@@ -70,6 +70,7 @@ public:
     size_t frameCount() { return m_image->frameCount(); }
     void setCurrentFrame(size_t frame) { m_image->m_currentFrame = frame; }
     size_t frameDecodedSize(size_t frame) { return m_image->m_frames[frame].m_frameBytes; }
+    size_t decodedFramesCount() const { return m_image->m_frames.size(); }
 
     void loadImage(const char* fileName)
     {
@@ -77,11 +78,25 @@ public:
         ASSERT_TRUE(imageData.get());
 
         m_image->setData(imageData, true);
-        EXPECT_EQ(0u, m_image->decodedSize());
+        EXPECT_EQ(0u, decodedSize());
 
         size_t frameCount = m_image->frameCount();
         for (size_t i = 0; i < frameCount; ++i)
             m_image->frameAtIndex(i);
+    }
+
+    size_t decodedSize()
+    {
+        // In the context of this test, the following loop will give the correct result, but only because the test
+        // forces all frames to be decoded in loadImage() above. There is no general guarantee that frameDecodedSize()
+        // is up-to-date. Because of how multi frame images (like GIF) work, requesting one frame to be decoded may
+        // require other previous frames to be decoded as well. In those cases frameDecodedSize() wouldn't return the
+        // correct thing for the previous frame because the decoded size wouldn't have propagated upwards to the
+        // BitmapImage frame cache.
+        size_t size = 0;
+        for (size_t i = 0; i < decodedFramesCount(); ++i)
+            size += frameDecodedSize(i);
+        return size;
     }
 
 protected:
@@ -97,7 +112,7 @@ protected:
 TEST_F(BitmapImageTest, destroyDecodedDataExceptCurrentFrame)
 {
     loadImage("/LayoutTests/fast/images/resources/animated-10color.gif");
-    size_t totalSize = m_image->decodedSize();
+    size_t totalSize = decodedSize();
     size_t frame = frameCount() / 2;
     setCurrentFrame(frame);
     size_t size = frameDecodedSize(frame);
@@ -109,11 +124,11 @@ TEST_F(BitmapImageTest, destroyDecodedDataExceptCurrentFrame)
 TEST_F(BitmapImageTest, destroyAllDecodedData)
 {
     loadImage("/LayoutTests/fast/images/resources/animated-10color.gif");
-    size_t decodedSize = m_image->decodedSize();
-    EXPECT_GT(decodedSize, 0u);
+    size_t totalSize = decodedSize();
+    EXPECT_GT(totalSize, 0u);
     destroyDecodedData(true);
-    EXPECT_EQ(-static_cast<int>(decodedSize), m_imageObserver.m_lastDecodedSizeChangedDelta);
-    EXPECT_EQ(0u, m_image->decodedSize());
+    EXPECT_EQ(-static_cast<int>(totalSize), m_imageObserver.m_lastDecodedSizeChangedDelta);
+    EXPECT_EQ(0u, decodedSize());
 }
 
 } // namespace

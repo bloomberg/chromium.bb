@@ -83,11 +83,6 @@ public:
     {
     }
 
-    virtual unsigned decodedSize() const OVERRIDE
-    {
-        return 0u;
-    }
-
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE
     {
         return false;

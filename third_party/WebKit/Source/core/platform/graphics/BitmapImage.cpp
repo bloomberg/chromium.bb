@@ -49,8 +49,6 @@ BitmapImage::BitmapImage(ImageObserver* observer)
     , m_repetitionCountStatus(Unknown)
     , m_repetitionsComplete(0)
     , m_desiredFrameStartTime(0)
-    , m_decodedSize(0)
-    , m_decodedPropertiesSize(0)
     , m_frameCount(0)
     , m_isSolidColor(false)
     , m_checkedForSolidColor(false)
@@ -72,8 +70,6 @@ BitmapImage::BitmapImage(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver*
     , m_repetitionCount(cAnimationNone)
     , m_repetitionCountStatus(Unknown)
     , m_repetitionsComplete(0)
-    , m_decodedSize(nativeImage->decodedSize())
-    , m_decodedPropertiesSize(0)
     , m_frameCount(1)
     , m_isSolidColor(false)
     , m_checkedForSolidColor(false)
@@ -135,12 +131,6 @@ void BitmapImage::destroyMetadataAndNotify(size_t frameBytesCleared)
     m_isSolidColor = false;
     m_checkedForSolidColor = false;
 
-    ASSERT(m_decodedSize >= frameBytesCleared);
-    m_decodedSize -= frameBytesCleared;
-    if (frameBytesCleared > 0) {
-        frameBytesCleared += m_decodedPropertiesSize;
-        m_decodedPropertiesSize = 0;
-    }
     if (frameBytesCleared && imageObserver())
         imageObserver()->decodedSizeChanged(this, -safeCast<int>(frameBytesCleared));
 }
@@ -168,32 +158,11 @@ void BitmapImage::cacheFrame(size_t index)
         m_hasUniformFrameSize = false;
     if (m_frames[index].m_frame) {
         int deltaBytes = safeCast<int>(m_frames[index].m_frameBytes);
-        m_decodedSize += deltaBytes;
         // The fully-decoded frame will subsume the partially decoded data used
         // to determine image properties.
-        deltaBytes -= m_decodedPropertiesSize;
-        m_decodedPropertiesSize = 0;
         if (imageObserver())
             imageObserver()->decodedSizeChanged(this, deltaBytes);
     }
-}
-
-void BitmapImage::didDecodeProperties() const
-{
-    if (m_decodedSize)
-        return;
-    size_t updatedSize = m_source.bytesDecodedToDetermineProperties();
-    if (m_decodedPropertiesSize == updatedSize)
-        return;
-    int deltaBytes = updatedSize - m_decodedPropertiesSize;
-#if !ASSERT_DISABLED
-    bool overflow = updatedSize > m_decodedPropertiesSize && deltaBytes < 0;
-    bool underflow = updatedSize < m_decodedPropertiesSize && deltaBytes > 0;
-    ASSERT(!overflow && !underflow);
-#endif
-    m_decodedPropertiesSize = updatedSize;
-    if (imageObserver())
-        imageObserver()->decodedSizeChanged(this, deltaBytes);
 }
 
 void BitmapImage::updateSize() const
@@ -204,7 +173,6 @@ void BitmapImage::updateSize() const
     m_size = m_source.size();
     m_sizeRespectingOrientation = m_source.size(RespectImageOrientation);
     m_haveSize = true;
-    didDecodeProperties();
 }
 
 IntSize BitmapImage::size() const
@@ -224,14 +192,12 @@ IntSize BitmapImage::currentFrameSize() const
     if (!m_currentFrame || m_hasUniformFrameSize)
         return size();
     IntSize frameSize = m_source.frameSizeAtIndex(m_currentFrame);
-    didDecodeProperties();
     return frameSize;
 }
 
 bool BitmapImage::getHotSpot(IntPoint& hotSpot) const
 {
     bool result = m_source.getHotSpot(hotSpot);
-    didDecodeProperties();
     return result;
 }
 
@@ -337,7 +303,6 @@ size_t BitmapImage::frameCount()
         m_frameCount = m_source.frameCount();
         // If decoder is not initialized yet, m_source.frameCount() returns 0.
         if (m_frameCount) {
-            didDecodeProperties();
             m_haveFrameCount = true;
         }
     }
@@ -350,7 +315,6 @@ bool BitmapImage::isSizeAvailable()
         return true;
 
     m_sizeAvailable = m_source.isSizeAvailable();
-    didDecodeProperties();
 
     return m_sizeAvailable;
 }
@@ -440,7 +404,6 @@ int BitmapImage::repetitionCount(bool imageKnownToBeComplete)
         // decoder will default to cAnimationLoopOnce, and we'll try and read
         // the count again once the whole image is decoded.
         m_repetitionCount = m_source.repetitionCount();
-        didDecodeProperties();
         m_repetitionCountStatus = (imageKnownToBeComplete || m_repetitionCount == cAnimationNone) ? Certain : Uncertain;
     }
     return m_repetitionCount;
@@ -566,13 +529,6 @@ void BitmapImage::resetAnimation()
     // For extremely large animations, when the animation is reset, we just throw everything away.
     destroyDecodedDataIfNecessary();
 }
-
-unsigned BitmapImage::decodedSize() const
-{
-    return m_decodedSize;
-}
-
-
 
 void BitmapImage::advanceAnimation(Timer<BitmapImage>*)
 {

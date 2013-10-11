@@ -89,11 +89,6 @@ public:
     {
     }
 
-    virtual unsigned decodedSize() const OVERRIDE
-    {
-        return 0u;
-    }
-
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, BlendMode) OVERRIDE
     {
     }

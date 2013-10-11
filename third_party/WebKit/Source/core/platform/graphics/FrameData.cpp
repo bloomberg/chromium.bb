@@ -53,6 +53,7 @@ bool FrameData::clear(bool clearMetadata)
         m_haveMetadata = false;
 
     m_orientation = DefaultImageOrientation;
+    m_frameBytes = 0;
 
     if (m_frame) {
         m_frame.clear();
