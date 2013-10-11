@@ -155,7 +155,7 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     if (clipChanged && !frameRectChanged)
         m_widget->clipRectChanged();
 
-    if (hasLayer() && layer()->compositingState() == PaintsIntoOwnBacking)
+    if (hasLayer() && layer()->isComposited())
         layer()->compositedLayerMapping()->updateAfterWidgetResize();
 
     bool boundsChanged = m_widget->frameRect().size() != newFrame.size();

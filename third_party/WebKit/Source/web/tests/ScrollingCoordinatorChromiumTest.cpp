@@ -292,7 +292,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
 
     RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
     ASSERT_TRUE(layer->usesCompositedScrolling());
-    ASSERT_EQ(PaintsIntoOwnBacking, layer->compositingState());
+    ASSERT_TRUE(layer->isComposited());
 
     CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
     ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());

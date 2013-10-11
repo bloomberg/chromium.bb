@@ -696,7 +696,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         m_backgroundLayer->setOffsetFromRenderer(m_graphicsLayer->offsetFromRenderer());
     }
 
-    if (m_owningLayer->reflectionLayer() && m_owningLayer->reflectionLayer()->compositedLayerMapping()) {
+    if (m_owningLayer->reflectionLayer() && m_owningLayer->reflectionLayer()->isComposited()) {
         CompositedLayerMapping* reflectionCompositedLayerMapping = m_owningLayer->reflectionLayer()->compositedLayerMapping();
         reflectionCompositedLayerMapping->updateGraphicsLayerGeometry();
 
@@ -1197,16 +1197,9 @@ float CompositedLayerMapping::compositingOpacity(float rendererOpacity) const
         if (!curr->isStackingContainer())
             continue;
 
-        // If we found a composited layer, regardless of whether it actually
-        // paints into it, we want to compute opacity relative to it. So we can
-        // break here.
-        //
-        // FIXME: with grouped backings, a composited descendant will have to
-        // continue past the grouped (squashed) layers that its parents may
-        // contribute to. This whole confusion can be avoided by specifying
-        // explicitly the composited ancestor where we would stop accumulating
-        // opacity.
-        if (curr->compositingState() == PaintsIntoOwnBacking || curr->compositingState() == HasOwnBackingButPaintsIntoAncestor)
+        // If we found a compositing layer, we want to compute opacity
+        // relative to it. So we can break here.
+        if (curr->isComposited())
             break;
 
         finalOpacity *= curr->renderer()->opacity();
@@ -1344,7 +1337,7 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
         size_t listSize = normalFlowList->size();
         for (size_t i = 0; i < listSize; ++i) {
             RenderLayer* curLayer = normalFlowList->at(i);
-            if (!curLayer->compositedLayerMapping()
+            if (!curLayer->isComposited()
                 && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
                 return true;
         }
@@ -1359,7 +1352,7 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
             size_t listSize = negZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = negZOrderList->at(i);
-                if (!curLayer->compositedLayerMapping()
+                if (!curLayer->isComposited()
                     && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
                     return true;
             }
@@ -1369,7 +1362,7 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
             size_t listSize = posZOrderList->size();
             for (size_t i = 0; i < listSize; ++i) {
                 RenderLayer* curLayer = posZOrderList->at(i);
-                if (!curLayer->compositedLayerMapping()
+                if (!curLayer->isComposited()
                     && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
                     return true;
             }
@@ -1379,9 +1372,7 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
     return false;
 }
 
-// FIXME: By name the implementation is correct. But the code that uses this function means something
-// very slightly different - the implementation needs to also include composited descendants that
-// don't paint into their own backing, and instead paint into this backing.
+// Conservative test for having no rendered children.
 bool CompositedLayerMapping::hasVisibleNonCompositingDescendantLayers() const
 {
     return hasVisibleNonCompositingDescendant(m_owningLayer);

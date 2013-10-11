@@ -1259,7 +1259,7 @@ void FrameView::updateCanBlitOnScrollRecursively()
 bool FrameView::contentsInCompositedLayer() const
 {
     RenderView* renderView = this->renderView();
-    if (renderView && renderView->compositingState() == PaintsIntoOwnBacking) {
+    if (renderView && renderView->isComposited()) {
         GraphicsLayer* layer = renderView->layer()->compositedLayerMapping()->mainGraphicsLayer();
         if (layer && layer->drawsContent())
             return true;
@@ -1376,10 +1376,10 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         ASSERT(renderer->hasLayer());
         RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
 
-        // Layers that paint into their ancestor or into a grouped backing will still need
-        // to apply a repaint invalidation. If the layer paints into its own backing, then
-        // it does not need repainting just to scroll.
-        if (layer->compositingState() == PaintsIntoOwnBacking)
+        // Composited layers may still actually paint into their ancestor.
+        // If that happens, the viewport constrained object needs to be
+        // repainted on scroll.
+        if (layer->isComposited() && !layer->compositedLayerMapping()->paintsIntoCompositedAncestor())
             continue;
 
         if (layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForBoundsOutOfView

@@ -102,49 +102,49 @@ bool RenderBoxModelObject::hasAcceleratedCompositing() const
 bool RenderBoxModelObject::startTransition(double timeOffset, CSSPropertyID propertyId, const RenderStyle* fromStyle, const RenderStyle* toStyle)
 {
     ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
+    ASSERT(isComposited());
     return layer()->compositedLayerMapping()->startTransition(timeOffset, propertyId, fromStyle, toStyle);
 }
 
 void RenderBoxModelObject::transitionPaused(double timeOffset, CSSPropertyID propertyId)
 {
     ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
+    ASSERT(isComposited());
     layer()->compositedLayerMapping()->transitionPaused(timeOffset, propertyId);
 }
 
 void RenderBoxModelObject::transitionFinished(CSSPropertyID propertyId)
 {
     ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
+    ASSERT(isComposited());
     layer()->compositedLayerMapping()->transitionFinished(propertyId);
 }
 
 bool RenderBoxModelObject::startAnimation(double timeOffset, const CSSAnimationData* animation, const KeyframeList& keyframes)
 {
     ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
+    ASSERT(isComposited());
     return layer()->compositedLayerMapping()->startAnimation(timeOffset, animation, keyframes);
 }
 
 void RenderBoxModelObject::animationPaused(double timeOffset, const String& name)
 {
     ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
+    ASSERT(isComposited());
     layer()->compositedLayerMapping()->animationPaused(timeOffset, name);
 }
 
 void RenderBoxModelObject::animationFinished(const String& name)
 {
     ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
+    ASSERT(isComposited());
     layer()->compositedLayerMapping()->animationFinished(name);
 }
 
 void RenderBoxModelObject::suspendAnimations(double time)
 {
     ASSERT(hasLayer());
-    ASSERT(compositingState() == PaintsIntoOwnBacking);
+    ASSERT(isComposited());
     layer()->compositedLayerMapping()->suspendAnimations(time);
 }
 
@@ -984,7 +984,7 @@ bool RenderBoxModelObject::fixedBackgroundPaintsInLocalCoordinates() const
         return false;
 
     RenderLayer* rootLayer = view()->layer();
-    if (!rootLayer || rootLayer->compositingState() == NotComposited)
+    if (!rootLayer || !rootLayer->isComposited())
         return false;
 
     return rootLayer->compositedLayerMapping()->backgroundLayerPaintsFixedRootBackground();

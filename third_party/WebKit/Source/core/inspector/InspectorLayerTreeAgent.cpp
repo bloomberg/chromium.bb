@@ -204,7 +204,7 @@ void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nod
 
 void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(ErrorString* errorString, RenderLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
-    if (root->compositedLayerMapping()) {
+    if (root->isComposited()) {
         if (Node* node = root->renderer()->generatingNode()) {
             GraphicsLayer* graphicsLayer = root->compositedLayerMapping()->childForSuperlayers();
             layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(errorString, node));
