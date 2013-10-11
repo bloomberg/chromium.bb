@@ -59,7 +59,7 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeRequestHandler {
   size_t raw_length() const;
 
  private:
-  std::string status_line_;
+  std::string request_line_;
   std::string headers_;
   int original_length_;
   int raw_length_;

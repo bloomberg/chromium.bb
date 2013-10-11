@@ -29,16 +29,16 @@ const int kVersionHeaderValueForRFC6455 = 13;
 // response).
 void ParseHandshakeHeader(
     const char* handshake_message, int len,
-    std::string* status_line,
+    std::string* request_line,
     std::string* headers) {
   size_t i = base::StringPiece(handshake_message, len).find_first_of("\r\n");
   if (i == base::StringPiece::npos) {
-    *status_line = std::string(handshake_message, len);
+    *request_line = std::string(handshake_message, len);
     *headers = "";
     return;
   }
-  // |status_line| includes \r\n.
-  *status_line = std::string(handshake_message, i + 2);
+  // |request_line| includes \r\n.
+  *request_line = std::string(handshake_message, i + 2);
 
   int header_len = len - (i + 2) - 2;
   if (header_len > 0) {
@@ -166,7 +166,7 @@ bool WebSocketHandshakeRequestHandler::ParseRequest(
 
   ParseHandshakeHeader(input.data(),
                        input_header_length,
-                       &status_line_,
+                       &request_line_,
                        &headers_);
 
   if (!CheckVersionInRequest(headers_)) {
@@ -200,9 +200,9 @@ HttpRequestInfo WebSocketHandshakeRequestHandler::GetRequestInfo(
     const GURL& url, std::string* challenge) {
   HttpRequestInfo request_info;
   request_info.url = url;
-  size_t method_end = base::StringPiece(status_line_).find_first_of(" ");
+  size_t method_end = base::StringPiece(request_line_).find_first_of(" ");
   if (method_end != base::StringPiece::npos)
-    request_info.method = std::string(status_line_.data(), method_end);
+    request_info.method = std::string(request_line_.data(), method_end);
 
   request_info.extra_headers.Clear();
   request_info.extra_headers.AddHeadersFromString(headers_);
@@ -292,10 +292,10 @@ bool WebSocketHandshakeRequestHandler::GetRequestHeaderBlock(
 }
 
 std::string WebSocketHandshakeRequestHandler::GetRawRequest() {
-  DCHECK(!status_line_.empty());
+  DCHECK(!request_line_.empty());
   DCHECK(!headers_.empty());
 
-  std::string raw_request = status_line_ + headers_ + "\r\n";
+  std::string raw_request = request_line_ + headers_ + "\r\n";
   raw_length_ = raw_request.size();
   return raw_request;
 }
