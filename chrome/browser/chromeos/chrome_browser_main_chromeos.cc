@@ -52,7 +52,6 @@
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
-#include "chrome/browser/chromeos/power/brightness_observer.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
@@ -586,10 +585,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   // These observers must be initialized after the profile because
   // they use the profile to dispatch extension events.
-  //
-  // Initialize the brightness observer so that we'll display an onscreen
-  // indication of brightness changes during login.
-  brightness_observer_.reset(new BrightnessObserver());
   extension_system_event_observer_.reset(new ExtensionSystemEventObserver());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableScreensaverExtensions)) {
@@ -704,7 +699,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   extension_system_event_observer_.reset();
-  brightness_observer_.reset();
   retail_mode_power_save_blocker_.reset();
   peripheral_battery_observer_.reset();
   power_prefs_.reset();
