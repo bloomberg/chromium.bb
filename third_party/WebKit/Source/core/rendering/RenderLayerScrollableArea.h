@@ -70,6 +70,9 @@ public:
     RenderLayerScrollableArea(RenderBox*);
     virtual ~RenderLayerScrollableArea();
 
+    bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
+    bool hasVerticalScrollbar() const { return verticalScrollbar(); }
+
     virtual Scrollbar* horizontalScrollbar() const OVERRIDE { return m_hBar.get(); }
     virtual Scrollbar* verticalScrollbar() const OVERRIDE { return m_vBar.get(); }
     virtual ScrollableArea* enclosingScrollableArea() const OVERRIDE;
@@ -160,9 +163,6 @@ private:
 
     PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
     void destroyScrollbar(ScrollbarOrientation);
-
-    bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
-    bool hasVerticalScrollbar() const { return verticalScrollbar(); }
 
     void setHasHorizontalScrollbar(bool hasScrollbar);
     void setHasVerticalScrollbar(bool hasScrollbar);

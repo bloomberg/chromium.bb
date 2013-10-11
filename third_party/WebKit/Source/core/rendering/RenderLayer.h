@@ -675,10 +675,6 @@ public:
     bool usesCompositedScrolling() const;
 
     bool hasOverlayScrollbars() const;
-    Scrollbar* horizontalScrollbar() const;
-    Scrollbar* verticalScrollbar() const;
-    bool hasVerticalScrollbar() const;
-    bool hasHorizontalScrollbar() const;
     int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
     int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 

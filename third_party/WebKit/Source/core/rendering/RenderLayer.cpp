@@ -4955,38 +4955,6 @@ bool RenderLayer::hasOverlayScrollbars() const
     return m_scrollableArea && m_scrollableArea->hasOverlayScrollbars();
 }
 
-Scrollbar* RenderLayer::horizontalScrollbar() const
-{
-    if (!m_scrollableArea)
-        return 0;
-
-    return m_scrollableArea->horizontalScrollbar();
-}
-
-Scrollbar* RenderLayer::verticalScrollbar() const
-{
-    if (!m_scrollableArea)
-        return 0;
-
-    return m_scrollableArea->verticalScrollbar();
-}
-
-bool RenderLayer::hasVerticalScrollbar() const
-{
-    if (!m_scrollableArea)
-        return false;
-
-    return m_scrollableArea->hasVerticalScrollbar();
-}
-
-bool RenderLayer::hasHorizontalScrollbar() const
-{
-    if (!m_scrollableArea)
-        return false;
-
-    return m_scrollableArea->hasHorizontalScrollbar();
-}
-
 int RenderLayer::verticalScrollbarWidth(OverlayScrollbarSizeRelevancy relevancy) const
 {
     if (!m_scrollableArea)

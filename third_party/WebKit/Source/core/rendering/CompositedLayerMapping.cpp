@@ -958,7 +958,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers(const IntSize& offse
 {
     IntSize offsetFromRenderer = m_graphicsLayer->offsetFromRenderer();
     if (GraphicsLayer* layer = layerForHorizontalScrollbar()) {
-        Scrollbar* hBar = m_owningLayer->horizontalScrollbar();
+        Scrollbar* hBar = m_owningLayer->scrollableArea()->horizontalScrollbar();
         if (hBar) {
             layer->setPosition(hBar->frameRect().location() - offsetFromRoot - offsetFromRenderer);
             layer->setSize(hBar->frameRect().size());
@@ -969,7 +969,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers(const IntSize& offse
     }
 
     if (GraphicsLayer* layer = layerForVerticalScrollbar()) {
-        Scrollbar* vBar = m_owningLayer->verticalScrollbar();
+        Scrollbar* vBar = m_owningLayer->scrollableArea()->verticalScrollbar();
         if (vBar) {
             layer->setPosition(vBar->frameRect().location() - offsetFromRoot - offsetFromRenderer);
             layer->setSize(vBar->frameRect().size());
@@ -1728,9 +1728,9 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
         doPaintTask(paintInfo, &context, clip);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
-        paintScrollbar(m_owningLayer->horizontalScrollbar(), context, clip);
+        paintScrollbar(m_owningLayer->scrollableArea()->horizontalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {
-        paintScrollbar(m_owningLayer->verticalScrollbar(), context, clip);
+        paintScrollbar(m_owningLayer->scrollableArea()->verticalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForScrollCorner()) {
         const IntRect& scrollCornerAndResizer = m_owningLayer->scrollCornerAndResizerRect();
         context.save();
