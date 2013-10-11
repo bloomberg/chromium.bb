@@ -292,11 +292,9 @@ FileTransferController.prototype = {
   onDragStart_: function(list, event) {
     // Check if a drag selection should be initiated or not.
     // TODO(hirono): Support drag selection on the grid view. crbug.com/247278
-    if (list.id == 'file-list' && list.parentNode.id == 'detail-table') {
-      if (list.parentNode.shouldStartDragSelection(event)) {
-        this.dragSelector_.startDragSelection(list, event);
-        return;
-      }
+    if (list.shouldStartDragSelection(event)) {
+      this.dragSelector_.startDragSelection(list, event);
+      return;
     }
 
     // Nothing selected.

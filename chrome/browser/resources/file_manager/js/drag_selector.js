@@ -55,6 +55,8 @@ function DragSelector() {
   // Bind handlers to make them removable.
   this.onMouseMoveBound_ = this.onMouseMove_.bind(this);
   this.onMouseUpBound_ = this.onMouseUp_.bind(this);
+
+  Object.seal(this);
 }
 
 /**
@@ -123,6 +125,8 @@ DragSelector.prototype.startDragSelection = function(list, event) {
   }
   this.border_.style.left = this.startX_ + 'px';
   this.border_.style.top = this.startY_ + 'px';
+  this.border_.style.width = '0';
+  this.border_.style.height = '0';
   list.appendChild(this.border_);
 
   // If no modifier key is pressed, clear the original selection.
@@ -138,7 +142,7 @@ DragSelector.prototype.startDragSelection = function(list, event) {
 };
 
 /**
- * Handle the mousemove event.
+ * Handles the mousemove event.
  * @private
  * @param {MouseEvent} event The mousemove event.
  */
@@ -155,20 +159,13 @@ DragSelector.prototype.onMouseMove_ = function(event) {
   borderBounds.height = borderBounds.bottom - borderBounds.top;
 
   // Collect items within the selection rect.
-  var currentSelection = [];
-  var leadIndex = -1;
-  for (var i = 0; i < this.target_.selectionModel_.length; i++) {
-    // TODO(hirono): Stop to use the private method. crbug.com/246459
-    var itemMetrics = this.target_.getHeightsForIndex_(i);
-    itemMetrics.bottom = itemMetrics.top + itemMetrics.height;
-    if (itemMetrics.top < borderBounds.bottom &&
-        itemMetrics.bottom >= borderBounds.top) {
-      currentSelection.push(i);
-    }
-    var pointed = itemMetrics.top <= pos.y && pos.y < itemMetrics.bottom;
-    if (pointed)
-      leadIndex = i;
-  }
+  var currentSelection = this.target_.getHitElements(
+      borderBounds.left,
+      borderBounds.top,
+      borderBounds.width,
+      borderBounds.height);
+  var pointedElements = this.target_.getHitElements(pos.x, pos.y);
+  var leadIndex = pointedElements.length ? pointedElements[0] : -1;
 
   // Diff the selection between currentSelection and this.lastSelection_.
   var selectionFlag = [];

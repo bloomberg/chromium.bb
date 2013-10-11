@@ -711,7 +711,7 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
 }
 
-.main-panel #detail-table > list > .drag-selection-border {
+#file-list .drag-selection-border {
   -webkit-box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.3);
   border: 2px solid rgba(255, 255, 255, 0.6);

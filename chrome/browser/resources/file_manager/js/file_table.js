@@ -364,6 +364,29 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   self.list.addEventListener('mousedown', function(e) {
     this.lastSelection_ = this.selectionModel.selectedIndexes;
   }.bind(self), true);
+  self.list.shouldStartDragSelection =
+      self.shouldStartDragSelection_.bind(self);
+
+  /**
+   * Obtains the index list of elements that are hit by the point or the
+   * rectangle.
+   *
+   * @param {number} x X coordinate value.
+   * @param {number} y Y coordinate value.
+   * @param {=number} opt_width Width of the coordinate.
+   * @param {=number} opt_height Height of the coordinate.
+   * @return {Array.<number>} Index list of hit elements.
+   */
+  self.list.getHitElements = function(x, y, opt_width, opt_height) {
+    var currentSelection = [];
+    var bottom = y + (opt_height || 0);
+    for (var i = 0; i < this.selectionModel_.length; i++) {
+      var itemMetrics = this.getHeightsForIndex_(i);
+      if (itemMetrics.top < bottom && itemMetrics.top + itemMetrics.height >= y)
+        currentSelection.push(i);
+    }
+    return currentSelection;
+  };
 };
 
 /**
@@ -387,8 +410,9 @@ FileTable.prototype.setDateTimeFormat = function(use12hourClock) {
  * event.
  * @param {MouseEvent} event Drag start event.
  * @return {boolean} True if the mouse is hit to the background of the list.
+ * @private
  */
-FileTable.prototype.shouldStartDragSelection = function(event) {
+FileTable.prototype.shouldStartDragSelection_ = function(event) {
   // If the shift key is pressed, it should starts drag selection.
   if (event.shiftKey)
     return true;

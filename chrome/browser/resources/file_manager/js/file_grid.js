@@ -231,3 +231,13 @@ FileGrid.prototype.setBottomMarginForPanel = function(margin) {
   this.style.paddingBottom = margin + 'px';
   this.scrollBar_.setBottomMarginForPanel(margin);
 };
+
+/**
+ * Obtains if the drag selection should be start or not by referring the mouse
+ * event.
+ * @param {MouseEvent} event Drag start event.
+ * @return {boolean} True if the mouse is hit to the background of the list.
+ */
+FileGrid.prototype.shouldStartDragSelection = function(event) {
+  return false;
+};
