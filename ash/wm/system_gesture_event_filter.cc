@@ -12,6 +12,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/gestures/long_press_affordance_handler.h"
+#include "ash/wm/gestures/overview_gesture_handler.h"
 #include "ash/wm/gestures/system_pinch_handler.h"
 #include "ash/wm/gestures/two_finger_drag_handler.h"
 #include "ash/wm/window_util.h"
@@ -45,6 +46,8 @@ SystemGestureEventFilter::SystemGestureEventFilter()
           HasSwitch(ash::switches::kAshEnableAdvancedGestures)),
       long_press_affordance_(new LongPressAffordanceHandler),
       two_finger_drag_(new TwoFingerDragHandler) {
+  if (switches::UseOverviewMode())
+    overview_gesture_handler_.reset(new OverviewGestureHandler);
 }
 
 SystemGestureEventFilter::~SystemGestureEventFilter() {
@@ -74,6 +77,12 @@ void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
       event->GetLowestTouchId());
 
   if (two_finger_drag_->ProcessGestureEvent(target, *event)) {
+    event->StopPropagation();
+    return;
+  }
+
+  if (overview_gesture_handler_ &&
+      overview_gesture_handler_->ProcessGestureEvent(*event)) {
     event->StopPropagation();
     return;
   }

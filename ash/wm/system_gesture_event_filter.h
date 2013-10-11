@@ -30,6 +30,7 @@ class SystemGestureEventFilterTest;
 
 namespace internal {
 class LongPressAffordanceHandler;
+class OverviewGestureHandler;
 class SystemPinchHandler;
 class TouchUMA;
 class TwoFingerDragHandler;
@@ -65,6 +66,7 @@ class SystemGestureEventFilter : public ui::EventHandler,
   bool system_gestures_enabled_;
 
   scoped_ptr<LongPressAffordanceHandler> long_press_affordance_;
+  scoped_ptr<OverviewGestureHandler> overview_gesture_handler_;
   scoped_ptr<TwoFingerDragHandler> two_finger_drag_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilter);

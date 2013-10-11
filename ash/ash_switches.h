@@ -93,6 +93,9 @@ ASH_EXPORT bool ShowShelfAlignmentMenu();
 // Returns true if the full MultiProfile mode (M-31 version) is used.
 ASH_EXPORT bool UseFullMultiProfileMode();
 
+// Returns true if overview mode should be activated for window switching.
+ASH_EXPORT bool UseOverviewMode();
+
 // Returns true if the MultiProfile shelf menu should be shown.
 ASH_EXPORT bool ShowMultiProfileShelfMenu();
 

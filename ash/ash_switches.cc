@@ -234,6 +234,10 @@ bool UseFullMultiProfileMode() {
 #endif
 }
 
+bool UseOverviewMode() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableOverviewMode);
+}
+
 // Returns true if the MultiProfile shelf menu should be shown.
 bool ShowMultiProfileShelfMenu() {
 #if defined(OS_CHROMEOS)

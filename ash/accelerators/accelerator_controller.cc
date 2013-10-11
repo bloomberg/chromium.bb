@@ -88,18 +88,13 @@ bool DebugShortcutsEnabled() {
 #endif
 }
 
-bool OverviewEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshDisableOverviewMode);
-}
-
 void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   Shell* shell = Shell::GetInstance();
 
   if (accelerator.key_code() == ui::VKEY_TAB)
     shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
 
-  if (OverviewEnabled()) {
+  if (switches::UseOverviewMode()) {
     shell->window_selector_controller()->HandleCycleWindow(
         WindowSelector::BACKWARD);
     return;
@@ -114,7 +109,7 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
 
-  if (OverviewEnabled()) {
+  if (switches::UseOverviewMode()) {
     shell->window_selector_controller()->HandleCycleWindow(
         WindowSelector::FORWARD);
     return;
@@ -128,7 +123,7 @@ void HandleCycleLinear(const ui::Accelerator& accelerator) {
 
   // TODO(jamescook): When overview becomes the default the AcceleratorAction
   // should be renamed from CYCLE_LINEAR to TOGGLE_OVERVIEW.
-  if (OverviewEnabled()) {
+  if (switches::UseOverviewMode()) {
     shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_OVERVIEW_F5);
     shell->window_selector_controller()->ToggleOverview();
     return;

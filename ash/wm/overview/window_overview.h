@@ -63,7 +63,6 @@ class WindowOverview : public ui::EventHandler {
   void MoveToSingleRootWindow(aura::RootWindow* root_window);
 
   // ui::EventHandler:
-  virtual void OnEvent(ui::Event* event) OVERRIDE;
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;

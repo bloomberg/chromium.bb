@@ -226,51 +226,44 @@ void WindowOverview::MoveToSingleRootWindow(aura::RootWindow* root_window) {
   PositionWindows();
 }
 
-void WindowOverview::OnEvent(ui::Event* event) {
-  // If the event is targetted at any of the windows in the overview, then
-  // prevent it from propagating.
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  for (WindowSelectorItemList::iterator iter = windows_->begin();
-       iter != windows_->end(); ++iter) {
-    if ((*iter)->TargetedWindow(target)) {
-      // TODO(flackr): StopPropogation prevents generation of gesture events.
-      // We should find a better way to prevent events from being delivered to
-      // the window, perhaps a transparent window in front of the target window
-      // or using EventClientImpl::CanProcessEventsWithinSubtree.
-      event->StopPropagation();
-      break;
-    }
-  }
-
-  // This object may not be valid after this call as a selection event can
-  // trigger deletion of the window selector.
-  ui::EventHandler::OnEvent(event);
-}
-
 void WindowOverview::OnKeyEvent(ui::KeyEvent* event) {
+  if (GetTargetedWindow(static_cast<aura::Window*>(event->target())))
+    event->StopPropagation();
   if (event->type() != ui::ET_KEY_PRESSED)
     return;
+
   if (event->key_code() == ui::VKEY_ESCAPE)
     window_selector_->CancelSelection();
 }
 
 void WindowOverview::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSE_RELEASED)
-    return;
   aura::Window* target = GetEventTarget(event);
   if (!target)
+    return;
+
+  event->StopPropagation();
+  if (event->type() != ui::ET_MOUSE_RELEASED)
     return;
 
   window_selector_->SelectWindow(target);
 }
 
 void WindowOverview::OnTouchEvent(ui::TouchEvent* event) {
+  // Existing touches should be allowed to continue. This prevents getting
+  // stuck in a gesture or with pressed fingers being tracked elsewhere.
   if (event->type() != ui::ET_TOUCH_PRESSED)
     return;
+
   aura::Window* target = GetEventTarget(event);
   if (!target)
     return;
 
+  // TODO(flackr): StopPropogation prevents generation of gesture events.
+  // We should find a better way to prevent events from being delivered to
+  // the window, perhaps a transparent window in front of the target window
+  // or using EventClientImpl::CanProcessEventsWithinSubtree and then a tap
+  // gesture could be used to activate the window.
+  event->StopPropagation();
   window_selector_->SelectWindow(target);
 }
 

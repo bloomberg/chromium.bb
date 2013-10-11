@@ -342,6 +342,9 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_CLOSE_THROUGH_CONTEXT_MENU:
       content::RecordAction(content::UserMetricsAction("CloseFromContextMenu"));
       break;
+    case ash::UMA_GESTURE_OVERVIEW:
+      content::RecordAction(content::UserMetricsAction("Gesture_Overview"));
+      break;
     case ash::UMA_LAUNCHER_CLICK_ON_APP:
       content::RecordAction(content::UserMetricsAction("Launcher_ClickOnApp"));
       break;
