@@ -9,7 +9,6 @@
 
 #include <stdint.h>
 
-#include "mojo/public/system/macros.h"
 #include "mojo/public/system/system_export.h"
 
 // Types -----------------------------------------------------------------------
@@ -259,6 +258,12 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle handle,
 #ifdef __cplusplus
 
 namespace mojo {
+
+// Used to assert things at compile time. (Use our own copy instead of
+// Chromium's, since we can't depend on Chromium.)
+template <bool> struct CompileAssert {};
+#define MOJO_COMPILE_ASSERT(expr, msg) \
+    typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
 
 struct Handle { MojoHandle value; };
 
