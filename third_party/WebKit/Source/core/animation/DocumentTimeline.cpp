@@ -33,7 +33,7 @@
 
 #include "core/animation/Player.h"
 #include "core/dom/Document.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 
 namespace WebCore {
 

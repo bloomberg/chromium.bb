@@ -30,7 +30,7 @@
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 
 namespace WebCore {
 

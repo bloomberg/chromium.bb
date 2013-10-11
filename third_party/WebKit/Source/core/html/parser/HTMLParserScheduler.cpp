@@ -28,7 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLDocumentParser.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 
 namespace WebCore {
 

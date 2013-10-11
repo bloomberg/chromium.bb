@@ -37,7 +37,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 

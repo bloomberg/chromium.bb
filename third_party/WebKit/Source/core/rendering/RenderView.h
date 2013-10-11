@@ -22,7 +22,7 @@
 #ifndef RenderView_h
 #define RenderView_h
 
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/LayoutState.h"

@@ -35,7 +35,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 

@@ -45,7 +45,7 @@
 #include "core/events/TouchEvent.h"
 #include "core/dom/TouchList.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 
 using namespace WebKit;
 using namespace WebCore;

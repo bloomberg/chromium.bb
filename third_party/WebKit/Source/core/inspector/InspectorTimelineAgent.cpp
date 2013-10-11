@@ -47,7 +47,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/DOMWindow.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/PageConsole.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"

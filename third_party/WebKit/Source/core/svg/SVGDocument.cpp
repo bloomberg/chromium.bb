@@ -24,7 +24,7 @@
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGSVGElement.h"

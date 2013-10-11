@@ -27,7 +27,7 @@
 #include "ScrollbarGroup.h"
 
 #include "WebPluginScrollbarImpl.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "public/platform/WebRect.h"

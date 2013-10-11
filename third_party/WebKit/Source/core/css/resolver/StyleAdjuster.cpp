@@ -39,7 +39,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Settings.h"
 #include "core/platform/Length.h"
 #include "core/rendering/Pagination.h"

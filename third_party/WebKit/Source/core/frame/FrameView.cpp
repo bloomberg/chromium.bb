@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
@@ -3209,7 +3209,7 @@ IntRect FrameView::convertToContainingView(const IntRect& localRect) const
             IntRect rect(localRect);
             // Add borders and padding??
             rect.move(renderer->borderLeft() + renderer->paddingLeft(),
-                      renderer->borderTop() + renderer->paddingTop());
+                renderer->borderTop() + renderer->paddingTop());
             return parentView->convertFromRenderer(renderer, rect);
         }
 

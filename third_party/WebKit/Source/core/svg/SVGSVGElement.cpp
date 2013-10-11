@@ -36,7 +36,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/UseCounter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderPart.h"

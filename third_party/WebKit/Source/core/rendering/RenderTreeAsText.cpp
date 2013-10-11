@@ -32,7 +32,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLElement.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/PrintContext.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/FlowThreadController.h"

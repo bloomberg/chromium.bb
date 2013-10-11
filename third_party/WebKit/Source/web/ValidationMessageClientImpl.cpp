@@ -30,7 +30,7 @@
 #include "WebValidationMessageClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/Element.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/HostWindow.h"
 #include "public/platform/WebRect.h"

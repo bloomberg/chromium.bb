@@ -29,7 +29,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
 #include "wtf/Vector.h"

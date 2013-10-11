@@ -28,7 +28,7 @@
 
 #include "core/css/PseudoStyleRequest.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderScrollbarTheme.h"

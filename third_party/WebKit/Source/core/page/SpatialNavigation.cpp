@@ -35,7 +35,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderLayer.h"

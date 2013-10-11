@@ -30,7 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLFormControlElement.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/RenderStyle.h"
 

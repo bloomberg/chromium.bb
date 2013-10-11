@@ -28,7 +28,7 @@
 #include "core/editing/Editor.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"

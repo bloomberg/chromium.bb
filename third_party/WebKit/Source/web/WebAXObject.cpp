@@ -44,7 +44,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/page/EventHandler.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "public/platform/WebPoint.h"

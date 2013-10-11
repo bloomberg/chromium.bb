@@ -74,7 +74,7 @@
 #include "core/page/DOMWindowLifecycleNotifier.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameTree.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"

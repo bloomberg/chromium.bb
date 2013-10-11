@@ -34,7 +34,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/WindowEventContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

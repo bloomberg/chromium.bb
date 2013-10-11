@@ -29,7 +29,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLTableElement.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/AutoTableLayout.h"
 #include "core/rendering/FixedTableLayout.h"

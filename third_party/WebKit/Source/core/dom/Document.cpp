@@ -149,7 +149,7 @@
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/History.h"
 #include "core/page/MouseEventWithHitTestResults.h"
 #include "core/page/Page.h"

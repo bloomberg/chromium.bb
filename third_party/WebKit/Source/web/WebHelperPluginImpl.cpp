@@ -44,7 +44,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/FocusController.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 

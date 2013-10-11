@@ -267,13 +267,13 @@ public:
     void calculateScrollbarModesForLayout(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy = AnyRule);
 
     // Normal delay
-    static void setRepaintThrottlingDeferredRepaintDelay(double p);
+    static void setRepaintThrottlingDeferredRepaintDelay(double);
     // Negative value would mean that first few repaints happen without a delay
-    static void setRepaintThrottlingnInitialDeferredRepaintDelayDuringLoading(double p);
+    static void setRepaintThrottlingnInitialDeferredRepaintDelayDuringLoading(double);
     // The delay grows on each repaint to this maximum value
-    static void setRepaintThrottlingMaxDeferredRepaintDelayDuringLoading(double p);
+    static void setRepaintThrottlingMaxDeferredRepaintDelayDuringLoading(double);
     // On each repaint the delay increses by this amount
-    static void setRepaintThrottlingDeferredRepaintDelayIncrementDuringLoading(double p);
+    static void setRepaintThrottlingDeferredRepaintDelayIncrementDuringLoading(double);
 
     virtual IntPoint lastKnownMousePosition() const;
     bool shouldSetCursor() const;

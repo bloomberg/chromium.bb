@@ -31,7 +31,7 @@
 #include "PickerCommon.h"
 #include "WebColorChooser.h"
 #include "WebViewImpl.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/ColorChooserClient.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/LocalizedStrings.h"

@@ -26,7 +26,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderPart.h"
 #include "core/svg/SVGDocument.h"
 #include "weborigin/SecurityOrigin.h"

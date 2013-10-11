@@ -52,7 +52,7 @@
 #include "core/dom/Element.h"
 #include "core/html/HTMLDocument.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Settings.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSize.h"

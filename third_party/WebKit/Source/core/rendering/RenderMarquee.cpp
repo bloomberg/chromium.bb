@@ -48,7 +48,7 @@
 
 #include "HTMLNames.h"
 #include "core/html/HTMLMarqueeElement.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/UseCounter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"

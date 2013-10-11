@@ -38,7 +38,7 @@
 #include "WebViewImpl.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/TouchDisambiguation.h"
 #include "platform/geometry/IntRect.h"
 #include "public/platform/Platform.h"

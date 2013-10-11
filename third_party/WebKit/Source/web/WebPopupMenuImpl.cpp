@@ -38,7 +38,7 @@
 #include "WebRange.h"
 #include "WebViewClient.h"
 #include "WebWidgetClient.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/Cursor.h"
 #include "platform/NotImplemented.h"
 #include "core/platform/chromium/FramelessScrollView.h"

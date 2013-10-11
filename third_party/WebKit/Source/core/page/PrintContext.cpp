@@ -22,7 +22,7 @@
 #include "core/page/PrintContext.h"
 
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/text/WTFString.h"

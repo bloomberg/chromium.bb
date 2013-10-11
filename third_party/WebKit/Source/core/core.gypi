@@ -1214,7 +1214,7 @@
             'page/FrameDestructionObserver.cpp',
             'page/FrameDestructionObserver.h',
             'page/FrameTree.cpp',
-            'page/FrameView.cpp',
+            'frame/FrameView.cpp',
             'frame/History.cpp',
             'frame/History.h',
             'page/ImageBitmap.cpp',

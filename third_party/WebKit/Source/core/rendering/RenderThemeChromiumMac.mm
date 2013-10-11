@@ -34,7 +34,7 @@
 #import "core/html/HTMLPlugInImageElement.h"
 #import "core/html/TimeRanges.h"
 #import "core/html/shadow/MediaControlElements.h"
-#import "core/page/FrameView.h"
+#import "core/frame/FrameView.h"
 #import "core/platform/graphics/BitmapImage.h"
 #import "core/platform/graphics/GraphicsContextStateSaver.h"
 #import "core/platform/graphics/Image.h"

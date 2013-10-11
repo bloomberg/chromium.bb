@@ -33,7 +33,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"

@@ -72,7 +72,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "core/rendering/style/StyleCustomFilterProgramCache.h"

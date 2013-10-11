@@ -14,7 +14,7 @@
 #include "WebView.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderView.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"

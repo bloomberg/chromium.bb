@@ -94,7 +94,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/EventHandler.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"

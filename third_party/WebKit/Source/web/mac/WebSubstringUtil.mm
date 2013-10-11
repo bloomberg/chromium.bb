@@ -44,7 +44,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/html/HTMLElement.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/mac/ColorMac.h"
 #include "core/rendering/RenderObject.h"

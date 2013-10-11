@@ -36,7 +36,7 @@
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/page/DOMWindow.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Settings.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"

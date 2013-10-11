@@ -27,7 +27,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"

@@ -43,7 +43,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "public/platform/WebFloatQuad.h"
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"

@@ -33,7 +33,7 @@
 #include "WebViewImpl.h"
 #include "core/dom/Node.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"

@@ -44,7 +44,7 @@
 #include "core/page/DOMSelection.h"
 #include "core/page/FocusController.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"

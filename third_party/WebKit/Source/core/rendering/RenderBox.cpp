@@ -36,7 +36,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/transforms/TransformState.h"

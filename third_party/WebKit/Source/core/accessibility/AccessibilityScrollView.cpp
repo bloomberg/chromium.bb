@@ -30,7 +30,7 @@
 #include "core/accessibility/AccessibilityScrollbar.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 
 namespace WebCore {
 

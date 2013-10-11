@@ -23,7 +23,7 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"

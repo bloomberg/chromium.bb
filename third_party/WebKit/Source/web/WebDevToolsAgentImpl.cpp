@@ -52,7 +52,7 @@
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorController.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/platform/graphics/GraphicsContext.h"

@@ -27,7 +27,7 @@
 #include "core/platform/ScrollbarThemeMacCommon.h"
 
 #include <Carbon/Carbon.h>
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/ScrollbarThemeMacNonOverlayAPI.h"
 #include "core/platform/ScrollbarThemeMacOverlayAPI.h"

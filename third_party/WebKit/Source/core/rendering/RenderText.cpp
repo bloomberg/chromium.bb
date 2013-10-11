@@ -28,7 +28,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Text.h"
 #include "core/fetch/TextResourceDecoder.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Settings.h"
 #include "core/platform/text/transcoder/FontTranscoder.h"
 #include "core/rendering/EllipsisBox.h"

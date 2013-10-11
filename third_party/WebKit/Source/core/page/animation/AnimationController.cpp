@@ -34,7 +34,7 @@
 #include "core/events/TransitionEvent.h"
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/animation/AnimationBase.h"
 #include "core/page/animation/AnimationControllerPrivate.h"

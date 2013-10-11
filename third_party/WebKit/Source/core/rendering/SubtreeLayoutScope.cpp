@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/rendering/SubtreeLayoutScope.h"
 
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

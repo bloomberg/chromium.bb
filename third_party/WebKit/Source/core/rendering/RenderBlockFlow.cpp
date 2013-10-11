@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/rendering/RenderBlockFlow.h"
 
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderNamedFlowThread.h"

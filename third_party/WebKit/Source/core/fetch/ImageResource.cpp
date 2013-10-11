@@ -29,7 +29,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/rendering/RenderObject.h"
 #include "core/svg/graphics/SVGImage.h"

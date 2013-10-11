@@ -62,7 +62,7 @@
 #include "core/html/forms/SearchInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/rendering/RenderTextControlSingleLine.h"

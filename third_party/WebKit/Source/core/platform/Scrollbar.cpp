@@ -36,7 +36,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameView.h"
+#include "core/frame/FrameView.h"
 
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
