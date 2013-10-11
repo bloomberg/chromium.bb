@@ -95,7 +95,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
                             ScopedVector<WebSocketFrame>* frames);
 
   // Converts a |chunk| to a |frame|. |*frame| should be NULL on entry to this
-  // method. If |chunk| is an incomplete control frame, or an empty non-final
+  // method. If |chunk| is an incomplete control frame, or an empty middle
   // frame, then |*frame| may still be NULL on exit. If an invalid control frame
   // is found, returns ERR_WS_PROTOCOL_ERROR and the stream is no longer
   // usable. Otherwise returns OK (even if frame is still NULL).
@@ -104,8 +104,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
 
   // Creates a frame based on the value of |is_final_chunk|, |data| and
   // |current_frame_header_|. Clears |current_frame_header_| if |is_final_chunk|
-  // is true. |data| may be NULL if the frame has an empty payload. A frame with
-  // no data and the "final" flag not set is not useful; in this case the
+  // is true. |data| may be NULL if the frame has an empty payload. A frame in
+  // the middle of a message with no data is not useful; in this case the
   // returned frame will be NULL. Otherwise, |current_frame_header_->opcode| is
   // set to Continuation after use if it was Text or Binary, in accordance with
   // WebSocket RFC6455 section 5.4.

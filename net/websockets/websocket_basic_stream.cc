@@ -379,9 +379,11 @@ scoped_ptr<WebSocketFrame> WebSocketBasicStream::CreateFrame(
       is_final_chunk && current_frame_header_->final;
   const int data_size = data ? data->size() : 0;
   const WebSocketFrameHeader::OpCode opcode = current_frame_header_->opcode;
-  // Empty frames convey no useful information unless they have the "final" bit
-  // set.
-  if (is_final_chunk_in_message || data_size > 0) {
+  // Empty frames convey no useful information unless they are the first frame
+  // (containing the type and flags) or have the "final" bit set.
+  if (is_final_chunk_in_message || data_size > 0 ||
+      current_frame_header_->opcode !=
+          WebSocketFrameHeader::kOpCodeContinuation) {
     result_frame.reset(new WebSocketFrame(opcode));
     result_frame->header.CopyFrom(*current_frame_header_);
     result_frame->header.final = is_final_chunk_in_message;
