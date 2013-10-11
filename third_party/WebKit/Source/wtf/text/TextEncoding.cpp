@@ -129,11 +129,6 @@ bool TextEncoding::usesVisualOrdering() const
     return m_name == a;
 }
 
-bool TextEncoding::isJapanese() const
-{
-    return isJapaneseEncoding(m_name);
-}
-
 UChar TextEncoding::backslashAsCurrencySymbol() const
 {
     return shouldShowBackslashAsCurrencySymbolIn(m_name) ? 0x00A5 : '\\';

@@ -99,215 +99,6 @@ static WTF::TextEncoding findTextEncoding(const char* encodingName, int length)
     return buffer.data();
 }
 
-class KanjiCode {
-public:
-    enum Type { ASCII, JIS, EUC, SJIS, UTF16, UTF8 };
-    static enum Type judge(const char* str, int length);
-    static const int ESC = 0x1b;
-    static const unsigned char sjisMap[256];
-    static int ISkanji(int code)
-    {
-        if (code >= 0x100)
-            return 0;
-        return sjisMap[code & 0xff] & 1;
-    }
-    static int ISkana(int code)
-    {
-        if (code >= 0x100)
-            return 0;
-        return sjisMap[code & 0xff] & 2;
-    }
-};
-
-const unsigned char KanjiCode::sjisMap[256] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0
-};
-
-/*
- * EUC-JP is
- *     [0xa1 - 0xfe][0xa1 - 0xfe]
- *     0x8e[0xa1 - 0xfe](SS2)
- *     0x8f[0xa1 - 0xfe][0xa1 - 0xfe](SS3)
- *
- * Shift_Jis is
- *     [0x81 - 0x9f, 0xe0 - 0xef(0xfe?)][0x40 - 0x7e, 0x80 - 0xfc]
- *
- * Shift_Jis Hankaku Kana is
- *     [0xa1 - 0xdf]
- */
-
-/*
- * KanjiCode::judge() is based on judge_jcode() from jvim
- *     http://hp.vector.co.jp/authors/VA003457/vim/
- *
- * Special Thanks to Kenichi Tsuchida
- */
-
-enum KanjiCode::Type KanjiCode::judge(const char* str, int size)
-{
-    enum Type code;
-    int i;
-    int bfr = false;            /* Kana Moji */
-    int bfk = 0;                /* EUC Kana */
-    int sjis = 0;
-    int euc = 0;
-
-    const unsigned char* ptr = reinterpret_cast<const unsigned char*>(str);
-
-    code = ASCII;
-
-    i = 0;
-    while (i < size) {
-        if (ptr[i] == ESC && (size - i >= 3)) {
-            if (bytesEqual(str + i + 1, '$', 'B')
-                || bytesEqual(str + i + 1, '(', 'B')
-                || bytesEqual(str + i + 1, '$', '@')
-                || bytesEqual(str + i + 1, '(', 'J')) {
-                code = JIS;
-                goto breakBreak;
-            }
-            if (bytesEqual(str + i + 1, '(', 'I') || bytesEqual(str + i + 1, ')', 'I')) {
-                code = JIS;
-                i += 3;
-            } else {
-                i++;
-            }
-            bfr = false;
-            bfk = 0;
-        } else {
-            if (ptr[i] < 0x20) {
-                bfr = false;
-                bfk = 0;
-                /* ?? check kudokuten ?? && ?? hiragana ?? */
-                if ((i >= 2) && (ptr[i - 2] == 0x81)
-                    && (0x41 <= ptr[i - 1] && ptr[i - 1] <= 0x49)) {
-                    code = SJIS;
-                    sjis += 100;        /* kudokuten */
-                } else if ((i >= 2) && (ptr[i - 2] == 0xa1) && (0xa2 <= ptr[i - 1] && ptr[i - 1] <= 0xaa)) {
-                    code = EUC;
-                    euc += 100;         /* kudokuten */
-                } else if ((i >= 2) && (ptr[i - 2] == 0x82) && (0xa0 <= ptr[i - 1])) {
-                    sjis += 40;         /* hiragana */
-                } else if ((i >= 2) && (ptr[i - 2] == 0xa4) && (0xa0 <= ptr[i - 1])) {
-                    euc += 40;          /* hiragana */
-                }
-            } else {
-                /* ?? check hiragana or katana ?? */
-                if ((size - i > 1) && (ptr[i] == 0x82) && (0xa0 <= ptr[i + 1])) {
-                    sjis++;     /* hiragana */
-                } else if ((size - i > 1) && (ptr[i] == 0x83) && (0x40 <= ptr[i + 1] && ptr[i + 1] <= 0x9f)) {
-                    sjis++;     /* katakana */
-                } else if ((size - i > 1) && (ptr[i] == 0xa4) && (0xa0 <= ptr[i + 1])) {
-                    euc++;      /* hiragana */
-                } else if ((size - i > 1) && (ptr[i] == 0xa5) && (0xa0 <= ptr[i + 1])) {
-                    euc++;      /* katakana */
-                }
-                if (bfr) {
-                    if ((i >= 1) && (0x40 <= ptr[i] && ptr[i] <= 0xa0) && ISkanji(ptr[i - 1])) {
-                        code = SJIS;
-                        goto breakBreak;
-                    }
-
-                    if ((i >= 1) && (0x81 <= ptr[i - 1] && ptr[i - 1] <= 0x9f) && ((0x40 <= ptr[i] && ptr[i] < 0x7e) || (0x7e < ptr[i] && ptr[i] <= 0xfc))) {
-                        code = SJIS;
-                        goto breakBreak;
-                    }
-
-                    if ((i >= 1) && (0xfd <= ptr[i] && ptr[i] <= 0xfe) && (0xa1 <= ptr[i - 1] && ptr[i - 1] <= 0xfe)) {
-                        code = EUC;
-                        goto breakBreak;
-                    }
-
-                    if ((i >= 1) && (0xfd <= ptr[i - 1] && ptr[i - 1] <= 0xfe) && (0xa1 <= ptr[i] && ptr[i] <= 0xfe)) {
-                        code = EUC;
-                        goto breakBreak;
-                    }
-
-                    if ((i >= 1) && (ptr[i] < 0xa0 || 0xdf < ptr[i]) && (0x8e == ptr[i - 1])) {
-                        code = SJIS;
-                        goto breakBreak;
-                    }
-
-                    if (ptr[i] <= 0x7f) {
-                        code = SJIS;
-                        goto breakBreak;
-                    }
-
-                    if (0xa1 <= ptr[i] && ptr[i] <= 0xa6) {
-                        euc++;      /* sjis hankaku kana kigo */
-                    } else if (0xa1 <= ptr[i] && ptr[i] <= 0xdf) {
-                        /* sjis hankaku kana */
-                    } else if (0xa1 <= ptr[i] && ptr[i] <= 0xfe) {
-                        euc++;
-                    } else if (0x8e == ptr[i]) {
-                        euc++;
-                    } else if (0x20 <= ptr[i] && ptr[i] <= 0x7f) {
-                        sjis++;
-                    }
-
-                    bfr = false;
-                    bfk = 0;
-                } else if (0x8e == ptr[i]) {
-                    if (size - i <= 1) {
-
-                    } else if (0xa1 <= ptr[i + 1] && ptr[i + 1] <= 0xdf) {
-                        /* EUC KANA or SJIS KANJI */
-                        if (bfk == 1) {
-                            euc += 100;
-                        }
-                        bfk++;
-                        i++;
-                    } else {
-                        /* SJIS only */
-                        code = SJIS;
-                        goto breakBreak;
-                    }
-                } else if (0x81 <= ptr[i] && ptr[i] <= 0x9f) {
-                    /* SJIS only */
-                    code = SJIS;
-                    if ((size - i >= 1) && ((0x40 <= ptr[i + 1] && ptr[i + 1] <= 0x7e) || (0x80 <= ptr[i + 1] && ptr[i + 1] <= 0xfc)))
-                        goto breakBreak;
-                } else if (0xfd <= ptr[i] && ptr[i] <= 0xfe) {
-                    /* EUC only */
-                    code = EUC;
-                    if ((size - i >= 1) && (0xa1 <= ptr[i + 1] && ptr[i + 1] <= 0xfe))
-                        goto breakBreak;
-                } else if (ptr[i] <= 0x7f) {
-
-                } else {
-                    bfr = true;
-                    bfk = 0;
-                }
-            }
-            i++;
-        }
-    }
-    if (code == ASCII) {
-        if (sjis > euc) {
-            code = SJIS;
-        } else if (sjis < euc) {
-            code = EUC;
-        }
-    }
-breakBreak:
-    return (code);
-}
-
 TextResourceDecoder::ContentType TextResourceDecoder::determineContentType(const String& mimeType)
 {
     if (equalIgnoringCase(mimeType, "text/css"))
@@ -571,25 +362,6 @@ void TextResourceDecoder::checkForMetaCharset(const char* data, size_t length)
     return;
 }
 
-void TextResourceDecoder::detectJapaneseEncoding(const char* data, size_t len)
-{
-    switch (KanjiCode::judge(data, len)) {
-    case KanjiCode::JIS:
-        setEncoding("ISO-2022-JP", EncodingFromContentSniffing);
-        break;
-    case KanjiCode::EUC:
-        setEncoding("EUC-JP", EncodingFromContentSniffing);
-        break;
-    case KanjiCode::SJIS:
-        setEncoding("Shift_JIS", EncodingFromContentSniffing);
-        break;
-    case KanjiCode::ASCII:
-    case KanjiCode::UTF16:
-    case KanjiCode::UTF8:
-        break;
-    }
-}
-
 // We use the encoding detector in two cases:
 //   1. Encoding detector is turned ON and no other encoding source is
 //      available (that is, it's DefaultEncoding).
@@ -625,20 +397,6 @@ String TextResourceDecoder::decode(const char* data, size_t len)
             return emptyString();
     }
 
-    // FIXME: It would be more efficient to move this logic below checkForMetaCharset because
-    //        checkForMetaCharset can overrule these detections.
-    if (shouldAutoDetect()) {
-        if (m_encoding.isJapanese()) {
-            detectJapaneseEncoding(data, len); // FIXME: We should use detectTextEncoding() for all languages.
-        } else {
-            WTF::TextEncoding detectedEncoding;
-            if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
-                setEncoding(detectedEncoding, EncodingFromContentSniffing);
-        }
-    }
-
-    ASSERT(m_encoding.isValid());
-
     const char* dataForDecode = data + lengthOfBOM;
     size_t lengthForDecode = len - lengthOfBOM;
 
@@ -655,6 +413,14 @@ String TextResourceDecoder::decode(const char* data, size_t len)
 
     if (m_contentType == HTML && !m_checkedForMetaCharset)
         checkForMetaCharset(dataForDecode, lengthForDecode);
+
+    if (shouldAutoDetect()) {
+        WTF::TextEncoding detectedEncoding;
+        if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
+            setEncoding(detectedEncoding, EncodingFromContentSniffing);
+    }
+
+    ASSERT(m_encoding.isValid());
 
     if (!m_codec)
         m_codec = newTextCodec(m_encoding);

@@ -42,7 +42,6 @@ public:
     bool isValid() const { return m_name; }
     const char* name() const { return m_name; }
     bool usesVisualOrdering() const;
-    bool isJapanese() const;
 
     bool hasTrivialDisplayString() const { return m_backslashAsCurrencySymbol == '\\'; }
 
