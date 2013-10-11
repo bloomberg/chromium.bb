@@ -89,31 +89,6 @@ const cr = (function() {
     return cur;
   };
 
-  // cr.Event is called CrEvent in here to prevent naming conflicts. We also
-  // store the original Event in case someone does a global alias of cr.Event.
-  const DomEvent = Event;
-
-  /**
-   * Creates a new event to be used with cr.EventTarget or DOM EventTarget
-   * objects.
-   * @param {string} type The name of the event.
-   * @param {boolean=} opt_bubbles Whether the event bubbles. Default is false.
-   * @param {boolean=} opt_preventable Whether the default action of the event
-   *     can be prevented.
-   * @constructor
-   * @extends {DomEvent}
-   */
-  function CrEvent(type, opt_bubbles, opt_preventable) {
-    var e = cr.doc.createEvent('Event');
-    e.initEvent(type, !!opt_bubbles, !!opt_preventable);
-    e.__proto__ = CrEvent.prototype;
-    return e;
-  }
-
-  CrEvent.prototype = {
-    __proto__: DomEvent.prototype
-  };
-
   /**
    * Fires a property change event on the target.
    * @param {EventTarget} target The target to dispatch the event on.
@@ -286,12 +261,15 @@ const cr = (function() {
    * @param {string} type The type of the event.
    * @param {boolean=} opt_bubbles Whether the event bubbles or not.
    * @param {boolean=} opt_cancelable Whether the default action of the event
-   *     can be prevented.
+   *     can be prevented. Default is true.
    * @return {boolean} If any of the listeners called {@code preventDefault}
    *     during the dispatch this will return false.
    */
   function dispatchSimpleEvent(target, type, opt_bubbles, opt_cancelable) {
-    var e = new cr.Event(type, opt_bubbles, opt_cancelable);
+    var e = new Event(type, {
+      bubbles: opt_bubbles,
+      cancelable: opt_cancelable === undefined || opt_cancelable
+    });
     return target.dispatchEvent(e);
   }
 
@@ -370,7 +348,6 @@ const cr = (function() {
     get doc() {
       return doc;
     },
-    withDoc: withDoc,
-    Event: CrEvent
+    withDoc: withDoc
   };
 })();

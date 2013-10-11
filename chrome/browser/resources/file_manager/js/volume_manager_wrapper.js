@@ -111,7 +111,7 @@ VolumeManagerWrapper.prototype.dispose = function() {
 /**
  * Called on events sent from VolumeManager. This has responsibility to
  * re-dispatch the event to the listeners.
- * @param {cr.Event} event Event object sent from VolumeManager.
+ * @param {Event} event Event object sent from VolumeManager.
  * @private
  */
 VolumeManagerWrapper.prototype.onEvent_ = function(event) {
@@ -128,7 +128,7 @@ VolumeManagerWrapper.prototype.onEvent_ = function(event) {
 
 /**
  * Called on events of modifying VolumeInfoList.
- * @param {cr.Event} event Event object sent from VolumeInfoList.
+ * @param {Event} event Event object sent from VolumeInfoList.
  * @private
  */
 VolumeManagerWrapper.prototype.onVolumeInfoListUpdated_ = function(event) {

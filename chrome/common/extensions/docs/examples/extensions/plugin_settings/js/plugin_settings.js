@@ -8,8 +8,7 @@
  */
 
 cr.define('pluginSettings', function() {
-  const EventTarget = cr.EventTarget;
-  const Event = cr.Event;
+  /** @const */ var EventTarget = cr.EventTarget;
 
   /**
    * Creates a new content settings model.

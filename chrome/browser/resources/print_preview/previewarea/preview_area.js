@@ -532,7 +532,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when the preview generator begins loading the preview.
-     * @param {cr.Event} Contains the URL to initialize the plugin to.
+     * @param {Event} Contains the URL to initialize the plugin to.
      * @private
      */
     onPreviewStart_: function(event) {
@@ -552,7 +552,7 @@ cr.define('print_preview', function() {
     /**
      * Called when a page preview has been generated. Updates the plugin with
      * the new page.
-     * @param {cr.Event} event Contains information about the page preview.
+     * @param {Event} event Contains information about the page preview.
      * @private
      */
     onPagePreviewReady_: function(event) {

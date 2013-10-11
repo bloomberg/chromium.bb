@@ -6,7 +6,6 @@
 
 cr.define('cr.ui', function() {
   /** @const */ var EventTarget = cr.EventTarget;
-  /** @const */ var Event = cr.Event;
   /** @const */ var Menu = cr.ui.Menu;
 
   /**

@@ -49,7 +49,7 @@ this.cr = (function() {
    * @param {*} oldValue The old value for the property.
    */
   function dispatchPropertyChange(target, propertyName, newValue, oldValue) {
-    var e = new cr.Event(propertyName + 'Change');
+    var e = new Event(propertyName + 'Change');
     e.propertyName = propertyName;
     e.newValue = newValue;
     e.oldValue = oldValue;
@@ -226,12 +226,15 @@ this.cr = (function() {
    * @param {string} type The type of the event.
    * @param {boolean=} opt_bubbles Whether the event bubbles or not.
    * @param {boolean=} opt_cancelable Whether the default action of the event
-   *     can be prevented.
+   *     can be prevented. Default is true.
    * @return {boolean} If any of the listeners called {@code preventDefault}
    *     during the dispatch this will return false.
    */
   function dispatchSimpleEvent(target, type, opt_bubbles, opt_cancelable) {
-    var e = new cr.Event(type, opt_bubbles, opt_cancelable);
+    var e = new Event(type, {
+      bubbles: opt_bubbles,
+      cancelable: opt_cancelable === undefined || opt_cancelable
+    });
     return target.dispatchEvent(e);
   }
 
@@ -280,29 +283,6 @@ this.cr = (function() {
     };
   }
 
-  var OriginalEvent = global.Event;
-
-  /**
-   * Creates a new event to be used with cr.EventTarget or DOM EventTarget
-   * objects.
-   * @param {string} type The name of the event.
-   * @param {boolean=} opt_bubbles Whether the event bubbles.
-   *     Default is false.
-   * @param {boolean=} opt_cancelable Whether the default action of the event
-   *     can be prevented. Unlike the DOM event constructor, this defaults to
-   *     true.
-   * @constructor
-   * @extends {Event}
-   */
-  function Event(type, opt_bubbles, opt_cancelable) {
-    var e = new OriginalEvent(type, {
-      bubbles: opt_bubbles,
-      cancelable: opt_cancelable === undefined ? true : opt_cancelable
-    });
-    e.__proto__ = OriginalEvent.prototype;
-    return e;
-  };
-
   /**
    * Initialization which must be deferred until run-time.
    */
@@ -323,8 +303,6 @@ this.cr = (function() {
 
       return;
     }
-
-    Event.prototype = {__proto__: OriginalEvent.prototype};
 
     cr.doc = document;
 
@@ -368,7 +346,6 @@ this.cr = (function() {
     defineProperty: defineProperty,
     dispatchPropertyChange: dispatchPropertyChange,
     dispatchSimpleEvent: dispatchSimpleEvent,
-    Event: Event,
     getUid: getUid,
     initialize: initialize,
     PropertyKind: PropertyKind

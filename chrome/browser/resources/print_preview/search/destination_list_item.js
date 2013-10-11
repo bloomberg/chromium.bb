@@ -133,7 +133,7 @@ cr.define('print_preview', function() {
         }
         this.fedexTos_.setIsVisible(true);
       } else {
-        var selectEvt = new cr.Event(DestinationListItem.EventType.SELECT);
+        var selectEvt = new Event(DestinationListItem.EventType.SELECT);
         selectEvt.destination = this.destination_;
         this.eventTarget_.dispatchEvent(selectEvt);
       }
@@ -145,7 +145,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onTosAgree_: function() {
-      var selectEvt = new cr.Event(DestinationListItem.EventType.SELECT);
+      var selectEvt = new Event(DestinationListItem.EventType.SELECT);
       selectEvt.destination = this.destination_;
       this.eventTarget_.dispatchEvent(selectEvt);
     }

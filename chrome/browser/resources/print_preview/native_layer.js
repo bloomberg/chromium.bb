@@ -353,7 +353,7 @@ cr.define('print_preview', function() {
           initialSettings['printerName'] || null,
           initialSettings['appState'] || null);
 
-      var initialSettingsSetEvent = new cr.Event(
+      var initialSettingsSetEvent = new Event(
           NativeLayer.EventType.INITIAL_SETTINGS_SET);
       initialSettingsSetEvent.initialSettings = nativeInitialSettings;
       this.dispatchEvent(initialSettingsSetEvent);
@@ -365,7 +365,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onSetUseCloudPrint_: function(cloudPrintURL) {
-      var cloudPrintEnableEvent = new cr.Event(
+      var cloudPrintEnableEvent = new Event(
           NativeLayer.EventType.CLOUD_PRINT_ENABLE);
       cloudPrintEnableEvent.baseCloudPrintUrl = cloudPrintURL;
       this.dispatchEvent(cloudPrintEnableEvent);
@@ -378,7 +378,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onSetPrinters_: function(printers) {
-      var localDestsSetEvent = new cr.Event(
+      var localDestsSetEvent = new Event(
           NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
       localDestsSetEvent.destinationInfos = printers;
       this.dispatchEvent(localDestsSetEvent);
@@ -391,7 +391,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onUpdateWithPrinterCapabilities_: function(settingsInfo) {
-      var capsSetEvent = new cr.Event(NativeLayer.EventType.CAPABILITIES_SET);
+      var capsSetEvent = new Event(NativeLayer.EventType.CAPABILITIES_SET);
       capsSetEvent.settingsInfo = settingsInfo;
       this.dispatchEvent(capsSetEvent);
     },
@@ -403,7 +403,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onFailedToGetPrinterCapabilities_: function(destinationId) {
-      var getCapsFailEvent = new cr.Event(
+      var getCapsFailEvent = new Event(
           NativeLayer.EventType.GET_CAPABILITIES_FAIL);
       getCapsFailEvent.destinationId = destinationId;
       getCapsFailEvent.destinationOrigin =
@@ -424,7 +424,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrintToCloud_: function(data) {
-      var printToCloudEvent = new cr.Event(
+      var printToCloudEvent = new Event(
           NativeLayer.EventType.PRINT_TO_CLOUD);
       printToCloudEvent.data = data;
       this.dispatchEvent(printToCloudEvent);
@@ -481,7 +481,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onDidGetDefaultPageLayout_: function(pageLayout, hasCustomPageSizeStyle) {
-      var pageLayoutChangeEvent = new cr.Event(
+      var pageLayoutChangeEvent = new Event(
           NativeLayer.EventType.PAGE_LAYOUT_READY);
       pageLayoutChangeEvent.pageLayout = pageLayout;
       pageLayoutChangeEvent.hasCustomPageSizeStyle = hasCustomPageSizeStyle;
@@ -497,7 +497,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onDidGetPreviewPageCount_: function(pageCount, previewResponseId) {
-      var pageCountChangeEvent = new cr.Event(
+      var pageCountChangeEvent = new Event(
           NativeLayer.EventType.PAGE_COUNT_READY);
       pageCountChangeEvent.pageCount = pageCount;
       pageCountChangeEvent.previewResponseId = previewResponseId;
@@ -512,7 +512,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onReloadPreviewPages_: function(previewUid, previewResponseId) {
-      var previewReloadEvent = new cr.Event(
+      var previewReloadEvent = new Event(
           NativeLayer.EventType.PREVIEW_RELOAD);
       previewReloadEvent.previewUid = previewUid;
       previewReloadEvent.previewResponseId = previewResponseId;
@@ -530,7 +530,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onDidPreviewPage_: function(pageNumber, previewUid, previewResponseId) {
-      var pagePreviewGenEvent = new cr.Event(
+      var pagePreviewGenEvent = new Event(
           NativeLayer.EventType.PAGE_PREVIEW_READY);
       pagePreviewGenEvent.pageIndex = pageNumber;
       pagePreviewGenEvent.previewUid = previewUid;
@@ -545,7 +545,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onDidGetAccessToken_: function(authType, accessToken) {
-      var getAccessTokenEvent = new cr.Event(
+      var getAccessTokenEvent = new Event(
           NativeLayer.EventType.ACCESS_TOKEN_READY);
       getAccessTokenEvent.authType = authType;
       getAccessTokenEvent.accessToken = accessToken;
@@ -562,7 +562,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onUpdatePrintPreview_: function(previewUid, previewResponseId) {
-      var previewGenDoneEvent = new cr.Event(
+      var previewGenDoneEvent = new Event(
           NativeLayer.EventType.PREVIEW_GENERATION_DONE);
       previewGenDoneEvent.previewUid = previewUid;
       previewGenDoneEvent.previewResponseId = previewResponseId;

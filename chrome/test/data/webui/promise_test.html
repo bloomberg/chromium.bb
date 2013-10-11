@@ -212,7 +212,7 @@ function testAllAlreadyDone() {
 
 function testEvent() {
   var p = Promise.event(document.body, 'foo');
-  var e = new cr.Event('foo');
+  var e = new Event('foo');
   document.body.dispatchEvent(e);
   assertEquals(e, p.value);
 }

@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('options.accounts', function() {
-  /** @const */ var Event = cr.Event;
-
   /**
    * Email alias only, assuming it's a gmail address.
    *   e.g. 'john'

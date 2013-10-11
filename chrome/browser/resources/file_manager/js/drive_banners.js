@@ -407,7 +407,7 @@ FileListBannerController.prototype.showWelcomeBanner_ = function(type) {
 /**
  * Update the UI when the current directory changes.
  *
- * @param {cr.Event} event The directory-changed event.
+ * @param {Event} event The directory-changed event.
  * @private
  */
 FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
@@ -595,7 +595,7 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
 
 /**
  * Called when volume info list is updated.
- * @param {cr.Event} event Splice event data on volume info list.
+ * @param {Event} event Splice event data on volume info list.
  * @private
  */
 FileListBannerController.prototype.onVolumeInfoListSplice_ = function(event) {

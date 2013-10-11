@@ -7,8 +7,7 @@
  */
 
 cr.define('cr.ui', function() {
-  const EventTarget = cr.EventTarget;
-  const Event = cr.Event;
+  /** @const */ var EventTarget = cr.EventTarget;
 
   /**
    * A data model that wraps a simple array and supports sorting by storing

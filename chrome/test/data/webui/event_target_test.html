@@ -4,11 +4,9 @@
 <script>
 
 /* @const */ var EventTarget;
-/* @const */ var Event;
 
 function setUp(){
   EventTarget = cr.EventTarget;
-  Event = cr.Event;
 }
 
 function testFunctionListener() {
@@ -88,13 +86,13 @@ function testPreventDefault() {
   var et = new EventTarget;
   et.addEventListener('test', pass);
 
-  assertTrue(et.dispatchEvent(new Event('test')));
+  assertTrue(et.dispatchEvent(new Event('test', {cancelable: true})));
   assertEquals(1, j);
 
   et.addEventListener('test', prevent);
 
   console.log('NOW');
-  assertFalse(et.dispatchEvent(new Event('test')));
+  assertFalse(et.dispatchEvent(new Event('test', {cancelable: true})));
   assertEquals(2, j);
   assertEquals(1, i);
 }
@@ -115,12 +113,12 @@ function testReturnFalse() {
   var et = new EventTarget;
   et.addEventListener('test', pass);
 
-  assertTrue(et.dispatchEvent(new Event('test')));
+  assertTrue(et.dispatchEvent(new Event('test', {cancelable: true})));
   assertEquals(1, j);
 
   et.addEventListener('test', prevent);
 
-  assertFalse(et.dispatchEvent(new Event('test')));
+  assertFalse(et.dispatchEvent(new Event('test', {cancelable: true})));
   assertEquals(2, j);
   assertEquals(1, i);
 }

@@ -103,7 +103,7 @@ ProgressCenter.prototype.addItem = function(item) {
   if (item.status !== ProgressItemState.PROGRESSING)
     this.resetTimeout_.request(ProgressCenter.RESET_DELAY_TIME_MS_);
 
-  var event = new cr.Event(ProgressCenterEvent.ITEM_ADDED);
+  var event = new Event(ProgressCenterEvent.ITEM_ADDED);
   event.item = item;
   this.dispatchEvent(event);
 };
@@ -122,7 +122,7 @@ ProgressCenter.prototype.updateItem = function(item) {
   if (item.status !== ProgressItemState.PROGRESSING)
     this.resetTimeout_.request(ProgressCenter.RESET_DELAY_TIME_MS_);
 
-  var event = new cr.Event(ProgressCenterEvent.ITEM_UPDATED);
+  var event = new Event(ProgressCenterEvent.ITEM_UPDATED);
   event.item = item;
   this.dispatchEvent(event);
 };
@@ -255,7 +255,7 @@ ProgressCenter.prototype.reset_ = function() {
   this.items_.splice(0, this.items_.length);
 
   // Dispatch a event.
-  this.dispatchEvent(new cr.Event(ProgressCenterEvent.RESET));
+  this.dispatchEvent(new Event(ProgressCenterEvent.RESET));
 };
 
 /**

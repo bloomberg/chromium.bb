@@ -360,7 +360,7 @@ cr.define('print_preview', function() {
     /**
      * Called when a destination search should be executed. Filters the
      * destination lists with the given query.
-     * @param {cr.Event} evt Contains the search query.
+     * @param {Event} evt Contains the search query.
      * @private
      */
     onSearch_: function(evt) {
@@ -381,7 +381,7 @@ cr.define('print_preview', function() {
     /**
      * Called when a destination is selected. Clears the search and hides the
      * widget.
-     * @param {cr.Event} evt Contains the selected destination.
+     * @param {Event} evt Contains the selected destination.
      * @private
      */
     onDestinationSelect_: function(evt) {

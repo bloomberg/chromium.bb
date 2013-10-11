@@ -1327,7 +1327,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * images of new entries.
    * See also FileOperationManager.EventRouter.
    *
-   * @param {cr.Event} event An event for the entry change.
+   * @param {Event} event An event for the entry change.
    * @private
    */
   FileManager.prototype.onEntryChanged_ = function(event) {
@@ -2394,7 +2394,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * Update the UI when the current directory changes.
    *
-   * @param {cr.Event} event The directory-changed event.
+   * @param {Event} event The directory-changed event.
    * @private
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {

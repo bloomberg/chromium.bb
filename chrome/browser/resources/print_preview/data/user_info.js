@@ -68,7 +68,7 @@ cr.define('print_preview', function() {
     /**
      * Called when a Google Cloud Print printer search completes. Updates user
      * information.
-     * @type {cr.Event} event Contains information about the logged in user.
+     * @type {Event} event Contains information about the logged in user.
      * @private
      */
     onCloudPrintSearchDone_: function(event) {

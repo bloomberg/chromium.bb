@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  const Event = cr.Event;
-  const EventTarget = cr.EventTarget;
+  /** @const */ var EventTarget = cr.EventTarget;
 
   /**
    * Creates a new selection model that is to be used with lists.

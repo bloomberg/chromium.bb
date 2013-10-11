@@ -169,7 +169,7 @@ cr.define('bmm', function() {
      * @param {!Event} originalEvent The original click event object.
      */
     dispatchUrlClickedEvent_: function(url, originalEvent) {
-      var event = new cr.Event('urlClicked', true, false);
+      var event = new Event('urlClicked', {bubbles: true});
       event.url = url;
       event.originalEvent = originalEvent;
       this.dispatchEvent(event);
