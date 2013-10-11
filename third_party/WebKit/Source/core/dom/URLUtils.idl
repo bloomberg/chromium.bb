@@ -31,7 +31,7 @@
     // https://code.google.com/p/chromium/issues/detail?id=304959
     [TreatNullAs=NullString] attribute DOMString href;
 
-    [NotEnumerable] DOMString toString();
+    [NotEnumerable, ImplementedAs=href] DOMString toString();
 
     readonly attribute DOMString origin;
     attribute DOMString protocol;
