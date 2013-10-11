@@ -112,7 +112,7 @@ FileSystemURL FileSystemURLDirName(const FileSystemURL& url) {
       url.origin(), url.mount_type(), VirtualPath::DirName(url.virtual_path()));
 }
 
-}  // namespace (anonymous)
+}  // namespace
 
 // TODO(ericu): The vast majority of this and the other FSFU subclass tests
 // could theoretically be shared.  It would basically be a FSFU interface
@@ -675,6 +675,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   MockFileChangeObserver change_observer_;
   ChangeObserverList change_observers_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilTest);
 };
 
@@ -2330,15 +2331,16 @@ TEST_F(ObfuscatedFileUtilTest, DestroyDirectoryDatabase_Isolated) {
   ObfuscatedFileUtil file_util(
       storage_policy_.get(), data_dir_path(),
       base::MessageLoopProxy::current().get());
+  const FileSystemURL url = FileSystemURL::CreateForTest(
+      origin_, kFileSystemTypePersistent, base::FilePath());
 
   // Create DirectoryDatabase for isolated origin.
-  SandboxDirectoryDatabase* db = file_util.GetDirectoryDatabase(
-      origin_, kFileSystemTypePersistent, true /* create */);
+  SandboxDirectoryDatabase* db =
+      file_util.GetDirectoryDatabase(url, true /* create */);
   ASSERT_TRUE(db != NULL);
 
   // Destory it.
-  ASSERT_TRUE(
-      file_util.DestroyDirectoryDatabase(origin_, kFileSystemTypePersistent));
+  ASSERT_TRUE(file_util.DestroyDirectoryDatabase(url.origin(), url.type()));
   ASSERT_TRUE(file_util.directories_.empty());
 }
 
@@ -2347,19 +2349,21 @@ TEST_F(ObfuscatedFileUtilTest, GetDirectoryDatabase_Isolated) {
   ObfuscatedFileUtil file_util(
       storage_policy_.get(), data_dir_path(),
       base::MessageLoopProxy::current().get());
+  const FileSystemURL url = FileSystemURL::CreateForTest(
+      origin_, kFileSystemTypePersistent, base::FilePath());
 
   // Create DirectoryDatabase for isolated origin.
-  SandboxDirectoryDatabase* db = file_util.GetDirectoryDatabase(
-      origin_, kFileSystemTypePersistent, true /* create */);
+  SandboxDirectoryDatabase* db =
+      file_util.GetDirectoryDatabase(url, true /* create */);
   ASSERT_TRUE(db != NULL);
   ASSERT_EQ(1U, file_util.directories_.size());
 
   // Remove isolated.
-  storage_policy_->RemoveIsolated(origin_);
+  storage_policy_->RemoveIsolated(url.origin());
 
   // This should still get the same database.
-  SandboxDirectoryDatabase* db2 = file_util.GetDirectoryDatabase(
-      origin_, kFileSystemTypePersistent, false /* create */);
+  SandboxDirectoryDatabase* db2 =
+      file_util.GetDirectoryDatabase(url, false /* create */);
   ASSERT_EQ(db, db2);
 }
 
