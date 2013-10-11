@@ -40,6 +40,32 @@ const uint64 kMaxControlFramePayload = 125;
 //     packet sizes / encryption block sizes / IPC alignment issues, etc.
 const int kReadBufferSize = 32 * 1024;
 
+typedef ScopedVector<WebSocketFrame>::const_iterator WebSocketFrameIterator;
+
+// Returns the total serialized size of |frames|. This function assumes that
+// |frames| will be serialized with mask field. This function forces the
+// masked bit of the frames on.
+int CalculateSerializedSizeAndTurnOnMaskBit(
+    ScopedVector<WebSocketFrame>* frames) {
+  const int kMaximumTotalSize = std::numeric_limits<int>::max();
+
+  int total_size = 0;
+  for (WebSocketFrameIterator it = frames->begin();
+       it != frames->end(); ++it) {
+    WebSocketFrame* frame = *it;
+    // Force the masked bit on.
+    frame->header.masked = true;
+    // We enforce flow control so the renderer should never be able to force us
+    // to cache anywhere near 2GB of frames.
+    int frame_size = frame->header.payload_length +
+                     GetWebSocketFrameHeaderSize(frame->header);
+    CHECK_GE(kMaximumTotalSize - total_size, frame_size)
+        << "Aborting to prevent overflow";
+    total_size += frame_size;
+  }
+  return total_size;
+}
+
 }  // namespace
 
 WebSocketBasicStream::WebSocketBasicStream(
@@ -105,26 +131,14 @@ int WebSocketBasicStream::WriteFrames(ScopedVector<WebSocketFrame>* frames,
   // perform multiple writes with smaller buffers.
   //
   // First calculate the size of the buffer we need to allocate.
-  typedef ScopedVector<WebSocketFrame>::const_iterator Iterator;
-  const int kMaximumTotalSize = std::numeric_limits<int>::max();
-  int total_size = 0;
-  for (Iterator it = frames->begin(); it != frames->end(); ++it) {
-    WebSocketFrame* frame = *it;
-    // Force the masked bit on.
-    frame->header.masked = true;
-    // We enforce flow control so the renderer should never be able to force us
-    // to cache anywhere near 2GB of frames.
-    int frame_size = frame->header.payload_length +
-                     GetWebSocketFrameHeaderSize(frame->header);
-    CHECK_GE(kMaximumTotalSize - total_size, frame_size)
-        << "Aborting to prevent overflow";
-    total_size += frame_size;
-  }
+  int total_size = CalculateSerializedSizeAndTurnOnMaskBit(frames);
   scoped_refptr<IOBufferWithSize> combined_buffer(
       new IOBufferWithSize(total_size));
+
   char* dest = combined_buffer->data();
   int remaining_size = total_size;
-  for (Iterator it = frames->begin(); it != frames->end(); ++it) {
+  for (WebSocketFrameIterator it = frames->begin();
+       it != frames->end(); ++it) {
     WebSocketFrame* frame = *it;
     WebSocketMaskingKey mask = generate_websocket_masking_key_();
     int result =
