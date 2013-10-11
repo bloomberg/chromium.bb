@@ -10,8 +10,6 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/render_frame_host.h"
 
-class GURL;
-
 namespace content {
 
 class FrameTree;
@@ -50,14 +48,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   }
 
  private:
-  // IPC Message handlers.
-  void OnDetach(int64 parent_frame_id, int64 frame_id);
-  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                         int64 parent_frame_id,
-                                         bool main_frame,
-                                         const GURL& url);
-
   bool is_swapped_out() { return is_swapped_out_; }
+
+  // IPC message handlers.
+  void OnDetach(int64 parent_frame_id, int64 frame_id);
 
   // TODO(nasko): This should be removed and replaced by RenderProcessHost.
   RenderViewHostImpl* render_view_host_;  // Not owned.

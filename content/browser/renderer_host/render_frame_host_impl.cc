@@ -11,7 +11,6 @@
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -62,8 +61,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameHostImpl, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoadForFrame,
-                        OnDidStartProvisionalLoadForFrame)
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;
@@ -89,15 +86,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_frame_routing_id,
 
 void RenderFrameHostImpl::OnDetach(int64 parent_frame_id, int64 frame_id) {
   frame_tree_->RemoveFrame(parent_frame_id, frame_id);
-}
-
-void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
-    bool is_main_frame,
-    const GURL& url) {
-  render_view_host_->OnDidStartProvisionalLoadForFrame(
-      frame_id, parent_frame_id, is_main_frame, url);
 }
 
 }  // namespace content
