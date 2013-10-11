@@ -44,7 +44,6 @@
               'debugger.json',
               'desktop_capture.idl',
               'developer_private.idl',
-              'diagnostics.idl',
               'dial.idl',
               'dns.idl',
               'downloads.idl',
@@ -71,7 +70,6 @@
               'infobars.json',
               'input_ime.json',
               'location.idl',
-              'log_private.idl',
               'management.json',
               'manifest_types.json',
               'mdns.idl',
@@ -143,7 +141,9 @@
           }],
           ['chromeos==1', {
             'schema_files': [
+              'diagnostics.idl',
               'file_browser_handler_internal.json',
+              'log_private.idl',
               'wallpaper.json',
               'wallpaper_private.json',
             ],
