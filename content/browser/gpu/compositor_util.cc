@@ -112,6 +112,12 @@ bool IsDelegatedRendererEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool enabled = false;
 
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // Enable on non-ChromeOS Aura. Chrome OS has driver issues on some platforms:
+  // https://code.google.com/p/chrome-os-partner/issues/detail?id=22688
+  enabled = true;
+#endif
+
   // Flags override.
   enabled |= command_line.HasSwitch(switches::kEnableDelegatedRenderer);
   enabled &= !command_line.HasSwitch(switches::kDisableDelegatedRenderer);
