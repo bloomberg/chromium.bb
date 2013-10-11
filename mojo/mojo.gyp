@@ -72,7 +72,6 @@
         'MOJO_SYSTEM_IMPLEMENTATION',
       ],
       'sources': [
-        'public/system/core.h',
         'system/core.cc',
         'system/core_impl.cc',
         'system/core_impl.h',
@@ -141,6 +140,14 @@
         'shell/switches.cc',
         'shell/switches.h',
       ],
+      'conditions': [
+        ['OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [
+            4267,
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'sample_app',
@@ -151,6 +158,42 @@
       ],
       'sources': [
         'shell/sample_app.cc',
+      ],
+    },
+    {
+      'target_name': 'mojo_bindings',
+      'type': 'static_library',
+      'include_dirs': [
+        '..'
+      ],
+      'sources': [
+        'public/bindings/lib/bindings.h',
+        'public/bindings/lib/bindings_internal.h',
+        'public/bindings/lib/bindings_serialization.cc',
+        'public/bindings/lib/bindings_serialization.h',
+        'public/bindings/lib/buffer.cc',
+        'public/bindings/lib/buffer.h',
+        'public/bindings/lib/message.cc',
+        'public/bindings/lib/message.h',
+        'public/bindings/lib/message_builder.cc',
+        'public/bindings/lib/message_builder.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_bindings_test',
+      'type': 'executable',
+      'include_dirs': [
+        '..'
+      ],
+      'dependencies': [
+        'mojo_bindings',
+      ],
+      'sources': [
+        'public/bindings/sample/generated/sample_service.h',
+        'public/bindings/sample/generated/sample_service_proxy.cc',
+        'public/bindings/sample/generated/sample_service_serialization.h',
+        'public/bindings/sample/generated/sample_service_stub.cc',
+        'public/bindings/sample/sample_test.cc',
       ],
     },
   ],
