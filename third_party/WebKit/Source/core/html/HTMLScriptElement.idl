@@ -27,5 +27,5 @@ interface HTMLScriptElement : HTMLElement {
     [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
     [Reflect, TreatNullAs=NullString] attribute DOMString type;
     [Reflect, TreatNullAs=NullString] attribute DOMString crossOrigin;
-    [Reflect, TreatNullAs=NullString, EnabledAtRuntime=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
+    [Reflect, TreatNullAs=NullString, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
 };

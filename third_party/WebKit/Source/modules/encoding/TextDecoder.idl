@@ -29,7 +29,7 @@
  */
 
 [
-    EnabledAtRuntime=EncodingAPI,
+    RuntimeEnabled=EncodingAPI,
     GlobalContext=Window&WorkerGlobalScope,
     Constructor([Default=NullString] optional DOMString label, optional Dictionary options),
     ConstructorRaisesException

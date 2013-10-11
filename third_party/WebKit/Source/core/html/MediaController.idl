@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=Media,
+    RuntimeEnabled=Media,
     Constructor,
     ConstructorCallWith=ScriptExecutionContext
 ] interface MediaController : EventTarget {

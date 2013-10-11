@@ -46,8 +46,8 @@
     const unsigned short SUPPLEMENTALCONSTANT1 = 1;
     [Reflect=CONST_IMPL] const unsigned short SUPPLEMENTALCONSTANT2 = 2;
 
-    [EnabledAtRuntime=Condition13] attribute Node Node13;
-    [EnabledPerContext=Condition14] attribute Node Node14;
-    [EnabledAtRuntime=Condition15, EnabledPerContext=Condition16] attribute Node Node15;
+    [RuntimeEnabled=Condition13] attribute Node Node13;
+    [PerContextEnabled=Condition14] attribute Node Node14;
+    [RuntimeEnabled=Condition15, PerContextEnabled=Condition16] attribute Node Node15;
 
 };

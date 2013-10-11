@@ -21,8 +21,8 @@
 interface HTMLDocument : Document {
     [Custom, CustomElementCallbacks] void open();
     void close();
-    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, CustomElementCallbacks] void write([Default=Undefined] optional DOMString text);
-    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, CustomElementCallbacks] void writeln([Default=Undefined] optional DOMString text);
+    [Custom, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, CustomElementCallbacks] void write([Default=Undefined] optional DOMString text);
+    [Custom, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, CustomElementCallbacks] void writeln([Default=Undefined] optional DOMString text);
 
     readonly attribute HTMLCollection embeds;
     readonly attribute HTMLCollection plugins;

@@ -73,18 +73,18 @@ def v8_class_name(interface):
     return v8_types.v8_type(interface.name)
 
 
-# ActivityLog
+# [ActivityLogging]
 def has_activity_logging(member, includes, access_type=None):
     """Returns whether a definition member has activity logging of specified access type.
 
     access_type can be 'Getter' or 'Setter' if only checking getting or setting.
     """
-    if 'ActivityLog' not in member.extended_attributes:
+    if 'ActivityLogging' not in member.extended_attributes:
         return False
-    activity_log = member.extended_attributes['ActivityLog']
-    # ActivityLog=Access means log for all access, otherwise check that value
-    # agrees with specified access_type.
-    has_logging = activity_log in ['Access', access_type]
+    activity_logging = member.extended_attributes['ActivityLogging']
+    # ActivityLogging=Access means log for all access, otherwise check that
+    # value agrees with specified access_type.
+    has_logging = activity_logging in ['Access', access_type]
     if has_logging:
         includes.update(['bindings/v8/V8Binding.h',
                          'bindings/v8/V8DOMActivityLogger.h',
@@ -92,7 +92,7 @@ def has_activity_logging(member, includes, access_type=None):
     return has_logging
 
 
-# CallWith
+# [CallWith]
 CALL_WITH_ARGUMENTS = {
     'ScriptState': '&state',
     'ScriptExecutionContext': 'scriptContext',
@@ -123,7 +123,7 @@ def call_with_arguments(member, contents):
             if has_extended_attribute_value(extended_attributes, 'CallWith', value)]
 
 
-# Conditional
+# [Conditional]
 def generate_conditional_string(definition_or_member):
     if 'Conditional' not in definition_or_member.extended_attributes:
         return None
@@ -136,14 +136,15 @@ def generate_conditional_string(definition_or_member):
     return 'ENABLE(%s)' % conditional
 
 
-# EnabledAtRuntime
-def runtime_enabled_features_function_name(definition_or_member):
+# [RuntimeEnabled]
+def runtime_enabled_function_name(definition_or_member):
     """Returns the name of the RuntimeEnabledFeatures function.
 
     The returned function checks if a method/attribute is enabled.
-    Given extended attribute EnabledAtRuntime=FeatureName, return:
+    Given extended attribute RuntimeEnabled=FeatureName, return:
         RuntimeEnabledFeatures::{featureName}Enabled
-    Note that the initial character or acronym is uncapitalized.
     """
-    feature_name = definition_or_member.extended_attributes['EnabledAtRuntime']
+    if 'RuntimeEnabled' not in definition_or_member.extended_attributes:
+        return None
+    feature_name = definition_or_member.extended_attributes['RuntimeEnabled']
     return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)

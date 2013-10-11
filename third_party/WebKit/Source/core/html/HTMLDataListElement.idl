@@ -29,7 +29,7 @@
  */
 
 [
-    EnabledAtRuntime=DataListElement
+    RuntimeEnabled=DataListElement
 ] interface HTMLDataListElement : HTMLElement {
     readonly attribute HTMLCollection options;
 };

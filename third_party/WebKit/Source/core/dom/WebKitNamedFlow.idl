@@ -29,7 +29,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=CSSRegions,
+    RuntimeEnabled=CSSRegions,
     ImplementedAs=NamedFlow,
     GenerateIsReachable=ownerNode
 ] interface WebKitNamedFlow : EventTarget {

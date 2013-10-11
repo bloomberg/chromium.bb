@@ -29,7 +29,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=CSSRegions,
+    RuntimeEnabled=CSSRegions,
     ImplementedAs=DOMNamedFlowCollection
 ] interface WebKitNamedFlowCollection {
     readonly attribute unsigned long length;

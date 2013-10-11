@@ -40,7 +40,7 @@
     [Reflect, TreatNullAs=NullString] attribute DOMString formTarget;
     [CustomElementCallbacks] attribute unsigned long height;
     attribute boolean indeterminate;
-    [EnabledAtRuntime=DataListElement] readonly attribute HTMLElement list;
+    [RuntimeEnabled=DataListElement] readonly attribute HTMLElement list;
     [Reflect, TreatNullAs=NullString] attribute DOMString max;
     [SetterRaisesException, CustomElementCallbacks] attribute long maxLength;
     [Reflect, TreatNullAs=NullString] attribute DOMString min;
@@ -59,7 +59,7 @@
     [TreatNullAs=NullString, SetterRaisesException, CustomElementCallbacks] attribute DOMString value;
     [SetterRaisesException, CustomElementCallbacks] attribute Date valueAsDate;
     [SetterRaisesException, CustomElementCallbacks] attribute double valueAsNumber;
-    [EnabledAtRuntime=InputModeAttribute, Reflect, TreatNullAs=NullString] attribute DOMString inputMode;
+    [RuntimeEnabled=InputModeAttribute, Reflect, TreatNullAs=NullString] attribute DOMString inputMode;
 
     [RaisesException, CustomElementCallbacks] void stepUp(optional long n);
     [RaisesException, CustomElementCallbacks] void stepDown(optional long n);
@@ -91,11 +91,11 @@
 
     // Non-standard attributes
     [Reflect, TreatNullAs=NullString] attribute DOMString align;
-    [Reflect, EnabledAtRuntime=DirectoryUpload] attribute boolean webkitdirectory;
+    [Reflect, RuntimeEnabled=DirectoryUpload] attribute boolean webkitdirectory;
     [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
     [Reflect] attribute boolean incremental;
-    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=SpeechInput] attribute boolean webkitSpeech;
-    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=SpeechInput] attribute boolean webkitGrammar;
+    [Conditional=INPUT_SPEECH, Reflect, RuntimeEnabled=SpeechInput] attribute boolean webkitSpeech;
+    [Conditional=INPUT_SPEECH, Reflect, RuntimeEnabled=SpeechInput] attribute boolean webkitGrammar;
     [Conditional=INPUT_SPEECH, NotEnumerable] attribute EventHandler onwebkitspeechchange;
 
     // See http://www.w3.org/TR/html-media-capture/

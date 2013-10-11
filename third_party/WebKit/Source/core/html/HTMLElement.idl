@@ -33,7 +33,7 @@
     [Reflect, TreatNullAs=NullString] attribute DOMString accessKey;
 
     // Extensions
-    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString innerText;
     [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString outerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString outerText;
@@ -45,7 +45,7 @@
     [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText([Default=Undefined] optional DOMString where,
                             [Default=Undefined] optional DOMString text);
 
-    [EnabledAtRuntime=IMEAPI] readonly attribute InputMethodContext inputMethodContext;
+    [RuntimeEnabled=IMEAPI] readonly attribute InputMethodContext inputMethodContext;
 
     [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;

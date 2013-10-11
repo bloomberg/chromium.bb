@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=ExperimentalCanvasFeatures
+    RuntimeEnabled=ExperimentalCanvasFeatures
 ] interface ImageBitmapFactories {
     [RaisesException] Promise createImageBitmap(Blob blob);
     [RaisesException] Promise createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);

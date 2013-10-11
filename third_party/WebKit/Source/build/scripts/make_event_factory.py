@@ -60,7 +60,7 @@ class EventFactoryWriter(name_macros.Writer):
     defaults = {
         'ImplementedAs': None,
         'Conditional': None,
-        'EnabledAtRuntime': None,
+        'RuntimeEnabled': None,
     }
     default_parameters = {
         'namespace': '',
@@ -74,8 +74,8 @@ class EventFactoryWriter(name_macros.Writer):
         return self.in_file.name_dictionaries
 
     def _factory_implementation(self, event):
-        if event['EnabledAtRuntime']:
-            runtime_condition = ' && RuntimeEnabledFeatures::%s()' % name_utilities.lower_first(event['EnabledAtRuntime'])
+        if event['RuntimeEnabled']:
+            runtime_condition = ' && RuntimeEnabledFeatures::%s()' % name_utilities.lower_first(event['RuntimeEnabled'])
         else:
             runtime_condition = ''
         script_name = name_utilities.script_name(event)

@@ -29,7 +29,7 @@
  */
 
 [
-    EnabledAtRuntime=HighResolutionTimeInWorkers
+    RuntimeEnabled=HighResolutionTimeInWorkers
 ] partial interface WorkerGlobalScope {
     readonly attribute WorkerPerformance performance;
 };

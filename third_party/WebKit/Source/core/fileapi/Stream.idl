@@ -37,7 +37,7 @@
 // FIXME: Make the Blob a subclass of the Stream.
 
 [
-    EnabledAtRuntime=Stream
+    RuntimeEnabled=Stream
 ] interface Stream {
     readonly attribute DOMString type;
 };

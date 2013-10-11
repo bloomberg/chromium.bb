@@ -1,5 +1,5 @@
 # Aliases
-AnimationEvent ImplementedAs=WebKitAnimationEvent, EnabledAtRuntime=cssAnimationUnprefixedEnabled
+AnimationEvent ImplementedAs=WebKitAnimationEvent, RuntimeEnabled=cssAnimationUnprefixedEnabled
 Events ImplementedAs=Event
 HTMLEvents ImplementedAs=Event
 KeyboardEvents ImplementedAs=KeyboardEvent
@@ -11,4 +11,4 @@ SVGZoomEvents ImplementedAs=SVGZoomEvent
 UIEvents ImplementedAs=UIEvent
 WebKitTransitionEvent ImplementedAs=TransitionEvent
 
-core/dom/TouchEvent EnabledAtRuntime=touchEnabled
+core/dom/TouchEvent RuntimeEnabled=touchEnabled

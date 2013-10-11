@@ -46,8 +46,8 @@
     const unsigned short IMPLEMENTSCONSTANT1 = 1;
     [Reflect=CONST_IMPL] const unsigned short IMPLEMENTSCONSTANT2 = 2;
 
-    [EnabledAtRuntime=Condition23] attribute Node Node23;
-    [EnabledPerContext=Condition24] attribute Node Node24;
-    [EnabledAtRuntime=Condition25, EnabledPerContext=Condition26] attribute Node Node25;
+    [RuntimeEnabled=Condition23] attribute Node Node23;
+    [PerContextEnabled=Condition24] attribute Node Node24;
+    [RuntimeEnabled=Condition25, PerContextEnabled=Condition26] attribute Node Node25;
 };
 

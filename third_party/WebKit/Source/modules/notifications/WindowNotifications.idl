@@ -28,5 +28,5 @@
     Conditional=LEGACY_NOTIFICATIONS,
     ImplementedAs=DOMWindowNotifications
 ] partial interface Window {
-    [EnabledAtRuntime=Notifications, MeasureAs=LegacyNotifications, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute NotificationCenter webkitNotifications;
+    [RuntimeEnabled=Notifications, MeasureAs=LegacyNotifications, PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] readonly attribute NotificationCenter webkitNotifications;
 };

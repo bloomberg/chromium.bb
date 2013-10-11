@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=MediaSource,
+    RuntimeEnabled=MediaSource,
     CallWith=ScriptExecutionContext
 ] interface SourceBufferList : EventTarget {
     readonly attribute unsigned long length;

@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=Media
+    RuntimeEnabled=Media
 ] interface HTMLVideoElement : HTMLMediaElement {
     [Reflect] attribute unsigned long width;
     [Reflect] attribute unsigned long height;
@@ -35,11 +35,11 @@
     readonly attribute boolean webkitSupportsFullscreen;
     readonly attribute boolean webkitDisplayingFullscreen;
 
-    [RaisesException, PerWorldBindings, ActivityLog=Access] void webkitEnterFullscreen();
+    [RaisesException, PerWorldBindings, ActivityLogging=Access] void webkitEnterFullscreen();
     void webkitExitFullscreen();
 
     // Note the different capitalization of the "S" in FullScreen.
-    [RaisesException, PerWorldBindings, ActivityLog=Access] void webkitEnterFullScreen();
+    [RaisesException, PerWorldBindings, ActivityLogging=Access] void webkitEnterFullScreen();
     void webkitExitFullScreen();
 
     // The number of frames that have been decoded and made available for

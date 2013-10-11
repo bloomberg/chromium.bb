@@ -32,7 +32,7 @@
 #
 
 ActiveDOMObject
-ActivityLog=Access|Getter|Setter|AccessForIsolatedWorlds|GetterForIsolatedWorlds|SetterForIsolatedWorlds
+ActivityLogging=Access|Getter|Setter|AccessForIsolatedWorlds|GetterForIsolatedWorlds|SetterForIsolatedWorlds
 CachedAttribute=*
 CallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity
@@ -62,10 +62,6 @@ DoNotCheckSecurityOnSetter
 DoNotCheckSignature
 DoNotGenerateToV8
 DoNotGenerateWrap
-# Valid values for EnabledAtRuntime and EnabledPerContext are Runtime Enabled
-# Features, listed in Source/core/page/RuntimeEnabledFeatures.in
-EnabledAtRuntime=*
-EnabledPerContext=*
 EnforceRange
 GenerateIsReachable=*
 GetterRaisesException
@@ -82,11 +78,15 @@ NamedConstructor=*
 NoInterfaceObject
 NotEnumerable
 OverrideBuiltins
+PerContextEnabled=*
 PerWorldBindings
 RaisesException
 ReadOnly
 Reflect=|*
 Replaceable
+# Valid values for RuntimeEnabled and PerContextEnabled are Runtime Enabled
+# Features, listed in Source/core/page/RuntimeEnabledFeatures.in
+RuntimeEnabled=*
 SetterCallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SetterRaisesException
 SpecialWrapFor=*

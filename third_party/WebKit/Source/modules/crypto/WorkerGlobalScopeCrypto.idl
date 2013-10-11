@@ -29,5 +29,5 @@
  */
 
 partial interface WorkerGlobalScope {
-    [EnabledAtRuntime=Crypto] readonly attribute WorkerCrypto crypto;
+    [RuntimeEnabled=Crypto] readonly attribute WorkerCrypto crypto;
 };

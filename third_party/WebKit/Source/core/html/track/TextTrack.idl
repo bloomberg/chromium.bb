@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=VideoTrack
+    RuntimeEnabled=VideoTrack
 ] interface TextTrack : EventTarget {
     readonly attribute DOMString kind;
     readonly attribute DOMString label;

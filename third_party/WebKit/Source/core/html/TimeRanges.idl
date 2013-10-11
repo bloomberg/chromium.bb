@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=Media
+    RuntimeEnabled=Media
 ] interface TimeRanges {
     readonly attribute unsigned long length;
     [RaisesException] double start(unsigned long index);

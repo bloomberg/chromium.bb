@@ -25,8 +25,8 @@
  */
 
 partial interface WorkerGlobalScope {
-    [EnabledAtRuntime=Database, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
+    [RuntimeEnabled=Database, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
 
-    [EnabledAtRuntime=Database, RaisesException] DatabaseSync openDatabaseSync(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
+    [RuntimeEnabled=Database, RaisesException] DatabaseSync openDatabaseSync(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
 };
 

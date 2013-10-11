@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=DialogElement
+    RuntimeEnabled=DialogElement
 ] interface HTMLDialogElement : HTMLElement {
     [Reflect] attribute boolean open;
     attribute DOMString returnValue;

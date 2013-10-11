@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=WebKitMediaSource,
+    RuntimeEnabled=WebKitMediaSource,
     ActiveDOMObject,
     Constructor,
     ConstructorCallWith=ScriptExecutionContext

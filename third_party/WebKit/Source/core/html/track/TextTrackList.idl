@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=VideoTrack,
+    RuntimeEnabled=VideoTrack,
     GenerateIsReachable=owner
 ] interface TextTrackList : EventTarget {
     readonly attribute unsigned long length;

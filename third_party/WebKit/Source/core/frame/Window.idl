@@ -39,9 +39,9 @@
     [Replaceable] readonly attribute BarProp scrollbars;
     [Replaceable] readonly attribute BarProp statusbar;
     [Replaceable] readonly attribute BarProp toolbar;
-    [Replaceable, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
+    [Replaceable, PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
-    [DoNotCheckSecurity, CustomSetter, Unforgeable, Replaceable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] readonly attribute Location location;
+    [DoNotCheckSecurity, CustomSetter, Unforgeable, Replaceable, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] readonly attribute Location location;
     [Custom, MeasureAs=WindowEvent, NotEnumerable, Replaceable] readonly attribute Event event;
 
     Selection getSelection();
@@ -143,10 +143,10 @@
     WebKitPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
                                                  [Default=Undefined] optional WebKitPoint p);
 
-    [EnabledAtRuntime=ApplicationCache, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute ApplicationCache applicationCache;
+    [RuntimeEnabled=ApplicationCache, PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] readonly attribute ApplicationCache applicationCache;
 
-    [EnabledAtRuntime=SessionStorage, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds, GetterRaisesException] readonly attribute Storage sessionStorage;
-    [EnabledAtRuntime=LocalStorage, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds, GetterRaisesException] readonly attribute Storage localStorage;
+    [RuntimeEnabled=SessionStorage, PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds, GetterRaisesException] readonly attribute Storage sessionStorage;
+    [RuntimeEnabled=LocalStorage, PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds, GetterRaisesException] readonly attribute Storage localStorage;
 
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
@@ -175,41 +175,41 @@
     attribute EventHandler oncanplay;
     attribute EventHandler oncanplaythrough;
     attribute EventHandler onchange;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onclick;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onclick;
     attribute EventHandler oncontextmenu;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondblclick;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondrag;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragend;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragenter;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragleave;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragover;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragstart;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondrop;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondblclick;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondrag;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragend;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragenter;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragleave;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragover;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragstart;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondrop;
     attribute EventHandler ondurationchange;
     attribute EventHandler onemptied;
     attribute EventHandler onended;
     attribute EventHandler onerror;
     attribute EventHandler onfocus;
     attribute EventHandler onhashchange;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler oninput;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler oninput;
     attribute EventHandler oninvalid;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onkeydown;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onkeypress;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onkeyup;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onkeydown;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onkeypress;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onkeyup;
     attribute EventHandler onload;
     attribute EventHandler onloadeddata;
     attribute EventHandler onloadedmetadata;
     attribute EventHandler onloadstart;
     attribute EventHandler onmessage;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousedown;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseenter;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseleave;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousemove;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseout;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseover;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseup;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onwheel;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmousedown;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseenter;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseleave;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmousemove;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseout;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseover;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseup;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onwheel;
     attribute EventHandler onoffline;
     attribute EventHandler ononline;
     attribute EventHandler onpagehide;
@@ -245,29 +245,29 @@
     // Webkit extensions
     attribute EventHandler onreset;
     attribute EventHandler onsearch;
-    [EnabledAtRuntime=CSSAnimationUnprefixed] attribute EventHandler onanimationend;
-    [EnabledAtRuntime=CSSAnimationUnprefixed] attribute EventHandler onanimationiteration;
-    [EnabledAtRuntime=CSSAnimationUnprefixed] attribute EventHandler onanimationstart;
+    [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationend;
+    [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationiteration;
+    [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationstart;
     attribute EventHandler onwebkitanimationend;
     attribute EventHandler onwebkitanimationiteration;
     attribute EventHandler onwebkitanimationstart;
     attribute EventHandler onwebkittransitionend;
     attribute EventHandler ontransitionend;
     [Conditional=ORIENTATION_EVENTS] attribute EventHandler onorientationchange;
-    [EnabledAtRuntime=Touch] attribute EventHandler ontouchstart;
-    [EnabledAtRuntime=Touch] attribute EventHandler ontouchmove;
-    [EnabledAtRuntime=Touch] attribute EventHandler ontouchend;
-    [EnabledAtRuntime=Touch] attribute EventHandler ontouchcancel;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchend;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
 
-    [EnabledAtRuntime=DeviceMotion] attribute EventHandler ondevicemotion;
-    [EnabledAtRuntime=DeviceOrientation] attribute EventHandler ondeviceorientation;
+    [RuntimeEnabled=DeviceMotion] attribute EventHandler ondevicemotion;
+    [RuntimeEnabled=DeviceOrientation] attribute EventHandler ondeviceorientation;
 
     [DeprecateAs=CaptureEvents] void captureEvents();
     [DeprecateAs=ReleaseEvents] void releaseEvents();
 
     // Additional constructors.
     attribute TransitionEventConstructor WebKitTransitionEvent;
-    [EnabledAtRuntime=CSSAnimationUnprefixed] attribute WebKitAnimationEventConstructor AnimationEvent;
+    [RuntimeEnabled=CSSAnimationUnprefixed] attribute WebKitAnimationEventConstructor AnimationEvent;
     [CustomConstructor] attribute HTMLImageElementConstructorConstructor Image; // Usable with new operator
     // Mozilla has a separate XMLDocument object for XML documents.
     // We just use Document for this.
@@ -285,22 +285,22 @@
 
     // Constructors whose name does not match the interface name.
     // FIXME: Remove these once [ImplementedAs] is used and once constructor names match interface names.
-    [EnabledAtRuntime=MediaStream] attribute MediaStreamConstructor webkitMediaStream;
-    [Conditional=WEB_AUDIO, EnabledAtRuntime=WebAudio] attribute AudioContextConstructor webkitAudioContext;
-    [Conditional=WEB_AUDIO, EnabledAtRuntime=WebAudio] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
-    [EnabledAtRuntime=PeerConnection] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
-    [EnabledAtRuntime=ScriptedSpeech] attribute SpeechGrammarConstructor webkitSpeechGrammar;
-    [EnabledAtRuntime=ScriptedSpeech] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;
-    [EnabledAtRuntime=ScriptedSpeech] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
-    [EnabledAtRuntime=ScriptedSpeech] attribute SpeechRecognitionErrorConstructor webkitSpeechRecognitionError;
-    [EnabledAtRuntime=ScriptedSpeech] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
+    [RuntimeEnabled=MediaStream] attribute MediaStreamConstructor webkitMediaStream;
+    [Conditional=WEB_AUDIO, RuntimeEnabled=WebAudio] attribute AudioContextConstructor webkitAudioContext;
+    [Conditional=WEB_AUDIO, RuntimeEnabled=WebAudio] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
+    [RuntimeEnabled=PeerConnection] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
+    [RuntimeEnabled=ScriptedSpeech] attribute SpeechGrammarConstructor webkitSpeechGrammar;
+    [RuntimeEnabled=ScriptedSpeech] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;
+    [RuntimeEnabled=ScriptedSpeech] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
+    [RuntimeEnabled=ScriptedSpeech] attribute SpeechRecognitionErrorConstructor webkitSpeechRecognitionError;
+    [RuntimeEnabled=ScriptedSpeech] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
     [Conditional=WEB_AUDIO] attribute PannerNodeConstructor webkitAudioPannerNode;
 
     // Prefixed ShadowRoot constructor should be phased out eventually, but for the moment it must be always exposed.
     // Unprefixed ShadowRoot constructor should be visible when the feature flag is enabled.
     // FIXME: When it's ready to remove WebKitShadowRoot, get rid of both constructors from Window.idl and remove
     // [NoInterfaceObject] from ShadowRoot interface definition.
-    [EnabledAtRuntime=ShadowDOM] attribute ShadowRootConstructor ShadowRoot;
+    [RuntimeEnabled=ShadowDOM] attribute ShadowRootConstructor ShadowRoot;
     [MeasureAs=PrefixedShadowRootConstructor] attribute ShadowRootConstructor WebKitShadowRoot;
 
     // window.toString() requires special handling in V8

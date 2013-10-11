@@ -30,9 +30,9 @@
     const unsigned short TEMPORARY = 0;
     const unsigned short PERSISTENT = 1;
 
-    [EnabledAtRuntime=FileSystem] void webkitRequestFileSystem(unsigned short type, long long size,
+    [RuntimeEnabled=FileSystem] void webkitRequestFileSystem(unsigned short type, long long size,
             FileSystemCallback successCallback, optional ErrorCallback errorCallback);
-    [EnabledAtRuntime=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url,
+    [RuntimeEnabled=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url,
             EntryCallback successCallback, optional ErrorCallback errorCallback);
 };
 

@@ -36,6 +36,6 @@
     // Web Crypto API spec.
     [Custom, RaisesException] ArrayBufferView getRandomValues(ArrayBufferView array);
 
-    [EnabledAtRuntime=Crypto] readonly attribute SubtleCrypto subtle;
+    [RuntimeEnabled=Crypto] readonly attribute SubtleCrypto subtle;
 };
 

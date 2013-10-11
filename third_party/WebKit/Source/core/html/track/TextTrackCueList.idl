@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=VideoTrack
+    RuntimeEnabled=VideoTrack
 ] interface TextTrackCueList {
     readonly attribute unsigned long length;
     getter TextTrackCue item(unsigned long index);

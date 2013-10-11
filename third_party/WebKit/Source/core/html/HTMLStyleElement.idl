@@ -20,7 +20,7 @@
 
 interface HTMLStyleElement : HTMLElement {
     attribute boolean disabled;
-    [EnabledAtRuntime=StyleScoped] attribute boolean scoped;
+    [RuntimeEnabled=StyleScoped] attribute boolean scoped;
     [Reflect, TreatNullAs=NullString] attribute DOMString media;
     [Reflect, TreatNullAs=NullString] attribute DOMString type;
 

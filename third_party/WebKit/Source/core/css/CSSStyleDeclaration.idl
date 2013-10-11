@@ -37,6 +37,6 @@
     [Custom, CustomEnumerateProperty] getter (DOMString or float) (DOMString name);
     [Custom] setter void (DOMString propertyName, [TreatNullAs=NullString] DOMString propertyValue);
     readonly attribute CSSRule          parentRule;
-    [EnabledAtRuntime=CSSVariables] readonly attribute CSSVariablesMap var;
+    [RuntimeEnabled=CSSVariables] readonly attribute CSSVariablesMap var;
 };
 

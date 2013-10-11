@@ -118,7 +118,7 @@ def generate_attribute_and_includes(interface, attribute):
 
 
     contents.update({
-        'is_activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # ActivityLog=Access|Getter
+        'is_activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # ActivityLogging=Access|Getter
         'is_check_security_for_node': is_check_security_for_node,
     })
 

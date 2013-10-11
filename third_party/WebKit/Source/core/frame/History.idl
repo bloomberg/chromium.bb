@@ -31,6 +31,6 @@ interface History {
     [CallWith=ScriptExecutionContext] void forward();
     [CallWith=ScriptExecutionContext] void go([Default=Undefined] optional long distance);
 
-    [Custom, EnabledPerContext=pushState, RaisesException] void pushState(any data, DOMString title, optional DOMString url);
-    [Custom, EnabledPerContext=pushState, RaisesException] void replaceState(any data, DOMString title, optional DOMString url);
+    [Custom, PerContextEnabled=pushState, RaisesException] void pushState(any data, DOMString title, optional DOMString url);
+    [Custom, PerContextEnabled=pushState, RaisesException] void replaceState(any data, DOMString title, optional DOMString url);
 };

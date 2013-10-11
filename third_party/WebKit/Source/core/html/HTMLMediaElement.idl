@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=Media,
+    RuntimeEnabled=Media,
     ActiveDOMObject
 ] interface HTMLMediaElement : HTMLElement {
 
@@ -82,8 +82,8 @@ attribute boolean muted;
 [Reflect=muted] attribute boolean defaultMuted;
 
 // tracks
-[EnabledAtRuntime=VideoTrack] readonly attribute TextTrackList textTracks;
-[EnabledAtRuntime=VideoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
+[RuntimeEnabled=VideoTrack] readonly attribute TextTrackList textTracks;
+[RuntimeEnabled=VideoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
 
 // WebKit extensions
 
@@ -92,14 +92,14 @@ readonly attribute unsigned long webkitAudioDecodedByteCount;
 readonly attribute unsigned long webkitVideoDecodedByteCount;
 
 // FIXME: add DeprecateAs=PrefixedMediaGenerateKeyRequest when MediaKeys is ready.
-[EnabledAtRuntime=PrefixedEncryptedMedia, RaisesException] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
-[EnabledAtRuntime=PrefixedEncryptedMedia, RaisesException] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
-[EnabledAtRuntime=PrefixedEncryptedMedia, RaisesException] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Default=NullString] optional DOMString sessionId);
+[RuntimeEnabled=PrefixedEncryptedMedia, RaisesException] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
+[RuntimeEnabled=PrefixedEncryptedMedia, RaisesException] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
+[RuntimeEnabled=PrefixedEncryptedMedia, RaisesException] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Default=NullString] optional DOMString sessionId);
 
-[EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyadded;
-[EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyerror;
-[EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeymessage;
-[EnabledAtRuntime=PrefixedEncryptedMedia] attribute EventHandler onwebkitneedkey;
+[RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyadded;
+[RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyerror;
+[RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeymessage;
+[RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitneedkey;
 
-[EnabledAtRuntime=EncryptedMedia, Conditional=ENCRYPTED_MEDIA_V2] attribute MediaKeys mediaKeys;
+[RuntimeEnabled=EncryptedMedia, Conditional=ENCRYPTED_MEDIA_V2] attribute MediaKeys mediaKeys;
 };

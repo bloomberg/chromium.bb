@@ -29,6 +29,6 @@
  */
 
 partial interface HTMLInputElement {
-[EnabledAtRuntime=FileSystem,CallWith=ScriptExecutionContext] readonly attribute Entry[] webkitEntries;
+[RuntimeEnabled=FileSystem,CallWith=ScriptExecutionContext] readonly attribute Entry[] webkitEntries;
 };
 

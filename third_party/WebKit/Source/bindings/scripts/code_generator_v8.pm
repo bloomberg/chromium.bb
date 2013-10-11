@@ -687,7 +687,7 @@ END
 END
     }
 
-    my @enabledPerContextFunctions;
+    my @perContextEnabledFunctions;
     foreach my $function (@{$interface->functions}) {
         my $name = $function->name;
         next if $name eq "";
@@ -701,8 +701,8 @@ END
 END
             $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
-        if ($attrExt->{"EnabledPerContext"}) {
-            push(@enabledPerContextFunctions, $function);
+        if ($attrExt->{"PerContextEnabled"}) {
+            push(@perContextEnabledFunctions, $function);
         }
     }
 
@@ -714,7 +714,7 @@ END
         $header{classPublic}->add("    static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);\n");
     }
 
-    my @enabledPerContextAttributes;
+    my @perContextEnabledAttributes;
     foreach my $attribute (@{$interface->attributes}) {
         my $name = $attribute->name;
         my $attrExt = $attribute->extendedAttributes;
@@ -733,8 +733,8 @@ END
 END
             $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
-        if ($attrExt->{"EnabledPerContext"}) {
-            push(@enabledPerContextAttributes, $attribute);
+        if ($attrExt->{"PerContextEnabled"}) {
+            push(@perContextEnabledAttributes, $attribute);
         }
     }
 
@@ -772,7 +772,7 @@ END
 END
     }
 
-    if (@enabledPerContextAttributes) {
+    if (@perContextEnabledAttributes) {
         $header{classPublic}->add(<<END);
     static void installPerContextProperties(v8::Handle<v8::Object>, ${nativeType}*, v8::Isolate*);
 END
@@ -782,7 +782,7 @@ END
 END
     }
 
-    if (@enabledPerContextFunctions) {
+    if (@perContextEnabledFunctions) {
         $header{classPublic}->add(<<END);
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*);
 END
@@ -1068,13 +1068,13 @@ sub HasActivityLogging
     my $attrExt = shift;
     my $access = shift;
 
-    if (!$attrExt->{"ActivityLog"}) {
+    if (!$attrExt->{"ActivityLogging"}) {
         return 0;
     }
-    my $logAllAccess = ($attrExt->{"ActivityLog"} =~ /^Access/);
-    my $logGetter = ($attrExt->{"ActivityLog"} =~ /^Getter/);
-    my $logSetter = ($attrExt->{"ActivityLog"} =~ /^Setter/);
-    my $logOnlyIsolatedWorlds = ($attrExt->{"ActivityLog"} =~ /ForIsolatedWorlds$/);
+    my $logAllAccess = ($attrExt->{"ActivityLogging"} =~ /^Access/);
+    my $logGetter = ($attrExt->{"ActivityLogging"} =~ /^Getter/);
+    my $logSetter = ($attrExt->{"ActivityLogging"} =~ /^Setter/);
+    my $logOnlyIsolatedWorlds = ($attrExt->{"ActivityLogging"} =~ /ForIsolatedWorlds$/);
 
     if ($logOnlyIsolatedWorlds && $forMainWorldSuffix eq "ForMainWorld") {
         return 0;
@@ -3139,8 +3139,8 @@ sub IsStandardFunction
     my $attrExt = $function->extendedAttributes;
     return 0 if $attrExt->{"Unforgeable"};
     return 0 if $function->isStatic;
-    return 0 if $attrExt->{"EnabledAtRuntime"};
-    return 0 if $attrExt->{"EnabledPerContext"};
+    return 0 if $attrExt->{"RuntimeEnabled"};
+    return 0 if $attrExt->{"PerContextEnabled"};
     return 0 if RequiresCustomSignature($function);
     return 0 if $attrExt->{"DoNotCheckSignature"};
     return 0 if ($attrExt->{"DoNotCheckSecurity"} && ($interface->extendedAttributes->{"CheckSecurity"} || $interfaceName eq "Window"));
@@ -3178,15 +3178,15 @@ sub GenerateNonStandardFunction
     }
 
     my $conditional = "";
-    if ($attrExt->{"EnabledAtRuntime"}) {
+    if ($attrExt->{"RuntimeEnabled"}) {
         # Only call Set()/SetAccessor() if this method should be enabled
-        my $enable_function = GetRuntimeEnableFunctionName($function);
-        $conditional = "if (${enable_function}())\n        ";
+        my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($function);
+        $conditional = "if (${runtimeEnabledFunction}())\n        ";
     }
-    if ($attrExt->{"EnabledPerContext"}) {
+    if ($attrExt->{"PerContextEnabled"}) {
         # Only call Set()/SetAccessor() if this method should be enabled
-        my $enable_function = GetContextEnableFunction($function);
-        $conditional = "if (${enable_function}(impl->document()))\n        ";
+        my $contextEnabledFunction = GetContextEnabledFunctionName($function);
+        $conditional = "if (${contextEnabledFunction}(impl->document()))\n        ";
     }
 
     if ($interface->extendedAttributes->{"CheckSecurity"} && $attrExt->{"DoNotCheckSecurity"}) {
@@ -4093,7 +4093,7 @@ v8::Handle<v8::Object> wrap($implClassName* impl, v8::Handle<v8::Object> creatio
 END
     }
 
-    my @enabledPerContextFunctions;
+    my @perContextEnabledFunctions;
     my @normalFunctions;
     my $needsDomainSafeFunctionSetter = 0;
     # Generate methods for functions.
@@ -4129,8 +4129,8 @@ END
         }
 
         # Separate out functions that are enabled per context so we can process them specially.
-        if ($function->extendedAttributes->{"EnabledPerContext"}) {
-            push(@enabledPerContextFunctions, $function);
+        if ($function->extendedAttributes->{"PerContextEnabled"}) {
+            push(@perContextEnabledFunctions, $function);
         } else {
             push(@normalFunctions, $function);
         }
@@ -4147,8 +4147,8 @@ END
     # ones that disallows shadowing and the rest.
     my @disallowsShadowing;
     # Also separate out attributes that are enabled at runtime so we can process them specially.
-    my @enabledAtRuntimeAttributes;
-    my @enabledPerContextAttributes;
+    my @runtimeEnabledAttributes;
+    my @perContextEnabledAttributes;
     my @normalAttributes;
     my @staticAttributes;
     foreach my $attribute (@$attributes) {
@@ -4157,12 +4157,12 @@ END
             push(@staticAttributes, $attribute);
         } elsif ($interfaceName eq "Window" && $attribute->extendedAttributes->{"Unforgeable"}) {
             push(@disallowsShadowing, $attribute);
-        } elsif ($attribute->extendedAttributes->{"EnabledAtRuntime"} || $attribute->extendedAttributes->{"EnabledPerContext"}) {
-            if ($attribute->extendedAttributes->{"EnabledPerContext"}) {
-                push(@enabledPerContextAttributes, $attribute);
+        } elsif ($attribute->extendedAttributes->{"RuntimeEnabled"} || $attribute->extendedAttributes->{"PerContextEnabled"}) {
+            if ($attribute->extendedAttributes->{"PerContextEnabled"}) {
+                push(@perContextEnabledAttributes, $attribute);
             }
-            if ($attribute->extendedAttributes->{"EnabledAtRuntime"}) {
-                push(@enabledAtRuntimeAttributes, $attribute);
+            if ($attribute->extendedAttributes->{"RuntimeEnabled"}) {
+                push(@runtimeEnabledAttributes, $attribute);
             }
         } else {
             push(@normalAttributes, $attribute);
@@ -4269,10 +4269,10 @@ static v8::Handle<v8::FunctionTemplate> Configure${v8ClassName}Template(v8::Hand
 
     v8::Local<v8::Signature> defaultSignature;
 END
-    if ($interface->extendedAttributes->{"EnabledAtRuntime"}) {
-        my $enable_function = GetRuntimeEnableFunctionName($interface);
+    if ($interface->extendedAttributes->{"RuntimeEnabled"}) {
+        my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($interface);
         $code .= <<END;
-    if (!${enable_function}())
+    if (!${runtimeEnabledFunction}())
         defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
     else
 END
@@ -4312,7 +4312,7 @@ END
         $code .= "    desc->SetLength(${interfaceLength});\n";
     }
 
-    if ($access_check or @enabledAtRuntimeAttributes or @normalFunctions or $has_constants) {
+    if ($access_check or @runtimeEnabledAttributes or @normalFunctions or $has_constants) {
         $code .=  <<END;
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
@@ -4326,12 +4326,12 @@ END
     }
 
     # Setup the enable-at-runtime attributes if we have them
-    foreach my $runtime_attr (@enabledAtRuntimeAttributes) {
-        next if grep { $_ eq $runtime_attr } @enabledPerContextAttributes;
-        my $enable_function = GetRuntimeEnableFunctionName($runtime_attr);
+    foreach my $runtime_attr (@runtimeEnabledAttributes) {
+        next if grep { $_ eq $runtime_attr } @perContextEnabledAttributes;
+        my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtime_attr);
         my $conditionalString = GenerateConditionalString($runtime_attr);
         $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-        $code .= "    if (${enable_function}()) {\n";
+        $code .= "    if (${runtimeEnabledFunction}()) {\n";
         $code .= "        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\\\n";
         $code .= GenerateAttributeConfiguration($interface, $runtime_attr, ";", "    ");
         $code .= <<END;
@@ -4353,7 +4353,7 @@ END
                 my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
                 AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
             }
-            if ($attrExt->{"EnabledAtRuntime"}) {
+            if ($attrExt->{"RuntimeEnabled"}) {
                 push(@constantsEnabledAtRuntime, $constant);
             } else {
                 $code .= <<END;
@@ -4367,10 +4367,10 @@ END
 END
         # Setup the enable-at-runtime constants if we have them
         foreach my $runtime_const (@constantsEnabledAtRuntime) {
-            my $enable_function = GetRuntimeEnableFunctionName($runtime_const);
+            my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtime_const);
             my $name = $runtime_const->name;
             my $value = $runtime_const->value;
-            $code .= "    if (${enable_function}()) {\n";
+            $code .= "    if (${runtimeEnabledFunction}()) {\n";
             $code .= <<END;
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"${name}", static_cast<signed int>(${value})};
         V8DOMConfiguration::installConstants(desc, proto, &constantConfiguration, 1, isolate);
@@ -4468,7 +4468,7 @@ bool ${v8ClassName}::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isol
 
 END
 
-    if (@enabledPerContextAttributes) {
+    if (@perContextEnabledAttributes) {
         my $code = "";
         $code .= <<END;
 void ${v8ClassName}::installPerContextProperties(v8::Handle<v8::Object> instance, ${nativeType}* impl, v8::Isolate* isolate)
@@ -4477,15 +4477,15 @@ void ${v8ClassName}::installPerContextProperties(v8::Handle<v8::Object> instance
 END
 
         # Setup the enable-by-settings attributes if we have them
-        foreach my $runtimeAttribute (@enabledPerContextAttributes) {
-            my $enableFunction = GetContextEnableFunction($runtimeAttribute);
+        foreach my $runtimeAttribute (@perContextEnabledAttributes) {
+            my $contextEnabledFunction = GetContextEnabledFunctionName($runtimeAttribute);
             my $conditionalString = GenerateConditionalString($runtimeAttribute);
             $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-            if (grep { $_ eq $runtimeAttribute } @enabledAtRuntimeAttributes) {
-                my $runtimeEnableFunction = GetRuntimeEnableFunctionName($runtimeAttribute);
-                $code .= "    if (${enableFunction}(impl->document()) && ${runtimeEnableFunction}()) {\n";
+            if (grep { $_ eq $runtimeAttribute } @runtimeEnabledAttributes) {
+                my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtimeAttribute);
+                $code .= "    if (${contextEnabledFunction}(impl->document()) && ${runtimeEnabledFunction}()) {\n";
             } else {
-                $code .= "    if (${enableFunction}(impl->document())) {\n";
+                $code .= "    if (${contextEnabledFunction}(impl->document())) {\n";
             }
 
             $code .= "        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\\\n";
@@ -4503,7 +4503,7 @@ END
         $implementation{nameSpaceWebCore}->add($code);
     }
 
-    if (@enabledPerContextFunctions) {
+    if (@perContextEnabledFunctions) {
         my $code = "";
         $code .= <<END;
 void ${v8ClassName}::installPerContextPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
@@ -4518,12 +4518,12 @@ END
     ScriptExecutionContext* context = toScriptExecutionContext(proto->CreationContext());
 END
 
-        foreach my $runtimeFunc (@enabledPerContextFunctions) {
-            my $enableFunction = GetContextEnableFunction($runtimeFunc);
+        foreach my $runtimeFunc (@perContextEnabledFunctions) {
+            my $contextEnabledFunction = GetContextEnabledFunctionName($runtimeFunc);
             my $functionLength = GetFunctionLength($runtimeFunc);
             my $conditionalString = GenerateConditionalString($runtimeFunc);
             $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-            $code .= "    if (context && context->isDocument() && ${enableFunction}(toDocument(context)))\n";
+            $code .= "    if (context && context->isDocument() && ${contextEnabledFunction}(toDocument(context)))\n";
             my $name = $runtimeFunc->name;
             $code .= <<END;
         proto->Set(v8::String::NewSymbol("${name}"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
@@ -5700,23 +5700,23 @@ sub ConvertToV8StringResource
 }
 
 # Returns the RuntimeEnabledFeatures function name that is hooked up to check if a method/attribute is enabled.
-sub GetRuntimeEnableFunctionName
+sub GetRuntimeEnabledFunctionName
 {
     my $signature = shift;
 
-    # Given [EnabledAtRuntime=FeatureName],
+    # Given [RuntimeEnabled=FeatureName],
     # return RuntimeEnabledFeatures::{featureName}Enabled;
-    my $featureName = ToMethodName($signature->extendedAttributes->{"EnabledAtRuntime"});
+    my $featureName = ToMethodName($signature->extendedAttributes->{"RuntimeEnabled"});
     return "RuntimeEnabledFeatures::${featureName}Enabled";
 }
 
-sub GetContextEnableFunction
+sub GetContextEnabledFunctionName
 {
     my $signature = shift;
 
-    # Given [EnabledPerContext=FeatureName],
+    # Given [PerContextEnabled=FeatureName],
     # return ContextFeatures::{featureName}Enabled
-    my $featureName = ToMethodName($signature->extendedAttributes->{"EnabledPerContext"});
+    my $featureName = ToMethodName($signature->extendedAttributes->{"PerContextEnabled"});
     return "ContextFeatures::${featureName}Enabled";
 }
 

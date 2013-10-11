@@ -32,7 +32,7 @@
 
 [
     Constructor,
-    EnabledAtRuntime=XSLT,
+    RuntimeEnabled=XSLT,
     MeasureAs=XSLTProcessor
 ] interface XSLTProcessor {
 

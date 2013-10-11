@@ -215,12 +215,12 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
 
     void classMethodWithClamp([Clamp] unsigned short objArgsShort, [Clamp] unsigned long objArgsLong);
 
-    // 'EnabledAtRuntime' methods and attributes.
-    [EnabledAtRuntime=FeatureName] void enabledAtRuntimeMethod(long longArg);
-    [EnabledAtRuntime=FeatureName] attribute long enabledAtRuntimeAttr;
-    // 'EnabledPerContext' methods and attributes.
-    [EnabledPerContext=FeatureName] void enabledPerContextMethod(long longArg);
-    [EnabledPerContext=FeatureName] attribute long enabledPerContextAttr;
+    // [RuntimeEnabled] methods and attributes.
+    [RuntimeEnabled=FeatureName] void enabledAtRuntimeMethod(long longArg);
+    [RuntimeEnabled=FeatureName] attribute long enabledAtRuntimeAttr;
+    // [PerContextEnabled] methods and attributes.
+    [PerContextEnabled=FeatureName] void enabledPerContextMethod(long longArg);
+    [PerContextEnabled=FeatureName] attribute long enabledPerContextAttr;
 
     attribute float[]                   floatArray;
     attribute double[]                  doubleArray;
@@ -276,20 +276,20 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [PerWorldBindings] void overloadedPerWorldMethod(long longArg);
     [PerWorldBindings] void overloadedPerWorldMethod(DOMString strArg, long longArg);
 
-    [ActivityLog=Access] void activityLoggedMethod1(long longArg);
-    [PerWorldBindings, ActivityLog=Access] void activityLoggedMethod2(long longArg);
-    [PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void activityLoggedInIsolatedWorldMethod(long longArg);
-    [PerWorldBindings, ActivityLog=Access] void overloadedActivityLoggedMethod(long longArg);
-    [PerWorldBindings, ActivityLog=Access] void overloadedActivityLoggedMethod(DOMString strArg, long longArg);
-    [ActivityLog=Access] attribute long activityLoggedAttr1;
-    [PerWorldBindings, ActivityLog=Access] attribute long activityLoggedAttr2;
-    [PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttr;
-    [ActivityLog=Setter] attribute long activityLoggedAttrSetter1;
-    [PerWorldBindings, ActivityLog=Setter] attribute long activityLoggedAttrSetter2;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttrSetter;
-    [ActivityLog=Getter] attribute long activityLoggedAttrGetter1;
-    [PerWorldBindings, ActivityLog=Getter] attribute long activityLoggedAttrGetter2;
-    [PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttrGetter;
+    [ActivityLogging=Access] void activityLoggedMethod1(long longArg);
+    [PerWorldBindings, ActivityLogging=Access] void activityLoggedMethod2(long longArg);
+    [PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] void activityLoggedInIsolatedWorldMethod(long longArg);
+    [PerWorldBindings, ActivityLogging=Access] void overloadedActivityLoggedMethod(long longArg);
+    [PerWorldBindings, ActivityLogging=Access] void overloadedActivityLoggedMethod(DOMString strArg, long longArg);
+    [ActivityLogging=Access] attribute long activityLoggedAttr1;
+    [PerWorldBindings, ActivityLogging=Access] attribute long activityLoggedAttr2;
+    [PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttr;
+    [ActivityLogging=Setter] attribute long activityLoggedAttrSetter1;
+    [PerWorldBindings, ActivityLogging=Setter] attribute long activityLoggedAttrSetter2;
+    [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttrSetter;
+    [ActivityLogging=Getter] attribute long activityLoggedAttrGetter1;
+    [PerWorldBindings, ActivityLogging=Getter] attribute long activityLoggedAttrGetter2;
+    [PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttrGetter;
 
     // DeprecateAs
     [DeprecateAs=StaticReadonlyAttribute] static readonly attribute long deprecatedStaticReadOnlyAttr;

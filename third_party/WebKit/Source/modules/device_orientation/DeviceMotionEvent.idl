@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=DeviceMotion
+    RuntimeEnabled=DeviceMotion
 ] interface DeviceMotionEvent : Event {
     readonly attribute DeviceAcceleration acceleration;
     readonly attribute DeviceAcceleration accelerationIncludingGravity;

@@ -30,7 +30,7 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     void save();
     void restore();
 
-    [EnabledAtRuntime=ExperimentalCanvasFeatures, Immutable] attribute SVGMatrix currentTransform;
+    [RuntimeEnabled=ExperimentalCanvasFeatures, Immutable] attribute SVGMatrix currentTransform;
     void scale(float sx, float sy);
     void rotate(float angle);
     void translate(float tx, float ty);
@@ -129,9 +129,9 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y);
     [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y, float width, float height);
     [RaisesException] void drawImage(HTMLVideoElement? video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
-    [EnabledAtRuntime=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y);
-    [EnabledAtRuntime=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y, float width, float height);
-    [EnabledAtRuntime=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y, float width, float height);
+    [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 
     void drawImageFromRect(HTMLImageElement image,
                            optional float sx, optional float sy, optional float sw, optional float sh,
@@ -163,8 +163,8 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RaisesException] ImageData webkitGetImageDataHD(float sx, float sy, float sw, float sh);
 
     // Focus rings
-    [EnabledAtRuntime=ExperimentalCanvasFeatures] void drawSystemFocusRing(Element element);
-    [EnabledAtRuntime=ExperimentalCanvasFeatures] boolean drawCustomFocusRing(Element element);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void drawSystemFocusRing(Element element);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] boolean drawCustomFocusRing(Element element);
 
     readonly attribute float webkitBackingStorePixelRatio;
 

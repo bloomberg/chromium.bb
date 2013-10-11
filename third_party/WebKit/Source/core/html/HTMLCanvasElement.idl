@@ -32,6 +32,6 @@ interface HTMLCanvasElement : HTMLElement {
     [Custom, RaisesException] DOMString toDataURL([TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString type);
 
     // The custom binding is needed to handle context creation attributes.
-    [Custom, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] any getContext([Default=Undefined] optional DOMString contextId);
+    [Custom, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] any getContext([Default=Undefined] optional DOMString contextId);
 };
 

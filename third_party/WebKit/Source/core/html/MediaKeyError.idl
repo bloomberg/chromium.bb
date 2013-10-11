@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=EncryptedMediaAnyVersion
+    RuntimeEnabled=EncryptedMediaAnyVersion
 ] interface MediaKeyError {
     const unsigned short MEDIA_KEYERR_UNKNOWN = 1;
     const unsigned short MEDIA_KEYERR_CLIENT = 2;
@@ -33,5 +33,5 @@
     const unsigned short MEDIA_KEYERR_HARDWARECHANGE = 5;
     const unsigned short MEDIA_KEYERR_DOMAIN = 6;
     readonly attribute unsigned short code;
-    [Conditional=ENCRYPTED_MEDIA_V2, EnabledAtRuntime=EncryptedMedia] readonly attribute unsigned long systemCode;
+    [Conditional=ENCRYPTED_MEDIA_V2, RuntimeEnabled=EncryptedMedia] readonly attribute unsigned long systemCode;
 };

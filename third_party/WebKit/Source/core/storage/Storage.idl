@@ -32,9 +32,9 @@ interface Storage {
     [ImplementedAs=anonymousNamedDeleter, RaisesException] deleter boolean (DOMString name);
     [NotEnumerable, GetterRaisesException] readonly attribute unsigned long length;
     [NotEnumerable, TreatReturnedNullStringAs=Null, RaisesException] DOMString key(unsigned long index);
-    [NotEnumerable, TreatReturnedNullStringAs=Null, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] DOMString getItem(DOMString key);
-    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void setItem(DOMString key, DOMString data);
-    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void removeItem(DOMString key);
-    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void clear();
+    [NotEnumerable, TreatReturnedNullStringAs=Null, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, RaisesException] DOMString getItem(DOMString key);
+    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] void setItem(DOMString key, DOMString data);
+    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] void removeItem(DOMString key);
+    [NotEnumerable, RaisesException, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] void clear();
 };
 

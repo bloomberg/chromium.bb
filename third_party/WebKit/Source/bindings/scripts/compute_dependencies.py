@@ -144,7 +144,7 @@ def get_interface_extended_attributes_from_idl(file_contents):
 def generate_constructor_attribute_list(interface_name, extended_attributes):
     extended_attributes_list = []
     for attribute_name, attribute_value in extended_attributes.iteritems():
-        if attribute_name not in ['Conditional', 'EnabledAtRuntime', 'EnabledPerContext']:
+        if attribute_name not in ['Conditional', 'RuntimeEnabled', 'PerContextEnabled']:
             continue
         extended_attribute = attribute_name
         if attribute_value != 'VALUE_IS_MISSING':
@@ -179,8 +179,8 @@ def generate_event_names_file(destination_filename, event_names, only_if_changed
     lines.append('\n')
     for filename, extended_attributes in sorted(event_names.iteritems()):
         attributes = []
-        for key in ('ImplementedAs', 'Conditional', 'EnabledAtRuntime'):
-            if key == 'EnabledAtRuntime':
+        for key in ('ImplementedAs', 'Conditional', 'RuntimeEnabled'):
+            if key == 'RuntimeEnabled':
                 suffix = 'Enabled'
             else:
                 suffix = ''

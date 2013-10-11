@@ -18,7 +18,7 @@
  */
 
 [
-    EnabledAtRuntime=Vibration
+    RuntimeEnabled=Vibration
 ] partial interface Navigator {
     boolean vibrate(sequence<unsigned long> pattern);
     boolean vibrate(unsigned long time);

@@ -29,5 +29,5 @@
  */
 
 partial interface Navigator {
-    [EnabledAtRuntime=WebMIDI] MIDIAccessPromise requestMIDIAccess(optional Dictionary options);
+    [RuntimeEnabled=WebMIDI] MIDIAccessPromise requestMIDIAccess(optional Dictionary options);
 };

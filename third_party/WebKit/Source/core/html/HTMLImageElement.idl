@@ -30,7 +30,7 @@
     [Reflect] attribute boolean isMap;
     [Reflect, TreatNullAs=NullString, URL] attribute DOMString longDesc;
     [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
-    [Reflect, TreatNullAs=NullString, EnabledAtRuntime=Srcset] attribute DOMString srcset;
+    [Reflect, TreatNullAs=NullString, RuntimeEnabled=Srcset] attribute DOMString srcset;
     [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
     [Reflect] attribute long vspace;
     attribute long width;

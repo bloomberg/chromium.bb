@@ -32,7 +32,7 @@ interface HTMLTextAreaElement : HTMLElement {
     [Reflect] attribute boolean required;
     attribute long rows;
     [Reflect, TreatNullAs=NullString] attribute DOMString wrap;
-    [EnabledAtRuntime=InputModeAttribute, Reflect, TreatNullAs=NullString] attribute DOMString inputMode;
+    [RuntimeEnabled=InputModeAttribute, Reflect, TreatNullAs=NullString] attribute DOMString inputMode;
 
     readonly attribute DOMString type;
     [TreatNullAs=NullString] attribute DOMString defaultValue;

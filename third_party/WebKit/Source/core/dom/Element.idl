@@ -108,10 +108,10 @@
     [RaisesException] boolean webkitMatchesSelector([Default=Undefined] optional DOMString selectors);
 
     // Shadow DOM API
-    [EnabledAtRuntime=ShadowDOM, Reflect, TreatNullAs=NullString, PerWorldBindings] attribute DOMString pseudo;
-    [EnabledAtRuntime=ShadowDOM, RaisesException] ShadowRoot createShadowRoot();
-    [EnabledAtRuntime=ShadowDOM, PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
-    [EnabledAtRuntime=ShadowDOM, PerWorldBindings] NodeList getDestinationInsertionPoints();
+    [RuntimeEnabled=ShadowDOM, Reflect, TreatNullAs=NullString, PerWorldBindings] attribute DOMString pseudo;
+    [RuntimeEnabled=ShadowDOM, RaisesException] ShadowRoot createShadowRoot();
+    [RuntimeEnabled=ShadowDOM, PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
+    [RuntimeEnabled=ShadowDOM, PerWorldBindings] NodeList getDestinationInsertionPoints();
 
     // To-be-deprecated prefixed Shadow DOM API
     [Reflect=pseudo, TreatNullAs=NullString, ImplementedAs=pseudo, PerWorldBindings, MeasureAs=ShadowDOMPrefixedPseudo] attribute DOMString webkitPseudo;
@@ -124,48 +124,48 @@
 
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    [EnabledAtRuntime=Fullscreen, PerWorldBindings, ActivityLog=Access] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
+    [RuntimeEnabled=Fullscreen, PerWorldBindings, ActivityLogging=Access] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
 
     // W3C version
-    [EnabledAtRuntime=Fullscreen, PerWorldBindings, ActivityLog=Access] void webkitRequestFullscreen();
+    [RuntimeEnabled=Fullscreen, PerWorldBindings, ActivityLogging=Access] void webkitRequestFullscreen();
 
     void webkitRequestPointerLock();
 
     // CSS Regions API
-    [EnabledAtRuntime=CSSRegions, PerWorldBindings] readonly attribute DOMString webkitRegionOverset;
-    [EnabledAtRuntime=CSSRegions] sequence<Range> webkitGetRegionFlowRanges();
+    [RuntimeEnabled=CSSRegions, PerWorldBindings] readonly attribute DOMString webkitRegionOverset;
+    [RuntimeEnabled=CSSRegions] sequence<Range> webkitGetRegionFlowRanges();
 
     // Event handler DOM attributes
     [NotEnumerable, PerWorldBindings] attribute EventHandler onabort;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onblur;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onchange;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onclick;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onclick;
     [NotEnumerable, PerWorldBindings] attribute EventHandler oncontextmenu;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondblclick;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondrag;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragend;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragenter;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragleave;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragover;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondragstart;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler ondrop;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondblclick;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondrag;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragend;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragenter;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragleave;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragover;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondragstart;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler ondrop;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onerror;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onfocus;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler oninput;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler oninput;
     [NotEnumerable, PerWorldBindings] attribute EventHandler oninvalid;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onkeydown;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onkeypress;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onkeyup;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onkeydown;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onkeypress;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onkeyup;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onload;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousedown;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseenter;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseleave;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousemove;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseout;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseover;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseup;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onwheel;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmousedown;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseenter;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseleave;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmousemove;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseout;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseover;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmouseup;
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
+    [NotEnumerable, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onwheel;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onscroll;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onselect;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onsubmit;
@@ -203,10 +203,10 @@
     [NotEnumerable, PerWorldBindings] attribute EventHandler onreset;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onsearch;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onselectstart;
-    [NotEnumerable, EnabledAtRuntime=Touch, PerWorldBindings] attribute EventHandler ontouchstart;
-    [NotEnumerable, EnabledAtRuntime=Touch, PerWorldBindings] attribute EventHandler ontouchmove;
-    [NotEnumerable, EnabledAtRuntime=Touch, PerWorldBindings] attribute EventHandler ontouchend;
-    [NotEnumerable, EnabledAtRuntime=Touch, PerWorldBindings] attribute EventHandler ontouchcancel;
+    [NotEnumerable, RuntimeEnabled=Touch, PerWorldBindings] attribute EventHandler ontouchstart;
+    [NotEnumerable, RuntimeEnabled=Touch, PerWorldBindings] attribute EventHandler ontouchmove;
+    [NotEnumerable, RuntimeEnabled=Touch, PerWorldBindings] attribute EventHandler ontouchend;
+    [NotEnumerable, RuntimeEnabled=Touch, PerWorldBindings] attribute EventHandler ontouchcancel;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onwebkitfullscreenchange;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onwebkitfullscreenerror;
 };

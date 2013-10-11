@@ -25,7 +25,7 @@
 
 [
     Conditional=ENCRYPTED_MEDIA_V2,
-    EnabledAtRuntime=EncryptedMedia
+    RuntimeEnabled=EncryptedMedia
 ] interface MediaKeySession : EventTarget {
     // error state
     readonly attribute MediaKeyError error;
@@ -39,7 +39,7 @@
     void close();
 
     // EventHandlers
-    [EnabledAtRuntime=EncryptedMedia] attribute EventHandler onwebkitkeyadded;
-    [EnabledAtRuntime=EncryptedMedia] attribute EventHandler onwebkitkeyerror;
-    [EnabledAtRuntime=EncryptedMedia] attribute EventHandler onwebkitkeymessage;
+    [RuntimeEnabled=EncryptedMedia] attribute EventHandler onwebkitkeyadded;
+    [RuntimeEnabled=EncryptedMedia] attribute EventHandler onwebkitkeyerror;
+    [RuntimeEnabled=EncryptedMedia] attribute EventHandler onwebkitkeymessage;
 };

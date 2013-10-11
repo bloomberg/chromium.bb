@@ -29,7 +29,7 @@
  */
 
 [
-    EnabledAtRuntime=MediaSource,
+    RuntimeEnabled=MediaSource,
     ActiveDOMObject,
     Constructor,
     ConstructorCallWith=ScriptExecutionContext

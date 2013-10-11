@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=VideoTrack,
+    RuntimeEnabled=VideoTrack,
     ConstructorTemplate=Event
 ] interface TrackEvent : Event {
     [InitializedByEventConstructor, CustomGetter] readonly attribute object track;
