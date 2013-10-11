@@ -1550,6 +1550,9 @@ class Port(object):
             VirtualTestSuite('virtual/implsidepainting/inspector/timeline',
                              'inspector/timeline',
                              ['--enable-threaded-compositing', '--enable-impl-side-painting', '--force-compositing-mode']),
+            VirtualTestSuite('virtual/fast-text-autosizing',
+                             'fast/text-autosizing',
+                             ['--enable-fast-text-autosizing']),
         ]
 
     @memoized
