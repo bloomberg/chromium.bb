@@ -430,11 +430,32 @@ camera.views.Camera.prototype.takePicture_ = function() {
     var img = document.createElement('img');
     img.src = dataURL;
     img.style.webkitTransform = 'rotate(' + (Math.random() * 40 - 20) + 'deg)';
+
+    // Create the fly-away animation after two second.
+    setTimeout(function() {
+      var sourceRect = img.getBoundingClientRect();
+      var targetRect = galleryButton.getBoundingClientRect();
+
+      var translateXValue = (targetRect.left + targetRect.right) / 2 -
+          (sourceRect.left + sourceRect.right) / 2;
+      var translateYValue = (targetRect.top + targetRect.bottom) / 2 -
+          (sourceRect.top + sourceRect.bottom) / 2;
+      var scaleValue = targetRect.width / sourceRect.width;
+
+      img.style.webkitTransform =
+          'rotate(0) translateX(' + translateXValue +'px) ' +
+          'translateY(' + translateYValue + 'px) ' +
+          'scale(' + scaleValue + ')';
+      img.style.opacity = 0;
+
+      camera.util.waitForTransitionCompletion(img, 1500, function() {
+        img.parentNode.removeChild(img);
+        this.taking_ = false;
+      }.bind(this));
+    }.bind(this), 2000);
+
+    // Add to DOM.
     picturePreview.appendChild(img);
-    camera.util.waitForAnimationCompletion(img, 2500, function() {
-      img.parentNode.removeChild(img);
-     this.taking_ = false;
-    }.bind(this));
 
     // Call the callback with the picture.
     this.context.onPictureTaken(dataURL);
