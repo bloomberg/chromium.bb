@@ -164,11 +164,12 @@ void ProfileHelper::OnBrowsingDataRemoverDone() {
 void ProfileHelper::OnSessionRestoreStateChanged(
     Profile* user_profile,
     OAuth2LoginManager::SessionRestoreState state) {
-  if (state ==  OAuth2LoginManager::SESSION_RESTORE_DONE ||
-      state ==  OAuth2LoginManager::SESSION_RESTORE_FAILED) {
+  if (state == OAuth2LoginManager::SESSION_RESTORE_DONE ||
+      state == OAuth2LoginManager::SESSION_RESTORE_FAILED ||
+      state == OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED) {
     chromeos::OAuth2LoginManager* login_manager =
-        chromeos::OAuth2LoginManagerFactory::GetInstance()->GetForProfile(
-            user_profile);
+        chromeos::OAuth2LoginManagerFactory::GetInstance()->
+            GetForProfile(user_profile);
     login_manager->RemoveObserver(this);
     ClearSigninProfile(base::Closure());
   }

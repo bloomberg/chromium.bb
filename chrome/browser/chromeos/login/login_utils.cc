@@ -730,6 +730,8 @@ void LoginUtilsImpl::OnSessionRestoreStateChanged(
   User::OAuthTokenStatus user_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
   OAuth2LoginManager* login_manager =
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
+
+  bool connection_error = false;
   switch (state) {
     case OAuth2LoginManager::SESSION_RESTORE_DONE:
       user_status = User::OAUTH2_TOKEN_STATUS_VALID;
@@ -737,18 +739,23 @@ void LoginUtilsImpl::OnSessionRestoreStateChanged(
     case OAuth2LoginManager::SESSION_RESTORE_FAILED:
       user_status = User::OAUTH2_TOKEN_STATUS_INVALID;
       break;
+    case OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED:
+      connection_error = true;
+      break;
     case OAuth2LoginManager::SESSION_RESTORE_NOT_STARTED:
-      return;
     case OAuth2LoginManager::SESSION_RESTORE_PREPARING:
-      return;
     case OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS:
       return;
   }
 
-  // We are in one of "done" states here.
-  UserManager::Get()->SaveUserOAuthStatus(
-      UserManager::Get()->GetLoggedInUser()->email(),
-      user_status);
+  // We should not be clearing existing token state if that was a connection
+  // error. http://crbug.com/295245
+  if (!connection_error) {
+    // We are in one of "done" states here.
+    UserManager::Get()->SaveUserOAuthStatus(
+        UserManager::Get()->GetLoggedInUser()->email(),
+        user_status);
+  }
   login_manager->RemoveObserver(this);
 }
 

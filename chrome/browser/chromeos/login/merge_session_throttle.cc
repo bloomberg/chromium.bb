@@ -221,7 +221,8 @@ bool MergeSessionThrottle::ShouldShowInterstitialPage(
       return true;
     }
     case chromeos::OAuth2LoginManager::SESSION_RESTORE_DONE:
-    case chromeos::OAuth2LoginManager::SESSION_RESTORE_FAILED: {
+    case chromeos::OAuth2LoginManager::SESSION_RESTORE_FAILED:
+    case chromeos::OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED: {
       UnblockProfile(profile);
       return false;
     }

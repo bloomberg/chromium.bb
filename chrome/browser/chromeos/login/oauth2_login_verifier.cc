@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chromeos/network/network_handler.h"
@@ -29,6 +30,12 @@ namespace {
 const int kMaxRequestAttemptCount = 5;
 // OAuth token request retry delay in milliseconds.
 const int kRequestRestartDelay = 3000;
+
+bool IsConnectionOrServiceError(const GoogleServiceAuthError& error) {
+  return error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
+         error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
+         error.state() == GoogleServiceAuthError::REQUEST_CANCELED;
+}
 
 }  // namespace
 
@@ -55,8 +62,12 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
   // portal.
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
+  NetworkPortalDetector::CaptivePortalState state =
+      detector->GetCaptivePortalState(default_network);
   if (!default_network ||
-      default_network->connection_state() == shill::kStatePortal) {
+      default_network->connection_state() == shill::kStatePortal ||
+      state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 access token fetch.";
     BrowserThread::PostDelayedTask(
@@ -202,16 +213,14 @@ void OAuth2LoginVerifier::OnGetTokenFailure(
       base::StringPrintf("OAuth2Login.%sFailure", "GetOAuth2AccessToken"),
       error.state(),
       GoogleServiceAuthError::NUM_STATES);
-  delegate_->OnOAuthLoginFailure();
+  delegate_->OnOAuthLoginFailure(IsConnectionOrServiceError(error));
 }
 
 void OAuth2LoginVerifier::RetryOnError(const char* operation_id,
                                        const GoogleServiceAuthError& error,
                                        const base::Closure& task_to_retry,
-                                       const base::Closure& error_handler) {
-  if ((error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
-       error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
-       error.state() == GoogleServiceAuthError::REQUEST_CANCELED) &&
+                                       const ErrorHandler& error_handler) {
+  if (IsConnectionOrServiceError(error) &&
       retry_count_ < kMaxRequestAttemptCount) {
     retry_count_++;
     UMA_HISTOGRAM_ENUMERATION(
@@ -230,7 +239,8 @@ void OAuth2LoginVerifier::RetryOnError(const char* operation_id,
       base::StringPrintf("OAuth2Login.%sFailure", operation_id),
       error.state(),
       GoogleServiceAuthError::NUM_STATES);
-  error_handler.Run();
+
+  error_handler.Run(IsConnectionOrServiceError(error));
 }
 
 }  // namespace chromeos

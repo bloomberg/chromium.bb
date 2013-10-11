@@ -177,12 +177,15 @@ void OAuth2LoginManager::OnOAuthLoginSuccess(
   StartTokenService(gaia_credentials);
 }
 
-void OAuth2LoginManager::OnOAuthLoginFailure() {
-  LOG(ERROR) << "OAuth2 refresh token verification failed!";
+void OAuth2LoginManager::OnOAuthLoginFailure(bool connection_error) {
+  LOG(ERROR) << "OAuth2 refresh token verification failed!"
+             << " connection_error: " << connection_error;
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
                             SESSION_RESTORE_OAUTHLOGIN_FAILED,
                             SESSION_RESTORE_COUNT);
-  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
+  SetSessionRestoreState(connection_error ?
+      OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED :
+      OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::OnSessionMergeSuccess() {
@@ -193,12 +196,15 @@ void OAuth2LoginManager::OnSessionMergeSuccess() {
   SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_DONE);
 }
 
-void OAuth2LoginManager::OnSessionMergeFailure() {
-  LOG(ERROR) << "OAuth2 refresh and GAIA token verification failed!";
+void OAuth2LoginManager::OnSessionMergeFailure(bool connection_error) {
+  LOG(ERROR) << "OAuth2 refresh and GAIA token verification failed!"
+             << " connection_error: " << connection_error;
   UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
                             SESSION_RESTORE_MERGE_SESSION_FAILED,
                             SESSION_RESTORE_COUNT);
-  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
+  SetSessionRestoreState(connection_error ?
+      OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED :
+      OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::StartTokenService(

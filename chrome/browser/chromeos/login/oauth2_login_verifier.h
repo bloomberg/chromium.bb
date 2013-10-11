@@ -28,6 +28,8 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
                             public GaiaAuthConsumer,
                             public OAuth2TokenService::Consumer {
  public:
+  typedef base::Callback<void(bool connection_error)> ErrorHandler;
+
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -35,11 +37,11 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
     virtual void OnOAuthLoginSuccess(
         const ClientLoginResult& gaia_credentials) = 0;
     // Invoked when provided OAuth2 refresh token is invalid.
-    virtual void OnOAuthLoginFailure() = 0;
+    virtual void OnOAuthLoginFailure(bool connection_error) = 0;
     // Invoked when cookie session is successfully merged.
     virtual void OnSessionMergeSuccess() = 0;
     // Invoked when cookie session can not be merged.
-    virtual void OnSessionMergeFailure() = 0;
+    virtual void OnSessionMergeFailure(bool connection_error) = 0;
   };
 
   OAuth2LoginVerifier(OAuth2LoginVerifier::Delegate* delegate,
@@ -92,7 +94,7 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   void RetryOnError(const char* operation_id,
                     const GoogleServiceAuthError& error,
                     const base::Closure& task_to_retry,
-                    const base::Closure& error_handler);
+                    const ErrorHandler& error_handler);
 
   OAuth2LoginVerifier::Delegate* delegate_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;

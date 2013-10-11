@@ -42,6 +42,8 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
     SESSION_RESTORE_DONE,
     // Session restore failed.
     SESSION_RESTORE_FAILED,
+    // Session restore failed due to connection or service errors.
+    SESSION_RESTORE_CONNECTION_FAILED,
   };
 
   // Session restore strategy.
@@ -126,9 +128,9 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   // OAuth2LoginVerifier::Delegate overrides.
   virtual void OnOAuthLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& gaia_credentials) OVERRIDE;
-  virtual void OnOAuthLoginFailure() OVERRIDE;
+  virtual void OnOAuthLoginFailure(bool connection_error) OVERRIDE;
   virtual void OnSessionMergeSuccess() OVERRIDE;
-  virtual void OnSessionMergeFailure() OVERRIDE;
+  virtual void OnSessionMergeFailure(bool connection_error) OVERRIDE;
 
   // OAuth2TokenFetcher::Delegate overrides.
   virtual void OnOAuth2TokensAvailable(
