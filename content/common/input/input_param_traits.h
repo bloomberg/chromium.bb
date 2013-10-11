@@ -11,12 +11,21 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/input/scoped_web_input_event.h"
+#include "content/common/input/synthetic_gesture_packet.h"
 
 namespace IPC {
 
 template <>
 struct CONTENT_EXPORT ParamTraits<content::ScopedWebInputEvent> {
   typedef content::ScopedWebInputEvent param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct CONTENT_EXPORT ParamTraits<content::SyntheticGesturePacket> {
+  typedef content::SyntheticGesturePacket param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
