@@ -1157,5 +1157,7 @@ crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidt
 
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 
+crbug.com/306645 plugins/destroy-plugin-from-callback.html [ Pass Crash ]
+
 crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
 crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
