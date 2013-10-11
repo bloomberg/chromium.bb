@@ -38,7 +38,7 @@
 	The sync request asks the server to emit the 'done' event
 	on the returned wl_callback object.  Since requests are
 	handled in-order and events are delivered in-order, this can
-	used as a barrier to ensure all previous requests and the
+	be used as a barrier to ensure all previous requests and the
 	resulting events have been handled.
 
 	The object returned by this request will be destroyed by the
