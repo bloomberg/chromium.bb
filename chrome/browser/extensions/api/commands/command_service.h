@@ -45,6 +45,15 @@ class CommandService : public ProfileKeyedAPI,
     ACTIVE_ONLY,
   };
 
+  // An enum specifying whether the command is global in scope or not. Global
+  // commands -- unlike regular commands -- have a global keyboard hook
+  // associated with them (and therefore work when Chrome doesn't have focus).
+  enum CommandScope {
+    REGULAR,    // Regular (non-globally scoped) command.
+    GLOBAL,     // Global command (works when Chrome doesn't have focus)
+    ANY_SCOPE,  // All commands, regardless of scope (used when querying).
+  };
+
   // Register prefs for keybinding.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -94,10 +103,11 @@ class CommandService : public ProfileKeyedAPI,
   // Gets the active command (if any) for the named commands of an extension
   // given its |extension_id|. The function consults the master list to see if
   // the command is active. Returns an empty map if the extension has no
-  // named commands or no active named commands when |type| requested is
-  // ACTIVE_ONLY.
+  // named commands of the right |scope| or no such active named commands when
+  // |type| requested is ACTIVE_ONLY.
   bool GetNamedCommands(const std::string& extension_id,
                         QueryType type,
+                        CommandScope scope,
                         extensions::CommandMap* command_map);
 
   // Records a keybinding |accelerator| as active for an extension with id
@@ -174,6 +184,9 @@ class CommandService : public ProfileKeyedAPI,
 
   DISALLOW_COPY_AND_ASSIGN(CommandService);
 };
+
+template <>
+void ProfileKeyedAPIFactory<CommandService>::DeclareFactoryDependencies();
 
 }  //  namespace extensions
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_H_
 
+#include <map>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -14,6 +15,10 @@
 #include "content/public/browser/notification_source.h"
 
 class Profile;
+
+namespace ui {
+class Accelerator;
+}
 
 namespace extensions {
 
@@ -63,8 +68,13 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
       const std::string& command_name) = 0;
   // Remove extension bindings for |extension|. |command_name| is optional,
   // but if not blank then only the command specified will be removed.
-  virtual void RemoveExtensionKeybinding(
+  void RemoveExtensionKeybinding(
       const Extension* extension,
+      const std::string& command_name);
+  // Overridden by platform specific implementations to provide additional
+  // unregistration (which varies between platforms).
+  virtual void RemoveExtensionKeybindingImpl(
+      const ui::Accelerator& accelerator,
       const std::string& command_name) = 0;
 
   // Make sure all extensions registered have keybindings added.
@@ -77,6 +87,15 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   // Notifies appropriate parties that a command has been executed.
   void CommandExecuted(const std::string& extension_id,
                        const std::string& command);
+
+  // Maps an accelerator to a string pair (extension id, command name) for
+  // commands that have been registered. This keeps track of the targets for the
+  // keybinding event (which named command to call in which extension). On GTK,
+  // this map contains registration for pageAction and browserAction commands,
+  // whereas on other platforms it does not.
+  typedef std::map< ui::Accelerator,
+                    std::pair<std::string, std::string> > EventTargets;
+  EventTargets event_targets_;
 
  private:
   // Returns true if the |extension| matches our extension filter.

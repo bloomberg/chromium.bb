@@ -55,6 +55,7 @@ bool GetAllCommandsFunction::RunImpl() {
   extensions::CommandMap named_commands;
   command_service->GetNamedCommands(extension_->id(),
                                     extensions::CommandService::ALL,
+                                    extensions::CommandService::ANY_SCOPE,
                                     &named_commands);
 
   for (extensions::CommandMap::const_iterator iter = named_commands.begin();

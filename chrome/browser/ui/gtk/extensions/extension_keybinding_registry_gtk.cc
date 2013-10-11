@@ -64,6 +64,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   command_service->GetNamedCommands(
           extension->id(),
           extensions::CommandService::ACTIVE_ONLY,
+          extensions::CommandService::REGULAR,
           &commands);
 
   for (extensions::CommandMap::const_iterator iter = commands.begin();
@@ -127,28 +128,16 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   }
 }
 
-void ExtensionKeybindingRegistryGtk::RemoveExtensionKeybinding(
-    const extensions::Extension* extension,
+void ExtensionKeybindingRegistryGtk::RemoveExtensionKeybindingImpl(
+    const ui::Accelerator& accelerator,
     const std::string& command_name) {
-  EventTargets::iterator iter = event_targets_.begin();
-  while (iter != event_targets_.end()) {
-    if (iter->second.first != extension->id() ||
-        (!command_name.empty() && iter->second.second != command_name)) {
-      ++iter;
-      continue;  // Not the extension or command we asked for.
-    }
-
-    // On GTK, unlike Windows, the Event Targets contain all events but we must
-    // only unregister the ones we registered targets for.
-    if (!ShouldIgnoreCommand(iter->second.second)) {
-      gtk_accel_group_disconnect_key(
-          accel_group_,
-          ui::GetGdkKeyCodeForAccelerator(iter->first),
-          ui::GetGdkModifierForAccelerator(iter->first));
-    }
-
-    EventTargets::iterator old = iter++;
-    event_targets_.erase(old);
+  // On GTK, unlike Windows, the Event Targets contain all events but we must
+  // only unregister the ones we registered targets for.
+  if (!ShouldIgnoreCommand(command_name)) {
+    gtk_accel_group_disconnect_key(
+        accel_group_,
+        ui::GetGdkKeyCodeForAccelerator(accelerator),
+        ui::GetGdkModifierForAccelerator(accelerator));
   }
 }
 

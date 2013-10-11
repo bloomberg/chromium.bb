@@ -140,7 +140,8 @@ void CommandsHandler::MaybeSetBrowserActionDefault(const Extension* extension,
     info->browser_action_command.reset(
         new Command(manifest_values::kBrowserActionCommandEvent,
                     string16(),
-                    std::string()));
+                    std::string(),
+                    false));
   }
 }
 

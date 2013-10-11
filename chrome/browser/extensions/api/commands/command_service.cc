@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/commands.h"
+#include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -55,6 +56,17 @@ bool InitialBindingsHaveBeenAssigned(
     return false;
 
   return assigned;
+}
+
+bool IsWhitelistedGlobalShortcut(const extensions::Command& command) {
+  if (!command.global())
+    return true;
+  if (!command.accelerator().IsCtrlDown())
+    return false;
+  if (!command.accelerator().IsShiftDown())
+    return false;
+  return (command.accelerator().key_code() >= ui::VKEY_0 &&
+          command.accelerator().key_code() <= ui::VKEY_9);
 }
 
 }  // namespace
@@ -125,9 +137,13 @@ bool CommandService::GetScriptBadgeCommand(
 
 bool CommandService::GetNamedCommands(const std::string& extension_id,
                                       QueryType type,
+                                      CommandScope scope,
                                       extensions::CommandMap* command_map) {
-  const ExtensionSet* extensions =
-      ExtensionSystem::Get(profile_)->extension_service()->extensions();
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  if (!extension_service)
+    return false;  // Can occur during testing.
+  const ExtensionSet* extensions = extension_service->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
   CHECK(extension);
 
@@ -146,6 +162,9 @@ bool CommandService::GetNamedCommands(const std::string& extension_id,
       continue;
 
     extensions::Command command = iter->second;
+    if (scope != ANY_SCOPE && ((scope == GLOBAL) != command.global()))
+      continue;
+
     if (shortcut_assigned.key_code() != ui::VKEY_UNKNOWN)
       command.set_accelerator(shortcut_assigned);
 
@@ -265,7 +284,8 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
   extensions::CommandMap::const_iterator iter = commands->begin();
   for (; iter != commands->end(); ++iter) {
     if (!chrome::IsChromeAccelerator(
-        iter->second.accelerator(), profile_)) {
+            iter->second.accelerator(), profile_) &&
+        IsWhitelistedGlobalShortcut(iter->second)) {
       AddKeybindingPref(iter->second.accelerator(),
                         extension->id(),
                         iter->second.command_name(),
@@ -402,6 +422,11 @@ bool CommandService::GetExtensionActionCommand(
     command->set_accelerator(shortcut_assigned);
 
   return true;
+}
+
+template <>
+void ProfileKeyedAPIFactory<CommandService>::DeclareFactoryDependencies() {
+  DependsOn(ExtensionCommandsGlobalRegistry::GetFactoryInstance());
 }
 
 }  // namespace extensions

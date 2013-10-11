@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_COCOA_H_
 
-#include <map>
 #include <string>
 #include <utility>
 
@@ -56,8 +55,8 @@ class ExtensionKeybindingRegistryCocoa
   virtual void AddExtensionKeybinding(
       const extensions::Extension* extension,
       const std::string& command_name) OVERRIDE;
-  virtual void RemoveExtensionKeybinding(
-      const extensions::Extension* extension,
+  virtual void RemoveExtensionKeybindingImpl(
+      const ui::Accelerator& accelerator,
       const std::string& command_name) OVERRIDE;
 
  private:
@@ -73,14 +72,6 @@ class ExtensionKeybindingRegistryCocoa
 
   // The window we are associated with.
   gfx::NativeWindow window_;
-
-  // Maps an accelerator to a string pair (extension id, command name) for
-  // commands that have been registered. Unlike its Views counterpart, this map
-  // contains browserAction and pageAction commands (but does not route those
-  // events), so that we can query priority handlers in HasPriorityHandler(...).
-  typedef std::map< ui::Accelerator,
-                    std::pair<std::string, std::string> > EventTargets;
-  EventTargets event_targets_;
 
   // The content notification registrar for listening to extension events.
   content::NotificationRegistrar registrar_;

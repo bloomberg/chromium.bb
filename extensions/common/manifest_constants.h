@@ -47,6 +47,7 @@ extern const char kFileHandlerTitle[];
 extern const char kFileHandlerTypes[];
 extern const char kFileFilters[];
 extern const char kFileBrowserHandlers[];
+extern const char kGlobal[];
 extern const char kMediaGalleriesHandlers[];
 extern const char kHomepageURL[];
 extern const char kIcons[];

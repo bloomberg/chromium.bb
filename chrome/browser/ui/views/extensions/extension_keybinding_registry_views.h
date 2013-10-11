@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_VIEWS_H_
 
-#include <map>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -47,8 +46,8 @@ class ExtensionKeybindingRegistryViews
   virtual void AddExtensionKeybinding(
       const extensions::Extension* extension,
       const std::string& command_name) OVERRIDE;
-  virtual void RemoveExtensionKeybinding(
-      const extensions::Extension* extension,
+  virtual void RemoveExtensionKeybindingImpl(
+      const ui::Accelerator& accelerator,
       const std::string& command_name) OVERRIDE;
 
   // Weak pointer to the our profile. Not owned by us.
@@ -57,13 +56,6 @@ class ExtensionKeybindingRegistryViews
   // Weak pointer back to the focus manager to use to register and unregister
   // accelerators with. Not owned by us.
   views::FocusManager* focus_manager_;
-
-  // Maps an accelerator to a string pair (extension id, command name) for
-  // commands that have been registered. Unlike its GTK counterpart, this map
-  // contains no registration for pageAction and browserAction commands.
-  typedef std::map< ui::Accelerator,
-                    std::pair<std::string, std::string> > EventTargets;
-  EventTargets event_targets_;
 
   // The content notification registrar for listening to extension events.
   content::NotificationRegistrar registrar_;

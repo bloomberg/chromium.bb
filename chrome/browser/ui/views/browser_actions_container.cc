@@ -84,7 +84,7 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       browser->profile(),
       owner_view->GetFocusManager(),
       extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
-      this)),
+      this));
 
   resize_animation_.reset(new gfx::SlideAnimation(this));
   resize_area_ = new views::ResizeArea(this);

@@ -250,13 +250,15 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
 
 }  // namespace
 
-Command::Command() {}
+Command::Command() : global_(false) {}
 
 Command::Command(const std::string& command_name,
                  const string16& description,
-                 const std::string& accelerator)
+                 const std::string& accelerator,
+                 bool global)
     : command_name_(command_name),
-      description_(description) {
+      description_(description),
+      global_(global) {
   string16 error;
   accelerator_ = ParseImpl(accelerator, CommandPlatform(), 0,
                            IsNamedCommand(command_name), &error);
@@ -432,6 +434,10 @@ bool Command::Parse(const base::DictionaryValue* command,
     }
   }
 
+  // Check if this is a global or a regular shortcut.
+  bool global = false;
+  command->GetBoolean(keys::kGlobal, &global);
+
   // Normalize the suggestions.
   for (SuggestionMap::iterator iter = suggestions.begin();
        iter != suggestions.end(); ++iter) {
@@ -494,6 +500,7 @@ bool Command::Parse(const base::DictionaryValue* command,
       accelerator_ = accelerator;
       command_name_ = command_name;
       description_ = description;
+      global_ = global;
     }
   }
   return true;

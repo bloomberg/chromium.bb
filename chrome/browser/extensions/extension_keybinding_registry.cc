@@ -34,6 +34,30 @@ ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
 ExtensionKeybindingRegistry::~ExtensionKeybindingRegistry() {
 }
 
+void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
+    const Extension* extension,
+    const std::string& command_name) {
+  EventTargets::iterator iter = event_targets_.begin();
+  while (iter != event_targets_.end()) {
+    if (iter->second.first != extension->id() ||
+        (!command_name.empty() && (iter->second.second != command_name))) {
+      ++iter;
+      continue;  // Not the extension or command we asked for.
+    }
+
+    // Let each platform-specific implementation get a chance to clean up.
+    RemoveExtensionKeybindingImpl(iter->first, command_name);
+
+    EventTargets::iterator old = iter++;
+    event_targets_.erase(old);
+
+    // If a specific command_name was requested, it has now been deleted so
+    // no further work is required.
+    if (!command_name.empty())
+      break;
+  }
+}
+
 void ExtensionKeybindingRegistry::Init() {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -64,9 +88,11 @@ void ExtensionKeybindingRegistry::CommandExecuted(
     return;
 
   // Grant before sending the event so that the permission is granted before
-  // the extension acts on the command.
+  // the extension acts on the command. NOTE: The Global Commands handler does
+  // not set the delegate as it deals only with named commands (not page/browser
+  // actions that are associated with the current page directly).
   ActiveTabPermissionGranter* granter =
-      delegate_->GetActiveTabPermissionGranter();
+      delegate_ ? delegate_->GetActiveTabPermissionGranter() : NULL;
   if (granter)
     granter->GrantIfRequested(extension);
 

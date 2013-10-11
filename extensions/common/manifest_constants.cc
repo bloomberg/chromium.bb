@@ -45,6 +45,7 @@ const char kFileHandlers[] = "file_handlers";
 const char kFileHandlerExtensions[] = "extensions";
 const char kFileHandlerTitle[] = "title";
 const char kFileHandlerTypes[] = "types";
+const char kGlobal[] = "global";
 const char kHomepageURL[] = "homepage_url";
 const char kIcons[] = "icons";
 const char kId[] = "id";

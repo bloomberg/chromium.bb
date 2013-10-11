@@ -19,7 +19,7 @@ namespace gfx {
 
 // Singleton message-only HWND that allows interested clients to receive WM_*
 // notifications.
-class SingletonHwnd : public WindowImpl {
+class GFX_EXPORT SingletonHwnd : public WindowImpl {
  public:
   static SingletonHwnd* GetInstance();
 

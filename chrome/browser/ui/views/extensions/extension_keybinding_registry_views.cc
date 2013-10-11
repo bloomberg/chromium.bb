@@ -47,7 +47,10 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
   // which are handled elsewhere).
   extensions::CommandMap commands;
   if (!command_service->GetNamedCommands(
-          extension->id(), extensions::CommandService::ACTIVE_ONLY, &commands))
+          extension->id(),
+          extensions::CommandService::ACTIVE_ONLY,
+          extensions::CommandService::REGULAR,
+          &commands))
     return;
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
@@ -62,26 +65,10 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
   }
 }
 
-void ExtensionKeybindingRegistryViews::RemoveExtensionKeybinding(
-    const extensions::Extension* extension,
+void ExtensionKeybindingRegistryViews::RemoveExtensionKeybindingImpl(
+    const ui::Accelerator& accelerator,
     const std::string& command_name) {
-  // This object only handles named commands, not browser/page actions.
-  if (ShouldIgnoreCommand(command_name))
-    return;
-
-  EventTargets::iterator iter = event_targets_.begin();
-  while (iter != event_targets_.end()) {
-    if (iter->second.first != extension->id() ||
-        (!command_name.empty() && (iter->second.second != command_name))) {
-      ++iter;
-      continue;  // Not the extension or command we asked for.
-    }
-
-    focus_manager_->UnregisterAccelerator(iter->first, this);
-
-    EventTargets::iterator old = iter++;
-    event_targets_.erase(old);
-  }
+  focus_manager_->UnregisterAccelerator(accelerator, this);
 }
 
 bool ExtensionKeybindingRegistryViews::AcceleratorPressed(

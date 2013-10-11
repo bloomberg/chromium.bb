@@ -149,6 +149,7 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
     extensions::CommandMap named_commands;
     if (command_service->GetNamedCommands((*extension)->id(),
                                           CommandService::ALL,
+                                          extensions::CommandService::ANY_SCOPE,
                                           &named_commands)) {
       for (extensions::CommandMap::const_iterator iter = named_commands.begin();
            iter != named_commands.end(); ++iter) {

@@ -84,6 +84,7 @@ void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
   command_service->GetNamedCommands(
           extension->id(),
           extensions::CommandService::ACTIVE_ONLY,
+          extensions::CommandService::REGULAR,
           &commands);
 
   for (extensions::CommandMap::const_iterator iter = commands.begin();
@@ -135,14 +136,7 @@ void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
   }
 }
 
-void ExtensionKeybindingRegistryCocoa::RemoveExtensionKeybinding(
-    const extensions::Extension* extension,
+void ExtensionKeybindingRegistryCocoa::RemoveExtensionKeybindingImpl(
+    const ui::Accelerator& accelerator,
     const std::string& command_name) {
-  EventTargets::iterator iter = event_targets_.begin();
-  while (iter != event_targets_.end()) {
-    EventTargets::iterator old = iter++;
-    if (old->second.first == extension->id() &&
-        (command_name.empty() || (old->second.second == command_name)))
-      event_targets_.erase(old);
-  }
 }
