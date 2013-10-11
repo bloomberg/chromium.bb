@@ -99,7 +99,7 @@ cr.define('print_preview', function() {
      */
     dispatchSearchEvent_: function() {
       this.timeout_ = null;
-      var searchEvent = new Event(SearchBox.EventType.SEARCH);
+      var searchEvent = new cr.Event(SearchBox.EventType.SEARCH);
       searchEvent.query = this.getQuery_();
       this.dispatchEvent(searchEvent);
     },

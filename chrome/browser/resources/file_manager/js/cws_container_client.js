@@ -138,7 +138,7 @@ CWSContainerClient.prototype.sendWidgetLoadFailed_ = function() {
  * @private
  */
 CWSContainerClient.prototype.sendInstallRequest_ = function(itemId) {
-  var event = new Event(CWSContainerClient.Events.REQUEST_INSTALL);
+  var event = new cr.Event(CWSContainerClient.Events.REQUEST_INSTALL);
   event.itemId = itemId;
   this.dispatchEvent(event);
 };

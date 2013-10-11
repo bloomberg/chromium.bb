@@ -711,7 +711,7 @@ Gallery.prototype.onFilenameEditBlur_ = function(event) {
   }.bind(this);
 
   var onSuccess = function() {
-    var e = new Event('content');
+    var e = new cr.Event('content');
     e.item = item;
     e.oldUrl = oldUrl;
     e.metadata = null;  // Metadata unchanged.

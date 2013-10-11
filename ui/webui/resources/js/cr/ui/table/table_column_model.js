@@ -7,6 +7,7 @@
  */
 cr.define('cr.ui.table', function() {
   /** @const */ var EventTarget = cr.EventTarget;
+  /** @const */ var Event = cr.Event;
 
   /**
    * A table column model that wraps table columns array

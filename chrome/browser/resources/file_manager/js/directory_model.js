@@ -867,7 +867,7 @@ DirectoryModel.prototype.changeDirectoryEntry_ = function(
     this.clearSearch_();
     this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
 
-    var e = new Event('directory-changed');
+    var e = new cr.Event('directory-changed');
     e.previousDirEntry = previous;
     e.newDirEntry = dirEntry;
     this.dispatchEvent(e);
@@ -1039,7 +1039,7 @@ DirectoryModel.prototype.selectIndex = function(index) {
 /**
  * Called when VolumeInfoList is updated.
  *
- * @param {Event} event Event of VolumeInfoList's 'splice'.
+ * @param {cr.Event} event Event of VolumeInfoList's 'splice'.
  * @private
  */
 DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
@@ -1224,7 +1224,7 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
     var previous = this.currentDirContents_.getDirectoryEntry();
     this.clearAndScan_(newDirContents);
 
-    var e = new Event('directory-changed');
+    var e = new cr.Event('directory-changed');
     e.previousDirEntry = previous;
     e.newDirEntry = dirEntry;
     this.dispatchEvent(e);

@@ -49,7 +49,7 @@ FileWatcher.prototype.dispose = function() {
 FileWatcher.prototype.onDirectoryChanged_ = function(event) {
   if (this.watchedDirectoryEntry_ &&
       event.directoryUrl == this.watchedDirectoryEntry_.toURL()) {
-    var e = new Event('watcher-directory-changed');
+    var e = new cr.Event('watcher-directory-changed');
     this.dispatchEvent(e);
   }
 };
@@ -105,7 +105,7 @@ FileWatcher.prototype.onDriveMetadataChanged_ = function(
  */
 FileWatcher.prototype.dispatchMetadataEvent_ = function(
     type, urls, properties) {
-  var e = new Event('watcher-metadata-changed');
+  var e = new cr.Event('watcher-metadata-changed');
   e.metadataType = type;
   e.urls = urls;
   e.properties = properties;

@@ -188,7 +188,7 @@ FileSelectionHandler.IMAGE_HOVER_PREVIEW_SIZE = 200;
 /**
  * Update the UI when the selection model changes.
  *
- * @param {Event} event The change event.
+ * @param {cr.Event} event The change event.
  */
 FileSelectionHandler.prototype.onFileSelectionChanged = function(event) {
   var indexes =

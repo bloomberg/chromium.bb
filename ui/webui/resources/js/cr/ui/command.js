@@ -95,7 +95,7 @@ cr.define('cr.ui', function() {
         return;
       var doc = this.ownerDocument;
       if (doc.activeElement) {
-        var e = new Event('command', {bubbles: true});
+        var e = new cr.Event('command', true, false);
         e.command = this;
 
         (opt_element || doc.activeElement).dispatchEvent(e);
@@ -283,7 +283,8 @@ cr.define('cr.ui', function() {
    * @class
    */
   function CanExecuteEvent(command) {
-    var e = new Event('canExecute', {bubbles: true});
+    var e = command.ownerDocument.createEvent('Event');
+    e.initEvent('canExecute', true, false);
     e.__proto__ = CanExecuteEvent.prototype;
     e.command = command;
     return e;

@@ -268,7 +268,7 @@ BreadcrumbsController.prototype.onClick_ = function(event) {
   if (!path)
     return;
 
-  var newEvent = new Event('pathclick');
+  var newEvent = new cr.Event('pathclick');
   newEvent.path = path;
   this.dispatchEvent(newEvent);
 };

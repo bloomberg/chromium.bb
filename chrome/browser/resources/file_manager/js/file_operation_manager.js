@@ -291,7 +291,7 @@ FileOperationManager.getInstance = function() {
 };
 
 /**
- * Manages Event dispatching.
+ * Manages cr.Event dispatching.
  * Currently this can send three types of events: "copy-progress",
  * "copy-operation-completed" and "delete".
  *
@@ -320,7 +320,7 @@ FileOperationManager.EventRouter.prototype.__proto__ = cr.EventTarget.prototype;
  */
 FileOperationManager.EventRouter.prototype.sendProgressEvent = function(
     reason, status, opt_error) {
-  var event = new Event('copy-progress');
+  var event = new cr.Event('copy-progress');
   event.reason = reason;
   event.status = status;
   if (opt_error)
@@ -336,7 +336,7 @@ FileOperationManager.EventRouter.prototype.sendProgressEvent = function(
  */
 FileOperationManager.EventRouter.prototype.sendEntryChangedEvent = function(
     kind, entry) {
-  var event = new Event('entry-changed');
+  var event = new cr.Event('entry-changed');
   event.kind = kind;
   event.entry = entry;
   this.dispatchEvent(event);
@@ -352,7 +352,7 @@ FileOperationManager.EventRouter.prototype.sendEntryChangedEvent = function(
  */
 FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
     reason, urls) {
-  var event = new Event('delete');
+  var event = new cr.Event('delete');
   event.reason = reason;
   event.urls = urls;
   this.dispatchEvent(event);
@@ -999,7 +999,7 @@ FileOperationManager.prototype.getStatus = function() {
 /**
  * Adds an event listener for the tasks.
  * @param {string} type The name of the event.
- * @param {function(Event)} handler The handler for the event.
+ * @param {function(cr.Event)} handler The handler for the event.
  *     This is called when the event is dispatched.
  */
 FileOperationManager.prototype.addEventListener = function(type, handler) {
@@ -1009,7 +1009,7 @@ FileOperationManager.prototype.addEventListener = function(type, handler) {
 /**
  * Removes an event listener for the tasks.
  * @param {string} type The name of the event.
- * @param {function(Event)} handler The handler to be removed.
+ * @param {function(cr.Event)} handler The handler to be removed.
  */
 FileOperationManager.prototype.removeEventListener = function(type, handler) {
   this.eventRouter_.removeEventListener(type, handler);

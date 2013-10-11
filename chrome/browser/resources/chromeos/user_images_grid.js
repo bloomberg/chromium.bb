@@ -189,7 +189,7 @@ cr.define('options', function() {
 
       this.updatePreview_();
 
-      var e = new Event('select');
+      var e = new cr.Event('select', false, false);
       e.oldSelectionType = oldSelectionType;
       this.dispatchEvent(e);
     },
@@ -503,7 +503,7 @@ cr.define('options', function() {
       this.previewElement.classList.toggle('flip-x');
       if (!this.cameraLive) {
         // Flip current still photo.
-        var e = new Event('photoupdated');
+        var e = new cr.Event('photoupdated');
         e.dataURL = this.flipPhoto ?
             this.flipFrame_(this.previewImage_) : this.previewImage_.src;
         this.dispatchEvent(e);
@@ -531,7 +531,7 @@ cr.define('options', function() {
         this.cameraImage = previewImg.src;
       }.bind(this));
       previewImg.src = canvas.toDataURL('image/png');
-      var e = new Event('phototaken');
+      var e = new cr.Event('phototaken');
       e.dataURL = this.flipPhoto ? this.flipFrame_(canvas) : previewImg.src;
       this.dispatchEvent(e);
       return true;

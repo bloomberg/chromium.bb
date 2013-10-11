@@ -166,7 +166,7 @@ cr.define('options.contentSettings', function() {
         indicator.setAttribute('content-exception', this.contentType);
         // Create a synthetic pref change event decorated as
         // CoreOptionsHandler::CreateValueForPref() does.
-        var event = new Event(this.contentType);
+        var event = new cr.Event(this.contentType);
         event.value = { controlledBy: controlledBy };
         indicator.handlePrefChange(event);
         this.appendChild(indicator);

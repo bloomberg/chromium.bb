@@ -485,7 +485,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when the local destinations have been got from the native layer.
-     * @param {Event} Contains the local destinations.
+     * @param {cr.Event} Contains the local destinations.
      * @private
      */
     onLocalDestinationsSet_: function(event) {
@@ -503,7 +503,7 @@ cr.define('print_preview', function() {
      * local destination. Updates the destination with new capabilities if the
      * destination already exists, otherwise it creates a new destination and
      * then updates its capabilities.
-     * @param {Event} event Contains the capabilities of the local print
+     * @param {cr.Event} event Contains the capabilities of the local print
      *     destination.
      * @private
      */
@@ -543,7 +543,7 @@ cr.define('print_preview', function() {
      * Called when a request to get a local destination's print capabilities
      * fails. If the destination is the initial destination, auto-select another
      * destination instead.
-     * @param {Event} event Contains the destination ID that failed.
+     * @param {cr.Event} event Contains the destination ID that failed.
      * @private
      */
     onGetCapabilitiesFail_: function(event) {
@@ -562,7 +562,7 @@ cr.define('print_preview', function() {
     /**
      * Called when the /search call completes. Adds the fetched destinations to
      * the destination store.
-     * @param {Event} event Contains the fetched destinations.
+     * @param {cr.Event} event Contains the fetched destinations.
      * @private
      */
     onCloudPrintSearchDone_: function(event) {
@@ -584,7 +584,7 @@ cr.define('print_preview', function() {
     /**
      * Called when /printer call completes. Updates the specified destination's
      * print capabilities.
-     * @param {Event} event Contains detailed information about the
+     * @param {cr.Event} event Contains detailed information about the
      *     destination.
      * @private
      */

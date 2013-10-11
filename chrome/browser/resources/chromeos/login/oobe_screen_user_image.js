@@ -188,7 +188,7 @@ cr.define('login', function() {
 
     /**
      * Handles selection change.
-     * @param {Event} e Selection change event.
+     * @param {cr.Event} e Selection change event.
      * @private
      */
     handleSelect_: function(e) {
@@ -244,7 +244,7 @@ cr.define('login', function() {
 
     /**
      * Handle photo captured event.
-     * @param {Event} e Event with 'dataURL' property containing a data URL.
+     * @param {cr.Event} e Event with 'dataURL' property containing a data URL.
      */
     handlePhotoTaken_: function(e) {
       chrome.send('photoTaken', [e.dataURL]);
@@ -254,7 +254,7 @@ cr.define('login', function() {
 
     /**
      * Handle photo updated event.
-     * @param {Event} e Event with 'dataURL' property containing a data URL.
+     * @param {cr.Event} e Event with 'dataURL' property containing a data URL.
      */
     handlePhotoUpdated_: function(e) {
       chrome.send('photoTaken', [e.dataURL]);

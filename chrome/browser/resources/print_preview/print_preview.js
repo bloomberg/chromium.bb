@@ -476,7 +476,7 @@ cr.define('print_preview', function() {
      * Called when the native layer has initial settings to set. Sets the
      * initial settings of the print preview and begins fetching print
      * destinations.
-     * @param {Event} event Contains the initial print preview settings
+     * @param {cr.Event} event Contains the initial print preview settings
      *     persisted through the session.
      * @private
      */
@@ -510,7 +510,7 @@ cr.define('print_preview', function() {
     /**
      * Calls when the native layer enables Google Cloud Print integration.
      * Fetches the user's cloud printers.
-     * @param {Event} event Contains the base URL of the Google Cloud Print
+     * @param {cr.Event} event Contains the base URL of the Google Cloud Print
      *     service.
      * @private
      */
@@ -550,7 +550,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called from the native layer when ready to print to Google Cloud Print.
-     * @param {Event} event Contains the body to send in the HTTP request.
+     * @param {cr.Event} event Contains the body to send in the HTTP request.
      * @private
      */
     onPrintToCloud_: function(event) {
@@ -594,7 +594,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called after successfully submitting a job to Google Cloud Print.
-     * @param {!Event} event Contains the ID of the submitted print job.
+     * @param {!cr.Event} event Contains the ID of the submitted print job.
      * @private
      */
     onCloudPrintSubmitDone_: function(event) {
@@ -613,7 +613,7 @@ cr.define('print_preview', function() {
     /**
      * Called when there was an error communicating with Google Cloud print.
      * Displays an error message in the print header.
-     * @param {!Event} event Contains the error message.
+     * @param {!cr.Event} event Contains the error message.
      * @private
      */
     onCloudPrintError_: function(event) {

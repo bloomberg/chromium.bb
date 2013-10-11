@@ -176,7 +176,7 @@ ImportingDialog.prototype.onContainerKeyDown_ = function(event) {
 
 /**
  * 'copy-progress' event handler. Show progress.
- * @param {Event} event A 'copy-progress' event from FileOperationManager.
+ * @param {cr.Event} event A 'copy-progress' event from FileOperationManager.
  * @private
  */
 ImportingDialog.prototype.onCopyProgress_ = function(event) {

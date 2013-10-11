@@ -505,7 +505,7 @@ cr.define('cr.ui', function() {
     /**
      * Callback from the selection model. We dispatch {@code change} events
      * when the selection changes.
-     * @param {!Event} e Event with change info.
+     * @param {!cr.Event} e Event with change info.
      * @private
      */
     handleOnChange_: function(ce) {

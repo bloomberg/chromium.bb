@@ -1228,7 +1228,7 @@ cr.define('options', function() {
       selectCtl.disabled = pref.disabled;
       // Create a synthetic pref change event decorated as
       // CoreOptionsHandler::CreateValueForPref() does.
-      var event = new Event('synthetic-font-size');
+      var event = new cr.Event('synthetic-font-size');
       event.value = {
         value: pref.value,
         controlledBy: pref.controlledBy,

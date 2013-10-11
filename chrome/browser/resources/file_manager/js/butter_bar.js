@@ -267,7 +267,7 @@ ButterBar.prototype.showProgress_ = function(progress) {
 
 /**
  * 'copy-progress' event handler. Show progress or an appropriate message.
- * @param {Event} event A 'copy-progress' event from FileOperationManager.
+ * @param {cr.Event} event A 'copy-progress' event from FileOperationManager.
  * @private
  */
 ButterBar.prototype.onCopyProgress_ = function(event) {
@@ -330,7 +330,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
 
 /**
  * 'delete' event handler. Shows information about deleting files.
- * @param {Event} event A 'delete' event from FileOperationManager.
+ * @param {cr.Event} event A 'delete' event from FileOperationManager.
  * @private
  */
 ButterBar.prototype.onDelete_ = function(event) {
