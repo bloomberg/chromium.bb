@@ -671,10 +671,10 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
     l->calculateRects(RenderLayer::ClipRectsContext(rootLayer, 0, TemporaryClipRects), paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect);
 
     // Ensure our lists are up-to-date.
-    l->stackingNode()->updateLayerListsIfNeeded();
+    l->updateLayerListsIfNeeded();
 
     bool shouldPaint = (behavior & RenderAsTextShowAllLayers) ? true : l->intersectsDamageRect(layerBounds, damageRect.rect(), rootLayer);
-    Vector<RenderLayer*>* negList = l->stackingNode()->negZOrderList();
+    Vector<RenderLayer*>* negList = l->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;
     if (shouldPaint && paintsBackgroundSeparately)
         write(ts, *l, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), LayerPaintPhaseBackground, indent, behavior);
@@ -693,7 +693,7 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
     if (shouldPaint)
         write(ts, *l, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior);
 
-    if (Vector<RenderLayer*>* normalFlowList = l->stackingNode()->normalFlowList()) {
+    if (Vector<RenderLayer*>* normalFlowList = l->normalFlowList()) {
         int currIndent = indent;
         if (behavior & RenderAsTextShowLayerNesting) {
             writeIndent(ts, indent);
@@ -704,7 +704,7 @@ static void writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLaye
             writeLayers(ts, rootLayer, normalFlowList->at(i), paintDirtyRect, currIndent, behavior);
     }
 
-    if (Vector<RenderLayer*>* posList = l->stackingNode()->posZOrderList()) {
+    if (Vector<RenderLayer*>* posList = l->posZOrderList()) {
         int currIndent = indent;
         if (behavior & RenderAsTextShowLayerNesting) {
             writeIndent(ts, indent);

@@ -51,7 +51,6 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayerRepainter.h"
 #include "core/rendering/RenderLayerScrollableArea.h"
-#include "core/rendering/RenderLayerStackingNode.h"
 
 #include "wtf/OwnPtr.h"
 
@@ -81,8 +80,6 @@ enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForB
 class RenderLayer {
 public:
     friend class RenderReplica;
-    // FIXME: Needed until we move all the necessary bits to the new class.
-    friend class RenderLayerStackingNode;
     // FIXME: Needed until we move all the necessary bits to the new class.
     friend class RenderLayerScrollableArea;
 
@@ -114,6 +111,7 @@ public:
 
     void styleChanged(StyleDifference, const RenderStyle* oldStyle);
 
+    bool isNormalFlowOnly() const { return m_isNormalFlowOnly; }
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
 
     bool cannotBlitToWindow() const;
@@ -219,15 +217,46 @@ public:
     void clearBlockSelectionGapsBounds();
     void repaintBlockSelectionGaps();
 
-    RenderLayerStackingNode* stackingNode() { return m_stackingNode.get(); }
-    const RenderLayerStackingNode* stackingNode() const { return m_stackingNode.get(); }
+    // A stacking context is a layer that has a non-auto z-index.
+    bool isStackingContext() const { return isStackingContext(renderer()->style()); }
 
-    RenderLayer* ancestorStackingContainerLayer() const;
-    RenderLayer* ancestorStackingContextLayer() const;
+    // A stacking container can have z-order lists. All stacking contexts are
+    // stacking containers, but the converse is not true. Layers that use
+    // composited scrolling are stacking containers, but they may not
+    // necessarily be stacking contexts.
+    bool isStackingContainer() const { return isStackingContext() || needsToBeStackingContainer(); }
+
+    RenderLayer* ancestorStackingContainer() const;
+    RenderLayer* ancestorStackingContext() const;
 
     // Gets the enclosing stacking container for this layer, possibly the layer
     // itself, if it is a stacking container.
-    RenderLayer* enclosingStackingContainerLayer() { return m_stackingNode->isStackingContainer() ? this : ancestorStackingContainerLayer(); }
+    RenderLayer* enclosingStackingContainer() { return isStackingContainer() ? this : ancestorStackingContainer(); }
+
+    void dirtyZOrderLists();
+    void dirtyStackingContainerZOrderLists();
+
+    Vector<RenderLayer*>* posZOrderList() const
+    {
+        ASSERT(!m_zOrderListsDirty);
+        ASSERT(isStackingContainer() || !m_posZOrderList);
+        return m_posZOrderList.get();
+    }
+
+    bool hasNegativeZOrderList() const { return negZOrderList() && negZOrderList()->size(); }
+
+    Vector<RenderLayer*>* negZOrderList() const
+    {
+        ASSERT(!m_zOrderListsDirty);
+        ASSERT(isStackingContainer() || !m_negZOrderList);
+        return m_negZOrderList.get();
+    }
+
+    void dirtyNormalFlowList();
+    Vector<RenderLayer*>* normalFlowList() const { ASSERT(!m_normalFlowListDirty); return m_normalFlowList.get(); }
+
+    // Update our normal and z-index lists.
+    void updateLayerListsIfNeeded();
 
     // FIXME: We should ASSERT(!m_visibleContentStatusDirty) here, but see https://bugs.webkit.org/show_bug.cgi?id=71044
     // ditto for hasVisibleDescendant(), see https://bugs.webkit.org/show_bug.cgi?id=71277
@@ -448,6 +477,7 @@ public:
     bool hasCompositedMask() const;
     bool hasCompositedClippingMask() const;
     bool needsCompositedScrolling() const;
+    bool needsToBeStackingContainer() const;
 
     RenderLayer* scrollParent() const;
     RenderLayer* clipParent() const;
@@ -494,6 +524,11 @@ public:
 
     void updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle);
 
+#if !ASSERT_DISABLED
+    bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
+    void setLayerListMutationAllowed(bool flag) { m_layerListMutationAllowed = flag; }
+#endif
+
     Node* enclosingElement() const;
 
     bool isInTopLayer() const;
@@ -512,6 +547,8 @@ public:
 
     bool isOutOfFlowRenderFlowThread() const { return renderer()->isOutOfFlowRenderFlowThread(); }
 
+    enum PaintOrderListType {BeforePromote, AfterPromote};
+    void computePaintOrderList(PaintOrderListType type, Vector<RefPtr<Node> >&);
     bool scrollsWithRespectTo(const RenderLayer*) const;
 
     enum ForceNeedsCompositedScrollingMode {
@@ -528,19 +565,28 @@ public:
     RenderLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
     RenderLayerRepainter& repainter() { return m_repainter; }
 
-    inline bool isPositionedContainer() const
-    {
-        // FIXME: This is not in sync with containingBlock.
-        // RenderObject::canContainFixedPositionedObject() should probably be used
-        // instead.
-        RenderLayerModelObject* layerRenderer = renderer();
-        return isRootLayer() || layerRenderer->isPositioned() || hasTransform();
-    }
-
 private:
+    enum CollectLayersBehavior {
+        ForceLayerToStackingContainer,
+        OverflowScrollCanBeStackingContainers,
+        OnlyStackingContextsCanBeStackingContainers
+    };
+
     bool hasOverflowControls() const;
 
+    void updateZOrderLists();
+    void rebuildZOrderLists();
+    // See the comment for collectLayers for information about the layerToForceAsStackingContainer parameter.
+    void rebuildZOrderLists(OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0, CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
+    void clearZOrderLists();
     void setIsUnclippedDescendant(bool isUnclippedDescendant) { m_isUnclippedDescendant = isUnclippedDescendant; }
+
+
+    void updateNormalFlowList();
+
+    bool isStackingContext(const RenderStyle* style) const { return !style->hasAutoZIndex() || isRootLayer(); }
+
+    bool isDirtyStackingContainer() const { return m_zOrderListsDirty && isStackingContainer(); }
 
     void setAncestorChainHasSelfPaintingLayerDescendant();
     void dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
@@ -552,17 +598,26 @@ private:
     // FIXME: This is a temporary flag and should be removed once accelerated
     // overflow scroll is ready (crbug.com/254111).
     bool compositorDrivenAcceleratedScrollingEnabled() const;
+    void updateDescendantsAreContiguousInStackingOrder();
+    void collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote);
+    void collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote);
+
+    void dirtyNormalFlowListCanBePromotedToStackingContainer();
+    void dirtySiblingStackingContextCanBePromotedToStackingContainer();
 
     void clipToRect(RenderLayer* rootLayer, GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&,
                     BorderRadiusClippingRule = IncludeSelfForBorderRadius);
     void restoreClip(GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&);
 
     void updateSelfPaintingLayer();
+    void updateIsNormalFlowOnly();
     void updateVisibilityAfterStyleChange(const RenderStyle* oldStyle);
+    void updateStackingContextsAfterStyleChange(const RenderStyle* oldStyle);
 
     void updateOutOfFlowPositioned(const RenderStyle* oldStyle);
 
     bool setNeedsCompositedScrolling(bool);
+    bool setNeedsToBeStackingContainer(bool);
     void didUpdateNeedsCompositedScrolling();
 
     // Returns true if the position changed.
@@ -587,6 +642,12 @@ private:
     void setLastChild(RenderLayer* last) { m_last = last; }
 
     LayoutPoint renderBoxLocation() const { return renderer()->isBox() ? toRenderBox(renderer())->location() : LayoutPoint(); }
+
+    // layerToForceAsStackingContainer allows us to build pre-promotion and
+    // post-promotion layer lists, by allowing us to treat a layer as if it is a
+    // stacking context, without adding a new member to RenderLayer or modifying
+    // the style (which could cause extra allocations).
+    void collectLayers(bool includeHiddenLayers, OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0, CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
 
     struct LayerPaintingInfo {
         LayerPaintingInfo(RenderLayer* inRootLayer, const LayoutRect& inDirtyRect, PaintBehavior inPaintBehavior, const LayoutSize& inSubPixelAccumulation, RenderObject* inPaintingRoot = 0, RenderRegion*inRegion = 0, OverlapTestRequestMap* inOverlapTestRequests = 0)
@@ -663,6 +724,9 @@ private:
 
     bool listBackgroundIsKnownToBeOpaqueInRect(const Vector<RenderLayer*>*, const LayoutRect&) const;
 
+    bool shouldBeNormalFlowOnly() const;
+    bool shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const;
+
     bool shouldBeSelfPaintingLayer() const;
 
     // Start of ScrollableArea interface
@@ -690,10 +754,6 @@ private:
     IntRect scrollCornerAndResizerRect() const;
 
     void updateCompositingLayersAfterScroll();
-
-    // FIXME: We should only create the stacking node if needed.
-    bool requiresStackingNode() const { return true; }
-    void updateStackingNode();
 
     // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
     // but for now, we are always allocating it for RenderBox as it's safer.
@@ -751,11 +811,18 @@ private:
     void setCompositingReasons(CompositingReasons reasons) { m_compositingProperties.compositingReasons = reasons; }
     CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
 
+    // Returns true if z ordering would not change if this layer were a stacking container.
+    bool descendantsAreContiguousInStackingOrder() const;
+
     friend class CompositedLayerMapping;
     friend class RenderLayerCompositor;
     friend class RenderLayerModelObject;
 
 protected:
+    unsigned m_zOrderListsDirty : 1;
+    unsigned m_normalFlowListDirty: 1;
+    unsigned m_isNormalFlowOnly : 1;
+
     unsigned m_isSelfPaintingLayer : 1;
 
     // If have no self-painting descendants, we don't have to walk our children during painting. This can lead to
@@ -775,9 +842,18 @@ protected:
     unsigned m_isUnclippedDescendant : 1;
 
     unsigned m_needsCompositedScrolling : 1;
+    unsigned m_needsToBeStackingContainerHasBeenRecorded : 1;
     unsigned m_willUseCompositedScrollingHasBeenRecorded : 1;
 
     unsigned m_isScrollableAreaHasBeenRecorded : 1;
+
+    unsigned m_needsToBeStackingContainer : 1;
+
+    // If this is true, then no non-descendant appears between any of our
+    // descendants in stacking order. This is one of the requirements of being
+    // able to safely become a stacking context.
+    unsigned m_descendantsAreContiguousInStackingOrder : 1;
+    unsigned m_descendantsAreContiguousInStackingOrderDirty : 1;
 
     const unsigned m_isRootLayer : 1;
 
@@ -803,6 +879,9 @@ protected:
 
     unsigned m_containsDirtyOverlayScrollbars : 1;
 
+#if !ASSERT_DISABLED
+    unsigned m_layerListMutationAllowed : 1;
+#endif
     // This is an optimization added for <table>.
     // Currently cells do not need to update their repaint rectangles when scrolling. This also
     // saves a lot of time when scrolling on a table.
@@ -828,6 +907,17 @@ protected:
 
     // The layer's width/height
     IntSize m_layerSize;
+
+    // For layers that establish stacking contexts, m_posZOrderList holds a sorted list of all the
+    // descendant layers within the stacking context that have z-indices of 0 or greater
+    // (auto will count as 0).  m_negZOrderList holds descendants within our stacking context with negative
+    // z-indices.
+    OwnPtr<Vector<RenderLayer*> > m_posZOrderList;
+    OwnPtr<Vector<RenderLayer*> > m_negZOrderList;
+
+    // This list contains child layers that cannot create stacking contexts.  For now it is just
+    // overflow layers, but that may change in the future.
+    OwnPtr<Vector<RenderLayer*> > m_normalFlowList;
 
     OwnPtr<ClipRectsCache> m_clipRectsCache;
 
@@ -867,21 +957,57 @@ protected:
     ForceNeedsCompositedScrollingMode m_forceNeedsCompositedScrolling;
 
 private:
-    enum CompositedScrollingHistogramBuckets {
-        IsScrollableAreaBucket = 0,
-        NeedsToBeStackingContainerBucket = 1,
-        WillUseCompositedScrollingBucket = 2,
-        CompositedScrollingHistogramMax = 3
-    };
-
     IntRect m_blockSelectionGapsBounds;
 
     OwnPtr<CompositedLayerMapping> m_compositedLayerMapping;
     OwnPtr<RenderLayerScrollableArea> m_scrollableArea;
 
     RenderLayerRepainter m_repainter;
-    OwnPtr<RenderLayerStackingNode> m_stackingNode;
 };
+
+inline void RenderLayer::clearZOrderLists()
+{
+    ASSERT(!isStackingContainer());
+
+    m_posZOrderList.clear();
+    m_negZOrderList.clear();
+}
+
+inline void RenderLayer::updateZOrderLists()
+{
+    if (!m_zOrderListsDirty)
+        return;
+
+    if (!isStackingContainer()) {
+        clearZOrderLists();
+        m_zOrderListsDirty = false;
+        return;
+    }
+
+    rebuildZOrderLists();
+}
+
+#if !ASSERT_DISABLED
+class LayerListMutationDetector {
+public:
+    LayerListMutationDetector(RenderLayer* layer)
+        : m_layer(layer)
+        , m_previousMutationAllowedState(layer->layerListMutationAllowed())
+    {
+        m_layer->setLayerListMutationAllowed(false);
+    }
+
+    ~LayerListMutationDetector()
+    {
+        m_layer->setLayerListMutationAllowed(m_previousMutationAllowedState);
+    }
+
+private:
+    RenderLayer* m_layer;
+    bool m_previousMutationAllowedState;
+};
+#endif
+
 
 } // namespace WebCore
 
