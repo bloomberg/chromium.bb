@@ -762,7 +762,8 @@ IN_PROC_BROWSER_TEST_P(KioskEnterpriseTest, EnterpriseKioskApp) {
   content::RunAllPendingInMessageLoop();
 }
 
-INSTANTIATE_TEST_CASE_P(KioskEnterpriseTestInstantiation,
+// Disabled due to failures; http://crbug.com/306611.
+INSTANTIATE_TEST_CASE_P(DISABLED_KioskEnterpriseTestInstantiation,
                         KioskEnterpriseTest,
                         testing::Bool());
 
