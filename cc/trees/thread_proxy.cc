@@ -1396,6 +1396,7 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   DCHECK(IsImplThread());
   layer_tree_host_->DeleteContentsTexturesOnImplThread(
       layer_tree_host_impl_->resource_provider());
+  current_resource_update_controller_on_impl_thread_.reset();
   layer_tree_host_impl_->SetNeedsBeginFrame(false);
   scheduler_on_impl_thread_.reset();
   layer_tree_host_impl_.reset();
