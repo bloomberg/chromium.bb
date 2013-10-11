@@ -39,6 +39,7 @@
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
+#include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
 #include "core/animation/AnimatableSVGPaint.h"
 #include "core/animation/AnimatableShapeValue.h"
@@ -112,6 +113,32 @@ inline static PassRefPtr<AnimatableValue> createFromLengthSize(const LengthSize 
         createFromLength(lengthSize.height(), style));
 }
 
+template<CSSPropertyID property>
+inline static PassRefPtr<AnimatableValue> createFromFillLayers(const FillLayer* fillLayer, const RenderStyle* style)
+{
+    ASSERT(fillLayer);
+    Vector<RefPtr<AnimatableValue> > values;
+    while (fillLayer) {
+        if (property == CSSPropertyBackgroundImage) {
+            if (!fillLayer->isImageSet())
+                break;
+            values.append(AnimatableImage::create(fillLayer->image()));
+        } else if (property == CSSPropertyBackgroundPositionX) {
+            if (!fillLayer->isXPositionSet())
+                break;
+            values.append(createFromLength(fillLayer->xPosition(), style));
+        } else if (property == CSSPropertyBackgroundPositionY) {
+            if (!fillLayer->isYPositionSet())
+                break;
+            values.append(createFromLength(fillLayer->yPosition(), style));
+        } else {
+            ASSERT_NOT_REACHED();
+        }
+        fillLayer = fillLayer->next();
+    }
+    return AnimatableRepeatable::create(values);
+}
+
 PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::createFromColor(CSSPropertyID property, const RenderStyle* style)
 {
     Color color = style->colorIncludingFallback(property, false);
@@ -137,6 +164,12 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     switch (property) {
     case CSSPropertyBackgroundColor:
         return createFromColor(property, style);
+    case CSSPropertyBackgroundImage:
+        return createFromFillLayers<CSSPropertyBackgroundImage>(style->backgroundLayers(), style);
+    case CSSPropertyBackgroundPositionX:
+        return createFromFillLayers<CSSPropertyBackgroundPositionX>(style->backgroundLayers(), style);
+    case CSSPropertyBackgroundPositionY:
+        return createFromFillLayers<CSSPropertyBackgroundPositionY>(style->backgroundLayers(), style);
     case CSSPropertyBaselineShift:
         return AnimatableSVGLength::create(style->baselineShiftValue());
     case CSSPropertyBorderBottomColor:

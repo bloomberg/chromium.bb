@@ -539,6 +539,8 @@
             'animation/AnimatableLengthSize.cpp',
             'animation/AnimatableLengthSize.h',
             'animation/AnimatableNeutral.h',
+            'animation/AnimatableRepeatable.cpp',
+            'animation/AnimatableRepeatable.h',
             'animation/AnimatableSVGLength.cpp',
             'animation/AnimatableSVGLength.h',
             'animation/AnimatableShapeValue.cpp',

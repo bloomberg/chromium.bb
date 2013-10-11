@@ -38,6 +38,7 @@
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthSize.h"
+#include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
 #include "core/animation/AnimatableSVGPaint.h"
 #include "core/animation/AnimatableShapeValue.h"
@@ -99,6 +100,51 @@ SVGLength animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
     return length;
 }
 
+template <CSSPropertyID property>
+void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleResolverState& state)
+{
+    const Vector<RefPtr<AnimatableValue> >& values = toAnimatableRepeatable(value)->values();
+    ASSERT(!values.isEmpty());
+    FillLayer* prev = 0;
+    for (size_t i = 0; i < values.size(); ++i) {
+        if (!fillLayer) {
+            fillLayer = new FillLayer(BackgroundFillLayer);
+            prev->setNext(fillLayer);
+        }
+        switch (property) {
+        case CSSPropertyBackgroundImage:
+            fillLayer->setImage(toAnimatableImage(values[i].get())->toStyleImage());
+            break;
+        case CSSPropertyBackgroundPositionX:
+            fillLayer->setXPosition(animatableValueToLength(values[i].get(), state));
+            break;
+        case CSSPropertyBackgroundPositionY:
+            fillLayer->setYPosition(animatableValueToLength(values[i].get(), state));
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        prev = fillLayer;
+        fillLayer = fillLayer->next();
+    }
+    while (fillLayer) {
+        switch (property) {
+        case CSSPropertyBackgroundImage:
+            fillLayer->clearImage();
+            break;
+        case CSSPropertyBackgroundPositionX:
+            fillLayer->clearXPosition();
+            break;
+        case CSSPropertyBackgroundPositionY:
+            fillLayer->clearYPosition();
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        fillLayer = fillLayer->next();
+    }
+}
+
 } // namespace
 
 // FIXME: Generate this function.
@@ -113,6 +159,15 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyBackgroundColor:
         style->setBackgroundColor(toAnimatableColor(value)->color());
         style->setVisitedLinkBackgroundColor(toAnimatableColor(value)->visitedLinkColor());
+        return;
+    case CSSPropertyBackgroundImage:
+        setOnFillLayers<CSSPropertyBackgroundImage>(style->accessBackgroundLayers(), value, state);
+        return;
+    case CSSPropertyBackgroundPositionX:
+        setOnFillLayers<CSSPropertyBackgroundPositionX>(style->accessBackgroundLayers(), value, state);
+        return;
+    case CSSPropertyBackgroundPositionY:
+        setOnFillLayers<CSSPropertyBackgroundPositionY>(style->accessBackgroundLayers(), value, state);
         return;
     case CSSPropertyBaselineShift:
         style->setBaselineShiftValue(toAnimatableSVGLength(value)->toSVGLength());

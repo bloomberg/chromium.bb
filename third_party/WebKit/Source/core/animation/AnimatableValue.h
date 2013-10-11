@@ -59,12 +59,19 @@ public:
     bool isLengthBox() const { return type() == TypeLengthBox; }
     bool isLengthSize() const { return type() == TypeLengthSize; }
     bool isNeutral() const { return type() == TypeNeutral; }
+    bool isRepeatable() const { return type() == TypeRepeatable; }
     bool isSVGLength() const { return type() == TypeSVGLength; }
     bool isShapeValue() const { return type() == TypeShapeValue; }
     bool isSVGPaint() const { return type() == TypeSVGPaint; }
     bool isTransform() const { return type() == TypeTransform; }
     bool isUnknown() const { return type() == TypeUnknown; }
     bool isVisibility() const { return type() == TypeVisibility; }
+
+    bool isSameType(const AnimatableValue* value) const
+    {
+        ASSERT(value);
+        return value->type() == type();
+    }
 
 protected:
     enum AnimatableType {
@@ -76,6 +83,7 @@ protected:
         TypeLengthBox,
         TypeLengthSize,
         TypeNeutral,
+        TypeRepeatable,
         TypeSVGLength,
         TypeShapeValue,
         TypeSVGPaint,
@@ -83,12 +91,6 @@ protected:
         TypeUnknown,
         TypeVisibility,
     };
-
-    bool isSameType(const AnimatableValue* value) const
-    {
-        ASSERT(value);
-        return value->type() == type();
-    }
 
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const = 0;
     static PassRefPtr<AnimatableValue> defaultInterpolateTo(const AnimatableValue* left, const AnimatableValue* right, double fraction) { return takeConstRef((fraction < 0.5) ? left : right); }
