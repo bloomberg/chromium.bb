@@ -29,6 +29,9 @@ class DomDistillerStoreInterface {
  public:
   virtual ~DomDistillerStoreInterface() {}
 
+  // Gets the syncable service for this store or null if it is not synced.
+  virtual syncer::SyncableService* GetSyncableService() = 0;
+
   virtual bool AddEntry(const ArticleEntry& entry) = 0;
 
   // Gets a copy of all the current entries.
@@ -73,6 +76,7 @@ class DomDistillerStore : public syncer::SyncableService,
   virtual ~DomDistillerStore();
 
   // DomDistillerStoreInterface implementation.
+  virtual syncer::SyncableService* GetSyncableService() OVERRIDE;
   virtual bool AddEntry(const ArticleEntry& entry) OVERRIDE;
   virtual std::vector<ArticleEntry> GetEntries() const OVERRIDE;
 

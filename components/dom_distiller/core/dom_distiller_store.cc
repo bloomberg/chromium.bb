@@ -68,6 +68,10 @@ DomDistillerStore::DomDistillerStore(
 DomDistillerStore::~DomDistillerStore() {}
 
 // DomDistillerStoreInterface implementation.
+syncer::SyncableService* DomDistillerStore::GetSyncableService() {
+  return this;
+}
+
 bool DomDistillerStore::AddEntry(const ArticleEntry& entry) {
   if (!database_loaded_) {
     return false;

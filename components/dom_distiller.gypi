@@ -28,6 +28,21 @@
           ],
         },
         {
+          'target_name': 'dom_distiller_content',
+          'type': 'static_library',
+          'dependencies': [
+            'dom_distiller_core',
+            '../sync/sync.gyp:sync',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'dom_distiller/content/dom_distiller_service_factory.h',
+            'dom_distiller/content/dom_distiller_service_factory.cc',
+          ],
+        },
+        {
           'target_name': 'dom_distiller_resources',
           'type': 'none',
           'variables': {
@@ -67,6 +82,8 @@
             'dom_distiller/core/dom_distiller_constants.h',
             'dom_distiller/core/dom_distiller_database.cc',
             'dom_distiller/core/dom_distiller_database.h',
+            'dom_distiller/core/dom_distiller_service.cc',
+            'dom_distiller/core/dom_distiller_service.h',
             'dom_distiller/core/dom_distiller_store.cc',
             'dom_distiller/core/dom_distiller_store.h',
           ],
