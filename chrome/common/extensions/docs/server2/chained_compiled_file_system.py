@@ -4,6 +4,8 @@
 
 from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
+from future import Gettable, Future
+
 
 class ChainedCompiledFileSystem(object):
   ''' A CompiledFileSystem implementation that fetches data from a chain of
@@ -32,39 +34,47 @@ class ChainedCompiledFileSystem(object):
            for factory, fs in self._factory_and_fs_chain])
 
   def __init__(self, compiled_fs_chain):
+    '''|compiled_fs_chain| is a list of tuples (compiled_fs, file_system).
+    '''
     assert len(compiled_fs_chain) > 0
     self._compiled_fs_chain = compiled_fs_chain
 
   def GetFromFile(self, path, binary=False):
-    # It's possible that a new file is added in the first compiled file system
-    # and it doesn't exist in other compiled file systems.
-    try:
-      first_compiled_fs, first_file_system = self._compiled_fs_chain[0]
-      # The first file system contains both files of a newer version and files
-      # shared with other compiled file systems. We are going to try each
-      # compiled file system in the reverse order and return the data when
-      # version matches. Data cached in other compiled file system will be
-      # reused whenever possible so that we don't need to recompile things that
-      # are not changed across these file systems.
-      version = first_file_system.Stat(path).version
-      for compiled_fs, _ in reversed(self._compiled_fs_chain):
-        if compiled_fs.StatFile(path) == version:
-          return compiled_fs.GetFromFile(path, binary)
-    except FileNotFoundError:
-      pass
-    # Try first operation again to generate the correct stack trace
-    return first_compiled_fs.GetFromFile(path, binary)
+    return self._GetImpl(
+        path,
+        lambda compiled_fs: compiled_fs.GetFromFile(path, binary=binary),
+        lambda compiled_fs: compiled_fs.StatFile(path))
 
   def GetFromFileListing(self, path):
     if not path.endswith('/'):
       path += '/'
-    try:
-      first_compiled_fs, first_file_system = self._compiled_fs_chain[0]
-      version = first_file_system.Stat(path).version
-      for compiled_fs, _ in reversed(self._compiled_fs_chain):
-        if compiled_fs.StatFileListing(path) == version:
-          return compiled_fs.GetFromFileListing(path)
-    except FileNotFoundError:
-      pass
-    # Try first operation again to generate the correct stack trace
-    return first_compiled_fs.GetFromFileListing(path)
+    return self._GetImpl(
+        path,
+        lambda compiled_fs: compiled_fs.GetFromFileListing(path),
+        lambda compiled_fs: compiled_fs.StatFileListing(path))
+
+  def _GetImpl(self, path, reader, statter):
+    # It's possible that a new file is added in the first compiled file system
+    # and it doesn't exist in other compiled file systems.
+    read_futures = [(reader(compiled_fs), compiled_fs)
+                    for compiled_fs, _ in self._compiled_fs_chain]
+
+    def resolve():
+      try:
+        first_compiled_fs, first_file_system = self._compiled_fs_chain[0]
+        # The first file system contains both files of a newer version and
+        # files shared with other compiled file systems. We are going to try
+        # each compiled file system in the reverse order and return the data
+        # when version matches. Data cached in other compiled file system will
+        # be reused whenever possible so that we don't need to recompile things
+        # that are not changed across these file systems.
+        version = first_file_system.Stat(path).version
+        for read_future, compiled_fs in reversed(read_futures):
+          if statter(compiled_fs) == version:
+            return read_future.Get()
+      except FileNotFoundError:
+        pass
+      # Try an arbitrary operation again to generate a realistic stack trace.
+      return read_futures[0][0].Get()
+
+    return Future(delegate=Gettable(resolve))

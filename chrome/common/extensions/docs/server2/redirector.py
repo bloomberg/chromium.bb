@@ -33,7 +33,7 @@ class Redirector(object):
 
     try:
       rules = self._cache.GetFromFile(
-          posixpath.join(self._root_path, dirname, 'redirects.json'))
+          posixpath.join(self._root_path, dirname, 'redirects.json')).Get()
     except FileNotFoundError:
       return None
 
@@ -66,4 +66,4 @@ class Redirector(object):
     for root, dirs, files in self._file_system.Walk(self._root_path):
       if 'redirects.json' in files:
         self._cache.GetFromFile('%s/redirects.json' % posixpath.join(
-            self._root_path, root).rstrip('/'))
+            self._root_path, root).rstrip('/')).Get()

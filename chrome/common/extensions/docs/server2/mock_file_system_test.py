@@ -37,24 +37,30 @@ class MockFileSystemTest(unittest.TestCase):
     self.assertFalse(*fs.CheckAndReset(read_count=1))
     self.assertFalse(*fs.CheckAndReset(stat_count=1))
 
-    fs.ReadSingle('apps/').Get()
+    future = fs.ReadSingle('apps/')
     self.assertTrue(*fs.CheckAndReset(read_count=1))
+    future.Get()
+    self.assertTrue(*fs.CheckAndReset(read_resolve_count=1))
     self.assertFalse(*fs.CheckAndReset(read_count=1))
     self.assertTrue(*fs.CheckAndReset())
 
-    fs.ReadSingle('apps/').Get()
+    future = fs.ReadSingle('apps/')
     self.assertFalse(*fs.CheckAndReset(read_count=2))
+    future.Get()
+    self.assertFalse(*fs.CheckAndReset(read_resolve_count=2))
 
     fs.ReadSingle('extensions/').Get()
     fs.ReadSingle('extensions/').Get()
-    self.assertTrue(*fs.CheckAndReset(read_count=2))
-    self.assertFalse(*fs.CheckAndReset(read_count=2))
+    self.assertTrue(*fs.CheckAndReset(read_count=2, read_resolve_count=2))
+    self.assertFalse(*fs.CheckAndReset(read_count=2, read_resolve_count=2))
     self.assertTrue(*fs.CheckAndReset())
 
     fs.ReadSingle('404.html').Get()
+    self.assertTrue(*fs.CheckAndReset(read_count=1, read_resolve_count=1))
     future = fs.Read(['notfound.html', 'apps/'])
-    self.assertTrue(*fs.CheckAndReset(read_count=2))
+    self.assertTrue(*fs.CheckAndReset(read_count=1))
     self.assertRaises(FileNotFoundError, future.Get)
+    self.assertTrue(*fs.CheckAndReset(read_resolve_count=1))
 
     fs.Stat('404.html')
     fs.Stat('404.html')
@@ -66,7 +72,8 @@ class MockFileSystemTest(unittest.TestCase):
     fs.ReadSingle('404.html').Get()
     fs.Stat('404.html')
     fs.Stat('apps/')
-    self.assertTrue(*fs.CheckAndReset(read_count=1, stat_count=2))
+    self.assertTrue(
+        *fs.CheckAndReset(read_count=1, read_resolve_count=1, stat_count=2))
     self.assertTrue(*fs.CheckAndReset())
 
   def testUpdates(self):

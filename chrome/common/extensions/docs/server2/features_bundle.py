@@ -47,7 +47,7 @@ class _FeaturesCache(object):
   def GetFeatures(self):
     if self._json_path is None:
       return {}
-    return self._cache.GetFromFile(self._json_path)
+    return self._cache.GetFromFile(self._json_path).Get()
 
 
 class FeaturesBundle(object):

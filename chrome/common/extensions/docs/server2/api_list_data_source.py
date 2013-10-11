@@ -68,7 +68,7 @@ class APIListDataSource(object):
 
     def _GenerateAPIDict(self):
       documented_apis = self._cache.GetFromFileListing(
-          self._public_template_path)
+          self._public_template_path).Get()
       api_features = self._features_bundle.GetAPIFeatures()
 
       def FilterAPIs(platform):

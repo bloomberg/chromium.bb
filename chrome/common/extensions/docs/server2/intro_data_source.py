@@ -106,7 +106,7 @@ class IntroDataSource(object):
   def get(self, key):
     path = FormatKey(key)
     def get_from_base_path(base_path):
-      return self._cache.GetFromFile('%s/%s' % (base_path, path))
+      return self._cache.GetFromFile('%s/%s' % (base_path, path)).Get()
     for base_path in self._base_paths:
       try:
         return get_from_base_path(base_path)

@@ -15,7 +15,7 @@ class StringsDataSource(DataSource):
     self._strings_json_path = server_instance.strings_json_path
 
   def Cron(self):
-    self._cache.GetFromFile(self._strings_json_path)
+    self._cache.GetFromFile(self._strings_json_path).Get()
 
   def get(self, key):
-    return self._cache.GetFromFile(self._strings_json_path)[key]
+    return self._cache.GetFromFile(self._strings_json_path).Get()[key]

@@ -42,4 +42,4 @@ class ExampleZipper(object):
     Paths within the zip file are given relative to and including |path|.
     '''
     return self._zip_cache.GetFromFileListing(
-        '%s/%s' % (self._base_path, path.strip('/')))
+        '%s/%s' % (self._base_path, path.strip('/'))).Get()

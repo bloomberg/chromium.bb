@@ -199,7 +199,7 @@ class _JSCModel(object):
 
   def _GetApiAvailability(self):
     # Check for a predetermined availability for this API.
-    api_info = self._api_availabilities.get(self._namespace.name)
+    api_info = self._api_availabilities.Get().get(self._namespace.name)
     if api_info is not None:
       channel = api_info['channel']
       if channel == 'stable':
@@ -464,7 +464,7 @@ class _JSCModel(object):
     # Devtools aren't in _api_features. If we're dealing with devtools, bail.
     if 'devtools' in self._namespace.name:
       return []
-    feature = self._api_features.get(self._namespace.name)
+    feature = self._api_features.Get().get(self._namespace.name)
     assert feature, ('"%s" not found in _api_features.json.'
                      % self._namespace.name)
 
@@ -486,7 +486,7 @@ class _JSCModel(object):
         manifest_content.append(make_code_node('"%s": {...}' % name))
       elif context == 'api':
         transitive_dependencies = (
-            self._api_features.get(name, {}).get('dependencies', []))
+            self._api_features.Get().get(name, {}).get('dependencies', []))
         for transitive_dependency in transitive_dependencies:
           categorize_dependency(transitive_dependency)
       else:
@@ -517,7 +517,7 @@ class _JSCModel(object):
     # Look up the API name in intro_tables.json, which is structured
     # similarly to the data structure being created. If the name is found, loop
     # through the attributes and add them to this structure.
-    table_info = self._intro_tables.get(self._namespace.name)
+    table_info = self._intro_tables.Get().get(self._namespace.name)
     if table_info is None:
       return misc_rows
 
@@ -635,8 +635,9 @@ class APIDataSource(object):
       description from Event in events.json.
       """
       if self._add_rules_schema is None:
-        self._add_rules_schema = _GetAddRulesDefinitionFromEvents(
-            self._json_cache.GetFromFile('%s/events.json' % self._base_path))
+        events_json = self._json_cache.GetFromFile(
+            '%s/events.json' % self._base_path).Get()
+        self._add_rules_schema = _GetAddRulesDefinitionFromEvents(events_json)
       return self._add_rules_schema
 
     def _LoadJsonAPI(self, api, disable_refs):
@@ -714,8 +715,8 @@ class APIDataSource(object):
     else:
       path = key
     unix_name = model.UnixName(path)
-    idl_names = self._idl_names_cache.GetFromFileListing(self._base_path)
-    names = self._names_cache.GetFromFileListing(self._base_path)
+    idl_names = self._idl_names_cache.GetFromFileListing(self._base_path).Get()
+    names = self._names_cache.GetFromFileListing(self._base_path).Get()
     if unix_name not in names and self._GetAsSubdirectory(unix_name) in names:
       unix_name = self._GetAsSubdirectory(unix_name)
 
@@ -727,4 +728,4 @@ class APIDataSource(object):
       cache, ext = ((self._idl_cache, '.idl') if (unix_name in idl_names) else
                     (self._json_cache, '.json'))
     return self._GenerateHandlebarContext(
-        cache.GetFromFile('%s/%s%s' % (self._base_path, unix_name, ext)))
+        cache.GetFromFile('%s/%s%s' % (self._base_path, unix_name, ext)).Get())

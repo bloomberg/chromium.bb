@@ -6,6 +6,7 @@ import copy
 import logging
 
 from data_source import DataSource
+from future import Gettable, Future
 from third_party.json_schema_compiler.json_parse import Parse
 from svn_constants import JSON_PATH
 
@@ -72,12 +73,14 @@ class SidenavDataSource(DataSource):
         item['href'] = self._server_instance.base_path + href
 
   def Cron(self):
-    for platform in ('apps', 'extensions'):
-      self._cache.GetFromFile(
-          '%s/%s_sidenav.json' % (JSON_PATH, platform))
+    futures = [
+        self._cache.GetFromFile('%s/%s_sidenav.json' % (JSON_PATH, platform))
+        for platform in ('apps', 'extensions')]
+    for future in futures:
+      future.Get()
 
   def get(self, key):
     sidenav = copy.deepcopy(self._cache.GetFromFile(
-        '%s/%s_sidenav.json' % (JSON_PATH, key)))
+        '%s/%s_sidenav.json' % (JSON_PATH, key)).Get())
     _AddSelected(sidenav, self._server_instance.base_path + self._request.path)
     return sidenav

@@ -208,10 +208,10 @@ class SamplesDataSource(object):
 
   def _CreateSamplesDict(self, key):
     if key == 'apps':
-      samples_list = self._apps_cache.GetFromFileListing('/')
+      samples_list = self._apps_cache.GetFromFileListing('/').Get()
     else:
       samples_list = self._extensions_cache.GetFromFileListing(
-          self._extension_samples_path + '/')
+          self._extension_samples_path + '/').Get()
     return_list = []
     for dict_ in samples_list:
       name = dict_['name']

@@ -123,6 +123,6 @@ class TemplateDataSource(object):
   def GetTemplate(self, base_path, template_name):
     try:
       return self._cache.GetFromFile(
-          '/'.join((base_path, FormatKey(template_name))))
+          '/'.join((base_path, FormatKey(template_name)))).Get()
     except FileNotFoundError:
       return None

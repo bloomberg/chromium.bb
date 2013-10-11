@@ -45,26 +45,28 @@ class ChainedCompiledFileSystemTest(unittest.TestCase):
         identity, TestFileSystem)
 
   def testGetFromFile(self):
-    self.assertEqual(self._chained_compiled_fs.GetFromFile('a.txt'),
-                     self._base_compiled_fs.GetFromFile('a.txt'))
-    self.assertEqual(self._chained_compiled_fs.GetFromFile('new.txt'),
+    self.assertEqual(self._chained_compiled_fs.GetFromFile('a.txt').Get(),
+                     self._base_compiled_fs.GetFromFile('a.txt').Get())
+    self.assertEqual(self._chained_compiled_fs.GetFromFile('new.txt').Get(),
                      'a new file')
-    self.assertEqual(self._chained_compiled_fs.GetFromFile('dir/new.txt'),
+    self.assertEqual(self._chained_compiled_fs.GetFromFile('dir/new.txt').Get(),
                      'new file in dir')
     self._file_system.IncrementStat('a.txt')
-    self.assertNotEqual(self._chained_compiled_fs.GetFromFile('a.txt'),
-                        self._base_compiled_fs.GetFromFile('a.txt'))
-    self.assertEqual(self._chained_compiled_fs.GetFromFile('a.txt'),
+    self.assertNotEqual(self._chained_compiled_fs.GetFromFile('a.txt').Get(),
+                        self._base_compiled_fs.GetFromFile('a.txt').Get())
+    self.assertEqual(self._chained_compiled_fs.GetFromFile('a.txt').Get(),
                      self._file_system.ReadSingle('a.txt').Get())
 
   def testGetFromFileListing(self):
-    self.assertEqual(self._chained_compiled_fs.GetFromFile('dir/'),
-                     self._base_compiled_fs.GetFromFile('dir/'))
+    self.assertEqual(self._chained_compiled_fs.GetFromFile('dir/').Get(),
+                     self._base_compiled_fs.GetFromFile('dir/').Get())
     self._file_system.IncrementStat('dir/')
-    self.assertNotEqual(self._chained_compiled_fs.GetFromFileListing('dir/'),
-                        self._base_compiled_fs.GetFromFileListing('dir/'))
-    self.assertEqual(self._chained_compiled_fs.GetFromFileListing('dir/'),
-                     self._file_system.ReadSingle('dir/').Get())
+    self.assertNotEqual(
+        self._chained_compiled_fs.GetFromFileListing('dir/').Get(),
+        self._base_compiled_fs.GetFromFileListing('dir/').Get())
+    self.assertEqual(
+        self._chained_compiled_fs.GetFromFileListing('dir/').Get(),
+        self._file_system.ReadSingle('dir/').Get())
 
 if __name__ == '__main__':
   unittest.main()

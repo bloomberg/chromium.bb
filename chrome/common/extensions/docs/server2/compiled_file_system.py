@@ -2,6 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
+from file_system import FileNotFoundError
+from future import Gettable, Future
+
+
 class _CacheEntry(object):
   def __init__(self, cache_data, version):
     self._cache_data = cache_data
@@ -48,14 +54,59 @@ class CompiledFileSystem(object):
     self._list_object_store = list_object_store
 
   def _RecursiveList(self, path):
-    files = []
-    for filename in self._file_system.ReadSingle(path).Get():
-      if filename.endswith('/'):
-        files.extend(['%s%s' % (filename, f)
-                      for f in self._RecursiveList('%s%s' % (path, filename))])
-      else:
-        files.append(filename)
-    return files
+    '''Returns a Future containing the recursive directory listing of |path| as
+    a flat list of paths.
+    '''
+    def split_dirs_from_files(paths):
+      '''Returns a tuple (dirs, files) where |dirs| contains the directory
+      names in |paths| and |files| contains the files.
+      '''
+      result = [], []
+      for path in paths:
+        result[0 if path.endswith('/') else 1].append(path)
+      return result
+
+    def add_prefix(prefix, paths):
+      return [prefix + path for path in paths]
+
+    # Read in the initial list of files. Do this eagerly (i.e. not part of the
+    # asynchronous Future contract) because there's a greater chance to
+    # parallelise fetching with the second layer (can fetch multiple paths).
+    try:
+      first_layer_dirs, first_layer_files = split_dirs_from_files(
+          self._file_system.ReadSingle(path).Get())
+    except FileNotFoundError:
+      return Future(exc_info=sys.exc_info())
+
+    if not first_layer_dirs:
+      return Future(value=first_layer_files)
+
+    second_layer_listing = self._file_system.Read(
+        add_prefix(path, first_layer_dirs))
+
+    def resolve():
+      def get_from_future_listing(futures):
+        '''Recursively lists files from directory listing |futures|.
+        '''
+        dirs, files = [], []
+        for dir_name, listing in futures.Get().iteritems():
+          new_dirs, new_files = split_dirs_from_files(listing)
+          # |dirs| are paths for reading. Add the full prefix relative to
+          # |path| so that |file_system| can find the files.
+          dirs += add_prefix(dir_name, new_dirs)
+          # |files| are not for reading, they are for returning to the caller.
+          # This entire function set (i.e. GetFromFileListing) is defined to
+          # not include the fetched-path in the result, however, |dir_name|
+          # will be prefixed with |path|. Strip it.
+          assert dir_name.startswith(path)
+          files += add_prefix(dir_name[len(path):], new_files)
+        if dirs:
+          files += get_from_future_listing(self._file_system.Read(dirs))
+        return files
+
+      return first_layer_files + get_from_future_listing(second_layer_listing)
+
+    return Future(delegate=Gettable(resolve))
 
   def GetFromFile(self, path, binary=False):
     """Calls |populate_function| on the contents of the file at |path|.  If
@@ -63,15 +114,21 @@ class CompiledFileSystem(object):
     apply for the first time the file is fetched; if already cached, |binary|
     will be ignored.
     """
-    version = self._file_system.Stat(path).version
+    try:
+      version = self._file_system.Stat(path).version
+    except FileNotFoundError:
+      return Future(exc_info=sys.exc_info())
+
     cache_entry = self._file_object_store.Get(path).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
-      return cache_entry._cache_data
-    cache_data = self._populate_function(
-        path,
-        self._file_system.ReadSingle(path, binary=binary).Get())
-    self._file_object_store.Set(path, _CacheEntry(cache_data, version))
-    return cache_data
+      return Future(value=cache_entry._cache_data)
+
+    future_files = self._file_system.Read([path], binary=binary)
+    def resolve():
+      cache_data = self._populate_function(path, future_files.Get().get(path))
+      self._file_object_store.Set(path, _CacheEntry(cache_data, version))
+      return cache_data
+    return Future(delegate=Gettable(resolve))
 
   def GetFromFileListing(self, path):
     """Calls |populate_function| on the listing of the files at |path|.
@@ -79,13 +136,22 @@ class CompiledFileSystem(object):
     """
     if not path.endswith('/'):
       path += '/'
-    version = self._file_system.Stat(path).version
+
+    try:
+      version = self._file_system.Stat(path).version
+    except FileNotFoundError:
+      return Future(exc_info=sys.exc_info())
+
     cache_entry = self._list_object_store.Get(path).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
-      return cache_entry._cache_data
-    cache_data = self._populate_function(path, self._RecursiveList(path))
-    self._list_object_store.Set(path, _CacheEntry(cache_data, version))
-    return cache_data
+      return Future(value=cache_entry._cache_data)
+
+    recursive_list_future = self._RecursiveList(path)
+    def resolve():
+      cache_data = self._populate_function(path, recursive_list_future.Get())
+      self._list_object_store.Set(path, _CacheEntry(cache_data, version))
+      return cache_data
+    return Future(delegate=Gettable(resolve))
 
   def StatFile(self, path):
     cache_entry = self._file_object_store.Get(path).Get()

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from file_system import FileSystem, FileNotFoundError
-from future import Future
+from future import Gettable, Future
 from test_file_system import TestFileSystem
 
 class MockFileSystem(FileSystem):
@@ -19,6 +19,7 @@ class MockFileSystem(FileSystem):
     # implemented a bunch of logic to interpret paths into dictionaries.
     self._updates = []
     self._read_count = 0
+    self._read_resolve_count = 0
     self._stat_count = 0
 
   @staticmethod
@@ -38,15 +39,15 @@ class MockFileSystem(FileSystem):
     '''
     self._read_count += 1
     future_result = self._file_system.Read(paths, binary=binary)
-    try:
+    def resolve():
+      self._read_resolve_count += 1
       result = future_result.Get()
-    except:
-      return future_result
-    for path in result.iterkeys():
-      _, update = self._GetMostRecentUpdate(path)
-      if update is not None:
-        result[path] = update
-    return Future(value=result)
+      for path in result.iterkeys():
+        _, update = self._GetMostRecentUpdate(path)
+        if update is not None:
+          result[path] = update
+      return result
+    return Future(delegate=Gettable(resolve))
 
   def _GetMostRecentUpdate(self, path):
     for revision, update in reversed(list(enumerate(self._updates))):
@@ -96,19 +97,17 @@ class MockFileSystem(FileSystem):
   # Testing methods.
   #
 
-  def GetReadCount(self):
-    return self._read_count
-
   def GetStatCount(self):
     return self._stat_count
 
-  def CheckAndReset(self, stat_count=0, read_count=0):
+  def CheckAndReset(self, stat_count=0, read_count=0, read_resolve_count=0):
     '''Returns a tuple (success, error). Use in tests like:
     self.assertTrue(*object_store.CheckAndReset(...))
     '''
     errors = []
     for desc, expected, actual in (
         ('read_count', read_count, self._read_count),
+        ('read_resolve_count', read_resolve_count, self._read_resolve_count),
         ('stat_count', stat_count, self._stat_count)):
       if actual != expected:
         errors.append('%s: expected %s got %s' % (desc, expected, actual))
@@ -119,6 +118,7 @@ class MockFileSystem(FileSystem):
 
   def Reset(self):
     self._read_count = 0
+    self._read_resolve_count = 0
     self._stat_count = 0
 
   def Update(self, update):

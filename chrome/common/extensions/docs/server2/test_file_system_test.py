@@ -64,12 +64,38 @@ class TestFileSystemTest(unittest.TestCase):
     self.assertEqual('404.html contents', fs.ReadSingle('/404.html').Get())
     self.assertEqual('a11y.html contents',
                      fs.ReadSingle('apps/a11y.html').Get())
-    self.assertEqual(set(['404.html', 'apps/', 'extensions/']),
-                     set(fs.ReadSingle('/').Get()))
-    self.assertEqual(set(['a11y.html', 'about_apps.html', 'fakedir/']),
-                     set(fs.ReadSingle('apps/').Get()))
-    self.assertEqual(set(['a11y.html', 'about_apps.html', 'fakedir/']),
-                     set(fs.ReadSingle('/apps/').Get()))
+    self.assertEqual(['404.html', 'apps/', 'extensions/'],
+                     sorted(fs.ReadSingle('/').Get()))
+    self.assertEqual(['a11y.html', 'about_apps.html', 'fakedir/'],
+                     sorted(fs.ReadSingle('apps/').Get()))
+    self.assertEqual(['a11y.html', 'about_apps.html', 'fakedir/'],
+                     sorted(fs.ReadSingle('/apps/').Get()))
+
+  def testReadFiles(self):
+    fs = TestFileSystem(deepcopy(_TEST_DATA))
+    self.assertEqual('404.html contents',
+                     fs.ReadSingle('404.html').Get())
+    self.assertEqual('404.html contents',
+                     fs.ReadSingle('/404.html').Get())
+    self.assertEqual('a11y.html contents',
+                     fs.ReadSingle('apps/a11y.html').Get())
+    self.assertEqual('a11y.html contents',
+                     fs.ReadSingle('/apps/a11y.html').Get())
+    self.assertEqual('file.html contents',
+                     fs.ReadSingle('apps/fakedir/file.html').Get())
+    self.assertEqual('file.html contents',
+                     fs.ReadSingle('/apps/fakedir/file.html').Get())
+
+  def testReadDirs(self):
+    fs = TestFileSystem(deepcopy(_TEST_DATA))
+    self.assertEqual(['404.html', 'apps/', 'extensions/'],
+                     sorted(fs.ReadSingle('/').Get()))
+    self.assertEqual(['a11y.html', 'about_apps.html', 'fakedir/'],
+                     sorted(fs.ReadSingle('/apps/').Get()))
+    self.assertEqual(['a11y.html', 'about_apps.html', 'fakedir/'],
+                     sorted(fs.ReadSingle('apps/').Get()))
+    self.assertEqual(['file.html'], fs.ReadSingle('/apps/fakedir/').Get())
+    self.assertEqual(['file.html'], fs.ReadSingle('apps/fakedir/').Get())
 
   def testStat(self):
     fs = TestFileSystem(deepcopy(_TEST_DATA))

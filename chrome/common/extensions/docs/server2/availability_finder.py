@@ -22,7 +22,7 @@ def _GetChannelFromFeatures(api_name, file_system, path):
   |path| for the given |file_system|. Returns None if channel information for
   the API cannot be located.
   '''
-  feature = file_system.GetFromFile(path).get(api_name)
+  feature = file_system.GetFromFile(path).Get().get(api_name)
 
   if feature is None:
     return None

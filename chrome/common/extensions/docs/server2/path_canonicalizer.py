@@ -79,9 +79,9 @@ class PathCanonicalizer(object):
 
     try:
       apps_public = self._public_apis.GetFromFileListing(
-          '/'.join((svn_constants.PUBLIC_TEMPLATE_PATH, 'apps')))
+          '/'.join((svn_constants.PUBLIC_TEMPLATE_PATH, 'apps'))).Get()
       extensions_public = self._public_apis.GetFromFileListing(
-          '/'.join((svn_constants.PUBLIC_TEMPLATE_PATH, 'extensions')))
+          '/'.join((svn_constants.PUBLIC_TEMPLATE_PATH, 'extensions'))).Get()
     except FileNotFoundError:
       # Probably offline.
       logging.warning(traceback.format_exc())
