@@ -26,7 +26,15 @@ function onAccessApproved(id) {
   }, gotStream, getUserMediaError);
 }
 
-document.querySelector('button').addEventListener('click', function(e) {
-  chrome.desktopCapture.chooseDesktopMedia(
-      ["screen", "window"], onAccessApproved );
+var pending_request_id = null;
+
+document.querySelector('#start').addEventListener('click', function(e) {
+  pending_request_id = chrome.desktopCapture.chooseDesktopMedia(
+      ["screen", "window"], onAccessApproved);
+});
+
+document.querySelector('#cancel').addEventListener('click', function(e) {
+  if (pending_request_id != null) {
+    chrome.desktopCapture.cancelChooseDesktopMedia(pending_request_id);
+  }
 });

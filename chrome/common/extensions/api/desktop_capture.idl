@@ -21,7 +21,9 @@ namespace desktopCapture {
   callback ChooseDesktopMediaCallback = void (DOMString streamId);
 
   interface Functions {
-    // Shows desktop media picker UI with the specified set of sources.
+    // Shows desktop media picker UI with the specified set of sources. Returns
+    // an id that can be passed to cancelChooseDesktopMedia() in case the prompt
+    // need to be canceled.
     //
     // |sources|: Set of sources that should be shown to the user.
     //
@@ -29,8 +31,13 @@ namespace desktopCapture {
     // not specified then the resulting stream can be used only the calling
     // extension, otherwise the stream can be used only by a page with the
     // specified origin.
-    static void chooseDesktopMedia(DesktopCaptureSourceType[] sources,
+    static long chooseDesktopMedia(DesktopCaptureSourceType[] sources,
                                    optional DOMString origin,
                                    ChooseDesktopMediaCallback callback);
+
+    // Hides desktop media picker dialog shown by chooseDesktopMedia().
+    //
+    // |desktopMediaRequestId|: Id returned by chooseDesktopMedia()
+    static void cancelChooseDesktopMedia(long desktopMediaRequestId);
   };
 };

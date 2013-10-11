@@ -72,5 +72,14 @@ chrome.test.runTests([
 
     chrome.desktopCapture.chooseDesktopMedia(
         ["screen", "window"], onPickerResult);
+  },
+
+  function cancelDialog() {
+    var requestId = chrome.desktopCapture.chooseDesktopMedia(
+        ["screen", "window"],
+        chrome.test.fail);
+    chrome.test.assertEq("number", typeof requestId);
+    chrome.desktopCapture.cancelChooseDesktopMedia(requestId);
+    chrome.test.succeed();
   }
 ]);

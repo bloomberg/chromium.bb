@@ -26,8 +26,10 @@ namespace {
 
 class FakeDesktopMediaPicker : public DesktopMediaPicker {
  public:
-  explicit FakeDesktopMediaPicker(const content::DesktopMediaID& source)
+  explicit FakeDesktopMediaPicker(const content::DesktopMediaID& source,
+                                  bool expect_cancelled)
       : source_(source),
+        expect_cancelled_(expect_cancelled),
         weak_factory_(this) {
   }
   virtual ~FakeDesktopMediaPicker() {}
@@ -38,10 +40,17 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
                     const string16& app_name,
                     scoped_ptr<DesktopMediaPickerModel> model,
                     const DoneCallback& done_callback) OVERRIDE {
-    // Post a task to call the callback asynchronously.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeDesktopMediaPicker::CallCallback,
-                            weak_factory_.GetWeakPtr(), done_callback));
+    if (!expect_cancelled_) {
+      // Post a task to call the callback asynchronously.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&FakeDesktopMediaPicker::CallCallback,
+                     weak_factory_.GetWeakPtr(), done_callback));
+    } else {
+      // If we expect the dialog to be canceled then store the callback to
+      // retain reference to the callback handler.
+      done_callback_ = done_callback;
+    }
   }
 
  private:
@@ -50,6 +59,8 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
   }
 
   content::DesktopMediaID source_;
+  bool expect_cancelled_;
+  DoneCallback done_callback_;
 
   base::WeakPtrFactory<FakeDesktopMediaPicker> weak_factory_;
 
@@ -63,6 +74,7 @@ class FakeDesktopMediaPickerFactory :
     bool screens;
     bool windows;
     content::DesktopMediaID selected_source;
+    bool cancelled;
   };
 
   FakeDesktopMediaPickerFactory() {}
@@ -89,12 +101,14 @@ class FakeDesktopMediaPickerFactory :
   }
   virtual scoped_ptr<DesktopMediaPicker> CreatePicker() OVERRIDE {
     content::DesktopMediaID next_source;
+    bool expect_cancelled = false;
     if (!expectations_.empty()) {
       next_source = expectations_.front().selected_source;
+      expect_cancelled = expectations_.front().cancelled;
       expectations_.pop();
     }
     return scoped_ptr<DesktopMediaPicker>(
-        new FakeDesktopMediaPicker(next_source));
+        new FakeDesktopMediaPicker(next_source, expect_cancelled));
   }
 
  private:
@@ -150,6 +164,9 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, ChooseDesktopMedia) {
     // chooseMediaAndTryGetStreamWithInvalidId()
     { true, true,
       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0) },
+    // cancelDialog()
+    { true, true,
+      content::DesktopMediaID(), true },
   };
   picker_factory_.SetExpectations(picker_expectations,
                                   arraysize(picker_expectations));

@@ -9,6 +9,8 @@
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
 
@@ -33,17 +35,40 @@ void DesktopCaptureChooseDesktopMediaFunction::SetPickerFactoryForTests(
 }
 
 DesktopCaptureChooseDesktopMediaFunction::
-DesktopCaptureChooseDesktopMediaFunction() {
-}
+    DesktopCaptureChooseDesktopMediaFunction() {}
 
 DesktopCaptureChooseDesktopMediaFunction::
-~DesktopCaptureChooseDesktopMediaFunction() {
+    ~DesktopCaptureChooseDesktopMediaFunction() {
+  // RenderViewHost may be already destroyed.
+  if (render_view_host()) {
+    DesktopCaptureRequestsRegistry::GetInstance()->RemoveRequest(
+        render_view_host()->GetProcess()->GetID(), request_id_);
+  }
+}
+
+void DesktopCaptureChooseDesktopMediaFunction::Cancel() {
+  // Keep reference to |this| to ensure the object doesn't get destroyed before
+  // we return.
+  scoped_refptr<DesktopCaptureChooseDesktopMediaFunction> self(this);
+  if (picker_) {
+    picker_.reset();
+    SetResult(new base::StringValue(std::string()));
+    SendResponse(true);
+  }
 }
 
 bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
+  EXTENSION_FUNCTION_VALIDATE(args_->GetSize() > 0);
+
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id_));
+  args_->Remove(0, NULL);
+
   scoped_ptr<api::desktop_capture::ChooseDesktopMedia::Params> params =
       api::desktop_capture::ChooseDesktopMedia::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DesktopCaptureRequestsRegistry::GetInstance()->AddRequest(
+      render_view_host()->GetProcess()->GetID(), request_id_, this);
 
   scoped_ptr<webrtc::ScreenCapturer> screen_capturer;
   scoped_ptr<webrtc::WindowCapturer> window_capturer;
@@ -125,5 +150,64 @@ void DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults(
   SetResult(new base::StringValue(result));
   SendResponse(true);
 }
+
+DesktopCaptureRequestsRegistry::RequestId::RequestId(int process_id,
+                                                     int request_id)
+    : process_id(process_id),
+      request_id(request_id) {
+}
+
+bool DesktopCaptureRequestsRegistry::RequestId::operator<(
+    const RequestId& other) const {
+  if (process_id != other.process_id) {
+    return process_id < other.process_id;
+  } else {
+    return request_id < other.request_id;
+  }
+}
+
+DesktopCaptureCancelChooseDesktopMediaFunction::
+    DesktopCaptureCancelChooseDesktopMediaFunction() {}
+
+DesktopCaptureCancelChooseDesktopMediaFunction::
+    ~DesktopCaptureCancelChooseDesktopMediaFunction() {}
+
+bool DesktopCaptureCancelChooseDesktopMediaFunction::RunImpl() {
+  int request_id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
+
+  DesktopCaptureRequestsRegistry::GetInstance()->CancelRequest(
+      render_view_host()->GetProcess()->GetID(), request_id);
+  return true;
+}
+
+DesktopCaptureRequestsRegistry::DesktopCaptureRequestsRegistry() {}
+DesktopCaptureRequestsRegistry::~DesktopCaptureRequestsRegistry() {}
+
+// static
+DesktopCaptureRequestsRegistry* DesktopCaptureRequestsRegistry::GetInstance() {
+  return Singleton<DesktopCaptureRequestsRegistry>::get();
+}
+
+void DesktopCaptureRequestsRegistry::AddRequest(
+    int process_id,
+    int request_id,
+    DesktopCaptureChooseDesktopMediaFunction* handler) {
+  requests_.insert(
+      RequestsMap::value_type(RequestId(process_id, request_id), handler));
+}
+
+void DesktopCaptureRequestsRegistry::RemoveRequest(int process_id,
+                                                   int request_id) {
+  requests_.erase(RequestId(process_id, request_id));
+}
+
+void DesktopCaptureRequestsRegistry::CancelRequest(int process_id,
+                                                   int request_id) {
+  RequestsMap::iterator it = requests_.find(RequestId(process_id, request_id));
+  if (it != requests_.end())
+    it->second->Cancel();
+}
+
 
 }  // namespace extensions
