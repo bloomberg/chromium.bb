@@ -41,7 +41,6 @@
       'SK_SUPPORT_GPU=<(skia_support_gpu)',
       'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
       'SK_ENABLE_LEGACY_API_ALIASING=1',
-      'SK_CROP_RECT_IS_INT=1',
     ],
 
     'default_font_cache_limit': '(20*1024*1024)',
