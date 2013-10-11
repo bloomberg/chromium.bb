@@ -1248,6 +1248,11 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
 
     Node* firstUncontainedNode = 0;
 
+    // We might hit something like an image map that has no renderer on it
+    // Walk up the tree until we have a node with an attached renderer
+    while (bestTouchNode && !bestTouchNode->renderer())
+        bestTouchNode = bestTouchNode->parentNode();
+
     // FIXME: http://crbug.com/289764 - Instead of stopping early on isContainedInParentBoundingBox, LinkHighlight
     // should calculate the appropriate rects (currently it just uses the linebox)
 
