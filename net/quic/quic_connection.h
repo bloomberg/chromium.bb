@@ -181,6 +181,10 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   // write blocked.
   virtual bool IsWriteBlockedDataBuffered() = 0;
 
+  // Returns true if |error| represents a write-block error code such
+  // as EAGAIN or ERR_IO_PENDING.
+  virtual bool IsWriteBlocked(int error) = 0;
+
   // Creates a new platform-specific alarm which will be configured to
   // notify |delegate| when the alarm fires.  Caller takes ownership
   // of the new alarm, which will not yet be "set" to fire.

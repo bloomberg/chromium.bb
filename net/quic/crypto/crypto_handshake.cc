@@ -759,13 +759,10 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     cetv.SetStringPiece(kCIDS, signature);
 
     CrypterPair crypters;
-    if (!CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
-                                 out_params->aead, out_params->client_nonce,
-                                 out_params->server_nonce, hkdf_input,
-                                 CryptoUtils::CLIENT, &crypters)) {
-      *error_details = "Symmetric key setup failed";
-      return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
-    }
+    CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
+                            out_params->aead, out_params->client_nonce,
+                            out_params->server_nonce, hkdf_input,
+                            CryptoUtils::CLIENT, &crypters);
 
     const QuicData& cetv_plaintext = cetv.GetSerialized();
     scoped_ptr<QuicData> cetv_ciphertext(crypters.encrypter->EncryptPacket(
@@ -797,13 +794,10 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(out_params->hkdf_input_suffix);
 
-  if (!CryptoUtils::DeriveKeys(
-           out_params->initial_premaster_secret, out_params->aead,
-           out_params->client_nonce, out_params->server_nonce, hkdf_input,
-           CryptoUtils::CLIENT, &out_params->initial_crypters)) {
-    *error_details = "Symmetric key setup failed";
-    return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
-  }
+  CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
+                          out_params->aead, out_params->client_nonce,
+                          out_params->server_nonce, hkdf_input,
+                          CryptoUtils::CLIENT, &out_params->initial_crypters);
 
   return QUIC_NO_ERROR;
 }
@@ -910,13 +904,10 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   hkdf_input.append(QuicCryptoConfig::kForwardSecureLabel, label_len);
   hkdf_input.append(out_params->hkdf_input_suffix);
 
-  if (!CryptoUtils::DeriveKeys(
-           out_params->forward_secure_premaster_secret, out_params->aead,
-           out_params->client_nonce, out_params->server_nonce, hkdf_input,
-           CryptoUtils::CLIENT, &out_params->forward_secure_crypters)) {
-    *error_details = "Symmetric key setup failed";
-    return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
-  }
+  CryptoUtils::DeriveKeys(
+      out_params->forward_secure_premaster_secret, out_params->aead,
+      out_params->client_nonce, out_params->server_nonce, hkdf_input,
+      CryptoUtils::CLIENT, &out_params->forward_secure_crypters);
 
   return QUIC_NO_ERROR;
 }

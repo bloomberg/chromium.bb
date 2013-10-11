@@ -77,7 +77,7 @@ string CryptoUtils::NormalizeHostname(const char* hostname) {
 }
 
 // static
-bool CryptoUtils::DeriveKeys(StringPiece premaster_secret,
+void CryptoUtils::DeriveKeys(StringPiece premaster_secret,
                              QuicTag aead,
                              StringPiece client_nonce,
                              StringPiece server_nonce,
@@ -99,22 +99,16 @@ bool CryptoUtils::DeriveKeys(StringPiece premaster_secret,
   crypto::HKDF hkdf(premaster_secret, nonce, hkdf_input, key_bytes,
                     nonce_prefix_bytes);
   if (perspective == SERVER) {
-    if (!out->encrypter->SetKey(hkdf.server_write_key()) ||
-        !out->encrypter->SetNoncePrefix(hkdf.server_write_iv()) ||
-        !out->decrypter->SetKey(hkdf.client_write_key()) ||
-        !out->decrypter->SetNoncePrefix(hkdf.client_write_iv())) {
-      return false;
-    }
+    out->encrypter->SetKey(hkdf.server_write_key());
+    out->encrypter->SetNoncePrefix(hkdf.server_write_iv());
+    out->decrypter->SetKey(hkdf.client_write_key());
+    out->decrypter->SetNoncePrefix(hkdf.client_write_iv());
   } else {
-    if (!out->encrypter->SetKey(hkdf.client_write_key()) ||
-        !out->encrypter->SetNoncePrefix(hkdf.client_write_iv()) ||
-        !out->decrypter->SetKey(hkdf.server_write_key()) ||
-        !out->decrypter->SetNoncePrefix(hkdf.server_write_iv())) {
-      return false;
-    }
+    out->encrypter->SetKey(hkdf.client_write_key());
+    out->encrypter->SetNoncePrefix(hkdf.client_write_iv());
+    out->decrypter->SetKey(hkdf.server_write_key());
+    out->decrypter->SetNoncePrefix(hkdf.server_write_iv());
   }
-
-  return true;
 }
 
 }  // namespace net

@@ -305,6 +305,10 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
     return is_write_blocked_data_buffered_;
   }
 
+  virtual bool IsWriteBlocked(int error) OVERRIDE {
+    return error == ERR_IO_PENDING;
+  }
+
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE {
     return new TestAlarm(delegate);
   }

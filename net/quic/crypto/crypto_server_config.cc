@@ -449,12 +449,9 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     hkdf_input.append(requested_config->serialized);
 
     CrypterPair crypters;
-    if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
-                                 info.client_nonce, info.server_nonce,
-                                 hkdf_input, CryptoUtils::SERVER, &crypters)) {
-      *error_details = "Symmetric key setup failed";
-      return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
-    }
+    CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
+                            info.client_nonce, info.server_nonce, hkdf_input,
+                            CryptoUtils::SERVER, &crypters);
 
     scoped_ptr<QuicData> cetv_plaintext(crypters.decrypter->DecryptPacket(
         0 /* sequence number */, StringPiece() /* associated data */,
@@ -489,13 +486,9 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(hkdf_suffix);
 
-  if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
-                               info.client_nonce, info.server_nonce, hkdf_input,
-                               CryptoUtils::SERVER,
-                               &params->initial_crypters)) {
-    *error_details = "Symmetric key setup failed";
-    return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
-  }
+  CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
+                          info.client_nonce, info.server_nonce, hkdf_input,
+                          CryptoUtils::SERVER, &params->initial_crypters);
 
   string forward_secure_public_value;
   if (ephemeral_key_source_.get()) {
@@ -522,13 +515,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                                    label_len);
   forward_secure_hkdf_input.append(hkdf_suffix);
 
-  if (!CryptoUtils::DeriveKeys(
-           params->forward_secure_premaster_secret, params->aead,
-           info.client_nonce, info.server_nonce, forward_secure_hkdf_input,
-           CryptoUtils::SERVER, &params->forward_secure_crypters)) {
-    *error_details = "Symmetric key setup failed";
-    return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
-  }
+  CryptoUtils::DeriveKeys(params->forward_secure_premaster_secret, params->aead,
+                          info.client_nonce, info.server_nonce,
+                          forward_secure_hkdf_input, CryptoUtils::SERVER,
+                          &params->forward_secure_crypters);
 
   out->set_tag(kSHLO);
   out->SetStringPiece(kSourceAddressTokenTag,

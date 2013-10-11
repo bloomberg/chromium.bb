@@ -123,6 +123,10 @@ bool QuicEpollConnectionHelper::IsWriteBlockedDataBuffered() {
   return false;
 }
 
+bool QuicEpollConnectionHelper::IsWriteBlocked(int error) {
+  return error == EAGAIN || error == EWOULDBLOCK;
+}
+
 QuicAlarm* QuicEpollConnectionHelper::CreateAlarm(
     QuicAlarm::Delegate* delegate) {
   return new QuicEpollAlarm(epoll_server_, delegate);

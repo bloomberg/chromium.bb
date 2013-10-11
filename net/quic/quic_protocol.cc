@@ -125,8 +125,6 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '0', '9');
     case QUIC_VERSION_10:
       return MakeQuicTag('Q', '0', '1', '0');
-    case QUIC_VERSION_11:
-      return MakeQuicTag('Q', '0', '1', '1');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -136,15 +134,19 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
 }
 
 QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
-  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    if (version_tag == QuicVersionToQuicTag(kSupportedQuicVersions[i])) {
-      return kSupportedQuicVersions[i];
-    }
+  const QuicTag quic_tag_v9 = MakeQuicTag('Q', '0', '0', '9');
+  const QuicTag quic_tag_v10 = MakeQuicTag('Q', '0', '1', '0');
+
+  if (version_tag == quic_tag_v9) {
+    return QUIC_VERSION_9;
+  } else if (version_tag == quic_tag_v10) {
+    return QUIC_VERSION_10;
+  } else {
+    // Reading from the client so this should not be considered an ERROR.
+    DLOG(INFO) << "Unsupported QuicTag version: "
+               << QuicUtils::TagToString(version_tag);
+    return QUIC_VERSION_UNSUPPORTED;
   }
-  // Reading from the client so this should not be considered an ERROR.
-  DLOG(INFO) << "Unsupported QuicTag version: "
-             << QuicUtils::TagToString(version_tag);
-  return QUIC_VERSION_UNSUPPORTED;
 }
 
 #define RETURN_STRING_LITERAL(x) \
@@ -155,7 +157,6 @@ string QuicVersionToString(const QuicVersion version) {
   switch (version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_9);
     RETURN_STRING_LITERAL(QUIC_VERSION_10);
-    RETURN_STRING_LITERAL(QUIC_VERSION_11);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }

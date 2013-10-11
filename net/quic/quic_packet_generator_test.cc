@@ -462,9 +462,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
 TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   // Set the packet size be enough for two stream frames with 0 stream offset,
   // but not enough for a stream frame of 0 offset and one with non-zero offset.
-  bool use_short_hash = framer_.version() >= QUIC_VERSION_11;
   creator_.options()->max_packet_length =
-      NullEncrypter(use_short_hash).GetCiphertextSize(0) +
+      NullEncrypter().GetCiphertextSize(0) +
       GetPacketHeaderSize(creator_.options()->send_guid_length,
                           true,
                           creator_.options()->send_sequence_number_length,

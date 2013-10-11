@@ -16,7 +16,6 @@ namespace net {
 // generate a MAC (fnv128) over both the payload and associated data.
 class NET_EXPORT_PRIVATE NullEncrypter : public QuicEncrypter {
  public:
-  explicit NullEncrypter(bool use_short_hash_);
   virtual ~NullEncrypter() {}
 
   // QuicEncrypter implementation
@@ -35,11 +34,6 @@ class NET_EXPORT_PRIVATE NullEncrypter : public QuicEncrypter {
   virtual size_t GetCiphertextSize(size_t plaintext_size) const OVERRIDE;
   virtual base::StringPiece GetKey() const OVERRIDE;
   virtual base::StringPiece GetNoncePrefix() const OVERRIDE;
-
- private:
-  size_t GetHashLength() const;
-
-  bool use_short_hash_;
 };
 
 }  // namespace net
