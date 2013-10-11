@@ -6,7 +6,7 @@ Running: testLiveEdit
 display: block;
     div - block user agent stylesheet
 font-size: 20px;
-    body - 20px get-set-stylesheet-text.css:1
+    body - 20px css-live-edit.css:1
 
 [expanded] 
 element.style  { ()

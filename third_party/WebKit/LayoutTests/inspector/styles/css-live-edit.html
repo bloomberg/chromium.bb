@@ -4,7 +4,7 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script src="../../http/tests/inspector/live-edit-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
-<link rel="stylesheet" href="resources/get-set-stylesheet-text.css">
+<link rel="stylesheet" href="resources/css-live-edit.css">
 <div id=foo></div>
 <script>
 
@@ -15,7 +15,7 @@ function test()
     InspectorTest.runTestSuite([
         function testLiveEdit(next)
         {
-            InspectorTest.showScriptSource("get-set-stylesheet-text.css", didShowResource);
+            InspectorTest.showScriptSource("css-live-edit.css", didShowResource);
 
             function didShowResource(sourceFrame)
             {

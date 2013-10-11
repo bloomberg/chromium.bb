@@ -45,12 +45,11 @@ function test()
                 InspectorTest.addResult("Failed to set stylesheet text: " + error);
                 return;
             }
-
-            InspectorTest.runAfterPendingDispatches(next);
         }
 
         InspectorTest.addResult("=== Original stylesheet text: ===");
         InspectorTest.addResult(foundStyleSheet.getText());
+        WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, next, this);
         foundStyleSheet.setText("h1 { COLOR: Red; }", true, callback);
     }
 
