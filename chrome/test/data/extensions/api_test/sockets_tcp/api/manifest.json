@@ -1,0 +1,13 @@
+{
+  "name": "chrome.sockets.tcp",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.sockets.tcp API",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "sockets": {
+    "tcp":  {"connect": ""}
+  }
+}

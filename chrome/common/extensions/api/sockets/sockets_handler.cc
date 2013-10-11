@@ -99,6 +99,14 @@ scoped_ptr<SocketsManifestData> SocketsManifestData::FromValue(
       return scoped_ptr<SocketsManifestData>();
     }
   }
+  if (sockets->tcp) {
+    if (!ParseHostPattern(result.get(),
+        content::SocketPermissionRequest::TCP_CONNECT,
+        sockets->tcp->connect,
+        error)) {
+      return scoped_ptr<SocketsManifestData>();
+    }
+  }
   return result.Pass();
 }
 

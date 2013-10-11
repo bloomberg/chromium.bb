@@ -96,6 +96,43 @@ class TCPSocket : public Socket {
   AcceptCompletionCallback accept_callback_;
 };
 
+// TCP Socket instances from the "sockets.tcp" namespace. These are regular
+// socket objects with additional properties related to the behavior defined in
+// the "sockets.tcp" namespace.
+class ResumableTCPSocket : public TCPSocket {
+ public:
+  explicit ResumableTCPSocket(const std::string& owner_extension_id);
+
+  const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { name_ = name; }
+
+  virtual bool persistent() const OVERRIDE;
+  void set_persistent(bool persistent) { persistent_ = persistent; }
+
+  int buffer_size() const { return buffer_size_; }
+  void set_buffer_size(int buffer_size) { buffer_size_ = buffer_size; }
+
+  bool paused() const { return paused_; }
+  void set_paused(bool paused) { paused_ = paused; }
+
+ private:
+  friend class ApiResourceManager<ResumableTCPSocket>;
+  static const char* service_name() {
+    return "ResumableTCPSocketManager";
+  }
+
+  // Application-defined string - see sockets_tcp.idl.
+  std::string name_;
+  // Flag indicating whether the socket is left open when the application is
+  // suspended - see sockets_tcp.idl..
+  bool persistent_;
+  // The size of the buffer used to receive data - see sockets_tcp.idl.
+  int buffer_size_;
+  // Flag indicating whether a connected socket blocks its peer from sending
+  // more data - see sockets_tcp.idl.
+  bool paused_;
+};
+
 }  //  namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKET_TCP_SOCKET_H_

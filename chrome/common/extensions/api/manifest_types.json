@@ -59,6 +59,18 @@
                 "type": "string"
               }
             }
+          },
+          "tcp": {
+            "description": "The <code>tcp</code> manifest property declares which sockets.tcp operations an app can issue.",
+            "optional": true,
+            "type": "object",
+            "properties": {
+              "connect": {
+                "description": "<p>The host:port pattern for <code>connect</code> operations.</p>",
+                "optional": true,
+                "type": "string"
+              }
+            }
           }
         }
       }

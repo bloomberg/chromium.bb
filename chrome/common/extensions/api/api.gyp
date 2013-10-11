@@ -92,6 +92,7 @@
               'sessions.json',
               'signed_in_devices.idl',
               'socket.idl',
+              'sockets_tcp.idl',
               'sockets_udp.idl',
               'storage.json',
               'sync_file_system.idl',

@@ -24,6 +24,7 @@
 
 namespace extensions {
 namespace api {
+class TCPSocketEventDispatcher;
 class UDPSocketEventDispatcher;
 }
 }
@@ -152,8 +153,9 @@ class ApiResourceManager : public ProfileKeyedAPI,
   }
 
  private:
-  friend class ProfileKeyedAPIFactory<ApiResourceManager<T> >;
+  friend class api::TCPSocketEventDispatcher;
   friend class api::UDPSocketEventDispatcher;
+  friend class ProfileKeyedAPIFactory<ApiResourceManager<T> >;
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
     return T::service_name();

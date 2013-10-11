@@ -33,7 +33,7 @@ class ApiResource {
 
  private:
   // The extension that owns this resource.
-  const std::string& owner_extension_id_;
+  const std::string owner_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ApiResource);
 };

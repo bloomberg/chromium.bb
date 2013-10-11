@@ -86,7 +86,9 @@
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
+#include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
+#include "chrome/browser/extensions/api/sockets_tcp/tcp_socket_event_dispatcher.h"
 #include "chrome/browser/extensions/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/api/system_info/system_info_api.h"
@@ -216,6 +218,8 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ActivityLogFactory::GetInstance();
   extensions::ActivityLogAPI::GetFactoryInstance();
   extensions::AlarmManager::GetFactoryInstance();
+  extensions::ApiResourceManager<extensions::ResumableTCPSocket>::
+      GetFactoryInstance();
   extensions::ApiResourceManager<extensions::ResumableUDPSocket>::
       GetFactoryInstance();
   extensions::ApiResourceManager<extensions::SerialConnection>::
@@ -223,6 +227,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ApiResourceManager<extensions::Socket>::GetFactoryInstance();
   extensions::ApiResourceManager<extensions::UsbDeviceResource>::
       GetFactoryInstance();
+  extensions::api::TCPSocketEventDispatcher::GetFactoryInstance();
   extensions::api::UDPSocketEventDispatcher::GetFactoryInstance();
   extensions::AudioAPI::GetFactoryInstance();
   extensions::BookmarksAPI::GetFactoryInstance();

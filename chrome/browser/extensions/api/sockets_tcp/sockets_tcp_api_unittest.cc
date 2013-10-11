@@ -7,8 +7,8 @@
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
-#include "chrome/browser/extensions/api/socket/udp_socket.h"
-#include "chrome/browser/extensions/api/sockets_udp/sockets_udp_api.h"
+#include "chrome/browser/extensions/api/socket/tcp_socket.h"
+#include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -27,16 +27,16 @@ BrowserContextKeyedService* ApiResourceManagerTestFactory(
     content::BrowserContext* profile) {
   content::BrowserThread::ID id;
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
-  return ApiResourceManager<ResumableUDPSocket>::
+  return ApiResourceManager<ResumableTCPSocket>::
       CreateApiResourceManagerForTest(static_cast<Profile*>(profile), id);
 }
 
-class SocketsUdpUnitTest : public BrowserWithTestWindowTest {
+class SocketsTcpUnitTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
 
-    ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance()->
+    ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance()->
         SetTestingFactoryAndUse(browser()->profile(),
                                 ApiResourceManagerTestFactory);
 
@@ -61,13 +61,13 @@ class SocketsUdpUnitTest : public BrowserWithTestWindowTest {
   scoped_refptr<extensions::Extension> extension_;
 };
 
-TEST_F(SocketsUdpUnitTest, Create) {
+TEST_F(SocketsTcpUnitTest, Create) {
   // Get BrowserThread
   content::BrowserThread::ID id;
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
 
   // Create SocketCreateFunction and put it on BrowserThread
-  SocketsUdpCreateFunction *function = new SocketsUdpCreateFunction();
+  SocketsTcpCreateFunction *function = new SocketsTcpCreateFunction();
   function->set_work_thread_id(id);
 
   // Run tests

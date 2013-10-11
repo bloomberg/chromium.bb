@@ -17,6 +17,17 @@ const char kTCPSocketTypeInvalidError[] =
     "Cannot call both connect and listen on the same socket.";
 const char kSocketListenError[] = "Could not listen on the specified port.";
 
+static base::LazyInstance<ProfileKeyedAPIFactory<
+      ApiResourceManager<ResumableTCPSocket> > >
+          g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+template <>
+ProfileKeyedAPIFactory<ApiResourceManager<ResumableTCPSocket> >*
+ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 TCPSocket::TCPSocket(const std::string& owner_extension_id)
     : Socket(owner_extension_id),
       socket_mode_(UNKNOWN) {
@@ -284,6 +295,17 @@ void TCPSocket::OnAccept(int result) {
     accept_callback_.Run(result, NULL);
   }
   accept_callback_.Reset();
+}
+
+ResumableTCPSocket::ResumableTCPSocket(const std::string& owner_extension_id)
+    : TCPSocket(owner_extension_id),
+      persistent_(false),
+      buffer_size_(0),
+      paused_(false) {
+}
+
+bool ResumableTCPSocket::persistent() const {
+  return persistent_;
 }
 
 }  // namespace extensions
