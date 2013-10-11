@@ -32,6 +32,10 @@ class TestAuthService : public DummyAuthService {
 
   virtual void StartAuthentication(
       const AuthStatusCallback& callback) OVERRIDE {
+    // RequestSender should clear the rejected access token before starting
+    // to request another one.
+    EXPECT_FALSE(HasAccessToken());
+
     ++auth_try_count_;
 
     if (refresh_token() == kTestRefreshToken) {
@@ -209,12 +213,38 @@ TEST_F(RequestSenderTest, ValidRefreshTokenAndNoAccessToken) {
   EXPECT_FALSE(weak_ptr);  // The request object is deleted.
 }
 
-TEST_F(RequestSenderTest, DoAuthAndFailOnce) {
-  // TODO(kinaba): write a test using passed_reauth_callback once.
-}
+TEST_F(RequestSenderTest, AccessTokenRejectedSeveralTimes) {
+  bool start_called  = false;
+  FinishReason finish_reason = NONE;
+  TestRequest* request = new TestRequest(&request_sender_,
+                                         &start_called,
+                                         &finish_reason);
+  base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
 
-TEST_F(RequestSenderTest, DoAuthAndFailTwice) {
-  // TODO(kinaba): write a test using passed_reauth_callback twice.
+  base::Closure cancel_closure = request_sender_.StartRequestWithRetry(request);
+  EXPECT_TRUE(!cancel_closure.is_null());
+
+  EXPECT_TRUE(start_called);
+  EXPECT_EQ(kTestAccessToken, request->passed_access_token());
+  // Emulate the case that the access token was rejected by the remote service.
+  request->passed_reauth_callback().Run(request);
+  // New access token is fetched. Let it fail once again.
+  EXPECT_EQ(kTestAccessToken + std::string("1"),
+            request->passed_access_token());
+  request->passed_reauth_callback().Run(request);
+  // Once more.
+  EXPECT_EQ(kTestAccessToken + std::string("2"),
+            request->passed_access_token());
+  request->passed_reauth_callback().Run(request);
+
+  // Currently, limit for the retry is controlled in each request object, not
+  // by the RequestSender. So with this TestRequest, RequestSender retries
+  // infinitely. Let it succeed/
+  EXPECT_EQ(kTestAccessToken + std::string("3"),
+            request->passed_access_token());
+  request->FinishRequestWithSuccess();
+  EXPECT_EQ(SUCCESS, finish_reason);
+  EXPECT_FALSE(weak_ptr);
 }
 
 }  // namespace google_apis
