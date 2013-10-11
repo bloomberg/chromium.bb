@@ -48,4 +48,10 @@
 #
 # START OVERRIDES HERE
 
+# The roll to Skia r11720 fixed a bug in Perlin noise rendering
+crbug.com/306488 css3/filters/effect-reference-hidpi-hw.html [ ImageOnlyFailure ]
+crbug.com/306488 css3/filters/effect-reference-hw.html [ ImageOnlyFailure ]
+crbug.com/306488 css3/filters/effect-reference-subregion-hw.html [ ImageOnlyFailure ]
+crbug.com/306488 css3/filters/effect-reference-zoom-hw.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
