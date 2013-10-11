@@ -13,10 +13,10 @@
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/auto_window_management.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -87,13 +87,13 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
   AdjustWindowBoundsWhenAdded(wm::GetWindowState(child));
   BaseLayoutManager::OnWindowAddedToLayout(child);
   UpdateDesktopVisibility();
-  RearrangeVisibleWindowOnShow(child);
+  WindowPositioner::RearrangeVisibleWindowOnShow(child);
 }
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(Window* child) {
   BaseLayoutManager::OnWillRemoveWindowFromLayout(child);
   if (child->TargetVisibility())
-    RearrangeVisibleWindowOnHideOrRemove(child);
+    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
 }
 
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(Window* child) {
@@ -105,9 +105,9 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
                                                             bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
   if (child->TargetVisibility())
-    RearrangeVisibleWindowOnShow(child);
+    WindowPositioner::RearrangeVisibleWindowOnShow(child);
   else
-    RearrangeVisibleWindowOnHideOrRemove(child);
+    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
   UpdateDesktopVisibility();
 }
 
