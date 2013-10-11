@@ -54,20 +54,6 @@ PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
       weak_factory_(this) {
 }
 
-PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
-                                           PP_Instance instance,
-                                           PP_Resource resource,
-                                           const GURL& root_url,
-                                           PP_FileSystemType type)
-    : ResourceHost(host->GetPpapiHost(), instance, resource),
-      renderer_ppapi_host_(host),
-      type_(type),
-      opened_(true),
-      root_url_(root_url),
-      called_open_(true),
-      weak_factory_(this) {
-}
-
 PepperFileSystemHost::~PepperFileSystemHost() {
 }
 
