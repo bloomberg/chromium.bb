@@ -12,8 +12,7 @@ function onload()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages();
-    InspectorTest.runAfterPendingDispatches(callback);
+    InspectorTest.expandConsoleMessages(callback);
 
     function callback()
     {

@@ -24,8 +24,7 @@ function onload()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages();
-    InspectorTest.runAfterPendingDispatches(dumpConsoleMessages);
+    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
 
     function dumpConsoleMessages()
     {

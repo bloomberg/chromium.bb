@@ -106,7 +106,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
         InspectorTest.addResult(result[i]);
 }
 
-InspectorTest.expandConsoleMessages = function()
+InspectorTest.expandConsoleMessages = function(callback)
 {
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
@@ -123,6 +123,8 @@ InspectorTest.expandConsoleMessages = function()
             node = node.traverseNextNode(element);
         }
     }
+    if (callback)
+        InspectorTest.runAfterPendingDispatches(callback);
 }
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()

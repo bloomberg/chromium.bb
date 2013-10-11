@@ -41,8 +41,7 @@ function test()
 
     function step0()
     {
-        InspectorTest.expandConsoleMessages();
-        InspectorTest.runAfterPendingDispatches(step1);
+        InspectorTest.expandConsoleMessages(step1);
     }
 
     function step1()
