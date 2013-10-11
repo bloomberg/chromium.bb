@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/quad_f.h"
@@ -2512,6 +2513,50 @@ TEST(XFormTest, To2dTranslation) {
   transform.MakeIdentity();
   transform.Translate(translation.x(), translation.y());
   EXPECT_EQ(translation.ToString(), transform.To2dTranslation().ToString());
+}
+
+TEST(XFormTest, TransformRect) {
+  Transform translation;
+  translation.Translate(3.f, 7.f);
+  RectF rect(1.f, 2.f, 3.f, 4.f);
+  RectF expected(4.f, 9.f, 3.f, 4.f);
+  translation.TransformRect(&rect);
+  EXPECT_EQ(expected.ToString(), rect.ToString());
+}
+
+TEST(XFormTest, TransformRectReverse) {
+  Transform translation;
+  translation.Translate(3.f, 7.f);
+  RectF rect(1.f, 2.f, 3.f, 4.f);
+  RectF expected(-2.f, -5.f, 3.f, 4.f);
+  EXPECT_TRUE(translation.TransformRectReverse(&rect));
+  EXPECT_EQ(expected.ToString(), rect.ToString());
+
+  Transform singular;
+  singular.Scale3d(0.f, 0.f, 0.f);
+  EXPECT_FALSE(singular.TransformRectReverse(&rect));
+}
+
+TEST(XFormTest, TransformBox) {
+  Transform translation;
+  translation.Translate3d(3.f, 7.f, 6.f);
+  BoxF box(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
+  BoxF expected(4.f, 9.f, 9.f, 4.f, 5.f, 6.f);
+  translation.TransformBox(&box);
+  EXPECT_EQ(expected.ToString(), box.ToString());
+}
+
+TEST(XFormTest, TransformBoxReverse) {
+  Transform translation;
+  translation.Translate3d(3.f, 7.f, 6.f);
+  BoxF box(1.f, 2.f, 3.f, 4.f, 5.f, 6.f);
+  BoxF expected(-2.f, -5.f, -3.f, 4.f, 5.f, 6.f);
+  EXPECT_TRUE(translation.TransformBoxReverse(&box));
+  EXPECT_EQ(expected.ToString(), box.ToString());
+
+  Transform singular;
+  singular.Scale3d(0.f, 0.f, 0.f);
+  EXPECT_FALSE(singular.TransformBoxReverse(&box));
 }
 
 }  // namespace

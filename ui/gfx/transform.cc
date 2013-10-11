@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/rect.h"
@@ -425,6 +426,33 @@ bool Transform::TransformRectReverse(RectF* rect) const {
   SkRect src = RectFToSkRect(*rect);
   matrix.mapRect(&src);
   *rect = SkRectToRectF(src);
+  return true;
+}
+
+void Transform::TransformBox(BoxF* box) const {
+  BoxF bounds;
+  bool first_point = true;
+  for (int corner = 0; corner < 8; ++corner) {
+    gfx::Point3F point = box->origin();
+    point += gfx::Vector3dF(corner & 1 ? box->width() : 0.f,
+                            corner & 2 ? box->height() : 0.f,
+                            corner & 4 ? box->depth() : 0.f);
+    TransformPoint(&point);
+    if (first_point) {
+      bounds.set_origin(point);
+      first_point = false;
+    } else {
+      bounds.ExpandTo(point);
+    }
+  }
+  *box = bounds;
+}
+
+bool Transform::TransformBoxReverse(BoxF* box) const {
+  gfx::Transform inverse = *this;
+  if (!GetInverse(&inverse))
+    return false;
+  inverse.TransformBox(box);
   return true;
 }
 
