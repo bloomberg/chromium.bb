@@ -88,6 +88,10 @@ class UI_EXPORT BaseWindow {
 
   // Returns true if a window is set to be always on top.
   virtual bool IsAlwaysOnTop() const = 0;
+
+  // If set to true, the window will stay on top of other windows which do not
+  // have this flag enabled.
+  virtual void SetAlwaysOnTop(bool always_on_top) = 0;
 };
 
 }  // namespace ui

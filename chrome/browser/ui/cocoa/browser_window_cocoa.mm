@@ -259,6 +259,11 @@ bool BrowserWindowCocoa::IsAlwaysOnTop() const {
   return false;
 }
 
+void BrowserWindowCocoa::SetAlwaysOnTop(bool always_on_top) {
+  // Not implemented for browser windows.
+  NOTIMPLEMENTED();
+}
+
 bool BrowserWindowCocoa::IsActive() const {
   return [window() isKeyWindow];
 }

@@ -147,6 +147,7 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual bool IsVisible() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
+  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

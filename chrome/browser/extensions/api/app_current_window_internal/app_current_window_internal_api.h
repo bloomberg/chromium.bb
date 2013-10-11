@@ -155,6 +155,17 @@ class AppCurrentWindowInternalSetInputRegionFunction
   virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
 };
 
+class AppCurrentWindowInternalSetAlwaysOnTopFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setAlwaysOnTop",
+                             APP_CURRENTWINDOWINTERNAL_SETALWAYSONTOP)
+
+ protected:
+  virtual ~AppCurrentWindowInternalSetAlwaysOnTopFunction() {}
+  virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_APP_CURRENT_WINDOW_INTERNAL_APP_CURRENT_WINDOW_INTERNAL_API_H_

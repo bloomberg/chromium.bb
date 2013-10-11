@@ -124,6 +124,7 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
       window_mapped_(false),
       focus_when_shown_(false),
       is_fullscreen_(false),
+      is_always_on_top_(false),
       current_cursor_(ui::kCursorNull),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura) {
@@ -433,9 +434,14 @@ bool DesktopRootWindowHostX11::HasCapture() const {
 }
 
 void DesktopRootWindowHostX11::SetAlwaysOnTop(bool always_on_top) {
+  is_always_on_top_ = always_on_top;
   SetWMSpecState(always_on_top,
                  atom_cache_.GetAtom("_NET_WM_STATE_ABOVE"),
                  None);
+}
+
+bool DesktopRootWindowHostX11::IsAlwaysOnTop() const {
+  return is_always_on_top_;
 }
 
 void DesktopRootWindowHostX11::SetWindowTitle(const string16& title) {
@@ -898,21 +904,30 @@ void DesktopRootWindowHostX11::InitX11Window(
                   PropModeReplace,
                   reinterpret_cast<unsigned char*>(&window_type), 1);
 
+  // List of window state properties (_NET_WM_STATE) to set, if any.
+  std::vector< ::Atom> state_atom_list;
+
   // Remove popup windows from taskbar.
   if (params.type == Widget::InitParams::TYPE_POPUP ||
       params.type == Widget::InitParams::TYPE_BUBBLE) {
-    Atom atom = atom_cache_.GetAtom("_NET_WM_STATE_SKIP_TASKBAR");
+    state_atom_list.push_back(
+        atom_cache_.GetAtom("_NET_WM_STATE_SKIP_TASKBAR"));
+  }
 
-    // Setting _NET_WM_STATE by sending a message to the root_window (with
-    // SetWMSpecState) has no effect here since the window has not yet been
-    // mapped. So we manually change the state.
-    XChangeProperty (xdisplay_,
-                     xwindow_,
-                     atom_cache_.GetAtom("_NET_WM_STATE"),
-                     XA_ATOM,
-                     32,
-                     PropModeAppend,
-                     reinterpret_cast<unsigned char*>(&atom), 1);
+  // If the window should stay on top of other windows, add the
+  // _NET_WM_STATE_ABOVE property.
+  is_always_on_top_ = params.keep_on_top;
+  if (is_always_on_top_)
+    state_atom_list.push_back(atom_cache_.GetAtom("_NET_WM_STATE_ABOVE"));
+
+  // Setting _NET_WM_STATE by sending a message to the root_window (with
+  // SetWMSpecState) has no effect here since the window has not yet been
+  // mapped. So we manually change the state.
+  if (!state_atom_list.empty()) {
+    ui::SetAtomArrayProperty(xwindow_,
+                             "_NET_WM_STATE",
+                             "ATOM",
+                             state_atom_list);
   }
 
   if (!params.wm_class_name.empty() || !params.wm_class_class.empty()) {
@@ -1355,6 +1370,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
         }
 
         is_fullscreen_ = HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN");
+        is_always_on_top_ = HasWMSpecProperty("_NET_WM_STATE_ABOVE");
 
         // Now that we have different window properties, we may need to
         // relayout the window. (The windows code doesn't need this because

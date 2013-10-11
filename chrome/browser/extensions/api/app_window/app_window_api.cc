@@ -93,6 +93,7 @@ void SetCreateResultFromShellWindow(ShellWindow* window,
   result->SetBoolean("fullscreen", window->GetBaseWindow()->IsFullscreen());
   result->SetBoolean("minimized", window->GetBaseWindow()->IsMinimized());
   result->SetBoolean("maximized", window->GetBaseWindow()->IsMaximized());
+  result->SetBoolean("alwaysOnTop", window->GetBaseWindow()->IsAlwaysOnTop());
   base::DictionaryValue* boundsValue = new base::DictionaryValue();
   gfx::Rect bounds = window->GetClientBounds();
   boundsValue->SetInteger("left", bounds.x());
@@ -245,6 +246,11 @@ bool AppWindowCreateFunction::RunImpl() {
 
     if (options->resizable.get())
       create_params.resizable = *options->resizable.get();
+
+    if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
+        options->always_on_top.get()) {
+      create_params.always_on_top = *options->always_on_top.get();
+    }
 
     if (options->type != extensions::api::app_window::WINDOW_TYPE_PANEL) {
       switch (options->state) {

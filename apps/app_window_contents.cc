@@ -92,6 +92,7 @@ void AppWindowContents::NativeWindowChanged(
                          native_app_window->IsFullscreenOrPending());
   dictionary->SetBoolean("minimized", native_app_window->IsMinimized());
   dictionary->SetBoolean("maximized", native_app_window->IsMaximized());
+  dictionary->SetBoolean("alwaysOnTop", native_app_window->IsAlwaysOnTop());
 
   content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),

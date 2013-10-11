@@ -265,6 +265,12 @@ void SetFullScreenCollectionBehavior(NSWindow* window, bool allow_fullscreen) {
 - (void)setMouseDownCanMoveWindow:(BOOL)can_move;
 @end
 
+namespace {
+
+const NSInteger kAlwaysOnTopWindowLevel = NSFloatingWindowLevel;
+
+}  // namespace
+
 NativeAppWindowCocoa::NativeAppWindowCocoa(
     ShellWindow* shell_window,
     const ShellWindow::CreateParams& params)
@@ -333,6 +339,9 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   if (base::mac::IsOSSnowLeopard() &&
       [window respondsToSelector:@selector(setBottomCornerRounded:)])
     [window setBottomCornerRounded:NO];
+
+  if (params.always_on_top)
+    [window setLevel:kAlwaysOnTopWindowLevel];
 
   // Set the window to participate in Lion Fullscreen mode. Setting this flag
   // has no effect on Snow Leopard or earlier. UI controls for fullscreen are
@@ -810,7 +819,7 @@ void NativeAppWindowCocoa::FlashFrame(bool flash) {
 }
 
 bool NativeAppWindowCocoa::IsAlwaysOnTop() const {
-  return false;
+  return [window() level] == kAlwaysOnTopWindowLevel;
 }
 
 void NativeAppWindowCocoa::RenderViewHostChanged(
@@ -983,6 +992,12 @@ void NativeAppWindowCocoa::ShowWithApp() {
   is_hidden_with_app_ = false;
   if (!is_hidden_)
     ShowInactive();
+  shell_window_->OnNativeWindowChanged();
+}
+
+void NativeAppWindowCocoa::SetAlwaysOnTop(bool always_on_top) {
+  [window() setLevel:(always_on_top ? kAlwaysOnTopWindowLevel :
+                                      NSNormalWindowLevel)];
   shell_window_->OnNativeWindowChanged();
 }
 

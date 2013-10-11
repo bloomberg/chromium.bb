@@ -719,6 +719,11 @@ bool BrowserWindowGtk::IsAlwaysOnTop() const {
   return false;
 }
 
+void BrowserWindowGtk::SetAlwaysOnTop(bool always_on_top) {
+  // Not implemented for browser windows.
+  NOTIMPLEMENTED();
+}
+
 gfx::NativeWindow BrowserWindowGtk::GetNativeWindow() {
   return window_;
 }

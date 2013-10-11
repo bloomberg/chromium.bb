@@ -137,6 +137,8 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   virtual void ShowWithApp() OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
 
+  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
+
   // WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;

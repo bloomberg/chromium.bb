@@ -619,6 +619,7 @@ class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
     widget->IsActive();
     widget->DisableInactiveRendering();
     widget->SetAlwaysOnTop(true);
+    widget->IsAlwaysOnTop();
     widget->Maximize();
     widget->Minimize();
     widget->Restore();

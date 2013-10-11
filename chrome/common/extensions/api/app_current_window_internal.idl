@@ -40,6 +40,7 @@
     static void setBounds(Bounds bounds);
     static void setIcon(DOMString icon_url);
     static void setInputRegion(Region region);
+    static void setAlwaysOnTop(boolean always_on_top);
   };
 
   interface Events {

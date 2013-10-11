@@ -20,6 +20,8 @@ namespace SetBounds = extensions::api::app_current_window_internal::SetBounds;
 namespace SetIcon = extensions::api::app_current_window_internal::SetIcon;
 namespace SetInputRegion =
     extensions::api::app_current_window_internal::SetInputRegion;
+namespace SetAlwaysOnTop =
+    extensions::api::app_current_window_internal::SetAlwaysOnTop;
 
 using apps::ShellWindow;
 using extensions::api::app_current_window_internal::Bounds;
@@ -199,6 +201,15 @@ bool AppCurrentWindowInternalSetInputRegionFunction::RunWithWindow(
 
   window->UpdateInputRegion(region.Pass());
 
+  return true;
+}
+
+bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
+    ShellWindow* window) {
+  scoped_ptr<SetAlwaysOnTop::Params> params(
+      SetAlwaysOnTop::Params::Create(*args_));
+  CHECK(params.get());
+  window->GetBaseWindow()->SetAlwaysOnTop(params->always_on_top);
   return true;
 }
 

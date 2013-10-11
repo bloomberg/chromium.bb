@@ -137,4 +137,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiProperties) {
 
 #endif  // defined(TOOLKIT_VIEWS)
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlwaysOnTop) {
+  EXPECT_TRUE(RunPlatformAppTest("platform_apps/windows_api_always_on_top"))
+      << message_;
+}
+
 }  // namespace extensions

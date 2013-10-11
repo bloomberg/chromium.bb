@@ -307,6 +307,10 @@ void DesktopRootWindowHostWin::SetAlwaysOnTop(bool always_on_top) {
   message_handler_->SetAlwaysOnTop(always_on_top);
 }
 
+bool DesktopRootWindowHostWin::IsAlwaysOnTop() const {
+  return message_handler_->IsAlwaysOnTop();
+}
+
 void DesktopRootWindowHostWin::SetWindowTitle(const string16& title) {
   message_handler_->SetTitle(title);
 }

@@ -334,6 +334,10 @@ void NativeWidgetWin::SetAlwaysOnTop(bool on_top) {
   message_handler_->SetAlwaysOnTop(on_top);
 }
 
+bool NativeWidgetWin::IsAlwaysOnTop() const {
+  return message_handler_->IsAlwaysOnTop();
+}
+
 void NativeWidgetWin::Maximize() {
   message_handler_->Maximize();
 }

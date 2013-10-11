@@ -133,6 +133,7 @@ class Panel : public ui::BaseWindow,
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
+  virtual void SetAlwaysOnTop(bool on_top) OVERRIDE;
 
   // Overridden from CommandUpdaterDelegate:
   virtual void ExecuteCommandWithDisposition(
@@ -244,9 +245,6 @@ class Panel : public ui::BaseWindow,
 
   // Handles keyboard events coming back from the renderer.
   void HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event);
-
-  // Whether the panel window is always on top.
-  void SetAlwaysOnTop(bool on_top);
 
   // Sets whether the panel is shown in preview mode. When the panel is
   // being dragged, it is in preview mode.

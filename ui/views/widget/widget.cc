@@ -658,6 +658,10 @@ void Widget::SetAlwaysOnTop(bool on_top) {
   native_widget_->SetAlwaysOnTop(on_top);
 }
 
+bool Widget::IsAlwaysOnTop() const {
+  return native_widget_->IsAlwaysOnTop();
+}
+
 void Widget::Maximize() {
   native_widget_->Maximize();
 }

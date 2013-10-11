@@ -461,6 +461,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets the widget to be on top of all other widgets in the windowing system.
   void SetAlwaysOnTop(bool on_top);
 
+  // Returns whether the widget has been set to be on top of most other widgets
+  // in the windowing system.
+  bool IsAlwaysOnTop() const;
+
   // Maximizes/minimizes/restores the window.
   void Maximize();
   void Minimize();

@@ -112,6 +112,9 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     AppWindow.prototype.isMaximized = function() {
       return appWindowData.maximized;
     };
+    AppWindow.prototype.isAlwaysOnTop = function() {
+      return appWindowData.alwaysOnTop;
+    };
 
     Object.defineProperty(AppWindow.prototype, 'id', {get: function() {
       return appWindowData.id;
@@ -123,7 +126,8 @@ appWindow.registerCustomHook(function(bindingsAPI) {
                 width: params.bounds.width, height: params.bounds.height },
       fullscreen: params.fullscreen,
       minimized: params.minimized,
-      maximized: params.maximized
+      maximized: params.maximized,
+      alwaysOnTop: params.alwaysOnTop
     };
     currentAppWindow = new AppWindow;
   });

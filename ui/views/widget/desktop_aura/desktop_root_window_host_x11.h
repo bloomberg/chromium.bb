@@ -106,6 +106,7 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   virtual bool IsMinimized() const OVERRIDE;
   virtual bool HasCapture() const OVERRIDE;
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
+  virtual bool IsAlwaysOnTop() const OVERRIDE;
   virtual void SetWindowTitle(const string16& title) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
@@ -230,6 +231,9 @@ private:
   // Local flag for fullscreen state to avoid a state mismatch between
   // server and local window_properties_ during app-initiated fullscreen.
   bool is_fullscreen_;
+
+  // True if the window should stay on top of most other windows.
+  bool is_always_on_top_;
 
   // We are owned by the RootWindow, but we have to have a back pointer to it.
   aura::RootWindow* root_window_;

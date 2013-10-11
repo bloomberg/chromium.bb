@@ -686,6 +686,10 @@ bool HWNDMessageHandler::IsMaximized() const {
   return !!::IsZoomed(hwnd());
 }
 
+bool HWNDMessageHandler::IsAlwaysOnTop() const {
+  return (GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TOPMOST) != 0;
+}
+
 bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset,
                                      bool hide_on_escape) {
   ReleaseCapture();

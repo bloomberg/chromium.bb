@@ -107,6 +107,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   bool IsActive() const;
   bool IsMinimized() const;
   bool IsMaximized() const;
+  bool IsAlwaysOnTop() const;
 
   bool RunMoveLoop(const gfx::Vector2d& drag_offset, bool hide_on_escape);
   void EndMoveLoop();

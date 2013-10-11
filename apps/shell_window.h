@@ -123,6 +123,10 @@ class ShellWindow : public content::NotificationObserver,
 
     // If true, the window will be focused on creation. Defaults to true.
     bool focused;
+
+    // If true, the window will stay on top of other windows that are not
+    // configured to be always on top. Defaults to false.
+    bool always_on_top;
   };
 
   class Delegate {

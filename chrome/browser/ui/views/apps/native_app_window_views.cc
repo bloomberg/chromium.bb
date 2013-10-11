@@ -169,6 +169,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.
   init_params.top_level = true;
+  init_params.keep_on_top = create_params.always_on_top;
   gfx::Rect window_bounds = create_params.bounds;
   bool position_specified =
       window_bounds.x() != INT_MIN && window_bounds.y() != INT_MIN;
@@ -410,14 +411,16 @@ void NativeAppWindowViews::FlashFrame(bool flash) {
 }
 
 bool NativeAppWindowViews::IsAlwaysOnTop() const {
-  if (!shell_window_->window_type_is_panel())
-    return false;
+  if (shell_window_->window_type_is_panel()) {
 #if defined(USE_ASH)
   return ash::wm::GetWindowState(window_->GetNativeWindow())->
       panel_attached();
 #else
   return true;
 #endif
+  } else {
+    return window_->IsAlwaysOnTop();
+  }
 }
 
 gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
@@ -442,6 +445,11 @@ bool NativeAppWindowViews::IsVisible() const {
 
 void NativeAppWindowViews::HideWithApp() {}
 void NativeAppWindowViews::ShowWithApp() {}
+
+void NativeAppWindowViews::SetAlwaysOnTop(bool always_on_top) {
+  window_->SetAlwaysOnTop(always_on_top);
+  shell_window_->OnNativeWindowChanged();
+}
 
 gfx::NativeView NativeAppWindowViews::GetHostView() const {
   return window_->GetNativeView();

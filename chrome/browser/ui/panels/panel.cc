@@ -350,6 +350,10 @@ bool Panel::IsAlwaysOnTop() const {
   return native_panel_->IsPanelAlwaysOnTop();
 }
 
+void Panel::SetAlwaysOnTop(bool on_top) {
+  native_panel_->SetPanelAlwaysOnTop(on_top);
+}
+
 void Panel::ExecuteCommandWithDisposition(int id,
                                           WindowOpenDisposition disposition) {
   DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
@@ -656,10 +660,6 @@ void Panel::IncreaseMaxSize(const gfx::Size& desired_panel_size) {
 
 void Panel::HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
   native_panel_->HandlePanelKeyboardEvent(event);
-}
-
-void Panel::SetAlwaysOnTop(bool on_top) {
-  native_panel_->SetPanelAlwaysOnTop(on_top);
 }
 
 void Panel::SetPreviewMode(bool in_preview) {

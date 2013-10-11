@@ -700,6 +700,11 @@ bool BrowserView::IsAlwaysOnTop() const {
   return false;
 }
 
+void BrowserView::SetAlwaysOnTop(bool always_on_top) {
+  // Not implemented for browser windows.
+  NOTIMPLEMENTED();
+}
+
 gfx::NativeWindow BrowserView::GetNativeWindow() {
   // While the browser destruction is going on, the widget can already be gone,
   // but utility functions like FindBrowserWithWindow will come here and crash.

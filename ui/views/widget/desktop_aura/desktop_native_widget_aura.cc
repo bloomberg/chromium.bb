@@ -645,6 +645,10 @@ void DesktopNativeWidgetAura::SetAlwaysOnTop(bool always_on_top) {
     desktop_root_window_host_->SetAlwaysOnTop(always_on_top);
 }
 
+bool DesktopNativeWidgetAura::IsAlwaysOnTop() const {
+  return window_ && desktop_root_window_host_->IsAlwaysOnTop();
+}
+
 void DesktopNativeWidgetAura::Maximize() {
   if (window_)
     desktop_root_window_host_->Maximize();

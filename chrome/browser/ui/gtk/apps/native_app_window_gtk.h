@@ -80,6 +80,7 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   virtual bool IsVisible() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
+  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;
@@ -153,6 +154,10 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
 
   // True if the window should be resizable by the user.
   bool resizable_;
+
+  // True if the window should be kept on top of other windows that do not have
+  // this flag enabled.
+  bool always_on_top_;
 
   // The current window cursor.  We set it to a resize cursor when over the
   // custom frame border.  We set it to NULL if we want the default cursor.

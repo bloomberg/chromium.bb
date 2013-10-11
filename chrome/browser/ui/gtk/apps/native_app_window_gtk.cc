@@ -48,6 +48,7 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
       is_active_(false),
       content_thinks_its_fullscreen_(false),
       frameless_(params.frame == ShellWindow::FRAME_NONE),
+      always_on_top_(params.always_on_top),
       frame_cursor_(NULL),
       atom_cache_(base::MessagePumpGtk::GetDefaultXDisplay(), kAtomsToCache),
       is_x_event_listened_(false) {
@@ -90,6 +91,9 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
   // Hide titlebar when {frame: 'none'} specified on ShellWindow.
   if (frameless_)
     gtk_window_set_decorated(window_, false);
+
+  if (always_on_top_)
+    gtk_window_set_keep_above(window_, TRUE);
 
   int min_width = params.minimum_size.width();
   int min_height = params.minimum_size.height();
@@ -339,7 +343,7 @@ void NativeAppWindowGtk::FlashFrame(bool flash) {
 }
 
 bool NativeAppWindowGtk::IsAlwaysOnTop() const {
-  return false;
+  return always_on_top_;
 }
 
 void NativeAppWindowGtk::RenderViewHostChanged(
@@ -380,6 +384,16 @@ bool NativeAppWindowGtk::IsVisible() const {
 
 void NativeAppWindowGtk::HideWithApp() {}
 void NativeAppWindowGtk::ShowWithApp() {}
+
+void NativeAppWindowGtk::SetAlwaysOnTop(bool always_on_top) {
+  if (always_on_top_ != always_on_top) {
+    // gdk_window_get_state() does not give us the correct value for the
+    // GDK_WINDOW_STATE_ABOVE bit. Cache the current state.
+    always_on_top_ = always_on_top;
+    gtk_window_set_keep_above(window_, always_on_top_ ? TRUE : FALSE);
+    shell_window_->OnNativeWindowChanged();
+  }
+}
 
 gfx::NativeView NativeAppWindowGtk::GetHostView() const {
   NOTIMPLEMENTED();

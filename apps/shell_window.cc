@@ -65,7 +65,8 @@ ShellWindow::CreateParams::CreateParams()
     state(ui::SHOW_STATE_DEFAULT),
     hidden(false),
     resizable(true),
-    focused(true) {}
+    focused(true),
+    always_on_top(false) {}
 
 ShellWindow::CreateParams::~CreateParams() {}
 
