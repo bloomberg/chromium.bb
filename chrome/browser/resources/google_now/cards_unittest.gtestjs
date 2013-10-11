@@ -36,10 +36,12 @@ function setUpCardManagerTest(fixture) {
       'chrome.alarms.clear',
       'chrome.alarms.create',
       'chrome.notifications.clear',
+      'chrome.storage.local.set',
       'instrumented.alarms.onAlarm.addListener',
       'instrumented.notifications.create',
       'instrumented.notifications.update',
-      'instrumented.storage.local.get'
+      'instrumented.storage.local.get',
+      'tasks.add'
   ]);
 
   chrome.runtime = {}; // No error.
@@ -306,7 +308,7 @@ TEST_F('GoogleNowCardsUnitTest', 'ClearCard', function() {
       chrome_alarms_clear(expectedHideAlarmId);
 
   // Call tested method.
-  test.cardSet.clear(testCardId);
+  test.cardSet.clear(testCardId, false);
 });
 
 TEST_F('GoogleNowCardsUnitTest', 'onAlarmUnrecognized', function() {
@@ -398,13 +400,82 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataUpdate', function() {
 TEST_F('GoogleNowCardsUnitTest', 'onAlarmHide', function() {
   // Tests onAlarm for the 'hide' alarm.
   var test = setUpCardManagerTest(this);
+  var tasksAddSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      tasks_add(
+          tasksAddSavedArgs.match(eq(CLEAR_CARD_TASK_NAME)),
+          tasksAddSavedArgs.match(ANYTHING)).
+      will(invokeCallback(tasksAddSavedArgs,1));
   this.mockApis.expects(once()).
       chrome_notifications_clear(testCardId, ANYTHING);
   this.mockApis.expects(once()).
       chrome_alarms_clear(expectedShowAlarmId);
   this.mockApis.expects(once()).
       chrome_alarms_clear(expectedHideAlarmId);
-
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_storage_local_get(
+          storageGetSavedArgs.match(
+              eqJSON(['notificationsData', 'notificationGroups'])),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          storageGetSavedArgs,
+          1,
+          {
+            notificationsData: {
+              'TEST CARD ID': {testField: 'TEST VALUE'},
+              'TEST CARD ID 1': {testField: 'TEST VALUE 1'}
+            },
+            notificationGroups: {
+              groupA: {
+                cards: [
+                  {
+                    chromeNotificationId: 'TEST CARD ID',
+                    testField: 'TEST VALUE',
+                  },
+                  {
+                    chromeNotificationId: 'TEST CARD ID 1',
+                    testField: 'TEST VALUE 1',
+                  }
+                ]
+              },
+              groupB: {
+                cards: [
+                  {
+                    chromeNotificationId: 'TEST CARD ID 0',
+                    testField: 'TEST VALUE 0',
+                  },
+                  {
+                    chromeNotificationId: 'TEST CARD ID',
+                    testField: 'TEST VALUE',
+                  }
+                ]
+              }
+            }}));
+  this.mockApis.expects(once()).
+      chrome_storage_local_set(eqJSON({
+        notificationsData: {
+          'TEST CARD ID 1': {testField: 'TEST VALUE 1'}
+        },
+        notificationGroups: {
+          groupA: {
+            cards: [
+              {
+                chromeNotificationId: 'TEST CARD ID 1',
+                testField: 'TEST VALUE 1',
+              }
+            ]
+          },
+          groupB: {
+            cards: [
+              {
+                chromeNotificationId: 'TEST CARD ID 0',
+                testField: 'TEST VALUE 0',
+              }
+            ]
+          }
+        }
+      }));
 
   // Call tested method.
   test.alarmCallback({name: expectedHideAlarmId});

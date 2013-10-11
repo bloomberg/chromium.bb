@@ -299,7 +299,7 @@ function showNotificationCards(cards) {
             if (!(chromeNotificationId in cards)) {
               console.log(
                   'showNotificationCards-delete ' + chromeNotificationId);
-              cardSet.clear(chromeNotificationId);
+              cardSet.clear(chromeNotificationId, false);
             }
           }
 
@@ -815,14 +815,15 @@ function onNotificationClosed(chromeNotificationId, byUser) {
   tasks.add(DISMISS_CARD_TASK_NAME, function() {
     dismissalAttempts.start();
 
-    // Deleting the notification in case it was re-added while this task was
-    // scheduled, waiting for execution.
-    cardSet.clear(chromeNotificationId);
-
     instrumented.storage.local.get(
         ['pendingDismissals', 'notificationsData'], function(items) {
       items.pendingDismissals = items.pendingDismissals || [];
       items.notificationsData = items.notificationsData || {};
+
+      // Deleting the notification in case it was re-added while this task was
+      // scheduled, waiting for execution; also cleaning notification's data
+      // from storage.
+      cardSet.clear(chromeNotificationId, true);
 
       var notificationData = items.notificationsData[chromeNotificationId];
 

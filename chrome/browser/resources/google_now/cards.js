@@ -52,6 +52,11 @@ var MergedCard;
 var CardCreateInfo;
 
 /**
+ * Names for tasks that can be created by the this file.
+ */
+var CLEAR_CARD_TASK_NAME = 'clear-card';
+
+/**
  * Builds an object to manage notification card set.
  * @return {Object} Card set interface.
  */
@@ -168,13 +173,39 @@ function buildCardSet() {
   /**
    * Removes a card notification.
    * @param {string} cardId Card ID.
+   * @param {boolean} clearStorage True if the information associated with the
+   *     card should be erased from chrome.storage.
    */
-  function clear(cardId) {
+  function clear(cardId, clearStorage) {
     console.log('cardManager.clear ' + cardId);
 
     chrome.notifications.clear(cardId, function() {});
     chrome.alarms.clear(cardShowPrefix + cardId);
     chrome.alarms.clear(cardHidePrefix + cardId);
+
+    if (clearStorage) {
+      instrumented.storage.local.get(
+          ['notificationsData', 'notificationGroups'],
+          function(items) {
+            items = items || {};
+            items.notificationsData = items.notificationsData || {};
+            items.notificationGroups = items.notificationGroups || {};
+
+            delete items.notificationsData[cardId];
+
+            for (var groupName in items.notificationGroups) {
+              var group = items.notificationGroups[groupName];
+              for (var i = 0; i != group.cards.length; ++i) {
+                if (group.cards[i].chromeNotificationId == cardId) {
+                  group.cards.splice(i, 1);
+                  break;
+                }
+              }
+            }
+
+            chrome.storage.local.set(items);
+          });
+    }
   }
 
   instrumented.alarms.onAlarm.addListener(function(alarm) {
@@ -195,8 +226,10 @@ function buildCardSet() {
       });
     } else if (alarm.name.indexOf(cardHidePrefix) == 0) {
       // Alarm to hide the card.
-      var cardId = alarm.name.substring(cardHidePrefix.length);
-      clear(cardId);
+      tasks.add(CLEAR_CARD_TASK_NAME, function() {
+        var cardId = alarm.name.substring(cardHidePrefix.length);
+        clear(cardId, true);
+      });
     }
   });
 
