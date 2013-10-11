@@ -1069,8 +1069,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, TabDragAndDrop) {
   tab_strip_model2->CloseAllTabs();
 }
 
-// Flaky test. crbug.com/303231
-IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DISABLED_MultipleOwnedTabs) {
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MultipleOwnedTabs) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   ash::LauncherID shortcut_id = CreateShortcut("app1");
@@ -1105,8 +1104,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DISABLED_MultipleOwnedTabs) {
   EXPECT_EQ(tab_strip->GetActiveWebContents(), first_tab);
 }
 
-// crbug.com/303231
-IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DISABLED_RefocusFilter) {
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilter) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   ash::LauncherID shortcut_id = CreateShortcut("app1");

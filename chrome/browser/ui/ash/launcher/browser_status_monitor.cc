@@ -36,10 +36,12 @@ void BrowserStatusMonitor::LocalWebContentsObserver::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   ChromeLauncherController::AppState state =
-      ChromeLauncherController::APP_STATE_ACTIVE;
+      ChromeLauncherController::APP_STATE_INACTIVE;
   if (browser->window()->IsActive() &&
       browser->tab_strip_model()->GetActiveWebContents() == web_contents())
     state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
+  else if (browser->window()->IsActive())
+    state = ChromeLauncherController::APP_STATE_ACTIVE;
 
   monitor_->UpdateAppItemState(web_contents(), state);
   monitor_->UpdateBrowserItemState();

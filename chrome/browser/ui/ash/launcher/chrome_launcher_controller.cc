@@ -851,13 +851,14 @@ void ChromeLauncherController::RemoveTabFromRunningApp(
   if (i_app_id != app_id_to_web_contents_list_.end()) {
     WebContentsList* tab_list = &i_app_id->second;
     tab_list->remove(tab);
+    ash::LauncherItemStatus status = ash::STATUS_RUNNING;
     if (tab_list->empty()) {
       app_id_to_web_contents_list_.erase(i_app_id);
-      i_app_id = app_id_to_web_contents_list_.end();
-      ash::LauncherID id = GetLauncherIDForAppID(app_id);
-      if (id)
-        SetItemStatus(id, ash::STATUS_CLOSED);
+      status = ash::STATUS_CLOSED;
     }
+    ash::LauncherID id = GetLauncherIDForAppID(app_id);
+    if (id)
+      SetItemStatus(id, status);
   }
 }
 
@@ -885,22 +886,25 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
     RemoveTabFromRunningApp(contents, app_id);
   } else if (!app_id.empty()) {
     WebContentsList& tab_list(app_id_to_web_contents_list_[app_id]);
+    WebContentsList::const_iterator i_tab =
+        std::find(tab_list.begin(), tab_list.end(), contents);
 
-    if (app_state == APP_STATE_INACTIVE) {
-      WebContentsList::const_iterator i_tab =
-          std::find(tab_list.begin(), tab_list.end(), contents);
-      if (i_tab == tab_list.end())
-        tab_list.push_back(contents);
-      // TODO(simon.hong81): Does this below case exist?
+    if (i_tab == tab_list.end())
+      tab_list.push_back(contents);
+
+    if (app_state == APP_STATE_INACTIVE || app_state == APP_STATE_ACTIVE) {
       if (i_tab != tab_list.begin()) {
-        // Going inactive, but wasn't the front tab, indicating that a new
-        // tab has already become active.
+        // Going to running state, but wasn't the front tab, indicating that a
+        // new tab has already become active.
         return;
       }
-    } else {
+    }
+
+    if (app_state == APP_STATE_ACTIVE || app_state == APP_STATE_WINDOW_ACTIVE) {
       tab_list.remove(contents);
       tab_list.push_front(contents);
     }
+
     ash::LauncherID id = GetLauncherIDForAppID(app_id);
     if (id) {
       // If the window is active, mark the app as active.
