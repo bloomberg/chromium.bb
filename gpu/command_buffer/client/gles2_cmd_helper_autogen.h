@@ -965,15 +965,6 @@
     }
   }
 
-  void ShaderSourceImmediate(GLuint shader, uint32 data_size) {
-    const uint32 s = 0;  // TODO(gman): compute correct size
-    gles2::cmds::ShaderSourceImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::ShaderSourceImmediate>(s);
-    if (c) {
-      c->Init(shader, data_size);
-    }
-  }
-
   void ShaderSourceBucket(GLuint shader, uint32 data_bucket_id) {
     gles2::cmds::ShaderSourceBucket* c =
         GetCmdSpace<gles2::cmds::ShaderSourceBucket>();

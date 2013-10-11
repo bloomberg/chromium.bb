@@ -1731,41 +1731,6 @@ TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderTest, ShaderSourceImmediateAndGetShaderSourceValidArgs) {
-  const uint32 kBucketId = 123;
-  const char kSource[] = "hello";
-  const uint32 kSourceSize = sizeof(kSource) - 1;
-  ShaderSourceImmediate& cmd = *GetImmediateAs<ShaderSourceImmediate>();
-  cmd.Init(client_shader_id_, kSourceSize);
-  memcpy(GetImmediateDataAs<void*>(&cmd), kSource, kSourceSize);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kSourceSize));
-  memset(shared_memory_address_, 0, kSourceSize);
-  // TODO(gman): GetShaderSource has to change format so result is always set.
-  GetShaderSource get_cmd;
-  get_cmd.Init(client_shader_id_, kBucketId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(get_cmd));
-  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
-  ASSERT_TRUE(bucket != NULL);
-  EXPECT_EQ(kSourceSize + 1, bucket->size());
-  EXPECT_EQ(0, memcmp(bucket->GetData(0, bucket->size()), kSource,
-                      bucket->size()));
-}
-
-TEST_F(GLES2DecoderTest, ShaderSourceImmediateInvalidArgs) {
-  const char kSource[] = "hello";
-  const uint32 kSourceSize = sizeof(kSource) - 1;
-  ShaderSourceImmediate& cmd = *GetImmediateAs<ShaderSourceImmediate>();
-  cmd.Init(kInvalidClientId, kSourceSize);
-  memcpy(GetImmediateDataAs<void*>(&cmd), kSource, kSourceSize);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kSourceSize));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
-  cmd.Init(client_program_id_, kSourceSize);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kSourceSize));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
-#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
-}
-
 TEST_F(GLES2DecoderTest, ShaderSourceBucketAndGetShaderSourceValidArgs) {
   const uint32 kInBucketId = 123;
   const uint32 kOutBucketId = 125;

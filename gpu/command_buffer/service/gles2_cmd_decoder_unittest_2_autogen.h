@@ -249,8 +249,6 @@ TEST_F(GLES2DecoderTest2, ScissorInvalidArgs3_0) {
 
 // TODO(gman): ShaderSource
 
-// TODO(gman): ShaderSourceImmediate
-
 // TODO(gman): ShaderSourceBucket
 
 TEST_F(GLES2DecoderTest2, StencilFuncValidArgs) {
@@ -1686,5 +1684,6 @@ TEST_F(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): DeleteVertexArraysOESImmediate
 // TODO(gman): IsVertexArrayOES
 // TODO(gman): BindVertexArrayOES
+// TODO(gman): SwapBuffers
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

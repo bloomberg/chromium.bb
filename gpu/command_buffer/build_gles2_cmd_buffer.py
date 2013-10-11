@@ -1359,7 +1359,7 @@ _FUNCTION_INFO = {
   },
   'DestroyImageCHROMIUM': {
     'type': 'Manual',
-    'immediate': True,
+    'immediate': False,
     'client_test': False,
     'gen_cmd': False,
     'extension': True,
@@ -1939,7 +1939,7 @@ _FUNCTION_INFO = {
   },
   'ShaderSource': {
     'type': 'Manual',
-    'immediate': True,
+    'immediate': False,
     'bucket': True,
     'needs_size': True,
     'client_test': False,
@@ -3597,10 +3597,7 @@ class ManualHandler(CustomHandler):
   def WriteImmediateCmdGetTotalSize(self, func, file):
     """Overrriden from TypeHandler."""
     # TODO(gman): Move this data to _FUNCTION_INFO?
-    if func.name == 'ShaderSourceImmediate':
-      file.Write("    uint32 total_size = ComputeSize(_data_size);\n")
-    else:
-      CustomHandler.WriteImmediateCmdGetTotalSize(self, func, file)
+    CustomHandler.WriteImmediateCmdGetTotalSize(self, func, file)
 
 
 class DataHandler(TypeHandler):

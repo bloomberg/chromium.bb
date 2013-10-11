@@ -1928,7 +1928,6 @@ TEST_F(GLES2FormatTest, ShaderSource) {
       next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Implement test for ShaderSourceImmediate
 TEST_F(GLES2FormatTest, ShaderSourceBucket) {
   cmds::ShaderSourceBucket& cmd = *GetBufferAs<cmds::ShaderSourceBucket>();
   void* next_cmd = cmd.Set(
