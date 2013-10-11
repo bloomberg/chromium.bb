@@ -44,6 +44,8 @@ public:
         return adoptPtr(new WorkerGlobalScopeObserver(context, bridge));
     }
 
+    virtual ~WorkerGlobalScopeObserver() { }
+
     // WorkerGlobalScope::Observer method.
     virtual void notifyStop()
     {
@@ -68,7 +70,7 @@ namespace WebKit {
 
 WorkerAllowMainThreadBridgeBase::WorkerAllowMainThreadBridgeBase(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase)
     : m_webWorkerBase(webWorkerBase)
-    , m_workerGlobalScopeObserver(WorkerGlobalScopeObserver::create(workerGlobalScope, this).leakPtr())
+    , m_workerGlobalScopeObserver(WorkerGlobalScopeObserver::create(workerGlobalScope, this))
 {
 }
 

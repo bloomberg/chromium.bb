@@ -86,7 +86,7 @@ private:
 
     Mutex m_mutex;
     WebWorkerBase* m_webWorkerBase;
-    WebCore::WorkerGlobalScope::Observer* m_workerGlobalScopeObserver;
+    OwnPtr<WebCore::WorkerGlobalScope::Observer> m_workerGlobalScopeObserver;
     bool m_result;
 };
 
