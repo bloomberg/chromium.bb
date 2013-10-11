@@ -52,8 +52,9 @@ private:
 };
 
 class InputMethodController {
+    WTF_MAKE_NONCOPYABLE(InputMethodController);
 public:
-    static PassOwnPtr<InputMethodController> create(Frame*);
+    static PassOwnPtr<InputMethodController> create(Frame&);
     ~InputMethodController();
 
     // international text input composition
@@ -92,7 +93,7 @@ private:
     };
     friend class SelectionOffsetsScope;
 
-    Frame* m_frame;
+    Frame& m_frame;
     RefPtr<Text> m_compositionNode;
     // FIXME: We should use PlainTextOffsets m_compositionRange instead of
     // m_compositionStart/m_compositionEnd.
@@ -102,7 +103,7 @@ private:
     // m_compositionNode.
     Vector<CompositionUnderline> m_customCompositionUnderlines;
 
-    explicit InputMethodController(Frame*);
+    explicit InputMethodController(Frame&);
     Editor& editor() const;
     EditorClient& editorClient() const;
     bool insertTextForConfirmedComposition(const String& text);
