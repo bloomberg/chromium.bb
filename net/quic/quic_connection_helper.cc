@@ -140,10 +140,6 @@ bool QuicConnectionHelper::IsWriteBlockedDataBuffered() {
   return true;
 }
 
-bool QuicConnectionHelper::IsWriteBlocked(int error) {
-  return error == ERR_IO_PENDING;
-}
-
 QuicAlarm* QuicConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
   return new QuicChromeAlarm(clock_, task_runner_, delegate);
 }

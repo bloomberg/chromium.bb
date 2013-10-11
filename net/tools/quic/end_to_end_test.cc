@@ -243,7 +243,8 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
           GetParam(), kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(min_payload_size);
+  size_t ciphertext_size =
+      NullEncrypter(GetParam()).GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
@@ -272,7 +273,8 @@ TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
           GetParam(), kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(min_payload_size);
+  size_t ciphertext_size =
+      NullEncrypter(GetParam()).GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,

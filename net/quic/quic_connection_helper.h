@@ -48,7 +48,6 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   virtual WriteResult WritePacketToWire(
       const QuicEncryptedPacket& packet) OVERRIDE;
   virtual bool IsWriteBlockedDataBuffered() OVERRIDE;
-  virtual bool IsWriteBlocked(int error) OVERRIDE;
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
 
  private:

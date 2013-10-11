@@ -310,13 +310,12 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
         decrypter_(new test::TestDecrypter()),
         start_(QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(0x10))),
         framer_(QuicVersionMax(), start_, true) {
+    version_ = GetParam();
+    framer_.set_version(version_);
     framer_.SetDecrypter(decrypter_);
     framer_.SetEncrypter(ENCRYPTION_NONE, encrypter_);
     framer_.set_visitor(&visitor_);
     framer_.set_received_entropy_calculator(&entropy_calculator_);
-
-    version_ = GetParam();
-    framer_.set_version(version_);
   }
 
   // Helper function to get unsigned char representation of digit in the

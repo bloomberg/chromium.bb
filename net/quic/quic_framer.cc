@@ -118,6 +118,10 @@ QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
   return (Delta(target, a) < Delta(target, b)) ? a : b;
 }
 
+QuicTag GetNullTag(QuicVersion version) {
+  return version >= QUIC_VERSION_11 ? kNULN : kNULL;
+}
+
 }  // namespace
 
 QuicFramer::QuicFramer(QuicVersion version,
@@ -129,12 +133,12 @@ QuicFramer::QuicFramer(QuicVersion version,
       last_sequence_number_(0),
       last_serialized_guid_(0),
       quic_version_(version),
-      decrypter_(QuicDecrypter::Create(kNULL)),
+      decrypter_(QuicDecrypter::Create(GetNullTag(version))),
       alternative_decrypter_latch_(false),
       is_server_(is_server),
       creation_time_(creation_time) {
   DCHECK(IsSupportedVersion(version));
-  encrypter_[ENCRYPTION_NONE].reset(QuicEncrypter::Create(kNULL));
+  encrypter_[ENCRYPTION_NONE].reset(QuicEncrypter::Create(GetNullTag(version)));
 }
 
 QuicFramer::~QuicFramer() {}
@@ -1826,6 +1830,13 @@ QuicPacketSequenceNumber QuicFramer::CalculateLargestObserved(
 
   // Otherwise return the largest missing packet, as indirectly observed.
   return *largest_written;
+}
+
+void QuicFramer::set_version(const QuicVersion version) {
+  DCHECK(IsSupportedVersion(version));
+  quic_version_ = version;
+  SetDecrypter(QuicDecrypter::Create(GetNullTag(version)));
+  encrypter_[ENCRYPTION_NONE].reset(QuicEncrypter::Create(GetNullTag(version)));
 }
 
 // TODO(ianswett): Use varints or another more compact approach for all deltas.

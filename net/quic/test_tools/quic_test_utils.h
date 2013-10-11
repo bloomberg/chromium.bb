@@ -200,7 +200,6 @@ class MockHelper : public QuicConnectionHelperInterface {
   MOCK_METHOD1(WritePacketToWire,
                WriteResult(const QuicEncryptedPacket& packet));
   MOCK_METHOD0(IsWriteBlockedDataBuffered, bool());
-  MOCK_METHOD1(IsWriteBlocked, bool(int stream_id));
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate);
 
  private:

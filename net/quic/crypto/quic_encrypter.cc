@@ -15,7 +15,9 @@ QuicEncrypter* QuicEncrypter::Create(QuicTag algorithm) {
     case kAESG:
       return new Aes128Gcm12Encrypter();
     case kNULL:
-      return new NullEncrypter();
+      return new NullEncrypter(false);
+    case kNULN:
+      return new NullEncrypter(true);
     default:
       LOG(FATAL) << "Unsupported algorithm: " << algorithm;
       return NULL;

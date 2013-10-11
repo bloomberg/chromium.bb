@@ -191,7 +191,8 @@ enum QuicVersion {
   QUIC_VERSION_UNSUPPORTED = 0,
 
   QUIC_VERSION_9 = 9,
-  QUIC_VERSION_10 = 10,  // Current version.
+  QUIC_VERSION_10 = 10,
+  QUIC_VERSION_11 = 11,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -199,7 +200,7 @@ enum QuicVersion {
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
 static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_10, QUIC_VERSION_9};
+    {QUIC_VERSION_11, QUIC_VERSION_10, QUIC_VERSION_9};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -405,9 +406,11 @@ enum QuicErrorCode {
   QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT = 44,
   // The server config for a server has expired.
   QUIC_CRYPTO_SERVER_CONFIG_EXPIRED = 45,
+  // We failed to setup the symmetric keys for a connection.
+  QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED = 53,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 53,
+  QUIC_LAST_ERROR = 54,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
