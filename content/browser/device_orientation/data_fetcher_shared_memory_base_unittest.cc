@@ -8,7 +8,7 @@
 #include "base/process/process_handle.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "content/common/device_motion_hardware_buffer.h"
+#include "content/common/device_orientation/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

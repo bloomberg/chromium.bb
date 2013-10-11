@@ -10,7 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "content/browser/device_orientation/device_data.h"
 #include "content/common/content_export.h"
-#include "content/common/device_motion_hardware_buffer.h"
+#include "content/common/device_orientation/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 
 template<typename T> struct DefaultSingletonTraits;

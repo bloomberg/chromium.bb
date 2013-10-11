@@ -6,7 +6,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/device_orientation/data_fetcher_shared_memory.h"
 #include "content/browser/device_orientation/device_inertial_sensor_service.h"
-#include "content/common/device_motion_hardware_buffer.h"
+#include "content/common/device_orientation/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"

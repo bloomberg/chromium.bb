@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
-#include "content/common/device_motion_hardware_buffer.h"
+#include "content/common/device_orientation/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 
 namespace content {

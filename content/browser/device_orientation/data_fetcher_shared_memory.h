@@ -8,7 +8,7 @@
 #include "content/browser/device_orientation/data_fetcher_shared_memory_base.h"
 
 #if !defined(OS_ANDROID)
-#include "content/common/device_motion_hardware_buffer.h"
+#include "content/common/device_orientation/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 #endif
 

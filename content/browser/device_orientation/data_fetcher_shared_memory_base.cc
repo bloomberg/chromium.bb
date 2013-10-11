@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
-#include "content/common/device_motion_hardware_buffer.h"
+#include "content/common/device_orientation/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
 
 namespace content {
