@@ -50,7 +50,7 @@ public:
     void setY(float y) { m_y = y; }
 
 private:
-    DOMPoint(float x=0, float y=0)
+    DOMPoint(float x = 0, float y = 0)
         : m_x(x)
         , m_y(y)
     {
