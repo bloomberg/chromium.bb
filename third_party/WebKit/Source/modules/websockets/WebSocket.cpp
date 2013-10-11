@@ -46,7 +46,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/platform/network/BlobData.h"
 #include "modules/websockets/CloseEvent.h"

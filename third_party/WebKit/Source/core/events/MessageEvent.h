@@ -33,7 +33,7 @@
 #include "core/events/EventTarget.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "wtf/ArrayBuffer.h"
 
 namespace WebCore {

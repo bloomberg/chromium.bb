@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2007 Apple Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,50 +26,32 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/page/BarProp.h"
+#ifndef BarProp_h
+#define BarProp_h
 
-#include "core/page/Chrome.h"
-#include "core/frame/Frame.h"
-#include "core/page/Page.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/frame/DOMWindowProperty.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-BarProp::BarProp(Frame* frame, Type type)
-    : DOMWindowProperty(frame)
-    , m_type(type)
-{
-    ScriptWrappable::init(this);
-}
+    class Frame;
 
-BarProp::Type BarProp::type() const
-{
-    return m_type;
-}
+    class BarProp : public ScriptWrappable, public RefCounted<BarProp>, public DOMWindowProperty {
+    public:
+        enum Type { Locationbar, Menubar, Personalbar, Scrollbars, Statusbar, Toolbar };
 
-bool BarProp::visible() const
-{
-    if (!m_frame)
-        return false;
-    Page* page = m_frame->page();
-    if (!page)
-        return false;
+        static PassRefPtr<BarProp> create(Frame* frame, Type type) { return adoptRef(new BarProp(frame, type)); }
 
-    switch (m_type) {
-    case Locationbar:
-    case Personalbar:
-    case Toolbar:
-        return page->chrome().toolbarsVisible();
-    case Menubar:
-        return page->chrome().menubarVisible();
-    case Scrollbars:
-        return page->chrome().scrollbarsVisible();
-    case Statusbar:
-        return page->chrome().statusbarVisible();
-    }
+        Type type() const;
+        bool visible() const;
 
-    ASSERT_NOT_REACHED();
-    return false;
-}
+    private:
+        BarProp(Frame*, Type);
+        Type m_type;
+    };
 
 } // namespace WebCore
+
+#endif // BarProp_h

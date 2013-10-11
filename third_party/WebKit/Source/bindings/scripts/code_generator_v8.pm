@@ -2207,7 +2207,7 @@ sub GenerateFunction
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         AddToImplIncludes("bindings/v8/V8EventListenerList.h");
-        AddToImplIncludes("core/page/DOMWindow.h");
+        AddToImplIncludes("core/frame/DOMWindow.h");
         $code .= <<END;
     EventTarget* impl = ${v8ClassName}::toNative(args.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {

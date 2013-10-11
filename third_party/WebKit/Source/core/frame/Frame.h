@@ -30,7 +30,7 @@
 
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
-#include "core/page/AdjustViewSizeOrNot.h"
+#include "core/frame/AdjustViewSizeOrNot.h"
 #include "core/page/FrameTree.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/scroll/ScrollTypes.h"

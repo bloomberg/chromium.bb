@@ -35,7 +35,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
-#include "core/page/FrameDestructionObserver.h"
+#include "core/frame/FrameDestructionObserver.h"
 #include "core/platform/chromium/PasteMode.h"
 
 namespace WebCore {

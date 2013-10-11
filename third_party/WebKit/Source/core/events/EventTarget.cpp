@@ -38,7 +38,7 @@
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"

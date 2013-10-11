@@ -149,7 +149,7 @@
 #include "core/loader/IconController.h"
 #include "core/loader/SubstituteData.h"
 #include "core/page/Chrome.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"

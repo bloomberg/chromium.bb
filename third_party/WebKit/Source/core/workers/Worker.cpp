@@ -35,7 +35,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/UseCounter.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerScriptLoader.h"

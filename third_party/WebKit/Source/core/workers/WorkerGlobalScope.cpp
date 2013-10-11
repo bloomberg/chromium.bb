@@ -45,7 +45,7 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/WorkerNavigator.h"
 #include "platform/NotImplemented.h"
 #include "core/workers/WorkerClients.h"

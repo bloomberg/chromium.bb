@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"

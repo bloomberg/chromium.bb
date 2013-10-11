@@ -41,7 +41,7 @@
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/PageGroup.h"
 #include "platform/NotImplemented.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"

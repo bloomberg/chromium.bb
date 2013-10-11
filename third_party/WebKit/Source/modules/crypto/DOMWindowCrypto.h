@@ -31,7 +31,7 @@
 #ifndef DOMWindowCrypto_h
 #define DOMWindowCrypto_h
 
-#include "core/page/DOMWindowProperty.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {

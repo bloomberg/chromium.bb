@@ -55,7 +55,7 @@
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
 #include "core/html/canvas/DOMPath.h"
-#include "core/page/ImageBitmap.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"

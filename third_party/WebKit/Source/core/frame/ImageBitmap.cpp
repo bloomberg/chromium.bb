@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/page/ImageBitmap.h"
+#include "core/frame/ImageBitmap.h"
 
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"

@@ -43,7 +43,7 @@
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Task.h"
 #include "wtf/Deque.h"

@@ -35,7 +35,7 @@
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/page/DOMWindowProperty.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

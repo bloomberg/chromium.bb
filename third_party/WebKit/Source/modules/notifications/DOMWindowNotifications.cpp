@@ -30,7 +30,7 @@
 #if ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "core/dom/Document.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/notifications/NotificationCenter.h"
 #include "modules/notifications/NotificationController.h"

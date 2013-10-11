@@ -40,7 +40,7 @@
 #include "core/events/ErrorEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

@@ -31,7 +31,7 @@
 #define Screen_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/page/DOMWindowProperty.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

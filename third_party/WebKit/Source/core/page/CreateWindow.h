@@ -27,7 +27,7 @@
 #ifndef CreateWindow_h
 #define CreateWindow_h
 
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

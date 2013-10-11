@@ -32,7 +32,7 @@
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerObjectProxy.h"

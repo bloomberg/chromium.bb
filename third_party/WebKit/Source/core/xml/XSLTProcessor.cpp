@@ -27,7 +27,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/editing/markup.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "weborigin/SecurityOrigin.h"

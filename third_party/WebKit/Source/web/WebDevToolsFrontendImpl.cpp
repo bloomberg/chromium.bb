@@ -49,7 +49,7 @@
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/ContextMenuController.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"

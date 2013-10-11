@@ -28,7 +28,7 @@
 #include "modules/device_orientation/DeviceSensorEventController.h"
 
 #include "core/dom/Document.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 
 namespace WebCore {
 

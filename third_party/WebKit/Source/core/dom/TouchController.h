@@ -29,7 +29,7 @@
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/events/Event.h"
 #include "core/dom/Node.h"
-#include "core/page/DOMWindowLifecycleObserver.h"
+#include "core/frame/DOMWindowLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "wtf/HashSet.h"
 

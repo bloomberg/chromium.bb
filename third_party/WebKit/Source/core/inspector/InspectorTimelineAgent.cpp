@@ -45,7 +45,7 @@
 #include "core/inspector/TimelineRecordFactory.h"
 #include "core/inspector/TimelineTraceEventProcessor.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/PageConsole.h"

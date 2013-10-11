@@ -145,7 +145,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMSecurityPolicy.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"

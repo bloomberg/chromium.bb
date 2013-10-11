@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/page/ImageBitmap.h"
+#include "core/frame/ImageBitmap.h"
 
 #include "SkPixelRef.h"
 #include "core/dom/Document.h"

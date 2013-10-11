@@ -26,7 +26,7 @@
 #ifndef DOMWindowSpeechSynthesis_h
 #define DOMWindowSpeechSynthesis_h
 
-#include "core/page/DOMWindowProperty.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "modules/speech/SpeechSynthesis.h"
 #include "platform/Supplementable.h"
 

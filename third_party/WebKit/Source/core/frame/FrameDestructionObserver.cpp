@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/page/FrameDestructionObserver.h"
+#include "core/frame/FrameDestructionObserver.h"
 
 #include "core/frame/Frame.h"
 

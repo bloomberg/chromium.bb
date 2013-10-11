@@ -92,7 +92,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"

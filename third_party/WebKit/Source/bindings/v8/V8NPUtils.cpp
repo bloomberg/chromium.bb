@@ -36,7 +36,7 @@
 #include "bindings/v8/V8NPObject.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

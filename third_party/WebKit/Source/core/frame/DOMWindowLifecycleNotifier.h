@@ -26,7 +26,7 @@
 #ifndef DOMWindowLifecycleNotifier_h
 #define DOMWindowLifecycleNotifier_h
 
-#include "core/page/DOMWindowLifecycleObserver.h"
+#include "core/frame/DOMWindowLifecycleObserver.h"
 #include "core/platform/LifecycleNotifier.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"

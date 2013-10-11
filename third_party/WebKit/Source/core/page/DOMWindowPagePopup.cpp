@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/page/DOMWindowPagePopup.h"
 
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/PagePopupController.h"
 
 namespace WebCore {

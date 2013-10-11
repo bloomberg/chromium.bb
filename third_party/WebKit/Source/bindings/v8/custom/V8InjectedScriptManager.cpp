@@ -40,7 +40,7 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/InjectedScriptHost.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

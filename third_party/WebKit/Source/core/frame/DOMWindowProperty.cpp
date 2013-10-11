@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "core/page/DOMWindowProperty.h"
+#include "core/frame/DOMWindowProperty.h"
 
 #include "core/dom/Document.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 
 namespace WebCore {

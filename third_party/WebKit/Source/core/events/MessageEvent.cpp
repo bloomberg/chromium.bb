@@ -29,7 +29,7 @@
 #include "core/events/MessageEvent.h"
 
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 
 namespace WebCore {
 

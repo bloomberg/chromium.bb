@@ -25,7 +25,7 @@
 
 
 #include "config.h"
-#include "core/page/DOMWindowLifecycleNotifier.h"
+#include "core/frame/DOMWindowLifecycleNotifier.h"
 
 namespace WebCore {
 

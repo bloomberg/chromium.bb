@@ -26,7 +26,7 @@
 
 #include "core/events/Event.h"
 #include "core/events/EventDispatchMediator.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 
 namespace WebCore {
 

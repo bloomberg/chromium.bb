@@ -30,7 +30,7 @@
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/page/DOMWindowProperty.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

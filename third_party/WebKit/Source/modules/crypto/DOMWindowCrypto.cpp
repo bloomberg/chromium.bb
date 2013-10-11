@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/crypto/DOMWindowCrypto.h"
 
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "modules/crypto/Crypto.h"
 
 namespace WebCore {

@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 
 #include <algorithm>
 #include "RuntimeEnabledFeatures.h"
@@ -67,11 +67,11 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/appcache/ApplicationCache.h"
-#include "core/page/BarProp.h"
+#include "core/frame/BarProp.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
-#include "core/page/DOMWindowLifecycleNotifier.h"
+#include "core/frame/DOMWindowLifecycleNotifier.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"

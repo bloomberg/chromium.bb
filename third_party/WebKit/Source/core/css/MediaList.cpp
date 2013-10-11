@@ -28,7 +28,7 @@
 #include "core/css/MediaQueryExp.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

@@ -32,7 +32,7 @@
 #include "modules/quota/DOMWindowQuota.h"
 
 #include "core/dom/Document.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/page/PageConsole.h"
 #include "modules/quota/StorageInfo.h"

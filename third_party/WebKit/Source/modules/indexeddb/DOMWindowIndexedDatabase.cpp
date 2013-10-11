@@ -27,7 +27,7 @@
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 
 #include "core/dom/Document.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/indexeddb/IDBFactory.h"
 #include "modules/indexeddb/PageGroupIndexedDatabase.h"

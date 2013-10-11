@@ -34,7 +34,7 @@
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Settings.h"

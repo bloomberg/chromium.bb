@@ -34,7 +34,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "wtf/text/AtomicString.h"
 

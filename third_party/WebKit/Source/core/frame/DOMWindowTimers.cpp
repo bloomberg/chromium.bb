@@ -31,48 +31,37 @@
  */
 
 #include "config.h"
-#include "core/page/DOMWindowBase64.h"
+#include "core/frame/DOMWindowTimers.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "wtf/text/Base64.h"
+#include "core/events/EventTarget.h"
+#include "core/page/DOMTimer.h"
 
 namespace WebCore {
 
-namespace DOMWindowBase64 {
+namespace DOMWindowTimers {
 
-String btoa(void*, const String& stringToEncode, ExceptionState& es)
+int setTimeout(EventTarget* eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
 {
-    if (stringToEncode.isNull())
-        return String();
-
-    if (!stringToEncode.containsOnlyLatin1()) {
-        es.throwDOMException(InvalidCharacterError, "'btoa' failed: The string to be encoded contains characters outside of the Latin1 range.");
-        return String();
-    }
-
-    return base64Encode(stringToEncode.latin1());
+    return DOMTimer::install(eventTarget->scriptExecutionContext(), action, timeout, true);
 }
 
-String atob(void*, const String& encodedString, ExceptionState& es)
+int setInterval(EventTarget* eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
 {
-    if (encodedString.isNull())
-        return String();
-
-    if (!encodedString.containsOnlyLatin1()) {
-        es.throwDOMException(InvalidCharacterError, "'atob' failed: The string to be decoded contains characters outside of the Latin1 range.");
-        return String();
-    }
-
-    Vector<char> out;
-    if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacterOrExcessPadding)) {
-        es.throwDOMException(InvalidCharacterError, "'atob' failed: The string to be decoded is not correctly encoded.");
-        return String();
-    }
-
-    return String(out.data(), out.size());
+    return DOMTimer::install(eventTarget->scriptExecutionContext(), action, timeout, false);
 }
 
-} // namespace DOMWindowBase64
+void clearTimeout(EventTarget* eventTarget, int timeoutID)
+{
+    if (ScriptExecutionContext* context = eventTarget->scriptExecutionContext())
+        DOMTimer::removeByID(context, timeoutID);
+}
+
+void clearInterval(EventTarget* eventTarget, int timeoutID)
+{
+    if (ScriptExecutionContext* context = eventTarget->scriptExecutionContext())
+        DOMTimer::removeByID(context, timeoutID);
+}
+
+} // namespace DOMWindowTimers
 
 } // namespace WebCore

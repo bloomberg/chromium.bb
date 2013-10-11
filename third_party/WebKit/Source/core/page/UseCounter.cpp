@@ -31,7 +31,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/page/DOMWindow.h"
+#include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/platform/HistogramSupport.h"

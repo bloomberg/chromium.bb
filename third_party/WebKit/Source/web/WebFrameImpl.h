@@ -35,7 +35,7 @@
 
 #include "FrameLoaderClientImpl.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameDestructionObserver.h"
+#include "core/frame/FrameDestructionObserver.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebFileSystemType.h"
 #include "wtf/Compiler.h"

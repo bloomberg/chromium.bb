@@ -34,7 +34,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
-#include "core/page/DOMWindowProperty.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "core/timing/MemoryInfo.h"
 #include "core/timing/PerformanceEntry.h"
 #include "core/timing/PerformanceNavigation.h"
