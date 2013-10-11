@@ -32,20 +32,19 @@ class StyleRulePage;
 
 class PageRuleCollector {
 public:
-    PageRuleCollector(const ElementResolveContext&, int pageIndex);
+    PageRuleCollector(const RenderStyle* rootElementStyle, int pageIndex);
 
     void matchPageRules(RuleSet* rules);
     MatchResult& matchedResult() { return m_result; }
 
 private:
-    bool isLeftPage(int pageIndex) const;
-    bool isRightPage(int pageIndex) const { return !isLeftPage(pageIndex); }
+    bool isLeftPage(const RenderStyle* rootElementStyle, int pageIndex) const;
+    bool isRightPage(const RenderStyle* rootElementStyle, int pageIndex) const { return !isLeftPage(rootElementStyle, pageIndex); }
     bool isFirstPage(int pageIndex) const;
     String pageName(int pageIndex) const;
 
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>& rules, bool isLeftPage, bool isFirstPage, const String& pageName);
 
-    const ElementResolveContext& m_context;
     const bool m_isLeftPage;
     const bool m_isFirstPage;
     const String m_pageName;

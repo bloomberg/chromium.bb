@@ -40,10 +40,11 @@ static inline bool comparePageRules(const StyleRulePage* r1, const StyleRulePage
     return r1->selector()->specificity() < r2->selector()->specificity();
 }
 
-bool PageRuleCollector::isLeftPage(int pageIndex) const
+bool PageRuleCollector::isLeftPage(const RenderStyle* rootElementStyle, int pageIndex) const
 {
     bool isFirstPageLeft = false;
-    if (!m_context.rootElementStyle() || !m_context.rootElementStyle()->isLeftToRightDirection())
+    ASSERT(rootElementStyle);
+    if (!rootElementStyle->isLeftToRightDirection())
         isFirstPageLeft = true;
 
     return (pageIndex + (isFirstPageLeft ? 1 : 0)) % 2;
@@ -61,9 +62,8 @@ String PageRuleCollector::pageName(int /* pageIndex */) const
     return "";
 }
 
-PageRuleCollector::PageRuleCollector(const ElementResolveContext& context, int pageIndex)
-    : m_context(context)
-    , m_isLeftPage(isLeftPage(pageIndex))
+PageRuleCollector::PageRuleCollector(const RenderStyle* rootElementStyle, int pageIndex)
+    : m_isLeftPage(isLeftPage(rootElementStyle, pageIndex))
     , m_isFirstPage(isFirstPage(pageIndex))
     , m_pageName(pageName(pageIndex)) { }
 

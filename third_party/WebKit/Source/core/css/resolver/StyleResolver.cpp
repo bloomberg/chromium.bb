@@ -1087,12 +1087,13 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     StyleResolverState state(document(), document().documentElement()); // m_rootElementStyle will be set to the document style.
 
     state.setStyle(RenderStyle::create());
-    if (state.rootElementStyle())
-        state.style()->inheritFrom(state.rootElementStyle());
+    const RenderStyle* rootElementStyle = state.rootElementStyle() ? state.rootElementStyle() : document().renderStyle();
+    ASSERT(rootElementStyle);
+    state.style()->inheritFrom(rootElementStyle);
 
     state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
 
-    PageRuleCollector collector(state.elementContext(), pageIndex);
+    PageRuleCollector collector(rootElementStyle, pageIndex);
 
     collector.matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle);
     collector.matchPageRules(m_ruleSets.userStyle());
