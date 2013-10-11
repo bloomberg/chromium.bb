@@ -28,14 +28,14 @@ namespace history {
 // are compared in an arbitrary (but consistent) way.
 bool CanonicalURLStringCompare(const std::string& s1, const std::string& s2);
 
-// Returns whether or not |url1| is a "URL prefix" of |url2|. Criteria:
-// - Scheme, host, port: exact match required.
-// - Path: treated as a list of path components (e.g., ["a", "bb"] for "/a/bb"),
-//   and |url1|'s list must be a prefix of |url2|'s list.
-// - Query and ref: ignored.
-// Note that "http://www.google.com/test" is NOT a prefix of
-// "http://www.google.com/testing", although "test" is a prefix of "testing".
-bool UrlIsPrefix(const GURL& url1, const GURL& url2);
+// Returns whether |url1| and |url2| have the same scheme, host, and port.
+bool HaveSameSchemeHostAndPort(const GURL&url1, const GURL& url2);
+
+// Treats |path1| and |path2| as lists of path components (e.g., ["a", "bb"]
+// for "/a/bb"). Returns whether |path1|'s list is a prefix of |path2|'s list.
+// This is used to define "URL prefix". Note that "test" does not count as a
+// prefix of "testing", even though "test" is a (string) prefix of "testing".
+bool IsPathPrefix(const std::string& p1, const std::string& p2);
 
 }  // namespace history
 

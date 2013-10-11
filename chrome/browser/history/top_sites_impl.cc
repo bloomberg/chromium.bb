@@ -235,17 +235,24 @@ bool TopSitesImpl::GetPageThumbnail(
   }
 
   if (prefix_match) {
-    // Still not found, so strip "?query#ref", and perform prefix match.
-    GURL::Replacements replacements;
-    replacements.ClearQuery();
-    replacements.ClearRef();
-    GURL url_stripped(url.ReplaceComponents(replacements));
     base::AutoLock lock(lock_);
-    GURL canonical_url(
-        thread_safe_cache_->GetCanonicalURLForPrefix(url_stripped));
-    if (thread_safe_cache_->GetPageThumbnail(canonical_url, bytes))
+
+    GURL canonical_url;
+    // Test whether |url| is prefix of any stored URL.
+    canonical_url = thread_safe_cache_->GetSpecializedCanonicalURL(url);
+    if (!canonical_url.is_empty() &&
+        thread_safe_cache_->GetPageThumbnail(canonical_url, bytes)) {
       return true;
+    }
+
+    // Test whether any stored URL is a prefix of |url|.
+    canonical_url = thread_safe_cache_->GetGeneralizedCanonicalURL(url);
+    if (!canonical_url.is_empty() &&
+        thread_safe_cache_->GetPageThumbnail(canonical_url, bytes)) {
+      return true;
+    }
   }
+
   return false;
 }
 

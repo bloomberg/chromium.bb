@@ -27,7 +27,7 @@ class TopSitesCacheTest : public testing::Test {
   // URL strings with optional indents: indentated URLs redirect to the last
   // non-indented URL. Titles are assigned as "Title 1", "Title 2", etc., in the
   // order of appearance. See |kTopSitesSpecBasic| for an example.
-  void InitTopSiteCache(const char** spec, int size);
+  void InitTopSiteCache(const char** spec, size_t size);
 
   MostVisitedURLList top_sites_;
   TopSitesCache cache_;
@@ -36,9 +36,9 @@ class TopSitesCacheTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TopSitesCacheTest);
 };
 
-void TopSitesCacheTest::InitTopSiteCache(const char** spec, int size) {
+void TopSitesCacheTest::InitTopSiteCache(const char** spec, size_t size) {
   std::set<std::string> urls_seen;
-  for (int i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     const char* spec_item = spec[i];
     while (*spec_item && *spec_item == ' ')  // Eat indent.
       ++spec_item;
@@ -119,54 +119,160 @@ TEST_F(TopSitesCacheTest, IsKnownUrl) {
 const char* kTopSitesSpecPrefix[] = {
   "http://www.google.com/",
   "  http://www.google.com/test?q=3",  // Redirects.
-  "  http://www.google.com/test/y?b",  // Redirects.
+  "  http://www.google.com/test/y?d",  // Redirects.
+  "  http://www.chromium.org/a/b",  // Redirects.
   "http://www.google.com/2",
   "  http://www.google.com/test/q",  // Redirects.
-  "  http://www.google.com/test/y?a",  // Redirects.
+  "  http://www.google.com/test/y?b",  // Redirects.
   "http://www.google.com/3",
   "  http://www.google.com/testing",  // Redirects.
   "http://www.google.com/test-hyphen",
   "http://www.google.com/sh",
-  "  http://www.google.com/sh/1/2",  // Redirects.
+  "  http://www.google.com/sh/1/2/3",  // Redirects.
   "http://www.google.com/sh/1",
 };
 
-TEST_F(TopSitesCacheTest, GetCanonicalURLForPrefix) {
+TEST_F(TopSitesCacheTest, GetCanonicalURLExactMatch) {
+  InitTopSiteCache(kTopSitesSpecPrefix, arraysize(kTopSitesSpecPrefix));
+  for (size_t i = 0; i < arraysize(kTopSitesSpecPrefix); ++i) {
+    // Go through each entry in kTopSitesSpecPrefix, trimming space.
+    const char* s = kTopSitesSpecPrefix[i];
+    while (*s && *s == ' ')
+      ++s;
+    // Get the answer from direct lookup.
+    GURL stored_url(s);
+    GURL expected(cache_.GetCanonicalURL(stored_url));
+    // Test specialization.
+    GURL result1(cache_.GetSpecializedCanonicalURL(stored_url));
+    EXPECT_EQ(expected, result1) << " for kTopSitesSpecPrefix[" << i << "]";
+    // Test generalization.
+    GURL result2(cache_.GetGeneralizedCanonicalURL(stored_url));
+    EXPECT_EQ(expected, result2) << " for kTopSitesSpecPrefix[" << i << "]";
+  }
+}
+
+TEST_F(TopSitesCacheTest, GetSpecializedCanonicalURL) {
   InitTopSiteCache(kTopSitesSpecPrefix, arraysize(kTopSitesSpecPrefix));
   struct {
     const char* expected;
     const char* query;
   } test_cases[] = {
-    // Already is canonical: redirects.
-    {"http://www.google.com/", "http://www.google.com"},
-    // Exact match with stored URL: redirects.
-    {"http://www.google.com/", "http://www.google.com/test?q=3"},
-    // Prefix match: redirects.
+    // Exact match after trimming "?query": redirects.
     {"http://www.google.com/", "http://www.google.com/test"},
-    // Competing prefix match: redirects to closest.
-    {"http://www.google.com/2", "http://www.google.com/test/q"},
-    // Multiple prefix matches: redirects to first.
+    // Specialized match: redirects.
+    {"http://www.google.com/sh", "http://www.google.com/sh/1/2"},
+    // Specialized match with trailing "/": redirects.
+    {"http://www.google.com/sh", "http://www.google.com/sh/1/2/"},
+    // Unique specialization match: redirects.
+    {"http://www.google.com/", "http://www.chromium.org/a"},
+    // Multiple exact matches after trimming: redirects to first.
     {"http://www.google.com/2", "http://www.google.com/test/y"},
-    // No prefix match: as-is.
-    {"http://www.google.com/no-match", "http://www.google.com/no-match"},
-    // String prefix match but not URL-prefix match: as-is.
-    {"http://www.google.com/t", "http://www.google.com/t"},
-    // Different protocol: as-is.
-    {"https://www.google.com/test", "https://www.google.com/test"},
+    // Multiple specialized matches: redirects to least specialized.
+    {"http://www.google.com/2", "http://www.google.com/test/q"},
+    // No specialized match: fails.
+    {"", "http://www.google.com/no-match"},
+    // String prefix match but not URL-prefix match: fails.
+    {"", "http://www.google.com/t"},
+    // Different protocol: fails.
+    {"", "https://www.google.com/test"},
     // Smart enough to know that port 80 is HTTP: redirects.
     {"http://www.google.com/", "http://www.google.com:80/test"},
-    // Exact match, unaffected by "http://www.google.com/sh/1": redirects.
-    {"http://www.google.com/sh", "http://www.google.com/sh/1/2"},
-    // Suffix match only: as-is
-    {"http://www.google.com/sh/1/2/3", "http://www.google.com/sh/1/2/3"},
-    // Exact match, unaffected by "http://www.google.com/sh": redirects.
-    {"http://www.google.com/sh/1", "http://www.google.com/sh/1"},
+    // Generalization match only: fails.
+    {"", "http://www.google.com/sh/1/2/3/4"},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     std::string expected(test_cases[i].expected);
     std::string query(test_cases[i].query);
-    EXPECT_EQ(expected, cache_.GetCanonicalURLForPrefix(GURL(query)).spec())
-      << " for test_case[" << i << "]";
+    GURL result(cache_.GetSpecializedCanonicalURL(GURL(query)));
+    EXPECT_EQ(expected, result.spec()) << " for test_case[" << i << "]";
+  }
+}
+
+TEST_F(TopSitesCacheTest, GetGeneralizedCanonicalURL) {
+  InitTopSiteCache(kTopSitesSpecPrefix, arraysize(kTopSitesSpecPrefix));
+  struct {
+    const char* expected;
+    const char* query;
+  } test_cases[] = {
+    // Exact match after trimming "?query": redirects.
+    {"http://www.google.com/", "http://www.google.com/test"},
+    // Same, but different code path: redirects.
+    {"http://www.google.com/", "http://www.google.com/test/y?e"},
+    {"http://www.google.com/", "http://www.google.com/test/y?c"},
+    // Same, but code path leads to different result: redirects.
+    {"http://www.google.com/2", "http://www.google.com/test/y?a"},
+    // Generalized match: redirects.
+    {"http://www.google.com/3", "http://www.google.com/3/1/4/1/5/9"},
+    // Generalized match with trailing "/": redirects.
+    {"http://www.google.com/3", "http://www.google.com/3/1/4/1/5/9/"},
+    // Unique generalization match: redirects.
+    {"http://www.google.com/", "http://www.chromium.org/a/b/c"},
+    // Multiple exact matches after trimming: redirects to first.
+    {"http://www.google.com/2", "http://www.google.com/test/y"},
+    // Multiple generalized matches: redirects to least general.
+    {"http://www.google.com/sh", "http://www.google.com/sh/1/2/3/4/"},
+    // Multiple generalized matches: redirects to least general.
+    {"http://www.google.com/sh", "http://www.google.com/sh/1/2/3/4/"},
+    // Competing generalized match: take the most specilized.
+    {"http://www.google.com/2", "http://www.google.com/test/q"},
+    // No generalized match, early element: fails.
+    {"", "http://www.a.com/"},
+    // No generalized match, intermediate element: fails.
+    {"", "http://www.e-is-between-chromium-and-google.com/"},
+    // No generalized match, late element: fails.
+    {"", "http://www.zzzzzzz.com/"},
+    // String prefix match but not URL-prefix match: fails.
+    {"", "http://www.chromium.org/a/beeswax"},
+    // String prefix match and URL-prefix match: redirects.
+    {"http://www.google.com/", "http://www.google.com/shhhhhh"},
+    // Different protocol: fails.
+    {"", "https://www.google.com/test"},
+    // Smart enough to know that port 80 is HTTP: redirects.
+    {"http://www.google.com/", "http://www.google.com:80/test"},
+    // Specialized match only: fails.
+    {"", "http://www.chromium.org/a"},
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    std::string expected(test_cases[i].expected);
+    std::string query(test_cases[i].query);
+    GURL result(cache_.GetGeneralizedCanonicalURL(GURL(query)));
+    EXPECT_EQ(expected, result.spec()) << " for test_case[" << i << "]";
+  }
+}
+
+// This tests a special case where there are 2 specialized and generalized
+// matches, and both should be checked to find the correct match.
+TEST_F(TopSitesCacheTest, GetPrefixCanonicalURLDiffByQuery) {
+  const char* top_sites_spec[] = {
+    "http://www.dest.com/1",
+    "  http://www.source.com/a?m=5",  // Redirects.
+    "http://www.dest.com/2",
+    "  http://www.source.com/a/t?q=3",  // Redirects.
+  };
+  InitTopSiteCache(top_sites_spec, arraysize(top_sites_spec));
+
+  // Shared by GetSpecializedCanonicalURL() and GetGeneralizedCanonicalURL
+  struct {
+    const char* expected;
+    const char* query;
+  } test_cases[] = {
+    // Slightly before "http://www.source.com/a?m=5".
+    {"http://www.dest.com/1", "http://www.source.com/a?l=5"},
+    // Slightly after "http://www.source.com/a?m=5".
+    {"http://www.dest.com/1", "http://www.source.com/a?n=5"},
+    // Slightly before "http://www.source.com/a/t?q=3".
+    {"http://www.dest.com/2", "http://www.source.com/a/t?q=2"},
+    // Slightly after "http://www.source.com/a/t?q=3".
+    {"http://www.dest.com/2", "http://www.source.com/a/t?q=4"},
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    std::string expected(test_cases[i].expected);
+    std::string query(test_cases[i].query);
+    GURL result1(cache_.GetSpecializedCanonicalURL(GURL(query)));
+    EXPECT_EQ(expected, result1.spec()) << " for test_case[" << i << "]";
+    GURL result2(cache_.GetGeneralizedCanonicalURL(GURL(query)));
+    EXPECT_EQ(expected, result2.spec()) << " for test_case[" << i << "]";
   }
 }
 

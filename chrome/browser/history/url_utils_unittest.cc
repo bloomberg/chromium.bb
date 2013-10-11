@@ -10,7 +10,7 @@ namespace history {
 
 namespace {
 
-TEST(UrlUtilsTest, CanonicalURLStringCompare) {
+TEST(HistoryUrlUtilsTest, CanonicalURLStringCompare) {
   // Comprehensive test by comparing each pair in sorted list. O(n^2).
   const char* sorted_list[] = {
     "http://www.gogle.com/redirects_to_google",
@@ -45,7 +45,7 @@ TEST(UrlUtilsTest, CanonicalURLStringCompare) {
   }
 }
 
-TEST(UrlUtilsTest, UrlIsPrefix) {
+TEST(HistoryUrlUtilsTest, HaveSameSchemeHostAndPort) {
   struct {
     const char* s1;
     const char* s2;
@@ -57,32 +57,61 @@ TEST(UrlUtilsTest, UrlIsPrefix) {
     {"http://www.google.com/", "http://www.google.com/test/with/dir/"},
     {"http://www.google.com:360", "http://www.google.com:360/?q=1234"},
     {"http://www.google.com:80", "http://www.google.com/gurl/is/smart"},
-    {"http://www.google.com:80/", "http://www.google.com/"},
     {"http://www.google.com/test", "http://www.google.com/test/with/dir/"},
-    {"http://www.google.com/test/", "http://www.google.com/test/with/dir"},
     {"http://www.google.com/test?", "http://www.google.com/test/with/dir/"},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(true_cases); ++i) {
-    EXPECT_TRUE(UrlIsPrefix(GURL(true_cases[i].s1), GURL(true_cases[i].s2)))
+    EXPECT_TRUE(HaveSameSchemeHostAndPort(GURL(true_cases[i].s1),
+                               GURL(true_cases[i].s2)))
         << " for true_cases[" << i << "]";
   }
   struct {
     const char* s1;
     const char* s2;
   } false_cases[] = {
-    {"http://www.google.com/test", "http://www.google.com"},
-    {"http://www.google.com/a/b/", "http://www.google.com/a/b"},  // Arguable.
     {"http://www.google.co", "http://www.google.com"},
     {"http://google.com", "http://www.google.com"},
     {"http://www.google.com", "https://www.google.com"},
     {"http://www.google.com/path", "http://www.google.com:137/path"},
     {"http://www.google.com/same/dir", "http://www.youtube.com/same/dir"},
-    {"http://www.google.com/te", "http://www.google.com/test"},
-    {"http://www.google.com/test", "http://www.google.com/test-bed"},
-    {"http://www.google.com/test-", "http://www.google.com/test?"},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(false_cases); ++i) {
-    EXPECT_FALSE(UrlIsPrefix(GURL(false_cases[i].s1), GURL(false_cases[i].s2)))
+    EXPECT_FALSE(HaveSameSchemeHostAndPort(GURL(false_cases[i].s1),
+                                GURL(false_cases[i].s2)))
+        << " for false_cases[" << i << "]";
+  }
+}
+
+TEST(HistoryUrlUtilsTest, IsPathPrefix) {
+  struct {
+    const char* p1;
+    const char* p2;
+  } true_cases[] = {
+    {"", ""},
+    {"", "/"},
+    {"/", "/"},
+    {"/a/b", "/a/b"},
+    {"/", "/test/with/dir/"},
+    {"/test", "/test/with/dir/"},
+    {"/test/", "/test/with/dir"},
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(true_cases); ++i) {
+    EXPECT_TRUE(IsPathPrefix(true_cases[i].p1, true_cases[i].p2))
+        << " for true_cases[" << i << "]";
+  }
+  struct {
+    const char* p1;
+    const char* p2;
+  } false_cases[] = {
+    {"/test", ""},
+    {"/", ""},  // Arguable.
+    {"/a/b/", "/a/b"},  // Arguable.
+    {"/te", "/test"},
+    {"/test", "/test-bed"},
+    {"/test-", "/test"},
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(false_cases); ++i) {
+    EXPECT_FALSE(IsPathPrefix(false_cases[i].p1, false_cases[i].p2))
         << " for false_cases[" << i << "]";
   }
 }
