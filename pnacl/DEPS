@@ -1,14 +1,14 @@
 vars = {
-  "pnacl_binutils_rev": "1712e607754a0eaa507ec6f735997542c99dd0be",
+  "pnacl_binutils_rev": "c926f7f27f42ae8bfda0fe3aefc51d6401f979e7",
   "pnacl_clang_rev": "3b1ef29c338890ce55a1990389d8e63f6be7da2c",
-  "pnacl_llvm_rev": "ed6b15283ff5f9d13cb48f88ba6e189be11291e8",
+  "pnacl_llvm_rev": "1763e0545c0ee2748b6dbf4aaa1b4bb9d20a2ef0",
   "pnacl_gcc_rev": "2933722d1fe2aeb27e0471972b4c693fcbf71fc1",
   "pnacl_libcxx_rev": "7456fbacf145b57404b741dc72bac397b12f8330",
   "pnacl_libcxxabi_rev": "19222a8f373a6db1b13c4308988fd9cf1c02cb1b",
 
   "newlib_rev": "c37e9aefa58db1b357e17fdc3754a474923250e1",
   "pnacl_llvm_testsuite_rev": "0d6d7c909e6f7cc83e2b85c11332e9347b73dfb9",
-  "compiler_rt_rev": "cad11a9ea0008d18125e81beafc27271ee71926e",
+  "compiler_rt_rev": "8fc63ab2a0e0ccca85b9c3cc515fd291cbbb96e9",
   "nacl_base_readonly": "http://git.chromium.org/native_client",
   "nacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",
   "llvm_upstream_base": "http://llvm.org/git/",
