@@ -587,11 +587,12 @@ body {
 }
 
 /* Show labels if there is enough space. */
-@media (min-width: 1050px) {
+@media (min-width: 1180px) {
 
   .gallery .edit-main button,
   .gallery .edit-main button[disabled] {
     background-position: 5px center;
+    max-width: 60px;
     min-width: 0;  /* Reset. */
     padding: 0 10px 0 35px;
     width: auto;
