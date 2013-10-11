@@ -455,6 +455,7 @@ void FindFileBrowserHandlerTasks(
 
 void FindAllTypesOfTasks(
     Profile* profile,
+    const drive::DriveAppRegistry* drive_app_registry,
     const PathAndMimeTypeSet& path_mime_set,
     const std::vector<GURL>& file_urls,
     std::vector<FullTaskDescriptor>* result_list) {
@@ -462,6 +463,8 @@ void FindAllTypesOfTasks(
   DCHECK(result_list);
 
   // Check if file_paths contain a google document.
+  // TODO(satorux): Move this stuff into FindDriveAppTasks() and add a unit
+  // test for it.
   bool has_google_document = false;
   for (PathAndMimeTypeSet::const_iterator iter = path_mime_set.begin();
        iter != path_mime_set.end(); ++iter) {
@@ -475,12 +478,8 @@ void FindAllTypesOfTasks(
 
   // List Drive apps only for non Google document files. This is to avoid dups
   // since Files.app already provides an internal handler for Google documents.
-  if (!has_google_document) {
-    drive::DriveAppRegistry* app_registry =
-        drive::util::GetDriveAppRegistryByProfile(profile);
-    // |app_registry| is NULL if Drive is disabled.
-    if (app_registry)
-      FindDriveAppTasks(*app_registry, path_mime_set, result_list);
+  if (!has_google_document && drive_app_registry) {
+    FindDriveAppTasks(*drive_app_registry, path_mime_set, result_list);
   }
 
   // Find and append file handler tasks. We know there aren't duplicates

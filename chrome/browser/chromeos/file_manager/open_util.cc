@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
@@ -150,10 +151,12 @@ bool OpenFile(Profile* profile, const base::FilePath& file_path) {
   file_urls.push_back(url);
 
   std::vector<file_tasks::FullTaskDescriptor> tasks;
-  file_tasks::FindAllTypesOfTasks(profile,
-                                  path_mime_set,
-                                  file_urls,
-                                  &tasks);
+  file_tasks::FindAllTypesOfTasks(
+      profile,
+      drive::util::GetDriveAppRegistryByProfile(profile),
+      path_mime_set,
+      file_urls,
+      &tasks);
   if (tasks.empty())
     return false;
 

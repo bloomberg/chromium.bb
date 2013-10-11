@@ -552,5 +552,104 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileBrowserHandlerTasks) {
   ASSERT_TRUE(tasks.empty());
 }
 
+// Test that all kinds of apps (file handler, file browser handler, and Drive
+// app) are returned.
+TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
+  // kFooId and kBarId copied from FindFileHandlerTasks test above.
+  const char kFooId[] = "hhgbjpmdppecanaaogonaigmmifgpaph";
+  const char kBarId[] = "odlhccgofgkadkkhcmhgnhgahonahoca";
+  const char kBazId[] = "plifkpkakemokpflgbnnigcoldgcbdmc";
+
+  // Foo.app can handle "text/plain".
+  // This is a packaged app (file handler).
+  extensions::ExtensionBuilder foo_app;
+  foo_app.SetManifest(extensions::DictionaryBuilder()
+                      .Set("name", "Foo")
+                      .Set("version", "1.0.0")
+                      .Set("manifest_version", 2)
+                      .Set("app",
+                           extensions::DictionaryBuilder()
+                           .Set("background",
+                                extensions::DictionaryBuilder()
+                                .Set("scripts",
+                                     extensions::ListBuilder()
+                                     .Append("background.js"))))
+                      .Set("file_handlers",
+                           extensions::DictionaryBuilder()
+                           .Set("text",
+                                extensions::DictionaryBuilder()
+                                .Set("title", "Text")
+                                .Set("types",
+                                     extensions::ListBuilder()
+                                     .Append("text/plain")))));
+  foo_app.SetID(kFooId);
+  extension_service_->AddExtension(foo_app.Build().get());
+
+  // Bar.app can only handle ".txt".
+  // This is an extension (file browser handler).
+  extensions::ExtensionBuilder bar_app;
+  bar_app.SetManifest(extensions::DictionaryBuilder()
+                      .Set("name", "Bar")
+                      .Set("version", "1.0.0")
+                      .Set("manifest_version", 2)
+                      .Set("file_browser_handlers",
+                           extensions::ListBuilder()
+                           .Append(extensions::DictionaryBuilder()
+                                   .Set("id", "open")
+                                   .Set("default_title", "open")
+                                   .Set("file_filters",
+                                        extensions::ListBuilder()
+                                        .Append("filesystem:*.txt")))));
+  bar_app.SetID(kBarId);
+  extension_service_->AddExtension(bar_app.Build().get());
+
+  // Baz.app can handle "text/plain".
+  // This is a Drive app.
+  scoped_ptr<google_apis::AppResource> baz_app(new google_apis::AppResource);
+  baz_app->set_product_url(
+      GURL("https://chrome.google.com/webstore/detail/baz_app_id"));
+  baz_app->set_application_id(kBazId);
+  baz_app->set_name("Baz");
+  baz_app->set_object_type("baz_object_type");
+  ScopedVector<std::string> baz_mime_types;
+  baz_mime_types.push_back(new std::string("text/plain"));
+  baz_app->set_primary_mimetypes(baz_mime_types.Pass());
+  // Set up DriveAppRegistry.
+  ScopedVector<google_apis::AppResource> app_resources;
+  app_resources.push_back(baz_app.release());
+  google_apis::AppList app_list;
+  app_list.set_items(app_resources.Pass());
+  drive::DriveAppRegistry drive_app_registry(NULL);
+  drive_app_registry.UpdateFromAppList(app_list);
+
+  // Find apps for "foo.txt". All apps should be found.
+  PathAndMimeTypeSet path_mime_set;
+  std::vector<GURL> file_urls;
+  path_mime_set.insert(
+      std::make_pair(
+          drive::util::GetDriveMountPointPath().AppendASCII("foo.txt"),
+          "text/plain"));
+  file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.txt"));
+
+  std::vector<FullTaskDescriptor> tasks;
+  FindAllTypesOfTasks(&test_profile_,
+                      &drive_app_registry,
+                      path_mime_set,
+                      file_urls,
+                      &tasks);
+  ASSERT_EQ(3U, tasks.size());
+
+  // Sort the app IDs, as the order is not guaranteed.
+  std::vector<std::string> app_ids;
+  app_ids.push_back(tasks[0].task_descriptor().app_id);
+  app_ids.push_back(tasks[1].task_descriptor().app_id);
+  app_ids.push_back(tasks[2].task_descriptor().app_id);
+  std::sort(app_ids.begin(), app_ids.end());
+  // Confirm that all apps are found.
+  EXPECT_EQ(kFooId, app_ids[0]);
+  EXPECT_EQ(kBarId, app_ids[1]);
+  EXPECT_EQ(kBazId, app_ids[2]);
+}
+
 }  // namespace file_tasks
 }  // namespace file_manager.

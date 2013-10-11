@@ -280,8 +280,11 @@ void FindFileBrowserHandlerTasks(
 // Finds all types (drive, file handlers, file browser handlers) of
 // tasks. See the comment at FindDriveAppTasks() about |result_list|.
 // Drive app tasks will be found only if all of the files are on Drive.
+// |drive_app_registry| can be NULL if the drive app registry is not
+// present.
 void FindAllTypesOfTasks(
     Profile* profile,
+    const drive::DriveAppRegistry* drive_app_registry,
     const PathAndMimeTypeSet& path_mime_set,
     const std::vector<GURL>& file_urls,
     std::vector<FullTaskDescriptor>* result_list);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_tasks.h"
 
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -147,10 +148,12 @@ bool FileBrowserPrivateGetFileTasksFunction::RunImpl() {
   }
 
   std::vector<file_manager::file_tasks::FullTaskDescriptor> tasks;
-  file_manager::file_tasks::FindAllTypesOfTasks(profile_,
-                                                path_mime_set,
-                                                file_urls,
-                                                &tasks);
+  file_manager::file_tasks::FindAllTypesOfTasks(
+      profile_,
+      drive::util::GetDriveAppRegistryByProfile(profile_),
+      path_mime_set,
+      file_urls,
+      &tasks);
 
   // Convert the tasks into JSON compatible objects.
   using api::file_browser_private::FileTask;
