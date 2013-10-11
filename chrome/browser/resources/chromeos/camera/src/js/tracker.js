@@ -221,7 +221,6 @@ camera.Tracker.prototype.detect = function() {
 
   var result = ccv.detect_objects({
     canvas: this.input_,
-    cascade: cascade,
     interval: 5,
     min_neighbors: 1,
     worker: 1,

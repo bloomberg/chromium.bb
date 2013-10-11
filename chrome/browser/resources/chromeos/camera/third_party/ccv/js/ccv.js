@@ -1,3 +1,14 @@
+// Cached workers to avoid creating them for each invocation.
+var cached_workers = [];
+
+// Import the cascade, if running in the worker scope.
+try {
+	importScripts('face.js');
+}
+catch (e) {
+	// Ignore.
+}
+
 if (parallable === undefined) {
 	var parallable = function (file, funct) {
 		parallable.core[funct.toString()] = funct().core;
@@ -34,7 +45,9 @@ if (parallable === undefined) {
 						else if (scope.shared[i].tagName !== undefined)
 							delete scope.shared[i];
 					for (i = 0; i < worker_num; i++) {
-						var worker = new Worker(file);
+						if (!(i in cached_workers))
+							cached_workers[i] = new Worker(file);
+						var worker = cached_workers[i];
 						worker.onmessage = (function (i) {
 							return function (event) {
 								outputs[i] = (typeof event.data == "string") ? JSON.parse(event.data) : event.data;
@@ -170,19 +183,15 @@ var ccv = {
 		return {"index" : idx, "cat" : class_idx};
 	},
 
-	detect_objects : parallable("../js/third_party/ccv/js/ccv.js", function (canvas, cascade, interval, min_neighbors) {
+	detect_objects : parallable("../js/third_party/ccv/js/ccv.js", function (canvas, interval, min_neighbors) {
 		if (this.shared !== undefined) {
-			var params = get_named_arguments(arguments, ["canvas", "cascade", "interval", "min_neighbors"]);
+			var params = get_named_arguments(arguments, ["canvas", "interval", "min_neighbors"]);
 			this.shared.canvas = params.canvas;
 			this.shared.interval = params.interval;
 			this.shared.min_neighbors = params.min_neighbors;
-			this.shared.cascade = params.cascade;
 			this.shared.scale = Math.pow(2, 1 / (params.interval + 1));
 			this.shared.next = params.interval + 1;
-			this.shared.scale_upto = Math.floor(Math.log(Math.min(params.canvas.width / params.cascade.width, params.canvas.height / params.cascade.height)) / Math.log(this.shared.scale));
-			var i;
-			for (i = 0; i < this.shared.cascade.stage_classifier.length; i++)
-				this.shared.cascade.stage_classifier[i].orig_feature = this.shared.cascade.stage_classifier[i].feature;
+			this.shared.scale_upto = Math.floor(Math.log(Math.min(params.canvas.width / cascade.width, params.canvas.height / cascade.height)) / Math.log(this.shared.scale));
 		}
 		function pre(worker_num) {
 			var canvas = this.shared.canvas;
@@ -242,7 +251,6 @@ var ccv = {
 		};
 
 		function core(pyr, id, worker_num) {
-			var cascade = this.shared.cascade;
 			var interval = this.shared.interval;
 			var scale = this.shared.scale;
 			var next = this.shared.next;
@@ -252,8 +260,12 @@ var ccv = {
 			var dx = [0, 1, 0, 1];
 			var dy = [0, 0, 1, 1];
 			var seq = [];
+			for (i = 0; i < cascade.stage_classifier.length; i++)
+				cascade.stage_classifier[i].orig_feature = cascade.stage_classifier[i].feature;
+
 			for (i = 0; i < scale_upto; i++) {
 				var qw = pyr[i * 4 + next * 8].width - Math.floor(cascade.width / 4);
+
 				var qh = pyr[i * 4 + next * 8].height - Math.floor(cascade.height / 4);
 				var step = [pyr[i * 4].width * 4, pyr[i * 4 + next * 4].width * 4, pyr[i * 4 + next * 8].width * 4];
 				var paddings = [pyr[i * 4].width * 16 - qw * 16,
@@ -345,19 +357,18 @@ var ccv = {
 				scale_x *= scale;
 				scale_y *= scale;
 			}
+			for (i = 0; i < cascade.stage_classifier.length; i++)
+				cascade.stage_classifier[i].feature = cascade.stage_classifier[i].orig_feature;
 			return seq;
 		};
 
 		function post(seq) {
 			var min_neighbors = this.shared.min_neighbors;
-			var cascade = this.shared.cascade;
 			var interval = this.shared.interval;
 			var scale = this.shared.scale;
 			var next = this.shared.next;
 			var scale_upto = this.shared.scale_upto;
 			var i, j;
-			for (i = 0; i < cascade.stage_classifier.length; i++)
-				cascade.stage_classifier[i].feature = cascade.stage_classifier[i].orig_feature;
 			seq = seq[0];
 			if (!(min_neighbors > 0))
 				return seq;
