@@ -110,6 +110,9 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
+#include "core/frame/DOMSecurityPolicy.h"
+#include "core/frame/DOMTimer.h"
+#include "core/frame/DOMWindow.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -144,8 +147,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/frame/DOMSecurityPolicy.h"
-#include "core/frame/DOMWindow.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
@@ -463,6 +464,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
 {
     ScriptWrappable::init(this);
+    setClient(this);
 
     if (m_frame) {
         provideContextFeaturesToDocumentFrom(this, m_frame->page());
@@ -567,6 +569,7 @@ Document::~Document()
         ASSERT(!m_nodeListCounts[i]);
 
     clearDocumentScope();
+    setClient(0);
 
     InspectorCounters::decrementCounter(InspectorCounters::DocumentCounter);
 }
@@ -2572,7 +2575,7 @@ double Document::timerAlignmentInterval() const
 {
     Page* p = page();
     if (!p)
-        return ScriptExecutionContext::timerAlignmentInterval();
+        return DOMTimer::visiblePageAlignmentInterval();
     return p->timerAlignmentInterval();
 }
 

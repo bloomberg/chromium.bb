@@ -68,7 +68,7 @@ V8AbstractEventListener::~V8AbstractEventListener()
 void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event* event)
 {
     // Don't reenter V8 if execution was terminated in this instance of V8.
-    if (context->isJSExecutionForbidden())
+    if (context->client()->isJSExecutionForbidden())
         return;
 
     ASSERT(event);

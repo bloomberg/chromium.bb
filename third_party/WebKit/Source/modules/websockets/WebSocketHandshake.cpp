@@ -219,7 +219,7 @@ CString WebSocketHandshake::clientHandshakeMessage() const
         fields.append("Sec-WebSocket-Extensions: " + extensionValue);
 
     // Add a User-Agent header.
-    fields.append("User-Agent: " + m_context->userAgent(m_context->url()));
+    fields.append("User-Agent: " + m_context->client()->userAgent(m_context->url()));
 
     // Fields in the handshake are sent by the client in a random order; the
     // order is not meaningful.  Thus, it's ok to send the order we constructed
@@ -267,7 +267,7 @@ PassRefPtr<WebSocketHandshakeRequest> WebSocketHandshake::clientHandshakeRequest
         request->addHeaderField("Sec-WebSocket-Extensions", extensionValue);
 
     // Add a User-Agent header.
-    request->addHeaderField("User-Agent", m_context->userAgent(m_context->url()));
+    request->addHeaderField("User-Agent", m_context->client()->userAgent(m_context->url()));
 
     return request.release();
 }

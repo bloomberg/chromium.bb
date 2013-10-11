@@ -58,11 +58,9 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ScriptExecutionContext, public WorkerSupplementable, public EventTargetWithInlineData {
+    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ScriptExecutionContext, public WorkerSupplementable, public ExecutionContextClient, public EventTargetWithInlineData {
     public:
         virtual ~WorkerGlobalScope();
-
-        virtual bool isWorkerGlobalScope() const OVERRIDE { return true; }
 
         virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
@@ -96,9 +94,9 @@ namespace WebCore {
         virtual void importScripts(const Vector<String>& urls, ExceptionState&);
         WorkerNavigator* navigator() const;
 
-        // ScriptExecutionContext
+        // ExecutionContextClient
         virtual WorkerEventQueue* eventQueue() const OVERRIDE;
-
+        virtual double timerAlignmentInterval() const OVERRIDE;
         virtual bool isContextThread() const OVERRIDE;
         virtual bool isJSExecutionForbidden() const OVERRIDE;
 
@@ -150,6 +148,7 @@ namespace WebCore {
         virtual void refEventTarget() OVERRIDE { ref(); }
         virtual void derefEventTarget() OVERRIDE { deref(); }
 
+        virtual bool isWorkerGlobalScope() const OVERRIDE { return true; }
         virtual const KURL& virtualURL() const OVERRIDE;
         virtual KURL virtualCompleteURL(const String&) const;
 
@@ -183,7 +182,7 @@ namespace WebCore {
 inline WorkerGlobalScope* toWorkerGlobalScope(ScriptExecutionContext* context)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!context || context->isWorkerGlobalScope());
-    return static_cast<WorkerGlobalScope*>(context);
+    return static_cast<WorkerGlobalScope*>(context ? context->client() : 0);
 }
 
 } // namespace WebCore

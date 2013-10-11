@@ -40,12 +40,13 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/Event.h"
+#include "core/frame/DOMTimer.h"
+#include "core/frame/DOMWindow.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerNavigator.h"
 #include "platform/NotImplemented.h"
 #include "core/workers/WorkerClients.h"
@@ -89,6 +90,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_workerClients(workerClients)
 {
     ScriptWrappable::init(this);
+    setClient(this);
     setSecurityOrigin(SecurityOrigin::create(url));
     m_workerClients->reattachThread();
 }
@@ -102,6 +104,7 @@ WorkerGlobalScope::~WorkerGlobalScope()
 
     // Notify proxy that we are going away. This can free the WorkerThread object, so do not access it after this.
     thread()->workerReportingProxy().workerGlobalScopeDestroyed();
+    setClient(0);
 }
 
 void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& policy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
@@ -319,6 +322,11 @@ bool WorkerGlobalScope::idleNotification()
 WorkerEventQueue* WorkerGlobalScope::eventQueue() const
 {
     return m_eventQueue.get();
+}
+
+double WorkerGlobalScope::timerAlignmentInterval() const
+{
+    return DOMTimer::visiblePageAlignmentInterval();
 }
 
 } // namespace WebCore

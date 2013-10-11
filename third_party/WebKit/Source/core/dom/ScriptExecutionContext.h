@@ -29,8 +29,9 @@
 #define ScriptExecutionContext_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/events/ErrorEvent.h"
+#include "core/dom/ExecutionContextClient.h"
 #include "core/dom/SecurityContext.h"
+#include "core/events/ErrorEvent.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/DOMTimer.h"
@@ -63,20 +64,15 @@ public:
     ScriptExecutionContext();
     virtual ~ScriptExecutionContext();
 
-    virtual bool isDocument() const { return false; }
-    virtual bool isWorkerGlobalScope() const { return false; }
+    void setClient(ExecutionContextClient* client) { m_client = client; }
+    ExecutionContextClient* client() const { return m_client; }
 
-    virtual bool isJSExecutionForbidden() const = 0;
-
-    virtual DOMWindow* executingWindow() { return 0; }
-    virtual void userEventWasHandled() { }
-
-    const KURL& url() const { return virtualURL(); }
-    KURL completeURL(const String& url) const { return virtualCompleteURL(url); }
-
-    virtual String userAgent(const KURL&) const = 0;
-
-    virtual void disableEval(const String& errorMessage) = 0;
+    bool isDocument() const { return m_client->isDocument(); }
+    bool isWorkerGlobalScope() { return m_client->isWorkerGlobalScope(); }
+    EventQueue* eventQueue() const { return m_client->eventQueue(); }
+    const KURL& url() const { return m_client->virtualURL(); }
+    KURL completeURL(const String& url) const { return m_client->virtualCompleteURL(url); }
+    void postTask(PassOwnPtr<ExecutionContextTask>);
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
     void reportException(PassRefPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
@@ -92,9 +88,9 @@ public:
 
     // Active objects can be asked to suspend even if canSuspendActiveDOMObjects() returns 'false' -
     // step-by-step JS debugging is one example.
-    virtual void suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension);
-    virtual void resumeActiveDOMObjects();
-    virtual void stopActiveDOMObjects();
+    void suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension);
+    void resumeActiveDOMObjects();
+    void stopActiveDOMObjects();
 
     bool activeDOMObjectsAreSuspended() const { return m_activeDOMObjectsAreSuspended; }
     bool activeDOMObjectsAreStopped() const { return m_activeDOMObjectsAreStopped; }
@@ -113,16 +109,10 @@ public:
     void ref() { refScriptExecutionContext(); }
     void deref() { derefScriptExecutionContext(); }
 
-    virtual void postTask(PassOwnPtr<ExecutionContextTask>) = 0; // Executes the task on context's thread asynchronously.
-
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
 
     void didChangeTimerAlignmentInterval();
-    virtual double timerAlignmentInterval() const;
-
-    virtual EventQueue* eventQueue() const = 0;
-
     void setDatabaseContext(DatabaseContext*);
 
 protected:
@@ -132,12 +122,6 @@ protected:
 private:
     friend class DOMTimer; // For installNewTimeout() and removeTimeoutByID() below.
 
-    virtual const KURL& virtualURL() const = 0;
-    virtual KURL virtualCompleteURL(const String&) const = 0;
-
-    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) = 0;
-    virtual EventTarget* errorEventTarget() = 0;
-    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
     bool dispatchErrorEvent(PassRefPtr<ErrorEvent>, AccessControlStatus);
 
     void closeMessagePorts();
@@ -150,6 +134,7 @@ private:
     int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
     void removeTimeoutByID(int timeoutID); // This makes underlying DOMTimer instance destructed.
 
+    ExecutionContextClient* m_client;
     HashSet<MessagePort*> m_messagePorts;
 
     int m_circularSequentialID;

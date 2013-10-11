@@ -77,7 +77,7 @@ MessagePort* EventTarget::toMessagePort()
 inline DOMWindow* EventTarget::executingWindow()
 {
     if (ScriptExecutionContext* context = scriptExecutionContext())
-        return context->executingWindow();
+        return context->client()->executingWindow();
     return 0;
 }
 
@@ -326,7 +326,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     d->firingEventIterators->removeLast();
     if (userEventWasHandled) {
         if (ScriptExecutionContext* context = scriptExecutionContext())
-            context->userEventWasHandled();
+            context->client()->userEventWasHandled();
     }
 }
 

@@ -164,7 +164,7 @@ void DOMTimer::stop()
 
 double DOMTimer::alignedFireTime(double fireTime) const
 {
-    double alignmentInterval = scriptExecutionContext()->timerAlignmentInterval();
+    double alignmentInterval = scriptExecutionContext()->client()->timerAlignmentInterval();
     if (alignmentInterval) {
         double currentTime = monotonicallyIncreasingTime();
         if (fireTime <= currentTime)

@@ -1846,6 +1846,7 @@
             'dom/ElementRareData.h',
             'dom/ElementTraversal.h',
             'dom/Entity.h',
+            'dom/ExecutionContextClient.h',
             'dom/ExecutionContextTask.cpp',
             'dom/ExecutionContextTask.h',
             'dom/FullscreenElementStack.cpp',

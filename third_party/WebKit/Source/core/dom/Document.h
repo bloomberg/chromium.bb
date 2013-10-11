@@ -207,7 +207,7 @@ enum DocumentClass {
 
 typedef unsigned char DocumentClassFlags;
 
-class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext, public DocumentSupplementable {
+class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext, public DocumentSupplementable, public ExecutionContextClient {
 public:
     static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -1400,13 +1400,13 @@ inline bool Document::shouldOverrideLegacyViewport(ViewportDescription::Type ori
 inline Document* toDocument(ScriptExecutionContext* scriptExecutionContext)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!scriptExecutionContext || scriptExecutionContext->isDocument());
-    return static_cast<Document*>(scriptExecutionContext);
+    return static_cast<Document*>(scriptExecutionContext ? scriptExecutionContext->client() : 0);
 }
 
 inline const Document* toDocument(const ScriptExecutionContext* scriptExecutionContext)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!scriptExecutionContext || scriptExecutionContext->isDocument());
-    return static_cast<const Document*>(scriptExecutionContext);
+    return static_cast<const Document*>(scriptExecutionContext ? scriptExecutionContext->client() : 0);
 }
 
 inline Document* toDocument(Node* node)

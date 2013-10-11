@@ -94,6 +94,11 @@ ScriptExecutionContext::~ScriptExecutionContext()
     }
 }
 
+void ScriptExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
+{
+    m_client->postTask(task);
+}
+
 void ScriptExecutionContext::processMessagePortMessagesSoon()
 {
     postTask(ProcessMessagesSoonTask::create());
@@ -120,7 +125,7 @@ void ScriptExecutionContext::dispatchMessagePortEvents()
 void ScriptExecutionContext::createdMessagePort(MessagePort* port)
 {
     ASSERT(port);
-    ASSERT((isDocument() && isMainThread())
+    ASSERT((m_client->isDocument() && isMainThread())
         || (isWorkerGlobalScope() && toWorkerGlobalScope(this)->thread()->isCurrentThread()));
 
     m_messagePorts.add(port);
@@ -129,7 +134,7 @@ void ScriptExecutionContext::createdMessagePort(MessagePort* port)
 void ScriptExecutionContext::destroyedMessagePort(MessagePort* port)
 {
     ASSERT(port);
-    ASSERT((isDocument() && isMainThread())
+    ASSERT((m_client->isDocument() && isMainThread())
         || (isWorkerGlobalScope() && toWorkerGlobalScope(this)->thread()->isCurrentThread()));
 
     m_messagePorts.remove(port);
@@ -208,31 +213,31 @@ void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassR
 
     // First report the original exception and only then all the nested ones.
     if (!dispatchErrorEvent(errorEvent, corsStatus))
-        logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
+        m_client->logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
 
     if (!m_pendingExceptions)
         return;
 
     for (size_t i = 0; i < m_pendingExceptions->size(); i++) {
         PendingException* e = m_pendingExceptions->at(i).get();
-        logExceptionToConsole(e->m_errorMessage, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
+        m_client->logExceptionToConsole(e->m_errorMessage, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
     }
     m_pendingExceptions.clear();
 }
 
 void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber)
 {
-    addMessage(source, level, message, sourceURL, lineNumber, 0);
+    m_client->addMessage(source, level, message, sourceURL, lineNumber, 0);
 }
 
 void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state)
 {
-    addMessage(source, level, message, String(), 0, state);
+    m_client->addMessage(source, level, message, String(), 0, state);
 }
 
 bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessControlStatus corsStatus)
 {
-    EventTarget* target = errorEventTarget();
+    EventTarget* target = m_client->errorEventTarget();
     if (!target)
         return false;
 
@@ -290,11 +295,6 @@ void ScriptExecutionContext::didChangeTimerAlignmentInterval()
 {
     for (TimeoutMap::iterator iter = m_timeouts.begin(); iter != m_timeouts.end(); ++iter)
         iter->value->didChangeAlignmentInterval();
-}
-
-double ScriptExecutionContext::timerAlignmentInterval() const
-{
-    return DOMTimer::visiblePageAlignmentInterval();
 }
 
 ContextLifecycleNotifier* ScriptExecutionContext::lifecycleNotifier()
