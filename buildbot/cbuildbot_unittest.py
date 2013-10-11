@@ -508,7 +508,7 @@ class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
 
     self.mox.ReplayAll()
     self.assertRaises(TestHaltedException, self.assertMain,
-                      ['--local', 'mario-paladin'])
+                      ['--local', 'x86-mario-paladin'])
 
   def testInferBuildRootPromptNo(self):
     """Test that a 'no' answer on the prompt halts execution."""

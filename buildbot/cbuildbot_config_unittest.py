@@ -483,7 +483,7 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     mock_options = mock.Mock()
     mock_options.remote_trybot = False
     mock_options.hw_test = False
-    old = cbuildbot_config.config['mario-paladin']
+    old = cbuildbot_config.config['x86-mario-paladin']
     new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
     self.assertTrue(constants.USE_CHROME_INTERNAL in old['useflags'])
     self.assertTrue(constants.USE_CHROME_PDF in old['useflags'])

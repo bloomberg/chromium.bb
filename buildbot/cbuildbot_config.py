@@ -808,19 +808,19 @@ incremental.add_config('x32-generic-incremental',
 
 paladin.add_config('x86-generic-paladin',
   boards=['x86-generic'],
-  paladin_builder_name='x86 generic paladin',
+  paladin_builder_name='x86-generic paladin',
 )
 
 paladin.add_config('amd64-generic-paladin',
   amd64,
   boards=['amd64-generic'],
-  paladin_builder_name='amd64 generic paladin',
+  paladin_builder_name='amd64-generic paladin',
 )
 
 paladin.add_config('x32-generic-paladin',
   amd64,
   boards=['x32-generic'],
-  paladin_builder_name='x32 generic paladin',
+  paladin_builder_name='x32-generic paladin',
   important=False,
 )
 
@@ -1203,11 +1203,11 @@ internal.add_config('test-ap',
 
 ### Master paladin (CQ builder).
 
-internal_paladin.add_config('mario-paladin',
+internal_paladin.add_config('x86-mario-paladin',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
   boards=['x86-mario'],
-  paladin_builder_name='mario paladin',
+  paladin_builder_name='x86-mario paladin',
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 )
 
@@ -1221,9 +1221,9 @@ internal_paladin.add_config('mario-paladin',
 # master_paladin = internal_paladin.add_config(...)
 # master_paladin.AddSlave(internal_paladin.add_config(...))
 
-internal_paladin.add_config('alex-paladin',
+internal_paladin.add_config('x86-alex-paladin',
   boards=['x86-alex'],
-  paladin_builder_name='alex paladin',
+  paladin_builder_name='x86-alex paladin',
   hw_tests=HWTestConfig.DefaultListCQ(timeout=60 * 60, num=8),
   upload_hw_test_artifacts=True,
 )
@@ -1253,9 +1253,9 @@ internal_paladin.add_config('falco-paladin',
   paladin_builder_name='falco paladin',
 )
 
-internal_paladin.add_config('fox-wtm2-paladin',
+internal_paladin.add_config('fox_wtm2-paladin',
   boards=['fox_wtm2'],
-  paladin_builder_name='fox paladin',
+  paladin_builder_name='fox_wtm2 paladin',
   vm_tests=None,
 )
 
@@ -1350,10 +1350,10 @@ internal_paladin.add_config('wolf-paladin',
   paladin_builder_name='wolf paladin',
 )
 
-internal_paladin.add_config('zgb-paladin',
+internal_paladin.add_config('x86-zgb-paladin',
   boards=['x86-zgb'],
   important=False,
-  paladin_builder_name='zgb paladin',
+  paladin_builder_name='x86-zgb paladin',
 )
 
 ### Arm paladins (CQ builders).

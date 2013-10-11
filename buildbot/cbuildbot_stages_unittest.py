@@ -719,8 +719,8 @@ class HWTestStageTest(AbstractStageTest):
 
   def testWithTimeout(self):
     """Test if run correctly with a critical timeout."""
-    self.bot_id = 'alex-paladin'
-    self.build_config = config.config['alex-paladin'].copy()
+    self.bot_id = 'x86-alex-paladin'
+    self.build_config = config.config['x86-alex-paladin'].copy()
     self.suite_config = self.GetHWTestSuite()
     self._RunHWTestSuite(timeout=True)
 
@@ -1178,7 +1178,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest,
   def testPaladinMasterUpload(self):
     board_map = {'amd64-generic': True, 'x86-generic': True,
                  'x86-alex': False, 'lumpy': False, 'daisy_spring': False}
-    self.VerifyBoardMap('mario-paladin', 8, board_map,
+    self.VerifyBoardMap('x86-mario-paladin', 8, board_map,
                         private_args=['--board', 'x86-mario'])
     self.assertCommandContains([self.CMD, '--sync-host'])
 
@@ -1705,7 +1705,7 @@ class BaseCQTest(StageTest):
 
 class SlaveCQSyncTest(BaseCQTest):
   """Tests the CommitQueueSync stage for the paladin slaves."""
-  PALADIN_BOT_ID = 'alex-paladin'
+  PALADIN_BOT_ID = 'x86-alex-paladin'
 
   def testReload(self):
     """Test basic ability to sync and reload the patches from disk."""
@@ -1721,7 +1721,7 @@ class MasterCQSyncTest(BaseCQTest):
   Tests in this class should apply both to the paladin masters and to the
   Pre-CQ Launcher.
   """
-  PALADIN_BOT_ID = 'mario-paladin'
+  PALADIN_BOT_ID = 'x86-mario-paladin'
 
   def setUp(self):
     """Setup patchers for specified bot id."""
