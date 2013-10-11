@@ -25,8 +25,10 @@ extern const WebCore::QualifiedName {{attr|symbol}}Attr;
 
 #endif // {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS
 
+{%- if tags %}
 const unsigned {{namespace}}TagsCount = {{tags|count}};
 WebCore::QualifiedName** get{{namespace}}Tags();
+{%- endif %}
 const unsigned {{namespace}}AttrsCount = {{attrs|count}};
 WebCore::QualifiedName** get{{namespace}}Attrs();
 

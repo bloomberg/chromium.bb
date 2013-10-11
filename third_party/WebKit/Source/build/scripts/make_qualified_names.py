@@ -57,15 +57,24 @@ class MakeQualifiedNamesWriter(in_generator.Writer):
 
     def __init__(self, in_file_paths, enabled_conditions):
         super(MakeQualifiedNamesWriter, self).__init__(None, enabled_conditions)
-        assert len(in_file_paths) == 2, 'MakeQualifiedNamesWriter requires 2 in files, got %d.' % len(in_file_paths)
-        tags_in_file = InFile.load_from_files([in_file_paths[0]], self.defaults, self.valid_values, self.default_parameters)
-        attrs_in_file = InFile.load_from_files([in_file_paths[1]], self.defaults, self.valid_values, self.default_parameters)
+        assert len(in_file_paths) <= 2, 'MakeQualifiedNamesWriter requires at most 2 in files, got %d.' % len(in_file_paths)
 
-        namespace = tags_in_file.parameters['namespace'].strip('"')
-        assert namespace == attrs_in_file.parameters['namespace'].strip('"'), 'Both in files must have the same namespace.'
+        if len(in_file_paths) == 2:
+            tags_in_file = InFile.load_from_files([in_file_paths.pop(0)], self.defaults, self.valid_values, self.default_parameters)
+        else:
+            tags_in_file = None
 
-        namespace_uri = tags_in_file.parameters['namespaceURI'].strip('"')
-        assert namespace_uri == attrs_in_file.parameters['namespaceURI'].strip('"'), 'Both in files must have the same namespaceURI.'
+        attrs_in_file = InFile.load_from_files([in_file_paths.pop()], self.defaults, self.valid_values, self.default_parameters)
+
+        namespace = attrs_in_file.parameters['namespace'].strip('"')
+        if tags_in_file:
+            assert namespace == tags_in_file.parameters['namespace'].strip('"'), 'Both in files must have the same namespace.'
+
+        namespace_uri = attrs_in_file.parameters['namespaceURI'].strip('"')
+        if tags_in_file:
+            assert namespace_uri == tags_in_file.parameters['namespaceURI'].strip('"'), 'Both in files must have the same namespaceURI.'
+
+        use_namespace_for_attrs = attrs_in_file.parameters['attrsNullNamespace'] is None
 
         self._outputs = {
             (namespace + "Names.h"): self.generate_header,
@@ -74,7 +83,8 @@ class MakeQualifiedNamesWriter(in_generator.Writer):
         self._template_context = {
             'namespace': namespace,
             'namespace_uri': namespace_uri,
-            'tags': tags_in_file.name_dictionaries,
+            'use_namespace_for_attrs': use_namespace_for_attrs,
+            'tags': tags_in_file.name_dictionaries if tags_in_file else [],
             'attrs': attrs_in_file.name_dictionaries,
         }
 

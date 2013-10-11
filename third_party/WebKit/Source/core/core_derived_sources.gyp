@@ -548,9 +548,7 @@
         {
           'action_name': 'XLinkNames',
           'inputs': [
-            '../build/scripts/Hasher.pm',
-            '../build/scripts/StaticString.pm',
-            '../build/scripts/make_names.pl',
+            '<@(make_qualified_names_files)',
             'svg/xlinkattrs.in',
           ],
           'outputs': [
@@ -559,21 +557,16 @@
           ],
           'action': [
             'python',
-            '../build/scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--extraDefines', '<(feature_defines)'
+            '../build/scripts/make_qualified_names.py',
+            'svg/xlinkattrs.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'XMLNSNames',
           'inputs': [
-            '../build/scripts/Hasher.pm',
-            '../build/scripts/StaticString.pm',
-            '../build/scripts/make_names.pl',
+            '<@(make_qualified_names_files)',
             'xml/xmlnsattrs.in',
           ],
           'outputs': [
@@ -582,21 +575,16 @@
           ],
           'action': [
             'python',
-            '../build/scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--extraDefines', '<(feature_defines)'
+            '../build/scripts/make_qualified_names.py',
+            'xml/xmlnsattrs.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'XMLNames',
           'inputs': [
-            '../build/scripts/Hasher.pm',
-            '../build/scripts/StaticString.pm',
-            '../build/scripts/make_names.pl',
+            '<@(make_qualified_names_files)',
             'xml/xmlattrs.in',
           ],
           'outputs': [
@@ -605,14 +593,11 @@
           ],
           'action': [
             'python',
-            '../build/scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--extraDefines', '<(feature_defines)'
+            '../build/scripts/make_qualified_names.py',
+            'xml/xmlattrs.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'preprocess_grammar',
