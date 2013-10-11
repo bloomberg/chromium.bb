@@ -11152,8 +11152,8 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.PSLDomainMatchTriggering"
-    enum="PasswordManagerPSLDomainMatchTriggering">
+<histogram name="PasswordManager.PslDomainMatchTriggering"
+    enum="PasswordManagerPslDomainMatchTriggering">
   <summary>
     Breakdown on trigger rate of providing a password form autofill entry based
     on matching stored information using the public suffix list for possible
@@ -25238,7 +25238,7 @@ other types of suffix sets.
              / form submit succeeded"/>
 </enum>
 
-<enum name="PasswordManagerPSLDomainMatchTriggering" type="int">
+<enum name="PasswordManagerPslDomainMatchTriggering" type="int">
   <summary>
     The value indicates whether an entry returned by password autofill contains
     a value that was found by matching against the public suffix list.
