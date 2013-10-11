@@ -195,6 +195,17 @@ camera.views.Camera = function(context) {
    */
   this.shownAtStartup_ = false;
 
+  /**
+   * Detects if the mouse has been moved or clicked, and if any touch events
+   * have been performed on the view. If such events are detected, then the
+   * ribbon and the window buttons are shown.
+   *
+   * @type {camera.util.PointerTracker}
+   * @private
+   */
+  this.pointerTracker_ = new camera.util.PointerTracker(
+      document.body, this.setExpanded_.bind(this, true));
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -229,14 +240,6 @@ camera.views.Camera = function(context) {
 
   // Select the default effect.
   this.setCurrentEffect_(0);
-
- // Show tools on touch or mouse move/click.
-  document.body.addEventListener(
-      'mousemove', this.setExpanded_.bind(this, true));
-  document.body.addEventListener(
-      'touchmove', this.setExpanded_.bind(this, true));
-  document.body.addEventListener(
-      'click', this.setExpanded_.bind(this, true));
 
   // Make the preview ribbon possible to scroll by dragging with mouse.
   document.querySelector('#effects').addEventListener(
