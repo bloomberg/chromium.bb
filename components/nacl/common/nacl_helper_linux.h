@@ -33,15 +33,4 @@ enum NaClZygoteIPCCommand {
 // content/browser/zygote_main_linux.cc
 // kMagicSandboxIPCDescriptor.
 
-// A fork request from the Zygote to the helper includes an array
-// of three file descriptors. These constants are used as indicies
-// into the array.
-// Used to pass in the descriptor for talking to the Browser
-#define kNaClBrowserFDIndex 0
-// The next two are used in the protocol for discovering the
-// child processes real PID from within the SUID sandbox. See
-// http://code.google.com/p/chromium/wiki/LinuxZygote
-#define kNaClDummyFDIndex 1
-#define kNaClParentFDIndex 2
-
 #endif  // COMPONENTS_NACL_COMMON_NACL_HELPER_LINUX_H_

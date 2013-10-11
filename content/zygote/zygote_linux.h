@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/containers/small_map.h"
+#include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 
@@ -77,7 +78,7 @@ class Zygote {
   // fills in uma_name et al with a report the helper wants to make via
   // UMA_HISTOGRAM_ENUMERATION.
   int ForkWithRealPid(const std::string& process_type,
-                      std::vector<int>& fds,
+                      const base::GlobalDescriptors::Mapping& fd_mapping,
                       const std::string& channel_switch,
                       std::string* uma_name,
                       int* uma_sample,

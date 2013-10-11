@@ -41,6 +41,14 @@ namespace {
 void SIGCHLDHandler(int signal) {
 }
 
+int LookUpFd(const base::GlobalDescriptors::Mapping& fd_mapping, uint32_t key) {
+  for (size_t index = 0; index < fd_mapping.size(); ++index) {
+    if (fd_mapping[index].first == key)
+      return fd_mapping[index].second;
+  }
+  return -1;
+}
+
 }  // namespace
 
 Zygote::Zygote(int sandbox_flags,
@@ -274,7 +282,7 @@ void Zygote::HandleGetTerminationStatus(int fd,
 }
 
 int Zygote::ForkWithRealPid(const std::string& process_type,
-                            std::vector<int>& fds,
+                            const base::GlobalDescriptors::Mapping& fd_mapping,
                             const std::string& channel_switch,
                             std::string* uma_name,
                             int* uma_sample,
@@ -303,8 +311,15 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
   }
 
   if (use_helper) {
-    fds.push_back(dummy_fd);
-    fds.push_back(pipe_fds[0]);
+    std::vector<int> fds;
+    int ipc_channel_fd = LookUpFd(fd_mapping, kPrimaryIPCChannel);
+    if (ipc_channel_fd < 0) {
+      DLOG(ERROR) << "Failed to find kPrimaryIPCChannel in FD mapping";
+      goto error;
+    }
+    fds.push_back(ipc_channel_fd);  // kBrowserFDIndex
+    fds.push_back(dummy_fd);  // kDummyFDIndex
+    fds.push_back(pipe_fds[0]);  // kParentFDIndex
     pid = helper_->Fork(fds);
   } else {
     pid = fork();
@@ -459,7 +474,7 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
       static_cast<uint32_t>(kSandboxIPCChannel), GetSandboxFD()));
 
   // Returns twice, once per process.
-  base::ProcessId child_pid = ForkWithRealPid(process_type, fds, channel_id,
+  base::ProcessId child_pid = ForkWithRealPid(process_type, mapping, channel_id,
                                               uma_name, uma_sample,
                                               uma_boundary_value);
   if (!child_pid) {

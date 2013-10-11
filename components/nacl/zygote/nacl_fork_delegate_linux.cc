@@ -258,7 +258,7 @@ bool NaClForkDelegate::CanHelp(const std::string& process_type,
 pid_t NaClForkDelegate::Fork(const std::vector<int>& fds) {
   VLOG(1) << "NaClForkDelegate::Fork";
 
-  DCHECK(fds.size() == kNaClParentFDIndex + 1);
+  DCHECK(fds.size() == kNumPassedFDs);
 
   // First, send a remote fork request.
   Pickle write_pickle;

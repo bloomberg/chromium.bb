@@ -43,6 +43,18 @@ class ZygoteForkDelegate {
   virtual bool CanHelp(const std::string& process_type, std::string* uma_name,
                        int* uma_sample, int* uma_boundary_value) = 0;
 
+  // Indexes of FDs in the vector passed to Fork().
+  enum {
+    // Used to pass in the descriptor for talking to the Browser
+    kBrowserFDIndex,
+    // The next two are used in the protocol for discovering the
+    // child processes real PID from within the SUID sandbox. See
+    // http://code.google.com/p/chromium/wiki/LinuxZygote
+    kDummyFDIndex,
+    kParentFDIndex,
+    kNumPassedFDs  // Number of FDs in the vector passed to Fork().
+  };
+
   // Delegate forks, returning a -1 on failure. Outside the
   // suid sandbox, Fork() returns the Linux process ID.
   // This method is not aware of any potential pid namespaces, so it'll

@@ -30,6 +30,7 @@
 #include "base/rand_util.h"
 #include "components/nacl/loader/nacl_listener.h"
 #include "components/nacl/loader/nacl_sandbox_linux.h"
+#include "content/public/common/zygote_fork_delegate_linux.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
@@ -56,8 +57,9 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
     LOG(ERROR) << "Could not initialize NaCl's second "
       << "layer sandbox (seccomp-bpf).";
   }
-  base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
-                                              child_fds[kNaClBrowserFDIndex]);
+  base::GlobalDescriptors::GetInstance()->Set(
+      kPrimaryIPCChannel,
+      child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]);
 
   base::MessageLoopForIO main_message_loop;
   NaClListener listener;
@@ -70,6 +72,8 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
 // Start the NaCl loader in a child created by the NaCl loader Zygote.
 void ChildNaClLoaderInit(const std::vector<int>& child_fds,
                          const NaClLoaderSystemInfo& system_info) {
+  const int parent_fd = child_fds[content::ZygoteForkDelegate::kParentFDIndex];
+  const int dummy_fd = child_fds[content::ZygoteForkDelegate::kDummyFDIndex];
   bool validack = false;
   const size_t kMaxReadSize = 1024;
   char buffer[kMaxReadSize];
@@ -77,8 +81,7 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
   // should not fork any child processes (which the seccomp
   // sandbox does) until then, because that can interfere with the
   // parent's discovery of our PID.
-  const int nread = HANDLE_EINTR(read(child_fds[kNaClParentFDIndex], buffer,
-                                      kMaxReadSize));
+  const int nread = HANDLE_EINTR(read(parent_fd, buffer, kMaxReadSize));
   const std::string switch_prefix = std::string("--") +
       switches::kProcessChannelID + std::string("=");
   const size_t len = switch_prefix.length();
@@ -95,10 +98,10 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
       validack = true;
     }
   }
-  if (HANDLE_EINTR(close(child_fds[kNaClDummyFDIndex])) != 0)
-    LOG(ERROR) << "close(child_fds[kNaClDummyFDIndex]) failed";
-  if (HANDLE_EINTR(close(child_fds[kNaClParentFDIndex])) != 0)
-    LOG(ERROR) << "close(child_fds[kNaClParentFDIndex]) failed";
+  if (HANDLE_EINTR(close(dummy_fd)) != 0)
+    LOG(ERROR) << "close(dummy_fd) failed";
+  if (HANDLE_EINTR(close(parent_fd)) != 0)
+    LOG(ERROR) << "close(parent_fd) failed";
   if (validack) {
     BecomeNaClLoader(child_fds, system_info);
   } else {
@@ -113,7 +116,7 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
 bool HandleForkRequest(const std::vector<int>& child_fds,
                        const NaClLoaderSystemInfo& system_info,
                        Pickle* output_pickle) {
-  if (kNaClParentFDIndex + 1 != child_fds.size()) {
+  if (content::ZygoteForkDelegate::kNumPassedFDs != child_fds.size()) {
     LOG(ERROR) << "nacl_helper: unexpected number of fds, got "
         << child_fds.size();
     return false;
