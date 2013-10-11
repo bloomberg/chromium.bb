@@ -71,6 +71,8 @@ public:
 
     InsertionPoint* findInsertionPointFor(const Node*) const;
 
+    void didDistributeNode(const Node*, InsertionPoint*);
+
 private:
     ElementShadow();
 
@@ -79,9 +81,7 @@ private:
 
     void distribute();
     void clearDistribution();
-    void populate(Node*, Vector<Node*>&);
     void collectSelectFeatureSetFrom(ShadowRoot*);
-    void distributeSelectionsTo(InsertionPoint*, const Vector<Node*>& pool, Vector<bool>& distributed);
     void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
 
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
