@@ -57,8 +57,9 @@ void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   base::FieldTrialList::FindValue("InstantDummy");
   base::FieldTrialList::FindValue("InstantChannel");
   base::FieldTrialList::FindValue("Test0PercentDefault");
-  // MouseEventPreconnect trial is used from renderer process.
-  // Mark here so it will be sync-ed.
+  // The following trials are used from renderer process.
+  // Mark here so they will be sync-ed.
+  base::FieldTrialList::FindValue("DateExtensionEnabled");
   base::FieldTrialList::FindValue("MouseEventPreconnect");
   // Activate the autocomplete dynamic field trials.
   OmniboxFieldTrial::ActivateDynamicTrials();
