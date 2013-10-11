@@ -43,7 +43,7 @@ inline SVGSwitchElement::SVGSwitchElement(const QualifiedName& tagName, Document
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSwitchElement();
 
-    UseCounter::count(document, UseCounter::SVGSwitchElement);
+    UseCounter::count(&document, UseCounter::SVGSwitchElement);
 }
 
 PassRefPtr<SVGSwitchElement> SVGSwitchElement::create(const QualifiedName& tagName, Document& document)

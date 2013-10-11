@@ -72,7 +72,7 @@ RenderMarquee::RenderMarquee(Element* element)
     , m_stopped(false)
     , m_direction(MAUTO)
 {
-    UseCounter::count(document(), UseCounter::HTMLMarqueeElement);
+    UseCounter::count(&document(), UseCounter::HTMLMarqueeElement);
 }
 
 RenderMarquee::~RenderMarquee()

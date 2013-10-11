@@ -51,7 +51,7 @@ inline SVGFontElement::SVGFontElement(const QualifiedName& tagName, Document& do
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFontElement();
 
-    UseCounter::count(document, UseCounter::SVGFontElement);
+    UseCounter::count(&document, UseCounter::SVGFontElement);
 }
 
 PassRefPtr<SVGFontElement> SVGFontElement::create(const QualifiedName& tagName, Document& document)

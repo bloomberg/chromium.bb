@@ -60,7 +60,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document&
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGAnimationElement();
 
-    UseCounter::count(document, UseCounter::SVGAnimationElement);
+    UseCounter::count(&document, UseCounter::SVGAnimationElement);
 }
 
 static void parseKeyTimes(const String& string, Vector<float>& result, bool verifyOrder)

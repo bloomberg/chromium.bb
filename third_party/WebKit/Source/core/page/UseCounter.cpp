@@ -568,9 +568,12 @@ void UseCounter::didCommitLoad()
     updateMeasurements();
 }
 
-void UseCounter::count(const Document& document, Feature feature)
+void UseCounter::count(Document* document, Feature feature)
 {
-    Page* page = document.page();
+    if (!document)
+        return;
+
+    Page* page = document->page();
     if (!page)
         return;
 
@@ -578,31 +581,32 @@ void UseCounter::count(const Document& document, Feature feature)
     page->useCounter().recordMeasurement(feature);
 }
 
-void UseCounter::count(const DOMWindow* domWindow, Feature feature)
+void UseCounter::count(DOMWindow* domWindow, Feature feature)
 {
     ASSERT(domWindow);
-    if (!domWindow->document())
-        return;
-    count(*domWindow->document(), feature);
+    count(domWindow->document(), feature);
 }
 
 void UseCounter::countDeprecation(ScriptExecutionContext* context, Feature feature)
 {
     if (!context || !context->isDocument())
         return;
-    UseCounter::countDeprecation(*toDocument(context), feature);
+    UseCounter::countDeprecation(toDocument(context), feature);
 }
 
-void UseCounter::countDeprecation(const DOMWindow* window, Feature feature)
+void UseCounter::countDeprecation(DOMWindow* window, Feature feature)
 {
-    if (!window || !window->document())
+    if (!window)
         return;
-    UseCounter::countDeprecation(*window->document(), feature);
+    UseCounter::countDeprecation(window->document(), feature);
 }
 
-void UseCounter::countDeprecation(const Document& document, Feature feature)
+void UseCounter::countDeprecation(Document* document, Feature feature)
 {
-    Page* page = document.page();
+    if (!document)
+        return;
+
+    Page* page = document->page();
     if (!page)
         return;
 

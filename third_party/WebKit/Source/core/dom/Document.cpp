@@ -2666,7 +2666,7 @@ void Document::processBaseElement()
                     target = &value;
             }
             if (contentSecurityPolicy()->isActive())
-                UseCounter::count(*this, UseCounter::ContentSecurityPolicyWithBaseElement);
+                UseCounter::count(this, UseCounter::ContentSecurityPolicyWithBaseElement);
         }
     }
 
@@ -3633,22 +3633,22 @@ void Document::addMutationEventListenerTypeIfEnabled(ListenerType listenerType)
 void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
 {
     if (eventType == EventTypeNames::DOMSubtreeModified) {
-        UseCounter::count(*this, UseCounter::DOMSubtreeModifiedEvent);
+        UseCounter::count(this, UseCounter::DOMSubtreeModifiedEvent);
         addMutationEventListenerTypeIfEnabled(DOMSUBTREEMODIFIED_LISTENER);
     } else if (eventType == EventTypeNames::DOMNodeInserted) {
-        UseCounter::count(*this, UseCounter::DOMNodeInsertedEvent);
+        UseCounter::count(this, UseCounter::DOMNodeInsertedEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEINSERTED_LISTENER);
     } else if (eventType == EventTypeNames::DOMNodeRemoved) {
-        UseCounter::count(*this, UseCounter::DOMNodeRemovedEvent);
+        UseCounter::count(this, UseCounter::DOMNodeRemovedEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEREMOVED_LISTENER);
     } else if (eventType == EventTypeNames::DOMNodeRemovedFromDocument) {
-        UseCounter::count(*this, UseCounter::DOMNodeRemovedFromDocumentEvent);
+        UseCounter::count(this, UseCounter::DOMNodeRemovedFromDocumentEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEREMOVEDFROMDOCUMENT_LISTENER);
     } else if (eventType == EventTypeNames::DOMNodeInsertedIntoDocument) {
-        UseCounter::count(*this, UseCounter::DOMNodeInsertedIntoDocumentEvent);
+        UseCounter::count(this, UseCounter::DOMNodeInsertedIntoDocumentEvent);
         addMutationEventListenerTypeIfEnabled(DOMNODEINSERTEDINTODOCUMENT_LISTENER);
     } else if (eventType == EventTypeNames::DOMCharacterDataModified) {
-        UseCounter::count(*this, UseCounter::DOMCharacterDataModifiedEvent);
+        UseCounter::count(this, UseCounter::DOMCharacterDataModifiedEvent);
         addMutationEventListenerTypeIfEnabled(DOMCHARACTERDATAMODIFIED_LISTENER);
     } else if (eventType == EventTypeNames::overflowchanged) {
         addListenerType(OVERFLOWCHANGED_LISTENER);
@@ -3661,7 +3661,7 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
     } else if (eventType == EventTypeNames::webkitTransitionEnd || eventType == EventTypeNames::transitionend) {
         addListenerType(TRANSITIONEND_LISTENER);
     } else if (eventType == EventTypeNames::beforeload) {
-        UseCounter::count(*this, UseCounter::BeforeLoadEvent);
+        UseCounter::count(this, UseCounter::BeforeLoadEvent);
         addListenerType(BEFORELOAD_LISTENER);
     } else if (eventType == EventTypeNames::scroll) {
         addListenerType(SCROLL_LISTENER);
@@ -4104,7 +4104,7 @@ void Document::popCurrentScript()
 void Document::applyXSLTransform(ProcessingInstruction* pi)
 {
     ASSERT(!pi->isLoading());
-    UseCounter::count(*this, UseCounter::XSLProcessingInstruction);
+    UseCounter::count(this, UseCounter::XSLProcessingInstruction);
     RefPtr<XSLTProcessor> processor = XSLTProcessor::create();
     processor->setXSLStyleSheet(static_cast<XSLStyleSheet*>(pi->sheet()));
     String resultMIMEType;
@@ -4259,7 +4259,7 @@ PassRefPtr<HTMLCollection> Document::anchors()
 
 PassRefPtr<HTMLCollection> Document::allForBinding()
 {
-    UseCounter::count(*this, UseCounter::DocumentAll);
+    UseCounter::count(this, UseCounter::DocumentAll);
     return all();
 }
 
