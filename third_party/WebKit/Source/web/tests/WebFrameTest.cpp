@@ -207,7 +207,7 @@ TEST_F(WebFrameTest, ContentText)
     webViewHelper.initializeAndLoad(m_baseURL + "iframes_test.html");
 
     // Now retrieve the frames text and test it only includes visible elements.
-    std::string content = std::string(webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8().data());
+    std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
     EXPECT_NE(std::string::npos, content.find(" visible paragraph"));
     EXPECT_NE(std::string::npos, content.find(" visible iframe"));
     EXPECT_EQ(std::string::npos, content.find(" invisible pararaph"));
@@ -262,7 +262,7 @@ TEST_F(WebFrameTest, ChromePageJavascript)
     webViewHelper.webView()->layout();
 
     // Now retrieve the frame's text and ensure it was modified by running javascript.
-    std::string content = std::string(webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8().data());
+    std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
     EXPECT_NE(std::string::npos, content.find("Clobbered"));
 }
 
@@ -282,7 +282,7 @@ TEST_F(WebFrameTest, ChromePageNoJavascript)
     webViewHelper.webView()->layout();
 
     // Now retrieve the frame's text and ensure it wasn't modified by running javascript.
-    std::string content = std::string(webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8().data());
+    std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
     EXPECT_EQ(std::string::npos, content.find("Clobbered"));
 }
 
@@ -572,7 +572,7 @@ TEST_F(WebFrameTest, DispatchMessageEventWithOriginCheck)
     webViewHelper.webView()->layout();
 
     // Verify that only the first addition is in the body of the page.
-    std::string content = std::string(webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8().data());
+    std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
     EXPECT_NE(std::string::npos, content.find("Message 1."));
     EXPECT_EQ(std::string::npos, content.find("Message 2."));
 }
@@ -2651,12 +2651,12 @@ TEST_F(WebFrameTest, GetContentAsPlainText)
     // Make sure it comes out OK.
     const std::string expected("Foo bar\nbaz");
     WebString text = frame->contentAsText(std::numeric_limits<size_t>::max());
-    EXPECT_EQ(expected, std::string(text.utf8().data()));
+    EXPECT_EQ(expected, text.utf8());
 
     // Try reading the same one with clipping of the text.
     const int length = 5;
     text = frame->contentAsText(length);
-    EXPECT_EQ(expected.substr(0, length), std::string(text.utf8().data()));
+    EXPECT_EQ(expected.substr(0, length), text.utf8());
 
     // Now do a new test with a subframe.
     const char outerFrameSource[] = "Hello<iframe></iframe> world";
@@ -2670,12 +2670,12 @@ TEST_F(WebFrameTest, GetContentAsPlainText)
     runPendingTasks();
 
     text = frame->contentAsText(std::numeric_limits<size_t>::max());
-    EXPECT_EQ("Hello world\n\nsub\ntext", std::string(text.utf8().data()));
+    EXPECT_EQ("Hello world\n\nsub\ntext", text.utf8());
 
     // Get the frame text where the subframe separator falls on the boundary of
     // what we'll take. There used to be a crash in this case.
     text = frame->contentAsText(12);
-    EXPECT_EQ("Hello world", std::string(text.utf8().data()));
+    EXPECT_EQ("Hello world", text.utf8());
 }
 
 TEST_F(WebFrameTest, GetFullHtmlOfPage)
@@ -2691,18 +2691,18 @@ TEST_F(WebFrameTest, GetFullHtmlOfPage)
     runPendingTasks();
 
     WebString text = frame->contentAsText(std::numeric_limits<size_t>::max());
-    EXPECT_EQ("Hello\n\nWorld", std::string(text.utf8().data()));
+    EXPECT_EQ("Hello\n\nWorld", text.utf8());
 
-    const std::string html = std::string(frame->contentAsMarkup().utf8().data());
+    const std::string html = frame->contentAsMarkup().utf8();
 
     // Load again with the output html.
     frame->loadHTMLString(WebData(html.c_str(), html.length()), testURL);
     runPendingTasks();
 
-    EXPECT_EQ(html, std::string(frame->contentAsMarkup().utf8().data()));
+    EXPECT_EQ(html, frame->contentAsMarkup().utf8());
 
     text = frame->contentAsText(std::numeric_limits<size_t>::max());
-    EXPECT_EQ("Hello\n\nWorld", std::string(text.utf8().data()));
+    EXPECT_EQ("Hello\n\nWorld", text.utf8());
 
     // Test selection check
     EXPECT_FALSE(frame->hasSelection());
@@ -3087,7 +3087,7 @@ static WebRect elementBounds(WebFrame* frame, const WebString& id)
 
 static std::string selectionAsString(WebFrame* frame)
 {
-    return std::string(frame->selectionAsText().utf8().data());
+    return frame->selectionAsText().utf8();
 }
 
 TEST_F(WebFrameTest, SelectRange)
@@ -3691,7 +3691,7 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation)
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     WebString text = frame->contentAsText(std::numeric_limits<size_t>::max());
-    EXPECT_EQ("This should appear", std::string(text.utf8().data()));
+    EXPECT_EQ("This should appear", text.utf8());
     EXPECT_TRUE(webFrameClient.commitCalled());
 }
 
@@ -3802,7 +3802,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange)
     EXPECT_EQ(1U, document->markers()->markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
 
     frame->replaceMisspelledRange("welcome");
-    EXPECT_EQ("_welcome_.", std::string(frame->contentAsText(std::numeric_limits<size_t>::max()).utf8().data()));
+    EXPECT_EQ("_welcome_.", frame->contentAsText(std::numeric_limits<size_t>::max()).utf8());
 }
 
 TEST_F(WebFrameTest, RemoveSpellingMarkers)
