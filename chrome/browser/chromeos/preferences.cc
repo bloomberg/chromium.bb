@@ -159,6 +159,10 @@ void Preferences::RegisterProfilePrefs(
       std::numeric_limits<double>::min(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
+      prefs::kAutoclickEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kShouldAlwaysShowAccessibilityMenu,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

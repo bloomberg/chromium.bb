@@ -94,6 +94,12 @@ class AccessibilityManager : public content::NotificationObserver {
   // Returns true if High Contrast is enabled, or false if not.
   bool IsHighContrastEnabled();
 
+  // Enables or disables autoclick.
+  void EnableAutoclick(bool enabled);
+
+  // Returns true if autoclick is enabled.
+  bool IsAutoclickEnabled();
+
   void SetProfileForTest(Profile* profile);
 
  protected:
@@ -111,6 +117,7 @@ class AccessibilityManager : public content::NotificationObserver {
   void UpdateStickyKeysFromPref();
   void UpdateSpokenFeedbackFromPref();
   void UpdateHighContrastFromPref();
+  void UpdateAutoclickFromPref();
   void LocalePrefChanged();
 
   void SetProfile(Profile* profile);
@@ -137,11 +144,13 @@ class AccessibilityManager : public content::NotificationObserver {
   PrefHandler large_cursor_pref_handler_;
   PrefHandler spoken_feedback_pref_handler_;
   PrefHandler high_contrast_pref_handler_;
+  PrefHandler autoclick_pref_handler_;
 
   bool large_cursor_enabled_;
   bool sticky_keys_enabled_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
+  bool autoclick_enabled_;
 
   ash::AccessibilityNotificationVisibility spoken_feedback_notification_;
 

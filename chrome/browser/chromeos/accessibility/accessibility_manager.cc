@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
+#include "ash/autoclick/autoclick_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -264,6 +265,7 @@ AccessibilityManager::AccessibilityManager()
       large_cursor_pref_handler_(prefs::kLargeCursorEnabled),
       spoken_feedback_pref_handler_(prefs::kSpokenFeedbackEnabled),
       high_contrast_pref_handler_(prefs::kHighContrastEnabled),
+      autoclick_pref_handler_(prefs::kAutoclickEnabled),
       large_cursor_enabled_(false),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
@@ -548,6 +550,32 @@ bool AccessibilityManager::IsHighContrastEnabled() {
   return high_contrast_enabled_;
 }
 
+void AccessibilityManager::EnableAutoclick(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kAutoclickEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsAutoclickEnabled() {
+  return autoclick_enabled_;
+}
+
+void AccessibilityManager::UpdateAutoclickFromPref() {
+  bool enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kAutoclickEnabled);
+
+  if (autoclick_enabled_ == enabled)
+    return;
+  autoclick_enabled_ = enabled;
+
+#if defined(USE_ASH)
+  ash::Shell::GetInstance()->autoclick_controller()->SetEnabled(enabled);
+#endif
+}
+
 void AccessibilityManager::SetProfile(Profile* profile) {
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
@@ -572,6 +600,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         prefs::kHighContrastEnabled,
         base::Bind(&AccessibilityManager::UpdateHighContrastFromPref,
                    base::Unretained(this)));
+    pref_change_registrar_->Add(
+        prefs::kAutoclickEnabled,
+        base::Bind(&AccessibilityManager::UpdateAutoclickFromPref,
+                   base::Unretained(this)));
 
     local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
@@ -589,12 +621,14 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   large_cursor_pref_handler_.HandleProfileChanged(profile_, profile);
   spoken_feedback_pref_handler_.HandleProfileChanged(profile_, profile);
   high_contrast_pref_handler_.HandleProfileChanged(profile_, profile);
+  autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
 
   profile_ = profile;
   UpdateLargeCursorFromPref();
   UpdateStickyKeysFromPref();
   UpdateSpokenFeedbackFromPref();
   UpdateHighContrastFromPref();
+  UpdateAutoclickFromPref();
 }
 
 void AccessibilityManager::SetProfileForTest(Profile* profile) {

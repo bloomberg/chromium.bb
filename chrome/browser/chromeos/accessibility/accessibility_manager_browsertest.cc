@@ -115,6 +115,14 @@ bool IsSpokenFeedbackEnabled() {
   return AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
 }
 
+void SetAutoclickEnabled(bool enabled) {
+  return AccessibilityManager::Get()->EnableAutoclick(enabled);
+}
+
+bool IsAutoclickEnabled() {
+  return AccessibilityManager::Get()->IsAutoclickEnabled();
+}
+
 Profile* GetProfile() {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   DCHECK(profile);
@@ -137,6 +145,10 @@ void SetSpokenFeedbackEnabledPref(bool enabled) {
   GetPrefs()->SetBoolean(prefs::kSpokenFeedbackEnabled, enabled);
 }
 
+void SetAutoclickEnabledPref(bool enabled) {
+  GetPrefs()->SetBoolean(prefs::kAutoclickEnabled, enabled);
+}
+
 bool GetLargeCursorEnabledFromPref() {
   return GetPrefs()->GetBoolean(prefs::kLargeCursorEnabled);
 }
@@ -147,6 +159,10 @@ bool GetHighContrastEnabledFromPref() {
 
 bool GetSpokenFeedbackEnabledFromPref() {
   return GetPrefs()->GetBoolean(prefs::kSpokenFeedbackEnabled);
+}
+
+bool GetAutoclickEnabledFromPref() {
+  return GetPrefs()->GetBoolean(prefs::kAutoclickEnabled);
 }
 
 }  // anonymouse namespace
@@ -177,6 +193,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
+  EXPECT_FALSE(IsAutoclickEnabled());
 
   // Logs in.
   UserManager::Get()->UserLoggedIn(kTestUserName, kTestUserName, true);
@@ -185,6 +202,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
+  EXPECT_FALSE(IsAutoclickEnabled());
 
   UserManager::Get()->SessionStarted();
 
@@ -192,6 +210,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
+  EXPECT_FALSE(IsAutoclickEnabled());
 
   // Enables large cursor.
   SetLargeCursorEnabled(true);
@@ -207,6 +226,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   SetHighContrastEnabled(true);
   // Confirms that high cotrast is enabled.
   EXPECT_TRUE(IsHighContrastEnabled());
+
+  // Enables autoclick.
+  SetAutoclickEnabled(true);
+  // Confirms that autoclick is enabled.
+  EXPECT_TRUE(IsAutoclickEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
@@ -218,6 +242,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   EXPECT_FALSE(IsLargeCursorEnabled());
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsHighContrastEnabled());
+  EXPECT_FALSE(IsAutoclickEnabled());
 
   // Sets the pref as true to enable the large cursor.
   SetLargeCursorEnabledPref(true);
@@ -229,10 +254,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   // Confirms that the spoken feedback is enabled.
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
-  // Enables the high contrast mode.
-  SetHighContrastEnabled(true);
+  // Sets the pref as true to enable high contrast mode.
+  SetHighContrastEnabledPref(true);
   // Confirms that the high contrast mode is enabled.
   EXPECT_TRUE(IsHighContrastEnabled());
+
+  // Sets the pref as true to enable autoclick.
+  SetAutoclickEnabledPref(true);
+  // Confirms that autoclick is enabled.
+  EXPECT_TRUE(IsAutoclickEnabled());
 
   SetLargeCursorEnabledPref(false);
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -242,6 +272,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
 
   SetHighContrastEnabledPref(false);
   EXPECT_FALSE(IsHighContrastEnabled());
+
+  SetAutoclickEnabledPref(false);
+  EXPECT_FALSE(IsAutoclickEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
@@ -260,6 +293,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   SetHighContrastEnabledPref(true);
   EXPECT_FALSE(IsHighContrastEnabled());
 
+  // Sets the pref to enable autoclick before login.
+  SetAutoclickEnabledPref(true);
+  EXPECT_FALSE(IsAutoclickEnabled());
+
   // Logs in.
   UserManager::Get()->SessionStarted();
 
@@ -267,6 +304,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   EXPECT_TRUE(IsLargeCursorEnabled());
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
   EXPECT_TRUE(IsHighContrastEnabled());
+  EXPECT_TRUE(IsAutoclickEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
@@ -385,6 +423,9 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   // Enables high contrast.
   SetHighContrastEnabled(true);
   EXPECT_TRUE(IsHighContrastEnabled());
+  // Enables autoclick.
+  SetAutoclickEnabled(true);
+  EXPECT_TRUE(IsAutoclickEnabled());
 
   // Logs in.
   const char* user_name = GetParam();
@@ -394,6 +435,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(IsLargeCursorEnabled());
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
   EXPECT_TRUE(IsHighContrastEnabled());
+  EXPECT_TRUE(IsAutoclickEnabled());
 
   UserManager::Get()->SessionStarted();
 
@@ -401,11 +443,13 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(IsLargeCursorEnabled());
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
   EXPECT_TRUE(IsHighContrastEnabled());
+  EXPECT_TRUE(IsAutoclickEnabled());
 
   // Confirms that the prefs have been copied to the user's profile.
   EXPECT_TRUE(GetLargeCursorEnabledFromPref());
   EXPECT_TRUE(GetSpokenFeedbackEnabledFromPref());
   EXPECT_TRUE(GetHighContrastEnabledFromPref());
+  EXPECT_TRUE(GetAutoclickEnabledFromPref());
 }
 
 }  // namespace chromeos
