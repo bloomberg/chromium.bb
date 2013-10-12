@@ -1011,9 +1011,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     // and the RenderPass contents texture, so we flip the tex coords from the
     // RenderPass texture to find the mask texture coords.
     GLC(Context(),
-        Context()->uniform2f(shader_mask_tex_coord_offset_location,
-                             quad->mask_uv_rect.x(),
-                             quad->mask_uv_rect.y() + mask_tex_scale_y));
+        Context()->uniform2f(
+            shader_mask_tex_coord_offset_location,
+            quad->mask_uv_rect.x(),
+            quad->mask_uv_rect.y() + quad->mask_uv_rect.height()));
     GLC(Context(),
         Context()->uniform2f(shader_mask_tex_coord_scale_location,
                              mask_tex_scale_x,

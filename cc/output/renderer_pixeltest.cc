@@ -84,12 +84,12 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
   quad->SetNew(shared_state,
                rect,
                pass_id,
-               false,         // is_replica
-               0,             // mask_resource_id
-               rect,          // contents_changed_since_last_frame
-               gfx::RectF(),  // mask_uv_rect
-               FilterOperations(),   // foreground filters
-               FilterOperations());  // background filters
+               false,                 // is_replica
+               0,                     // mask_resource_id
+               rect,                  // contents_changed_since_last_frame
+               gfx::RectF(1.f, 1.f),  // mask_uv_rect
+               FilterOperations(),    // foreground filters
+               FilterOperations());   // background filters
 
   return quad.PassAs<DrawQuad>();
 }
@@ -880,6 +880,107 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
       PixelTest::NoOffscreenContext,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_anti_aliasing.png")),
       FuzzyPixelOffByOneComparator(true)));
+}
+
+// This tests the case where we have a RenderPass with a mask, but the quad
+// for the masked surface does not include the full surface texture.
+TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
+
+  RenderPass::Id root_pass_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+  scoped_ptr<SharedQuadState> root_pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), viewport_rect);
+
+  RenderPass::Id child_pass_id(2, 2);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_pass_id, viewport_rect, transform_to_root);
+  scoped_ptr<SharedQuadState> child_pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), viewport_rect);
+
+  // The child render pass is just a green box.
+  static const SkColor kCSSGreen = 0xff008000;
+  scoped_ptr<SolidColorDrawQuad> green = SolidColorDrawQuad::Create();
+  green->SetNew(child_pass_shared_state.get(), viewport_rect, kCSSGreen, false);
+  child_pass->quad_list.push_back(green.PassAs<DrawQuad>());
+
+  // Make a mask.
+  gfx::Rect mask_rect = viewport_rect;
+  SkBitmap bitmap;
+  bitmap.setConfig(
+      SkBitmap::kARGB_8888_Config, mask_rect.width(), mask_rect.height());
+  bitmap.allocPixels();
+  SkBitmapDevice bitmap_device(bitmap);
+  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(&bitmap_device));
+  SkPaint paint;
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(SkIntToScalar(4));
+  paint.setColor(SK_ColorWHITE);
+  canvas->clear(SK_ColorTRANSPARENT);
+  gfx::Rect rect = mask_rect;
+  while (!rect.IsEmpty()) {
+    rect.Inset(6, 6, 4, 4);
+    canvas->drawRect(
+        SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()),
+        paint);
+    rect.Inset(6, 6, 4, 4);
+  }
+
+  ResourceProvider::ResourceId mask_resource_id =
+      this->resource_provider_->CreateResource(
+          mask_rect.size(),
+          GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureUsageAny,
+          RGBA_8888);
+  {
+    SkAutoLockPixels lock(bitmap);
+    this->resource_provider_->SetPixels(
+        mask_resource_id,
+        reinterpret_cast<uint8_t*>(bitmap.getPixels()),
+        mask_rect,
+        mask_rect,
+        gfx::Vector2d());
+  }
+
+  // This RenderPassDrawQuad does not include the full |viewport_rect| which is
+  // the size of the child render pass.
+  gfx::Rect sub_rect = gfx::Rect(50, 50, 100, 100);
+  EXPECT_NE(sub_rect.x(), child_pass->output_rect.x());
+  EXPECT_NE(sub_rect.y(), child_pass->output_rect.y());
+  EXPECT_NE(sub_rect.right(), child_pass->output_rect.right());
+  EXPECT_NE(sub_rect.bottom(), child_pass->output_rect.bottom());
+  EXPECT_TRUE(child_pass->output_rect.Contains(sub_rect));
+
+  // Set up a mask on the RenderPassDrawQuad.
+  scoped_ptr<RenderPassDrawQuad> mask_quad = RenderPassDrawQuad::Create();
+  mask_quad->SetNew(root_pass_shared_state.get(),
+                    sub_rect,
+                    child_pass_id,
+                    false,  // is_replica
+                    mask_resource_id,
+                    sub_rect,              // contents_changed_since_last_frame
+                    gfx::RectF(1.f, 1.f),  // mask_uv_rect
+                    FilterOperations(),    // foreground filters
+                    FilterOperations());   // background filters
+  root_pass->quad_list.push_back(mask_quad.PassAs<DrawQuad>());
+
+  // White background behind the masked render pass.
+  scoped_ptr<SolidColorDrawQuad> white = SolidColorDrawQuad::Create();
+  white->SetNew(
+      root_pass_shared_state.get(), viewport_rect, SK_ColorWHITE, false);
+  root_pass->quad_list.push_back(white.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      PixelTest::NoOffscreenContext,
+      base::FilePath(FILE_PATH_LITERAL("image_mask_of_layer.png")),
+      ExactPixelComparator(true)));
 }
 
 template <typename RendererType>
