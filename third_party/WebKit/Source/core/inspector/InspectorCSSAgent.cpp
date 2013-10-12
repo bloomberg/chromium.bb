@@ -298,7 +298,7 @@ InspectorCSSAgent::EnableResourceClient::EnableResourceClient(InspectorCSSAgent*
     for (size_t i = 0; i < styleSheets.size(); ++i) {
         InspectorStyleSheet* styleSheet = styleSheets.at(i);
         Document* document = styleSheet->ownerDocument();
-        FetchRequest request(ResourceRequest(styleSheet->finalURL()), FetchInitiatorTypeNames::inspector);
+        FetchRequest request(ResourceRequest(styleSheet->finalURL()), FetchInitiatorTypeNames::internal);
         ResourcePtr<Resource> resource = document->fetcher()->fetchCSSStyleSheet(request);
         resource->addClient(this);
     }

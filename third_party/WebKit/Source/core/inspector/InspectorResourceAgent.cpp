@@ -287,7 +287,8 @@ InspectorResourceAgent::~InspectorResourceAgent()
 
 void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
-    if (initiatorInfo.name == FetchInitiatorTypeNames::inspector)
+    // Ignore the request initiated internally.
+    if (initiatorInfo.name == FetchInitiatorTypeNames::internal)
         return;
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));

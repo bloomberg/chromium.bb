@@ -32,6 +32,7 @@
 
 #include "core/fileapi/FileReaderLoader.h"
 
+#include "FetchInitiatorTypeNames.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/fileapi/Blob.h"
@@ -111,6 +112,8 @@ void FileReaderLoader::startForURL(ExecutionContext* executionContext, const KUR
     options.crossOriginRequestPolicy = DenyCrossOriginRequests;
     // FIXME: Is there a directive to which this load should be subject?
     options.contentSecurityPolicyEnforcement = DoNotEnforceContentSecurityPolicy;
+    // Use special initiator to hide the request from the inspector.
+    options.initiator = FetchInitiatorTypeNames::internal;
 
     if (m_client)
         m_loader = ThreadableLoader::create(executionContext, this, request, options);
