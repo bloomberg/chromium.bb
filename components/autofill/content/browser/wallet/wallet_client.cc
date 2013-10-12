@@ -689,7 +689,6 @@ void WalletClient::OnURLFetchComplete(
     }
 
     case GET_WALLET_ITEMS: {
-      NOTIMPLEMENTED() << data;
       scoped_ptr<WalletItems> wallet_items(
           WalletItems::CreateWalletItems(*response_dict));
       if (wallet_items) {
