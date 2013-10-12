@@ -6,7 +6,7 @@ vars = {
   "pnacl_libcxx_rev": "7456fbacf145b57404b741dc72bac397b12f8330",
   "pnacl_libcxxabi_rev": "19222a8f373a6db1b13c4308988fd9cf1c02cb1b",
 
-  "newlib_rev": "c37e9aefa58db1b357e17fdc3754a474923250e1",
+  "newlib_rev": "4c3e3730d0fdadc8f8a2f5b2abc0f9f7f308adbb",
   "pnacl_llvm_testsuite_rev": "0d6d7c909e6f7cc83e2b85c11332e9347b73dfb9",
   "compiler_rt_rev": "8fc63ab2a0e0ccca85b9c3cc515fd291cbbb96e9",
   "nacl_base_readonly": "http://git.chromium.org/native_client",
