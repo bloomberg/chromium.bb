@@ -160,16 +160,16 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
         if (PassRefPtr<DocumentFragment> fragment = dragData->asFragment(frame, context, allowPlainText, chosePlainText))
             return fragment;
 
-        if (dragData->containsURL(frame, DragData::DoNotConvertFilenames)) {
+        if (dragData->containsURL(DragData::DoNotConvertFilenames)) {
             String title;
-            String url = dragData->asURL(frame, DragData::DoNotConvertFilenames, &title);
+            String url = dragData->asURL(DragData::DoNotConvertFilenames, &title);
             if (!url.isEmpty()) {
                 RefPtr<HTMLAnchorElement> anchor = HTMLAnchorElement::create(document);
                 anchor->setHref(url);
                 if (title.isEmpty()) {
                     // Try the plain text first because the url might be normalized or escaped.
                     if (dragData->containsPlainText())
-                        title = dragData->asPlainText(frame);
+                        title = dragData->asPlainText();
                     if (title.isEmpty())
                         title = url;
                 }
@@ -183,7 +183,7 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
     }
     if (allowPlainText && dragData->containsPlainText()) {
         chosePlainText = true;
-        return createFragmentFromText(context.get(), dragData->asPlainText(frame)).get();
+        return createFragmentFromText(context.get(), dragData->asPlainText()).get();
     }
 
     return 0;
@@ -265,7 +265,7 @@ bool DragController::performDrag(DragData* dragData)
     if (operationForLoad(dragData) == DragOperationNone)
         return false;
 
-    m_page->mainFrame()->loader()->load(FrameLoadRequest(0, ResourceRequest(dragData->asURL(m_page->mainFrame()))));
+    m_page->mainFrame()->loader()->load(FrameLoadRequest(0, ResourceRequest(dragData->asURL())));
     return true;
 }
 
@@ -438,7 +438,7 @@ static bool setSelectionToDragCaret(Frame* frame, VisibleSelection& dragCaret, R
 bool DragController::dispatchTextInputEventFor(Frame* innerFrame, DragData* dragData)
 {
     ASSERT(m_page->dragCaretController().hasCaret());
-    String text = m_page->dragCaretController().isContentRichlyEditable() ? "" : dragData->asPlainText(innerFrame);
+    String text = m_page->dragCaretController().isContentRichlyEditable() ? "" : dragData->asPlainText();
     Node* target = innerFrame->editor().findEventTargetFrom(m_page->dragCaretController().caretPosition());
     return target->dispatchEvent(TextEvent::createForDrop(innerFrame->domWindow(), text), IGNORE_EXCEPTION);
 }
@@ -516,7 +516,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
             }
         }
     } else {
-        String text = dragData->asPlainText(innerFrame.get());
+        String text = dragData->asPlainText();
         if (text.isEmpty())
             return false;
 
@@ -914,7 +914,7 @@ DragOperation DragController::dragOperation(DragData* dragData)
     // attached sheet If this can be determined from within WebCore
     // operationForDrag can be pulled into WebCore itself
     ASSERT(dragData);
-    return dragData->containsURL(0) && !m_didInitiateDrag ? DragOperationCopy : DragOperationNone;
+    return dragData->containsURL() && !m_didInitiateDrag ? DragOperationCopy : DragOperationNone;
 }
 
 bool DragController::isCopyKeyDown(DragData*)

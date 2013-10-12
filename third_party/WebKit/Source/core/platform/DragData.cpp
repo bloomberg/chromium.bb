@@ -69,13 +69,13 @@ static bool containsHTML(const ChromiumDataObject* dropData)
     return dropData->types().contains(mimeTypeTextHTML);
 }
 
-bool DragData::containsURL(Frame*, FilenameConversionPolicy filenamePolicy) const
+bool DragData::containsURL(FilenameConversionPolicy filenamePolicy) const
 {
     return m_platformDragData->types().contains(mimeTypeTextURIList)
         || (filenamePolicy == ConvertFilenames && m_platformDragData->containsFilenames());
 }
 
-String DragData::asURL(Frame*, FilenameConversionPolicy filenamePolicy, String* title) const
+String DragData::asURL(FilenameConversionPolicy filenamePolicy, String* title) const
 {
     String url;
     if (m_platformDragData->types().contains(mimeTypeTextURIList))
@@ -112,7 +112,7 @@ bool DragData::containsPlainText() const
     return m_platformDragData->types().contains(mimeTypeTextPlain);
 }
 
-String DragData::asPlainText(Frame*) const
+String DragData::asPlainText() const
 {
     return m_platformDragData->getData(mimeTypeTextPlain);
 }
@@ -130,7 +130,7 @@ bool DragData::canSmartReplace() const
 bool DragData::containsCompatibleContent() const
 {
     return containsPlainText()
-        || containsURL(0)
+        || containsURL()
         || containsHTML(m_platformDragData)
         || containsFiles();
 }

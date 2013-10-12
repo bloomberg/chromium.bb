@@ -61,11 +61,11 @@ public:
     DragApplicationFlags flags() const { return m_applicationFlags; }
     ChromiumDataObject* platformData() const { return m_platformDragData; }
     DragOperation draggingSourceOperationMask() const { return m_draggingSourceOperationMask; }
-    bool containsURL(Frame*, FilenameConversionPolicy filenamePolicy = ConvertFilenames) const;
+    bool containsURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames) const;
     bool containsPlainText() const;
     bool containsCompatibleContent() const;
-    String asURL(Frame*, FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = 0) const;
-    String asPlainText(Frame*) const;
+    String asURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = 0) const;
+    String asPlainText() const;
     void asFilenames(Vector<String>&) const;
     PassRefPtr<DocumentFragment> asFragment(Frame*, PassRefPtr<Range> context,
                                             bool allowPlainText, bool& chosePlainText) const;
