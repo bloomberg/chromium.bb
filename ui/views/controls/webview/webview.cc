@@ -7,10 +7,6 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -70,7 +66,6 @@ void WebView::SetWebContents(content::WebContents* web_contents) {
     wc_owner_.reset();
   web_contents_ = web_contents;
   if (embed_fullscreen_widget_mode_enabled_) {
-    WebContentsObserver::Observe(web_contents_);
     is_embedding_fullscreen_widget_ =
         web_contents_ && web_contents_->GetFullscreenRenderWidgetHostView();
   } else {
@@ -84,12 +79,10 @@ void WebView::SetEmbedFullscreenWidgetMode(bool enable) {
   if (!embed_fullscreen_widget_mode_enabled_ && enable) {
     DCHECK(!is_embedding_fullscreen_widget_);
     embed_fullscreen_widget_mode_enabled_ = true;
-    WebContentsObserver::Observe(web_contents_);
     should_be_embedded =
         web_contents_ && web_contents_->GetFullscreenRenderWidgetHostView();
   } else if (embed_fullscreen_widget_mode_enabled_ && !enable) {
     embed_fullscreen_widget_mode_enabled_ = false;
-    WebContentsObserver::Observe(NULL);
   }
   if (should_be_embedded != is_embedding_fullscreen_widget_)
     ReattachForFullscreenChange(should_be_embedded);
@@ -191,25 +184,6 @@ gfx::Size WebView::GetPreferredSize() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebView, content::NotificationObserver implementation:
-
-void WebView::Observe(int type,
-                      const content::NotificationSource& source,
-                      const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    FocusManager* const focus_manager = GetFocusManager();
-    if (focus_manager && focus_manager->GetFocusedView() == this)
-      OnFocus();
-  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
-    DCHECK(content::Source<content::WebContents>(source).ptr() ==
-               web_contents_);
-    SetWebContents(NULL);
-  } else {
-    NOTREACHED();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WebView, content::WebContentsDelegate implementation:
 
 void WebView::WebContentsFocused(content::WebContents* web_contents) {
@@ -226,14 +200,29 @@ bool WebView::EmbedsFullscreenWidget() const {
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, content::WebContentsObserver implementation:
 
+void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
+                                    content::RenderViewHost* new_host) {
+  FocusManager* const focus_manager = GetFocusManager();
+  if (focus_manager && focus_manager->GetFocusedView() == this)
+    OnFocus();
+}
+
+void WebView::WebContentsDestroyed(content::WebContents* web_contents) {
+  // We watch for destruction of WebContents that we host but do not own. If we
+  // own a WebContents that is being destroyed, we're doing the destroying, so
+  // we don't want to recursively tear it down while it's being torn down.
+  if (!wc_owner_.get())
+    SetWebContents(NULL);
+}
+
 void WebView::DidShowFullscreenWidget(int routing_id) {
-  DCHECK(embed_fullscreen_widget_mode_enabled_);
-  ReattachForFullscreenChange(true);
+  if (embed_fullscreen_widget_mode_enabled_)
+    ReattachForFullscreenChange(true);
 }
 
 void WebView::DidDestroyFullscreenWidget(int routing_id) {
-  DCHECK(embed_fullscreen_widget_mode_enabled_);
-  ReattachForFullscreenChange(false);
+  if (embed_fullscreen_widget_mode_enabled_)
+    ReattachForFullscreenChange(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -259,14 +248,7 @@ void WebView::AttachWebContents() {
   if (focus_manager && focus_manager->GetFocusedView() == this)
     OnFocus();
 
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<content::WebContents>(web_contents_));
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(web_contents_));
+  WebContentsObserver::Observe(web_contents_);
 
 #if defined(OS_WIN) && defined(USE_AURA)
   if (!is_embedding_fullscreen_widget_) {
@@ -296,7 +278,7 @@ void WebView::DetachWebContents() {
     }
 #endif
   }
-  registrar_.RemoveAll();
+  WebContentsObserver::Observe(NULL);
 }
 
 void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {

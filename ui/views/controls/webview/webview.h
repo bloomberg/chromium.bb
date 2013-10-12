@@ -7,8 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
@@ -24,7 +22,6 @@ namespace views {
 class NativeViewHost;
 
 class WEBVIEW_EXPORT WebView : public View,
-                               public content::NotificationObserver,
                                public content::WebContentsDelegate,
                                public content::WebContentsObserver {
  public:
@@ -104,16 +101,16 @@ class WEBVIEW_EXPORT WebView : public View,
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Overridden from content::WebContentsDelegate:
   virtual void WebContentsFocused(content::WebContents* web_contents) OVERRIDE;
   virtual bool EmbedsFullscreenWidget() const OVERRIDE;
 
   // Overridden from content::WebContentsObserver:
+  virtual void RenderViewHostChanged(
+      content::RenderViewHost* old_host,
+      content::RenderViewHost* new_host) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
   virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE;
   virtual void DidDestroyFullscreenWidget(int routing_id) OVERRIDE;
   // Workaround for MSVC++ linker bug/feature that requires
@@ -134,14 +131,12 @@ class WEBVIEW_EXPORT WebView : public View,
   NativeViewHost* wcv_holder_;
   scoped_ptr<content::WebContents> wc_owner_;
   content::WebContents* web_contents_;
-  // When true, WebView observes WebContents and auto-embeds fullscreen widgets
-  // as a child view.
+  // When true, WebView auto-embeds fullscreen widgets as a child view.
   bool embed_fullscreen_widget_mode_enabled_;
   // Set to true while WebView is embedding a fullscreen widget view as a child
   // view instead of the normal WebContentsView render view.
   bool is_embedding_fullscreen_widget_;
   content::BrowserContext* browser_context_;
-  content::NotificationRegistrar registrar_;
   bool allow_accelerators_;
   gfx::Size preferred_size_;
 
