@@ -279,7 +279,13 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
 }
 
 // Tests that a canceled request is not leaked.
-TEST_F(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
+#if !defined(LEAK_SANITIZER)
+#define MAYBE_CancelRequestThenQuit CancelRequestThenQuit
+#else
+// See PR303886. LeakSanitizer flags a leak here.
+#define MAYBE_CancelRequestThenQuit DISABLED_CancelRequestThenQuit
+#endif
+TEST_F(MultiThreadedCertVerifierTest, MAYBE_CancelRequestThenQuit) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));

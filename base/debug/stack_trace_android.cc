@@ -26,16 +26,6 @@ struct StackCrawlState {
   bool have_skipped_self;
 };
 
-// Clang's unwind.h doesn't provide _Unwind_GetIP on ARM, refer to
-// http://llvm.org/bugs/show_bug.cgi?id=16564 for details.
-#if defined(__clang__)
-uintptr_t _Unwind_GetIP(_Unwind_Context* context) {
-  uintptr_t ip = 0;
-  _Unwind_VRS_Get(context, _UVRSC_CORE, 15, _UVRSD_UINT32, &ip);
-  return ip & ~static_cast<uintptr_t>(0x1);  // Remove thumb mode bit.
-}
-#endif
-
 _Unwind_Reason_Code TraceStackFrame(_Unwind_Context* context, void* arg) {
   StackCrawlState* state = static_cast<StackCrawlState*>(arg);
   uintptr_t ip = _Unwind_GetIP(context);
