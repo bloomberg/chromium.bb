@@ -178,16 +178,13 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   virtual scoped_ptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) OVERRIDE {
-    scoped_refptr<VideoContextProvider> context_provider;
-    if (CanCreateMainThreadContext() && offscreen_context_for_main_thread_) {
-      DCHECK(wrapped_gl_context_for_main_thread_);
-      context_provider =
-          new VideoContextProvider(offscreen_context_for_main_thread_,
-                                   wrapped_gl_context_for_main_thread_);
-    }
-    return make_scoped_ptr(new StreamTextureFactorySynchronousImpl(
-                               context_provider.get(), view_id))
-        .PassAs<StreamTextureFactory>();
+    scoped_ptr<StreamTextureFactorySynchronousImpl> factory(
+        new StreamTextureFactorySynchronousImpl(
+            base::Bind(&SynchronousCompositorFactoryImpl::
+                            TryCreateStreamTextureFactory,
+                       base::Unretained(this)),
+            view_id));
+    return factory.PassAs<StreamTextureFactory>();
   }
 
   void CompositorInitializedHardwareDraw(SynchronousCompositorImpl* compositor);
@@ -196,6 +193,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
  private:
   void ReleaseGlobalHardwareResources();
   bool CanCreateMainThreadContext();
+  scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
+      TryCreateStreamTextureFactory();
 
   SynchronousInputEventFilter synchronous_input_event_filter_;
 
@@ -246,6 +245,19 @@ void SynchronousCompositorFactoryImpl::ReleaseGlobalHardwareResources() {
 bool SynchronousCompositorFactoryImpl::CanCreateMainThreadContext() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   return num_hardware_compositors_ > 0;
+}
+
+scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
+SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
+  scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
+      context_provider;
+  if (CanCreateMainThreadContext() && offscreen_context_for_main_thread_) {
+    DCHECK(wrapped_gl_context_for_main_thread_);
+    context_provider =
+        new VideoContextProvider(offscreen_context_for_main_thread_,
+                                 wrapped_gl_context_for_main_thread_);
+  }
+  return context_provider;
 }
 
 base::LazyInstance<SynchronousCompositorFactoryImpl>::Leaky g_factory =

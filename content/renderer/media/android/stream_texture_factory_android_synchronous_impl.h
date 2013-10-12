@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_SYNCHRONOUS_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_SYNCHRONOUS_IMPL_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/renderer/media/android/stream_texture_factory_android.h"
 
@@ -33,8 +34,12 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
     virtual ~ContextProvider() {}
   };
 
-  StreamTextureFactorySynchronousImpl(ContextProvider* context_provider,
-                                      int view_id);
+  typedef base::Callback<scoped_refptr<ContextProvider>(void)>
+      CreateContextProviderCallback;
+
+  StreamTextureFactorySynchronousImpl(
+      const CreateContextProviderCallback& try_create_callback,
+      int view_id);
   virtual ~StreamTextureFactorySynchronousImpl();
 
   virtual StreamTextureProxy* CreateProxy() OVERRIDE;
@@ -49,6 +54,7 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
                                     const gfx::Size& size) OVERRIDE;
 
  private:
+  CreateContextProviderCallback create_context_provider_callback_;
   scoped_refptr<ContextProvider> context_provider_;
   int view_id_;
 

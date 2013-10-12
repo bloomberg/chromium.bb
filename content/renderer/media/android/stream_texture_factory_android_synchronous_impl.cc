@@ -117,13 +117,18 @@ void StreamTextureProxyImpl::OnFrameAvailable() {
 }  // namespace
 
 StreamTextureFactorySynchronousImpl::StreamTextureFactorySynchronousImpl(
-    ContextProvider* context_provider,
+    const CreateContextProviderCallback& try_create_callback,
     int view_id)
-    : context_provider_(context_provider), view_id_(view_id) {}
+    : create_context_provider_callback_(try_create_callback),
+      context_provider_(create_context_provider_callback_.Run()),
+      view_id_(view_id) {}
 
 StreamTextureFactorySynchronousImpl::~StreamTextureFactorySynchronousImpl() {}
 
 StreamTextureProxy* StreamTextureFactorySynchronousImpl::CreateProxy() {
+  if (!context_provider_)
+    context_provider_ = create_context_provider_callback_.Run();
+
   if (!context_provider_)
     return NULL;
   return new StreamTextureProxyImpl(context_provider_);
