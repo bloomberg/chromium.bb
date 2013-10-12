@@ -20,3 +20,6 @@ along with all of the frontend files for doing utility programs.
 We added a new file jpeglibmangler.h and included it from jpeglib.h that changes
 the names of all externally visible functions to chromium_ijg_* so that we can
 avoid conflicts that arise when system libraries attempt to use our libjpeg.
+
+Also patch in google.jdmarker.patch to better handle multiple SOS CSi values and
+their ordering.
