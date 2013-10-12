@@ -219,6 +219,8 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
     virtual void computePreferredLogicalWidths();
 
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE;
+
 private:
     virtual const char* renderName() const { return (isAnonymous() || isPseudoElement()) ? "RenderTableCell (anonymous)" : "RenderTableCell"; }
 

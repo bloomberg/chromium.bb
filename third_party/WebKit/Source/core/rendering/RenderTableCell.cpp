@@ -163,6 +163,16 @@ void RenderTableCell::computePreferredLogicalWidths()
     }
 }
 
+void RenderTableCell::addLayerHitTestRects(LayerHitTestRects& layerRects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+{
+    LayoutPoint adjustedLayerOffset = layerOffset;
+    // RenderTableCell's location includes the offset of it's containing RenderTableRow, so
+    // we need to subtract that again here (as for RenderTableCell::offsetFromContainer.
+    if (parent())
+        adjustedLayerOffset -= parentBox()->locationOffset();
+    RenderBox::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset, containerRect);
+}
+
 void RenderTableCell::computeIntrinsicPadding(int rowHeight, SubtreeLayoutScope& layouter)
 {
     int oldIntrinsicPaddingBefore = intrinsicPaddingBefore();

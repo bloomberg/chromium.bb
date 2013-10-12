@@ -55,6 +55,10 @@ svg {
   width: 100px;
   height: 10px;
 }
+table,td {
+  border: 1px solid lightgrey;
+  font-size: 7px;
+}
 </style>
 </head>
 <body>
@@ -132,6 +136,10 @@ to quickly validate graphically.</p>
       <line x1="40" y1="5" x2="60" y2="5" stroke-width="3" stroke="black"/>
     </svg>
   </div>
+  <table>
+    <tr><td>cell<td>cell</td></tr>
+    <tr><td>cell</td><td class="testcase" id="tablecell">cell</td></tr>
+  </table>
 </div>
 
 <div id="console"></div>
