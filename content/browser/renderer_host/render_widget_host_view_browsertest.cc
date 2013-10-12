@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/render_widget_host_view_port.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
@@ -767,6 +768,12 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                        CopyFromCompositingSurface_Origin_Scaled) {
+#if defined(USE_AURA)
+  // TODO(gpu): Fix this test in software compositing mode:
+  // http://crbug.com/306789.
+  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+#endif
   gfx::Rect copy_rect(400, 300);
   gfx::Size output_size(200, 100);
   gfx::Size expected_bitmap_size = output_size;
@@ -798,6 +805,12 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 
 IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
                        CopyFromCompositingSurface_Cropped_Scaled) {
+#if defined(USE_AURA)
+  // TODO(gpu): Fix this test in software compositing mode:
+  // http://crbug.com/306789.
+  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+#endif
   // Grab 60x60 pixels from the center of the tab contents.
   gfx::Rect copy_rect(400, 300);
   copy_rect = gfx::Rect(copy_rect.CenterPoint() - gfx::Vector2d(30, 30),
