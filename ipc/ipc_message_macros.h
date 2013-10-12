@@ -1010,7 +1010,14 @@
 
 #endif  // IPC_IPC_MESSAGE_MACROS_H_
 
+// The following #ifdef cannot be removed.  Although the code is semantically
+// equivalent without the #ifdef, VS2013 contains a bug where it is
+// over-aggressive in optimizing out #includes.  Putting the #ifdef is a
+// workaround for this bug.  See http://goo.gl/eGt2Fb for more details.
+// This can be removed once VS2013 is fixed.
+#ifdef IPC_MESSAGE_START
 // Clean up IPC_MESSAGE_START in this unguarded section so that the
 // XXX_messages.h files need not do so themselves.  This makes the
 // XXX_messages.h files easier to write.
 #undef IPC_MESSAGE_START
+#endif
