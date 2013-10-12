@@ -346,7 +346,7 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
     if (result_size > 0) {
       WebKit::WebVector<WebKit::WebTextCheckingResult> results(result_size);
       for (size_t i = 0; i < result_size; ++i) {
-        results[i].setDecoration(last_results_[i].getDecoration());
+        results[i].decoration = last_results_[i].decoration;
         results[i].location = last_results_[i].location;
         results[i].length = last_results_[i].length;
         results[i].replacement = last_results_[i].replacement;
