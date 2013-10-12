@@ -1421,6 +1421,11 @@ void AutofillDialogViews::UpdateSection(DialogSection section) {
   UpdateSectionImpl(section, true);
 }
 
+void AutofillDialogViews::UpdateErrorBubble() {
+  if (!delegate_->ShouldShowErrorBubble())
+    HideErrorBubble();
+}
+
 void AutofillDialogViews::FillSection(DialogSection section,
                                       const DetailInput& originating_input) {
   DetailsGroup* group = GroupForSection(section);
@@ -2165,6 +2170,11 @@ void AutofillDialogViews::SetValidityForInput(
 void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
   if (!view->GetWidget())
     return;
+
+  if (!delegate_->ShouldShowErrorBubble()) {
+    DCHECK(!error_bubble_);
+    return;
+  }
 
   std::map<views::View*, base::string16>::iterator error_message =
       validity_map_.find(view);

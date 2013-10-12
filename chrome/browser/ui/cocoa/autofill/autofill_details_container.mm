@@ -61,21 +61,21 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
   for (AutofillSectionContainer* container in details_.get())
     [[scrollView_ documentView] addSubview:[container view]];
 
-  infoBubble_.reset([[InfoBubbleView alloc] initWithFrame:NSZeroRect]);
-  [infoBubble_ setBackgroundColor:
+  errorBubble_.reset([[InfoBubbleView alloc] initWithFrame:NSZeroRect]);
+  [errorBubble_ setBackgroundColor:
       gfx::SkColorToCalibratedNSColor(kWarningColor)];
-  [infoBubble_ setArrowLocation:info_bubble::kTopCenter];
-  [infoBubble_ setAlignment:info_bubble::kAlignArrowToAnchor];
-  [infoBubble_ setHidden:YES];
+  [errorBubble_ setArrowLocation:info_bubble::kTopCenter];
+  [errorBubble_ setAlignment:info_bubble::kAlignArrowToAnchor];
+  [errorBubble_ setHidden:YES];
 
   base::scoped_nsobject<NSTextField> label([[NSTextField alloc] init]);
   [label setEditable:NO];
   [label setBordered:NO];
   [label setDrawsBackground:NO];
   [label setTextColor:[NSColor whiteColor]];
-  [infoBubble_ addSubview:label];
+  [errorBubble_ addSubview:label];
 
-  [[scrollView_ documentView] addSubview:infoBubble_];
+  [[scrollView_ documentView] addSubview:errorBubble_];
 
   [self performLayout];
 }
@@ -126,16 +126,22 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
   return allValid;
 }
 
+- (void)updateErrorBubble {
+  if (!delegate_->ShouldShowErrorBubble())
+    [errorBubble_ setHidden:YES];
+}
+
 // TODO(groby): Unify with BaseBubbleController's originFromAnchor:view:.
 - (NSPoint)originFromAnchorView:(NSView*)view {
   // All math done in window coordinates, since views might be flipped.
   NSRect viewRect = [view convertRect:[view bounds] toView:nil];
   NSPoint anchorPoint =
       NSMakePoint(NSMidX(viewRect), NSMinY(viewRect));
-  NSRect bubbleRect = [infoBubble_ convertRect:[infoBubble_ bounds] toView:nil];
+  NSRect bubbleRect = [errorBubble_ convertRect:[errorBubble_ bounds]
+                                         toView:nil];
   NSPoint bubbleOrigin = NSMakePoint(anchorPoint.x - NSWidth(bubbleRect) / 2.0,
                                      anchorPoint.y - NSHeight(bubbleRect));
-  return [[infoBubble_ superview] convertPoint:bubbleOrigin fromView:nil];
+  return [[errorBubble_ superview] convertPoint:bubbleOrigin fromView:nil];
 }
 
 - (void)updateMessageForField:(NSControl<AutofillInputField>*)field {
@@ -144,25 +150,29 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
   // firstResponder is a subview of the NSTextField, not the field itself.
   NSView* firstResponderView =
       base::mac::ObjCCast<NSView>([[field window] firstResponder]);
-  if (![firstResponderView isDescendantOf:field]) {
+  if (![firstResponderView isDescendantOf:field])
+    return;
+
+  if (!delegate_->ShouldShowErrorBubble()) {
+    DCHECK([errorBubble_ isHidden]);
     return;
   }
 
   if ([field invalid]) {
     const CGFloat labelInset = 3.0;
 
-    NSTextField* label = [[infoBubble_ subviews] objectAtIndex:0];
+    NSTextField* label = [[errorBubble_ subviews] objectAtIndex:0];
     [label setStringValue:[field validityMessage]];
     [label sizeToFit];
     NSSize bubbleSize = [label frame].size;
     bubbleSize.width += 2 * labelInset;
     bubbleSize.height += 2 * labelInset + info_bubble::kBubbleArrowHeight;
-    [infoBubble_ setFrameSize:bubbleSize];
+    [errorBubble_ setFrameSize:bubbleSize];
     [label setFrameOrigin:NSMakePoint(labelInset, labelInset)];
-    [infoBubble_ setFrameOrigin:[self originFromAnchorView:field]];
-    [infoBubble_ setHidden:NO];
+    [errorBubble_ setFrameOrigin:[self originFromAnchorView:field]];
+    [errorBubble_ setHidden:NO];
   } else {
-    [infoBubble_ setHidden:YES];
+    [errorBubble_ setHidden:YES];
   }
 }
 

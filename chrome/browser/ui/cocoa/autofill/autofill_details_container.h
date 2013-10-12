@@ -31,7 +31,7 @@ class AutofillDialogViewDelegate;
   base::scoped_nsobject<NSMutableArray> details_;
 
   // An info bubble to display validation errors.
-  base::scoped_nsobject<InfoBubbleView> infoBubble_;
+  base::scoped_nsobject<InfoBubbleView> errorBubble_;
 
   autofill::AutofillDialogViewDelegate* delegate_;  // Not owned.
 }
@@ -41,6 +41,9 @@ class AutofillDialogViewDelegate;
 
 // Retrieve the container for the specified |section|.
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;
+
+// Called when |errorBubble_| needs to be updated.
+- (void)updateErrorBubble;
 
 // Called when the delegate-maintained suggestions model has changed.
 - (void)modelChanged;

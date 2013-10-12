@@ -1897,15 +1897,22 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
       base::i18n::IsRTL() ?
           base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT);
   popup_controller_->set_hide_on_outside_click(true);
+
+  // |input_showing_popup_| must be set before calling |Show()|.
+  input_showing_popup_ = input;
+
   popup_controller_->Show(popup_values,
                           popup_labels,
                           popup_icons,
                           popup_ids);
-  input_showing_popup_ = input;
 }
 
 void AutofillDialogControllerImpl::FocusMoved() {
   HidePopup();
+}
+
+bool AutofillDialogControllerImpl::ShouldShowErrorBubble() const {
+  return !input_showing_popup_;
 }
 
 void AutofillDialogControllerImpl::ViewClosed() {
@@ -2078,6 +2085,9 @@ content::WebContents* AutofillDialogControllerImpl::GetWebContents() {
 
 void AutofillDialogControllerImpl::OnPopupShown(
     content::RenderWidgetHost::KeyPressEventCallback* callback) {
+  ScopedViewUpdates update(view_.get());
+  view_->UpdateErrorBubble();
+
   GetMetricLogger().LogDialogPopupEvent(AutofillMetrics::DIALOG_POPUP_SHOWN);
 }
 

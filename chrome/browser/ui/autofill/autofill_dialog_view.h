@@ -65,6 +65,9 @@ class AutofillDialogView {
   // Called when the contents of a section have changed.
   virtual void UpdateSection(DialogSection section) = 0;
 
+  // Updates the error bubble for this view.
+  virtual void UpdateErrorBubble() = 0;
+
   // Fills the given section with Autofill data that was triggered by a user
   // interaction with |originating_input|.
   virtual void FillSection(DialogSection section,

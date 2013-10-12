@@ -50,6 +50,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void UpdateForErrors() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
+  virtual void UpdateErrorBubble() OVERRIDE;
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
@@ -149,6 +150,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
 - (content::NavigationController*)showSignIn;
 - (void)hideSignIn;
 - (void)modelChanged;
+- (void)updateErrorBubble;
 
 @end
 

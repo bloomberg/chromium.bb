@@ -68,6 +68,9 @@ namespace autofill {
 // Called when there are changes to the notification area.
 - (void)updateNotificationArea;
 
+// Called when the error bubble needs to be updated.
+- (void)updateErrorBubble;
+
 // Validates form input data.
 - (BOOL)validate;
 

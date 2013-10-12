@@ -180,6 +180,10 @@ class TestAutofillDialogView : public AutofillDialogView {
     EXPECT_GE(updates_started_, 1);
   }
 
+  virtual void UpdateErrorBubble() OVERRIDE {
+    EXPECT_GE(updates_started_, 1);
+  }
+
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE {};
   virtual void GetUserInput(DialogSection section, DetailOutputMap* output)

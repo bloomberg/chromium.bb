@@ -149,6 +149,10 @@ void AutofillDialogCocoa::ModelChanged() {
   [sheet_delegate_ modelChanged];
 }
 
+void AutofillDialogCocoa::UpdateErrorBubble() {
+  [sheet_delegate_ updateErrorBubble];
+}
+
 TestableAutofillDialogView* AutofillDialogCocoa::GetTestableView() {
   return this;
 }
@@ -544,6 +548,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (void)modelChanged {
   [mainContainer_ modelChanged];
+}
+
+- (void)updateErrorBubble {
+  [mainContainer_ updateErrorBubble];
 }
 
 @end

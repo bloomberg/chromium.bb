@@ -289,6 +289,10 @@
       (delegate_->ShouldSaveInChrome() ? NSOnState : NSOffState)];
 }
 
+- (void)updateErrorBubble {
+  [detailsContainer_ updateErrorBubble];
+}
+
 @end
 
 
