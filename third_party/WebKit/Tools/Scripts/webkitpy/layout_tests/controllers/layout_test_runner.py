@@ -384,7 +384,7 @@ class Sharder(object):
             return self._shard_in_two(test_inputs)
         elif fully_parallel:
             return self._shard_every_file(test_inputs)
-        return self._shard_by_directory(test_inputs, num_workers)
+        return self._shard_by_directory(test_inputs)
 
     def _shard_in_two(self, test_inputs):
         """Returns two lists of shards, one with all the tests requiring a lock and one with the rest.
@@ -413,18 +413,30 @@ class Sharder(object):
         This mode gets maximal parallelism at the cost of much higher flakiness."""
         locked_shards = []
         unlocked_shards = []
+        virtual_inputs = []
+
         for test_input in test_inputs:
             # Note that we use a '.' for the shard name; the name doesn't really
             # matter, and the only other meaningful value would be the filename,
             # which would be really redundant.
             if test_input.requires_lock:
                 locked_shards.append(TestShard('.', [test_input]))
+            elif test_input.test_name.startswith('virtual'):
+                # This violates the spirit of sharding every file, but in practice, since the
+                # virtual test suites require a different commandline flag and thus a restart
+                # of content_shell, it's too slow to shard them fully.
+                virtual_inputs.append(test_input)
             else:
                 unlocked_shards.append(TestShard('.', [test_input]))
 
-        return locked_shards, unlocked_shards
+        locked_virtual_shards, unlocked_virtual_shards = self._shard_by_directory(virtual_inputs)
 
-    def _shard_by_directory(self, test_inputs, num_workers):
+        # The locked shards still need to be limited to self._max_locked_shards in order to not
+        # overload the http server for the http tests.
+        return (self._resize_shards(locked_virtual_shards + locked_shards, self._max_locked_shards, 'locked_shard'),
+            unlocked_virtual_shards + unlocked_shards)
+
+    def _shard_by_directory(self, test_inputs):
         """Returns two lists of shards, each shard containing all the files in a directory.
 
         This is the default mode, and gets as much parallelism as we can while

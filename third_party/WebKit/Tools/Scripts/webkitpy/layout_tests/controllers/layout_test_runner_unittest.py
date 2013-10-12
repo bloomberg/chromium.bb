@@ -169,7 +169,8 @@ class SharderTests(unittest.TestCase):
         "ietestcenter/Javascript/11.1.5_4-4-c-1.html",
         "dom/html/level2/html/HTMLAnchorElement06.html",
         "perf/object-keys.html",
-        "virtual/threaded/test.html",
+        "virtual/threaded/dir/test.html",
+        "virtual/threaded/fast/foo/test.html",
     ]
 
     def get_test_input(self, test_file):
@@ -203,7 +204,8 @@ class SharderTests(unittest.TestCase):
                 'http/tests/xmlhttprequest/supported-xml-content-types.html',
                 'perf/object-keys.html'])])
         self.assert_shards(unlocked,
-            [('virtual/threaded', ['virtual/threaded/test.html']),
+            [('virtual/threaded/dir', ['virtual/threaded/dir/test.html']),
+             ('virtual/threaded/fast/foo', ['virtual/threaded/fast/foo/test.html']),
              ('animations', ['animations/keyframes.html']),
              ('dom/html/level2/html', ['dom/html/level2/html/HTMLAnchorElement03.html',
                                       'dom/html/level2/html/HTMLAnchorElement06.html']),
@@ -211,20 +213,23 @@ class SharderTests(unittest.TestCase):
              ('ietestcenter/Javascript', ['ietestcenter/Javascript/11.1.5_4-4-c-1.html'])])
 
     def test_shard_every_file(self):
-        locked, unlocked = self.get_shards(num_workers=2, fully_parallel=True)
+        locked, unlocked = self.get_shards(num_workers=2, fully_parallel=True, max_locked_shards=2)
         self.assert_shards(locked,
-            [('.', ['http/tests/websocket/tests/unicode.htm']),
-             ('.', ['http/tests/security/view-source-no-refresh.html']),
-             ('.', ['http/tests/websocket/tests/websocket-protocol-ignored.html']),
-             ('.', ['http/tests/xmlhttprequest/supported-xml-content-types.html']),
-             ('.', ['perf/object-keys.html'])]),
+            [('locked_shard_1',
+              ['http/tests/websocket/tests/unicode.htm',
+               'http/tests/security/view-source-no-refresh.html',
+               'http/tests/websocket/tests/websocket-protocol-ignored.html']),
+             ('locked_shard_2',
+              ['http/tests/xmlhttprequest/supported-xml-content-types.html',
+               'perf/object-keys.html'])]),
         self.assert_shards(unlocked,
-            [('.', ['animations/keyframes.html']),
+            [('virtual/threaded/dir', ['virtual/threaded/dir/test.html']),
+             ('virtual/threaded/fast/foo', ['virtual/threaded/fast/foo/test.html']),
+             ('.', ['animations/keyframes.html']),
              ('.', ['fast/css/display-none-inline-style-change-crash.html']),
              ('.', ['dom/html/level2/html/HTMLAnchorElement03.html']),
              ('.', ['ietestcenter/Javascript/11.1.5_4-4-c-1.html']),
-             ('.', ['dom/html/level2/html/HTMLAnchorElement06.html']),
-             ('.', ['virtual/threaded/test.html'])])
+             ('.', ['dom/html/level2/html/HTMLAnchorElement06.html'])])
 
     def test_shard_in_two(self):
         locked, unlocked = self.get_shards(num_workers=1, fully_parallel=False)
@@ -242,7 +247,8 @@ class SharderTests(unittest.TestCase):
                'dom/html/level2/html/HTMLAnchorElement03.html',
                'ietestcenter/Javascript/11.1.5_4-4-c-1.html',
                'dom/html/level2/html/HTMLAnchorElement06.html',
-               'virtual/threaded/test.html'])])
+               'virtual/threaded/dir/test.html',
+               'virtual/threaded/fast/foo/test.html'])])
 
     def test_shard_in_two_has_no_locked_shards(self):
         locked, unlocked = self.get_shards(num_workers=1, fully_parallel=False,
