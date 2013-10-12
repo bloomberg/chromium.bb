@@ -36,6 +36,8 @@
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/FontSelector.h"
+#include "core/platform/graphics/FontSmoothingMode.h"
+#include "core/platform/graphics/TextRenderingMode.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashTableDeletedValueType.h"
@@ -64,15 +66,34 @@ FontCache::FontCache()
 struct FontPlatformDataCacheKey {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    FontPlatformDataCacheKey(const AtomicString& family = AtomicString(), float size = 0, unsigned weight = 0, bool italic = false,
-        bool isPrinterFont = false, FontOrientation orientation = Horizontal, FontWidthVariant widthVariant = RegularWidth)
-        : m_size(size * FontCache::s_fontSizePrecisionMultiplier)
-        , m_weight(weight)
-        , m_family(family)
-        , m_italic(italic)
-        , m_printerFont(isPrinterFont)
-        , m_orientation(orientation)
-        , m_widthVariant(widthVariant)
+    FontPlatformDataCacheKey()
+        : m_family(AtomicString())
+        , m_size(0)
+        , m_weight(0)
+        , m_italic(false)
+        , m_printerFont(false)
+        , m_orientation(Horizontal)
+        , m_widthVariant(RegularWidth)
+        , m_textRenderingMode(AutoTextRendering)
+        , m_fontSmoothingMode(AutoSmoothing)
+    {
+    }
+
+    FontPlatformDataCacheKey(const AtomicString& family, float size, const FontDescription& fontDescription)
+        : m_family(family)
+        , m_size(size * FontCache::s_fontSizePrecisionMultiplier)
+        , m_weight(fontDescription.weight())
+        , m_italic(fontDescription.italic())
+        , m_printerFont(fontDescription.usePrinterFont())
+        , m_orientation(fontDescription.orientation())
+        , m_widthVariant(fontDescription.widthVariant())
+        , m_textRenderingMode(fontDescription.textRenderingMode())
+// -webkit-font-smoothing actually controls AppleFontSmoothing for CoreGraphics.
+#if OS(MACOSX)
+        , m_fontSmoothingMode(fontDescription.fontSmoothing())
+#else
+        , m_fontSmoothingMode(AutoSmoothing)
+#endif
     {
     }
 
@@ -81,18 +102,26 @@ public:
 
     bool operator==(const FontPlatformDataCacheKey& other) const
     {
-        return equalIgnoringCase(m_family, other.m_family) && m_size == other.m_size
-            && m_weight == other.m_weight && m_italic == other.m_italic && m_printerFont == other.m_printerFont
-            && m_orientation == other.m_orientation && m_widthVariant == other.m_widthVariant;
+        return equalIgnoringCase(m_family, other.m_family)
+            && m_size == other.m_size
+            && m_weight == other.m_weight
+            && m_italic == other.m_italic
+            && m_printerFont == other.m_printerFont
+            && m_orientation == other.m_orientation
+            && m_widthVariant == other.m_widthVariant
+            && m_textRenderingMode == other.m_textRenderingMode
+            && m_fontSmoothingMode == other.m_fontSmoothingMode;
     }
 
+    AtomicString m_family;
     unsigned m_size;
     unsigned m_weight;
-    AtomicString m_family;
     bool m_italic;
     bool m_printerFont;
     FontOrientation m_orientation;
     FontWidthVariant m_widthVariant;
+    TextRenderingMode m_textRenderingMode;
+    FontSmoothingMode m_fontSmoothingMode;
 
 private:
     static unsigned hashTableDeletedSize() { return 0xFFFFFFFFU; }
@@ -105,7 +134,11 @@ inline unsigned computeHash(const FontPlatformDataCacheKey& fontKey)
         fontKey.m_size,
         fontKey.m_weight,
         fontKey.m_widthVariant,
-        static_cast<unsigned>(fontKey.m_orientation) << 2 | static_cast<unsigned>(fontKey.m_italic) << 1 | static_cast<unsigned>(fontKey.m_printerFont)
+        static_cast<unsigned>(fontKey.m_fontSmoothingMode) << 5 | // bits 5-6
+        static_cast<unsigned>(fontKey.m_textRenderingMode) << 3 | // bits 3-4
+        static_cast<unsigned>(fontKey.m_orientation) << 2 | // bit 2
+        static_cast<unsigned>(fontKey.m_italic) << 1 | // bit 1
+        static_cast<unsigned>(fontKey.m_printerFont) // bit 0
     };
     return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
 }
@@ -199,8 +232,7 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
 }
 
 FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& fontDescription,
-                                                       const AtomicString& passedFamilyName,
-                                                       bool checkingAlternateName)
+    const AtomicString& passedFamilyName, bool checkingAlternateName)
 {
 #if OS(WIN) && ENABLE(OPENTYPE_VERTICAL)
     // Leading "@" in the font name enables Windows vertical flow flag for the font.
@@ -222,9 +254,7 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
         fontSize = fontDescription.computedSize();
     else
         fontSize = fontDescription.computedPixelSize();
-    FontPlatformDataCacheKey key(familyName, fontSize, fontDescription.weight(), fontDescription.italic(),
-
-        fontDescription.usePrinterFont(), fontDescription.orientation(), fontDescription.widthVariant());
+    FontPlatformDataCacheKey key(familyName, fontSize, fontDescription);
     FontPlatformData* result = 0;
     bool foundResult;
     FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
@@ -238,8 +268,8 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
     }
 
     if (!foundResult && !checkingAlternateName) {
-        // We were unable to find a font.  We have a small set of fonts that we alias to other names,
-        // e.g., Arial/Helvetica, Courier/Courier New, etc.  Try looking up the font under the aliased name.
+        // We were unable to find a font. We have a small set of fonts that we alias to other names,
+        // e.g., Arial/Helvetica, Courier/Courier New, etc. Try looking up the font under the aliased name.
         const AtomicString& alternateName = alternateFamilyName(familyName);
         if (!alternateName.isEmpty())
             result = getFontResourcePlatformData(fontDescription, alternateName, true);
@@ -364,9 +394,9 @@ PassRefPtr<SimpleFontData> FontCache::getFontResourceData(const FontPlatformData
         gInactiveFontData->remove(result.get()->value.first);
     }
 
-    if (shouldRetain == Retain)
+    if (shouldRetain == Retain) {
         result.get()->value.second++;
-    else if (!result.get()->value.second) {
+    } else if (!result.get()->value.second) {
         // If shouldRetain is DoNotRetain and count is 0, we want to remove the fontData from
         // gInactiveFontData (above) and re-add here to update LRU position.
         gInactiveFontData->add(result.get()->value.first);
@@ -411,7 +441,7 @@ void FontCache::purgeInactiveFontData(int count)
     if (!gInactiveFontData || m_purgePreventCount)
         return;
 
-    static bool isPurging;  // Guard against reentry when e.g. a deleted FontData releases its small caps FontData.
+    static bool isPurging; // Guard against reentry when e.g. a deleted FontData releases its small caps FontData.
     if (isPurging)
         return;
 
@@ -518,13 +548,14 @@ PassRefPtr<FontData> FontCache::getFontData(const Font& font, int& familyIndex, 
     if (!currFamily)
         familyIndex = cAllFamiliesScanned;
 
-    if (!result)
+    if (!result) {
         // We didn't find a font. Try to find a similar font using our own specific knowledge about our platform.
         // For example on OS X, we know to map any families containing the words Arabic, Pashto, or Urdu to the
         // Geeza Pro font.
         result = getSimilarFontPlatformData(font);
+    }
 
-    if (!result && startIndex == 0) {
+    if (!result && !startIndex) {
         // If it's the primary font that we couldn't find, we try the following. In all other cases, we will
         // just use per-character system fallback.
 
@@ -534,7 +565,7 @@ PassRefPtr<FontData> FontCache::getFontData(const Font& font, int& familyIndex, 
                 return data.release();
         }
 
-        // Still no result.  Hand back our last resort fallback font.
+        // Still no result. Hand back our last resort fallback font.
         result = getLastResortFallbackFont(font.fontDescription());
     }
     return result.release();
