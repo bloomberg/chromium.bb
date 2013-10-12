@@ -1639,20 +1639,15 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
       RenderWidgetHostViewPort::FromRWHV(GetCreatedWidget(route_id));
   if (!widget_host_view)
     return;
-  bool allow_privileged = false;
   if (is_fullscreen) {
+    DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
+    fullscreen_widget_routing_id_ = route_id;
     if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
       delegate_->ToggleFullscreenModeForTab(this, true);
     } else {
       widget_host_view->InitAsFullscreen(GetRenderWidgetHostViewPort());
-      // Only allow privileged mouse lock for fullscreen render widget, which is
-      // used to implement Pepper Flash fullscreen.
-      allow_privileged = true;
     }
-
-    DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
-    fullscreen_widget_routing_id_ = route_id;
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
                       DidShowFullscreenWidget(route_id));
@@ -1665,9 +1660,9 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
   RenderWidgetHostImpl* render_widget_host_impl =
       RenderWidgetHostImpl::From(widget_host_view->GetRenderWidgetHost());
   render_widget_host_impl->Init();
-  render_widget_host_impl->set_allow_privileged_mouse_lock(allow_privileged);
-  // TODO(miu): For now, all mouse lock requests by embedded Flash fullscreen
-  // will be denied.  This is to be rectified in a soon-upcoming change.
+  // Only allow privileged mouse lock for fullscreen render widget, which is
+  // used to implement Pepper Flash fullscreen.
+  render_widget_host_impl->set_allow_privileged_mouse_lock(is_fullscreen);
 
 #if defined(OS_MACOSX)
   // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's

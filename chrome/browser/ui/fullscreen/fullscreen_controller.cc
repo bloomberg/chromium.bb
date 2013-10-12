@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -300,10 +301,13 @@ void FullscreenController::WindowFullscreenStateChanged() {
     extension_caused_fullscreen_ = GURL();
     NotifyTabOfExitIfNecessary();
   }
-  if (exiting_fullscreen)
+  if (exiting_fullscreen) {
     window_->GetDownloadShelf()->Unhide();
-  else
+  } else {
     window_->GetDownloadShelf()->Hide();
+    if (window_->GetStatusBubble())
+      window_->GetStatusBubble()->Hide();
+  }
 }
 
 bool FullscreenController::HandleUserPressedEscape() {
@@ -441,7 +445,9 @@ FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
 
   if (fullscreened_tab_) {
     if (tab_fullscreen_accepted_) {
-      if (IsMouseLocked()) {
+      if (IsPrivilegedFullscreenForTab()) {
+        return FEB_TYPE_NONE;
+      } else if (IsMouseLocked()) {
         return FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION;
       } else if (IsMouseLockRequested()) {
         return FEB_TYPE_MOUSELOCK_BUTTONS;

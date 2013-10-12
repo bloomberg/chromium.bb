@@ -2328,12 +2328,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   browser_->WindowFullscreenStateChanged();
 
   if (fullscreen) {
-    if (!chrome::IsRunningInAppMode() &&
-        type != FOR_METRO &&
-        !ShouldUseImmersiveFullscreenForUrl(url)) {
-      fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
-          this, url, bubble_type));
-    }
+    if (!chrome::IsRunningInAppMode() && type != FOR_METRO)
+      UpdateFullscreenExitBubbleContent(url, bubble_type);
   } else {
 #if defined(OS_WIN) && !defined(USE_AURA)
     if (omnibox_win) {
