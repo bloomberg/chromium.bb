@@ -28,7 +28,8 @@ function runTest() {
     source = context.createBufferSource();
 
     // Make sure we can't set to something which isn't an AudioBuffer.
-    shouldThrow("source.buffer = 57");
+    shouldThrow("source.buffer = 57", "'TypeError: Type error'");
+    shouldThrow("source.buffer = null", "'TypeError: buffer cannot be null'");
 
     // Check that mono buffer can be set.
     try {

@@ -151,7 +151,6 @@
             'v8/custom/V8ArrayBufferCustom.h',
             'v8/custom/V8ArrayBufferViewCustom.cpp',
             'v8/custom/V8ArrayBufferViewCustom.h',
-            'v8/custom/V8AudioBufferSourceNodeCustom.cpp',
             'v8/custom/V8AudioContextCustom.cpp',
             'v8/custom/V8AudioNodeCustom.cpp',
             'v8/custom/V8BiquadFilterNodeCustom.cpp',
