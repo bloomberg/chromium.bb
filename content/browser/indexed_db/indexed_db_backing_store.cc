@@ -667,15 +667,13 @@ bool IndexedDBBackingStore::GetIDBDatabaseMetaData(
   return true;
 }
 
-WARN_UNUSED_RESULT static bool GetNewDatabaseId(LevelDBDatabase* db,
+WARN_UNUSED_RESULT static bool GetNewDatabaseId(LevelDBTransaction* transaction,
                                                 int64* new_id) {
-  scoped_refptr<LevelDBTransaction> transaction = new LevelDBTransaction(db);
-
   *new_id = -1;
   int64 max_database_id = -1;
   bool found = false;
   bool ok = GetInt(
-      transaction.get(), MaxDatabaseIdKey::Encode(), &max_database_id, &found);
+      transaction, MaxDatabaseIdKey::Encode(), &max_database_id, &found);
   if (!ok) {
     INTERNAL_READ_ERROR(GET_NEW_DATABASE_ID);
     return false;
@@ -686,11 +684,7 @@ WARN_UNUSED_RESULT static bool GetNewDatabaseId(LevelDBDatabase* db,
   DCHECK_GE(max_database_id, 0);
 
   int64 database_id = max_database_id + 1;
-  PutInt(transaction.get(), MaxDatabaseIdKey::Encode(), database_id);
-  if (!transaction->Commit()) {
-    INTERNAL_WRITE_ERROR(GET_NEW_DATABASE_ID);
-    return false;
-  }
+  PutInt(transaction, MaxDatabaseIdKey::Encode(), database_id);
   *new_id = database_id;
   return true;
 }
@@ -699,7 +693,10 @@ bool IndexedDBBackingStore::CreateIDBDatabaseMetaData(const string16& name,
                                                       const string16& version,
                                                       int64 int_version,
                                                       int64* row_id) {
-  bool ok = GetNewDatabaseId(db_.get(), row_id);
+  scoped_refptr<LevelDBTransaction> transaction =
+      new LevelDBTransaction(db_.get());
+
+  bool ok = GetNewDatabaseId(transaction.get(), row_id);
   if (!ok)
     return false;
   DCHECK_GE(*row_id, 0);
@@ -707,8 +704,6 @@ bool IndexedDBBackingStore::CreateIDBDatabaseMetaData(const string16& name,
   if (int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
     int_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
 
-  scoped_refptr<LevelDBTransaction> transaction =
-      new LevelDBTransaction(db_.get());
   PutInt(
       transaction.get(), DatabaseNameKey::Encode(identifier_, name), *row_id);
   PutString(
