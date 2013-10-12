@@ -1546,19 +1546,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
-#if defined(USE_AURA)
 // http://crbug.com/103496
-#define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
-#elif defined(OS_MACOSX)
 // http://crbug.com/100514
-#define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
-#elif defined(OS_WIN) && defined(ARCH_CPU_X86_64)
 // TODO(jschuh): Failing plugin tests. crbug.com/244653
-#define MAYBE_PrerenderDelayLoadPlugin DISABLED_PrerenderDelayLoadPlugin
-#else
-#define MAYBE_PrerenderDelayLoadPlugin PrerenderDelayLoadPlugin
-#endif
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderDelayLoadPlugin) {
+// http://crbug.com/306715
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderDelayLoadPlugin) {
   PrerenderTestURL("files/prerender/plugin_delay_load.html",
                    FINAL_STATUS_USED,
                    1);
