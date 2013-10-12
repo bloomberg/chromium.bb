@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "net/quic/quic_protocol.h"
 

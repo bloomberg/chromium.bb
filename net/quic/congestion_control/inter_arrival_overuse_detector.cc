@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <algorithm>
+
 // Initial noise variance, equal to a standard deviation of 1 millisecond.
 static const float kInitialVarianceNoise = 1000000.0;
 

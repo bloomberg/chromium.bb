@@ -4,6 +4,8 @@
 
 #include "net/quic/congestion_control/inter_arrival_bitrate_ramp_up.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/congestion_control/cube_root.h"

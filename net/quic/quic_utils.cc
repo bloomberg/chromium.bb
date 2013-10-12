@@ -6,6 +6,8 @@
 
 #include <ctype.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/port.h"
 #include "base/strings/stringprintf.h"

@@ -4,6 +4,8 @@
 
 #include "net/quic/congestion_control/paced_sender.h"
 
+#include <algorithm>
+
 #include "net/quic/quic_protocol.h"
 
 namespace net {

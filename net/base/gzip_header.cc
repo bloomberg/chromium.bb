@@ -4,6 +4,8 @@
 
 #include "net/base/gzip_header.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "third_party/zlib/zlib.h"
 

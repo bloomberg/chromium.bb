@@ -4,6 +4,8 @@
 
 #include "net/quic/congestion_control/hybrid_slow_start.h"
 
+#include <algorithm>
+
 namespace net {
 
 // Note(pwestin): the magic clamping numbers come from the original code in
