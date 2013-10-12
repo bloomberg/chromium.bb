@@ -401,9 +401,9 @@ void WindowOverview::InitializeSelectionWidget() {
   content_view->set_background(
       views::Background::CreateSolidBackground(kWindowOverviewSelectionColor));
   selection_widget_->SetContentsView(content_view);
+  selection_widget_->Show();
   selection_widget_->GetNativeWindow()->parent()->StackChildAtBottom(
       selection_widget_->GetNativeWindow());
-  selection_widget_->Show();
   selection_widget_->GetNativeWindow()->layer()->SetOpacity(0);
 }
 
