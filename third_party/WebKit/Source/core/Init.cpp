@@ -45,6 +45,7 @@
 #include "core/css/MediaFeatureNames.h"
 #include "platform/EventTracer.h"
 #include "platform/Partitions.h"
+#include "platform/PlatformThreadData.h"
 #include "wtf/text/StringStatics.h"
 
 namespace WebCore {
@@ -75,6 +76,10 @@ void init()
     QualifiedName::init();
     Partitions::init();
     EventTracer::initialize();
+
+    // Ensure that the main thread's thread-local data is initialized before
+    // starting any worker threads.
+    PlatformThreadData::current();
 
     StringImpl::freezeStaticStrings();
 }

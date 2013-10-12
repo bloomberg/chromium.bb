@@ -36,41 +36,4 @@
 #include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
-
-    class ThreadLocalInspectorCounters;
-    class ThreadTimers;
-
-    struct TECConverterWrapper;
-
-    class ThreadGlobalData {
-        WTF_MAKE_NONCOPYABLE(ThreadGlobalData);
-    public:
-        ThreadGlobalData();
-        ~ThreadGlobalData();
-
-        void destroy(); // called on workers to clean up the ThreadGlobalData before the thread exits.
-
-        ThreadLocalInspectorCounters& inspectorCounters() { return *m_inspectorCounters; }
-
-    private:
-        OwnPtr<ThreadLocalInspectorCounters> m_inspectorCounters;
-
-        static ThreadSpecific<ThreadGlobalData>* staticData;
-        friend ThreadGlobalData& threadGlobalData();
-    };
-
-inline ThreadGlobalData& threadGlobalData()
-{
-    // FIXME: Workers are not necessarily the only feature that make per-thread global data necessary.
-    // We need to check for e.g. database objects manipulating strings on secondary threads.
-
-    // ThreadGlobalData is used on main thread before it could possibly be used on secondary ones, so there is no need for synchronization here.
-    if (!ThreadGlobalData::staticData)
-        ThreadGlobalData::staticData = new ThreadSpecific<ThreadGlobalData>;
-    return **ThreadGlobalData::staticData;
-}
-
-} // namespace WebCore
-
 #endif // ThreadGlobalData_h

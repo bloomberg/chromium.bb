@@ -36,6 +36,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
+#include "platform/PlatformThreadData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWorkerRunLoop.h"
 #include "weborigin/KURL.h"
@@ -135,8 +136,8 @@ void WorkerThread::workerThread()
     // We cannot let any objects survive past thread exit, because no other thread will run GC or otherwise destroy them.
     m_workerGlobalScope = 0;
 
-    // Clean up WebCore::ThreadGlobalData before WTF::WTFThreadData goes away!
-    threadGlobalData().destroy();
+    // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
+    PlatformThreadData::current().destroy();
 
     // The thread object may be already destroyed from notification now, don't try to access "this".
     detachThread(threadID);

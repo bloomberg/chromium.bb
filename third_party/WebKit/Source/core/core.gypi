@@ -2671,7 +2671,6 @@
             'platform/ScrollbarThemeWin.h',
             'platform/SerializedResource.h',
             'platform/Theme.cpp',
-            'platform/ThreadGlobalData.cpp',
             'platform/Widget.cpp',
             'platform/Widget.h',
             'platform/animation/AnimationValue.h',

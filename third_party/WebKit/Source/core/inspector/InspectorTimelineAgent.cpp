@@ -784,7 +784,7 @@ void InspectorTimelineAgent::setDOMCounters(TypeBuilder::Timeline::TimelineEvent
             documentCount = InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
             nodeCount = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
         }
-        int listenerCount = ThreadLocalInspectorCounters::current().counterValue(ThreadLocalInspectorCounters::JSEventListenerCounter);
+        int listenerCount = InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter);
         RefPtr<TypeBuilder::Timeline::DOMCounters> counters = TypeBuilder::Timeline::DOMCounters::create()
             .setDocuments(documentCount)
             .setNodes(nodeCount)

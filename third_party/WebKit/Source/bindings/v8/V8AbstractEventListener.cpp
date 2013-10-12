@@ -53,7 +53,8 @@ V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, PassRefPtr<DO
     , m_world(world)
     , m_isolate(isolate)
 {
-    ThreadLocalInspectorCounters::current().incrementCounter(ThreadLocalInspectorCounters::JSEventListenerCounter);
+    if (isMainThread())
+        InspectorCounters::incrementCounter(InspectorCounters::JSEventListenerCounter);
 }
 
 V8AbstractEventListener::~V8AbstractEventListener()
@@ -62,7 +63,8 @@ V8AbstractEventListener::~V8AbstractEventListener()
         v8::HandleScope scope(m_isolate);
         V8EventListenerList::clearWrapper(m_listener.newLocal(m_isolate), m_isAttribute, m_isolate);
     }
-    ThreadLocalInspectorCounters::current().decrementCounter(ThreadLocalInspectorCounters::JSEventListenerCounter);
+    if (isMainThread())
+        InspectorCounters::decrementCounter(InspectorCounters::JSEventListenerCounter);
 }
 
 void V8AbstractEventListener::handleEvent(ExecutionContext* context, Event* event)

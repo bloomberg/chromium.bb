@@ -32,8 +32,8 @@
 #include "platform/PlatformThreadData.h"
 
 #include "platform/ThreadTimers.h"
-#include "wtf/ThreadSpecific.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/ThreadSpecific.h"
 
 namespace WebCore {
 

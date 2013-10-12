@@ -68,34 +68,6 @@ private:
     static int s_counters[CounterTypeLength];
 };
 
-
-class ThreadLocalInspectorCounters {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    enum CounterType {
-        JSEventListenerCounter,
-        CounterTypeLength
-    };
-    ThreadLocalInspectorCounters();
-
-    inline void incrementCounter(CounterType type)
-    {
-        ++m_counters[type];
-    }
-
-    inline void decrementCounter(CounterType type)
-    {
-        --m_counters[type];
-    }
-
-    int counterValue(CounterType);
-
-    static ThreadLocalInspectorCounters& current();
-
-private:
-    int m_counters[CounterTypeLength];
-};
-
 } // namespace WebCore
 
 #endif // !defined(InspectorCounters_h)
