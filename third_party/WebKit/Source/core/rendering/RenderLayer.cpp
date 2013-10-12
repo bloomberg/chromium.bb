@@ -4727,6 +4727,9 @@ void RenderLayer::rebuildZOrderLists(OwnPtr<Vector<RenderLayer*> >& posZOrderLis
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {
                 RenderLayer* layer = toRenderLayerModelObject(child)->layer();
+                // Create the buffer if it doesn't exist yet.
+                if (!posZOrderList)
+                    posZOrderList = adoptPtr(new Vector<RenderLayer*>);
                 posZOrderList->append(layer);
             }
         }
