@@ -116,6 +116,10 @@ struct device {
 };
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+static inline int64_t U642I64(uint64_t val)
+{
+	return (int64_t)*((int64_t *)&val);
+}
 
 struct type_name {
 	int type;
@@ -296,32 +300,43 @@ static void dump_prop(struct device *dev, drmModePropertyPtr prop,
 	printf("\t\tflags:");
 	if (prop->flags & DRM_MODE_PROP_PENDING)
 		printf(" pending");
-	if (prop->flags & DRM_MODE_PROP_RANGE)
-		printf(" range");
 	if (prop->flags & DRM_MODE_PROP_IMMUTABLE)
 		printf(" immutable");
-	if (prop->flags & DRM_MODE_PROP_ENUM)
+	if (drm_property_type_is(prop, DRM_MODE_PROP_SIGNED_RANGE))
+		printf(" signed range");
+	if (drm_property_type_is(prop, DRM_MODE_PROP_RANGE))
+		printf(" range");
+	if (drm_property_type_is(prop, DRM_MODE_PROP_ENUM))
 		printf(" enum");
-	if (prop->flags & DRM_MODE_PROP_BITMASK)
+	if (drm_property_type_is(prop, DRM_MODE_PROP_BITMASK))
 		printf(" bitmask");
-	if (prop->flags & DRM_MODE_PROP_BLOB)
+	if (drm_property_type_is(prop, DRM_MODE_PROP_BLOB))
 		printf(" blob");
+	if (drm_property_type_is(prop, DRM_MODE_PROP_OBJECT))
+		printf(" object");
 	printf("\n");
 
-	if (prop->flags & DRM_MODE_PROP_RANGE) {
+	if (drm_property_type_is(prop, DRM_MODE_PROP_SIGNED_RANGE)) {
+		printf("\t\tvalues:");
+		for (i = 0; i < prop->count_values; i++)
+			printf(" %"PRId64, U642I64(prop->values[i]));
+		printf("\n");
+	}
+
+	if (drm_property_type_is(prop, DRM_MODE_PROP_RANGE)) {
 		printf("\t\tvalues:");
 		for (i = 0; i < prop->count_values; i++)
 			printf(" %"PRIu64, prop->values[i]);
 		printf("\n");
 	}
 
-	if (prop->flags & DRM_MODE_PROP_ENUM) {
+	if (drm_property_type_is(prop, DRM_MODE_PROP_ENUM)) {
 		printf("\t\tenums:");
 		for (i = 0; i < prop->count_enums; i++)
 			printf(" %s=%llu", prop->enums[i].name,
 			       prop->enums[i].value);
 		printf("\n");
-	} else if (prop->flags & DRM_MODE_PROP_BITMASK) {
+	} else if (drm_property_type_is(prop, DRM_MODE_PROP_BITMASK)) {
 		printf("\t\tvalues:");
 		for (i = 0; i < prop->count_enums; i++)
 			printf(" %s=0x%llx", prop->enums[i].name,
@@ -331,7 +346,7 @@ static void dump_prop(struct device *dev, drmModePropertyPtr prop,
 		assert(prop->count_enums == 0);
 	}
 
-	if (prop->flags & DRM_MODE_PROP_BLOB) {
+	if (drm_property_type_is(prop, DRM_MODE_PROP_BLOB)) {
 		printf("\t\tblobs:\n");
 		for (i = 0; i < prop->count_blobs; i++)
 			dump_blob(dev, prop->blob_ids[i]);
@@ -341,7 +356,7 @@ static void dump_prop(struct device *dev, drmModePropertyPtr prop,
 	}
 
 	printf("\t\tvalue:");
-	if (prop->flags & DRM_MODE_PROP_BLOB)
+	if (drm_property_type_is(prop, DRM_MODE_PROP_BLOB))
 		dump_blob(dev, value);
 	else
 		printf(" %"PRIu64"\n", value);

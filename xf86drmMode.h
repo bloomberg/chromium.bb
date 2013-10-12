@@ -240,6 +240,15 @@ typedef struct _drmModeProperty {
 	uint32_t *blob_ids; /* store the blob IDs */
 } drmModePropertyRes, *drmModePropertyPtr;
 
+static inline int drm_property_type_is(drmModePropertyPtr property,
+		uint32_t type)
+{
+	/* instanceof for props.. handles extended type vs original types: */
+	if (property->flags & DRM_MODE_PROP_EXTENDED_TYPE)
+		return (property->flags & DRM_MODE_PROP_EXTENDED_TYPE) == type;
+	return property->flags & type;
+}
+
 typedef struct _drmModeCrtc {
 	uint32_t crtc_id;
 	uint32_t buffer_id; /**< FB id to connect to 0 = disconnect */
