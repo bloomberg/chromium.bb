@@ -68,6 +68,10 @@ public:
     {
         return adoptRef(new AnimatableLength(number, unitType, cssPrimitiveValue));
     }
+    static PassRefPtr<AnimatableLength> create(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
+    {
+        return adoptRef(new AnimatableLength(calcExpression, cssPrimitiveValue));
+    }
     PassRefPtr<CSSValue> toCSSValue(NumberRange = AllValues) const;
     Length toLength(const RenderStyle* currStyle, const RenderStyle* rootStyle, double zoom, NumberRange = AllValues) const;
 
@@ -94,10 +98,6 @@ private:
     virtual AnimatableType type() const OVERRIDE { return TypeLength; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
-    static PassRefPtr<AnimatableLength> create(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue = 0)
-    {
-        return adoptRef(new AnimatableLength(calcExpression, cssPrimitiveValue));
-    }
     static PassRefPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
     {
         ASSERT(leftAddend && rightAddend);

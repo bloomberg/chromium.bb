@@ -47,6 +47,7 @@
 #include "core/animation/AnimatableUnknown.h"
 #include "core/animation/AnimatableVisibility.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/platform/Length.h"
 #include "core/platform/LengthBox.h"
@@ -70,9 +71,7 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
     case ViewportPercentageMax:
         return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportMax);
     case Calculated:
-        // FIXME: Convert platform calcs to CSS calcs.
-        ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: Convert platform CalculationValue to AnimatableValue");
-        return 0;
+        return AnimatableLength::create(CSSCalcValue::createExpressionNode(length.calculationValue()->expression(), style->effectiveZoom()));
     case Auto:
     case Intrinsic:
     case MinIntrinsic:

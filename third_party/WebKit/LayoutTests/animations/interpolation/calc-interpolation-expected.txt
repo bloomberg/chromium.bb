@@ -1,0 +1,9 @@
+      
+PASS: left from [calc(50% - 25px)] to [calc(100% - 10px)] was [-10px] at -0.25
+PASS: left from [calc(50% - 25px)] to [calc(100% - 10px)] was [0px] at 0
+PASS: left from [calc(50% - 25px)] to [calc(100% - 10px)] was [10px] at 0.25
+PASS: left from [calc(50% - 25px)] to [calc(100% - 10px)] was [20px] at 0.5
+PASS: left from [calc(50% - 25px)] to [calc(100% - 10px)] was [30px] at 0.75
+PASS: left from [calc(50% - 25px)] to [calc(100% - 10px)] was [40px] at 1
+PASS: left from [calc(50% - 25px)] to [calc(100% - 10px)] was [50px] at 1.25
+
