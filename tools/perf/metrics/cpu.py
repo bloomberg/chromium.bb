@@ -62,7 +62,7 @@ def _SubtractCpuStats(cpu_stats, start_cpu_stats):
                         start_cpu_stats[process_type]['CpuProcessTime'])
     total_time = (cpu_stats[process_type]['TotalTime'] -
                   start_cpu_stats[process_type]['TotalTime'])
-    assert total_time > 0
+    assert total_time > 0, 'Expected total_time > 0, was: %d' % total_time
     cpu_usage[process_type] = float(cpu_process_time) / total_time
   return cpu_usage
 
