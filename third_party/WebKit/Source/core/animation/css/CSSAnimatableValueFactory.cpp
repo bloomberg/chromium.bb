@@ -320,8 +320,6 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return AnimatableShapeValue::create(style->shapeInside());
     case CSSPropertyWebkitTextEmphasisColor:
         return createFromColor(property, style);
-    case CSSPropertyWebkitTextFillColor:
-        return createFromColor(property, style);
     case CSSPropertyWebkitTextStrokeColor:
         return createFromColor(property, style);
     case CSSPropertyWebkitTransform:

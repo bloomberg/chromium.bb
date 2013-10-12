@@ -409,10 +409,6 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTextEmphasisColor(toAnimatableColor(value)->color());
         style->setVisitedLinkTextEmphasisColor(toAnimatableColor(value)->visitedLinkColor());
         return;
-    case CSSPropertyWebkitTextFillColor:
-        style->setTextFillColor(toAnimatableColor(value)->color());
-        style->setVisitedLinkTextFillColor(toAnimatableColor(value)->visitedLinkColor());
-        return;
     case CSSPropertyWebkitTextStrokeColor:
         style->setTextStrokeColor(toAnimatableColor(value)->color());
         style->setVisitedLinkTextStrokeColor(toAnimatableColor(value)->visitedLinkColor());
