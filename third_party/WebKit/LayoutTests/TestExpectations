@@ -971,6 +971,7 @@ crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
 Bug(vollick) compositing/z-order/collect-layers-does-not-initialize-pos-z-order-list.html [ NeedsRebaseline ]
+Bug(vollick) virtual/softwarecompositing/z-order/collect-layers-does-not-initialize-pos-z-order-list.html [ NeedsRebaseline ]
 
 # Rebase once v8 i18n rolled.
 Bug(jochen) fast/js/kde/inbuilt_function_tostring.html [ Pass Failure ]
