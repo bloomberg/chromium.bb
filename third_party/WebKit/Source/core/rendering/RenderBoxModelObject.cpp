@@ -1075,7 +1075,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
 
     LayoutUnit computedXPosition = minimumValueForLength(fillLayer->xPosition(), availableWidth, renderView, true);
     if (backgroundRepeatX == RoundFill && positioningAreaSize.width() > 0 && fillTileSize.width() > 0) {
-        long nrTiles = lroundf((float)positioningAreaSize.width() / fillTileSize.width());
+        long nrTiles = max(1l, lroundf((float)positioningAreaSize.width() / fillTileSize.width()));
 
         if (fillLayer->size().size.height().isAuto() && backgroundRepeatY != RoundFill) {
             fillTileSize.setHeight(fillTileSize.height() * positioningAreaSize.width() / (nrTiles * fillTileSize.width()));
@@ -1089,7 +1089,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
 
     LayoutUnit computedYPosition = minimumValueForLength(fillLayer->yPosition(), availableHeight, renderView, true);
     if (backgroundRepeatY == RoundFill && positioningAreaSize.height() > 0 && fillTileSize.height() > 0) {
-        long nrTiles = lroundf((float)positioningAreaSize.height() / fillTileSize.height());
+        long nrTiles = max(1l, lroundf((float)positioningAreaSize.height() / fillTileSize.height()));
 
         if (fillLayer->size().size.width().isAuto() && backgroundRepeatX != RoundFill) {
             fillTileSize.setWidth(fillTileSize.width() * positioningAreaSize.height() / (nrTiles * fillTileSize.height()));
