@@ -1676,19 +1676,13 @@ TEST_F(RenderTextTest, Multiline_MinWidth) {
 
 // Ensure strings wrap onto multiple lines for a normal available width.
 TEST_F(RenderTextTest, Multiline_NormalWidth) {
-  // TODO(ckocagil): Enable this test on XP.
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-#endif
-
   const struct {
     const wchar_t* const text;
     const Range first_line_char_range;
     const Range second_line_char_range;
   } kTestStrings[] = {
     { L"abc defg hijkl", Range(0, 9), Range(9, 14) },
-    { L"qwertyuiop", Range(0, 8), Range(8, 10) },
+    { L"qwertyzxcvbn", Range(0, 8), Range(8, 12) },
     { L"\x062A\x0641\x0627\x062D\x05EA\x05E4\x05D5\x05D6\x05D9\x05DD",
           Range(4, 10), Range(0, 4) }
   };
