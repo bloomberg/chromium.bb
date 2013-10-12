@@ -357,6 +357,12 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
+#if defined(USE_AURA)
+  // TODO(gpu): Fix this test in software compositing mode:
+  // http://crbug.com/306790.
+  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+#endif
   // Accelerated canvas 2D is not supported on XP.
   if (gpu::GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
