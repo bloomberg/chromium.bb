@@ -57,11 +57,6 @@ AudioInputController* TestAudioInputControllerFactory::Create(
   return controller_;
 }
 
-void TestAudioInputControllerFactory::SetDelegateForTests(
-    TestAudioInputControllerDelegate* delegate) {
-  delegate_ = delegate;
-}
-
 void TestAudioInputControllerFactory::OnTestAudioInputControllerDestroyed(
     TestAudioInputController* controller) {
   DCHECK_EQ(controller_, controller);

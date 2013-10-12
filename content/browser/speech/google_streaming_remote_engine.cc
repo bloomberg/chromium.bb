@@ -35,10 +35,9 @@ const char kWebServiceBaseUrl[] =
     "https://www.google.com/speech-api/full-duplex/v1";
 const char kDownstreamUrl[] = "/down?";
 const char kUpstreamUrl[] = "/up?";
-const int kAudioPacketIntervalMs = 100;
 const AudioEncoder::Codec kDefaultAudioCodec = AudioEncoder::CODEC_FLAC;
 
-// This mathces the maximum maxAlternatives value supported by the server.
+// This matches the maximum maxAlternatives value supported by the server.
 const uint32 kMaxMaxAlternatives = 30;
 
 // TODO(hans): Remove this and other logging when we don't need it anymore.
@@ -86,6 +85,7 @@ std::string GetAPIKey() {
 
 }  // namespace
 
+const int GoogleStreamingRemoteEngine::kAudioPacketIntervalMs = 100;
 const int GoogleStreamingRemoteEngine::kUpstreamUrlFetcherIdForTesting = 0;
 const int GoogleStreamingRemoteEngine::kDownstreamUrlFetcherIdForTesting = 1;
 const int GoogleStreamingRemoteEngine::kWebserviceStatusNoError = 0;

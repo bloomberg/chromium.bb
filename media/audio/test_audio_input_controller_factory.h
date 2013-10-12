@@ -69,6 +69,10 @@ class TestAudioInputController : public AudioInputController {
   // Ensure that the closure is run on the audio-manager thread.
   virtual void Close(const base::Closure& closed_task) OVERRIDE;
 
+  const AudioParameters& audio_parameters() const {
+    return audio_parameters_;
+  }
+
  protected:
   virtual ~TestAudioInputController();
 
@@ -99,7 +103,9 @@ class TestAudioInputControllerFactory : public AudioInputController::Factory {
       AudioParameters params,
       UserInputMonitor* user_input_monitor) OVERRIDE;
 
-  void SetDelegateForTests(TestAudioInputControllerDelegate* delegate);
+  void set_delegate(TestAudioInputControllerDelegate* delegate) {
+    delegate_ = delegate;
+  }
 
   TestAudioInputController* controller() const { return controller_; }
 

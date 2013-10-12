@@ -49,6 +49,9 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
       public net::URLFetcherDelegate,
       public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
+  // Duration of each audio packet.
+  static const int kAudioPacketIntervalMs;
+
   explicit GoogleStreamingRemoteEngine(net::URLRequestContextGetter* context);
   virtual ~GoogleStreamingRemoteEngine();
 
