@@ -118,6 +118,9 @@ public:
     BLINK_EXPORT static void enableScriptedSpeech(bool);
     BLINK_EXPORT static bool isScriptedSpeechEnabled();
 
+    BLINK_EXPORT static void enableServiceWorker(bool);
+    BLINK_EXPORT static bool isServiceWorkerEnabled();
+
     BLINK_EXPORT static void enableSessionStorage(bool);
     BLINK_EXPORT static bool isSessionStorageEnabled();
 

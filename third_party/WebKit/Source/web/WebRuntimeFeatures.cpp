@@ -304,6 +304,16 @@ bool WebRuntimeFeatures::isScriptedSpeechEnabled()
     return RuntimeEnabledFeatures::scriptedSpeechEnabled();
 }
 
+void WebRuntimeFeatures::enableServiceWorker(bool enable)
+{
+    RuntimeEnabledFeatures::setServiceWorkerEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isServiceWorkerEnabled()
+{
+    return RuntimeEnabledFeatures::serviceWorkerEnabled();
+}
+
 void WebRuntimeFeatures::enableSessionStorage(bool enable)
 {
     RuntimeEnabledFeatures::setSessionStorageEnabled(enable);
