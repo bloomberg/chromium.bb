@@ -72,6 +72,23 @@ namespace cast.channel {
     // urn:cast-x:<namespace> that is used to interpret and route Cast messages.
     DOMString namespace_;
 
+    // source and destination ids identify the origin and destination of the
+    // message.  They are used to route messages between endpoints that share a
+    // device-to-device channel.
+    //
+    // For messages between applications:
+    //   - The sender application id is a unique identifier generated on behalf
+    //     of the sender application.
+    //   - The receiver id is always the the session id for the application.
+    //
+    // For messages to or from the sender or receiver platform, the special ids
+    // 'sender-0' and 'receiver-0' can be used.
+    // 
+    // For messages intended for all endpoints using a given channel, the
+    // wildcard destination_id '*' can be used.
+    DOMString sourceId;
+    DOMString destinationId;
+
     // The content of the message.  Must be either a string or an ArrayBuffer.
     any data;
   };

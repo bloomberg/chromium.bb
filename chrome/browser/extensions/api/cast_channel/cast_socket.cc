@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
+#include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -31,14 +32,6 @@ const uint32 kMessageHeaderSize = sizeof(uint32);
 // after 9 failed probes.  So the total idle time before close is 10 *
 // kTcpKeepAliveDelaySecs.
 const int kTcpKeepAliveDelaySecs = 10;
-
-const std::string ProtoToString(
-    const extensions::api::cast_channel::CastMessage& proto) {
-  std::string out;
-  out += "ns = " + proto.namespace_();
-  out += ", str = " + proto.payload_utf8();
-  return out;
-}
 
 }  // namespace
 
@@ -77,7 +70,7 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
   body_read_buffer_ = new net::GrowableIOBuffer();
   body_read_buffer_->SetCapacity(kMaxMessageSize);
   current_read_buffer_ = header_read_buffer_;
-};
+}
 
 CastSocket::~CastSocket() { }
 
@@ -91,7 +84,7 @@ net::TCPClientSocket* CastSocket::CreateSocket(
     const net::NetLog::Source& source) {
   // TODO(mfoltz,munjal): Create a TLS socket.
   return new net::TCPClientSocket(addresses, net_log, source);
-};
+}
 
 void CastSocket::Connect(const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -118,7 +111,7 @@ void CastSocket::Connect(const net::CompletionCallback& callback) {
   connect_callback_ = callback;
   socket_->Connect(base::Bind(&CastSocket::OnConnectComplete,
                               AsWeakPtr()));
-};
+}
 
 void CastSocket::OnConnectComplete(int result) {
   DCHECK(CalledOnValidThread());
@@ -137,11 +130,10 @@ void CastSocket::Close(const net::CompletionCallback& callback) {
   socket_.reset(NULL);
   ready_state_ = READY_STATE_CLOSED;
   callback.Run(net::OK);
-};
+}
 
-void CastSocket::SendString(const std::string& name_space,
-                            const std::string& value,
-                            const net::CompletionCallback& callback) {
+void CastSocket::SendMessage(const MessageInfo& message,
+                             const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Send::ReadyState " << ready_state_;
   int result = net::ERR_FAILED;
@@ -150,15 +142,18 @@ void CastSocket::SendString(const std::string& name_space,
     return;
   }
   WriteRequest write_request(callback);
-  if (!write_request.SetStringMessage(name_space, value)) {
-    // TODO(mfoltz): Signal channel errors via |callback|
+  CastMessage message_proto;
+  if (!MessageInfoToCastMessage(message, &message_proto) ||
+      !write_request.SetContent(message_proto)) {
     CloseWithError(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE);
-    callback.Run(result);
+    // TODO(mfoltz): Do a better job of signaling cast_channel errors to the
+    // caller.
+    callback.Run(net::OK);
     return;
   }
   write_queue_.push(write_request);
   WriteData();
-};
+}
 
 void CastSocket::WriteData() {
   DCHECK(CalledOnValidThread());
@@ -185,7 +180,7 @@ void CastSocket::WriteData() {
 
   if (result != net::ERR_IO_PENDING)
     OnWriteData(result);
-};
+}
 
 void CastSocket::OnWriteData(int result) {
   DCHECK(CalledOnValidThread());
@@ -226,7 +221,7 @@ void CastSocket::OnWriteData(int result) {
 
   if (!write_queue_.empty())
     WriteData();
-};
+}
 
 void CastSocket::ReadData() {
   DCHECK(CalledOnValidThread());
@@ -308,7 +303,7 @@ bool CastSocket::ProcessHeader() {
 bool CastSocket::ProcessBody() {
   DCHECK_EQ(static_cast<uint32>(body_read_buffer_->offset()),
             current_message_size_);
-  if (!ParseMessage()) {
+  if (!ParseMessageFromBody()) {
     CloseWithError(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE);
     return false;
   }
@@ -319,7 +314,7 @@ bool CastSocket::ProcessBody() {
   return true;
 }
 
-bool CastSocket::ParseMessage() {
+bool CastSocket::ParseMessageFromBody() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(static_cast<uint32>(body_read_buffer_->offset()),
             current_message_size_);
@@ -328,36 +323,26 @@ bool CastSocket::ParseMessage() {
       body_read_buffer_->StartOfBuffer(),
       current_message_size_))
     return false;
-  DVLOG(1) << "Parsed message " << ProtoToString(message_proto);
+  DVLOG(1) << "Parsed message " << MessageProtoToString(message_proto);
   if (delegate_) {
-    switch (message_proto.payload_type()) {
-    case CastMessage_PayloadType_STRING:
-      delegate_->OnStringMessage(this,
-                                 message_proto.namespace_(),
-                                 message_proto.payload_utf8());
-      break;
-    default:
-      DLOG(ERROR) << "Unhandled message type in " <<
-        ProtoToString(message_proto);
-    }
+    MessageInfo message;
+    if (!CastMessageToMessageInfo(message_proto, &message))
+      return false;
+    delegate_->OnMessage(this, message);
   }
   return true;
 }
 
 // static
-bool CastSocket::SerializeStringMessage(const std::string& name_space,
-                                        const std::string& message,
-                                        std::string* message_data) {
-  CastMessage message_proto;
-  message_proto.set_protocol_version(CastMessage_ProtocolVersion_CASTV2_1_0);
-  message_proto.set_payload_type(CastMessage_PayloadType_STRING);
-  message_proto.set_namespace_(name_space);
-  message_proto.set_payload_utf8(message);
-  DCHECK(message_proto.IsInitialized());
+bool CastSocket::Serialize(const CastMessage& message_proto,
+                           std::string* message_data) {
+  DCHECK(message_data);
   message_proto.SerializeToString(message_data);
   size_t message_size = message_data->size();
-  if (message_size > kMaxMessageSize)
+  if (message_size > kMaxMessageSize) {
+    message_data->clear();
     return false;
+  }
   CastSocket::MessageHeader header;
   header.SetMessageSize(message_size);
   header.PrependToString(message_data);
@@ -417,7 +402,7 @@ void CastSocket::FillChannelInfo(ChannelInfo* channel_info) const {
   channel_info->url = url_.spec();
   channel_info->ready_state = ready_state_;
   channel_info->error_state = error_state_;
-};
+}
 
 CastSocket::MessageHeader::MessageHeader() : message_size(0) { }
 
@@ -425,7 +410,7 @@ void CastSocket::MessageHeader::SetMessageSize(size_t size) {
   DCHECK(size < static_cast<size_t>(kuint32max));
   DCHECK(size > 0);
   message_size = static_cast<size_t>(size);
-};
+}
 
 void CastSocket::MessageHeader::PrependToString(std::string* str) {
   MessageHeader output = *this;
@@ -449,11 +434,10 @@ std::string CastSocket::MessageHeader::ToString() {
 CastSocket::WriteRequest::WriteRequest(const net::CompletionCallback& callback)
   : callback(callback) { }
 
-bool CastSocket::WriteRequest::SetStringMessage(const std::string& name_space,
-                                                const std::string& message) {
+bool CastSocket::WriteRequest::SetContent(const CastMessage& message_proto) {
   DCHECK(!io_buffer.get());
   std::string message_data;
-  if (!SerializeStringMessage(name_space, message, &message_data))
+  if (!Serialize(message_proto, &message_data))
     return false;
   io_buffer = new net::DrainableIOBuffer(new net::StringIOBuffer(message_data),
                                          message_data.size());

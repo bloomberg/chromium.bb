@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
 
 #include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
+#include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
 #include "net/base/address_list.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/io_buffer.h"
@@ -26,9 +27,8 @@ class MockCastSocketDelegate : public CastSocket::Delegate {
  public:
   MOCK_METHOD2(OnError, void(const CastSocket* socket,
                              ChannelError error));
-  MOCK_METHOD3(OnStringMessage, void(const CastSocket* socket,
-                                     const std::string& namespace_,
-                                     const std::string& data));
+  MOCK_METHOD2(OnMessage, void(const CastSocket* socket,
+                               const MessageInfo& message));
 };
 
 class MockTCPClientSocket : public net::TCPClientSocket {
@@ -107,6 +107,11 @@ class CastSocketTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     socket_.reset(new TestCastSocket(&mock_delegate_));
+    test_message_.namespace_ = "urn:test";
+    test_message_.source_id = "1";
+    test_message_.destination_id = "2";
+    test_message_.data.reset(new base::StringValue("Hello, World!"));
+    ASSERT_TRUE(MessageInfoToCastMessage(test_message_, &test_proto_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -153,6 +158,8 @@ class CastSocketTest : public testing::Test {
   MockCastSocketDelegate mock_delegate_;
   scoped_ptr<TestCastSocket> socket_;
   CompleteHandler handler_;
+  MessageInfo test_message_;
+  CastMessage test_proto_;
 };
 
 // Tests URL parsing and validation.
@@ -198,16 +205,16 @@ TEST_F(CastSocketTest, TestWriteViaCallback) {
 
   EXPECT_CALL(mock_tcp_socket(),
               Write(A<net::IOBuffer*>(),
-                    33,
+                    39,
                     A<const net::CompletionCallback&>()))
     .Times(1)
     .WillOnce(DoAll(SaveArg<2>(&write_callback),
                     Return(net::ERR_IO_PENDING)));
-  EXPECT_CALL(handler_, OnWriteComplete(33));
-  socket_->SendString("urn:test", "Hello, World!",
-                      base::Bind(&CompleteHandler::OnWriteComplete,
-                                 base::Unretained(&handler_)));
-  write_callback.Run(33);
+  EXPECT_CALL(handler_, OnWriteComplete(39));
+  socket_->SendMessage(test_message_,
+                       base::Bind(&CompleteHandler::OnWriteComplete,
+                                  base::Unretained(&handler_)));
+  write_callback.Run(39);
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 }
@@ -218,12 +225,12 @@ TEST_F(CastSocketTest, TestWrite) {
 
   EXPECT_CALL(mock_tcp_socket(),
               Write(A<net::IOBuffer*>(),
-                    33,
+                    39,
                     A<const net::CompletionCallback&>()))
     .Times(1)
-    .WillOnce(Return(33));
-  EXPECT_CALL(handler_, OnWriteComplete(33));
-  socket_->SendString("urn:test", "Hello, World!",
+    .WillOnce(Return(39));
+  EXPECT_CALL(handler_, OnWriteComplete(39));
+  socket_->SendMessage(test_message_,
                       base::Bind(&CompleteHandler::OnWriteComplete,
                                  base::Unretained(&handler_)));
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
@@ -238,7 +245,8 @@ TEST_F(CastSocketTest, TestWriteMany) {
   messages[1] = "Goodbye, World!";
   messages[2] = "Hello, Sky!";
   messages[3] = "Goodbye, Volcano!";
-  int sizes[4] = {33, 35, 31, 37};
+  int sizes[4] = {39, 41, 37, 43};
+  MessageInfo message_info[4];
   net::CompletionCallback write_callback;
 
   for (int i = 0; i < 4; i++) {
@@ -252,9 +260,13 @@ TEST_F(CastSocketTest, TestWriteMany) {
   }
 
   for (int i = 0; i < 4; i++) {
-    socket_->SendString("urn:test", messages[i],
-                        base::Bind(&CompleteHandler::OnWriteComplete,
-                                   base::Unretained(&handler_)));
+    message_info[i].namespace_ = "urn:test";
+    message_info[i].source_id = "1";
+    message_info[i].destination_id = "2";
+    message_info[i].data.reset(new base::StringValue(messages[i]));
+    socket_->SendMessage(message_info[i],
+                         base::Bind(&CompleteHandler::OnWriteComplete,
+                                    base::Unretained(&handler_)));
   }
   for (int i = 0; i < 4; i++) {
     write_callback.Run(sizes[i]);
@@ -270,7 +282,7 @@ TEST_F(CastSocketTest, TestWriteError) {
 
   EXPECT_CALL(mock_tcp_socket(),
               Write(A<net::IOBuffer*>(),
-                    33,
+                    39,
                     A<const net::CompletionCallback&>()))
     .Times(1)
     .WillOnce(DoAll(SaveArg<2>(&write_callback),
@@ -278,9 +290,9 @@ TEST_F(CastSocketTest, TestWriteError) {
   EXPECT_CALL(handler_, OnWriteComplete(net::ERR_SOCKET_NOT_CONNECTED));
   EXPECT_CALL(mock_delegate_,
               OnError(socket_.get(), cast_channel::CHANNEL_ERROR_SOCKET_ERROR));
-  socket_->SendString("urn:test", "Hello, World!",
-                      base::Bind(&CompleteHandler::OnWriteComplete,
-                                 base::Unretained(&handler_)));
+  socket_->SendMessage(test_message_,
+                       base::Bind(&CompleteHandler::OnWriteComplete,
+                                  base::Unretained(&handler_)));
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
 }
@@ -291,9 +303,7 @@ TEST_F(CastSocketTest, TestRead) {
   net::CompletionCallback read_callback;
 
   std::string message_data;
-  ASSERT_TRUE(CastSocket::SerializeStringMessage("urn:test",
-                                                 "Hello, World!",
-                                                 &message_data));
+  ASSERT_TRUE(CastSocket::Serialize(test_proto_, &message_data));
 
   EXPECT_CALL(mock_tcp_socket(), SetNoDelay(true))
     .Times(1)
@@ -314,7 +324,7 @@ TEST_F(CastSocketTest, TestRead) {
 
   // Expect the test message to be read and invoke the delegate.
   EXPECT_CALL(mock_delegate_,
-              OnStringMessage(socket_.get(), "urn:test", "Hello, World!"));
+              OnMessage(socket_.get(), A<const MessageInfo&>()));
 
   // Connect the socket.
   socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
@@ -327,8 +337,8 @@ TEST_F(CastSocketTest, TestRead) {
          message_data.c_str(), 4);
   read_callback.Run(4);
   memcpy(socket_->body_read_buffer_->StartOfBuffer(),
-         message_data.c_str() + 4, 29);
-  read_callback.Run(29);
+         message_data.c_str() + 4, 35);
+  read_callback.Run(35);
 
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
@@ -343,13 +353,14 @@ TEST_F(CastSocketTest, TestReadMany) {
   messages[1] = "Goodbye, World!";
   messages[2] = "Hello, Sky!";
   messages[3] = "Goodbye, Volcano!";
-  int sizes[4] = {29, 31, 27, 33};
+  int sizes[4] = {35, 37, 33, 39};
   std::string message_data[4];
 
-  for (int i = 0; i < 4; i++)
-    ASSERT_TRUE(CastSocket::SerializeStringMessage("urn:test",
-                                                   messages[i],
-                                                   &message_data[i]));
+  // Set up test data
+  for (int i = 0; i < 4; i++) {
+    test_proto_.set_payload_utf8(messages[i]);
+    ASSERT_TRUE(CastSocket::Serialize(test_proto_, &message_data[i]));
+  }
 
   EXPECT_CALL(mock_tcp_socket(), SetNoDelay(true))
     .Times(1)
@@ -369,9 +380,9 @@ TEST_F(CastSocketTest, TestReadMany) {
                           Return(net::ERR_IO_PENDING)));
 
   // Expect the test messages to be read and invoke the delegate.
-  for (int i = 0; i < 4; i++)
-    EXPECT_CALL(mock_delegate_,
-                OnStringMessage(socket_.get(), "urn:test", messages[i]));
+  EXPECT_CALL(mock_delegate_, OnMessage(socket_.get(),
+                                        A<const MessageInfo&>()))
+    .Times(4);
 
   // Connect the socket.
   socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,

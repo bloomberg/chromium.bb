@@ -152,6 +152,8 @@
         'browser/extensions/api/browsing_data/browsing_data_api.h',
         'browser/extensions/api/cast_channel/cast_channel_api.cc',
         'browser/extensions/api/cast_channel/cast_channel_api.h',
+        'browser/extensions/api/cast_channel/cast_message_util.cc',
+        'browser/extensions/api/cast_channel/cast_message_util.h',
         'browser/extensions/api/cast_channel/cast_socket.cc',
         'browser/extensions/api/cast_channel/cast_socket.h',
         'browser/extensions/api/cloud_print_private/cloud_print_private_api.cc',

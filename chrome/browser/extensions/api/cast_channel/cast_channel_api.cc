@@ -68,15 +68,11 @@ void CastChannelAPI::OnError(const CastSocket* socket,
   manager->Remove(socket->owner_extension_id(), socket->id());
 }
 
-void CastChannelAPI::OnStringMessage(const CastSocket* socket,
-                                     const std::string& namespace_,
-                                     const std::string& data) {
+void CastChannelAPI::OnMessage(const CastSocket* socket,
+                               const MessageInfo& message_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ChannelInfo channel_info;
   socket->FillChannelInfo(&channel_info);
-  MessageInfo message_info;
-  message_info.namespace_ = namespace_;
-  message_info.data.reset(base::Value::CreateStringValue(data));
   scoped_ptr<base::ListValue> results =
     OnMessage::Create(channel_info, message_info);
   scoped_ptr<Event> event(new Event(OnMessage::kEventName, results.Pass()));
@@ -210,27 +206,8 @@ void CastChannelSendFunction::AsyncWorkStart() {
     AsyncWorkCompleted();
     return;
   }
-  base::Value* data = params_->message.data.get();
-  std::string string_data;
-  switch (data->GetType()) {
-  case Value::TYPE_STRING:
-    data->GetAsString(&string_data);
-    if (string_data.size() > cast_channel::kMaxMessageSize)
-      break;
-    socket_->SendString(params_->message.namespace_,
-                        string_data,
-                        base::Bind(&CastChannelSendFunction::OnSend, this));
-    return;
-  default:
-    // TODO(mfoltz): Add support for JS ArrayBuffer as binary value
-    // NOTE(mfoltz): We could also take a Dictionary or List value and convert
-    // to JSON.
-    break;
-  }
-  SetResultFromError("",
-                     cast_channel::CHANNEL_ERROR_INVALID_MESSAGE);
-  RemoveSocketIfError();
-  AsyncWorkCompleted();
+  socket_->SendMessage(params_->message,
+                       base::Bind(&CastChannelSendFunction::OnSend, this));
 }
 
 void CastChannelSendFunction::OnSend(int result) {

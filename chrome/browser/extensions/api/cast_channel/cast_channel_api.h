@@ -39,9 +39,8 @@ class CastChannelAPI : public ProfileKeyedAPI,
   // CastSocket::Delegate.  Called on IO thread.
   virtual void OnError(const cast_channel::CastSocket* socket,
                        cast_channel::ChannelError error) OVERRIDE;
-  virtual void OnStringMessage(const cast_channel::CastSocket* socket,
-                               const std::string& namespace_,
-                               const std::string& data) OVERRIDE;
+  virtual void OnMessage(const cast_channel::CastSocket* socket,
+                         const cast_channel::MessageInfo& message) OVERRIDE;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

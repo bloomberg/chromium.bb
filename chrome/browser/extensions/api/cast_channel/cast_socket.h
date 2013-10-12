@@ -55,9 +55,8 @@ class CastSocket : public ApiResource,
     virtual void OnError(const CastSocket* socket,
                          ChannelError error) = 0;
     // A string message was received on the channel.
-    virtual void OnStringMessage(const CastSocket* socket,
-                                 const std::string& namespace_,
-                                 const std::string& data) = 0;
+    virtual void OnMessage(const CastSocket* socket,
+                           const MessageInfo& message) = 0;
    protected:
     virtual ~Delegate() {}
   };
@@ -92,11 +91,10 @@ class CastSocket : public ApiResource,
   // READY_STATE_OPEN.
   virtual void Connect(const net::CompletionCallback& callback);
 
-  // Sends a message with a string payload over a connected channel. The
-  // channel must be in READY_STATE_OPEN.
-  virtual void SendString(const std::string& name_space,
-                          const std::string& value,
-                          const net::CompletionCallback& callback);
+  // Sends a message over a connected channel. The channel must be in
+  // READY_STATE_OPEN.
+  virtual void SendMessage(const MessageInfo& message,
+                           const net::CompletionCallback& callback);
 
   // Closes the channel. On completion, the channel will be in
   // READY_STATE_CLOSED.
@@ -138,15 +136,13 @@ class CastSocket : public ApiResource,
   bool ProcessHeader();
   // Processes the contents of body_read_buffer_ and returns true on success.
   bool ProcessBody();
-  // Parses the message held in body_read_buffer_ and returns true on success.
-  // Notifies |delegate_| if a message was extracted from the buffer.
-  bool ParseMessage();
+  // Parses the message held in body_read_buffer_ and notifies |delegate_| if a
+  // message was extracted from the buffer.  Returns true on success.
+  bool ParseMessageFromBody();
 
-  // Creates a protocol buffer to hold |namespace_| and |message| and serializes
-  // it (with a header) to |message_data|.
-  static bool SerializeStringMessage(const std::string& name_space,
-                                     const std::string& message,
-                                     std::string* message_data);
+  // Serializes the content of message_proto (with a header) to |message_data|.
+  static bool Serialize(const CastMessage& message_proto,
+                        std::string* message_data);
 
   // Closes the socket and sets |error_state_|. Also signals |error| via
   // |delegate_|.
@@ -217,9 +213,9 @@ class CastSocket : public ApiResource,
   struct WriteRequest {
     explicit WriteRequest(const net::CompletionCallback& callback);
     ~WriteRequest();
-    // Sets the content of the message. Must only be called once.
-    bool SetStringMessage(const std::string& name_space,
-                          const std::string& message);
+    // Sets the content of the request by serializing |message| into |io_buffer|
+    // and prepending the header.  Must only be called once.
+    bool SetContent(const CastMessage& message_proto);
 
     net::CompletionCallback callback;
     scoped_refptr<net::DrainableIOBuffer> io_buffer;
