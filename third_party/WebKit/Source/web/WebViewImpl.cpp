@@ -165,13 +165,13 @@
 #include "wtf/TemporaryChange.h"
 #include "wtf/Uint8ClampedArray.h"
 
-#if ENABLE(DEFAULT_RENDER_THEME)
+#if USE(DEFAULT_RENDER_THEME)
 #include "core/platform/chromium/PlatformThemeChromiumDefault.h"
 #include "core/rendering/RenderThemeChromiumDefault.h"
 #endif
 
 #if OS(WIN)
-#if !ENABLE(DEFAULT_RENDER_THEME)
+#if !USE(DEFAULT_RENDER_THEME)
 #include "core/rendering/RenderThemeChromiumWin.h"
 #endif
 #else
@@ -3633,7 +3633,7 @@ void WebViewImpl::setWindowFeatures(const WebWindowFeatures& features)
 void WebViewImpl::setScrollbarColors(unsigned inactiveColor,
                                      unsigned activeColor,
                                      unsigned trackColor) {
-#if ENABLE(DEFAULT_RENDER_THEME)
+#if USE(DEFAULT_RENDER_THEME)
     PlatformThemeChromiumDefault::setScrollbarColors(inactiveColor, activeColor, trackColor);
 #endif
 }
@@ -3642,7 +3642,7 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
                                      unsigned activeForegroundColor,
                                      unsigned inactiveBackgroundColor,
                                      unsigned inactiveForegroundColor) {
-#if ENABLE(DEFAULT_RENDER_THEME)
+#if USE(DEFAULT_RENDER_THEME)
     RenderThemeChromiumDefault::setSelectionColors(activeBackgroundColor, activeForegroundColor, inactiveBackgroundColor, inactiveForegroundColor);
     RenderTheme::theme().platformColorsDidChange();
 #endif

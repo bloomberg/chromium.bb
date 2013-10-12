@@ -98,7 +98,7 @@
       }],
       ['use_default_render_theme==1', {
         'feature_defines': [
-          'ENABLE_DEFAULT_RENDER_THEME=1',
+          'WTF_USE_DEFAULT_RENDER_THEME=1',
         ],
       }],
     ],
