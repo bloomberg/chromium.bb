@@ -1536,6 +1536,7 @@ TEST_F(WebFrameTest, targetDensityDpiDeviceAndFixedWidth)
 
 TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOne)
 {
+    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-less-than-1.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1559,6 +1560,7 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOne)
 
 TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth)
 {
+    UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-less-than-1-device-width.html");
 
     FixedLayoutTestWebViewClient client;
@@ -1578,7 +1580,7 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth)
     const float pageZoom = 0.25f;
     EXPECT_NEAR(viewportWidth * client.m_screenInfo.deviceScaleFactor / pageZoom, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width(), 1.0f);
     EXPECT_NEAR(viewportHeight * client.m_screenInfo.deviceScaleFactor / pageZoom, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height(), 1.0f);
-    EXPECT_NEAR(pageZoom * 1.0f / client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->pageScaleFactor(), 0.01f);
+    EXPECT_NEAR(1.0f / client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
 class WebFrameResizeTest : public WebFrameTest {
