@@ -73,12 +73,12 @@ static HomogeneousCoordinate ComputeClippedPointForEdge(
   DCHECK(h1.ShouldBeClipped() ^ h2.ShouldBeClipped());
 
   // ...or any positive non-zero small epsilon
-  double w = 0.00001;
-  double t = (w - h1.w()) / (h2.w() - h1.w());
+  SkMScalar w = 0.00001f;
+  SkMScalar t = (w - h1.w()) / (h2.w() - h1.w());
 
-  SkMScalar x = SkDoubleToMScalar((1.0 - t) * h1.x() + t * h2.x());
-  SkMScalar y = SkDoubleToMScalar((1.0 - t) * h1.y() + t * h2.y());
-  SkMScalar z = SkDoubleToMScalar((1.0 - t) * h1.z() + t * h2.z());
+  SkMScalar x = (SK_MScalar1 - t) * h1.x() + t * h2.x();
+  SkMScalar y = (SK_MScalar1 - t) * h1.y() + t * h2.y();
+  SkMScalar z = (SK_MScalar1 - t) * h1.z() + t * h2.z();
 
   return HomogeneousCoordinate(x, y, z, w);
 }

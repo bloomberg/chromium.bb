@@ -21,6 +21,14 @@ do { \
   EXPECT_FLOAT_EQ((expected).height(), (actual).height()); \
 } while (false)
 
+#define EXPECT_RECT_NEAR(expected, actual, abs_error) \
+do { \
+  EXPECT_NEAR((expected).x(), (actual).x(), (abs_error)); \
+  EXPECT_NEAR((expected).y(), (actual).y(), (abs_error)); \
+  EXPECT_NEAR((expected).width(), (actual).width(), (abs_error)); \
+  EXPECT_NEAR((expected).height(), (actual).height(), (abs_error)); \
+} while (false)
+
 #define EXPECT_RECT_EQ(expected, actual) \
 do { \
   EXPECT_EQ((expected).x(), (actual).x()); \

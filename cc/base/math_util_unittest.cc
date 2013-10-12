@@ -44,8 +44,10 @@ TEST(MathUtilTest, EnclosingClippedRectUsesCorrectInitialBounds) {
   // then the enclosing clipped rect will be computed incorrectly.
   gfx::RectF result = MathUtil::ComputeEnclosingClippedRect(h1, h2, h3, h4);
 
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(gfx::PointF(-100, -100), gfx::SizeF(90, 90)),
-                       result);
+  // Due to floating point math in ComputeClippedPointForEdge this result
+  // is fairly imprecise.  0.15f was empirically determined.
+  EXPECT_RECT_NEAR(
+      gfx::RectF(gfx::PointF(-100, -100), gfx::SizeF(90, 90)), result, 0.15f);
 }
 
 TEST(MathUtilTest, EnclosingRectOfVerticesUsesCorrectInitialBounds) {
