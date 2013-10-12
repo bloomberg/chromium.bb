@@ -19,6 +19,7 @@ class PageCyclerDhtml(test.Test):
 
 
 class PageCyclerIndexeddb(test.Test):
+  tag = 'indexed_db'
   test = page_cycler.PageCycler
   page_set = 'page_sets/page_cycler/indexed_db/basic_insert.json'
   options = {'pageset_repeat_iters': 10}
