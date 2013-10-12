@@ -32,6 +32,7 @@ class DrmSkBitmapOzone : public SkBitmap {
 
  private:
   friend class DrmAllocator;
+  friend class HardwareDisplayControllerOzone;
 
   void set_handle(uint32_t handle) { handle_ = handle; };
   void set_framebuffer(uint32_t framebuffer) { framebuffer_ = framebuffer; };
