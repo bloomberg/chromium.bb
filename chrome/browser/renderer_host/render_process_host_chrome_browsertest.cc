@@ -329,6 +329,14 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
+
+  // close docked devtools
+  content::WindowedNotificationObserver close_observer(
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(WebContents::FromRenderViewHost(devtools)));
+
+  chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_TOGGLE);
+  close_observer.Wait();
 }
 
 // Ensure that DevTools opened to debug DevTools is launched in a separate
@@ -369,6 +377,14 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
+
+  // close docked devtools
+  content::WindowedNotificationObserver close_observer(
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<content::WebContents>(
+          WebContents::FromRenderViewHost(devtools)));
+  chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_TOGGLE);
+  close_observer.Wait();
 }
 
 // This class's goal is to close the browser window when a renderer process has
