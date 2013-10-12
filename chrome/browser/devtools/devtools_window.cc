@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/devtools/devtools_window.h"
 
 #include <algorithm>
@@ -448,7 +449,7 @@ int DevToolsWindow::GetMinimizedHeight() {
 }
 
 void DevToolsWindow::InspectedContentsClosing() {
-  web_contents_->GetRenderViewHost()->ClosePage();
+  Hide();
 }
 
 content::RenderViewHost* DevToolsWindow::GetRenderViewHost() {
@@ -787,25 +788,6 @@ void DevToolsWindow::AddNewContents(content::WebContents* source,
 }
 
 void DevToolsWindow::CloseContents(content::WebContents* source) {
-  CHECK(IsDocked());
-  // Update dev tools to reflect removed dev tools window.
-  BrowserWindow* inspected_window = GetInspectedBrowserWindow();
-  if (inspected_window)
-    inspected_window->UpdateDevTools();
-  // In case of docked web_contents_, we own it so delete here.
-  delete web_contents_;
-
-  delete this;
-}
-
-void DevToolsWindow::BeforeUnloadFired(content::WebContents* tab,
-                                       bool proceed,
-                                       bool* proceed_to_fire_unload) {
-  if (proceed) {
-    content::DevToolsManager::GetInstance()->ClientHostClosing(
-        frontend_host_.get());
-  }
-  *proceed_to_fire_unload = proceed;
 }
 
 bool DevToolsWindow::PreHandleKeyboardEvent(
@@ -897,18 +879,11 @@ void DevToolsWindow::ActivateWindow() {
     browser_->window()->Activate();
 }
 
-void DevToolsWindow::ActivateContents(content::WebContents* contents) {
-  if (IsDocked()) {
-    content::WebContents* inspected_tab = this->GetInspectedWebContents();
-    inspected_tab->GetDelegate()->ActivateContents(inspected_tab);
-  } else {
-    browser_->window()->Activate();
-  }
-}
-
 void DevToolsWindow::CloseWindow() {
   DCHECK(IsDocked());
-  web_contents_->GetRenderViewHost()->FirePageBeforeUnload(false);
+  content::DevToolsManager::GetInstance()->ClientHostClosing(
+      frontend_host_.get());
+  Hide();
 }
 
 void DevToolsWindow::SetWindowBounds(int x, int y, int width, int height) {
@@ -1252,6 +1227,26 @@ void DevToolsWindow::UpdateFrontendDockSide() {
   base::FundamentalValue docked(IsDocked());
   CallClientFunction("InspectorFrontendAPI.setAttachedWindow", &docked, NULL,
                      NULL);
+}
+
+void DevToolsWindow::Hide() {
+  if (IsDocked()) {
+    // Update dev tools to reflect removed dev tools window.
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      inspected_window->UpdateDevTools();
+    // In case of docked web_contents_, we own it so delete here.
+    delete web_contents_;
+
+    delete this;
+  } else {
+    // First, initiate self-destruct to free all the registrars.
+    // Then close all tabs. Browser will take care of deleting web_contents_
+    // for us.
+    Browser* browser = browser_;
+    delete this;
+    browser->tab_strip_model()->CloseAllTabs();
+  }
 }
 
 void DevToolsWindow::ScheduleAction(DevToolsToggleAction action) {
