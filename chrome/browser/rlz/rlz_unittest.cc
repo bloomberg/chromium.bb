@@ -18,6 +18,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -90,64 +91,29 @@ AssertionResult CmpHelperSTRNC(const char* str_expression,
 #define EXPECT_STR_NOT_CONTAIN(str, substr) \
     EXPECT_PRED_FORMAT2(CmpHelperSTRNC, str, substr)
 
+void RunPendingTasks() {
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+}
+
 }  // namespace
 
-// Test class for RLZ tracker. Makes some member functions public and
-// overrides others to make it easier to test.
-class TestRLZTracker : public RLZTracker {
+// Test RLZTrackerDelegate that implements test specific
+// SendFinalcialPing and provides a way to verify it works.
+class TestRLZTrackerDelegate : public RLZTrackerDelegate {
  public:
-  using RLZTracker::InitRlzDelayed;
-  using RLZTracker::DelayedInit;
-  using RLZTracker::Observe;
-
-  TestRLZTracker() : assume_not_ui_thread_(true) {
-    set_tracker(this);
+  TestRLZTrackerDelegate() : tracker_(this) {
+    RLZTracker::SetTrackerForTest(&tracker_);
   }
 
-  virtual ~TestRLZTracker() {
-    set_tracker(NULL);
+  virtual ~TestRLZTrackerDelegate() {
+    RLZTracker::SetTrackerForTest(NULL);
   }
 
   bool was_ping_sent_for_brand(const std::string& brand) const {
     return pinged_brands_.count(brand) > 0;
   }
 
-  void set_assume_not_ui_thread(bool assume_not_ui_thread) {
-    assume_not_ui_thread_ = assume_not_ui_thread;
-  }
-
  private:
-  virtual void ScheduleDelayedInit(base::TimeDelta delay) OVERRIDE {
-    // If the delay is 0, invoke the delayed init now. Otherwise,
-    // don't schedule anything, it will be manually called during tests.
-    if (delay == base::TimeDelta())
-      DelayedInit();
-  }
-
-  virtual void ScheduleFinancialPing() OVERRIDE {
-    PingNowImpl();
-  }
-
-  virtual bool ScheduleRecordProductEvent(rlz_lib::Product product,
-                                          rlz_lib::AccessPoint point,
-                                          rlz_lib::Event event_id) OVERRIDE {
-    return !assume_not_ui_thread_;
-  }
-
-  virtual bool ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) OVERRIDE {
-    return !assume_not_ui_thread_;
-  }
-
-  virtual bool ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) OVERRIDE {
-    return !assume_not_ui_thread_;
-  }
-
-#if defined(OS_CHROMEOS)
-  virtual bool ScheduleClearRlzState() OVERRIDE {
-    return !assume_not_ui_thread_;
-  }
-#endif
-
   virtual bool SendFinancialPing(const std::string& brand,
                                  const string16& lang,
                                  const string16& referral) OVERRIDE {
@@ -165,9 +131,9 @@ class TestRLZTracker : public RLZTracker {
   }
 
   std::set<std::string> pinged_brands_;
-  bool assume_not_ui_thread_;
+  RLZTracker tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestRLZTracker);
+  DISALLOW_COPY_AND_ASSIGN(TestRLZTrackerDelegate);
 };
 
 class RlzLibTest : public testing::Test {
@@ -190,7 +156,24 @@ class RlzLibTest : public testing::Test {
   void ExpectRlzPingSent(bool expected);
   void ExpectReactivationRlzPingSent(bool expected);
 
-  TestRLZTracker tracker_;
+  bool InitRlzDelayed(bool first_run,
+                      bool send_ping_immediately,
+                      base::TimeDelta delay,
+                      bool is_google_default_search,
+                      bool is_google_homepage,
+                      bool is_google_in_startpages) {
+    bool ret = RLZTracker::InitRlzDelayed(
+        first_run,
+        send_ping_immediately,
+        delay,
+        is_google_default_search,
+        is_google_homepage,
+        is_google_in_startpages);
+    RunPendingTasks();
+    return ret;
+  }
+
+  TestRLZTrackerDelegate tracker_;
 #if defined(OS_WIN)
   RegistryOverrideManager override_manager_;
 #elif defined(OS_POSIX)
@@ -289,22 +272,26 @@ void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
 #endif
 
 void RlzLibTest::SimulateOmniboxUsage() {
-  tracker_.Observe(chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                   content::NotificationService::AllSources(),
-                   content::Details<OmniboxLog>(NULL));
+  RLZTracker::GetInstance()->Observe(
+      chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+      content::NotificationService::AllSources(),
+      content::Details<OmniboxLog>(NULL));
+  RunPendingTasks();
 }
 
 void RlzLibTest::SimulateHomepageUsage() {
   scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetPageID(0);
   entry->SetTransitionType(content::PAGE_TRANSITION_HOME_PAGE);
-  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
-                   content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(entry.get()));
+  RLZTracker::GetInstance()->Observe(
+      content::NOTIFICATION_NAV_ENTRY_PENDING,
+      content::NotificationService::AllSources(),
+      content::Details<NavigationEntry>(entry.get()));
+  RunPendingTasks();
 }
 
 void RlzLibTest::InvokeDelayedInit() {
-  tracker_.DelayedInit();
+  RLZTracker::GetInstance()->DelayedInit();
 }
 
 void RlzLibTest::ExpectEventRecorded(const char* event_name, bool expected) {
@@ -393,12 +380,13 @@ const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(20);
 TEST_F(RlzLibTest, RecordProductEvent) {
   RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::CHROME_OMNIBOX,
                                  rlz_lib::FIRST_SEARCH);
+  RunPendingTasks();
 
   ExpectEventRecorded(kOmniboxFirstSearch, true);
 }
 
 TEST_F(RlzLibTest, QuickStopAfterStart) {
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, true);
+  InitRlzDelayed(true, false, kDelay, true, true, true);
 
   // Omnibox events.
   ExpectEventRecorded(kOmniboxInstall, false);
@@ -414,7 +402,7 @@ TEST_F(RlzLibTest, QuickStopAfterStart) {
 }
 
 TEST_F(RlzLibTest, DelayedInitOnly) {
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -431,7 +419,7 @@ TEST_F(RlzLibTest, DelayedInitOnly) {
 }
 
 TEST_F(RlzLibTest, DelayedInitOnlyGoogleAsStartup) {
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, false, false, true);
+  InitRlzDelayed(true, false, kDelay, false, false, true);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -448,7 +436,7 @@ TEST_F(RlzLibTest, DelayedInitOnlyGoogleAsStartup) {
 }
 
 TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStrings) {
-  TestRLZTracker::InitRlzDelayed(false, false, kDelay, true, true, false);
+  InitRlzDelayed(false, false, kDelay, true, true, false);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -465,7 +453,7 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStrings) {
 }
 
 TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRunNoRlzStringsGoogleAsStartup) {
-  TestRLZTracker::InitRlzDelayed(false, false, kDelay, false, false, true);
+  InitRlzDelayed(false, false, kDelay, false, false, true);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -487,7 +475,7 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRun) {
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, kHomepageRlzString);
 
-  TestRLZTracker::InitRlzDelayed(false, false, kDelay, true, true, true);
+  InitRlzDelayed(false, false, kDelay, true, true, true);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -504,7 +492,7 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoFirstRun) {
 }
 
 TEST_F(RlzLibTest, DelayedInitOnlyNoGoogleDefaultSearchOrHomepageOrStartup) {
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, false, false, false);
+  InitRlzDelayed(true, false, kDelay, false, false, false);
   InvokeDelayedInit();
 
   // Omnibox events.
@@ -521,7 +509,7 @@ TEST_F(RlzLibTest, DelayedInitOnlyNoGoogleDefaultSearchOrHomepageOrStartup) {
 }
 
 TEST_F(RlzLibTest, OmniboxUsageOnly) {
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   SimulateOmniboxUsage();
 
   // Omnibox events.
@@ -538,7 +526,7 @@ TEST_F(RlzLibTest, OmniboxUsageOnly) {
 }
 
 TEST_F(RlzLibTest, HomepageUsageOnly) {
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   SimulateHomepageUsage();
 
   // Omnibox events.
@@ -555,7 +543,7 @@ TEST_F(RlzLibTest, HomepageUsageOnly) {
 }
 
 TEST_F(RlzLibTest, UsageBeforeDelayedInit) {
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   SimulateOmniboxUsage();
   SimulateHomepageUsage();
   InvokeDelayedInit();
@@ -574,7 +562,7 @@ TEST_F(RlzLibTest, UsageBeforeDelayedInit) {
 }
 
 TEST_F(RlzLibTest, OmniboxUsageAfterDelayedInit) {
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   InvokeDelayedInit();
   SimulateOmniboxUsage();
   SimulateHomepageUsage();
@@ -593,7 +581,7 @@ TEST_F(RlzLibTest, OmniboxUsageAfterDelayedInit) {
 }
 
 TEST_F(RlzLibTest, OmniboxUsageSendsPingWhenSendPingImmediately) {
-  TestRLZTracker::InitRlzDelayed(true, true, kDelay, true, true, false);
+  InitRlzDelayed(true, true, kDelay, true, true, false);
   SimulateOmniboxUsage();
 
   // Omnibox events.
@@ -610,7 +598,7 @@ TEST_F(RlzLibTest, OmniboxUsageSendsPingWhenSendPingImmediately) {
 }
 
 TEST_F(RlzLibTest, HomepageUsageDoesNotSendPingWhenSendPingImmediately) {
-  TestRLZTracker::InitRlzDelayed(true, true, kDelay, true, true, false);
+  InitRlzDelayed(true, true, kDelay, true, true, false);
   SimulateHomepageUsage();
 
   // Omnibox events.
@@ -627,7 +615,7 @@ TEST_F(RlzLibTest, HomepageUsageDoesNotSendPingWhenSendPingImmediately) {
 }
 
 TEST_F(RlzLibTest, StartupUsageDoesNotSendPingWhenSendPingImmediately) {
-  TestRLZTracker::InitRlzDelayed(true, true, kDelay, true, false, true);
+  InitRlzDelayed(true, true, kDelay, true, false, true);
   SimulateHomepageUsage();
 
   // Omnibox events.
@@ -643,42 +631,18 @@ TEST_F(RlzLibTest, StartupUsageDoesNotSendPingWhenSendPingImmediately) {
   ExpectRlzPingSent(false);
 }
 
-TEST_F(RlzLibTest, GetAccessPointRlzOnIoThread) {
-  // Set dummy RLZ string.
-  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
-
-  string16 rlz;
-
-  tracker_.set_assume_not_ui_thread(true);
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
-}
-
-TEST_F(RlzLibTest, GetAccessPointRlzNotOnIoThread) {
-  // Set dummy RLZ string.
-  rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
-
-  string16 rlz;
-
-  tracker_.set_assume_not_ui_thread(false);
-  EXPECT_FALSE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-}
-
 TEST_F(RlzLibTest, GetAccessPointRlzIsCached) {
   // Set dummy RLZ string.
   rlz_lib::SetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, kOmniboxRlzString);
 
   string16 rlz;
-
-  tracker_.set_assume_not_ui_thread(false);
+  RLZTracker* tracker = RLZTracker::GetInstance();
+  EXPECT_FALSE(
+      tracker->GetCachedAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_FALSE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-
-  tracker_.set_assume_not_ui_thread(true);
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
-
-  tracker_.set_assume_not_ui_thread(false);
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
+  RunPendingTasks();
+  EXPECT_TRUE(
+      tracker->GetCachedAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
 }
 
@@ -690,36 +654,40 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   string16 rlz;
 
   // Prime the cache.
-  tracker_.set_assume_not_ui_thread(true);
-
+  EXPECT_FALSE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
+  RunPendingTasks();
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
+
   EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
-        RLZTracker::CHROME_HOME_PAGE, &rlz));
+
+  EXPECT_FALSE(
+      RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, &rlz));
+  RunPendingTasks();
+  EXPECT_TRUE(
+      RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, &rlz));
   EXPECT_STREQ(kHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 
   // Make sure cache is valid.
-  tracker_.set_assume_not_ui_thread(false);
-
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
+  RLZTracker* tracker = RLZTracker::GetInstance();
+  EXPECT_TRUE(
+      tracker->GetCachedAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
-        RLZTracker::CHROME_HOME_PAGE, &rlz));
+  EXPECT_TRUE(
+      tracker->GetCachedAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, &rlz));
   EXPECT_STREQ(kHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 
   // Perform ping.
-  tracker_.set_assume_not_ui_thread(true);
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   InvokeDelayedInit();
+  RunPendingTasks();
   ExpectRlzPingSent(true);
 
   // Make sure cache is now updated.
-  tracker_.set_assume_not_ui_thread(false);
-
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
+  EXPECT_TRUE(
+      tracker->GetCachedAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
   EXPECT_STREQ(kNewOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
-  EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
-        RLZTracker::CHROME_HOME_PAGE, &rlz));
+  EXPECT_TRUE(
+      tracker->GetCachedAccessPointRlz(RLZTracker::CHROME_HOME_PAGE, &rlz));
   EXPECT_STREQ(kNewHomepageRlzString, UTF16ToUTF8(rlz).c_str());
 }
 
@@ -727,12 +695,14 @@ TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
   scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetPageID(0);
   entry->SetTransitionType(content::PAGE_TRANSITION_LINK);
-  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
-                   content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(NULL));
-  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
-                   content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(entry.get()));
+  RLZTracker::GetInstance()->Observe(
+      content::NOTIFICATION_NAV_ENTRY_PENDING,
+      content::NotificationService::AllSources(),
+      content::Details<NavigationEntry>(NULL));
+  RLZTracker::GetInstance()->Observe(
+      content::NOTIFICATION_NAV_ENTRY_PENDING,
+      content::NotificationService::AllSources(),
+      content::Details<NavigationEntry>(entry.get()));
 }
 
 // TODO(thakis): Reactivation doesn't exist on Mac yet.
@@ -740,7 +710,7 @@ TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
 TEST_F(RlzLibTest, ReactivationNonOrganicNonOrganic) {
   SetReactivationBrand("REAC");
 
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   InvokeDelayedInit();
 
   ExpectRlzPingSent(true);
@@ -751,7 +721,7 @@ TEST_F(RlzLibTest, ReactivationOrganicNonOrganic) {
   SetMainBrand("GGLS");
   SetReactivationBrand("REAC");
 
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   InvokeDelayedInit();
 
   ExpectRlzPingSent(false);
@@ -762,7 +732,7 @@ TEST_F(RlzLibTest, ReactivationNonOrganicOrganic) {
   SetMainBrand("TEST");
   SetReactivationBrand("GGLS");
 
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   InvokeDelayedInit();
 
   ExpectRlzPingSent(true);
@@ -773,7 +743,7 @@ TEST_F(RlzLibTest, ReactivationOrganicOrganic) {
   SetMainBrand("GGLS");
   SetReactivationBrand("GGRS");
 
-  TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
+  InitRlzDelayed(true, false, kDelay, true, true, false);
   InvokeDelayedInit();
 
   ExpectRlzPingSent(false);
@@ -785,10 +755,11 @@ TEST_F(RlzLibTest, ReactivationOrganicOrganic) {
 TEST_F(RlzLibTest, ClearRlzState) {
   RLZTracker::RecordProductEvent(rlz_lib::CHROME, RLZTracker::CHROME_OMNIBOX,
                                  rlz_lib::FIRST_SEARCH);
-
+  RunPendingTasks();
   ExpectEventRecorded(kOmniboxFirstSearch, true);
 
   RLZTracker::ClearRlzState();
+  RunPendingTasks();
 
   ExpectEventRecorded(kOmniboxFirstSearch, false);
 }

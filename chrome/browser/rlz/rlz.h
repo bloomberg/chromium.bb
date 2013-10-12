@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -26,6 +27,16 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+// An interface to provide financial ping implementation.
+class RLZTrackerDelegate {
+ public:
+  // Sends the financial ping to the RLZ servers. This method is virtual to
+  // allow tests to override.
+  virtual bool SendFinancialPing(const std::string& brand,
+                                 const string16& lang,
+                                 const string16& referral) = 0;
+};
+
 // RLZ is a library which is used to measure distribution scenarios.
 // Its job is to record certain lifetime events in the registry and to send
 // them encoded as a compact string at most twice. The sent data does
@@ -35,8 +46,8 @@ class URLRequestContextGetter;
 //
 // For partner or bundled installs, the RLZ might send more information
 // according to the terms disclosed in the EULA.
-
-class RLZTracker : public content::NotificationObserver {
+class RLZTracker : public content::NotificationObserver,
+                   public RLZTrackerDelegate {
  public:
   // Initializes the RLZ library services for use in chrome. Schedules a delayed
   // task that performs the ping and registers some events when 'first-run' is
@@ -53,9 +64,8 @@ class RLZTracker : public content::NotificationObserver {
                                         base::TimeDelta delay);
 
   // Records an RLZ event. Some events can be access point independent.
-  // Returns false it the event could not be recorded. Requires write access
-  // to the HKCU registry hive on windows.
-  static bool RecordProductEvent(rlz_lib::Product product,
+  // Requires write access to the HKCU registry hive on windows.
+  static void RecordProductEvent(rlz_lib::Product product,
                                  rlz_lib::AccessPoint point,
                                  rlz_lib::Event event_id);
 
@@ -90,11 +100,15 @@ class RLZTracker : public content::NotificationObserver {
   // Enables zero delay for InitRlzFromProfileDelayed. For testing only.
   static void EnableZeroDelayForTesting();
 
-  // The following methods are made protected so that they can be used for
-  // testing purposes. Production code should never need to call these.
- protected:
-  RLZTracker();
-  virtual ~RLZTracker();
+ private:
+  friend class RlzLibTest;
+  friend class TestRLZTrackerDelegate;
+  friend class base::RefCountedThreadSafe<RLZTracker>;
+  friend struct DefaultSingletonTraits<RLZTracker>;
+
+  FRIEND_TEST_ALL_PREFIXES(RlzLibTest, GetAccessPointRlzIsCached);
+  FRIEND_TEST_ALL_PREFIXES(RlzLibTest, ObserveHandlesBadArgs);
+  FRIEND_TEST_ALL_PREFIXES(RlzLibTest, PingUpdatesRlzCache);
 
   // Called by InitRlzFromProfileDelayed with values taken from |profile|.
   static bool InitRlzDelayed(bool first_run,
@@ -104,29 +118,22 @@ class RLZTracker : public content::NotificationObserver {
                              bool is_google_homepage,
                              bool is_google_in_startpages);
 
-  // Performs initialization of RLZ tracker that is purposefully delayed so
-  // that it does not interfere with chrome startup time.
-  virtual void DelayedInit();
-
-  // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Used by test code to override the default RLZTracker instance returned
   // by GetInstance().
-  void set_tracker(RLZTracker* tracker) {
-    tracker_ = tracker;
-  }
+  static void SetTrackerForTest(RLZTracker* tracker);
+
+  RLZTracker();
+  explicit RLZTracker(RLZTrackerDelegate* delegate);
+  virtual ~RLZTracker();
+
+  // Performs initialization of RLZ tracker that is purposefully delayed so
+  // that it does not interfere with chrome startup time.
+  void DelayedInit();
 
   // Sends the financial ping to the RLZ servers and invalidates the RLZ string
   // cache since the response from the RLZ server may have changed then.
   // Protected so that its accessible from tests.
-  void PingNowImpl();
-
- private:
-  friend struct DefaultSingletonTraits<RLZTracker>;
-  friend class base::RefCountedThreadSafe<RLZTracker>;
+  void SendFinancialPingNow();
 
   // Implementation called from InitRlzDelayed() static method.
   bool Init(bool first_run,
@@ -136,59 +143,69 @@ class RLZTracker : public content::NotificationObserver {
             bool google_default_homepage,
             bool is_google_in_startpages);
 
-  // Implementation called from RecordProductEvent() static method.
-  bool RecordProductEventImpl(rlz_lib::Product product,
-                              rlz_lib::AccessPoint point,
-                              rlz_lib::Event event_id);
+  // Gets the cached accesspoint rlz. Returns false if the cache doesn't exist.
+  bool GetCachedAccessPointRlz(rlz_lib::AccessPoint point, string16* rlz);
 
-  // Records FIRST_SEARCH event. Called from Observe() on blocking task runner.
-  void RecordFirstSearch(rlz_lib::AccessPoint point);
-
-  // Implementation called from GetAccessPointRlz() static method.
-  bool GetAccessPointRlzImpl(rlz_lib::AccessPoint point, string16* rlz);
+#if defined(OS_CHROMEOS)
+  // Implementation called from ClearRlzState static method.
+  void ClearRlzStateImpl();
+#endif
 
   // Schedules the delayed initialization. This method is virtual to allow
   // tests to override how the scheduling is done.
-  virtual void ScheduleDelayedInit(base::TimeDelta delay);
+  void ScheduleDelayedInit(base::TimeDelta delay);
 
   // Schedules a call to rlz_lib::RecordProductEvent(). This method is virtual
   // to allow tests to override how the scheduling is done.
-  virtual bool ScheduleRecordProductEvent(rlz_lib::Product product,
-                                          rlz_lib::AccessPoint point,
-                                          rlz_lib::Event event_id);
-
+  void ScheduleRecordProductEvent(rlz_lib::Product product,
+                                  rlz_lib::AccessPoint point,
+                                  rlz_lib::Event event_id);
   // Schedules a call to rlz_lib::RecordFirstSearch(). This method is virtual
   // to allow tests to override how the scheduling is done.
-  virtual bool ScheduleRecordFirstSearch(rlz_lib::AccessPoint point);
+  void ScheduleRecordFirstSearch(rlz_lib::AccessPoint point);
 
   // Schedules a call to rlz_lib::SendFinancialPing(). This method is virtual
   // to allow tests to override how the scheduling is done.
-  virtual void ScheduleFinancialPing();
+  void ScheduleSendFinancialPing();
 
   // Schedules a call to GetAccessPointRlz() on the I/O thread if the current
   // thread is not already the I/O thread, otherwise does nothing. Returns
   // true if the call was scheduled, and false otherwise. This method is
   // virtual to allow tests to override how the scheduling is done.
-  virtual bool ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point);
+  void ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point);
 
-  // Sends the financial ping to the RLZ servers. This method is virtual to
-  // allow tests to override.
-  virtual bool SendFinancialPing(const std::string& brand,
-                                 const string16& lang,
-                                 const string16& referral);
 
 #if defined(OS_CHROMEOS)
-  // Implementation called from ClearRlzState static method.
-  void ClearRlzStateImpl();
-
-  // Schedules a call to ClearRlzStateImpl(). This method is virtual
-  // to allow tests to override how the scheduling is done.
-  virtual bool ScheduleClearRlzState();
+  // Schedules a call to ClearRlzStateImpl().
+  void ScheduleClearRlzState();
 #endif
 
-  // Tracker used for testing purposes only. If this value is non-NULL, it
-  // will be returned from GetInstance() instead of the regular singleton.
-  static RLZTracker* tracker_;
+  // Implementation called from RecordProductEvent() static method
+  // on SequencedWorkerPool.
+  bool RecordProductEventImpl(rlz_lib::Product product,
+                              rlz_lib::AccessPoint point,
+                              rlz_lib::Event event_id);
+
+  // Records FIRST_SEARCH event. Scheduled on SequencedWorkerPool
+  // in Observe.
+  void RecordFirstSearchImpl(rlz_lib::AccessPoint point);
+
+  // Implementation of GetAccessPointRlz() invoked on SequencedWorkerPool.
+  // This caches RLZ strings for all access points. If we had
+  // a successful ping, then we update the cached value.
+  void GetAccessPointRlzImpl(rlz_lib::AccessPoint point);
+
+  void Cleanup();
+
+  // Overridden from RZLTrackerDelegate:
+  virtual bool SendFinancialPing(const std::string& brand,
+                                 const string16& lang,
+                                 const string16& referral) OVERRIDE;
+
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Configuation data for RLZ tracker. Set by call to Init().
   bool first_run_;
@@ -205,9 +222,10 @@ class RLZTracker : public content::NotificationObserver {
   // initialization.
   bool already_ran_;
 
-  // Keeps a cache of RLZ access point strings, since they rarely change.
-  // The cache must be protected by a lock since it may be accessed from
-  // the UI thread for reading and the IO thread for reading and/or writing.
+  // Keeps a cache of RLZ access point strings, since they rarely
+  // change.  The cache must be protected by a lock since it may be
+  // accessed from the UI thread for reading and the global blocking
+  // pool for reading and/or writing.
   base::Lock cache_lock_;
   std::map<rlz_lib::AccessPoint, string16> rlz_cache_;
 
@@ -220,6 +238,8 @@ class RLZTracker : public content::NotificationObserver {
   std::string reactivation_brand_;
 
   content::NotificationRegistrar registrar_;
+
+  RLZTrackerDelegate* delegate_;  // not owned.
 
   // Minimum delay before sending financial ping after initialization.
   base::TimeDelta min_init_delay_;
