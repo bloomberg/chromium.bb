@@ -11,10 +11,13 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/tiled_layer_impl.h"
+#include "cc/quads/render_pass_draw_quad.h"
+#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/layer_tiling_data.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,12 +27,13 @@
 namespace cc {
 namespace {
 
-class TestOcclusionTrackerImpl : public OcclusionTrackerImpl {
+class TestOcclusionTrackerImpl
+    : public TestOcclusionTrackerBase<LayerImpl, RenderSurfaceImpl> {
  public:
   TestOcclusionTrackerImpl(gfx::Rect scissor_rect_in_screen,
                            bool record_metrics_for_frame = true)
-      : OcclusionTrackerImpl(scissor_rect_in_screen, record_metrics_for_frame) {
-  }
+      : TestOcclusionTrackerBase(scissor_rect_in_screen,
+                                 record_metrics_for_frame) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestOcclusionTrackerImpl);
@@ -132,7 +136,7 @@ class QuadCullerTest : public testing::Test {
   gfx::Size child_size = gfx::Size(200, 200);                                  \
   gfx::Rect child_rect = gfx::Rect(child_size);
 
-TEST_F(QuadCullerTest, VerifyNoCulling) {
+TEST_F(QuadCullerTest, NoCulling) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
@@ -172,7 +176,7 @@ TEST_F(QuadCullerTest, VerifyNoCulling) {
       occlusion_tracker.overdraw_metrics()->pixels_culled_for_drawing(), 0, 1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullChildLinesUpTopLeft) {
+TEST_F(QuadCullerTest, CullChildLinesUpTopLeft) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
@@ -212,7 +216,7 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpTopLeft) {
               1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullWhenChildOpacityNotOne) {
+TEST_F(QuadCullerTest, CullWhenChildOpacityNotOne) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
@@ -252,7 +256,7 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpacityNotOne) {
       occlusion_tracker.overdraw_metrics()->pixels_culled_for_drawing(), 0, 1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullWhenChildOpaqueFlagFalse) {
+TEST_F(QuadCullerTest, CullWhenChildOpaqueFlagFalse) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
@@ -292,7 +296,7 @@ TEST_F(QuadCullerTest, VerifyCullWhenChildOpaqueFlagFalse) {
       occlusion_tracker.overdraw_metrics()->pixels_culled_for_drawing(), 0, 1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullCenterTileOnly) {
+TEST_F(QuadCullerTest, CullCenterTileOnly) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   child_transform.Translate(50, 50);
@@ -349,7 +353,7 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileOnly) {
               1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize1) {
+TEST_F(QuadCullerTest, CullCenterTileNonIntegralSize1) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   child_transform.Translate(100, 100);
@@ -399,7 +403,7 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize1) {
       occlusion_tracker.overdraw_metrics()->pixels_culled_for_drawing(), 0, 1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize2) {
+TEST_F(QuadCullerTest, CullCenterTileNonIntegralSize2) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   // Make the child's quad slightly smaller than, and centred over, the root
@@ -450,7 +454,7 @@ TEST_F(QuadCullerTest, VerifyCullCenterTileNonIntegralSize2) {
       occlusion_tracker.overdraw_metrics()->pixels_culled_for_drawing(), 0, 1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullChildLinesUpBottomRight) {
+TEST_F(QuadCullerTest, CullChildLinesUpBottomRight) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   child_transform.Translate(100, 100);
@@ -491,7 +495,7 @@ TEST_F(QuadCullerTest, VerifyCullChildLinesUpBottomRight) {
               1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullSubRegion) {
+TEST_F(QuadCullerTest, CullSubRegion) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   child_transform.Translate(50, 50);
@@ -537,7 +541,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion) {
               1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullSubRegion2) {
+TEST_F(QuadCullerTest, CullSubRegion2) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   child_transform.Translate(50, 10);
@@ -583,7 +587,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegion2) {
               1);
 }
 
-TEST_F(QuadCullerTest, VerifyCullSubRegionCheckOvercull) {
+TEST_F(QuadCullerTest, CullSubRegionCheckOvercull) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   child_transform.Translate(50, 49);
@@ -629,7 +633,7 @@ TEST_F(QuadCullerTest, VerifyCullSubRegionCheckOvercull) {
               1);
 }
 
-TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsDontOcclude) {
+TEST_F(QuadCullerTest, NonAxisAlignedQuadsDontOcclude) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   // Use a small rotation so as to not disturb the geometry significantly.
@@ -677,7 +681,7 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsDontOcclude) {
 // child would normally occlude, three will move (slightly) out from under the
 // child layer, and one moves further under the child. Only this last tile
 // should be culled.
-TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsSafelyCulled) {
+TEST_F(QuadCullerTest, NonAxisAlignedQuadsSafelyCulled) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
 
   // Use a small rotation so as to not disturb the geometry significantly.
@@ -721,7 +725,7 @@ TEST_F(QuadCullerTest, VerifyNonAxisAlignedQuadsSafelyCulled) {
               1);
 }
 
-TEST_F(QuadCullerTest, VerifyWithoutMetrics) {
+TEST_F(QuadCullerTest, WithoutMetrics) {
   DECLARE_AND_INITIALIZE_TEST_QUADS();
   scoped_ptr<TiledLayerImpl> root_layer = MakeLayer(NULL,
                                                     gfx::Transform(),
@@ -759,6 +763,156 @@ TEST_F(QuadCullerTest, VerifyWithoutMetrics) {
             occlusion_tracker.overdraw_metrics()->pixels_drawn_translucent());
   EXPECT_EQ(0.f,
             occlusion_tracker.overdraw_metrics()->pixels_culled_for_drawing());
+}
+
+TEST_F(QuadCullerTest, PartialCullingNotDestroyed) {
+  DECLARE_AND_INITIALIZE_TEST_QUADS();
+
+  scoped_ptr<TiledLayerImpl> dummy_layer = MakeLayer(NULL,
+                                                     gfx::Transform(),
+                                                     gfx::Rect(),
+                                                     1.f,
+                                                     true,
+                                                     gfx::Rect(),
+                                                     render_surface_layer_list);
+
+  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(1000, 1000));
+  LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
+
+  QuadCuller culler(&quad_list,
+                    &shared_state_list,
+                    dummy_layer.get(),
+                    occlusion_tracker,
+                    false,
+                    false);
+
+  SharedQuadState* sqs = culler.UseSharedQuadState(SharedQuadState::Create());
+
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(sqs, gfx::Rect(100, 100), SK_ColorRED, false);
+
+  scoped_ptr<RenderPassDrawQuad> pass_quad = RenderPassDrawQuad::Create();
+  pass_quad->SetNew(sqs,
+                    gfx::Rect(100, 100),
+                    RenderPass::Id(10, 10),
+                    false,
+                    0,
+                    gfx::Rect(),
+                    gfx::RectF(),
+                    FilterOperations(),
+                    FilterOperations());
+
+  scoped_ptr<RenderPassDrawQuad> replica_quad = RenderPassDrawQuad::Create();
+  replica_quad->SetNew(sqs,
+                       gfx::Rect(100, 100),
+                       RenderPass::Id(10, 10),
+                       true,
+                       0,
+                       gfx::Rect(),
+                       gfx::RectF(),
+                       FilterOperations(),
+                       FilterOperations());
+
+  // Set a visible rect on the quads.
+  color_quad->visible_rect = gfx::Rect(20, 30, 10, 11);
+  pass_quad->visible_rect = gfx::Rect(50, 60, 13, 14);
+  replica_quad->visible_rect = gfx::Rect(30, 40, 15, 16);
+
+  // Nothing is occluding.
+  occlusion_tracker.EnterLayer(it, false);
+
+  EXPECT_EQ(0u, quad_list.size());
+
+  AppendQuadsData data;
+  culler.Append(color_quad.PassAs<DrawQuad>(), &data);
+  culler.Append(pass_quad.PassAs<DrawQuad>(), &data);
+  culler.Append(replica_quad.PassAs<DrawQuad>(), &data);
+
+  ASSERT_EQ(3u, quad_list.size());
+
+  // The partial culling is preserved.
+  EXPECT_EQ(gfx::Rect(20, 30, 10, 11).ToString(),
+            quad_list[0]->visible_rect.ToString());
+  EXPECT_EQ(gfx::Rect(50, 60, 13, 14).ToString(),
+            quad_list[1]->visible_rect.ToString());
+  EXPECT_EQ(gfx::Rect(30, 40, 15, 16).ToString(),
+            quad_list[2]->visible_rect.ToString());
+}
+
+TEST_F(QuadCullerTest, PartialCullingWithOcclusionNotDestroyed) {
+  DECLARE_AND_INITIALIZE_TEST_QUADS();
+
+  scoped_ptr<TiledLayerImpl> dummy_layer = MakeLayer(NULL,
+                                                     gfx::Transform(),
+                                                     gfx::Rect(),
+                                                     1.f,
+                                                     true,
+                                                     gfx::Rect(),
+                                                     render_surface_layer_list);
+
+  TestOcclusionTrackerImpl occlusion_tracker(gfx::Rect(1000, 1000));
+  LayerIteratorType it = LayerIteratorType::Begin(&render_surface_layer_list);
+
+  QuadCuller culler(&quad_list,
+                    &shared_state_list,
+                    dummy_layer.get(),
+                    occlusion_tracker,
+                    false,
+                    false);
+
+  SharedQuadState* sqs = culler.UseSharedQuadState(SharedQuadState::Create());
+
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(sqs, gfx::Rect(100, 100), SK_ColorRED, false);
+
+  scoped_ptr<RenderPassDrawQuad> pass_quad = RenderPassDrawQuad::Create();
+  pass_quad->SetNew(sqs,
+                    gfx::Rect(100, 100),
+                    RenderPass::Id(10, 10),
+                    false,
+                    0,
+                    gfx::Rect(),
+                    gfx::RectF(),
+                    FilterOperations(),
+                    FilterOperations());
+
+  scoped_ptr<RenderPassDrawQuad> replica_quad = RenderPassDrawQuad::Create();
+  replica_quad->SetNew(sqs,
+                       gfx::Rect(100, 100),
+                       RenderPass::Id(10, 10),
+                       true,
+                       0,
+                       gfx::Rect(),
+                       gfx::RectF(),
+                       FilterOperations(),
+                       FilterOperations());
+
+  // Set a visible rect on the quads.
+  color_quad->visible_rect = gfx::Rect(10, 10, 10, 11);
+  pass_quad->visible_rect = gfx::Rect(10, 20, 13, 14);
+  replica_quad->visible_rect = gfx::Rect(10, 30, 15, 16);
+
+  // Occlude the left part of the visible rects.
+  occlusion_tracker.EnterLayer(it, false);
+  occlusion_tracker.set_occlusion_from_outside_target(gfx::Rect(0, 0, 15, 100));
+
+  EXPECT_EQ(0u, quad_list.size());
+
+  AppendQuadsData data;
+  culler.Append(color_quad.PassAs<DrawQuad>(), &data);
+  culler.Append(pass_quad.PassAs<DrawQuad>(), &data);
+  culler.Append(replica_quad.PassAs<DrawQuad>(), &data);
+
+  ASSERT_EQ(3u, quad_list.size());
+
+  // The partial culling is preserved, while the left side of the quads is newly
+  // occluded.
+  EXPECT_EQ(gfx::Rect(15, 10, 5, 11).ToString(),
+            quad_list[0]->visible_rect.ToString());
+  EXPECT_EQ(gfx::Rect(15, 20, 8, 14).ToString(),
+            quad_list[1]->visible_rect.ToString());
+  EXPECT_EQ(gfx::Rect(15, 30, 10, 16).ToString(),
+            quad_list[2]->visible_rect.ToString());
 }
 
 }  // namespace

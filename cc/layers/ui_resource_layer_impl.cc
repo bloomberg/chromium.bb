@@ -80,14 +80,12 @@ void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
 
   DCHECK(!bounds().IsEmpty());
 
-  // TODO(clholgat): Properly calculate opacity: crbug.com/300027
-  gfx::Rect opaque_rect;
-  if (contents_opaque())
-    opaque_rect = gfx::Rect(bounds());
-
   gfx::Rect quad_rect(bounds());
   gfx::Rect uv_top_left(0.f, 0.f);
   gfx::Rect uv_bottom_right(1.f, 1.f);
+
+  // TODO(clholgat): Properly calculate opacity: crbug.com/300027
+  gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
 
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
   scoped_ptr<TextureDrawQuad> quad;

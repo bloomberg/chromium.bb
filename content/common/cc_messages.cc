@@ -361,6 +361,13 @@ void ParamTraits<cc::RenderPass>::Write(
   size_t shared_quad_state_index = 0;
   for (size_t i = 0; i < p.quad_list.size(); ++i) {
     const cc::DrawQuad* quad = p.quad_list[i];
+    DCHECK(quad->rect.Contains(quad->visible_rect))
+        << quad->material << " rect: " << quad->rect.ToString()
+        << " visible_rect: " << quad->visible_rect.ToString();
+    DCHECK(quad->opaque_rect.IsEmpty() ||
+           quad->rect.Contains(quad->opaque_rect))
+        << quad->material << " rect: " << quad->rect.ToString()
+        << " opaque_rect: " << quad->opaque_rect.ToString();
 
     switch (quad->material) {
       case cc::DrawQuad::CHECKERBOARD:
@@ -512,6 +519,19 @@ bool ParamTraits<cc::RenderPass>::Read(
     }
     if (!draw_quad)
       return false;
+    if (!draw_quad->rect.Contains(draw_quad->visible_rect)) {
+      LOG(ERROR) << "Quad with invalid visible rect " << draw_quad->material
+                 << " rect: " << draw_quad->rect.ToString()
+                 << " visible_rect: " << draw_quad->visible_rect.ToString();
+      return false;
+    }
+    if (!draw_quad->opaque_rect.IsEmpty() &&
+        !draw_quad->rect.Contains(draw_quad->opaque_rect)) {
+      LOG(ERROR) << "Quad with invalid opaque rect " << draw_quad->material
+                 << " rect: " << draw_quad->rect.ToString()
+                 << " opaque_rect: " << draw_quad->opaque_rect.ToString();
+      return false;
+    }
 
     size_t shared_quad_state_index;
     if (!ReadParam(m, iter, &shared_quad_state_index) ||

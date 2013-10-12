@@ -88,13 +88,11 @@ bool QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad,
 
   if (for_surface_) {
     culled_rect = occlusion_tracker_.UnoccludedContributingSurfaceContentRect(
-        layer_,
-        false,
-        draw_quad->rect);
+        layer_, false, draw_quad->visible_rect);
   } else {
     culled_rect = occlusion_tracker_.UnoccludedContentRect(
         layer_->render_target(),
-        draw_quad->rect,
+        draw_quad->visible_rect,
         draw_quad->quadTransform(),
         impl_draw_transform_is_unknown);
   }

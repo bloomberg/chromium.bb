@@ -236,7 +236,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       case ManagedTileState::TileVersion::RESOURCE_MODE: {
         gfx::RectF texture_rect = iter.texture_rect();
         gfx::Rect opaque_rect = iter->opaque_rect();
-        opaque_rect.Intersect(content_rect);
+        opaque_rect.Intersect(geometry_rect);
 
         if (iter->contents_scale() != ideal_contents_scale_)
           append_quads_data->had_incomplete_tile = true;
@@ -255,7 +255,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       case ManagedTileState::TileVersion::PICTURE_PILE_MODE: {
         gfx::RectF texture_rect = iter.texture_rect();
         gfx::Rect opaque_rect = iter->opaque_rect();
-        opaque_rect.Intersect(content_rect);
+        opaque_rect.Intersect(geometry_rect);
 
         ResourceProvider* resource_provider =
             layer_tree_impl()->resource_provider();

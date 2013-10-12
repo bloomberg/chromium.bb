@@ -232,8 +232,9 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
         continue;
       }
 
-      gfx::Rect tile_opaque_rect = contents_opaque() ? tile_rect :
-        gfx::IntersectRects(tile->opaque_rect(), content_rect);
+      gfx::Rect tile_opaque_rect =
+          contents_opaque() ? tile_rect : gfx::IntersectRects(
+                                              tile->opaque_rect(), tile_rect);
 
       // Keep track of how the top left has moved, so the texture can be
       // offset the same amount.

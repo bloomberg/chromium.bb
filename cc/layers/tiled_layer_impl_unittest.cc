@@ -57,8 +57,10 @@ class TiledLayerImplTest : public testing::Test {
     ResourceProvider::ResourceId resource_id = 1;
     for (int i = 0; i < layer->TilingForTesting()->num_tiles_x(); ++i) {
       for (int j = 0; j < layer->TilingForTesting()->num_tiles_y(); ++j) {
-        layer->PushTileProperties(
-            i, j, resource_id++, gfx::Rect(0, 0, 1, 1), false);
+        gfx::Rect opaque_rect(
+            layer->TilingForTesting()->tile_bounds(i, j).origin(),
+            gfx::Size(1, 1));
+        layer->PushTileProperties(i, j, resource_id++, opaque_rect, false);
       }
     }
 
@@ -268,7 +270,7 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
         << LayerTestCommon::quad_string << i;
     EXPECT_EQ(tile_size, quad->texture_size) << LayerTestCommon::quad_string
                                              << i;
-    EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaque_rect)
+    EXPECT_EQ(gfx::Size(1, 1).ToString(), quad->opaque_rect.size().ToString())
         << LayerTestCommon::quad_string << i;
   }
 }

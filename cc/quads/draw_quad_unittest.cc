@@ -352,7 +352,7 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
 }
 
 TEST(DrawQuadTest, CopyIOSurfaceDrawQuad) {
-  gfx::Rect opaque_rect(3, 7, 10, 12);
+  gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Size size(58, 95);
   ResourceProvider::ResourceId resource_id = 72;
   IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
@@ -444,7 +444,7 @@ TEST(DrawQuadTest, CopySolidColorDrawQuad) {
 }
 
 TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
-  gfx::Rect opaque_rect(3, 7, 10, 12);
+  gfx::Rect opaque_rect(33, 47, 10, 12);
   ResourceProvider::ResourceId resource_id = 64;
   gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
   CREATE_SHARED_STATE();
@@ -462,7 +462,7 @@ TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
 }
 
 TEST(DrawQuadTest, CopyTextureDrawQuad) {
-  gfx::Rect opaque_rect(3, 7, 10, 12);
+  gfx::Rect opaque_rect(33, 47, 10, 12);
   unsigned resource_id = 82;
   bool premultiplied_alpha = true;
   gfx::PointF uv_top_left(0.5f, 224.f);
@@ -540,7 +540,7 @@ TEST(DrawQuadTest, CopyTileDrawQuad) {
 }
 
 TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
-  gfx::Rect opaque_rect(3, 7, 10, 12);
+  gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::SizeF tex_scale(0.75f, 0.5f);
   ResourceProvider::ResourceId y_plane_resource_id = 45;
   ResourceProvider::ResourceId u_plane_resource_id = 532;
@@ -664,7 +664,7 @@ TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
 }
 
 TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
-  gfx::Rect opaque_rect(3, 7, 10, 12);
+  gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Size size(58, 95);
   ResourceProvider::ResourceId resource_id = 72;
   IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
@@ -719,7 +719,7 @@ TEST_F(DrawQuadIteratorTest, SolidColorDrawQuad) {
 }
 
 TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
-  gfx::Rect opaque_rect(3, 7, 10, 12);
+  gfx::Rect opaque_rect(33, 47, 10, 12);
   ResourceProvider::ResourceId resource_id = 64;
   gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
 
@@ -731,7 +731,7 @@ TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
 }
 
 TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
-  gfx::Rect opaque_rect(3, 7, 10, 12);
+  gfx::Rect opaque_rect(33, 47, 10, 12);
   unsigned resource_id = 82;
   bool premultiplied_alpha = true;
   gfx::PointF uv_top_left(0.5f, 224.f);
@@ -774,7 +774,7 @@ TEST_F(DrawQuadIteratorTest, TileDrawQuad) {
 }
 
 TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
-  gfx::Rect opaque_rect(3, 7, 10, 12);
+  gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::SizeF tex_scale(0.75f, 0.5f);
   ResourceProvider::ResourceId y_plane_resource_id = 45;
   ResourceProvider::ResourceId u_plane_resource_id = 532;

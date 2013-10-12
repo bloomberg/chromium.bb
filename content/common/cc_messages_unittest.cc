@@ -210,8 +210,14 @@ TEST_F(CCMessagesTest, AllQuads) {
   arbitrary_matrix.Translate(-5, 20);
   arbitrary_matrix.Rotate(15);
   gfx::Rect arbitrary_rect1(-5, 9, 3, 15);
+  gfx::Rect arbitrary_rect1_inside_rect1(-4, 12, 2, 8);
+  gfx::Rect arbitrary_rect2_inside_rect1(-5, 11, 1, 2);
   gfx::Rect arbitrary_rect2(40, 23, 11, 7);
+  gfx::Rect arbitrary_rect1_inside_rect2(44, 23, 4, 2);
+  gfx::Rect arbitrary_rect2_inside_rect2(41, 25, 3, 5);
   gfx::Rect arbitrary_rect3(7, -53, 22, 19);
+  gfx::Rect arbitrary_rect1_inside_rect3(10, -40, 6, 3);
+  gfx::Rect arbitrary_rect2_inside_rect3(12, -51, 5, 12);
   gfx::Size arbitrary_size1(15, 19);
   gfx::Size arbitrary_size2(3, 99);
   gfx::Size arbitrary_size3(75, 1281);
@@ -262,8 +268,8 @@ TEST_F(CCMessagesTest, AllQuads) {
       CheckerboardDrawQuad::Create();
   checkerboard_in->SetAll(shared_state1_in.get(),
                           arbitrary_rect1,
-                          arbitrary_rect2,
-                          arbitrary_rect3,
+                          arbitrary_rect2_inside_rect1,
+                          arbitrary_rect1_inside_rect1,
                           arbitrary_bool1,
                           arbitrary_color);
   scoped_ptr<DrawQuad> checkerboard_cmp = checkerboard_in->Copy(
@@ -273,8 +279,8 @@ TEST_F(CCMessagesTest, AllQuads) {
       DebugBorderDrawQuad::Create();
   debugborder_in->SetAll(shared_state1_in.get(),
                          arbitrary_rect3,
-                         arbitrary_rect1,
-                         arbitrary_rect2,
+                         arbitrary_rect1_inside_rect3,
+                         arbitrary_rect2_inside_rect3,
                          arbitrary_bool1,
                          arbitrary_color,
                          arbitrary_int);
@@ -285,8 +291,8 @@ TEST_F(CCMessagesTest, AllQuads) {
       IOSurfaceDrawQuad::Create();
   iosurface_in->SetAll(shared_state1_in.get(),
                        arbitrary_rect2,
-                       arbitrary_rect3,
-                       arbitrary_rect1,
+                       arbitrary_rect2_inside_rect2,
+                       arbitrary_rect1_inside_rect2,
                        arbitrary_bool1,
                        arbitrary_size1,
                        arbitrary_resourceid3,
@@ -298,8 +304,8 @@ TEST_F(CCMessagesTest, AllQuads) {
       RenderPassDrawQuad::Create();
   renderpass_in->SetAll(shared_state1_in.get(),
                         arbitrary_rect1,
-                        arbitrary_rect2,
-                        arbitrary_rect3,
+                        arbitrary_rect2_inside_rect1,
+                        arbitrary_rect1_inside_rect1,
                         arbitrary_bool1,
                         arbitrary_id,
                         arbitrary_bool2,
@@ -333,8 +339,8 @@ TEST_F(CCMessagesTest, AllQuads) {
       SolidColorDrawQuad::Create();
   solidcolor_in->SetAll(shared_state1_in.get(),
                         arbitrary_rect3,
-                        arbitrary_rect1,
-                        arbitrary_rect2,
+                        arbitrary_rect1_inside_rect3,
+                        arbitrary_rect2_inside_rect3,
                         arbitrary_bool1,
                         arbitrary_color,
                         arbitrary_bool2);
@@ -345,8 +351,8 @@ TEST_F(CCMessagesTest, AllQuads) {
       StreamVideoDrawQuad::Create();
   streamvideo_in->SetAll(shared_state1_in.get(),
                          arbitrary_rect2,
-                         arbitrary_rect3,
-                         arbitrary_rect1,
+                         arbitrary_rect2_inside_rect2,
+                         arbitrary_rect1_inside_rect2,
                          arbitrary_bool1,
                          arbitrary_resourceid2,
                          arbitrary_matrix);
@@ -356,8 +362,8 @@ TEST_F(CCMessagesTest, AllQuads) {
   scoped_ptr<TextureDrawQuad> texture_in = TextureDrawQuad::Create();
   texture_in->SetAll(shared_state1_in.get(),
                      arbitrary_rect2,
-                     arbitrary_rect3,
-                     arbitrary_rect1,
+                     arbitrary_rect2_inside_rect2,
+                     arbitrary_rect1_inside_rect2,
                      arbitrary_bool1,
                      arbitrary_resourceid1,
                      arbitrary_bool2,
@@ -372,8 +378,8 @@ TEST_F(CCMessagesTest, AllQuads) {
   scoped_ptr<TileDrawQuad> tile_in = TileDrawQuad::Create();
   tile_in->SetAll(shared_state1_in.get(),
                   arbitrary_rect2,
-                  arbitrary_rect3,
-                  arbitrary_rect1,
+                  arbitrary_rect2_inside_rect2,
+                  arbitrary_rect1_inside_rect2,
                   arbitrary_bool1,
                   arbitrary_resourceid3,
                   arbitrary_rectf1,
@@ -386,8 +392,8 @@ TEST_F(CCMessagesTest, AllQuads) {
       YUVVideoDrawQuad::Create();
   yuvvideo_in->SetAll(shared_state1_in.get(),
                       arbitrary_rect1,
-                      arbitrary_rect2,
-                      arbitrary_rect3,
+                      arbitrary_rect2_inside_rect1,
+                      arbitrary_rect1_inside_rect1,
                       arbitrary_bool1,
                       arbitrary_sizef1,
                       arbitrary_resourceid1,
