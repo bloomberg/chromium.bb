@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
 #define CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/debug/rendering_stats.h"
@@ -54,6 +55,9 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   int GetLayerTreeId() const;
   void NotifyInputThrottledUntilCommit();
   const cc::Layer* GetRootLayer() const;
+  bool ScheduleMicroBenchmark(
+      const std::string& name,
+      const base::Callback<void(scoped_ptr<base::Value>)>& callback);
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();

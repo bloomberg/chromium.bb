@@ -15,6 +15,7 @@
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
@@ -296,6 +297,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "chrome.gpuBenchmarking.clearImageCache = function() {"
           "  native function ClearImageCache();"
           "  ClearImageCache();"
+          "};"
+          "chrome.gpuBenchmarking.runMicroBenchmark ="
+          "    function(name, callback) {"
+          "  native function RunMicroBenchmark();"
+          "  return RunMicroBenchmark(name, callback);"
           "};") {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -318,6 +324,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(BeginWindowSnapshotPNG);
     if (name->Equals(v8::String::New("ClearImageCache")))
       return v8::FunctionTemplate::New(ClearImageCache);
+    if (name->Equals(v8::String::New("RunMicroBenchmark")))
+      return v8::FunctionTemplate::New(RunMicroBenchmark);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -589,6 +597,54 @@ class GpuBenchmarkingWrapper : public v8::Extension {
   static void ClearImageCache(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
     WebImageCache::clear();
+  }
+
+  static void OnMicroBenchmarkCompleted(
+      CallbackAndContext* callback_and_context,
+      scoped_ptr<base::Value> result) {
+    v8::HandleScope scope(callback_and_context->isolate());
+    v8::Handle<v8::Context> context = callback_and_context->GetContext();
+    v8::Context::Scope context_scope(context);
+    WebFrame* frame = WebFrame::frameForContext(context);
+    if (frame) {
+      scoped_ptr<V8ValueConverter> converter =
+          make_scoped_ptr(V8ValueConverter::create());
+      v8::Handle<v8::Value> value = converter->ToV8Value(result.get(), context);
+      v8::Handle<v8::Value> argv[] = { value };
+
+      frame->callFunctionEvenIfScriptDisabled(
+          callback_and_context->GetCallback(), v8::Object::New(), 1, argv);
+    }
+  }
+
+  static void RunMicroBenchmark(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    GpuBenchmarkingContext context;
+    if (!context.Init(true)) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    if (args.Length() != 2 ||
+        !args[0]->IsString() ||
+        !args[1]->IsFunction()) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    v8::Local<v8::Function> callback_local =
+        v8::Local<v8::Function>::Cast(args[1]);
+
+    scoped_refptr<CallbackAndContext> callback_and_context =
+        new CallbackAndContext(args.GetIsolate(),
+                               callback_local,
+                               context.web_frame()->mainWorldScriptContext());
+
+    v8::String::Utf8Value benchmark(args[0]);
+    DCHECK(*benchmark);
+    args.GetReturnValue().Set(context.compositor()->ScheduleMicroBenchmark(
+        std::string(*benchmark),
+        base::Bind(&OnMicroBenchmarkCompleted, callback_and_context)));
   }
 };
 

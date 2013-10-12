@@ -107,6 +107,8 @@
         'debug/traced_picture.h',
         'debug/traced_value.cc',
         'debug/traced_value.h',
+        'debug/unittest_only_benchmark.cc',
+        'debug/unittest_only_benchmark.h',
         'input/input_handler.h',
         'input/page_scale_animation.cc',
         'input/page_scale_animation.h',

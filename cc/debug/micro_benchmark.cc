@@ -11,7 +11,7 @@
 namespace cc {
 
 MicroBenchmark::MicroBenchmark(const DoneCallback& callback)
-    : callback_(callback) {}
+    : callback_(callback), is_done_(false) {}
 
 MicroBenchmark::~MicroBenchmark() {}
 

@@ -16,6 +16,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/debug/micro_benchmark.h"
 #include "cc/layers/compositing_reasons.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
@@ -424,6 +425,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool descendant_needs_push_properties() const {
     return num_dependents_need_push_properties_ > 0;
   }
+
+  virtual void RunMicroBenchmark(MicroBenchmark* benchmark);
 
  protected:
   friend class LayerImpl;

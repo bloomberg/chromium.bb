@@ -1086,4 +1086,8 @@ void Layer::RemoveFromClipTree() {
   clip_parent_ = NULL;
 }
 
+void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
+  benchmark->RunOnLayer(this);
+}
+
 }  // namespace cc

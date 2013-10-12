@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/values.h"
+#include "cc/debug/unittest_only_benchmark.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -18,6 +19,8 @@ scoped_ptr<MicroBenchmark> CreateBenchmark(
     const std::string& name,
     const MicroBenchmark::DoneCallback& callback) {
   // TODO(vmpstr): Add benchmarks.
+  if (name == "unittest_only_benchmark")
+    return scoped_ptr<MicroBenchmark>(new UnittestOnlyBenchmark(callback));
   return scoped_ptr<MicroBenchmark>();
 }
 

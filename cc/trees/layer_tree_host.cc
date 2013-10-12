@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <stack>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -114,6 +115,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       client_(client),
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
+      micro_benchmark_controller_(this),
       output_surface_can_be_initialized_(true),
       output_surface_lost_(true),
       num_failed_recreate_attempts_(0),
@@ -739,7 +741,11 @@ bool LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue) {
 
   DCHECK(!root_layer()->parent());
 
-  return UpdateLayers(root_layer(), queue);
+  bool result = UpdateLayers(root_layer(), queue);
+
+  micro_benchmark_controller_.DidUpdateLayers();
+
+  return result;
 }
 
 static Layer* FindFirstScrollableLayer(Layer* layer) {
@@ -1253,6 +1259,12 @@ void LayerTreeHost::RegisterViewportLayers(
   page_scale_layer_ = page_scale_layer;
   inner_viewport_scroll_layer_ = inner_viewport_scroll_layer;
   outer_viewport_scroll_layer_ = outer_viewport_scroll_layer;
+}
+
+bool LayerTreeHost::ScheduleMicroBenchmark(
+    const std::string& benchmark_name,
+    const MicroBenchmark::DoneCallback& callback) {
+  return micro_benchmark_controller_.ScheduleRun(benchmark_name, callback);
 }
 
 }  // namespace cc

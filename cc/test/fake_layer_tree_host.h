@@ -16,52 +16,43 @@ namespace cc {
 
 class FakeLayerTreeHost : protected LayerTreeHost {
  public:
-  static scoped_ptr<FakeLayerTreeHost> Create() {
-    static FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
-    static LayerTreeSettings settings;
-    return make_scoped_ptr(new FakeLayerTreeHost(&client, settings));
-  }
+  static scoped_ptr<FakeLayerTreeHost> Create();
 
   static scoped_ptr<FakeLayerTreeHost> Create(
-      const LayerTreeSettings& settings) {
-    static FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
-    return make_scoped_ptr(new FakeLayerTreeHost(&client, settings));
-  }
+      const LayerTreeSettings& settings);
 
   virtual ~FakeLayerTreeHost() {}
 
-  virtual void SetNeedsCommit() OVERRIDE {}
+  virtual void SetNeedsCommit() OVERRIDE;
   virtual void SetNeedsFullTreeSync() OVERRIDE {}
 
   using LayerTreeHost::SetRootLayer;
   using LayerTreeHost::root_layer;
 
-  LayerImpl* CommitAndCreateLayerImplTree() {
-    scoped_ptr<LayerImpl> old_root_layer_impl =
-        active_tree()->DetachLayerTree();
-
-    scoped_ptr<LayerImpl> layer_impl =
-        TreeSynchronizer::SynchronizeTrees(
-            root_layer(),
-            old_root_layer_impl.Pass(),
-            active_tree());
-    TreeSynchronizer::PushProperties(root_layer(), layer_impl.get());
-
-    active_tree()->SetRootLayer(layer_impl.Pass());
-    return active_tree()->root_layer();
-  }
+  LayerImpl* CommitAndCreateLayerImplTree();
 
   FakeLayerTreeHostImpl* host_impl() { return &host_impl_; }
   LayerTreeImpl* active_tree() { return host_impl_.active_tree(); }
+
+  using LayerTreeHost::ScheduleMicroBenchmark;
+  using LayerTreeHost::SetOutputSurfaceLostForTesting;
+  using LayerTreeHost::InitializeForTesting;
+  void UpdateLayers(ResourceUpdateQueue* queue) {
+    LayerTreeHost::UpdateLayers(queue);
+  }
+
+  bool needs_commit() { return needs_commit_; }
 
  private:
   FakeLayerTreeHost(LayerTreeHostClient* client,
                     const LayerTreeSettings& settings)
       : LayerTreeHost(client, settings),
-        host_impl_(settings, &proxy_) {}
+        host_impl_(settings, &proxy_),
+        needs_commit_(false) {}
 
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
+  bool needs_commit_;
 };
 
 }  // namespace cc

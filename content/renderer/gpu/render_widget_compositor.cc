@@ -16,8 +16,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "cc/base/switches.h"
 #include "cc/debug/layer_tree_debug_state.h"
+#include "cc/debug/micro_benchmark.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -28,6 +30,10 @@
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
+
+namespace base {
+class Value;
+}
 
 namespace cc {
 class Layer;
@@ -391,6 +397,12 @@ void RenderWidgetCompositor::NotifyInputThrottledUntilCommit() {
 
 const cc::Layer* RenderWidgetCompositor::GetRootLayer() const {
   return layer_tree_host_->root_layer();
+}
+
+bool RenderWidgetCompositor::ScheduleMicroBenchmark(
+    const std::string& name,
+    const base::Callback<void(scoped_ptr<base::Value>)>& callback) {
+  return layer_tree_host_->ScheduleMicroBenchmark(name, callback);
 }
 
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
