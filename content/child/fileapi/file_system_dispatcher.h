@@ -69,8 +69,6 @@ class FileSystemDispatcher : public IPC::Listener {
 
   void OpenFileSystem(const GURL& origin_url,
                       fileapi::FileSystemType type,
-                      long long size,
-                      bool create,
                       const OpenFileSystemCallback& success_callback,
                       const StatusCallback& error_callback);
   void ResolveURL(const GURL& filesystem_url,

@@ -166,7 +166,7 @@ bool FileAPIMessageFilter::OnMessageReceived(
   *message_was_ok = true;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(FileAPIMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(FileSystemHostMsg_Open, OnOpen)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_OpenFileSystem, OnOpenFileSystem)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_ResolveURL, OnResolveURL)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_DeleteFileSystem, OnDeleteFileSystem)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Move, OnMove)
@@ -233,19 +233,17 @@ void FileAPIMessageFilter::BadMessageReceived() {
   BrowserMessageFilter::BadMessageReceived();
 }
 
-void FileAPIMessageFilter::OnOpen(
-    int request_id, const GURL& origin_url, fileapi::FileSystemType type,
-    int64 requested_size, bool create) {
+void FileAPIMessageFilter::OnOpenFileSystem(int request_id,
+                                            const GURL& origin_url,
+                                            fileapi::FileSystemType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (type == fileapi::kFileSystemTypeTemporary) {
     RecordAction(UserMetricsAction("OpenFileSystemTemporary"));
   } else if (type == fileapi::kFileSystemTypePersistent) {
     RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
   }
-  // TODO(kinuko): Use this mode for IPC too.
   fileapi::OpenFileSystemMode mode =
-      create ? fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT
-             : fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT;
+      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT;
   context_->OpenFileSystem(origin_url, type, mode, base::Bind(
       &FileAPIMessageFilter::DidOpenFileSystem, this, request_id));
 }

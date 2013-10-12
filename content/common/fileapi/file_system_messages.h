@@ -74,12 +74,10 @@ IPC_MESSAGE_CONTROL2(FileSystemMsg_DidFail,
 // File system messages sent from the child process to the browser.
 
 // WebFrameClient::openFileSystem() message.
-IPC_MESSAGE_CONTROL5(FileSystemHostMsg_Open,
+IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFileSystem,
                      int /* request_id */,
                      GURL /* origin_url */,
-                     fileapi::FileSystemType /* type */,
-                     int64 /* requested_size */,
-                     bool /* create */)
+                     fileapi::FileSystemType /* type */)
 
 // WevFrameClient::resolveURL() message.
 IPC_MESSAGE_CONTROL2(FileSystemHostMsg_ResolveURL,

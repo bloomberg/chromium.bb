@@ -128,7 +128,7 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
   file_system_dispatcher->OpenFileSystem(
       GURL(plugin_instance->GetContainer()->element().document().url()).
           GetOrigin(),
-      file_system_type, expected_size, true /* create */,
+      file_system_type,
       base::Bind(&PepperFileSystemHost::DidOpenFileSystem,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&PepperFileSystemHost::DidFailOpenFileSystem,

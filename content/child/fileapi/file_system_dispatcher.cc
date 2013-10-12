@@ -181,14 +181,14 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void FileSystemDispatcher::OpenFileSystem(
-    const GURL& origin_url, fileapi::FileSystemType type,
-    long long size, bool create,
+    const GURL& origin_url,
+    fileapi::FileSystemType type,
     const OpenFileSystemCallback& success_callback,
     const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
-  ChildThread::current()->Send(new FileSystemHostMsg_Open(
-          request_id, origin_url, type, size, create));
+  ChildThread::current()->Send(new FileSystemHostMsg_OpenFileSystem(
+      request_id, origin_url, type));
 }
 
 void FileSystemDispatcher::ResolveURL(
