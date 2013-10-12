@@ -233,7 +233,7 @@
              'yurys+blink@chromium.org' ],
     'indexed_db': ['alecflett@chromium.org','dgrogan@chromium.org',
                    'jsbell@chromium.org'],
-    'rendering': [ 'eae+blinkwatch@chromium.org', 'jchaffraix+rendering@chromium.org', 'leviw+renderwatch@chromium.org' ],
+    'rendering': [ 'eae+blinkwatch@chromium.org', 'jchaffraix+rendering@chromium.org', 'leviw+renderwatch@chromium.org', 'zoltan@webkit.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org' ],
