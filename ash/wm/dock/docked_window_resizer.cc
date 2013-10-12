@@ -238,6 +238,7 @@ void DockedWindowResizer::StartedDragging() {
 void DockedWindowResizer::FinishedDragging() {
   if (!did_move_or_resize_)
     return;
+  did_move_or_resize_ = false;
   aura::Window* window = GetTarget();
   wm::WindowState* window_state = wm::GetWindowState(window);
   const bool attached_panel =
