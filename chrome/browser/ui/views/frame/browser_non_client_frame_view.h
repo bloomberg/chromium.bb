@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
+#include "chrome/browser/ui/views/new_avatar_button.h"
 #include "ui/views/window/non_client_view.h"
 
 class AvatarLabel;
 class AvatarMenuButton;
 class BrowserFrame;
 class BrowserView;
+class NewAvatarButton;
 
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
@@ -33,6 +35,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   virtual ~BrowserNonClientFrameView();
 
   AvatarMenuButton* avatar_button() const { return avatar_button_; }
+
+  NewAvatarButton* new_avatar_button() const { return new_avatar_button_; }
 
   AvatarLabel* avatar_label() const { return avatar_label_; }
 
@@ -62,6 +66,16 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Updates the title and icon of the avatar button.
   void UpdateAvatarInfo();
 
+  // Updates the title of the avatar button displayed in the caption area.
+  // The button uses |style| to match the browser window style and notifies
+  // |listener| when it is clicked.
+  void UpdateNewStyleAvatarInfo(views::ButtonListener* listener,
+                                const NewAvatarButton::AvatarButtonStyle style);
+
+  // Anchor and show the ProfileChooser bubble under the avatar button in
+  // the caption area.
+  void ShowProfileChooserViewBubble();
+
  private:
   // The frame that hosts this view.
   BrowserFrame* frame_;
@@ -75,6 +89,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
 
   // Avatar label that is used for a managed user.
   AvatarLabel* avatar_label_;
+
+  // Menu button that displays the name of the active or guest profile.
+  // May be NULL and will not be displayed for off the record profiles.
+  NewAvatarButton* new_avatar_button_;
 };
 
 namespace chrome {

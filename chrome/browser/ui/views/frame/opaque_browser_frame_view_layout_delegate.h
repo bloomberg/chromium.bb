@@ -35,6 +35,9 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // Controls the visualization of the avatar
   virtual bool ShouldShowAvatar() const = 0;
 
+  // Returns true if in guest mode or a non off the record session.
+  virtual bool IsRegularOrGuestSession() const = 0;
+
   // We don't have a ThemeProvider in the layout manager, so plumb in the icon
   // source here.
   virtual gfx::ImageSkia GetOTRAvatarIcon() const = 0;

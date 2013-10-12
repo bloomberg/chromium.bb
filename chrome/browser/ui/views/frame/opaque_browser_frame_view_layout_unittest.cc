@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/common/chrome_switches.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/text_constants.h"
@@ -78,6 +80,10 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
 
   virtual bool ShouldShowAvatar() const OVERRIDE {
     return show_avatar_;
+  }
+
+  virtual bool IsRegularOrGuestSession() const OVERRIDE {
+    return true;
   }
 
   virtual gfx::ImageSkia GetOTRAvatarIcon() const OVERRIDE {
@@ -213,6 +219,12 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     AddAvatarButton();
   }
 
+  void AddNewAvatarButton() {
+   new_avatar_button_ = new views::MenuButton(NULL, string16(), NULL, false);
+   new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
+   root_view_->AddChildView(new_avatar_button_);
+  }
+
   void ExpectBasicWindowBounds() {
     EXPECT_EQ("428,1 25x18", maximize_button_->bounds().ToString());
     EXPECT_EQ("402,1 26x18", minimize_button_->bounds().ToString());
@@ -238,6 +250,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
   views::MenuButton* menu_button_;
   views::MenuButton* avatar_label_;
+  views::MenuButton* new_avatar_button_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayoutTest);
 };
@@ -309,6 +322,28 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithAvatar) {
   // Check the location of the avatar
   EXPECT_EQ("7,11 40x29", menu_button_->bounds().ToString());
   EXPECT_EQ("45,13 352x29",
+            layout_manager_->GetBoundsForTabStrip(
+                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
+  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
+}
+
+
+TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kNewProfileManagement);
+
+  // Tests a normal tabstrip window with the new style avatar icon.
+  AddNewAvatarButton();
+  root_view_->Layout();
+
+  ExpectBasicWindowBounds();
+
+  // Check the location of the caption button
+  EXPECT_EQ("385,1 12x20", new_avatar_button_->bounds().ToString());
+  // The basic window bounds are (-1, 13 398x29). There should not be an icon
+  // avatar in the left, and the new avatar button has an offset of 5 to its
+  // next control.
+  EXPECT_EQ("-1,13 381x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
   EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());

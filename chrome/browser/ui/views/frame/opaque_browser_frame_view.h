@@ -20,6 +20,7 @@ class BrowserView;
 class OpaqueBrowserFrameViewLayout;
 class OpaqueBrowserFrameViewPlatformSpecific;
 class TabIconView;
+class NewAvatarButton;
 
 namespace views {
 class ImageButton;
@@ -87,6 +88,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual bool ShouldLeaveOffsetNearTopBorder() const OVERRIDE;
   virtual gfx::Size GetBrowserViewMinimumSize() const OVERRIDE;
   virtual bool ShouldShowAvatar() const OVERRIDE;
+  virtual bool IsRegularOrGuestSession() const OVERRIDE;
   virtual gfx::ImageSkia GetOTRAvatarIcon() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;

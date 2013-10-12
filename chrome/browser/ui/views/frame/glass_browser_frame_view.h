@@ -16,6 +16,7 @@
 class BrowserView;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
+                              public views::ButtonListener,
                               public content::NotificationObserver {
  public:
   // Constructs a non-client view for an BrowserFrame.
@@ -46,6 +47,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   virtual void Layout() OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
+  // Overidden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
  private:
   // Returns the thickness of the border that makes up the window frame edges.
   // This does not include any client edge.
@@ -66,6 +71,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Layout various sub-components of this view.
   void LayoutAvatar();
+  void LayoutNewStyleAvatar();
   void LayoutClientView();
 
   // Returns the insets of the client area.
