@@ -84,21 +84,21 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
         if (previousFloat != newFloat && previousFloat->type() == newFloat->type()) {
             previousShapeOutsideInfo = previousFloat->renderer()->shapeOutsideInfo();
             if (previousShapeOutsideInfo)
-                previousShapeOutsideInfo->computeSegmentsForContainingBlockLine(&m_block, previousFloat, m_block.logicalHeight(), lineHeight);
+                previousShapeOutsideInfo->updateDeltasForContainingBlockLine(&m_block, previousFloat, m_block.logicalHeight(), lineHeight);
             break;
         }
     }
 
     ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo();
     if (shapeOutsideInfo)
-        shapeOutsideInfo->computeSegmentsForContainingBlockLine(&m_block, newFloat, m_block.logicalHeight(), lineHeight);
+        shapeOutsideInfo->updateDeltasForContainingBlockLine(&m_block, newFloat, m_block.logicalHeight(), lineHeight);
 
     if (newFloat->type() == FloatingObject::FloatLeft) {
         float newLeft = newFloat->logicalRight(m_block.isHorizontalWritingMode());
         if (previousShapeOutsideInfo)
-            newLeft -= previousShapeOutsideInfo->rightSegmentMarginBoxDelta();
+            newLeft -= previousShapeOutsideInfo->rightMarginBoxDelta();
         if (shapeOutsideInfo)
-            newLeft += shapeOutsideInfo->rightSegmentMarginBoxDelta();
+            newLeft += shapeOutsideInfo->rightMarginBoxDelta();
 
         if (shouldIndentText() && m_block.style()->isLeftToRightDirection())
             newLeft += floorToInt(m_block.textIndentOffset());
@@ -106,9 +106,9 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
     } else {
         float newRight = newFloat->logicalLeft(m_block.isHorizontalWritingMode());
         if (previousShapeOutsideInfo)
-            newRight -= previousShapeOutsideInfo->leftSegmentMarginBoxDelta();
+            newRight -= previousShapeOutsideInfo->leftMarginBoxDelta();
         if (shapeOutsideInfo)
-            newRight += shapeOutsideInfo->leftSegmentMarginBoxDelta();
+            newRight += shapeOutsideInfo->leftMarginBoxDelta();
 
         if (shouldIndentText() && !m_block.style()->isLeftToRightDirection())
             newRight -= floorToInt(m_block.textIndentOffset());

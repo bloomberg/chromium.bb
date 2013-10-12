@@ -76,10 +76,18 @@ public:
         return result;
     }
 
-    virtual bool updateSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight) OVERRIDE
+    bool updateSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight)
     {
+        ASSERT(lineHeight >= 0);
+        m_shapeLineTop = lineTop - logicalTopOffset();
+        m_lineHeight = lineHeight;
+        m_segments.clear();
         m_segmentRanges.clear();
-        return ShapeInfo<RenderBlock>::updateSegmentsForLine(lineTop, lineHeight);
+
+        if (lineOverlapsShapeBounds())
+            m_segments = computeSegmentsForLine(lineTop, lineHeight);
+
+        return m_segments.size();
     }
 
     bool hasSegments() const
@@ -100,6 +108,7 @@ public:
         ASSERT(m_segmentRanges.size() < m_segments.size());
         return &m_segments[m_segmentRanges.size()];
     }
+    void clearSegments() { m_segments.clear(); }
     bool adjustLogicalLineTop(float minSegmentWidth);
     LayoutUnit computeFirstFitPositionForFloat(const LayoutSize) const;
 
@@ -128,6 +137,7 @@ private:
 
     SegmentRangeList m_segmentRanges;
     bool m_needsLayout;
+    SegmentList m_segments;
 };
 
 }

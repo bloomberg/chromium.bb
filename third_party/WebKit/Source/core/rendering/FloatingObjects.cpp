@@ -374,8 +374,8 @@ LayoutUnit FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit
     const FloatingObject* outermostFloat = adapter.outermostFloat();
     if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
         if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
-            shapeOutside->computeSegmentsForContainingBlockLine(m_renderer, outermostFloat, logicalTop, logicalHeight);
-            offset += shapeOutside->rightSegmentMarginBoxDelta();
+            shapeOutside->updateDeltasForContainingBlockLine(m_renderer, outermostFloat, logicalTop, logicalHeight);
+            offset += shapeOutside->rightMarginBoxDelta();
         }
     }
 
@@ -394,8 +394,8 @@ LayoutUnit FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUni
     const FloatingObject* outermostFloat = adapter.outermostFloat();
     if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
         if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
-            shapeOutside->computeSegmentsForContainingBlockLine(m_renderer, outermostFloat, logicalTop, logicalHeight);
-            offset += shapeOutside->leftSegmentMarginBoxDelta();
+            shapeOutside->updateDeltasForContainingBlockLine(m_renderer, outermostFloat, logicalTop, logicalHeight);
+            offset += shapeOutside->leftMarginBoxDelta();
         }
     }
 
