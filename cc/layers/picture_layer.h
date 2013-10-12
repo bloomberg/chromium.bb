@@ -7,6 +7,7 @@
 
 #include "cc/base/invalidation_region.h"
 #include "cc/debug/devtools_instrumentation.h"
+#include "cc/debug/micro_benchmark_controller.h"
 #include "cc/layers/layer.h"
 #include "cc/resources/picture_pile.h"
 #include "cc/trees/occlusion_tracker.h"
@@ -35,6 +36,10 @@ class CC_EXPORT PictureLayer : public Layer {
   virtual void SetIsMask(bool is_mask) OVERRIDE;
   virtual bool SupportsLCDText() const OVERRIDE;
   virtual skia::RefPtr<SkPicture> GetPicture() const OVERRIDE;
+
+  virtual void RunMicroBenchmark(MicroBenchmark* benchmark) OVERRIDE;
+
+  ContentLayerClient* client() { return client_; }
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);

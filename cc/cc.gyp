@@ -92,6 +92,8 @@
         'debug/overdraw_metrics.h',
         'debug/paint_time_counter.cc',
         'debug/paint_time_counter.h',
+        'debug/picture_record_benchmark.cc',
+        'debug/picture_record_benchmark.h',
         'debug/rendering_stats.cc',
         'debug/rendering_stats.h',
         'debug/rendering_stats_instrumentation.cc',

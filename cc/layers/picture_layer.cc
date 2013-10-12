@@ -139,4 +139,8 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
   return picture;
 }
 
+void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {
+  benchmark->RunOnLayer(this);
+}
+
 }  // namespace cc
