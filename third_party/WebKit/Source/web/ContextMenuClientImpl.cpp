@@ -101,7 +101,7 @@ static WebURL urlFromFrame(Frame* frame)
 static bool isASingleWord(const String& text)
 {
     TextBreakIterator* it = wordBreakIterator(text, 0, text.length());
-    return it && textBreakNext(it) == static_cast<int>(text.length());
+    return it && it->next() == static_cast<int>(text.length());
 }
 
 // Helper function to get misspelled word on which context menu
