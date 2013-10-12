@@ -32,43 +32,23 @@ namespace WebCore {
 StyleResolverState::StyleResolverState(Document& document, Element* element, RenderStyle* parentStyle, RenderRegion* regionForStyling)
     : m_elementContext(element ? ElementResolveContext(element) : ElementResolveContext())
     , m_document(element ? m_elementContext.document() : document)
-    , m_regionForStyling(0)
+    , m_style(0)
+    , m_parentStyle(parentStyle)
+    , m_regionForStyling(regionForStyling)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(0)
     , m_styleMap(*this, m_elementStyleResources)
     , m_currentRule(0)
 {
-    m_regionForStyling = regionForStyling;
-
     if (m_elementContext.resetStyleInheritance())
         m_parentStyle = 0;
-    else if (parentStyle)
-        m_parentStyle = parentStyle;
-    else if (m_elementContext.parentNode())
+    else if (!parentStyle && m_elementContext.parentNode())
         m_parentStyle = m_elementContext.parentNode()->renderStyle();
-    else
-        m_parentStyle = 0;
 
-    m_style = 0;
-    m_elementStyleResources.clear();
-    m_fontBuilder.clear();
-
-    // FIXME: StyleResolverState is never passed between documents
-    // so we should be able to do this initialization at StyleResolverState
-    // createion time instead of now, correct?
+    // FIXME: How can we not have a page here?
     if (Page* page = document.page())
         m_elementStyleResources.setDeviceScaleFactor(page->deviceScaleFactor());
-}
-
-StyleResolverState::~StyleResolverState()
-{
-    m_elementContext = ElementResolveContext();
-    m_style = 0;
-    m_parentStyle = 0;
-    m_regionForStyling = 0;
-    m_elementStyleResources.clear();
-    m_fontBuilder.clear();
 }
 
 } // namespace WebCore

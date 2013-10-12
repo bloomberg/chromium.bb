@@ -77,13 +77,6 @@ void FontBuilder::initForStyleResolve(const Document& document, RenderStyle* sty
     m_fontDirty = false;
 }
 
-void FontBuilder::clear()
-{
-    m_document = 0;
-    m_style = 0;
-    m_fontDirty = false;
-}
-
 void FontBuilder::setInitial(float effectiveZoom)
 {
     ASSERT(m_document && m_document->settings());

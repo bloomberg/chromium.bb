@@ -717,6 +717,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
         adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element);
     }
+
     document().didAccessStyleResolver();
 
     // FIXME: Shouldn't this be on RenderBody::styleDidChange?
@@ -1047,7 +1048,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
     {
         // Check UA, user and author rules.
-    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
+        ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
         collector.setPseudoStyleRequest(pseudoStyleRequest);
 
         matchUARules(collector);
@@ -1071,9 +1072,6 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         // in the adjustRenderStyle code.
         adjuster.adjustRenderStyle(state.style(), state.parentStyle(), 0);
     }
-
-    // Start loading resources referenced by this style.
-    m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
     document().didAccessStyleResolver();
 

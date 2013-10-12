@@ -43,7 +43,6 @@ public:
 
     // FIXME: The name is probably wrong, but matches StyleResolverState callsite for consistency.
     void initForStyleResolve(const Document&, RenderStyle*, bool useSVGZoomRules);
-    void clear();
 
     void setInitial(float effectiveZoom);
 

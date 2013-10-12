@@ -96,12 +96,4 @@ void ElementStyleResources::addPendingSVGDocument(FilterOperation* filterOperati
     m_pendingSVGDocuments.set(filterOperation, cssSVGDocumentValue);
 }
 
-void ElementStyleResources::clear()
-{
-    m_pendingImageProperties.clear();
-    m_pendingSVGDocuments.clear();
-    m_hasPendingShaders = false;
-    m_deviceScaleFactor = 1;
-}
-
 }

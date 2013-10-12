@@ -251,9 +251,6 @@ void StyleResourceLoader::loadPendingResources(RenderStyle* renderStyle, Element
 
     // Start loading the SVG Documents referenced by this style.
     loadPendingSVGDocuments(renderStyle, elementStyleResources);
-
-    // FIXME: Investigate if this clearing is necessary.
-    elementStyleResources.clear();
 }
 
 }

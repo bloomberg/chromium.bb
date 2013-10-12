@@ -45,9 +45,6 @@ typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
 
 // Holds information about resources, requested by stylesheets.
 // Lifetime: per-element style resolve.
-// FIXME: At least for the moment, the lifetime actually matches that of StyleResolverState,
-// but all data is cleared for each element resolve. We must investigate performance
-// implications of matching effective and intended lifetime.
 class ElementStyleResources {
 WTF_MAKE_NONCOPYABLE(ElementStyleResources);
 public:
@@ -70,8 +67,6 @@ public:
     void setDeviceScaleFactor(float deviceScaleFactor) { m_deviceScaleFactor = deviceScaleFactor; }
 
     void addPendingSVGDocument(FilterOperation*, CSSSVGDocumentValue*);
-
-    void clear();
 
 private:
     PendingImagePropertyMap m_pendingImageProperties;
