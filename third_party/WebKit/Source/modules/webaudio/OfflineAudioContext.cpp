@@ -48,6 +48,15 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* co
 
     Document* document = toDocument(context);
 
+    if (!numberOfFrames) {
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "OfflineAudioContext",
+                "number of frames cannot be zero."));
+        return 0;
+    }
+
     if (numberOfChannels > 10) {
         es.throwDOMException(
             SyntaxError,

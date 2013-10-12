@@ -1,0 +1,10 @@
+Tests the OfflineAudioContext constructor
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS new webkitOfflineAudioContext(1, 0, 44100) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': number of frames cannot be zero..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

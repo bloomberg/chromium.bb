@@ -154,7 +154,9 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
 
     // Create a new destination for offline rendering.
     m_renderTarget = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate);
+    ASSERT(m_renderTarget);
     m_destinationNode = OfflineAudioDestinationNode::create(this, m_renderTarget.get());
+    ASSERT(m_destinationNode);
 }
 
 void AudioContext::constructCommon()
