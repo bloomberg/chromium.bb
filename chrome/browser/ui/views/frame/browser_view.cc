@@ -1547,7 +1547,7 @@ gfx::ImageSkia BrowserView::GetWindowAppIcon() {
 }
 
 gfx::ImageSkia BrowserView::GetWindowIcon() {
-  if (browser_->is_app())
+  if (browser_->is_app() || browser_->is_type_popup())
     return browser_->GetCurrentPageIcon().AsImageSkia();
   return gfx::ImageSkia();
 }
