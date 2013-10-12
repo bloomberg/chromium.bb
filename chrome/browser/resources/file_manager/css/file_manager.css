@@ -1312,6 +1312,7 @@ input.rename {
 }
 
 #share-button {
+  display: block;
   min-width: 0;  /* overrride */
 }
 
