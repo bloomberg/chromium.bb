@@ -45,11 +45,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGFEMergeNodeElement* toSVGFEMergeNodeElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::feMergeNodeTag));
-    return static_cast<SVGFEMergeNodeElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGFEMergeNodeElement, hasTagName(SVGNames::feMergeNodeTag));
 
 } // namespace WebCore
 

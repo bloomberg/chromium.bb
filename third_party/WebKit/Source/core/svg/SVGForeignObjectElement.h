@@ -58,11 +58,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGForeignObjectElement* toSVGForeignObjectElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::foreignObjectTag));
-    return static_cast<SVGForeignObjectElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGForeignObjectElement, hasTagName(SVGNames::foreignObjectTag));
 
 } // namespace WebCore
 

@@ -72,11 +72,7 @@ private:
     ResourcePtr<ImageResource> m_cachedImage;
 };
 
-inline SVGFEImageElement* toSVGFEImageElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::feImageTag));
-    return static_cast<SVGFEImageElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGFEImageElement, hasTagName(SVGNames::feImageTag));
 
 } // namespace WebCore
 

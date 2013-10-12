@@ -78,11 +78,7 @@ private:
     SVGImageLoader m_imageLoader;
 };
 
-inline SVGImageElement* toSVGImageElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::imageTag));
-    return static_cast<SVGImageElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGImageElement, hasTagName(SVGNames::imageTag));
 
 } // namespace WebCore
 

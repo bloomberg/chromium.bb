@@ -41,11 +41,7 @@ private:
     virtual bool childShouldCreateRenderer(const Node& child) const;
 };
 
-inline SVGTextElement* toSVGTextElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::textTag));
-    return static_cast<SVGTextElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGTextElement, hasTagName(SVGNames::textTag));
 
 } // namespace WebCore
 

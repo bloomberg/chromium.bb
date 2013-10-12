@@ -56,11 +56,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGCircleElement* toSVGCircleElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::circleTag));
-    return static_cast<SVGCircleElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGCircleElement, hasTagName(SVGNames::circleTag));
 
 } // namespace WebCore
 

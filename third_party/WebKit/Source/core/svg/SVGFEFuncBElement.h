@@ -34,11 +34,7 @@ private:
     SVGFEFuncBElement(const QualifiedName&, Document&);
 };
 
-inline SVGFEFuncBElement* toSVGFEFuncBElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::feFuncBTag));
-    return static_cast<SVGFEFuncBElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGFEFuncBElement, hasTagName(SVGNames::feFuncBTag));
 
 } // namespace WebCore
 

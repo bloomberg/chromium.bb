@@ -65,11 +65,7 @@ private:
     float m_dy;
 };
 
-inline SVGGlyphRefElement* toSVGGlyphRefElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::glyphRefTag));
-    return static_cast<SVGGlyphRefElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGGlyphRefElement, hasTagName(SVGNames::glyphRefTag));
 
 }
 

@@ -79,11 +79,7 @@ private:
     HashSet<RefPtr<Node> > m_clientsToAdd;
 };
 
-inline SVGFilterElement* toSVGFilterElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::filterTag));
-    return static_cast<SVGFilterElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGFilterElement, hasTagName(SVGNames::filterTag));
 
 }
 

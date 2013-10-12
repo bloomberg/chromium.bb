@@ -67,11 +67,7 @@ private:
     SVGFontElement* m_fontElement;
 };
 
-inline SVGFontFaceElement* toSVGFontFaceElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::font_faceTag));
-    return static_cast<SVGFontFaceElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGFontFaceElement, hasTagName(SVGNames::font_faceTag));
 
 } // namespace WebCore
 

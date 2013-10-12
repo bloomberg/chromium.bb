@@ -89,11 +89,7 @@ private:
     bool m_isGlyphCacheValid;
 };
 
-inline SVGFontElement* toSVGFontElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::fontTag));
-    return static_cast<SVGFontElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGFontElement, hasTagName(SVGNames::fontTag));
 
 } // namespace WebCore
 

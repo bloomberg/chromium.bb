@@ -54,11 +54,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGLinearGradientElement* toSVGLinearGradientElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::linearGradientTag));
-    return static_cast<SVGLinearGradientElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGLinearGradientElement, hasTagName(SVGNames::linearGradientTag));
 
 } // namespace WebCore
 

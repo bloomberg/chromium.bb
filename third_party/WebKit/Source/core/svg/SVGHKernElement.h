@@ -43,11 +43,7 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
 };
 
-inline SVGHKernElement* toSVGHKernElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::hkernTag));
-    return static_cast<SVGHKernElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGHKernElement, hasTagName(SVGNames::hkernTag));
 
 } // namespace WebCore
 

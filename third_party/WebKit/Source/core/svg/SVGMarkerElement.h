@@ -165,11 +165,7 @@ private:
     mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;
 };
 
-inline SVGMarkerElement* toSVGMarkerElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::markerTag));
-    return static_cast<SVGMarkerElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGMarkerElement, hasTagName(SVGNames::markerTag));
 
 }
 

@@ -66,11 +66,7 @@ private:
     SVGStringList m_viewTarget;
 };
 
-inline SVGViewElement* toSVGViewElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::viewTag));
-    return static_cast<SVGViewElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGViewElement, hasTagName(SVGNames::viewTag));
 
 } // namespace WebCore
 

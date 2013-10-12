@@ -57,11 +57,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGLineElement* toSVGLineElement(Element* element)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->hasTagName(SVGNames::lineTag));
-    return static_cast<SVGLineElement*>(element);
-}
+DEFINE_NODE_TYPE_CASTS(SVGLineElement, hasTagName(SVGNames::lineTag));
 
 } // namespace WebCore
 

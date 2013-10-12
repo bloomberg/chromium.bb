@@ -40,11 +40,7 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
-inline SVGFontFaceNameElement* toSVGFontFaceNameElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::font_face_nameTag));
-    return static_cast<SVGFontFaceNameElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGFontFaceNameElement, hasTagName(SVGNames::font_face_nameTag));
 
 } // namespace WebCore
 

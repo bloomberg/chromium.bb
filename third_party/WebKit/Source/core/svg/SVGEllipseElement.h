@@ -57,11 +57,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGEllipseElement* toSVGEllipseElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::ellipseTag));
-    return static_cast<SVGEllipseElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGEllipseElement, hasTagName(SVGNames::ellipseTag));
 
 } // namespace WebCore
 

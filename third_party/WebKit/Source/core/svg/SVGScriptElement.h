@@ -94,11 +94,7 @@ private:
     OwnPtr<ScriptLoader> m_loader;
 };
 
-inline SVGScriptElement* toSVGScriptElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::scriptTag));
-    return static_cast<SVGScriptElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGScriptElement, hasTagName(SVGNames::scriptTag));
 
 } // namespace WebCore
 

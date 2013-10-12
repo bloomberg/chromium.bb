@@ -57,11 +57,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGFEDiffuseLightingElement* toSVGFEDiffuseLightingElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::feDiffuseLightingTag));
-    return static_cast<SVGFEDiffuseLightingElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGFEDiffuseLightingElement, hasTagName(SVGNames::feDiffuseLightingTag));
 
 } // namespace WebCore
 

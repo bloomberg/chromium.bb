@@ -59,11 +59,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGRectElement* toSVGRectElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::rectTag));
-    return static_cast<SVGRectElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGRectElement, hasTagName(SVGNames::rectTag));
 
 } // namespace WebCore
 

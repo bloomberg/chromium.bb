@@ -940,7 +940,7 @@ bool SVGUseElement::selfHasRelativeLengths() const
     if (!element)
         return false;
 
-    return toSVGElement(element)->hasRelativeLengths();
+    return element->hasRelativeLengths();
 }
 
 void SVGUseElement::notifyFinished(Resource* resource)

@@ -56,11 +56,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGClipPathElement* toSVGClipPathElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::clipPathTag));
-    return static_cast<SVGClipPathElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGClipPathElement, hasTagName(SVGNames::clipPathTag));
 
 }
 

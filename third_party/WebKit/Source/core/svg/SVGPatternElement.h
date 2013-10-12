@@ -86,11 +86,7 @@ private:
     virtual void synchronizeSystemLanguage() { SVGTests::synchronizeSystemLanguage(this); }
 };
 
-inline SVGPatternElement* toSVGPatternElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::patternTag));
-    return static_cast<SVGPatternElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGPatternElement, hasTagName(SVGNames::patternTag));
 
 } // namespace WebCore
 

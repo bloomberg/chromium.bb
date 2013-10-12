@@ -34,11 +34,7 @@ private:
     SVGPolygonElement(const QualifiedName&, Document&);
 };
 
-inline SVGPolygonElement* toSVGPolygonElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::polygonTag));
-    return static_cast<SVGPolygonElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGPolygonElement, hasTagName(SVGNames::polygonTag));
 
 } // namespace WebCore
 

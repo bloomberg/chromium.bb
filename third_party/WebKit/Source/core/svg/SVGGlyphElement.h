@@ -58,11 +58,7 @@ private:
     void invalidateGlyphCache();
 };
 
-inline SVGGlyphElement* toSVGGlyphElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::glyphTag));
-    return static_cast<SVGGlyphElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(SVGGlyphElement, hasTagName(SVGNames::glyphTag));
 
 } // namespace WebCore
 
