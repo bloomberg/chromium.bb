@@ -24,9 +24,9 @@ cr.define('options', function() {
     __proto__: OptionsPage.prototype
   };
 
-  GeolocationOptions.showGeolocationOption = function() {
-    $('geolocationCheckbox').hidden = false;
-  };
+  // TODO(robliao): Determine if a full unroll is necessary
+  // (http://crbug.com/306613).
+  GeolocationOptions.showGeolocationOption = function() {};
 
   return {
     GeolocationOptions: GeolocationOptions
