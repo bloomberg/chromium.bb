@@ -854,10 +854,11 @@ fill_tiles_rgb32(const struct format_info *info, unsigned char *mem,
 			div_t d = div(x+y, width);
 			uint32_t rgb32 = 0x00130502 * (d.quot >> 6)
 				       + 0x000a1120 * (d.rem >> 6);
+			uint32_t alpha = ((y < height/2) && (x < width/2)) ? 127 : 255;
 			uint32_t color =
 				MAKE_RGBA(rgb, (rgb32 >> 16) & 0xff,
 					  (rgb32 >> 8) & 0xff, rgb32 & 0xff,
-					  255);
+					  alpha);
 
 			((uint32_t *)mem)[x] = color;
 		}
