@@ -5047,10 +5047,12 @@ sub GenerateFunctionCallString
         } elsif (IsSVGTypeNeedingTearOff($parameter->type) and not $interfaceName =~ /List$/) {
             AddToImplIncludes("core/dom/ExceptionCode.h");
             push @arguments, "$paramName->propertyReference()";
-            $code .= $indent . "if (!$paramName) {\n";
-            $code .= $indent . "    setDOMException(WebCore::TypeMismatchError, args.GetIsolate());\n";
-            $code .= $indent . "    return;\n";
-            $code .= $indent . "}\n";
+            $code .= <<END;
+    if (!$paramName) {
+        throwTypeError(args.GetIsolate());
+        return;
+    }
+END
         } elsif ($parameter->type eq "SVGMatrix" and $interfaceName eq "SVGTransformList") {
             push @arguments, "$paramName.get()";
         } else {

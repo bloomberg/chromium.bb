@@ -7,6 +7,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS markerElement.orientType.baseVal is SVGMarkerElement.SVG_MARKER_ORIENT_AUTO
 PASS markerElement.orientAngle.baseVal.value is 0
+PASS markerElement.setOrientToAngle() threw exception TypeError: Type error.
+PASS markerElement.setOrientToAngle(true) threw exception TypeError: Type error.
+PASS markerElement.setOrientToAngle(2) threw exception TypeError: Type error.
+PASS markerElement.setOrientToAngle('aString') threw exception TypeError: Type error.
+PASS markerElement.setOrientToAngle(markerElement) threw exception TypeError: Type error.
 PASS markerElement.orientType.baseVal is SVGMarkerElement.SVG_MARKER_ORIENT_ANGLE
 PASS markerElement.orientAngle.baseVal.value is 0
 PASS successfullyParsed is true

@@ -47,6 +47,8 @@ shouldThrow("svgText.getEndPositionOfChar()", '"TypeError: Failed to execute \'g
 shouldThrow("svgText.getExtentOfChar()", '"TypeError: Failed to execute \'getExtentOfChar\' on \'SVGTextContentElement\': 1 argument required, but only 0 present."');
 shouldThrow("svgText.getRotationOfChar()", '"TypeError: Failed to execute \'getRotationOfChar\' on \'SVGTextContentElement\': 1 argument required, but only 0 present."');
 shouldThrow("svgText.getCharNumAtPosition()", '"TypeError: Failed to execute \'getCharNumAtPosition\' on \'SVGTextContentElement\': 1 argument required, but only 0 present."');
+shouldThrow("svgText.getCharNumAtPosition('aString')", "'TypeError: Type error'");
+shouldThrow("svgText.getCharNumAtPosition(svgText)", "'TypeError: Type error'");
 shouldThrow("svgText.selectSubString()", '"TypeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': 2 arguments required, but only 0 present."');
 shouldThrow("svgText.selectSubString(2)", '"TypeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': 2 arguments required, but only 1 present."');
 

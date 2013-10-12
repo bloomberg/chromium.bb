@@ -243,6 +243,9 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     SVGPoint mutablePointFunction();
     [Immutable] SVGPoint immutablePointFunction();
 
+    SVGPoint svgPointMethod(SVGPoint item, unsigned long index);
+    [StrictTypeChecking, RaisesException]  SVGPoint strictSVGPointMethod(SVGPoint item, unsigned long index);
+
     [ImplementedAs=banana] void orange();
     [ImplementedAs=blueberry] attribute long strawberry;
 

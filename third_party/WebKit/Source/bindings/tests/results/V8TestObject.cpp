@@ -55,6 +55,7 @@
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/frame/DOMWindow.h"
 #include "core/page/UseCounter.h"
@@ -4407,6 +4408,62 @@ static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void svgPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("svgPointMethod", "TestObject", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(args.Holder());
+    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    V8TRYCATCH_VOID(unsigned, index, toUInt32(args[1]));
+    if (!item) {
+        throwTypeError(args.GetIsolate());
+        return;
+    }
+    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->svgPointMethod(item->propertyReference(), index))), args.Holder());
+    return;
+}
+
+static void svgPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::svgPointMethodMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("strictSVGPointMethod", "TestObject", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(args.Holder());
+    ExceptionState es(args.GetIsolate());
+    if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8SVGPoint::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
+        throwTypeError(args.GetIsolate());
+        return;
+    }
+    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    V8TRYCATCH_VOID(unsigned, index, toUInt32(args[1]));
+    if (!item) {
+        throwTypeError(args.GetIsolate());
+        return;
+    }
+    SVGPoint result = imp->strictSVGPointMethod(item->propertyReference(), index, es);
+    if (es.throwIfNeeded())
+        return;
+    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(result)), args.Holder());
+    return;
+}
+
+static void strictSVGPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::strictSVGPointMethodMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void orangeMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
@@ -5175,6 +5232,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"getSVGDocument", TestObjV8Internal::getSVGDocumentMethodCallback, 0, 0},
     {"mutablePointFunction", TestObjV8Internal::mutablePointFunctionMethodCallback, 0, 0},
     {"immutablePointFunction", TestObjV8Internal::immutablePointFunctionMethodCallback, 0, 0},
+    {"strictSVGPointMethod", TestObjV8Internal::strictSVGPointMethodMethodCallback, 0, 2},
     {"orange", TestObjV8Internal::orangeMethodCallback, 0, 0},
     {"strictFunction", TestObjV8Internal::strictFunctionMethodCallback, 0, 3},
     {"variadicStringMethod", TestObjV8Internal::variadicStringMethodMethodCallback, 0, 2},
@@ -5295,6 +5353,12 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     v8::Handle<v8::FunctionTemplate> convert5Argv[convert5Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::info, currentWorldType) };
     v8::Handle<v8::Signature> convert5Signature = v8::Signature::New(desc, convert5Argc, convert5Argv);
     proto->Set(v8::String::NewSymbol("convert5"), v8::FunctionTemplate::New(TestObjV8Internal::convert5MethodCallback, v8Undefined(), convert5Signature, 1));
+
+    // Custom Signature 'svgPointMethod'
+    const int svgPointMethodArgc = 2;
+    v8::Handle<v8::FunctionTemplate> svgPointMethodArgv[svgPointMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8SVGPoint::info, currentWorldType), v8::Handle<v8::FunctionTemplate>() };
+    v8::Handle<v8::Signature> svgPointMethodSignature = v8::Signature::New(desc, svgPointMethodArgc, svgPointMethodArgv);
+    proto->Set(v8::String::NewSymbol("svgPointMethod"), v8::FunctionTemplate::New(TestObjV8Internal::svgPointMethodMethodCallback, v8Undefined(), svgPointMethodSignature, 2));
 
     // Custom Signature 'variadicNodeMethod'
     const int variadicNodeMethodArgc = 2;

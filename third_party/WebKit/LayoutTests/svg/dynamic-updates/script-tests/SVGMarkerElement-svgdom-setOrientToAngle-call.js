@@ -35,6 +35,12 @@ rootSVGElement.appendChild(pathElement);
 shouldBe("markerElement.orientType.baseVal", "SVGMarkerElement.SVG_MARKER_ORIENT_AUTO");
 shouldBe("markerElement.orientAngle.baseVal.value", "0");
 
+shouldThrow("markerElement.setOrientToAngle()", "'TypeError: Type error'");
+shouldThrow("markerElement.setOrientToAngle(true)", "'TypeError: Type error'");
+shouldThrow("markerElement.setOrientToAngle(2)", "'TypeError: Type error'");
+shouldThrow("markerElement.setOrientToAngle('aString')", "'TypeError: Type error'");
+shouldThrow("markerElement.setOrientToAngle(markerElement)", "'TypeError: Type error'");
+
 function repaintTest() {
     markerElement.setOrientToAngle(rootSVGElement.createSVGAngle());
 
