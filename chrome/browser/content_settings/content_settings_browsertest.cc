@@ -562,7 +562,7 @@ const char* const PepperContentSettingsTest::kExternalClearKeyMimeType =
     "application/x-ppapi-clearkey-cdm";
 
 // Tests Pepper plugins that use JavaScript instead of Plug-ins settings.
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, DISABLED_PluginSpecialCases) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
