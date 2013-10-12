@@ -227,24 +227,24 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   // The value store is first created during CreateExtensionService.
   TestingValueStore* store = system->value_store();
 
+  const std::string event_name("testEvent");
+  const std::string rules_stored_key(
+      RulesRegistryWithCache::RuleStorageOnUI::GetRulesStoredKey(
+          event_name, profile.IsOffTheRecord()));
   scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part;
   scoped_refptr<RulesRegistryWithCache> registry(new TestRulesRegistry(
-      &profile, "testEvent", content::BrowserThread::UI, &ui_part));
+      &profile, event_name, content::BrowserThread::UI, &ui_part));
 
   // 1. Test the handling of preferences.
   // Default value is always true.
   EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(kExtensionId));
 
   extension_prefs->UpdateExtensionPref(
-      kExtensionId,
-      RulesRegistryWithCache::RuleStorageOnUI::kRulesStoredKey,
-      new base::FundamentalValue(false));
+      kExtensionId, rules_stored_key, new base::FundamentalValue(false));
   EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(kExtensionId));
 
   extension_prefs->UpdateExtensionPref(
-      kExtensionId,
-      RulesRegistryWithCache::RuleStorageOnUI::kRulesStoredKey,
-      new base::FundamentalValue(true));
+      kExtensionId, rules_stored_key, new base::FundamentalValue(true));
   EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(kExtensionId));
 
   // 2. Test writing behavior.
@@ -285,6 +285,43 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   ui_part->ReadFromStorage(kExtensionId);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(read_count + 1, store->read_count());
+}
+
+// Test that each registry has its own "are some rules stored" flag.
+TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
+  TestingProfile profile;
+  // TestingProfile::Init makes sure that the factory method for a corresponding
+  // extension system creates a TestExtensionSystem.
+  extensions::TestExtensionSystem* system =
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(&profile));
+  ExtensionPrefs* extension_prefs = system->CreateExtensionPrefs(
+      CommandLine::ForCurrentProcess(), base::FilePath());
+
+  const std::string event_name1("testEvent1");
+  const std::string event_name2("testEvent2");
+  const std::string rules_stored_key1(
+      RulesRegistryWithCache::RuleStorageOnUI::GetRulesStoredKey(
+          event_name1, profile.IsOffTheRecord()));
+  const std::string rules_stored_key2(
+      RulesRegistryWithCache::RuleStorageOnUI::GetRulesStoredKey(
+          event_name2, profile.IsOffTheRecord()));
+  scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part1;
+  scoped_refptr<RulesRegistryWithCache> registry1(new TestRulesRegistry(
+      &profile, event_name1, content::BrowserThread::UI, &ui_part1));
+  scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part2;
+  scoped_refptr<RulesRegistryWithCache> registry2(new TestRulesRegistry(
+      &profile, event_name2, content::BrowserThread::UI, &ui_part2));
+
+  // Checkt the correct default values.
+  EXPECT_TRUE(ui_part1->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(ui_part2->GetDeclarativeRulesStored(kExtensionId));
+
+  // Update the flag for the first registry.
+  extension_prefs->UpdateExtensionPref(
+      kExtensionId, rules_stored_key1, new base::FundamentalValue(false));
+  EXPECT_FALSE(ui_part1->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(ui_part2->GetDeclarativeRulesStored(kExtensionId));
 }
 
 TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {

@@ -43,17 +43,22 @@ class RulesRegistryWithCache : public RulesRegistry {
   // registering rules on initialization will be logged with UMA.
   class RuleStorageOnUI : public content::NotificationObserver {
    public:
-    // This key is used to store in preferences whether there are some
-    // declarative rules stored in the rule store.
-    static const char kRulesStoredKey[];
-
+    // |event_name| identifies the JavaScript event for which rules are
+    // registered. For example, for WebRequestRulesRegistry the name is
+    // "declarativeWebRequest.onRequest".
     RuleStorageOnUI(Profile* profile,
-                    const std::string& storage_key,
+                    const std::string& event_name,
                     content::BrowserThread::ID rules_registry_thread,
                     base::WeakPtr<RulesRegistryWithCache> registry,
                     bool log_storage_init_delay);
 
     virtual ~RuleStorageOnUI();
+
+    // Returns a key for the state store. The associated preference is a boolean
+    // indicating whether there are some declarative rules stored in the rule
+    // store.
+    static std::string GetRulesStoredKey(const std::string& event_name,
+                                         bool incognito);
 
     // Initialize the storage functionality.
     void Init();
@@ -69,6 +74,10 @@ class RulesRegistryWithCache : public RulesRegistry {
    private:
     FRIEND_TEST_ALL_PREFIXES(RulesRegistryWithCacheTest,
                              DeclarativeRulesStored);
+    FRIEND_TEST_ALL_PREFIXES(RulesRegistryWithCacheTest,
+                             RulesStoredFlagMultipleRegistries);
+
+    static const char kRulesStoredKey[];
 
     // NotificationObserver
     virtual void Observe(int type,
@@ -104,6 +113,9 @@ class RulesRegistryWithCache : public RulesRegistry {
     // The key under which rules are stored.
     const std::string storage_key_;
 
+    // The key under which we store whether the rules have been stored.
+    const std::string rules_stored_key_;
+
     // A set of extension IDs that have rules we are reading from storage.
     std::set<std::string> waiting_for_extensions_;
 
@@ -133,7 +145,7 @@ class RulesRegistryWithCache : public RulesRegistry {
   // case the storage functionality disabled (no RuleStorageOnUI object
   // created) and the |log_storage_init_delay| flag is ignored.
   RulesRegistryWithCache(Profile* profile,
-                         const char* event_name,
+                         const std::string& event_name,
                          content::BrowserThread::ID owner_thread,
                          bool log_storage_init_delay,
                          scoped_ptr<RuleStorageOnUI>* ui_part);

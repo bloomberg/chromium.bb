@@ -9,7 +9,7 @@
 namespace extensions {
 
 TestRulesRegistry::TestRulesRegistry(content::BrowserThread::ID owner_thread,
-                                     const char* event_name)
+                                     const std::string& event_name)
     : RulesRegistryWithCache(NULL /*profile*/,
                              event_name,
                              owner_thread,
@@ -18,7 +18,7 @@ TestRulesRegistry::TestRulesRegistry(content::BrowserThread::ID owner_thread,
 
 TestRulesRegistry::TestRulesRegistry(
     Profile* profile,
-    const char* event_name,
+    const std::string& event_name,
     content::BrowserThread::ID owner_thread,
     scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI>* ui_part)
     : RulesRegistryWithCache(profile,

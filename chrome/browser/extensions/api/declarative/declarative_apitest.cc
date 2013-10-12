@@ -6,6 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,7 +23,23 @@ using extensions::RulesRegistry;
 using extensions::RulesRegistryService;
 using extensions::WebRequestRulesRegistry;
 
+namespace {
+
+const char kArbitraryUrl[] = "http://www.example.com";
+
+// The extension in "declarative/redirect_to_data" redirects every navigation to
+// a page with title |kTestTitle|.
+const char kTestTitle[] = ":TEST:";
+
+}  // namespace
+
 class DeclarativeApiTest : public ExtensionApiTest {
+ public:
+  std::string GetTitle() {
+    string16 title(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+    return base::UTF16ToUTF8(title);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
@@ -52,4 +70,15 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
   content::RunAllPendingInMessageLoop(rules_registry->owner_thread());
 
   EXPECT_TRUE(known_rules.empty());
+}
+
+// PersistRules test first installs an extension, which registers some rules.
+// Then after browser restart, it checks that the rules are still in effect.
+IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PRE_PersistRules) {
+  ASSERT_TRUE(RunExtensionTest("declarative/redirect_to_data")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PersistRules) {
+  ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
+  EXPECT_EQ(kTestTitle, GetTitle());
 }

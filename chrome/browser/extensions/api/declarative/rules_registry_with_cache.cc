@@ -76,22 +76,19 @@ namespace extensions {
 
 RulesRegistryWithCache::RulesRegistryWithCache(
     Profile* profile,
-    const char* event_name,
+    const std::string& event_name,
     content::BrowserThread::ID owner_thread,
     bool log_storage_init_delay,
     scoped_ptr<RuleStorageOnUI>* ui_part)
     : RulesRegistry(owner_thread, event_name),
       weak_ptr_factory_(profile ? this : NULL),
-      storage_on_ui_((profile
-                          ? (new RuleStorageOnUI(profile,
-                                                 GetDeclarativeRuleStorageKey(
-                                                     event_name,
-                                                     profile->IsOffTheRecord()),
-                                                 owner_thread,
-                                                 weak_ptr_factory_.GetWeakPtr(),
-                                                 log_storage_init_delay))
-                                ->GetWeakPtr()
-                          : base::WeakPtr<RuleStorageOnUI>())),
+      storage_on_ui_(
+          (profile ? (new RuleStorageOnUI(profile,
+                                          event_name,
+                                          owner_thread,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          log_storage_init_delay))->GetWeakPtr()
+                   : base::WeakPtr<RuleStorageOnUI>())),
       process_changed_rules_requested_(profile ? NOT_SCHEDULED_FOR_PROCESSING
                                                : NEVER_PROCESS) {
   if (!profile) {
@@ -275,12 +272,15 @@ const char RulesRegistryWithCache::RuleStorageOnUI::kRulesStoredKey[] =
 
 RulesRegistryWithCache::RuleStorageOnUI::RuleStorageOnUI(
     Profile* profile,
-    const std::string& storage_key,
+    const std::string& event_name,
     content::BrowserThread::ID rules_registry_thread,
     base::WeakPtr<RulesRegistryWithCache> registry,
     bool log_storage_init_delay)
     : profile_(profile),
-      storage_key_(storage_key),
+      storage_key_(GetDeclarativeRuleStorageKey(event_name,
+                                                profile->IsOffTheRecord())),
+      rules_stored_key_(GetRulesStoredKey(event_name,
+                                          profile->IsOffTheRecord())),
       log_storage_init_delay_(log_storage_init_delay),
       registry_(registry),
       rules_registry_thread_(rules_registry_thread),
@@ -288,6 +288,16 @@ RulesRegistryWithCache::RuleStorageOnUI::RuleStorageOnUI(
       weak_ptr_factory_(this) {}
 
 RulesRegistryWithCache::RuleStorageOnUI::~RuleStorageOnUI() {}
+
+// Returns the key to use for storing whether the rules have been stored.
+// static
+std::string RulesRegistryWithCache::RuleStorageOnUI::GetRulesStoredKey(
+    const std::string& event_name,
+    bool incognito) {
+  std::string result(kRulesStoredKey);
+  result += incognito ? ".incognito." : ".";
+  return result + event_name;
+}
 
 // This is called from the constructor of RulesRegistryWithCache, so it is
 // important that it both
@@ -451,7 +461,7 @@ bool RulesRegistryWithCache::RuleStorageOnUI::GetDeclarativeRulesStored(
 
   bool rules_stored = true;
   if (extension_prefs->ReadPrefAsBoolean(
-          extension_id, kRulesStoredKey, &rules_stored))
+          extension_id, rules_stored_key_, &rules_stored))
     return rules_stored;
 
   // Safe default -- if we don't know that the rules are not stored, we force
@@ -465,7 +475,9 @@ void RulesRegistryWithCache::RuleStorageOnUI::SetDeclarativeRulesStored(
   CHECK(profile_);
   ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
   extension_prefs->UpdateExtensionPref(
-      extension_id, kRulesStoredKey, new base::FundamentalValue(rules_stored));
+      extension_id,
+      rules_stored_key_,
+      new base::FundamentalValue(rules_stored));
 }
 
 }  // namespace extensions
