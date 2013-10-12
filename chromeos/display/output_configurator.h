@@ -45,6 +45,7 @@ enum OutputType {
   OUTPUT_TYPE_HDMI = 1 << 3,
   OUTPUT_TYPE_DVI = 1 << 4,
   OUTPUT_TYPE_DISPLAYPORT = 1 << 5,
+  OUTPUT_TYPE_NETWORK = 1 << 6,
 };
 
 // Content protection methods applied on video output.

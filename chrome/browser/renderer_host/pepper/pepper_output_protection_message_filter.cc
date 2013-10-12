@@ -5,7 +5,10 @@
 #include "chrome/browser/renderer_host/pepper/pepper_output_protection_message_filter.h"
 
 #include "build/build_config.h"
+#include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_output_protection_private.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -53,6 +56,10 @@ COMPILE_ASSERT(
     static_cast<int>(chromeos::OUTPUT_TYPE_DISPLAYPORT),
     PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_DISPLAYPORT);
 COMPILE_ASSERT(
+    static_cast<int>(PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NETWORK) ==
+    static_cast<int>(chromeos::OUTPUT_TYPE_NETWORK),
+    PP_OUTPUT_PROTECTION_LINK_TYPE_PRIVATE_NETWORK);
+COMPILE_ASSERT(
     static_cast<int>(PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE) ==
     static_cast<int>(chromeos::OUTPUT_PROTECTION_METHOD_NONE),
     PP_OUTPUT_PROTECTION_METHOD_PRIVATE_NONE);
@@ -74,9 +81,13 @@ void UnregisterClientOnUIThread(
 
 }  // namespace
 
-PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter() {
+PepperOutputProtectionMessageFilter::PepperOutputProtectionMessageFilter(
+    content::BrowserPpapiHost* host,
+    PP_Instance instance) {
 #if defined(OS_CHROMEOS) && defined(USE_ASH) && defined(USE_X11)
   client_id_ = 0;
+  host->GetRenderViewIDsForInstance(
+      instance, &render_process_id_, &render_view_id_);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -141,6 +152,18 @@ int32_t PepperOutputProtectionMessageFilter::OnQueryStatus(
       ash::Shell::GetInstance()->output_configurator();
   bool result = configurator->QueryOutputProtectionStatus(
       GetClientId(), &link_mask, &protection_mask);
+
+  // If we successfully retrieved the device level status, check for capturers.
+  if (result) {
+    // Ensure the RenderViewHost is still alive.
+    content::RenderViewHost* rvh =
+        content::RenderViewHost::FromID(render_process_id_, render_view_id_);
+    if (rvh) {
+      if (content::WebContents::FromRenderViewHost(rvh)->GetCapturerCount() > 0)
+        link_mask |= chromeos::OUTPUT_TYPE_NETWORK;
+    }
+  }
+
   reply_context.params.set_result(result ? PP_OK : PP_ERROR_FAILED);
   SendReply(
       reply_context,

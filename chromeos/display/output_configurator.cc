@@ -305,9 +305,10 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
     switch (it->type) {
       case OUTPUT_TYPE_UNKNOWN:
         return false;
-      // HDMI and DisplayPort both support HDCP.
-      case OUTPUT_TYPE_HDMI:
-      case OUTPUT_TYPE_DISPLAYPORT: {
+      // DisplayPort, DVI, and HDMI all support HDCP.
+      case OUTPUT_TYPE_DISPLAYPORT:
+      case OUTPUT_TYPE_DVI:
+      case OUTPUT_TYPE_HDMI: {
         HDCPState state;
         if (!delegate_->GetHDCPState(this_id, &state))
           return false;
@@ -319,7 +320,7 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
       }
       case OUTPUT_TYPE_INTERNAL:
       case OUTPUT_TYPE_VGA:
-      case OUTPUT_TYPE_DVI:
+      case OUTPUT_TYPE_NETWORK:
         // No protections for these types. Do nothing.
         break;
       case OUTPUT_TYPE_NONE:
@@ -360,9 +361,10 @@ bool OutputConfigurator::EnableOutputProtection(
     switch (it->type) {
       case OUTPUT_TYPE_UNKNOWN:
         return false;
-      // HDMI and DisplayPort both support HDCP.
-      case OUTPUT_TYPE_HDMI:
-      case OUTPUT_TYPE_DISPLAYPORT: {
+      // DisplayPort, DVI, and HDMI all support HDCP.
+      case OUTPUT_TYPE_DISPLAYPORT:
+      case OUTPUT_TYPE_DVI:
+      case OUTPUT_TYPE_HDMI: {
         HDCPState new_desired_state =
             (all_desired & OUTPUT_PROTECTION_METHOD_HDCP) ?
             HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
@@ -372,7 +374,7 @@ bool OutputConfigurator::EnableOutputProtection(
       }
       case OUTPUT_TYPE_INTERNAL:
       case OUTPUT_TYPE_VGA:
-      case OUTPUT_TYPE_DVI:
+      case OUTPUT_TYPE_NETWORK:
         // No protections for these types. Do nothing.
         break;
       case OUTPUT_TYPE_NONE:

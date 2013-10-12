@@ -2,30 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_OUTPUT_PROTECTION_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_OUTPUT_PROTECTION_MESSAGE_FILTER_H_
 
-#include "content/public/browser/browser_thread.h"
-#include "ppapi/host/host_message_context.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/display/output_configurator.h"
 #endif
 
+namespace content {
+class BrowserPpapiHost;
+}  // namespace content
+
 namespace ppapi {
 namespace host {
-class PpapiHost;
-}
-}
+struct HostMessageContext;
+}  // namespace host
+}  // namespace ppapi
 
 namespace chrome {
 
 class PepperOutputProtectionMessageFilter
     : public ppapi::host::ResourceMessageFilter {
  public:
-  PepperOutputProtectionMessageFilter();
+  PepperOutputProtectionMessageFilter(content::BrowserPpapiHost* host,
+                                      PP_Instance instance);
 
  private:
   // ppapi::host::ResourceMessageFilter overrides.
@@ -46,6 +49,10 @@ class PepperOutputProtectionMessageFilter
 
 #if defined(OS_CHROMEOS)
   chromeos::OutputConfigurator::OutputProtectionClientId client_id_;
+
+  // Used to lookup the WebContents associated with this PP_Instance.
+  int render_process_id_;
+  int render_view_id_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PepperOutputProtectionMessageFilter);
