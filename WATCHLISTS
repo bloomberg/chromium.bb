@@ -579,7 +579,7 @@
     },
     'views_corewm': {
       'filepath': 'ui/views/corewm/',
-    }
+    },
     'webkit': {
       'filepath': 'webkit/',
     },
