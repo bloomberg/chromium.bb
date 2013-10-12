@@ -9,7 +9,7 @@ namespace content {
 
 ScopedClipboardWriterGlue::ScopedClipboardWriterGlue(ClipboardClient* client)
     : ui::ScopedClipboardWriter(client->GetClipboard(),
-                                ui::Clipboard::BUFFER_STANDARD),
+                                ui::CLIPBOARD_TYPE_COPY_PASTE),
       context_(client->CreateWriteContext()) {
   // We should never have an instance where both are set.
   DCHECK((clipboard_ && !context_.get()) ||

@@ -8,32 +8,19 @@
 
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
-  return PasteboardContainsBookmarks(BOOKMARK_PASTEBOARD_TYPE_COPY_PASTE);
+  return PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_COPY_PASTE);
 }
 
-void BookmarkNodeData::WriteToClipboard() const {
-  WriteBookmarksToPasteboard(
-      BOOKMARK_PASTEBOARD_TYPE_COPY_PASTE, elements, profile_path_);
+void BookmarkNodeData::WriteToClipboard(ui::ClipboardType type) {
+  WriteBookmarksToPasteboard(type, elements, profile_path_);
 }
 
-bool BookmarkNodeData::ReadFromClipboard() {
+bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
   base::FilePath file_path;
-  if (!ReadBookmarksFromPasteboard(
-          BOOKMARK_PASTEBOARD_TYPE_COPY_PASTE, elements, &file_path)) {
-    return false;
+  if (ReadBookmarksFromPasteboard(type, elements, &file_path)) {
+    profile_path_ = file_path;
+    return true;
   }
 
-  profile_path_ = file_path;
-  return true;
-}
-
-bool BookmarkNodeData::ReadFromDragClipboard() {
-  base::FilePath file_path;
-  if (!ReadBookmarksFromPasteboard(
-          BOOKMARK_PASTEBOARD_TYPE_DRAG, elements, &file_path)) {
-    return false;
-  }
-
-  profile_path_ = file_path;
-  return true;
+  return false;
 }

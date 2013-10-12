@@ -211,8 +211,8 @@ Clipboard::Clipboard() {
 Clipboard::~Clipboard() {
 }
 
-void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
   ScopedClipboard clipboard;
   if (!clipboard.Acquire(GetClipboardWindow()))
@@ -371,19 +371,19 @@ void Clipboard::WriteToClipboard(unsigned int format, HANDLE handle) {
   }
 }
 
-uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   return ::GetClipboardSequenceNumber();
 }
 
 bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
-                                  Clipboard::Buffer buffer) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+                                  ClipboardType type) const {
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   return ::IsClipboardFormatAvailable(format.ToUINT()) != FALSE;
 }
 
-void Clipboard::Clear(Buffer buffer) {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+void Clipboard::Clear(ClipboardType type) {
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   ScopedClipboard clipboard;
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;
@@ -391,7 +391,7 @@ void Clipboard::Clear(Buffer buffer) {
   ::EmptyClipboard();
 }
 
-void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
+void Clipboard::ReadAvailableTypes(ClipboardType type,
                                    std::vector<string16>* types,
                                    bool* contains_filenames) const {
   if (!types || !contains_filenames) {
@@ -423,8 +423,8 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
   ::GlobalUnlock(hdata);
 }
 
-void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+void Clipboard::ReadText(ClipboardType type, string16* result) const {
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   if (!result) {
     NOTREACHED();
     return;
@@ -445,9 +445,8 @@ void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
   ::GlobalUnlock(data);
 }
 
-void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
-                              std::string* result) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   if (!result) {
     NOTREACHED();
     return;
@@ -468,10 +467,12 @@ void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
   ::GlobalUnlock(data);
 }
 
-void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
-                         std::string* src_url, uint32* fragment_start,
+void Clipboard::ReadHTML(ClipboardType type,
+                         string16* markup,
+                         std::string* src_url,
+                         uint32* fragment_start,
                          uint32* fragment_end) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
   markup->clear();
   // TODO(dcheng): Remove these checks, I don't think they should be optional.
@@ -518,14 +519,14 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   *fragment_end = base::checked_numeric_cast<uint32>(offsets[1]);
 }
 
-void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+void Clipboard::ReadRTF(ClipboardType type, std::string* result) const {
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
   ReadData(GetRtfFormatType(), result);
 }
 
-SkBitmap Clipboard::ReadImage(Buffer buffer) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+SkBitmap Clipboard::ReadImage(ClipboardType type) const {
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
   // Acquire the clipboard.
   ScopedClipboard clipboard;
@@ -594,10 +595,10 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   return canvas.ExtractImageRep().sk_bitmap();
 }
 
-void Clipboard::ReadCustomData(Buffer buffer,
+void Clipboard::ReadCustomData(ClipboardType clipboard_type,
                                const string16& type,
                                string16* result) const {
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(clipboard_type, CLIPBOARD_TYPE_COPY_PASTE);
 
   // Acquire the clipboard.
   ScopedClipboard clipboard;

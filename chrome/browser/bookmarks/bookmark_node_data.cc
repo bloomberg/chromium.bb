@@ -98,7 +98,7 @@ BookmarkNodeData::~BookmarkNodeData() {
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::Clipboard::GetFormatType(kClipboardFormatString),
-      ui::Clipboard::BUFFER_STANDARD);
+      ui::CLIPBOARD_TYPE_COPY_PASTE);
 }
 #endif
 
@@ -132,9 +132,10 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url, const string16& title) {
 }
 
 #if !defined(OS_MACOSX)
-void BookmarkNodeData::WriteToClipboard() const {
+void BookmarkNodeData::WriteToClipboard(ui::ClipboardType type) {
+  DCHECK_EQ(type, ui::CLIPBOARD_TYPE_COPY_PASTE);
   ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
-                                ui::Clipboard::BUFFER_STANDARD);
+                                ui::CLIPBOARD_TYPE_COPY_PASTE);
 
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
@@ -158,11 +159,12 @@ void BookmarkNodeData::WriteToClipboard() const {
 
   Pickle pickle;
   WriteToPickle(NULL, &pickle);
-  scw.WritePickledData(
-      pickle, ui::Clipboard::GetFormatType(kClipboardFormatString));
+  scw.WritePickledData(pickle,
+                       ui::Clipboard::GetFormatType(kClipboardFormatString));
 }
 
-bool BookmarkNodeData::ReadFromClipboard() {
+bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
+  DCHECK_EQ(type, ui::CLIPBOARD_TYPE_COPY_PASTE);
   std::string data;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->ReadData(ui::Clipboard::GetFormatType(kClipboardFormatString),

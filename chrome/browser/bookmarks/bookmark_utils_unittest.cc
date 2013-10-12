@@ -79,7 +79,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
   {
     ui::ScopedClipboardWriter clipboard_writer(
         ui::Clipboard::GetForCurrentThread(),
-        ui::Clipboard::BUFFER_STANDARD);
+        ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(ASCIIToUTF16("foo"));
   }
 

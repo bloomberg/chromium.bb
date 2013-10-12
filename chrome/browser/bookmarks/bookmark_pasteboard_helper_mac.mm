@@ -218,14 +218,17 @@ void WriteSimplifiedBookmarkTypes(
   [pb setString:titleString forType:kNSURLTitlePboardType];
 }
 
-NSPasteboard* PasteboardFromType(BookmarkPasteboardType type) {
+NSPasteboard* PasteboardFromType(ui::ClipboardType type) {
   NSString* type_string = nil;
   switch (type) {
-    case BOOKMARK_PASTEBOARD_TYPE_COPY_PASTE:
+    case ui::CLIPBOARD_TYPE_COPY_PASTE:
       type_string = NSGeneralPboard;
       break;
-    case BOOKMARK_PASTEBOARD_TYPE_DRAG:
+    case ui::CLIPBOARD_TYPE_DRAG:
       type_string = NSDragPboard;
+      break;
+    case ui::CLIPBOARD_TYPE_SELECTION:
+      NOTREACHED();
       break;
   }
 
@@ -235,7 +238,7 @@ NSPasteboard* PasteboardFromType(BookmarkPasteboardType type) {
 }  // namespace
 
 void WriteBookmarksToPasteboard(
-    BookmarkPasteboardType type,
+    ui::ClipboardType type,
     const std::vector<BookmarkNodeData::Element>& elements,
     const base::FilePath& profile_path) {
   if (elements.empty())
@@ -258,7 +261,7 @@ void WriteBookmarksToPasteboard(
 }
 
 bool ReadBookmarksFromPasteboard(
-    BookmarkPasteboardType type,
+    ui::ClipboardType type,
     std::vector<BookmarkNodeData::Element>& elements,
     base::FilePath* profile_path) {
   NSPasteboard* pb = PasteboardFromType(type);
@@ -271,7 +274,7 @@ bool ReadBookmarksFromPasteboard(
          ReadNSURLPboardType(pb, elements);
 }
 
-bool PasteboardContainsBookmarks(BookmarkPasteboardType type) {
+bool PasteboardContainsBookmarks(ui::ClipboardType type) {
   NSPasteboard* pb = PasteboardFromType(type);
 
   NSArray* availableTypes =

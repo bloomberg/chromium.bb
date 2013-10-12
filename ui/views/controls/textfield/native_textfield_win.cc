@@ -639,7 +639,7 @@ void NativeTextfieldWin::OnCopy() {
   if (!text.empty()) {
     ui::ScopedClipboardWriter(
         ui::Clipboard::GetForCurrentThread(),
-        ui::Clipboard::BUFFER_STANDARD).WriteText(text);
+        ui::CLIPBOARD_TYPE_COPY_PASTE).WriteText(text);
     if (TextfieldController* controller = textfield_->GetController())
       controller->OnAfterCutOrCopy();
   }
@@ -1052,11 +1052,11 @@ void NativeTextfieldWin::OnPaste() {
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   if (!clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
-                                    ui::Clipboard::BUFFER_STANDARD))
+                                    ui::CLIPBOARD_TYPE_COPY_PASTE))
     return;
 
   string16 clipboard_str;
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_str);
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard_str);
   if (!clipboard_str.empty()) {
     string16 collapsed(CollapseWhitespace(clipboard_str, false));
     if (textfield_->style() & Textfield::STYLE_LOWERCASE)

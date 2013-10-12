@@ -26,15 +26,15 @@ namespace {
 
 const size_t kMaxClipboardWriteSize = 1000000;
 
-ui::Clipboard::Buffer ConvertClipboardType(uint32_t type) {
+ui::ClipboardType ConvertClipboardType(uint32_t type) {
   switch (type) {
     case PP_FLASH_CLIPBOARD_TYPE_STANDARD:
-      return ui::Clipboard::BUFFER_STANDARD;
+      return ui::CLIPBOARD_TYPE_COPY_PASTE;
     case PP_FLASH_CLIPBOARD_TYPE_SELECTION:
-      return ui::Clipboard::BUFFER_SELECTION;
+      return ui::CLIPBOARD_TYPE_SELECTION;
   }
   NOTREACHED();
-  return ui::Clipboard::BUFFER_STANDARD;
+  return ui::CLIPBOARD_TYPE_COPY_PASTE;
 }
 
 // Functions to pack/unpack custom data from a pickle. See the header file for
@@ -160,24 +160,24 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgIsFormatAvailable(
   }
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::Clipboard::Buffer buffer_type = ConvertClipboardType(clipboard_type);
+  ui::ClipboardType type = ConvertClipboardType(clipboard_type);
   bool available = false;
   switch (format) {
     case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
       bool plain = clipboard->IsFormatAvailable(
-          ui::Clipboard::GetPlainTextFormatType(), buffer_type);
+          ui::Clipboard::GetPlainTextFormatType(), type);
       bool plainw = clipboard->IsFormatAvailable(
-          ui::Clipboard::GetPlainTextWFormatType(), buffer_type);
+          ui::Clipboard::GetPlainTextWFormatType(), type);
       available = plain || plainw;
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_HTML:
       available = clipboard->IsFormatAvailable(
-          ui::Clipboard::GetHtmlFormatType(), buffer_type);
+          ui::Clipboard::GetHtmlFormatType(), type);
       break;
     case PP_FLASH_CLIPBOARD_FORMAT_RTF:
-      available = clipboard->IsFormatAvailable(
-          ui::Clipboard::GetRtfFormatType(), buffer_type);
+      available =
+          clipboard->IsFormatAvailable(ui::Clipboard::GetRtfFormatType(), type);
       break;
     case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
       break;
@@ -206,15 +206,15 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
   }
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::Clipboard::Buffer buffer_type = ConvertClipboardType(clipboard_type);
+  ui::ClipboardType type = ConvertClipboardType(clipboard_type);
   std::string clipboard_string;
   int32_t result = PP_ERROR_FAILED;
   switch (format) {
     case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
       if (clipboard->IsFormatAvailable(
-          ui::Clipboard::GetPlainTextWFormatType(), buffer_type)) {
+          ui::Clipboard::GetPlainTextWFormatType(), type)) {
         string16 text;
-        clipboard->ReadText(buffer_type, &text);
+        clipboard->ReadText(type, &text);
         if (!text.empty()) {
           result = PP_OK;
           clipboard_string = UTF16ToUTF8(text);
@@ -223,16 +223,16 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
       }
       // If the PlainTextW format isn't available or is empty, take the
       // ASCII text format.
-      if (clipboard->IsFormatAvailable(
-          ui::Clipboard::GetPlainTextFormatType(), buffer_type)) {
+      if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+                                       type)) {
         result = PP_OK;
-        clipboard->ReadAsciiText(buffer_type, &clipboard_string);
+        clipboard->ReadAsciiText(type, &clipboard_string);
       }
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_HTML: {
-      if (!clipboard->IsFormatAvailable(
-          ui::Clipboard::GetHtmlFormatType(), buffer_type)) {
+      if (!clipboard->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
+                                        type)) {
         break;
       }
 
@@ -240,8 +240,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
       std::string url;
       uint32 fragment_start;
       uint32 fragment_end;
-      clipboard->ReadHTML(buffer_type, &html, &url, &fragment_start,
-                                  &fragment_end);
+      clipboard->ReadHTML(type, &html, &url, &fragment_start, &fragment_end);
       result = PP_OK;
       clipboard_string = UTF16ToUTF8(
           html.substr(fragment_start, fragment_end - fragment_start));
@@ -249,19 +248,19 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
     }
     case PP_FLASH_CLIPBOARD_FORMAT_RTF: {
       if (!clipboard->IsFormatAvailable(
-          ui::Clipboard::GetRtfFormatType(), buffer_type)) {
+          ui::Clipboard::GetRtfFormatType(), type)) {
         break;
       }
       result = PP_OK;
-      clipboard->ReadRTF(buffer_type, &clipboard_string);
+      clipboard->ReadRTF(type, &clipboard_string);
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
       break;
     default: {
       if (custom_formats_.IsFormatRegistered(format)) {
-        string16 format_name = UTF8ToUTF16(
-            custom_formats_.GetFormatName(format));
+        string16 format_name =
+            UTF8ToUTF16(custom_formats_.GetFormatName(format));
         std::string clipboard_data;
         clipboard->ReadData(
             ui::Clipboard::GetPepperCustomDataFormatType(), &clipboard_data);
@@ -295,14 +294,14 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
     return PP_ERROR_FAILED;
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::Clipboard::Buffer buffer_type = ConvertClipboardType(clipboard_type);
+  ui::ClipboardType type = ConvertClipboardType(clipboard_type);
   // If no formats are passed in clear the clipboard.
   if (formats.size() == 0) {
-    clipboard->Clear(buffer_type);
+    clipboard->Clear(type);
     return PP_OK;
   }
 
-  ui::ScopedClipboardWriter scw(clipboard, buffer_type);
+  ui::ScopedClipboardWriter scw(clipboard, type);
   std::map<string16, std::string> custom_data_map;
   int32_t res = PP_OK;
   for (uint32_t i = 0; i < formats.size(); ++i) {

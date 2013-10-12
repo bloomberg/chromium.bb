@@ -1247,21 +1247,21 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   normal->SelectAll(false);
   normal->ExecuteCommand(IDS_APP_CUT);
   string16 result;
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   EXPECT_EQ(kNormalText, result);
   normal->SetText(kNormalText);  // Let's revert to the original content.
 
   read_only->SelectAll(false);
   read_only->ExecuteCommand(IDS_APP_CUT);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll(false);
   password->ExecuteCommand(IDS_APP_CUT);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -1273,19 +1273,19 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll(false);
   read_only->ExecuteCommand(IDS_APP_COPY);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   EXPECT_EQ(kReadOnlyText, result);
 
   normal->SelectAll(false);
   normal->ExecuteCommand(IDS_APP_COPY);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll(false);
   password->ExecuteCommand(IDS_APP_COPY);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
   // Text cannot be copied from an obscured field; the clipboard won't change.
   EXPECT_EQ(kNormalText, result);
 

@@ -56,7 +56,7 @@ using content::UserMetricsAction;
   if (![[self controller] draggingAllowed:info])
     return NSDragOperationNone;
   if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
-      PasteboardContainsBookmarks(BOOKMARK_PASTEBOARD_TYPE_DRAG) ||
+      PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_DRAG) ||
       [[info draggingPasteboard] containsURLData]) {
     // Find the position of the drop indicator.
     BOOL showIt = [[self controller]

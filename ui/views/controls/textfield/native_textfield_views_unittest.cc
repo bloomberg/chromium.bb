@@ -252,14 +252,14 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   string16 GetClipboardText() const {
     string16 text;
     ui::Clipboard::GetForCurrentThread()->
-        ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
+        ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
     return text;
   }
 
   void SetClipboardText(const std::string& text) {
     ui::ScopedClipboardWriter clipboard_writer(
         ui::Clipboard::GetForCurrentThread(),
-        ui::Clipboard::BUFFER_STANDARD);
+        ui::CLIPBOARD_TYPE_COPY_PASTE);
     clipboard_writer.WriteText(ASCIIToUTF16(text));
   }
 
@@ -793,7 +793,7 @@ TEST_F(NativeTextfieldViewsTest, ContextMenuDisplayTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   EXPECT_TRUE(textfield_->context_menu_controller());
   textfield_->SetText(ASCIIToUTF16("hello world"));
-  ui::Clipboard::GetForCurrentThread()->Clear(ui::Clipboard::BUFFER_STANDARD);
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
   textfield_view_->ClearEditHistory();
   EXPECT_TRUE(GetContextMenuModel());
   VerifyTextfieldContextMenuContents(false, false, GetContextMenuModel());

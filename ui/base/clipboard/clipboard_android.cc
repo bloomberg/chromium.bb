@@ -184,9 +184,9 @@ Clipboard::~Clipboard() {
 }
 
 // Main entry point used to write several values in the clipboard.
-void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   g_map.Get().Clear();
   for (ObjectMap::const_iterator iter = objects.begin();
        iter != objects.end(); ++iter) {
@@ -194,7 +194,7 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
   }
 }
 
-uint64 Clipboard::GetSequenceNumber(Clipboard::Buffer /* buffer */) {
+uint64 Clipboard::GetSequenceNumber(ClipboardType /* type */) {
   DCHECK(CalledOnValidThread());
   // TODO: implement this. For now this interface will advertise
   // that the clipboard never changes. That's fine as long as we
@@ -203,22 +203,23 @@ uint64 Clipboard::GetSequenceNumber(Clipboard::Buffer /* buffer */) {
 }
 
 bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
-                                  Clipboard::Buffer buffer) const {
+                                  ClipboardType type) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   return g_map.Get().HasFormat(format.data());
 }
 
-void Clipboard::Clear(Buffer buffer) {
+void Clipboard::Clear(ClipboardType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   g_map.Get().Clear();
 }
 
-void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
+void Clipboard::ReadAvailableTypes(ClipboardType type,
+                                   std::vector<string16>* types,
                                    bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
   if (!types || !contains_filenames) {
     NOTREACHED();
@@ -231,29 +232,28 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
   *contains_filenames = false;
 }
 
-void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
+void Clipboard::ReadText(ClipboardType type, string16* result) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   std::string utf8;
-  ReadAsciiText(buffer, &utf8);
+  ReadAsciiText(type, &utf8);
   *result = UTF8ToUTF16(utf8);
 }
 
-void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
-                              std::string* result) const {
+void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   *result = g_map.Get().Get(kPlainTextFormat);
 }
 
 // Note: |src_url| isn't really used. It is only implemented in Windows
-void Clipboard::ReadHTML(Clipboard::Buffer buffer,
+void Clipboard::ReadHTML(ClipboardType type,
                          string16* markup,
                          std::string* src_url,
                          uint32* fragment_start,
                          uint32* fragment_end) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   if (src_url)
     src_url->clear();
 
@@ -264,14 +264,14 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer,
   *fragment_end = static_cast<uint32>(markup->length());
 }
 
-void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
+void Clipboard::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
-SkBitmap Clipboard::ReadImage(Buffer buffer) const {
+SkBitmap Clipboard::ReadImage(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   std::string input = g_map.Get().Get(kBitmapFormat);
 
   SkBitmap bmp;
@@ -291,7 +291,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   return bmp;
 }
 
-void Clipboard::ReadCustomData(Buffer buffer,
+void Clipboard::ReadCustomData(ClipboardType clipboard_type,
                                const string16& type,
                                string16* result) const {
   DCHECK(CalledOnValidThread());

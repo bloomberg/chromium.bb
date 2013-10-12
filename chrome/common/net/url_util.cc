@@ -26,7 +26,7 @@ void WriteURLToClipboard(const GURL& url,
       net::FormatUrl(url, languages, net::kFormatUrlOmitNothing,
                      net::UnescapeRule::NONE, NULL, NULL, NULL);
 
-  ui::ScopedClipboardWriter scw(clipboard, ui::Clipboard::BUFFER_STANDARD);
+  ui::ScopedClipboardWriter scw(clipboard, ui::CLIPBOARD_TYPE_COPY_PASTE);
   scw.WriteURL(text);
 }
 

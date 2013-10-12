@@ -16,14 +16,14 @@
 namespace ui {
 
 ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard,
-                                             Clipboard::Buffer buffer)
+                                             ClipboardType type)
     : clipboard_(clipboard),
-      buffer_(buffer) {
+      type_(type) {
 }
 
 ScopedClipboardWriter::~ScopedClipboardWriter() {
   if (!objects_.empty() && clipboard_)
-    clipboard_->WriteObjects(buffer_, objects_);
+    clipboard_->WriteObjects(type_, objects_);
 }
 
 void ScopedClipboardWriter::WriteText(const string16& text) {

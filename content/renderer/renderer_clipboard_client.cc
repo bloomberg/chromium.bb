@@ -100,69 +100,64 @@ ui::Clipboard* RendererClipboardClient::GetClipboard() {
   return NULL;
 }
 
-uint64 RendererClipboardClient::GetSequenceNumber(
-    ui::Clipboard::Buffer buffer) {
+uint64 RendererClipboardClient::GetSequenceNumber(ui::ClipboardType type) {
   uint64 sequence_number = 0;
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_GetSequenceNumber(buffer,
-                                             &sequence_number));
+      new ClipboardHostMsg_GetSequenceNumber(type, &sequence_number));
   return sequence_number;
 }
 
 bool RendererClipboardClient::IsFormatAvailable(
     const ui::Clipboard::FormatType& format,
-    ui::Clipboard::Buffer buffer) {
+    ui::ClipboardType type) {
   bool result;
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_IsFormatAvailable(format, buffer, &result));
+      new ClipboardHostMsg_IsFormatAvailable(format, type, &result));
   return result;
 }
 
-void RendererClipboardClient::Clear(ui::Clipboard::Buffer buffer) {
-  RenderThreadImpl::current()->Send(new ClipboardHostMsg_Clear(buffer));
+void RendererClipboardClient::Clear(ui::ClipboardType type) {
+  RenderThreadImpl::current()->Send(new ClipboardHostMsg_Clear(type));
 }
 
-void RendererClipboardClient::ReadAvailableTypes(
-    ui::Clipboard::Buffer buffer,
-    std::vector<string16>* types,
-    bool* contains_filenames) {
+void RendererClipboardClient::ReadAvailableTypes(ui::ClipboardType type,
+                                                 std::vector<string16>* types,
+                                                 bool* contains_filenames) {
   RenderThreadImpl::current()->Send(new ClipboardHostMsg_ReadAvailableTypes(
-      buffer, types, contains_filenames));
+      type, types, contains_filenames));
 }
 
-void RendererClipboardClient::ReadText(ui::Clipboard::Buffer buffer,
+void RendererClipboardClient::ReadText(ui::ClipboardType type,
                                        string16* result) {
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_ReadText(buffer, result));
+      new ClipboardHostMsg_ReadText(type, result));
 }
 
-void RendererClipboardClient::ReadAsciiText(ui::Clipboard::Buffer buffer,
+void RendererClipboardClient::ReadAsciiText(ui::ClipboardType type,
                                             std::string* result) {
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_ReadAsciiText(buffer, result));
+      new ClipboardHostMsg_ReadAsciiText(type, result));
 }
 
-void RendererClipboardClient::ReadHTML(ui::Clipboard::Buffer buffer,
+void RendererClipboardClient::ReadHTML(ui::ClipboardType type,
                                        string16* markup,
                                        GURL* url, uint32* fragment_start,
                                        uint32* fragment_end) {
-  RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_ReadHTML(buffer, markup, url, fragment_start,
-                                    fragment_end));
+  RenderThreadImpl::current()->Send(new ClipboardHostMsg_ReadHTML(
+      type, markup, url, fragment_start, fragment_end));
 }
 
-void RendererClipboardClient::ReadRTF(ui::Clipboard::Buffer buffer,
+void RendererClipboardClient::ReadRTF(ui::ClipboardType type,
                                       std::string* result) {
-  RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_ReadRTF(buffer, result));
+  RenderThreadImpl::current()->Send(new ClipboardHostMsg_ReadRTF(type, result));
 }
 
-void RendererClipboardClient::ReadImage(ui::Clipboard::Buffer buffer,
+void RendererClipboardClient::ReadImage(ui::ClipboardType type,
                                         std::string* data) {
   base::SharedMemoryHandle image_handle;
   uint32 image_size;
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_ReadImage(buffer, &image_handle, &image_size));
+      new ClipboardHostMsg_ReadImage(type, &image_handle, &image_size));
   if (base::SharedMemory::IsHandleValid(image_handle)) {
     base::SharedMemory buffer(image_handle, true);
     buffer.Map(image_size);
@@ -170,11 +165,11 @@ void RendererClipboardClient::ReadImage(ui::Clipboard::Buffer buffer,
   }
 }
 
-void RendererClipboardClient::ReadCustomData(ui::Clipboard::Buffer buffer,
+void RendererClipboardClient::ReadCustomData(ui::ClipboardType clipboard_type,
                                              const string16& type,
                                              string16* data) {
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_ReadCustomData(buffer, type, data));
+      new ClipboardHostMsg_ReadCustomData(clipboard_type, type, data));
 }
 
 void RendererClipboardClient::ReadData(const ui::Clipboard::FormatType& format,

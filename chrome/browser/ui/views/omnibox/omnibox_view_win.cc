@@ -1394,10 +1394,10 @@ void OmniboxViewWin::OnCopy() {
   if (write_url) {
     BookmarkNodeData data;
     data.ReadFromTuple(url, text);
-    data.WriteToClipboard();
+    data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
   } else {
     ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
-                                  ui::Clipboard::BUFFER_STANDARD);
+                                  ui::CLIPBOARD_TYPE_COPY_PASTE);
     scw.WriteText(text);
   }
 }

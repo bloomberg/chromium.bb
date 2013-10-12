@@ -232,11 +232,11 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
   X11AtomCache* atom_cache() { return &atom_cache_; }
 
   // Returns the X11 type that we pass to various XSelection functions for the
-  // given buffer.
-  ::Atom LookupSelectionForBuffer(Buffer buffer) const;
+  // given type.
+  ::Atom LookupSelectionForClipboardType(ClipboardType type) const;
 
-  // Returns the object which is responsible for communication on |buffer|.
-  SelectionRequestor* GetSelectionRequestorForBuffer(Buffer buffer);
+  // Returns the object which is responsible for communication on |type|.
+  SelectionRequestor* GetSelectionRequestorForClipboardType(ClipboardType type);
 
   // Finds the SelectionFormatMap for the incoming selection atom.
   const SelectionFormatMap& LookupStorageForAtom(::Atom atom);
@@ -252,8 +252,8 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
                      const scoped_refptr<base::RefCountedMemory>& memory);
 
   // Moves the temporary |clipboard_data_| to the long term data storage for
-  // |buffer|.
-  void TakeOwnershipOfSelection(Buffer buffer);
+  // |type|.
+  void TakeOwnershipOfSelection(ClipboardType type);
 
   // Returns the first of |types| offered by the current selection holder in
   // |data_out|, or returns NULL if none of those types are available.
@@ -263,14 +263,14 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
   // selection holder is some other window, we spin up a nested message loop
   // and do the asynchronous dance with whatever application is holding the
   // selection.
-  ui::SelectionData RequestAndWaitForTypes(Buffer buffer,
+  ui::SelectionData RequestAndWaitForTypes(ClipboardType type,
                                            const std::vector< ::Atom>& types);
 
   // Retrieves the list of possible data types the current clipboard owner has.
   //
   // If the selection holder is us, this is synchronous, otherwise this runs a
   // blocking message loop.
-  TargetList WaitAndGetTargetsList(Buffer buffer);
+  TargetList WaitAndGetTargetsList(ClipboardType type);
 
   // Returns a list of all text atoms that we handle.
   std::vector< ::Atom> GetTextAtoms() const;
@@ -278,8 +278,8 @@ class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
   // Returns a vector with a |format| converted to an X11 atom.
   std::vector< ::Atom> GetAtomsForFormat(const Clipboard::FormatType& format);
 
-  // Clears a certain data buffer.
-  void Clear(Buffer buffer);
+  // Clears a certain clipboard type.
+  void Clear(ClipboardType type);
 
  private:
   // Overridden from base::MessagePumpDispatcher:
@@ -341,9 +341,9 @@ Clipboard::AuraX11Details::~AuraX11Details() {
   XDestroyWindow(x_display_, x_window_);
 }
 
-::Atom Clipboard::AuraX11Details::LookupSelectionForBuffer(
-    Buffer buffer) const {
-  if (buffer == BUFFER_STANDARD)
+::Atom Clipboard::AuraX11Details::LookupSelectionForClipboardType(
+    ClipboardType type) const {
+  if (type == CLIPBOARD_TYPE_COPY_PASTE)
     return atom_cache_.GetAtom(kClipboard);
 
   return XA_PRIMARY;
@@ -359,8 +359,9 @@ const SelectionFormatMap& Clipboard::AuraX11Details::LookupStorageForAtom(
 }
 
 ui::SelectionRequestor*
-Clipboard::AuraX11Details::GetSelectionRequestorForBuffer(Buffer buffer) {
-  if (buffer == BUFFER_STANDARD)
+Clipboard::AuraX11Details::GetSelectionRequestorForClipboardType(
+    ClipboardType type) {
+  if (type == CLIPBOARD_TYPE_COPY_PASTE)
     return &clipboard_requestor_;
   else
     return &primary_requestor_;
@@ -377,17 +378,17 @@ void Clipboard::AuraX11Details::InsertMapping(
   clipboard_data_.Insert(atom_key, memory);
 }
 
-void Clipboard::AuraX11Details::TakeOwnershipOfSelection(Buffer buffer) {
-  if (buffer == BUFFER_STANDARD)
+void Clipboard::AuraX11Details::TakeOwnershipOfSelection(ClipboardType type) {
+  if (type == CLIPBOARD_TYPE_COPY_PASTE)
     return clipboard_owner_.TakeOwnershipOfSelection(clipboard_data_);
   else
     return primary_owner_.TakeOwnershipOfSelection(clipboard_data_);
 }
 
 SelectionData Clipboard::AuraX11Details::RequestAndWaitForTypes(
-    Buffer buffer,
+    ClipboardType type,
     const std::vector< ::Atom>& types) {
-  ::Atom selection_name = LookupSelectionForBuffer(buffer);
+  ::Atom selection_name = LookupSelectionForClipboardType(type);
   if (XGetSelectionOwner(x_display_, selection_name) == x_window_) {
     // We can local fastpath instead of playing the nested message loop game
     // with the X server.
@@ -400,8 +401,8 @@ SelectionData Clipboard::AuraX11Details::RequestAndWaitForTypes(
         return SelectionData(format_map_it->first, format_map_it->second);
     }
   } else {
-    TargetList targets = WaitAndGetTargetsList(buffer);
-    SelectionRequestor* receiver = GetSelectionRequestorForBuffer(buffer);
+    TargetList targets = WaitAndGetTargetsList(type);
+    SelectionRequestor* receiver = GetSelectionRequestorForClipboardType(type);
 
     std::vector< ::Atom> intersection;
     ui::GetAtomIntersection(types, targets.target_list(), &intersection);
@@ -412,8 +413,8 @@ SelectionData Clipboard::AuraX11Details::RequestAndWaitForTypes(
 }
 
 TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
-    Buffer buffer) {
-  ::Atom selection_name = LookupSelectionForBuffer(buffer);
+    ClipboardType type) {
+  ::Atom selection_name = LookupSelectionForClipboardType(type);
   std::vector< ::Atom> out;
   if (XGetSelectionOwner(x_display_, selection_name) == x_window_) {
     // We can local fastpath and return the list of local targets.
@@ -428,7 +429,7 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
     size_t out_data_items = 0;
     ::Atom out_type = None;
 
-    SelectionRequestor* receiver = GetSelectionRequestorForBuffer(buffer);
+    SelectionRequestor* receiver = GetSelectionRequestorForClipboardType(type);
     if (receiver->PerformBlockingConvertSelection(atom_cache_.GetAtom(kTargets),
                                                   &data,
                                                   NULL,
@@ -474,8 +475,8 @@ std::vector< ::Atom> Clipboard::AuraX11Details::GetAtomsForFormat(
   return atoms;
 }
 
-void Clipboard::AuraX11Details::Clear(Buffer buffer) {
-  if (buffer == BUFFER_STANDARD)
+void Clipboard::AuraX11Details::Clear(ClipboardType type) {
+  if (type == CLIPBOARD_TYPE_COPY_PASTE)
     return clipboard_owner_.Clear();
   else
     return primary_owner_.Clear();
@@ -529,54 +530,53 @@ Clipboard::~Clipboard() {
   // current selection to live on.
 }
 
-void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsValidBuffer(buffer));
+  DCHECK(IsSupportedClipboardType(type));
 
   aurax11_details_->CreateNewClipboardData();
   for (ObjectMap::const_iterator iter = objects.begin();
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
-  aurax11_details_->TakeOwnershipOfSelection(buffer);
+  aurax11_details_->TakeOwnershipOfSelection(type);
 
-  if (buffer == BUFFER_STANDARD) {
+  if (type == CLIPBOARD_TYPE_COPY_PASTE) {
     ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
     if (text_iter != objects.end()) {
       aurax11_details_->CreateNewClipboardData();
       const ObjectMapParam& char_vector = text_iter->second[0];
       WriteText(&char_vector.front(), char_vector.size());
-      aurax11_details_->TakeOwnershipOfSelection(BUFFER_SELECTION);
+      aurax11_details_->TakeOwnershipOfSelection(CLIPBOARD_TYPE_SELECTION);
     }
   }
 }
 
 bool Clipboard::IsFormatAvailable(const FormatType& format,
-                                  Buffer buffer) const {
+                                  ClipboardType type) const {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsValidBuffer(buffer));
+  DCHECK(IsSupportedClipboardType(type));
 
-  TargetList target_list =
-      aurax11_details_->WaitAndGetTargetsList(buffer);
+  TargetList target_list = aurax11_details_->WaitAndGetTargetsList(type);
   return target_list.ContainsFormat(format);
 }
 
-void Clipboard::Clear(Buffer buffer) {
+void Clipboard::Clear(ClipboardType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsValidBuffer(buffer));
-  aurax11_details_->Clear(buffer);
+  DCHECK(IsSupportedClipboardType(type));
+  aurax11_details_->Clear(type);
 }
 
-void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
-    bool* contains_filenames) const {
+void Clipboard::ReadAvailableTypes(ClipboardType type,
+                                   std::vector<string16>* types,
+                                   bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
   if (!types || !contains_filenames) {
     NOTREACHED();
     return;
   }
 
-  TargetList target_list =
-      aurax11_details_->WaitAndGetTargetsList(buffer);
+  TargetList target_list = aurax11_details_->WaitAndGetTargetsList(type);
 
   types->clear();
 
@@ -591,35 +591,34 @@ void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
   *contains_filenames = false;
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      buffer,
-      aurax11_details_->GetAtomsForFormat(GetWebCustomDataFormatType())));
+      type, aurax11_details_->GetAtomsForFormat(GetWebCustomDataFormatType())));
   if (data.IsValid())
     ReadCustomDataTypes(data.GetData(), data.GetSize(), types);
 }
 
-void Clipboard::ReadText(Buffer buffer, string16* result) const {
+void Clipboard::ReadText(ClipboardType type, string16* result) const {
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      buffer, aurax11_details_->GetTextAtoms()));
+      type, aurax11_details_->GetTextAtoms()));
   if (data.IsValid()) {
     std::string text = data.GetText();
     *result = UTF8ToUTF16(text);
   }
 }
 
-void Clipboard::ReadAsciiText(Buffer buffer, std::string* result) const {
+void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      buffer, aurax11_details_->GetTextAtoms()));
+      type, aurax11_details_->GetTextAtoms()));
   if (data.IsValid())
     result->assign(data.GetText());
 }
 
 // TODO(estade): handle different charsets.
 // TODO(port): set *src_url.
-void Clipboard::ReadHTML(Buffer buffer,
+void Clipboard::ReadHTML(ClipboardType type,
                          string16* markup,
                          std::string* src_url,
                          uint32* fragment_start,
@@ -632,7 +631,7 @@ void Clipboard::ReadHTML(Buffer buffer,
   *fragment_end = 0;
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      buffer, aurax11_details_->GetAtomsForFormat(GetHtmlFormatType())));
+      type, aurax11_details_->GetAtomsForFormat(GetHtmlFormatType())));
   if (data.IsValid()) {
     *markup = data.GetHtml();
 
@@ -642,21 +641,20 @@ void Clipboard::ReadHTML(Buffer buffer,
   }
 }
 
-void Clipboard::ReadRTF(Buffer buffer, std::string* result) const {
+void Clipboard::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      buffer, aurax11_details_->GetAtomsForFormat(GetRtfFormatType())));
+      type, aurax11_details_->GetAtomsForFormat(GetRtfFormatType())));
   if (data.IsValid())
     data.AssignTo(result);
 }
 
-SkBitmap Clipboard::ReadImage(Buffer buffer) const {
+SkBitmap Clipboard::ReadImage(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      buffer,
-      aurax11_details_->GetAtomsForFormat(GetBitmapFormatType())));
+      type, aurax11_details_->GetAtomsForFormat(GetBitmapFormatType())));
   if (data.IsValid()) {
     SkBitmap bitmap;
     if (gfx::PNGCodec::Decode(data.GetData(), data.GetSize(), &bitmap))
@@ -666,13 +664,13 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   return SkBitmap();
 }
 
-void Clipboard::ReadCustomData(Buffer buffer,
+void Clipboard::ReadCustomData(ClipboardType clipboard_type,
                                const string16& type,
                                string16* result) const {
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      buffer,
+      clipboard_type,
       aurax11_details_->GetAtomsForFormat(GetWebCustomDataFormatType())));
   if (data.IsValid())
     ReadCustomDataForType(data.GetData(), data.GetSize(), type, result);
@@ -688,14 +686,14 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      BUFFER_STANDARD, aurax11_details_->GetAtomsForFormat(format)));
+      CLIPBOARD_TYPE_COPY_PASTE, aurax11_details_->GetAtomsForFormat(format)));
   if (data.IsValid())
     data.AssignTo(result);
 }
 
-uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
+uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
   DCHECK(CalledOnValidThread());
-  if (buffer == BUFFER_STANDARD)
+  if (type == CLIPBOARD_TYPE_COPY_PASTE)
     return SelectionChangeObserver::GetInstance()->clipboard_sequence_number();
   else
     return SelectionChangeObserver::GetInstance()->primary_sequence_number();

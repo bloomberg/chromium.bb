@@ -32,7 +32,7 @@ struct ParamTraits<ui::Clipboard::FormatType> {
 
 #endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 
-IPC_ENUM_TRAITS(ui::Clipboard::Buffer)
+IPC_ENUM_TRAITS(ui::ClipboardType)
 
 // Clipboard IPC messages sent from the renderer to the browser.
 
@@ -46,39 +46,39 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ClipboardHostMsg_WriteObjectsSync,
                             ui::Clipboard::ObjectMap /* objects */,
                             base::SharedMemoryHandle /* bitmap handle */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_GetSequenceNumber,
-                            ui::Clipboard::Buffer /* buffer */,
+                            ui::ClipboardType /* type */,
                             uint64 /* result */)
 IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_IsFormatAvailable,
                             ui::Clipboard::FormatType /* format */,
-                            ui::Clipboard::Buffer /* buffer */,
+                            ui::ClipboardType /* type */,
                             bool /* result */)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_Clear,
-                     ui::Clipboard::Buffer /* buffer */)
+                     ui::ClipboardType /* type */)
 IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadAvailableTypes,
-                            ui::Clipboard::Buffer /* buffer */,
+                            ui::ClipboardType /* type */,
                             std::vector<string16> /* types */,
                             bool /* contains filenames */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadText,
-                            ui::Clipboard::Buffer /* buffer */,
+                            ui::ClipboardType /* type */,
                             string16 /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadAsciiText,
-                            ui::Clipboard::Buffer  /* buffer */,
+                            ui::ClipboardType /* type */,
                             std::string /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_4(ClipboardHostMsg_ReadHTML,
-                            ui::Clipboard::Buffer  /* buffer */,
+                            ui::ClipboardType /* type */,
                             string16 /* markup */,
                             GURL /* url */,
                             uint32 /* fragment start */,
                             uint32 /* fragment end */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadRTF,
-                            ui::Clipboard::Buffer /* buffer */,
+                            ui::ClipboardType /* type */,
                             std::string /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadImage,
-                            ui::Clipboard::Buffer /* buffer */,
+                            ui::ClipboardType /* type */,
                             base::SharedMemoryHandle /* PNG-encoded image */,
                             uint32 /* image size */)
 IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_ReadCustomData,
-                            ui::Clipboard::Buffer /* buffer */,
+                            ui::ClipboardType /* type */,
                             string16 /* type */,
                             string16 /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadData,

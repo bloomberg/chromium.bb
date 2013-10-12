@@ -512,7 +512,7 @@ bool TextfieldViewsModel::Cut() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
     ui::ScopedClipboardWriter(
         ui::Clipboard::GetForCurrentThread(),
-        ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());
+        ui::CLIPBOARD_TYPE_COPY_PASTE).WriteText(GetSelectedText());
     // A trick to let undo/redo handle cursor correctly.
     // Undoing CUT moves the cursor to the end of the change rather
     // than beginning, unlike Delete/Backspace.
@@ -530,7 +530,7 @@ bool TextfieldViewsModel::Copy() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
     ui::ScopedClipboardWriter(
         ui::Clipboard::GetForCurrentThread(),
-        ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());
+        ui::CLIPBOARD_TYPE_COPY_PASTE).WriteText(GetSelectedText());
     return true;
   }
   return false;
@@ -538,8 +538,8 @@ bool TextfieldViewsModel::Copy() {
 
 bool TextfieldViewsModel::Paste() {
   string16 result;
-  ui::Clipboard::GetForCurrentThread()
-      ->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                                 &result);
   if (!result.empty()) {
     InsertTextInternal(result, false);
     return true;

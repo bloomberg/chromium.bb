@@ -531,7 +531,7 @@ std::wstring GetPathAndQueryFromUrl(const std::wstring& url) {
 std::wstring GetClipboardText() {
   string16 text16;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::Clipboard::BUFFER_STANDARD, &text16);
+      ui::CLIPBOARD_TYPE_COPY_PASTE, &text16);
   return UTF16ToWide(text16);
 }
 
@@ -542,7 +542,7 @@ void DestroyClipboard() {
 void SetClipboardText(const std::wstring& text) {
   ui::ScopedClipboardWriter clipboard_writer(
       ui::Clipboard::GetForCurrentThread(),
-      ui::Clipboard::BUFFER_STANDARD);
+      ui::CLIPBOARD_TYPE_COPY_PASTE);
   clipboard_writer.WriteText(WideToUTF16(text));
 }
 

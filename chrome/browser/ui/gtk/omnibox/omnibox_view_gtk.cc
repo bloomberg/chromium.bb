@@ -1580,7 +1580,7 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
   if (write_url) {
     BookmarkNodeData data;
     data.ReadFromTuple(url, text);
-    data.WriteToClipboard();
+    data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
     SetSelectedRange(selection);
 
     // Stop propagating the signal.

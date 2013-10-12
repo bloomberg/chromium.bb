@@ -52,7 +52,7 @@ class WebClipboardImpl : public WebKit::WebClipboard {
   virtual void writeDataObject(const WebKit::WebDragData& data);
 
  private:
-  bool ConvertBufferType(Buffer, ui::Clipboard::Buffer*);
+  bool ConvertBufferType(Buffer, ui::ClipboardType*);
   ClipboardClient* client_;
 };
 

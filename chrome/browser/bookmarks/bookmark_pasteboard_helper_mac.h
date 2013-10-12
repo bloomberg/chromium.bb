@@ -18,26 +18,21 @@ class FilePath;
 // This set of functions lets C++ code interact with the cocoa pasteboard and
 // dragging methods.
 
-enum BookmarkPasteboardType {
-  BOOKMARK_PASTEBOARD_TYPE_COPY_PASTE,
-  BOOKMARK_PASTEBOARD_TYPE_DRAG
-};
-
 // Writes a set of bookmark elements from a profile to the specified pasteboard.
 void WriteBookmarksToPasteboard(
-    BookmarkPasteboardType type,
+    ui::ClipboardType type,
     const std::vector<BookmarkNodeData::Element>& elements,
     const base::FilePath& profile_path);
 
 // Reads a set of bookmark elements from the specified pasteboard.
 bool ReadBookmarksFromPasteboard(
-    BookmarkPasteboardType type,
+    ui::ClipboardType type,
     std::vector<BookmarkNodeData::Element>& elements,
     base::FilePath* profile_path);
 
 // Returns true if the specified pasteboard contains any sort of bookmark
 // elements. It currently does not consider a plaintext url a valid bookmark.
-bool PasteboardContainsBookmarks(BookmarkPasteboardType type);
+bool PasteboardContainsBookmarks(ui::ClipboardType type);
 
 #if defined(__OBJC__)
 // Pasteboard type for dictionary containing bookmark structure consisting

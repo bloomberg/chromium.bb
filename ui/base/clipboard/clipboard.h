@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
+#include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/ui_export.h"
 
 #if defined(TOOLKIT_GTK)
@@ -188,28 +189,20 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   typedef std::vector<ObjectMapParam> ObjectMapParams;
   typedef std::map<int /* ObjectType */, ObjectMapParams> ObjectMap;
 
-  // Buffer designates which clipboard the action should be applied to.
-  // Only platforms that use the X Window System support the selection
-  // buffer.
-  enum Buffer {
-    BUFFER_STANDARD,
-    BUFFER_SELECTION,
-  };
-
-  static bool IsValidBuffer(int32 buffer) {
-    switch (buffer) {
-      case BUFFER_STANDARD:
+  static bool IsSupportedClipboardType(int32 type) {
+    switch (type) {
+      case CLIPBOARD_TYPE_COPY_PASTE:
         return true;
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-      case BUFFER_SELECTION:
+      case CLIPBOARD_TYPE_SELECTION:
         return true;
 #endif
     }
     return false;
   }
 
-  static Buffer FromInt(int32 buffer) {
-    return static_cast<Buffer>(buffer);
+  static ClipboardType FromInt(int32 type) {
+    return static_cast<ClipboardType>(type);
   }
 
   // Sets the list of threads that are allowed to access the clipboard.
@@ -233,43 +226,47 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // contents of |objects|. On Windows they are copied to the system clipboard.
   // On linux they are copied into a structure owned by the Clipboard object and
   // kept until the system clipboard is set again.
-  void WriteObjects(Buffer buffer, const ObjectMap& objects);
+  void WriteObjects(ClipboardType type, const ObjectMap& objects);
 
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine
   // whether it has changed.
-  uint64 GetSequenceNumber(Buffer buffer);
+  uint64 GetSequenceNumber(ClipboardType type);
 
   // Tests whether the clipboard contains a certain format
-  bool IsFormatAvailable(const FormatType& format, Buffer buffer) const;
+  bool IsFormatAvailable(const FormatType& format, ClipboardType type) const;
 
   // Clear the clipboard data.
-  void Clear(Buffer buffer);
+  void Clear(ClipboardType type);
 
-  void ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
+  void ReadAvailableTypes(ClipboardType type,
+                          std::vector<string16>* types,
                           bool* contains_filenames) const;
 
   // Reads UNICODE text from the clipboard, if available.
-  void ReadText(Buffer buffer, string16* result) const;
+  void ReadText(ClipboardType type, string16* result) const;
 
   // Reads ASCII text from the clipboard, if available.
-  void ReadAsciiText(Buffer buffer, std::string* result) const;
+  void ReadAsciiText(ClipboardType type, std::string* result) const;
 
   // Reads HTML from the clipboard, if available. If the HTML fragment requires
   // context to parse, |fragment_start| and |fragment_end| are indexes into
   // markup indicating the beginning and end of the actual fragment. Otherwise,
   // they will contain 0 and markup->size().
-  void ReadHTML(Buffer buffer, string16* markup, std::string* src_url,
-                uint32* fragment_start, uint32* fragment_end) const;
+  void ReadHTML(ClipboardType type,
+                string16* markup,
+                std::string* src_url,
+                uint32* fragment_start,
+                uint32* fragment_end) const;
 
   // Reads RTF from the clipboard, if available. Stores the result as a byte
   // vector.
-  void ReadRTF(Buffer buffer, std::string* result) const;
+  void ReadRTF(ClipboardType type, std::string* result) const;
 
   // Reads an image from the clipboard, if available.
-  SkBitmap ReadImage(Buffer buffer) const;
+  SkBitmap ReadImage(ClipboardType type) const;
 
-  void ReadCustomData(Buffer buffer,
+  void ReadCustomData(ClipboardType clipboard_type,
                       const string16& type,
                       string16* result) const;
 
@@ -386,12 +383,12 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
  private:
   // Write changes to gtk clipboard.
-  void SetGtkClipboard(Buffer buffer);
+  void SetGtkClipboard(ClipboardType type);
   // Insert a mapping into clipboard_data_.
   void InsertMapping(const char* key, char* data, size_t data_len);
 
-  // Find the gtk clipboard for the passed buffer enum.
-  GtkClipboard* LookupBackingClipboard(Buffer clipboard) const;
+  // Find the gtk clipboard for the passed type enum.
+  GtkClipboard* LookupBackingClipboard(ClipboardType type) const;
 
   TargetMap* clipboard_data_;
   GtkClipboard* clipboard_;

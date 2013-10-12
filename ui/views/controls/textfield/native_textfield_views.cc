@@ -756,7 +756,7 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
       return model_->HasSelection() && !textfield_->IsObscured();
     case IDS_APP_PASTE:
       ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::Clipboard::BUFFER_STANDARD, &result);
+          ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
       return editable && !result.empty();
     case IDS_APP_DELETE:
       return editable && model_->HasSelection();
