@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -38,6 +39,23 @@ bool UnloadController::CanCloseContents(content::WebContents* contents) {
     ClearUnloadState(contents, true);
   return !is_attempting_to_close_browser_ ||
       is_calling_before_unload_handlers();
+}
+
+// static
+bool UnloadController::RunUnloadEventsHelper(content::WebContents* contents) {
+  // If the WebContents is not connected yet, then there's no unload
+  // handler we can fire even if the WebContents has an unload listener.
+  // One case where we hit this is in a tab that has an infinite loop
+  // before load.
+  if (contents->NeedToFireBeforeUnload()) {
+    // If the page has unload listeners, then we tell the renderer to fire
+    // them. Once they have fired, we'll get a message back saying whether
+    // to proceed closing the page or not, which sends us back to this method
+    // with the NeedToFireBeforeUnload bit cleared.
+    contents->GetRenderViewHost()->FirePageBeforeUnload(false);
+    return true;
+  }
+  return false;
 }
 
 bool UnloadController::BeforeUnloadFired(content::WebContents* contents,

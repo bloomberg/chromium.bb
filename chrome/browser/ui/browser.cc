@@ -843,19 +843,9 @@ void Browser::UpdateDownloadShelfVisibility(bool visible) {
 
 // static
 bool Browser::RunUnloadEventsHelper(WebContents* contents) {
-  // If the WebContents is not connected yet, then there's no unload
-  // handler we can fire even if the WebContents has an unload listener.
-  // One case where we hit this is in a tab that has an infinite loop
-  // before load.
-  if (contents->NeedToFireBeforeUnload()) {
-    // If the page has unload listeners, then we tell the renderer to fire
-    // them. Once they have fired, we'll get a message back saying whether
-    // to proceed closing the page or not, which sends us back to this method
-    // with the NeedToFireBeforeUnload bit cleared.
-    contents->GetRenderViewHost()->FirePageBeforeUnload(false);
-    return true;
-  }
-  return false;
+  if (IsFastTabUnloadEnabled())
+    return chrome::FastUnloadController::RunUnloadEventsHelper(contents);
+  return chrome::UnloadController::RunUnloadEventsHelper(contents);
 }
 
 // static

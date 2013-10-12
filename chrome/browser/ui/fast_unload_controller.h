@@ -64,6 +64,10 @@ class FastUnloadController : public content::NotificationObserver,
   // renderer.
   bool CanCloseContents(content::WebContents* contents);
 
+  // Helper function to run beforeunload listeners on a WebContents.
+  // Returns true if |contents| beforeunload listeners were invoked.
+  static bool RunUnloadEventsHelper(content::WebContents* contents);
+
   // Called when a BeforeUnload handler is fired for |contents|. |proceed|
   // indicates the user's response to the Y/N BeforeUnload handler dialog. If
   // this parameter is false, any pending attempt to close the whole browser
