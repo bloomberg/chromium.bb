@@ -223,7 +223,9 @@ Error MountNodeUDP::Bind(const struct sockaddr* addr, socklen_t len) {
   return 0;
 }
 
-Error MountNodeUDP::Connect(const struct sockaddr* addr, socklen_t len) {
+Error MountNodeUDP::Connect(const HandleAttr& attr,
+                            const struct sockaddr* addr,
+                            socklen_t len) {
   if (0 == socket_resource_)
     return EBADF;
 

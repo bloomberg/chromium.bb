@@ -192,12 +192,16 @@ bool MountNodeSocket::IsEquivalentAddress(PP_Resource addr1,
   return memcmp(saddr1, saddr2, len1) == 0;
 }
 
-Error MountNodeSocket::Accept(PP_Resource* new_sock, struct sockaddr* addr,
+Error MountNodeSocket::Accept(const HandleAttr& attr,
+                              PP_Resource* new_sock,
+                              struct sockaddr* addr,
                               socklen_t* len) {
   return ENOSYS;
 }
 
-Error MountNodeSocket::Connect(const struct sockaddr* addr, socklen_t len) {
+Error MountNodeSocket::Connect(const HandleAttr& attr,
+                               const struct sockaddr* addr,
+                               socklen_t len) {
   if (len < 1)
     return EINVAL;
 

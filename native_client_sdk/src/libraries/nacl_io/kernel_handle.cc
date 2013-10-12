@@ -9,6 +9,7 @@
 
 #include "nacl_io/mount.h"
 #include "nacl_io/mount_node.h"
+#include "nacl_io/mount_node_socket.h"
 #include "nacl_io/osunistd.h"
 
 #include "sdk_util/auto_lock.h"
@@ -36,10 +37,10 @@ MountNodeSocket* KernelHandle::socket_node() {
 }
 
 Error KernelHandle::Init(int open_flags) {
-  handle_data_.flags = open_flags;
+  handle_attr_.flags = open_flags;
 
   if (open_flags & O_APPEND) {
-    Error error = node_->GetSize(&handle_data_.offs);
+    Error error = node_->GetSize(&handle_attr_.offs);
     if (error)
       return error;
   }
@@ -65,7 +66,7 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
       base = 0;
       break;
     case SEEK_CUR:
-      base = handle_data_.offs;
+      base = handle_attr_.offs;
       break;
     case SEEK_END:
       base = node_size;
@@ -85,31 +86,31 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
       return EINVAL;
   }
 
-  *out_offset = handle_data_.offs = new_offset;
+  *out_offset = handle_attr_.offs = new_offset;
   return 0;
 }
 
 Error KernelHandle::Read(void* buf, size_t nbytes, int* cnt) {
   AUTO_LOCK(handle_lock_);
-  Error error = node_->Read(handle_data_, buf, nbytes, cnt);
+  Error error = node_->Read(handle_attr_, buf, nbytes, cnt);
   if (0 == error)
-    handle_data_.offs += *cnt;
+    handle_attr_.offs += *cnt;
   return error;
 }
 
 Error KernelHandle::Write(const void* buf, size_t nbytes, int* cnt) {
   AUTO_LOCK(handle_lock_);
-  Error error = node_->Write(handle_data_, buf, nbytes, cnt);
+  Error error = node_->Write(handle_attr_, buf, nbytes, cnt);
   if (0 == error)
-    handle_data_.offs += *cnt;
+    handle_attr_.offs += *cnt;
   return error;
 }
 
 Error KernelHandle::GetDents(struct dirent* pdir, size_t nbytes, int* cnt) {
   AUTO_LOCK(handle_lock_);
-  Error error = node_->GetDents(handle_data_.offs, pdir, nbytes, cnt);
+  Error error = node_->GetDents(handle_attr_.offs, pdir, nbytes, cnt);
   if (0 == error)
-    handle_data_.offs += *cnt;
+    handle_attr_.offs += *cnt;
   return error;
 }
 
@@ -124,25 +125,95 @@ Error KernelHandle::Fcntl(int request, int* result, ...) {
 Error KernelHandle::VFcntl(int request, int* result, va_list args) {
   switch (request) {
     case F_GETFL: {
-      *result = handle_data_.flags;
+      *result = handle_attr_.flags;
       return 0;
     }
     case F_SETFL: {
       AUTO_LOCK(handle_lock_);
       int flags = va_arg(args, int);
-      if (!(flags & O_APPEND) && (handle_data_.flags & O_APPEND)) {
+      if (!(flags & O_APPEND) && (handle_attr_.flags & O_APPEND)) {
         // Attempt to clear O_APPEND.
         return EPERM;
       }
       // Only certain flags are mutable
       const int mutable_flags = O_ASYNC | O_NONBLOCK;
       flags &= mutable_flags;
-      handle_data_.flags &= ~mutable_flags;
-      handle_data_.flags |= flags;
+      handle_attr_.flags &= ~mutable_flags;
+      handle_attr_.flags |= flags;
       return 0;
     }
   }
   return ENOSYS;
+}
+
+Error KernelHandle::Accept(PP_Resource* new_sock, struct sockaddr* addr,
+                           socklen_t* len) {
+  MountNodeSocket* sock = socket_node();
+  if (!sock)
+    return ENOTSOCK;
+
+  AUTO_LOCK(handle_lock_);
+  return sock->Accept(handle_attr_, new_sock, addr, len);
+}
+
+Error KernelHandle::Connect(const struct sockaddr* addr, socklen_t len) {
+  MountNodeSocket* sock = socket_node();
+  if (!sock)
+    return ENOTSOCK;
+
+  AUTO_LOCK(handle_lock_);
+  return sock->Connect(handle_attr_, addr, len);
+}
+
+Error KernelHandle::Recv(void* buf, size_t len, int flags, int* out_len) {
+  MountNodeSocket* sock = socket_node();
+  if (!sock)
+    return ENOTSOCK;
+
+  AUTO_LOCK(handle_lock_);
+  return sock->Recv(handle_attr_, buf, len, flags, out_len);
+}
+
+Error KernelHandle::RecvFrom(void* buf,
+                             size_t len,
+                             int flags,
+                             struct sockaddr* src_addr,
+                             socklen_t* addrlen,
+                             int* out_len) {
+  MountNodeSocket* sock = socket_node();
+  if (!sock)
+    return ENOTSOCK;
+
+  AUTO_LOCK(handle_lock_);
+  return sock->RecvFrom(handle_attr_, buf, len, flags, src_addr, addrlen,
+                        out_len);
+}
+
+Error KernelHandle::Send(const void* buf,
+                         size_t len,
+                         int flags,
+                         int* out_len) {
+  MountNodeSocket* sock = socket_node();
+  if (!sock)
+    return ENOTSOCK;
+
+  AUTO_LOCK(handle_lock_);
+  return sock->Send(handle_attr_, buf, len, flags, out_len);
+}
+
+Error KernelHandle::SendTo(const void* buf,
+                           size_t len,
+                           int flags,
+                           const struct sockaddr* dest_addr,
+                           socklen_t addrlen,
+                           int* out_len) {
+  MountNodeSocket* sock = socket_node();
+  if (!sock)
+    return ENOTSOCK;
+
+  AUTO_LOCK(handle_lock_);
+  return sock->SendTo(handle_attr_, buf, len, flags, dest_addr, addrlen,
+                      out_len);
 }
 
 }  // namespace nacl_io

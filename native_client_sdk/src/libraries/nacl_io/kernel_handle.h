@@ -7,10 +7,12 @@
 
 #include <fcntl.h>
 #include <pthread.h>
+#include <ppapi/c/pp_resource.h>
 
 #include "nacl_io/error.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/mount_node.h"
+#include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 
 #include "sdk_util/macros.h"
@@ -45,29 +47,43 @@ class KernelHandle : public sdk_util::RefObject {
 
   Error Init(int open_flags);
 
-  // Assumes |out_offset| is non-NULL.
-  Error Seek(off_t offset, int whence, off_t* out_offset);
-
-  // Dispatches Read, Write, GetDents to atomically update offs_.
-  Error Read(void* buf, size_t nbytes, int* bytes_read);
-  Error Write(const void* buf, size_t nbytes, int* bytes_written);
-  Error GetDents(struct dirent* pdir, size_t count, int* bytes_written);
+  Error Accept(PP_Resource* new_sock, struct sockaddr* addr, socklen_t* len);
+  Error Connect(const struct sockaddr* addr, socklen_t len);
   Error Fcntl(int request, int* result, ...);
   Error VFcntl(int request, int* result, va_list args);
+  Error GetDents(struct dirent* pdir, size_t count, int* bytes_written);
+  Error Read(void* buf, size_t nbytes, int* bytes_read);
+  Error Recv(void* buf, size_t len, int flags, int* out_len);
+  Error RecvFrom(void* buf,
+                 size_t len,
+                 int flags,
+                 struct sockaddr* src_addr,
+                 socklen_t* addrlen,
+                 int* out_len);
+  // Assumes |out_offset| is non-NULL.
+  Error Seek(off_t offset, int whence, off_t* out_offset);
+  Error Send(const void* buf, size_t len, int flags, int* out_len);
+  Error SendTo(const void* buf,
+               size_t len,
+               int flags,
+               const struct sockaddr* dest_addr,
+               socklen_t addrlen,
+               int* out_len);
+  Error Write(const void* buf, size_t nbytes, int* bytes_written);
 
   const ScopedMountNode& node() { return node_; }
   const ScopedMount& mount() { return mount_; }
 
+  const HandleAttr& Attr() { return handle_attr_; }
+private:
   // Returns the MountNodeSocket* if this node is a socket otherwise returns
   // NULL.
   MountNodeSocket* socket_node();
 
-  const HandleAttr& Data() { return handle_data_; }
-private:
   ScopedMount mount_;
   ScopedMountNode node_;
   sdk_util::SimpleLock handle_lock_;
-  HandleAttr handle_data_;
+  HandleAttr handle_attr_;
 
   friend class KernelProxy;
   DISALLOW_COPY_AND_ASSIGN(KernelHandle);

@@ -28,6 +28,7 @@ class EventEmitterTTY : public EventEmitterStream {
   size_t Read_Locked(char* data, size_t len);
   size_t Write_Locked(const char* data, size_t len);
 
+ protected:
   virtual FIFOChar* in_fifo() { return &fifo_; }
   virtual FIFONull* out_fifo() { return &null_; }
 

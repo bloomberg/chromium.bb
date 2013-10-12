@@ -27,6 +27,9 @@ class EventEmitterStream : public EventEmitter {
 
   MountNodeStream* stream() { return stream_; }
 
+  uint32_t BytesInOutputFIFO();
+  uint32_t SpaceInInputFIFO();
+
 protected:
   virtual FIFOInterface* in_fifo() = 0;
   virtual FIFOInterface* out_fifo() = 0;

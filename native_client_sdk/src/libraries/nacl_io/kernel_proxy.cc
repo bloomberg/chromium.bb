@@ -1027,13 +1027,16 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
   }
 
   ScopedKernelHandle handle;
-  if (AcquireSocketHandle(fd, &handle) == -1)
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
     return -1;
+  }
 
   PP_Resource new_sock = 0;
-  Error err = handle->socket_node()->Accept(&new_sock, addr, len);
-  if (err != 0) {
-    errno = err;
+  error = handle->Accept(&new_sock, addr, len);
+  if (error != 0) {
+    errno = error;
     return -1;
   }
 
@@ -1042,9 +1045,9 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
   // The MountNodeSocket now holds a reference to the new socket
   // so we release ours.
   ppapi_->ReleaseResource(new_sock);
-  err = sock->Init(S_IREAD | S_IWRITE);
-  if (err != 0) {
-    errno = err;
+  error = sock->Init(S_IREAD | S_IWRITE);
+  if (error != 0) {
+    errno = error;
     return -1;
   }
 
@@ -1079,12 +1082,15 @@ int KernelProxy::connect(int fd, const struct sockaddr* addr, socklen_t len) {
   }
 
   ScopedKernelHandle handle;
-  if (AcquireSocketHandle(fd, &handle) == -1)
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
     return -1;
+  }
 
-  Error err = handle->socket_node()->Connect(addr, len);
-  if (err != 0) {
-    errno = err;
+  error = handle->Connect(addr, len);
+  if (error != 0) {
+    errno = error;
     return -1;
   }
 
@@ -1180,14 +1186,16 @@ ssize_t KernelProxy::recv(int fd,
   }
 
   ScopedKernelHandle handle;
-  if (AcquireSocketHandle(fd, &handle) == -1)
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
     return -1;
+  }
 
   int out_len = 0;
-  Error err = handle->socket_node()->Recv(handle->Data(), buf, len, flags,
-                                          &out_len);
-  if (err != 0) {
-    errno = err;
+  error = handle->Recv(buf, len, flags, &out_len);
+  if (error != 0) {
+    errno = error;
     return -1;
   }
 
@@ -1211,19 +1219,16 @@ ssize_t KernelProxy::recvfrom(int fd,
   }
 
   ScopedKernelHandle handle;
-  if (AcquireSocketHandle(fd, &handle) == -1)
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
     return -1;
+  }
 
   int out_len = 0;
-  Error err = handle->socket_node()->RecvFrom(handle->Data(),
-                                              buf,
-                                              len,
-                                              flags,
-                                              addr,
-                                              addrlen,
-                                              &out_len);
-  if (err != 0) {
-    errno = err;
+  error = handle->RecvFrom(buf, len, flags, addr, addrlen, &out_len);
+  if (error != 0) {
+    errno = error;
     return -1;
   }
 
@@ -1251,14 +1256,16 @@ ssize_t KernelProxy::send(int fd, const void* buf, size_t len, int flags) {
   }
 
   ScopedKernelHandle handle;
-  if (AcquireSocketHandle(fd, &handle) == -1)
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
     return -1;
+  }
 
   int out_len = 0;
-  Error err = handle->socket_node()->Send(handle->Data(), buf, len, flags,
-                                          &out_len);
-  if (err != 0) {
-    errno = err;
+  error = handle->Send(buf, len, flags, &out_len);
+  if (error != 0) {
+    errno = error;
     return -1;
   }
 
@@ -1282,15 +1289,16 @@ ssize_t KernelProxy::sendto(int fd,
   }
 
   ScopedKernelHandle handle;
-  if (AcquireSocketHandle(fd, &handle) == -1)
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
     return -1;
+  }
 
   int out_len = 0;
-  Error err = handle->socket_node()->SendTo(handle->Data(), buf, len, flags,
-                                            addr, addrlen, &out_len);
-
-  if (err != 0) {
-    errno = err;
+  error = handle->SendTo(buf, len, flags, addr, addrlen, &out_len);
+  if (error != 0) {
+    errno = error;
     return -1;
   }
 

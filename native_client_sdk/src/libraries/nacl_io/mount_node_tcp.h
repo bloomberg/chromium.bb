@@ -27,20 +27,27 @@ class MountNodeTCP : public MountNodeSocket {
   virtual void Destroy();
 
  public:
-  virtual EventEmitterTCP* GetEventEmitter();
+  virtual EventEmitter* GetEventEmitter();
 
+  virtual void QueueAccept();
+  virtual void QueueConnect();
   virtual void QueueInput();
   virtual void QueueOutput();
 
-  virtual Error Accept(PP_Resource* out_sock,
+  virtual Error Accept(const HandleAttr& attr,
+                       PP_Resource* out_sock,
                        struct sockaddr* addr,
                        socklen_t* len);
   virtual Error Bind(const struct sockaddr* addr, socklen_t len);
   virtual Error Listen(int backlog);
-  virtual Error Connect(const struct sockaddr* addr, socklen_t len);
+  virtual Error Connect(const HandleAttr& attr,
+                        const struct sockaddr* addr,
+                        socklen_t len);
+
+  void ConnectDone_Locked();
+  void ConnectFailed_Locked();
 
  protected:
-  void ConnectDone();
   virtual Error Recv_Locked(void* buf,
                             size_t len,
                             PP_Resource* out_addr,
@@ -52,6 +59,7 @@ class MountNodeTCP : public MountNodeSocket {
                             int* out_len);
 
   ScopedEventEmitterTCP emitter_;
+  PP_Resource accepted_socket_;
 };
 
 

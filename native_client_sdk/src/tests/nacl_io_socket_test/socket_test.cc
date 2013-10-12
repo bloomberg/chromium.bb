@@ -44,6 +44,14 @@ void IP4ToSockAddr(uint32_t ip, uint16_t port, struct sockaddr_in* addr) {
   addr->sin_addr.s_addr = htonl(ip);
 }
 
+void SetNonBlocking(int sock) {
+  int flags = fcntl(sock, F_GETFL);
+  ASSERT_NE(-1, flags);
+  flags |= O_NONBLOCK;
+  ASSERT_EQ(0, fcntl(sock, F_SETFL, flags));
+  ASSERT_EQ(flags, fcntl(sock, F_GETFL));
+}
+
 class SocketTest : public ::testing::Test {
  public:
   SocketTest() : sock1(-1), sock2(-1) {}
@@ -291,6 +299,36 @@ TEST_F(SocketTestWithServer, TCPConnect) {
   EXPECT_EQ(0, memcmp(outbuf, inbuf, sizeof(outbuf)));
 }
 
+TEST_F(SocketTestWithServer, TCPConnectNonBlock) {
+  char outbuf[256];
+  //char inbuf[512];
+
+  memset(outbuf, 1, sizeof(outbuf));
+
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+
+  SetNonBlocking(sock_);
+  ASSERT_EQ(-1, connect(sock_, (sockaddr*) &addr, addrlen));
+  ASSERT_EQ(EINPROGRESS, errno)
+     << "expected EINPROGRESS but got: " << strerror(errno) << "\n";
+  ASSERT_EQ(-1, connect(sock_, (sockaddr*) &addr, addrlen));
+  ASSERT_EQ(EALREADY, errno);
+
+  // Wait for the socket connection to complete using poll()
+  struct pollfd pollfd = { sock_, POLLIN|POLLOUT, 0 };
+  ASSERT_EQ(1, poll(&pollfd, 1, -1));
+  ASSERT_EQ(POLLOUT, pollfd.revents);
+
+  // Attempts to connect again should yield EISCONN
+  ASSERT_EQ(-1, connect(sock_, (sockaddr*) &addr, addrlen));
+  ASSERT_EQ(EISCONN, errno);
+
+  // And SO_ERROR should be 0.
+}
+
 TEST_F(SocketTest, Getsockopt) {
   sock1 = socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_GT(sock1, -1);
@@ -334,7 +372,6 @@ TEST_F(SocketTestUDP, Listen) {
 }
 
 TEST_F(SocketTestTCP, Listen) {
-  // Accept should fail when socket not listening
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
 
@@ -346,7 +383,7 @@ TEST_F(SocketTestTCP, Listen) {
   // Listen should fail on unbound socket
   ASSERT_EQ(-1, listen(server_sock, 10));
 
-  // bind and listen
+  // Bind and Listen
   ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
   ASSERT_EQ(0, listen(server_sock, 10))
     << "listen failed with: " << strerror(errno);
@@ -377,6 +414,59 @@ TEST_F(SocketTestTCP, Listen) {
 
   char inbuf[512];
   ASSERT_EQ(5, recv(new_socket, inbuf, 5, 0));
+  ASSERT_EQ(0, close(new_socket));
+}
+
+TEST_F(SocketTestTCP, ListenNonBlocking) {
+  int server_sock = sock1;
+
+  // Set non-blocking
+  SetNonBlocking(server_sock);
+
+  // bind and listen
+  ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
+  ASSERT_EQ(0, listen(server_sock, 10))
+    << "listen failed with: " << strerror(errno);
+
+  // Accept should fail with EAGAIN since there is no incomming
+  // connection.
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+  ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
+  ASSERT_EQ(EAGAIN, errno);
+
+  // If we poll the listening socket it should also return
+  // not readable to indicate that no connections are available
+  // to accept.
+  struct pollfd pollfd = { server_sock, POLLIN|POLLOUT, 0 };
+  ASSERT_EQ(0, poll(&pollfd, 1, 0));
+
+  // Connect to listening socket
+  int client_sock = sock2;
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+  addrlen = sizeof(addr);
+  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+
+  // Not poll again but with an infintie timeout.
+  pollfd.fd = server_sock;
+  pollfd.events = POLLIN | POLLOUT;
+  ASSERT_EQ(1, poll(&pollfd, 1, -1));
+
+  // Now non-blocking accept should return the new socket
+  int new_socket = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  ASSERT_NE(-1, new_socket)
+    << "accept failed with: " << strerror(errno) << "\n";
+  ASSERT_EQ(0, close(new_socket));
+
+  // Accept calls should once again fail with EAGAIN
+  ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
+  ASSERT_EQ(EAGAIN, errno);
+
+  // As should polling the listening socket
+  pollfd.fd = server_sock;
+  pollfd.events = POLLIN | POLLOUT;
+  ASSERT_EQ(0, poll(&pollfd, 1, 0));
 }
 
 #endif  // PROVIDES_SOCKET_API

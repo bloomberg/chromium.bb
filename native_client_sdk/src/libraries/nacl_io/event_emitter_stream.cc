@@ -39,7 +39,12 @@ void EventEmitterStream::UpdateStatus_Locked() {
   RaiseEvents_Locked(status);
 }
 
+uint32_t EventEmitterStream::BytesInOutputFIFO() {
+  return out_fifo()->ReadAvailable();
+}
+
+uint32_t EventEmitterStream::SpaceInInputFIFO() {
+  return in_fifo()->WriteAvailable();
+}
 
 }  // namespace nacl_io
-
-

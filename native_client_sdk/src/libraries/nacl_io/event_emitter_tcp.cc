@@ -16,7 +16,6 @@ namespace nacl_io {
 EventEmitterTCP::EventEmitterTCP(size_t rsize, size_t wsize)
     : in_fifo_(std::max<size_t>(65536, rsize)),
       out_fifo_(std::max<size_t>(65536, wsize)) {
-  UpdateStatus_Locked();
 }
 
 uint32_t EventEmitterTCP::ReadIn_Locked(char* data, uint32_t len) {
@@ -47,7 +46,21 @@ uint32_t EventEmitterTCP::WriteOut_Locked(const char* data, uint32_t len) {
   return count;
 }
 
+void EventEmitterTCP::ConnectDone_Locked() {
+  RaiseEvents_Locked(POLLOUT);
+  UpdateStatus_Locked();
+}
+
+void EventEmitterTCP::SetAcceptedSocket_Locked(PP_Resource socket) {
+  accepted_socket_ = socket;
+  RaiseEvents_Locked(POLLIN);
+}
+
+PP_Resource EventEmitterTCP::GetAcceptedSocket_Locked() {
+  int rtn = accepted_socket_;
+  accepted_socket_ = 0;
+  ClearEvents_Locked(POLLIN);
+  return rtn;
+}
 
 }  // namespace nacl_io
-
-

@@ -61,11 +61,14 @@ class MountNodeSocket : public MountNodeStream {
                      void** out_addr);
 
   // Socket Functions.
-  virtual Error Accept(PP_Resource* new_sock,
+  virtual Error Accept(const HandleAttr& attr,
+                       PP_Resource* new_sock,
                        struct sockaddr* addr,
                        socklen_t* len);
   virtual Error Bind(const struct sockaddr* addr, socklen_t len);
-  virtual Error Connect(const struct sockaddr* addr, socklen_t len);
+  virtual Error Connect(const HandleAttr& attr,
+                        const struct sockaddr* addr,
+                        socklen_t len);
   virtual Error Listen(int backlog);
   virtual Error Recv(const HandleAttr& attr,
                      void* buf,
@@ -97,9 +100,11 @@ class MountNodeSocket : public MountNodeStream {
   virtual Error GetSockName(struct sockaddr* addr, socklen_t* len);
 
   PP_Resource socket_resource() { return socket_resource_; }
+  PP_Resource remote_addr() { return remote_addr_; }
 
   // Updates socket's state, recording last error.
   void SetError_Locked(int pp_error_num);
+
 
  protected:
 

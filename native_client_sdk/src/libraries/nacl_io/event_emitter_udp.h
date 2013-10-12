@@ -27,10 +27,11 @@ class EventEmitterUDP : public EventEmitterStream {
   Packet* ReadTXPacket_Locked();
   void WriteTXPacket_Locked(Packet* packet);
 
+protected:
   virtual FIFOPacket* in_fifo() { return &in_fifo_; }
   virtual FIFOPacket* out_fifo() { return &out_fifo_; }
 
-protected:
+private:
   FIFOPacket in_fifo_;
   FIFOPacket out_fifo_;
   DISALLOW_COPY_AND_ASSIGN(EventEmitterUDP);
