@@ -37,7 +37,6 @@ from webkitpy.layout_tests.models.test_run_results import TestRunResults
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_results
-from webkitpy.layout_tests.port import driver
 from webkitpy.tool import grammar
 
 
@@ -239,16 +238,9 @@ class Worker(object):
     def handle(self, name, source, test_list_name, test_inputs):
         assert name == 'test_list'
         for i, test_input in enumerate(test_inputs):
-            try:
-                device_offline = self._run_test(test_input, test_list_name)
-                # FIXME: Do we need both the DriverOutput.device_offline and the exception?
-                if device_offline:
-                    self._caller.post('device_offline', test_list_name, test_inputs[i + 1:])
-                    self._caller.stop_running()
-                    return
-            except driver.DeviceOffline as e:
-                _log.error('Device offline: %s' % repr(e))
-                self._caller.post('device_offline', test_list_name, test_inputs[i:])
+            device_offline = self._run_test(test_input, test_list_name)
+            if device_offline:
+                self._caller.post('device_offline', test_list_name, test_inputs[i + 1:])
                 self._caller.stop_running()
                 return
 

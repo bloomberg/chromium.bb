@@ -76,6 +76,7 @@ class DriverTest(unittest.TestCase):
         port = TestWebKitPort()
         driver = Driver(port, 0, pixel_tests=False)
         driver._server_process = MockServerProcess(lines=[
+            '#READY',
             'ActualHash: foobar',
             'Content-Type: my_type',
             'Content-Transfer-Encoding: none',
