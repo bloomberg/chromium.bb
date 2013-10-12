@@ -64,10 +64,6 @@ struct WebTextCheckingResult {
     operator WebCore::TextCheckingResult() const;
 #endif
 
-    // TODO(rouslan): Remove these methods after clients start using |decoration| directly instead of get/setDecoration().
-    WebTextDecorationType getDecoration() const { return decoration; }
-    void setDecoration(WebTextDecorationType decorationType) { decoration = decorationType; }
-
     WebTextDecorationType decoration;
     int location;
     int length;
