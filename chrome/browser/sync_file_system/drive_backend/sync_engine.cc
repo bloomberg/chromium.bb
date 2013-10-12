@@ -30,8 +30,8 @@ SyncEngine::SyncEngine(
       drive_service_(drive_service.Pass()),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
-      task_manager_(weak_ptr_factory_.GetWeakPtr()),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      task_manager_(weak_ptr_factory_.GetWeakPtr()) {
 }
 
 SyncEngine::~SyncEngine() {
