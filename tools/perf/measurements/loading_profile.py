@@ -14,9 +14,6 @@ class LoadingProfile(page_measurement.PageMeasurement):
   def __init__(self):
     super(LoadingProfile, self).__init__(discard_first_result=True)
 
-    if not perf_profiler.PerfProfiler.is_supported(browser_type='any'):
-      raise Exception('This measurement is not supported on this platform')
-
   @property
   def results_are_the_same_on_every_page(self):
     return False
@@ -29,6 +26,9 @@ class LoadingProfile(page_measurement.PageMeasurement):
     parser.add_option(page_repeat_option)
 
   def CustomizeBrowserOptions(self, options):
+    if not perf_profiler.PerfProfiler.is_supported(browser_type='any'):
+      raise Exception('This measurement is not supported on this platform')
+
     perf_profiler.PerfProfiler.CustomizeBrowserOptions(options)
 
   def WillNavigateToPage(self, page, tab):
