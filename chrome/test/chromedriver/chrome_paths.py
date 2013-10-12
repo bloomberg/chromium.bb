@@ -23,7 +23,7 @@ def GetTestData():
 
 def GetBuildDir(required_paths):
   """Returns the preferred build directory that contains given paths."""
-  dirs = ['out', 'build', 'xcodebuild', 'sconsbuild']
+  dirs = ['out', 'build', 'xcodebuild']
   rel_dirs = [os.path.join(x, 'Release') for x in dirs]
   debug_dirs = [os.path.join(x, 'Debug') for x in dirs]
   full_dirs = [os.path.join(GetSrc(), x) for x in rel_dirs + debug_dirs]

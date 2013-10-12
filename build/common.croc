@@ -57,7 +57,7 @@
     },
     # Don't include output dirs
     {
-      'regexp' : '.*/(Debug|Release|sconsbuild|out|xcodebuild)/',
+      'regexp' : '.*/(Debug|Release|out|xcodebuild)/',
       'include' : 0,
     },
     # Don't include third-party source

@@ -23,8 +23,8 @@ def GetBuildDirs():
   """Returns list of possible build directories."""
   # List of dirs that can contain a Debug/Release build.
   outer_dirs = {
-      'linux2': ['out', 'sconsbuild'],
-      'linux3': ['out', 'sconsbuild'],
+      'linux2': ['out'],
+      'linux3': ['out'],
       'darwin': ['out', 'xcodebuild'],
       'win32':  ['chrome', 'build', 'out'],
       'cygwin': ['chrome'],
