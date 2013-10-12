@@ -70,7 +70,8 @@ void CrashDumpTask(CrashHandlerHostLinux* handler, BreakpadInfo* info) {
 // non-refcounted pointers.
 
 CrashHandlerHostLinux::CrashHandlerHostLinux()
-    : shutting_down_(false) {
+    : shutting_down_(false),
+      worker_pool_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()) {
   int fds[2];
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the process from
   // sending datagrams to other sockets on the system. The sandbox may prevent
@@ -341,8 +342,9 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   info->process_start_time = uptime;
   info->oom_size = oom_size;
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+      worker_pool_token_,
+      FROM_HERE,
       base::Bind(&CrashHandlerHostLinux::WriteDumpFile,
                  base::Unretained(this),
                  info,
@@ -355,7 +357,8 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
                                           pid_t crashing_pid,
                                           char* crash_context,
                                           int signal_fd) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      worker_pool_token_));
 
   base::FilePath dumps_path("/tmp");
   PathService::Get(base::DIR_TEMP, &dumps_path);

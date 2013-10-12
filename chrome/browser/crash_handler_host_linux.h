@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/sequenced_worker_pool.h"
 
 struct BreakpadInfo;
 
@@ -80,6 +81,10 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   base::MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
   scoped_ptr<base::Thread> uploader_thread_;
   bool shutting_down_;
+
+  // Unique sequence token so that writing crash dump won't be blocked
+  // by other tasks.
+  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
 
 #if defined(ADDRESS_SANITIZER)
   char* asan_report_str_;
