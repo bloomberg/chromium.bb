@@ -21,12 +21,20 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/notification_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
 namespace {
 chrome::MultiUserWindowManager* g_instance = NULL;
+
+// Get the user id from a given profile.
+std::string GetUserIDFromProfile(Profile* profile) {
+  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(
+      profile->GetOriginalProfile()->GetProfileName()));
+}
+
 }  // namespace
 
 namespace chrome {
@@ -64,7 +72,7 @@ MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
       ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
       !ash::switches::UseFullMultiProfileMode()) {
     g_instance = CreateInstanceInternal(
-        ProfileManager::GetDefaultProfile()->GetProfileName());
+        GetUserIDFromProfile(ProfileManager::GetDefaultProfile()));
   }
   return g_instance;
 }
@@ -313,7 +321,7 @@ void MultiUserWindowManager::AddBrowserWindow(Browser* browser) {
   if (browser->window() && !browser->window()->GetNativeWindow())
     return;
   SetWindowOwner(browser->window()->GetNativeWindow(),
-                 browser->profile()->GetOriginalProfile()->GetProfileName());
+                 GetUserIDFromProfile(browser->profile()));
 }
 
 void MultiUserWindowManager::SetWindowVisibility(
@@ -342,7 +350,7 @@ Profile* MultiUserWindowManager::GetProfileFromUserID(
 
   std::vector<Profile*>::iterator profile_iterator = profiles.begin();
   for (; profile_iterator != profiles.end(); ++profile_iterator) {
-    if ((*profile_iterator)->GetProfileName() == user_id)
+    if (GetUserIDFromProfile(*profile_iterator) == user_id)
       return *profile_iterator;
   }
   return NULL;
