@@ -34,14 +34,11 @@
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
 #include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/frame/Frame.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
@@ -50,6 +47,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebDragData.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -144,37 +143,29 @@ bool Pasteboard::canSmartReplace()
     return WebKit::Platform::current()->clipboard()->isFormatAvailable(WebKit::WebClipboard::FormatSmartPaste, m_buffer);
 }
 
+bool Pasteboard::isHTMLAvailable()
+{
+    return WebKit::Platform::current()->clipboard()->isFormatAvailable(WebKit::WebClipboard::FormatHTML, m_buffer);
+}
+
 String Pasteboard::plainText()
 {
     return WebKit::Platform::current()->clipboard()->readPlainText(m_buffer);
 }
 
-PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefPtr<Range> context, bool allowPlainText, bool& chosePlainText)
+String Pasteboard::readHTML(KURL& url, unsigned& fragmentStart, unsigned& fragmentEnd)
 {
-    chosePlainText = false;
-
-    if (WebKit::Platform::current()->clipboard()->isFormatAvailable(WebKit::WebClipboard::FormatHTML, m_buffer)) {
-        unsigned fragmentStart = 0;
-        unsigned fragmentEnd = 0;
-        WebKit::WebURL url;
-        WebKit::WebString markup = WebKit::Platform::current()->clipboard()->readHTML(m_buffer, &url, &fragmentStart, &fragmentEnd);
-        if (!markup.isEmpty()) {
-            ASSERT(frame->document());
-            if (RefPtr<DocumentFragment> fragment = createFragmentFromMarkupWithContext(*frame->document(), markup, fragmentStart, fragmentEnd, KURL(url), DisallowScriptingAndPluginContent))
-                return fragment.release();
-        }
+    WebKit::WebURL webURL;
+    WebKit::WebString markup = WebKit::Platform::current()->clipboard()->readHTML(m_buffer, &webURL, &fragmentStart, &fragmentEnd);
+    if (!markup.isEmpty()) {
+        url = webURL;
+        // fragmentStart and fragmentEnd are populated by WebClipboard::readHTML.
+    } else {
+        url = KURL();
+        fragmentStart = 0;
+        fragmentEnd = 0;
     }
-
-    if (allowPlainText) {
-        String markup = WebKit::Platform::current()->clipboard()->readPlainText(m_buffer);
-        if (!markup.isEmpty()) {
-            chosePlainText = true;
-            if (RefPtr<DocumentFragment> fragment = createFragmentFromText(context.get(), markup))
-                return fragment.release();
-        }
-    }
-
-    return 0;
+    return markup;
 }
 
 } // namespace WebCore

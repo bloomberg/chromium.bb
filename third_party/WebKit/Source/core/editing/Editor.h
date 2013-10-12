@@ -280,7 +280,7 @@ private:
 
     bool canSmartReplaceWithPasteboard(Pasteboard*);
     void pasteAsPlainTextWithPasteboard(Pasteboard*);
-    void pasteWithPasteboard(Pasteboard*, bool allowPlainText);
+    void pasteWithPasteboard(Pasteboard*);
     bool dispatchCPPEvent(const AtomicString&, ClipboardAccessPolicy, PasteMode = AllMimeTypes);
 
     void revealSelectionAfterEditingOperation(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);

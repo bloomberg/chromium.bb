@@ -38,6 +38,7 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/ParserContentPolicy.h"
 #include "core/dom/Text.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/DeleteSelectionCommand.h"
@@ -375,11 +376,31 @@ void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
     pasteAsPlainText(text, canSmartReplaceWithPasteboard(pasteboard));
 }
 
-void Editor::pasteWithPasteboard(Pasteboard* pasteboard, bool allowPlainText)
+void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
 {
     RefPtr<Range> range = selectedRange();
-    bool chosePlainText;
-    RefPtr<DocumentFragment> fragment = pasteboard->documentFragment(&m_frame, range, allowPlainText, chosePlainText);
+    RefPtr<DocumentFragment> fragment;
+    bool chosePlainText = false;
+
+    if (pasteboard->isHTMLAvailable()) {
+        unsigned fragmentStart = 0;
+        unsigned fragmentEnd = 0;
+        KURL url;
+        String markup = pasteboard->readHTML(url, fragmentStart, fragmentEnd);
+        if (!markup.isEmpty()) {
+            ASSERT(m_frame.document());
+            fragment = createFragmentFromMarkupWithContext(*m_frame.document(), markup, fragmentStart, fragmentEnd, url, DisallowScriptingAndPluginContent);
+        }
+    }
+
+    if (!fragment) {
+        String text = pasteboard->plainText();
+        if (!text.isEmpty()) {
+            chosePlainText = true;
+            fragment = createFragmentFromText(range.get(), text);
+        }
+    }
+
     if (fragment)
         pasteAsFragment(fragment, canSmartReplaceWithPasteboard(pasteboard), chosePlainText);
 }
@@ -914,7 +935,7 @@ void Editor::paste()
     ResourceFetcher* loader = m_frame.document()->fetcher();
     ResourceCacheValidationSuppressor validationSuppressor(loader);
     if (m_frame.selection().isContentRichlyEditable())
-        pasteWithPasteboard(Pasteboard::generalPasteboard(), true);
+        pasteWithPasteboard(Pasteboard::generalPasteboard());
     else
         pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
 }
