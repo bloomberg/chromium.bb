@@ -30,27 +30,21 @@
 
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
+#include "platform/Task.h"
+#include "public/platform/Platform.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/MainThread.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 AsyncAudioDecoder::AsyncAudioDecoder()
+    : m_thread(adoptPtr(WebKit::Platform::current()->createThread("Audio Decoder")))
 {
-    // Start worker thread.
-    MutexLocker lock(m_threadCreationMutex);
-    m_threadID = createThread(AsyncAudioDecoder::threadEntry, this, "Audio Decoder");
 }
 
 AsyncAudioDecoder::~AsyncAudioDecoder()
 {
-    m_queue.kill();
-
-    // Stop thread.
-    waitForThreadCompletion(m_threadID);
-    m_threadID = 0;
 }
 
 void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback)
@@ -60,81 +54,35 @@ void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, Pa
     if (!audioData)
         return;
 
-    OwnPtr<DecodingTask> decodingTask = DecodingTask::create(audioData, sampleRate, successCallback, errorCallback);
-    m_queue.append(decodingTask.release()); // note that ownership of the task is effectively taken by the queue.
+    // Add a ref to keep audioData alive until completion of decoding.
+    RefPtr<ArrayBuffer> audioDataRef(audioData);
+
+    // The leak references to successCallback and errorCallback are picked up on notifyComplete.
+    m_thread->postTask(new Task(WTF::bind(&AsyncAudioDecoder::decode, audioDataRef.release().leakRef(), sampleRate, successCallback.leakRef(), errorCallback.leakRef())));
 }
 
-// Asynchronously decode in this thread.
-void AsyncAudioDecoder::threadEntry(void* threadData)
+void AsyncAudioDecoder::decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
 {
-    ASSERT(threadData);
-    AsyncAudioDecoder* decoder = reinterpret_cast<AsyncAudioDecoder*>(threadData);
-    decoder->runLoop();
-}
-
-void AsyncAudioDecoder::runLoop()
-{
-    ASSERT(!isMainThread());
-
-    {
-        // Wait for until we have m_threadID established before starting the run loop.
-        MutexLocker lock(m_threadCreationMutex);
-    }
-
-    // Keep running decoding tasks until we're killed.
-    while (OwnPtr<DecodingTask> decodingTask = m_queue.waitForMessage()) {
-        // Let the task take care of its own ownership.
-        // See DecodingTask::notifyComplete() for cleanup.
-        decodingTask.leakPtr()->decode();
-    }
-}
-
-PassOwnPtr<AsyncAudioDecoder::DecodingTask> AsyncAudioDecoder::DecodingTask::create(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback)
-{
-    return adoptPtr(new DecodingTask(audioData, sampleRate, successCallback, errorCallback));
-}
-
-AsyncAudioDecoder::DecodingTask::DecodingTask(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback)
-    : m_audioData(audioData)
-    , m_sampleRate(sampleRate)
-    , m_successCallback(successCallback)
-    , m_errorCallback(errorCallback)
-{
-}
-
-void AsyncAudioDecoder::DecodingTask::decode()
-{
-    ASSERT(m_audioData.get());
-    if (!m_audioData.get())
-        return;
-
     // Do the actual decoding and invoke the callback.
-    m_audioBuffer = AudioBuffer::createFromAudioFileData(m_audioData->data(), m_audioData->byteLength(), false, sampleRate());
+    RefPtr<AudioBuffer> audioBuffer = AudioBuffer::createFromAudioFileData(audioData->data(), audioData->byteLength(), false, sampleRate);
 
     // Decoding is finished, but we need to do the callbacks on the main thread.
-    callOnMainThread(notifyCompleteDispatch, this);
+    // The leaked reference to audioBuffer is picked up in notifyComplete.
+    callOnMainThread(WTF::bind(&AsyncAudioDecoder::notifyComplete, audioData, successCallback, errorCallback, audioBuffer.release().leakRef()));
 }
 
-void AsyncAudioDecoder::DecodingTask::notifyCompleteDispatch(void* userData)
+void AsyncAudioDecoder::notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBuffer* audioBuffer)
 {
-    AsyncAudioDecoder::DecodingTask* task = reinterpret_cast<AsyncAudioDecoder::DecodingTask*>(userData);
-    ASSERT(task);
-    if (!task)
-        return;
+    // Adopt references, so everything gets correctly dereffed.
+    RefPtr<ArrayBuffer> audioDataRef = adoptRef(audioData);
+    RefPtr<AudioBufferCallback> successCallbackRef = adoptRef(successCallback);
+    RefPtr<AudioBufferCallback> errorCallbackRef = adoptRef(errorCallback);
+    RefPtr<AudioBuffer> audioBufferRef = adoptRef(audioBuffer);
 
-    task->notifyComplete();
-}
-
-void AsyncAudioDecoder::DecodingTask::notifyComplete()
-{
-    if (audioBuffer() && successCallback())
-        successCallback()->handleEvent(audioBuffer());
-    else if (errorCallback())
-        errorCallback()->handleEvent(audioBuffer());
-
-    // Our ownership was given up in AsyncAudioDecoder::runLoop()
-    // Make sure to clean up here.
-    delete this;
+    if (audioBuffer && successCallback)
+        successCallback->handleEvent(audioBuffer);
+    else if (errorCallback)
+        errorCallback->handleEvent(audioBuffer);
 }
 
 } // namespace WebCore

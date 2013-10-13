@@ -25,12 +25,9 @@
 #ifndef AsyncAudioDecoder_h
 #define AsyncAudioDecoder_h
 
+#include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
-#include "wtf/MessageQueue.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -50,38 +47,10 @@ public:
     void decodeAsync(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback);
 
 private:
-    class DecodingTask {
-        WTF_MAKE_NONCOPYABLE(DecodingTask);
-    public:
-        static PassOwnPtr<DecodingTask> create(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback);
+    static void decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
+    static void notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBuffer*);
 
-        void decode();
-
-    private:
-        DecodingTask(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback);
-
-        ArrayBuffer* audioData() { return m_audioData.get(); }
-        float sampleRate() const { return m_sampleRate; }
-        AudioBufferCallback* successCallback() { return m_successCallback.get(); }
-        AudioBufferCallback* errorCallback() { return m_errorCallback.get(); }
-        AudioBuffer* audioBuffer() { return m_audioBuffer.get(); }
-
-        static void notifyCompleteDispatch(void* userData);
-        void notifyComplete();
-
-        RefPtr<ArrayBuffer> m_audioData;
-        float m_sampleRate;
-        RefPtr<AudioBufferCallback> m_successCallback;
-        RefPtr<AudioBufferCallback> m_errorCallback;
-        RefPtr<AudioBuffer> m_audioBuffer;
-    };
-
-    static void threadEntry(void* threadData);
-    void runLoop();
-
-    WTF::ThreadIdentifier m_threadID;
-    Mutex m_threadCreationMutex;
-    MessageQueue<DecodingTask> m_queue;
+    OwnPtr<WebKit::WebThread> m_thread;
 };
 
 } // namespace WebCore
