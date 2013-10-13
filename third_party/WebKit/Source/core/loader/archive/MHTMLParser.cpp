@@ -33,11 +33,154 @@
 
 #include "core/loader/archive/MHTMLArchive.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/network/MIMEHeader.h"
+#include "platform/SharedBufferChunkReader.h"
+#include "platform/network/ParsedContentType.h"
 #include "platform/text/QuotedPrintable.h"
+#include "wtf/HashMap.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/Base64.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringConcatenate.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
+
+// This class is a limited MIME parser used to parse the MIME headers of MHTML files.
+class MIMEHeader : public RefCounted<MIMEHeader> {
+public:
+    enum Encoding {
+        QuotedPrintable,
+        Base64,
+        EightBit,
+        SevenBit,
+        Binary,
+        Unknown
+    };
+
+    static PassRefPtr<MIMEHeader> parseHeader(SharedBufferChunkReader* crLFLineReader);
+
+    bool isMultipart() const { return m_contentType.startsWith("multipart/"); }
+
+    String contentType() const { return m_contentType; }
+    String charset() const { return m_charset; }
+    Encoding contentTransferEncoding() const { return m_contentTransferEncoding; }
+    String contentLocation() const { return m_contentLocation; }
+
+    // Multi-part type and boundaries are only valid for multipart MIME headers.
+    String multiPartType() const { return m_multipartType; }
+    String endOfPartBoundary() const { return m_endOfPartBoundary; }
+    String endOfDocumentBoundary() const { return m_endOfDocumentBoundary; }
+
+private:
+    MIMEHeader();
+
+    static Encoding parseContentTransferEncoding(const String&);
+
+    String m_contentType;
+    String m_charset;
+    Encoding m_contentTransferEncoding;
+    String m_contentLocation;
+    String m_multipartType;
+    String m_endOfPartBoundary;
+    String m_endOfDocumentBoundary;
+};
+
+typedef HashMap<String, String> KeyValueMap;
+
+static KeyValueMap retrieveKeyValuePairs(WebCore::SharedBufferChunkReader* buffer)
+{
+    KeyValueMap keyValuePairs;
+    String line;
+    String key;
+    StringBuilder value;
+    while (!(line = buffer->nextChunkAsUTF8StringWithLatin1Fallback()).isNull()) {
+        if (line.isEmpty())
+            break; // Empty line means end of key/value section.
+        if (line[0] == '\t') {
+            ASSERT(!key.isEmpty());
+            value.append(line.substring(1));
+            continue;
+        }
+        // New key/value, store the previous one if any.
+        if (!key.isEmpty()) {
+            if (keyValuePairs.find(key) != keyValuePairs.end())
+                LOG_ERROR("Key duplicate found in MIME header. Key is '%s', previous value replaced.", key.ascii().data());
+            keyValuePairs.add(key, value.toString().stripWhiteSpace());
+            key = String();
+            value.clear();
+        }
+        size_t semiColonIndex = line.find(':');
+        if (semiColonIndex == kNotFound) {
+            // This is not a key value pair, ignore.
+            continue;
+        }
+        key = line.substring(0, semiColonIndex).lower().stripWhiteSpace();
+        value.append(line.substring(semiColonIndex + 1));
+    }
+    // Store the last property if there is one.
+    if (!key.isEmpty())
+        keyValuePairs.set(key, value.toString().stripWhiteSpace());
+    return keyValuePairs;
+}
+
+PassRefPtr<MIMEHeader> MIMEHeader::parseHeader(SharedBufferChunkReader* buffer)
+{
+    RefPtr<MIMEHeader> mimeHeader = adoptRef(new MIMEHeader);
+    KeyValueMap keyValuePairs = retrieveKeyValuePairs(buffer);
+    KeyValueMap::iterator mimeParametersIterator = keyValuePairs.find("content-type");
+    if (mimeParametersIterator != keyValuePairs.end()) {
+        ParsedContentType parsedContentType(mimeParametersIterator->value);
+        mimeHeader->m_contentType = parsedContentType.mimeType();
+        if (!mimeHeader->isMultipart()) {
+            mimeHeader->m_charset = parsedContentType.charset().stripWhiteSpace();
+        } else {
+            mimeHeader->m_multipartType = parsedContentType.parameterValueForName("type");
+            mimeHeader->m_endOfPartBoundary = parsedContentType.parameterValueForName("boundary");
+            if (mimeHeader->m_endOfPartBoundary.isNull()) {
+                LOG_ERROR("No boundary found in multipart MIME header.");
+                return 0;
+            }
+            mimeHeader->m_endOfPartBoundary.insert("--", 0);
+            mimeHeader->m_endOfDocumentBoundary = mimeHeader->m_endOfPartBoundary;
+            mimeHeader->m_endOfDocumentBoundary.append("--");
+        }
+    }
+
+    mimeParametersIterator = keyValuePairs.find("content-transfer-encoding");
+    if (mimeParametersIterator != keyValuePairs.end())
+        mimeHeader->m_contentTransferEncoding = parseContentTransferEncoding(mimeParametersIterator->value);
+
+    mimeParametersIterator = keyValuePairs.find("content-location");
+    if (mimeParametersIterator != keyValuePairs.end())
+        mimeHeader->m_contentLocation = mimeParametersIterator->value;
+
+    return mimeHeader.release();
+}
+
+MIMEHeader::Encoding MIMEHeader::parseContentTransferEncoding(const String& text)
+{
+    String encoding = text.stripWhiteSpace().lower();
+    if (encoding == "base64")
+        return Base64;
+    if (encoding == "quoted-printable")
+        return QuotedPrintable;
+    if (encoding == "8bit")
+        return EightBit;
+    if (encoding == "7bit")
+        return SevenBit;
+    if (encoding == "binary")
+        return Binary;
+    LOG_ERROR("Unknown encoding '%s' found in MIME header.", text.ascii().data());
+    return Unknown;
+}
+
+MIMEHeader::MIMEHeader()
+    : m_contentTransferEncoding(Unknown)
+{
+}
 
 static bool skipLinesUntilBoundaryFound(SharedBufferChunkReader& lineReader, const String& boundary)
 {

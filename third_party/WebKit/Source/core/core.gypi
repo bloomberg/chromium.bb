@@ -3048,7 +3048,6 @@
             'platform/network/HTTPParsers.h',
             'platform/network/HTTPRequest.cpp',
             'platform/network/HTTPRequest.h',
-            'platform/network/MIMEHeader.cpp',
             'platform/network/ResourceRequest.cpp',
             'platform/network/ResourceRequest.h',
             'platform/network/ResourceResponse.cpp',
