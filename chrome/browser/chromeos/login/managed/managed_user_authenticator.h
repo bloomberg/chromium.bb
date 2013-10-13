@@ -35,7 +35,6 @@ class ManagedUserAuthenticator
    public:
     AuthAttempt(const std::string& username,
                 const std::string& password,
-                const std::string& hashed_password,
                 bool add_key_attempt);
     ~AuthAttempt();
 
@@ -58,7 +57,6 @@ class ManagedUserAuthenticator
 
     const std::string username;
     const std::string password;
-    const std::string hashed_password;
     const bool add_key;
 
    private:

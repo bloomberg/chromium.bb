@@ -22,7 +22,6 @@ class AuthAttemptState {
  public:
   // Used to initialize for a login attempt.
   AuthAttemptState(const UserContext& user_context,
-                   const std::string& ascii_hash,
                    const std::string& login_token,
                    const std::string& login_captcha,
                    const User::UserType user_type,
@@ -30,11 +29,10 @@ class AuthAttemptState {
 
   // Used to initialize for a externally authenticated login.
   AuthAttemptState(const UserContext& user_context,
-                   const std::string& ascii_hash,
                    const bool user_is_new);
 
   // Used to initialize for a screen unlock attempt.
-  AuthAttemptState(const std::string& username, const std::string& ascii_hash);
+  AuthAttemptState(const std::string& username, const std::string& password);
 
   virtual ~AuthAttemptState();
 
@@ -86,7 +84,6 @@ class AuthAttemptState {
   UserContext user_context;
 
   // These fields are saved so we can retry client login.
-  const std::string ascii_hash;
   const std::string login_token;
   const std::string login_captcha;
 

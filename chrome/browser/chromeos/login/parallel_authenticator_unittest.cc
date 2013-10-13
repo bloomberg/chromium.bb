@@ -56,7 +56,10 @@ class ParallelAuthenticatorTest : public testing::Test {
   ParallelAuthenticatorTest()
       : username_("me@nowhere.org"),
         password_("fakepass"),
-        hash_ascii_("0a010000000000a0" + std::string(16, '0')),
+        hash_ascii_(ParallelAuthenticator::HashPassword(
+            password_,
+            CryptohomeLibrary::ConvertRawSaltToHexString(
+                FakeCryptohomeClient::GetStubSystemSalt()))),
         user_manager_enabler_(new MockUserManager),
         mock_caller_(NULL),
         mock_dbus_thread_manager_(new MockDBusThreadManagerWithoutGMock) {
@@ -80,7 +83,6 @@ class ParallelAuthenticatorTest : public testing::Test {
     state_.reset(new TestAttemptState(UserContext(username_,
                                                   password_,
                                                   std::string()),
-                                      hash_ascii_,
                                       "",
                                       "",
                                       User::USER_TYPE_REGULAR,
@@ -297,7 +299,6 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
   state_.reset(new TestAttemptState(UserContext(username_,
                                                 password_,
                                                 std::string()),
-                                    hash_ascii_,
                                     "",
                                     "",
                                     User::USER_TYPE_REGULAR,
@@ -351,7 +352,6 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   state_.reset(new TestAttemptState(UserContext(username_,
                                                 password_,
                                                 std::string()),
-                                    hash_ascii_,
                                     "",
                                     "",
                                     User::USER_TYPE_REGULAR,

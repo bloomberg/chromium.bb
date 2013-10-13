@@ -147,6 +147,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
     unmount_result_= result;
   }
 
+  // Returns the stub system salt as raw bytes. (not as a string encoded in the
+  // format used by CryptohomeLibrary::ConvertRawSaltToHexString()).
+  static std::vector<uint8> GetStubSystemSalt();
+
  private:
   // Posts tasks which return fake results to the UI thread.
   void ReturnAsyncMethodResult(const AsyncMethodCallback& callback,

@@ -15,13 +15,11 @@ using content::BrowserThread;
 namespace chromeos {
 
 AuthAttemptState::AuthAttemptState(const UserContext& user_context,
-                                   const std::string& ascii_hash,
                                    const std::string& login_token,
                                    const std::string& login_captcha,
                                    const User::UserType user_type,
                                    const bool user_is_new)
     : user_context(user_context),
-      ascii_hash(ascii_hash),
       login_token(login_token),
       login_captcha(login_captcha),
       user_type(user_type),
@@ -38,9 +36,8 @@ AuthAttemptState::AuthAttemptState(const UserContext& user_context,
 }
 
 AuthAttemptState::AuthAttemptState(const std::string& username,
-                                   const std::string& ascii_hash)
-    : user_context(username, "", ""),
-      ascii_hash(ascii_hash),
+                                   const std::string& password)
+    : user_context(username, password, ""),
       user_type(User::USER_TYPE_REGULAR),
       unlock(true),
       online_complete_(true),
@@ -54,10 +51,8 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
 }
 
 AuthAttemptState::AuthAttemptState(const UserContext& user_context,
-                                   const std::string& ascii_hash,
                                    const bool user_is_new)
     : user_context(user_context),
-      ascii_hash(ascii_hash),
       user_type(User::USER_TYPE_REGULAR),
       unlock(true),
       online_complete_(false),

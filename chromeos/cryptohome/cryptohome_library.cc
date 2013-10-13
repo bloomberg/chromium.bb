@@ -50,8 +50,7 @@ void CryptohomeLibrary::LoadSystemSalt() {
     LOG(WARNING) << "System salt not available";
     return;
   }
-  system_salt_ = StringToLowerASCII(base::HexEncode(
-      reinterpret_cast<const void*>(salt.data()), salt.size()));
+  system_salt_ = ConvertRawSaltToHexString(salt);
 }
 
 // static
@@ -77,6 +76,13 @@ CryptohomeLibrary* CryptohomeLibrary::Get() {
   CHECK(g_cryptohome_library)
       << "CryptohomeLibrary::Get() called before Initialize()";
   return g_cryptohome_library;
+}
+
+// static
+std::string CryptohomeLibrary::ConvertRawSaltToHexString(
+    const std::vector<uint8>& salt) {
+  return StringToLowerASCII(base::HexEncode(
+      reinterpret_cast<const void*>(salt.data()), salt.size()));
 }
 
 }  // namespace chromeos

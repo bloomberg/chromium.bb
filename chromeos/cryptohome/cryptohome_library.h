@@ -6,6 +6,7 @@
 #define CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -25,6 +26,9 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   static bool IsInitialized();
   static void Shutdown();
   static CryptohomeLibrary* Get();
+
+  // Converts |salt| to a hex encoded string.
+  static std::string ConvertRawSaltToHexString(const std::vector<uint8>& salt);
 
   // Returns system hash in hex encoded ascii format. Note: this may return
   // an empty string (e.g. if cryptohome is not running). It is up to the

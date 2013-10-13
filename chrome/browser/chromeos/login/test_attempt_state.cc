@@ -11,22 +11,15 @@
 namespace chromeos {
 
 TestAttemptState::TestAttemptState(const UserContext& credentials,
-                                   const std::string& ascii_hash,
                                    const std::string& login_token,
                                    const std::string& login_captcha,
                                    const User::UserType user_type,
                                    const bool user_is_new)
     : AuthAttemptState(credentials,
-                       ascii_hash,
                        login_token,
                        login_captcha,
                        user_type,
                        user_is_new) {
-}
-
-TestAttemptState::TestAttemptState(const std::string& username,
-                                   const std::string& ascii_hash)
-    : AuthAttemptState(username, ascii_hash) {
 }
 
 TestAttemptState::~TestAttemptState() {}

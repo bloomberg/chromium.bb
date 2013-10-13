@@ -37,7 +37,6 @@ void OnlineAttemptHost::Check(Profile* profile,
             UserContext(gaia::CanonicalizeEmail(user_context.username),
                         user_context.password,
                         user_context.auth_code),
-            std::string(),  // ascii_hash
             std::string(),  // login_token
             std::string(),  // login_captcha
             User::USER_TYPE_REGULAR,

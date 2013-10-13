@@ -69,9 +69,7 @@ void FakeCryptohomeClient::AsyncRemove(
 }
 
 bool FakeCryptohomeClient::GetSystemSalt(std::vector<uint8>* salt) {
-  const char kStubSystemSalt[] = "stub_system_salt";
-  salt->assign(kStubSystemSalt,
-               kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
+  *salt = GetStubSystemSalt();
   return true;
 }
 
@@ -359,6 +357,13 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
     const BoolDBusMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
+}
+
+// static
+std::vector<uint8> FakeCryptohomeClient::GetStubSystemSalt() {
+  const char kStubSystemSalt[] = "stub_system_salt";
+  return std::vector<uint8>(kStubSystemSalt,
+                            kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
 }
 
 void FakeCryptohomeClient::ReturnAsyncMethodResult(
