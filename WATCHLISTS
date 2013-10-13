@@ -812,7 +812,7 @@
                  'glider+watch@chromium.org',
                  'timurrrr+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
-    'views_core': ['ben+views@chromium.org'],l
+    'views_core': ['ben+views@chromium.org'],
     'views_corewm': ['ben+corewm@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'webrtc_media': ['wjia+watch@chromium.org'],
