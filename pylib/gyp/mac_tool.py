@@ -9,6 +9,7 @@ These functions are executed via gyp-mac-tool when using the Makefile generator.
 """
 
 import fcntl
+import json
 import os
 import plistlib
 import re
@@ -125,7 +126,8 @@ class MacTool(object):
 
     # Insert synthesized key/value pairs (e.g. BuildMachineOSBuild).
     plist = plistlib.readPlistFromString(lines)
-    plist = dict(plist.items() + zip(keys[::2], keys[1::2]))
+    if keys:
+      plist = dict(plist.items() + json.loads(keys[0]).items())
     lines = plistlib.writePlistToString(plist)
 
     # Go through all the environment variables and replace them as variables in

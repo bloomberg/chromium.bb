@@ -8,6 +8,7 @@
 Verifies that device and simulator bundles are built correctly.
 """
 
+import plistlib
 import TestGyp
 import subprocess
 import sys
@@ -22,22 +23,53 @@ def CheckFileType(file, expected):
     test.fail_test()
 
 
+def CheckPlistvalue(plist, key, expected):
+  if key not in plist:
+    print '%s not set in plist' % key
+    test.fail_test()
+    return
+  actual = plist[key]
+  if actual != expected:
+    print 'File: Expected %s, got %s for %s' % (expected, actual, key)
+    test.fail_test()
+
+def ConvertBinaryPlistToXML(path):
+  proc = subprocess.call(['plutil', '-convert', 'xml1', path],
+                         stdout=subprocess.PIPE)
+
 if sys.platform == 'darwin':
-  # TODO(justincohen): Enable this in xcode too once ninja can codesign and bots
-  # are configured with signing certs.
-  test = TestGyp.TestGyp(formats=['ninja'])
+  test = TestGyp.TestGyp(formats=['ninja', 'xcode'])
 
   test.run_gyp('test-device.gyp', chdir='app-bundle')
 
-  for configuration in ['Default-iphoneos', 'Default']:
+  test_configs = ['Default-iphoneos', 'Default']
+  # TODO(justincohen): Disabling 'Default-iphoneos' for xcode until bots are
+  # configured with signing certs.
+  if test.format == 'xcode':
+    test_configs.remove('Default-iphoneos')
+
+  for configuration in test_configs:
     test.set_configuration(configuration)
     test.build('test-device.gyp', test.ALL, chdir='app-bundle')
     result_file = test.built_file_path('Test App Gyp.bundle/Test App Gyp',
                                        chdir='app-bundle')
     test.must_exist(result_file)
+
+    info_plist = test.built_file_path('Test App Gyp.bundle/Info.plist',
+                                      chdir='app-bundle')
+
+    # plistlib doesn't support binary plists, but that's what Xcode creates.
+    if test.format == 'xcode':
+      ConvertBinaryPlistToXML(info_plist)
+    plist = plistlib.readPlist(info_plist)
+
+    CheckPlistvalue(plist, 'UIDeviceFamily', [1, 2])
+
     if configuration == 'Default-iphoneos':
       CheckFileType(result_file, 'armv7')
+      CheckPlistvalue(plist, 'CFBundleSupportedPlatforms', ['iPhoneOS'])
     else:
       CheckFileType(result_file, 'i386')
+      CheckPlistvalue(plist, 'CFBundleSupportedPlatforms', ['iPhoneSimulator'])
 
   test.pass_test()

@@ -30,8 +30,10 @@
           '-fobjc-abi-version=2',
         ],
         'SDKROOT': 'iphonesimulator',  # -isysroot
+        'TARGETED_DEVICE_FAMILY': '1,2',
         'INFOPLIST_FILE': 'TestApp/TestApp-Info.plist',
         'IPHONEOS_DEPLOYMENT_TARGET': '4.2',
+        'CONFIGURATION_BUILD_DIR':'build/Default',
       },
     },
   ],

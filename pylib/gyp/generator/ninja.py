@@ -4,6 +4,7 @@
 
 import copy
 import hashlib
+import json
 import multiprocessing
 import os.path
 import re
@@ -770,7 +771,7 @@ class NinjaWriter:
     env = self.ComputeExportEnvString(env)
 
     keys = self.xcode_settings.GetExtraPlistItems(self.config_name)
-    keys = [QuoteShellArgument(v, self.flavor) for v in sum(keys.items(), ())]
+    keys = QuoteShellArgument(json.dumps(keys), self.flavor)
     self.ninja.build(out, 'copy_infoplist', info_plist,
                      variables=[('env', env), ('keys', keys)])
     bundle_depends.append(out)

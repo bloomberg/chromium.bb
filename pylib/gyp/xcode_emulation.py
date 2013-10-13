@@ -792,10 +792,14 @@ class XcodeSettings(object):
     build = build.split()[-1]
     return version, build
 
+  def _XcodeIOSDeviceFamily(self, configname):
+    family = self.xcode_settings[configname].get('TARGETED_DEVICE_FAMILY', '1')
+    return [int(x) for x in family.split(',')]
+
   def GetExtraPlistItems(self, configname=None):
     """Returns a dictionary with extra items to insert into Info.plist."""
-    if not XcodeSettings._plist_cache:
-      cache = XcodeSettings._plist_cache
+    if configname not in XcodeSettings._plist_cache:
+      cache = {}
       cache['BuildMachineOSBuild'] = self._BuildMachineOSBuild()
 
       xcode, xcode_build = self._XcodeVersion()
@@ -810,7 +814,14 @@ class XcodeSettings(object):
       else:
         cache['DTSDKBuild'] = cache['BuildMachineOSBuild']
 
-    return XcodeSettings._plist_cache
+      if self.isIOS:
+        cache['UIDeviceFamily'] = self._XcodeIOSDeviceFamily(configname)
+        if configname.endswith("iphoneos"):
+          cache['CFBundleSupportedPlatforms'] = ['iPhoneOS']
+        else:
+          cache['CFBundleSupportedPlatforms'] = ['iPhoneSimulator']
+      XcodeSettings._plist_cache[configname] = cache
+    return XcodeSettings._plist_cache[configname]
 
 
 class MacPrefixHeader(object):
