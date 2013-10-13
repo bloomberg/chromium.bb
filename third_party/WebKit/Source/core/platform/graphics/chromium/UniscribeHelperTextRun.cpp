@@ -33,8 +33,8 @@
 
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
-#include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
+#include "platform/graphics/TextRun.h"
 
 namespace WebCore {
 

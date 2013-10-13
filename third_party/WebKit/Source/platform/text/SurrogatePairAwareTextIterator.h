@@ -21,12 +21,13 @@
 #ifndef SurrogatePairAwareTextIterator_h
 #define SurrogatePairAwareTextIterator_h
 
-#include "wtf/unicode/CharacterNames.h"
+#include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 
-class SurrogatePairAwareTextIterator {
+class PLATFORM_EXPORT SurrogatePairAwareTextIterator {
 public:
     // The passed in UChar pointer starts at 'currentCharacter'. The iterator operatoes on the range [currentCharacter, lastCharacter].
     // 'endCharacter' denotes the maximum length of the UChar array, which might exceed 'lastCharacter'.

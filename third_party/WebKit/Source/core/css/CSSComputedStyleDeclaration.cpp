@@ -59,7 +59,6 @@
 #include "core/dom/PseudoElement.h"
 #include "core/page/RuntimeCSSEnabled.h"
 #include "core/frame/animation/AnimationController.h"
-#include "core/platform/graphics/FontFeatureSettings.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ContentData.h"
@@ -67,6 +66,7 @@
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShapeValue.h"
+#include "platform/fonts/FontFeatureSettings.h"
 #include "wtf/text/StringBuilder.h"
 
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"

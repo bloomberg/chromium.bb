@@ -26,7 +26,7 @@
 #ifndef SegmentedFontData_h
 #define SegmentedFontData_h
 
-#include "core/platform/graphics/FontData.h"
+#include "platform/fonts/FontData.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

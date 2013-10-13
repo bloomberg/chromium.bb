@@ -23,7 +23,6 @@
 #ifndef RenderBlock_h
 #define RenderBlock_h
 
-#include "core/platform/graphics/TextRun.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/FloatingObjects.h"
 #include "core/rendering/GapRects.h"
@@ -32,6 +31,7 @@
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/shapes/ShapeInsideInfo.h"
 #include "core/rendering/style/ShapeValue.h"
+#include "platform/graphics/TextRun.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"

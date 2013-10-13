@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebTextRun.h"
 
-#include "core/platform/graphics/TextRun.h"
+#include "platform/graphics/TextRun.h"
 
 using namespace WebCore;
 

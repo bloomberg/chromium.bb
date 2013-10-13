@@ -26,13 +26,13 @@
 #define FontDescription_h
 
 #include "FontFamilyNames.h"
-#include "core/platform/graphics/FontFamily.h"
-#include "core/platform/graphics/FontFeatureSettings.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/FontTraitsMask.h"
 #include "core/platform/graphics/FontWidthVariant.h"
 #include "core/platform/graphics/TextRenderingMode.h"
+#include "platform/fonts/FontFamily.h"
+#include "platform/fonts/FontFeatureSettings.h"
 #include "platform/text/NonCJKGlyphOrientation.h"
 #include "wtf/MathExtras.h"
 

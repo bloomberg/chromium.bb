@@ -45,7 +45,6 @@
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/StringTruncator.h"
-#include "core/platform/graphics/TextRun.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -53,6 +52,7 @@
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/TextRun.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/CurrentTime.h"
 #include <limits>

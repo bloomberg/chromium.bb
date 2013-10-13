@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003, 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,72 +23,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontFamily_h
-#define FontFamily_h
+#ifndef FontFeatureSettings_h
+#define FontFeatureSettings_h
 
+#include "platform/PlatformExport.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class SharedFontFamily;
-
-class FontFamily {
+class PLATFORM_EXPORT FontFeature {
 public:
-    FontFamily() { }
-    ~FontFamily();
+    FontFeature(const AtomicString& tag, int value);
+    bool operator==(const FontFeature&);
 
-    void setFamily(const AtomicString& family) { m_family = family; }
-    const AtomicString& family() const { return m_family; }
-    bool familyIsEmpty() const { return m_family.isEmpty(); }
-
-    const FontFamily* next() const;
-
-    void appendFamily(PassRefPtr<SharedFontFamily>);
-    PassRefPtr<SharedFontFamily> releaseNext();
+    const AtomicString& tag() const { return m_tag; }
+    int value() const { return m_value; }
 
 private:
-    AtomicString m_family;
-    RefPtr<SharedFontFamily> m_next;
+    AtomicString m_tag;
+    const int m_value;
 };
 
-class SharedFontFamily : public FontFamily, public RefCounted<SharedFontFamily> {
+class PLATFORM_EXPORT FontFeatureSettings : public RefCounted<FontFeatureSettings> {
 public:
-    static PassRefPtr<SharedFontFamily> create()
+    static PassRefPtr<FontFeatureSettings> create()
     {
-        return adoptRef(new SharedFontFamily);
+        return adoptRef(new FontFeatureSettings());
     }
+    void append(const FontFeature& feature) { m_list.append(feature); }
+    size_t size() const { return m_list.size(); }
+    const FontFeature& operator[](int index) const { return m_list[index]; }
+    const FontFeature& at(size_t index) const { return m_list.at(index); }
 
 private:
-    SharedFontFamily() { }
+    FontFeatureSettings();
+    Vector<FontFeature> m_list;
 };
 
-bool operator==(const FontFamily&, const FontFamily&);
-inline bool operator!=(const FontFamily& a, const FontFamily& b) { return !(a == b); }
-
-inline FontFamily::~FontFamily()
-{
-    RefPtr<SharedFontFamily> reaper = m_next.release();
-    while (reaper && reaper->hasOneRef())
-        reaper = reaper->releaseNext(); // implicitly protects reaper->next, then derefs reaper
 }
 
-inline const FontFamily* FontFamily::next() const
-{
-    return m_next.get();
-}
-
-inline void FontFamily::appendFamily(PassRefPtr<SharedFontFamily> family)
-{
-    m_next = family;
-}
-
-inline PassRefPtr<SharedFontFamily> FontFamily::releaseNext()
-{
-    return m_next.release();
-}
-
-}
-
-#endif
+#endif // FontFeatureSettings_h

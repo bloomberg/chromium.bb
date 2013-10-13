@@ -29,7 +29,7 @@
 #ifndef TextRunIterator_h
 #define TextRunIterator_h
 
-#include "core/platform/graphics/TextRun.h"
+#include "platform/graphics/TextRun.h"
 
 namespace WebCore {
 

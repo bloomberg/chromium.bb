@@ -32,9 +32,9 @@
 #define HarfBuzzShaper_h
 
 #include "core/platform/graphics/GlyphBuffer.h"
-#include "core/platform/graphics/TextRun.h"
 #include "hb.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/graphics/TextRun.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

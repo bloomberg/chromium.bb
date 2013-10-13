@@ -29,10 +29,10 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/TextRun.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderButton.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/graphics/TextRun.h"
 #include "platform/text/PlatformLocale.h"
 
 using namespace std;

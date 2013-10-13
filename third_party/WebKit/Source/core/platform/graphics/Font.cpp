@@ -24,10 +24,10 @@
 #include "config.h"
 #include "core/platform/graphics/Font.h"
 
-#include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/WidthIterator.h"
 #include "core/platform/text/transcoder/FontTranscoder.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/TextRun.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"

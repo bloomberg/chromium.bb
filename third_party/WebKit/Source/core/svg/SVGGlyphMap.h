@@ -23,7 +23,7 @@
 #if ENABLE(SVG_FONTS)
 #include "core/platform/graphics/Latin1TextIterator.h"
 #include "core/platform/graphics/SVGGlyph.h"
-#include "core/platform/graphics/SurrogatePairAwareTextIterator.h"
+#include "platform/text/SurrogatePairAwareTextIterator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 

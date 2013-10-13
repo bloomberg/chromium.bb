@@ -26,7 +26,7 @@
 #ifndef VerticalPositionCache_h
 #define VerticalPositionCache_h
 
-#include "core/platform/graphics/FontBaseline.h"
+#include "platform/fonts/FontBaseline.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

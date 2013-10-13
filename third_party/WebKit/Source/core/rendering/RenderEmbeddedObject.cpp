@@ -34,11 +34,11 @@
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/Path.h"
-#include "core/platform/graphics/TextRun.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "platform/graphics/TextRun.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace WebCore {

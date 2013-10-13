@@ -24,7 +24,7 @@
 
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SVGGlyph.h"
-#include "core/platform/graphics/TextRun.h"
+#include "platform/graphics/TextRun.h"
 #include "wtf/HashSet.h"
 #include "wtf/unicode/Unicode.h"
 #include "wtf/Vector.h"

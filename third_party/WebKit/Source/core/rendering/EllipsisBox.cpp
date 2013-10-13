@@ -23,13 +23,13 @@
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/TextRun.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/style/ShadowData.h"
+#include "platform/graphics/TextRun.h"
 
 namespace WebCore {
 

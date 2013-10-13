@@ -22,7 +22,7 @@
 #define SVGTextRunRenderingContext_h
 
 #include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/TextRun.h"
+#include "platform/graphics/TextRun.h"
 
 namespace WebCore {
 

@@ -20,7 +20,7 @@
 #ifndef FontMetrics_h
 #define FontMetrics_h
 
-#include "core/platform/graphics/FontBaseline.h"
+#include "platform/fonts/FontBaseline.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

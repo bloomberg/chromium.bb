@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2008 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,46 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontFeatureSettings_h
-#define FontFeatureSettings_h
-
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
+#include "config.h"
+#include "platform/fonts/FontData.h"
 
 namespace WebCore {
 
-class FontFeature {
-public:
-    FontFeature(const AtomicString& tag, int value);
-    bool operator==(const FontFeature&);
-
-    const AtomicString& tag() const { return m_tag; }
-    int value() const { return m_value; }
-
-private:
-    AtomicString m_tag;
-    const int m_value;
-};
-
-class FontFeatureSettings : public RefCounted<FontFeatureSettings> {
-public:
-    static PassRefPtr<FontFeatureSettings> create()
-    {
-        return adoptRef(new FontFeatureSettings());
-    }
-    void append(const FontFeature& feature) { m_list.append(feature); }
-    size_t size() const { return m_list.size(); }
-    const FontFeature& operator[](int index) const { return m_list[index]; }
-    const FontFeature& at(size_t index) const { return m_list.at(index); }
-
-private:
-    FontFeatureSettings();
-    Vector<FontFeature> m_list;
-};
-
+FontData::~FontData()
+{
 }
 
-#endif // FontFeatureSettings_h
+} // namespace WebCore

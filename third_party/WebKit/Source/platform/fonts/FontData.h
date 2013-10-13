@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,24 +23,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/platform/graphics/FontFamily.h"
+#ifndef FontData_h
+#define FontData_h
+
+#include "platform/PlatformExport.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 
-bool operator==(const FontFamily& a, const FontFamily& b)
-{
-    if (a.family() != b.family())
-        return false;
-    const FontFamily* ap;
-    const FontFamily* bp;
-    for (ap = a.next(), bp = b.next(); ap != bp; ap = ap->next(), bp = bp->next()) {
-        if (!ap || !bp)
-            return false;
-        if (ap->family() != bp->family())
-            return false;
-    }
-    return true;
-}
+class SimpleFontData;
 
-}
+class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
+    WTF_MAKE_NONCOPYABLE(FontData); WTF_MAKE_FAST_ALLOCATED;
+public:
+    FontData()
+        : m_maxGlyphPageTreeLevel(0)
+    {
+    }
+
+    virtual ~FontData();
+
+    virtual const SimpleFontData* fontDataForCharacter(UChar32) const = 0;
+    virtual bool containsCharacters(const UChar*, int length) const = 0;
+    virtual bool isCustomFont() const = 0;
+    virtual bool isLoading() const = 0;
+    // Returns whether this is a temporary font data for a custom font which is not yet loaded.
+    virtual bool isLoadingFallback() const = 0;
+    virtual bool isSegmented() const = 0;
+
+    void setMaxGlyphPageTreeLevel(unsigned level) const { m_maxGlyphPageTreeLevel = level; }
+    unsigned maxGlyphPageTreeLevel() const { return m_maxGlyphPageTreeLevel; }
+
+#ifndef NDEBUG
+    virtual String description() const = 0;
+#endif
+
+private:
+    mutable unsigned m_maxGlyphPageTreeLevel;
+};
+
+} // namespace WebCore
+
+#endif // FontData_h

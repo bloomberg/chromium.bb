@@ -24,6 +24,7 @@
 #ifndef TextRun_h
 #define TextRun_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/RefCounted.h"
@@ -39,7 +40,7 @@ class SimpleFontData;
 struct GlyphData;
 struct WidthIterator;
 
-class TextRun {
+class PLATFORM_EXPORT TextRun {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     enum ExpansionBehaviorFlags {

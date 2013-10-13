@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2008 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,12 +24,23 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FontData.h"
+#include "platform/fonts/FontFamily.h"
 
 namespace WebCore {
 
-FontData::~FontData()
+bool operator==(const FontFamily& a, const FontFamily& b)
 {
+    if (a.family() != b.family())
+        return false;
+    const FontFamily* ap;
+    const FontFamily* bp;
+    for (ap = a.next(), bp = b.next(); ap != bp; ap = ap->next(), bp = bp->next()) {
+        if (!ap || !bp)
+            return false;
+        if (ap->family() != bp->family())
+            return false;
+    }
+    return true;
 }
 
-} // namespace WebCore
+}
