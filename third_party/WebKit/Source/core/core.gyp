@@ -271,7 +271,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTypeNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTypeNames.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/FetchInitiatorTypeNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.cpp',

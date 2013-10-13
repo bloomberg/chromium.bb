@@ -86,7 +86,9 @@ mkpath($outputDir);
 if (length($fontNamesIn)) {
     my $familyNamesFileBase = "FontFamily";
     my $familyNamesPrefix = "CSS";
-    createGenericNamesFile($fontNamesIn, $familyNamesFileBase, $familyNamesPrefix);
+    my $exportInclude = "#include \"platform/PlatformExport.h\"\n";
+    my $exportDeclaration = "PLATFORM_EXPORT ";
+    createFontFamilyNamesFile($fontNamesIn, $familyNamesFileBase, $familyNamesPrefix, $exportInclude, $exportDeclaration);
 }
 
 die "You must specify at least one of --tags <file> or --attrs <file>" unless (length($tagsFile) || length($attrsFile));
@@ -511,10 +513,10 @@ sub printCppHead
 
 sub printInit
 {
-    my ($F, $isDefinition) = @_;
+    my ($F, $isDefinition, $exportDeclaration) = @_;
 
     if ($isDefinition) {
-        print F "\nvoid init();\n\n";
+        print F "\n".$exportDeclaration."void init();\n\n";
         print F "} }\n\n";
         print F "#endif\n\n";
         return;
@@ -596,7 +598,7 @@ sub printNamesHeaderFile
         print F "WebCore::QualifiedName** get$parameters{namespace}Attrs();\n";
     }
 
-    printInit($F, 1);
+    printInit($F, 1, "");
     close F;
 }
 
@@ -644,7 +646,7 @@ sub printNamesCppFile
         print F "}\n";
     }
 
-    printInit($F, 0);
+    printInit($F, 0, "");
 
     print(F "    AtomicString ${lowerNamespace}NS(\"$parameters{namespaceURI}\", AtomicString::ConstructFromLiteral);\n\n");
 
@@ -1232,11 +1234,13 @@ END
     close F;
 }
 
-sub createGenericNamesFile
+sub createFontFamilyNamesFile
 {
     my $inputName = shift;
     my $baseName = shift;
     my $basePrefix = shift;
+    my $exportInclude = shift;
+    my $exportDeclaration = shift;
 
     my $names = new IO::File;
     open($names, $inputName) or die "Failed to open file: $inputName";
@@ -1251,12 +1255,16 @@ sub createGenericNamesFile
     open F, ">$header" or die "Unable to open $header for writing.";
 
     printLicenseHeader($F);
-    printHeaderHead($F, $basePrefix, $baseName, "#include \"wtf/text/AtomicString.h\"");
 
-    printMacros($F, "extern const WTF::AtomicString", "", \%parameters);
+    printHeaderHead($F, $basePrefix, $baseName, $exportInclude."#include \"wtf/StaticConstructors.h\"\n#include \"wtf/text/AtomicString.h\"\n");
+    printMacros($F, $exportDeclaration."extern const WTF::AtomicString", "", \%parameters);
+    print F "#else\n";
+    while ( my ($name, $identifier) = each %parameters ) {
+        print F $exportDeclaration."DECLARE_GLOBAL(AtomicString, $name)\n";
+    }
     print F "#endif\n\n";
 
-    printInit($F, 1);
+    printInit($F, 1, $exportDeclaration);
     close F;
 
     my $source = File::Spec->catfile($outputDir, "${baseName}Names.cpp");
@@ -1269,7 +1277,7 @@ sub createGenericNamesFile
         print F "DEFINE_GLOBAL(AtomicString, $name)\n";
     }
 
-    printInit($F, 0);
+    printInit($F, 0, "");
 
     print F "\n";
     print F StaticString::GenerateStringImpls(\%parameters);
