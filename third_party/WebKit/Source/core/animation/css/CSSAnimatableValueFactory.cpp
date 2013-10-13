@@ -221,6 +221,12 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->flexBasis(), style);
     case CSSPropertyFloodColor:
         return createFromColor(property, style);
+    case CSSPropertyFontSize:
+        // Must pass a specified size to setFontSize if Text Autosizing is enabled, but a computed size
+        // if text zoom is enabled (if neither is enabled it's irrelevant as they're probably the same).
+        // FIXME: Should we introduce an option to pass the computed font size here, allowing consumers to
+        // enable text zoom rather than Text Autosizing? See http://crbug.com/227545.
+        return createFromDouble(style->specifiedFontSize());
     case CSSPropertyHeight:
         return createFromLength(style->height(), style);
     case CSSPropertyKerning:
