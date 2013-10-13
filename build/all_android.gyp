@@ -78,6 +78,7 @@
         '../sync/sync.gyp:sync_unit_tests',
         '../third_party/WebKit/public/all.gyp:*',
         '../tools/android/android_tools.gyp:android_tools',
+        '../tools/android/android_tools.gyp:memconsumer',
         '../tools/android/device_stats_monitor/device_stats_monitor.gyp:device_stats_monitor',
         '../tools/android/findbugs_plugin/findbugs_plugin.gyp:findbugs_plugin_test',
         '../ui/ui.gyp:ui_unittests',
