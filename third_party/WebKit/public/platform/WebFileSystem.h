@@ -61,9 +61,8 @@ public:
     // WebFileSystemCallbacks::didOpenFileSystem() must be called with
     // a name and root path for the requested FileSystem when the operation
     // is completed successfully. WebFileSystemCallbacks::didFail() must be
-    // called otherwise. The create bool is for indicating whether or not to
-    // create root path for file systems if it do not exist.
-    virtual void openFileSystem(const WebURL& storagePartition, const WebFileSystemType, bool create, WebFileSystemCallbacks) { BLINK_ASSERT_NOT_REACHED(); }
+    // called otherwise.
+    virtual void openFileSystem(const WebURL& storagePartition, const WebFileSystemType, WebFileSystemCallbacks) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Resolves a filesystem URL.
     // WebFileSystemCallbacks::didSucceed() must be called with filesystem

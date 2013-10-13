@@ -74,7 +74,7 @@ void LocalFileSystemBase::requestFileSystem(ExecutionContext* context, FileSyste
         return;
     }
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebKit::WebFileSystemType>(type), true, callbacks);
+    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebKit::WebFileSystemType>(type), callbacks);
 }
 
 void LocalFileSystemBase::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
