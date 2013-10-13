@@ -212,6 +212,8 @@
       'geometry/RoundedRect.h',
       'graphics/angle/ANGLEPlatformBridge.cpp',
       'graphics/angle/ANGLEPlatformBridge.h',
+      'graphics/ImageOrientation.cpp',
+      'graphics/ImageOrientation.h',
       'graphics/TextRun.cpp',
       'graphics/TextRun.h',
       'graphics/TextRunIterator.h',

@@ -31,9 +31,9 @@
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FrameData.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/ImageSource.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

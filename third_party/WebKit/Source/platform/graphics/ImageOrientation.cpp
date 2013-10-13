@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/ImageOrientation.h"
+#include "platform/graphics/ImageOrientation.h"
 
 #include "platform/transforms/AffineTransform.h"
 

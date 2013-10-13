@@ -28,9 +28,9 @@
 #include "config.h"
 #include "core/platform/graphics/ImageSource.h"
 
-#include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 

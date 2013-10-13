@@ -26,7 +26,7 @@
 #ifndef ImageSource_h
 #define ImageSource_h
 
-#include "core/platform/graphics/ImageOrientation.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"

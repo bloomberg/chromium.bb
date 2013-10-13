@@ -28,7 +28,7 @@
 #ifndef FrameData_h
 #define FrameData_h
 
-#include "core/platform/graphics/ImageOrientation.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/VectorTraits.h"

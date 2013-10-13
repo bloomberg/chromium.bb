@@ -26,6 +26,8 @@
 #ifndef ImageOrientation_h
 #define ImageOrientation_h
 
+#include "platform/PlatformExport.h"
+
 namespace WebCore {
 
 class AffineTransform;
@@ -52,7 +54,7 @@ enum RespectImageOrientationEnum {
     RespectImageOrientation = 1
 };
 
-class ImageOrientation {
+class PLATFORM_EXPORT ImageOrientation {
 public:
     ImageOrientation(ImageOrientationEnum orientation = DefaultImageOrientation)
         : m_orientation(orientation)

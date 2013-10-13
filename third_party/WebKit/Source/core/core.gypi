@@ -2732,7 +2732,6 @@
             'platform/graphics/GraphicsTypes.cpp',
             'platform/graphics/Image.cpp',
             'platform/graphics/ImageBuffer.cpp',
-            'platform/graphics/ImageOrientation.cpp',
             'platform/graphics/ImageSource.cpp',
             'platform/graphics/InbandTextTrackPrivate.h',
             'platform/graphics/InbandTextTrackPrivateClient.h',

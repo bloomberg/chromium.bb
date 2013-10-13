@@ -29,9 +29,9 @@
 
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/GraphicsTypes.h"
-#include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

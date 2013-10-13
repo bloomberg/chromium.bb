@@ -26,8 +26,8 @@
 #ifndef DragImage_h
 #define DragImage_h
 
-#include "core/platform/graphics/ImageOrientation.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/ImageOrientation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Forward.h"
 
