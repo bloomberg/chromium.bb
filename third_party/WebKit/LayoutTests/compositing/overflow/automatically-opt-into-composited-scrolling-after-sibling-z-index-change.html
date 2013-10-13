@@ -38,10 +38,8 @@
         if (window.testRunner)
             testRunner.dumpAsText();
 
-        if (window.internals) {
+        if (window.internals)
             window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
-            window.internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(false);
-        }
 
         function doTest()
         {

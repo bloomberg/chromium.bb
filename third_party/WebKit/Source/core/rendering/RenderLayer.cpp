@@ -114,12 +114,11 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_hasUnclippedDescendant(false)
     , m_isUnclippedDescendant(false)
     , m_needsCompositedScrolling(false)
-    , m_needsToBeStackingContainerHasBeenRecorded(false)
+    , m_needsCompositedScrollingHasBeenRecorded(false)
     , m_willUseCompositedScrollingHasBeenRecorded(false)
     , m_isScrollableAreaHasBeenRecorded(false)
-    , m_needsToBeStackingContainer(false)
-    , m_descendantsAreContiguousInStackingOrder(false)
-    , m_descendantsAreContiguousInStackingOrderDirty(true)
+    , m_canBePromotedToStackingContainer(false)
+    , m_canBePromotedToStackingContainerDirty(true)
     , m_isRootLayer(renderer->isRenderView())
     , m_usedTransparency(false)
     , m_childLayerHasBlendMode(false)
@@ -412,11 +411,11 @@ bool RenderLayer::compositorDrivenAcceleratedScrollingEnabled() const
 // We do this by computing what positive and negative z-order lists would look
 // like before and after promotion, and ensuring that proper stacking order is
 // preserved between the two sets of lists.
-void RenderLayer::updateDescendantsAreContiguousInStackingOrder()
+void RenderLayer::updateCanBeStackingContainer()
 {
-    TRACE_EVENT0("blink_rendering,comp-scroll", "RenderLayer::updateDescendantsAreContiguousInStackingOrder");
+    TRACE_EVENT0("blink_rendering,comp-scroll", "RenderLayer::updateCanBeStackingContainer");
 
-    if (isStackingContext() || !m_descendantsAreContiguousInStackingOrderDirty || !acceleratedCompositingForOverflowScrollEnabled())
+    if (isStackingContext() || !m_canBePromotedToStackingContainerDirty || !acceleratedCompositingForOverflowScrollEnabled())
         return;
 
     FrameView* frameView = renderer()->view()->frameView();
@@ -437,8 +436,8 @@ void RenderLayer::updateDescendantsAreContiguousInStackingOrder()
 
     size_t maxIndex = std::min(posZOrderListAfterPromote->size() + negZOrderListAfterPromote->size(), posZOrderListBeforePromote->size() + negZOrderListBeforePromote->size());
 
-    m_descendantsAreContiguousInStackingOrderDirty = false;
-    m_descendantsAreContiguousInStackingOrder = false;
+    m_canBePromotedToStackingContainerDirty = false;
+    m_canBePromotedToStackingContainer = false;
 
     const RenderLayer* layerAfterPromote = 0;
     for (size_t i = 0; i < maxIndex && layerAfterPromote != this; ++i) {
@@ -466,7 +465,7 @@ void RenderLayer::updateDescendantsAreContiguousInStackingOrder()
             return;
     }
 
-    m_descendantsAreContiguousInStackingOrder = true;
+    m_canBePromotedToStackingContainer = true;
 }
 
 static inline bool isPositionedContainer(const RenderLayer* layer)
@@ -907,13 +906,13 @@ void RenderLayer::updatePagination()
     }
 }
 
-bool RenderLayer::descendantsAreContiguousInStackingOrder() const
+bool RenderLayer::canBeStackingContainer() const
 {
     if (isStackingContext() || !ancestorStackingContainer())
         return true;
 
-    ASSERT(!m_descendantsAreContiguousInStackingOrderDirty);
-    return m_descendantsAreContiguousInStackingOrder;
+    ASSERT(!m_canBePromotedToStackingContainerDirty);
+    return m_canBePromotedToStackingContainer;
 }
 
 void RenderLayer::setHasVisibleContent()
@@ -1681,7 +1680,7 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     // layer's stacking context. We need to manually do it here as well, in case
     // we're adding this layer after the stacking context has already been
     // updated.
-    child->m_descendantsAreContiguousInStackingOrderDirty = true;
+    child->m_canBePromotedToStackingContainerDirty = true;
     compositor()->layerWasAdded(this, child);
 }
 
@@ -1946,11 +1945,20 @@ bool RenderLayer::usesCompositedScrolling() const
     return isComposited() && compositedLayerMapping()->scrollingLayer();
 }
 
-bool RenderLayer::adjustForForceCompositedScrollingMode(bool value) const
+bool RenderLayer::needsCompositedScrolling() const
+{
+    if (!compositorDrivenAcceleratedScrollingEnabled())
+        return needsToBeStackingContainer();
+    if (FrameView* frameView = renderer()->view()->frameView())
+        return frameView->containsScrollableArea(scrollableArea());
+    return false;
+}
+
+bool RenderLayer::needsToBeStackingContainer() const
 {
     switch (m_forceNeedsCompositedScrolling) {
     case DoNotForceCompositedScrolling:
-        return value;
+        return m_needsCompositedScrolling;
     case CompositedScrollingAlwaysOn:
         return true;
     case CompositedScrollingAlwaysOff:
@@ -1958,17 +1966,7 @@ bool RenderLayer::adjustForForceCompositedScrollingMode(bool value) const
     }
 
     ASSERT_NOT_REACHED();
-    return value;
-}
-
-bool RenderLayer::needsCompositedScrolling() const
-{
-    return adjustForForceCompositedScrollingMode(m_needsCompositedScrolling);
-}
-
-bool RenderLayer::needsToBeStackingContainer() const
-{
-    return adjustForForceCompositedScrollingMode(m_needsToBeStackingContainer);
+    return m_needsCompositedScrolling;
 }
 
 RenderLayer* RenderLayer::scrollParent() const
@@ -1990,13 +1988,13 @@ RenderLayer* RenderLayer::scrollParent() const
     // that we scroll with our scrolling ancestor and it cannot do this if we do not promote.
     RenderLayer* scrollParent = ancestorScrollingLayer();
 
-    if (!scrollParent || scrollParent->isStackingContainer())
+    if (!scrollParent || scrollParent->isStackingContext())
         return 0;
 
     // If we hit a stacking context on our way up to the ancestor scrolling layer, it will already
     // be composited due to an overflow scrolling parent, so we don't need to.
     for (RenderLayer* ancestor = parent(); ancestor && ancestor != scrollParent; ancestor = ancestor->parent()) {
-        if (ancestor->isStackingContainer())
+        if (ancestor->isStackingContext())
             return 0;
     }
 
@@ -2020,18 +2018,13 @@ void RenderLayer::updateNeedsCompositedScrolling()
 {
     TRACE_EVENT0("comp-scroll", "RenderLayer::updateNeedsCompositedScrolling");
 
-    updateDescendantsAreContiguousInStackingOrder();
+    updateCanBeStackingContainer();
     updateDescendantDependentFlags();
 
     ASSERT(renderer()->view()->frameView() && renderer()->view()->frameView()->containsScrollableArea(scrollableArea()));
-    const bool needsToBeStackingContainer = acceleratedCompositingForOverflowScrollEnabled()
-        && descendantsAreContiguousInStackingOrder()
+    bool needsCompositedScrolling = acceleratedCompositingForOverflowScrollEnabled()
+        && canBeStackingContainer()
         && !hasUnclippedDescendant();
-
-    const bool needsToBeStackingContainerDidChange = setNeedsToBeStackingContainer(needsToBeStackingContainer);
-
-    const bool needsCompositedScrolling = needsToBeStackingContainer
-        || compositorDrivenAcceleratedScrollingEnabled();
 
     // We gather a boolean value for use with Google UMA histograms to
     // quantify the actual effects of a set of patches attempting to
@@ -2040,15 +2033,7 @@ void RenderLayer::updateNeedsCompositedScrolling()
     if (acceleratedCompositingForOverflowScrollEnabled())
         HistogramSupport::histogramEnumeration("Renderer.NeedsCompositedScrolling", needsCompositedScrolling, 2);
 
-    const bool needsCompositedScrollingDidChange = setNeedsCompositedScrolling(needsCompositedScrolling);
-
-    if (needsToBeStackingContainerDidChange || needsCompositedScrollingDidChange) {
-        // Note, the z-order lists may need to be rebuilt, but our code guarantees
-        // that we have not affected stacking, so we will not dirty
-        // m_descendantsAreContiguousInStackingOrder for either us or our stacking
-        // context or container.
-        didUpdateNeedsCompositedScrolling();
-    }
+    setNeedsCompositedScrolling(needsCompositedScrolling);
 }
 
 enum CompositedScrollingHistogramBuckets {
@@ -2058,14 +2043,28 @@ enum CompositedScrollingHistogramBuckets {
     CompositedScrollingHistogramMax = 3
 };
 
-bool RenderLayer::setNeedsCompositedScrolling(bool needsCompositedScrolling)
+void RenderLayer::setNeedsCompositedScrolling(bool needsCompositedScrolling)
 {
     if (m_needsCompositedScrolling == needsCompositedScrolling)
-        return false;
+        return;
+
+    // Count the total number of RenderLayers which need to be stacking
+    // containers some point. This should be recorded at most once per
+    // RenderLayer, so we check m_needsCompositedScrollingHasBeenRecorded.
+    if (acceleratedCompositingForOverflowScrollEnabled() && !m_needsCompositedScrollingHasBeenRecorded) {
+        HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", NeedsToBeStackingContainerBucket, CompositedScrollingHistogramMax);
+        m_needsCompositedScrollingHasBeenRecorded = true;
+    }
 
     // Count the total number of RenderLayers which need composited scrolling at
     // some point. This should be recorded at most once per RenderLayer, so we
     // check m_willUseCompositedScrollingHasBeenRecorded.
+    //
+    // FIXME: Currently, this computes the exact same value as the above.
+    // However, it will soon be expanded to cover more than just stacking
+    // containers (see crbug.com/249354). When this happens, we should see a
+    // spike in "WillUseCompositedScrolling", while "NeedsToBeStackingContainer"
+    // will remain relatively static.
     if (acceleratedCompositingForOverflowScrollEnabled() && !m_willUseCompositedScrollingHasBeenRecorded) {
         HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", WillUseCompositedScrollingBucket, CompositedScrollingHistogramMax);
         m_willUseCompositedScrollingHasBeenRecorded = true;
@@ -2073,25 +2072,11 @@ bool RenderLayer::setNeedsCompositedScrolling(bool needsCompositedScrolling)
 
     m_needsCompositedScrolling = needsCompositedScrolling;
 
-    return true;
-}
-
-bool RenderLayer::setNeedsToBeStackingContainer(bool needsToBeStackingContainer)
-{
-    if (m_needsToBeStackingContainer == needsToBeStackingContainer)
-        return false;
-
-    // Count the total number of RenderLayers which need to be stacking
-    // containers some point. This should be recorded at most once per
-    // RenderLayer, so we check m_needsToBeStackingContainerHasBeenRecorded.
-    if (acceleratedCompositingForOverflowScrollEnabled() && !m_needsToBeStackingContainerHasBeenRecorded) {
-        HistogramSupport::histogramEnumeration("Renderer.CompositedScrolling", NeedsToBeStackingContainerBucket, CompositedScrollingHistogramMax);
-        m_needsToBeStackingContainerHasBeenRecorded = true;
-    }
-
-    m_needsToBeStackingContainer = needsToBeStackingContainer;
-
-    return true;
+    // Note, the z-order lists may need to be rebuilt, but our code guarantees
+    // that we have not affected stacking, so we will not dirty
+    // m_canBePromotedToStackingContainer for either us or our stacking context
+    // or container.
+    didUpdateNeedsCompositedScrolling();
 }
 
 void RenderLayer::setForceNeedsCompositedScrolling(RenderLayer::ForceNeedsCompositedScrollingMode mode)
@@ -4611,7 +4596,7 @@ static inline bool compareZIndex(RenderLayer* first, RenderLayer* second)
 
 void RenderLayer::dirtyNormalFlowListCanBePromotedToStackingContainer()
 {
-    m_descendantsAreContiguousInStackingOrderDirty = true;
+    m_canBePromotedToStackingContainerDirty = true;
 
     if (m_normalFlowListDirty || !normalFlowList())
         return;
@@ -4628,14 +4613,14 @@ void RenderLayer::dirtySiblingStackingContextCanBePromotedToStackingContainer()
 
     if (!ancestorStackingContext->m_zOrderListsDirty && ancestorStackingContext->posZOrderList()) {
         for (size_t index = 0; index < ancestorStackingContext->posZOrderList()->size(); ++index)
-            ancestorStackingContext->posZOrderList()->at(index)->m_descendantsAreContiguousInStackingOrderDirty = true;
+            ancestorStackingContext->posZOrderList()->at(index)->m_canBePromotedToStackingContainerDirty = true;
     }
 
     ancestorStackingContext->dirtyNormalFlowListCanBePromotedToStackingContainer();
 
     if (!ancestorStackingContext->m_zOrderListsDirty && ancestorStackingContext->negZOrderList()) {
         for (size_t index = 0; index < ancestorStackingContext->negZOrderList()->size(); ++index)
-            ancestorStackingContext->negZOrderList()->at(index)->m_descendantsAreContiguousInStackingOrderDirty = true;
+            ancestorStackingContext->negZOrderList()->at(index)->m_canBePromotedToStackingContainerDirty = true;
     }
 }
 
@@ -4650,7 +4635,7 @@ void RenderLayer::dirtyZOrderLists()
         m_negZOrderList->clear();
     m_zOrderListsDirty = true;
 
-    m_descendantsAreContiguousInStackingOrderDirty = true;
+    m_canBePromotedToStackingContainerDirty = true;
 
     if (!renderer()->documentBeingDestroyed()) {
         compositor()->setNeedsUpdateCompositingRequirementsState();
@@ -4665,7 +4650,7 @@ void RenderLayer::dirtyStackingContainerZOrderLists()
     // Any siblings in the ancestor stacking context could also be affected.
     // Changing z-index, for example, could cause us to stack in between a
     // sibling's descendants, meaning that we have to recompute
-    // m_descendantsAreContiguousInStackingOrder for that sibling.
+    // m_canBePromotedToStackingContainer for that sibling.
     dirtySiblingStackingContextCanBePromotedToStackingContainer();
 
     RenderLayer* stackingContainer = this->ancestorStackingContainer();

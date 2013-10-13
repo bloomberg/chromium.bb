@@ -28,10 +28,8 @@
             // descendant property. Since no layers will opt out due to stacking
             // issues, we can judge whether we're setting this state correctly
             // by which layers opt-in.
-            if (window.internals) {
+            if (window.internals)
                 window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
-                window.internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(false);
-            }
             
             if (window.testRunner)
                 window.testRunner.dumpAsText();

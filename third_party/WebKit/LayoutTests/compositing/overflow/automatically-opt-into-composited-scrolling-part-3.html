@@ -12,10 +12,8 @@
     //
     // Note that permutation set 2 specifically tests the permutations for which
     // the 'sibling' is placed at the index 2 of the paint order.
-    if (window.internals) {
+    if (window.internals)
       window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
-      window.internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(false);
-    }
 
     function doTest()
     {
