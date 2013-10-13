@@ -32,6 +32,7 @@
 #ifndef HTTPRequest_h
 #define HTTPRequest_h
 
+#include "platform/PlatformExport.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "weborigin/KURL.h"
@@ -41,7 +42,7 @@
 
 namespace WebCore {
 
-class HTTPRequest : public RefCounted<HTTPRequest> {
+class PLATFORM_EXPORT HTTPRequest : public RefCounted<HTTPRequest> {
 public:
     static PassRefPtr<HTTPRequest> create() { return adoptRef(new HTTPRequest()); }
     static PassRefPtr<HTTPRequest> create(const String& requestMethod, const KURL& url, HTTPVersion version) { return adoptRef(new HTTPRequest(requestMethod, url, version)); }

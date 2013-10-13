@@ -31,7 +31,7 @@
 #ifndef WebSocketHandshakeRequest_h
 #define WebSocketHandshakeRequest_h
 
-#include "core/platform/network/HTTPRequest.h"
+#include "platform/network/HTTPRequest.h"
 
 namespace WebCore {
 

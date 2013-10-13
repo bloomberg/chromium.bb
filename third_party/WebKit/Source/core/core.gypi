@@ -3037,8 +3037,6 @@
             'platform/network/FormDataBuilder.h',
             'platform/network/FormDataList.cpp',
             'platform/network/FormDataList.h',
-            'platform/network/HTTPRequest.cpp',
-            'platform/network/HTTPRequest.h',
             'platform/network/ResourceRequest.cpp',
             'platform/network/ResourceRequest.h',
             'platform/network/ResourceResponse.cpp',

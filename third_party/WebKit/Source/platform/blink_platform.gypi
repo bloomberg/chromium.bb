@@ -221,6 +221,8 @@
       'network/HTTPHeaderMap.h',
       'network/HTTPParsers.cpp',
       'network/HTTPParsers.h',
+      'network/HTTPRequest.cpp',
+      'network/HTTPRequest.h',
       'network/ParsedContentType.cpp',
       'network/ParsedContentType.h',
       'network/ProxyServer.cpp',
