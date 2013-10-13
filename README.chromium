@@ -25,4 +25,5 @@ following changes which are not merged to upstream:
 * Fixed valgrind errors.
 The 'google.patch' file represents our changes from the original
 libjpeg-turbo-1.2. With those applied, also patch in google.jdmarker.patch to
-better handle multiple SOS CSi values and their ordering.
+better handle multiple SOS CSi values and their ordering, and to 0 unused DHT
+huffman values at creation time.

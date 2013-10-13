@@ -15,3 +15,11 @@ index 0d5da67..b537cb0 100644
    }
  
    /* Collect the additional scan parameters Ss, Se, Ah/Al. */
+@@ -470,6 +470,7 @@ get_dht (j_decompress_ptr cinfo)
+     for (i = 0; i < count; i++)
+       INPUT_BYTE(cinfo, huffval[i], return FALSE);
+ 
++    MEMZERO(&huffval[count], (256 - count) * SIZEOF(UINT8));
+     length -= count;
+ 
+     if (index & 0x10) {		/* AC table definition */
