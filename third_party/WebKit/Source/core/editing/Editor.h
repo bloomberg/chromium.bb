@@ -36,7 +36,7 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
 #include "core/frame/FrameDestructionObserver.h"
-#include "core/platform/chromium/PasteMode.h"
+#include "platform/PasteMode.h"
 
 namespace WebCore {
 

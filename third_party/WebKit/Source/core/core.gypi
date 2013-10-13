@@ -2694,7 +2694,6 @@
             'platform/chromium/KeyboardCodes.h',
             'platform/chromium/MemoryUsageSupportChromium.cpp',
             'platform/chromium/MIMETypeRegistryChromium.cpp',
-            'platform/chromium/PasteMode.h',
             'platform/chromium/PlatformScreenChromium.cpp',
             'platform/chromium/PlatformThemeChromiumDefault.cpp',
             'platform/chromium/PlatformThemeChromiumDefault.h',
