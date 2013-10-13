@@ -34,7 +34,6 @@ namespace {
 #endif
 
 const std::string kHostname = "127.0.0.1";
-const int kPort = 8888;
 
 class SocketsTcpApiTest : public ExtensionApiTest {
  public:

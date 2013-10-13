@@ -36,14 +36,8 @@ const char kRemoveWhitespaceRewrite[] = "\\1";
 // Separator to terminate a sentence.
 const char kEndOfSentenceSeparator[] = ";";
 
-// Separator to continue a sentence with another operation.
-const char kContinueSentenceSeparator[] = "/";
-
 // The 'true' Boolean keyword.
 const char kTrueKeyword[] = "true";
-
-// The 'false' Boolean keyword.
-const char kFalseKeyword[] = "false";
 
 // RegEx that matches and captures one argument, which is either a double-quote
 // enclosed string, or a Boolean value. Will throw away a trailing comma.

@@ -76,8 +76,6 @@ const char kMEID[] = "MEID";
 const char kMIN[] = "MIN";
 const char kModelID[] = "ModelID";
 const char kNetworkTechnology[] = "NetworkTechnology";
-const char kOperatorCode[] = "OperatorCode";
-const char kOperatorName[] = "OperatorName";
 const char kPRLVersion[] = "PRLVersion";
 const char kProviderRequiresRoaming[] = "ProviderRequiresRoaming";
 const char kRoamingState[] = "RoamingState";
@@ -179,7 +177,6 @@ const char kPBKDF2[] = "PBKDF2";
 const char kSHA1[] = "SHA1";
 const char kSalt[] = "Salt";
 const char kStretch[] = "Stretch";
-const char kType[] = "Type";
 }  // namespace encrypted
 
 namespace eap {

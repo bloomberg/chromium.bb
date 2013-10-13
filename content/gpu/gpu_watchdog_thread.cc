@@ -22,8 +22,10 @@
 namespace content {
 namespace {
 const int64 kCheckPeriodMs = 2000;
+#if defined(OS_CHROMEOS)
 const base::FilePath::CharType
     kTtyFilePath[] = FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
+#endif
 }  // namespace
 
 GpuWatchdogThread::GpuWatchdogThread(int timeout)

@@ -40,12 +40,6 @@ const int kRelatedControlVerticalSpacing = 8;
 // TODO(estade): pull out these constants, and figure out better values
 // for them. Note: These are duplicated from Views code.
 
-// Fixed width for the section label.
-const int kLabelWidth = 180;
-
-// Padding between section label and section input.
-const int kPadding = 30;
-
 // Fixed width for the details section.
 const int kDetailsWidth = 440;
 
