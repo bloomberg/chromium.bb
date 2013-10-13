@@ -28,6 +28,7 @@
 #ifndef Widget_h
 #define Widget_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -47,7 +48,7 @@ class HostWindow;
 // Widgets are connected in a hierarchy, with the restriction that plugins and
 // scrollbars are always leaves of the tree. Only ScrollViews can have children
 // (and therefore the Widget class has no concept of children).
-class Widget : public RefCounted<Widget> {
+class PLATFORM_EXPORT Widget : public RefCounted<Widget> {
 public:
     Widget();
     virtual ~Widget();
@@ -103,9 +104,9 @@ public:
     IntPoint convertToRootView(const IntPoint&) const;
     IntPoint convertFromRootView(const IntPoint&) const;
 
-    // It is important for cross-platform code to realize that Mac has flipped coordinates.  Therefore any code
+    // It is important for cross-platform code to realize that Mac has flipped coordinates. Therefore any code
     // that tries to convert the location of a rect using the point-based convertFromContainingWindow will end
-    // up with an inaccurate rect.  Always make sure to use the rect-based convertFromContainingWindow method
+    // up with an inaccurate rect. Always make sure to use the rect-based convertFromContainingWindow method
     // when converting window rects.
     IntRect convertToContainingWindow(const IntRect&) const;
     IntRect convertFromContainingWindow(const IntRect&) const;
@@ -116,7 +117,7 @@ public:
     virtual void frameRectsChanged() { }
 
     // Notifies this widget that other widgets on the page have been repositioned.
-    virtual void widgetPositionsUpdated() {}
+    virtual void widgetPositionsUpdated() { }
 
     // Notifies this widget that its clip rect changed.
     virtual void clipRectChanged() { }

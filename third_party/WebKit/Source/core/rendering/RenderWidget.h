@@ -22,8 +22,8 @@
 #ifndef RenderWidget_h
 #define RenderWidget_h
 
-#include "core/platform/Widget.h"
 #include "core/rendering/RenderReplaced.h"
+#include "platform/Widget.h"
 
 namespace WebCore {
 

@@ -31,10 +31,10 @@
 #include "core/events/Event.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
-#include "core/platform/Widget.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderWidget.h"
+#include "platform/Widget.h"
 #include "wtf/UnusedParam.h"
 
 

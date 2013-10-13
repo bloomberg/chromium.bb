@@ -32,8 +32,8 @@
 #define WebPluginContainerImpl_h
 
 #include "WebPluginContainer.h"
-#include "core/platform/Widget.h"
 #include "core/plugins/PluginView.h"
+#include "platform/Widget.h"
 
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"

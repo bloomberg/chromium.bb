@@ -29,7 +29,7 @@
 
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/Scrollbar.h"
-#include "core/platform/Widget.h"
+#include "platform/Widget.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/scroll/ScrollTypes.h"
 

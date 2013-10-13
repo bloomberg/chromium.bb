@@ -39,10 +39,10 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/Widget.h"
 #include "core/platform/network/FormDataList.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
+#include "platform/Widget.h"
 
 namespace WebCore {
 

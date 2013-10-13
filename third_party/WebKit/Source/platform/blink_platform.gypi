@@ -76,6 +76,8 @@
       'URLPatternMatcher.h',
       'UUID.cpp',
       'UUID.h',
+      'Widget.cpp',
+      'Widget.h',
       'animation/UnitBezier.h',
       'audio/AudioArray.h',
       'audio/AudioBus.cpp',

@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/Widget.h"
+#include "platform/Widget.h"
 
 #include "platform/HostWindow.h"
 #include "platform/geometry/IntRect.h"
