@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/PathTraversalState.h"
+#include "platform/graphics/PathTraversalState.h"
 
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
@@ -110,7 +110,7 @@ struct CubicBezier {
 // FIXME: This function is possibly very slow due to the ifs required for proper path measuring
 // A simple speed-up would be to use an additional boolean template parameter to control whether
 // to use the "fast" version of this function with no PathTraversalState updating, vs. the slow
-// version which does update the PathTraversalState.  We'll have to shark it to see if that's necessary.
+// version which does update the PathTraversalState. We'll have to shark it to see if that's necessary.
 // Another check which is possible up-front (to send us down the fast path) would be to check if
 // approximateDistance() + current total distance > desired distance
 template<class CurveType>
@@ -132,8 +132,7 @@ static float curveLength(PathTraversalState& traversalState, CurveType curve)
             curveStack.append(rightCurve);
         } else {
             totalLength += length;
-            if (traversalState.m_action == PathTraversalState::TraversalPointAtLength
-             || traversalState.m_action == PathTraversalState::TraversalNormalAngleAtLength) {
+            if (traversalState.m_action == PathTraversalState::TraversalPointAtLength || traversalState.m_action == PathTraversalState::TraversalNormalAngleAtLength) {
                 traversalState.m_previous = curve.start;
                 traversalState.m_current = curve.end;
                 if (traversalState.m_totalLength + totalLength > traversalState.m_desiredLength)
@@ -213,8 +212,9 @@ void PathTraversalState::processSegment()
         if (m_action == TraversalPointAtLength) {
             float offset = m_desiredLength - m_totalLength;
             m_current.move(offset * cosf(slope), offset * sinf(slope));
-        } else
+        } else {
             m_normalAngle = rad2deg(slope);
+        }
         m_success = true;
     }
     m_previous = m_current;

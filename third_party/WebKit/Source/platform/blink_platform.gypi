@@ -218,6 +218,8 @@
       'graphics/angle/ANGLEPlatformBridge.h',
       'graphics/ImageOrientation.cpp',
       'graphics/ImageOrientation.h',
+      'graphics/PathTraversalState.cpp',
+      'graphics/PathTraversalState.h',
       'graphics/TextRun.cpp',
       'graphics/TextRun.h',
       'graphics/TextRunIterator.h',

@@ -2737,8 +2737,6 @@
             'platform/graphics/MediaPlayer.cpp',
             'platform/graphics/MediaPlayer.h',
             'platform/graphics/Path.cpp',
-            'platform/graphics/PathTraversalState.cpp',
-            'platform/graphics/PathTraversalState.h',
             'platform/graphics/Pattern.cpp',
             'platform/graphics/SegmentedFontData.cpp',
             'platform/graphics/SegmentedFontData.h',

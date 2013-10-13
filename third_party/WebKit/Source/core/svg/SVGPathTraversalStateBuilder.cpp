@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/PathTraversalState.h"
+#include "platform/graphics/PathTraversalState.h"
 
 #include "core/svg/SVGPathTraversalStateBuilder.h"
 

@@ -26,11 +26,12 @@
 #ifndef PathTraversalState_h
 #define PathTraversalState_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 
 namespace WebCore {
 
-class PathTraversalState {
+class PLATFORM_EXPORT PathTraversalState {
 public:
     enum PathTraversalAction {
         TraversalTotalLength,

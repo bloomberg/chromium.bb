@@ -21,7 +21,6 @@
 
 #include "core/svg/SVGPathUtilities.h"
 
-#include "core/platform/graphics/PathTraversalState.h"
 #include "core/svg/SVGPathBlender.h"
 #include "core/svg/SVGPathBuilder.h"
 #include "core/svg/SVGPathByteStreamBuilder.h"
@@ -32,6 +31,7 @@
 #include "core/svg/SVGPathStringBuilder.h"
 #include "core/svg/SVGPathStringSource.h"
 #include "core/svg/SVGPathTraversalStateBuilder.h"
+#include "platform/graphics/PathTraversalState.h"
 
 namespace WebCore {
 
