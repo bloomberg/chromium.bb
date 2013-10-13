@@ -27,7 +27,7 @@
 #define XSSAuditor_h
 
 #include "core/html/parser/HTMLToken.h"
-#include "core/platform/network/HTTPParsers.h"
+#include "platform/network/HTTPParsers.h"
 #include "platform/text/SuffixTree.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"

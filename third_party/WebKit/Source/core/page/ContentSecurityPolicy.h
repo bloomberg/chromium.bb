@@ -27,7 +27,7 @@
 #define ContentSecurityPolicy_h
 
 #include "bindings/v8/ScriptState.h"
-#include "core/platform/network/HTTPParsers.h"
+#include "platform/network/HTTPParsers.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"

@@ -31,6 +31,7 @@
 #ifndef HTTPParsers_h
 #define HTTPParsers_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
@@ -69,29 +70,29 @@ enum ReflectedXSSDisposition {
     BlockReflectedXSS
 };
 
-ContentDispositionType contentDispositionType(const String&);
-bool isValidHTTPHeaderValue(const String&);
-bool isValidHTTPToken(const String&);
-bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& delay, String& url);
-double parseDate(const String&);
-String filenameFromHTTPContentDisposition(const String&);
-String extractMIMETypeFromMediaType(const String&);
-String extractCharsetFromMediaType(const String&);
-void findCharsetInMediaType(const String& mediaType, unsigned int& charsetPos, unsigned int& charsetLen, unsigned int start = 0);
-ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL);
-String extractReasonPhraseFromHTTPStatusLine(const String&);
-XFrameOptionsDisposition parseXFrameOptionsHeader(const String&);
+PLATFORM_EXPORT ContentDispositionType contentDispositionType(const String&);
+PLATFORM_EXPORT bool isValidHTTPHeaderValue(const String&);
+PLATFORM_EXPORT bool isValidHTTPToken(const String&);
+PLATFORM_EXPORT bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& delay, String& url);
+PLATFORM_EXPORT double parseDate(const String&);
+PLATFORM_EXPORT String filenameFromHTTPContentDisposition(const String&);
+PLATFORM_EXPORT String extractMIMETypeFromMediaType(const String&);
+PLATFORM_EXPORT String extractCharsetFromMediaType(const String&);
+PLATFORM_EXPORT void findCharsetInMediaType(const String& mediaType, unsigned& charsetPos, unsigned& charsetLen, unsigned start = 0);
+PLATFORM_EXPORT ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL);
+PLATFORM_EXPORT String extractReasonPhraseFromHTTPStatusLine(const String&);
+PLATFORM_EXPORT XFrameOptionsDisposition parseXFrameOptionsHeader(const String&);
 
 // -1 could be set to one of the return parameters to indicate the value is not specified.
-bool parseRange(const String&, long long& rangeOffset, long long& rangeEnd, long long& rangeSuffixLength);
+PLATFORM_EXPORT bool parseRange(const String&, long long& rangeOffset, long long& rangeEnd, long long& rangeSuffixLength);
 
-ContentTypeOptionsDisposition parseContentTypeOptionsHeader(const String& header);
+PLATFORM_EXPORT ContentTypeOptionsDisposition parseContentTypeOptionsHeader(const String& header);
 
 // Parsing Complete HTTP Messages.
 enum HTTPVersion { Unknown, HTTP_1_0, HTTP_1_1 };
-size_t parseHTTPRequestLine(const char* data, size_t length, String& failureReason, String& method, String& url, HTTPVersion&);
-size_t parseHTTPHeader(const char* data, size_t length, String& failureReason, AtomicString& nameStr, String& valueStr);
-size_t parseHTTPRequestBody(const char* data, size_t length, Vector<unsigned char>& body);
+PLATFORM_EXPORT size_t parseHTTPRequestLine(const char* data, size_t length, String& failureReason, String& method, String& url, HTTPVersion&);
+PLATFORM_EXPORT size_t parseHTTPHeader(const char* data, size_t length, String& failureReason, AtomicString& nameStr, String& valueStr);
+PLATFORM_EXPORT size_t parseHTTPRequestBody(const char* data, size_t length, Vector<unsigned char>& body);
 
 }
 

@@ -31,7 +31,7 @@
  */
 
 #include "config.h"
-#include "core/platform/network/HTTPParsers.h"
+#include "platform/network/HTTPParsers.h"
 
 #include "wtf/DateMath.h"
 #include "wtf/text/CString.h"
@@ -199,8 +199,9 @@ bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& del
             if (refresh[urlStartPos] == '=') {
                 ++urlStartPos;
                 skipWhiteSpace(refresh, urlStartPos, fromHttpEquivMeta);
-            } else
-                urlStartPos = pos;  // e.g. "Refresh: 0; url.html"
+            } else {
+                urlStartPos = pos; // e.g. "Refresh: 0; url.html"
+            }
         }
 
         unsigned urlEndPos = len;
@@ -302,12 +303,12 @@ String extractMIMETypeFromMediaType(const String& mediaType)
 
 String extractCharsetFromMediaType(const String& mediaType)
 {
-    unsigned int pos, len;
+    unsigned pos, len;
     findCharsetInMediaType(mediaType, pos, len);
     return mediaType.substring(pos, len);
 }
 
-void findCharsetInMediaType(const String& mediaType, unsigned int& charsetPos, unsigned int& charsetLen, unsigned int start)
+void findCharsetInMediaType(const String& mediaType, unsigned& charsetPos, unsigned& charsetLen, unsigned start)
 {
     charsetPos = start;
     charsetLen = 0;
@@ -562,8 +563,9 @@ size_t parseHTTPRequestLine(const char* data, size_t length, String& failureReas
                 space1 = p;
             else if (!space2)
                 space2 = p;
-        } else if (*p == '\n')
+        } else if (*p == '\n') {
             break;
+        }
     }
 
     // Haven't finished header line.

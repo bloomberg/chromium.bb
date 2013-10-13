@@ -32,7 +32,7 @@
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
-#include "core/platform/network/HTTPParsers.h"
+#include "platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Vector.h"
 

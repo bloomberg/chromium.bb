@@ -3044,8 +3044,6 @@
             'platform/network/FormDataBuilder.h',
             'platform/network/FormDataList.cpp',
             'platform/network/FormDataList.h',
-            'platform/network/HTTPParsers.cpp',
-            'platform/network/HTTPParsers.h',
             'platform/network/HTTPRequest.cpp',
             'platform/network/HTTPRequest.h',
             'platform/network/ResourceRequest.cpp',

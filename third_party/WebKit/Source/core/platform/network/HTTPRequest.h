@@ -32,8 +32,8 @@
 #ifndef HTTPRequest_h
 #define HTTPRequest_h
 
-#include "core/platform/network/HTTPParsers.h"
 #include "platform/network/HTTPHeaderMap.h"
+#include "platform/network/HTTPParsers.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

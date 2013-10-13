@@ -208,6 +208,8 @@
       'network/DNS.h',
       'network/HTTPHeaderMap.cpp',
       'network/HTTPHeaderMap.h',
+      'network/HTTPParsers.cpp',
+      'network/HTTPParsers.h',
       'network/ParsedContentType.cpp',
       'network/ParsedContentType.h',
       'network/ProxyServer.cpp',

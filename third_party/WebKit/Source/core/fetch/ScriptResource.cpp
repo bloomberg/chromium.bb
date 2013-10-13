@@ -30,7 +30,7 @@
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "platform/SharedBuffer.h"
-#include "core/platform/network/HTTPParsers.h"
+#include "platform/network/HTTPParsers.h"
 
 namespace WebCore {
 
