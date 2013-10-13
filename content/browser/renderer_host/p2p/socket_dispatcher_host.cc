@@ -22,6 +22,8 @@ using content::BrowserThread;
 
 namespace content {
 
+const size_t kMaximumPacketSize = 32768;
+
 class P2PSocketDispatcherHost::DnsRequest {
  public:
   typedef base::Callback<void(const net::IPAddressNumber&)> DoneCallback;
@@ -227,6 +229,16 @@ void P2PSocketDispatcherHost::OnSend(int socket_id,
     LOG(ERROR) << "Received P2PHostMsg_Send for invalid socket_id.";
     return;
   }
+
+  if (data.size() > kMaximumPacketSize) {
+    LOG(ERROR) << "Received P2PHostMsg_Send with a packet that is too big: "
+               << data.size();
+    Send(new P2PMsg_OnError(socket_id));
+    delete socket;
+    sockets_.erase(socket_id);
+    return;
+  }
+
   socket->Send(socket_address, data);
 }
 
