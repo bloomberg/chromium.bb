@@ -75,11 +75,6 @@ public:
     }
 
 private:
-    virtual bool canSuspend() const OVERRIDE
-    {
-        return true;
-    }
-
     virtual void resume() OVERRIDE
     {
         m_webDevToolsFrontendImpl->resume();

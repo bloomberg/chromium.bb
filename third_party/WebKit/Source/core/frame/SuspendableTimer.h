@@ -40,8 +40,7 @@ public:
     // ActiveDOMObject
     virtual bool hasPendingActivity() const;
     virtual void stop();
-    virtual bool canSuspend() const;
-    virtual void suspend(ReasonForSuspension);
+    virtual void suspend();
     virtual void resume();
 
 private:
@@ -58,4 +57,3 @@ private:
 } // namespace WebCore
 
 #endif // SuspendableTimer_h
-

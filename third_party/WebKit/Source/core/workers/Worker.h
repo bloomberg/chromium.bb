@@ -57,7 +57,6 @@ public:
 
     void terminate();
 
-    virtual bool canSuspend() const OVERRIDE;
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE;
 

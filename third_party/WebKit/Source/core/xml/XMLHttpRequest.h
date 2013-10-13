@@ -83,8 +83,7 @@ public:
     };
 
     virtual void contextDestroyed();
-    virtual bool canSuspend() const;
-    virtual void suspend(ReasonForSuspension);
+    virtual void suspend();
     virtual void resume();
     virtual void stop();
 

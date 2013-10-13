@@ -52,11 +52,10 @@ public:
     virtual void removeObserver(LifecycleObserver*) OVERRIDE;
 
     void notifyResumingActiveDOMObjects();
-    void notifySuspendingActiveDOMObjects(ActiveDOMObject::ReasonForSuspension);
+    void notifySuspendingActiveDOMObjects();
     void notifyStoppingActiveDOMObjects();
 
     bool contains(ActiveDOMObject* object) const { return m_activeDOMObjects.contains(object); }
-    bool canSuspendActiveDOMObjects();
     bool hasPendingActivity() const;
 
 protected:

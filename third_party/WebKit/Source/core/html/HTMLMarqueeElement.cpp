@@ -166,12 +166,7 @@ void HTMLMarqueeElement::setLoop(int loop, ExceptionState& es)
         setIntegralAttribute(loopAttr, loop);
 }
 
-bool HTMLMarqueeElement::canSuspend() const
-{
-    return true;
-}
-
-void HTMLMarqueeElement::suspend(ReasonForSuspension)
+void HTMLMarqueeElement::suspend()
 {
     if (RenderMarquee* marqueeRenderer = renderMarquee())
         marqueeRenderer->suspend();

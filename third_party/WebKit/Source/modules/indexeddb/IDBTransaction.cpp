@@ -371,13 +371,6 @@ bool IDBTransaction::dispatchEvent(PassRefPtr<Event> event)
     return returnValue;
 }
 
-bool IDBTransaction::canSuspend() const
-{
-    // FIXME: Technically we can suspend before the first request is schedule
-    //        and after the complete/abort event is enqueued.
-    return m_state == Finished;
-}
-
 void IDBTransaction::stop()
 {
     if (m_contextStopped)

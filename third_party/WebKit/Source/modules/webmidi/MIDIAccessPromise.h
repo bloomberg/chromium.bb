@@ -55,9 +55,6 @@ public:
 
     void then(PassRefPtr<MIDISuccessCallback>, PassRefPtr<MIDIErrorCallback>);
 
-    // ActiveDOMObject
-    virtual bool canSuspend() const OVERRIDE { return true; }
-
     MIDIOptions* options() { return m_options.get(); }
 
     void fulfill();

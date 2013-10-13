@@ -83,12 +83,9 @@ public:
     PublicURLManager& publicURLManager();
 
     // Active objects are not garbage collected even if inaccessible, e.g. because their activity may result in callbacks being invoked.
-    bool canSuspendActiveDOMObjects();
     bool hasPendingActivity();
 
-    // Active objects can be asked to suspend even if canSuspendActiveDOMObjects() returns 'false' -
-    // step-by-step JS debugging is one example.
-    void suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension);
+    void suspendActiveDOMObjects();
     void resumeActiveDOMObjects();
     void stopActiveDOMObjects();
 
@@ -146,7 +143,6 @@ private:
     OwnPtr<Vector<OwnPtr<PendingException> > > m_pendingExceptions;
 
     bool m_activeDOMObjectsAreSuspended;
-    ActiveDOMObject::ReasonForSuspension m_reasonForSuspendingActiveDOMObjects;
     bool m_activeDOMObjectsAreStopped;
 
     OwnPtr<PublicURLManager> m_publicURLManager;

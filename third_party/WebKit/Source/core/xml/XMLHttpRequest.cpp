@@ -1349,12 +1349,7 @@ void XMLHttpRequest::handleDidTimeout()
     dispatchEventAndLoadEnd(EventTypeNames::timeout);
 }
 
-bool XMLHttpRequest::canSuspend() const
-{
-    return !m_loader;
-}
-
-void XMLHttpRequest::suspend(ReasonForSuspension)
+void XMLHttpRequest::suspend()
 {
     m_progressEventThrottle.suspend();
 }

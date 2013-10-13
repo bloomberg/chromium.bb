@@ -65,9 +65,6 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::MIDIPort; }
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
 
-    // ActiveDOMObject
-    virtual bool canSuspend() const OVERRIDE { return true; }
-
 protected:
     MIDIPort(ExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
 

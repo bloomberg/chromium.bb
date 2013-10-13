@@ -80,7 +80,6 @@ ExecutionContext::ExecutionContext()
     : m_circularSequentialID(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
-    , m_reasonForSuspendingActiveDOMObjects(static_cast<ActiveDOMObject::ReasonForSuspension>(-1))
     , m_activeDOMObjectsAreStopped(false)
 {
 }
@@ -140,11 +139,6 @@ void ExecutionContext::destroyedMessagePort(MessagePort* port)
     m_messagePorts.remove(port);
 }
 
-bool ExecutionContext::canSuspendActiveDOMObjects()
-{
-    return lifecycleNotifier()->canSuspendActiveDOMObjects();
-}
-
 bool ExecutionContext::hasPendingActivity()
 {
     if (lifecycleNotifier()->hasPendingActivity())
@@ -159,11 +153,10 @@ bool ExecutionContext::hasPendingActivity()
     return false;
 }
 
-void ExecutionContext::suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension why)
+void ExecutionContext::suspendActiveDOMObjects()
 {
-    lifecycleNotifier()->notifySuspendingActiveDOMObjects(why);
+    lifecycleNotifier()->notifySuspendingActiveDOMObjects();
     m_activeDOMObjectsAreSuspended = true;
-    m_reasonForSuspendingActiveDOMObjects = why;
 }
 
 void ExecutionContext::resumeActiveDOMObjects()
@@ -185,7 +178,7 @@ void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
     ASSERT(lifecycleNotifier()->contains(object));
     // Ensure all ActiveDOMObjects are suspended also newly created ones.
     if (m_activeDOMObjectsAreSuspended)
-        object->suspend(m_reasonForSuspendingActiveDOMObjects);
+        object->suspend();
 }
 
 void ExecutionContext::closeMessagePorts()

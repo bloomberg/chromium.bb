@@ -99,12 +99,6 @@ void Worker::terminate()
     m_contextProxy->terminateWorkerGlobalScope();
 }
 
-bool Worker::canSuspend() const
-{
-    // FIXME: It is not currently possible to suspend a worker, so pages with workers can not go into page cache.
-    return false;
-}
-
 void Worker::stop()
 {
     terminate();

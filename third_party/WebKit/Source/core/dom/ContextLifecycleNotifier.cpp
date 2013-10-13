@@ -75,14 +75,14 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
     }
 }
 
-void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects(ActiveDOMObject::ReasonForSuspension why)
+void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
     ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
     for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
         ASSERT((*iter)->executionContext() == context());
         ASSERT((*iter)->suspendIfNeededCalled());
-        (*iter)->suspend(why);
+        (*iter)->suspend();
     }
 }
 
@@ -97,20 +97,6 @@ void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
     }
 }
 
-bool ContextLifecycleNotifier::canSuspendActiveDOMObjects()
-{
-    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
-    ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
-    for (ActiveDOMObjectSet::const_iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == context());
-        ASSERT((*iter)->suspendIfNeededCalled());
-        if (!(*iter)->canSuspend())
-            return false;
-    }
-
-    return true;
-}
-
 bool ContextLifecycleNotifier::hasPendingActivity() const
 {
     ActiveDOMObjectSet::const_iterator activeObjectsEnd = activeDOMObjects().end();
@@ -123,4 +109,3 @@ bool ContextLifecycleNotifier::hasPendingActivity() const
 }
 
 } // namespace WebCore
-

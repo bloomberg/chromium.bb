@@ -4709,12 +4709,12 @@ void Document::pendingTasksTimerFired(Timer<Document>*)
     }
 }
 
-void Document::suspendScheduledTasks(ActiveDOMObject::ReasonForSuspension reason)
+void Document::suspendScheduledTasks()
 {
     ASSERT(!m_scheduledTasksAreSuspended);
 
     suspendScriptedAnimationControllerCallbacks();
-    suspendActiveDOMObjects(reason);
+    suspendActiveDOMObjects();
     scriptRunner()->suspend();
     m_pendingTasksTimer.stop();
     if (m_parser)

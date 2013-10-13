@@ -54,7 +54,7 @@ void SuspendableTimer::stop()
     TimerBase::stop();
 }
 
-void SuspendableTimer::suspend(ReasonForSuspension)
+void SuspendableTimer::suspend()
 {
 #if !ASSERT_DISABLED
     ASSERT(!m_suspended);
@@ -76,11 +76,6 @@ void SuspendableTimer::resume()
 #endif
     if (m_active)
         start(m_nextFireInterval, m_repeatInterval);
-}
-
-bool SuspendableTimer::canSuspend() const
-{
-    return true;
 }
 
 } // namespace WebCore

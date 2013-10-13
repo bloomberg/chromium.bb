@@ -3464,11 +3464,6 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
         configureTextTrackDisplay(AssumeNoVisibleChange);
 }
 
-bool HTMLMediaElement::canSuspend() const
-{
-    return true;
-}
-
 void HTMLMediaElement::stop()
 {
     LOG(Media, "HTMLMediaElement::stop");

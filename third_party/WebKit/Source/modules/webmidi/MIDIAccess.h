@@ -69,7 +69,6 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
 
     // ActiveDOMObject
-    virtual bool canSuspend() const OVERRIDE { return true; }
     virtual void stop();
 
     // MIDIAccessorClient

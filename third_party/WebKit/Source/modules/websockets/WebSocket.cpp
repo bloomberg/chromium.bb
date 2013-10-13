@@ -466,12 +466,7 @@ void WebSocket::contextDestroyed()
     ActiveDOMObject::contextDestroyed();
 }
 
-bool WebSocket::canSuspend() const
-{
-    return !m_channel;
-}
-
-void WebSocket::suspend(ReasonForSuspension)
+void WebSocket::suspend()
 {
     if (m_channel)
         m_channel->suspend();

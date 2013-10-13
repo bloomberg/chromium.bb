@@ -345,7 +345,6 @@ private:
     virtual bool isInteractiveContent() const OVERRIDE;
 
     // ActiveDOMObject functions.
-    virtual bool canSuspend() const;
     virtual void stop();
 
     virtual void updateDisplayState() { }

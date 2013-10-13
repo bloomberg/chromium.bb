@@ -70,7 +70,6 @@ public:
     virtual void didFail(WebKit::WebFileError) OVERRIDE;
 
     // ActiveDOMObject
-    virtual bool canSuspend() const;
     virtual void stop();
 
     // EventTarget

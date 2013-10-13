@@ -102,7 +102,6 @@ public:
 
     // ActiveDOMObject
     virtual bool hasPendingActivity() const OVERRIDE;
-    virtual bool canSuspend() const OVERRIDE;
     virtual void stop() OVERRIDE;
 
     using RefCounted<IDBTransaction>::ref;

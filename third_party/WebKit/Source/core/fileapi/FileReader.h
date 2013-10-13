@@ -75,7 +75,6 @@ public:
     String stringResult();
 
     // ActiveDOMObject
-    virtual bool canSuspend() const;
     virtual void stop();
 
     // EventTarget

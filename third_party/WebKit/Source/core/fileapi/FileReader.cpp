@@ -87,12 +87,6 @@ const AtomicString& FileReader::interfaceName() const
     return EventTargetNames::FileReader;
 }
 
-bool FileReader::canSuspend() const
-{
-    // FIXME: It is not currently possible to suspend a FileReader, so pages with FileReader can not go into page cache.
-    return false;
-}
-
 void FileReader::stop()
 {
     terminate();

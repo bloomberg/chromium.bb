@@ -71,12 +71,7 @@ bool ActiveDOMObject::hasPendingActivity() const
     return m_pendingActivityCount;
 }
 
-bool ActiveDOMObject::canSuspend() const
-{
-    return false;
-}
-
-void ActiveDOMObject::suspend(ReasonForSuspension)
+void ActiveDOMObject::suspend()
 {
 }
 

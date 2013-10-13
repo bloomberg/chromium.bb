@@ -79,12 +79,6 @@ const AtomicString& FileWriter::interfaceName() const
     return EventTargetNames::FileWriter;
 }
 
-bool FileWriter::canSuspend() const
-{
-    // FIXME: It is not currently possible to suspend a FileWriter, so pages with FileWriter can not go into page cache.
-    return false;
-}
-
 void FileWriter::stop()
 {
     // Make sure we've actually got something to stop, and haven't already called abort().

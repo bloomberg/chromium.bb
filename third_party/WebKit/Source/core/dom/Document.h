@@ -985,7 +985,7 @@ public:
 
     bool isInDocumentWrite() { return m_writeRecursionDepth > 0; }
 
-    void suspendScheduledTasks(ActiveDOMObject::ReasonForSuspension);
+    void suspendScheduledTasks();
     void resumeScheduledTasks();
 
     IntSize initialViewportSize() const;
