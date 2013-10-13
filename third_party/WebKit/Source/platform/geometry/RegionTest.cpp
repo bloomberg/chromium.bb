@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/Region.h"
+#include "platform/geometry/Region.h"
 
 #include <gtest/gtest.h>
 

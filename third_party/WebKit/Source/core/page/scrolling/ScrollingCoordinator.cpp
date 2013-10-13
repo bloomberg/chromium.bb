@@ -41,9 +41,9 @@
 #include "core/platform/chromium/support/WebScrollbarImpl.h"
 #include "core/platform/chromium/support/WebScrollbarThemeGeometryNative.h"
 #include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/Region.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "platform/TraceEvent.h"
+#include "platform/geometry/Region.h"
 #if OS(MACOSX)
 #include "core/platform/mac/ScrollAnimatorMac.h"
 #endif

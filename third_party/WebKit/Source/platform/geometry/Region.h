@@ -26,12 +26,13 @@
 #ifndef Region_h
 #define Region_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class Region {
+class PLATFORM_EXPORT Region {
 public:
     Region();
     Region(const IntRect&);
@@ -83,12 +84,12 @@ private:
         bool isRect() const { return m_spans.size() <= 2 && m_segments.size() <= 2; }
 
         typedef const Span* SpanIterator;
-        SpanIterator spans_begin() const;
-        SpanIterator spans_end() const;
+        SpanIterator spansBegin() const;
+        SpanIterator spansEnd() const;
 
         typedef const int* SegmentIterator;
-        SegmentIterator segments_begin(SpanIterator) const;
-        SegmentIterator segments_end(SpanIterator) const;
+        SegmentIterator segmentsBegin(SpanIterator) const;
+        SegmentIterator segmentsEnd(SpanIterator) const;
 
         static Shape unionShapes(const Shape& shape1, const Shape& shape2);
         static Shape intersectShapes(const Shape& shape1, const Shape& shape2);

@@ -300,7 +300,6 @@
       'tests/PopupContainerTest.cpp',
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',
-      'tests/RegionTest.cpp',
       'tests/RenderTableCellTest.cpp',
       'tests/RenderTableRowTest.cpp',
       'tests/ScrollingCoordinatorChromiumTest.cpp',

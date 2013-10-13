@@ -3044,7 +3044,6 @@
         ],
         'webcore_platform_geometry_files': [
             'platform/graphics/FloatPolygon.cpp',
-            'platform/graphics/Region.cpp',
         ],
         'webcore_svg_files': [
             'rendering/style/SVGRenderStyle.cpp',
