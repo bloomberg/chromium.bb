@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/KeyboardCodes.h"
+#include "platform/KeyboardCodes.h"
 
 #include <android/keycodes.h>
 
