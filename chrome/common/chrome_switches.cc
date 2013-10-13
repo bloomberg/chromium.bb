@@ -867,6 +867,11 @@ const char kForceAppMode[]                  = "force-app-mode";
 // kCancelFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
+// Forces additional Chrome Variation Ids that will be sent in
+// X-Chrome-Variations header, specified as a comma-separated list of numeric
+// experiment ids.
+const char kForceVariationIds[]             = "force-variation-ids";
+
 // Tries to load cloud policy for every signed in user, regardless of whether
 // they are a dasher user or not. Used to allow any GAIA account to be used for
 // testing the cloud policy framework.

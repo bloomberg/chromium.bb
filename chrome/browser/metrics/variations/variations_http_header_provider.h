@@ -46,11 +46,21 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
                      bool uma_enabled,
                      net::HttpRequestHeaders* headers);
 
+  // Sets *additional* variation ids to be encoded in the X-Chrome-Varations
+  // request header.  This is intended for development use to force a server
+  // side experiment id.  |variation_ids| should be a comma-separated string of
+  // numeric experiment ids.
+  bool SetDefaultVariationIds(const std::string& variation_ids);
+
  private:
   friend struct DefaultSingletonTraits<VariationsHttpHeaderProvider>;
 
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            ShouldAppendHeaders);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           SetDefaultVariationIds_Valid);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           SetDefaultVariationIds_Invalid);
 
   VariationsHttpHeaderProvider();
   virtual ~VariationsHttpHeaderProvider();
@@ -86,6 +96,9 @@ class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
   // Keep a cache of variation IDs that are transmitted in headers to Google.
   // This consists of a list of valid IDs, and the actual transmitted header.
   std::set<chrome_variations::VariationID> variation_ids_set_;
+
+  // Provides the google experiment ids forced from command line.
+  std::set<chrome_variations::VariationID> default_variation_ids_set_;
   std::string variation_ids_header_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeaderProvider);

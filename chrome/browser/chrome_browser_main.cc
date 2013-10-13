@@ -69,6 +69,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
+#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
@@ -601,7 +602,16 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     CHECK(result) << "Invalid --" << switches::kForceFieldTrials
                   << " list specified.";
   }
-
+  if (command_line->HasSwitch(switches::kForceVariationIds)) {
+    // Create default variation ids which will always be included in the
+    // X-Chrome-Variations request header.
+    chrome_variations::VariationsHttpHeaderProvider* provider =
+        chrome_variations::VariationsHttpHeaderProvider::GetInstance();
+    bool result = provider->SetDefaultVariationIds(
+        command_line->GetSwitchValueASCII(switches::kForceVariationIds));
+    CHECK(result) << "Invalid --" << switches::kForceVariationIds
+                  << " list specified.";
+  }
   chrome_variations::VariationsService* variations_service =
       browser_process_->variations_service();
   if (variations_service)

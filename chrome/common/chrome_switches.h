@@ -245,6 +245,7 @@ extern const char kFeedbackServer[];
 extern const char kFileDescriptorLimit[];
 extern const char kForceAppMode[];
 extern const char kForceFirstRun[];
+extern const char kForceVariationIds[];
 extern const char kForceLoadCloudPolicy[];
 extern const char kGaiaProfileInfo[];
 extern const char kGoogleBaseURL[];

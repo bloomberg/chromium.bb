@@ -4,9 +4,13 @@
 
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 
+#include <vector>
+
 #include "base/base64.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/metrics/proto/chrome_experiments.pb.h"
@@ -51,6 +55,23 @@ void VariationsHttpHeaderProvider::AppendHeaders(
     headers->SetHeaderIfMissing("X-Chrome-Variations",
                                 variation_ids_header_copy);
   }
+}
+
+bool VariationsHttpHeaderProvider::SetDefaultVariationIds(
+    const std::string& variation_ids) {
+  default_variation_ids_set_.clear();
+  std::vector<std::string> entries;
+  base::SplitString(variation_ids, ',', &entries);
+  for (std::vector<std::string>::const_iterator it = entries.begin();
+       it != entries.end(); ++it) {
+    int variation_id = 0;
+    if (!base::StringToInt(*it, &variation_id)) {
+      default_variation_ids_set_.clear();
+      return false;
+    }
+    default_variation_ids_set_.insert(variation_id);
+  }
+  return true;
 }
 
 VariationsHttpHeaderProvider::VariationsHttpHeaderProvider()
@@ -113,21 +134,27 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
 
   // The header value is a serialized protobuffer of Variation IDs which is
   // base64 encoded before transmitting as a string.
-  if (variation_ids_set_.empty())
+  variation_ids_header_.clear();
+
+  if (variation_ids_set_.empty() && default_variation_ids_set_.empty())
     return;
 
   // This is the bottleneck for the creation of the header, so validate the size
   // here. Force a hard maximum on the ID count in case the Variations server
   // returns too many IDs and DOSs receiving servers with large requests.
   DCHECK_LE(variation_ids_set_.size(), 10U);
-  if (variation_ids_set_.size() > 20) {
-    variation_ids_header_.clear();
+  if (variation_ids_set_.size() > 20)
     return;
-  }
 
-  metrics::ChromeVariations proto;
+  // Merge the two sets of experiment ids.
+  std::set<VariationID> all_variation_ids_set = default_variation_ids_set_;
   for (std::set<VariationID>::const_iterator it = variation_ids_set_.begin();
        it != variation_ids_set_.end(); ++it) {
+    all_variation_ids_set.insert(*it);
+  }
+  metrics::ChromeVariations proto;
+  for (std::set<VariationID>::const_iterator it = all_variation_ids_set.begin();
+       it != all_variation_ids_set.end(); ++it) {
     proto.add_variation_id(*it);
   }
 
