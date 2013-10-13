@@ -36,6 +36,7 @@ struct weston_test {
 
 struct weston_test_surface {
 	struct weston_surface *surface;
+	struct weston_view *view;
 	int32_t x, y;
 	struct weston_test *test;
 };
@@ -79,15 +80,16 @@ test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy, i
 	struct weston_test_surface *test_surface = surface->configure_private;
 	struct weston_test *test = test_surface->test;
 
-	if (wl_list_empty(&surface->layer_link))
-		wl_list_insert(&test->layer.surface_list,
-			       &surface->layer_link);
+	if (wl_list_empty(&test_surface->view->layer_link))
+		wl_list_insert(&test->layer.view_list,
+			       &test_surface->view->layer_link);
 
-	weston_surface_configure(surface, test_surface->x, test_surface->y,
-				 width, height);
+	weston_view_configure(test_surface->view,
+			      test_surface->x, test_surface->y,
+			      width, height);
 
-	if (!weston_surface_is_mapped(surface))
-		weston_surface_update_transform(surface);
+	if (!weston_view_is_mapped(test_surface->view))
+		weston_view_update_transform(test_surface->view);
 }
 
 static void
@@ -99,13 +101,23 @@ move_surface(struct wl_client *client, struct wl_resource *resource,
 		wl_resource_get_user_data(surface_resource);
 	struct weston_test_surface *test_surface;
 
-	surface->configure = test_surface_configure;
-	if (surface->configure_private == NULL)
-		surface->configure_private = malloc(sizeof *test_surface);
 	test_surface = surface->configure_private;
-	if (test_surface == NULL) {
-		wl_resource_post_no_memory(resource);
-		return;
+	if (!test_surface) {
+		test_surface = malloc(sizeof *test_surface);
+		if (!test_surface) {
+			wl_resource_post_no_memory(resource);
+			return;
+		}
+
+		test_surface->view = weston_view_create(surface);
+		if (!test_surface->view) {
+			wl_resource_post_no_memory(resource);
+			free(test_surface);
+			return;
+		}
+
+		surface->configure_private = test_surface;
+		surface->configure = test_surface_configure;
 	}
 
 	test_surface->surface = surface;

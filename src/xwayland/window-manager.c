@@ -124,6 +124,7 @@ struct weston_wm_window {
 	cairo_surface_t *cairo_surface;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
+	struct weston_view *view;
 	struct wl_listener surface_destroy_listener;
 	struct wl_event_source *repaint_source;
 	struct wl_event_source *configure_source;
@@ -716,13 +717,13 @@ weston_wm_window_transform(struct wl_listener *listener, void *data)
 	if (!window || !wm)
 		return;
 
-	if (!weston_surface_is_mapped(surface))
+	if (!window->view || !weston_view_is_mapped(window->view))
 		return;
 
-	if (window->x != surface->geometry.x ||
-	    window->y != surface->geometry.y) {
-		values[0] = surface->geometry.x;
-		values[1] = surface->geometry.y;
+	if (window->x != window->view->geometry.x ||
+	    window->y != window->view->geometry.y) {
+		values[0] = window->view->geometry.x;
+		values[1] = window->view->geometry.y;
 		mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y;
 
 		xcb_configure_window(wm->conn, window->frame_id, mask, values);
@@ -958,7 +959,8 @@ weston_wm_window_draw_decoration(void *data)
 						  window->width + 2,
 						  window->height + 2);
 		}
-		weston_surface_geometry_dirty(window->surface);
+		if (window->view)
+			weston_view_geometry_dirty(window->view);
 	}
 
 	if (window->surface && !window->fullscreen) {
@@ -986,7 +988,8 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 				pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
 							  width, height);
 			}
-			weston_surface_geometry_dirty(window->surface);
+			if (window->view)
+				weston_view_geometry_dirty(window->view);
 		}
 		return;
 	}
@@ -1177,8 +1180,8 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 
-	if (seat->pointer->button_count != 1 ||
-	    seat->pointer->focus != window->surface)
+	if (seat->pointer->button_count != 1 || !window->view
+	    || seat->pointer->focus != window->view)
 		return;
 
 	detail = client_message->data.data32[2];
@@ -2169,10 +2172,15 @@ xserver_map_shell_surface(struct weston_wm *wm,
 	if (!shell_interface->create_shell_surface)
 		return;
 
+	if (!shell_interface->get_primary_view)
+		return;
+
 	window->shsurf = 
 		shell_interface->create_shell_surface(shell_interface->shell,
 						      window->surface,
 						      &shell_client);
+	window->view = shell_interface->get_primary_view(shell_interface->shell,
+							 window->shsurf);
 
 	if (window->name)
 		shell_interface->set_title(window->shsurf, window->name);

@@ -156,7 +156,7 @@ struct drm_output {
 	struct gbm_bo *cursor_bo[2];
 	struct weston_plane cursor_plane;
 	struct weston_plane fb_plane;
-	struct weston_surface *cursor_surface;
+	struct weston_view *cursor_view;
 	int current_cursor;
 	struct drm_fb *current, *next;
 	struct backlight *backlight;
@@ -448,23 +448,23 @@ drm_output_check_scanout_format(struct drm_output *output,
 }
 
 static struct weston_plane *
-drm_output_prepare_scanout_surface(struct weston_output *_output,
-				   struct weston_surface *es)
+drm_output_prepare_scanout_view(struct weston_output *_output,
+				struct weston_view *ev)
 {
 	struct drm_output *output = (struct drm_output *) _output;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
-	struct weston_buffer *buffer = es->buffer_ref.buffer;
+	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
 	struct gbm_bo *bo;
 	uint32_t format;
 
-	if (es->geometry.x != output->base.x ||
-	    es->geometry.y != output->base.y ||
+	if (ev->geometry.x != output->base.x ||
+	    ev->geometry.y != output->base.y ||
 	    buffer == NULL || c->gbm == NULL ||
 	    buffer->width != output->base.current_mode->width ||
 	    buffer->height != output->base.current_mode->height ||
-	    output->base.transform != es->buffer_transform ||
-	    es->transform.enabled)
+	    output->base.transform != ev->surface->buffer_transform ||
+	    ev->transform.enabled)
 		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
@@ -474,7 +474,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	if (!bo)
 		return NULL;
 
-	format = drm_output_check_scanout_format(output, es, bo);
+	format = drm_output_check_scanout_format(output, ev->surface, bo);
 	if (format == 0) {
 		gbm_bo_destroy(bo);
 		return NULL;
@@ -766,7 +766,7 @@ page_flip_handler(int fd, unsigned int frame,
 
 static uint32_t
 drm_output_check_sprite_format(struct drm_sprite *s,
-			       struct weston_surface *es, struct gbm_bo *bo)
+			       struct weston_view *ev, struct gbm_bo *bo)
 {
 	uint32_t i, format;
 
@@ -776,9 +776,9 @@ drm_output_check_sprite_format(struct drm_sprite *s,
 		pixman_region32_t r;
 
 		pixman_region32_init_rect(&r, 0, 0,
-					  es->geometry.width,
-					  es->geometry.height);
-		pixman_region32_subtract(&r, &r, &es->opaque);
+					  ev->geometry.width,
+					  ev->geometry.height);
+		pixman_region32_subtract(&r, &r, &ev->surface->opaque);
 
 		if (!pixman_region32_not_empty(&r))
 			format = GBM_FORMAT_XRGB8888;
@@ -794,15 +794,15 @@ drm_output_check_sprite_format(struct drm_sprite *s,
 }
 
 static int
-drm_surface_transform_supported(struct weston_surface *es)
+drm_view_transform_supported(struct weston_view *ev)
 {
-	return !es->transform.enabled ||
-		(es->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
+	return !ev->transform.enabled ||
+		(ev->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
 }
 
 static struct weston_plane *
-drm_output_prepare_overlay_surface(struct weston_output *output_base,
-				   struct weston_surface *es)
+drm_output_prepare_overlay_view(struct weston_output *output_base,
+				struct weston_view *ev)
 {
 	struct weston_compositor *ec = output_base->compositor;
 	struct drm_compositor *c =(struct drm_compositor *) ec;
@@ -817,28 +817,28 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (c->gbm == NULL)
 		return NULL;
 
-	if (es->buffer_transform != output_base->transform)
+	if (ev->surface->buffer_transform != output_base->transform)
 		return NULL;
 
-	if (es->buffer_scale != output_base->current_scale)
+	if (ev->surface->buffer_scale != output_base->current_scale)
 		return NULL;
 
 	if (c->sprites_are_broken)
 		return NULL;
 
-	if (es->output_mask != (1u << output_base->id))
+	if (ev->output_mask != (1u << output_base->id))
 		return NULL;
 
-	if (es->buffer_ref.buffer == NULL)
+	if (ev->surface->buffer_ref.buffer == NULL)
 		return NULL;
 
-	if (es->alpha != 1.0f)
+	if (ev->alpha != 1.0f)
 		return NULL;
 
-	if (wl_shm_buffer_get(es->buffer_ref.buffer->resource))
+	if (wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource))
 		return NULL;
 
-	if (!drm_surface_transform_supported(es))
+	if (!drm_view_transform_supported(ev))
 		return NULL;
 
 	wl_list_for_each(s, &c->sprite_list, link) {
@@ -856,12 +856,12 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
-			   es->buffer_ref.buffer->resource,
+			   ev->surface->buffer_ref.buffer->resource,
 			   GBM_BO_USE_SCANOUT);
 	if (!bo)
 		return NULL;
 
-	format = drm_output_check_sprite_format(s, es, bo);
+	format = drm_output_check_sprite_format(s, ev, bo);
 	if (format == 0) {
 		gbm_bo_destroy(bo);
 		return NULL;
@@ -873,9 +873,9 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 		return NULL;
 	}
 
-	drm_fb_set_buffer(s->next, es->buffer_ref.buffer);
+	drm_fb_set_buffer(s->next, ev->surface->buffer_ref.buffer);
 
-	box = pixman_region32_extents(&es->transform.boundingbox);
+	box = pixman_region32_extents(&ev->transform.boundingbox);
 	s->plane.x = box->x1;
 	s->plane.y = box->y1;
 
@@ -885,7 +885,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	 * for us already).
 	 */
 	pixman_region32_init(&dest_rect);
-	pixman_region32_intersect(&dest_rect, &es->transform.boundingbox,
+	pixman_region32_intersect(&dest_rect, &ev->transform.boundingbox,
 				  &output_base->region);
 	pixman_region32_translate(&dest_rect, -output_base->x, -output_base->y);
 	box = pixman_region32_extents(&dest_rect);
@@ -901,36 +901,37 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	pixman_region32_fini(&dest_rect);
 
 	pixman_region32_init(&src_rect);
-	pixman_region32_intersect(&src_rect, &es->transform.boundingbox,
+	pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
 				  &output_base->region);
 	box = pixman_region32_extents(&src_rect);
 
-	weston_surface_from_global_fixed(es,
-					 wl_fixed_from_int(box->x1),
-					 wl_fixed_from_int(box->y1),
-					 &sx1, &sy1);
-	weston_surface_from_global_fixed(es,
-					 wl_fixed_from_int(box->x2),
-					 wl_fixed_from_int(box->y2),
-					 &sx2, &sy2);
+	weston_view_from_global_fixed(ev,
+				      wl_fixed_from_int(box->x1),
+				      wl_fixed_from_int(box->y1),
+				      &sx1, &sy1);
+	weston_view_from_global_fixed(ev,
+				      wl_fixed_from_int(box->x2),
+				      wl_fixed_from_int(box->y2),
+				      &sx2, &sy2);
 
 	if (sx1 < 0)
 		sx1 = 0;
 	if (sy1 < 0)
 		sy1 = 0;
-	if (sx2 > wl_fixed_from_int(es->geometry.width))
-		sx2 = wl_fixed_from_int(es->geometry.width);
-	if (sy2 > wl_fixed_from_int(es->geometry.height))
-		sy2 = wl_fixed_from_int(es->geometry.height);
+	if (sx2 > wl_fixed_from_int(ev->geometry.width))
+		sx2 = wl_fixed_from_int(ev->geometry.width);
+	if (sy2 > wl_fixed_from_int(ev->geometry.height))
+		sy2 = wl_fixed_from_int(ev->geometry.height);
 
 	tbox.x1 = sx1;
 	tbox.y1 = sy1;
 	tbox.x2 = sx2;
 	tbox.y2 = sy2;
 
-	tbox = weston_transformed_rect(wl_fixed_from_int(es->geometry.width),
-				       wl_fixed_from_int(es->geometry.height),
-				       es->buffer_transform, es->buffer_scale, tbox);
+	tbox = weston_transformed_rect(wl_fixed_from_int(ev->geometry.width),
+				       wl_fixed_from_int(ev->geometry.height),
+				       ev->surface->buffer_transform,
+				       ev->surface->buffer_scale, tbox);
 
 	s->src_x = tbox.x1 << 8;
 	s->src_y = tbox.y1 << 8;
@@ -942,8 +943,8 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 }
 
 static struct weston_plane *
-drm_output_prepare_cursor_surface(struct weston_output *output_base,
-				  struct weston_surface *es)
+drm_output_prepare_cursor_view(struct weston_output *output_base,
+			       struct weston_view *ev)
 {
 	struct drm_compositor *c =
 		(struct drm_compositor *) output_base->compositor;
@@ -953,18 +954,18 @@ drm_output_prepare_cursor_surface(struct weston_output *output_base,
 		return NULL;
 	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
 		return NULL;
-	if (output->cursor_surface)
+	if (output->cursor_view)
 		return NULL;
-	if (es->output_mask != (1u << output_base->id))
+	if (ev->output_mask != (1u << output_base->id))
 		return NULL;
 	if (c->cursors_are_broken)
 		return NULL;
-	if (es->buffer_ref.buffer == NULL ||
-	    !wl_shm_buffer_get(es->buffer_ref.buffer->resource) ||
-	    es->geometry.width > 64 || es->geometry.height > 64)
+	if (ev->surface->buffer_ref.buffer == NULL ||
+	    !wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource) ||
+	    ev->geometry.width > 64 || ev->geometry.height > 64)
 		return NULL;
 
-	output->cursor_surface = es;
+	output->cursor_view = ev;
 
 	return &output->cursor_plane;
 }
@@ -972,7 +973,7 @@ drm_output_prepare_cursor_surface(struct weston_output *output_base,
 static void
 drm_output_set_cursor(struct drm_output *output)
 {
-	struct weston_surface *es = output->cursor_surface;
+	struct weston_view *ev = output->cursor_view;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
 	EGLint handle, stride;
@@ -981,24 +982,24 @@ drm_output_set_cursor(struct drm_output *output)
 	unsigned char *s;
 	int i, x, y;
 
-	output->cursor_surface = NULL;
-	if (es == NULL) {
+	output->cursor_view = NULL;
+	if (ev == NULL) {
 		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
 		return;
 	}
 
-	if (es->buffer_ref.buffer &&
+	if (ev->surface->buffer_ref.buffer &&
 	    pixman_region32_not_empty(&output->cursor_plane.damage)) {
 		pixman_region32_fini(&output->cursor_plane.damage);
 		pixman_region32_init(&output->cursor_plane.damage);
 		output->current_cursor ^= 1;
 		bo = output->cursor_bo[output->current_cursor];
 		memset(buf, 0, sizeof buf);
-		stride = wl_shm_buffer_get_stride(es->buffer_ref.buffer->shm_buffer);
-		s = wl_shm_buffer_get_data(es->buffer_ref.buffer->shm_buffer);
-		for (i = 0; i < es->geometry.height; i++)
+		stride = wl_shm_buffer_get_stride(ev->surface->buffer_ref.buffer->shm_buffer);
+		s = wl_shm_buffer_get_data(ev->surface->buffer_ref.buffer->shm_buffer);
+		for (i = 0; i < ev->geometry.height; i++)
 			memcpy(buf + i * 64, s + i * stride,
-			       es->geometry.width * 4);
+			       ev->geometry.width * 4);
 
 		if (gbm_bo_write(bo, buf, sizeof buf) < 0)
 			weston_log("failed update cursor: %m\n");
@@ -1011,8 +1012,8 @@ drm_output_set_cursor(struct drm_output *output)
 		}
 	}
 
-	x = (es->geometry.x - output->base.x) * output->base.current_scale;
-	y = (es->geometry.y - output->base.y) * output->base.current_scale;
+	x = (ev->geometry.x - output->base.x) * output->base.current_scale;
+	y = (ev->geometry.y - output->base.y) * output->base.current_scale;
 	if (output->cursor_plane.x != x || output->cursor_plane.y != y) {
 		if (drmModeMoveCursor(c->drm.fd, output->crtc_id, x, y)) {
 			weston_log("failed to move cursor: %m\n");
@@ -1029,7 +1030,7 @@ drm_assign_planes(struct weston_output *output)
 {
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->compositor;
-	struct weston_surface *es, *next;
+	struct weston_view *ev, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
 
@@ -1048,36 +1049,39 @@ drm_assign_planes(struct weston_output *output)
 	 */
 	pixman_region32_init(&overlap);
 	primary = &c->base.primary_plane;
-	wl_list_for_each_safe(es, next, &c->base.surface_list, link) {
+
+	/* Flag all visible surfaces as keep_buffer = 1 */
+	wl_list_for_each(ev, &c->base.view_list, link)
+		ev->surface->keep_buffer = 1;
+
+	wl_list_for_each_safe(ev, next, &c->base.view_list, link) {
 		/* test whether this buffer can ever go into a plane:
 		 * non-shm, or small enough to be a cursor
 		 */
-		if ((es->buffer_ref.buffer &&
-		     !wl_shm_buffer_get(es->buffer_ref.buffer->resource)) ||
-		    (es->geometry.width <= 64 && es->geometry.height <= 64))
-			es->keep_buffer = 1;
-		else
-			es->keep_buffer = 0;
+		if (!ev->surface->buffer_ref.buffer ||
+		    (wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource) &&
+		    (ev->geometry.width > 64 || ev->geometry.height > 64)))
+			ev->surface->keep_buffer = 0;
 
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect(&surface_overlap, &overlap,
-					  &es->transform.boundingbox);
+					  &ev->transform.boundingbox);
 
 		next_plane = NULL;
 		if (pixman_region32_not_empty(&surface_overlap))
 			next_plane = primary;
 		if (next_plane == NULL)
-			next_plane = drm_output_prepare_cursor_surface(output, es);
+			next_plane = drm_output_prepare_cursor_view(output, ev);
 		if (next_plane == NULL)
-			next_plane = drm_output_prepare_scanout_surface(output, es);
+			next_plane = drm_output_prepare_scanout_view(output, ev);
 		if (next_plane == NULL)
-			next_plane = drm_output_prepare_overlay_surface(output, es);
+			next_plane = drm_output_prepare_overlay_view(output, ev);
 		if (next_plane == NULL)
 			next_plane = primary;
-		weston_surface_move_to_plane(es, next_plane);
+		weston_view_move_to_plane(ev, next_plane);
 		if (next_plane == primary)
 			pixman_region32_union(&overlap, &overlap,
-					      &es->transform.boundingbox);
+					      &ev->transform.boundingbox);
 
 		pixman_region32_fini(&surface_overlap);
 	}

@@ -26,6 +26,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "compositor.h"
 
@@ -33,11 +34,11 @@ struct weston_drag {
 	struct wl_client *client;
 	struct weston_data_source *data_source;
 	struct wl_listener data_source_listener;
-	struct weston_surface *focus;
+	struct weston_view *focus;
 	struct wl_resource *focus_resource;
 	struct wl_listener focus_listener;
 	struct weston_pointer_grab grab;
-	struct weston_surface *icon;
+	struct weston_view *icon;
 	struct wl_listener icon_destroy_listener;
 	int32_t dx, dy;
 };
@@ -178,14 +179,17 @@ drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_
 	struct wl_list *list;
 	float fx, fy;
 
+	assert(es->configure == drag_surface_configure);
+
 	if (!weston_surface_is_mapped(es) && es->buffer_ref.buffer) {
-		if (pointer->sprite && weston_surface_is_mapped(pointer->sprite))
+		if (pointer->sprite && weston_view_is_mapped(pointer->sprite))
 			list = &pointer->sprite->layer_link;
 		else
-			list = &es->compositor->cursor_layer.surface_list;
+			list = &es->compositor->cursor_layer.view_list;
 
-		wl_list_insert(list, &es->layer_link);
-		weston_surface_update_transform(es);
+		wl_list_remove(&drag->icon->layer_link);
+		wl_list_insert(list, &drag->icon->layer_link);
+		weston_view_update_transform(drag->icon);
 		empty_region(&es->pending.input);
 	}
 
@@ -194,7 +198,7 @@ drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_
 
 	fx = wl_fixed_to_double(pointer->x) + drag->dx;
 	fy = wl_fixed_to_double(pointer->y) + drag->dy;
-	weston_surface_configure(es, fx, fy, width, height);
+	weston_view_configure(drag->icon, fx, fy, width, height);
 }
 
 static void
@@ -207,13 +211,18 @@ destroy_drag_focus(struct wl_listener *listener, void *data)
 }
 
 static void
-weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
+weston_drag_set_focus(struct weston_drag *drag, struct weston_view *view,
 		      wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct weston_pointer *pointer = drag->grab.pointer;
 	struct wl_resource *resource, *offer = NULL;
 	struct wl_display *display = pointer->seat->compositor->wl_display;
 	uint32_t serial;
+
+	if (drag->focus && view && drag->focus->surface == view->surface) {
+		drag->focus = view;
+		return;
+	}
 
 	if (drag->focus_resource) {
 		wl_data_device_send_leave(drag->focus_resource);
@@ -222,15 +231,15 @@ weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
 		drag->focus = NULL;
 	}
 
-	if (!surface)
+	if (!view || !view->surface->resource)
 		return;
 
 	if (!drag->data_source &&
-	    wl_resource_get_client(surface->resource) != drag->client)
+	    wl_resource_get_client(view->surface->resource) != drag->client)
 		return;
 
 	resource = wl_resource_find_for_client(&pointer->seat->drag_resource_list,
-					       wl_resource_get_client(surface->resource));
+					       wl_resource_get_client(view->surface->resource));
 	if (!resource)
 		return;
 
@@ -243,10 +252,10 @@ weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
 			return;
 	}
 
-	wl_data_device_send_enter(resource, serial, surface->resource,
+	wl_data_device_send_enter(resource, serial, view->surface->resource,
 				  sx, sy, offer);
 
-	drag->focus = surface;
+	drag->focus = view;
 	drag->focus_listener.notify = destroy_drag_focus;
 	wl_resource_add_destroy_listener(resource, &drag->focus_listener);
 	drag->focus_resource = resource;
@@ -258,14 +267,14 @@ drag_grab_focus(struct weston_pointer_grab *grab)
 	struct weston_drag *drag =
 		container_of(grab, struct weston_drag, grab);
 	struct weston_pointer *pointer = grab->pointer;
-	struct weston_surface *surface;
+	struct weston_view *view;
 	wl_fixed_t sx, sy;
 
-	surface = weston_compositor_pick_surface(pointer->seat->compositor,
-						 pointer->x, pointer->y,
-						 &sx, &sy);
-	if (drag->focus != surface)
-		weston_drag_set_focus(drag, surface, sx, sy);
+	view = weston_compositor_pick_view(pointer->seat->compositor,
+					   pointer->x, pointer->y,
+					   &sx, &sy);
+	if (drag->focus != view)
+		weston_drag_set_focus(drag, view, sx, sy);
 }
 
 static void
@@ -280,14 +289,14 @@ drag_grab_motion(struct weston_pointer_grab *grab, uint32_t time)
 	if (drag->icon) {
 		fx = wl_fixed_to_double(pointer->x) + drag->dx;
 		fy = wl_fixed_to_double(pointer->y) + drag->dy;
-		weston_surface_set_position(drag->icon, fx, fy);
-		weston_surface_schedule_repaint(drag->icon);
+		weston_view_set_position(drag->icon, fx, fy);
+		weston_view_schedule_repaint(drag->icon);
 	}
 
 	if (drag->focus_resource) {
-		weston_surface_from_global_fixed(drag->focus,
-						 pointer->x, pointer->y,
-						 &sx, &sy);
+		weston_view_from_global_fixed(drag->focus,
+					      pointer->x, pointer->y,
+					      &sx, &sy);
 
 		wl_data_device_send_motion(drag->focus_resource, time, sx, sy);
 	}
@@ -297,12 +306,13 @@ static void
 data_device_end_drag_grab(struct weston_drag *drag)
 {
 	if (drag->icon) {
-		if (weston_surface_is_mapped(drag->icon))
-			weston_surface_unmap(drag->icon);
+		if (weston_view_is_mapped(drag->icon))
+			weston_view_unmap(drag->icon);
 
-		drag->icon->configure = NULL;
-		empty_region(&drag->icon->pending.input);
+		drag->icon->surface->configure = NULL;
+		empty_region(&drag->icon->surface->pending.input);
 		wl_list_remove(&drag->icon_destroy_listener.link);
+		weston_view_destroy(drag->icon);
 	}
 
 	weston_drag_set_focus(drag, NULL, 0, 0);
@@ -373,21 +383,28 @@ weston_seat_start_drag(struct weston_seat *seat,
 	drag->grab.interface = &drag_grab_interface;
 	drag->client = client;
 	drag->data_source = source;
-	drag->icon = icon;
-
-	if (source) {
-		drag->data_source_listener.notify = destroy_data_device_source;
-		wl_signal_add(&source->destroy_signal,
-			      &drag->data_source_listener);
-	}
 
 	if (icon) {
+		drag->icon = weston_view_create(icon);
+		if (drag->icon == NULL) {
+			free(drag);
+			return -1;
+		}
+
 		drag->icon_destroy_listener.notify = handle_drag_icon_destroy;
 		wl_signal_add(&icon->destroy_signal,
 			      &drag->icon_destroy_listener);
 
 		icon->configure = drag_surface_configure;
 		icon->configure_private = drag;
+	} else {
+		drag->icon = NULL;
+	}
+
+	if (source) {
+		drag->data_source_listener.notify = destroy_data_device_source;
+		wl_signal_add(&source->destroy_signal,
+			      &drag->data_source_listener);
 	}
 
 	weston_pointer_set_focus(seat->pointer, NULL,
@@ -409,7 +426,8 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
-	    seat->pointer->focus != wl_resource_get_user_data(origin_resource))
+	    !seat->pointer->focus ||
+	    seat->pointer->focus->surface != wl_resource_get_user_data(origin_resource))
 		return;
 
 	/* FIXME: Check that the data source type array isn't empty. */

@@ -29,39 +29,42 @@ surface_to_from_global(void *data)
 {
 	struct weston_compositor *compositor = data;
 	struct weston_surface *surface;
+	struct weston_view *view;
 	float x, y;
 	wl_fixed_t fx, fy;
 	int32_t ix, iy;
 
 	surface = weston_surface_create(compositor);
 	assert(surface);
-	weston_surface_configure(surface, 5, 10, 50, 50);
-	weston_surface_update_transform(surface);
+	view = weston_view_create(surface);
+	assert(view);
+	weston_view_configure(view, 5, 10, 50, 50);
+	weston_view_update_transform(view);
 
-	weston_surface_to_global_float(surface, 33, 22, &x, &y);
+	weston_view_to_global_float(view, 33, 22, &x, &y);
 	assert(x == 38 && y == 32);
 
-	weston_surface_to_global_float(surface, -8, -2, &x, &y);
+	weston_view_to_global_float(view, -8, -2, &x, &y);
 	assert(x == -3 && y == 8);
 
-	weston_surface_to_global_fixed(surface, wl_fixed_from_int(12),
+	weston_view_to_global_fixed(view, wl_fixed_from_int(12),
 				       wl_fixed_from_int(5), &fx, &fy);
 	assert(fx == wl_fixed_from_int(17) && fy == wl_fixed_from_int(15));
 
-	weston_surface_from_global_float(surface, 38, 32, &x, &y);
+	weston_view_from_global_float(view, 38, 32, &x, &y);
 	assert(x == 33 && y == 22);
 
-	weston_surface_from_global_float(surface, 42, 5, &x, &y);
+	weston_view_from_global_float(view, 42, 5, &x, &y);
 	assert(x == 37 && y == -5);
 
-	weston_surface_from_global_fixed(surface, wl_fixed_from_int(21),
+	weston_view_from_global_fixed(view, wl_fixed_from_int(21),
 					 wl_fixed_from_int(100), &fx, &fy);
 	assert(fx == wl_fixed_from_int(16) && fy == wl_fixed_from_int(90));
 
-	weston_surface_from_global(surface, 0, 0, &ix, &iy);
+	weston_view_from_global(view, 0, 0, &ix, &iy);
 	assert(ix == -5 && iy == -10);
 
-	weston_surface_from_global(surface, 5, 10, &ix, &iy);
+	weston_view_from_global(view, 5, 10, &ix, &iy);
 	assert(ix == 0 && iy == 0);
 
 	wl_display_terminate(compositor->wl_display);

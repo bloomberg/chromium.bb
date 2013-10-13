@@ -25,7 +25,7 @@
 #include "compositor.h"
 
 WL_EXPORT void
-weston_surface_geometry_dirty(struct weston_surface *surface)
+weston_view_geometry_dirty(struct weston_view *view)
 {
 }
 
@@ -36,7 +36,7 @@ weston_log(const char *fmt, ...)
 }
 
 WL_EXPORT void
-weston_compositor_schedule_repaint(struct weston_compositor *compositor)
+weston_view_schedule_repaint(struct weston_view *view)
 {
 }
 

@@ -27,97 +27,6 @@
 #include "compositor.h"
 #include "text-cursor-position-server-protocol.h"
 
-struct text_cursor_position {
-	struct weston_compositor *ec;
-	struct wl_global *global;
-	struct wl_listener destroy_listener;
-};
-
-static void
-text_cursor_position_notify(struct wl_client *client,
-			    struct wl_resource *resource,
-			    struct wl_resource *surface_resource,
-			    wl_fixed_t x, wl_fixed_t y)
-{
-	struct weston_surface *surface =
-		wl_resource_get_user_data(surface_resource);
-
-	weston_text_cursor_position_notify(surface, x, y);
-}
-
-struct text_cursor_position_interface text_cursor_position_implementation = {
-	text_cursor_position_notify
-};
-
-static void
-bind_text_cursor_position(struct wl_client *client,
-	     void *data, uint32_t version, uint32_t id)
-{
-	struct wl_resource *resource;
-
-	resource = wl_resource_create(client,
-				      &text_cursor_position_interface, 1, id);
-	if (resource)
-		wl_resource_set_implementation(resource,
-					       &text_cursor_position_implementation,
-					       data, NULL);
-}
-
-static void
-text_cursor_position_notifier_destroy(struct wl_listener *listener, void *data)
-{
-	struct text_cursor_position *text_cursor_position =
-		container_of(listener, struct text_cursor_position, destroy_listener);
-
-	wl_global_destroy(text_cursor_position->global);
-	free(text_cursor_position);
-}
-
-void
-text_cursor_position_notifier_create(struct weston_compositor *ec)
-{
-	struct text_cursor_position *text_cursor_position;
-
-	text_cursor_position = malloc(sizeof *text_cursor_position);
-	if (text_cursor_position == NULL)
-		return;
-
-	text_cursor_position->ec = ec;
-
-	text_cursor_position->global =
-		wl_global_create(ec->wl_display,
-				 &text_cursor_position_interface, 1,
-				 text_cursor_position,
-				 bind_text_cursor_position);
-
-	text_cursor_position->destroy_listener.notify =
-		text_cursor_position_notifier_destroy;
-	wl_signal_add(&ec->destroy_signal, &text_cursor_position->destroy_listener);
-}
-
-WL_EXPORT void
-weston_text_cursor_position_notify(struct weston_surface *surface,
-						wl_fixed_t cur_pos_x,
-						wl_fixed_t cur_pos_y)
-{
-	struct weston_output *output;
-	wl_fixed_t global_x, global_y;
-
-	weston_surface_to_global_fixed(surface, cur_pos_x, cur_pos_y,
-						&global_x, &global_y);
-
-	wl_list_for_each(output, &surface->compositor->output_list, link)
-		if (output->zoom.active &&
-		    pixman_region32_contains_point(&output->region,
-						wl_fixed_to_int(global_x),
-						wl_fixed_to_int(global_y),
-						NULL)) {
-			output->zoom.text_cursor.x = global_x;
-			output->zoom.text_cursor.y = global_y;
-			weston_output_update_zoom(output, ZOOM_FOCUS_TEXT);
-		}
-}
-
 static void
 weston_zoom_frame_z(struct weston_animation *animation,
 		struct weston_output *output, uint32_t msecs)
@@ -176,12 +85,8 @@ weston_zoom_frame_xy(struct weston_animation *animation,
 
 	if (weston_spring_done(&output->zoom.spring_xy)) {
 		output->zoom.spring_xy.current = output->zoom.spring_xy.target;
-		output->zoom.current.x =
-			output->zoom.type == ZOOM_FOCUS_POINTER ?
-				seat->pointer->x : output->zoom.text_cursor.x;
-		output->zoom.current.y =
-			output->zoom.type == ZOOM_FOCUS_POINTER ?
-				seat->pointer->y : output->zoom.text_cursor.y;
+		output->zoom.current.x = seat->pointer->x;
+		output->zoom.current.y = seat->pointer->y;
 		wl_list_remove(&animation->link);
 		wl_list_init(&animation->link);
 	}
@@ -251,7 +156,6 @@ weston_zoom_apply_output_transform(struct weston_output *output,
 static void
 weston_output_update_zoom_transform(struct weston_output *output)
 {
-	uint32_t type = output->zoom.type;
 	float global_x, global_y;
 	wl_fixed_t x = output->zoom.current.x;
 	wl_fixed_t y = output->zoom.current.y;
@@ -265,8 +169,7 @@ weston_output_update_zoom_transform(struct weston_output *output)
 	    level == 0.0f)
 		return;
 
-	if (type == ZOOM_FOCUS_POINTER &&
-			wl_list_empty(&output->zoom.animation_xy.link))
+	if (wl_list_empty(&output->zoom.animation_xy.link))
 		zoom_area_center_from_pointer(output, &x, &y);
 
 	global_x = wl_fixed_to_double(x);
@@ -297,39 +200,8 @@ weston_output_update_zoom_transform(struct weston_output *output)
 }
 
 static void
-weston_zoom_transition(struct weston_output *output, uint32_t type,
-						wl_fixed_t x, wl_fixed_t y)
+weston_zoom_transition(struct weston_output *output, wl_fixed_t x, wl_fixed_t y)
 {
-	if (output->zoom.type != type) {
-		/* Set from/to points and start animation */
-		output->zoom.spring_xy.current = 0.0;
-		output->zoom.spring_xy.previous = 0.0;
-		output->zoom.spring_xy.target = 1.0;
-
-		if (wl_list_empty(&output->zoom.animation_xy.link)) {
-			output->zoom.animation_xy.frame_counter = 0;
-			wl_list_insert(output->animation_list.prev,
-				&output->zoom.animation_xy.link);
-
-			output->zoom.from.x = (type == ZOOM_FOCUS_TEXT) ?
-						x : output->zoom.text_cursor.x;
-			output->zoom.from.y = (type == ZOOM_FOCUS_TEXT) ?
-						y : output->zoom.text_cursor.y;
-		} else {
-			output->zoom.from.x = output->zoom.current.x;
-			output->zoom.from.y = output->zoom.current.y;
-		}
-
-		output->zoom.to.x = (type == ZOOM_FOCUS_POINTER) ?
-						x : output->zoom.text_cursor.x;
-		output->zoom.to.y = (type == ZOOM_FOCUS_POINTER) ?
-						y : output->zoom.text_cursor.y;
-		output->zoom.current.x = output->zoom.from.x;
-		output->zoom.current.y = output->zoom.from.y;
-
-		output->zoom.type = type;
-	}
-
 	if (output->zoom.level != output->zoom.spring_z.current) {
 		output->zoom.spring_z.target = output->zoom.level;
 		if (wl_list_empty(&output->zoom.animation_z.link)) {
@@ -344,7 +216,7 @@ weston_zoom_transition(struct weston_output *output, uint32_t type,
 }
 
 WL_EXPORT void
-weston_output_update_zoom(struct weston_output *output, uint32_t type)
+weston_output_update_zoom(struct weston_output *output)
 {
 	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
 	wl_fixed_t x = seat->pointer->x;
@@ -352,27 +224,15 @@ weston_output_update_zoom(struct weston_output *output, uint32_t type)
 
 	zoom_area_center_from_pointer(output, &x, &y);
 
-	if (type == ZOOM_FOCUS_POINTER) {
-		if (wl_list_empty(&output->zoom.animation_xy.link)) {
-			output->zoom.current.x = seat->pointer->x;
-			output->zoom.current.y = seat->pointer->y;
-		} else {
-			output->zoom.to.x = x;
-			output->zoom.to.y = y;
-		}
+	if (wl_list_empty(&output->zoom.animation_xy.link)) {
+		output->zoom.current.x = seat->pointer->x;
+		output->zoom.current.y = seat->pointer->y;
+	} else {
+		output->zoom.to.x = x;
+		output->zoom.to.y = y;
 	}
 
-	if (type == ZOOM_FOCUS_TEXT) {
-		if (wl_list_empty(&output->zoom.animation_xy.link)) {
-			output->zoom.current.x = output->zoom.text_cursor.x;
-			output->zoom.current.y = output->zoom.text_cursor.y;
-		} else {
-			output->zoom.to.x = output->zoom.text_cursor.x;
-			output->zoom.to.y = output->zoom.text_cursor.y;
-		}
-	}
-
-	weston_zoom_transition(output, type, x, y);
+	weston_zoom_transition(output, x, y);
 	weston_output_update_zoom_transform(output);
 }
 
@@ -385,7 +245,6 @@ weston_output_init_zoom(struct weston_output *output)
 	output->zoom.level = 0.0;
 	output->zoom.trans_x = 0.0;
 	output->zoom.trans_y = 0.0;
-	output->zoom.type = ZOOM_FOCUS_POINTER;
 	weston_spring_init(&output->zoom.spring_z, 250.0, 0.0, 0.0);
 	output->zoom.spring_z.friction = 1000;
 	output->zoom.animation_z.frame = weston_zoom_frame_z;

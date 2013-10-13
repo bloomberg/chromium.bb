@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <linux/input.h>
+#include <assert.h>
 
 #include "compositor.h"
 #include "tablet-shell-server-protocol.h"
@@ -124,27 +125,43 @@ tablet_shell_set_state(struct tablet_shell *shell, int state)
 	shell->state = state;
 }
 
+static struct weston_view *
+get_surface_view(struct weston_surface *surface, int create)
+{
+	if (!surface)
+		return NULL;
+
+	if (wl_list_empty(&surface->views)) {
+		if (create)
+			return weston_view_create(surface);
+		else
+			return NULL;
+	}
+
+	return container_of(surface->views.next, struct weston_view, surface_link);
+}
+
 static void
 tablet_shell_surface_configure(struct weston_surface *surface,
 			       int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct tablet_shell *shell = get_shell(surface->compositor);
+	struct weston_view *view = get_surface_view(surface, 0);
+	assert(view);
 
 	if (weston_surface_is_mapped(surface) || width == 0)
 		return;
 
-	weston_surface_configure(surface, 0, 0, width, height);
-
 	if (surface == shell->lockscreen_surface) {
-			wl_list_insert(&shell->lockscreen_layer.surface_list,
-					&surface->layer_link);
+		wl_list_insert(&shell->lockscreen_layer.view_list,
+				&view->layer_link);
 	} else if (surface == shell->switcher_surface) {
 		/* */
 	} else if (surface == shell->home_surface) {
 		if (shell->state == STATE_STARTING) {
 	                /* homescreen always visible, at the bottom */
-			wl_list_insert(&shell->homescreen_layer.surface_list,
-					&surface->layer_link);
+			wl_list_insert(&shell->homescreen_layer.view_list,
+					&view->layer_link);
 
 			tablet_shell_set_state(shell, STATE_LOCKED);
 			shell->previous_state = STATE_HOME;
@@ -155,12 +172,15 @@ tablet_shell_surface_configure(struct weston_surface *surface,
 		   shell->current_client->client == wl_resource_get_client(surface->resource)) {
 		tablet_shell_set_state(shell, STATE_TASK);
 		shell->current_client->surface = surface;
-		weston_zoom_run(surface, 0.3, 1.0, NULL, NULL);
-		wl_list_insert(&shell->application_layer.surface_list,
-			       &surface->layer_link);
+		weston_zoom_run(view, 0.3, 1.0, NULL, NULL);
+		wl_list_insert(&shell->application_layer.view_list,
+			       &view->layer_link);
 	}
 
-	weston_surface_update_transform(surface);
+	if (view) {
+		weston_view_configure(view, 0, 0, width, height);
+		weston_view_update_transform(view);
+	}
 }
 
 static void
@@ -181,10 +201,12 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 {
 	struct tablet_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *es = wl_resource_get_user_data(surface_resource);
+	struct weston_view *view;
 
-	weston_surface_set_position(es, 0, 0);
+	view = weston_view_create(es);
+	weston_view_set_position(view, 0, 0);
 	shell->lockscreen_surface = es;
-	shell->lockscreen_surface->configure = tablet_shell_surface_configure;
+	es->configure = tablet_shell_surface_configure;
 	shell->lockscreen_listener.notify = handle_lockscreen_surface_destroy;
 	wl_signal_add(&es->destroy_signal, &shell->lockscreen_listener);
 }
@@ -208,14 +230,16 @@ tablet_shell_set_switcher(struct wl_client *client,
 {
 	struct tablet_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *es = wl_resource_get_user_data(surface_resource);
+	struct weston_view *view;
 
 	/* FIXME: Switcher should be centered and the compositor
 	 * should do the tinting of the background.  With the cache
 	 * layer idea, we should be able to hit the framerate on the
 	 * fade/zoom in. */
-	shell->switcher_surface = es;
-	weston_surface_set_position(shell->switcher_surface, 0, 0);
+	view = weston_view_create(es);
+	weston_view_set_position(view, 0, 0);
 
+	shell->switcher_surface = es;
 	shell->switcher_listener.notify = handle_switcher_surface_destroy;
 	wl_signal_add(&es->destroy_signal, &shell->switcher_listener);
 }
@@ -226,15 +250,18 @@ tablet_shell_set_homescreen(struct wl_client *client,
 			    struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = wl_resource_get_user_data(resource);
+	struct weston_surface *es = wl_resource_get_user_data(surface_resource);
+	struct weston_view *view;
 
-	shell->home_surface = wl_resource_get_user_data(surface_resource);
-	shell->home_surface->configure = tablet_shell_surface_configure;
+	view = weston_view_create(es);
+	weston_view_set_position(view, 0, 0);
 
-	weston_surface_set_position(shell->home_surface, 0, 0);
+	shell->home_surface = es;
+	es->configure = tablet_shell_surface_configure;
 }
 
 static void
-minimize_zoom_done(struct weston_surface_animation *zoom, void *data)
+minimize_zoom_done(struct weston_view_animation *zoom, void *data)
 {
 	struct tablet_shell *shell = data;
 	struct weston_compositor *compositor = shell->compositor;
@@ -246,11 +273,12 @@ minimize_zoom_done(struct weston_surface_animation *zoom, void *data)
 
 static void
 tablet_shell_switch_to(struct tablet_shell *shell,
-			     struct weston_surface *surface)
+		       struct weston_surface *surface)
 {
 	struct weston_compositor *compositor = shell->compositor;
 	struct weston_seat *seat;
 	struct weston_surface *current;
+	struct weston_view *view = get_surface_view(surface, 1);
 
 	if (shell->state == STATE_SWITCHER) {
 		wl_list_remove(&shell->switcher_listener.link);
@@ -262,15 +290,15 @@ tablet_shell_switch_to(struct tablet_shell *shell,
 
 		if (shell->current_client && shell->current_client->surface) {
 			current = shell->current_client->surface;
-			weston_zoom_run(current, 1.0, 0.3,
-				      minimize_zoom_done, shell);
+			weston_zoom_run(get_surface_view(current, 0), 1.0, 0.3,
+				        minimize_zoom_done, shell);
 		}
 	} else {
-		fprintf(stderr, "switch to %p\n", surface);
+		fprintf(stderr, "switch to %p\n", view);
 		wl_list_for_each(seat, &compositor->seat_list, link)
-			weston_surface_activate(surface, seat);
+			weston_surface_activate(view->surface, seat);
 		tablet_shell_set_state(shell, STATE_TASK);
-		weston_zoom_run(surface, 0.3, 1.0, NULL, NULL);
+		weston_zoom_run(view, 0.3, 1.0, NULL, NULL);
 	}
 }
 

@@ -31,20 +31,23 @@ surface_transform(void *data)
 {
 	struct weston_compositor *compositor = data;
 	struct weston_surface *surface;
+	struct weston_view *view;
 	float x, y;
 
 	surface = weston_surface_create(compositor);
 	assert(surface);
-	weston_surface_configure(surface, 100, 100, 200, 200);
-	weston_surface_update_transform(surface);
-	weston_surface_to_global_float(surface, 20, 20, &x, &y);
+	view = weston_view_create(surface);
+	assert(view);
+	weston_view_configure(view, 100, 100, 200, 200);
+	weston_view_update_transform(view);
+	weston_view_to_global_float(view, 20, 20, &x, &y);
 
 	fprintf(stderr, "20,20 maps to %f, %f\n", x, y);
 	assert(x == 120 && y == 120);
 
-	weston_surface_set_position(surface, 150, 300);
-	weston_surface_update_transform(surface);
-	weston_surface_to_global_float(surface, 50, 40, &x, &y);
+	weston_view_set_position(view, 150, 300);
+	weston_view_update_transform(view);
+	weston_view_to_global_float(view, 50, 40, &x, &y);
 	assert(x == 200 && y == 340);
 
 	wl_display_terminate(compositor->wl_display);
