@@ -109,6 +109,7 @@
 #include "chrome/browser/ui/webui/chromeos/proxy_settings_ui.h"
 #include "chrome/browser/ui/webui/chromeos/salsa_ui.h"
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
+#include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #endif
@@ -400,6 +401,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::SimUnlockUI>;
   if (url.host() == chrome::kChromeUISlowHost)
     return &NewWebUI<chromeos::SlowUI>;
+  if (url.host() == chrome::kChromeUISlowTraceHost)
+    return &NewWebUI<chromeos::SlowTraceController>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
     return &NewWebUI<chromeos::SystemInfoUI>;
   if (url.host() == chrome::kChromeUINetworkHost)

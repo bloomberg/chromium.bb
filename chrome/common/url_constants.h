@@ -262,6 +262,7 @@ extern const char kChromeUIRotateHost[];
 extern const char kChromeUISimUnlockHost[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISlowHost[];
+extern const char kChromeUISlowTraceHost[];
 extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIUserImageHost[];
 

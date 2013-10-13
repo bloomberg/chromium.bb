@@ -270,6 +270,7 @@ const char kChromeUIRotateHost[] = "rotate";
 const char kChromeUISimUnlockHost[] = "sim-unlock";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISlowHost[] = "slow";
+const char kChromeUISlowTraceHost[] = "slow_trace";
 const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIUserImageHost[] = "userimage";
 

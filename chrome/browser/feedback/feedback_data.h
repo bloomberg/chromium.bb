@@ -94,7 +94,8 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
   virtual ~FeedbackData();
 
-  void OnGetTraceData(scoped_refptr<base::RefCountedString> trace_data);
+  void OnGetTraceData(int trace_id,
+                      scoped_refptr<base::RefCountedString> trace_data);
 
   Profile* profile_;
 

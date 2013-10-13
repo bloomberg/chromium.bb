@@ -113,7 +113,7 @@ void FeedbackData::SetAndCompressSystemInfo(
     if (!manager ||
         !manager->GetTraceData(
             trace_id_,
-            base::Bind(&FeedbackData::OnGetTraceData, this))) {
+            base::Bind(&FeedbackData::OnGetTraceData, this, trace_id_))) {
       trace_id_ = 0;
     }
   }
@@ -134,8 +134,12 @@ void FeedbackData::SetAndCompressSystemInfo(
 }
 
 void FeedbackData::OnGetTraceData(
+    int trace_id_,
     scoped_refptr<base::RefCountedString> trace_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TracingManager* manager = TracingManager::Get();
+  if (manager)
+    manager->DiscardTraceData(trace_id_);
 
   scoped_ptr<std::string> data(new std::string(trace_data->data()));
 

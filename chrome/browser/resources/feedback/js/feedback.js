@@ -72,6 +72,15 @@ function openSystemInfoWindow() {
 }
 
 /**
+ * Opens a new window with chrome://slow_trace, downloading performance data.
+ */
+function openSlowTraceWindow() {
+  chrome.windows.create(
+      {url: 'chrome://slow_trace/tracing.zip#' + feedbackInfo.traceId},
+      function(win) {});
+}
+
+/**
  * Sends the report; after the report is sent, we need to be redirected to
  * the landing page, but we shouldn't be able to navigate back, hence
  * we open the landing page in a new tab and sendReport closes this tab.
@@ -235,6 +244,7 @@ function initialize() {
         $('performance-info-area').hidden = false;
         $('performance-info-checkbox').checked = true;
         performanceFeedbackChanged();
+        $('performance-info-link').onclick = openSlowTraceWindow;
       }
 </if>
 
