@@ -25,17 +25,22 @@
 #ifndef WebTransformKeyframe_h
 #define WebTransformKeyframe_h
 
+#include "WebNonCopyable.h"
 #include "WebPrivateOwnPtr.h"
 #include "WebTransformOperations.h"
+#if BLINK_IMPLEMENTATION
+namespace WTF { template <typename T> class PassOwnPtr; }
+#endif
 
 namespace WebKit {
 
-class WebTransformKeyframe {
+class WebTransformKeyframe : public WebNonCopyable {
 public:
-    // Takes ownership of the WebTranformOperations object.
-    BLINK_EXPORT WebTransformKeyframe(double time, WebTransformOperations* value);
+#if BLINK_IMPLEMENTATION
+    WebTransformKeyframe(double time, WTF::PassOwnPtr<WebTransformOperations> value);
+#endif
 
-    BLINK_EXPORT ~WebTransformKeyframe();
+    ~WebTransformKeyframe();
 
     BLINK_EXPORT double time() const;
 

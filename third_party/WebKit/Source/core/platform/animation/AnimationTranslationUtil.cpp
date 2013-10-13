@@ -165,7 +165,7 @@ bool appendKeyframeWithStandardTimingFunction<TransformAnimationValue, WebTransf
         canBlend = lastOperations->canBlendWith(*operations);
     }
     if (canBlend) {
-        curve->add(WebTransformKeyframe(keyTime, operations.leakPtr()), timingFunctionType);
+        curve->add(WebTransformKeyframe(keyTime, operations.release()), timingFunctionType);
         return true;
     }
     return false;
@@ -185,7 +185,7 @@ bool appendKeyframeWithCustomBezierTimingFunction<TransformAnimationValue, WebTr
         canBlend = lastOperations->canBlendWith(*operations);
     }
     if (canBlend) {
-        curve->add(WebTransformKeyframe(keyTime, operations.leakPtr()), x1, y1, x2, y2);
+        curve->add(WebTransformKeyframe(keyTime, operations.release()), x1, y1, x2, y2);
         return true;
     }
     return false;

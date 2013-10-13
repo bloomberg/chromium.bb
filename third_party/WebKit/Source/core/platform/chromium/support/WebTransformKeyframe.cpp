@@ -24,10 +24,11 @@
 
 #include "config.h"
 #include "public/platform/WebTransformKeyframe.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebKit {
 
-WebTransformKeyframe::WebTransformKeyframe(double time, WebTransformOperations* value)
+WebTransformKeyframe::WebTransformKeyframe(double time, PassOwnPtr<WebTransformOperations> value)
     : m_time(time)
     , m_value(value)
 {

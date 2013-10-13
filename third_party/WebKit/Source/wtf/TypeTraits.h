@@ -224,9 +224,9 @@ namespace WTF {
     };
 
 #define EnsurePtrConvertibleArgDecl(From, To) \
-    typename EnableIf<IsPointerConvertible<From, To>::Value, bool>::Type = true
+    typename WTF::EnableIf<WTF::IsPointerConvertible<From, To>::Value, bool>::Type = true
 #define EnsurePtrConvertibleArgDefn(From, To) \
-    typename EnableIf<IsPointerConvertible<From, To>::Value, bool>::Type
+    typename WTF::EnableIf<WTF::IsPointerConvertible<From, To>::Value, bool>::Type
 
 } // namespace WTF
 
