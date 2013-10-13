@@ -151,7 +151,7 @@ public:
 
     virtual void dispatchWillInsertBody() OVERRIDE;
 
-    virtual WebServiceWorkerRegistry* serviceWorkerRegistry() OVERRIDE;
+    virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<WebServiceWorkerProviderClient>) OVERRIDE;
 
     virtual void didStopAllLoaders() OVERRIDE;
 

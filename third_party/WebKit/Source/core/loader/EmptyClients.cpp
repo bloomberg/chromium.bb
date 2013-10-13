@@ -35,6 +35,8 @@
 #include "core/platform/ColorChooser.h"
 #include "core/platform/DateTimeChooser.h"
 #include "platform/FileChooser.h"
+#include "public/platform/WebServiceWorkerProvider.h"
+#include "public/platform/WebServiceWorkerProviderClient.h"
 
 namespace WebCore {
 
@@ -138,6 +140,11 @@ void EmptyEditorClient::registerRedoStep(PassRefPtr<UndoStep>)
 
 void EmptyFrameLoaderClient::didRequestAutocomplete(PassRefPtr<FormState>)
 {
+}
+
+PassOwnPtr<WebKit::WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider(PassOwnPtr<WebKit::WebServiceWorkerProviderClient>)
+{
+    return nullptr;
 }
 
 }

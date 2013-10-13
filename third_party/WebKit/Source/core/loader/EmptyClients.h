@@ -248,7 +248,7 @@ public:
     virtual WebKit::WebCookieJar* cookieJar() const { return 0; }
 
     virtual void didRequestAutocomplete(PassRefPtr<FormState>) OVERRIDE;
-    virtual WebKit::WebServiceWorkerRegistry* serviceWorkerRegistry() OVERRIDE { return 0; }
+    virtual PassOwnPtr<WebKit::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<WebKit::WebServiceWorkerProviderClient>) OVERRIDE;
 };
 
 class EmptyTextCheckerClient : public TextCheckerClient {

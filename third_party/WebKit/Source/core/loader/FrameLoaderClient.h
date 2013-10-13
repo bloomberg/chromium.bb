@@ -46,7 +46,8 @@ template<class T> class Handle;
 
 namespace WebKit {
 class WebCookieJar;
-class WebServiceWorkerRegistry;
+class WebServiceWorkerProvider;
+class WebServiceWorkerProviderClient;
 }
 
 namespace WebCore {
@@ -218,7 +219,7 @@ class FetchRequest;
 
         virtual void dispatchDidChangeResourcePriority(unsigned long /*identifier*/, ResourceLoadPriority) { }
 
-        virtual WebKit::WebServiceWorkerRegistry* serviceWorkerRegistry() = 0;
+        virtual PassOwnPtr<WebKit::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<WebKit::WebServiceWorkerProviderClient>) = 0;
 
         virtual void didStopAllLoaders() { }
 

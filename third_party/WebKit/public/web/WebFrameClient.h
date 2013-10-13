@@ -58,7 +58,8 @@ class WebFormElement;
 class WebFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
-class WebServiceWorkerRegistry;
+class WebServiceWorkerProvider;
+class WebServiceWorkerProviderClient;
 class WebNode;
 class WebPlugin;
 class WebRTCPeerConnectionHandler;
@@ -92,7 +93,8 @@ public:
     // May return null.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*) { return 0; }
 
-    virtual WebServiceWorkerRegistry* serviceWorkerRegistry(WebFrame*) { return 0; }
+    // May return null. Takes ownership of the client.
+    virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebFrame*, WebServiceWorkerProviderClient*) { return 0; }
 
 
     // Services ------------------------------------------------------------

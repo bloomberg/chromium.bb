@@ -34,6 +34,7 @@
 #include "V8ServiceWorker.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
@@ -41,14 +42,19 @@
 #include "core/workers/SharedWorker.h"
 #include "modules/serviceworkers/CallbackPromiseAdapter.h"
 #include "modules/serviceworkers/ServiceWorker.h"
-#include "public/platform/WebServiceWorkerRegistry.h"
+#include "public/platform/WebServiceWorkerProvider.h"
+#include "public/platform/WebServiceWorkerProviderClient.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+
+using WebKit::WebServiceWorkerProvider;
+using WebKit::WebString;
 
 namespace WebCore {
 
 NavigatorServiceWorker::NavigatorServiceWorker(Navigator* navigator)
-    : m_navigator(navigator)
+    : DOMWindowProperty(navigator->frame())
+    , m_navigator(navigator)
 {
 }
 
@@ -59,6 +65,19 @@ NavigatorServiceWorker::~NavigatorServiceWorker()
 const char* NavigatorServiceWorker::supplementName()
 {
     return "NavigatorServiceWorker";
+}
+
+WebServiceWorkerProvider* NavigatorServiceWorker::ensureProvider()
+{
+    ASSERT(m_navigator->frame());
+    if (!m_provider) {
+        Frame* frame = m_navigator->frame();
+
+        FrameLoaderClient* client = frame->loader()->client();
+        // FIXME: This is temporarily hooked up here until we hook up to the loading process.
+        m_provider = client->createServiceWorkerProvider(nullptr);
+    }
+    return m_provider.get();
 }
 
 NavigatorServiceWorker* NavigatorServiceWorker::from(Navigator* navigator)
@@ -76,21 +95,32 @@ ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* co
     return from(navigator)->registerServiceWorker(context, pattern, url, es);
 }
 
-
 ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* executionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    FrameLoaderClient* client = m_navigator->frame()->loader()->client();
-    // WTF? Surely there's a better way to resolve a url?
-    KURL scriptUrl = m_navigator->frame()->document()->completeURL(scriptSrc);
-    WebKit::WebServiceWorkerRegistry* peer = client->serviceWorkerRegistry();
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    Frame* frame = m_navigator->frame();
 
-    if (peer)
-        peer->registerServiceWorker(pattern, scriptUrl, new CallbackPromiseAdapter(resolver, executionContext));
-    else
-        resolver->reject(PassRefPtr<ServiceWorker>(0));
-    // call here?
+    if (!frame) {
+        es.throwDOMException(InvalidStateError, "No document available.");
+        return ScriptPromise();
+    }
+
+    RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
+
+    KURL patternURL = executionContext->completeURL(pattern);
+    if (documentOrigin->canRequest(patternURL)) {
+        es.throwSecurityError("Can only register for patterns in the document's origin.");
+        return ScriptPromise();
+    }
+
+    KURL scriptURL = executionContext->completeURL(scriptSrc);
+    if (documentOrigin->canRequest(scriptURL)) {
+        es.throwSecurityError("Script must be in document's origin.");
+        return ScriptPromise();
+    }
+
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ensureProvider()->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter(resolver, executionContext));
     return resolver->promise();
 }
 
@@ -102,14 +132,30 @@ ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* 
 ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    FrameLoaderClient* client = m_navigator->frame()->loader()->client();
-    WebKit::WebServiceWorkerRegistry* peer = client->serviceWorkerRegistry();
+    Frame* frame = m_navigator->frame();
+    if (!frame) {
+        es.throwDOMException(InvalidStateError, "No document available.");
+        return ScriptPromise();
+    }
+
+    RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
+
+    KURL patternURL = executionContext->completeURL(pattern);
+    if (documentOrigin->canRequest(patternURL)) {
+        es.throwSecurityError("Can only unregister for patterns in the document's origin.");
+        return ScriptPromise();
+    }
+
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
-    if (peer)
-        peer->unregisterServiceWorker(pattern, new CallbackPromiseAdapter(resolver, executionContext));
-    else
-        resolver->reject(PassRefPtr<ServiceWorker>(0));
+    ensureProvider()->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter(resolver, executionContext));
     return resolver->promise();
 }
+
+void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()
+{
+    m_provider = nullptr;
+    DOMWindowProperty::willDetachGlobalObjectFromFrame();
+}
+
 
 } // namespace WebCore

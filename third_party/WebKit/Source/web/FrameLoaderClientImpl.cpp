@@ -83,6 +83,8 @@
 #include "platform/network/SocketStreamHandleInternal.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"
+#include "public/platform/WebServiceWorkerProvider.h"
+#include "public/platform/WebServiceWorkerProviderClient.h"
 #include "public/platform/WebSocketStreamHandle.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
@@ -752,11 +754,11 @@ void FrameLoaderClientImpl::dispatchWillInsertBody()
         m_webFrame->client()->willInsertBody(m_webFrame);
 }
 
-WebServiceWorkerRegistry* FrameLoaderClientImpl::serviceWorkerRegistry()
+PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerProvider(PassOwnPtr<WebServiceWorkerProviderClient> client)
 {
     if (!m_webFrame->client())
-        return 0;
-    return m_webFrame->client()->serviceWorkerRegistry(m_webFrame);
+        return nullptr;
+    return adoptPtr(m_webFrame->client()->createServiceWorkerProvider(m_webFrame, client.leakPtr()));
 }
 
 void FrameLoaderClientImpl::didStopAllLoaders()

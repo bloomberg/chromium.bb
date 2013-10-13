@@ -28,48 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorServiceWorker_h
-#define NavigatorServiceWorker_h
+#ifndef WebServiceWorkerProvider_h
+#define WebServiceWorkerProvider_h
 
-#include "bindings/v8/ScriptPromise.h"
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
+#include "public/platform/WebCallbacks.h"
 
 namespace WebKit {
-class WebServiceWorkerProvider;
-class WebServiceWorkerProviderClient;
-}
 
-namespace WebCore {
+class WebString;
+class WebURL;
+class WebServiceWorker;
 
-class ExceptionState;
-class Navigator;
-
-class NavigatorServiceWorker : public Supplement<Navigator>, DOMWindowProperty {
+class WebServiceWorkerProvider {
 public:
-    virtual ~NavigatorServiceWorker();
-    static NavigatorServiceWorker* from(Navigator*);
-    static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator* navigator) { return static_cast<NavigatorServiceWorker*>(Supplement<Navigator>::from(navigator, supplementName())); }
+    typedef WebCallbacks<WebServiceWorker, WebServiceWorker> WebServiceWorkerCallbacks;
+    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerCallbacks*) { }
 
-    static ScriptPromise registerServiceWorker(ExecutionContext*, Navigator*, const String& pattern, const String& src, ExceptionState&);
-    static ScriptPromise unregisterServiceWorker(ExecutionContext*, Navigator*, const String& pattern, ExceptionState&);
-
-private:
-    ScriptPromise registerServiceWorker(ExecutionContext*, const String& pattern, const String& src, ExceptionState&);
-    ScriptPromise unregisterServiceWorker(ExecutionContext*, const String& pattern, ExceptionState&);
-
-    explicit NavigatorServiceWorker(Navigator*);
-
-    virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
-
-    WebKit::WebServiceWorkerProvider* ensureProvider();
-
-    static const char* supplementName();
-
-    Navigator* m_navigator;
-    OwnPtr<WebKit::WebServiceWorkerProvider> m_provider;
+    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks*) { }
+    virtual ~WebServiceWorkerProvider() { }
 };
 
-} // namespace WebCore
+} // namespace WebKit
 
-#endif // NavigatorServiceWorker_h
+#endif

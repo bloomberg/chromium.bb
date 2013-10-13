@@ -28,25 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerRegistry_h
-#define WebServiceWorkerRegistry_h
-
-#include "public/platform/WebCallbacks.h"
+#ifndef WebServiceWorkerProviderClient_h
+#define WebServiceWorkerProviderClient_h
 
 namespace WebKit {
-
 class WebString;
-class WebURL;
-class WebServiceWorker;
 
-class WebServiceWorkerRegistry {
+// This class catches any errors that may originate on the browser
+// side and not via a DOM API call, such as errors that occur when
+// loading resources through the service worker.
+class WebServiceWorkerProviderClient {
 public:
-    typedef WebCallbacks<WebServiceWorker, WebServiceWorker> WebServiceWorkerCallbacks;
-    virtual void registerServiceWorker(const WebString& pattern, const WebURL& scriptUrl, WebServiceWorkerCallbacks*) { }
+    // FIXME: replace this general error handler with more specific error handlers.
+    virtual void didFailToStart(const WebString& message) { }
 
-    virtual void unregisterServiceWorker(const WebString& pattern, WebServiceWorkerCallbacks*) { }
+    virtual ~WebServiceWorkerProviderClient() { }
 };
 
-} // namespace WebKit
+};
 
-#endif
+#endif // WebServiceWorkerProviderClient_h
