@@ -11,7 +11,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 
 HeapSnapshotTaker::HeapSnapshotTaker(DevToolsClient* client)
-    : client_(client), snapshot_uid_(-1), finished_(false) {
+    : client_(client), snapshot_uid_(-1) {
   client_->AddListener(this);
 }
 
@@ -35,7 +35,6 @@ Status HeapSnapshotTaker::TakeSnapshot(scoped_ptr<base::Value>* snapshot) {
       *snapshot = value.Pass();
   }
   snapshot_uid_ = -1;
-  finished_ = false;
   snapshot_.clear();
   if (status1.IsError())
     return status1;
@@ -73,9 +72,6 @@ Status HeapSnapshotTaker::TakeSnapshotInternal() {
   if (status.IsError())
     return status;
 
-  if (!finished_)
-    return Status(kUnknownError, "failed to retrieve all heap snapshot data");
-
   return Status(kOk);
 }
 
@@ -104,17 +100,6 @@ Status HeapSnapshotTaker::OnEvent(DevToolsClient* client,
       snapshot_.append(chunk);
     } else {
       LOG(WARNING) << "expect chunk event uid " << snapshot_uid_
-                   << ", but got " << uid;
-    }
-  } else if (method == "HeapProfiler.finishHeapSnapshot") {
-    int uid = -1;
-    if (!params.GetInteger("uid", &uid)) {
-      return Status(kUnknownError,
-                    "HeapProfiler.finishHeapSnapshot has no 'uid'");
-    } else if (uid == snapshot_uid_) {
-      finished_ = true;
-    } else {
-      LOG(WARNING) << "expect finish event uid " << snapshot_uid_
                    << ", but got " << uid;
     }
   }

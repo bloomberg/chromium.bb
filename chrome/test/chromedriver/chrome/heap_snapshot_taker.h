@@ -38,7 +38,6 @@ class HeapSnapshotTaker: public DevToolsEventListener {
 
   DevToolsClient* client_;
   int snapshot_uid_;
-  bool finished_;
   std::string snapshot_;
 
   DISALLOW_COPY_AND_ASSIGN(HeapSnapshotTaker);

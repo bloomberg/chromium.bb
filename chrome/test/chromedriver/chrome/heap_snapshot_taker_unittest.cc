@@ -57,13 +57,6 @@ class DummyDevToolsClient : public StubDevToolsClient {
     return Status(kOk);
   }
 
-  virtual Status SendFinishHeapSnapshotEvent() {
-    base::DictionaryValue event_params;
-    event_params.SetInteger("uid", uid_);
-    return listeners_.front()->OnEvent(
-            this, "HeapProfiler.finishHeapSnapshot", event_params);
-  }
-
   // Overridden from DevToolsClient:
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) OVERRIDE {
@@ -80,9 +73,6 @@ class DummyDevToolsClient : public StubDevToolsClient {
         return status;
     } else if (method == "HeapProfiler.getHeapSnapshot") {
       Status status = SendAddHeapSnapshotChunkEvent();
-      if (status.IsError())
-        return status;
-      status = SendFinishHeapSnapshotEvent();
       if (status.IsError())
         return status;
     }
@@ -217,33 +207,6 @@ TEST(HeapSnapshotTaker, IgnoreChunkWithDifferentUid) {
   Status status = taker.TakeSnapshot(&snapshot);
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(GetSnapshotAsValue()->Equals(snapshot.get()));
-  ASSERT_TRUE(client.IsCleared());
-  ASSERT_TRUE(client.IsDisabled());
-}
-
-namespace {
-
-class NoFinishEventClient : public DummyDevToolsClient {
- public:
-  NoFinishEventClient() : DummyDevToolsClient("", false) {}
-  virtual ~NoFinishEventClient() {}
-
-  // Overridden from DummyDevToolsClient:
-  virtual Status SendFinishHeapSnapshotEvent() OVERRIDE {
-    uid_ = 2;
-    return DummyDevToolsClient::SendFinishHeapSnapshotEvent();
-  }
-};
-
-}  // namespace
-
-TEST(HeapSnapshotTaker, NoFinishEvent) {
-  NoFinishEventClient client;
-  HeapSnapshotTaker taker(&client);
-  scoped_ptr<base::Value> snapshot;
-  Status status = taker.TakeSnapshot(&snapshot);
-  ASSERT_TRUE(status.IsError());
-  ASSERT_FALSE(snapshot.get());
   ASSERT_TRUE(client.IsCleared());
   ASSERT_TRUE(client.IsDisabled());
 }
