@@ -1,4 +1,14 @@
-PASS internals.isPreloaded("resources/blue-100-px-square.png") is false
+main frame - script requested 'srcset-helper.js'
+main frame - script requested 'js-test-pre.js'
+main frame - script requested 'js-test-pre.js'
+main frame - img requested 'blue-100-px-square.png'
+main frame - img requested 'blue-100-px-square.png'
+main frame - document requested 'image-srcset-change-dynamically-from-js-2x.html'
+main frame - script requested 'srcset-helper.js'
+main frame - script requested 'js-test-pre.js'
+main frame - script requested 'js-test-pre.js'
+main frame - img requested 'green-200-px-square.png'
+main frame - img requested 'green-200-px-square.png'
 PASS document.getElementById("foo").clientWidth==200 is true
 This test passes if this img tag below is a green square when the scale factor is 2. It ensures that attributes can be changed dynamically from javascript, and that only the correct resource is loaded.
 

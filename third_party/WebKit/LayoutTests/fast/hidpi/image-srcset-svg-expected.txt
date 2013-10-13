@@ -1,0 +1,458 @@
+layer at (0,0) size 785x3388
+  RenderView at (0,0) size 785x600
+layer at (0,0) size 785x3388
+  RenderBlock {HTML} at (0,0) size 785x3388.31
+    RenderBody {BODY} at (8,19.91) size 769x3352.41
+      RenderBlock {H2} at (0,0) size 769x27
+        RenderInline {A} at (0,0) size 59x26 [color=#0000EE]
+          RenderText {#text} at (0,0) size 59x26
+            text run at (0,0) width 59: "srcset"
+        RenderText {#text} at (59,0) size 184x26
+          text run at (59,0) width 184: " testcases for SVG"
+      RenderBlock {DIV} at (0,46.91) size 769x223.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (535.22,17) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (302.44,17) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 267x99
+          text run at (17,17) width 263: "This test should show an SVG image of size"
+          text run at (17,37) width 267: "200x100, and intrinsic/natural size 200x100."
+          text run at (17,57) width 246: "The left half of the image should be green"
+          text run at (17,77) width 230: "and there should be a blue circle in the"
+          text run at (17,97) width 41: "center."
+        RenderBR {BR} at (58,97) size 0x19
+        RenderBlock {CODE} at (17,171.78) size 440x34
+          RenderText {#text} at (0,0) size 384x17
+            text run at (0,0) width 384: "image stats: size(200,100), naturalSize(200,100)"
+          RenderBR {BR} at (384,0) size 0x17
+          RenderText {#text} at (0,17) size 440x17
+            text run at (0,17) width 440: "image codes: <img id=\"svg1\" src=\"resources/srcset.svg\">"
+        RenderText {#text} at (457,186) size 4x20
+          text run at (457,186) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (461,186) size 0x20
+      RenderBlock {DIV} at (0,286.69) size 769x173.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 463x59
+          text run at (17,17) width 463: "This test should show an SVG image of size 100x50, and intrinsic/natural size"
+          text run at (17,37) width 463: "100x50. The left half of the image should be green and there should be a blue"
+          text run at (17,57) width 113: "circle in the center."
+        RenderBR {BR} at (130,57) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 632x34
+          RenderText {#text} at (0,0) size 368x17
+            text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+          RenderBR {BR} at (368,0) size 0x17
+          RenderText {#text} at (0,17) size 632x17
+            text run at (0,17) width 632: "image codes: <img id=\"svg2\" src=\"resources/srcset.svg\" width=\"100\" height=\"50\">"
+        RenderText {#text} at (649,136) size 4x20
+          text run at (649,136) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (653,136) size 0x20
+      RenderBlock {DIV} at (0,476.47) size 769x173.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 463x59
+          text run at (17,17) width 463: "This test should show an SVG image of size 100x50, and intrinsic/natural size"
+          text run at (17,37) width 463: "100x50. The left half of the image should be green and there should be a blue"
+          text run at (17,57) width 113: "circle in the center."
+        RenderBR {BR} at (130,57) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 544x34
+          RenderText {#text} at (0,0) size 368x17
+            text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+          RenderBR {BR} at (368,0) size 0x17
+          RenderText {#text} at (0,17) size 544x17
+            text run at (0,17) width 544: "image codes: <img id=\"svg3\" src=\"\" srcset=\"resources/srcset.svg 2x\">"
+        RenderText {#text} at (561,136) size 4x20
+          text run at (561,136) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (565,136) size 0x20
+      RenderBlock {DIV} at (0,666.25) size 769x190.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 463x59
+          text run at (17,17) width 463: "This test should show an SVG image of size 100x50, and intrinsic/natural size"
+          text run at (17,37) width 455: "50x25. The left half of the image should be green and there should be a blue"
+          text run at (17,57) width 113: "circle in the center."
+        RenderBR {BR} at (130,57) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 735x51
+          RenderText {#text} at (0,0) size 368x17
+            text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+          RenderBR {BR} at (368,0) size 0x17
+          RenderText {#text} at (0,17) size 632x34
+            text run at (0,17) width 632: "image codes: <img id=\"svg4\" src=\"\" srcset=\"resources/srcset.svg 4x\" width=\"100\""
+            text run at (0,34) width 96: "height=\"50\">"
+        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,873.03) size 769x223.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (535.22,17) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (302.44,17) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 267x79
+          text run at (17,17) width 257: "This test should show a PNG image of size"
+          text run at (17,37) width 267: "200x100, and intrinsic/natural size 200x100."
+          text run at (17,57) width 259: "The left half of the image should be red and"
+          text run at (17,77) width 257: "there should be a black circle in the center."
+        RenderBR {BR} at (274,77) size 0x19
+        RenderBlock {CODE} at (17,171.78) size 440x34
+          RenderText {#text} at (0,0) size 384x17
+            text run at (0,0) width 384: "image stats: size(200,100), naturalSize(200,100)"
+          RenderBR {BR} at (384,0) size 0x17
+          RenderText {#text} at (0,17) size 440x17
+            text run at (0,17) width 440: "image codes: <img id=\"png1\" src=\"resources/srcset.png\">"
+        RenderText {#text} at (457,186) size 4x20
+          text run at (457,186) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (461,186) size 0x20
+      RenderBlock {DIV} at (0,1112.81) size 769x173.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 458x59
+          text run at (17,17) width 457: "This test should show a PNG image of size 100x50, and intrinsic/natural size"
+          text run at (17,37) width 458: "100x50. The left half of the image should be red and there should be a black"
+          text run at (17,57) width 113: "circle in the center."
+        RenderBR {BR} at (130,57) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 632x34
+          RenderText {#text} at (0,0) size 376x17
+            text run at (0,0) width 376: "image stats: size(100,50), naturalSize(200,100)"
+          RenderBR {BR} at (376,0) size 0x17
+          RenderText {#text} at (0,17) size 632x17
+            text run at (0,17) width 632: "image codes: <img id=\"png2\" src=\"resources/srcset.png\" width=\"100\" height=\"50\">"
+        RenderText {#text} at (649,136) size 4x20
+          text run at (649,136) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (653,136) size 0x20
+      RenderBlock {DIV} at (0,1302.59) size 769x173.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 458x59
+          text run at (17,17) width 457: "This test should show a PNG image of size 100x50, and intrinsic/natural size"
+          text run at (17,37) width 458: "100x50. The left half of the image should be red and there should be a black"
+          text run at (17,57) width 113: "circle in the center."
+        RenderBR {BR} at (130,57) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 544x34
+          RenderText {#text} at (0,0) size 376x17
+            text run at (0,0) width 376: "image stats: size(100,50), naturalSize(200,100)"
+          RenderBR {BR} at (376,0) size 0x17
+          RenderText {#text} at (0,17) size 544x17
+            text run at (0,17) width 544: "image codes: <img id=\"png3\" src=\"\" srcset=\"resources/srcset.png 2x\">"
+        RenderText {#text} at (561,136) size 4x20
+          text run at (561,136) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (565,136) size 0x20
+      RenderBlock {DIV} at (0,1492.38) size 769x190.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 457x59
+          text run at (17,17) width 457: "This test should show a PNG image of size 100x50, and intrinsic/natural size"
+          text run at (17,37) width 450: "50x25. The left half of the image should be red and there should be a black"
+          text run at (17,57) width 113: "circle in the center."
+        RenderBR {BR} at (130,57) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 735x51
+          RenderText {#text} at (0,0) size 376x17
+            text run at (0,0) width 376: "image stats: size(100,50), naturalSize(200,100)"
+          RenderBR {BR} at (376,0) size 0x17
+          RenderText {#text} at (0,17) size 632x34
+            text run at (0,17) width 632: "image codes: <img id=\"png4\" src=\"\" srcset=\"resources/srcset.png 4x\" width=\"100\""
+            text run at (0,34) width 96: "height=\"50\">"
+        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,1699.16) size 769x173.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 465x59
+          text run at (17,17) width 463: "This test should show an SVG image of size 100x50, and intrinsic/natural size"
+          text run at (17,37) width 465: "100x50.The left half of the image should be pink and there should be a purple"
+          text run at (17,57) width 113: "circle in the center."
+        RenderBR {BR} at (130,57) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 696x34
+          RenderText {#text} at (0,0) size 368x17
+            text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+          RenderBR {BR} at (368,0) size 0x17
+          RenderText {#text} at (0,17) size 696x17
+            text run at (0,17) width 696: "image codes: <img id=\"svg5\" src=\"resources/relativesrcset.svg\" width=\"100\" height=\"50\">"
+        RenderText {#text} at (713,136) size 4x20
+          text run at (713,136) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (717,136) size 0x20
+      RenderBlock {DIV} at (0,1888.94) size 769x190.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 463x59
+          text run at (17,17) width 463: "This test should show an SVG image of size 100x50, and intrinsic/natural size"
+          text run at (17,37) width 461: "50x25. The left half of the image should be pink and there should be a purple"
+          text run at (17,57) width 113: "circle in the center."
+        RenderBR {BR} at (130,57) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 735x51
+          RenderText {#text} at (0,0) size 368x17
+            text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+          RenderBR {BR} at (368,0) size 0x17
+          RenderText {#text} at (0,17) size 696x34
+            text run at (0,17) width 696: "image codes: <img id=\"svg6\" src=\"\" srcset=\"resources/relativesrcset.svg 4x\" width=\"100\""
+            text run at (0,34) width 96: "height=\"50\">"
+        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,2095.72) size 769x223.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (535.22,17) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (302.44,17) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderHTMLCanvas {CANVAS} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 266x59
+          text run at (17,17) width 263: "This test should show an SVG image drawn"
+          text run at (17,37) width 262: "into a canvas. The canvas and image should"
+          text run at (17,57) width 266: "look the same and both should be 200x100."
+        RenderBR {BR} at (283,57) size 0x19
+        RenderBlock {CODE} at (17,171.78) size 520x34
+          RenderText {#text} at (0,0) size 384x17
+            text run at (0,0) width 384: "image stats: size(200,100), naturalSize(200,100)"
+          RenderBR {BR} at (384,0) size 0x17
+          RenderText {#text} at (0,17) size 520x17
+            text run at (0,17) width 520: "image codes: <img id=\"svg7\" src=\"\" srcset=\"resources/srcset.svg\">"
+        RenderText {#text} at (537,186) size 4x20
+          text run at (537,186) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (541,186) size 0x20
+      RenderBlock {DIV} at (0,2335.50) size 769x173.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderHTMLCanvas {CANVAS} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 447x39
+          text run at (17,17) width 447: "This test should show an SVG image drawn into a canvas. The canvas and"
+          text run at (17,37) width 340: "image should look the same and both should be 100x50."
+        RenderBR {BR} at (357,37) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 544x34
+          RenderText {#text} at (0,0) size 368x17
+            text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+          RenderBR {BR} at (368,0) size 0x17
+          RenderText {#text} at (0,17) size 544x17
+            text run at (0,17) width 544: "image codes: <img id=\"svg8\" src=\"\" srcset=\"resources/srcset.svg 2x\">"
+        RenderText {#text} at (561,136) size 4x20
+          text run at (561,136) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (565,136) size 0x20
+      RenderBlock {DIV} at (0,2525.28) size 769x223.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (535.22,17) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (302.44,17) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderHTMLCanvas {CANVAS} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 266x59
+          text run at (17,17) width 257: "This test should show a PNG image drawn"
+          text run at (17,37) width 262: "into a canvas. The canvas and image should"
+          text run at (17,57) width 266: "look the same and both should be 200x100."
+        RenderBR {BR} at (283,57) size 0x19
+        RenderBlock {CODE} at (17,171.78) size 520x34
+          RenderText {#text} at (0,0) size 384x17
+            text run at (0,0) width 384: "image stats: size(200,100), naturalSize(200,100)"
+          RenderBR {BR} at (384,0) size 0x17
+          RenderText {#text} at (0,17) size 520x17
+            text run at (0,17) width 520: "image codes: <img id=\"png5\" src=\"\" srcset=\"resources/srcset.png\">"
+        RenderText {#text} at (537,186) size 4x20
+          text run at (537,186) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (541,186) size 0x20
+      RenderBlock {DIV} at (0,2765.06) size 769x173.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderHTMLCanvas {CANVAS} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 447x39
+          text run at (17,17) width 447: "This test should show an SVG image drawn into a canvas. The canvas and"
+          text run at (17,37) width 340: "image should look the same and both should be 100x50."
+        RenderBR {BR} at (357,37) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 544x34
+          RenderText {#text} at (0,0) size 376x17
+            text run at (0,0) width 376: "image stats: size(100,50), naturalSize(200,100)"
+          RenderBR {BR} at (376,0) size 0x17
+          RenderText {#text} at (0,17) size 544x17
+            text run at (0,17) width 544: "image codes: <img id=\"png6\" src=\"\" srcset=\"resources/srcset.png 2x\">"
+        RenderText {#text} at (561,136) size 4x20
+          text run at (561,136) width 4: " "
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (565,136) size 0x20
+      RenderBlock {DIV} at (0,2954.84) size 769x190.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderHTMLCanvas {CANVAS} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 447x39
+          text run at (17,17) width 447: "This test should show an SVG image drawn into a canvas. The canvas and"
+          text run at (17,37) width 340: "image should look the same and both should be 100x50."
+        RenderBR {BR} at (357,37) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 735x51
+          RenderText {#text} at (0,0) size 368x17
+            text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+          RenderBR {BR} at (368,0) size 0x17
+          RenderText {#text} at (0,17) size 672x34
+            text run at (0,17) width 672: "image codes: <img id=\"svg9\" src=\"\" srcset=\"resources/relativesrcset.svg\" width=\"100\""
+            text run at (0,34) width 96: "height=\"50\">"
+        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (0,0) size 0x0
+      RenderBlock {DIV} at (0,3161.63) size 769x190.78 [border: (1px solid #808080)]
+        RenderBlock (floating) {DIV} at (635.22,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,17) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderHTMLCanvas {CANVAS} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (17,17) size 447x39
+          text run at (17,17) width 447: "This test should show an SVG image drawn into a canvas. The canvas and"
+          text run at (17,37) width 340: "image should look the same and both should be 100x50."
+        RenderBR {BR} at (357,37) size 0x19
+        RenderBlock {CODE} at (17,121.78) size 735x51
+          RenderText {#text} at (0,0) size 368x17
+            text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+          RenderBR {BR} at (368,0) size 0x17
+          RenderText {#text} at (0,17) size 704x34
+            text run at (0,17) width 704: "image codes: <img id=\"svg10\" src=\"\" srcset=\"resources/relativesrcset.svg 2x\" width=\"100\""
+            text run at (0,34) width 96: "height=\"50\">"
+        RenderText {#text} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+        RenderBR {BR} at (0,0) size 0x0
