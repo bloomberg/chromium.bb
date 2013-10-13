@@ -24,4 +24,5 @@ following changes which are not merged to upstream:
 * Supported motion-JPEG frames that do not have DHT markers.
 * Fixed valgrind errors.
 The 'google.patch' file represents our changes from the original
-libjpeg-turbo-1.2.
+libjpeg-turbo-1.2. With those applied, also patch in google.jdmarker.patch to
+better handle multiple SOS CSi values and their ordering.
