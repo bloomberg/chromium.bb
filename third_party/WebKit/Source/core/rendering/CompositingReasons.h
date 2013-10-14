@@ -24,6 +24,7 @@ const uint64_t CompositingReasonFilters                                = UINT64_
 const uint64_t CompositingReasonPositionFixed                          = UINT64_C(1) << 8;
 const uint64_t CompositingReasonPositionSticky                         = UINT64_C(1) << 9;
 const uint64_t CompositingReasonOverflowScrollingTouch                 = UINT64_C(1) << 10;
+const uint64_t CompositingReasonBlending                               = UINT64_C(1) << 11;
 
 // Overlap reasons that require knowing what's behind you in paint-order before knowing the answer
 const uint64_t CompositingReasonAssumedOverlap                         = UINT64_C(1) << 12;

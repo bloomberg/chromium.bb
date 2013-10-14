@@ -49,6 +49,7 @@ const uint64_t CompositingReasonFilters                                = static_
 const uint64_t CompositingReasonPositionFixed                          = static_cast<uint64_t>(1) << 8;
 const uint64_t CompositingReasonPositionSticky                         = static_cast<uint64_t>(1) << 9;
 const uint64_t CompositingReasonOverflowScrollingTouch                 = static_cast<uint64_t>(1) << 10;
+const uint64_t CompositingReasonBlending                               = static_cast<uint64_t>(1) << 11;
 const uint64_t CompositingReasonAssumedOverlap                         = static_cast<uint64_t>(1) << 12;
 const uint64_t CompositingReasonOverlap                                = static_cast<uint64_t>(1) << 13;
 const uint64_t CompositingReasonNegativeZIndexChildren                 = static_cast<uint64_t>(1) << 14;

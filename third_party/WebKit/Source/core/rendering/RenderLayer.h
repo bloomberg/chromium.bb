@@ -283,8 +283,6 @@ public:
     void setHasOutOfFlowPositionedDescendant(bool hasDescendant) { m_hasOutOfFlowPositionedDescendant = hasDescendant; }
     void setHasOutOfFlowPositionedDescendantDirty(bool dirty) { m_hasOutOfFlowPositionedDescendantDirty = dirty; }
 
-    bool childLayerHasBlendMode() const { ASSERT(!m_childLayerHasBlendModeStatusDirty); return m_childLayerHasBlendMode; }
-
     bool hasUnclippedDescendant() const { return m_hasUnclippedDescendant; }
     void setHasUnclippedDescendant(bool hasDescendant) { m_hasUnclippedDescendant = hasDescendant; }
     void updateHasUnclippedDescendant();
@@ -753,9 +751,6 @@ private:
     void dirtyAncestorChainVisibleDescendantStatus();
     void setAncestorChainHasVisibleDescendant();
 
-    void dirtyAncestorChainBlendedDescendantStatus();
-    void setAncestorChainBlendedDescendant();
-
     void updateDescendantDependentFlags();
 
     // This flag is computed by RenderLayerCompositor, which knows more about 3d hierarchies than we do.
@@ -846,9 +841,6 @@ protected:
     unsigned m_usedTransparency : 1; // Tracks whether we need to close a transparent layer, i.e., whether
                                  // we ended up painting this layer or any descendants (and therefore need to
                                  // blend).
-
-    unsigned m_childLayerHasBlendMode : 1;
-    unsigned m_childLayerHasBlendModeStatusDirty : 1;
     unsigned m_paintingInsideReflection : 1; // A state bit tracking if we are painting inside a replica.
 
     unsigned m_visibleContentStatusDirty : 1;
