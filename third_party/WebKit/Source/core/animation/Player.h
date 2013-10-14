@@ -56,6 +56,7 @@ public:
     double startTime() const { return m_startTime; }
     double timeDrift() const;
     DocumentTimeline* timeline() { return m_timeline; }
+    TimedItem* source() { return m_content.get(); }
 
 private:
     Player(DocumentTimeline*, TimedItem*);

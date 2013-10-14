@@ -335,10 +335,6 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     style->adjustBackgroundLayers();
     style->adjustMaskLayers();
 
-    // Do the same for animations and transitions.
-    style->adjustAnimations();
-    style->adjustTransitions();
-
     // Important: Intrinsic margins get added to controls before the theme has adjusted the style, since the theme will
     // alter fonts and heights/widths.
     if (e && e->isFormControlElement() && style->fontSize() >= 11) {

@@ -191,9 +191,6 @@ public:
         RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
 
     // FIXME: The following logic related to animations and keyframes should be factored out of StyleResolver
-    // The body of calculateCSSAnimationUpdate can move to CSSAnimations.cpp and take just const element, const style,
-    // and const ScopedStyleTree
-    void calculateCSSAnimationUpdate(StyleResolverState&);
     void resolveKeyframes(Element*, const RenderStyle*, const AtomicString& animationName, TimingFunction* defaultTimingFunction, Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >&);
     void keyframeStylesForAnimation(Element*, const RenderStyle*, KeyframeList&);
     const StyleRuleKeyframes* matchScopedKeyframesRule(const Element*, const StringImpl* animationName);

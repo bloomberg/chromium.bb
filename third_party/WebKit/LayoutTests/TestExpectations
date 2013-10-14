@@ -293,6 +293,8 @@ crbug.com/258896 virtual/web-animations-css/animations/play-state-suspend.html [
 crbug.com/258896 virtual/web-animations-css/animations/3d/state-at-end-event-transform.html [ ImageOnlyFailure Pass ]
 crbug.com/258896 virtual/web-animations-css/animations/suspend-resume-animation.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/suspend-transform-animation.html [ ImageOnlyFailure ]
+crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-1.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
 # These can't be rebaselined because they time out.
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-forwards.html [ Timeout Pass ]

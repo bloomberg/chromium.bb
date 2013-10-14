@@ -1246,7 +1246,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Doc
         const Vector<Animation*>& animations = animationStack->activeAnimations(element);
         for (size_t i = 0; i < animations.size(); ++i) {
             RefPtr<Animation> animation = animations.at(i);
-            if (update && update->isCancelled(animation->player()))
+            if (update && update->isCancelledAnimation(animation->player()))
                 continue;
             const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
             for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
@@ -1452,23 +1452,6 @@ void StyleResolver::invalidateMatchedPropertiesCache()
     m_matchedPropertiesCache.clear();
 }
 
-void StyleResolver::calculateCSSAnimationUpdate(StyleResolverState& state)
-{
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
-        return;
-
-    Element* element = state.element();
-    ASSERT(element);
-
-    if (!CSSAnimations::needsUpdate(element, state.style()))
-        return;
-
-    ActiveAnimations* activeAnimations = element->activeAnimations();
-    const CSSAnimationDataList* animations = state.style()->animations();
-    const CSSAnimations* cssAnimations = activeAnimations ? activeAnimations->cssAnimations() : 0;
-    state.setAnimationUpdate(CSSAnimations::calculateUpdate(element, state.style(), cssAnimations, animations, this));
-}
-
 void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult)
 {
     const Element* element = state.element();
@@ -1513,6 +1496,12 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
+    // Match transition-property / animation-name length by trimming and
+    // lengthening other transition / animation property lists
+    // FIXME: This is wrong because we shouldn't affect the computed values
+    state.style()->adjustAnimations();
+    state.style()->adjustTransitions();
+
     // Now we have all of the matched rules in the appropriate order. Walk the rules and apply
     // high-priority properties first, i.e., those properties that other properties depend on.
     // The order is (1) high-priority not important, (2) high-priority important, (3) normal not important
@@ -1552,7 +1541,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     if (RuntimeEnabledFeatures::webAnimationsEnabled() && !applyInheritedOnly) {
-        calculateCSSAnimationUpdate(state);
+        state.setAnimationUpdate(CSSAnimations::calculateUpdate(state.element(), state.style(), this));
         // Apply animated properties, then reapply any rules marked important.
         if (applyAnimatedProperties<HighPriorityProperties>(state, element->document().timeline())) {
             bool important = true;

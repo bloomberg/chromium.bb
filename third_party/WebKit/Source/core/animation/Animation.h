@@ -50,6 +50,8 @@ public:
         return m_compositableValues.get();
     }
 
+    const AnimationEffect* effect() const { return m_effect.get(); }
+
 protected:
     virtual void applyEffects(bool previouslyInEffect);
     virtual void clearEffects();
