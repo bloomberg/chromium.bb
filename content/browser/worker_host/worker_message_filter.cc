@@ -4,7 +4,7 @@
 
 #include "content/browser/worker_host/worker_message_filter.h"
 
-#include "content/browser/message_port_message_filter.h"
+#include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
@@ -16,11 +16,11 @@ WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition,
-    MessagePortMessageFilter* message_port_message_filter)
+    const NextRoutingIDCallback& callback)
     : render_process_id_(render_process_id),
       resource_context_(resource_context),
       partition_(partition),
-      message_port_message_filter_(message_port_message_filter) {
+      next_routing_id_(callback) {
   // Note: This constructor is called on both IO or UI thread.
   DCHECK(resource_context);
 }
@@ -30,6 +30,7 @@ WorkerMessageFilter::~WorkerMessageFilter() {
 }
 
 void WorkerMessageFilter::OnChannelClosing() {
+  MessagePortService::GetInstance()->OnWorkerMessageFilterClosing(this);
   WorkerServiceImpl::GetInstance()->OnWorkerMessageFilterClosing(this);
 }
 
@@ -45,6 +46,24 @@ bool WorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker, OnForwardToWorker)
     // Only sent from renderer.
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentDetached, OnDocumentDetached)
+    // Message Port related messages.
+    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_CreateMessagePort,
+                        OnCreateMessagePort)
+    IPC_MESSAGE_FORWARD(WorkerProcessHostMsg_DestroyMessagePort,
+                        MessagePortService::GetInstance(),
+                        MessagePortService::Destroy)
+    IPC_MESSAGE_FORWARD(WorkerProcessHostMsg_Entangle,
+                        MessagePortService::GetInstance(),
+                        MessagePortService::Entangle)
+    IPC_MESSAGE_FORWARD(WorkerProcessHostMsg_PostMessage,
+                        MessagePortService::GetInstance(),
+                        MessagePortService::PostMessage)
+    IPC_MESSAGE_FORWARD(WorkerProcessHostMsg_QueueMessages,
+                        MessagePortService::GetInstance(),
+                        MessagePortService::QueueMessages)
+    IPC_MESSAGE_FORWARD(WorkerProcessHostMsg_SendQueuedMessages,
+                        MessagePortService::GetInstance(),
+                        MessagePortService::SendQueuedMessages)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -52,14 +71,14 @@ bool WorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 int WorkerMessageFilter::GetNextRoutingID() {
-  return message_port_message_filter_->GetNextRoutingID();
+  return next_routing_id_.Run();
 }
 
 void WorkerMessageFilter::OnCreateWorker(
     const ViewHostMsg_CreateWorker_Params& params,
     int* route_id) {
   *route_id = params.route_id != MSG_ROUTING_NONE ?
-      params.route_id : GetNextRoutingID();
+      params.route_id : next_routing_id_.Run();
   WorkerServiceImpl::GetInstance()->CreateWorker(
       params, *route_id, this, resource_context_, partition_);
 }
@@ -69,7 +88,7 @@ void WorkerMessageFilter::OnLookupSharedWorker(
     bool* exists,
     int* route_id,
     bool* url_error) {
-  *route_id = GetNextRoutingID();
+  *route_id = next_routing_id_.Run();
 
   WorkerServiceImpl::GetInstance()->LookupSharedWorker(
       params, *route_id, this, resource_context_, partition_, exists,
@@ -82,6 +101,12 @@ void WorkerMessageFilter::OnForwardToWorker(const IPC::Message& message) {
 
 void WorkerMessageFilter::OnDocumentDetached(unsigned long long document_id) {
   WorkerServiceImpl::GetInstance()->DocumentDetached(document_id, this);
+}
+
+void WorkerMessageFilter::OnCreateMessagePort(int *route_id,
+                                              int* message_port_id) {
+  *route_id = next_routing_id_.Run();
+  MessagePortService::GetInstance()->Create(*route_id, this, message_port_id);
 }
 
 }  // namespace content

@@ -35,7 +35,6 @@ class Size;
 namespace content {
 class BrowserDemuxerAndroid;
 class GpuMessageFilter;
-class MessagePortMessageFilter;
 class PeerConnectionTrackerHost;
 class RendererMainThread;
 class RenderWidgetHelper;
@@ -260,9 +259,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // away, it posts a task to the IO thread to destroy it there, so we know that
   // it's valid if non-NULL.
   GpuMessageFilter* gpu_message_filter_;
-
-  // The filter for MessagePort messages coming from the renderer.
-  scoped_refptr<MessagePortMessageFilter> message_port_message_filter_;
 
   // A map of transport DIB ids to cached TransportDIBs
   std::map<TransportDIB::Id, TransportDIB*> cached_dibs_;

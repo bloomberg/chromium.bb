@@ -63,7 +63,6 @@
 #include "content/browser/loader/resource_scheduler_filter.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
@@ -674,11 +673,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           GetID(), request_context_callback, resource_context);
   AddFilter(socket_stream_dispatcher_host);
 
-  message_port_message_filter_ = new MessagePortMessageFilter(
-      base::Bind(&RenderWidgetHelper::GetNextRoutingID,
-                 base::Unretained(widget_helper_.get())));
-  AddFilter(message_port_message_filter_);
-
   AddFilter(new WorkerMessageFilter(
       GetID(),
       resource_context,
@@ -690,7 +684,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           storage_partition_impl_->GetFileSystemContext(),
           storage_partition_impl_->GetDatabaseTracker(),
           storage_partition_impl_->GetIndexedDBContext()),
-      message_port_message_filter_));
+      base::Bind(&RenderWidgetHelper::GetNextRoutingID,
+                 base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_WEBRTC)
   AddFilter(new P2PSocketDispatcherHost(
@@ -1345,7 +1340,6 @@ void RenderProcessHostImpl::Cleanup() {
     // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
     channel_.reset();
     gpu_message_filter_ = NULL;
-    message_port_message_filter_ = NULL;
 
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
@@ -1644,7 +1638,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   child_process_launcher_.reset();
   channel_.reset();
   gpu_message_filter_ = NULL;
-  message_port_message_filter_ = NULL;
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {

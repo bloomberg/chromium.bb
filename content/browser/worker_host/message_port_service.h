@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MESSAGE_PORT_SERVICE_H_
-#define CONTENT_BROWSER_MESSAGE_PORT_SERVICE_H_
+#ifndef CONTENT_BROWSER_WORKER_HOST_MESSAGE_PORT_SERVICE_H_
+#define CONTENT_BROWSER_WORKER_HOST_MESSAGE_PORT_SERVICE_H_
 
 #include <map>
 #include <utility>
@@ -15,7 +15,7 @@
 #include "ipc/ipc_message.h"
 
 namespace content {
-class MessagePortMessageFilter;
+class WorkerMessageFilter;
 
 class MessagePortService {
  public:
@@ -25,9 +25,7 @@ class MessagePortService {
   static MessagePortService* GetInstance();
 
   // These methods correspond to the message port related IPCs.
-  void Create(int route_id,
-              MessagePortMessageFilter* filter,
-              int* message_port_id);
+  void Create(int route_id, WorkerMessageFilter* filter, int* message_port_id);
   void Destroy(int message_port_id);
   void Entangle(int local_message_port_id, int remote_message_port_id);
   void PostMessage(int sender_message_port_id,
@@ -41,10 +39,10 @@ class MessagePortService {
   // (possibly different) process.
   void UpdateMessagePort(
       int message_port_id,
-      MessagePortMessageFilter* filter,
+      WorkerMessageFilter* filter,
       int routing_id);
 
-  void OnMessagePortMessageFilterClosing(MessagePortMessageFilter* filter);
+  void OnWorkerMessageFilterClosing(WorkerMessageFilter* filter);
 
   // Attempts to send the queued messages for a message port.
   void SendQueuedMessagesIfPossible(int message_port_id);
@@ -75,4 +73,4 @@ class MessagePortService {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MESSAGE_PORT_SERVICE_H_
+#endif  // CONTENT_BROWSER_WORKER_HOST_MESSAGE_PORT_SERVICE_H_

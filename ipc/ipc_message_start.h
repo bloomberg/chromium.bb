@@ -91,7 +91,6 @@ enum IPCMessageStart {
   PowerMonitorMsgStart,
   EncryptedMediaMsgStart,
   ServiceWorkerMsgStart,
-  MessagePortMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 
