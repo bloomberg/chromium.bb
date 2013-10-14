@@ -159,11 +159,10 @@ porting process on their blog.
 Porting XaoS
 ^^^^^^^^^^^^
 
-Google engineers ported `XaoS
-<http://wmi.math.u-szeged.hu/xaos/doku.php>`_, an interactive graphical
-exploration tool for fractals, to Native Client. Many of the porting
-problems they encountered are quite common, and the techniques described
-here should help with similar porting efforts. Some of the background
+Google engineers ported `XaoS <http://xaos.sourceforge.net/english.php>`_, an
+interactive graphical exploration tool for fractals, to Native Client. Many of
+the porting problems they encountered are quite common, and the techniques
+described here should help with similar porting efforts. Some of the background
 information might also benefit those who are writing new Native Client
 applications.
 

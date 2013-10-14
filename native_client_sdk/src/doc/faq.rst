@@ -185,7 +185,7 @@ to consider Native Client for standardization.
 We consistenly try to document our design and implementation and hope to
 standardize Portable Native Client when it gains more traction. A good
 example is our `PNaCl bitcode reference manual
-<https://www.chromium.org/nativeclient/pnacl/bitcode-abi>`_.
+<http://www.chromium.org/nativeclient/pnacl/bitcode-abi>`_.
 
 .. TODO Update the above bitcode-abi link to a :doc: once 3693 is fixed.
 
@@ -256,7 +256,7 @@ Is NPAPI part of the Native Client SDK?
 
 NPAPI is not supported by the Native Client SDK, and is `deprecated in
 Chrome
-<https://blog.chromium.org/2013/09/saying-goodbye-to-our-old-friend-npapi.html>`_.
+<http://blog.chromium.org/2013/09/saying-goodbye-to-our-old-friend-npapi.html>`_.
 
 Does Native Client support SIMD vector instructions?
 ----------------------------------------------------

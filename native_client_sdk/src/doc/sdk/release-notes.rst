@@ -14,7 +14,7 @@ PNaCl in Chrome 30 Dev channel (01 Aug 2013)
   30 (currently in the Dev channel). Apps and sites built with PNaCl can run in
   Chrome 30 without an explicit flag.
 * See `Introduction to Portable Native Client
-  <http://www.chromium.org/nativeclient/pnacl/building-and-testing-portable-native-client>`_
+  <http://www.chromium.org/nativeclient/pnacl/introduction-to-portable-native-client>`_
   for information on developing for PNaCl. More documentation will be available
   soon.
 * Please note that the `PNaCl bitcode ABI
