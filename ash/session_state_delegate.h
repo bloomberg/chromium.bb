@@ -11,6 +11,10 @@
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
@@ -92,6 +96,13 @@ class ASH_EXPORT SessionStateDelegate {
   // Adds or removes sessions state observer.
   virtual void AddSessionStateObserver(SessionStateObserver* observer) = 0;
   virtual void RemoveSessionStateObserver(SessionStateObserver* observer) = 0;
+
+  // Transfers the visibility of a window to another user. Returns true when
+  // transfer was done. This could fail if the |window| belongs to no one and
+  // is therefore shown on the desktop of every user.
+  virtual bool TransferWindowToDesktopOfUser(
+      aura::Window* window,
+      ash::MultiProfileIndex index) const = 0;
 };
 
 }  // namespace ash

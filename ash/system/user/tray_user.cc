@@ -1139,6 +1139,23 @@ TrayUser::TestState TrayUser::GetStateForTest() const {
   return user_->GetStateForTest();
 }
 
+bool TrayUser::CanDropWindowHereToTransferToUser(
+    const gfx::Point& point_in_screen) {
+  // Check that this item is shown in the system tray (which means it must have
+  // a view there) and that the user it represents is not the current user (in
+  // which case |GetTrayIndex()| would return NULL).
+  if (!layout_view_ || !GetTrayIndex())
+    return false;
+  return layout_view_->GetBoundsInScreen().Contains(point_in_screen);
+}
+
+bool TrayUser::TransferWindowToUser(aura::Window* window) {
+  const SessionStateDelegate* session_state_delegate =
+      ash::Shell::GetInstance()->session_state_delegate();
+  return session_state_delegate->TransferWindowToDesktopOfUser(window,
+                                                               GetTrayIndex());
+}
+
 gfx::Rect TrayUser::GetUserPanelBoundsInScreenForTest() const {
   DCHECK(user_);
   return user_->GetBoundsInScreenOfUserButtonForTest();

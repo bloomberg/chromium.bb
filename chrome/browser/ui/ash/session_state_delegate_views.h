@@ -42,7 +42,9 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
-
+  virtual bool TransferWindowToDesktopOfUser(
+      aura::Window* window,
+      ash::MultiProfileIndex index) const OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegate);
 };

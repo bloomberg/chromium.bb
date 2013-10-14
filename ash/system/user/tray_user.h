@@ -13,6 +13,7 @@
 
 namespace gfx {
 class Rect;
+class Point;
 }
 
 namespace views {
@@ -48,6 +49,14 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
     ACTIVE_BUT_DISABLED   // The item was clicked anc cannot add a user.
   };
   TestState GetStateForTest() const;
+
+  // Checks if a drag and drop operation would be able to land a window on this
+  // |point_in_screen|.
+  bool CanDropWindowHereToTransferToUser(const gfx::Point& point_in_screen);
+
+  // Try to re-parent the |window| to a new owner. Returns true if the window
+  // got transfered.
+  bool TransferWindowToUser(aura::Window* window);
 
   // Returns the bounds of the user panel in screen coordinates.
   // Note: This only works when the panel shown.

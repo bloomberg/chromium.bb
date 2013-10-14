@@ -5,8 +5,11 @@
 #include "ash/wm/drag_window_resizer.h"
 
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/user/tray_user.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/drag_window_controller.h"
 #include "base/memory/weak_ptr.h"
@@ -72,7 +75,14 @@ DragWindowResizer* DragWindowResizer::Create(
 
 void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   base::WeakPtr<DragWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
-  next_window_resizer_->Drag(location, event_flags);
+
+  // If we are on top of a window to desktop transfer button, we move the window
+  // temporarily back to where it was initially (showing that we do something).
+  gfx::Point filtered_location = GetTrayUserItemAtPoint(location) ?
+      details_.initial_location_in_parent : location;
+
+  next_window_resizer_->Drag(filtered_location, event_flags);
+
   if (!resizer)
     return;
 
@@ -90,6 +100,9 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void DragWindowResizer::CompleteDrag(int event_flags) {
+  if (TryDraggingToNewUser())
+    return;
+
   next_window_resizer_->CompleteDrag(event_flags);
 
   GetTarget()->layer()->SetOpacity(details_.initial_opacity);
@@ -195,6 +208,61 @@ bool DragWindowResizer::ShouldAllowMouseWarp() {
       !GetTarget()->transient_parent() &&
       (GetTarget()->type() == aura::client::WINDOW_TYPE_NORMAL ||
        GetTarget()->type() == aura::client::WINDOW_TYPE_PANEL);
+}
+
+TrayUser* DragWindowResizer::GetTrayUserItemAtPoint(
+    const gfx::Point& point_in_screen) {
+  // Unit tests might not have an ash shell.
+  if (!ash::Shell::GetInstance())
+    return NULL;
+
+  // Check that this is a drag move operation from a suitable window.
+  if (details_.window_component != HTCAPTION ||
+      GetTarget()->transient_parent() ||
+      (GetTarget()->type() != aura::client::WINDOW_TYPE_NORMAL &&
+       GetTarget()->type() != aura::client::WINDOW_TYPE_PANEL &&
+       GetTarget()->type() != aura::client::WINDOW_TYPE_POPUP))
+    return NULL;
+
+  // We only allow to drag the window onto a tray of it's own RootWindow.
+  SystemTray* tray = internal::GetRootWindowController(
+      details_.window->GetRootWindow())->GetSystemTray();
+
+  // Again - unit tests might not have a tray.
+  if (!tray)
+    return NULL;
+
+  const std::vector<internal::TrayUser*> tray_users = tray->GetTrayUserItems();
+  if (tray_users.size() <= 1)
+    return NULL;
+
+  std::vector<internal::TrayUser*>::const_iterator it = tray_users.begin();
+  for (; it != tray_users.end(); ++it) {
+    if ((*it)->CanDropWindowHereToTransferToUser(point_in_screen))
+      return *it;
+  }
+  return NULL;
+}
+
+bool DragWindowResizer::TryDraggingToNewUser() {
+  TrayUser* tray_user = GetTrayUserItemAtPoint(last_mouse_location_);
+  // No need to try dragging if there is no user.
+  if (!tray_user)
+    return false;
+
+  // We have to avoid a brief flash caused by the RevertDrag operation.
+  // To do this, we first set the opacity of our target window to 0, so that no
+  // matter what the RevertDrag does the window will stay hidden. Then transfer
+  // the window to the new owner (which will hide it). RevertDrag will then do
+  // it's thing and return the transparency to its original value.
+  int old_opacity = GetTarget()->layer()->opacity();
+  GetTarget()->layer()->SetOpacity(0);
+  if (!tray_user->TransferWindowToUser(details_.window)) {
+    GetTarget()->layer()->SetOpacity(old_opacity);
+    return false;
+  }
+  RevertDrag();
+  return true;
 }
 
 }  // namespace internal

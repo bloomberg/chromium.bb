@@ -27,6 +27,7 @@ class SystemTrayItem;
 namespace internal {
 class SystemBubbleWrapper;
 class TrayAccessibility;
+class TrayUser;
 }
 
 // There are different methods for creating bubble views.
@@ -53,6 +54,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
 
   // Returns all tray items that has been added to system tray.
   const std::vector<SystemTrayItem*>& GetTrayItems() const;
+
+  // Returns all tray user items that were added to the system tray.
+  const std::vector<internal::TrayUser*>& GetTrayUserItems() const;
 
   // Shows the default view of all items.
   void ShowDefaultView(BubbleCreationType creation_type);
@@ -187,6 +191,10 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
 
   // Owned items.
   ScopedVector<SystemTrayItem> items_;
+
+  // User items - note, this is a subset of the |items_| list. Note that no
+  // item in this list needs to be deleted.
+  std::vector<internal::TrayUser*> user_items_;
 
   // Pointers to members of |items_|.
   SystemTrayItem* detailed_item_;

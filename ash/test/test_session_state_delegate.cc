@@ -130,5 +130,11 @@ void TestSessionStateDelegate::RemoveSessionStateObserver(
     SessionStateObserver* observer) {
 }
 
+bool TestSessionStateDelegate::TransferWindowToDesktopOfUser(
+    aura::Window* window,
+    ash::MultiProfileIndex index) const {
+  return false;
+}
+
 }  // namespace test
 }  // namespace ash

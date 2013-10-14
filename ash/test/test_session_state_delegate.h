@@ -44,6 +44,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
+  virtual bool TransferWindowToDesktopOfUser(
+      aura::Window* window,
+      ash::MultiProfileIndex index) const OVERRIDE;
 
   // TODO(oshima): Use state machine instead of using boolean variables.
 

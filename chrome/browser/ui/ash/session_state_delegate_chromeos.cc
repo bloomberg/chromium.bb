@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -156,6 +157,19 @@ void SessionStateDelegateChromeos::AddSessionStateObserver(
 void SessionStateDelegateChromeos::RemoveSessionStateObserver(
     ash::SessionStateObserver* observer) {
   session_state_observer_list_.RemoveObserver(observer);
+}
+
+bool SessionStateDelegateChromeos::TransferWindowToDesktopOfUser(
+    aura::Window* window,
+    ash::MultiProfileIndex index) const {
+  chrome::MultiUserWindowManager* window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  if (!window_manager || window_manager->GetWindowOwner(window).empty())
+    return false;
+  DCHECK_LT(index, NumberOfLoggedInUsers());
+  window_manager->ShowWindowForUser(window,
+      chromeos::UserManager::Get()->GetLRULoggedInUsers()[index]->email());
+  return true;
 }
 
 void SessionStateDelegateChromeos::ActiveUserChanged(

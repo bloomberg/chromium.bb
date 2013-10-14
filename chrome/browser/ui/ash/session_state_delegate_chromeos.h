@@ -45,7 +45,9 @@ class SessionStateDelegateChromeos
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
-
+  virtual bool TransferWindowToDesktopOfUser(
+      aura::Window* window,
+      ash::MultiProfileIndex index) const OVERRIDE;
   // UserManager::UserSessionStateObserver:
   virtual void ActiveUserChanged(const chromeos::User* active_user) OVERRIDE;
   virtual void UserAddedToSession(const chromeos::User* added_user) OVERRIDE;

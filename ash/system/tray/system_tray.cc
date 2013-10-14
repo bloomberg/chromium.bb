@@ -154,8 +154,11 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
           0;
   // Note: We purposely use one more item then logged in users to account for
   // the additional separator.
-  for (int i = 0; i <= maximum_user_profiles; i++)
-    AddTrayItem(new internal::TrayUser(this, i));
+  for (int i = 0; i <= maximum_user_profiles; i++) {
+    internal::TrayUser* tray_user = new internal::TrayUser(this, i);
+    AddTrayItem(tray_user);
+    user_items_.push_back(tray_user);
+  }
 #endif
 
   tray_accessibility_ = new internal::TrayAccessibility(this);
@@ -225,6 +228,10 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
 
 const std::vector<SystemTrayItem*>& SystemTray::GetTrayItems() const {
   return items_.get();
+}
+
+const std::vector<internal::TrayUser*>& SystemTray::GetTrayUserItems() const {
+  return user_items_;
 }
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {

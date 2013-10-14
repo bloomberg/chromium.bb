@@ -41,6 +41,9 @@ class SessionStateDelegateStub : public SessionStateDelegate {
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
+  virtual bool TransferWindowToDesktopOfUser(
+      aura::Window* window,
+      ash::MultiProfileIndex index) const OVERRIDE;
 
  private:
   bool screen_locked_;
