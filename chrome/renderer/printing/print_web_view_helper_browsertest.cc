@@ -51,7 +51,7 @@ const char kHTMLWithPageSizeCss[] =
     "  }"
     "}"
     "</style></head>"
-    "<body>Lorem Ipsum:<p>"
+    "<body>Lorem Ipsum:"
     "</body></html>";
 
 // A simple web page with print page layout css.
@@ -687,7 +687,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
       "  }"
       "}"
       "</style></head>"
-      "<body>Lorem Ipsum:<p>"
+      "<body>Lorem Ipsum:"
       "</body></html>";
   LoadHTML(kHTMLWithPageCss);
 
