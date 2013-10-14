@@ -115,7 +115,11 @@ def ParseExcludeFile(filename, config_attributes,
       one test with the same shortname, the full name must be given.
       Errors are reported if an exclude does not match exactly one test
       in alltests, or if there are duplicate excludes.
+
+      Returns:
+        Number of failures in the exclusion file.
   '''
+  errors = 0
   f = open(filename)
   for line in f:
     line = line.strip()
@@ -130,28 +134,35 @@ def ParseExcludeFile(filename, config_attributes,
     else:
       testname = line
     if testname in EXCLUDES:
-      Fatal('ERROR: duplicate exclude: ' + line)
+      logging.error('Duplicate exclude: %s', line)
+      errors += 1
     if IsFullname(testname):
       shortname = GetShortname(testname)
       if shortname not in alltests or testname not in alltests[shortname]:
-        Fatal('ERROR: exclude ' + line + ' not found in list of tests')
+        logging.error('Exclude %s not found in list of tests', line)
+        errors += 1
       fullname = testname
     else:
       # short name is specified
       shortname = testname
       if shortname not in alltests:
-        Fatal('ERROR: exclude ' + shortname + ' not found in list of tests')
+        logging.error('Exclude %s not found in list of tests', shortname)
+        errors += 1
       if len(alltests[shortname]) > 1:
-        Fatal('ERROR: exclude ' + shortname + ' matches more than one test: ' +
-              str(alltests[shortname]) + '. Specify full name in exclude file.')
+        logging.error('Exclude %s matches more than one test: %s. ' +
+                      'Specify full name in exclude file.',
+                      shortname, str(alltests[shortname]))
+        errors += 1
       fullname = alltests[shortname][0]
 
     if fullname in EXCLUDES:
-      Fatal('ERROR: duplicate exclude ' + fullname)
+      logging.error('Duplicate exclude %s', fullname)
+      errors += 1
 
     EXCLUDES[fullname] = filename
   f.close()
-  logging.info('parsed %s: now %d total excludes', filename, len(EXCLUDES))
+  logging.info('Parsed %s: now %d total excludes', filename, len(EXCLUDES))
+  return errors
 
 def DumpFileContents(name):
   error = not os.path.exists(name)
@@ -159,9 +170,9 @@ def DumpFileContents(name):
   try:
     logging.debug(open(name, 'rb').read())
   except IOError:
-    error = True;
+    error = True
   if error:
-    logging.error("Error: couldn't open file: %s", name)
+    logging.error("Couldn't open file: %s", name)
     # Make the bots go red
     logging.error('@@@STEP_FAILURE@@@')
 
@@ -244,9 +255,11 @@ def Report(options, filename=None, filecontents=None):
     Fatal('Must specify either testsuite (-t) or lit (-l) output format')
 
   # get the set of excludes
+  exclusion_failures = 0
   for f in options['excludes']:
-    ParseExcludeFile(f, set(options['attributes']),
-                     check_test_names=check_test_names, alltests=alltests)
+    exclusion_failures += ParseExcludeFile(f, set(options['attributes']),
+                                           check_test_names=check_test_names,
+                                           alltests=alltests)
 
   # Regardless of the verbose option, do a dry run of
   # PrintCompilationResult so we can catch errors when intermediate
@@ -273,10 +286,13 @@ def Report(options, filename=None, filecontents=None):
 
   logging.info('%d unexpected failures %d unexpected passes',
                unexpected_failures, unexpected_passes)
+  if exclusion_failures:
+    logging.info('%d problems in known_failures exclusion files',
+                 exclusion_failures)
 
   if options['check_excludes']:
-    return unexpected_failures + unexpected_passes > 0
-  return unexpected_failures > 0
+    return unexpected_failures + unexpected_passes + exclusion_failures > 0
+  return unexpected_failures + exclusion_failures > 0
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
