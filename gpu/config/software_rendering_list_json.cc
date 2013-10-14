@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.11",
+  "version": "6.12",
   "entries": [
     {
       "id": 1,
@@ -137,6 +137,12 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           "driver_version": {
             "op": ">=",
             "value": "7.15.10.1624"
+          }
+        },
+        {
+          "driver_vendor": {
+            "op": "=",
+            "value": "osmesa"
           }
         }
       ],
@@ -329,6 +335,14 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "op": "<",
         "value": "7.11"
       },
+      "exceptions": [
+        {
+          "driver_vendor": {
+            "op": "=",
+            "value": "osmesa"
+          }
+        }
+      ],
       "features": [
         "all"
       ]
@@ -766,6 +780,12 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
             "op": ">=",
             "value": "7.15.10.1624"
           }
+        },
+        {
+          "driver_vendor": {
+            "op": "=",
+            "value": "osmesa"
+          }
         }
       ],
       "features": [
@@ -1069,6 +1089,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "all"
       ]
     },
+)  // String split to avoid MSVC char limit.
+LONG_STRING_CONST(
     {
       "id": 75,
       "description": "Texture sharing not supported on AMD Switchable GPUs due to driver issues",
@@ -1081,8 +1103,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "texture_sharing"
       ]
     },
-)  // String split to avoid MSVC char limit.
-LONG_STRING_CONST(
     {
       "id": 76,
       "description": "WebGL is disabled on Android unless GPU reset notification is supported",
@@ -1134,6 +1154,21 @@ LONG_STRING_CONST(
       "features": [
         "accelerated_video_decode"
       ]
+    },
+    {
+      "id": 79,
+      "description": "Disable force compositing mode on all Windows versions prior to Vista.",
+      "cr_bugs": [273920],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "<",
+          "value": "6.0"
+        }
+      },
+      "features": [
+        "force_compositing_mode"
+      ]
     }
   ]
 }
@@ -1141,4 +1176,3 @@ LONG_STRING_CONST(
 );  // LONG_STRING_CONST macro
 
 }  // namespace gpu
-
