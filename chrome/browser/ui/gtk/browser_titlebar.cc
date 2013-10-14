@@ -642,7 +642,8 @@ void BrowserTitlebar::UpdateThrobber(WebContents* web_contents) {
 
     // Note: we want to exclude the application popup/panel window.
     if ((browser_window_->browser()->is_app() &&
-        !browser_window_->browser()->is_type_tabbed())) {
+        !browser_window_->browser()->is_type_tabbed()) ||
+        browser_window_->browser()->is_type_popup()) {
       gfx::Image icon = browser_window_->browser()->GetCurrentPageIcon();
       if (icon.IsEmpty()) {
         // Fallback to the Chromium icon if the page has no icon.
