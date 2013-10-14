@@ -155,5 +155,25 @@ void TraceLog::ApplyATraceEnabledFlag(unsigned char* category_group_enabled) {
   *category_group_enabled |= ATRACE_ENABLED;
 }
 
+void TraceLog::AddClockSyncMetadataEvent() {
+  int atrace_fd = open(kATraceMarkerFile, O_WRONLY | O_APPEND);
+  if (atrace_fd == -1) {
+    PLOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
+    return;
+  }
+
+  // Android's kernel trace system has a trace_marker feature: this is a file on
+  // debugfs that takes the written data and pushes it onto the trace
+  // buffer. So, to establish clock sync, we write our monotonic clock into that
+  // trace buffer.
+  TimeTicks now = TimeTicks::NowFromSystemTraceTime();
+  double now_in_seconds = now.ToInternalValue() / 1000000.0;
+  std::string marker = StringPrintf(
+      "trace_event_clock_sync: parent_ts=%f\n", now_in_seconds);
+  if (write(atrace_fd, marker.c_str(), marker.size()) == -1)
+    PLOG(WARNING) << "Couldn't write to " << kATraceMarkerFile;
+  close(atrace_fd);
+}
+
 }  // namespace debug
 }  // namespace base

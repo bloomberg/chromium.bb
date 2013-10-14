@@ -401,6 +401,7 @@ class BASE_EXPORT TraceLog {
 #if defined(OS_ANDROID)
   void StartATrace();
   void StopATrace();
+  void AddClockSyncMetadataEvent();
 #endif
 
   // Enabled state listeners give a callback when tracing is enabled or

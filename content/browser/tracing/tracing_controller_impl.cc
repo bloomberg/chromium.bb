@@ -71,6 +71,11 @@ bool TracingControllerImpl::EnableRecording(
   if (!can_enable_recording())
     return false;
 
+#if defined(OS_ANDROID)
+  if (pending_get_categories_done_callback_.is_null())
+    TraceLog::GetInstance()->AddClockSyncMetadataEvent();
+#endif
+
   trace_options_ = TraceLog::GetInstance()->trace_options();
   TraceLog::GetInstance()->SetEnabled(filter, trace_options_);
 
@@ -99,6 +104,11 @@ bool TracingControllerImpl::DisableRecording(
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
   TraceLog::GetInstance()->SetDisabled();
+
+#if defined(OS_ANDROID)
+  if (pending_get_categories_done_callback_.is_null())
+    TraceLog::GetInstance()->AddClockSyncMetadataEvent();
+#endif
 
   // We don't need to create a temporary file when getting categories.
   if (pending_get_categories_done_callback_.is_null()) {
@@ -146,6 +156,10 @@ bool TracingControllerImpl::EnableMonitoring(
   if (!can_enable_monitoring())
     return false;
   is_monitoring_ = true;
+
+#if defined(OS_ANDROID)
+  TraceLog::GetInstance()->AddClockSyncMetadataEvent();
+#endif
 
   int monitoring_tracing_options = 0;
   if (options & ENABLE_SAMPLING)
@@ -225,6 +239,10 @@ void TracingControllerImpl::CaptureMonitoringSnapshot(
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
     it->get()->SendCaptureMonitoringSnapshot();
   }
+
+#if defined(OS_ANDROID)
+  TraceLog::GetInstance()->AddClockSyncMetadataEvent();
+#endif
 }
 
 void TracingControllerImpl::AddFilter(TraceMessageFilter* filter) {

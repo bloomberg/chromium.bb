@@ -133,6 +133,11 @@ bool TraceControllerImpl::BeginTracing(TraceSubscriber* subscriber,
   if (!can_begin_tracing(subscriber))
     return false;
 
+#if defined(OS_ANDROID)
+  if (!is_get_category_groups_)
+    TraceLog::GetInstance()->AddClockSyncMetadataEvent();
+#endif
+
   // Enable tracing
   TraceLog::GetInstance()->SetEnabled(
       base::debug::CategoryFilter(category_patterns), options);
@@ -151,6 +156,11 @@ bool TraceControllerImpl::EndTracingAsync(TraceSubscriber* subscriber) {
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
   TraceLog::GetInstance()->SetDisabled();
+
+#if defined(OS_ANDROID)
+  if (!is_get_category_groups_)
+    TraceLog::GetInstance()->AddClockSyncMetadataEvent();
+#endif
 
   // There could be a case where there are no child processes and filters_
   // is empty. In that case we can immediately tell the subscriber that tracing
