@@ -688,7 +688,6 @@ webkit.org/b/112643 http/tests/history/redirect-js-location-0-seconds.html [ Fai
 webkit.org/b/112980 [ Win Mac ] fast/frames/seamless/seamless-form-post-override.html [ Failure Pass ]
 webkit.org/b/112980 http/tests/navigation/lockedhistory-iframe.html [ Failure Pass ]
 webkit.org/b/112980 http/tests/navigation/changing-frame-hierarchy-in-onload.html [ Failure Pass ]
-webkit.org/b/112984 [ Win ] fast/mediastream/RTCPeerConnection-statsSelector.html [ Failure Pass ]
 
 webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ ImageOnlyFailure ]
 
