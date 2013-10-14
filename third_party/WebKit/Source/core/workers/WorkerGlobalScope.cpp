@@ -46,7 +46,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/WorkerThreadableLoader.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/workers/WorkerNavigator.h"
 #include "platform/NotImplemented.h"
 #include "core/workers/WorkerClients.h"

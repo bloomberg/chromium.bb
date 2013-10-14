@@ -37,7 +37,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImportLoaderClient.h"
 #include "core/loader/DocumentWriter.h"
-#include "core/page/ContentSecurityPolicyResponseHeaders.h"
+#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 
 namespace WebCore {
 

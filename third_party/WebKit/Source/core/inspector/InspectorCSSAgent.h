@@ -30,7 +30,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "platform/JSONValues.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

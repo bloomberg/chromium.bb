@@ -45,7 +45,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/platform/network/BlobData.h"

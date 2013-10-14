@@ -43,7 +43,7 @@
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
 #include "platform/SharedBuffer.h"
 #include "core/platform/network/ResourceRequest.h"

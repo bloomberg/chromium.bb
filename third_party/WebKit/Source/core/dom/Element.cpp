@@ -83,7 +83,7 @@
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/page/FocusController.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"

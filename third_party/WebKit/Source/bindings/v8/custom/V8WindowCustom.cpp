@@ -53,7 +53,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Chrome.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/DOMWindowTimers.h"

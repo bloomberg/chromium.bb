@@ -28,7 +28,7 @@
 #include "core/html/HTMLParamElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderApplet.h"

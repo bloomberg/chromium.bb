@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/page/ContentSecurityPolicyResponseHeaders.h"
+#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 
 #include "core/platform/network/ResourceResponse.h"
 #include "wtf/text/WTFString.h"

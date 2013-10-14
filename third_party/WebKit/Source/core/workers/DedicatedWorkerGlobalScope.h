@@ -32,7 +32,7 @@
 #define DedicatedWorkerGlobalScope_h
 
 #include "core/dom/MessagePort.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {

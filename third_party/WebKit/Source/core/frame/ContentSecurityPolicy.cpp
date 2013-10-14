@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
@@ -37,7 +37,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/PingLoader.h"
-#include "core/page/ContentSecurityPolicyResponseHeaders.h"
+#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/frame/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/ParsingUtilities.h"

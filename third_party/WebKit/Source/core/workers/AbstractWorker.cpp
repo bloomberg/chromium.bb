@@ -35,7 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {

@@ -44,7 +44,7 @@
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/workers/SharedWorker.h"
 #include "core/workers/WorkerScriptLoader.h"

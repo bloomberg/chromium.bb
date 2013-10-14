@@ -31,7 +31,7 @@
 #ifndef DefaultSharedWorkerRepository_h
 #define DefaultSharedWorkerRepository_h
 
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

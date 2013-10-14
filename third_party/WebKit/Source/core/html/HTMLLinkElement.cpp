@@ -43,7 +43,7 @@
 #include "core/html/LinkImport.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "wtf/StdLibExtras.h"

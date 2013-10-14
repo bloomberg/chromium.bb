@@ -44,7 +44,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/platform/network/ResourceRequest.h"

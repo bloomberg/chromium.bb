@@ -28,7 +28,7 @@
 #include "core/dom/SecurityContext.h"
 
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 

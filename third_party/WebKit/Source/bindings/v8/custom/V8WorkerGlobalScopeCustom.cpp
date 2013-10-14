@@ -38,7 +38,7 @@
 #include "bindings/v8/V8WorkerGlobalScopeEventListener.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindowTimers.h"
 #include "core/workers/WorkerGlobalScope.h"

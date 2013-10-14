@@ -62,7 +62,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/WidthIterator.h"
