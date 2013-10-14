@@ -154,7 +154,7 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const 
     if (!verifyProtocolHandlerScheme(scheme, "registerProtocolHandler", es))
         return;
 
-    NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, url, navigator->frame()->displayStringModifiedByEncoding(title));
+    NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, url, title);
 }
 
 #if ENABLE(CUSTOM_SCHEME_HANDLER)

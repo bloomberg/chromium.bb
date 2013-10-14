@@ -248,13 +248,6 @@ String HitTestResult::title(TextDirection& dir) const
     return String();
 }
 
-String displayString(const String& string, const Node* node)
-{
-    if (!node)
-        return string;
-    return node->document().displayStringModifiedByEncoding(string);
-}
-
 String HitTestResult::altDisplayString() const
 {
     if (!m_innerNonSharedNode)
@@ -262,12 +255,12 @@ String HitTestResult::altDisplayString() const
 
     if (m_innerNonSharedNode->hasTagName(imgTag)) {
         HTMLImageElement* image = toHTMLImageElement(m_innerNonSharedNode.get());
-        return displayString(image->getAttribute(altAttr), m_innerNonSharedNode.get());
+        return image->getAttribute(altAttr);
     }
 
     if (m_innerNonSharedNode->hasTagName(inputTag)) {
         HTMLInputElement* input = toHTMLInputElement(m_innerNonSharedNode.get());
-        return displayString(input->alt(), m_innerNonSharedNode.get());
+        return input->alt();
     }
 
     return String();
@@ -389,7 +382,7 @@ String HitTestResult::titleDisplayString() const
     if (!m_innerURLElement)
         return String();
 
-    return displayString(m_innerURLElement->title(), m_innerURLElement.get());
+    return m_innerURLElement->title();
 }
 
 String HitTestResult::textContent() const

@@ -884,17 +884,6 @@ public:
     void setEncoding(const WTF::TextEncoding&);
     const WTF::TextEncoding& encoding() const { return m_encoding; }
 
-    String displayStringModifiedByEncoding(const String&) const;
-    PassRefPtr<StringImpl> displayStringModifiedByEncoding(PassRefPtr<StringImpl>) const;
-    void displayBufferModifiedByEncoding(LChar* buffer, unsigned len) const
-    {
-        displayBufferModifiedByEncodingInternal(buffer, len);
-    }
-    void displayBufferModifiedByEncoding(UChar* buffer, unsigned len) const
-    {
-        displayBufferModifiedByEncodingInternal(buffer, len);
-    }
-
     void setAnnotatedRegionsDirty(bool f) { m_annotatedRegionsDirty = f; }
     bool annotatedRegionsDirty() const { return m_annotatedRegionsDirty; }
     bool hasAnnotatedRegions () const { return m_hasAnnotatedRegions; }
@@ -1115,9 +1104,6 @@ private:
     void pendingTasksTimerFired(Timer<Document>*);
 
     static void didReceiveTask(void*);
-
-    template <typename CharacterType>
-    void displayBufferModifiedByEncodingInternal(CharacterType*, unsigned) const;
 
     PageVisibilityState visibilityState() const;
 

@@ -25,7 +25,6 @@
 #include "core/platform/graphics/Font.h"
 
 #include "core/platform/graphics/WidthIterator.h"
-#include "core/platform/text/transcoder/FontTranscoder.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/TextRun.h"
 #include "wtf/MainThread.h"
@@ -93,7 +92,6 @@ Font::Font()
     : m_letterSpacing(0)
     , m_wordSpacing(0)
     , m_isPlatformFont(false)
-    , m_needsTranscoding(false)
     , m_typesettingFeatures(0)
 {
 }
@@ -103,7 +101,6 @@ Font::Font(const FontDescription& fd, float letterSpacing, float wordSpacing)
     , m_letterSpacing(letterSpacing)
     , m_wordSpacing(wordSpacing)
     , m_isPlatformFont(false)
-    , m_needsTranscoding(fontTranscoder().needsTranscoding(fd))
     , m_typesettingFeatures(computeTypesettingFeatures())
 {
 }
@@ -117,7 +114,6 @@ Font::Font(const FontPlatformData& fontData, bool isPrinterFont, FontSmoothingMo
 {
     m_fontDescription.setUsePrinterFont(isPrinterFont);
     m_fontDescription.setFontSmoothing(fontSmoothingMode);
-    m_needsTranscoding = fontTranscoder().needsTranscoding(fontDescription());
     m_fontFallbackList->setPlatformFont(fontData);
 }
 
@@ -127,7 +123,6 @@ Font::Font(const Font& other)
     , m_letterSpacing(other.m_letterSpacing)
     , m_wordSpacing(other.m_wordSpacing)
     , m_isPlatformFont(other.m_isPlatformFont)
-    , m_needsTranscoding(other.m_needsTranscoding)
     , m_typesettingFeatures(computeTypesettingFeatures())
 {
 }
@@ -139,7 +134,6 @@ Font& Font::operator=(const Font& other)
     m_letterSpacing = other.m_letterSpacing;
     m_wordSpacing = other.m_wordSpacing;
     m_isPlatformFont = other.m_isPlatformFont;
-    m_needsTranscoding = other.m_needsTranscoding;
     m_typesettingFeatures = other.m_typesettingFeatures;
     return *this;
 }

@@ -241,7 +241,6 @@ TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
     , m_sortedTextBoxesPosition(0)
     , m_emitsCharactersBetweenAllVisiblePositions(behavior & TextIteratorEmitsCharactersBetweenAllVisiblePositions)
     , m_entersTextControls(behavior & TextIteratorEntersTextControls)
-    , m_emitsTextWithoutTranscoding(behavior & TextIteratorEmitsTextsWithoutTranscoding)
     , m_emitsOriginalText(behavior & TextIteratorEmitsOriginalText)
     , m_handledFirstLetter(false)
     , m_ignoresStyleVisibility(behavior & TextIteratorIgnoresStyleVisibility)
@@ -1017,7 +1016,7 @@ void TextIterator::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, 
 void TextIterator::emitText(Node* textNode, RenderObject* renderObject, int textStartOffset, int textEndOffset)
 {
     RenderText* renderer = toRenderText(renderObject);
-    m_text = m_emitsOriginalText ? renderer->originalText() : (m_emitsTextWithoutTranscoding ? renderer->textWithoutTranscoding() : renderer->text());
+    m_text = m_emitsOriginalText ? renderer->originalText() : renderer->text();
     ASSERT(!m_text.isEmpty());
     ASSERT(0 <= textStartOffset && textStartOffset < static_cast<int>(m_text.length()));
     ASSERT(0 <= textEndOffset && textEndOffset <= static_cast<int>(m_text.length()));
@@ -2349,7 +2348,7 @@ bool TextIterator::getLocationAndLengthFromRange(Node* scope, const Range* range
 
 // --------
 
-String plainText(const Range* r, TextIteratorBehavior defaultBehavior, bool isDisplayString)
+String plainText(const Range* r, TextIteratorBehavior defaultBehavior)
 {
     // The initial buffer size can be critical for performance: https://bugs.webkit.org/show_bug.cgi?id=81192
     static const unsigned initialCapacity = 1 << 15;
@@ -2357,11 +2356,8 @@ String plainText(const Range* r, TextIteratorBehavior defaultBehavior, bool isDi
     unsigned bufferLength = 0;
     StringBuilder builder;
     builder.reserveCapacity(initialCapacity);
-    TextIteratorBehavior behavior = defaultBehavior;
-    if (!isDisplayString)
-        behavior = static_cast<TextIteratorBehavior>(behavior | TextIteratorEmitsTextsWithoutTranscoding);
 
-    for (TextIterator it(r, behavior); !it.atEnd(); it.advance()) {
+    for (TextIterator it(r, defaultBehavior); !it.atEnd(); it.advance()) {
         it.appendTextToStringBuilder(builder);
         bufferLength += it.length();
     }
@@ -2369,12 +2365,7 @@ String plainText(const Range* r, TextIteratorBehavior defaultBehavior, bool isDi
     if (!bufferLength)
         return emptyString();
 
-    String result = builder.toString();
-
-    if (isDisplayString)
-        r->ownerDocument().displayStringModifiedByEncoding(result);
-
-    return result;
+    return builder.toString();
 }
 
 static PassRefPtr<Range> collapsedToBoundary(const Range* range, bool forward)

@@ -40,12 +40,11 @@ enum TextIteratorBehavior {
     TextIteratorDefaultBehavior = 0,
     TextIteratorEmitsCharactersBetweenAllVisiblePositions = 1 << 0,
     TextIteratorEntersTextControls = 1 << 1,
-    TextIteratorEmitsTextsWithoutTranscoding = 1 << 2,
-    TextIteratorIgnoresStyleVisibility = 1 << 3,
-    TextIteratorEmitsObjectReplacementCharacters = 1 << 4,
-    TextIteratorEmitsOriginalText = 1 << 5,
-    TextIteratorStopsOnFormControls = 1 << 6,
-    TextIteratorEmitsImageAltText = 1 << 7,
+    TextIteratorIgnoresStyleVisibility = 1 << 2,
+    TextIteratorEmitsObjectReplacementCharacters = 1 << 3,
+    TextIteratorEmitsOriginalText = 1 << 4,
+    TextIteratorStopsOnFormControls = 1 << 5,
+    TextIteratorEmitsImageAltText = 1 << 6,
 };
 
 // FIXME: Can't really answer this question correctly without knowing the white-space mode.
@@ -61,7 +60,7 @@ inline bool isCollapsibleWhitespace(UChar c)
     }
 }
 
-String plainText(const Range*, TextIteratorBehavior defaultBehavior = TextIteratorDefaultBehavior, bool isDisplayString = false);
+String plainText(const Range*, TextIteratorBehavior defaultBehavior = TextIteratorDefaultBehavior);
 PassRefPtr<Range> findPlainText(const Range*, const String&, FindOptions);
 
 class BitStack {
@@ -194,8 +193,6 @@ private:
     bool m_emitsCharactersBetweenAllVisiblePositions;
     bool m_entersTextControls;
 
-    // Used when we want texts for copying, pasting, and transposing.
-    bool m_emitsTextWithoutTranscoding;
     // Used in pasting inside password field.
     bool m_emitsOriginalText;
     // Used when deciding text fragment created by :first-letter should be looked into.

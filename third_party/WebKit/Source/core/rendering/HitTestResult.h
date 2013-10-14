@@ -146,8 +146,6 @@ private:
     mutable OwnPtr<NodeSet> m_rectBasedTestResult;
 };
 
-String displayString(const String&, const Node*);
-
 } // namespace WebCore
 
 #endif // HitTestResult_h

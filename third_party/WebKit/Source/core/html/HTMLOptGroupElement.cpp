@@ -125,7 +125,7 @@ PassRefPtr<RenderStyle> HTMLOptGroupElement::customStyleForRenderer()
 
 String HTMLOptGroupElement::groupLabelText() const
 {
-    String itemText = document().displayStringModifiedByEncoding(getAttribute(labelAttr));
+    String itemText = getAttribute(labelAttr);
 
     // In WinIE, leading and trailing whitespace is ignored in options and optgroups. We match this behavior.
     itemText = itemText.stripWhiteSpace();

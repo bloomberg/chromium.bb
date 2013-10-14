@@ -243,10 +243,9 @@ void Chrome::runJavaScriptAlert(Frame* frame, const String& message)
 
     ASSERT(frame);
     notifyPopupOpeningObservers();
-    String displayMessage = frame->displayStringModifiedByEncoding(message);
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, displayMessage);
-    m_client->runJavaScriptAlert(frame, displayMessage);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, message);
+    m_client->runJavaScriptAlert(frame, message);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
 }
 
@@ -261,10 +260,9 @@ bool Chrome::runJavaScriptConfirm(Frame* frame, const String& message)
 
     ASSERT(frame);
     notifyPopupOpeningObservers();
-    String displayMessage = frame->displayStringModifiedByEncoding(message);
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, displayMessage);
-    bool ok = m_client->runJavaScriptConfirm(frame, displayMessage);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, message);
+    bool ok = m_client->runJavaScriptConfirm(frame, message);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
     return ok;
 }
@@ -280,14 +278,10 @@ bool Chrome::runJavaScriptPrompt(Frame* frame, const String& prompt, const Strin
 
     ASSERT(frame);
     notifyPopupOpeningObservers();
-    String displayPrompt = frame->displayStringModifiedByEncoding(prompt);
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, displayPrompt);
-    bool ok = m_client->runJavaScriptPrompt(frame, displayPrompt, frame->displayStringModifiedByEncoding(defaultValue), result);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(m_page, prompt);
+    bool ok = m_client->runJavaScriptPrompt(frame, prompt, defaultValue, result);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
-
-    if (ok)
-        result = frame->displayStringModifiedByEncoding(result);
 
     return ok;
 }
@@ -295,7 +289,7 @@ bool Chrome::runJavaScriptPrompt(Frame* frame, const String& prompt, const Strin
 void Chrome::setStatusbarText(Frame* frame, const String& status)
 {
     ASSERT(frame);
-    m_client->setStatusbarText(frame->displayStringModifiedByEncoding(status));
+    m_client->setStatusbarText(status);
 }
 
 IntRect Chrome::windowResizerRect() const

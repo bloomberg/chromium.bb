@@ -148,8 +148,6 @@ namespace WebCore {
 
         String documentTypeString() const;
 
-        String displayStringModifiedByEncoding(const String&) const;
-
         PassOwnPtr<DragImage> nodeImage(Node*);
         PassOwnPtr<DragImage> dragImageForSelection();
 

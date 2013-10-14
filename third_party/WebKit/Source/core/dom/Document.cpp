@@ -1276,9 +1276,6 @@ static inline String canonicalizedTitle(Document* document, const String& title)
 
     buffer.shrink(builderIndex + 1);
 
-    // Replace the backslashes with currency symbols if the encoding requires it.
-    document->displayBufferModifiedByEncoding(buffer.characters(), buffer.length());
-
     return String::adopt(buffer);
 }
 
@@ -2419,7 +2416,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, Document* navigatingDoc
         return true;
     }
 
-    String text = displayStringModifiedByEncoding(beforeUnloadEvent->returnValue());
+    String text = beforeUnloadEvent->returnValue();
     if (chrome.runBeforeUnloadConfirmPanel(text, m_frame)) {
         navigatingDocument->m_didAllowNavigationViaBeforeUnloadConfirmationPanel = true;
         return true;
@@ -4749,31 +4746,6 @@ void Document::resumeScriptedAnimationControllerCallbacks()
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->resume();
 }
-
-String Document::displayStringModifiedByEncoding(const String& str) const
-{
-    if (m_decoder)
-        return m_decoder->encoding().displayString(str.impl());
-    return str;
-}
-
-PassRefPtr<StringImpl> Document::displayStringModifiedByEncoding(PassRefPtr<StringImpl> str) const
-{
-    if (m_decoder)
-        return m_decoder->encoding().displayString(str);
-    return str;
-}
-
-template <typename CharacterType>
-void Document::displayBufferModifiedByEncodingInternal(CharacterType* buffer, unsigned len) const
-{
-    if (m_decoder)
-        m_decoder->encoding().displayBuffer(buffer, len);
-}
-
-// Generate definitions for both character types
-template void Document::displayBufferModifiedByEncodingInternal<LChar>(LChar*, unsigned) const;
-template void Document::displayBufferModifiedByEncodingInternal<UChar>(UChar*, unsigned) const;
 
 void Document::enqueuePageshowEvent(PageshowEventPersistence persisted)
 {

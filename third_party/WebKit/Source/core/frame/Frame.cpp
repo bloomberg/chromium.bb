@@ -367,11 +367,6 @@ String Frame::documentTypeString() const
     return String();
 }
 
-String Frame::displayStringModifiedByEncoding(const String& str) const
-{
-    return document() ? document()->displayStringModifiedByEncoding(str) : str;
-}
-
 String Frame::selectedText() const
 {
     return selection().selectedText();

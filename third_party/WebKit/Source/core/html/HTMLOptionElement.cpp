@@ -123,9 +123,7 @@ String HTMLOptionElement::text() const
     if (text.isEmpty())
         text = collectOptionInnerText();
 
-    // FIXME: Is displayStringModifiedByEncoding helpful here?
-    // If it's correct here, then isn't it needed in the value and label functions too?
-    return document.displayStringModifiedByEncoding(text).stripWhiteSpace(isHTMLSpace<UChar>).simplifyWhiteSpace(isHTMLSpace<UChar>);
+    return text.stripWhiteSpace(isHTMLSpace<UChar>).simplifyWhiteSpace(isHTMLSpace<UChar>);
 }
 
 void HTMLOptionElement::setText(const String &text, ExceptionState& es)

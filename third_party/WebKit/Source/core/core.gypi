@@ -3039,8 +3039,6 @@
             'platform/network/ResourceResponse.cpp',
             'platform/network/ResourceResponse.h',
             'platform/text/RegularExpression.cpp',
-            'platform/text/transcoder/FontTranscoder.cpp',
-            'platform/text/transcoder/FontTranscoder.h',
         ],
         'webcore_platform_geometry_files': [
             'platform/graphics/FloatPolygon.cpp',

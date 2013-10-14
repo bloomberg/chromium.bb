@@ -232,7 +232,6 @@ public:
     static String normalizeSpaces(const LChar*, unsigned length);
     static String normalizeSpaces(const UChar*, unsigned length);
 
-    bool needsTranscoding() const { return m_needsTranscoding; }
     FontFallbackList* fontList() const { return m_fontFallbackList.get(); }
 
     void willUseFontData() const;
@@ -292,7 +291,6 @@ private:
     float m_letterSpacing;
     float m_wordSpacing;
     bool m_isPlatformFont;
-    bool m_needsTranscoding;
     mutable unsigned m_typesettingFeatures : 2; // (TypesettingFeatures) Caches values computed from m_fontDescription.
 };
 
