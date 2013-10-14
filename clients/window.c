@@ -1514,7 +1514,7 @@ window_get_output_scale(struct window *window)
 	return scale;
 }
 
-static void frame_destroy(struct frame *frame);
+static void window_frame_destroy(struct frame *frame);
 
 static void
 surface_destroy(struct surface *surface)
@@ -1568,7 +1568,7 @@ window_destroy(struct window *window)
 	}
 
 	if (window->frame)
-		frame_destroy(window->frame);
+		window_frame_destroy(window->frame);
 
 	if (window->shell_surface)
 		wl_shell_surface_destroy(window->shell_surface);
@@ -2706,7 +2706,7 @@ frame_touch_down_handler(struct widget *widget, struct input *input,
 }
 
 struct widget *
-frame_create(struct window *window, void *data)
+window_frame_create(struct window *window, void *data)
 {
 	struct frame *frame;
 
@@ -2742,7 +2742,8 @@ frame_create(struct window *window, void *data)
 }
 
 void
-frame_set_child_size(struct widget *widget, int child_width, int child_height)
+window_frame_set_child_size(struct widget *widget, int child_width,
+			    int child_height)
 {
 	struct display *display = widget->window->display;
 	struct theme *t = display->theme;
@@ -2766,7 +2767,7 @@ frame_set_child_size(struct widget *widget, int child_width, int child_height)
 }
 
 static void
-frame_destroy(struct frame *frame)
+window_frame_destroy(struct frame *frame)
 {
 	struct frame_button *button, *tmp;
 

@@ -798,7 +798,7 @@ cliptest_create(struct display *display)
 	geometry_init(&cliptest->ui.geometry);
 
 	cliptest->window = window_create(display);
-	cliptest->widget = frame_create(cliptest->window, cliptest);
+	cliptest->widget = window_frame_create(cliptest->window, cliptest);
 	window_set_title(cliptest->window, "cliptest");
 	cliptest->display = display;
 

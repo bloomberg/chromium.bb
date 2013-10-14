@@ -1221,7 +1221,7 @@ main(int argc, char *argv[])
 	display_set_global_handler(editor.display, global_handler);
 
 	editor.window = window_create(editor.display);
-	editor.widget = frame_create(editor.window, &editor);
+	editor.widget = window_frame_create(editor.window, &editor);
 
 	editor.entry = text_entry_create(&editor, "Entry");
 	editor.entry->click_to_show = click_to_show;

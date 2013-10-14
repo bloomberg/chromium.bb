@@ -378,7 +378,7 @@ image_create(struct display *display, const char *filename,
 	}
 
 	image->window = window_create(display);
-	image->widget = frame_create(image->window, image);
+	image->widget = window_frame_create(image->window, image);
 	window_set_title(image->window, title);
 	image->display = display;
 	image->image_counter = image_counter;

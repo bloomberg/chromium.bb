@@ -840,7 +840,7 @@ terminal_resize(struct terminal *terminal, int columns, int rows)
 	width = columns * terminal->average_width + m;
 	height = rows * terminal->extents.height + m;
 
-	frame_set_child_size(terminal->widget, width, height);
+	window_frame_set_child_size(terminal->widget, width, height);
 }
 
 struct color_scheme DEFAULT_COLORS = {
@@ -2652,7 +2652,7 @@ terminal_create(struct display *display)
 	terminal->margin_top = 0;
 	terminal->margin_bottom = -1;
 	terminal->window = window_create(display);
-	terminal->widget = frame_create(terminal->window, terminal);
+	terminal->widget = window_frame_create(terminal->window, terminal);
 	window_set_title(terminal->window, "Wayland Terminal");
 	widget_set_transparent(terminal->widget, 0);
 

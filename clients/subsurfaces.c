@@ -722,7 +722,7 @@ demoapp_create(struct display *display)
 	display_set_user_data(app->display, app);
 
 	app->window = window_create(app->display);
-	app->widget = frame_create(app->window, app);
+	app->widget = window_frame_create(app->window, app);
 	window_set_title(app->window, "Wayland Sub-surface Demo");
 
 	window_set_key_handler(app->window, key_handler);

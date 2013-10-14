@@ -307,7 +307,7 @@ eventdemo_create(struct display *d)
 		 */
 		e->widget = window_add_widget(e->window, e);
 	} else {
-		e->widget = frame_create(e->window, e);
+		e->widget = window_frame_create(e->window, e);
 		window_set_title(e->window, title);
 	}
 	e->display = d;

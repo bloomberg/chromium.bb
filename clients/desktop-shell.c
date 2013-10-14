@@ -896,7 +896,7 @@ unlock_dialog_create(struct desktop *desktop)
 	dialog = xzalloc(sizeof *dialog);
 
 	dialog->window = window_create_custom(display);
-	dialog->widget = frame_create(dialog->window, dialog);
+	dialog->widget = window_frame_create(dialog->window, dialog);
 	window_set_title(dialog->window, "Unlock your desktop");
 
 	window_set_user_data(dialog->window, dialog);

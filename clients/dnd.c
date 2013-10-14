@@ -589,7 +589,7 @@ dnd_create(struct display *display)
 
 	dnd = xzalloc(sizeof *dnd);
 	dnd->window = window_create(display);
-	dnd->widget = frame_create(dnd->window, dnd);
+	dnd->widget = window_frame_create(dnd->window, dnd);
 	window_set_title(dnd->window, "Wayland Drag and Drop Demo");
 
 	dnd->display = display;
@@ -618,7 +618,7 @@ dnd_create(struct display *display)
 	width = 4 * (item_width + item_padding) + item_padding;
 	height = 4 * (item_height + item_padding) + item_padding;
 
-	frame_set_child_size(dnd->widget, width, height);
+	window_frame_set_child_size(dnd->widget, width, height);
 
 	return dnd;
 }

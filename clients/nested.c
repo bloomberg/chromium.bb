@@ -583,7 +583,7 @@ nested_create(struct display *display)
 		return nested;
 
 	nested->window = window_create(display);
-	nested->widget = frame_create(nested->window, nested);
+	nested->widget = window_frame_create(nested->window, nested);
 	window_set_title(nested->window, "Wayland Nested");
 	nested->display = display;
 
