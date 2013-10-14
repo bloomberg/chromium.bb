@@ -1106,6 +1106,16 @@ crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-null-
 crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throwing-constructor.html [ Crash ]
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
+crbug.com/299835 virtual/deferred/fast/images/12-55.html [ NeedsRebaseline ]
+crbug.com/299835 fast/images/12-55.html [ NeedsRebaseline ]
+crbug.com/299835 virtual/deferred/fast/images/182.html [ NeedsRebaseline ]
+crbug.com/299835 fast/images/182.html [ NeedsRebaseline ]
+crbug.com/299835 virtual/deferred/fast/images/2-comp.html [ NeedsRebaseline ]
+crbug.com/299835 fast/images/2-comp.html [ NeedsRebaseline ]
+crbug.com/299835 virtual/deferred/fast/images/2-dht.html [ NeedsRebaseline ]
+crbug.com/299835 fast/images/2-dht.html [ NeedsRebaseline ]
+crbug.com/299835 virtual/deferred/fast/images/23-55.html [ NeedsRebaseline ]
+crbug.com/299835 fast/images/23-55.html [ NeedsRebaseline ]
 
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
