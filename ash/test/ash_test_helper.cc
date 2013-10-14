@@ -15,6 +15,8 @@
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
+#include "ui/aura/input_state_lookup.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/message_center/message_center.h"
@@ -74,6 +76,9 @@ void AshTestHelper::SetUp(bool start_session) {
   RunAllPendingInMessageLoop();
 #endif
   ash::Shell::CreateInstance(test_shell_delegate_);
+  aura::test::EnvTestHelper(aura::Env::GetInstance()).SetInputStateLookup(
+      scoped_ptr<aura::InputStateLookup>());
+
   Shell* shell = Shell::GetInstance();
   if (start_session) {
     test_shell_delegate_->test_session_state_delegate()->

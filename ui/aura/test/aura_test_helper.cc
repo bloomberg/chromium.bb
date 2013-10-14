@@ -12,7 +12,9 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
+#include "ui/aura/input_state_lookup.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/base/ime/dummy_input_method.h"
@@ -66,6 +68,11 @@ void AuraTestHelper::SetUp() {
   ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
 
   Env::CreateInstance();
+  // Unit tests generally don't want to query the system, rather use the state
+  // from RootWindow.
+  EnvTestHelper(Env::GetInstance()).SetInputStateLookup(
+      scoped_ptr<InputStateLookup>());
+
   test_screen_.reset(TestScreen::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   root_window_.reset(test_screen_->CreateRootWindowForPrimaryDisplay());

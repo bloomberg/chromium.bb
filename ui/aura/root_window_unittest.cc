@@ -130,19 +130,19 @@ TEST_F(RootWindowTest, OnHostMouseEvent) {
 
 TEST_F(RootWindowTest, RepostEvent) {
   // Test RepostEvent in RootWindow. It only works for Mouse Press.
-  EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
   gfx::Point point(10, 10);
   ui::MouseEvent event(
       ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON);
   root_window()->RepostEvent(event);
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 }
 
 // Check that we correctly track the state of the mouse buttons in response to
 // button press and release events.
 TEST_F(RootWindowTest, MouseButtonState) {
-  EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
 
   gfx::Point location;
   scoped_ptr<ui::MouseEvent> event;
@@ -154,7 +154,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_LEFT_MOUSE_BUTTON));
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
-  EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Additionally press the right.
   event.reset(new ui::MouseEvent(
@@ -163,7 +163,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
-  EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Release the left button.
   event.reset(new ui::MouseEvent(
@@ -172,7 +172,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_RIGHT_MOUSE_BUTTON));
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
-  EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Release the right button.  We should ignore the Shift-is-down flag.
   event.reset(new ui::MouseEvent(
@@ -181,7 +181,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_SHIFT_DOWN));
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
-  EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
 
   // Press the middle button.
   event.reset(new ui::MouseEvent(
@@ -190,7 +190,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_MIDDLE_MOUSE_BUTTON));
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
-  EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 }
 
 TEST_F(RootWindowTest, TranslatedEvent) {
@@ -515,7 +515,7 @@ TEST_F(RootWindowTest, RepostTargetsCaptureWindow) {
   // Set capture on |window| generate a mouse event (that is reposted) and not
   // over |window| and verify |window| gets it (|window| gets it because it has
   // capture).
-  EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
+  EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
   scoped_ptr<Window> window(CreateNormalWindow(1, root_window(), NULL));
   window->SetBounds(gfx::Rect(20, 20, 40, 30));
   EventFilterRecorder* recorder = new EventFilterRecorder;

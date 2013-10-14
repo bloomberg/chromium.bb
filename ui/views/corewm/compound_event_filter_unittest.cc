@@ -189,7 +189,7 @@ TEST_F(CompoundEventFilterTest, DontHideWhenMouseDown) {
   EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
   event_generator.PressLeftButton();
   EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
-  EXPECT_TRUE(aura::Env::GetInstance()->is_mouse_button_down());
+  EXPECT_TRUE(aura::Env::GetInstance()->IsMouseButtonDown());
 
   // Do a touch event. As the mouse button is down this should not disable mouse
   // events.

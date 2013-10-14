@@ -1145,7 +1145,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 
 // static
 bool NativeWidgetPrivate::IsMouseButtonDown() {
-  return aura::Env::GetInstance()->is_mouse_button_down();
+  return aura::Env::GetInstance()->IsMouseButtonDown();
 }
 
 // static

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "ui/aura/env_observer.h"
+#include "ui/aura/input_state_lookup.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
@@ -25,7 +26,8 @@ Env* Env::instance_ = NULL;
 
 Env::Env()
     : mouse_button_flags_(0),
-      is_touch_down_(false) {
+      is_touch_down_(false),
+      input_state_lookup_(InputStateLookup::Create().Pass()) {
 }
 
 Env::~Env() {
@@ -66,6 +68,11 @@ void Env::AddObserver(EnvObserver* observer) {
 
 void Env::RemoveObserver(EnvObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+bool Env::IsMouseButtonDown() const {
+  return input_state_lookup_.get() ? input_state_lookup_->IsMouseButtonDown() :
+      mouse_button_flags_ != 0;
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID) && \

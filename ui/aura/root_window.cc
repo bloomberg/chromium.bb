@@ -712,7 +712,7 @@ void RootWindow::UpdateCapture(Window* old_capture,
   if (new_capture) {
     // Make all subsequent mouse events go to the capture window. We shouldn't
     // need to send an event here as OnCaptureLost() should take care of that.
-    if (mouse_moved_handler_ || Env::GetInstance()->is_mouse_button_down())
+    if (mouse_moved_handler_ || Env::GetInstance()->IsMouseButtonDown())
       SetMouseMovedHandler(new_capture, MOUSE_MOVED_HANDLER_SET_REASON_CAPTURE);
   } else {
     // Make sure mouse_moved_handler gets updated.
