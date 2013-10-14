@@ -275,7 +275,7 @@ webkit.org/b/111004 [ Win Linux ] accessibility/svg-remote-element.html [ Failur
 crbug.com/258896 virtual/web-animations-css/animations/opacity-transform-animation.html [ ImageOnlyFailure ]
 crbug.com/258896 virtual/web-animations-css/animations/play-state-paused.html [ ImageOnlyFailure ]
 # These can't be rebaselined because they're crashes.
-crbug.com/258896 virtual/web-animations-css/animations/cross-fade-background-image.html [ Crash ]
+crbug.com/306967 virtual/web-animations-css/animations/cross-fade-background-image.html [ Crash Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
