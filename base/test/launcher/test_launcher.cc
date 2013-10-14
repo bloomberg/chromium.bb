@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/test_results_tracker.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -311,9 +312,10 @@ void RunTestIteration(TestLauncherDelegate* launcher_delegate,
                       int* exit_code,
                       bool run_tests_success) {
   if (!run_tests_success) {
+    // Change the exit code to signal failure, but continue to run all requested
+    // test iterations. With the summary of all iterations at the end this is
+    // a good default.
     *exit_code = 1;
-    MessageLoop::current()->Quit();
-    return;
   }
 
   if (cycles == 0) {
@@ -356,22 +358,48 @@ const char kGTestOutputFlag[] = "gtest_output";
 TestResult::TestResult() : status(TEST_UNKNOWN) {
 }
 
+TestResult::~TestResult() {
+}
+
+std::string TestResult::StatusAsString() const {
+  switch (status) {
+    case TEST_UNKNOWN:
+      return "UNKNOWN";
+    case TEST_SUCCESS:
+      return "SUCCESS";
+    case TEST_FAILURE:
+      return "FAILURE";
+    case TEST_CRASH:
+      return "CRASH";
+    case TEST_TIMEOUT:
+      return "TIMEOUT";
+    case TEST_SKIPPED:
+      return "SKIPPED";
+     // Rely on compiler warnings to ensure all possible values are handled.
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
 TestLauncherDelegate::~TestLauncherDelegate() {
 }
 
-void PrintTestOutputSnippetOnFailure(const TestResult& result,
-                                     const std::string& full_output) {
-  if (result.status == TestResult::TEST_SUCCESS)
-    return;
-
+std::string GetTestOutputSnippet(const TestResult& result,
+                                 const std::string& full_output) {
   size_t run_pos = full_output.find(std::string("[ RUN      ] ") +
                                     result.GetFullName());
   if (run_pos == std::string::npos)
-    return;
+    return std::string();
 
   size_t end_pos = full_output.find(std::string("[  FAILED  ] ") +
                                     result.GetFullName(),
                                     run_pos);
+  if (end_pos == std::string::npos) {
+    end_pos = full_output.find(std::string("[       OK ] ") +
+                               result.GetFullName(),
+                               run_pos);
+  }
   if (end_pos != std::string::npos) {
     size_t newline_pos = full_output.find("\n", end_pos);
     if (newline_pos != std::string::npos)
@@ -382,10 +410,7 @@ void PrintTestOutputSnippetOnFailure(const TestResult& result,
   if (end_pos != std::string::npos)
     snippet = full_output.substr(run_pos, end_pos - run_pos);
 
-  // TODO(phajdan.jr): Indent each line of the snippet so it's more
-  // noticeable.
-  fprintf(stdout, "%s", snippet.c_str());
-  fflush(stdout);
+  return snippet;
 }
 
 int LaunchChildGTestProcess(const CommandLine& command_line,
@@ -574,6 +599,17 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
            true));
 
   MessageLoop::current()->Run();
+
+  if (cycles != 1)
+    results_tracker.PrintSummaryOfAllIterations();
+
+  if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
+    FilePath summary_path(
+        command_line->GetSwitchValuePath(switches::kTestLauncherSummaryOutput));
+    if (!results_tracker.SaveSummaryAsJSON(summary_path)) {
+      LOG(ERROR) << "Failed to save test launcher output summary.";
+    }
+  }
 
   return exit_code;
 }

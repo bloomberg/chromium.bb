@@ -250,7 +250,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
               test_result.status = TestResult::TEST_TIMEOUT;
             }
           }
-          PrintTestOutputSnippetOnFailure(test_result, output);
+          test_result.output_snippet =
+              GetTestOutputSnippet(test_result, output);
           tests[i].callback.Run(test_result);
           called_any_callback = true;
         } else if (had_interrupted_test) {
@@ -263,7 +264,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
           test_result.test_case_name = tests[i].test_case_name;
           test_result.test_name = tests[i].test_name;
           test_result.status = TestResult::TEST_UNKNOWN;
-          PrintTestOutputSnippetOnFailure(test_result, output);
+          test_result.output_snippet =
+              GetTestOutputSnippet(test_result, output);
           tests[i].callback.Run(test_result);
           called_any_callback = true;
         }

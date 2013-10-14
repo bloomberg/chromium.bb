@@ -17,6 +17,8 @@ class CommandLine;
 
 namespace base {
 
+class FilePath;
+
 // A helper class to output results.
 // Note: as currently XML is the only supported format by gtest, we don't
 // check output format (e.g. "xml:" prefix) here and output an XML file
@@ -51,6 +53,13 @@ class TestResultsTracker {
   // Adds |result| to the stored test results.
   void AddTestResult(const TestResult& result);
 
+  // Prints a summary of all test iterations (not just the last one) to stdout.
+  void PrintSummaryOfAllIterations() const;
+
+  // Saves a JSON summary of all test iterations results to |path|. Returns
+  // true on success.
+  bool SaveSummaryAsJSON(const FilePath& path) const WARN_UNUSED_RESULT;
+
  private:
   struct PerIterationData {
     PerIterationData();
@@ -78,8 +87,12 @@ class TestResultsTracker {
 
   ThreadChecker thread_checker_;
 
-  // TODO(phajdan.jr): Also store data for past iterations for a JSON summary.
-  PerIterationData per_iteration_data_;
+  // Store test results for each iteration.
+  std::vector<PerIterationData> per_iteration_data_;
+
+  // Index of current iteration (starting from 0). -1 before the first
+  // iteration.
+  int iteration_;
 
   // File handle of output file (can be NULL if no file).
   FILE* out_;

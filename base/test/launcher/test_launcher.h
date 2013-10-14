@@ -43,8 +43,12 @@ struct TestResult {
   };
 
   TestResult();
+  ~TestResult();
 
   std::string GetFullName() const { return test_case_name + "." + test_name; }
+
+  // Returns the test status as string (e.g. for display).
+  std::string StatusAsString() const;
 
   // Returns true if the test has completed (i.e. the test binary exited
   // normally, possibly with an exit code indicating failure, but didn't crash
@@ -63,6 +67,9 @@ struct TestResult {
 
   // Time it took to run the test.
   base::TimeDelta elapsed_time;
+
+  // Output of just this test (optional).
+  std::string output_snippet;
 };
 
 // Interface for use with LaunchTests that abstracts away exact details
@@ -104,10 +111,9 @@ class TestLauncherDelegate {
   virtual ~TestLauncherDelegate();
 };
 
-// If |result| is not successful, prints that test's failure message
-// (extracted from |full_output|) to stdout.
-void PrintTestOutputSnippetOnFailure(const TestResult& result,
-                                     const std::string& full_output);
+// Extract part from |full_output| that applies to |result|.
+std::string GetTestOutputSnippet(const TestResult& result,
+                                 const std::string& full_output);
 
 // Launches a child process (assumed to be gtest-based binary)
 // using |command_line|. If |wrapper| is not empty, it is prepended

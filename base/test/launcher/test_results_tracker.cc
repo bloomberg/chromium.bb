@@ -8,8 +8,10 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 
 namespace base {
 
@@ -22,9 +24,29 @@ namespace {
 const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
     "test_detail.xml");
 
+// Utility function to print a list of test names. Uses iterator to be
+// compatible with different containers, like vector and set.
+template<typename InputIterator>
+void PrintTests(InputIterator first,
+                InputIterator last,
+                const std::string& description) {
+  size_t count = std::distance(first, last);
+  if (count == 0)
+    return;
+
+  fprintf(stdout,
+          "%" PRIuS " test%s %s:\n",
+          count,
+          count != 1 ? "s" : "",
+          description.c_str());
+  for (InputIterator i = first; i != last; ++i)
+    fprintf(stdout, "    %s\n", (*i).c_str());
+  fflush(stdout);
+}
+
 }  // namespace
 
-TestResultsTracker::TestResultsTracker() : out_(NULL) {
+TestResultsTracker::TestResultsTracker() : iteration_(-1), out_(NULL) {
 }
 
 TestResultsTracker::~TestResultsTracker() {
@@ -36,8 +58,8 @@ TestResultsTracker::~TestResultsTracker() {
   fprintf(out_, "<testsuites name=\"AllTests\" tests=\"\" failures=\"\""
           " disabled=\"\" errors=\"\" time=\"\">\n");
   for (PerIterationData::ResultsMap::iterator i =
-           per_iteration_data_.results.begin();
-       i != per_iteration_data_.results.end();
+           per_iteration_data_[iteration_].results.begin();
+       i != per_iteration_data_[iteration_].results.end();
        ++i) {
     fprintf(out_, "  <testsuite name=\"%s\" tests=\"%" PRIuS "\" failures=\"\""
             " disabled=\"\" errors=\"\" time=\"\">\n",
@@ -115,40 +137,49 @@ void TestResultsTracker::OnTestIterationStarting(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Start with a fresh state for new iteration.
-  per_iteration_data_ = PerIterationData();
+  iteration_++;
+  per_iteration_data_.push_back(PerIterationData());
+  DCHECK_EQ(per_iteration_data_.size(), static_cast<size_t>(iteration_ + 1));
 
-  per_iteration_data_.callback = callback;
+  per_iteration_data_[iteration_].callback = callback;
 }
 
 void TestResultsTracker::OnTestStarted(const std::string& name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ++per_iteration_data_.test_started_count;
+  ++per_iteration_data_[iteration_].test_started_count;
 }
 
 void TestResultsTracker::OnAllTestsStarted() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (per_iteration_data_.test_started_count == 0) {
+  if (per_iteration_data_[iteration_].test_started_count == 0) {
     fprintf(stdout, "0 tests run\n");
     fflush(stdout);
 
     // No tests have actually been started, so fire the callback
     // to avoid a hang.
-    per_iteration_data_.callback.Run(true);
+    per_iteration_data_[iteration_].callback.Run(true);
   }
 }
 
 void TestResultsTracker::AddTestResult(const TestResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ++per_iteration_data_.test_run_count;
-  per_iteration_data_.results[result.test_case_name].push_back(result);
+  ++per_iteration_data_[iteration_].test_run_count;
+  per_iteration_data_[iteration_].results[result.test_case_name].push_back(
+      result);
+
+  if (result.status != TestResult::TEST_SUCCESS) {
+    fprintf(stdout, "%s", result.output_snippet.c_str());
+    fflush(stdout);
+  }
 
   // TODO(phajdan.jr): Align counter (padding).
-  std::string status_line(StringPrintf("[%" PRIuS "/%" PRIuS "] %s ",
-                                       per_iteration_data_.test_run_count,
-                                       per_iteration_data_.test_started_count,
-                                       result.GetFullName().c_str()));
+  std::string status_line(
+      StringPrintf("[%" PRIuS "/%" PRIuS "] %s ",
+                   per_iteration_data_[iteration_].test_run_count,
+                   per_iteration_data_[iteration_].test_started_count,
+                   result.GetFullName().c_str()));
   if (result.completed()) {
     status_line.append(StringPrintf("(%" PRId64 " ms)",
                                     result.elapsed_time.InMilliseconds()));
@@ -167,14 +198,14 @@ void TestResultsTracker::AddTestResult(const TestResult& result) {
   fprintf(stdout, "%s\n", status_line.c_str());
   fflush(stdout);
 
-  per_iteration_data_.tests_by_status[result.status].push_back(
+  per_iteration_data_[iteration_].tests_by_status[result.status].push_back(
       result.GetFullName());
 
-  if (per_iteration_data_.test_run_count ==
-      per_iteration_data_.test_started_count) {
+  if (per_iteration_data_[iteration_].test_run_count ==
+      per_iteration_data_[iteration_].test_started_count) {
     fprintf(stdout, "%" PRIuS " test%s run\n",
-            per_iteration_data_.test_run_count,
-            per_iteration_data_.test_run_count > 1 ? "s" : "");
+            per_iteration_data_[iteration_].test_run_count,
+            per_iteration_data_[iteration_].test_run_count > 1 ? "s" : "");
     fflush(stdout);
 
     PrintTestsByStatus(TestResult::TEST_FAILURE, "failed");
@@ -183,12 +214,84 @@ void TestResultsTracker::AddTestResult(const TestResult& result) {
     PrintTestsByStatus(TestResult::TEST_SKIPPED, "skipped");
     PrintTestsByStatus(TestResult::TEST_UNKNOWN, "had unknown result");
 
-    bool success = (per_iteration_data_.tests_by_status[
+    bool success = (per_iteration_data_[iteration_].tests_by_status[
                         TestResult::TEST_SUCCESS].size() ==
-                    per_iteration_data_.test_run_count);
+                    per_iteration_data_[iteration_].test_run_count);
 
-    per_iteration_data_.callback.Run(success);
+    per_iteration_data_[iteration_].callback.Run(success);
   }
+}
+
+void TestResultsTracker::PrintSummaryOfAllIterations() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  std::map<TestResult::Status, std::set<std::string> > all_tests_by_status;
+
+  for (int i = 0; i <= iteration_; i++) {
+    for (PerIterationData::StatusMap::const_iterator j =
+             per_iteration_data_[i].tests_by_status.begin();
+         j != per_iteration_data_[i].tests_by_status.end();
+         ++j) {
+      for (size_t k = 0; k < j->second.size(); k++)
+        all_tests_by_status[j->first].insert(j->second[k]);
+    }
+  }
+
+  fprintf(stdout, "Summary of all itest iterations:\n");
+  fflush(stdout);
+
+  PrintTests(all_tests_by_status[TestResult::TEST_FAILURE].begin(),
+             all_tests_by_status[TestResult::TEST_FAILURE].end(),
+             "failed");
+  PrintTests(all_tests_by_status[TestResult::TEST_TIMEOUT].begin(),
+             all_tests_by_status[TestResult::TEST_TIMEOUT].end(),
+             "timed out");
+  PrintTests(all_tests_by_status[TestResult::TEST_CRASH].begin(),
+             all_tests_by_status[TestResult::TEST_CRASH].end(),
+             "crashed");
+  PrintTests(all_tests_by_status[TestResult::TEST_SKIPPED].begin(),
+             all_tests_by_status[TestResult::TEST_SKIPPED].end(),
+             "skipped");
+  PrintTests(all_tests_by_status[TestResult::TEST_UNKNOWN].begin(),
+             all_tests_by_status[TestResult::TEST_UNKNOWN].end(),
+             "had unknown result");
+
+  fprintf(stdout, "End of the summary.\n");
+  fflush(stdout);
+}
+
+bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
+  scoped_ptr<DictionaryValue> summary_root(new DictionaryValue);
+
+  ListValue* per_iteration_data = new ListValue;
+  summary_root->Set("per_iteration_data", per_iteration_data);
+
+  for (int i = 0; i <= iteration_; i++) {
+    ListValue* current_iteration_data = new ListValue;
+    per_iteration_data->Append(current_iteration_data);
+
+    for (PerIterationData::ResultsMap::const_iterator j =
+             per_iteration_data_[i].results.begin();
+         j != per_iteration_data_[i].results.end();
+         ++j) {
+      for (size_t k = 0; k < j->second.size(); k++) {
+        const TestResult& test_result = j->second[k];
+
+        DictionaryValue* test_result_value = new DictionaryValue;
+        current_iteration_data->Append(test_result_value);
+
+        test_result_value->SetString("full_name", test_result.GetFullName());
+        test_result_value->SetString("status", test_result.StatusAsString());
+        test_result_value->SetInteger(
+            "elapsed_time_ms", test_result.elapsed_time.InMilliseconds());
+        test_result_value->SetString("output_snippet",
+                                     test_result.output_snippet);
+      }
+    }
+  }
+
+  JSONFileValueSerializer serializer(path);
+  return serializer.Serialize(*summary_root);
 }
 
 TestResultsTracker::PerIterationData::PerIterationData()
@@ -204,17 +307,8 @@ void TestResultsTracker::PrintTestsByStatus(TestResult::Status status,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const std::vector<std::string>& tests =
-      per_iteration_data_.tests_by_status[status];
-  if (tests.empty())
-    return;
-  fprintf(stdout,
-          "%" PRIuS " test%s %s:\n",
-          tests.size(),
-          tests.size() != 1 ? "s" : "",
-          description.c_str());
-  for (size_t i = 0; i < tests.size(); i++)
-    fprintf(stdout, "    %s\n", tests[i].c_str());
-  fflush(stdout);
+      per_iteration_data_[iteration_].tests_by_status[status];
+  PrintTests(tests.begin(), tests.end(), description);
 }
 
 }  // namespace base
