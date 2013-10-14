@@ -7,7 +7,9 @@
 </head>
 <body>
     <div>
-        Following actions must not emit resize events: page load, dynamic content generation, page scaling and changing fixed layout size.<br/>
+        Following actions must not emit resize events: page load, dynamic content generation and page scaling.<br/>
+
+        When fixed layout is enabled, changing fixed layout size must emit resize event.<br/>
 
         The spec DOM Level 2 Events states that the resize event occurs when document view size (a.k.a layout size) is changed. Refer to http://www.w3.org/TR/DOM-Level-2-Events/events.html<br/>
         However, showing/hiding scrollbars shouldn't be considered a layout size change. Refer to webkit.org/b/80242<br/>
@@ -24,6 +26,8 @@
 
         if (window.testRunner) {
             testRunner.dumpAsText();
+            testRunner.enableFixedLayoutMode(true);
+            testRunner.setFixedLayoutSize(700, 240);
             testRunner.waitUntilDone();
         }
         function test() {
@@ -49,8 +53,8 @@
             setTimeout(finish, 20);
         }
         function finish() {
-            // No resize events are acceptable.
-            shouldBe("resizeEventCount", "0");
+            // setFixedLayoutSize() must emit a resize event.
+            shouldBe("resizeEventCount", "1");
             if (window.testRunner)
                 testRunner.notifyDone();
         }
