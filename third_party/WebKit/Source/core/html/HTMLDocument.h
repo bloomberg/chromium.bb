@@ -50,16 +50,16 @@ public:
     Element* activeElement();
     bool hasFocus();
 
-    String bgColor();
-    void setBgColor(const String&);
-    String fgColor();
-    void setFgColor(const String&);
-    String alinkColor();
-    void setAlinkColor(const String&);
-    String linkColor();
-    void setLinkColor(const String&);
-    String vlinkColor();
-    void setVlinkColor(const String&);
+    const AtomicString& bgColor() const;
+    void setBgColor(const AtomicString&);
+    const AtomicString& fgColor() const;
+    void setFgColor(const AtomicString&);
+    const AtomicString& alinkColor() const;
+    void setAlinkColor(const AtomicString&);
+    const AtomicString& linkColor() const;
+    void setLinkColor(const AtomicString&);
+    const AtomicString& vlinkColor() const;
+    void setVlinkColor(const AtomicString&);
 
     void clear();
 
@@ -80,7 +80,11 @@ protected:
     HTMLDocument(const DocumentInit&, DocumentClassFlags extendedDocumentClasses = DefaultDocumentClass);
 
 private:
-    HTMLBodyElement* bodyAsHTMLBodyElement() const;
+    HTMLBodyElement* htmlBodyElement() const;
+
+    const AtomicString& bodyAttributeValue(const QualifiedName&) const;
+    void setBodyAttribute(const QualifiedName&, const AtomicString&);
+
     void addItemToMap(HashCountedSet<StringImpl*>&, const AtomicString&);
     void removeItemFromMap(HashCountedSet<StringImpl*>&, const AtomicString&);
 

@@ -130,90 +130,79 @@ bool HTMLDocument::hasFocus()
     return false;
 }
 
-inline HTMLBodyElement* HTMLDocument::bodyAsHTMLBodyElement() const
+HTMLBodyElement* HTMLDocument::htmlBodyElement() const
 {
-    HTMLElement* element = body();
-    return (element && element->hasTagName(bodyTag)) ? toHTMLBodyElement(element) : 0;
+    HTMLElement* body = this->body();
+    return (body && body->hasTagName(bodyTag)) ? toHTMLBodyElement(body) : 0;
 }
 
-String HTMLDocument::bgColor()
+const AtomicString& HTMLDocument::bodyAttributeValue(const QualifiedName& name) const
 {
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
-        return bodyElement->bgColor();
-    return String();
+    if (HTMLBodyElement* body = htmlBodyElement())
+        return body->fastGetAttribute(name);
+    return nullAtom;
 }
 
-void HTMLDocument::setBgColor(const String& value)
+void HTMLDocument::setBodyAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
-        bodyElement->setBgColor(value);
-}
-
-String HTMLDocument::fgColor()
-{
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
-        return bodyElement->text();
-    return String();
-}
-
-void HTMLDocument::setFgColor(const String& value)
-{
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
-        bodyElement->setText(value);
-}
-
-String HTMLDocument::alinkColor()
-{
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
-        return bodyElement->aLink();
-    return String();
-}
-
-void HTMLDocument::setAlinkColor(const String& value)
-{
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement()) {
-        // This check is a bit silly, but some benchmarks like to set the
-        // document's link colors over and over to the same value and we
-        // don't want to incur a style update each time.
-        if (bodyElement->aLink() != value)
-            bodyElement->setALink(value);
+    if (HTMLBodyElement* body = htmlBodyElement()) {
+        // FIXME: This check is apparently for benchmarks that set the same value repeatedly.
+        // It's not clear what benchmarks though, it's also not clear why we don't avoid
+        // causing a style recalc when setting the same value to a presentational attribute
+        // in the common case.
+        if (body->fastGetAttribute(name) != value)
+            body->setAttribute(name, value);
     }
 }
 
-String HTMLDocument::linkColor()
+const AtomicString& HTMLDocument::bgColor() const
 {
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
-        return bodyElement->link();
-    return String();
+    return bodyAttributeValue(bgcolorAttr);
 }
 
-void HTMLDocument::setLinkColor(const String& value)
+void HTMLDocument::setBgColor(const AtomicString& value)
 {
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement()) {
-        // This check is a bit silly, but some benchmarks like to set the
-        // document's link colors over and over to the same value and we
-        // don't want to incur a style update each time.
-        if (bodyElement->link() != value)
-            bodyElement->setLink(value);
-    }
+    setBodyAttribute(bgcolorAttr, value);
 }
 
-String HTMLDocument::vlinkColor()
+const AtomicString& HTMLDocument::fgColor() const
 {
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
-        return bodyElement->vLink();
-    return String();
+    return bodyAttributeValue(textAttr);
 }
 
-void HTMLDocument::setVlinkColor(const String& value)
+void HTMLDocument::setFgColor(const AtomicString& value)
 {
-    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement()) {
-        // This check is a bit silly, but some benchmarks like to set the
-        // document's link colors over and over to the same value and we
-        // don't want to incur a style update each time.
-        if (bodyElement->vLink() != value)
-            bodyElement->setVLink(value);
-    }
+    setBodyAttribute(textAttr, value);
+}
+
+const AtomicString& HTMLDocument::alinkColor() const
+{
+    return bodyAttributeValue(alinkAttr);
+}
+
+void HTMLDocument::setAlinkColor(const AtomicString& value)
+{
+    setBodyAttribute(alinkAttr, value);
+}
+
+const AtomicString& HTMLDocument::linkColor() const
+{
+    return bodyAttributeValue(linkAttr);
+}
+
+void HTMLDocument::setLinkColor(const AtomicString& value)
+{
+    setBodyAttribute(linkAttr, value);
+}
+
+const AtomicString& HTMLDocument::vlinkColor() const
+{
+    return bodyAttributeValue(vlinkAttr);
+}
+
+void HTMLDocument::setVlinkColor(const AtomicString& value)
+{
+    setBodyAttribute(vlinkAttr, value);
 }
 
 // --------------------------------------------------------------------------
