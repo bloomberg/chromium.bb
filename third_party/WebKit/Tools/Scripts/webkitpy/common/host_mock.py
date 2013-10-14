@@ -26,7 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from webkitpy.common.checkout.checkout_mock import MockCheckout
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.common.net.buildbot.buildbot_mock import MockBuildBot
 from webkitpy.common.net.web_mock import MockWeb
@@ -43,7 +42,6 @@ class MockHost(MockSystemHost):
         add_unit_tests_to_mock_filesystem(self.filesystem)
         self.web = web or MockWeb()
 
-        self._checkout = MockCheckout()
         self._scm = None
         # FIXME: we should never initialize the SCM by default, since the real
         # object doesn't either. This has caused at least one bug (see bug 89498).

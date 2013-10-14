@@ -38,6 +38,7 @@ _log = logging.getLogger(__name__)
 class CommitAnnouncerCommand(AbstractDeclarativeCommand):
     name = "commit-announcer"
     help_text = "Start an IRC bot for announcing new git commits."
+    show_in_main_help = True
 
     def __init__(self):
         options = [

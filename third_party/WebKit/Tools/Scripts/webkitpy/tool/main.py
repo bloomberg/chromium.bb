@@ -33,7 +33,6 @@ from optparse import make_option
 import os
 import threading
 
-from webkitpy.common.config.ports import DeprecatedPort
 from webkitpy.common.host import Host
 from webkitpy.tool.multicommandtool import MultiCommandTool
 from webkitpy.tool import commands
@@ -43,8 +42,6 @@ class WebKitPatch(MultiCommandTool, Host):
     global_options = [
         make_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="enable all logging"),
         make_option("-d", "--directory", action="append", dest="patch_directories", default=[], help="Directory to look at for changed files"),
-        make_option("--seconds-to-sleep", action="store", default=120, type="int", help="Number of seconds to sleep in the task queue."),
-        make_option("--port", action="store", dest="port", default=None, help="Specify a port (e.g., mac, qt, gtk, ...)."),
     ]
 
     def __init__(self, path):
@@ -52,10 +49,6 @@ class WebKitPatch(MultiCommandTool, Host):
         Host.__init__(self)
         self._path = path
         self.wakeup_event = threading.Event()
-        self._deprecated_port = None
-
-    def deprecated_port(self):
-        return self._deprecated_port
 
     def path(self):
         return self._path
@@ -70,8 +63,6 @@ class WebKitPatch(MultiCommandTool, Host):
     # FIXME: This may be unnecessary since we pass global options to all commands during execute() as well.
     def handle_global_options(self, options):
         self.initialize_scm(options.patch_directories)
-        # If options.port is None, we'll get the default port for this platform.
-        self._deprecated_port = DeprecatedPort.port(options.port)
 
     def should_execute_command(self, command):
         if command.requires_local_commits and not self.scm().supports_local_commits():

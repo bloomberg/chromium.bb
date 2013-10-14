@@ -227,6 +227,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
 class OptimizeBaselines(AbstractRebaseliningCommand):
     name = "optimize-baselines"
     help_text = "Reshuffles the baselines for the given tests to use as litte space on disk as possible."
+    show_in_main_help = True
     argument_names = "TEST_NAMES"
 
     def __init__(self):
@@ -255,6 +256,7 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
 class AnalyzeBaselines(AbstractRebaseliningCommand):
     name = "analyze-baselines"
     help_text = "Analyzes the baselines for the given tests and prints results that are identical."
+    show_in_main_help = True
     argument_names = "TEST_NAMES"
 
     def __init__(self):
@@ -492,6 +494,7 @@ class RebaselineJson(AbstractParallelRebaselineCommand):
 class RebaselineExpectations(AbstractParallelRebaselineCommand):
     name = "rebaseline-expectations"
     help_text = "Rebaselines the tests indicated in TestExpectations."
+    show_in_main_help = True
 
     def __init__(self):
         super(RebaselineExpectations, self).__init__(options=[
@@ -539,6 +542,7 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
 class Rebaseline(AbstractParallelRebaselineCommand):
     name = "rebaseline"
     help_text = "Rebaseline tests with results from the build bots. Shows the list of failing tests on the builders if no test names are provided."
+    show_in_main_help = True
     argument_names = "[TEST_NAMES]"
 
     def __init__(self):
@@ -841,6 +845,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 class RebaselineOMatic(AbstractDeclarativeCommand):
     name = "rebaseline-o-matic"
     help_text = "Calls webkit-patch auto-rebaseline in a loop."
+    show_in_main_help = True
 
     SLEEP_TIME_IN_SECONDS = 30
 

@@ -31,7 +31,6 @@ import sys
 
 from webkitpy.tool import steps
 
-from webkitpy.common.checkout.scm import CheckoutNeedsUpdate
 from webkitpy.common.system.executive import ScriptError
 
 _log = logging.getLogger(__name__)
@@ -79,12 +78,6 @@ class StepSequence(object):
             state = {}
         try:
             self._run(tool, options, state)
-        except CheckoutNeedsUpdate, e:
-            _log.info("Commit failed because the checkout is out of date. Please update and try again.")
-            if options.parent_command:
-                command = tool.command_by_name(options.parent_command)
-                command.handle_checkout_needs_update(tool, state, options, e)
-            self.exit_after_handled_error(e)
         except ScriptError, e:
             if not options.quiet:
                 _log.error(e.message_with_output())

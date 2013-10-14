@@ -45,6 +45,7 @@ _log = logging.getLogger(__name__)
 class CrashLog(AbstractDeclarativeCommand):
     name = "crash-log"
     help_text = "Print the newest crash log for the given process"
+    show_in_main_help = True
     long_help = """Finds the newest crash log matching the given process name
 and PID and prints it to stdout."""
     argument_names = "PROCESS_NAME [PID]"
@@ -60,6 +61,7 @@ and PID and prints it to stdout."""
 class PrintExpectations(AbstractDeclarativeCommand):
     name = 'print-expectations'
     help_text = 'Print the expected result for the given test(s) on the given port(s)'
+    show_in_main_help = True
 
     def __init__(self):
         options = [
@@ -151,6 +153,7 @@ class PrintExpectations(AbstractDeclarativeCommand):
 class PrintBaselines(AbstractDeclarativeCommand):
     name = 'print-baselines'
     help_text = 'Prints the baseline locations for given test(s) on the given port(s)'
+    show_in_main_help = True
 
     def __init__(self):
         options = [

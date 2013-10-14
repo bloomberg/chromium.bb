@@ -27,19 +27,5 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # FIXME: Is this the right way to do this?
-from webkitpy.tool.steps.addsvnmimetypeforpng import AddSvnMimetypeForPng
-from webkitpy.tool.steps.checkstyle import CheckStyle
-from webkitpy.tool.steps.cleanworkingdirectory import CleanWorkingDirectory
-from webkitpy.tool.steps.commit import Commit
 from webkitpy.tool.steps.confirmdiff import ConfirmDiff
-from webkitpy.tool.steps.discardlocalchanges import DiscardLocalChanges
-from webkitpy.tool.steps.ensurebugisopenandassigned import EnsureBugIsOpenAndAssigned
-from webkitpy.tool.steps.ensurelocalcommitifneeded import EnsureLocalCommitIfNeeded
-from webkitpy.tool.steps.haslanded import HasLanded
-from webkitpy.tool.steps.obsoletepatches import ObsoletePatches
 from webkitpy.tool.steps.options import Options
-from webkitpy.tool.steps.postdiff import PostDiff
-from webkitpy.tool.steps.promptforbugortitle import PromptForBugOrTitle
-from webkitpy.tool.steps.reopenbugafterrollout import ReopenBugAfterRollout
-from webkitpy.tool.steps.revertrevision import RevertRevision
-from webkitpy.tool.steps.runtests import RunTests

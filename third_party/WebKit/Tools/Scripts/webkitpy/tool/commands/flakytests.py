@@ -34,6 +34,7 @@ from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 class FlakyTests(AbstractDeclarativeCommand):
     name = "flaky-tests"
     help_text = "Generate FlakyTests file from the flakiness dashboard"
+    show_in_main_help = True
 
     def execute(self, options, args, tool):
         port = tool.port_factory.get()

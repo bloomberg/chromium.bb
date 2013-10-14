@@ -30,6 +30,7 @@ from webkitpy.tool.servers.gardeningserver import GardeningHTTPServer
 class GardenOMatic(AbstractRebaseliningCommand):
     name = "garden-o-matic"
     help_text = "Command for gardening the WebKit tree."
+    show_in_main_help = True
 
     def __init__(self):
         super(GardenOMatic, self).__init__(options=(self.platform_options + [

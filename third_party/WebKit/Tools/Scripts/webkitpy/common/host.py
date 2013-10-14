@@ -31,7 +31,6 @@ import logging
 import os
 import sys
 
-from webkitpy.common.checkout import Checkout
 from webkitpy.common.checkout.scm.detection import SCMDetector
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net import buildbot, web
@@ -48,9 +47,7 @@ class Host(SystemHost):
         SystemHost.__init__(self)
         self.web = web.Web()
 
-        # FIXME: Checkout should own the scm object.
         self._scm = None
-        self._checkout = None
 
         # Everything below this line is WebKit-specific and belongs on a higher-level object.
         self.buildbot = buildbot.BuildBot()
@@ -128,13 +125,9 @@ class Host(SystemHost):
             self._engage_awesome_windows_hacks()
         detector = SCMDetector(self.filesystem, self.executive)
         self._scm = detector.default_scm(patch_directories)
-        self._checkout = Checkout(self.scm())
 
     def scm(self):
         return self._scm
-
-    def checkout(self):
-        return self._checkout
 
     def buildbot_for_builder_name(self, name):
         if self.port_factory.get_from_builder_name(name).is_chromium():
