@@ -69,11 +69,8 @@ namespace cc {
 // refers to the layer itself, as a child of the
 // current target RenderSurface.
 //
-// The BackToFront iterator will return a layer representing the target surface
-// before returning layers representing themselves as children of the current
-// target surface. Whereas the FrontToBack ordering will iterate over children
-// layers of a surface before the layer representing the surface
-// as a target surface.
+// The FrontToBack iterator will iterate over children layers of a surface
+// before the layer representing the surface as a target surface.
 //
 // To use the iterators:
 //
@@ -237,34 +234,6 @@ class LayerIterator {
 
 // Orderings for iterating over the RenderSurface-Layer tree.
 struct CC_EXPORT LayerIteratorActions {
-  // Walks layers sorted by z-order from back to front.
-  class CC_EXPORT BackToFront {
-   public:
-    template <typename LayerType,
-              typename LayerList,
-              typename RenderSurfaceType,
-              typename ActionType>
-    void Begin(
-        LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it);
-
-    template <typename LayerType,
-              typename LayerList,
-              typename RenderSurfaceType,
-              typename ActionType>
-    void End(
-        LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it);
-
-    template <typename LayerType,
-              typename LayerList,
-              typename RenderSurfaceType,
-              typename ActionType>
-    void Next(
-        LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it);
-
-   private:
-    int highest_target_render_surface_layer_;
-  };
-
   // Walks layers sorted by z-order from front to back
   class CC_EXPORT FrontToBack {
    public:

@@ -54,10 +54,6 @@ typedef LayerIterator<Layer,
                       RenderSurfaceLayerList,
                       RenderSurface,
                       LayerIteratorActions::FrontToBack> FrontToBack;
-typedef LayerIterator<Layer,
-                      RenderSurfaceLayerList,
-                      RenderSurface,
-                      LayerIteratorActions::BackToFront> BackToFront;
 
 void ResetCounts(RenderSurfaceLayerList* render_surface_layer_list) {
   for (unsigned surface_index = 0;
@@ -101,27 +97,9 @@ void IterateFrontToBack(
   }
 }
 
-void IterateBackToFront(
-    RenderSurfaceLayerList* render_surface_layer_list) {
-  ResetCounts(render_surface_layer_list);
-  int count = 0;
-  for (BackToFront it = BackToFront::Begin(render_surface_layer_list);
-       it != BackToFront::End(render_surface_layer_list);
-       ++it, ++count) {
-    TestLayer* layer = static_cast<TestLayer*>(*it);
-    if (it.represents_target_render_surface())
-      layer->count_representing_target_surface_ = count;
-    if (it.represents_contributing_render_surface())
-      layer->count_representing_contributing_surface_ = count;
-    if (it.represents_itself())
-      layer->count_representing_itself_ = count;
-  }
-}
-
 TEST(LayerIteratorTest, EmptyTree) {
   RenderSurfaceLayerList render_surface_layer_list;
 
-  IterateBackToFront(&render_surface_layer_list);
   IterateFrontToBack(&render_surface_layer_list);
 }
 
@@ -144,13 +122,6 @@ TEST(LayerIteratorTest, SimpleTree) {
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
       root_layer.get(), root_layer->bounds(), &render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-  IterateBackToFront(&render_surface_layer_list);
-  EXPECT_COUNT(root_layer, 0, -1, 1);
-  EXPECT_COUNT(first, -1, -1, 2);
-  EXPECT_COUNT(second, -1, -1, 3);
-  EXPECT_COUNT(third, -1, -1, 4);
-  EXPECT_COUNT(fourth, -1, -1, 5);
 
   IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 5, -1, 4);
@@ -187,17 +158,6 @@ TEST(LayerIteratorTest, ComplexTree) {
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
       root_layer.get(), root_layer->bounds(), &render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-  IterateBackToFront(&render_surface_layer_list);
-  EXPECT_COUNT(root_layer, 0, -1, 1);
-  EXPECT_COUNT(root1, -1, -1, 2);
-  EXPECT_COUNT(root2, -1, -1, 3);
-  EXPECT_COUNT(root21, -1, -1, 4);
-  EXPECT_COUNT(root22, -1, -1, 5);
-  EXPECT_COUNT(root221, -1, -1, 6);
-  EXPECT_COUNT(root23, -1, -1, 7);
-  EXPECT_COUNT(root231, -1, -1, 8);
-  EXPECT_COUNT(root3, -1, -1, 9);
 
   IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 9, -1, 8);
@@ -243,17 +203,6 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
       root_layer.get(), root_layer->bounds(), &render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-  IterateBackToFront(&render_surface_layer_list);
-  EXPECT_COUNT(root_layer, 0, -1, 1);
-  EXPECT_COUNT(root1, -1, -1, 2);
-  EXPECT_COUNT(root2, 4, 3, -1);
-  EXPECT_COUNT(root21, -1, -1, 5);
-  EXPECT_COUNT(root22, 7, 6, 8);
-  EXPECT_COUNT(root221, -1, -1, 9);
-  EXPECT_COUNT(root23, 11, 10, 12);
-  EXPECT_COUNT(root231, -1, -1, 13);
-  EXPECT_COUNT(root3, -1, -1, 14);
 
   IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 14, -1, 13);

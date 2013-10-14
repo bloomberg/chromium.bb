@@ -893,11 +893,10 @@ void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {
 
 void LayerTreeHost::SetPrioritiesForLayers(
     const RenderSurfaceLayerList& update_list) {
-  // Use BackToFront since it's cheap and this isn't order-dependent.
   typedef LayerIterator<Layer,
                         RenderSurfaceLayerList,
                         RenderSurface,
-                        LayerIteratorActions::BackToFront> LayerIteratorType;
+                        LayerIteratorActions::FrontToBack> LayerIteratorType;
 
   PriorityCalculator calculator;
   LayerIteratorType end = LayerIteratorType::End(&update_list);

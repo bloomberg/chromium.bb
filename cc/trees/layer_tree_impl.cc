@@ -597,7 +597,7 @@ scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
   typedef LayerIterator<LayerImpl,
                         LayerImplList,
                         RenderSurfaceImpl,
-                        LayerIteratorActions::BackToFront> LayerIteratorType;
+                        LayerIteratorActions::FrontToBack> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
   for (LayerIteratorType it = LayerIteratorType::Begin(
            &render_surface_layer_list_); it != end; ++it) {

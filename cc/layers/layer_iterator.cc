@@ -17,81 +17,6 @@ template <typename LayerType,
           typename LayerList,
           typename RenderSurfaceType,
           typename ActionType>
-void LayerIteratorActions::BackToFront::Begin(
-    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
-  it->target_render_surface_layer_index_ = 0;
-  it->current_layer_index_ =
-      LayerIteratorValue::kLayerIndexRepresentingTargetRenderSurface;
-
-  highest_target_render_surface_layer_ = 0;
-}
-
-template <typename LayerType,
-          typename LayerList,
-          typename RenderSurfaceType,
-          typename ActionType>
-void LayerIteratorActions::BackToFront::End(
-    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
-  it->target_render_surface_layer_index_ =
-      LayerIteratorValue::kInvalidTargetRenderSurfaceLayerIndex;
-  it->current_layer_index_ = 0;
-}
-
-template <typename LayerType,
-          typename LayerList,
-          typename RenderSurfaceType,
-          typename ActionType>
-void LayerIteratorActions::BackToFront::Next(
-    LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
-  // If the current layer has a RS, move to its layer list. Otherwise,
-  // visit the next layer in the current RS layer list.
-  if (it->current_layer_represents_contributing_render_surface()) {
-    // Save our position in the child_layers list for the RenderSurface,
-    // then jump to the next RenderSurface. Save where we
-    // came from in the next RenderSurface so we can get back to it.
-    it->target_render_surface()->current_layer_index_history_ =
-        it->current_layer_index_;
-    int previous_target_render_surface_layer =
-        it->target_render_surface_layer_index_;
-
-    it->target_render_surface_layer_index_ =
-        ++highest_target_render_surface_layer_;
-    it->current_layer_index_ =
-        LayerIteratorValue::kLayerIndexRepresentingTargetRenderSurface;
-
-    it->target_render_surface()->target_render_surface_layer_index_history_ =
-        previous_target_render_surface_layer;
-  } else {
-    ++it->current_layer_index_;
-
-    int target_render_surface_num_children =
-        it->target_render_surface_children().size();
-    while (it->current_layer_index_ == target_render_surface_num_children) {
-      // Jump back to the previous RenderSurface,
-      // and get back the position where we were in that list,
-      // and move to the next position there.
-      if (!it->target_render_surface_layer_index_) {
-        // End of the list
-        it->target_render_surface_layer_index_ =
-            LayerIteratorValue::kInvalidTargetRenderSurfaceLayerIndex;
-        it->current_layer_index_ = 0;
-        return;
-      }
-      it->target_render_surface_layer_index_ = it->target_render_surface()
-          ->target_render_surface_layer_index_history_;
-      it->current_layer_index_ =
-          it->target_render_surface()->current_layer_index_history_ + 1;
-
-      target_render_surface_num_children =
-          it->target_render_surface_children().size();
-    }
-  }
-}
-
-template <typename LayerType,
-          typename LayerList,
-          typename RenderSurfaceType,
-          typename ActionType>
 void LayerIteratorActions::FrontToBack::Begin(
     LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it) {
   it->target_render_surface_layer_index_ = 0;
@@ -176,26 +101,6 @@ void LayerIteratorActions::FrontToBack::GoToHighestInSubtree(
 
 // Declare each of the above functions for Layer and LayerImpl classes
 // so that they are linked.
-template CC_EXPORT void LayerIteratorActions::BackToFront::Begin(
-    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, BackToFront>*
-        it);
-template CC_EXPORT void LayerIteratorActions::BackToFront::End(
-    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, BackToFront>*
-        it);
-template CC_EXPORT void LayerIteratorActions::BackToFront::Next(
-    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, BackToFront>*
-        it);
-
-template CC_EXPORT void LayerIteratorActions::BackToFront::Begin(
-    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>*
-        it);
-template CC_EXPORT void LayerIteratorActions::BackToFront::End(
-    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>*
-        it);
-template CC_EXPORT void LayerIteratorActions::BackToFront::Next(
-    LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>*
-        it);
-
 template CC_EXPORT void LayerIteratorActions::FrontToBack::Next(
     LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, FrontToBack>*
         it);
