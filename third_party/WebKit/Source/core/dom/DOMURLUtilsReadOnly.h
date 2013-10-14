@@ -40,7 +40,6 @@ public:
     virtual String input() const = 0;
 
     static String href(DOMURLUtilsReadOnly*);
-    static String toString(DOMURLUtilsReadOnly*);
 
     static String protocol(DOMURLUtilsReadOnly*);
     static String host(DOMURLUtilsReadOnly*);
