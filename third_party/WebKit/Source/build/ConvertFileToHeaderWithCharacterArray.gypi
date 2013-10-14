@@ -44,6 +44,7 @@
       'action_name': 'ConvertFileToHeaderWithCharacterArray',
       'inputs': [
         '../build/scripts/xxd.pl',
+        '<(input_file_path)',
       ],
       'outputs': [ '<@(output_file_path)', ],
       'action': [
