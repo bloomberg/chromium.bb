@@ -724,8 +724,6 @@ private:
     void updateNeedsCompositedScrolling();
 
 public:
-    GraphicsLayer* layerForScrolling() const;
-    GraphicsLayer* layerForScrollChild() const;
     bool usesCompositedScrolling() const;
 
     bool hasOverlayScrollbars() const;

@@ -148,7 +148,7 @@ void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
 
 GraphicsLayer* RenderLayerScrollableArea::layerForScrolling() const
 {
-    return layer()->layerForScrolling();
+    return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->scrollingContentsLayer() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForHorizontalScrollbar() const

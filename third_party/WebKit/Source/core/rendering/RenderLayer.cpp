@@ -4494,16 +4494,6 @@ bool RenderLayer::hasCompositedClippingMask() const
     return m_compositedLayerMapping && m_compositedLayerMapping->hasChildClippingMaskLayer();
 }
 
-GraphicsLayer* RenderLayer::layerForScrolling() const
-{
-    return m_compositedLayerMapping ? m_compositedLayerMapping->scrollingContentsLayer() : 0;
-}
-
-GraphicsLayer* RenderLayer::layerForScrollChild() const
-{
-    return m_compositedLayerMapping ? m_compositedLayerMapping->childForSuperlayers() : 0;
-}
-
 bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 {
     return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || !isComposited());

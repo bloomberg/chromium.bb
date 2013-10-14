@@ -1332,7 +1332,8 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
     if (searchRoot->compositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer())
         return searchRoot;
 
-    if (graphicsLayer == searchRoot->layerForScrolling()) {
+    GraphicsLayer* layerForScrolling = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForScrolling() : 0;
+    if (graphicsLayer == layerForScrolling) {
         *layerType = "scrolling";
         return searchRoot;
     }
