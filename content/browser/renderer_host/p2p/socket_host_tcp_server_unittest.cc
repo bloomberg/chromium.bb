@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
 
+#include <list>
+
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "net/base/completion_callback.h"

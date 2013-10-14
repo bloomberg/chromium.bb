@@ -15,8 +15,6 @@
 #include <sys/socket.h>
 #endif
 
-#include <list>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -175,8 +173,8 @@ NET_EXPORT std::string GetHostName();
 // Extracts the unescaped username/password from |url|, saving the results
 // into |*username| and |*password|.
 NET_EXPORT_PRIVATE void GetIdentityFromURL(const GURL& url,
-                        base::string16* username,
-                        base::string16* password);
+                                           base::string16* username,
+                                           base::string16* password);
 
 // Returns either the host from |url|, or, if the host is empty, the full spec.
 NET_EXPORT std::string GetHostOrSpecFromURL(const GURL& url);
@@ -203,7 +201,7 @@ NET_EXPORT std::string GetSpecificHeader(const std::string& headers,
 // script-language pairs (currently Han, Kana and Hangul for zh,ja and ko).
 // When |languages| is empty, even that mixing is not allowed.
 NET_EXPORT base::string16 IDNToUnicode(const std::string& host,
-                                 const std::string& languages);
+                                       const std::string& languages);
 
 // Canonicalizes |host| and returns it.  Also fills |host_info| with
 // IP address information.  |host_info| must not be NULL.
@@ -430,7 +428,7 @@ NET_EXPORT void SetExplicitlyAllowedPorts(const std::string& allowed_ports);
 
 class NET_EXPORT ScopedPortException {
  public:
-  ScopedPortException(int port);
+  explicit ScopedPortException(int port);
   ~ScopedPortException();
 
  private:

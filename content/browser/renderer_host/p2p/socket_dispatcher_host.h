@@ -6,6 +6,9 @@
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_DISPATCHER_HOST_H_
 
 #include <map>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
 #include "content/common/p2p_sockets.h"
