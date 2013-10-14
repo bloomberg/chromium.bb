@@ -1024,7 +1024,7 @@ class ChromiumAndroidDriver(driver.Driver):
         self._abort('Failed to start the content_shell application multiple times. Giving up.')
 
     def _start_once(self, pixel_tests, per_test_args):
-        super(ChromiumAndroidDriver, self)._start(pixel_tests, per_test_args)
+        super(ChromiumAndroidDriver, self)._start(pixel_tests, per_test_args, wait_for_ready=False)
 
         self._log_debug('Starting forwarder')
         self._forwarder_process = self._port._server_process_constructor(
@@ -1145,16 +1145,3 @@ class ChromiumAndroidDriver(driver.Driver):
                 if last_char in ('#', '$'):
                     return
             last_char = current_char
-
-    def _wait_for_server_process_output(self, server_process, deadline, text):
-        output = ''
-        line = server_process.read_stdout_line(deadline)
-        while not server_process.timed_out and not server_process.has_crashed() and not text in line.rstrip():
-            output += line
-            line = server_process.read_stdout_line(deadline)
-
-        if server_process.timed_out or server_process.has_crashed():
-            _log.error('Failed to start the %s process: \n%s' % (server_process.name(), output))
-            return False
-
-        return True

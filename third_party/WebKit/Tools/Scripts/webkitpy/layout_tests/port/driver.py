@@ -42,6 +42,9 @@ from webkitpy.common.system.profiler import ProfilerFactory
 _log = logging.getLogger(__name__)
 
 
+DRIVER_START_TIMEOUT_SECS = 30
+
+
 class DriverInput(object):
     def __init__(self, test_name, timeout, image_hash, should_run_pixel_test, args=None):
         self.test_name = test_name
@@ -261,7 +264,7 @@ class Driver(object):
             environment = self._profiler.adjusted_environment(environment)
         return environment
 
-    def _start(self, pixel_tests, per_test_args):
+    def _start(self, pixel_tests, per_test_args, wait_for_ready=True):
         self.stop()
         self._driver_tempdir = self._port._filesystem.mkdtemp(prefix='%s-' % self._port.driver_name())
         server_name = self._port.driver_name()
@@ -273,6 +276,24 @@ class Driver(object):
         self._server_process = self._port._server_process_constructor(self._port, server_name, cmd_line, environment, logging=self._port.get_option("driver_logging"))
         self._server_process.start()
         self._current_cmd_line = cmd_line
+
+        if wait_for_ready:
+            deadline = time.time() + DRIVER_START_TIMEOUT_SECS
+            if not self._wait_for_server_process_output(self._server_process, deadline, '#READY'):
+                _log.error("content_shell took too long to startup.")
+
+    def _wait_for_server_process_output(self, server_process, deadline, text):
+        output = ''
+        line = server_process.read_stdout_line(deadline)
+        while not server_process.timed_out and not server_process.has_crashed() and not text in line.rstrip():
+            output += line
+            line = server_process.read_stdout_line(deadline)
+
+        if server_process.timed_out or server_process.has_crashed():
+            _log.error('Failed to start the %s process: \n%s' % (server_process.name(), output))
+            return False
+
+        return True
 
     def _run_post_start_tasks(self):
         # Remote drivers may override this to delay post-start tasks until the server has ack'd.
@@ -422,10 +443,6 @@ class Driver(object):
 
             if out_line:
                 assert not out_seen_eof
-                # FIXME: This is a temporary hack so we can have content_shell print out when it's ready to start running tests.
-                # Once content_shell spits out #READY, then we can have _start block until it sees that message.
-                if out_line == "#READY\n":
-                    continue
                 out_line, out_seen_eof = self._strip_eof(out_line)
             if err_line:
                 assert not self.err_seen_eof
