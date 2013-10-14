@@ -338,17 +338,14 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
     *destinationLength = 0;
     while (position < length) {
         UChar32 character;
-        unsigned nextPosition = position;
-        U16_NEXT(source, nextPosition, length, character);
+        U16_NEXT(source, position, length, character);
         // Don't normalize tabs as they are not treated as spaces for word-end.
         if (Font::treatAsSpace(character) && character != '\t')
             character = ' ';
         else if (Font::treatAsZeroWidthSpaceInComplexScript(character))
             character = zeroWidthSpace;
-        U16_APPEND(destination, position, length, character, error);
+        U16_APPEND(destination, *destinationLength, length, character, error);
         ASSERT_UNUSED(error, !error);
-        *destinationLength += U16_LENGTH(character);
-        position = nextPosition;
     }
 }
 
@@ -382,8 +379,7 @@ static void normalizeSpacesAndMirrorChars(const UChar* source, unsigned length, 
     *destinationLength = 0;
     while (position < length) {
         UChar32 character;
-        int nextPosition = position;
-        U16_NEXT(source, nextPosition, length, character);
+        U16_NEXT(source, position, length, character);
         // Don't normalize tabs as they are not treated as spaces for word-end
         if (Font::treatAsSpace(character) && character != '\t')
             character = ' ';
@@ -391,10 +387,8 @@ static void normalizeSpacesAndMirrorChars(const UChar* source, unsigned length, 
             character = zeroWidthSpace;
         else if (normalizeMode == HarfBuzzShaper::NormalizeMirrorChars)
             character = u_charMirror(character);
-        U16_APPEND(destination, position, length, character, error);
+        U16_APPEND(destination, *destinationLength, length, character, error);
         ASSERT_UNUSED(error, !error);
-        *destinationLength += U16_LENGTH(character);
-        position = nextPosition;
     }
 }
 
