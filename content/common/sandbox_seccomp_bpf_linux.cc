@@ -1883,7 +1883,8 @@ void InitGpuBrokerProcess(Sandbox::EvaluateSyscall gpu_policy,
     NOTREACHED();
   }
 
-  *broker_process = new BrokerProcess(read_whitelist, write_whitelist);
+  *broker_process = new BrokerProcess(EPERM,
+                                      read_whitelist, write_whitelist);
   // Initialize the broker process and give it a sandbox callback.
   CHECK((*broker_process)->Init(sandbox_callback));
 }

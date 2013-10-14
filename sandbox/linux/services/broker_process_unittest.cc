@@ -68,7 +68,8 @@ TEST(BrokerProcess, CreateAndDestroy) {
   std::vector<std::string> read_whitelist;
   read_whitelist.push_back("/proc/cpuinfo");
 
-  BrokerProcess* open_broker = new BrokerProcess(read_whitelist,
+  BrokerProcess* open_broker = new BrokerProcess(EPERM,
+                                                 read_whitelist,
                                                  std::vector<std::string>());
   ASSERT_TRUE(open_broker->Init(NULL));
   pid_t broker_pid = open_broker->broker_pid();
@@ -83,7 +84,7 @@ TEST(BrokerProcess, CreateAndDestroy) {
 
 TEST(BrokerProcess, TestOpenAccessNull) {
   const std::vector<std::string> empty;
-  BrokerProcess open_broker(empty, empty);
+  BrokerProcess open_broker(EPERM, empty, empty);
   ASSERT_TRUE(open_broker.Init(NULL));
 
   int fd = open_broker.Open(NULL, O_RDONLY);
@@ -93,7 +94,7 @@ TEST(BrokerProcess, TestOpenAccessNull) {
   ASSERT_EQ(ret, -EFAULT);
 }
 
-void TestOpenFilePerms(bool fast_check_in_client) {
+void TestOpenFilePerms(bool fast_check_in_client, int denied_errno) {
   const char kR_WhiteListed[] = "/proc/DOESNOTEXIST1";
   // We can't debug the init process, and shouldn't be able to access
   // its auxv file.
@@ -111,7 +112,8 @@ void TestOpenFilePerms(bool fast_check_in_client) {
   write_whitelist.push_back(kW_WhiteListed);
   write_whitelist.push_back(kRW_WhiteListed);
 
-  BrokerProcess open_broker(read_whitelist,
+  BrokerProcess open_broker(denied_errno,
+                            read_whitelist,
                             write_whitelist,
                             fast_check_in_client);
   ASSERT_TRUE(open_broker.Init(NULL));
@@ -120,22 +122,22 @@ void TestOpenFilePerms(bool fast_check_in_client) {
   fd = open_broker.Open(kR_WhiteListed, O_RDONLY);
   ASSERT_EQ(fd, -ENOENT);
   fd = open_broker.Open(kR_WhiteListed, O_WRONLY);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
   fd = open_broker.Open(kR_WhiteListed, O_RDWR);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
   int ret = -1;
   ret = open_broker.Access(kR_WhiteListed, F_OK);
   ASSERT_EQ(ret, -ENOENT);
   ret = open_broker.Access(kR_WhiteListed, R_OK);
   ASSERT_EQ(ret, -ENOENT);
   ret = open_broker.Access(kR_WhiteListed, W_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(kR_WhiteListed, R_OK | W_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(kR_WhiteListed, X_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(kR_WhiteListed, R_OK | X_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
 
   // Android sometimes runs tests as root.
   // This part of the test requires a process that doesn't have
@@ -146,42 +148,42 @@ void TestOpenFilePerms(bool fast_check_in_client) {
     // won't.
     ASSERT_EQ(fd, -EACCES);
     fd = open_broker.Open(kR_WhiteListedButDenied, O_WRONLY);
-    ASSERT_EQ(fd, -EPERM);
+    ASSERT_EQ(fd, -denied_errno);
     fd = open_broker.Open(kR_WhiteListedButDenied, O_RDWR);
-    ASSERT_EQ(fd, -EPERM);
+    ASSERT_EQ(fd, -denied_errno);
     ret = open_broker.Access(kR_WhiteListedButDenied, F_OK);
     // The normal permission system will let us check that the file exists.
     ASSERT_EQ(ret, 0);
     ret = open_broker.Access(kR_WhiteListedButDenied, R_OK);
     ASSERT_EQ(ret, -EACCES);
     ret = open_broker.Access(kR_WhiteListedButDenied, W_OK);
-    ASSERT_EQ(ret, -EPERM);
+    ASSERT_EQ(ret, -denied_errno);
     ret = open_broker.Access(kR_WhiteListedButDenied, R_OK | W_OK);
-    ASSERT_EQ(ret, -EPERM);
+    ASSERT_EQ(ret, -denied_errno);
     ret = open_broker.Access(kR_WhiteListedButDenied, X_OK);
-    ASSERT_EQ(ret, -EPERM);
+    ASSERT_EQ(ret, -denied_errno);
     ret = open_broker.Access(kR_WhiteListedButDenied, R_OK | X_OK);
-    ASSERT_EQ(ret, -EPERM);
+    ASSERT_EQ(ret, -denied_errno);
   }
 
   fd = open_broker.Open(kW_WhiteListed, O_RDONLY);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
   fd = open_broker.Open(kW_WhiteListed, O_WRONLY);
   ASSERT_EQ(fd, -ENOENT);
   fd = open_broker.Open(kW_WhiteListed, O_RDWR);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
   ret = open_broker.Access(kW_WhiteListed, F_OK);
   ASSERT_EQ(ret, -ENOENT);
   ret = open_broker.Access(kW_WhiteListed, R_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(kW_WhiteListed, W_OK);
   ASSERT_EQ(ret, -ENOENT);
   ret = open_broker.Access(kW_WhiteListed, R_OK | W_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(kW_WhiteListed, X_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(kW_WhiteListed, R_OK | X_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
 
   fd = open_broker.Open(kRW_WhiteListed, O_RDONLY);
   ASSERT_EQ(fd, -ENOENT);
@@ -198,61 +200,73 @@ void TestOpenFilePerms(bool fast_check_in_client) {
   ret = open_broker.Access(kRW_WhiteListed, R_OK | W_OK);
   ASSERT_EQ(ret, -ENOENT);
   ret = open_broker.Access(kRW_WhiteListed, X_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(kRW_WhiteListed, R_OK | X_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
 
   fd = open_broker.Open(k_NotWhitelisted, O_RDONLY);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
   fd = open_broker.Open(k_NotWhitelisted, O_WRONLY);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
   fd = open_broker.Open(k_NotWhitelisted, O_RDWR);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
   ret = open_broker.Access(k_NotWhitelisted, F_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(k_NotWhitelisted, R_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(k_NotWhitelisted, W_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(k_NotWhitelisted, R_OK | W_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(k_NotWhitelisted, X_OK);
-  ASSERT_EQ(ret, -EPERM);
+  ASSERT_EQ(ret, -denied_errno);
   ret = open_broker.Access(k_NotWhitelisted, R_OK | X_OK);
-  ASSERT_EQ(ret, -EPERM);
-
+  ASSERT_EQ(ret, -denied_errno);
 
   // We have some extra sanity check for clearly wrong values.
   fd = open_broker.Open(kRW_WhiteListed, O_RDONLY|O_WRONLY|O_RDWR);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
 
   // It makes no sense to allow O_CREAT in a 2-parameters open. Ensure this
   // is denied.
   fd = open_broker.Open(kRW_WhiteListed, O_RDWR|O_CREAT);
-  ASSERT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -denied_errno);
 }
 
 // Run the same thing twice. The second time, we make sure that no security
 // check is performed on the client.
 TEST(BrokerProcess, OpenFilePermsWithClientCheck) {
-  TestOpenFilePerms(true /* fast_check_in_client */);
+  TestOpenFilePerms(true /* fast_check_in_client */, EPERM);
   // Don't do anything here, so that ASSERT works in the subfunction as
   // expected.
 }
 
 TEST(BrokerProcess, OpenOpenFilePermsNoClientCheck) {
-  TestOpenFilePerms(false /* fast_check_in_client */);
+  TestOpenFilePerms(false /* fast_check_in_client */, EPERM);
   // Don't do anything here, so that ASSERT works in the subfunction as
   // expected.
 }
 
+// Run the same twice again, but with ENOENT instead of EPERM.
+TEST(BrokerProcess, OpenFilePermsWithClientCheckNoEnt) {
+  TestOpenFilePerms(true /* fast_check_in_client */, ENOENT);
+  // Don't do anything here, so that ASSERT works in the subfunction as
+  // expected.
+}
+
+TEST(BrokerProcess, OpenOpenFilePermsNoClientCheckNoEnt) {
+  TestOpenFilePerms(false /* fast_check_in_client */, ENOENT);
+  // Don't do anything here, so that ASSERT works in the subfunction as
+  // expected.
+}
 
 void TestOpenCpuinfo(bool fast_check_in_client) {
   const char kFileCpuInfo[] = "/proc/cpuinfo";
   std::vector<std::string> read_whitelist;
   read_whitelist.push_back(kFileCpuInfo);
 
-  BrokerProcess* open_broker = new BrokerProcess(read_whitelist,
+  BrokerProcess* open_broker = new BrokerProcess(EPERM,
+                                                 read_whitelist,
                                                  std::vector<std::string>(),
                                                  fast_check_in_client);
   ASSERT_TRUE(open_broker->Init(NULL));
@@ -328,7 +342,7 @@ TEST(BrokerProcess, OpenFileRW) {
   std::vector<std::string> whitelist;
   whitelist.push_back(tempfile_name);
 
-  BrokerProcess open_broker(whitelist, whitelist);
+  BrokerProcess open_broker(EPERM, whitelist, whitelist);
   ASSERT_TRUE(open_broker.Init(NULL));
 
   // Check we can access that file with read or write.
@@ -355,12 +369,14 @@ TEST(BrokerProcess, OpenFileRW) {
   ASSERT_EQ(close(tempfile2), 0);
 }
 
-// Sandbox test because we could get a SIGPIPE.
+// SANDBOX_TEST because the process could die with a SIGPIPE
+// and we want this to happen in a subprocess.
 SANDBOX_TEST(BrokerProcess, BrokerDied) {
   std::vector<std::string> read_whitelist;
   read_whitelist.push_back("/proc/cpuinfo");
 
-  BrokerProcess open_broker(read_whitelist,
+  BrokerProcess open_broker(EPERM,
+                            read_whitelist,
                             std::vector<std::string>(),
                             true /* fast_check_in_client */,
                             true /* quiet_failures_for_tests */);
@@ -373,7 +389,7 @@ SANDBOX_TEST(BrokerProcess, BrokerDied) {
   SANDBOX_ASSERT(waitpid(broker_pid, &status, 0) == broker_pid);
   SANDBOX_ASSERT(WIFSIGNALED(status));
   SANDBOX_ASSERT(WTERMSIG(status) == SIGKILL);
-  // Hopefully doing Open with a dead broker won't SIGPIPE us.
+  // Check that doing Open with a dead broker won't SIGPIPE us.
   SANDBOX_ASSERT(open_broker.Open("/proc/cpuinfo", O_RDONLY) == -ENOMEM);
   SANDBOX_ASSERT(open_broker.Access("/proc/cpuinfo", O_RDONLY) == -ENOMEM);
 }
@@ -383,7 +399,8 @@ void TestOpenComplexFlags(bool fast_check_in_client) {
   std::vector<std::string> whitelist;
   whitelist.push_back(kCpuInfo);
 
-  BrokerProcess open_broker(whitelist,
+  BrokerProcess open_broker(EPERM,
+                            whitelist,
                             whitelist,
                             fast_check_in_client);
   ASSERT_TRUE(open_broker.Init(NULL));

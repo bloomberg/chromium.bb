@@ -666,7 +666,8 @@ class InitializedOpenBroker {
     allowed_files.push_back("/proc/allowed");
     allowed_files.push_back("/proc/cpuinfo");
 
-    broker_process_.reset(new BrokerProcess(allowed_files,
+    broker_process_.reset(new BrokerProcess(EPERM,
+                                            allowed_files,
                                             std::vector<std::string>()));
     BPF_ASSERT(broker_process() != NULL);
     BPF_ASSERT(broker_process_->Init(NULL));

@@ -26,12 +26,17 @@ namespace sandbox {
 // 4. Use open_broker.Open() to open files.
 class BrokerProcess {
  public:
-  // |allowed_file_names| is a white list of files that can be opened later via
-  // the Open() API.
+  // |denied_errno| is the error code returned when methods such as Open()
+  // or Access() are invoked on a file which is not in the whitelist. EACCESS
+  // would be a typical value.
+  // |allowed_r_files| and |allowed_w_files| are white lists of files that can
+  // be opened later via the Open() API, respectively for reading and writing.
+  // A file available read-write should be listed in both.
   // |fast_check_in_client| and |quiet_failures_for_tests| are reserved for
   // unit tests, don't use it.
-  explicit BrokerProcess(const std::vector<std::string>& allowed_r_files_,
-                         const std::vector<std::string>& allowed_w_files_,
+  explicit BrokerProcess(int denied_errno,
+                         const std::vector<std::string>& allowed_r_files,
+                         const std::vector<std::string>& allowed_w_files,
                          bool fast_check_in_client = true,
                          bool quiet_failures_for_tests = false);
   ~BrokerProcess();
@@ -42,8 +47,8 @@ class BrokerProcess {
   bool Init(bool (*sandbox_callback)(void));
 
   // Can be used in place of access(). Will be async signal safe.
-  // X_OK will always EPERM in practice since the broker process doesn't support
-  // execute permissions.
+  // X_OK will always return an error in practice since the broker process
+  // doesn't support execute permissions.
   // It's similar to the access() system call and will return -errno on errors.
   int Access(const char* pathname, int mode) const;
   // Can be used in place of open(). Will be async signal safe.
@@ -73,6 +78,7 @@ class BrokerProcess {
                       std::vector<int>* opened_files) const;
   bool GetFileNameIfAllowedToAccess(const char*, int, const char**) const;
   bool GetFileNameIfAllowedToOpen(const char*, int, const char**) const;
+  const int denied_errno_;
   bool initialized_;  // Whether we've been through Init() yet.
   bool is_child_;  // Whether we're the child (broker process).
   bool fast_check_in_client_;  // Whether to forward a request that we know
