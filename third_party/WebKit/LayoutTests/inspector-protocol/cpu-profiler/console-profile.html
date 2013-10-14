@@ -21,20 +21,15 @@ function test()
     InspectorTest.sendCommand("Profiler.enable", {});
     InspectorTest.sendCommand("Runtime.evaluate", { expression: "collectProfiles()"}, didCollectProfiles);
 
+    var headers = [];
     InspectorTest.eventHandler["Profiler.addProfileHeader"] = function(messageObject)
     {
-        InspectorTest.log("FAIL: unexpected header = " + JSON.stringify(messageObject, null, 4));
+        headers.push(messageObject["params"]["header"]);
     }
 
     function didCollectProfiles(messageObject)
     {
-        InspectorTest.sendCommand("Profiler.getProfileHeaders", {}, didReceiveProfileHeaders);
-    }
-
-    function didReceiveProfileHeaders(messageObject)
-    {
-        var headers = messageObject["result"]["headers"];
-        if (!headers || headers.length !== 2)
+        if (headers.length !== 2)
             return InspectorTest.fail("Cannot retrive headers: " + JSON.stringify(messageObject, null, 4));
         for (var i = 0; i < headers.length; i++) {
             if (headers[i].title === "inner") {

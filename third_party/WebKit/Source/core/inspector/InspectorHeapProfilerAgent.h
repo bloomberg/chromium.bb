@@ -57,7 +57,8 @@ public:
     virtual void collectGarbage(ErrorString*);
     virtual void clearProfiles(ErrorString*);
 
-    virtual void getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::HeapProfiler::ProfileHeader> >&);
+    virtual void enable(ErrorString*);
+    virtual void disable(ErrorString*);
     virtual void getHeapSnapshot(ErrorString*, int uid);
     virtual void removeProfile(ErrorString*, int uid);
     virtual void startTrackingHeapObjects(ErrorString*);

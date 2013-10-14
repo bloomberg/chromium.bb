@@ -67,7 +67,6 @@ public:
 
     bool enabled();
     String getCurrentUserInitiatedProfileName(bool incrementProfileNumber = false);
-    virtual void getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::ProfileHeader> >&);
     virtual void getCPUProfile(ErrorString*, int uid, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
     virtual void removeProfile(ErrorString*, const String& type, int uid);
 

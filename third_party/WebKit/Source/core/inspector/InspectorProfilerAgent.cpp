@@ -50,7 +50,6 @@ namespace ProfilerAgentState {
 static const char samplingInterval[] = "samplingInterval";
 static const char userInitiatedProfiling[] = "userInitiatedProfiling";
 static const char profilerEnabled[] = "profilerEnabled";
-static const char profileHeadersRequested[] = "profileHeadersRequested";
 }
 
 static const char* const CPUProfileType = "CPU";
@@ -81,7 +80,7 @@ void InspectorProfilerAgent::addProfile(PassRefPtr<ScriptProfile> prpProfile, un
 {
     RefPtr<ScriptProfile> profile = prpProfile;
     m_profiles.add(profile->uid(), profile);
-    if (m_frontend && m_state->getBoolean(ProfilerAgentState::profileHeadersRequested))
+    if (m_frontend && m_state->getBoolean(ProfilerAgentState::profilerEnabled))
         m_frontend->addProfileHeader(createProfileHeader(*profile));
     addProfileFinishedMessageToConsole(profile, lineNumber, sourceURL);
 }
@@ -124,7 +123,6 @@ void InspectorProfilerAgent::disable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorProfilerAgent(0);
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, false);
-    m_state->setBoolean(ProfilerAgentState::profileHeadersRequested, false);
 }
 
 bool InspectorProfilerAgent::enabled()
@@ -148,16 +146,6 @@ String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool increment
         m_currentUserInitiatedProfileNumber = m_nextUserInitiatedProfileNumber++;
 
     return "Profile " + String::number(m_currentUserInitiatedProfileNumber);
-}
-
-void InspectorProfilerAgent::getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::ProfileHeader> >& headers)
-{
-    m_state->setBoolean(ProfilerAgentState::profileHeadersRequested, true);
-    headers = TypeBuilder::Array<TypeBuilder::Profiler::ProfileHeader>::create();
-
-    ProfilesMap::iterator profilesEnd = m_profiles.end();
-    for (ProfilesMap::iterator it = m_profiles.begin(); it != profilesEnd; ++it)
-        headers->addItem(createProfileHeader(*it->value));
 }
 
 void InspectorProfilerAgent::getCPUProfile(ErrorString* errorString, int rawUid, RefPtr<TypeBuilder::Profiler::CPUProfile>& profileObject)
@@ -198,7 +186,7 @@ void InspectorProfilerAgent::resetFrontendProfiles()
 {
     if (!m_frontend)
         return;
-    if (!m_state->getBoolean(ProfilerAgentState::profileHeadersRequested))
+    if (!m_state->getBoolean(ProfilerAgentState::profilerEnabled))
         return;
     if (m_profiles.isEmpty())
         m_frontend->resetProfiles();
@@ -212,8 +200,8 @@ void InspectorProfilerAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorProfilerAgent::clearFrontend()
 {
     m_frontend = 0;
-    stop();
     ErrorString error;
+    clearProfiles(&error);
     disable(&error);
 }
 
