@@ -45,17 +45,16 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   virtual void SetConnection(QuicConnection* connection) OVERRIDE;
   virtual const QuicClock* GetClock() const OVERRIDE;
   virtual QuicRandom* GetRandomGenerator() OVERRIDE;
-  virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
-                                int* error) OVERRIDE;
+  virtual WriteResult WritePacketToWire(
+      const QuicEncryptedPacket& packet) OVERRIDE;
   virtual bool IsWriteBlockedDataBuffered() OVERRIDE;
-  virtual bool IsWriteBlocked(int error) OVERRIDE;
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
 
  private:
   friend class test::QuicConnectionHelperPeer;
 
   // A completion callback invoked when a write completes.
-  void OnWriteComplete(int result);
+  void OnWriteComplete(int rv);
 
   base::WeakPtrFactory<QuicConnectionHelper> weak_factory_;
   base::TaskRunner* task_runner_;

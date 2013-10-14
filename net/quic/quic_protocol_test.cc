@@ -63,7 +63,7 @@ TEST(QuicProtocolTest, QuicVersionToQuicTag) {
   // default case (i.e. all supported versions should be successfully converted
   // to valid QuicTags).
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    const QuicVersion& version = kSupportedQuicVersions[i];
+    QuicVersion version = kSupportedQuicVersions[i];
     EXPECT_LT(0u, QuicVersionToQuicTag(version));
   }
 }
@@ -99,7 +99,7 @@ TEST(QuicProtocolTest, QuicTagToQuicVersion) {
             QuicTagToQuicVersion(MakeQuicTag('Q', '0', '1', '0')));
 
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
-    const QuicVersion& version = kSupportedQuicVersions[i];
+    QuicVersion version = kSupportedQuicVersions[i];
 
     // Get the tag from the version (we can loop over QuicVersions easily).
     QuicTag tag = QuicVersionToQuicTag(version);
@@ -139,6 +139,12 @@ TEST(QuicProtocolTest, QuicVersionToString) {
   EXPECT_EQ("QUIC_VERSION_10,QUIC_VERSION_9,",
             QuicVersionArrayToString(multiple_versions,
                                      arraysize(multiple_versions)));
+
+  // Make sure that all supported versions are present in QuicVersionToString.
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    QuicVersion version = kSupportedQuicVersions[i];
+    EXPECT_NE("QUIC_VERSION_UNSUPPORTED", QuicVersionToString(version));
+  }
 }
 
 }  // namespace

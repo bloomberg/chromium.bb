@@ -41,6 +41,7 @@ const QuicTag kC255 = TAG('C', '2', '5', '5');  // ECDH, Curve25519
 
 // AEAD algorithms
 const QuicTag kNULL = TAG('N', 'U', 'L', 'L');  // null algorithm
+const QuicTag kNULN = TAG('N', 'U', 'L', 'N');  // new null algorithm
 const QuicTag kAESG = TAG('A', 'E', 'S', 'G');  // AES128 + GCM-12
 
 // Congestion control feedback types

@@ -313,6 +313,25 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_WritableAndShouldNotFlush) {
   EXPECT_TRUE(generator_.HasQueuedFrames());
 }
 
+TEST_F(QuicPacketGeneratorTest, AddControlFrame_NotWritableBatchThenFlush) {
+  delegate_.SetCanNotWrite();
+  generator_.StartBatchOperations();
+
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+  generator_.FinishBatchOperations();
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+
+  EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
+      DoAll(SaveArg<0>(&packet_), Return(true)));
+  generator_.FlushAllQueuedFrames();
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+
+  PacketContents contents;
+  contents.num_rst_stream_frames = 1;
+  CheckPacketContains(contents, packet_);
+}
+
 TEST_F(QuicPacketGeneratorTest, AddControlFrame_WritableAndShouldFlush) {
   delegate_.SetCanWriteAnything();
 
@@ -462,8 +481,9 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
 TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   // Set the packet size be enough for two stream frames with 0 stream offset,
   // but not enough for a stream frame of 0 offset and one with non-zero offset.
+  bool use_short_hash = framer_.version() >= QUIC_VERSION_11;
   creator_.options()->max_packet_length =
-      NullEncrypter().GetCiphertextSize(0) +
+      NullEncrypter(use_short_hash).GetCiphertextSize(0) +
       GetPacketHeaderSize(creator_.options()->send_guid_length,
                           true,
                           creator_.options()->send_sequence_number_length,

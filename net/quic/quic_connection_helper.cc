@@ -107,13 +107,11 @@ QuicRandom* QuicConnectionHelper::GetRandomGenerator() {
   return random_generator_;
 }
 
-int QuicConnectionHelper::WritePacketToWire(
-    const QuicEncryptedPacket& packet,
-    int* error) {
+WriteResult QuicConnectionHelper::WritePacketToWire(
+    const QuicEncryptedPacket& packet) {
   if (connection_->ShouldSimulateLostPacket()) {
     DLOG(INFO) << "Dropping packet due to fake packet loss.";
-    *error = 0;
-    return packet.length();
+    return WriteResult(WRITE_STATUS_OK, packet.length());
   }
 
   scoped_refptr<StringIOBuffer> buf(
@@ -123,16 +121,17 @@ int QuicConnectionHelper::WritePacketToWire(
                           packet.length(),
                           base::Bind(&QuicConnectionHelper::OnWriteComplete,
                                      weak_factory_.GetWeakPtr()));
-  if (rv >= 0) {
-    *error = 0;
-  } else {
+  WriteStatus status = WRITE_STATUS_OK;
+  if (rv < 0) {
     if (rv != ERR_IO_PENDING) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.WriteError", -rv);
+      status = WRITE_STATUS_ERROR;
+    } else {
+      status = WRITE_STATUS_BLOCKED;
     }
-    *error = rv;
-    rv = -1;
   }
-  return rv;
+
+  return WriteResult(status, rv);
 }
 
 bool QuicConnectionHelper::IsWriteBlockedDataBuffered() {
@@ -141,16 +140,14 @@ bool QuicConnectionHelper::IsWriteBlockedDataBuffered() {
   return true;
 }
 
-bool QuicConnectionHelper::IsWriteBlocked(int error) {
-  return error == ERR_IO_PENDING;
-}
-
 QuicAlarm* QuicConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
   return new QuicChromeAlarm(clock_, task_runner_, delegate);
 }
 
-void QuicConnectionHelper::OnWriteComplete(int result) {
-  // TODO(rch): Inform the connection about the result.
+void QuicConnectionHelper::OnWriteComplete(int rv) {
+  DCHECK_NE(rv, ERR_IO_PENDING);
+  WriteResult result(rv < 0 ? WRITE_STATUS_ERROR : WRITE_STATUS_OK, rv);
+  connection_->OnPacketSent(result);
   connection_->OnCanWrite();
 }
 

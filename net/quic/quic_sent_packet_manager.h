@@ -79,8 +79,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Processes the ReceivedPacketInfo data from the incoming ack.
   void OnIncomingAck(const ReceivedPacketInfo& received_info,
-                     bool is_truncated_ack,
-                     SequenceNumberSet* acked_packets);
+                     bool is_truncated_ack);
 
   // Discards any information for the packet corresponding to |sequence_number|.
   // If this packet has been retransmitted, information on those packets
@@ -187,12 +186,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Process the incoming ack looking for newly ack'd data packets.
   void HandleAckForSentPackets(const ReceivedPacketInfo& received_info,
-                               bool is_truncated_ack,
-                               SequenceNumberSet* acked_packets);
+                               bool is_truncated_ack);
 
   // Process the incoming ack looking for newly ack'd FEC packets.
-  void HandleAckForSentFecPackets(const ReceivedPacketInfo& received_info,
-                                  SequenceNumberSet* acked_packets);
+  void HandleAckForSentFecPackets(const ReceivedPacketInfo& received_info);
 
   // Marks |sequence_number| as having been seen by the peer.  Returns an
   // iterator to the next remaining unacked packet.

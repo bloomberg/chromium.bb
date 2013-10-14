@@ -12,6 +12,7 @@
 #include <string>
 
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_protocol.h"
 
 namespace net {
 namespace tools {
@@ -45,12 +46,13 @@ class QuicSocketUtils {
                         IPAddressNumber* self_address,
                         IPEndPoint* peer_address);
 
-  // Writes buf_len to the socket. If writing is successful returns the number
-  // of bytes written otherwise returns -1 and sets error to errno.
-  static int WritePacket(int fd, const char* buffer, size_t buf_len,
-                         const IPAddressNumber& self_address,
-                         const IPEndPoint& peer_address,
-                         int* error);
+  // Writes buf_len to the socket. If writing is successful, sets the result's
+  // status to WRITE_STATUS_OK and sets bytes_written.  Otherwise sets the
+  // result's status to WRITE_STATUS_BLOCKED or WRITE_STATUS_ERROR and sets
+  // error_code to errno.
+  static WriteResult WritePacket(int fd, const char* buffer, size_t buf_len,
+                                 const IPAddressNumber& self_address,
+                                 const IPEndPoint& peer_address);
 };
 
 }  // namespace tools

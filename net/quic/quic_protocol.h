@@ -191,7 +191,8 @@ enum QuicVersion {
   QUIC_VERSION_UNSUPPORTED = 0,
 
   QUIC_VERSION_9 = 9,
-  QUIC_VERSION_10 = 10,  // Current version.
+  QUIC_VERSION_10 = 10,
+  QUIC_VERSION_11 = 11,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -199,7 +200,7 @@ enum QuicVersion {
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
 static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_10, QUIC_VERSION_9};
+    {QUIC_VERSION_11, QUIC_VERSION_10, QUIC_VERSION_9};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -377,6 +378,8 @@ enum QuicErrorCode {
   QUIC_INVALID_CRYPTO_MESSAGE_TYPE = 33,
   // A crypto message was received with an illegal parameter.
   QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER = 34,
+  // An invalid channel id signature was supplied.
+  QUIC_INVALID_CHANNEL_ID_SIGNATURE = 52,
   // A crypto message was received with a mandatory parameter missing.
   QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND = 35,
   // A crypto message was received with a parameter that has no overlap
@@ -403,9 +406,11 @@ enum QuicErrorCode {
   QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT = 44,
   // The server config for a server has expired.
   QUIC_CRYPTO_SERVER_CONFIG_EXPIRED = 45,
+  // We failed to setup the symmetric keys for a connection.
+  QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED = 53,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 52,
+  QUIC_LAST_ERROR = 54,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
@@ -868,6 +873,26 @@ struct QuicConsumedData {
 
   // True if an incoming fin was consumed.
   bool fin_consumed;
+};
+
+enum WriteStatus {
+  WRITE_STATUS_OK,
+  WRITE_STATUS_BLOCKED,
+  WRITE_STATUS_ERROR,
+};
+
+// A struct used to return the result of write calls including either the number
+// of bytes written or the error code, depending upon the status.
+struct NET_EXPORT_PRIVATE WriteResult {
+  WriteResult(WriteStatus status, int bytes_written_or_error_code) :
+    status(status), bytes_written(bytes_written_or_error_code) {
+  }
+
+  WriteStatus status;
+  union {
+    int bytes_written;  // only valid when status is OK
+    int error_code;  // only valid when status is ERROR
+  };
 };
 
 }  // namespace net

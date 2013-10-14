@@ -404,12 +404,13 @@ size_t GetPacketLengthForOneStream(
     InFecGroup is_in_fec_group,
     size_t* payload_length) {
   *payload_length = 1;
+  bool use_short_hash = version >= QUIC_VERSION_11;
   const size_t stream_length =
-      NullEncrypter().GetCiphertextSize(*payload_length) +
+      NullEncrypter(use_short_hash).GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
           version, PACKET_8BYTE_GUID, include_version,
           sequence_number_length, is_in_fec_group);
-  const size_t ack_length = NullEncrypter().GetCiphertextSize(
+  const size_t ack_length = NullEncrypter(use_short_hash).GetCiphertextSize(
       QuicFramer::GetMinAckFrameSize()) +
       GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version,
                           sequence_number_length, is_in_fec_group);
@@ -417,7 +418,7 @@ size_t GetPacketLengthForOneStream(
     *payload_length = 1 + ack_length - stream_length;
   }
 
-  return NullEncrypter().GetCiphertextSize(*payload_length) +
+  return NullEncrypter(use_short_hash).GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
           version, PACKET_8BYTE_GUID, include_version,
           sequence_number_length, is_in_fec_group);

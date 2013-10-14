@@ -98,11 +98,13 @@ QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(
   ReceivedEntropyMap::const_iterator it =
       packets_entropy_.upper_bound(sequence_number);
   // When this map is empty we should only query entropy for
-  // |largest_received_sequence_number_|.
+  // received_info_.largest_observed, since no other entropy can be correctly
+  // calculated, because we're not storing the entropy for any prior packets.
   // TODO(rtenneti): add support for LOG_IF_EVERY_N_SEC to chromium.
-  // LOG_IF_EVERY_N_SEC(WARNING, it != packets_entropy_.end(), 10)
-  LOG_IF(WARNING, it != packets_entropy_.end())
-      << "largest_received: " << received_info_.largest_observed
+  // LOG_IF_EVERY_N_SEC(DFATAL, it == packets_entropy_.end(), 10)
+  LOG_IF(DFATAL, it == packets_entropy_.end())
+      << "EntropyHash may be unknown. largest_received: "
+      << received_info_.largest_observed
       << " sequence_number: " << sequence_number;
 
   // TODO(satyamshekhar): Make this O(1).

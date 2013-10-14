@@ -243,7 +243,8 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
           GetParam(), kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(min_payload_size);
+  size_t ciphertext_size =
+      NullEncrypter(GetParam()).GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
@@ -272,7 +273,8 @@ TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
           GetParam(), kStreamId, kStreamOffset, true) + kStreamDataLength;
   size_t min_payload_size =
       std::max(kCongestionFeedbackFrameSize, stream_payload_size);
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(min_payload_size);
+  size_t ciphertext_size =
+      NullEncrypter(GetParam()).GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
@@ -534,14 +536,13 @@ class WrongAddressWriter : public QuicPacketWriter {
     self_address_ = IPEndPoint(ip, 0);
   }
 
-  virtual int WritePacket(const char* buffer, size_t buf_len,
-                          const IPAddressNumber& real_self_address,
-                          const IPEndPoint& peer_address,
-                          QuicBlockedWriterInterface* blocked_writer,
-                          int* error) OVERRIDE {
+  virtual WriteResult WritePacket(
+      const char* buffer, size_t buf_len,
+      const IPAddressNumber& real_self_address,
+      const IPEndPoint& peer_address,
+      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
     return QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
-                                        self_address_.address(), peer_address,
-                                        error);
+                                        self_address_.address(), peer_address);
   }
 
   IPEndPoint self_address_;

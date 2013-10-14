@@ -46,7 +46,8 @@ const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
 QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
     : expiry_time(QuicWallTime::Zero()),
-      channel_id_enabled(false) { }
+      channel_id_enabled(false),
+      p256(false) {}
 
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     StringPiece source_address_token_secret,
@@ -97,9 +98,14 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
       Curve25519KeyExchange::New(curve25519_private_key));
   StringPiece curve25519_public_value = curve25519->public_value();
 
-  const string p256_private_key = P256KeyExchange::NewPrivateKey();
-  scoped_ptr<P256KeyExchange> p256(P256KeyExchange::New(p256_private_key));
-  StringPiece p256_public_value = p256->public_value();
+  string p256_private_key;
+  StringPiece p256_public_value;
+  scoped_ptr<P256KeyExchange> p256;
+  if (options.p256) {
+    p256_private_key = P256KeyExchange::NewPrivateKey();
+    p256.reset(P256KeyExchange::New(p256_private_key));
+    p256_public_value = p256->public_value();
+  }
 
   string encoded_public_values;
   // First three bytes encode the length of the public value.
@@ -115,7 +121,11 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
                                p256_public_value.size());
 
   msg.set_tag(kSCFG);
-  msg.SetTaglist(kKEXS, kC255, kP256, 0);
+  if (options.p256) {
+    msg.SetTaglist(kKEXS, kC255, kP256, 0);
+  } else {
+    msg.SetTaglist(kKEXS, kC255, 0);
+  }
   msg.SetTaglist(kAEAD, kAESG, 0);
   msg.SetValue(kVERS, static_cast<uint16>(0));
   msg.SetStringPiece(kPUBS, encoded_public_values);
@@ -158,9 +168,12 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
   QuicServerConfigProtobuf::PrivateKey* curve25519_key = config->add_key();
   curve25519_key->set_tag(kC255);
   curve25519_key->set_private_key(curve25519_private_key);
-  QuicServerConfigProtobuf::PrivateKey* p256_key = config->add_key();
-  p256_key->set_tag(kP256);
-  p256_key->set_private_key(p256_private_key);
+
+  if (options.p256) {
+    QuicServerConfigProtobuf::PrivateKey* p256_key = config->add_key();
+    p256_key->set_tag(kP256);
+    p256_key->set_private_key(p256_private_key);
+  }
 
   return config.release();
 }
@@ -436,9 +449,12 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     hkdf_input.append(requested_config->serialized);
 
     CrypterPair crypters;
-    CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
-                            info.client_nonce, info.server_nonce, hkdf_input,
-                            CryptoUtils::SERVER, &crypters);
+    if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
+                                 info.client_nonce, info.server_nonce,
+                                 hkdf_input, CryptoUtils::SERVER, &crypters)) {
+      *error_details = "Symmetric key setup failed";
+      return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
+    }
 
     scoped_ptr<QuicData> cetv_plaintext(crypters.decrypter->DecryptPacket(
         0 /* sequence number */, StringPiece() /* associated data */,
@@ -473,9 +489,13 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(hkdf_suffix);
 
-  CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
-                          info.client_nonce, info.server_nonce, hkdf_input,
-                          CryptoUtils::SERVER, &params->initial_crypters);
+  if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
+                               info.client_nonce, info.server_nonce, hkdf_input,
+                               CryptoUtils::SERVER,
+                               &params->initial_crypters)) {
+    *error_details = "Symmetric key setup failed";
+    return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
+  }
 
   string forward_secure_public_value;
   if (ephemeral_key_source_.get()) {
@@ -502,10 +522,13 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                                    label_len);
   forward_secure_hkdf_input.append(hkdf_suffix);
 
-  CryptoUtils::DeriveKeys(params->forward_secure_premaster_secret, params->aead,
-                          info.client_nonce, info.server_nonce,
-                          forward_secure_hkdf_input, CryptoUtils::SERVER,
-                          &params->forward_secure_crypters);
+  if (!CryptoUtils::DeriveKeys(
+           params->forward_secure_premaster_secret, params->aead,
+           info.client_nonce, info.server_nonce, forward_secure_hkdf_input,
+           CryptoUtils::SERVER, &params->forward_secure_crypters)) {
+    *error_details = "Symmetric key setup failed";
+    return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
+  }
 
   out->set_tag(kSHLO);
   out->SetStringPiece(kSourceAddressTokenTag,

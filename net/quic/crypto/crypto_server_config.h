@@ -61,6 +61,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // orbit contains the kOrbitSize bytes of the orbit value for the server
     // config. If |orbit| is empty then a random orbit is generated.
     std::string orbit;
+    // p256 determines whether a P-256 public key will be included in the
+    // server config. Note that this breaks deterministic server-config
+    // generation since P-256 key generation doesn't use the QuicRandom given
+    // to DefaultConfig().
+    bool p256;
   };
 
   // |source_address_token_secret|: secret key material used for encrypting and

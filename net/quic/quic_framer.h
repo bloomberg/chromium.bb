@@ -186,10 +186,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
     return quic_version_;
   }
 
-  void set_version(const QuicVersion version) {
-    DCHECK(IsSupportedVersion(version));
-    quic_version_ = version;
-  }
+  void set_version(const QuicVersion version);
 
   // Does not DCHECK for supported version. Used by tests to set unsupported
   // version to trigger version negotiation.

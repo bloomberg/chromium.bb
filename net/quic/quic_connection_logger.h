@@ -6,6 +6,7 @@
 #define NET_QUIC_QUIC_CONNECTION_LOGGER_H_
 
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_protocol.h"
 
 namespace net {
 
@@ -28,7 +29,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
                             EncryptionLevel level,
                             const QuicEncryptedPacket& packet,
-                            int rv) OVERRIDE;
+                            WriteResult result) OVERRIDE;
   virtual void OnPacketRetransmitted(
       QuicPacketSequenceNumber old_sequence_number,
       QuicPacketSequenceNumber new_sequence_number) OVERRIDE;

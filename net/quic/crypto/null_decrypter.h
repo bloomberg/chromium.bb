@@ -11,11 +11,14 @@
 
 namespace net {
 
+class QuicDataReader;
+
 // A NullDecrypter is a QuicDecrypter used before a crypto negotiation
 // has occurred.  It does not actually decrypt the payload, but does
 // verify a hash (fnv128) over both the payload and associated data.
 class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
  public:
+  explicit NullDecrypter(bool use_short_hash);
   virtual ~NullDecrypter() {}
 
   // QuicDecrypter implementation
@@ -31,6 +34,11 @@ class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
                                   base::StringPiece ciphertext) OVERRIDE;
   virtual base::StringPiece GetKey() const OVERRIDE;
   virtual base::StringPiece GetNoncePrefix() const OVERRIDE;
+
+ private:
+  bool ReadHash(QuicDataReader* reader, uint128* hash);
+  uint128 ComputeHash(const std::string& data) const;
+  bool use_short_hash_;
 };
 
 }  // namespace net

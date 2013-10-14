@@ -197,10 +197,9 @@ class MockHelper : public QuicConnectionHelperInterface {
   const QuicClock* GetClock() const;
   QuicRandom* GetRandomGenerator();
   void AdvanceTime(QuicTime::Delta delta);
-  MOCK_METHOD2(WritePacketToWire, int(const QuicEncryptedPacket& packet,
-                                      int* error));
+  MOCK_METHOD1(WritePacketToWire,
+               WriteResult(const QuicEncryptedPacket& packet));
   MOCK_METHOD0(IsWriteBlockedDataBuffered, bool());
-  MOCK_METHOD1(IsWriteBlocked, bool(int stream_id));
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate);
 
  private:

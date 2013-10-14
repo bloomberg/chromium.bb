@@ -752,17 +752,20 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     if (!channel_id_signer_->Sign(server_hostname, hkdf_input,
                                   &key, &signature)) {
       *error_details = "Channel ID signature failed";
-      return QUIC_INTERNAL_ERROR;
+      return QUIC_INVALID_CHANNEL_ID_SIGNATURE;
     }
 
     cetv.SetStringPiece(kCIDK, key);
     cetv.SetStringPiece(kCIDS, signature);
 
     CrypterPair crypters;
-    CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
-                            out_params->aead, out_params->client_nonce,
-                            out_params->server_nonce, hkdf_input,
-                            CryptoUtils::CLIENT, &crypters);
+    if (!CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
+                                 out_params->aead, out_params->client_nonce,
+                                 out_params->server_nonce, hkdf_input,
+                                 CryptoUtils::CLIENT, &crypters)) {
+      *error_details = "Symmetric key setup failed";
+      return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
+    }
 
     const QuicData& cetv_plaintext = cetv.GetSerialized();
     scoped_ptr<QuicData> cetv_ciphertext(crypters.encrypter->EncryptPacket(
@@ -794,10 +797,13 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(out_params->hkdf_input_suffix);
 
-  CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
-                          out_params->aead, out_params->client_nonce,
-                          out_params->server_nonce, hkdf_input,
-                          CryptoUtils::CLIENT, &out_params->initial_crypters);
+  if (!CryptoUtils::DeriveKeys(
+           out_params->initial_premaster_secret, out_params->aead,
+           out_params->client_nonce, out_params->server_nonce, hkdf_input,
+           CryptoUtils::CLIENT, &out_params->initial_crypters)) {
+    *error_details = "Symmetric key setup failed";
+    return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
+  }
 
   return QUIC_NO_ERROR;
 }
@@ -904,10 +910,13 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   hkdf_input.append(QuicCryptoConfig::kForwardSecureLabel, label_len);
   hkdf_input.append(out_params->hkdf_input_suffix);
 
-  CryptoUtils::DeriveKeys(
-      out_params->forward_secure_premaster_secret, out_params->aead,
-      out_params->client_nonce, out_params->server_nonce, hkdf_input,
-      CryptoUtils::CLIENT, &out_params->forward_secure_crypters);
+  if (!CryptoUtils::DeriveKeys(
+           out_params->forward_secure_premaster_secret, out_params->aead,
+           out_params->client_nonce, out_params->server_nonce, hkdf_input,
+           CryptoUtils::CLIENT, &out_params->forward_secure_crypters)) {
+    *error_details = "Symmetric key setup failed";
+    return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
+  }
 
   return QUIC_NO_ERROR;
 }

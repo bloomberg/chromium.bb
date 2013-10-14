@@ -113,6 +113,15 @@ void QuicUtils::SerializeUint128(uint128 v, uint8* out) {
   memcpy(out + sizeof(lo), &hi, sizeof(hi));
 }
 
+// static
+void QuicUtils::SerializeUint128Short(uint128 v, uint8* out) {
+  const uint64 lo = Uint128Low64(v);
+  const uint64 hi = Uint128High64(v);
+  // This assumes that the system is little-endian.
+  memcpy(out, &lo, sizeof(lo));
+  memcpy(out + sizeof(lo), &hi, sizeof(hi) / 2);
+}
+
 #define RETURN_STRING_LITERAL(x) \
 case x: \
 return #x;
@@ -190,6 +199,8 @@ const char* QuicUtils::ErrorToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_CRYPTO_DUPLICATE_TAG);
     RETURN_STRING_LITERAL(QUIC_CRYPTO_ENCRYPTION_LEVEL_INCORRECT);
     RETURN_STRING_LITERAL(QUIC_CRYPTO_SERVER_CONFIG_EXPIRED);
+    RETURN_STRING_LITERAL(QUIC_INVALID_CHANNEL_ID_SIGNATURE);
+    RETURN_STRING_LITERAL(QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED);
     RETURN_STRING_LITERAL(QUIC_LAST_ERROR);
     // Intentionally have no default case, so we'll break the build
     // if we add errors and don't put them here.

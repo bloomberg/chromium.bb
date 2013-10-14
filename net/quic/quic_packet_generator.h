@@ -115,8 +115,11 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   bool InBatchMode();
   // Disables flushing.
   void StartBatchOperations();
-  // Enables flushing and flushes queued data.
+  // Enables flushing and flushes queued data which can be sent.
   void FinishBatchOperations();
+
+  // Flushes all queued frames, even frames which are not sendable.
+  void FlushAllQueuedFrames();
 
   bool HasQueuedFrames() const;
 
@@ -125,7 +128,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   }
 
  private:
-  void SendQueuedFrames();
+  void SendQueuedFrames(bool flush);
 
   // Test to see if we have pending ack, feedback, or control frames.
   bool HasPendingFrames() const;

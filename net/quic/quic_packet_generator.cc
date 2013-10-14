@@ -59,12 +59,12 @@ QuicPacketGenerator::~QuicPacketGenerator() {
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback) {
   should_send_ack_ = true;
   should_send_feedback_ = also_send_feedback;
-  SendQueuedFrames();
+  SendQueuedFrames(false);
 }
 
 void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
   queued_control_frames_.push_back(frame);
-  SendQueuedFrames();
+  SendQueuedFrames(false);
 }
 
 QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
@@ -76,7 +76,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   // The caller should have flushed pending frames before sending handshake
   // messages.
   DCHECK(handshake == NOT_HANDSHAKE || !HasPendingFrames());
-  SendQueuedFrames();
+  SendQueuedFrames(false);
 
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
@@ -146,16 +146,17 @@ bool QuicPacketGenerator::CanSendWithNextPendingFrameAddition() const {
                                          NOT_HANDSHAKE);
 }
 
-void QuicPacketGenerator::SendQueuedFrames() {
+void QuicPacketGenerator::SendQueuedFrames(bool flush) {
   // Only add pending frames if we are SURE we can then send the whole packet.
-  while (HasPendingFrames() && CanSendWithNextPendingFrameAddition()) {
+  while (HasPendingFrames() &&
+         (flush || CanSendWithNextPendingFrameAddition())) {
     if (!AddNextPendingFrame()) {
       // Packet was full, so serialize and send it.
       SerializeAndSendPacket();
     }
   }
 
-  if (!InBatchMode()) {
+  if (!InBatchMode() || flush) {
     if (packet_creator_->HasPendingFrames()) {
       SerializeAndSendPacket();
     }
@@ -180,7 +181,11 @@ void QuicPacketGenerator::StartBatchOperations() {
 
 void QuicPacketGenerator::FinishBatchOperations() {
   batch_mode_ = false;
-  SendQueuedFrames();
+  SendQueuedFrames(false);
+}
+
+void QuicPacketGenerator::FlushAllQueuedFrames() {
+  SendQueuedFrames(true);
 }
 
 bool QuicPacketGenerator::HasQueuedFrames() const {
