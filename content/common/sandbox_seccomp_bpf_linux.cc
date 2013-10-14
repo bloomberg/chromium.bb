@@ -1403,6 +1403,9 @@ ErrorCode RestrictSocketcallCommand(Sandbox* sandbox) {
 }
 #endif
 
+// TODO(jorgelo): using ENOENT here is a temporary fix. crbug.com/270326
+const int kFSDeniedErrno = ENOENT;
+
 ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
@@ -1448,7 +1451,7 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
 #endif
 
   if (IsFileSystem(sysno) || IsCurrentDirectory(sysno)) {
-    return ErrorCode(EPERM);
+    return ErrorCode(kFSDeniedErrno);
   }
 
   if (IsAnySystemV(sysno)) {
@@ -1759,7 +1762,7 @@ void RunSandboxSanityChecks(const std::string& process_type) {
     // open() must be restricted.
     syscall_ret = open("/etc/passwd", O_RDONLY);
     CHECK_EQ(-1, syscall_ret);
-    CHECK_EQ(EPERM, errno);
+    CHECK_EQ(kFSDeniedErrno, errno);
 
     // We should never allow the creation of netlink sockets.
     syscall_ret = socket(AF_NETLINK, SOCK_DGRAM, 0);
@@ -1883,7 +1886,7 @@ void InitGpuBrokerProcess(Sandbox::EvaluateSyscall gpu_policy,
     NOTREACHED();
   }
 
-  *broker_process = new BrokerProcess(EPERM,
+  *broker_process = new BrokerProcess(kFSDeniedErrno,
                                       read_whitelist, write_whitelist);
   // Initialize the broker process and give it a sandbox callback.
   CHECK((*broker_process)->Init(sandbox_callback));
