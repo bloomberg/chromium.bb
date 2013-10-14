@@ -29,6 +29,9 @@ class MediaDecoderJob {
   // finished successfully, presentation time, audio output bytes.
   typedef base::Callback<void(MediaCodecStatus, const base::TimeDelta&,
                               size_t)> DecoderCallback;
+  // Callback when a decoder job finishes releasing the output buffer.
+  // Args: audio output bytes, must be 0 for video.
+  typedef base::Callback<void(size_t)> ReleaseOutputCompletionCallback;
 
   virtual ~MediaDecoderJob();
 
@@ -63,6 +66,10 @@ class MediaDecoderJob {
   // Flush the decoder.
   void Flush();
 
+  void set_preroll_timestamp(const base::TimeDelta& preroll_timestamp) {
+    preroll_timestamp_ = preroll_timestamp;
+  }
+
   bool is_decoding() const { return !decode_cb_.is_null(); }
 
  protected:
@@ -70,12 +77,13 @@ class MediaDecoderJob {
                   MediaCodecBridge* media_codec_bridge,
                   const base::Closure& request_data_cb);
 
-  // Release the output buffer and render it.
+  // Release the output buffer at index |output_buffer_index| and render it if
+  // |render_output| is true. Upon completion, |callback| will be called.
   virtual void ReleaseOutputBuffer(
-      int outputBufferIndex, size_t size,
-      const base::TimeDelta& presentation_timestamp,
-      const DecoderCallback& callback,
-      MediaCodecStatus status) = 0;
+      int output_buffer_index,
+      size_t size,
+      bool render_output,
+      const ReleaseOutputCompletionCallback& callback) = 0;
 
   // Returns true if the "time to render" needs to be computed for frames in
   // this decoder job.
@@ -112,6 +120,9 @@ class MediaDecoderJob {
                       const DecoderCallback& callback);
 
   // Called on the UI thread to indicate that one decode cycle has completed.
+  // If the |presentation_timestamp| is equal to kNoTimestamp(),
+  // the caller should ignore the output of this frame and update its clock to
+  // avoid introducing extra delays to the next frame.
   void OnDecodeCompleted(MediaCodecStatus status,
                          const base::TimeDelta& presentation_timestamp,
                          size_t audio_output_bytes);
@@ -131,6 +142,12 @@ class MediaDecoderJob {
 
   // Whether input EOS is encountered.
   bool input_eos_encountered_;
+
+  // The timestamp the decoder needs to preroll to. If an access unit's
+  // timestamp is smaller than |preroll_timestamp_|, don't render it.
+  // TODO(qinmin): Comparing access unit's timestamp with |preroll_timestamp_|
+  // is not very accurate.
+  base::TimeDelta preroll_timestamp_;
 
   // Weak pointer passed to media decoder jobs for callbacks. It is bounded to
   // the decoder thread.

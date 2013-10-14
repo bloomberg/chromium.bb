@@ -247,7 +247,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithValidConfig) {
 
   // Test audio decoder job will be created when codec is successfully started.
   StartAudioDecoderJob();
-  EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
+  EXPECT_TRUE(GetMediaDecoderJob(true));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 }
 
@@ -284,7 +284,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
   EXPECT_EQ(0, demuxer_->num_seek_requests());
 
   // The decoder job should be ready now.
-  EXPECT_TRUE(NULL != GetMediaDecoderJob(false));
+  EXPECT_TRUE(GetMediaDecoderJob(false));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 }
 
@@ -316,7 +316,7 @@ TEST_F(MediaSourcePlayerTest, ReadFromDemuxerAfterSeek) {
 
   // Test decoder job will resend a ReadFromDemuxer request after seek.
   StartAudioDecoderJob();
-  EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
+  EXPECT_TRUE(GetMediaDecoderJob(true));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 
   // Initiate a seek. Skip the round-trip of requesting seek from renderer.
@@ -372,7 +372,7 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
 
   // Send the seek done notification. The player should start requesting data.
   player_.OnDemuxerSeekDone();
-  EXPECT_TRUE(NULL != GetMediaDecoderJob(false));
+  EXPECT_TRUE(GetMediaDecoderJob(false));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 
   // Reconfirm exactly 1 seek request has been made of demuxer.
@@ -435,7 +435,7 @@ TEST_F(MediaSourcePlayerTest, StartAfterSeekFinish) {
 
   // Sending back the seek done notification.
   player_.OnDemuxerSeekDone();
-  EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
+  EXPECT_TRUE(GetMediaDecoderJob(true));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 
   // Reconfirm exactly 1 seek request has been made of demuxer.
@@ -450,7 +450,7 @@ TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
   StartAudioDecoderJob();
 
   MediaDecoderJob* decoder_job = GetMediaDecoderJob(true);
-  EXPECT_TRUE(NULL != decoder_job);
+  EXPECT_TRUE(decoder_job);
   EXPECT_EQ(1, demuxer_->num_data_requests());
   EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
 
@@ -522,7 +522,7 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
 
   // Test start time ticks will reset after decoder job underruns.
   StartAudioDecoderJob();
-  EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
+  EXPECT_TRUE(GetMediaDecoderJob(true));
   EXPECT_EQ(1, demuxer_->num_data_requests());
   // For the first couple chunks, the decoder job may return
   // DECODE_FORMAT_CHANGED status instead of DECODE_SUCCEEDED status. Decode
@@ -651,7 +651,7 @@ TEST_F(MediaSourcePlayerTest, DemuxerDataArrivesAfterRelease) {
   StartAudioDecoderJob();
   EXPECT_TRUE(player_.IsPlaying());
   EXPECT_EQ(1, demuxer_->num_data_requests());
-  EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
+  EXPECT_TRUE(GetMediaDecoderJob(true));
 
   player_.Release();
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
@@ -659,6 +659,44 @@ TEST_F(MediaSourcePlayerTest, DemuxerDataArrivesAfterRelease) {
   // The decoder job should have been released.
   EXPECT_FALSE(player_.IsPlaying());
   EXPECT_EQ(1, demuxer_->num_data_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, PrerollAfterSeek) {
+  if (!MediaCodecBridge::IsAvailable()) {
+    LOG(INFO) << "Could not run test - not supported on device.";
+    return;
+  }
+
+  // Test decoder job will preroll the media to the seek position.
+  StartAudioDecoderJob();
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  // Initiate a seek to 100 ms. This will abort the intial prefetch.
+  player_.SeekTo(base::TimeDelta::FromMilliseconds(100));
+  DemuxerData data;
+  data.type = DemuxerStream::AUDIO;
+  data.access_units.resize(1);
+  data.access_units[0].status = DemuxerStream::kAborted;
+  player_.OnDemuxerDataAvailable(data);
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+  player_.OnDemuxerSeekDone();
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // Send some data with before the seek position.
+  for (int i = 1; i < 4; ++i) {
+    player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(i));
+    EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+    message_loop_.Run();
+  }
+  EXPECT_EQ(100.0, player_.GetCurrentTime().InMillisecondsF());
+
+  // Send data after the seek position.
+  data = CreateReadFromDemuxerAckForAudio(3);
+  data.access_units[0].timestamp = base::TimeDelta::FromMilliseconds(100);
+  player_.OnDemuxerDataAvailable(data);
+  message_loop_.Run();
+  EXPECT_LT(100.0, player_.GetCurrentTime().InMillisecondsF());
 }
 
 // TODO(xhwang): Enable this test when the test devices are updated.

@@ -58,16 +58,16 @@ void AudioDecoderJob::SetVolume(double volume) {
 }
 
 void AudioDecoderJob::ReleaseOutputBuffer(
-    int outputBufferIndex, size_t size,
-    const base::TimeDelta& presentation_timestamp,
-    const MediaDecoderJob::DecoderCallback& callback,
-    MediaCodecStatus status) {
-  audio_codec_bridge_->PlayOutputBuffer(outputBufferIndex, size);
+    int output_buffer_index,
+    size_t size,
+    bool render_output,
+    const ReleaseOutputCompletionCallback& callback) {
+  size_t size_to_render = render_output ? size : 0u;
+  if (size_to_render)
+    audio_codec_bridge_->PlayOutputBuffer(output_buffer_index, size_to_render);
+  audio_codec_bridge_->ReleaseOutputBuffer(output_buffer_index, false);
 
-  if (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u)
-    audio_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, false);
-
-  callback.Run(status, presentation_timestamp, size);
+  callback.Run(size_to_render);
 }
 
 bool AudioDecoderJob::ComputeTimeToRender() const {

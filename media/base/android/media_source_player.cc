@@ -19,6 +19,7 @@
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/video_decoder_job.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/buffers.h"
 
 namespace {
 
@@ -85,6 +86,7 @@ MediaSourcePlayer::MediaSourcePlayer(
       drm_bridge_(NULL),
       is_waiting_for_key_(false) {
   demuxer_->Initialize(this);
+  clock_.SetMaxTime(base::TimeDelta());
 }
 
 MediaSourcePlayer::~MediaSourcePlayer() {
@@ -386,7 +388,16 @@ void MediaSourcePlayer::OnDemuxerSeekDone() {
   DVLOG(1) << __FUNCTION__;
 
   ClearPendingEvent(SEEK_EVENT_PENDING);
-  manager()->OnSeekComplete(player_id(), GetCurrentTime());
+  base::TimeDelta current_time = GetCurrentTime();
+  manager()->OnSeekComplete(player_id(), current_time);
+  // TODO(qinmin): Simplify the logic by using |start_presentation_timestamp_|
+  // to preroll media decoder jobs. Currently |start_presentation_timestamp_|
+  // is calculated from decoder output, while preroll relies on the access
+  // unit's timestamp. There are some differences between the two.
+  if (audio_decoder_job_)
+    audio_decoder_job_->set_preroll_timestamp(current_time);
+  if (video_decoder_job_)
+    video_decoder_job_->set_preroll_timestamp(current_time);
   ProcessPendingEvents();
 }
 
@@ -512,8 +523,10 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (status == MEDIA_CODEC_OK && is_clock_manager)
+  if (status == MEDIA_CODEC_OK && is_clock_manager &&
+      presentation_timestamp != kNoTimestamp()) {
     UpdateTimestamps(presentation_timestamp, audio_output_bytes);
+  }
 
   if (!playing_) {
     if (is_clock_manager)
@@ -532,8 +545,15 @@ void MediaSourcePlayer::MediaDecoderCallback(
   if (status == MEDIA_CODEC_STOPPED)
     return;
 
-  if (status == MEDIA_CODEC_OK && is_clock_manager)
-    StartStarvationCallback(presentation_timestamp);
+  if (is_clock_manager) {
+    // If we have a valid timestamp, start the starvation callback. Otherwise,
+    // reset the |start_time_ticks_| so that the next frame will not suffer
+    // from the decoding delay caused by the current frame.
+    if (presentation_timestamp != kNoTimestamp())
+      StartStarvationCallback(presentation_timestamp);
+    else
+      start_time_ticks_ = base::TimeTicks::Now();
+  }
 
   if (is_audio) {
     DecodeMoreAudio();

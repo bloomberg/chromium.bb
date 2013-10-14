@@ -39,10 +39,10 @@ class VideoDecoderJob : public MediaDecoderJob {
 
   // MediaDecoderJob implementation.
   virtual void ReleaseOutputBuffer(
-      int outputBufferIndex, size_t size,
-      const base::TimeDelta& presentation_timestamp,
-      const MediaDecoderJob::DecoderCallback& callback,
-      MediaCodecStatus status) OVERRIDE;
+      int output_buffer_index,
+      size_t size,
+      bool render_output,
+      const ReleaseOutputCompletionCallback& callback) OVERRIDE;
 
   virtual bool ComputeTimeToRender() const OVERRIDE;
 

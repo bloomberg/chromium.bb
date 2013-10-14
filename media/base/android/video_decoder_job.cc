@@ -51,14 +51,12 @@ VideoDecoderJob::~VideoDecoderJob() {
 }
 
 void VideoDecoderJob::ReleaseOutputBuffer(
-    int outputBufferIndex, size_t size,
-    const base::TimeDelta& presentation_timestamp,
-    const MediaDecoderJob::DecoderCallback& callback,
-    MediaCodecStatus status) {
-  if (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u)
-    video_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, true);
-
-  callback.Run(status, presentation_timestamp, 0);
+    int output_buffer_index,
+    size_t size,
+    bool render_output,
+    const ReleaseOutputCompletionCallback& callback) {
+  video_codec_bridge_->ReleaseOutputBuffer(output_buffer_index, render_output);
+  callback.Run(0u);
 }
 
 bool VideoDecoderJob::ComputeTimeToRender() const {
