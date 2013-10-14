@@ -20,7 +20,6 @@ import time
 
 import cmd_helper
 import constants
-import io_stats_parser
 try:
   from pylib import pexpect
 except:
@@ -1368,8 +1367,25 @@ class AndroidCommands(object):
       Dict of {num_reads, num_writes, read_ms, write_ms} or None if there
       was an error.
     """
+    IoStats = collections.namedtuple(
+        'IoStats',
+        ['device',
+         'num_reads_issued',
+         'num_reads_merged',
+         'num_sectors_read',
+         'ms_spent_reading',
+         'num_writes_completed',
+         'num_writes_merged',
+         'num_sectors_written',
+         'ms_spent_writing',
+         'num_ios_in_progress',
+         'ms_spent_doing_io',
+         'ms_spent_doing_io_weighted',
+        ])
+
     for line in self.GetFileContents('/proc/diskstats', log_result=False):
-      stats = io_stats_parser.ParseIoStatsLine(line)
+      fields = line.split()
+      stats = IoStats._make([fields[2]] + [int(f) for f in fields[3:]])
       if stats.device == 'mmcblk0':
         return {
             'num_reads': stats.num_reads_issued,

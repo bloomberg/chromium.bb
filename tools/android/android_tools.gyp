@@ -10,7 +10,6 @@
       'target_name': 'android_tools',
       'type': 'none',
       'dependencies': [
-        'fake_dns/fake_dns.gyp:fake_dns',
         'forwarder2/forwarder.gyp:forwarder2',
         'md5sum/md5sum.gyp:md5sum',
         'adb_reboot/adb_reboot.gyp:adb_reboot',
