@@ -555,8 +555,8 @@ evdev_handle_device(struct evdev_device *device)
 static int
 evdev_configure_device(struct evdev_device *device)
 {
-	if ((device->caps &
-	     (EVDEV_MOTION_ABS | EVDEV_MOTION_REL | EVDEV_BUTTON))) {
+	if ((device->caps & (EVDEV_MOTION_ABS | EVDEV_MOTION_REL)) &&
+	    (device->caps & EVDEV_BUTTON)) {
 		weston_seat_init_pointer(device->seat);
 		weston_log("input device %s, %s is a pointer caps =%s%s%s\n",
 			   device->devname, device->devnode,
