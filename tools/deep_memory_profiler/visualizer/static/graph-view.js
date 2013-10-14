@@ -21,47 +21,53 @@ var GraphView = function(profiler) {
  * @private
  */
 GraphView.prototype.generateLines_ = function(models) {
-  function getLeaves(node, categories) {
-    if ('children' in node) {
-      node.children.forEach(function(child) {
-        getLeaves(child, categories);
+  function mergeCategoryTree(snapNode, index, n, treeNode, lines) {
+    if ('children' in snapNode) {
+      // If |snapNode| is not a leaf node, we should go deeper.
+      if (!('children' in treeNode))
+        treeNode.children = {};
+      snapNode.children.forEach(function(child) {
+        if (!(child.id in treeNode.children))
+          treeNode.children[child.id] = {};
+        mergeCategoryTree(child, index, n, treeNode.children[child.id], lines);
       });
     } else {
-      categories.push(node);
+      // If |snapNode| is a leaf node, register its value.
+      var id = snapNode.id;
+      if (!(id in lines)) {
+        // Allocate an array for a new graph line.
+        treeNode.name = snapNode.name;
+        lines[id] = [];
+        for (var i = 0; i < n; ++i)
+          lines[id].push([i, 0]);
+      }
+      lines[id][index] = [index, snapNode.size];
+    }
+  }
+
+  function getCategoriesMap(node, id, categories) {
+    if ('children' in node) {
+      Object.keys(node.children).forEach(function(id) {
+        getCategoriesMap(node.children[id], id, categories);
+      });
+    } else {
+      categories[id] = node.name;
     }
   }
 
   var lines = {};
+  var categoryTree = {};
   var categoryMap = {};
   var snapshotNum = models.length;
-  // Initialize lines with all zero.
-  models.forEach(function(model) {
-    var categories = [];
-    getLeaves(model, categories);
-    categories.forEach(function(category) {
-      var id = category.id;
-      if (lines[id])
-        return;
-      lines[id] = [];
-      for (var i = 0; i < snapshotNum; ++i)
-        lines[id].push([i, 0]);
-      categoryMap[id] = category;
-    });
-  });
-
-  // Assignment lines with values of models.
+  // Enumerate all existing categories in tree format, with getting values.
   models.forEach(function(model, index) {
-    var categories = [];
-    getLeaves(model, categories);
-    categories.forEach(function(category) {
-      var id = category.id;
-      var size = category.size;
-      lines[id][index] = [index, size];
-    });
+    mergeCategoryTree(model, index, snapshotNum, categoryTree, lines);
   });
+  // Convert layout of categories from tree style to hash map style.
+  getCategoriesMap(categoryTree, '', categoryMap);
 
-  return Object.keys(lines).map(function(id) {
-    var name = categoryMap[id].name;
+  return Object.keys(categoryMap).map(function(id) {
+    var name = categoryMap[id];
     return {
       id: id,
       label: name,
