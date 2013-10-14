@@ -63,3 +63,23 @@
    fun:infoleak_check_state
    fun:main
 }
+
+# Suppress all errors that come from the python testing harness.
+{
+   ADDRESS_IN_RANGE/Invalid read of size 4
+   Memcheck:Addr4
+   obj:/usr/bin/python*
+}
+
+{
+   ADDRESS_IN_RANGE/Invalid read of size 4
+   Memcheck:Value4
+   obj:/usr/bin/python*
+}
+
+{
+   ADDRESS_IN_RANGE/Conditional jump or move depends on uninitialised value
+   Memcheck:Cond
+   obj:/usr/bin/python*
+}
+

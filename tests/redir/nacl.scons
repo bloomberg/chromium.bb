@@ -44,11 +44,17 @@ node = env.CommandSelLdrTestNacl(
     osenv=['NACL_EXE_STDOUT=%s' % outfile,
            'NACL_EXE_STDERR=%s' % errfile])
 
+# Valgrind doesn't yet work.
+# TODO(sehr): https://code.google.com/p/nativeclient/issues/detail?id=3158
+testing_on_valgrind = env.Bit('running_on_valgrind')
+
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_redir_test')
+                       'run_redir_test',
+                       is_broken=testing_on_valgrind)
 
-tests_disabled = env.Bit('do_not_run_tests') or env.GetSelLdr() is None
+tests_disabled = (env.Bit('do_not_run_tests') or env.GetSelLdr() is None or
+                  testing_on_valgrind)
 
 test_node = env.AutoDepsCommand(
     'redir_test_output_compare',

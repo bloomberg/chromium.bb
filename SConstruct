@@ -1542,6 +1542,11 @@ def CommandSelLdrTestNacl(env, name, nexe,
   # http://code.google.com/p/nativeclient/issues/detail?id=1799
   if env.IsRunningUnderValgrind() and env.Bit('nacl_glibc'):
     sel_ldr_flags += ['-cc']
+    # https://code.google.com/p/nativeclient/issues/detail?id=3158
+    # We don't currently have valgrind.so for LD_PRELOAD to use.  That .so
+    # is not used for newlib.
+    # TODO(sehr): add valgrind.so built for NaCl.
+    return []
 
   # Skip platform qualification checks on configurations with known issues.
   if env.GetEmulator() or env.IsRunningUnderValgrind():

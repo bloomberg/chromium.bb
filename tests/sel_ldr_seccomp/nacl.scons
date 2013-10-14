@@ -17,6 +17,10 @@ if not trusted_env.SupportsSeccompBpfSandbox():
 if env.Bit('pnacl_generate_pexe'):
   Return()
 
+# Valgrind doesn't like the syscall checking done here.
+if env.IsRunningUnderValgrind():
+  Return()
+
 node = env.CommandSelLdrTestNacl(
     'sel_ldr_seccomp_test.out',
     env.File('${STAGING_DIR}/hello_world.nexe'),

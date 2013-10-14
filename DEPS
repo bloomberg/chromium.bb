@@ -11,7 +11,7 @@ vars = {
   "breakpad_rev": "1172",
   "lcov_rev": "149720",
   "python_26_rev": "53573",
-  "tools_rev": "11437",
+  "tools_rev": "12212",
 
   # These are URL prefixes rather than revision numbers, so keep them separate.
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
@@ -36,6 +36,8 @@ deps = {
   "third_party/lss":
     ((Var("googlecode_url") % "linux-syscall-support") +
      "/trunk/lss@" + Var("lss_rev")),
+  "third_party/valgrind":
+    Var("chromium_trunk") + "/deps/third_party/valgrind@" + Var("chrome_rev"),
   "tools/clang":
     Var("chromium_trunk") + "/src/tools/clang@" + Var("chrome_rev"),
   "tools/gyp":

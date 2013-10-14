@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 DIR="$(dirname "$0")"
-BINDIR="$DIR/../../../../third_party/valgrind/bin"
+BINDIR="$DIR/../../../../third_party/valgrind/binaries/linux_x64/bin"
 NACL_DANGEROUS_SKIP_QUALIFICATION_TEST=1 \
-NACLENV_LD_PRELOAD=libvalgrind.so \
-"$BINDIR/memcheck" --suppressions="$DIR/nacl.supp" "$@"
+NACLENV_LD_PRELOAD=$BINDIR/../lib/vgpreload_memcheck-amd64-linux.so \
+"$BINDIR/valgrind" --tool=memcheck --suppressions="$DIR/nacl.supp" "$@"
