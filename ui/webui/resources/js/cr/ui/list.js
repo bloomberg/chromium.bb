@@ -313,7 +313,7 @@ cr.define('cr.ui', function() {
       this.selectionModel = new ListSelectionModel(length);
 
       this.addEventListener('dblclick', this.handleDoubleClick_);
-      this.addEventListener('mousedown', this.handleMouseDown_);
+      this.addEventListener('mousedown', handleMouseDown);
       this.addEventListener('mouseup', this.handlePointerDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
       this.addEventListener('focus', this.handleElementFocus_, true);
@@ -491,44 +491,6 @@ cr.define('cr.ui', function() {
 
       var index = this.getIndexOfListItem(target);
       this.selectionController_.handlePointerDownUp(e, index);
-    },
-
-    /**
-     * Try focusing on |eventTarget| or its ancestor under |root|.
-     * This is a helper for handleMouseDown_.
-     * @param {!Element} start An element which we start to try.
-     * @param {!Element} root An element which we finish to try.
-     * @return {boolean} True if we focused on an element successfully.
-     * @private
-     */
-    tryFocusOnAncestor_: function(start, root) {
-      for (var element = start; element && element != root;
-          element = element.parentElement) {
-        element.focus();
-        if (root.ownerDocument.activeElement == element)
-          return true;
-      }
-      return false;
-    },
-
-    /**
-     * Mousedown event handler.
-     * @param {MouseEvent} e The mouse event object.
-     * @private
-     */
-    handleMouseDown_: function(e) {
-      this.handlePointerDownUp_(e);
-      // If non-focusable area in a list item is clicked and the item still
-      // contains the focused element, the item did a special focus handling
-      // [1] and we should not focus on the list.
-      //
-      // [1] For example, clicking non-focusable area gives focus on the first
-      // form control in the item.
-      var listItem = this.getListItemAncestor(e.target);
-      if (listItem && !this.tryFocusOnAncestor_(e.target, listItem) &&
-          listItem.contains(listItem.ownerDocument.activeElement)) {
-        e.preventDefault();
-      }
     },
 
     /**
@@ -1314,6 +1276,43 @@ cr.define('cr.ui', function() {
    * that point even though it doesn't actually have the page focus.
    */
   cr.defineProperty(List, 'hasElementFocus', cr.PropertyKind.BOOL_ATTR);
+
+  /**
+   * Mousedown event handler.
+   * @this {List}
+   * @param {MouseEvent} e The mouse event object.
+   */
+  function handleMouseDown(e) {
+    this.handlePointerDownUp_(e);
+    // If non-focusable area in a list item is clicked and the item still
+    // contains the focused element, the item did a special focus handling
+    // [1] and we should not focus on the list.
+    //
+    // [1] For example, clicking non-focusable area gives focus on the first
+    // form control in the item.
+    var listItem = this.getListItemAncestor(e.target);
+    if (listItem && !tryFocusOnAncestor(e.target, listItem) &&
+        listItem.contains(listItem.ownerDocument.activeElement)) {
+      e.preventDefault();
+    }
+  }
+
+  /**
+   * Try focusing on |eventTarget| or its ancestor under |root|.
+   * This is a helper for handleMouseDown.
+   * @param {!Element} start An element which we start to try.
+   * @param {!Element} root An element which we finish to try.
+   * @return {boolean} True if we focused on an element successfully.
+   */
+  function tryFocusOnAncestor(start, root) {
+    for (var element = start; element && element != root;
+        element = element.parentElement) {
+      element.focus();
+      if (root.ownerDocument.activeElement == element)
+        return true;
+    }
+    return false;
+  }
 
   return {
     List: List
