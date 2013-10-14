@@ -70,10 +70,10 @@ class VideoReceiverTest : public ::testing::Test {
     config_.codec = kVp8;
     config_.use_external_decoder = false;
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        NULL, NULL, task_runner_, task_runner_);
-    receiver_.reset(
-        new PeerVideoReceiver(cast_environment_, config_, &mock_transport_));
+    cast_environment_ = new CastEnvironment(task_runner_, NULL, NULL,
+                                  task_runner_, task_runner_);
+    receiver_.reset(new
+        PeerVideoReceiver(cast_environment_, config_, &mock_transport_));
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     video_receiver_callback_ = new TestVideoReceiverCallback();

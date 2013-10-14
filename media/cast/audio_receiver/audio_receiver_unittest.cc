@@ -41,12 +41,7 @@ class TestAudioEncoderCallback :
 
   int number_times_called() { return num_called_;}
 
- protected:
-  virtual ~TestAudioEncoderCallback() {}
-
  private:
-  friend class base::RefCountedThreadSafe<TestAudioEncoderCallback>;
-
   int num_called_;
   uint8 expected_frame_id_;
   base::TimeTicks expected_playout_time_;
@@ -74,8 +69,8 @@ class AudioReceiverTest : public ::testing::Test {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_);
+    cast_environment_ = new CastEnvironment(task_runner_, task_runner_,
+        task_runner_, task_runner_, task_runner_);
     test_audio_encoder_callback_ = new TestAudioEncoderCallback();
   }
 

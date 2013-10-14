@@ -129,7 +129,7 @@ void AudioEncoder::EncodeAudioFrameThread(
     const FrameEncodedCallback& frame_encoded_callback,
     const base::Closure release_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO_ENCODER));
-  size_t samples_per_10ms = audio_frame->frequency / 100;
+  int samples_per_10ms = audio_frame->frequency / 100;
   size_t number_of_10ms_blocks = audio_frame->samples.size() /
       (samples_per_10ms * audio_frame->channels);
   DCHECK(webrtc::AudioFrame::kMaxDataSizeSamples > samples_per_10ms)
