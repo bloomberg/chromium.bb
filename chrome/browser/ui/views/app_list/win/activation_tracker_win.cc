@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/app_list/win/activation_tracker.h"
+#include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 
 #include "base/time/time.h"
 
@@ -12,8 +12,9 @@ static const wchar_t kTrayClassName[] = L"Shell_TrayWnd";
 
 }  // namespace
 
-ActivationTracker::ActivationTracker(app_list::AppListView* view,
-                                     const base::Closure& on_should_dismiss)
+ActivationTrackerWin::ActivationTrackerWin(
+    app_list::AppListView* view,
+    const base::Closure& on_should_dismiss)
     : view_(view),
       on_should_dismiss_(on_should_dismiss),
       regain_next_lost_focus_(false),
@@ -21,12 +22,12 @@ ActivationTracker::ActivationTracker(app_list::AppListView* view,
   view_->AddObserver(this);
 }
 
-ActivationTracker::~ActivationTracker() {
+ActivationTrackerWin::~ActivationTrackerWin() {
   view_->RemoveObserver(this);
   timer_.Stop();
 }
 
-void ActivationTracker::OnActivationChanged(
+void ActivationTrackerWin::OnActivationChanged(
     views::Widget* widget, bool active) {
   const int kFocusCheckIntervalMS = 250;
   if (active) {
@@ -37,14 +38,14 @@ void ActivationTracker::OnActivationChanged(
   preserving_focus_for_taskbar_menu_ = false;
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kFocusCheckIntervalMS), this,
-               &ActivationTracker::CheckTaskbarOrViewHasFocus);
+               &ActivationTrackerWin::CheckTaskbarOrViewHasFocus);
 }
 
-void ActivationTracker::OnViewHidden() {
+void ActivationTrackerWin::OnViewHidden() {
   timer_.Stop();
 }
 
-void ActivationTracker::CheckTaskbarOrViewHasFocus() {
+void ActivationTrackerWin::CheckTaskbarOrViewHasFocus() {
   // Remember if the taskbar had focus without the right mouse button being
   // down.
   bool was_preserving_focus = preserving_focus_for_taskbar_menu_;

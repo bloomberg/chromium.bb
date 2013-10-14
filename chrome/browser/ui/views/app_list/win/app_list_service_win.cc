@@ -27,17 +27,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/app_list/app_list.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
+#include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
 #include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
-#include "chrome/browser/ui/views/app_list/win/activation_tracker.h"
+#include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_shower.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_view_factory.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_view_win.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_view_win_impl.h"
+#include "chrome/browser/ui/views/app_list/win/app_list_win.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -310,14 +310,14 @@ void SetWindowAttributes(HWND hwnd) {
   ui::win::SetAppIconForWindow(icon_path, hwnd);
 }
 
-class AppListViewFactoryImpl : public AppListViewFactory {
+class AppListFactoryWin : public AppListFactory {
  public:
-  explicit AppListViewFactoryImpl(
+  explicit AppListFactoryWin(
       scoped_ptr<AppListControllerDelegate> delegate)
       : delegate_(delegate.Pass()) {}
-  virtual ~AppListViewFactoryImpl() {}
+  virtual ~AppListFactoryWin() {}
 
-  virtual AppListViewWin* CreateAppListView(
+  virtual AppList* CreateAppList(
       Profile* profile,
       const base::Closure& on_should_dismiss) OVERRIDE {
     // The controller will be owned by the view delegate, and the delegate is
@@ -333,7 +333,7 @@ class AppListViewFactoryImpl : public AppListViewFactory {
                                       views::BubbleBorder::FLOAT,
                                       false /* border_accepts_events */);
     SetWindowAttributes(view->GetHWND());
-    return new AppListViewWinImpl(view, on_should_dismiss);
+    return new AppListWin(view, on_should_dismiss);
   }
 
  private:
@@ -341,7 +341,7 @@ class AppListViewFactoryImpl : public AppListViewFactory {
   app_list::PaginationModel pagination_model_;
 
   scoped_ptr<AppListControllerDelegate> delegate_;
-  DISALLOW_COPY_AND_ASSIGN(AppListViewFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(AppListFactoryWin);
 };
 
 }  // namespace
@@ -354,12 +354,12 @@ AppListServiceWin* AppListServiceWin::GetInstance() {
 
 AppListServiceWin::AppListServiceWin()
     : enable_app_list_on_next_init_(false),
-      shower_(new AppListShower(make_scoped_ptr(new AppListViewFactoryImpl(
-          scoped_ptr<AppListControllerDelegate>(
-              new AppListControllerDelegateWin(this)))),
-                                make_scoped_ptr(new KeepAliveServiceImpl))),
-      weak_factory_(this) {
-}
+      shower_(new AppListShower(
+          scoped_ptr<AppListFactory>(
+              new AppListFactoryWin(scoped_ptr<AppListControllerDelegate>(
+                  new AppListControllerDelegateWin(this)))),
+          scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl))),
+      weak_factory_(this) {}
 
 AppListServiceWin::~AppListServiceWin() {
 }
@@ -377,7 +377,7 @@ AppListControllerDelegate* AppListServiceWin::CreateControllerDelegate() {
 }
 
 app_list::AppListModel* AppListServiceWin::GetAppListModelForTesting() {
-  return static_cast<AppListViewWinImpl*>(shower_->view())->model();
+  return static_cast<AppListWin*>(shower_->app_list())->model();
 }
 
 void AppListServiceWin::ShowForProfile(Profile* requested_profile) {

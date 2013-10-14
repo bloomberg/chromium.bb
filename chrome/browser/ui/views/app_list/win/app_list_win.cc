@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/app_list/win/app_list_view_win_impl.h"
+#include "chrome/browser/ui/views/app_list/win/app_list_win.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -107,17 +107,17 @@ gfx::Point FindAnchorPoint(
 
 }  // namespace
 
-AppListViewWinImpl::AppListViewWinImpl(app_list::AppListView* view,
-                                       const base::Closure& on_should_dismiss)
+AppListWin::AppListWin(app_list::AppListView* view,
+                       const base::Closure& on_should_dismiss)
   : view_(view),
     activation_tracker_(view, on_should_dismiss),
     window_icon_updated_(false) {
 }
 
-AppListViewWinImpl::~AppListViewWinImpl() {
+AppListWin::~AppListWin() {
 }
 
-void AppListViewWinImpl::Show() {
+void AppListWin::Show() {
   view_->GetWidget()->Show();
   if (!window_icon_updated_) {
     view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
@@ -126,12 +126,12 @@ void AppListViewWinImpl::Show() {
   view_->GetWidget()->Activate();
 }
 
-void AppListViewWinImpl::Hide() {
+void AppListWin::Hide() {
   view_->GetWidget()->Hide();
   activation_tracker_.OnViewHidden();
 }
 
-void AppListViewWinImpl::MoveNearCursor() {
+void AppListWin::MoveNearCursor() {
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   gfx::Screen* screen =
       gfx::Screen::GetScreenFor(view_->GetWidget()->GetNativeView());
@@ -142,22 +142,22 @@ void AppListViewWinImpl::MoveNearCursor() {
       view_->GetPreferredSize(), display, cursor));
 }
 
-bool AppListViewWinImpl::IsVisible() {
+bool AppListWin::IsVisible() {
   return view_->GetWidget()->IsVisible();
 }
 
-void AppListViewWinImpl::Prerender() {
+void AppListWin::Prerender() {
   view_->Prerender();
 }
 
-void AppListViewWinImpl::RegainNextLostFocus() {
+void AppListWin::RegainNextLostFocus() {
   activation_tracker_.RegainNextLostFocus();
 }
 
-gfx::NativeWindow AppListViewWinImpl::GetWindow() {
+gfx::NativeWindow AppListWin::GetWindow() {
   return view_->GetWidget()->GetNativeWindow();
 }
 
-void AppListViewWinImpl::SetProfile(Profile* profile) {
+void AppListWin::SetProfile(Profile* profile) {
   view_->SetProfileByPath(profile->GetPath());
 }

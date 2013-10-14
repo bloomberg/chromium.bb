@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_shower.h"
+#include "chrome/browser/ui/app_list/app_list_shower.h"
 
-AppListShower::AppListShower(scoped_ptr<AppListViewFactory> factory,
+AppListShower::AppListShower(scoped_ptr<AppListFactory> factory,
                              scoped_ptr<KeepAliveService> keep_alive)
     : factory_(factory.Pass()),
       keep_alive_service_(keep_alive.Pass()),
@@ -19,34 +19,34 @@ AppListShower::~AppListShower() {
 
 void AppListShower::ShowAndReacquireFocus(Profile* requested_profile) {
   ShowForProfile(requested_profile);
-  view_->RegainNextLostFocus();
+  app_list_->RegainNextLostFocus();
 }
 
 void AppListShower::ShowForProfile(Profile* requested_profile) {
   // If the app list is already displaying |profile| just activate it (in case
   // we have lost focus).
   if (IsAppListVisible() && (requested_profile == profile_)) {
-    view_->Show();
+    app_list_->Show();
     return;
   }
 
-  if (!view_) {
+  if (!app_list_) {
     CreateViewForProfile(requested_profile);
   } else if (requested_profile != profile_) {
     profile_ = requested_profile;
-    view_->SetProfile(requested_profile);
+    app_list_->SetProfile(requested_profile);
   }
 
   keep_alive_service_->EnsureKeepAlive();
   if (!IsAppListVisible())
-    view_->MoveNearCursor();
-  view_->Show();
+    app_list_->MoveNearCursor();
+  app_list_->Show();
 }
 
 gfx::NativeWindow AppListShower::GetWindow() {
   if (!IsAppListVisible())
     return NULL;
-  return view_->GetWindow();
+  return app_list_->GetWindow();
 }
 
 void AppListShower::CreateViewForProfile(Profile* requested_profile) {
@@ -61,20 +61,20 @@ void AppListShower::CreateViewForProfile(Profile* requested_profile) {
 #endif
 
   profile_ = requested_profile;
-  view_.reset(factory_->CreateAppListView(
+  app_list_.reset(factory_->CreateAppList(
       profile_,
       base::Bind(&AppListShower::DismissAppList, base::Unretained(this))));
 }
 
 void AppListShower::DismissAppList() {
-  if (view_ && can_close_app_list_) {
-    view_->Hide();
+  if (app_list_ && can_close_app_list_) {
+    app_list_->Hide();
     keep_alive_service_->FreeKeepAlive();
   }
 }
 
 void AppListShower::CloseAppList() {
-  view_.reset();
+  app_list_.reset();
   profile_ = NULL;
 
   // We may end up here as the result of the OS deleting the AppList's
@@ -96,15 +96,15 @@ void AppListShower::CloseAppList() {
 }
 
 bool AppListShower::IsAppListVisible() const {
-  return view_ && view_->IsVisible();
+  return app_list_ && app_list_->IsVisible();
 }
 
 void AppListShower::WarmupForProfile(Profile* profile) {
   DCHECK(!profile_);
   CreateViewForProfile(profile);
-  view_->Prerender();
+  app_list_->Prerender();
 }
 
 bool AppListShower::HasView() const {
-  return !!view_;
+  return !!app_list_;
 }

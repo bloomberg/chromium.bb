@@ -4,17 +4,17 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list.h"
+#include "chrome/browser/ui/app_list/app_list_factory.h"
+#include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/keep_alive_service.h"
 #include "chrome/browser/ui/app_list/test/fake_keep_alive_service.h"
 #include "chrome/browser/ui/app_list/test/fake_profile.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_shower.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_view_factory.h"
-#include "chrome/browser/ui/views/app_list/win/app_list_view_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class FakeView : public AppListViewWin {
+class FakeAppList : public AppList {
  public:
-  explicit FakeView(Profile* profile)
+  explicit FakeAppList(Profile* profile)
       : profile_(profile) {
   }
 
@@ -22,7 +22,7 @@ class FakeView : public AppListViewWin {
     return profile_->GetProfileName();
   }
 
-  // AppListViewWin overrides.
+  // AppList overrides.
   virtual void Show() OVERRIDE {
     visible_ = true;
   }
@@ -58,17 +58,17 @@ class FakeView : public AppListViewWin {
   bool prerendered_;
 };
 
-class FakeFactory : public AppListViewFactory {
+class FakeFactory : public AppListFactory {
  public:
   FakeFactory()
       : views_created_(0) {
   }
 
-  virtual AppListViewWin* CreateAppListView(
+  virtual AppList* CreateAppList(
       Profile* profile,
       const base::Closure& on_should_dismiss) OVERRIDE {
     views_created_++;
-    return new FakeView(profile);
+    return new FakeAppList(profile);
   }
 
   int views_created_;
@@ -79,8 +79,9 @@ class AppListShowerUnitTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     keep_alive_service_ = new FakeKeepAliveService;
     factory_ = new FakeFactory;
-    shower_.reset(new AppListShower(make_scoped_ptr(factory_),
-                                    make_scoped_ptr(keep_alive_service_)));
+    shower_.reset(
+        new AppListShower(scoped_ptr<AppListFactory>(factory_),
+                          scoped_ptr<KeepAliveService>(keep_alive_service_)));
     profile1_ = CreateProfile("p1").Pass();
     profile2_ = CreateProfile("p2").Pass();
   }
@@ -92,8 +93,8 @@ class AppListShowerUnitTest : public testing::Test {
     return make_scoped_ptr(new FakeProfile(name));
   }
 
-  FakeView* GetCurrentView() {
-    return static_cast<FakeView*>(shower_->view());
+  FakeAppList* GetCurrentAppList() {
+    return static_cast<FakeAppList*>(shower_->app_list());
   }
 
   // Owned by |shower_|.
@@ -150,9 +151,9 @@ TEST_F(AppListShowerUnitTest, CloseRemovesView) {
 
 TEST_F(AppListShowerUnitTest, SwitchingProfiles) {
   shower_->ShowForProfile(profile1_.get());
-  EXPECT_EQ("p1", GetCurrentView()->profile_name());
+  EXPECT_EQ("p1", GetCurrentAppList()->profile_name());
   shower_->ShowForProfile(profile2_.get());
-  EXPECT_EQ("p2", GetCurrentView()->profile_name());
+  EXPECT_EQ("p2", GetCurrentAppList()->profile_name());
 
   // Shouldn't create new view for second profile - it should switch in place.
   EXPECT_EQ(1, factory_->views_created_);
