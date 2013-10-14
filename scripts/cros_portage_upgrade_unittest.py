@@ -3366,8 +3366,8 @@ class StabilizeEbuildTest(CpuTestBase):
   @osutils.TempFileDecorator
   def testNothingToDo(self):
     arch = 'arm'
-    keyword_line = 'KEYWORDS="amd64 arm ~mips x86"'
-    gold_keyword_line = keyword_line
+    keyword_line = 'KEYWORDS="amd64 arm mips x86"'
+    gold_keyword_line = 'KEYWORDS="amd64 arm mips x86"'
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
@@ -3375,7 +3375,7 @@ class StabilizeEbuildTest(CpuTestBase):
   def testNothingToDoFbsd(self):
     arch = 'x86'
     keyword_line = 'KEYWORDS="amd64 arm ~mips x86 ~x86-fbsd"'
-    gold_keyword_line = keyword_line
+    gold_keyword_line = 'KEYWORDS="amd64 arm mips x86 ~x86-fbsd"'
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
@@ -3383,7 +3383,7 @@ class StabilizeEbuildTest(CpuTestBase):
   def testSimpleMiddleOfLine(self):
     arch = 'arm'
     keyword_line = 'KEYWORDS="amd64 ~arm ~mips x86"'
-    gold_keyword_line = 'KEYWORDS="amd64 arm ~mips x86"'
+    gold_keyword_line = 'KEYWORDS="amd64 arm mips x86"'
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
@@ -3391,7 +3391,7 @@ class StabilizeEbuildTest(CpuTestBase):
   def testSimpleMiddleOfLineSpacePrefix(self):
     arch = 'arm'
     keyword_line = '    KEYWORDS="amd64 ~arm ~mips x86"'
-    gold_keyword_line = '    KEYWORDS="amd64 arm ~mips x86"'
+    gold_keyword_line = '    KEYWORDS="amd64 arm mips x86"'
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
@@ -3399,7 +3399,7 @@ class StabilizeEbuildTest(CpuTestBase):
   def testSimpleStartOfLine(self):
     arch = 'arm'
     keyword_line = 'KEYWORDS="~arm amd64 ~mips x86"'
-    gold_keyword_line = 'KEYWORDS="arm amd64 ~mips x86"'
+    gold_keyword_line = 'KEYWORDS="arm amd64 mips x86"'
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
@@ -3407,7 +3407,7 @@ class StabilizeEbuildTest(CpuTestBase):
   def testSimpleEndOfLine(self):
     arch = 'arm'
     keyword_line = 'KEYWORDS="amd64 ~mips x86 ~arm"'
-    gold_keyword_line = 'KEYWORDS="amd64 ~mips x86 arm"'
+    gold_keyword_line = 'KEYWORDS="amd64 mips x86 arm"'
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
@@ -3415,7 +3415,7 @@ class StabilizeEbuildTest(CpuTestBase):
   def testPreFbsd(self):
     arch = 'x86'
     keyword_line = 'KEYWORDS="amd64 ~arm ~mips ~x86 ~x86-fbsd"'
-    gold_keyword_line = 'KEYWORDS="amd64 ~arm ~mips x86 ~x86-fbsd"'
+    gold_keyword_line = 'KEYWORDS="amd64 ~arm mips x86 ~x86-fbsd"'
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
@@ -3423,7 +3423,7 @@ class StabilizeEbuildTest(CpuTestBase):
   def testPostFbsd(self):
     arch = 'x86'
     keyword_line = 'KEYWORDS="amd64 ~arm ~mips ~x86-fbsd ~x86"'
-    gold_keyword_line = 'KEYWORDS="amd64 ~arm ~mips ~x86-fbsd x86"'
+    gold_keyword_line = 'KEYWORDS="amd64 ~arm mips ~x86-fbsd x86"'
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
@@ -3437,7 +3437,7 @@ class StabilizeEbuildTest(CpuTestBase):
                      ]
     gold_keyword_lines = ['KEYWORDS="amd64',
                           '  arm',
-                          '  ~mips',
+                          '  mips',
                           '  x86"',
                           ]
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
@@ -3453,7 +3453,7 @@ class StabilizeEbuildTest(CpuTestBase):
                      ]
     gold_keyword_lines = ['KEYWORDS="amd64',
                           '  arm',
-                          '  ~mips',
+                          '  mips',
                           '  x86"',
                           ]
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
@@ -3469,7 +3469,7 @@ class StabilizeEbuildTest(CpuTestBase):
                      ]
     gold_keyword_lines = ['KEYWORDS="amd64',
                           '  arm',
-                          '  ~mips',
+                          '  mips',
                           '  x86"',
                           ]
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
@@ -3478,11 +3478,11 @@ class StabilizeEbuildTest(CpuTestBase):
   @osutils.TempFileDecorator
   def testMultipleKeywordLinesOneChange(self):
     arch = 'arm'
-    keyword_lines = ['KEYWORDS="amd64 arm mips x86',
-                     'KEYWORDS="~amd64 ~arm ~mips ~x86',
+    keyword_lines = ['KEYWORDS="amd64 arm mips x86"',
+                     'KEYWORDS="~amd64 ~arm ~mips ~x86"',
                      ]
-    gold_keyword_lines = ['KEYWORDS="amd64 arm mips x86',
-                          'KEYWORDS="~amd64 arm ~mips ~x86',
+    gold_keyword_lines = ['KEYWORDS="amd64 arm mips x86"',
+                          'KEYWORDS="~amd64 arm mips ~x86"',
                           ]
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
@@ -3490,11 +3490,11 @@ class StabilizeEbuildTest(CpuTestBase):
   @osutils.TempFileDecorator
   def testMultipleKeywordLinesMultipleChanges(self):
     arch = 'arm'
-    keyword_lines = ['KEYWORDS="amd64 ~arm mips x86',
-                     'KEYWORDS="~amd64 ~arm ~mips ~x86',
+    keyword_lines = ['KEYWORDS="amd64 ~arm mips x86"',
+                     'KEYWORDS="~amd64 ~arm ~mips ~x86"',
                      ]
-    gold_keyword_lines = ['KEYWORDS="amd64 arm mips x86',
-                          'KEYWORDS="~amd64 arm ~mips ~x86',
+    gold_keyword_lines = ['KEYWORDS="amd64 arm mips x86"',
+                          'KEYWORDS="~amd64 arm mips ~x86"',
                           ]
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
@@ -3502,11 +3502,11 @@ class StabilizeEbuildTest(CpuTestBase):
   @osutils.TempFileDecorator
   def testMultipleKeywordLinesMultipleChangesSpacePrefix(self):
     arch = 'arm'
-    keyword_lines = ['     KEYWORDS="amd64 ~arm mips x86',
-                     '     KEYWORDS="~amd64 ~arm ~mips ~x86',
+    keyword_lines = ['     KEYWORDS="amd64 ~arm mips x86"',
+                     '     KEYWORDS="~amd64 ~arm ~mips ~x86"',
                      ]
-    gold_keyword_lines = ['     KEYWORDS="amd64 arm mips x86',
-                          '     KEYWORDS="~amd64 arm ~mips ~x86',
+    gold_keyword_lines = ['     KEYWORDS="amd64 arm mips x86"',
+                          '     KEYWORDS="~amd64 arm mips ~x86"',
                           ]
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
