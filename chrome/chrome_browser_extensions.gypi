@@ -855,6 +855,8 @@
         'browser/extensions/webstore_data_fetcher_delegate.h',
         'browser/extensions/webstore_inline_installer.cc',
         'browser/extensions/webstore_inline_installer.h',
+        'browser/extensions/webstore_inline_installer_factory.cc',
+        'browser/extensions/webstore_inline_installer_factory.h',
         'browser/extensions/webstore_install_helper.cc',
         'browser/extensions/webstore_install_helper.h',
         'browser/extensions/webstore_installer.cc',

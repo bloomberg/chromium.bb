@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
@@ -36,6 +37,7 @@ class LocationBarController;
 class ScriptBadgeController;
 class ScriptBubbleController;
 class ScriptExecutor;
+class WebstoreInlineInstallerFactory;
 
 // Per-tab extension helper. Also handles non-extension apps.
 class TabHelper : public content::WebContentsObserver,
@@ -155,6 +157,11 @@ class TabHelper : public content::WebContentsObserver,
   // INVALIDATE_TYPE_TITLE navigation state change to trigger repaint of title.
   void SetAppIcon(const SkBitmap& app_icon);
 
+  // Sets the factory used to create inline webstore item installers.
+  // Used for testing. Takes ownership of the factory instance.
+  void SetWebstoreInlineInstallerFactoryForTests(
+      WebstoreInlineInstallerFactory* factory);
+
  private:
   explicit TabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<TabHelper>;
@@ -262,6 +269,9 @@ class TabHelper : public content::WebContentsObserver,
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_;
+
+  // Creates WebstoreInlineInstaller instances for inline install triggers.
+  scoped_ptr<WebstoreInlineInstallerFactory> webstore_inline_installer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabHelper);
 };
