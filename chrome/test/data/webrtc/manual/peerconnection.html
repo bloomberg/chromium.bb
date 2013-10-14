@@ -27,9 +27,9 @@
     <button id="re-request" onclick="getUserMediaFromHere();">
         Request GetUserMedia</button><br/>
     Audio source <select class="drop-down" id="audiosrc"
-        onclick="updateGetUserMediaConstraints();"></select>
+        onchange="updateGetUserMediaConstraints();"></select>
     Video source <select class="drop-down" id="videosrc"
-        onclick="updateGetUserMediaConstraints();"></select>
+        onchange="updateGetUserMediaConstraints();"></select>
     <button id="refresh-devices" onclick="getDevices();">
         Refresh devices</button>
     Use <a href="constraints.html">constraints.html</a> to create more
