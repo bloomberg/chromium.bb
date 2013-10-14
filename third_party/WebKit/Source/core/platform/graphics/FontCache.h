@@ -140,7 +140,7 @@ private:
 
     // These methods are implemented by each platform.
     PassRefPtr<SimpleFontData> getSimilarFontPlatformData(const Font&);
-    FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family);
+    FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family, float fontSize);
 
     // Implemented on skia platforms.
     SkTypeface* createTypeface(const FontDescription&, const AtomicString& family, CString& name);

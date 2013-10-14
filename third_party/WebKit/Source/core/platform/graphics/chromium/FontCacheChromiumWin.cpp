@@ -610,7 +610,7 @@ void FontCache::getTraitsInFamily(const AtomicString& familyName, Vector<unsigne
     copyToVector(procData.m_traitsMasks, traitsMasks);
 }
 
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family)
+FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
 {
     LOGFONT winfont = {0};
     FillLogFont(fontDescription, &winfont);
@@ -639,9 +639,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         }
     }
 
-    return new FontPlatformData(hfont,
-                                fontDescription.computedPixelSize(),
-                                fontDescription.orientation());
+    return new FontPlatformData(hfont, fontSize, fontDescription.orientation());
 }
 
 }

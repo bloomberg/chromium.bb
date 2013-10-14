@@ -199,7 +199,7 @@ static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& fam
     return matchesRequestedFamily;
 }
 
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family)
+FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
 {
     CString name;
     SkTypeface* tf = createTypeface(fontDescription, family, name);
@@ -218,7 +218,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
 
     FontPlatformData* result = new FontPlatformData(tf,
         name.data(),
-        fontDescription.computedSize(),
+        fontSize,
         fontDescription.weight() >= FontWeightBold && !tf->isBold(),
         fontDescription.italic() && !tf->isItalic(),
         fontDescription.orientation());

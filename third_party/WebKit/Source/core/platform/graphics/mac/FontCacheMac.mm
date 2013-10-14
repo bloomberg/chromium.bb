@@ -217,11 +217,11 @@ void FontCache::getTraitsInFamily(const AtomicString& familyName, Vector<unsigne
     [WebFontCache getTraits:traitsMasks inFamily:familyName];
 }
 
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family)
+FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
 {
     NSFontTraitMask traits = fontDescription.italic() ? NSFontItalicTrait : 0;
     NSInteger weight = toAppKitFontWeight(fontDescription.weight());
-    float size = fontDescription.computedPixelSize();
+    float size = fontSize;
 
     NSFont *nsFont = [WebFontCache fontWithFamily:family traits:traits weight:weight size:size];
     if (!nsFont)

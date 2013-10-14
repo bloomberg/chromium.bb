@@ -158,7 +158,7 @@ SkTypeface* FontCache::createTypeface(const FontDescription& fontDescription, co
 }
 
 #if !OS(WIN)
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family)
+FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
 {
     CString name;
     SkTypeface* tf = createTypeface(fontDescription, family, name);
@@ -167,7 +167,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
 
     FontPlatformData* result = new FontPlatformData(tf,
         name.data(),
-        fontDescription.computedSize(),
+        fontSize,
         fontDescription.weight() >= FontWeightBold && !tf->isBold(),
         fontDescription.italic() && !tf->isItalic(),
         fontDescription.orientation());

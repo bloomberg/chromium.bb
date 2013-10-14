@@ -259,7 +259,7 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
     bool foundResult;
     FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
     if (it == gFontPlatformDataCache->end()) {
-        result = createFontPlatformData(fontDescription, familyName);
+        result = createFontPlatformData(fontDescription, familyName, fontSize);
         gFontPlatformDataCache->set(key, adoptPtr(result));
         foundResult = result;
     } else {
