@@ -33,6 +33,29 @@ Update procedure, from this directory:
 
 (3) make a CL to check in the new nacl_perf_expectations.json file.
 
+
+Utilities
+=========
+
+A handy tool to update *all* perf expectations matching a regex is
+"update_perf_expectations.py", found under tools/perf_expectations.
+For example, to set reva and revb for TestCondvarSignalNoOp over
+all bots (Windows, Mac, Linux) x (32-bit, 64-bit), run the following
+
+  python ../perf_expectations/update_perf_expectations.py \
+    -f .*TestCondvarSignalNoOp.* \
+    --reva <new_reva> --revb <new_revb> \
+    --config ./nacl_per_expecations.cfg
+
+That will only reset the reva and revb fields. To actually poll the
+bots for the improve and regress values, use the usual command:
+
+  ../perf_expectations/make_expectations.py -c ./nacl_perf_expectations.cfg
+
+
+More information
+================
+
 For more info on the format see:
 http://dev.chromium.org/developers/testing/chromium-build-infrastructure/performance-test-plots#TOC-Format-of-expectations-file
 
