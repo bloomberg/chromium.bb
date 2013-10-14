@@ -1079,7 +1079,8 @@ def _CreateParser():
                                'timeout.')
   group.add_remote_option('--version', dest='force_version', default=None,
                           help='Used with manifest logic.  Forces use of this '
-                               'version rather than create or get latest.')
+                               'version rather than create or get latest. '
+                               'Examples: 4815.0.0-rc1, 4815.1.2')
 
   parser.add_option_group(group)
 
