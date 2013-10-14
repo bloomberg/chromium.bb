@@ -107,11 +107,11 @@ void RtpPacketizer::Cast(bool is_key,
     packet.push_back(
         (is_key ? kCastKeyFrameBitMask : 0) | kCastReferenceFrameIdBitMask);
     packet.push_back(frame_id_);
-    int start_size = packet.size();
+    size_t start_size = packet.size();
     packet.resize(start_size + 4);
     net::BigEndianWriter big_endian_writer(packet.data() + start_size, 4);
     big_endian_writer.WriteU16(packet_id_);
-    big_endian_writer.WriteU16(num_packets - 1);
+    big_endian_writer.WriteU16(static_cast<uint16>(num_packets - 1));
     packet.push_back(reference_frame_id);
 
     // Copy payload data.

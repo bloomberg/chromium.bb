@@ -20,6 +20,7 @@ namespace media {
 namespace cast {
 
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const uint8 kPixelValue = 123;
 
 using testing::_;
 
@@ -96,19 +97,19 @@ class VideoSenderTest : public ::testing::Test {
     video_frame->y_plane.length = video_frame->width;
     video_frame->y_plane.data =
         new uint8[video_frame->width * video_frame->height];
-    memset(video_frame->y_plane.data, 123,
+    memset(video_frame->y_plane.data, kPixelValue,
         video_frame->width * video_frame->height);
     video_frame->u_plane.stride = video_frame->width / 2;
     video_frame->u_plane.length = video_frame->width / 2;
     video_frame->u_plane.data =
         new uint8[video_frame->width * video_frame->height / 4];
-    memset(video_frame->u_plane.data, 123,
+    memset(video_frame->u_plane.data, kPixelValue,
         video_frame->width * video_frame->height / 4);
     video_frame->v_plane.stride = video_frame->width / 2;
     video_frame->v_plane.length = video_frame->width / 2;
     video_frame->v_plane.data =
         new uint8[video_frame->width * video_frame->height / 4];
-    memset(video_frame->v_plane.data, 123,
+    memset(video_frame->v_plane.data, kPixelValue,
         video_frame->width * video_frame->height / 4);
     return video_frame;
   }
@@ -146,14 +147,14 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
   video_frame.key_frame = true;
   video_frame.frame_id = 0;
   video_frame.last_referenced_frame_id = 0;
-  video_frame.data.insert(video_frame.data.begin(), 123, 1000);
+  video_frame.data.insert(video_frame.data.begin(), 1000, kPixelValue);
 
   video_sender_->InsertCodedVideoFrame(&video_frame, capture_time,
     base::Bind(&ReleaseEncodedFrame, &video_frame));
 }
 
 TEST_F(VideoSenderTest, RtcpTimer) {
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(2);
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
   InitEncoder(false);
 
   // Make sure that we send at least one RTCP packet.

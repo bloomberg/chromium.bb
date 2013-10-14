@@ -43,10 +43,10 @@ TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
   std::vector<int16> payload(640, 0x1234);
 
   uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
-  int payload_size = payload.size() * sizeof(int16);
+  size_t payload_size = payload.size() * sizeof(int16);
 
-  audio_decoder_->IncomingParsedRtpPacket(payload_data, payload_size,
-                                          rtp_header);
+  audio_decoder_->IncomingParsedRtpPacket(payload_data,
+      static_cast<int>(payload_size), rtp_header);
 
   int number_of_10ms_blocks = 4;
   int desired_frequency = 16000;
@@ -90,10 +90,10 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
   std::vector<int16> payload(640, 0x1234);
 
   uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
-  int payload_size = payload.size() * sizeof(int16);
+  size_t payload_size = payload.size() * sizeof(int16);
 
-  audio_decoder_->IncomingParsedRtpPacket(payload_data, payload_size,
-                                          rtp_header);
+  audio_decoder_->IncomingParsedRtpPacket(payload_data,
+      static_cast<int>(payload_size), rtp_header);
 
 
   int number_of_10ms_blocks = 2;
@@ -155,10 +155,10 @@ TEST_F(AudioDecoderTest, Pcm16Resample) {
   std::vector<int16> payload(640, 0x1234);
 
   uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
-  int payload_size = payload.size() * sizeof(int16);
+  size_t payload_size = payload.size() * sizeof(int16);
 
-  audio_decoder_->IncomingParsedRtpPacket(payload_data, payload_size,
-                                          rtp_header);
+  audio_decoder_->IncomingParsedRtpPacket(payload_data,
+      static_cast<int>(payload_size), rtp_header);
 
   int number_of_10ms_blocks = 2;
   int desired_frequency = 48000;

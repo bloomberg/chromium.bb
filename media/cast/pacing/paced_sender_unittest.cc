@@ -28,7 +28,6 @@ class TestPacketSender : public PacketSender {
       EXPECT_FALSE(expected_packet_size_.empty());
       int expected_packet_size = expected_packet_size_.front();
       expected_packet_size_.pop_front();
-      VLOG(0) << "Check " << it->size();
       EXPECT_EQ(expected_packet_size, it->size());
     }
     return true;
