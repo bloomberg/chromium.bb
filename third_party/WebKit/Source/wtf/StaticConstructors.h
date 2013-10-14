@@ -53,16 +53,12 @@
     // Define an global in the normal way.
 #define DEFINE_GLOBAL(type, name, ...) \
     const type name;
-#define DECLARE_GLOBAL(type, name, ...) \
-    extern const type_name;
 
 #else
 // Define an correctly-sized array of pointers to avoid static initialization.
 // Use an array of pointers instead of an array of char in case there is some alignment issue.
 #define DEFINE_GLOBAL(type, name, ...) \
     void * name[(sizeof(type) + sizeof(void *) - 1) / sizeof(void *)];
-#define DECLARE_GLOBAL(type, name, ...) \
-    extern void * name[];
 #endif
 
 #endif // StaticConstructors_h
