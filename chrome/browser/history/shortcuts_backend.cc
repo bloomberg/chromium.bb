@@ -179,66 +179,8 @@ bool ShortcutsBackend::Init() {
       base::Bind(&ShortcutsBackend::InitInternal, this));
 }
 
-bool ShortcutsBackend::AddShortcut(const Shortcut& shortcut) {
-  if (!initialized())
-    return false;
-  DCHECK(guid_map_.find(shortcut.id) == guid_map_.end());
-  guid_map_[shortcut.id] = shortcuts_map_.insert(
-      std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::AddShortcut),
-                 db_.get(), shortcut));
-}
-
-bool ShortcutsBackend::UpdateShortcut(const Shortcut& shortcut) {
-  if (!initialized())
-    return false;
-  GuidMap::iterator it(guid_map_.find(shortcut.id));
-  if (it != guid_map_.end())
-    shortcuts_map_.erase(it->second);
-  guid_map_[shortcut.id] = shortcuts_map_.insert(
-      std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::UpdateShortcut),
-                 db_.get(), shortcut));
-}
-
-bool ShortcutsBackend::DeleteShortcutsWithIds(
-    const std::vector<std::string>& shortcut_ids) {
-  if (!initialized())
-    return false;
-  for (size_t i = 0; i < shortcut_ids.size(); ++i) {
-    GuidMap::iterator it(guid_map_.find(shortcut_ids[i]));
-    if (it != guid_map_.end()) {
-      shortcuts_map_.erase(it->second);
-      guid_map_.erase(it);
-    }
-  }
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithIds),
-                 db_.get(), shortcut_ids));
-}
-
 bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& shortcut_url) {
   return initialized() && DeleteShortcutsWithUrl(shortcut_url, true);
-}
-
-bool ShortcutsBackend::DeleteAllShortcuts() {
-  if (!initialized())
-    return false;
-  shortcuts_map_.clear();
-  guid_map_.clear();
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
-  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShortcutsDatabase::DeleteAllShortcuts),
-                 db_.get()));
 }
 
 void ShortcutsBackend::AddObserver(ShortcutsBackendObserver* obs) {
@@ -339,6 +281,52 @@ void ShortcutsBackend::InitCompleted() {
                     OnShortcutsLoaded());
 }
 
+bool ShortcutsBackend::AddShortcut(const Shortcut& shortcut) {
+  if (!initialized())
+    return false;
+  DCHECK(guid_map_.find(shortcut.id) == guid_map_.end());
+  guid_map_[shortcut.id] = shortcuts_map_.insert(
+      std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
+  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
+                    OnShortcutsChanged());
+  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&ShortcutsDatabase::AddShortcut),
+                 db_.get(), shortcut));
+}
+
+bool ShortcutsBackend::UpdateShortcut(const Shortcut& shortcut) {
+  if (!initialized())
+    return false;
+  GuidMap::iterator it(guid_map_.find(shortcut.id));
+  if (it != guid_map_.end())
+    shortcuts_map_.erase(it->second);
+  guid_map_[shortcut.id] = shortcuts_map_.insert(
+      std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
+  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
+                    OnShortcutsChanged());
+  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&ShortcutsDatabase::UpdateShortcut),
+                 db_.get(), shortcut));
+}
+
+bool ShortcutsBackend::DeleteShortcutsWithIds(
+    const std::vector<std::string>& shortcut_ids) {
+  if (!initialized())
+    return false;
+  for (size_t i = 0; i < shortcut_ids.size(); ++i) {
+    GuidMap::iterator it(guid_map_.find(shortcut_ids[i]));
+    if (it != guid_map_.end()) {
+      shortcuts_map_.erase(it->second);
+      guid_map_.erase(it);
+    }
+  }
+  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
+                    OnShortcutsChanged());
+  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithIds),
+                 db_.get(), shortcut_ids));
+}
+
 bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& url,
                                               bool exact_match) {
   const std::string& url_spec = url.spec();
@@ -363,6 +351,18 @@ bool ShortcutsBackend::DeleteShortcutsWithUrl(const GURL& url,
           base::Bind(
               base::IgnoreResult(&ShortcutsDatabase::DeleteShortcutsWithUrl),
               db_.get(), url_spec));
+}
+
+bool ShortcutsBackend::DeleteAllShortcuts() {
+  if (!initialized())
+    return false;
+  shortcuts_map_.clear();
+  guid_map_.clear();
+  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
+                    OnShortcutsChanged());
+  return no_db_access_ || BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&ShortcutsDatabase::DeleteAllShortcuts),
+                 db_.get()));
 }
 
 }  // namespace history

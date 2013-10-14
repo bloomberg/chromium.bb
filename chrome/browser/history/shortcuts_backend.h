@@ -82,7 +82,7 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
     int number_of_hits;           // How many times shortcut was selected.
   };
 
-  typedef std::multimap<string16, const ShortcutsBackend::Shortcut> ShortcutMap;
+  typedef std::multimap<string16, const Shortcut> ShortcutMap;
 
   // |profile| is necessary for profile notifications only and can be NULL in
   // unit-tests. For unit testing, set |suppress_db| to true to prevent creation
@@ -111,26 +111,17 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   bool initialized() const { return current_state_ == INITIALIZED; }
   const ShortcutMap& shortcuts_map() const { return shortcuts_map_; }
 
-  // Adds the Shortcut to the database.
-  bool AddShortcut(const ShortcutsBackend::Shortcut& shortcut);
-
-  // Updates timing and selection count for the Shortcut.
-  bool UpdateShortcut(const ShortcutsBackend::Shortcut& shortcut);
-
-  // Deletes the Shortcuts with the id.
-  bool DeleteShortcutsWithIds(const std::vector<std::string>& shortcut_ids);
-
   // Deletes the Shortcuts with the url.
   bool DeleteShortcutsWithUrl(const GURL& shortcut_url);
-
-  // Deletes all of the shortcuts.
-  bool DeleteAllShortcuts();
 
   void AddObserver(ShortcutsBackendObserver* obs);
   void RemoveObserver(ShortcutsBackendObserver* obs);
 
  private:
   friend class base::RefCountedThreadSafe<ShortcutsBackend>;
+  friend class ShortcutsProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(ShortcutsBackendTest, AddAndUpdateShortcut);
+  FRIEND_TEST_ALL_PREFIXES(ShortcutsBackendTest, DeleteShortcuts);
 
   enum CurrentState {
     NOT_INITIALIZED,  // Backend created but not initialized.
@@ -158,9 +149,21 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   // Finishes initialization on UI thread, notifies all observers.
   void InitCompleted();
 
+  // Adds the Shortcut to the database.
+  bool AddShortcut(const Shortcut& shortcut);
+
+  // Updates timing and selection count for the Shortcut.
+  bool UpdateShortcut(const Shortcut& shortcut);
+
+  // Deletes the Shortcuts with the id.
+  bool DeleteShortcutsWithIds(const std::vector<std::string>& shortcut_ids);
+
   // Deletes all shortcuts whose URLs begin with |url|.  If |exact_match| is
   // true, only shortcuts from exactly |url| are deleted.
   bool DeleteShortcutsWithUrl(const GURL& url, bool exact_match);
+
+  // Deletes all of the shortcuts.
+  bool DeleteAllShortcuts();
 
   CurrentState current_state_;
   ObserverList<ShortcutsBackendObserver> observer_list_;

@@ -37,8 +37,8 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-using history::ShortcutsBackend;
+
+// TestShortcutInfo -----------------------------------------------------------
 
 namespace {
 
@@ -148,6 +148,41 @@ struct TestShortcutInfo {
 
 }  // namespace
 
+
+// ClassifyTest ---------------------------------------------------------------
+
+// Helper class to make running tests of ClassifyAllMatchesInString() more
+// convenient.
+class ClassifyTest {
+ public:
+  ClassifyTest(const string16& text, ACMatchClassifications matches);
+  ~ClassifyTest();
+
+  ACMatchClassifications RunTest(const string16& find_text);
+
+ private:
+  const string16 text_;
+  const ACMatchClassifications matches_;
+};
+
+ClassifyTest::ClassifyTest(const string16& text, ACMatchClassifications matches)
+    : text_(text),
+      matches_(matches) {
+}
+
+ClassifyTest::~ClassifyTest() {
+}
+
+ACMatchClassifications ClassifyTest::RunTest(const string16& find_text) {
+  return ShortcutsProvider::ClassifyAllMatchesInString(find_text,
+      ShortcutsProvider::CreateWordMapForString(find_text), text_, matches_);
+}
+
+namespace history {
+
+
+// ShortcutsProviderTest ------------------------------------------------------
+
 class ShortcutsProviderTest : public testing::Test,
                               public AutocompleteProviderListener {
  public:
@@ -184,6 +219,11 @@ class ShortcutsProviderTest : public testing::Test,
                const URLs& expected_urls,
                std::string expected_top_result);
 
+  // Passthrough to the private function in provider_.
+  int CalculateScore(const std::string& terms,
+                     const ShortcutsBackend::Shortcut& shortcut,
+                     int max_relevance);
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
@@ -197,8 +237,8 @@ class ShortcutsProviderTest : public testing::Test,
 };
 
 ShortcutsProviderTest::ShortcutsProviderTest()
-    : ui_thread_(BrowserThread::UI, &message_loop_),
-      file_thread_(BrowserThread::FILE, &message_loop_) {
+    : ui_thread_(content::BrowserThread::UI, &message_loop_),
+      file_thread_(content::BrowserThread::FILE, &message_loop_) {
 }
 
 void ShortcutsProviderTest::OnProviderUpdate(bool updated_matches) {}
@@ -293,6 +333,17 @@ void ShortcutsProviderTest::RunTest(const string16 text,
     EXPECT_FALSE(it->allowed_to_be_default_match);
 }
 
+int ShortcutsProviderTest::CalculateScore(
+    const std::string& terms,
+    const ShortcutsBackend::Shortcut& shortcut,
+    int max_relevance) {
+  return provider_->CalculateScore(ASCIIToUTF16(terms), shortcut,
+                                   max_relevance);
+}
+
+
+// Actual tests ---------------------------------------------------------------
+
 TEST_F(ShortcutsProviderTest, SimpleSingleMatch) {
   string16 text(ASCIIToUTF16("go"));
   std::string expected_url("http://www.google.com/");
@@ -339,33 +390,6 @@ TEST_F(ShortcutsProviderTest, DaysAgoMatches) {
   expected_urls.push_back("http://www.daysagotest.com/b.html");
   expected_urls.push_back("http://www.daysagotest.com/c.html");
   RunTest(text, expected_urls, "http://www.daysagotest.com/a.html");
-}
-
-// Helper class to make running tests of ClassifyAllMatchesInString() more
-// convenient.
-class ClassifyTest {
- public:
-  ClassifyTest(const string16& text, ACMatchClassifications matches);
-  ~ClassifyTest();
-
-  ACMatchClassifications RunTest(const string16& find_text);
-
- private:
-  const string16 text_;
-  const ACMatchClassifications matches_;
-};
-
-ClassifyTest::ClassifyTest(const string16& text, ACMatchClassifications matches)
-    : text_(text),
-      matches_(matches) {
-}
-
-ClassifyTest::~ClassifyTest() {
-}
-
-ACMatchClassifications ClassifyTest::RunTest(const string16& find_text) {
-  return ShortcutsProvider::ClassifyAllMatchesInString(find_text,
-      ShortcutsProvider::CreateWordMapForString(find_text), text_, matches_);
 }
 
 TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
@@ -477,37 +501,31 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
 
   // Maximal score.
   const int max_relevance = AutocompleteResult::kLowestDefaultScore - 1;
-  const int kMaxScore = provider_->CalculateScore(
-      ASCIIToUTF16("test"), shortcut, max_relevance);
+  const int kMaxScore = CalculateScore("test", shortcut, max_relevance);
 
   // Score decreases as percent of the match is decreased.
-  int score_three_quarters =
-      provider_->CalculateScore(ASCIIToUTF16("tes"), shortcut, max_relevance);
+  int score_three_quarters = CalculateScore("tes", shortcut, max_relevance);
   EXPECT_LT(score_three_quarters, kMaxScore);
-  int score_one_half =
-      provider_->CalculateScore(ASCIIToUTF16("te"), shortcut, max_relevance);
+  int score_one_half = CalculateScore("te", shortcut, max_relevance);
   EXPECT_LT(score_one_half, score_three_quarters);
-  int score_one_quarter =
-      provider_->CalculateScore(ASCIIToUTF16("t"), shortcut, max_relevance);
+  int score_one_quarter = CalculateScore("t", shortcut, max_relevance);
   EXPECT_LT(score_one_quarter, score_one_half);
 
   // Should decay with time - one week.
   shortcut.last_access_time = base::Time::Now() - base::TimeDelta::FromDays(7);
-  int score_week_old =
-      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut, max_relevance);
+  int score_week_old = CalculateScore("test", shortcut, max_relevance);
   EXPECT_LT(score_week_old, kMaxScore);
 
   // Should decay more in two weeks.
   shortcut.last_access_time = base::Time::Now() - base::TimeDelta::FromDays(14);
-  int score_two_weeks_old =
-      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut, max_relevance);
+  int score_two_weeks_old = CalculateScore("test", shortcut, max_relevance);
   EXPECT_LT(score_two_weeks_old, score_week_old);
 
   // But not if it was activly clicked on. 2 hits slow decaying power.
   shortcut.number_of_hits = 2;
   shortcut.last_access_time = base::Time::Now() - base::TimeDelta::FromDays(14);
   int score_popular_two_weeks_old =
-      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut, max_relevance);
+      CalculateScore("test", shortcut, max_relevance);
   EXPECT_LT(score_two_weeks_old, score_popular_two_weeks_old);
   // But still decayed.
   EXPECT_LT(score_popular_two_weeks_old, kMaxScore);
@@ -516,7 +534,7 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
   shortcut.number_of_hits = 3;
   shortcut.last_access_time = base::Time::Now() - base::TimeDelta::FromDays(14);
   int score_more_popular_two_weeks_old =
-      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut, max_relevance);
+      CalculateScore("test", shortcut, max_relevance);
   EXPECT_LT(score_two_weeks_old, score_more_popular_two_weeks_old);
   EXPECT_LT(score_popular_two_weeks_old, score_more_popular_two_weeks_old);
   // But still decayed.
@@ -608,3 +626,5 @@ TEST_F(ShortcutsProviderTest, Extension) {
   // Now the URL should have disappeared.
   RunTest(text, URLs(), std::string());
 }
+
+}  // namespace history

@@ -15,6 +15,10 @@
 
 class Profile;
 
+namespace history {
+class ShortcutsProviderTest;
+}
+
 // Provider of recently autocompleted links. Provides autocomplete suggestions
 // from previously selected suggestions. The more often a user selects a
 // suggestion for a given search term the higher will be that suggestion's
@@ -34,9 +38,7 @@ class ShortcutsProvider
 
  private:
   friend class ClassifyTest;
-  friend class ShortcutsProviderTest;
-  FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, CalculateScore);
-  FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, DeleteMatch);
+  friend class history::ShortcutsProviderTest;
 
   typedef std::multimap<char16, string16> WordMap;
 
