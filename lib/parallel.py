@@ -527,15 +527,15 @@ def BackgroundTaskRunner(task, *args, **kwargs):
 
   Example:
     # This will run somefunc(1, 'small', 'cow', foo='bar') in the background
-    # while "more random stuff" is being executed.
+    # as soon as data is added to the queue (i.e. queue.put() is called).
 
     def somefunc(arg1, arg2, arg3, foo=None):
       ...
-    ...
+
     with BackgroundTaskRunner(somefunc, 1, foo='bar') as queue:
       ... do random stuff ...
       queue.put(['small', 'cow'])
-      ... do more random stuff ...
+      ... do more random stuff while somefunc() runs ...
     # Exiting the with statement will block until all calls have completed.
 
   Args:
