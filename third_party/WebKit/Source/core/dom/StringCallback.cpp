@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/dom/StringCallback.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -46,7 +46,7 @@ public:
         return adoptPtr(new DispatchCallbackTask(callback, data));
     }
 
-    virtual void performTask(ExecutionContext*)
+    virtual void performTask(ScriptExecutionContext*)
     {
         m_callback->handleEvent(m_data);
     }
@@ -64,7 +64,7 @@ private:
 
 } // namespace
 
-void StringCallback::scheduleCallback(ExecutionContext* context, const String& data)
+void StringCallback::scheduleCallback(ScriptExecutionContext* context, const String& data)
 {
     context->postTask(DispatchCallbackTask::create(this, data));
 }

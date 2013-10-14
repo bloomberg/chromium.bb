@@ -44,8 +44,8 @@ class RTCPeerConnectionHandler;
 
 class RTCDataChannel : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDataChannelHandlerClient {
 public:
-    static PassRefPtr<RTCDataChannel> create(ExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
-    static PassRefPtr<RTCDataChannel> create(ExecutionContext*, RTCPeerConnectionHandler*, const String& label, const WebKit::WebRTCDataChannelInit&, ExceptionState&);
+    static PassRefPtr<RTCDataChannel> create(ScriptExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
+    static PassRefPtr<RTCDataChannel> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, const String& label, const WebKit::WebRTCDataChannelInit&, ExceptionState&);
     ~RTCDataChannel();
 
     String label() const;
@@ -81,13 +81,13 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     using RefCounted<RTCDataChannel>::ref;
     using RefCounted<RTCDataChannel>::deref;
 
 private:
-    RTCDataChannel(ExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
+    RTCDataChannel(ScriptExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
 
     void scheduleDispatchEvent(PassRefPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
@@ -95,7 +95,7 @@ private:
     // EventTarget
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
-    ExecutionContext* m_executionContext;
+    ScriptExecutionContext* m_scriptExecutionContext;
 
     // RTCDataChannelHandlerClient
     virtual void didChangeReadyState(ReadyState) OVERRIDE;

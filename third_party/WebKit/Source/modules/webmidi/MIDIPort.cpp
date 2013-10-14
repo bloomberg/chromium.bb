@@ -33,14 +33,14 @@
 
 namespace WebCore {
 
-PassRefPtr<MIDIPort> MIDIPort::create(ExecutionContext* context, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version)
+PassRefPtr<MIDIPort> MIDIPort::create(ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version)
 {
     RefPtr<MIDIPort> midiPort(adoptRef(new MIDIPort(context, id, manufacturer, name, type, version)));
     midiPort->suspendIfNeeded();
     return midiPort.release();
 }
 
-MIDIPort::MIDIPort(ExecutionContext* context, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version)
+MIDIPort::MIDIPort(ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version)
     : ActiveDOMObject(context)
     , m_id(id)
     , m_manufacturer(manufacturer)

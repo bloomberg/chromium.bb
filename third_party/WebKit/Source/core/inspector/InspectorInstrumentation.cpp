@@ -160,22 +160,22 @@ String preprocessEventListenerImpl(InstrumentingAgents* instrumentingAgents, Fra
     return source;
 }
 
-bool canvasAgentEnabled(ExecutionContext* executionContext)
+bool canvasAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(scriptExecutionContext);
     return instrumentingAgents && instrumentingAgents->inspectorCanvasAgent();
 }
 
-bool consoleAgentEnabled(ExecutionContext* executionContext)
+bool consoleAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(scriptExecutionContext);
     InspectorConsoleAgent* consoleAgent = instrumentingAgents ? instrumentingAgents->inspectorConsoleAgent() : 0;
     return consoleAgent && consoleAgent->enabled();
 }
 
-bool timelineAgentEnabled(ExecutionContext* executionContext)
+bool timelineAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(scriptExecutionContext);
     return instrumentingAgents && instrumentingAgents->inspectorTimelineAgent();
 }
 
@@ -226,7 +226,7 @@ InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope
     return instrumentationForWorkerGlobalScope(workerGlobalScope);
 }
 
-InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* context)
+InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionContext* context)
 {
     if (context->isWorkerGlobalScope())
         return instrumentationForWorkerGlobalScope(toWorkerGlobalScope(context));

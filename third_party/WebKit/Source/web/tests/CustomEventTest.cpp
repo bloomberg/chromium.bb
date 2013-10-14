@@ -59,7 +59,7 @@ public:
         return true;
     }
 
-    virtual void handleEvent(ExecutionContext* context, Event* event)
+    virtual void handleEvent(ScriptExecutionContext* context, Event* event)
     {
         EXPECT_EQ(event->type(), "blah");
 

@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-PassRefPtr<MIDIAccess> MIDIAccess::create(ExecutionContext* context, MIDIAccessPromise* promise)
+PassRefPtr<MIDIAccess> MIDIAccess::create(ScriptExecutionContext* context, MIDIAccessPromise* promise)
 {
     RefPtr<MIDIAccess> midiAccess(adoptRef(new MIDIAccess(context, promise)));
     midiAccess->suspendIfNeeded();
@@ -57,7 +57,7 @@ MIDIAccess::~MIDIAccess()
     stop();
 }
 
-MIDIAccess::MIDIAccess(ExecutionContext* context, MIDIAccessPromise* promise)
+MIDIAccess::MIDIAccess(ScriptExecutionContext* context, MIDIAccessPromise* promise)
     : ActiveDOMObject(context)
     , m_promise(promise)
     , m_hasAccess(false)
@@ -82,7 +82,7 @@ void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, c
 {
     ASSERT(isMainThread());
 
-    m_inputs.append(MIDIInput::create(this, executionContext(), id, manufacturer, name, version));
+    m_inputs.append(MIDIInput::create(this, scriptExecutionContext(), id, manufacturer, name, version));
 }
 
 void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version)
@@ -90,7 +90,7 @@ void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, 
     ASSERT(isMainThread());
 
     unsigned portIndex = m_outputs.size();
-    m_outputs.append(MIDIOutput::create(this, portIndex, executionContext(), id, manufacturer, name, version));
+    m_outputs.append(MIDIOutput::create(this, portIndex, scriptExecutionContext(), id, manufacturer, name, version));
 }
 
 void MIDIAccess::didStartSession(bool success)
@@ -112,7 +112,7 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
         // Convert from time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime()
         // into time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now().
         // This is how timestamps are defined in the Web MIDI spec.
-        Document* document = toDocument(executionContext());
+        Document* document = toDocument(scriptExecutionContext());
         ASSERT(document);
 
         double timeStampInMilliseconds = 1000 * document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(timeStamp);
@@ -133,7 +133,7 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
             // We need to translate it exactly to 0 seconds.
             timeStamp = 0;
         } else {
-            Document* document = toDocument(executionContext());
+            Document* document = toDocument(scriptExecutionContext());
             ASSERT(document);
             double documentStartTime = document->loader()->timing()->referenceMonotonicTime();
             timeStamp = documentStartTime + 0.001 * timeStampInMilliseconds;
@@ -149,7 +149,7 @@ void MIDIAccess::stop()
     if (!m_requesting)
         return;
     m_requesting = false;
-    Document* document = toDocument(executionContext());
+    Document* document = toDocument(scriptExecutionContext());
     ASSERT(document);
     MIDIController* controller = MIDIController::from(document->page());
     ASSERT(controller);
@@ -164,7 +164,7 @@ void MIDIAccess::startRequest()
         m_accessor->startSession();
         return;
     }
-    Document* document = toDocument(executionContext());
+    Document* document = toDocument(scriptExecutionContext());
     ASSERT(document);
     MIDIController* controller = MIDIController::from(document->page());
     if (controller) {

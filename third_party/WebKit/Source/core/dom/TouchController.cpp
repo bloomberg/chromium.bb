@@ -141,7 +141,7 @@ void TouchController::didRemoveAllEventListeners(DOMWindow* window)
 
 void TouchController::documentWasDetached()
 {
-    Document* document = static_cast<Document*>(executionContext());
+    Document* document = static_cast<Document*>(scriptExecutionContext());
     Document* parentDocument = document->parentDocument();
 
     if (parentDocument) {
@@ -153,7 +153,7 @@ void TouchController::documentWasDetached()
 
 void TouchController::documentBeingDestroyed()
 {
-    Document* document = static_cast<Document*>(executionContext());
+    Document* document = static_cast<Document*>(scriptExecutionContext());
 
     if (Document* ownerDocument = document->ownerDocument())
         TouchController::from(ownerDocument)->didRemoveEventTargetNode(ownerDocument, document);

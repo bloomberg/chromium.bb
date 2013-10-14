@@ -42,7 +42,7 @@ namespace WebCore {
     class ResourceError;
     class ResourceRequest;
     class ResourceResponse;
-    class ExecutionContext;
+    class ScriptExecutionContext;
     class ThreadableLoaderClient;
 
     enum CrossOriginRequestPolicy {
@@ -82,8 +82,8 @@ namespace WebCore {
     class ThreadableLoader {
         WTF_MAKE_NONCOPYABLE(ThreadableLoader);
     public:
-        static void loadResourceSynchronously(ExecutionContext*, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
-        static PassRefPtr<ThreadableLoader> create(ExecutionContext*, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&);
+        static void loadResourceSynchronously(ScriptExecutionContext*, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
+        static PassRefPtr<ThreadableLoader> create(ScriptExecutionContext*, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&);
 
         virtual void cancel() = 0;
         void ref() { refThreadableLoader(); }

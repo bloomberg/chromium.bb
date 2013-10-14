@@ -45,14 +45,14 @@ namespace WebCore {
 static const int kMaxRecursionDepth = 3;
 static const double progressNotificationIntervalMS = 50;
 
-PassRefPtr<FileWriter> FileWriter::create(ExecutionContext* context)
+PassRefPtr<FileWriter> FileWriter::create(ScriptExecutionContext* context)
 {
     RefPtr<FileWriter> fileWriter(adoptRef(new FileWriter(context)));
     fileWriter->suspendIfNeeded();
     return fileWriter.release();
 }
 
-FileWriter::FileWriter(ExecutionContext* context)
+FileWriter::FileWriter(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
     , m_readyState(INIT)
     , m_operationInProgress(OperationNone)

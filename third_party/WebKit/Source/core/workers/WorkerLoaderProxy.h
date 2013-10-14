@@ -31,7 +31,7 @@
 #ifndef WorkerLoaderProxy_h
 #define WorkerLoaderProxy_h
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 

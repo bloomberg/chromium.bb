@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
@@ -38,14 +38,14 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamTrack> MediaStreamTrack::create(ExecutionContext* context, MediaStreamComponent* component)
+PassRefPtr<MediaStreamTrack> MediaStreamTrack::create(ScriptExecutionContext* context, MediaStreamComponent* component)
 {
     RefPtr<MediaStreamTrack> track = adoptRef(new MediaStreamTrack(context, component));
     track->suspendIfNeeded();
     return track.release();
 }
 
-MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamComponent* component)
+MediaStreamTrack::MediaStreamTrack(ScriptExecutionContext* context, MediaStreamComponent* component)
     : ActiveDOMObject(context)
     , m_stopped(false)
     , m_component(component)
@@ -121,7 +121,7 @@ String MediaStreamTrack::readyState() const
     return String();
 }
 
-void MediaStreamTrack::getSources(ExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& es)
+void MediaStreamTrack::getSources(ScriptExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& es)
 {
     RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context, callback);
     if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request.release()))
@@ -185,9 +185,9 @@ const AtomicString& MediaStreamTrack::interfaceName() const
     return EventTargetNames::MediaStreamTrack;
 }
 
-ExecutionContext* MediaStreamTrack::executionContext() const
+ScriptExecutionContext* MediaStreamTrack::scriptExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::scriptExecutionContext();
 }
 
 } // namespace WebCore

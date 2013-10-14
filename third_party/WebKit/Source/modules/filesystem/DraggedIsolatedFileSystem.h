@@ -49,7 +49,7 @@ public:
     }
 
     const String& filesystemId() const { return m_filesystemId; }
-    DOMFileSystem* getDOMFileSystem(ExecutionContext*);
+    DOMFileSystem* getDOMFileSystem(ScriptExecutionContext*);
 
     static const char* supplementName();
     static DraggedIsolatedFileSystem* from(ChromiumDataObject* dataObject) { return static_cast<DraggedIsolatedFileSystem*>(Supplement<ChromiumDataObject>::from(dataObject, supplementName())); }

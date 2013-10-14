@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-SuspendableTimer::SuspendableTimer(ExecutionContext* context)
+SuspendableTimer::SuspendableTimer(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
     , m_nextFireInterval(0)
     , m_repeatInterval(0)

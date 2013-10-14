@@ -35,7 +35,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/events/EventContext.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/Frame.h"
@@ -60,7 +60,7 @@ class GraphicsContext;
 class InspectorTimelineAgent;
 class InstrumentingAgents;
 class RenderLayer;
-class ExecutionContext;
+class ScriptExecutionContext;
 class ThreadableLoaderClient;
 class WorkerGlobalScope;
 class WorkerGlobalScopeProxy;
@@ -106,14 +106,14 @@ InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCook
 // Called from generated instrumentation code.
 InstrumentingAgents* instrumentingAgentsFor(Page*);
 InstrumentingAgents* instrumentingAgentsFor(Frame*);
-InstrumentingAgents* instrumentingAgentsFor(ExecutionContext*);
+InstrumentingAgents* instrumentingAgentsFor(ScriptExecutionContext*);
 InstrumentingAgents* instrumentingAgentsFor(Document*);
 InstrumentingAgents* instrumentingAgentsFor(RenderObject*);
 InstrumentingAgents* instrumentingAgentsFor(Element*);
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
 
 // Helper for the one above.
-InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
+InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionContext*);
 
 }  // namespace InspectorInstrumentation
 
@@ -138,7 +138,7 @@ extern const char PixelRefId[];
 
 namespace InspectorInstrumentation {
 
-inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context)
+inline InstrumentingAgents* instrumentingAgentsFor(ScriptExecutionContext* context)
 {
     if (!context)
         return 0;

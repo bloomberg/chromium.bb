@@ -36,7 +36,7 @@
 namespace WebCore {
 
 class WorkerCrypto;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class WorkerGlobalScopeCrypto : public WorkerSupplement {
 public:

@@ -32,7 +32,7 @@
 [
     RuntimeEnabled=SharedWorker,
     Constructor(DOMString scriptURL, [Default=NullString] optional DOMString name),
-    ConstructorCallWith=ExecutionContext,
+    ConstructorCallWith=ScriptExecutionContext,
     ConstructorRaisesException,
     ActiveDOMObject
 ] interface SharedWorker : EventTarget {

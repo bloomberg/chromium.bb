@@ -27,19 +27,19 @@
 #include "config.h"
 #include "core/workers/WorkerEventQueue.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/events/Event.h"
 
 namespace WebCore {
 
-PassOwnPtr<WorkerEventQueue> WorkerEventQueue::create(ExecutionContext* context)
+PassOwnPtr<WorkerEventQueue> WorkerEventQueue::create(ScriptExecutionContext* context)
 {
     return adoptPtr(new WorkerEventQueue(context));
 }
 
-WorkerEventQueue::WorkerEventQueue(ExecutionContext* context)
-    : m_executionContext(context)
+WorkerEventQueue::WorkerEventQueue(ScriptExecutionContext* context)
+    : m_scriptExecutionContext(context)
     , m_isClosed(false)
 {
 }
@@ -62,12 +62,12 @@ public:
             m_eventQueue->removeEvent(m_event.get());
     }
 
-    void dispatchEvent(ExecutionContext*, PassRefPtr<Event> event)
+    void dispatchEvent(ScriptExecutionContext*, PassRefPtr<Event> event)
     {
         event->target()->dispatchEvent(event);
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         if (m_isCancelled)
             return;
@@ -107,7 +107,7 @@ bool WorkerEventQueue::enqueueEvent(PassRefPtr<Event> prpEvent)
     RefPtr<Event> event = prpEvent;
     OwnPtr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
     m_eventTaskMap.add(event.release(), task.get());
-    m_executionContext->postTask(task.release());
+    m_scriptExecutionContext->postTask(task.release());
     return true;
 }
 

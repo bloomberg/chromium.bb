@@ -234,7 +234,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
 
@@ -259,7 +259,7 @@ private:
     void lazyInitialize();
     void uninitialize();
 
-    // ExecutionContext calls stop twice.
+    // ScriptExecutionContext calls stop twice.
     // We'd like to schedule only one stop action for them.
     bool m_isStopScheduled;
     static void stopDispatch(void* userData);

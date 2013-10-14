@@ -33,7 +33,7 @@
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 

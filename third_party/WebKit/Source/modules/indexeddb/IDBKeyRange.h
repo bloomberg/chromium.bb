@@ -54,7 +54,7 @@ public:
     static PassRefPtr<IDBKeyRange> create(PassRefPtr<IDBKey> prpKey);
 
     // Null if the script value is null or undefined, the range if it is one, otherwise tries to convert to a key and throws if it fails.
-    static PassRefPtr<IDBKeyRange> fromScriptValue(ExecutionContext*, const ScriptValue&, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> fromScriptValue(ScriptExecutionContext*, const ScriptValue&, ExceptionState&);
 
     ~IDBKeyRange() { }
 
@@ -62,15 +62,15 @@ public:
     PassRefPtr<IDBKey> lower() const { return m_lower; }
     PassRefPtr<IDBKey> upper() const { return m_upper; }
 
-    ScriptValue lowerValue(ExecutionContext*) const;
-    ScriptValue upperValue(ExecutionContext*) const;
+    ScriptValue lowerValue(ScriptExecutionContext*) const;
+    ScriptValue upperValue(ScriptExecutionContext*) const;
     bool lowerOpen() const { return m_lowerType == LowerBoundOpen; }
     bool upperOpen() const { return m_upperType == UpperBoundOpen; }
 
-    static PassRefPtr<IDBKeyRange> only(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    static PassRefPtr<IDBKeyRange> lowerBound(ExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
-    static PassRefPtr<IDBKeyRange> upperBound(ExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
-    static PassRefPtr<IDBKeyRange> bound(ExecutionContext*, const ScriptValue& lower, const ScriptValue& upper, bool lowerOpen, bool upperOpen, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> only(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> lowerBound(ScriptExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> upperBound(ScriptExecutionContext*, const ScriptValue& bound, bool open, ExceptionState&);
+    static PassRefPtr<IDBKeyRange> bound(ScriptExecutionContext*, const ScriptValue& lower, const ScriptValue& upper, bool lowerOpen, bool upperOpen, ExceptionState&);
 
     static PassRefPtr<IDBKeyRange> only(PassRefPtr<IDBKey> value, ExceptionState&);
 

@@ -37,14 +37,14 @@
 
 namespace WebCore {
 
-String URLMediaStream::createObjectURL(ExecutionContext* executionContext, MediaStream* stream)
+String URLMediaStream::createObjectURL(ScriptExecutionContext* scriptExecutionContext, MediaStream* stream)
 {
     // Since WebWorkers cannot obtain Stream objects, we should be on the main thread.
     ASSERT(isMainThread());
 
-    if (!executionContext || !stream)
+    if (!scriptExecutionContext || !stream)
         return String();
-    return DOMURL::createPublicURL(executionContext, stream);
+    return DOMURL::createPublicURL(scriptExecutionContext, stream);
 }
 
 

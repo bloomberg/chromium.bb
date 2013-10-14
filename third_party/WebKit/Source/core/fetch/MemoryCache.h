@@ -39,7 +39,7 @@ class CSSStyleSheetResource;
 class Resource;
 class ResourceFetcher;
 class KURL;
-class ExecutionContext;
+class ScriptExecutionContext;
 class SecurityOrigin;
 struct SecurityOriginHash;
 
@@ -142,7 +142,7 @@ public:
     void addToLiveResourcesSize(Resource*);
     void removeFromLiveResourcesSize(Resource*);
 
-    static void removeURLFromCache(ExecutionContext*, const KURL&);
+    static void removeURLFromCache(ScriptExecutionContext*, const KURL&);
 
     Statistics getStatistics();
 
@@ -175,7 +175,7 @@ private:
 
     void evict(Resource*);
 
-    static void removeURLFromCacheInternal(ExecutionContext*, const KURL&);
+    static void removeURLFromCacheInternal(ScriptExecutionContext*, const KURL&);
 
     bool m_inPruneResources;
     bool m_prunePending;

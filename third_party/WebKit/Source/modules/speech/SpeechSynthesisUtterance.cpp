@@ -28,12 +28,12 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechSynthesisUtterance> SpeechSynthesisUtterance::create(ExecutionContext* context, const String& text)
+PassRefPtr<SpeechSynthesisUtterance> SpeechSynthesisUtterance::create(ScriptExecutionContext* context, const String& text)
 {
     return adoptRef(new SpeechSynthesisUtterance(context, text));
 }
 
-SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context, const String& text)
+SpeechSynthesisUtterance::SpeechSynthesisUtterance(ScriptExecutionContext* context, const String& text)
     : ContextLifecycleObserver(context)
     , m_platformUtterance(PlatformSpeechSynthesisUtterance::create(this))
 {
@@ -46,9 +46,9 @@ SpeechSynthesisUtterance::~SpeechSynthesisUtterance()
     m_platformUtterance->setClient(0);
 }
 
-ExecutionContext* SpeechSynthesisUtterance::executionContext() const
+ScriptExecutionContext* SpeechSynthesisUtterance::scriptExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::scriptExecutionContext();
 }
 
 const AtomicString& SpeechSynthesisUtterance::interfaceName() const

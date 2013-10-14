@@ -39,7 +39,7 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/WrapperTypeInfo.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/HashTraits.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"

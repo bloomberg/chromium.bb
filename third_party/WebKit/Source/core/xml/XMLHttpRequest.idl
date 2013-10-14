@@ -40,7 +40,7 @@ enum XMLHttpRequestResponseType {
     GlobalContext=Window&WorkerGlobalScope,
     ActiveDOMObject,
     Constructor,
-    ConstructorCallWith=ExecutionContext,
+    ConstructorCallWith=ScriptExecutionContext,
     CustomConstructor(optional XMLHttpRequestOptions options)
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
     // event handler attributes

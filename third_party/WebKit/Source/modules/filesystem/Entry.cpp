@@ -30,7 +30,7 @@
 #include "config.h"
 #include "modules/filesystem/Entry.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"

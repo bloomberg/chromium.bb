@@ -66,11 +66,11 @@ void WorkerConsole::reportMessageToClient(MessageLevel level, const String& mess
     m_scope->thread()->workerReportingProxy().postConsoleMessageToWorkerObject(ConsoleAPIMessageSource, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 
-ExecutionContext* WorkerConsole::context()
+ScriptExecutionContext* WorkerConsole::context()
 {
     if (!m_scope)
         return 0;
-    return m_scope->executionContext();
+    return m_scope->scriptExecutionContext();
 }
 
 bool WorkerConsole::profilerEnabled()

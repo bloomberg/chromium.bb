@@ -31,8 +31,8 @@
 #ifndef CrossThreadTask_h
 #define CrossThreadTask_h
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/CrossThreadCopier.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -60,7 +60,7 @@ template<typename T> struct CrossThreadTaskTraits<PassOwnPtr<T> > {
 template<typename P1, typename MP1>
 class CrossThreadTask1 : public ExecutionContextTask {
 public:
-    typedef void (*Method)(ExecutionContext*, MP1);
+    typedef void (*Method)(ScriptExecutionContext*, MP1);
     typedef CrossThreadTask1<P1, MP1> CrossThreadTask;
     typedef typename CrossThreadTaskTraits<P1>::ParamType Param1;
 
@@ -76,7 +76,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         (*m_method)(context, m_parameter1);
     }
@@ -89,7 +89,7 @@ private:
 template<typename P1, typename MP1, typename P2, typename MP2>
 class CrossThreadTask2 : public ExecutionContextTask {
 public:
-    typedef void (*Method)(ExecutionContext*, MP1, MP2);
+    typedef void (*Method)(ScriptExecutionContext*, MP1, MP2);
     typedef CrossThreadTask2<P1, MP1, P2, MP2> CrossThreadTask;
     typedef typename CrossThreadTaskTraits<P1>::ParamType Param1;
     typedef typename CrossThreadTaskTraits<P2>::ParamType Param2;
@@ -107,7 +107,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         (*m_method)(context, m_parameter1, m_parameter2);
     }
@@ -121,7 +121,7 @@ private:
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
 class CrossThreadTask3 : public ExecutionContextTask {
 public:
-    typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3);
+    typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3);
     typedef CrossThreadTask3<P1, MP1, P2, MP2, P3, MP3> CrossThreadTask;
     typedef typename CrossThreadTaskTraits<P1>::ParamType Param1;
     typedef typename CrossThreadTaskTraits<P2>::ParamType Param2;
@@ -141,7 +141,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         (*m_method)(context, m_parameter1, m_parameter2, m_parameter3);
     }
@@ -156,7 +156,7 @@ private:
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
 class CrossThreadTask4 : public ExecutionContextTask {
 public:
-    typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4);
+    typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4);
     typedef CrossThreadTask4<P1, MP1, P2, MP2, P3, MP3, P4, MP4> CrossThreadTask;
     typedef typename CrossThreadTaskTraits<P1>::ParamType Param1;
     typedef typename CrossThreadTaskTraits<P2>::ParamType Param2;
@@ -178,7 +178,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4);
     }
@@ -194,7 +194,7 @@ private:
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
 class CrossThreadTask5 : public ExecutionContextTask {
 public:
-    typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5);
+    typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5);
     typedef CrossThreadTask5<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5> CrossThreadTask;
     typedef typename CrossThreadTaskTraits<P1>::ParamType Param1;
     typedef typename CrossThreadTaskTraits<P2>::ParamType Param2;
@@ -218,7 +218,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4, m_parameter5);
     }
@@ -235,7 +235,7 @@ private:
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6>
 class CrossThreadTask6 : public ExecutionContextTask {
 public:
-    typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6);
+    typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6);
     typedef CrossThreadTask6<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6> CrossThreadTask;
     typedef typename CrossThreadTaskTraits<P1>::ParamType Param1;
     typedef typename CrossThreadTaskTraits<P2>::ParamType Param2;
@@ -261,7 +261,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4, m_parameter5, m_parameter6);
     }
@@ -279,7 +279,7 @@ private:
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7>
 class CrossThreadTask7 : public ExecutionContextTask {
 public:
-    typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7);
+    typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7);
     typedef CrossThreadTask7<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6, P7, MP7> CrossThreadTask;
     typedef typename CrossThreadTaskTraits<P1>::ParamType Param1;
     typedef typename CrossThreadTaskTraits<P2>::ParamType Param2;
@@ -307,7 +307,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4, m_parameter5, m_parameter6, m_parameter7);
     }
@@ -326,7 +326,7 @@ private:
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7, typename P8, typename MP8>
 class CrossThreadTask8 : public ExecutionContextTask {
 public:
-    typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8);
+    typedef void (*Method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8);
     typedef CrossThreadTask8<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6, P7, MP7, P8, MP8> CrossThreadTask;
     typedef typename CrossThreadTaskTraits<P1>::ParamType Param1;
     typedef typename CrossThreadTaskTraits<P2>::ParamType Param2;
@@ -356,7 +356,7 @@ private:
     {
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4, m_parameter5, m_parameter6, m_parameter7, m_parameter8);
     }
@@ -375,7 +375,7 @@ private:
 
 template<typename P1, typename MP1>
 PassOwnPtr<ExecutionContextTask> createCallbackTask(
-    void (*method)(ExecutionContext*, MP1),
+    void (*method)(ScriptExecutionContext*, MP1),
     const P1& parameter1)
 {
     return CrossThreadTask1<typename CrossThreadCopier<P1>::Type, MP1>::create(
@@ -385,7 +385,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 
 template<typename P1, typename MP1, typename P2, typename MP2>
 PassOwnPtr<ExecutionContextTask> createCallbackTask(
-    void (*method)(ExecutionContext*, MP1, MP2),
+    void (*method)(ScriptExecutionContext*, MP1, MP2),
     const P1& parameter1, const P2& parameter2)
 {
     return CrossThreadTask2<typename CrossThreadCopier<P1>::Type, MP1, typename CrossThreadCopier<P2>::Type, MP2>::create(
@@ -395,7 +395,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
 PassOwnPtr<ExecutionContextTask> createCallbackTask(
-    void (*method)(ExecutionContext*, MP1, MP2, MP3),
+    void (*method)(ScriptExecutionContext*, MP1, MP2, MP3),
     const P1& parameter1, const P2& parameter2, const P3& parameter3)
 {
     return CrossThreadTask3<typename CrossThreadCopier<P1>::Type, MP1, typename CrossThreadCopier<P2>::Type, MP2, typename CrossThreadCopier<P3>::Type, MP3>::create(
@@ -406,7 +406,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
 PassOwnPtr<ExecutionContextTask> createCallbackTask(
-    void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4),
+    void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4)
 {
     return CrossThreadTask4<typename CrossThreadCopier<P1>::Type, MP1, typename CrossThreadCopier<P2>::Type, MP2, typename CrossThreadCopier<P3>::Type, MP3,
@@ -418,7 +418,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
 PassOwnPtr<ExecutionContextTask> createCallbackTask(
-    void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5),
+    void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5)
 {
     return CrossThreadTask5<typename CrossThreadCopier<P1>::Type, MP1, typename CrossThreadCopier<P2>::Type, MP2, typename CrossThreadCopier<P3>::Type, MP3,
@@ -431,7 +431,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6>
 PassOwnPtr<ExecutionContextTask> createCallbackTask(
-    void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6),
+    void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6)
 {
     return CrossThreadTask6<typename CrossThreadCopier<P1>::Type, MP1, typename CrossThreadCopier<P2>::Type, MP2, typename CrossThreadCopier<P3>::Type, MP3,
@@ -444,7 +444,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7>
 PassOwnPtr<ExecutionContextTask> createCallbackTask(
-    void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7),
+    void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6, const P7& parameter7)
 {
     return CrossThreadTask7<typename CrossThreadCopier<P1>::Type, MP1, typename CrossThreadCopier<P2>::Type, MP2, typename CrossThreadCopier<P3>::Type, MP3,
@@ -459,7 +459,7 @@ PassOwnPtr<ExecutionContextTask> createCallbackTask(
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7, typename P8, typename MP8>
 PassOwnPtr<ExecutionContextTask> createCallbackTask(
-    void (*method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8),
+    void (*method)(ScriptExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8),
     const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6, const P7& parameter7, const P8& parameter8)
 {
     return CrossThreadTask8<typename CrossThreadCopier<P1>::Type, MP1, typename CrossThreadCopier<P2>::Type, MP2, typename CrossThreadCopier<P3>::Type, MP3,

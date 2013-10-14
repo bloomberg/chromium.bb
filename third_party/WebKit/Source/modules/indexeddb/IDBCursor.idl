@@ -26,12 +26,12 @@
 interface IDBCursor {
 
     readonly attribute DOMString direction;
-    [CallWith=ExecutionContext, CachedAttribute=isKeyDirty] readonly attribute any key;
-    [CallWith=ExecutionContext, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;
+    [CallWith=ScriptExecutionContext, CachedAttribute=isKeyDirty] readonly attribute any key;
+    [CallWith=ScriptExecutionContext, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;
     readonly attribute IDBAny source;
 
     [CallWith=ScriptState, RaisesException] IDBRequest update(any value);
     [RaisesException] void advance([EnforceRange] unsigned long count);
-    [CallWith=ExecutionContext, ImplementedAs=continueFunction, RaisesException] void continue([Default=Undefined] optional any key);
-    [CallWith=ExecutionContext, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete();
+    [CallWith=ScriptExecutionContext, ImplementedAs=continueFunction, RaisesException] void continue([Default=Undefined] optional any key);
+    [CallWith=ScriptExecutionContext, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete();
 };

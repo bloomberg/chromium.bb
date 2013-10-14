@@ -27,7 +27,7 @@
     Constructor,
     Constructor(MediaStream stream),
     Constructor(MediaStreamTrack[] tracks),
-    ConstructorCallWith=ExecutionContext
+    ConstructorCallWith=ScriptExecutionContext
 ] interface MediaStream : EventTarget {
     // DEPRECATED
     readonly attribute DOMString label;

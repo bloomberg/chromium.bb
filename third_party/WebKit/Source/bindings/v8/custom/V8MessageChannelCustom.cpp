@@ -43,7 +43,7 @@ namespace WebCore {
 
 void V8MessageChannel::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    ExecutionContext* context = getExecutionContext();
+    ScriptExecutionContext* context = getScriptExecutionContext();
 
     RefPtr<MessageChannel> obj = MessageChannel::create(context);
 

@@ -43,19 +43,19 @@
 
 namespace WebCore {
 
-PassRefPtr<WebKitMediaSource> WebKitMediaSource::create(ExecutionContext* context)
+PassRefPtr<WebKitMediaSource> WebKitMediaSource::create(ScriptExecutionContext* context)
 {
     RefPtr<WebKitMediaSource> mediaSource(adoptRef(new WebKitMediaSource(context)));
     mediaSource->suspendIfNeeded();
     return mediaSource.release();
 }
 
-WebKitMediaSource::WebKitMediaSource(ExecutionContext* context)
+WebKitMediaSource::WebKitMediaSource(ScriptExecutionContext* context)
     : MediaSourceBase(context)
 {
     ScriptWrappable::init(this);
-    m_sourceBuffers = WebKitSourceBufferList::create(executionContext(), asyncEventQueue());
-    m_activeSourceBuffers = WebKitSourceBufferList::create(executionContext(), asyncEventQueue());
+    m_sourceBuffers = WebKitSourceBufferList::create(scriptExecutionContext(), asyncEventQueue());
+    m_activeSourceBuffers = WebKitSourceBufferList::create(scriptExecutionContext(), asyncEventQueue());
 }
 
 WebKitSourceBufferList* WebKitMediaSource::sourceBuffers()

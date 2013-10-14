@@ -34,7 +34,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -202,7 +202,7 @@ void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, 
     if (m_document) {
         InspectorInstrumentation::didReceiveWebSocketFrameError(m_document, m_identifier, reason);
         const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: " + reason;
-        static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, level, message, sourceURL, lineNumber);
+        static_cast<ScriptExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, level, message, sourceURL, lineNumber);
     }
     // Hybi-10 specification explicitly states we must not continue to handle incoming data
     // once the WebSocket connection is failed (section 7.1.7).
@@ -229,7 +229,7 @@ void MainThreadWebSocketChannel::disconnect()
     if (m_identifier && m_document)
         InspectorInstrumentation::didCloseWebSocket(m_document, m_identifier);
     if (m_handshake)
-        m_handshake->clearExecutionContext();
+        m_handshake->clearScriptExecutionContext();
     m_client = 0;
     m_document = 0;
     if (m_handle)

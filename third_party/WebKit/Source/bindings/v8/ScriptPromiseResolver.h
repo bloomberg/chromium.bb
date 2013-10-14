@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 
 // ScriptPromiseResolver is a class for performing operations on Promise
 // (resolve / reject) from C++ world.
@@ -78,7 +78,7 @@ class ExecutionContext;
 class ScriptPromiseResolver : public RefCounted<ScriptPromiseResolver> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 public:
-    static PassRefPtr<ScriptPromiseResolver> create(ExecutionContext*);
+    static PassRefPtr<ScriptPromiseResolver> create(ScriptExecutionContext*);
     static PassRefPtr<ScriptPromiseResolver> create();
 
     // A ScriptPromiseResolver should be resolved / rejected before

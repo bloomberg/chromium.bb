@@ -51,7 +51,7 @@ public:
     static PassRefPtr<MediaKeys> create(const String& keySystem, ExceptionState&);
     ~MediaKeys();
 
-    PassRefPtr<MediaKeySession> createSession(ExecutionContext*, const String& mimeType, Uint8Array* initData, ExceptionState&);
+    PassRefPtr<MediaKeySession> createSession(ScriptExecutionContext*, const String& mimeType, Uint8Array* initData, ExceptionState&);
 
     const String& keySystem() const { return m_keySystem; }
 

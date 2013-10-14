@@ -60,7 +60,7 @@ Notification::Notification()
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-Notification::Notification(const String& title, const String& body, const String& iconURI, ExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
+Notification::Notification(const String& title, const String& body, const String& iconURI, ScriptExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
     : ActiveDOMObject(context)
     , m_title(title)
     , m_body(body)
@@ -75,7 +75,7 @@ Notification::Notification(const String& title, const String& body, const String
         return;
     }
 
-    m_icon = iconURI.isEmpty() ? KURL() : executionContext()->completeURL(iconURI);
+    m_icon = iconURI.isEmpty() ? KURL() : scriptExecutionContext()->completeURL(iconURI);
     if (!m_icon.isEmpty() && !m_icon.isValid()) {
         es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "'" + iconURI + "' is not a valid icon URL."));
         return;
@@ -83,7 +83,7 @@ Notification::Notification(const String& title, const String& body, const String
 }
 #endif
 
-Notification::Notification(ExecutionContext* context, const String& title)
+Notification::Notification(ScriptExecutionContext* context, const String& title)
     : ActiveDOMObject(context)
     , m_title(title)
     , m_state(Idle)
@@ -102,7 +102,7 @@ Notification::~Notification()
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-PassRefPtr<Notification> Notification::create(const String& title, const String& body, const String& iconURI, ExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
+PassRefPtr<Notification> Notification::create(const String& title, const String& body, const String& iconURI, ScriptExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
 {
     RefPtr<Notification> notification(adoptRef(new Notification(title, body, iconURI, context, es, provider)));
     notification->suspendIfNeeded();
@@ -110,7 +110,7 @@ PassRefPtr<Notification> Notification::create(const String& title, const String&
 }
 #endif
 
-PassRefPtr<Notification> Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
+PassRefPtr<Notification> Notification::create(ScriptExecutionContext* context, const String& title, const Dictionary& options)
 {
     RefPtr<Notification> notification(adoptRef(new Notification(context, title)));
     String argument;
@@ -141,9 +141,9 @@ void Notification::show()
 {
     // prevent double-showing
     if (m_state == Idle) {
-        if (!toDocument(executionContext())->page())
+        if (!toDocument(scriptExecutionContext())->page())
             return;
-        if (NotificationController::from(toDocument(executionContext())->page())->client()->checkPermission(executionContext()) != NotificationClient::PermissionAllowed) {
+        if (NotificationController::from(toDocument(scriptExecutionContext())->page())->client()->checkPermission(scriptExecutionContext()) != NotificationClient::PermissionAllowed) {
             dispatchErrorEvent();
             return;
         }
@@ -209,7 +209,7 @@ void Notification::dispatchErrorEvent()
 
 void Notification::taskTimerFired(Timer<Notification>* timer)
 {
-    ASSERT(executionContext()->isDocument());
+    ASSERT(scriptExecutionContext()->isDocument());
     ASSERT_UNUSED(timer, timer == m_taskTimer.get());
     show();
 }
@@ -217,13 +217,13 @@ void Notification::taskTimerFired(Timer<Notification>* timer)
 bool Notification::dispatchEvent(PassRefPtr<Event> event)
 {
     // Do not dispatch if the context is gone.
-    if (!executionContext())
+    if (!scriptExecutionContext())
         return false;
 
     return EventTarget::dispatchEvent(event);
 }
 
-const String& Notification::permission(ExecutionContext* context)
+const String& Notification::permission(ScriptExecutionContext* context)
 {
     ASSERT(toDocument(context)->page());
     return permissionString(NotificationController::from(toDocument(context)->page())->client()->checkPermission(context));
@@ -248,7 +248,7 @@ const String& Notification::permissionString(NotificationClient::Permission perm
     return deniedPermission;
 }
 
-void Notification::requestPermission(ExecutionContext* context, PassRefPtr<NotificationPermissionCallback> callback)
+void Notification::requestPermission(ScriptExecutionContext* context, PassRefPtr<NotificationPermissionCallback> callback)
 {
     ASSERT(toDocument(context)->page());
     NotificationController::from(toDocument(context)->page())->client()->requestPermission(context, callback);

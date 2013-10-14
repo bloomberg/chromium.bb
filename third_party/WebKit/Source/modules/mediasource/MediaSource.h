@@ -43,7 +43,7 @@ class ExceptionState;
 
 class MediaSource : public MediaSourceBase, public ScriptWrappable {
 public:
-    static PassRefPtr<MediaSource> create(ExecutionContext*);
+    static PassRefPtr<MediaSource> create(ScriptExecutionContext*);
     virtual ~MediaSource();
 
     // MediaSource.idl methods
@@ -60,7 +60,7 @@ public:
     using RefCounted<MediaSourceBase>::deref;
 
 private:
-    explicit MediaSource(ExecutionContext*);
+    explicit MediaSource(ScriptExecutionContext*);
 
     // MediaSourceBase interface
     virtual void onReadyStateChange(const AtomicString&, const AtomicString&) OVERRIDE;

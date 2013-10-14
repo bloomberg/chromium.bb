@@ -50,7 +50,7 @@ static const char* const defaultFontFamily = "sans-serif";
 
 class LoadFontPromiseResolver : public CSSSegmentedFontFace::LoadFontCallback {
 public:
-    static PassRefPtr<LoadFontPromiseResolver> create(const FontFamily& family, ExecutionContext* context)
+    static PassRefPtr<LoadFontPromiseResolver> create(const FontFamily& family, ScriptExecutionContext* context)
     {
         int numFamilies = 0;
         for (const FontFamily* f = &family; f; f = f->next())
@@ -72,7 +72,7 @@ public:
     }
 
 private:
-    LoadFontPromiseResolver(int numLoading, ExecutionContext* context)
+    LoadFontPromiseResolver(int numLoading, ScriptExecutionContext* context)
         : m_numLoading(numLoading)
         , m_errorOccured(false)
         , m_scriptState(ScriptState::current())
@@ -121,7 +121,7 @@ void LoadFontPromiseResolver::resolve()
 
 class FontsReadyPromiseResolver {
 public:
-    static PassOwnPtr<FontsReadyPromiseResolver> create(ExecutionContext* context)
+    static PassOwnPtr<FontsReadyPromiseResolver> create(ScriptExecutionContext* context)
     {
         return adoptPtr(new FontsReadyPromiseResolver(context));
     }
@@ -140,7 +140,7 @@ public:
     }
 
 private:
-    FontsReadyPromiseResolver(ExecutionContext* context)
+    FontsReadyPromiseResolver(ScriptExecutionContext* context)
         : m_scriptState(ScriptState::current())
         , m_resolver(ScriptPromiseResolver::create(context))
     { }
@@ -163,7 +163,7 @@ FontFaceSet::~FontFaceSet()
 
 Document* FontFaceSet::document() const
 {
-    return toDocument(executionContext());
+    return toDocument(scriptExecutionContext());
 }
 
 const AtomicString& FontFaceSet::interfaceName() const
@@ -171,9 +171,9 @@ const AtomicString& FontFaceSet::interfaceName() const
     return EventTargetNames::FontFaceSet;
 }
 
-ExecutionContext* FontFaceSet::executionContext() const
+ScriptExecutionContext* FontFaceSet::scriptExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::scriptExecutionContext();
 }
 
 AtomicString FontFaceSet::status() const
@@ -281,7 +281,7 @@ void FontFaceSet::queueDoneEvent(FontFace* fontFace)
 
 ScriptPromise FontFaceSet::ready()
 {
-    OwnPtr<FontsReadyPromiseResolver> resolver = FontsReadyPromiseResolver::create(executionContext());
+    OwnPtr<FontsReadyPromiseResolver> resolver = FontsReadyPromiseResolver::create(scriptExecutionContext());
     ScriptPromise promise = resolver->promise();
     m_readyResolvers.append(resolver.release());
     if (!m_timer.isActive())
@@ -359,7 +359,7 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
     }
 
     Document* d = document();
-    RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.family(), executionContext());
+    RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.family(), scriptExecutionContext());
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = d->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face) {

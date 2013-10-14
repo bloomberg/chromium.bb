@@ -407,17 +407,17 @@ PassRefPtr<JSONObject> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(
     return eventData.release();
 }
 
-void InspectorDOMDebuggerAgent::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
+void InspectorDOMDebuggerAgent::didInstallTimer(ScriptExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, setTimerEventName), true);
 }
 
-void InspectorDOMDebuggerAgent::didRemoveTimer(ExecutionContext* context, int timerId)
+void InspectorDOMDebuggerAgent::didRemoveTimer(ScriptExecutionContext* context, int timerId)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, clearTimerEventName), true);
 }
 
-void InspectorDOMDebuggerAgent::willFireTimer(ExecutionContext* context, int timerId)
+void InspectorDOMDebuggerAgent::willFireTimer(ScriptExecutionContext* context, int timerId)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, timerFiredEventName), false);
 }

@@ -246,7 +246,7 @@ public:
     // causes an ambiguity error at compile time. This class's constructor
     // ensures that both implementations return document, so return the result
     // of one of them here.
-    virtual ExecutionContext* executionContext() const OVERRIDE { return HTMLElement::executionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return HTMLElement::scriptExecutionContext(); }
 
     bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
 

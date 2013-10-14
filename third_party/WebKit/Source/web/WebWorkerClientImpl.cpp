@@ -32,7 +32,7 @@
 #include "WebWorkerClientImpl.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
@@ -56,8 +56,8 @@ namespace WebKit {
 // static
 WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker* worker)
 {
-    if (worker->executionContext()->isDocument()) {
-        Document* document = toDocument(worker->executionContext());
+    if (worker->scriptExecutionContext()->isDocument()) {
+        Document* document = toDocument(worker->scriptExecutionContext());
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         OwnPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), WorkerFileSystemClient::create());

@@ -33,7 +33,7 @@ namespace WebCore {
 
 class IDBFactory;
 class IDBFactoryBackendInterface;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class WorkerGlobalScopeIndexedDatabase : public WorkerSupplement {
 public:

@@ -50,7 +50,7 @@ class FileSystemCallback;
 class FileWriterBase;
 class FileWriterBaseCallback;
 class MetadataCallback;
-class ExecutionContext;
+class ScriptExecutionContext;
 class VoidCallback;
 
 class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
@@ -98,25 +98,25 @@ private:
 
 class FileSystemCallbacks : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<FileSystemCallback>, PassRefPtr<ErrorCallback>, ExecutionContext*, FileSystemType);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<FileSystemCallback>, PassRefPtr<ErrorCallback>, ScriptExecutionContext*, FileSystemType);
     virtual void didOpenFileSystem(const String& name, const KURL& rootURL);
 
 private:
-    FileSystemCallbacks(PassRefPtr<FileSystemCallback>, PassRefPtr<ErrorCallback>, ExecutionContext*, FileSystemType);
+    FileSystemCallbacks(PassRefPtr<FileSystemCallback>, PassRefPtr<ErrorCallback>, ScriptExecutionContext*, FileSystemType);
     RefPtr<FileSystemCallback> m_successCallback;
-    RefPtr<ExecutionContext> m_executionContext;
+    RefPtr<ScriptExecutionContext> m_scriptExecutionContext;
     FileSystemType m_type;
 };
 
 class ResolveURICallbacks : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, ExecutionContext*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, ScriptExecutionContext*);
     virtual void didResolveURL(const String& name, const KURL& rootURL, FileSystemType, const String& filePath, bool isDirectry);
 
 private:
-    ResolveURICallbacks(PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, ExecutionContext*);
+    ResolveURICallbacks(PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, ScriptExecutionContext*);
     RefPtr<EntryCallback> m_successCallback;
-    RefPtr<ExecutionContext> m_executionContext;
+    RefPtr<ScriptExecutionContext> m_scriptExecutionContext;
 };
 
 class MetadataCallbacks : public FileSystemCallbacksBase {

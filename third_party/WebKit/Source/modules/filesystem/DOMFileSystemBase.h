@@ -51,7 +51,7 @@ class EntryBase;
 class EntryCallback;
 class ErrorCallback;
 class MetadataCallback;
-class ExecutionContext;
+class ScriptExecutionContext;
 class SecurityOrigin;
 class VoidCallback;
 
@@ -70,7 +70,7 @@ public:
     static const char isolatedPathPrefix[];
     static const char externalPathPrefix[];
 
-    static PassRefPtr<DOMFileSystemBase> create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+    static PassRefPtr<DOMFileSystemBase> create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     {
         return adoptRef(new DOMFileSystemBase(context, name, type, rootURL));
     }
@@ -116,10 +116,10 @@ public:
     bool readDirectory(PassRefPtr<DirectoryReaderBase>, const String& path, PassRefPtr<EntriesCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
 
 protected:
-    DOMFileSystemBase(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
+    DOMFileSystemBase(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
     friend class DOMFileSystemSync;
 
-    ExecutionContext* m_context;
+    ScriptExecutionContext* m_context;
     String m_name;
     FileSystemType m_type;
     KURL m_filesystemRootURL;

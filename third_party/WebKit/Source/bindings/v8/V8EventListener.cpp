@@ -43,7 +43,7 @@ V8EventListener::V8EventListener(v8::Local<v8::Object> listener, bool isAttribut
     setListenerObject(listener);
 }
 
-v8::Local<v8::Function> V8EventListener::getListenerFunction(ExecutionContext* context)
+v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptExecutionContext* context)
 {
     v8::Local<v8::Object> listener = getListenerObject(context);
 
@@ -66,7 +66,7 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ExecutionContext* c
     return v8::Local<v8::Function>();
 }
 
-v8::Local<v8::Value> V8EventListener::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
 {
 
     v8::Local<v8::Function> handlerFunction = getListenerFunction(context);

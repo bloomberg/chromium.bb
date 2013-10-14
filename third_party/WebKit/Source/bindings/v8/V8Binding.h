@@ -49,7 +49,7 @@ namespace WebCore {
     class Document;
     class Frame;
     class NodeFilter;
-    class ExecutionContext;
+    class ScriptExecutionContext;
     class ScriptWrappable;
     class XPathNSResolver;
 
@@ -596,15 +596,15 @@ namespace WebCore {
 
     v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context>);
     DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
-    ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
+    ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context>);
 
     DOMWindow* activeDOMWindow();
-    ExecutionContext* activeExecutionContext();
+    ScriptExecutionContext* activeScriptExecutionContext();
     DOMWindow* firstDOMWindow();
     Document* currentDocument();
 
-    // Returns the context associated with a ExecutionContext.
-    v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld*);
+    // Returns the context associated with a ScriptExecutionContext.
+    v8::Local<v8::Context> toV8Context(ScriptExecutionContext*, DOMWrapperWorld*);
 
     // Returns the frame object of the window object associated with
     // a context, if the window is currently being displayed in the Frame.
@@ -655,7 +655,7 @@ namespace WebCore {
     v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String> key);
 
     v8::Isolate* mainThreadIsolate();
-    v8::Isolate* toIsolate(ExecutionContext*);
+    v8::Isolate* toIsolate(ScriptExecutionContext*);
     v8::Isolate* toIsolate(Frame*);
 
     // Can only be called by WebKit::initialize

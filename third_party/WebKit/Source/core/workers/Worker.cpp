@@ -44,14 +44,14 @@
 
 namespace WebCore {
 
-inline Worker::Worker(ExecutionContext* context)
+inline Worker::Worker(ScriptExecutionContext* context)
     : AbstractWorker(context)
     , m_contextProxy(WorkerGlobalScopeProxy::create(this))
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, ExceptionState& es)
+PassRefPtr<Worker> Worker::create(ScriptExecutionContext* context, const String& url, ExceptionState& es)
 {
     ASSERT(isMainThread());
     UseCounter::count(toDocument(context)->domWindow(), UseCounter::WorkerStart);
@@ -76,7 +76,7 @@ PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, 
 Worker::~Worker()
 {
     ASSERT(isMainThread());
-    ASSERT(executionContext()); // The context is protected by worker context proxy, so it cannot be destroyed while a Worker exists.
+    ASSERT(scriptExecutionContext()); // The context is protected by worker context proxy, so it cannot be destroyed while a Worker exists.
     m_contextProxy->workerObjectDestroyed();
 }
 
@@ -111,7 +111,7 @@ bool Worker::hasPendingActivity() const
 
 void Worker::didReceiveResponse(unsigned long identifier, const ResourceResponse&)
 {
-    InspectorInstrumentation::didReceiveScriptResponse(executionContext(), identifier);
+    InspectorInstrumentation::didReceiveScriptResponse(scriptExecutionContext(), identifier);
 }
 
 void Worker::notifyFinished()
@@ -120,10 +120,10 @@ void Worker::notifyFinished()
         dispatchEvent(Event::createCancelable(EventTypeNames::error));
     } else {
         WorkerThreadStartMode startMode = DontPauseWorkerGlobalScopeOnStart;
-        if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(executionContext()))
+        if (InspectorInstrumentation::shouldPauseDedicatedWorkerOnStart(scriptExecutionContext()))
             startMode = PauseWorkerGlobalScopeOnStart;
-        m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(), executionContext()->client()->userAgent(m_scriptLoader->url()), m_scriptLoader->script(), startMode);
-        InspectorInstrumentation::scriptImported(executionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
+        m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(), scriptExecutionContext()->userAgent(m_scriptLoader->url()), m_scriptLoader->script(), startMode);
+        InspectorInstrumentation::scriptImported(scriptExecutionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
     }
     m_scriptLoader = nullptr;
 

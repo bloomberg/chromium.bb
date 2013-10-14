@@ -33,7 +33,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 
 #include "FetchInitiatorTypeNames.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/BlobRegistry.h"
@@ -84,19 +84,19 @@ FileReaderLoader::~FileReaderLoader()
     }
 }
 
-void FileReaderLoader::startForURL(ExecutionContext* executionContext, const KURL& url)
+void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContext, const KURL& url)
 {
     // The blob is read by routing through the request handling layer given a temporary public url.
-    m_urlForReading = BlobURL::createPublicURL(executionContext->securityOrigin());
+    m_urlForReading = BlobURL::createPublicURL(scriptExecutionContext->securityOrigin());
     if (m_urlForReading.isEmpty()) {
         failed(FileError::SECURITY_ERR);
         return;
     }
 
     if (m_urlForReadingIsStream)
-        BlobRegistry::registerStreamURL(executionContext->securityOrigin(), m_urlForReading, url);
+        BlobRegistry::registerStreamURL(scriptExecutionContext->securityOrigin(), m_urlForReading, url);
     else
-        BlobRegistry::registerBlobURL(executionContext->securityOrigin(), m_urlForReading, url);
+        BlobRegistry::registerBlobURL(scriptExecutionContext->securityOrigin(), m_urlForReading, url);
 
     // Construct and load the request.
     ResourceRequest request(m_urlForReading);
@@ -116,18 +116,18 @@ void FileReaderLoader::startForURL(ExecutionContext* executionContext, const KUR
     options.initiator = FetchInitiatorTypeNames::internal;
 
     if (m_client)
-        m_loader = ThreadableLoader::create(executionContext, this, request, options);
+        m_loader = ThreadableLoader::create(scriptExecutionContext, this, request, options);
     else
-        ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options);
+        ThreadableLoader::loadResourceSynchronously(scriptExecutionContext, request, *this, options);
 }
 
-void FileReaderLoader::start(ExecutionContext* executionContext, const Blob& blob)
+void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Blob& blob)
 {
     m_urlForReadingIsStream = false;
-    startForURL(executionContext, blob.url());
+    startForURL(scriptExecutionContext, blob.url());
 }
 
-void FileReaderLoader::start(ExecutionContext* executionContext, const Stream& stream, unsigned readSize)
+void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Stream& stream, unsigned readSize)
 {
     if (readSize > 0) {
         m_hasRange = true;
@@ -136,7 +136,7 @@ void FileReaderLoader::start(ExecutionContext* executionContext, const Stream& s
     }
 
     m_urlForReadingIsStream = true;
-    startForURL(executionContext, stream.url());
+    startForURL(scriptExecutionContext, stream.url());
 }
 
 void FileReaderLoader::cancel()

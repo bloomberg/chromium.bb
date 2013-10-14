@@ -27,7 +27,7 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class Comment FINAL : public CharacterData {
 public:

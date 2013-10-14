@@ -28,12 +28,12 @@
 #include "config.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
-ContextLifecycleNotifier::ContextLifecycleNotifier(ExecutionContext* context)
+ContextLifecycleNotifier::ContextLifecycleNotifier(ScriptExecutionContext* context)
     : LifecycleNotifier(context)
 {
 }
@@ -69,7 +69,7 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
     ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
     for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == context());
+        ASSERT((*iter)->scriptExecutionContext() == context());
         ASSERT((*iter)->suspendIfNeededCalled());
         (*iter)->resume();
     }
@@ -80,7 +80,7 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
     ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
     for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == context());
+        ASSERT((*iter)->scriptExecutionContext() == context());
         ASSERT((*iter)->suspendIfNeededCalled());
         (*iter)->suspend();
     }
@@ -91,7 +91,7 @@ void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
     ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
     for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == context());
+        ASSERT((*iter)->scriptExecutionContext() == context());
         ASSERT((*iter)->suspendIfNeededCalled());
         (*iter)->stop();
     }

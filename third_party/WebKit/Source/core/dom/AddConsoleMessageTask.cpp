@@ -27,11 +27,11 @@
 #include "config.h"
 #include "core/dom/AddConsoleMessageTask.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 
-void AddConsoleMessageTask::performTask(ExecutionContext* context)
+void AddConsoleMessageTask::performTask(ScriptExecutionContext* context)
 {
     context->addConsoleMessage(m_source, m_level, m_message);
 }

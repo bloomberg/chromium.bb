@@ -60,7 +60,7 @@ public:
     // explicitly by passing the last parameter.
     // In the usual case, they are set automatically and you don't have to
     // pass it.
-    static PassRefPtr<NewWebSocketChannelImpl> create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
+    static PassRefPtr<NewWebSocketChannelImpl> create(ScriptExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0)
     {
         return adoptRef(new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber));
     }
@@ -118,7 +118,7 @@ private:
     class BlobLoader;
     class Resumer;
 
-    NewWebSocketChannelImpl(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned);
+    NewWebSocketChannelImpl(ScriptExecutionContext*, WebSocketChannelClient*, const String&, unsigned);
     void sendInternal();
     void flowControlIfNecessary();
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, "", 0); }

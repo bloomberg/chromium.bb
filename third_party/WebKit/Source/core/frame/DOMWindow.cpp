@@ -44,8 +44,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/editing/Editor.h"
 #include "core/events/EventListener.h"
 #include "core/events/MessageEvent.h"
@@ -117,7 +117,7 @@ public:
     {
     }
 
-    PassRefPtr<MessageEvent> event(ExecutionContext* context)
+    PassRefPtr<MessageEvent> event(ScriptExecutionContext* context)
     {
         OwnPtr<MessagePortArray> messagePorts = MessagePort::entanglePorts(*context, m_channels.release());
         return MessageEvent::create(messagePorts.release(), m_message, m_origin, String(), m_source);
@@ -413,7 +413,7 @@ const AtomicString& DOMWindow::interfaceName() const
     return EventTargetNames::DOMWindow;
 }
 
-ExecutionContext* DOMWindow::executionContext() const
+ScriptExecutionContext* DOMWindow::scriptExecutionContext() const
 {
     return m_document.get();
 }
@@ -442,7 +442,7 @@ void DOMWindow::frameDestroyed()
 void DOMWindow::willDetachPage()
 {
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
-    // FIXME: Once DeviceOrientationController is a ExecutionContext
+    // FIXME: Once DeviceOrientationController is a ScriptExecutionContext
     // Supplement, this will no longer be needed.
     if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
         controller->stopUpdating();
@@ -825,7 +825,7 @@ Element* DOMWindow::frameElement() const
     return m_frame->ownerElement();
 }
 
-void DOMWindow::focus(ExecutionContext* context)
+void DOMWindow::focus(ScriptExecutionContext* context)
 {
     if (!m_frame)
         return;
@@ -856,7 +856,7 @@ void DOMWindow::blur()
 {
 }
 
-void DOMWindow::close(ExecutionContext* context)
+void DOMWindow::close(ScriptExecutionContext* context)
 {
     if (!m_frame)
         return;

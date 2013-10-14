@@ -45,12 +45,12 @@ namespace WebCore {
 
 class ExceptionState;
 class KURL;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class AbstractWorker : public RefCounted<AbstractWorker>, public EventTargetWithInlineData, public ActiveDOMObject {
 public:
     // EventTarget APIs
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
@@ -58,7 +58,7 @@ public:
     using RefCounted<AbstractWorker>::deref;
 
     virtual void contextDestroyed() OVERRIDE;
-    AbstractWorker(ExecutionContext*);
+    AbstractWorker(ScriptExecutionContext*);
     virtual ~AbstractWorker();
 
 protected:

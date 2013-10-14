@@ -29,7 +29,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMStringList.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/events/EventQueue.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/HistogramSupport.h"
@@ -62,14 +62,14 @@ const char IDBDatabase::sourceDeletedErrorMessage[] = "The cursor's source or ef
 const char IDBDatabase::transactionInactiveErrorMessage[] = "The transaction is not active.";
 const char IDBDatabase::transactionFinishedErrorMessage[] = "The transaction has finished.";
 
-PassRefPtr<IDBDatabase> IDBDatabase::create(ExecutionContext* context, PassRefPtr<IDBDatabaseBackendInterface> database, PassRefPtr<IDBDatabaseCallbacks> callbacks)
+PassRefPtr<IDBDatabase> IDBDatabase::create(ScriptExecutionContext* context, PassRefPtr<IDBDatabaseBackendInterface> database, PassRefPtr<IDBDatabaseCallbacks> callbacks)
 {
     RefPtr<IDBDatabase> idbDatabase(adoptRef(new IDBDatabase(context, database, callbacks)));
     idbDatabase->suspendIfNeeded();
     return idbDatabase.release();
 }
 
-IDBDatabase::IDBDatabase(ExecutionContext* context, PassRefPtr<IDBDatabaseBackendInterface> backend, PassRefPtr<IDBDatabaseCallbacks> callbacks)
+IDBDatabase::IDBDatabase(ScriptExecutionContext* context, PassRefPtr<IDBDatabaseBackendInterface> backend, PassRefPtr<IDBDatabaseCallbacks> callbacks)
     : ActiveDOMObject(context)
     , m_backend(backend)
     , m_closePending(false)
@@ -255,7 +255,7 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& es)
     m_metadata.objectStores.remove(objectStoreId);
 }
 
-PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& es)
+PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* context, const Vector<String>& scope, const String& modeString, ExceptionState& es)
 {
     IDB_TRACE("IDBDatabase::transaction");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
@@ -295,7 +295,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, c
     return transaction.release();
 }
 
-PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, const String& storeName, const String& mode, ExceptionState& es)
+PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* context, const String& storeName, const String& mode, ExceptionState& es)
 {
     RefPtr<DOMStringList> storeNames = DOMStringList::create();
     storeNames->append(storeName);
@@ -330,10 +330,10 @@ void IDBDatabase::closeConnection()
     m_backend->close(m_databaseCallbacks);
     m_backend.clear();
 
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !scriptExecutionContext())
         return;
 
-    EventQueue* eventQueue = executionContext()->eventQueue();
+    EventQueue* eventQueue = scriptExecutionContext()->eventQueue();
     // Remove any pending versionchange events scheduled to fire on this
     // connection. They would have been scheduled by the backend when another
     // connection called setVersion, but the frontend connection is being
@@ -347,7 +347,7 @@ void IDBDatabase::closeConnection()
 void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
 {
     IDB_TRACE("IDBDatabase::onVersionChange");
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !scriptExecutionContext())
         return;
 
     if (m_closePending)
@@ -360,8 +360,8 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
 void IDBDatabase::enqueueEvent(PassRefPtr<Event> event)
 {
     ASSERT(!m_contextStopped);
-    ASSERT(executionContext());
-    EventQueue* eventQueue = executionContext()->eventQueue();
+    ASSERT(scriptExecutionContext());
+    EventQueue* eventQueue = scriptExecutionContext()->eventQueue();
     event->setTarget(this);
     eventQueue->enqueueEvent(event.get());
     m_enqueuedEvents.append(event);
@@ -409,9 +409,9 @@ const AtomicString& IDBDatabase::interfaceName() const
     return EventTargetNames::IDBDatabase;
 }
 
-ExecutionContext* IDBDatabase::executionContext() const
+ScriptExecutionContext* IDBDatabase::scriptExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::scriptExecutionContext();
 }
 
 } // namespace WebCore

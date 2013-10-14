@@ -34,7 +34,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageQuota.h"
 #include "modules/quota/StorageQuotaCallback.h"
@@ -51,28 +51,28 @@ StorageInfo::~StorageInfo()
 {
 }
 
-void StorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int storageType, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+void StorageInfo::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionContext, int storageType, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
 {
     // Dispatching the request to StorageQuota, as this interface is deprecated in favor of StorageQuota.
     StorageQuota* storageQuota = getStorageQuota(storageType);
     if (!storageQuota) {
         // Unknown storage type is requested.
-        executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
     }
-    storageQuota->queryUsageAndQuota(executionContext, successCallback, errorCallback);
+    storageQuota->queryUsageAndQuota(scriptExecutionContext, successCallback, errorCallback);
 }
 
-void StorageInfo::requestQuota(ExecutionContext* executionContext, int storageType, unsigned long long newQuotaInBytes, PassRefPtr<StorageQuotaCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+void StorageInfo::requestQuota(ScriptExecutionContext* scriptExecutionContext, int storageType, unsigned long long newQuotaInBytes, PassRefPtr<StorageQuotaCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
 {
     // Dispatching the request to StorageQuota, as this interface is deprecated in favor of StorageQuota.
     StorageQuota* storageQuota = getStorageQuota(storageType);
     if (!storageQuota) {
         // Unknown storage type is requested.
-        executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
     }
-    storageQuota->requestQuota(executionContext, newQuotaInBytes, successCallback, errorCallback);
+    storageQuota->requestQuota(scriptExecutionContext, newQuotaInBytes, successCallback, errorCallback);
 }
 
 StorageQuota* StorageInfo::getStorageQuota(int storageType)

@@ -37,7 +37,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/html/VoidCallback.h"
 #include "modules/notifications/Notification.h"
 #include "platform/Supplementable.h"
@@ -54,7 +54,7 @@ class VoidCallback;
 
 class NotificationCenter : public RefCounted<NotificationCenter>, public ScriptWrappable, public ActiveDOMObject {
 public:
-    static PassRefPtr<NotificationCenter> create(ExecutionContext*, NotificationClient*);
+    static PassRefPtr<NotificationCenter> create(ScriptExecutionContext*, NotificationClient*);
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
     PassRefPtr<Notification> createNotification(const String& iconURI, const String& title, const String& body, ExceptionState& es)
@@ -63,7 +63,7 @@ public:
             es.throwUninformativeAndGenericDOMException(InvalidStateError);
             return 0;
         }
-        return Notification::create(title, body, iconURI, executionContext(), es, this);
+        return Notification::create(title, body, iconURI, scriptExecutionContext(), es, this);
     }
 #endif
 
@@ -77,7 +77,7 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    NotificationCenter(ExecutionContext*, NotificationClient*);
+    NotificationCenter(ScriptExecutionContext*, NotificationClient*);
 
     class NotificationRequestCallback : public RefCounted<NotificationRequestCallback> {
     public:

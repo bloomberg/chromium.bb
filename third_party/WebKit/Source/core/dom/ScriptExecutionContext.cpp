@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 #include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/ContextLifecycleNotifier.h"
@@ -52,13 +52,13 @@ public:
         return adoptPtr(new ProcessMessagesSoonTask);
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* context)
     {
         context->dispatchMessagePortEvents();
     }
 };
 
-class ExecutionContext::PendingException {
+class ScriptExecutionContext::PendingException {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:
     PendingException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtr<ScriptCallStack> callStack)
@@ -76,7 +76,7 @@ public:
     RefPtr<ScriptCallStack> m_callStack;
 };
 
-ExecutionContext::ExecutionContext()
+ScriptExecutionContext::ScriptExecutionContext()
     : m_circularSequentialID(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
@@ -84,28 +84,23 @@ ExecutionContext::ExecutionContext()
 {
 }
 
-ExecutionContext::~ExecutionContext()
+ScriptExecutionContext::~ScriptExecutionContext()
 {
     HashSet<MessagePort*>::iterator messagePortsEnd = m_messagePorts.end();
     for (HashSet<MessagePort*>::iterator iter = m_messagePorts.begin(); iter != messagePortsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == this);
+        ASSERT((*iter)->scriptExecutionContext() == this);
         (*iter)->contextDestroyed();
     }
 }
 
-void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
-{
-    m_client->postTask(task);
-}
-
-void ExecutionContext::processMessagePortMessagesSoon()
+void ScriptExecutionContext::processMessagePortMessagesSoon()
 {
     postTask(ProcessMessagesSoonTask::create());
 }
 
-void ExecutionContext::dispatchMessagePortEvents()
+void ScriptExecutionContext::dispatchMessagePortEvents()
 {
-    RefPtr<ExecutionContext> protect(this);
+    RefPtr<ScriptExecutionContext> protect(this);
 
     // Make a frozen copy.
     Vector<MessagePort*> ports;
@@ -121,25 +116,25 @@ void ExecutionContext::dispatchMessagePortEvents()
     }
 }
 
-void ExecutionContext::createdMessagePort(MessagePort* port)
+void ScriptExecutionContext::createdMessagePort(MessagePort* port)
 {
     ASSERT(port);
-    ASSERT((m_client->isDocument() && isMainThread())
+    ASSERT((isDocument() && isMainThread())
         || (isWorkerGlobalScope() && toWorkerGlobalScope(this)->thread()->isCurrentThread()));
 
     m_messagePorts.add(port);
 }
 
-void ExecutionContext::destroyedMessagePort(MessagePort* port)
+void ScriptExecutionContext::destroyedMessagePort(MessagePort* port)
 {
     ASSERT(port);
-    ASSERT((m_client->isDocument() && isMainThread())
+    ASSERT((isDocument() && isMainThread())
         || (isWorkerGlobalScope() && toWorkerGlobalScope(this)->thread()->isCurrentThread()));
 
     m_messagePorts.remove(port);
 }
 
-bool ExecutionContext::hasPendingActivity()
+bool ScriptExecutionContext::hasPendingActivity()
 {
     if (lifecycleNotifier()->hasPendingActivity())
         return true;
@@ -153,19 +148,19 @@ bool ExecutionContext::hasPendingActivity()
     return false;
 }
 
-void ExecutionContext::suspendActiveDOMObjects()
+void ScriptExecutionContext::suspendActiveDOMObjects()
 {
     lifecycleNotifier()->notifySuspendingActiveDOMObjects();
     m_activeDOMObjectsAreSuspended = true;
 }
 
-void ExecutionContext::resumeActiveDOMObjects()
+void ScriptExecutionContext::resumeActiveDOMObjects()
 {
     m_activeDOMObjectsAreSuspended = false;
     lifecycleNotifier()->notifyResumingActiveDOMObjects();
 }
 
-void ExecutionContext::stopActiveDOMObjects()
+void ScriptExecutionContext::stopActiveDOMObjects()
 {
     m_activeDOMObjectsAreStopped = true;
     lifecycleNotifier()->notifyStoppingActiveDOMObjects();
@@ -173,7 +168,7 @@ void ExecutionContext::stopActiveDOMObjects()
     closeMessagePorts();
 }
 
-void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
+void ScriptExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
 {
     ASSERT(lifecycleNotifier()->contains(object));
     // Ensure all ActiveDOMObjects are suspended also newly created ones.
@@ -181,21 +176,21 @@ void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
         object->suspend();
 }
 
-void ExecutionContext::closeMessagePorts()
+void ScriptExecutionContext::closeMessagePorts()
 {
     HashSet<MessagePort*>::iterator messagePortsEnd = m_messagePorts.end();
     for (HashSet<MessagePort*>::iterator iter = m_messagePorts.begin(); iter != messagePortsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == this);
+        ASSERT((*iter)->scriptExecutionContext() == this);
         (*iter)->close();
     }
 }
 
-bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus corsStatus)
+bool ScriptExecutionContext::shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus corsStatus)
 {
     return !(securityOrigin()->canRequest(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void ScriptExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
     RefPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
@@ -207,31 +202,31 @@ void ExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<
 
     // First report the original exception and only then all the nested ones.
     if (!dispatchErrorEvent(errorEvent, corsStatus))
-        m_client->logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
+        logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
 
     if (!m_pendingExceptions)
         return;
 
     for (size_t i = 0; i < m_pendingExceptions->size(); i++) {
         PendingException* e = m_pendingExceptions->at(i).get();
-        m_client->logExceptionToConsole(e->m_errorMessage, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
+        logExceptionToConsole(e->m_errorMessage, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
     }
     m_pendingExceptions.clear();
 }
 
-void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber)
+void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber)
 {
-    m_client->addMessage(source, level, message, sourceURL, lineNumber, 0);
+    addMessage(source, level, message, sourceURL, lineNumber, 0);
 }
 
-void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state)
+void ScriptExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state)
 {
-    m_client->addMessage(source, level, message, String(), 0, state);
+    addMessage(source, level, message, String(), 0, state);
 }
 
-bool ExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessControlStatus corsStatus)
+bool ScriptExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessControlStatus corsStatus)
 {
-    EventTarget* target = m_client->errorEventTarget();
+    EventTarget* target = errorEventTarget();
     if (!target)
         return false;
 
@@ -246,7 +241,7 @@ bool ExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessCo
     return errorEvent->defaultPrevented();
 }
 
-int ExecutionContext::circularSequentialID()
+int ScriptExecutionContext::circularSequentialID()
 {
     ++m_circularSequentialID;
     if (m_circularSequentialID <= 0)
@@ -254,7 +249,7 @@ int ExecutionContext::circularSequentialID()
     return m_circularSequentialID;
 }
 
-int ExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
+int ScriptExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
 {
     int timeoutID;
     while (true) {
@@ -271,42 +266,47 @@ int ExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int 
     return timer->timeoutID();
 }
 
-void ExecutionContext::removeTimeoutByID(int timeoutID)
+void ScriptExecutionContext::removeTimeoutByID(int timeoutID)
 {
     if (timeoutID <= 0)
         return;
     m_timeouts.remove(timeoutID);
 }
 
-PublicURLManager& ExecutionContext::publicURLManager()
+PublicURLManager& ScriptExecutionContext::publicURLManager()
 {
     if (!m_publicURLManager)
         m_publicURLManager = PublicURLManager::create(this);
     return *m_publicURLManager;
 }
 
-void ExecutionContext::didChangeTimerAlignmentInterval()
+void ScriptExecutionContext::didChangeTimerAlignmentInterval()
 {
     for (TimeoutMap::iterator iter = m_timeouts.begin(); iter != m_timeouts.end(); ++iter)
         iter->value->didChangeAlignmentInterval();
 }
 
-ContextLifecycleNotifier* ExecutionContext::lifecycleNotifier()
+double ScriptExecutionContext::timerAlignmentInterval() const
+{
+    return DOMTimer::visiblePageAlignmentInterval();
+}
+
+ContextLifecycleNotifier* ScriptExecutionContext::lifecycleNotifier()
 {
     return static_cast<ContextLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
 }
 
-PassOwnPtr<LifecycleNotifier> ExecutionContext::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier> ScriptExecutionContext::createLifecycleNotifier()
 {
     return ContextLifecycleNotifier::create(this);
 }
 
-bool ExecutionContext::isIteratingOverObservers() const
+bool ScriptExecutionContext::isIteratingOverObservers() const
 {
     return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
 }
 
-void ExecutionContext::setDatabaseContext(DatabaseContext* databaseContext)
+void ScriptExecutionContext::setDatabaseContext(DatabaseContext* databaseContext)
 {
     m_databaseContext = databaseContext;
 }

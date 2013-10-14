@@ -52,7 +52,7 @@ public:
 private:
     V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, v8::Isolate*);
 
-    virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
+    virtual v8::Local<v8::Value> callListenerFunction(ScriptExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
 };
 

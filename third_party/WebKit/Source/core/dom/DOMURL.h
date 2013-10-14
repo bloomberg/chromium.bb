@@ -39,7 +39,7 @@ namespace WebCore {
 
 class Blob;
 class ExceptionState;
-class ExecutionContext;
+class ScriptExecutionContext;
 class URLRegistrable;
 
 class DOMURL : public ScriptWrappable, public DOMURLUtils, public RefCounted<DOMURL> {
@@ -59,10 +59,10 @@ public:
         return adoptRef(new DOMURL(url, base->m_url, es));
     }
 
-    static String createObjectURL(ExecutionContext*, Blob*);
-    static void revokeObjectURL(ExecutionContext*, const String&);
+    static String createObjectURL(ScriptExecutionContext*, Blob*);
+    static void revokeObjectURL(ScriptExecutionContext*, const String&);
 
-    static String createPublicURL(ExecutionContext*, URLRegistrable*);
+    static String createPublicURL(ScriptExecutionContext*, URLRegistrable*);
 
     virtual KURL url() const OVERRIDE { return m_url; }
     virtual void setURL(const KURL& url) OVERRIDE { m_url = url; }

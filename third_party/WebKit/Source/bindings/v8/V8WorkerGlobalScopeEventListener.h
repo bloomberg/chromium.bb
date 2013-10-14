@@ -46,14 +46,14 @@ namespace WebCore {
             return adoptRef(new V8WorkerGlobalScopeEventListener(listener, isInline, isolate));
         }
 
-        virtual void handleEvent(ExecutionContext*, Event*);
+        virtual void handleEvent(ScriptExecutionContext*, Event*);
 
     protected:
         V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, v8::Isolate*);
 
     private:
-        virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
-        v8::Local<v8::Object> getReceiverObject(ExecutionContext*, Event*);
+        virtual v8::Local<v8::Value> callListenerFunction(ScriptExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
+        v8::Local<v8::Object> getReceiverObject(ScriptExecutionContext*, Event*);
     };
 
 } // namespace WebCore

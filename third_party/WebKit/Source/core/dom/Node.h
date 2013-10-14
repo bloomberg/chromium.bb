@@ -636,7 +636,7 @@ public:
     virtual Node* toNode();
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
     virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);

@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 class XMLHttpRequest;
 
 class XMLHttpRequestUpload : public ScriptWrappable, public XMLHttpRequestEventTarget {
@@ -56,7 +56,7 @@ public:
     XMLHttpRequest* xmlHttpRequest() const { return m_xmlHttpRequest; }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     void dispatchEventAndLoadEnd(PassRefPtr<Event>);
 

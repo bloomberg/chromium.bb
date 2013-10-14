@@ -33,7 +33,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
@@ -85,7 +85,7 @@ String V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
     v8::Handle<v8::Value> argv[argc] = { v8String(prefix, m_isolate) };
     v8::Handle<v8::Function> function = lookupNamespaceURIFunc.IsEmpty() ? v8::Handle<v8::Function>::Cast(m_resolver) : lookupNamespaceURIFunc;
 
-    v8::Handle<v8::Value> retval = ScriptController::callFunction(activeExecutionContext(), function, m_resolver, argc, argv, m_isolate);
+    v8::Handle<v8::Value> retval = ScriptController::callFunction(activeScriptExecutionContext(), function, m_resolver, argc, argv, m_isolate);
 
     // Eat exceptions from namespace resolver and return an empty string. This will most likely cause NamespaceError.
     if (tryCatch.HasCaught())

@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/FileWriterBase.h"
@@ -45,11 +45,11 @@ namespace WebCore {
 
 class Blob;
 class ExceptionState;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebKit::WebFileWriterClient {
 public:
-    static PassRefPtr<FileWriter> create(ExecutionContext*);
+    static PassRefPtr<FileWriter> create(ScriptExecutionContext*);
 
     enum ReadyState {
         INIT = 0,
@@ -74,7 +74,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
 
     using RefCounted<FileWriterBase>::ref;
     using RefCounted<FileWriterBase>::deref;
@@ -94,7 +94,7 @@ private:
         OperationAbort
     };
 
-    FileWriter(ExecutionContext*);
+    FileWriter(ScriptExecutionContext*);
 
     virtual ~FileWriter();
 

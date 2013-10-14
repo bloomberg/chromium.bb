@@ -36,13 +36,13 @@
 
 namespace WebCore {
 
-PassRefPtr<MIDIInput> MIDIInput::create(MIDIAccess* access, ExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
+PassRefPtr<MIDIInput> MIDIInput::create(MIDIAccess* access, ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(access);
     return adoptRef(new MIDIInput(access, context, id, manufacturer, name, version));
 }
 
-MIDIInput::MIDIInput(MIDIAccess* access, ExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
+MIDIInput::MIDIInput(MIDIAccess* access, ScriptExecutionContext* context, const String& id, const String& manufacturer, const String& name, const String& version)
     : MIDIPort(context, id, manufacturer, name, MIDIPortTypeInput, version)
     , m_access(access)
 {

@@ -104,11 +104,11 @@ namespace WebCore {
             void clearClientWrapper();
 
             // All executed on the main thread.
-            static void mainThreadDestroy(ExecutionContext*, MainThreadBridge*);
+            static void mainThreadDestroy(ScriptExecutionContext*, MainThreadBridge*);
             ~MainThreadBridge();
 
-            static void mainThreadCreateLoader(ExecutionContext*, MainThreadBridge*, PassOwnPtr<CrossThreadResourceRequestData>, ThreadableLoaderOptions, const String& outgoingReferrer);
-            static void mainThreadCancel(ExecutionContext*, MainThreadBridge*);
+            static void mainThreadCreateLoader(ScriptExecutionContext*, MainThreadBridge*, PassOwnPtr<CrossThreadResourceRequestData>, ThreadableLoaderOptions, const String& outgoingReferrer);
+            static void mainThreadCancel(ScriptExecutionContext*, MainThreadBridge*);
             virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
             virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
             virtual void didReceiveData(const char*, int dataLength) OVERRIDE;

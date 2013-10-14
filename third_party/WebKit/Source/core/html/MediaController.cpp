@@ -39,12 +39,12 @@
 using namespace WebCore;
 using namespace std;
 
-PassRefPtr<MediaController> MediaController::create(ExecutionContext* context)
+PassRefPtr<MediaController> MediaController::create(ScriptExecutionContext* context)
 {
     return adoptRef(new MediaController(context));
 }
 
-MediaController::MediaController(ExecutionContext* context)
+MediaController::MediaController(ScriptExecutionContext* context)
     : m_paused(false)
     , m_defaultPlaybackRate(1)
     , m_volume(1)
@@ -56,7 +56,7 @@ MediaController::MediaController(ExecutionContext* context)
     , m_clearPositionTimer(this, &MediaController::clearPositionTimerFired)
     , m_closedCaptionsVisible(false)
     , m_clock(Clock::create())
-    , m_executionContext(context)
+    , m_scriptExecutionContext(context)
     , m_timeupdateTimer(this, &MediaController::timeupdateTimerFired)
     , m_previousTimeupdateTime(0)
 {

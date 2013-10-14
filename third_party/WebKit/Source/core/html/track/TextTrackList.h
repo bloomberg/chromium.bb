@@ -42,7 +42,7 @@ class TextTrackList;
 
 class TextTrackList : public RefCounted<TextTrackList>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
-    static PassRefPtr<TextTrackList> create(HTMLMediaElement* owner, ExecutionContext* context)
+    static PassRefPtr<TextTrackList> create(HTMLMediaElement* owner, ScriptExecutionContext* context)
     {
         return adoptRef(new TextTrackList(owner, context));
     }
@@ -61,7 +61,7 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     using RefCounted<TextTrackList>::ref;
     using RefCounted<TextTrackList>::deref;
-    virtual ExecutionContext* executionContext() const OVERRIDE { return m_context; }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return m_context; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
 
@@ -71,7 +71,7 @@ public:
     bool isFiringEventListeners() { return m_dispatchingEvents; }
 
 private:
-    TextTrackList(HTMLMediaElement*, ExecutionContext*);
+    TextTrackList(HTMLMediaElement*, ScriptExecutionContext*);
 
     // EventTarget
     virtual void refEventTarget() OVERRIDE { ref(); }
@@ -82,7 +82,7 @@ private:
 
     void invalidateTrackIndexesAfterTrack(TextTrack*);
 
-    ExecutionContext* m_context;
+    ScriptExecutionContext* m_context;
     HTMLMediaElement* m_owner;
 
     Vector<RefPtr<Event> > m_pendingEvents;

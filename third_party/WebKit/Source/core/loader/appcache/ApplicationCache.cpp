@@ -96,7 +96,7 @@ const AtomicString& ApplicationCache::interfaceName() const
     return EventTargetNames::ApplicationCache;
 }
 
-ExecutionContext* ApplicationCache::executionContext() const
+ScriptExecutionContext* ApplicationCache::scriptExecutionContext() const
 {
     if (m_frame)
         return m_frame->document();

@@ -31,12 +31,12 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class ContextLifecycleObserver : public LifecycleObserver {
 public:
-    explicit ContextLifecycleObserver(ExecutionContext*, Type = GenericType);
-    ExecutionContext* executionContext() const;
+    explicit ContextLifecycleObserver(ScriptExecutionContext*, Type = GenericType);
+    ScriptExecutionContext* scriptExecutionContext() const;
 
 protected:
     virtual ~ContextLifecycleObserver();

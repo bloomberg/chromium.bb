@@ -35,7 +35,7 @@ namespace WebCore {
 
 class DocumentLifecycleNotifier : public ContextLifecycleNotifier {
 public:
-    static PassOwnPtr<DocumentLifecycleNotifier> create(ExecutionContext*);
+    static PassOwnPtr<DocumentLifecycleNotifier> create(ScriptExecutionContext*);
 
     void notifyDocumentWasDetached();
     void notifyDocumentWasDisposed();
@@ -44,13 +44,13 @@ public:
     virtual void removeObserver(LifecycleObserver*) OVERRIDE;
 
 private:
-    explicit DocumentLifecycleNotifier(ExecutionContext*);
+    explicit DocumentLifecycleNotifier(ScriptExecutionContext*);
 
     typedef HashSet<DocumentLifecycleObserver*> DocumentObserverSet;
     DocumentObserverSet m_documentObservers;
 };
 
-inline PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create(ExecutionContext* context)
+inline PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create(ScriptExecutionContext* context)
 {
     return adoptPtr(new DocumentLifecycleNotifier(context));
 }

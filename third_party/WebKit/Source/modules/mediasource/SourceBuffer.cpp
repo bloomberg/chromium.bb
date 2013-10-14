@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -59,7 +59,7 @@ PassRefPtr<SourceBuffer> SourceBuffer::create(PassOwnPtr<SourceBufferPrivate> so
 }
 
 SourceBuffer::SourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, MediaSource* source, GenericEventQueue* asyncEventQueue)
-    : ActiveDOMObject(source->executionContext())
+    : ActiveDOMObject(source->scriptExecutionContext())
     , m_private(sourceBufferPrivate)
     , m_source(source)
     , m_asyncEventQueue(asyncEventQueue)
@@ -372,9 +372,9 @@ void SourceBuffer::stop()
     m_appendStreamTimer.stop();
 }
 
-ExecutionContext* SourceBuffer::executionContext() const
+ScriptExecutionContext* SourceBuffer::scriptExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::scriptExecutionContext();
 }
 
 const AtomicString& SourceBuffer::interfaceName() const
@@ -547,7 +547,7 @@ void SourceBuffer::appendStreamTimerFired(Timer<SourceBuffer>*)
 
     // Steps 3-11 are handled by m_loader.
     // Note: Passing 0 here signals that maxSize was not set. (i.e. Read all the data in the stream).
-    m_loader->start(executionContext(), *m_stream, m_streamMaxSizeValid ? m_streamMaxSize : 0);
+    m_loader->start(scriptExecutionContext(), *m_stream, m_streamMaxSizeValid ? m_streamMaxSize : 0);
 }
 
 void SourceBuffer::appendStreamDone(bool success)

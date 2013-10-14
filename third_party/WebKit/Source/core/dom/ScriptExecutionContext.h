@@ -25,11 +25,10 @@
  *
  */
 
-#ifndef ExecutionContext_h
-#define ExecutionContext_h
+#ifndef ScriptExecutionContext_h
+#define ScriptExecutionContext_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/ExecutionContextClient.h"
 #include "core/dom/SecurityContext.h"
 #include "core/events/ErrorEvent.h"
 #include "core/fetch/CrossOriginAccessControl.h"
@@ -59,20 +58,25 @@ class PublicURLManager;
 class ScriptCallStack;
 class ScriptState;
 
-class ExecutionContext : public LifecycleContext, public SecurityContext {
+class ScriptExecutionContext : public LifecycleContext, public SecurityContext {
 public:
-    ExecutionContext();
-    virtual ~ExecutionContext();
+    ScriptExecutionContext();
+    virtual ~ScriptExecutionContext();
 
-    void setClient(ExecutionContextClient* client) { m_client = client; }
-    ExecutionContextClient* client() const { return m_client; }
+    virtual bool isDocument() const { return false; }
+    virtual bool isWorkerGlobalScope() const { return false; }
 
-    bool isDocument() const { return m_client->isDocument(); }
-    bool isWorkerGlobalScope() { return m_client->isWorkerGlobalScope(); }
-    EventQueue* eventQueue() const { return m_client->eventQueue(); }
-    const KURL& url() const { return m_client->virtualURL(); }
-    KURL completeURL(const String& url) const { return m_client->virtualCompleteURL(url); }
-    void postTask(PassOwnPtr<ExecutionContextTask>);
+    virtual bool isJSExecutionForbidden() const = 0;
+
+    virtual DOMWindow* executingWindow() { return 0; }
+    virtual void userEventWasHandled() { }
+
+    const KURL& url() const { return virtualURL(); }
+    KURL completeURL(const String& url) const { return virtualCompleteURL(url); }
+
+    virtual String userAgent(const KURL&) const = 0;
+
+    virtual void disableEval(const String& errorMessage) = 0;
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
     void reportException(PassRefPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
@@ -103,13 +107,19 @@ public:
     void destroyedMessagePort(MessagePort*);
     const HashSet<MessagePort*>& messagePorts() const { return m_messagePorts; }
 
-    void ref() { refExecutionContext(); }
-    void deref() { derefExecutionContext(); }
+    void ref() { refScriptExecutionContext(); }
+    void deref() { derefScriptExecutionContext(); }
+
+    virtual void postTask(PassOwnPtr<ExecutionContextTask>) = 0; // Executes the task on context's thread asynchronously.
 
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
 
     void didChangeTimerAlignmentInterval();
+    virtual double timerAlignmentInterval() const;
+
+    virtual EventQueue* eventQueue() const = 0;
+
     void setDatabaseContext(DatabaseContext*);
 
 protected:
@@ -119,19 +129,24 @@ protected:
 private:
     friend class DOMTimer; // For installNewTimeout() and removeTimeoutByID() below.
 
+    virtual const KURL& virtualURL() const = 0;
+    virtual KURL virtualCompleteURL(const String&) const = 0;
+
+    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) = 0;
+    virtual EventTarget* errorEventTarget() = 0;
+    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
     bool dispatchErrorEvent(PassRefPtr<ErrorEvent>, AccessControlStatus);
 
     void closeMessagePorts();
 
-    virtual void refExecutionContext() = 0;
-    virtual void derefExecutionContext() = 0;
+    virtual void refScriptExecutionContext() = 0;
+    virtual void derefScriptExecutionContext() = 0;
     virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
     // Implementation details for DOMTimer. No other classes should call these functions.
     int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
     void removeTimeoutByID(int timeoutID); // This makes underlying DOMTimer instance destructed.
 
-    ExecutionContextClient* m_client;
     HashSet<MessagePort*> m_messagePorts;
 
     int m_circularSequentialID;
@@ -150,11 +165,11 @@ private:
     RefPtr<DatabaseContext> m_databaseContext;
 
     // The location of this member is important; to make sure contextDestroyed() notification on
-    // ExecutionContext's members (notably m_timeouts) is called before they are destructed,
+    // ScriptExecutionContext's members (notably m_timeouts) is called before they are destructed,
     // m_lifecycleNotifer should be placed *after* such members.
     OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
 };
 
 } // namespace WebCore
 
-#endif // ExecutionContext_h
+#endif // ScriptExecutionContext_h

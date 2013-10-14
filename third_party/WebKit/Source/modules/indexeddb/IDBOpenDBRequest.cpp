@@ -27,7 +27,7 @@
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
@@ -36,14 +36,14 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBOpenDBRequest> IDBOpenDBRequest::create(ExecutionContext* context, PassRefPtr<IDBDatabaseCallbacksImpl> callbacks, int64_t transactionId, int64_t version)
+PassRefPtr<IDBOpenDBRequest> IDBOpenDBRequest::create(ScriptExecutionContext* context, PassRefPtr<IDBDatabaseCallbacksImpl> callbacks, int64_t transactionId, int64_t version)
 {
     RefPtr<IDBOpenDBRequest> request(adoptRef(new IDBOpenDBRequest(context, callbacks, transactionId, version)));
     request->suspendIfNeeded();
     return request.release();
 }
 
-IDBOpenDBRequest::IDBOpenDBRequest(ExecutionContext* context, PassRefPtr<IDBDatabaseCallbacksImpl> callbacks, int64_t transactionId, int64_t version)
+IDBOpenDBRequest::IDBOpenDBRequest(ScriptExecutionContext* context, PassRefPtr<IDBDatabaseCallbacksImpl> callbacks, int64_t transactionId, int64_t version)
     : IDBRequest(context, IDBAny::createNull(), IDBDatabaseBackendInterface::NormalTask, 0)
     , m_databaseCallbacks(callbacks)
     , m_transactionId(transactionId)
@@ -74,7 +74,7 @@ void IDBOpenDBRequest::onBlocked(int64_t oldVersion)
 void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabaseBackendInterface> prpDatabaseBackend, const IDBDatabaseMetadata& metadata, WebKit::WebIDBCallbacks::DataLoss dataLoss)
 {
     IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
-    if (m_contextStopped || !executionContext()) {
+    if (m_contextStopped || !scriptExecutionContext()) {
         RefPtr<IDBDatabaseBackendInterface> db = prpDatabaseBackend;
         db->abort(m_transactionId);
         db->close(m_databaseCallbacks);
@@ -87,7 +87,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabas
 
     RefPtr<IDBDatabaseBackendInterface> databaseBackend = prpDatabaseBackend;
 
-    RefPtr<IDBDatabase> idbDatabase = IDBDatabase::create(executionContext(), databaseBackend, m_databaseCallbacks);
+    RefPtr<IDBDatabase> idbDatabase = IDBDatabase::create(scriptExecutionContext(), databaseBackend, m_databaseCallbacks);
     idbDatabase->setMetadata(metadata);
     m_databaseCallbacks->connect(idbDatabase.get());
     m_databaseCallbacks = 0;
@@ -99,7 +99,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabas
     IDBDatabaseMetadata oldMetadata(metadata);
     oldMetadata.intVersion = oldVersion;
 
-    m_transaction = IDBTransaction::create(executionContext(), m_transactionId, idbDatabase.get(), this, oldMetadata);
+    m_transaction = IDBTransaction::create(scriptExecutionContext(), m_transactionId, idbDatabase.get(), this, oldMetadata);
     m_result = IDBAny::create(idbDatabase.release());
 
     if (m_version == IDBDatabaseMetadata::NoIntVersion)
@@ -110,7 +110,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabas
 void IDBOpenDBRequest::onSuccess(PassRefPtr<IDBDatabaseBackendInterface> prpBackend, const IDBDatabaseMetadata& metadata)
 {
     IDB_TRACE("IDBOpenDBRequest::onSuccess()");
-    if (m_contextStopped || !executionContext()) {
+    if (m_contextStopped || !scriptExecutionContext()) {
         RefPtr<IDBDatabaseBackendInterface> db = prpBackend;
         db->close(m_databaseCallbacks);
         return;
@@ -126,7 +126,7 @@ void IDBOpenDBRequest::onSuccess(PassRefPtr<IDBDatabaseBackendInterface> prpBack
         ASSERT(!m_databaseCallbacks);
     } else {
         ASSERT(m_databaseCallbacks);
-        idbDatabase = IDBDatabase::create(executionContext(), backend.release(), m_databaseCallbacks);
+        idbDatabase = IDBDatabase::create(scriptExecutionContext(), backend.release(), m_databaseCallbacks);
         m_databaseCallbacks->connect(idbDatabase.get());
         m_databaseCallbacks = 0;
         m_result = IDBAny::create(idbDatabase.get());
@@ -137,7 +137,7 @@ void IDBOpenDBRequest::onSuccess(PassRefPtr<IDBDatabaseBackendInterface> prpBack
 
 bool IDBOpenDBRequest::shouldEnqueueEvent() const
 {
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !scriptExecutionContext())
         return false;
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
     if (m_requestAborted)

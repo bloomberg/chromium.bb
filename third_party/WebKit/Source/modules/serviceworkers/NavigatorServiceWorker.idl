@@ -30,6 +30,6 @@
 [
     RuntimeEnabled=ServiceWorker
 ] partial interface Navigator {
-  [CallWith=ExecutionContext, RaisesException] Promise registerServiceWorker(DOMString pattern, DOMString src);
-  [CallWith=ExecutionContext, RaisesException] Promise unregisterServiceWorker(DOMString pattern);
+  [CallWith=ScriptExecutionContext, RaisesException] Promise registerServiceWorker(DOMString pattern, DOMString src);
+  [CallWith=ScriptExecutionContext, RaisesException] Promise unregisterServiceWorker(DOMString pattern);
 };

@@ -33,7 +33,7 @@
 
 #include "WebWorkerBase.h"
 #include "WorkerAllowMainThreadBridgeBase.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -85,7 +85,7 @@ WorkerFileSystemClient::~WorkerFileSystemClient()
 {
 }
 
-bool WorkerFileSystemClient::allowFileSystem(ExecutionContext* context)
+bool WorkerFileSystemClient::allowFileSystem(ScriptExecutionContext* context)
 {
     WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     WebCore::WorkerThread* workerThread = workerGlobalScope->thread();

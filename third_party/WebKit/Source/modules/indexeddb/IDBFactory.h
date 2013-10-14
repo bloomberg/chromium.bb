@@ -41,7 +41,7 @@ class ExceptionState;
 class IDBFactoryBackendInterface;
 class IDBKey;
 class IDBKeyRange;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class IDBFactory : public ScriptWrappable, public RefCounted<IDBFactory> {
 public:
@@ -51,18 +51,18 @@ public:
     }
     ~IDBFactory();
 
-    PassRefPtr<IDBRequest> getDatabaseNames(ExecutionContext*, ExceptionState&);
+    PassRefPtr<IDBRequest> getDatabaseNames(ScriptExecutionContext*, ExceptionState&);
 
-    PassRefPtr<IDBOpenDBRequest> open(ExecutionContext*, const String& name, ExceptionState&);
-    PassRefPtr<IDBOpenDBRequest> open(ExecutionContext*, const String& name, unsigned long long version, ExceptionState&);
-    PassRefPtr<IDBOpenDBRequest> deleteDatabase(ExecutionContext*, const String& name, ExceptionState&);
+    PassRefPtr<IDBOpenDBRequest> open(ScriptExecutionContext*, const String& name, ExceptionState&);
+    PassRefPtr<IDBOpenDBRequest> open(ScriptExecutionContext*, const String& name, unsigned long long version, ExceptionState&);
+    PassRefPtr<IDBOpenDBRequest> deleteDatabase(ScriptExecutionContext*, const String& name, ExceptionState&);
 
-    short cmp(ExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
+    short cmp(ScriptExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
     IDBFactory(IDBFactoryBackendInterface*);
 
-    PassRefPtr<IDBOpenDBRequest> openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
+    PassRefPtr<IDBOpenDBRequest> openInternal(ScriptExecutionContext*, const String& name, int64_t version, ExceptionState&);
 
     RefPtr<IDBFactoryBackendInterface> m_backend;
 };

@@ -675,7 +675,7 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& a
     ExceptionState es(args.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
-    ExecutionContext* scriptContext = getExecutionContext();
+    ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     RefPtr<TestObj> result = TestImplements::implementsMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
@@ -764,7 +764,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     ExceptionState es(args.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
-    ExecutionContext* scriptContext = getExecutionContext();
+    ScriptExecutionContext* scriptContext = getScriptExecutionContext();
     RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
@@ -828,7 +828,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, args[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, args[1]);
 
-    ExecutionContext* context = getExecutionContext();
+    ScriptExecutionContext* context = getScriptExecutionContext();
     RefPtr<TestInterface> impl = TestInterface::create(context, str1, str2, es);
     v8::Handle<v8::Object> wrapper = args.Holder();
     if (es.throwIfNeeded())

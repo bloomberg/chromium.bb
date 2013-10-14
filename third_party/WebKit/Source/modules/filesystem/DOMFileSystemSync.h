@@ -44,7 +44,7 @@ class ExceptionState;
 
 class DOMFileSystemSync : public DOMFileSystemBase, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMFileSystemSync> create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+    static PassRefPtr<DOMFileSystemSync> create(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     {
         return adoptRef(new DOMFileSystemSync(context, name, type, rootURL));
     }
@@ -59,7 +59,7 @@ public:
     PassRefPtr<FileWriterSync> createWriter(const FileEntrySync*, ExceptionState&);
 
 private:
-    DOMFileSystemSync(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
+    DOMFileSystemSync(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 };
 
 }

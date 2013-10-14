@@ -34,7 +34,7 @@ namespace WebCore {
 
 class SuspendableTimer : public TimerBase, public ActiveDOMObject {
 public:
-    explicit SuspendableTimer(ExecutionContext*);
+    explicit SuspendableTimer(ScriptExecutionContext*);
     virtual ~SuspendableTimer();
 
     // ActiveDOMObject

@@ -35,7 +35,7 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"

@@ -32,7 +32,7 @@
 #define V8RecursionScope_h
 
 #include "bindings/v8/V8PerIsolateData.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
@@ -57,7 +57,7 @@ namespace WebCore {
 class V8RecursionScope {
     WTF_MAKE_NONCOPYABLE(V8RecursionScope);
 public:
-    explicit V8RecursionScope(ExecutionContext* context)
+    explicit V8RecursionScope(ScriptExecutionContext* context)
         : m_isDocumentContext(context && context->isDocument())
     {
         V8PerIsolateData::current()->incrementRecursionLevel();

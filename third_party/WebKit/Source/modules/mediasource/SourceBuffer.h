@@ -84,7 +84,7 @@ public:
     virtual void stop() OVERRIDE;
 
     // EventTarget interface
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
     using RefCounted<SourceBuffer>::ref;

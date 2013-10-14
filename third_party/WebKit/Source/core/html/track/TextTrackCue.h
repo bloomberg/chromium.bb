@@ -41,7 +41,7 @@ namespace WebCore {
 
 class DocumentFragment;
 class ExceptionState;
-class ExecutionContext;
+class ScriptExecutionContext;
 class TextTrack;
 class TextTrackCue;
 
@@ -71,7 +71,7 @@ protected:
 
 class TextTrackCue : public RefCounted<TextTrackCue>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
-    static PassRefPtr<TextTrackCue> create(ExecutionContext* context, double start, double end, const String& content)
+    static PassRefPtr<TextTrackCue> create(ScriptExecutionContext* context, double start, double end, const String& content)
     {
         return adoptRef(new TextTrackCue(context, start, end, content));
     }
@@ -151,7 +151,7 @@ public:
     int calculateComputedLinePosition();
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     std::pair<double, double> getCSSPosition() const;
 
@@ -199,9 +199,9 @@ public:
     using RefCounted<TextTrackCue>::deref;
 
 protected:
-    TextTrackCue(ExecutionContext*, double start, double end, const String& content);
+    TextTrackCue(ScriptExecutionContext*, double start, double end, const String& content);
 
-    Document* ownerDocument() { return toDocument(m_executionContext); }
+    Document* ownerDocument() { return toDocument(m_scriptExecutionContext); }
 
     virtual PassRefPtr<TextTrackCueBox> createDisplayTree();
     PassRefPtr<TextTrackCueBox> displayTreeInternal();
@@ -253,7 +253,7 @@ private:
     RefPtr<DocumentFragment> m_webVTTNodeTree;
     TextTrack* m_track;
 
-    ExecutionContext* m_executionContext;
+    ScriptExecutionContext* m_scriptExecutionContext;
 
     bool m_isActive;
     bool m_pauseOnExit;

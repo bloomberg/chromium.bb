@@ -27,7 +27,7 @@
 #ifndef WorkerMessagingProxy_h
 #define WorkerMessagingProxy_h
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerObjectProxy.h"
@@ -41,7 +41,7 @@
 namespace WebCore {
 
     class DedicatedWorkerThread;
-    class ExecutionContext;
+    class ScriptExecutionContext;
     class Worker;
     class WorkerClients;
 
@@ -95,11 +95,11 @@ namespace WebCore {
         friend class WorkerThreadActivityReportTask;
 
         void workerGlobalScopeDestroyedInternal();
-        static void workerObjectDestroyedInternal(ExecutionContext*, WorkerMessagingProxy*);
+        static void workerObjectDestroyedInternal(ScriptExecutionContext*, WorkerMessagingProxy*);
         void reportPendingActivityInternal(bool confirmingMessage, bool hasPendingActivity);
         Worker* workerObject() const { return m_workerObject; }
 
-        RefPtr<ExecutionContext> m_executionContext;
+        RefPtr<ScriptExecutionContext> m_scriptExecutionContext;
         Worker* m_workerObject;
         bool m_mayBeDestroyed;
         RefPtr<DedicatedWorkerThread> m_workerThread;

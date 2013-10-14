@@ -49,7 +49,7 @@ V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(v8::Local<v8:
 {
 }
 
-void V8WorkerGlobalScopeEventListener::handleEvent(ExecutionContext* context, Event* event)
+void V8WorkerGlobalScopeEventListener::handleEvent(ScriptExecutionContext* context, Event* event)
 {
     if (!context)
         return;
@@ -78,7 +78,7 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ExecutionContext* context, Ev
     invokeEventHandler(context, event, v8::Local<v8::Value>::New(isolate, jsEvent));
 }
 
-v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ScriptExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
 {
     v8::Local<v8::Function> handlerFunction = getListenerFunction(context);
     v8::Local<v8::Object> receiver = getReceiverObject(context, event);
@@ -106,7 +106,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Exec
     return result;
 }
 
-v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(ExecutionContext* context, Event* event)
+v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(ScriptExecutionContext* context, Event* event)
 {
     v8::Local<v8::Object> listener = getListenerObject(context);
 

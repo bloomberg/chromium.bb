@@ -47,7 +47,7 @@ const char* WorkerLocalFileSystem::supplementName()
     return "WorkerLocalFileSystem";
 }
 
-WorkerLocalFileSystem* WorkerLocalFileSystem::from(ExecutionContext* context)
+WorkerLocalFileSystem* WorkerLocalFileSystem::from(ScriptExecutionContext* context)
 {
     return static_cast<WorkerLocalFileSystem*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
 }

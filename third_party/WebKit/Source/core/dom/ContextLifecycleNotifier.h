@@ -36,11 +36,11 @@ namespace WebCore {
 
 class ActiveDOMObject;
 class ContextLifecycleObserver;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class ContextLifecycleNotifier : public LifecycleNotifier {
 public:
-    static PassOwnPtr<ContextLifecycleNotifier> create(ExecutionContext*);
+    static PassOwnPtr<ContextLifecycleNotifier> create(ScriptExecutionContext*);
 
     virtual ~ContextLifecycleNotifier();
 
@@ -59,13 +59,13 @@ public:
     bool hasPendingActivity() const;
 
 protected:
-    explicit ContextLifecycleNotifier(ExecutionContext*);
+    explicit ContextLifecycleNotifier(ScriptExecutionContext*);
 
 private:
     ActiveDOMObjectSet m_activeDOMObjects;
 };
 
-inline PassOwnPtr<ContextLifecycleNotifier> ContextLifecycleNotifier::create(ExecutionContext* context)
+inline PassOwnPtr<ContextLifecycleNotifier> ContextLifecycleNotifier::create(ScriptExecutionContext* context)
 {
     return adoptPtr(new ContextLifecycleNotifier(context));
 }

@@ -51,8 +51,8 @@ PassOwnPtr<SQLStatement> SQLStatement::create(Database* database,
 
 SQLStatement::SQLStatement(Database* database, PassRefPtr<SQLStatementCallback> callback,
     PassRefPtr<SQLStatementErrorCallback> errorCallback)
-    : m_statementCallbackWrapper(callback, database->executionContext())
-    , m_statementErrorCallbackWrapper(errorCallback, database->executionContext())
+    : m_statementCallbackWrapper(callback, database->scriptExecutionContext())
+    , m_statementErrorCallbackWrapper(errorCallback, database->scriptExecutionContext())
 {
 }
 

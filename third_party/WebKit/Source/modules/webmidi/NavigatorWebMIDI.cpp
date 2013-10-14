@@ -32,7 +32,7 @@
 #include "modules/webmidi/NavigatorWebMIDI.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/frame/Navigator.h"
 #include "modules/webmidi/MIDIAccessPromise.h"
@@ -73,7 +73,7 @@ PassRefPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(const Dictiona
     if (!frame())
         return 0;
 
-    ExecutionContext* context = frame()->document();
+    ScriptExecutionContext* context = frame()->document();
     ASSERT(context);
 
     RefPtr<MIDIAccessPromise> promise = MIDIAccessPromise::create(context, options);

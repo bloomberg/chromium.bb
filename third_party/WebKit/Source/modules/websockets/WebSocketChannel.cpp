@@ -33,7 +33,7 @@
 #include "modules/websockets/WebSocketChannel.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Settings.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerRunLoop.h"
@@ -49,7 +49,7 @@ namespace WebCore {
 
 static const char webSocketChannelMode[] = "webSocketChannelMode";
 
-PassRefPtr<WebSocketChannel> WebSocketChannel::create(ExecutionContext* context, WebSocketChannelClient* client)
+PassRefPtr<WebSocketChannel> WebSocketChannel::create(ScriptExecutionContext* context, WebSocketChannelClient* client)
 {
     ASSERT(context);
     ASSERT(client);

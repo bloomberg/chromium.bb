@@ -63,7 +63,7 @@ static PassRefPtr<MediaConstraintsImpl> parseOptions(const Dictionary& options, 
     return constraints.release();
 }
 
-PassRefPtr<UserMediaRequest> UserMediaRequest::create(ExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& es)
+PassRefPtr<UserMediaRequest> UserMediaRequest::create(ScriptExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& es)
 {
     RefPtr<MediaConstraintsImpl> audio = parseOptions(options, "audio", es);
     if (es.hadException())
@@ -79,7 +79,7 @@ PassRefPtr<UserMediaRequest> UserMediaRequest::create(ExecutionContext* context,
     return adoptRef(new UserMediaRequest(context, controller, audio.release(), video.release(), successCallback, errorCallback));
 }
 
-UserMediaRequest::UserMediaRequest(ExecutionContext* context, UserMediaController* controller, PassRefPtr<MediaConstraintsImpl> audio, PassRefPtr<MediaConstraintsImpl> video, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback)
+UserMediaRequest::UserMediaRequest(ScriptExecutionContext* context, UserMediaController* controller, PassRefPtr<MediaConstraintsImpl> audio, PassRefPtr<MediaConstraintsImpl> video, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback)
     : ContextLifecycleObserver(context)
     , m_audio(audio)
     , m_video(video)
@@ -115,7 +115,7 @@ MediaConstraints* UserMediaRequest::videoConstraints() const
 
 Document* UserMediaRequest::ownerDocument()
 {
-    if (ExecutionContext* context = executionContext()) {
+    if (ScriptExecutionContext* context = scriptExecutionContext()) {
         return toDocument(context);
     }
 
@@ -130,10 +130,10 @@ void UserMediaRequest::start()
 
 void UserMediaRequest::succeed(PassRefPtr<MediaStreamDescriptor> streamDescriptor)
 {
-    if (!executionContext())
+    if (!scriptExecutionContext())
         return;
 
-    RefPtr<MediaStream> stream = MediaStream::create(executionContext(), streamDescriptor);
+    RefPtr<MediaStream> stream = MediaStream::create(scriptExecutionContext(), streamDescriptor);
 
     MediaStreamTrackVector audioTracks = stream->getAudioTracks();
     for (MediaStreamTrackVector::iterator iter = audioTracks.begin(); iter != audioTracks.end(); ++iter) {
@@ -150,7 +150,7 @@ void UserMediaRequest::succeed(PassRefPtr<MediaStreamDescriptor> streamDescripto
 
 void UserMediaRequest::fail(const String& description)
 {
-    if (!executionContext())
+    if (!scriptExecutionContext())
         return;
 
     if (m_errorCallback) {
@@ -162,7 +162,7 @@ void UserMediaRequest::fail(const String& description)
 void UserMediaRequest::failConstraint(const String& constraintName, const String& description)
 {
     ASSERT(!constraintName.isEmpty());
-    if (!executionContext())
+    if (!scriptExecutionContext())
         return;
 
     if (m_errorCallback) {

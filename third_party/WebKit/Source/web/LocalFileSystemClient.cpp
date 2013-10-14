@@ -57,7 +57,7 @@ LocalFileSystemClient::~LocalFileSystemClient()
 {
 }
 
-bool LocalFileSystemClient::allowFileSystem(ExecutionContext* context)
+bool LocalFileSystemClient::allowFileSystem(ScriptExecutionContext* context)
 {
     Document* document = toDocument(context);
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());

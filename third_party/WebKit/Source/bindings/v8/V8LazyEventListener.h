@@ -56,12 +56,12 @@ namespace WebCore {
         virtual bool isLazy() const { return true; }
 
     protected:
-        virtual void prepareListenerObject(ExecutionContext*);
+        virtual void prepareListenerObject(ScriptExecutionContext*);
 
     private:
         V8LazyEventListener(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition&, Node*, v8::Isolate*);
 
-        virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
+        virtual v8::Local<v8::Value> callListenerFunction(ScriptExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
 
         // Needs to return true for all event handlers implemented in JavaScript so that
         // the SVG code does not add the event handler in both

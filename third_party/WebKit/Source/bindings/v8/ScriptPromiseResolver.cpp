@@ -80,7 +80,7 @@ void ScriptPromiseResolver::detachPromiseForResolve()
         m_promise.clear();
 }
 
-PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ExecutionContext* context)
+PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptExecutionContext* context)
 {
     ASSERT(v8::Context::InContext());
     ASSERT(context);

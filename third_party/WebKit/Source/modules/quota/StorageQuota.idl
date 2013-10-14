@@ -26,6 +26,6 @@
 [
     NoInterfaceObject
 ] interface StorageQuota {
-    [CallWith=ExecutionContext] void queryUsageAndQuota(StorageUsageCallback usageCallback, optional StorageErrorCallback errorCallback);
-    [CallWith=ExecutionContext] void requestQuota(unsigned long long newQuotaInBytes, optional StorageQuotaCallback quotaCallback, optional StorageErrorCallback errorCallback);
+    [CallWith=ScriptExecutionContext] void queryUsageAndQuota(StorageUsageCallback usageCallback, optional StorageErrorCallback errorCallback);
+    [CallWith=ScriptExecutionContext] void requestQuota(unsigned long long newQuotaInBytes, optional StorageQuotaCallback quotaCallback, optional StorageErrorCallback errorCallback);
 };

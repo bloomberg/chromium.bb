@@ -61,7 +61,7 @@ class Node;
 class Page;
 class PagePopupController;
 class Range;
-class ExecutionContext;
+class ScriptExecutionContext;
 class SerializedScriptValue;
 class ShadowRoot;
 class TypeConversions;

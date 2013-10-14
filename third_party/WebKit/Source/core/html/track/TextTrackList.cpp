@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-TextTrackList::TextTrackList(HTMLMediaElement* owner, ExecutionContext* context)
+TextTrackList::TextTrackList(HTMLMediaElement* owner, ScriptExecutionContext* context)
     : m_context(context)
     , m_owner(owner)
     , m_pendingEventTimer(this, &TextTrackList::asyncEventTimerFired)

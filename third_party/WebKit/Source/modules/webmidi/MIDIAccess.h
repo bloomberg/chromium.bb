@@ -44,13 +44,13 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 class MIDIAccessPromise;
 
 class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
 public:
     virtual ~MIDIAccess();
-    static PassRefPtr<MIDIAccess> create(ExecutionContext*, MIDIAccessPromise*);
+    static PassRefPtr<MIDIAccess> create(ScriptExecutionContext*, MIDIAccessPromise*);
 
     MIDIInputVector inputs() const { return m_inputs; }
     MIDIOutputVector outputs() const { return m_outputs; }
@@ -66,7 +66,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::MIDIAccess; }
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
 
     // ActiveDOMObject
     virtual void stop();
@@ -81,7 +81,7 @@ public:
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);
 
 private:
-    MIDIAccess(ExecutionContext*, MIDIAccessPromise*);
+    MIDIAccess(ScriptExecutionContext*, MIDIAccessPromise*);
 
     void startRequest();
     virtual void permissionDenied();

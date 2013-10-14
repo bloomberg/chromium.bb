@@ -121,20 +121,20 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [CallWith=ScriptState] TestObject withScriptStateObj();
     [CallWith=ScriptState, RaisesException] void withScriptStateVoidException();
     [CallWith=ScriptState, RaisesException] TestObject withScriptStateObjException();
-    [CallWith=ExecutionContext] void withExecutionContext();
-    [CallWith=ExecutionContext&ScriptState] void withExecutionContextAndScriptState();
-    [CallWith=ExecutionContext&ScriptState, RaisesException] TestObject withExecutionContextAndScriptStateObjException();
-    [CallWith=  ExecutionContext  &  ScriptState  ] TestObject withExecutionContextAndScriptStateWithSpaces();
+    [CallWith=ScriptExecutionContext] void withScriptExecutionContext();
+    [CallWith=ScriptExecutionContext&ScriptState] void withScriptExecutionContextAndScriptState();
+    [CallWith=ScriptExecutionContext&ScriptState, RaisesException] TestObject withScriptExecutionContextAndScriptStateObjException();
+    [CallWith=  ScriptExecutionContext  &  ScriptState  ] TestObject withScriptExecutionContextAndScriptStateWithSpaces();
     [CallWith=ActiveWindow&FirstWindow] void withActiveWindowAndFirstWindow();
 
     [CallWith=ScriptState] attribute long withScriptStateAttribute;
-    [CallWith=ExecutionContext] attribute TestObject withExecutionContextAttribute;
+    [CallWith=ScriptExecutionContext] attribute TestObject withScriptExecutionContextAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute TestObject withActiveWindowAndFirstWindowAttribute;
     [CallWith=ScriptState, GetterRaisesException] attribute TestObject withScriptStateAttributeRaises;
-    [CallWith=ExecutionContext, GetterRaisesException] attribute TestObject withExecutionContextAttributeRaises;
-    [CallWith=ExecutionContext&ScriptState] attribute TestObject withExecutionContextAndScriptStateAttribute;
-    [CallWith=ExecutionContext&ScriptState, GetterRaisesException] attribute TestObject withExecutionContextAndScriptStateAttributeRaises;
-    [CallWith=  ExecutionContext  &  ScriptState  ] attribute TestObject withExecutionContextAndScriptStateWithSpacesAttribute;
+    [CallWith=ScriptExecutionContext, GetterRaisesException] attribute TestObject withScriptExecutionContextAttributeRaises;
+    [CallWith=ScriptExecutionContext&ScriptState] attribute TestObject withScriptExecutionContextAndScriptStateAttribute;
+    [CallWith=ScriptExecutionContext&ScriptState, GetterRaisesException] attribute TestObject withScriptExecutionContextAndScriptStateAttributeRaises;
+    [CallWith=  ScriptExecutionContext  &  ScriptState  ] attribute TestObject withScriptExecutionContextAndScriptStateWithSpacesAttribute;
 
     // optional parameters
     void    methodWithOptionalArg(optional long opt);

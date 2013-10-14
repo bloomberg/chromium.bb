@@ -46,7 +46,7 @@ class RTCSessionDescriptionCallback;
 
 class RTCSessionDescriptionRequestImpl : public RTCSessionDescriptionRequest, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ExecutionContext*, PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>);
+    static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ScriptExecutionContext*, PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>);
     virtual ~RTCSessionDescriptionRequestImpl();
 
     virtual void requestSucceeded(const WebKit::WebRTCSessionDescription&) OVERRIDE;
@@ -56,7 +56,7 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    RTCSessionDescriptionRequestImpl(ExecutionContext*, PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>);
+    RTCSessionDescriptionRequestImpl(ScriptExecutionContext*, PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>);
 
     void clear();
 

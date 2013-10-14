@@ -32,8 +32,8 @@
     GlobalContext=WorkerGlobalScope,
     Constructor
 ] interface FileReaderSync {
-    [CallWith=ExecutionContext, RaisesException] ArrayBuffer readAsArrayBuffer(Blob blob);
-    [CallWith=ExecutionContext, RaisesException] DOMString readAsBinaryString(Blob blob);
-    [CallWith=ExecutionContext, RaisesException] DOMString readAsText(Blob blob, optional DOMString encoding);
-    [CallWith=ExecutionContext, RaisesException] DOMString readAsDataURL(Blob blob);
+    [CallWith=ScriptExecutionContext, RaisesException] ArrayBuffer readAsArrayBuffer(Blob blob);
+    [CallWith=ScriptExecutionContext, RaisesException] DOMString readAsBinaryString(Blob blob);
+    [CallWith=ScriptExecutionContext, RaisesException] DOMString readAsText(Blob blob, optional DOMString encoding);
+    [CallWith=ScriptExecutionContext, RaisesException] DOMString readAsDataURL(Blob blob);
 };

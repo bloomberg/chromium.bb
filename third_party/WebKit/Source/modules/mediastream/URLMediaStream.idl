@@ -28,5 +28,5 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 partial interface URL {
-    [CallWith=ExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaStream? stream);
+    [CallWith=ScriptExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaStream? stream);
 };

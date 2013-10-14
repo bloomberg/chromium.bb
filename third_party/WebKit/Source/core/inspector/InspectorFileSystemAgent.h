@@ -38,7 +38,7 @@
 namespace WebCore {
 
 class InspectorPageAgent;
-class ExecutionContext;
+class ScriptExecutionContext;
 class SecurityOrigin;
 
 class InspectorFileSystemAgent : public InspectorBaseAgent<InspectorFileSystemAgent>, public InspectorBackendDispatcher::FileSystemCommandHandler {
@@ -61,7 +61,7 @@ public:
 private:
     InspectorFileSystemAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorCompositeState*);
     bool assertEnabled(ErrorString*);
-    ExecutionContext* assertExecutionContextForOrigin(ErrorString*, SecurityOrigin*);
+    ScriptExecutionContext* assertScriptExecutionContextForOrigin(ErrorString*, SecurityOrigin*);
 
     InspectorPageAgent* m_pageAgent;
     bool m_enabled;

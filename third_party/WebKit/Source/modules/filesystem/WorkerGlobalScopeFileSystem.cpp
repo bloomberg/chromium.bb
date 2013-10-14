@@ -49,7 +49,7 @@ namespace WebCore {
 
 void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope* worker, int type, long long size, PassRefPtr<FileSystemCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
 {
-    ExecutionContext* secureContext = worker->executionContext();
+    ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
         DOMFileSystem::scheduleCallback(worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
@@ -66,7 +66,7 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope* wor
 
 PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope* worker, int type, long long size, ExceptionState& es)
 {
-    ExecutionContext* secureContext = worker->executionContext();
+    ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
         es.throwSecurityError(ExceptionMessages::failedToExecute("webkitRequestFileSystemSync", "WorkerGlobalScopeFileSystem", FileError::securityErrorMessage));
         return 0;
@@ -89,7 +89,7 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
 void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalScope* worker, const String& url, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
 {
     KURL completedURL = worker->completeURL(url);
-    ExecutionContext* secureContext = worker->executionContext();
+    ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
         DOMFileSystem::scheduleCallback(worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
@@ -106,7 +106,7 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
 PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope* worker, const String& url, ExceptionState& es)
 {
     KURL completedURL = worker->completeURL(url);
-    ExecutionContext* secureContext = worker->executionContext();
+    ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
         es.throwSecurityError(ExceptionMessages::failedToExecute("webkitResolveLocalFileSystemSyncURL", "WorkerGlobalScopeFileSystem", FileError::securityErrorMessage));
         return 0;

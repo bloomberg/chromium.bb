@@ -28,7 +28,7 @@
 
 #include "public/platform/WebURL.h"
 #include "WebSecurityOrigin.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "modules/geolocation/Geolocation.h"
 #include "weborigin/SecurityOrigin.h"
 
@@ -38,7 +38,7 @@ namespace WebKit {
 
 WebSecurityOrigin WebGeolocationPermissionRequest::securityOrigin() const
 {
-    return WebSecurityOrigin(m_private->executionContext()->securityOrigin());
+    return WebSecurityOrigin(m_private->scriptExecutionContext()->securityOrigin());
 }
 
 void WebGeolocationPermissionRequest::setIsAllowed(bool allowed)

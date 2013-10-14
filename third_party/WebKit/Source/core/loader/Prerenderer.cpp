@@ -106,8 +106,8 @@ void Prerenderer::documentWasDetached()
 
 Document* Prerenderer::document()
 {
-    ASSERT(executionContext()->isDocument());
-    return toDocument(executionContext());
+    ASSERT(scriptExecutionContext()->isDocument());
+    return toDocument(scriptExecutionContext());
 }
 
 PrerendererClient* Prerenderer::client()

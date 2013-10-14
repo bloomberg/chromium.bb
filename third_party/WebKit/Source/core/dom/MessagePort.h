@@ -44,14 +44,14 @@ class Event;
 class ExceptionState;
 class Frame;
 class MessagePort;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 // The overwhelmingly common case is sending a single port, so handle that efficiently with an inline buffer of size 1.
 typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 
 class MessagePort : public RefCounted<MessagePort>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
-    static PassRefPtr<MessagePort> create(ExecutionContext& executionContext) { return adoptRef(new MessagePort(executionContext)); }
+    static PassRefPtr<MessagePort> create(ScriptExecutionContext& scriptExecutionContext) { return adoptRef(new MessagePort(scriptExecutionContext)); }
     virtual ~MessagePort();
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
@@ -66,7 +66,7 @@ public:
     static PassOwnPtr<MessagePortChannelArray> disentanglePorts(const MessagePortArray*, ExceptionState&);
 
     // Returns 0 if the passed array is 0/empty.
-    static PassOwnPtr<MessagePortArray> entanglePorts(ExecutionContext&, PassOwnPtr<MessagePortChannelArray>);
+    static PassOwnPtr<MessagePortArray> entanglePorts(ScriptExecutionContext&, PassOwnPtr<MessagePortChannelArray>);
 
     void messageAvailable();
     bool started() const { return m_started; }
@@ -74,7 +74,7 @@ public:
     void contextDestroyed();
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
     MessagePort* toMessagePort() OVERRIDE { return this; }
 
     void dispatchMessages();
@@ -98,7 +98,7 @@ public:
     bool isNeutered() { return !m_entangledChannel; }
 
 private:
-    explicit MessagePort(ExecutionContext&);
+    explicit MessagePort(ScriptExecutionContext&);
 
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
@@ -108,7 +108,7 @@ private:
     bool m_started;
     bool m_closed;
 
-    ExecutionContext* m_executionContext;
+    ScriptExecutionContext* m_scriptExecutionContext;
 };
 
 } // namespace WebCore

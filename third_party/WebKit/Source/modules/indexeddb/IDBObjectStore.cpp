@@ -32,7 +32,7 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
@@ -70,7 +70,7 @@ PassRefPtr<DOMStringList> IDBObjectStore::indexNames() const
     return indexNames.release();
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::get(ExecutionContext* context, const ScriptValue& key, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBObjectStore::get(ScriptExecutionContext* context, const ScriptValue& key, ExceptionState& es)
 {
     IDB_TRACE("IDBObjectStore::get");
     if (isDeleted()) {
@@ -135,7 +135,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(ScriptState* state, ScriptValue& valu
 
 PassRefPtr<IDBRequest> IDBObjectStore::put(IDBDatabaseBackendInterface::PutMode putMode, PassRefPtr<IDBAny> source, ScriptState* state, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& es)
 {
-    ExecutionContext* context = state->executionContext();
+    ScriptExecutionContext* context = state->scriptExecutionContext();
     DOMRequestState requestState(context);
     RefPtr<IDBKey> key = keyValue.isUndefined() ? 0 : scriptValueToIDBKey(&requestState, keyValue);
     return put(putMode, source, state, value, key.release(), es);
@@ -177,7 +177,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(IDBDatabaseBackendInterface::PutMode 
     const bool usesInLineKeys = !keyPath.isNull();
     const bool hasKeyGenerator = autoIncrement();
 
-    ExecutionContext* context = state->executionContext();
+    ScriptExecutionContext* context = state->scriptExecutionContext();
     DOMRequestState requestState(context);
 
     if (putMode != IDBDatabaseBackendInterface::CursorUpdate && usesInLineKeys && key) {
@@ -229,7 +229,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(IDBDatabaseBackendInterface::PutMode 
     return request.release();
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::deleteFunction(ExecutionContext* context, const ScriptValue& key, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBObjectStore::deleteFunction(ScriptExecutionContext* context, const ScriptValue& key, ExceptionState& es)
 {
     IDB_TRACE("IDBObjectStore::delete");
     if (isDeleted()) {
@@ -262,7 +262,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::deleteFunction(ExecutionContext* context,
     return request.release();
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::clear(ExecutionContext* context, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBObjectStore::clear(ScriptExecutionContext* context, ExceptionState& es)
 {
     IDB_TRACE("IDBObjectStore::clear");
     if (isDeleted()) {
@@ -315,7 +315,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ExecutionContext* context, Event* event)
+    virtual void handleEvent(ScriptExecutionContext* context, Event* event)
     {
         ASSERT(event->type() == EventTypeNames::success);
         EventTarget* target = event->target();
@@ -357,7 +357,7 @@ private:
 };
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& es)
+PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptExecutionContext* context, const String& name, const IDBKeyPath& keyPath, const Dictionary& options, ExceptionState& es)
 {
     bool unique = false;
     options.get("unique", unique);
@@ -368,7 +368,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, cons
     return createIndex(context, name, keyPath, unique, multiEntry, es);
 }
 
-PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& es)
+PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ScriptExecutionContext* context, const String& name, const IDBKeyPath& keyPath, bool unique, bool multiEntry, ExceptionState& es)
 {
     IDB_TRACE("IDBObjectStore::createIndex");
     if (!m_transaction->isVersionChange()) {
@@ -503,7 +503,7 @@ void IDBObjectStore::deleteIndex(const String& name, ExceptionState& es)
     }
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ScriptExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
 {
     IDB_TRACE("IDBObjectStore::openCursor");
     if (isDeleted()) {
@@ -530,7 +530,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, con
     return openCursor(context, keyRange, direction, IDBDatabaseBackendInterface::NormalTask);
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> range, IndexedDB::CursorDirection direction, IDBDatabaseBackendInterface::TaskType taskType)
+PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ScriptExecutionContext* context, PassRefPtr<IDBKeyRange> range, IndexedDB::CursorDirection direction, IDBDatabaseBackendInterface::TaskType taskType)
 {
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
@@ -539,7 +539,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, Pas
     return request.release();
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::openKeyCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBObjectStore::openKeyCursor(ScriptExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
 {
     IDB_TRACE("IDBObjectStore::openKeyCursor");
     if (isDeleted()) {
@@ -570,7 +570,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openKeyCursor(ExecutionContext* context, 
     return request.release();
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::count(ExecutionContext* context, const ScriptValue& range, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBObjectStore::count(ScriptExecutionContext* context, const ScriptValue& range, ExceptionState& es)
 {
     IDB_TRACE("IDBObjectStore::count");
     if (isDeleted()) {

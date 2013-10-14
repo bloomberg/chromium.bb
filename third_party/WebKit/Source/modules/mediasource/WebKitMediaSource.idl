@@ -33,7 +33,7 @@
     RuntimeEnabled=WebKitMediaSource,
     ActiveDOMObject,
     Constructor,
-    ConstructorCallWith=ExecutionContext
+    ConstructorCallWith=ScriptExecutionContext
 ] interface WebKitMediaSource : EventTarget {
     // All the source buffers created by this object.
     readonly attribute WebKitSourceBufferList sourceBuffers;

@@ -53,7 +53,7 @@ public:
     virtual ~WorkerConsole();
 
 protected:
-    virtual ExecutionContext* context();
+    virtual ScriptExecutionContext* context();
     virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) OVERRIDE;
     virtual bool profilerEnabled();
 

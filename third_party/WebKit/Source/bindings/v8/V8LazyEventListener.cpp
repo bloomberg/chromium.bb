@@ -74,7 +74,7 @@ v8::Handle<v8::Object> toObjectWrapper(T* domObject, v8::Isolate* isolate)
     return v8::Local<v8::Object>::New(isolate, value.As<v8::Object>());
 }
 
-v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
+v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ScriptExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
 {
     v8::Local<v8::Object> listenerObject = getListenerObject(context);
     if (listenerObject.IsEmpty())
@@ -108,7 +108,7 @@ static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value
     v8SetReturnValue(args, args.Holder()->GetHiddenValue(V8HiddenPropertyName::toStringString(args.GetIsolate())));
 }
 
-void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
+void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
 {
     if (context->isDocument() && !toDocument(context)->allowInlineEventHandlers(m_node, this, m_sourceURL, m_position.m_line)) {
         clearListenerObject();

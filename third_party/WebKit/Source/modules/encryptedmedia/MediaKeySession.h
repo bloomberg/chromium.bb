@@ -54,7 +54,7 @@ class MediaKeySession
     : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTargetWithInlineData, public ContextLifecycleObserver
     , private ContentDecryptionModuleSessionClient {
 public:
-    static PassRefPtr<MediaKeySession> create(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
+    static PassRefPtr<MediaKeySession> create(ScriptExecutionContext*, ContentDecryptionModule*, MediaKeys*);
     ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
@@ -77,10 +77,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeymessage);
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
 private:
-    MediaKeySession(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
+    MediaKeySession(ScriptExecutionContext*, ContentDecryptionModule*, MediaKeys*);
     void keyRequestTimerFired(Timer<MediaKeySession>*);
     void addKeyTimerFired(Timer<MediaKeySession>*);
 

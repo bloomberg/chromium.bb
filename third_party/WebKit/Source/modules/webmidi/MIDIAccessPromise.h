@@ -44,13 +44,13 @@ class DOMError;
 class MIDIAccess;
 class MIDIErrorCallback;
 class MIDISuccessCallback;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 struct MIDIOptions;
 
 class MIDIAccessPromise : public RefCounted<MIDIAccessPromise>, public ScriptWrappable, public ActiveDOMObject {
 public:
-    static PassRefPtr<MIDIAccessPromise> create(ExecutionContext*, const Dictionary&);
+    static PassRefPtr<MIDIAccessPromise> create(ScriptExecutionContext*, const Dictionary&);
     virtual ~MIDIAccessPromise();
 
     void then(PassRefPtr<MIDISuccessCallback>, PassRefPtr<MIDIErrorCallback>);
@@ -68,7 +68,7 @@ private:
         Invoked,
     };
 
-    MIDIAccessPromise(ExecutionContext*, const Dictionary&);
+    MIDIAccessPromise(ScriptExecutionContext*, const Dictionary&);
 
     State m_state;
     RefPtr<MIDISuccessCallback> m_successCallback;

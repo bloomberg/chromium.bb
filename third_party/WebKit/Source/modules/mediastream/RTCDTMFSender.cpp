@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "modules/mediastream/MediaStreamTrack.h"
@@ -42,7 +42,7 @@ static const long maxToneDurationMs = 6000;
 static const long minInterToneGapMs = 50;
 static const long defaultInterToneGapMs = 50;
 
-PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& es)
+PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ScriptExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& es)
 {
     RefPtr<MediaStreamTrack> track = prpTrack;
     OwnPtr<RTCDTMFSenderHandler> handler = peerConnectionHandler->createDTMFSender(track->component());
@@ -56,7 +56,7 @@ PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ExecutionContext* context, RTCPe
     return dtmfSender.release();
 }
 
-RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, PassRefPtr<MediaStreamTrack> track, PassOwnPtr<RTCDTMFSenderHandler> handler)
+RTCDTMFSender::RTCDTMFSender(ScriptExecutionContext* context, PassRefPtr<MediaStreamTrack> track, PassOwnPtr<RTCDTMFSenderHandler> handler)
     : ActiveDOMObject(context)
     , m_track(track)
     , m_duration(defaultToneDurationMs)
@@ -132,9 +132,9 @@ const AtomicString& RTCDTMFSender::interfaceName() const
     return EventTargetNames::RTCDTMFSender;
 }
 
-ExecutionContext* RTCDTMFSender::executionContext() const
+ScriptExecutionContext* RTCDTMFSender::scriptExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::scriptExecutionContext();
 }
 
 void RTCDTMFSender::stop()

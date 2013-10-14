@@ -49,7 +49,7 @@ public:
     {
     }
 
-    ExecutionContext* executionContext()
+    ScriptExecutionContext* scriptExecutionContext()
     {
         return m_document.get();
     }
@@ -63,9 +63,9 @@ private:
 TEST_F(IDBRequestTest, EventsAfterStopping)
 {
     IDBTransaction* transaction = 0;
-    RefPtr<IDBRequest> request = IDBRequest::create(executionContext(), IDBAny::createInvalid(), transaction);
+    RefPtr<IDBRequest> request = IDBRequest::create(scriptExecutionContext(), IDBAny::createInvalid(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
-    executionContext()->stopActiveDOMObjects();
+    scriptExecutionContext()->stopActiveDOMObjects();
 
     // Ensure none of the following raise assertions in stopped state:
     request->onError(DOMError::create(AbortError, "Description goes here."));
@@ -82,7 +82,7 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
 TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 {
     IDBTransaction* transaction = 0;
-    RefPtr<IDBRequest> request = IDBRequest::create(executionContext(), IDBAny::createInvalid(), transaction);
+    RefPtr<IDBRequest> request = IDBRequest::create(scriptExecutionContext(), IDBAny::createInvalid(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
 
     // Simulate the IDBTransaction having received onAbort from back end and aborting the request:
@@ -146,19 +146,19 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
 
     {
         RefPtr<MockIDBDatabaseBackendInterface> interface = MockIDBDatabaseBackendInterface::create();
-        RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(executionContext(), callbacks, transactionId, version);
+        RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(scriptExecutionContext(), callbacks, transactionId, version);
         EXPECT_EQ(request->readyState(), "pending");
 
-        executionContext()->stopActiveDOMObjects();
+        scriptExecutionContext()->stopActiveDOMObjects();
         request->onUpgradeNeeded(oldVersion, interface, metadata, WebKit::WebIDBCallbacks::DataLossNone);
     }
 
     {
         RefPtr<MockIDBDatabaseBackendInterface> interface = MockIDBDatabaseBackendInterface::create();
-        RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(executionContext(), callbacks, transactionId, version);
+        RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(scriptExecutionContext(), callbacks, transactionId, version);
         EXPECT_EQ(request->readyState(), "pending");
 
-        executionContext()->stopActiveDOMObjects();
+        scriptExecutionContext()->stopActiveDOMObjects();
         request->onSuccess(interface, metadata);
     }
 }

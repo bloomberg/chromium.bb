@@ -1269,7 +1269,7 @@ sub GenerateDeprecationNotification
     my $deprecateAs = shift;
     if ($deprecateAs) {
         AddToImplIncludes("core/page/UseCounter.h");
-        return "    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::${deprecateAs});\n";
+        return "    UseCounter::countDeprecation(activeScriptExecutionContext(), UseCounter::${deprecateAs});\n";
     }
     return "";
 }
@@ -1643,7 +1643,7 @@ END
         my $getterFunc = ToMethodName($attribute->name);
         # FIXME: Pass the main world ID for main-world-only getters.
         $code .= "    EventListener* value = imp->${getterFunc}(isolatedWorldForIsolate(info.GetIsolate()));\n";
-        $code .= "    v8SetReturnValue(info, value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(value)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
+        $code .= "    v8SetReturnValue(info, value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(value)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
     } else {
         my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", $forMainWorldSuffix, "return");
         $code .= "${nativeValue}\n";
@@ -2331,8 +2331,8 @@ sub GenerateCallWith
         $code .= $indent . "ScriptState& state = *currentState;\n";
         push(@callWithArgs, "&state");
     }
-    if (ExtendedAttributeContains($callWith, "ExecutionContext")) {
-        $code .= $indent . "ExecutionContext* scriptContext = getExecutionContext();\n";
+    if (ExtendedAttributeContains($callWith, "ScriptExecutionContext")) {
+        $code .= $indent . "ScriptExecutionContext* scriptContext = getScriptExecutionContext();\n";
         push(@callWithArgs, "scriptContext");
     }
     if ($function and ExtendedAttributeContains($callWith, "ScriptArguments")) {
@@ -2423,7 +2423,7 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "            throwTypeError(args.GetIsolate());\n";
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
-                $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(args[$paramIndex], getExecutionContext());\n";
+                $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
                 $parameterCheckString .= "    }\n";
             } else {
                 $parameterCheckString .= "    if (args.Length() <= $paramIndex || ";
@@ -2438,7 +2438,7 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "    }\n";
                 $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName = ";
                 $parameterCheckString .= "args[$paramIndex]->IsNull() ? 0 : " if $parameter->isNullable;
-                $parameterCheckString .= "${v8ClassName}::create(args[$paramIndex], getExecutionContext());\n";
+                $parameterCheckString .= "${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
             }
         } elsif ($parameter->extendedAttributes->{"Clamp"}) {
                 my $nativeValue = "${parameterName}NativeValue";
@@ -2604,14 +2604,14 @@ END
     $code .= $parameterCheckString;
 
     if ($interface->extendedAttributes->{"ConstructorCallWith"}) {
-        if ($interface->extendedAttributes->{"ConstructorCallWith"} eq "ExecutionContext") {
+        if ($interface->extendedAttributes->{"ConstructorCallWith"} eq "ScriptExecutionContext") {
             push(@beforeArgumentList, "context");
             $code .= "\n";
-            $code .= "    ExecutionContext* context = getExecutionContext();";
+            $code .= "    ScriptExecutionContext* context = getScriptExecutionContext();";
         } elsif ($interface->extendedAttributes->{"ConstructorCallWith"} eq "Document") {
             push(@beforeArgumentList, "document");
             $code .= "\n";
-            $code .= "    Document& document = *toDocument(getExecutionContext());";
+            $code .= "    Document& document = *toDocument(getScriptExecutionContext());";
         }
     }
 
@@ -4514,7 +4514,7 @@ END
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
-    ExecutionContext* context = toExecutionContext(proto->CreationContext());
+    ScriptExecutionContext* context = toScriptExecutionContext(proto->CreationContext());
 END
 
         foreach my $runtimeFunc (@perContextEnabledFunctions) {
@@ -4634,12 +4634,12 @@ sub GenerateCallbackHeader
     for my $include (sort @includes) {
         $header{includes}->add("#include \"$include\"\n");
     }
-    $header{nameSpaceWebCore}->addHeader("\nclass ExecutionContext;\n\n");
+    $header{nameSpaceWebCore}->addHeader("\nclass ScriptExecutionContext;\n\n");
     $header{class}->addHeader("class $v8ClassName : public $implClassName, public ActiveDOMCallback {");
     $header{class}->addFooter("};\n");
 
     $header{classPublic}->add(<<END);
-    static PassRefPtr<${v8ClassName}> create(v8::Handle<v8::Value> value, ExecutionContext* context)
+    static PassRefPtr<${v8ClassName}> create(v8::Handle<v8::Value> value, ScriptExecutionContext* context)
     {
         ASSERT(value->IsObject());
         ASSERT(context);
@@ -4673,11 +4673,11 @@ END
 
     $header{classPublic}->add(<<END);
 
-    virtual ExecutionContext* executionContext() const { return ContextLifecycleObserver::executionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextLifecycleObserver::scriptExecutionContext(); }
 
 END
     $header{classPrivate}->add(<<END);
-    ${v8ClassName}(v8::Handle<v8::Object>, ExecutionContext*);
+    ${v8ClassName}(v8::Handle<v8::Object>, ScriptExecutionContext*);
 
     ScopedPersistent<v8::Object> m_callback;
     RefPtr<DOMWrapperWorld> m_world;
@@ -4690,13 +4690,13 @@ sub GenerateCallbackImplementation
     my $interface = shift;
     my $v8ClassName = GetV8ClassName($interface);
 
-    AddToImplIncludes("core/dom/ExecutionContext.h");
+    AddToImplIncludes("core/dom/ScriptExecutionContext.h");
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8Callback.h");
     AddToImplIncludes("wtf/Assertions.h");
 
     $implementation{nameSpaceWebCore}->add(<<END);
-${v8ClassName}::${v8ClassName}(v8::Handle<v8::Object> callback, ExecutionContext* context)
+${v8ClassName}::${v8ClassName}(v8::Handle<v8::Object> callback, ScriptExecutionContext* context)
     : ActiveDOMCallback(context)
     , m_callback(toIsolate(context), callback)
     , m_world(DOMWrapperWorld::current())
@@ -4753,7 +4753,7 @@ END
             $code .= "        return true;\n\n";
             $code .= "    v8::Isolate* isolate = v8::Isolate::GetCurrent();\n";
             $code .= "    v8::HandleScope handleScope(isolate);\n\n";
-            $code .= "    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());\n";
+            $code .= "    v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());\n";
             $code .= "    if (v8Context.IsEmpty())\n";
             $code .= "        return true;\n\n";
             $code .= "    v8::Context::Scope scope(v8Context);\n\n";
@@ -4789,7 +4789,7 @@ END
                 $code .= "\n    v8::Handle<v8::Value> *argv = 0;\n\n";
             }
             $code .= "    bool callbackReturnValue = false;\n";
-            $code .= "    return !invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, callbackReturnValue, executionContext(), isolate);\n";
+            $code .= "    return !invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, callbackReturnValue, scriptExecutionContext(), isolate);\n";
             $code .= "}\n";
             $implementation{nameSpaceWebCore}->add($code);
         }

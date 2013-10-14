@@ -91,7 +91,7 @@ void History::back()
     go(-1);
 }
 
-void History::back(ExecutionContext* context)
+void History::back(ScriptExecutionContext* context)
 {
     go(context, -1);
 }
@@ -101,7 +101,7 @@ void History::forward()
     go(1);
 }
 
-void History::forward(ExecutionContext* context)
+void History::forward(ScriptExecutionContext* context)
 {
     go(context, 1);
 }
@@ -114,7 +114,7 @@ void History::go(int distance)
     m_frame->navigationScheduler()->scheduleHistoryNavigation(distance);
 }
 
-void History::go(ExecutionContext* context, int distance)
+void History::go(ScriptExecutionContext* context, int distance)
 {
     if (!m_frame)
         return;

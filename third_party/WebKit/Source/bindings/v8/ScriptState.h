@@ -41,7 +41,7 @@ namespace WebCore {
 class DOMWindow;
 class DOMWrapperWorld;
 class Frame;
-class ExecutionContext;
+class ScriptExecutionContext;
 class WorkerGlobalScope;
 
 class ScriptState {
@@ -66,7 +66,7 @@ public:
     }
 
     DOMWindow* domWindow() const;
-    ExecutionContext* executionContext() const;
+    ScriptExecutionContext* scriptExecutionContext() const;
     bool evalEnabled() const;
     void setEvalEnabled(bool);
 

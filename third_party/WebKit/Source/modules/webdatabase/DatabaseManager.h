@@ -45,7 +45,7 @@ class DatabaseSync;
 class DatabaseTaskSynchronizer;
 class ExceptionState;
 class SecurityOrigin;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 typedef int ExceptionCode;
 
@@ -54,9 +54,9 @@ class DatabaseManager {
 public:
     static DatabaseManager& manager();
 
-    // This gets a DatabaseContext for the specified ExecutionContext.
+    // This gets a DatabaseContext for the specified ScriptExecutionContext.
     // If one doesn't already exist, it will create a new one.
-    PassRefPtr<DatabaseContext> databaseContextFor(ExecutionContext*);
+    PassRefPtr<DatabaseContext> databaseContextFor(ScriptExecutionContext*);
 
     // These 2 methods are for DatabaseContext (un)registration, and should only
     // be called by the DatabaseContext constructor and destructor.
@@ -73,36 +73,36 @@ public:
 
     static void throwExceptionForDatabaseError(const String& method, const String& context, DatabaseError, const String& errorMessage, ExceptionState&);
 
-    PassRefPtr<Database> openDatabase(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
-    PassRefPtr<DatabaseSync> openDatabaseSync(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
+    PassRefPtr<Database> openDatabase(ScriptExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
+    PassRefPtr<DatabaseSync> openDatabaseSync(ScriptExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
 
-    bool hasOpenDatabases(ExecutionContext*);
-    void stopDatabases(ExecutionContext*, DatabaseTaskSynchronizer*);
+    bool hasOpenDatabases(ScriptExecutionContext*);
+    void stopDatabases(ScriptExecutionContext*, DatabaseTaskSynchronizer*);
 
     String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
     void closeDatabasesImmediately(const String& originIdentifier, const String& name);
 
-    void interruptAllDatabasesForContext(ExecutionContext*);
+    void interruptAllDatabasesForContext(ScriptExecutionContext*);
 
 private:
     DatabaseManager();
     ~DatabaseManager() { }
 
-    // This gets a DatabaseContext for the specified ExecutionContext if
+    // This gets a DatabaseContext for the specified ScriptExecutionContext if
     // it already exist previously. Otherwise, it returns 0.
-    PassRefPtr<DatabaseContext> existingDatabaseContextFor(ExecutionContext*);
+    PassRefPtr<DatabaseContext> existingDatabaseContextFor(ScriptExecutionContext*);
 
-    PassRefPtr<DatabaseBackendBase> openDatabaseBackend(ExecutionContext*,
+    PassRefPtr<DatabaseBackendBase> openDatabaseBackend(ScriptExecutionContext*,
         DatabaseType, const String& name, const String& expectedVersion, const String& displayName,
         unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
-    static void logErrorMessage(ExecutionContext*, const String& message);
+    static void logErrorMessage(ScriptExecutionContext*, const String& message);
 
     AbstractDatabaseServer* m_server;
 
     // Access to the following fields require locking m_contextMapLock:
-    typedef HashMap<ExecutionContext*, DatabaseContext*> ContextMap;
+    typedef HashMap<ScriptExecutionContext*, DatabaseContext*> ContextMap;
     ContextMap m_contextMap;
 #if !ASSERT_DISABLED
     int m_databaseContextRegisteredCount;

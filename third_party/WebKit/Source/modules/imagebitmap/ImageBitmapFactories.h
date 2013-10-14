@@ -53,7 +53,7 @@ class HTMLImageElement;
 class HTMLVideoElement;
 class ImageBitmap;
 class ImageData;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class ImageBitmapFactories : public Supplement<DOMWindow>, public WorkerSupplement {
 
@@ -87,7 +87,7 @@ private:
             return adoptRef(new ImageBitmapLoader(factory, resolver, cropRect));
         }
 
-        void loadBlobAsync(ExecutionContext*, Blob*);
+        void loadBlobAsync(ScriptExecutionContext*, Blob*);
 
         ~ImageBitmapLoader() { }
 

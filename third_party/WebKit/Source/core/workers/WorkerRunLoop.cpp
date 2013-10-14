@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/workers/WorkerRunLoop.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -245,7 +245,7 @@ PassOwnPtr<WorkerRunLoop::Task> WorkerRunLoop::Task::create(PassOwnPtr<Execution
     return adoptPtr(new Task(task, mode));
 }
 
-void WorkerRunLoop::Task::performTask(const WorkerRunLoop& runLoop, ExecutionContext* context)
+void WorkerRunLoop::Task::performTask(const WorkerRunLoop& runLoop, ScriptExecutionContext* context)
 {
     WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     if ((!workerGlobalScope->isClosing() && !runLoop.terminated()) || m_task->isCleanupTask())

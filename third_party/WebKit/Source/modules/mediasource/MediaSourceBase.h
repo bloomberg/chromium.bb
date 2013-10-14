@@ -79,7 +79,7 @@ public:
     virtual void stop() OVERRIDE;
 
     // EventTarget interface
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
@@ -90,7 +90,7 @@ public:
     using RefCounted<MediaSourceBase>::deref;
 
 protected:
-    explicit MediaSourceBase(ExecutionContext*);
+    explicit MediaSourceBase(ScriptExecutionContext*);
 
     virtual void onReadyStateChange(const AtomicString& oldState, const AtomicString& newState) = 0;
     virtual Vector<RefPtr<TimeRanges> > activeRanges() const = 0;

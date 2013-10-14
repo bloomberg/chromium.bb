@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DOMFilePath.h"
@@ -59,7 +59,7 @@ const char DOMFileSystemBase::temporaryPathPrefix[] = "temporary";
 const char DOMFileSystemBase::isolatedPathPrefix[] = "isolated";
 const char DOMFileSystemBase::externalPathPrefix[] = "external";
 
-DOMFileSystemBase::DOMFileSystemBase(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
+DOMFileSystemBase::DOMFileSystemBase(ScriptExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     : m_context(context)
     , m_name(name)
     , m_type(type)

@@ -42,10 +42,10 @@ class ExceptionState;
 
 class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver {
 public:
-    static PassRefPtr<MediaStream> create(ExecutionContext*);
-    static PassRefPtr<MediaStream> create(ExecutionContext*, PassRefPtr<MediaStream>);
-    static PassRefPtr<MediaStream> create(ExecutionContext*, const MediaStreamTrackVector&);
-    static PassRefPtr<MediaStream> create(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
+    static PassRefPtr<MediaStream> create(ScriptExecutionContext*);
+    static PassRefPtr<MediaStream> create(ScriptExecutionContext*, PassRefPtr<MediaStream>);
+    static PassRefPtr<MediaStream> create(ScriptExecutionContext*, const MediaStreamTrackVector&);
+    static PassRefPtr<MediaStream> create(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
     virtual ~MediaStream();
 
     // DEPRECATED
@@ -75,7 +75,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     using RefCounted<MediaStream>::ref;
     using RefCounted<MediaStream>::deref;
@@ -84,7 +84,7 @@ public:
     virtual URLRegistry& registry() const OVERRIDE;
 
 protected:
-    MediaStream(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
+    MediaStream(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
 
     // ContextLifecycleObserver
     virtual void contextDestroyed();

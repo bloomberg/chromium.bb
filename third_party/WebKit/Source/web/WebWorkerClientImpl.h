@@ -31,7 +31,7 @@
 #ifndef WebWorkerClientImpl_h
 #define WebWorkerClientImpl_h
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerMessagingProxy.h"

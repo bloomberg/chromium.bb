@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 
@@ -40,12 +40,12 @@ DatabaseContext* DatabaseBackendContext::frontend()
 
 SecurityOrigin* DatabaseBackendContext::securityOrigin() const
 {
-    return executionContext()->securityOrigin();
+    return scriptExecutionContext()->securityOrigin();
 }
 
 bool DatabaseBackendContext::isContextThread() const
 {
-    return executionContext()->isContextThread();
+    return scriptExecutionContext()->isContextThread();
 }
 
 } // namespace WebCore

@@ -47,7 +47,7 @@
 namespace WebCore {
 
 class KURL;
-class ExecutionContext;
+class ScriptExecutionContext;
 class ThreadableWebSocketChannelClientWrapper;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
@@ -83,7 +83,7 @@ public:
     public:
         // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
-        static Peer* create(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ExecutionContext* context, const String& taskMode, const String& sourceURLAtConnection, unsigned lineNumberAtConnection)
+        static Peer* create(PassRefPtr<ThreadableWebSocketChannelClientWrapper> clientWrapper, WorkerLoaderProxy& loaderProxy, ScriptExecutionContext* context, const String& taskMode, const String& sourceURLAtConnection, unsigned lineNumberAtConnection)
         {
             return new Peer(clientWrapper, loaderProxy, context, taskMode, sourceURLAtConnection, lineNumberAtConnection);
         }
@@ -110,7 +110,7 @@ public:
         virtual void didReceiveMessageError() OVERRIDE;
 
     private:
-        Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ExecutionContext*, const String& taskMode, const String& sourceURL, unsigned lineNumber);
+        Peer(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ScriptExecutionContext*, const String& taskMode, const String& sourceURL, unsigned lineNumber);
 
         RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         WorkerLoaderProxy& m_loaderProxy;
@@ -155,13 +155,13 @@ private:
     private:
         Bridge(PassRefPtr<ThreadableWebSocketChannelClientWrapper>, PassRefPtr<WorkerGlobalScope>, const String& taskMode);
 
-        static void setWebSocketChannel(ExecutionContext*, Bridge* thisPtr, Peer*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
+        static void setWebSocketChannel(ScriptExecutionContext*, Bridge* thisPtr, Peer*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
 
         // Executed on the main thread to create a Peer for this bridge.
         // sourceURL and lineNumber provides the source filename and
         // the line number information at the connection initiation
         // respectively. They may be shown when the connection fails.
-        static void mainThreadInitialize(ExecutionContext*, WorkerLoaderProxy*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, const String& taskMode, const String& sourceURL, unsigned lineNumber);
+        static void mainThreadInitialize(ScriptExecutionContext*, WorkerLoaderProxy*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, const String& taskMode, const String& sourceURL, unsigned lineNumber);
 
         // Executed on the worker context's thread.
         void clearClientWrapper();
@@ -178,16 +178,16 @@ private:
 
     WorkerThreadableWebSocketChannel(WorkerGlobalScope*, WebSocketChannelClient*, const String& taskMode);
 
-    static void mainThreadConnect(ExecutionContext*, Peer*, const KURL&, const String& protocol);
-    static void mainThreadSend(ExecutionContext*, Peer*, const String& message);
-    static void mainThreadSendArrayBuffer(ExecutionContext*, Peer*, PassOwnPtr<Vector<char> >);
-    static void mainThreadSendBlob(ExecutionContext*, Peer*, const KURL&, const String& type, long long size);
-    static void mainThreadBufferedAmount(ExecutionContext*, Peer*);
-    static void mainThreadClose(ExecutionContext*, Peer*, int code, const String& reason);
-    static void mainThreadFail(ExecutionContext*, Peer*, const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
-    static void mainThreadDestroy(ExecutionContext*, PassOwnPtr<Peer>);
-    static void mainThreadSuspend(ExecutionContext*, Peer*);
-    static void mainThreadResume(ExecutionContext*, Peer*);
+    static void mainThreadConnect(ScriptExecutionContext*, Peer*, const KURL&, const String& protocol);
+    static void mainThreadSend(ScriptExecutionContext*, Peer*, const String& message);
+    static void mainThreadSendArrayBuffer(ScriptExecutionContext*, Peer*, PassOwnPtr<Vector<char> >);
+    static void mainThreadSendBlob(ScriptExecutionContext*, Peer*, const KURL&, const String& type, long long size);
+    static void mainThreadBufferedAmount(ScriptExecutionContext*, Peer*);
+    static void mainThreadClose(ScriptExecutionContext*, Peer*, int code, const String& reason);
+    static void mainThreadFail(ScriptExecutionContext*, Peer*, const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
+    static void mainThreadDestroy(ScriptExecutionContext*, PassOwnPtr<Peer>);
+    static void mainThreadSuspend(ScriptExecutionContext*, Peer*);
+    static void mainThreadResume(ScriptExecutionContext*, Peer*);
 
     class WorkerGlobalScopeDidInitializeTask;
 

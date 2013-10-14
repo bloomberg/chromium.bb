@@ -37,7 +37,7 @@ namespace WebCore {
 class IDBCallbacks;
 class IDBDatabase;
 class IDBDatabaseCallbacks;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 // This class is shared by IDBFactory (async) and IDBFactorySync (sync).
 // This is implemented by IDBFactoryBackendImpl and optionally others (in order to proxy
@@ -48,9 +48,9 @@ public:
     static PassRefPtr<IDBFactoryBackendInterface> create();
     virtual ~IDBFactoryBackendInterface() { }
 
-    virtual void getDatabaseNames(PassRefPtr<IDBCallbacks>, const String& databaseIdentifier, ExecutionContext*) = 0;
-    virtual void open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks>, PassRefPtr<IDBDatabaseCallbacks>, const String& databaseIdentifier, ExecutionContext*) = 0;
-    virtual void deleteDatabase(const String& name, PassRefPtr<IDBCallbacks>, const String& databaseIdentifier, ExecutionContext*) = 0;
+    virtual void getDatabaseNames(PassRefPtr<IDBCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*) = 0;
+    virtual void open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks>, PassRefPtr<IDBDatabaseCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*) = 0;
+    virtual void deleteDatabase(const String& name, PassRefPtr<IDBCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*) = 0;
 };
 
 } // namespace WebCore

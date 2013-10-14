@@ -47,7 +47,7 @@ public:
     void setParentOrShadowHostNode(SVGElementInstance* instance) { m_parentInstance = instance; }
 
     virtual const AtomicString& interfaceName() const;
-    virtual ExecutionContext* executionContext() const;
+    virtual ScriptExecutionContext* scriptExecutionContext() const;
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
     virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);

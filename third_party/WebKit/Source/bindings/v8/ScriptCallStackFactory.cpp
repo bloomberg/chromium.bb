@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 
 static ScriptCallFrame toScriptCallFrame(v8::Handle<v8::StackFrame> frame)
 {
@@ -114,8 +114,8 @@ PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize)
 {
     size_t stackSize = 1;
     if (InspectorInstrumentation::hasFrontends()) {
-        ExecutionContext* executionContext = getExecutionContext();
-        if (InspectorInstrumentation::consoleAgentEnabled(executionContext))
+        ScriptExecutionContext* scriptExecutionContext = getScriptExecutionContext();
+        if (InspectorInstrumentation::consoleAgentEnabled(scriptExecutionContext))
             stackSize = maxStackSize;
     }
     return createScriptCallStack(stackSize);

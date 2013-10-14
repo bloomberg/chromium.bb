@@ -40,13 +40,13 @@
 
 namespace WebCore {
 
-MessagePort::MessagePort(ExecutionContext& executionContext)
+MessagePort::MessagePort(ScriptExecutionContext& scriptExecutionContext)
     : m_started(false)
     , m_closed(false)
-    , m_executionContext(&executionContext)
+    , m_scriptExecutionContext(&scriptExecutionContext)
 {
     ScriptWrappable::init(this);
-    m_executionContext->createdMessagePort(this);
+    m_scriptExecutionContext->createdMessagePort(this);
 
     // Don't need to call processMessagePortMessagesSoon() here, because the port will not be opened until start() is invoked.
 }
@@ -54,15 +54,15 @@ MessagePort::MessagePort(ExecutionContext& executionContext)
 MessagePort::~MessagePort()
 {
     close();
-    if (m_executionContext)
-        m_executionContext->destroyedMessagePort(this);
+    if (m_scriptExecutionContext)
+        m_scriptExecutionContext->destroyedMessagePort(this);
 }
 
 void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& es)
 {
     if (!isEntangled())
         return;
-    ASSERT(m_executionContext);
+    ASSERT(m_scriptExecutionContext);
 
     OwnPtr<MessagePortChannelArray> channels;
     // Make sure we aren't connected to any of the passed-in ports.
@@ -88,9 +88,9 @@ PassRefPtr<MessagePortChannel> MessagePort::disentangle()
     m_entangledChannel->disentangle();
 
     // We can't receive any messages or generate any events, so remove ourselves from the list of active ports.
-    ASSERT(m_executionContext);
-    m_executionContext->destroyedMessagePort(this);
-    m_executionContext = 0;
+    ASSERT(m_scriptExecutionContext);
+    m_scriptExecutionContext->destroyedMessagePort(this);
+    m_scriptExecutionContext = 0;
 
     return m_entangledChannel.release();
 }
@@ -99,8 +99,8 @@ PassRefPtr<MessagePortChannel> MessagePort::disentangle()
 // This code may be called from another thread, and so should not call any non-threadsafe APIs (i.e. should not call into the entangled channel or access mutable variables).
 void MessagePort::messageAvailable()
 {
-    ASSERT(m_executionContext);
-    m_executionContext->processMessagePortMessagesSoon();
+    ASSERT(m_scriptExecutionContext);
+    m_scriptExecutionContext->processMessagePortMessagesSoon();
 }
 
 void MessagePort::start()
@@ -109,12 +109,12 @@ void MessagePort::start()
     if (!isEntangled())
         return;
 
-    ASSERT(m_executionContext);
+    ASSERT(m_scriptExecutionContext);
     if (m_started)
         return;
 
     m_started = true;
-    m_executionContext->processMessagePortMessagesSoon();
+    m_scriptExecutionContext->processMessagePortMessagesSoon();
 }
 
 void MessagePort::close()
@@ -128,7 +128,7 @@ void MessagePort::entangle(PassRefPtr<MessagePortChannel> remote)
 {
     // Only invoked to set our initial entanglement.
     ASSERT(!m_entangledChannel);
-    ASSERT(m_executionContext);
+    ASSERT(m_scriptExecutionContext);
 
     remote->entangle(this);
     m_entangledChannel = remote;
@@ -136,11 +136,11 @@ void MessagePort::entangle(PassRefPtr<MessagePortChannel> remote)
 
 void MessagePort::contextDestroyed()
 {
-    ASSERT(m_executionContext);
+    ASSERT(m_scriptExecutionContext);
     // Must be closed before blowing away the cached context, to ensure that we get no more calls to messageAvailable().
-    // ExecutionContext::closeMessagePorts() takes care of that.
+    // ScriptExecutionContext::closeMessagePorts() takes care of that.
     ASSERT(m_closed);
-    m_executionContext = 0;
+    m_scriptExecutionContext = 0;
 }
 
 const AtomicString& MessagePort::interfaceName() const
@@ -148,9 +148,9 @@ const AtomicString& MessagePort::interfaceName() const
     return EventTargetNames::MessagePort;
 }
 
-ExecutionContext* MessagePort::executionContext() const
+ScriptExecutionContext* MessagePort::scriptExecutionContext() const
 {
-    return m_executionContext;
+    return m_scriptExecutionContext;
 }
 
 void MessagePort::dispatchMessages()
@@ -164,10 +164,10 @@ void MessagePort::dispatchMessages()
     while (m_entangledChannel && m_entangledChannel->tryGetMessageFromRemote(message, channels)) {
 
         // close() in Worker onmessage handler should prevent next message from dispatching.
-        if (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext)->isClosing())
+        if (m_scriptExecutionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_scriptExecutionContext)->isClosing())
             return;
 
-        OwnPtr<MessagePortArray> ports = MessagePort::entanglePorts(*m_executionContext, channels.release());
+        OwnPtr<MessagePortArray> ports = MessagePort::entanglePorts(*m_scriptExecutionContext, channels.release());
         RefPtr<Event> evt = MessageEvent::create(ports.release(), message.release());
 
         dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
@@ -217,7 +217,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
     return portArray.release();
 }
 
-PassOwnPtr<MessagePortArray> MessagePort::entanglePorts(ExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
+PassOwnPtr<MessagePortArray> MessagePort::entanglePorts(ScriptExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
 {
     if (!channels || !channels->size())
         return nullptr;

@@ -44,7 +44,7 @@ class Element;
 class Node;
 class RenderFullScreen;
 class RenderStyle;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class FullscreenElementStack
     : public DocumentSupplement

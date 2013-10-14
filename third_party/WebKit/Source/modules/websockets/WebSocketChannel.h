@@ -41,14 +41,14 @@ namespace WebCore {
 
 class Blob;
 class KURL;
-class ExecutionContext;
+class ScriptExecutionContext;
 class WebSocketChannelClient;
 
 class WebSocketChannel {
     WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 public:
     WebSocketChannel() { }
-    static PassRefPtr<WebSocketChannel> create(ExecutionContext*, WebSocketChannelClient*);
+    static PassRefPtr<WebSocketChannel> create(ScriptExecutionContext*, WebSocketChannelClient*);
 
     enum SendResult {
         SendSuccess,

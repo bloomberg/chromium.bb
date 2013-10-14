@@ -37,12 +37,12 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
+PassRefPtr<MediaKeySession> MediaKeySession::create(ScriptExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
 {
     return adoptRef(new MediaKeySession(context, cdm, keys));
 }
 
-MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
+MediaKeySession::MediaKeySession(ScriptExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
     : ContextLifecycleObserver(context)
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_keySystem(keys->keySystem())
@@ -198,9 +198,9 @@ const AtomicString& MediaKeySession::interfaceName() const
     return EventTargetNames::MediaKeySession;
 }
 
-ExecutionContext* MediaKeySession::executionContext() const
+ScriptExecutionContext* MediaKeySession::scriptExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::scriptExecutionContext();
 }
 
 }

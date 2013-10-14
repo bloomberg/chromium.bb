@@ -31,7 +31,7 @@
 [
     ActiveDOMObject,
     Conditional=Condition1|Condition2,
-    ConstructorCallWith=ExecutionContext,
+    ConstructorCallWith=ScriptExecutionContext,
     Constructor(DOMString str1, [Default=Undefined] optional DOMString str2),
     ConstructorRaisesException
 ] interface TestInterface {

@@ -210,7 +210,7 @@ String InspectorFrontendHost::getSelectionForegroundColor()
 
 PassRefPtr<DOMFileSystem> InspectorFrontendHost::isolatedFileSystem(const String& fileSystemName, const String& rootURL)
 {
-    ExecutionContext* context = m_frontendPage->mainFrame()->document();
+    ScriptExecutionContext* context = m_frontendPage->mainFrame()->document();
     return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated, KURL(ParsedURLString, rootURL));
 }
 

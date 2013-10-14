@@ -43,7 +43,7 @@ class GenericEventQueue;
 
 class SourceBufferList : public RefCounted<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
 public:
-    static PassRefPtr<SourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
+    static PassRefPtr<SourceBufferList> create(ScriptExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
         return adoptRef(new SourceBufferList(context, asyncEventQueue));
     }
@@ -59,20 +59,20 @@ public:
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     using RefCounted<SourceBufferList>::ref;
     using RefCounted<SourceBufferList>::deref;
 
 private:
-    SourceBufferList(ExecutionContext*, GenericEventQueue*);
+    SourceBufferList(ScriptExecutionContext*, GenericEventQueue*);
 
     void scheduleEvent(const AtomicString&);
 
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
-    ExecutionContext* m_executionContext;
+    ScriptExecutionContext* m_scriptExecutionContext;
     GenericEventQueue* m_asyncEventQueue;
 
     Vector<RefPtr<SourceBuffer> > m_list;

@@ -45,11 +45,11 @@ namespace WebCore {
 
 class Blob;
 class ExceptionState;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class FileReader : public RefCounted<FileReader>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient {
 public:
-    static PassRefPtr<FileReader> create(ExecutionContext*);
+    static PassRefPtr<FileReader> create(ScriptExecutionContext*);
 
     virtual ~FileReader();
 
@@ -79,7 +79,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
 
     // FileReaderLoaderClient
     virtual void didStartLoading();
@@ -98,7 +98,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend);
 
 private:
-    FileReader(ExecutionContext*);
+    FileReader(ScriptExecutionContext*);
 
     // EventTarget
     virtual void refEventTarget() OVERRIDE { ref(); }

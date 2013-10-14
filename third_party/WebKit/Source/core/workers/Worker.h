@@ -42,13 +42,13 @@
 namespace WebCore {
 
 class ExceptionState;
-class ExecutionContext;
+class ScriptExecutionContext;
 class WorkerGlobalScopeProxy;
 class WorkerScriptLoader;
 
 class Worker : public AbstractWorker, public ScriptWrappable, private WorkerScriptLoaderClient {
 public:
-    static PassRefPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);
+    static PassRefPtr<Worker> create(ScriptExecutionContext*, const String& url, ExceptionState&);
     virtual ~Worker();
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -63,7 +63,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
 private:
-    explicit Worker(ExecutionContext*);
+    explicit Worker(ScriptExecutionContext*);
 
     // WorkerScriptLoaderClient callbacks
     virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;

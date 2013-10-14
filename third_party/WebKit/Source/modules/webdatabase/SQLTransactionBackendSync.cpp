@@ -34,7 +34,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
@@ -60,19 +60,19 @@ SQLTransactionBackendSync::SQLTransactionBackendSync(DatabaseSync* db, PassRefPt
     , m_modifiedDatabase(false)
     , m_transactionClient(adoptPtr(new SQLTransactionClient()))
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(m_database->scriptExecutionContext()->isContextThread());
 }
 
 SQLTransactionBackendSync::~SQLTransactionBackendSync()
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(m_database->scriptExecutionContext()->isContextThread());
     if (m_sqliteTransaction && m_sqliteTransaction->inProgress())
         rollback();
 }
 
 PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState& es)
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(m_database->scriptExecutionContext()->isContextThread());
 
     m_database->setLastErrorMessage("");
 
@@ -129,7 +129,7 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
 
 void SQLTransactionBackendSync::begin(ExceptionState& es)
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(m_database->scriptExecutionContext()->isContextThread());
     if (!m_database->opened()) {
         m_database->reportStartTransactionResult(1, SQLError::UNKNOWN_ERR, 0);
         m_database->setLastErrorMessage("cannot begin transaction because the database is not open");
@@ -180,7 +180,7 @@ void SQLTransactionBackendSync::begin(ExceptionState& es)
 
 void SQLTransactionBackendSync::execute(ExceptionState& es)
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(m_database->scriptExecutionContext()->isContextThread());
     if (!m_database->opened() || (m_callback && !m_callback->handleEvent(SQLTransactionSync::from(this)))) {
         if (m_database->lastErrorMessage().isEmpty())
             m_database->setLastErrorMessage("failed to execute transaction callback");
@@ -194,7 +194,7 @@ void SQLTransactionBackendSync::execute(ExceptionState& es)
 
 void SQLTransactionBackendSync::commit(ExceptionState& es)
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(m_database->scriptExecutionContext()->isContextThread());
     if (!m_database->opened()) {
         m_database->reportCommitTransactionResult(1, SQLError::UNKNOWN_ERR, 0);
         m_database->setLastErrorMessage("unable to commit transaction because the database is not open.");
@@ -232,7 +232,7 @@ void SQLTransactionBackendSync::commit(ExceptionState& es)
 
 void SQLTransactionBackendSync::rollback()
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(m_database->scriptExecutionContext()->isContextThread());
     m_database->disableAuthorizer();
     if (m_sqliteTransaction) {
         m_sqliteTransaction->rollback();

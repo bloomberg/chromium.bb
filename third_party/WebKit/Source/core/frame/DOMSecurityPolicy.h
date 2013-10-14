@@ -39,7 +39,7 @@ class Frame;
 
 class DOMSecurityPolicy : public RefCounted<DOMSecurityPolicy>, public ScriptWrappable, public ContextLifecycleObserver {
 public:
-    static PassRefPtr<DOMSecurityPolicy> create(ExecutionContext* context)
+    static PassRefPtr<DOMSecurityPolicy> create(ScriptExecutionContext* context)
     {
         return adoptRef(new DOMSecurityPolicy(context));
     }
@@ -64,7 +64,7 @@ public:
     bool allowsStyleFrom(const String& url) const;
 
 private:
-    explicit DOMSecurityPolicy(ExecutionContext*);
+    explicit DOMSecurityPolicy(ScriptExecutionContext*);
 };
 
 }

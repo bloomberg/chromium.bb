@@ -35,7 +35,7 @@
 namespace WebCore {
 
 class KURL;
-class ExecutionContext;
+class ScriptExecutionContext;
 class SecurityOrigin;
 class URLRegistry;
 class URLRegistrable;
@@ -43,7 +43,7 @@ class URLRegistrable;
 class PublicURLManager : public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<PublicURLManager> create(ExecutionContext*);
+    static PassOwnPtr<PublicURLManager> create(ScriptExecutionContext*);
 
     void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*);
     void revoke(const KURL&);
@@ -52,7 +52,7 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    PublicURLManager(ExecutionContext*);
+    PublicURLManager(ScriptExecutionContext*);
 
     typedef HashSet<String> URLSet;
     typedef HashMap<URLRegistry*, URLSet > RegistryURLMap;

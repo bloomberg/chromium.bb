@@ -26,25 +26,25 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseBase.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
 
-DatabaseBase::DatabaseBase(ExecutionContext* executionContext)
-    : m_executionContext(executionContext)
+DatabaseBase::DatabaseBase(ScriptExecutionContext* scriptExecutionContext)
+    : m_scriptExecutionContext(scriptExecutionContext)
 {
-    ASSERT(m_executionContext->isContextThread());
+    ASSERT(m_scriptExecutionContext->isContextThread());
 }
 
-ExecutionContext* DatabaseBase::executionContext() const
+ScriptExecutionContext* DatabaseBase::scriptExecutionContext() const
 {
-    return m_executionContext.get();
+    return m_scriptExecutionContext.get();
 }
 
 void DatabaseBase::logErrorMessage(const String& message)
 {
-    m_executionContext->addConsoleMessage(StorageMessageSource, ErrorMessageLevel, message);
+    m_scriptExecutionContext->addConsoleMessage(StorageMessageSource, ErrorMessageLevel, message);
 }
 
 } // namespace WebCore

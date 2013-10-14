@@ -37,13 +37,13 @@ namespace WebCore {
 
 class Event;
 class Node;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class WorkerEventQueue : public EventQueue {
     WTF_MAKE_FAST_ALLOCATED;
 public:
 
-    static PassOwnPtr<WorkerEventQueue> create(ExecutionContext*);
+    static PassOwnPtr<WorkerEventQueue> create(ScriptExecutionContext*);
     virtual ~WorkerEventQueue();
 
     // EventQueue
@@ -52,10 +52,10 @@ public:
     virtual void close() OVERRIDE;
 
 private:
-    explicit WorkerEventQueue(ExecutionContext*);
+    explicit WorkerEventQueue(ScriptExecutionContext*);
     void removeEvent(Event*);
 
-    ExecutionContext* m_executionContext;
+    ScriptExecutionContext* m_scriptExecutionContext;
     bool m_isClosed;
 
     class EventDispatcherTask;

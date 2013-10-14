@@ -35,7 +35,7 @@
 #include "modules/websockets/WebSocketHandshake.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CookieJar.h"
 #include "core/platform/Cookie.h"
@@ -118,7 +118,7 @@ String WebSocketHandshake::getExpectedWebSocketAccept(const String& secWebSocket
     return base64Encode(reinterpret_cast<const char*>(hash.data()), sha1HashSize);
 }
 
-WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, ExecutionContext* context)
+WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, ScriptExecutionContext* context)
     : m_url(url)
     , m_clientProtocol(protocol)
     , m_secure(m_url.protocolIs("wss"))
@@ -219,7 +219,7 @@ CString WebSocketHandshake::clientHandshakeMessage() const
         fields.append("Sec-WebSocket-Extensions: " + extensionValue);
 
     // Add a User-Agent header.
-    fields.append("User-Agent: " + m_context->client()->userAgent(m_context->url()));
+    fields.append("User-Agent: " + m_context->userAgent(m_context->url()));
 
     // Fields in the handshake are sent by the client in a random order; the
     // order is not meaningful.  Thus, it's ok to send the order we constructed
@@ -267,7 +267,7 @@ PassRefPtr<WebSocketHandshakeRequest> WebSocketHandshake::clientHandshakeRequest
         request->addHeaderField("Sec-WebSocket-Extensions", extensionValue);
 
     // Add a User-Agent header.
-    request->addHeaderField("User-Agent", m_context->client()->userAgent(m_context->url()));
+    request->addHeaderField("User-Agent", m_context->userAgent(m_context->url()));
 
     return request.release();
 }
@@ -278,7 +278,7 @@ void WebSocketHandshake::reset()
     m_extensionDispatcher.reset();
 }
 
-void WebSocketHandshake::clearExecutionContext()
+void WebSocketHandshake::clearScriptExecutionContext()
 {
     m_context = 0;
 }

@@ -55,7 +55,7 @@ static void processTrack(MediaStreamTrack* track, MediaStreamSourceVector& sourc
         sourceVector.append(source);
 }
 
-static PassRefPtr<MediaStream> createFromSourceVectors(ExecutionContext* context, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
+static PassRefPtr<MediaStream> createFromSourceVectors(ScriptExecutionContext* context, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
 {
     RefPtr<MediaStreamDescriptor> descriptor = MediaStreamDescriptor::create(audioSources, videoSources);
     MediaStreamCenter::instance().didCreateMediaStream(descriptor.get());
@@ -63,7 +63,7 @@ static PassRefPtr<MediaStream> createFromSourceVectors(ExecutionContext* context
     return MediaStream::create(context, descriptor.release());
 }
 
-PassRefPtr<MediaStream> MediaStream::create(ExecutionContext* context)
+PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context)
 {
     MediaStreamSourceVector audioSources;
     MediaStreamSourceVector videoSources;
@@ -71,7 +71,7 @@ PassRefPtr<MediaStream> MediaStream::create(ExecutionContext* context)
     return createFromSourceVectors(context, audioSources, videoSources);
 }
 
-PassRefPtr<MediaStream> MediaStream::create(ExecutionContext* context, PassRefPtr<MediaStream> stream)
+PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context, PassRefPtr<MediaStream> stream)
 {
     ASSERT(stream);
 
@@ -87,7 +87,7 @@ PassRefPtr<MediaStream> MediaStream::create(ExecutionContext* context, PassRefPt
     return createFromSourceVectors(context, audioSources, videoSources);
 }
 
-PassRefPtr<MediaStream> MediaStream::create(ExecutionContext* context, const MediaStreamTrackVector& tracks)
+PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context, const MediaStreamTrackVector& tracks)
 {
     MediaStreamSourceVector audioSources;
     MediaStreamSourceVector videoSources;
@@ -98,12 +98,12 @@ PassRefPtr<MediaStream> MediaStream::create(ExecutionContext* context, const Med
     return createFromSourceVectors(context, audioSources, videoSources);
 }
 
-PassRefPtr<MediaStream> MediaStream::create(ExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
+PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
 {
     return adoptRef(new MediaStream(context, streamDescriptor));
 }
 
-MediaStream::MediaStream(ExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
+MediaStream::MediaStream(ScriptExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
     : ContextLifecycleObserver(context)
     , m_stopped(false)
     , m_descriptor(streamDescriptor)
@@ -151,7 +151,7 @@ void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState
         return;
 
     RefPtr<MediaStreamComponent> component = MediaStreamComponent::create(m_descriptor.get(), track->component()->source());
-    RefPtr<MediaStreamTrack> newTrack = MediaStreamTrack::create(executionContext(), component.get());
+    RefPtr<MediaStreamTrack> newTrack = MediaStreamTrack::create(scriptExecutionContext(), component.get());
 
     switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
@@ -264,9 +264,9 @@ const AtomicString& MediaStream::interfaceName() const
     return EventTargetNames::MediaStream;
 }
 
-ExecutionContext* MediaStream::executionContext() const
+ScriptExecutionContext* MediaStream::scriptExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::scriptExecutionContext();
 }
 
 void MediaStream::addRemoteTrack(MediaStreamComponent* component)
@@ -277,7 +277,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 
     component->setStream(descriptor());
 
-    RefPtr<MediaStreamTrack> track = MediaStreamTrack::create(executionContext(), component);
+    RefPtr<MediaStreamTrack> track = MediaStreamTrack::create(scriptExecutionContext(), component);
     switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
         m_audioTracks.append(track);

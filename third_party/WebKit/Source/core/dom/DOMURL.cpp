@@ -30,7 +30,7 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/BlobURL.h"
@@ -63,32 +63,32 @@ void DOMURL::setInput(const String& value)
     }
 }
 
-String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob)
+String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, Blob* blob)
 {
-    if (!executionContext || !blob)
+    if (!scriptExecutionContext || !blob)
         return String();
-    return createPublicURL(executionContext, blob);
+    return createPublicURL(scriptExecutionContext, blob);
 }
 
-String DOMURL::createPublicURL(ExecutionContext* executionContext, URLRegistrable* registrable)
+String DOMURL::createPublicURL(ScriptExecutionContext* scriptExecutionContext, URLRegistrable* registrable)
 {
-    KURL publicURL = BlobURL::createPublicURL(executionContext->securityOrigin());
+    KURL publicURL = BlobURL::createPublicURL(scriptExecutionContext->securityOrigin());
     if (publicURL.isEmpty())
         return String();
 
-    executionContext->publicURLManager().registerURL(executionContext->securityOrigin(), publicURL, registrable);
+    scriptExecutionContext->publicURLManager().registerURL(scriptExecutionContext->securityOrigin(), publicURL, registrable);
 
     return publicURL.string();
 }
 
-void DOMURL::revokeObjectURL(ExecutionContext* executionContext, const String& urlString)
+void DOMURL::revokeObjectURL(ScriptExecutionContext* scriptExecutionContext, const String& urlString)
 {
-    if (!executionContext)
+    if (!scriptExecutionContext)
         return;
 
     KURL url(KURL(), urlString);
-    MemoryCache::removeURLFromCache(executionContext, url);
-    executionContext->publicURLManager().revoke(url);
+    MemoryCache::removeURLFromCache(scriptExecutionContext, url);
+    scriptExecutionContext->publicURLManager().revoke(url);
 }
 
 } // namespace WebCore

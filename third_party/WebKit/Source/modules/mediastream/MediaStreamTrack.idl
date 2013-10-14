@@ -31,7 +31,7 @@
     attribute boolean enabled;
     readonly attribute DOMString readyState;
 
-    [CallWith=ExecutionContext, RaisesException] static void getSources(MediaStreamTrackSourcesCallback callback);
+    [CallWith=ScriptExecutionContext, RaisesException] static void getSources(MediaStreamTrackSourcesCallback callback);
     [ImplementedAs=stopTrack, RaisesException] void stop();
 
     attribute EventHandler onmute;

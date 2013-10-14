@@ -143,8 +143,8 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
 
 static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context)
 {
-    if (ExecutionContext* executionContext = toExecutionContext(context)) {
-        if (ContentSecurityPolicy* policy = toDocument(executionContext)->contentSecurityPolicy())
+    if (ScriptExecutionContext* scriptExecutionContext = toScriptExecutionContext(context)) {
+        if (ContentSecurityPolicy* policy = toDocument(scriptExecutionContext)->contentSecurityPolicy())
             return policy->allowEval(ScriptState::forContext(context));
     }
     return false;
@@ -195,7 +195,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
     isReportingException = true;
 
     // During the frame teardown, there may not be a valid context.
-    if (ExecutionContext* context = getExecutionContext()) {
+    if (ScriptExecutionContext* context = getScriptExecutionContext()) {
         String errorMessage = toWebCoreString(message->Get());
         String sourceURL = toWebCoreString(message->GetScriptResourceName());
         RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn(), DOMWrapperWorld::current());

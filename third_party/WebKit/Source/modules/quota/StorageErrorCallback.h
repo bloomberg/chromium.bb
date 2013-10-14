@@ -31,8 +31,8 @@
 #ifndef StorageErrorCallback_h
 #define StorageErrorCallback_h
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -54,7 +54,7 @@ public:
             return adoptPtr(new CallbackTask(callback, ec));
         }
 
-        virtual void performTask(ExecutionContext*);
+        virtual void performTask(ScriptExecutionContext*);
 
     private:
         CallbackTask(PassRefPtr<StorageErrorCallback>, ExceptionCode);

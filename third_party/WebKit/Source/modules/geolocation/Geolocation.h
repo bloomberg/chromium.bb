@@ -44,12 +44,12 @@ class GeolocationController;
 class GeolocationError;
 class GeolocationPosition;
 class Page;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class Geolocation : public ScriptWrappable, public RefCounted<Geolocation>, public ActiveDOMObject
 {
 public:
-    static PassRefPtr<Geolocation> create(ExecutionContext*);
+    static PassRefPtr<Geolocation> create(ScriptExecutionContext*);
     ~Geolocation();
 
     virtual void stop() OVERRIDE;
@@ -71,7 +71,7 @@ private:
 
     bool isDenied() const { return m_allowGeolocation == No; }
 
-    explicit Geolocation(ExecutionContext*);
+    explicit Geolocation(ScriptExecutionContext*);
 
     Page* page() const;
 

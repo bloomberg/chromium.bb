@@ -40,9 +40,9 @@
 
 namespace WebCore {
 
-TextTrackLoader::TextTrackLoader(TextTrackLoaderClient* client, ExecutionContext* context)
+TextTrackLoader::TextTrackLoader(TextTrackLoaderClient* client, ScriptExecutionContext* context)
     : m_client(client)
-    , m_executionContext(context)
+    , m_scriptExecutionContext(context)
     , m_cueLoadTimer(this, &TextTrackLoader::cueLoadTimerFired)
     , m_state(Idle)
     , m_parseOffset(0)
@@ -89,7 +89,7 @@ void TextTrackLoader::processNewCueData(Resource* resource)
         return;
 
     if (!m_cueParser)
-        m_cueParser = WebVTTParser::create(this, m_executionContext);
+        m_cueParser = WebVTTParser::create(this, m_scriptExecutionContext);
 
     const char* data;
     unsigned length;
@@ -114,7 +114,7 @@ void TextTrackLoader::deprecatedDidReceiveResource(Resource* resource)
 void TextTrackLoader::corsPolicyPreventedLoad()
 {
     DEFINE_STATIC_LOCAL(String, consoleMessage, ("Cross-origin text track load denied by Cross-Origin Resource Sharing policy."));
-    Document* document = toDocument(m_executionContext);
+    Document* document = toDocument(m_scriptExecutionContext);
     document->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, consoleMessage);
     m_state = Failed;
 }
@@ -123,7 +123,7 @@ void TextTrackLoader::notifyFinished(Resource* resource)
 {
     ASSERT(m_cachedCueData == resource);
 
-    Document* document = toDocument(m_executionContext);
+    Document* document = toDocument(m_scriptExecutionContext);
     if (!m_crossOriginMode.isNull()
         && !document->securityOrigin()->canRequest(resource->response().url())
         && !resource->passesAccessControlCheck(document->securityOrigin())) {
@@ -150,8 +150,8 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
     if (!m_client->shouldLoadCues(this))
         return false;
 
-    ASSERT(m_executionContext->isDocument());
-    Document* document = toDocument(m_executionContext);
+    ASSERT(m_scriptExecutionContext->isDocument());
+    Document* document = toDocument(m_scriptExecutionContext);
     FetchRequest cueRequest(ResourceRequest(document->completeURL(url)), FetchInitiatorTypeNames::texttrack);
 
     if (!crossOriginMode.isNull()) {

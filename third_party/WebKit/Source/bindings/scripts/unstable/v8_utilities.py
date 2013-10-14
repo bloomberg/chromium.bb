@@ -95,7 +95,7 @@ def has_activity_logging(member, includes, access_type=None):
 # [CallWith]
 CALL_WITH_ARGUMENTS = {
     'ScriptState': '&state',
-    'ExecutionContext': 'scriptContext',
+    'ScriptExecutionContext': 'scriptContext',
     'ScriptArguments': 'scriptArguments.release()',
     'ActiveWindow': 'activeDOMWindow()',
     'FirstWindow': 'firstDOMWindow()',
@@ -103,7 +103,7 @@ CALL_WITH_ARGUMENTS = {
 # List because key order matters, as we want arguments in deterministic order
 CALL_WITH_VALUES = [
     'ScriptState',
-    'ExecutionContext',
+    'ScriptExecutionContext',
     'ScriptArguments',
     'ActiveWindow',
     'FirstWindow',
@@ -116,7 +116,7 @@ def call_with_arguments(member, contents):
         return []
 
     # FIXME: Implement other template values for setters and functions
-    contents['is_call_with_script_execution_context'] = has_extended_attribute_value(extended_attributes, 'CallWith', 'ExecutionContext')
+    contents['is_call_with_script_execution_context'] = has_extended_attribute_value(extended_attributes, 'CallWith', 'ScriptExecutionContext')
 
     return [CALL_WITH_ARGUMENTS[value]
             for value in CALL_WITH_VALUES

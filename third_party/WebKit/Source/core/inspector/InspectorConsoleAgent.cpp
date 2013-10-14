@@ -193,7 +193,7 @@ Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()
     return result;
 }
 
-void InspectorConsoleAgent::consoleTime(ExecutionContext*, const String& title)
+void InspectorConsoleAgent::consoleTime(ScriptExecutionContext*, const String& title)
 {
     // Follow Firebug's behavior of requiring a title that is not null or
     // undefined for timing functions
@@ -203,7 +203,7 @@ void InspectorConsoleAgent::consoleTime(ExecutionContext*, const String& title)
     m_times.add(title, monotonicallyIncreasingTime());
 }
 
-void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& title, ScriptState* state)
+void InspectorConsoleAgent::consoleTimeEnd(ScriptExecutionContext*, const String& title, ScriptState* state)
 {
     // Follow Firebug's behavior of requiring a title that is not null or
     // undefined for timing functions
@@ -222,12 +222,12 @@ void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& titl
     addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, String(), 0, 0, state);
 }
 
-void InspectorConsoleAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* state)
+void InspectorConsoleAgent::consoleTimeline(ScriptExecutionContext* context, const String& title, ScriptState* state)
 {
     m_timelineAgent->consoleTimeline(context, title, state);
 }
 
-void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const String& title, ScriptState* state)
+void InspectorConsoleAgent::consoleTimelineEnd(ScriptExecutionContext* context, const String& title, ScriptState* state)
 {
     m_timelineAgent->consoleTimelineEnd(context, title, state);
 }

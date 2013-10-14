@@ -50,8 +50,8 @@ class SharedBuffer;
 
 class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTargetWithInlineData, public ActiveDOMObject {
 public:
-    static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
-    static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
+    static PassRefPtr<IDBRequest> create(ScriptExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
+    static PassRefPtr<IDBRequest> create(ScriptExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
     virtual ~IDBRequest();
 
     PassRefPtr<IDBAny> result(ExceptionState&) const;
@@ -94,7 +94,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
     virtual void uncaughtExceptionInEventHandler() OVERRIDE;
 
     using EventTarget::dispatchEvent;
@@ -119,7 +119,7 @@ public:
     IDBCursor* getResultCursor();
 
 protected:
-    IDBRequest(ExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
+    IDBRequest(ScriptExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
     void enqueueEvent(PassRefPtr<Event>);
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(PassRefPtr<SerializedScriptValue>);

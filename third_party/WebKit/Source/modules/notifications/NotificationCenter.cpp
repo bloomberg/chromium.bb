@@ -42,14 +42,14 @@
 
 namespace WebCore {
 
-PassRefPtr<NotificationCenter> NotificationCenter::create(ExecutionContext* context, NotificationClient* client)
+PassRefPtr<NotificationCenter> NotificationCenter::create(ScriptExecutionContext* context, NotificationClient* client)
 {
     RefPtr<NotificationCenter> notificationCenter(adoptRef(new NotificationCenter(context, client)));
     notificationCenter->suspendIfNeeded();
     return notificationCenter.release();
 }
 
-NotificationCenter::NotificationCenter(ExecutionContext* context, NotificationClient* client)
+NotificationCenter::NotificationCenter(ScriptExecutionContext* context, NotificationClient* client)
     : ActiveDOMObject(context)
     , m_client(client)
 {
@@ -59,39 +59,39 @@ NotificationCenter::NotificationCenter(ExecutionContext* context, NotificationCl
 #if ENABLE(LEGACY_NOTIFICATIONS)
 int NotificationCenter::checkPermission()
 {
-    if (!client() || !executionContext())
+    if (!client() || !scriptExecutionContext())
         return NotificationClient::PermissionDenied;
 
-    switch (executionContext()->securityOrigin()->canShowNotifications()) {
+    switch (scriptExecutionContext()->securityOrigin()->canShowNotifications()) {
     case SecurityOrigin::AlwaysAllow:
         return NotificationClient::PermissionAllowed;
     case SecurityOrigin::AlwaysDeny:
         return NotificationClient::PermissionDenied;
     case SecurityOrigin::Ask:
-        return m_client->checkPermission(executionContext());
+        return m_client->checkPermission(scriptExecutionContext());
     }
 
     ASSERT_NOT_REACHED();
-    return m_client->checkPermission(executionContext());
+    return m_client->checkPermission(scriptExecutionContext());
 }
 
 void NotificationCenter::requestPermission(PassRefPtr<VoidCallback> callback)
 {
-    if (!client() || !executionContext())
+    if (!client() || !scriptExecutionContext())
         return;
 
-    switch (executionContext()->securityOrigin()->canShowNotifications()) {
+    switch (scriptExecutionContext()->securityOrigin()->canShowNotifications()) {
     case SecurityOrigin::AlwaysAllow:
     case SecurityOrigin::AlwaysDeny: {
         m_callbacks.add(NotificationRequestCallback::createAndStartTimer(this, callback));
         return;
     }
     case SecurityOrigin::Ask:
-        return m_client->requestPermission(executionContext(), callback);
+        return m_client->requestPermission(scriptExecutionContext(), callback);
     }
 
     ASSERT_NOT_REACHED();
-    m_client->requestPermission(executionContext(), callback);
+    m_client->requestPermission(scriptExecutionContext(), callback);
 }
 #endif
 
@@ -99,8 +99,8 @@ void NotificationCenter::stop()
 {
     if (!m_client)
         return;
-    m_client->cancelRequestsForPermission(executionContext());
-    m_client->clearNotifications(executionContext());
+    m_client->cancelRequestsForPermission(scriptExecutionContext());
+    m_client->clearNotifications(scriptExecutionContext());
     m_client = 0;
 }
 

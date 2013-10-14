@@ -38,17 +38,17 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class WorkerPerformance : public RefCounted<WorkerPerformance>, public ContextLifecycleObserver {
 public:
-    static PassRefPtr<WorkerPerformance> create(ExecutionContext* context) { return adoptRef(new WorkerPerformance(context)); }
+    static PassRefPtr<WorkerPerformance> create(ScriptExecutionContext* context) { return adoptRef(new WorkerPerformance(context)); }
     ~WorkerPerformance();
 
     double now() const;
 
 private:
-    explicit WorkerPerformance(ExecutionContext*);
+    explicit WorkerPerformance(ScriptExecutionContext*);
 };
 
 }

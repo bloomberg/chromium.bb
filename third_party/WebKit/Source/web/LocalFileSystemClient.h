@@ -42,7 +42,7 @@ public:
 
     virtual ~LocalFileSystemClient();
 
-    virtual bool allowFileSystem(WebCore::ExecutionContext*) OVERRIDE;
+    virtual bool allowFileSystem(WebCore::ScriptExecutionContext*) OVERRIDE;
 
 private:
     LocalFileSystemClient();

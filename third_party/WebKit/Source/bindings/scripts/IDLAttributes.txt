@@ -34,13 +34,13 @@
 ActiveDOMObject
 ActivityLogging=Access|Getter|Setter|AccessForIsolatedWorlds|GetterForIsolatedWorlds|SetterForIsolatedWorlds
 CachedAttribute=*
-CallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
+CallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity
 CheckSecurityForNode
 Clamp
 Conditional=*
 Constructor
-ConstructorCallWith=ExecutionContext|Document
+ConstructorCallWith=ScriptExecutionContext|Document
 ConstructorRaisesException
 ConstructorTemplate=Event|TypedArray
 Custom
@@ -87,7 +87,7 @@ Replaceable
 # Valid values for RuntimeEnabled and PerContextEnabled are Runtime Enabled
 # Features, listed in Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
-SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
+SetterCallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SetterRaisesException
 SpecialWrapFor=*
 StrictTypeChecking

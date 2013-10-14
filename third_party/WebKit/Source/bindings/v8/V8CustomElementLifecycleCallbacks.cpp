@@ -38,7 +38,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -49,9 +49,9 @@ namespace WebCore {
     V(leftView, LeftView)                 \
     V(attributeChanged, AttributeChanged)
 
-PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
+PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
 {
-    v8::Isolate* isolate = toIsolate(executionContext);
+    v8::Isolate* isolate = toIsolate(scriptExecutionContext);
     // A given object can only be used as a Custom Element prototype
     // once; see customElementIsInterfacePrototypeObject
 #define SET_HIDDEN_PROPERTY(Value, Name) \
@@ -62,7 +62,7 @@ PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks:
     CALLBACK_LIST(SET_HIDDEN_PROPERTY)
 #undef SET_HIDDEN_PROPERTY
 
-    return adoptRef(new V8CustomElementLifecycleCallbacks(executionContext, prototype, created, enteredView, leftView, attributeChanged));
+    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptExecutionContext, prototype, created, enteredView, leftView, attributeChanged));
 }
 
 static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
@@ -88,15 +88,15 @@ static void weakCallback(v8::Isolate*, v8::Persistent<T>*, ScopedPersistent<T>* 
     handle->clear();
 }
 
-V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
+V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptExecutionContext* scriptExecutionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
     : CustomElementLifecycleCallbacks(flagSet(enteredView, leftView, attributeChanged))
-    , ActiveDOMCallback(executionContext)
+    , ActiveDOMCallback(scriptExecutionContext)
     , m_world(DOMWrapperWorld::current())
-    , m_prototype(toIsolate(executionContext), prototype)
-    , m_created(toIsolate(executionContext), created)
-    , m_enteredView(toIsolate(executionContext), enteredView)
-    , m_leftView(toIsolate(executionContext), leftView)
-    , m_attributeChanged(toIsolate(executionContext), attributeChanged)
+    , m_prototype(toIsolate(scriptExecutionContext), prototype)
+    , m_created(toIsolate(scriptExecutionContext), created)
+    , m_enteredView(toIsolate(scriptExecutionContext), enteredView)
+    , m_leftView(toIsolate(scriptExecutionContext), leftView)
+    , m_attributeChanged(toIsolate(scriptExecutionContext), attributeChanged)
     , m_owner(0)
 {
     m_prototype.makeWeak(&m_prototype, weakCallback<v8::Object>);
@@ -111,10 +111,10 @@ V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionCo
 
 V8PerContextData* V8CustomElementLifecycleCallbacks::creationContextData()
 {
-    if (!executionContext())
+    if (!scriptExecutionContext())
         return 0;
 
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), m_world.get());
+    v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return 0;
 
@@ -126,7 +126,7 @@ V8CustomElementLifecycleCallbacks::~V8CustomElementLifecycleCallbacks()
     if (!m_owner)
         return;
 
-    v8::HandleScope handleScope(toIsolate(executionContext()));
+    v8::HandleScope handleScope(toIsolate(scriptExecutionContext()));
     if (V8PerContextData* perContextData = creationContextData())
         perContextData->clearCustomElementBinding(m_owner);
 }
@@ -154,9 +154,9 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     element->setCustomElementState(Element::Upgraded);
 
-    v8::Isolate* isolate = toIsolate(executionContext());
+    v8::Isolate* isolate = toIsolate(scriptExecutionContext());
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), m_world.get());
+    v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return;
 
@@ -184,7 +184,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
+    ScriptController::callFunction(scriptExecutionContext(), callback, receiver, 0, 0, isolate);
 }
 
 void V8CustomElementLifecycleCallbacks::enteredView(Element* element)
@@ -202,9 +202,9 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
     if (!canInvokeCallback())
         return;
 
-    v8::Isolate* isolate = toIsolate(executionContext());
+    v8::Isolate* isolate = toIsolate(scriptExecutionContext());
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), m_world.get());
+    v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return;
 
@@ -225,7 +225,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(executionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
+    ScriptController::callFunction(scriptExecutionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function>& weakCallback, Element* element)
@@ -233,8 +233,8 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     if (!canInvokeCallback())
         return;
 
-    v8::HandleScope handleScope(toIsolate(executionContext()));
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), m_world.get());
+    v8::HandleScope handleScope(toIsolate(scriptExecutionContext()));
+    v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
     if (context.IsEmpty())
         return;
 
@@ -250,7 +250,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
+    ScriptController::callFunction(scriptExecutionContext(), callback, receiver, 0, 0, isolate);
 }
 
 } // namespace WebCore

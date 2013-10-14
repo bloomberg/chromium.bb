@@ -122,7 +122,7 @@ protected:
     static const char* databaseInfoTableName();
 
     RefPtr<SecurityOrigin> m_contextThreadSecurityOrigin;
-    RefPtr<DatabaseBackendContext> m_databaseContext; // Associated with m_executionContext.
+    RefPtr<DatabaseBackendContext> m_databaseContext; // Associated with m_scriptExecutionContext.
 
     String m_name;
     String m_expectedVersion;

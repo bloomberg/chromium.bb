@@ -29,8 +29,8 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorDatabaseInstrumentation.h"
 #include "platform/Logging.h"
 #include "modules/webdatabase/AbstractDatabaseServer.h"
@@ -76,7 +76,7 @@ public:
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
 
-    virtual void performTask(ExecutionContext*)
+    virtual void performTask(ScriptExecutionContext*)
     {
         m_creationCallback->handleEvent(m_database.get());
     }
@@ -92,7 +92,7 @@ private:
     RefPtr<DatabaseCallback> m_creationCallback;
 };
 
-PassRefPtr<DatabaseContext> DatabaseManager::existingDatabaseContextFor(ExecutionContext* context)
+PassRefPtr<DatabaseContext> DatabaseManager::existingDatabaseContextFor(ScriptExecutionContext* context)
 {
     MutexLocker locker(m_contextMapLock);
 
@@ -106,7 +106,7 @@ PassRefPtr<DatabaseContext> DatabaseManager::existingDatabaseContextFor(Executio
         // carry a new refCount of 1. The client expects this and will simply
         // adoptRef the databaseContext without ref'ing it.
         //     However, instead of instantiating a new instance, we're reusing
-        // an existing one that corresponds to the specified ExecutionContext.
+        // an existing one that corresponds to the specified ScriptExecutionContext.
         // Hence, that new refCount need to be attributed to the reused instance
         // to ensure that the refCount is accurate when the client adopts the ref.
         // We do this by ref'ing the reused databaseContext before returning it.
@@ -115,7 +115,7 @@ PassRefPtr<DatabaseContext> DatabaseManager::existingDatabaseContextFor(Executio
     return databaseContext.release();
 }
 
-PassRefPtr<DatabaseContext> DatabaseManager::databaseContextFor(ExecutionContext* context)
+PassRefPtr<DatabaseContext> DatabaseManager::databaseContextFor(ScriptExecutionContext* context)
 {
     RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
     if (!databaseContext)
@@ -126,7 +126,7 @@ PassRefPtr<DatabaseContext> DatabaseManager::databaseContextFor(ExecutionContext
 void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
 {
     MutexLocker locker(m_contextMapLock);
-    ExecutionContext* context = databaseContext->executionContext();
+    ScriptExecutionContext* context = databaseContext->scriptExecutionContext();
     m_contextMap.set(context, databaseContext);
 #if !ASSERT_DISABLED
     m_databaseContextRegisteredCount++;
@@ -136,7 +136,7 @@ void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
 void DatabaseManager::unregisterDatabaseContext(DatabaseContext* databaseContext)
 {
     MutexLocker locker(m_contextMapLock);
-    ExecutionContext* context = databaseContext->executionContext();
+    ScriptExecutionContext* context = databaseContext->scriptExecutionContext();
     ASSERT(m_contextMap.get(context));
 #if !ASSERT_DISABLED
     m_databaseContextRegisteredCount--;
@@ -175,7 +175,7 @@ void DatabaseManager::throwExceptionForDatabaseError(const String& method, const
     }
 }
 
-static void logOpenDatabaseError(ExecutionContext* context, const String& name)
+static void logOpenDatabaseError(ScriptExecutionContext* context, const String& name)
 {
     UNUSED_PARAM(context);
     UNUSED_PARAM(name);
@@ -183,7 +183,7 @@ static void logOpenDatabaseError(ExecutionContext* context, const String& name)
         context->securityOrigin()->toString().ascii().data());
 }
 
-PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionContext* context,
+PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ScriptExecutionContext* context,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
@@ -215,7 +215,7 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionCo
     return backend.release();
 }
 
-PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
+PassRefPtr<Database> DatabaseManager::openDatabase(ScriptExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback,
     DatabaseError& error, String& errorMessage)
@@ -236,14 +236,14 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
 
     if (backend->isNew() && creationCallback.get()) {
         LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database.get());
-        database->m_executionContext->postTask(DatabaseCreationCallbackTask::create(database, creationCallback));
+        database->m_scriptExecutionContext->postTask(DatabaseCreationCallbackTask::create(database, creationCallback));
     }
 
     ASSERT(database);
     return database.release();
 }
 
-PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* context,
+PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ScriptExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback,
     DatabaseError& error, String& errorMessage)
@@ -268,7 +268,7 @@ PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* con
     return database.release();
 }
 
-bool DatabaseManager::hasOpenDatabases(ExecutionContext* context)
+bool DatabaseManager::hasOpenDatabases(ScriptExecutionContext* context)
 {
     RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
     if (!databaseContext)
@@ -276,7 +276,7 @@ bool DatabaseManager::hasOpenDatabases(ExecutionContext* context)
     return databaseContext->hasOpenDatabases();
 }
 
-void DatabaseManager::stopDatabases(ExecutionContext* context, DatabaseTaskSynchronizer* synchronizer)
+void DatabaseManager::stopDatabases(ScriptExecutionContext* context, DatabaseTaskSynchronizer* synchronizer)
 {
     RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
     if (!databaseContext || !databaseContext->stopDatabases(synchronizer))
@@ -294,14 +294,14 @@ void DatabaseManager::closeDatabasesImmediately(const String& originIdentifier, 
     m_server->closeDatabasesImmediately(originIdentifier, name);
 }
 
-void DatabaseManager::interruptAllDatabasesForContext(ExecutionContext* context)
+void DatabaseManager::interruptAllDatabasesForContext(ScriptExecutionContext* context)
 {
     RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
     if (databaseContext)
         m_server->interruptAllDatabasesForContext(databaseContext->backend().get());
 }
 
-void DatabaseManager::logErrorMessage(ExecutionContext* context, const String& message)
+void DatabaseManager::logErrorMessage(ScriptExecutionContext* context, const String& message)
 {
     context->addConsoleMessage(StorageMessageSource, ErrorMessageLevel, message);
 }

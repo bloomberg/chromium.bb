@@ -72,7 +72,7 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
     if (muteCount && source != ConsoleAPIMessageSource)
         return;
 
-    ExecutionContext* context = m_page->mainFrame()->document();
+    ScriptExecutionContext* context = m_page->mainFrame()->document();
     if (!context)
         return;
 

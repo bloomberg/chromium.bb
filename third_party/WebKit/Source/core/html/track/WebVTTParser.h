@@ -72,7 +72,7 @@ public:
         BadCue
     };
 
-    static PassOwnPtr<WebVTTParser> create(WebVTTParserClient* client, ExecutionContext* context)
+    static PassOwnPtr<WebVTTParser> create(WebVTTParserClient* client, ScriptExecutionContext* context)
     {
         return adoptPtr(new WebVTTParser(client, context));
     }
@@ -119,9 +119,9 @@ public:
     double collectTimeStamp(const String&, unsigned*);
 
 protected:
-    WebVTTParser(WebVTTParserClient*, ExecutionContext*);
+    WebVTTParser(WebVTTParserClient*, ScriptExecutionContext*);
 
-    ExecutionContext* m_executionContext;
+    ScriptExecutionContext* m_scriptExecutionContext;
     ParseState m_state;
 
 private:

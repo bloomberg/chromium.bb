@@ -25,13 +25,13 @@
 
 [
 ] interface IDBKeyRange {
-    [ImplementedAs=lowerValue,CallWith=ExecutionContext] readonly attribute any lower;
-    [ImplementedAs=upperValue,CallWith=ExecutionContext] readonly attribute any upper;
+    [ImplementedAs=lowerValue,CallWith=ScriptExecutionContext] readonly attribute any lower;
+    [ImplementedAs=upperValue,CallWith=ScriptExecutionContext] readonly attribute any upper;
     readonly attribute boolean lowerOpen;
     readonly attribute boolean upperOpen;
 
-    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange only(any value);
-    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange lowerBound(any bound, [Default=Undefined] optional boolean open);
-    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange upperBound(any bound, [Default=Undefined] optional boolean open);
-    [CallWith=ExecutionContext, RaisesException] static IDBKeyRange bound(any lower, any upper, [Default=Undefined] optional boolean lowerOpen, [Default=Undefined] optional boolean upperOpen);
+    [CallWith=ScriptExecutionContext, RaisesException] static IDBKeyRange only(any value);
+    [CallWith=ScriptExecutionContext, RaisesException] static IDBKeyRange lowerBound(any bound, [Default=Undefined] optional boolean open);
+    [CallWith=ScriptExecutionContext, RaisesException] static IDBKeyRange upperBound(any bound, [Default=Undefined] optional boolean open);
+    [CallWith=ScriptExecutionContext, RaisesException] static IDBKeyRange bound(any lower, any upper, [Default=Undefined] optional boolean lowerOpen, [Default=Undefined] optional boolean upperOpen);
 };

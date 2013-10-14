@@ -48,7 +48,7 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -109,7 +109,7 @@ private:
     }
 };
 
-bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const String& name, const WebSecurityOrigin& origin, PassRefPtr<IDBCallbacks> callbacks)
+bool IDBFactoryBackendProxy::allowIndexedDB(ScriptExecutionContext* context, const String& name, const WebSecurityOrigin& origin, PassRefPtr<IDBCallbacks> callbacks)
 {
     bool allowed;
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument() || context->isWorkerGlobalScope());
@@ -142,7 +142,7 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const Str
     return allowed;
 }
 
-void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
+void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context)
 {
     RefPtr<IDBCallbacks> callbacks(prpCallbacks);
     WebSecurityOrigin origin(context->securityOrigin());
@@ -152,7 +152,7 @@ void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallba
     m_webIDBFactory->getDatabaseNames(new WebIDBCallbacksImpl(callbacks), databaseIdentifier);
 }
 
-void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks> prpCallbacks, PassRefPtr<IDBDatabaseCallbacks> prpDatabaseCallbacks, const String& databaseIdentifier, ExecutionContext* context)
+void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks> prpCallbacks, PassRefPtr<IDBDatabaseCallbacks> prpDatabaseCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context)
 {
     RefPtr<IDBCallbacks> callbacks(prpCallbacks);
     RefPtr<IDBDatabaseCallbacks> databaseCallbacks(prpDatabaseCallbacks);
@@ -163,7 +163,7 @@ void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t t
     m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacksImpl(callbacks), new WebIDBDatabaseCallbacksImpl(databaseCallbacks), databaseIdentifier);
 }
 
-void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
+void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context)
 {
     RefPtr<IDBCallbacks> callbacks(prpCallbacks);
     WebSecurityOrigin origin(context->securityOrigin());

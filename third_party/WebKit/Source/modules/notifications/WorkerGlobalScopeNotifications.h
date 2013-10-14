@@ -34,7 +34,7 @@
 namespace WebCore {
 
 class NotificationCenter;
-class ExecutionContext;
+class ScriptExecutionContext;
 class WorkerGlobalScope;
 
 class WorkerGlobalScopeNotifications : public WorkerSupplement {

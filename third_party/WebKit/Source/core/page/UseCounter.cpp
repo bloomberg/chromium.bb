@@ -30,7 +30,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
@@ -586,7 +586,7 @@ void UseCounter::count(const DOMWindow* domWindow, Feature feature)
     count(*domWindow->document(), feature);
 }
 
-void UseCounter::countDeprecation(ExecutionContext* context, Feature feature)
+void UseCounter::countDeprecation(ScriptExecutionContext* context, Feature feature)
 {
     if (!context || !context->isDocument())
         return;

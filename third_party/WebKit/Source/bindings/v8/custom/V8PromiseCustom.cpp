@@ -202,7 +202,7 @@ public:
     }
     virtual ~CallHandlerTask() { }
 
-    virtual void performTask(ExecutionContext*) OVERRIDE;
+    virtual void performTask(ScriptExecutionContext*) OVERRIDE;
 
 private:
     ScopedPersistent<v8::Object> m_promise;
@@ -210,7 +210,7 @@ private:
     ScopedPersistent<v8::Value> m_argument;
 };
 
-void CallHandlerTask::performTask(ExecutionContext* context)
+void CallHandlerTask::performTask(ScriptExecutionContext* context)
 {
     ASSERT(context);
     if (context->activeDOMObjectsAreStopped())
@@ -252,7 +252,7 @@ public:
     }
     virtual ~UpdateDerivedTask() { }
 
-    virtual void performTask(ExecutionContext*) OVERRIDE;
+    virtual void performTask(ScriptExecutionContext*) OVERRIDE;
 
 private:
     ScopedPersistent<v8::Object> m_promise;
@@ -261,7 +261,7 @@ private:
     ScopedPersistent<v8::Object> m_originatorValueObject;
 };
 
-void UpdateDerivedTask::performTask(ExecutionContext* context)
+void UpdateDerivedTask::performTask(ScriptExecutionContext* context)
 {
     ASSERT(context);
     if (context->activeDOMObjectsAreStopped())
@@ -454,9 +454,9 @@ void PromisePropagator::updateDerived(v8::Handle<v8::Object> derivedPromise, v8:
     v8::Local<v8::Value> originatorValue = originatorInternal->GetInternalField(V8PromiseCustom::InternalResultIndex);
     if (originatorState == V8PromiseCustom::Fulfilled) {
         if (originatorValue->IsObject()) {
-            ExecutionContext* executionContext = getExecutionContext();
-            ASSERT(executionContext && executionContext->isContextThread());
-            executionContext->postTask(adoptPtr(new UpdateDerivedTask(derivedPromise, onFulfilled, onRejected, originatorValue.As<v8::Object>(), isolate)));
+            ScriptExecutionContext* scriptExecutionContext = getScriptExecutionContext();
+            ASSERT(scriptExecutionContext && scriptExecutionContext->isContextThread());
+            scriptExecutionContext->postTask(adoptPtr(new UpdateDerivedTask(derivedPromise, onFulfilled, onRejected, originatorValue.As<v8::Object>(), isolate)));
         } else {
             updateDerivedFromValue(derivedPromise, onFulfilled, originatorValue, isolate);
         }
@@ -493,7 +493,7 @@ void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
         createClosure(promiseRejectCallback, promise, isolate)
     };
     v8::TryCatch trycatch;
-    if (V8ScriptRunner::callFunction(init, getExecutionContext(), v8::Undefined(isolate), WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
+    if (V8ScriptRunner::callFunction(init, getScriptExecutionContext(), v8::Undefined(isolate), WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
         // An exception is thrown. Reject the promise if its resolved flag is unset.
         V8PromiseCustom::reject(promise, trycatch.Exception(), isolate);
     }
@@ -806,7 +806,7 @@ v8::Local<v8::Object> V8PromiseCustom::coerceThenable(v8::Handle<v8::Object> the
         createClosure(promiseRejectCallback, promise, isolate)
     };
     v8::TryCatch trycatch;
-    if (V8ScriptRunner::callFunction(then, getExecutionContext(), thenable, WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
+    if (V8ScriptRunner::callFunction(then, getScriptExecutionContext(), thenable, WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
         reject(promise, trycatch.Exception(), isolate);
     }
     thenable->SetHiddenValue(V8HiddenPropertyName::thenableHiddenPromise(isolate), promise);
@@ -815,9 +815,9 @@ v8::Local<v8::Object> V8PromiseCustom::coerceThenable(v8::Handle<v8::Object> the
 
 void V8PromiseCustom::callHandler(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, v8::Isolate* isolate)
 {
-    ExecutionContext* executionContext = getExecutionContext();
-    ASSERT(executionContext && executionContext->isContextThread());
-    executionContext->postTask(adoptPtr(new CallHandlerTask(promise, handler, argument, isolate)));
+    ScriptExecutionContext* scriptExecutionContext = getScriptExecutionContext();
+    ASSERT(scriptExecutionContext && scriptExecutionContext->isContextThread());
+    scriptExecutionContext->postTask(adoptPtr(new CallHandlerTask(promise, handler, argument, isolate)));
 }
 
 } // namespace WebCore

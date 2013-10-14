@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class SpeechRecognitionAlternative : public ScriptWrappable, public RefCounted<SpeechRecognitionAlternative> {
 public:

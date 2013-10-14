@@ -35,10 +35,10 @@
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/DocumentSupplementable.h"
 #include "core/dom/DocumentTiming.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/QualifiedName.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
@@ -207,7 +207,7 @@ enum DocumentClass {
 
 typedef unsigned char DocumentClassFlags;
 
-class Document : public ContainerNode, public TreeScope, public ExecutionContext, public DocumentSupplementable, public ExecutionContextClient {
+class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext, public DocumentSupplementable {
 public:
     static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -1073,11 +1073,11 @@ private:
     virtual bool childTypeAllowed(NodeType) const;
     virtual PassRefPtr<Node> cloneNode(bool deep = true);
 
-    virtual void refExecutionContext() { ref(); }
-    virtual void derefExecutionContext() { deref(); }
+    virtual void refScriptExecutionContext() { ref(); }
+    virtual void derefScriptExecutionContext() { deref(); }
     virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
-    virtual const KURL& virtualURL() const; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
+    virtual const KURL& virtualURL() const; // Same as url(), but needed for ScriptExecutionContext to implement it without a performance loss for direct calls.
     virtual KURL virtualCompleteURL(const String&) const; // Same as completeURL() for the same reason as above.
 
     virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*);
@@ -1383,16 +1383,16 @@ inline bool Document::shouldOverrideLegacyViewport(ViewportDescription::Type ori
     return origin >= m_legacyViewportDescription.type;
 }
 
-inline Document* toDocument(ExecutionContext* executionContext)
+inline Document* toDocument(ScriptExecutionContext* scriptExecutionContext)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!executionContext || executionContext->isDocument());
-    return static_cast<Document*>(executionContext ? executionContext->client() : 0);
+    ASSERT_WITH_SECURITY_IMPLICATION(!scriptExecutionContext || scriptExecutionContext->isDocument());
+    return static_cast<Document*>(scriptExecutionContext);
 }
 
-inline const Document* toDocument(const ExecutionContext* executionContext)
+inline const Document* toDocument(const ScriptExecutionContext* scriptExecutionContext)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!executionContext || executionContext->isDocument());
-    return static_cast<const Document*>(executionContext ? executionContext->client() : 0);
+    ASSERT_WITH_SECURITY_IMPLICATION(!scriptExecutionContext || scriptExecutionContext->isDocument());
+    return static_cast<const Document*>(scriptExecutionContext);
 }
 
 DEFINE_NODE_TYPE_CASTS(Document, isDocumentNode());

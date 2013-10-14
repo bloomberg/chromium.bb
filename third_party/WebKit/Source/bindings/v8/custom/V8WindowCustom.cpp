@@ -82,7 +82,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
         return;
 
     DOMWindow* imp = V8Window::toNative(args.Holder());
-    ExecutionContext* scriptContext = static_cast<ExecutionContext*>(imp->document());
+    ScriptExecutionContext* scriptContext = static_cast<ScriptExecutionContext*>(imp->document());
 
     if (!scriptContext) {
         es.throwUninformativeAndGenericDOMException(InvalidAccessError);

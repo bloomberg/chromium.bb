@@ -33,14 +33,14 @@
 
 namespace WebCore {
 
-PassOwnPtr<PublicURLManager> PublicURLManager::create(ExecutionContext* context)
+PassOwnPtr<PublicURLManager> PublicURLManager::create(ScriptExecutionContext* context)
 {
     OwnPtr<PublicURLManager> publicURLManager(adoptPtr(new PublicURLManager(context)));
     publicURLManager->suspendIfNeeded();
     return publicURLManager.release();
 }
 
-PublicURLManager::PublicURLManager(ExecutionContext* context)
+PublicURLManager::PublicURLManager(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
     , m_isStopped(false)
 {

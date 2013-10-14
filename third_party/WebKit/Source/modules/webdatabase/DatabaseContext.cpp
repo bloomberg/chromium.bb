@@ -29,7 +29,7 @@
 #include "modules/webdatabase/DatabaseContext.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -50,7 +50,7 @@ namespace WebCore {
 // it need to stay alive?
 //
 // The DatabaseContext is referenced from RefPtrs in:
-// 1. ExecutionContext
+// 1. ScriptExecutionContext
 // 2. Database
 //
 // At Birth:
@@ -59,25 +59,25 @@ namespace WebCore {
 // open a Database via DatabaseManager::openDatabase().
 //
 // The DatabaseContext constructor will call setDatabaseContext() on the
-// the ExecutionContext. This sets the RefPtr in the ExecutionContext
+// the ScriptExecutionContext. This sets the RefPtr in the ScriptExecutionContext
 // for keeping the DatabaseContext alive. Since the DatabaseContext is only
 // created from the script thread, it is safe for the constructor to call
-// ExecutionContext::setDatabaseContext().
+// ScriptExecutionContext::setDatabaseContext().
 //
-// Once a DatabaseContext is associated with a ExecutionContext, it will
-// live until after the ExecutionContext destructs. This is true even if
+// Once a DatabaseContext is associated with a ScriptExecutionContext, it will
+// live until after the ScriptExecutionContext destructs. This is true even if
 // we don't succeed in opening any Databases for that context. When we do
-// succeed in opening Databases for this ExecutionContext, the Database
+// succeed in opening Databases for this ScriptExecutionContext, the Database
 // will re-use the same DatabaseContext.
 //
 // At Shutdown:
 // ===========
 // During shutdown, the DatabaseContext needs to:
-// 1. "outlive" the ExecutionContext.
+// 1. "outlive" the ScriptExecutionContext.
 //    - This is needed because the DatabaseContext needs to remove itself from the
-//      ExecutionContext's ActiveDOMObject list and ContextLifecycleObserver
+//      ScriptExecutionContext's ActiveDOMObject list and ContextLifecycleObserver
 //      list. This removal needs to be executed on the script's thread. Hence, we
-//      rely on the ExecutionContext's shutdown process to call
+//      rely on the ScriptExecutionContext's shutdown process to call
 //      stop() and contextDestroyed() to give us a chance to clean these up from
 //      the script thread.
 //
@@ -86,16 +86,16 @@ namespace WebCore {
 //      task and shutdown in an orderly manner. When the Databases are destructed,
 //      they will deref the DatabaseContext from the DatabaseThread.
 //
-// During shutdown, the ExecutionContext is shutting down on the script thread
+// During shutdown, the ScriptExecutionContext is shutting down on the script thread
 // while the Databases are shutting down on the DatabaseThread. Hence, there can be
-// a race condition as to whether the ExecutionContext or the Databases
+// a race condition as to whether the ScriptExecutionContext or the Databases
 // destruct first.
 //
-// The RefPtrs in the Databases and ExecutionContext will ensure that the
+// The RefPtrs in the Databases and ScriptExecutionContext will ensure that the
 // DatabaseContext will outlive both regardless of which of the 2 destructs first.
 
 
-DatabaseContext::DatabaseContext(ExecutionContext* context)
+DatabaseContext::DatabaseContext(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
     , m_hasOpenDatabases(false)
     , m_isRegistered(true) // will register on construction below.
@@ -123,7 +123,7 @@ DatabaseContext::~DatabaseContext()
     DatabaseManager::manager().didDestructDatabaseContext();
 }
 
-// This is called if the associated ExecutionContext is destructing while
+// This is called if the associated ScriptExecutionContext is destructing while
 // we're still associated with it. That's our cue to disassociate and shutdown.
 // To do this, we stop the database and let everything shutdown naturally
 // because the database closing process may still make use of this context.
@@ -194,11 +194,11 @@ bool DatabaseContext::stopDatabases(DatabaseTaskSynchronizer* cleanupSync)
 
 bool DatabaseContext::allowDatabaseAccess() const
 {
-    if (executionContext()->isDocument()) {
-        Document* document = toDocument(executionContext());
+    if (scriptExecutionContext()->isDocument()) {
+        Document* document = toDocument(scriptExecutionContext());
         return document->page();
     }
-    ASSERT(executionContext()->isWorkerGlobalScope());
+    ASSERT(scriptExecutionContext()->isWorkerGlobalScope());
     // allowDatabaseAccess is not yet implemented for workers.
     return true;
 }

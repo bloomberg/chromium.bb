@@ -48,9 +48,9 @@
 
     [CheckSecurityForNode] readonly attribute Element frameElement;
 
-    [DoNotCheckSecurity, CallWith=ExecutionContext] void focus();
+    [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void focus();
     [DoNotCheckSecurity] void blur();
-    [DoNotCheckSecurity, CallWith=ExecutionContext] void close();
+    [DoNotCheckSecurity, CallWith=ScriptExecutionContext] void close();
 
     void print();
     void stop();

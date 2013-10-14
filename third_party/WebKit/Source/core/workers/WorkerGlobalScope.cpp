@@ -40,13 +40,12 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/Event.h"
-#include "core/frame/DOMTimer.h"
-#include "core/frame/DOMWindow.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/frame/ContentSecurityPolicy.h"
+#include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerNavigator.h"
 #include "platform/NotImplemented.h"
 #include "core/workers/WorkerClients.h"
@@ -68,7 +67,7 @@ public:
         return adoptPtr(new CloseWorkerGlobalScopeTask);
     }
 
-    virtual void performTask(ExecutionContext *context)
+    virtual void performTask(ScriptExecutionContext *context)
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
         // Notify parent that this context is closed. Parent is responsible for calling WorkerThread::stop().
@@ -90,7 +89,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_workerClients(workerClients)
 {
     ScriptWrappable::init(this);
-    setClient(this);
     setSecurityOrigin(SecurityOrigin::create(url));
     m_workerClients->reattachThread();
 }
@@ -104,7 +102,6 @@ WorkerGlobalScope::~WorkerGlobalScope()
 
     // Notify proxy that we are going away. This can free the WorkerThread object, so do not access it after this.
     thread()->workerReportingProxy().workerGlobalScopeDestroyed();
-    setClient(0);
 }
 
 void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& policy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
@@ -113,7 +110,7 @@ void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& polic
     contentSecurityPolicy()->didReceiveHeader(policy, contentSecurityPolicyType);
 }
 
-ExecutionContext* WorkerGlobalScope::executionContext() const
+ScriptExecutionContext* WorkerGlobalScope::scriptExecutionContext() const
 {
     return const_cast<WorkerGlobalScope*>(this);
 }
@@ -197,7 +194,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
     Vector<String>::const_iterator urlsEnd = urls.end();
     Vector<KURL> completedURLs;
     for (Vector<String>::const_iterator it = urls.begin(); it != urlsEnd; ++it) {
-        const KURL& url = executionContext()->completeURL(*it);
+        const KURL& url = scriptExecutionContext()->completeURL(*it);
         if (!url.isValid()) {
             es.throwDOMException(SyntaxError, "Failed to execute 'importScripts': the URL '" + *it + "' is invalid.");
             return;
@@ -209,7 +206,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
     for (Vector<KURL>::const_iterator it = completedURLs.begin(); it != end; ++it) {
         RefPtr<WorkerScriptLoader> scriptLoader(WorkerScriptLoader::create());
         scriptLoader->setTargetType(ResourceRequest::TargetIsScript);
-        scriptLoader->loadSynchronously(executionContext(), *it, AllowCrossOriginRequests);
+        scriptLoader->loadSynchronously(scriptExecutionContext(), *it, AllowCrossOriginRequests);
 
         // If the fetching attempt failed, throw a NetworkError exception and abort all these steps.
         if (scriptLoader->failed()) {
@@ -217,7 +214,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
             return;
         }
 
-        InspectorInstrumentation::scriptImported(executionContext(), scriptLoader->identifier(), scriptLoader->script());
+        InspectorInstrumentation::scriptImported(scriptExecutionContext(), scriptLoader->identifier(), scriptLoader->script());
 
         RefPtr<ErrorEvent> errorEvent;
         m_script->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent);
@@ -322,11 +319,6 @@ bool WorkerGlobalScope::idleNotification()
 WorkerEventQueue* WorkerGlobalScope::eventQueue() const
 {
     return m_eventQueue.get();
-}
-
-double WorkerGlobalScope::timerAlignmentInterval() const
-{
-    return DOMTimer::visiblePageAlignmentInterval();
 }
 
 } // namespace WebCore

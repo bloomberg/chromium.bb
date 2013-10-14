@@ -36,13 +36,13 @@
 namespace WebCore {
 
 class DatabaseBackendBase;
-class ExecutionContext;
+class ScriptExecutionContext;
 
 // The implementation of this class is in the WebKit API (Chromium source tree)
 // in WebKit/chromium/src/DatabaseObserver.cpp.
 class DatabaseObserver {
 public:
-    static bool canEstablishDatabase(ExecutionContext*, const String&, const String&, unsigned long);
+    static bool canEstablishDatabase(ScriptExecutionContext*, const String&, const String&, unsigned long);
     static void databaseOpened(DatabaseBackendBase*);
     static void databaseModified(DatabaseBackendBase*);
     static void databaseClosed(DatabaseBackendBase*);

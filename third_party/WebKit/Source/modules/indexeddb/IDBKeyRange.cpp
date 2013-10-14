@@ -41,7 +41,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::create(PassRefPtr<IDBKey> prpKey)
     return adoptRef(new IDBKeyRange(key, key, LowerBoundClosed, UpperBoundClosed));
 }
 
-PassRefPtr<IDBKeyRange> IDBKeyRange::fromScriptValue(ExecutionContext* context, const ScriptValue& value, ExceptionState& es)
+PassRefPtr<IDBKeyRange> IDBKeyRange::fromScriptValue(ScriptExecutionContext* context, const ScriptValue& value, ExceptionState& es)
 {
     DOMRequestState requestState(context);
     if (value.isUndefined() || value.isNull())
@@ -69,13 +69,13 @@ IDBKeyRange::IDBKeyRange(PassRefPtr<IDBKey> lower, PassRefPtr<IDBKey> upper, Low
     ScriptWrappable::init(this);
 }
 
-ScriptValue IDBKeyRange::lowerValue(ExecutionContext* context) const
+ScriptValue IDBKeyRange::lowerValue(ScriptExecutionContext* context) const
 {
     DOMRequestState requestState(context);
     return idbKeyToScriptValue(&requestState, m_lower);
 }
 
-ScriptValue IDBKeyRange::upperValue(ExecutionContext* context) const
+ScriptValue IDBKeyRange::upperValue(ScriptExecutionContext* context) const
 {
     DOMRequestState requestState(context);
     return idbKeyToScriptValue(&requestState, m_upper);
@@ -92,7 +92,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::only(PassRefPtr<IDBKey> prpKey, ExceptionSt
     return IDBKeyRange::create(key, key, LowerBoundClosed, UpperBoundClosed);
 }
 
-PassRefPtr<IDBKeyRange> IDBKeyRange::only(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& es)
+PassRefPtr<IDBKeyRange> IDBKeyRange::only(ScriptExecutionContext* context, const ScriptValue& keyValue, ExceptionState& es)
 {
     DOMRequestState requestState(context);
     RefPtr<IDBKey> key = scriptValueToIDBKey(&requestState, keyValue);
@@ -104,7 +104,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::only(ExecutionContext* context, const Scrip
     return IDBKeyRange::create(key, key, LowerBoundClosed, UpperBoundClosed);
 }
 
-PassRefPtr<IDBKeyRange> IDBKeyRange::lowerBound(ExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& es)
+PassRefPtr<IDBKeyRange> IDBKeyRange::lowerBound(ScriptExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& es)
 {
     DOMRequestState requestState(context);
     RefPtr<IDBKey> bound = scriptValueToIDBKey(&requestState, boundValue);
@@ -116,7 +116,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::lowerBound(ExecutionContext* context, const
     return IDBKeyRange::create(bound, 0, open ? LowerBoundOpen : LowerBoundClosed, UpperBoundOpen);
 }
 
-PassRefPtr<IDBKeyRange> IDBKeyRange::upperBound(ExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& es)
+PassRefPtr<IDBKeyRange> IDBKeyRange::upperBound(ScriptExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& es)
 {
     DOMRequestState requestState(context);
     RefPtr<IDBKey> bound = scriptValueToIDBKey(&requestState, boundValue);
@@ -128,7 +128,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::upperBound(ExecutionContext* context, const
     return IDBKeyRange::create(0, bound, LowerBoundOpen, open ? UpperBoundOpen : UpperBoundClosed);
 }
 
-PassRefPtr<IDBKeyRange> IDBKeyRange::bound(ExecutionContext* context, const ScriptValue& lowerValue, const ScriptValue& upperValue, bool lowerOpen, bool upperOpen, ExceptionState& es)
+PassRefPtr<IDBKeyRange> IDBKeyRange::bound(ScriptExecutionContext* context, const ScriptValue& lowerValue, const ScriptValue& upperValue, bool lowerOpen, bool upperOpen, ExceptionState& es)
 {
     DOMRequestState requestState(context);
     RefPtr<IDBKey> lower = scriptValueToIDBKey(&requestState, lowerValue);

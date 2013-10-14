@@ -42,7 +42,7 @@ namespace WebCore {
 
     class EventListener;
     class MessagePort;
-    class ExecutionContext;
+    class ScriptExecutionContext;
 
     // Use an array to hold dependents. It works like a ref-counted scheme. A value can be added more than once to the DOM object.
     void createHiddenDependency(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
@@ -51,7 +51,7 @@ namespace WebCore {
     // Combo create/remove, for generated event-handler-setter bindings:
     void transferHiddenDependency(v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate*);
 
-    ExecutionContext* getExecutionContext();
+    ScriptExecutionContext* getScriptExecutionContext();
 
     typedef WTF::Vector<RefPtr<MessagePort>, 1> MessagePortArray;
     typedef WTF::Vector<RefPtr<ArrayBuffer>, 1> ArrayBufferArray;

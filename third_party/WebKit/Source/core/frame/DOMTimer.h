@@ -36,13 +36,13 @@
 
 namespace WebCore {
 
-class ExecutionContext;
+class ScriptExecutionContext;
 
 class DOMTimer : public SuspendableTimer {
 public:
-    // Creates a new timer owned by the ExecutionContext, starts it and returns its ID.
-    static int install(ExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
-    static void removeByID(ExecutionContext*, int timeoutID);
+    // Creates a new timer owned by the ScriptExecutionContext, starts it and returns its ID.
+    static int install(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
+    static void removeByID(ScriptExecutionContext*, int timeoutID);
 
     virtual ~DOMTimer();
 
@@ -57,15 +57,15 @@ public:
     static double visiblePageAlignmentInterval();
 
 private:
-    friend class ExecutionContext; // For create().
+    friend class ScriptExecutionContext; // For create().
 
-    // Should only be used by ExecutionContext.
-    static PassOwnPtr<DOMTimer> create(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
+    // Should only be used by ScriptExecutionContext.
+    static PassOwnPtr<DOMTimer> create(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
     {
         return adoptPtr(new DOMTimer(context, action, timeout, singleShot, timeoutID));
     }
 
-    DOMTimer(ExecutionContext*, PassOwnPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
+    DOMTimer(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
     virtual void fired();
 
     // Retuns timer fire time rounded to the next multiple of timer alignment interval.

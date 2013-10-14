@@ -41,9 +41,9 @@ PassRefPtr<SpeechGrammar> SpeechGrammar::create(const KURL& src, double weight)
     return adoptRef(new SpeechGrammar(src, weight));
 }
 
-void SpeechGrammar::setSrc(ExecutionContext* executionContext, const String& src)
+void SpeechGrammar::setSrc(ScriptExecutionContext* scriptExecutionContext, const String& src)
 {
-    Document* document = toDocument(executionContext);
+    Document* document = toDocument(scriptExecutionContext);
     m_src = document->completeURL(src);
 }
 

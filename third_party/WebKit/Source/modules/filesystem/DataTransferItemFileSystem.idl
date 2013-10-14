@@ -29,6 +29,6 @@
  */
 
 partial interface DataTransferItem {
-    [CallWith=ExecutionContext] Entry webkitGetAsEntry();
+    [CallWith=ScriptExecutionContext] Entry webkitGetAsEntry();
 };
 

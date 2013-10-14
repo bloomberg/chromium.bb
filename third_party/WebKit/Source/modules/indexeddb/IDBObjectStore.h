@@ -64,26 +64,26 @@ public:
     PassRefPtr<IDBTransaction> transaction() const { return m_transaction; }
     bool autoIncrement() const { return m_metadata.autoIncrement; }
 
-    PassRefPtr<IDBRequest> openCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
-    PassRefPtr<IDBRequest> openKeyCursor(ExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
-    PassRefPtr<IDBRequest> get(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
+    PassRefPtr<IDBRequest> openKeyCursor(ScriptExecutionContext*, const ScriptValue& range, const String& direction, ExceptionState&);
+    PassRefPtr<IDBRequest> get(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
     PassRefPtr<IDBRequest> add(ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
     PassRefPtr<IDBRequest> put(ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
-    PassRefPtr<IDBRequest> deleteFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
-    PassRefPtr<IDBRequest> clear(ExecutionContext*, ExceptionState&);
+    PassRefPtr<IDBRequest> deleteFunction(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> clear(ScriptExecutionContext*, ExceptionState&);
 
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext* context, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& es) { return createIndex(context, name, IDBKeyPath(keyPath), options, es); }
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext* context, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& es) { return createIndex(context, name, IDBKeyPath(keyPath), options, es); }
+    PassRefPtr<IDBIndex> createIndex(ScriptExecutionContext* context, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& es) { return createIndex(context, name, IDBKeyPath(keyPath), options, es); }
+    PassRefPtr<IDBIndex> createIndex(ScriptExecutionContext* context, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& es) { return createIndex(context, name, IDBKeyPath(keyPath), options, es); }
     PassRefPtr<IDBIndex> index(const String& name, ExceptionState&);
     void deleteIndex(const String& name, ExceptionState&);
 
-    PassRefPtr<IDBRequest> count(ExecutionContext*, const ScriptValue& range, ExceptionState&);
+    PassRefPtr<IDBRequest> count(ScriptExecutionContext*, const ScriptValue& range, ExceptionState&);
 
     // Used by IDBCursor::update():
     PassRefPtr<IDBRequest> put(IDBDatabaseBackendInterface::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, PassRefPtr<IDBKey>, ExceptionState&);
 
     // Used internally and by InspectorIndexedDBAgent:
-    PassRefPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, IndexedDB::CursorDirection, IDBDatabaseBackendInterface::TaskType = IDBDatabaseBackendInterface::NormalTask);
+    PassRefPtr<IDBRequest> openCursor(ScriptExecutionContext*, PassRefPtr<IDBKeyRange>, IndexedDB::CursorDirection, IDBDatabaseBackendInterface::TaskType = IDBDatabaseBackendInterface::NormalTask);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const { return m_deleted; }
@@ -100,8 +100,8 @@ public:
 private:
     IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
 
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
+    PassRefPtr<IDBIndex> createIndex(ScriptExecutionContext*, const String& name, const IDBKeyPath&, const Dictionary&, ExceptionState&);
+    PassRefPtr<IDBIndex> createIndex(ScriptExecutionContext*, const String& name, const IDBKeyPath&, bool unique, bool multiEntry, ExceptionState&);
     PassRefPtr<IDBRequest> put(IDBDatabaseBackendInterface::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, const ScriptValue& key, ExceptionState&);
 
     int64_t findIndexId(const String& name) const;

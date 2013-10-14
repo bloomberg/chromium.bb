@@ -110,9 +110,13 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMSecurityPolicy.h"
-#include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/History.h"
+#include "core/frame/animation/AnimationController.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -146,18 +150,13 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/History.h"
 #include "core/page/MouseEventWithHitTestResults.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/Settings.h"
-#include "core/frame/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/HitTestRequest.h"
@@ -359,7 +358,7 @@ public:
 
 private:
     CheckFocusedElementTask() { }
-    virtual void performTask(ExecutionContext* context) OVERRIDE
+    virtual void performTask(ScriptExecutionContext* context) OVERRIDE
     {
         ASSERT(context->isDocument());
         Document* document = toDocument(context);
@@ -464,7 +463,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
 {
     ScriptWrappable::init(this);
-    setClient(this);
 
     if (m_frame) {
         provideContextFeaturesToDocumentFrom(this, m_frame->page());
@@ -569,7 +567,6 @@ Document::~Document()
         ASSERT(!m_nodeListCounts[i]);
 
     clearDocumentScope();
-    setClient(0);
 
     InspectorCounters::decrementCounter(InspectorCounters::DocumentCounter);
 }
@@ -2572,7 +2569,7 @@ double Document::timerAlignmentInterval() const
 {
     Page* p = page();
     if (!p)
-        return DOMTimer::visiblePageAlignmentInterval();
+        return ScriptExecutionContext::timerAlignmentInterval();
     return p->timerAlignmentInterval();
 }
 
@@ -5272,7 +5269,7 @@ PassOwnPtr<LifecycleNotifier> Document::createLifecycleNotifier()
 
 DocumentLifecycleNotifier* Document::lifecycleNotifier()
 {
-    return static_cast<DocumentLifecycleNotifier*>(ExecutionContext::lifecycleNotifier());
+    return static_cast<DocumentLifecycleNotifier*>(ScriptExecutionContext::lifecycleNotifier());
 }
 
 } // namespace WebCore

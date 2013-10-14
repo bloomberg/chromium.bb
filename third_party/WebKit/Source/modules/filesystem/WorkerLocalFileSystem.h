@@ -41,7 +41,7 @@ class WorkerLocalFileSystem : public LocalFileSystemBase, public Supplement<Work
 public:
     static PassOwnPtr<WorkerLocalFileSystem> create(PassOwnPtr<FileSystemClient>);
     static const char* supplementName();
-    static WorkerLocalFileSystem* from(ExecutionContext*);
+    static WorkerLocalFileSystem* from(ScriptExecutionContext*);
     virtual ~WorkerLocalFileSystem();
 
 private:

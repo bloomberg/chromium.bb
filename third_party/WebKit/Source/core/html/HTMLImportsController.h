@@ -43,7 +43,7 @@
 namespace WebCore {
 
 class FetchRequest;
-class ExecutionContext;
+class ScriptExecutionContext;
 class ResourceFetcher;
 class HTMLImportLoader;
 class HTMLImportLoaderClient;

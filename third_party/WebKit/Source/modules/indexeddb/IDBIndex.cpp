@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBObjectStore.h"
@@ -56,7 +56,7 @@ IDBIndex::~IDBIndex()
 {
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::openCursor(ScriptExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
 {
     IDB_TRACE("IDBIndex::openCursor");
     if (isDeleted()) {
@@ -82,7 +82,7 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const Scr
     return openCursor(context, keyRange, direction);
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, IndexedDB::CursorDirection direction)
+PassRefPtr<IDBRequest> IDBIndex::openCursor(ScriptExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, IndexedDB::CursorDirection direction)
 {
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
@@ -90,7 +90,7 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPt
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptValue& range, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::count(ScriptExecutionContext* context, const ScriptValue& range, ExceptionState& es)
 {
     IDB_TRACE("IDBIndex::count");
     if (isDeleted()) {
@@ -115,7 +115,7 @@ PassRefPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptVa
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ScriptExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
 {
     IDB_TRACE("IDBIndex::openKeyCursor");
     if (isDeleted()) {
@@ -144,7 +144,7 @@ PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const 
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::get(ExecutionContext* context, const ScriptValue& key, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::get(ScriptExecutionContext* context, const ScriptValue& key, ExceptionState& es)
 {
     IDB_TRACE("IDBIndex::get");
     if (isDeleted()) {
@@ -173,7 +173,7 @@ PassRefPtr<IDBRequest> IDBIndex::get(ExecutionContext* context, const ScriptValu
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::getKey(ExecutionContext* context, const ScriptValue& key, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::getKey(ScriptExecutionContext* context, const ScriptValue& key, ExceptionState& es)
 {
     IDB_TRACE("IDBIndex::getKey");
     if (isDeleted()) {

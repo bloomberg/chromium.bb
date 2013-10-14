@@ -121,7 +121,7 @@ public:
         return adoptRef(new FileSystemRootRequest(requestCallback, type));
     }
 
-    void start(ExecutionContext*);
+    void start(ScriptExecutionContext*);
 
 private:
     bool didHitError(FileError* error)
@@ -145,9 +145,9 @@ private:
     String m_type;
 };
 
-void FileSystemRootRequest::start(ExecutionContext* executionContext)
+void FileSystemRootRequest::start(ScriptExecutionContext* scriptExecutionContext)
 {
-    ASSERT(executionContext);
+    ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &FileSystemRootRequest::didHitError);
 
@@ -157,15 +157,15 @@ void FileSystemRootRequest::start(ExecutionContext* executionContext)
         return;
     }
 
-    KURL rootURL = DOMFileSystemBase::createFileSystemRootURL(executionContext->securityOrigin()->toString(), type);
+    KURL rootURL = DOMFileSystemBase::createFileSystemRootURL(scriptExecutionContext->securityOrigin()->toString(), type);
     if (!rootURL.isValid()) {
         errorCallback->handleEvent(FileError::create(FileError::SYNTAX_ERR).get());
         return;
     }
 
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileSystemRootRequest::didGetEntry);
-    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, executionContext);
-    LocalFileSystem::from(executionContext)->resolveURL(executionContext, rootURL, fileSystemCallbacks.release());
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
+    LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, rootURL, fileSystemCallbacks.release());
 }
 
 bool FileSystemRootRequest::didGetEntry(Entry* entry)
@@ -191,7 +191,7 @@ public:
         reportResult(FileError::ABORT_ERR);
     }
 
-    void start(ExecutionContext*);
+    void start(ScriptExecutionContext*);
 
 private:
     bool didHitError(FileError* error)
@@ -220,16 +220,16 @@ private:
     RefPtr<DirectoryReader> m_directoryReader;
 };
 
-void DirectoryContentRequest::start(ExecutionContext* executionContext)
+void DirectoryContentRequest::start(ScriptExecutionContext* scriptExecutionContext)
 {
-    ASSERT(executionContext);
+    ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &DirectoryContentRequest::didHitError);
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &DirectoryContentRequest::didGetEntry);
 
-    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, executionContext);
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
 
-    LocalFileSystem::from(executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
+    LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, m_url, fileSystemCallbacks.release());
 }
 
 bool DirectoryContentRequest::didGetEntry(Entry* entry)
@@ -247,7 +247,7 @@ bool DirectoryContentRequest::didGetEntry(Entry* entry)
 
 void DirectoryContentRequest::readDirectoryEntries()
 {
-    if (!m_directoryReader->filesystem()->executionContext()) {
+    if (!m_directoryReader->filesystem()->scriptExecutionContext()) {
         reportResult(FileError::ABORT_ERR);
         return;
     }
@@ -312,7 +312,7 @@ public:
         reportResult(FileError::ABORT_ERR);
     }
 
-    void start(ExecutionContext*);
+    void start(ScriptExecutionContext*);
 
 private:
     bool didHitError(FileError* error)
@@ -338,19 +338,19 @@ private:
     bool m_isDirectory;
 };
 
-void MetadataRequest::start(ExecutionContext* executionContext)
+void MetadataRequest::start(ScriptExecutionContext* scriptExecutionContext)
 {
-    ASSERT(executionContext);
+    ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &MetadataRequest::didHitError);
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &MetadataRequest::didGetEntry);
-    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, executionContext);
-    LocalFileSystem::from(executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
+    LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, m_url, fileSystemCallbacks.release());
 }
 
 bool MetadataRequest::didGetEntry(Entry* entry)
 {
-    if (!entry->filesystem()->executionContext()) {
+    if (!entry->filesystem()->scriptExecutionContext()) {
         reportResult(FileError::ABORT_ERR);
         return true;
     }
@@ -385,14 +385,14 @@ public:
         reportResult(FileError::ABORT_ERR);
     }
 
-    void start(ExecutionContext*);
+    void start(ScriptExecutionContext*);
 
     virtual bool operator==(const EventListener& other) OVERRIDE
     {
         return this == &other;
     }
 
-    virtual void handleEvent(ExecutionContext*, Event* event) OVERRIDE
+    virtual void handleEvent(ScriptExecutionContext*, Event* event) OVERRIDE
     {
         if (event->type() == EventTypeNames::load)
             didRead();
@@ -436,15 +436,15 @@ private:
     RefPtr<FileReader> m_reader;
 };
 
-void FileContentRequest::start(ExecutionContext* executionContext)
+void FileContentRequest::start(ScriptExecutionContext* scriptExecutionContext)
 {
-    ASSERT(executionContext);
+    ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &FileContentRequest::didHitError);
     RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &FileContentRequest::didGetEntry);
 
-    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, executionContext);
-    LocalFileSystem::from(executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
+    OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
+    LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, m_url, fileSystemCallbacks.release());
 }
 
 bool FileContentRequest::didGetEntry(Entry* entry)
@@ -454,7 +454,7 @@ bool FileContentRequest::didGetEntry(Entry* entry)
         return true;
     }
 
-    if (!entry->filesystem()->executionContext()) {
+    if (!entry->filesystem()->scriptExecutionContext()) {
         reportResult(FileError::ABORT_ERR);
         return true;
     }
@@ -463,7 +463,7 @@ bool FileContentRequest::didGetEntry(Entry* entry)
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &FileContentRequest::didHitError);
     static_cast<FileEntry*>(entry)->file(successCallback, errorCallback);
 
-    m_reader = FileReader::create(entry->filesystem()->executionContext());
+    m_reader = FileReader::create(entry->filesystem()->scriptExecutionContext());
     m_mimeType = MIMETypeRegistry::getMIMETypeForPath(entry->name());
 
     return true;
@@ -513,7 +513,7 @@ public:
         return didDeleteEntry();
     }
 
-    void start(ExecutionContext*);
+    void start(ScriptExecutionContext*);
 
 private:
     bool didHitError(FileError* error)
@@ -538,9 +538,9 @@ private:
     KURL m_url;
 };
 
-void DeleteEntryRequest::start(ExecutionContext* executionContext)
+void DeleteEntryRequest::start(ScriptExecutionContext* scriptExecutionContext)
 {
-    ASSERT(executionContext);
+    ASSERT(scriptExecutionContext);
 
     RefPtr<ErrorCallback> errorCallback = CallbackDispatcherFactory<ErrorCallback>::create(this, &DeleteEntryRequest::didHitError);
 
@@ -553,11 +553,11 @@ void DeleteEntryRequest::start(ExecutionContext* executionContext)
 
     if (path == "/") {
         OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = VoidCallbacks::create(this, errorCallback, 0);
-        LocalFileSystem::from(executionContext)->deleteFileSystem(executionContext, type, fileSystemCallbacks.release());
+        LocalFileSystem::from(scriptExecutionContext)->deleteFileSystem(scriptExecutionContext, type, fileSystemCallbacks.release());
     } else {
         RefPtr<EntryCallback> successCallback = CallbackDispatcherFactory<EntryCallback>::create(this, &DeleteEntryRequest::didGetEntry);
-        OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, executionContext);
-        LocalFileSystem::from(executionContext)->resolveURL(executionContext, m_url, fileSystemCallbacks.release());
+        OwnPtr<AsyncFileSystemCallbacks> fileSystemCallbacks = ResolveURICallbacks::create(successCallback, errorCallback, scriptExecutionContext);
+        LocalFileSystem::from(scriptExecutionContext)->resolveURL(scriptExecutionContext, m_url, fileSystemCallbacks.release());
     }
 }
 
@@ -611,11 +611,11 @@ void InspectorFileSystemAgent::requestFileSystemRoot(ErrorString* error, const S
     if (!assertEnabled(error))
         return;
 
-    ExecutionContext* executionContext = assertExecutionContextForOrigin(error, SecurityOrigin::createFromString(origin).get());
-    if (!executionContext)
+    ScriptExecutionContext* scriptExecutionContext = assertScriptExecutionContextForOrigin(error, SecurityOrigin::createFromString(origin).get());
+    if (!scriptExecutionContext)
         return;
 
-    FileSystemRootRequest::create(requestCallback, type)->start(executionContext);
+    FileSystemRootRequest::create(requestCallback, type)->start(scriptExecutionContext);
 }
 
 void InspectorFileSystemAgent::requestDirectoryContent(ErrorString* error, const String& url, PassRefPtr<RequestDirectoryContentCallback> requestCallback)
@@ -623,11 +623,11 @@ void InspectorFileSystemAgent::requestDirectoryContent(ErrorString* error, const
     if (!assertEnabled(error))
         return;
 
-    ExecutionContext* executionContext = assertExecutionContextForOrigin(error, SecurityOrigin::createFromString(url).get());
-    if (!executionContext)
+    ScriptExecutionContext* scriptExecutionContext = assertScriptExecutionContextForOrigin(error, SecurityOrigin::createFromString(url).get());
+    if (!scriptExecutionContext)
         return;
 
-    DirectoryContentRequest::create(requestCallback, url)->start(executionContext);
+    DirectoryContentRequest::create(requestCallback, url)->start(scriptExecutionContext);
 }
 
 void InspectorFileSystemAgent::requestMetadata(ErrorString* error, const String& url, PassRefPtr<RequestMetadataCallback> requestCallback)
@@ -635,11 +635,11 @@ void InspectorFileSystemAgent::requestMetadata(ErrorString* error, const String&
     if (!assertEnabled(error))
         return;
 
-    ExecutionContext* executionContext = assertExecutionContextForOrigin(error, SecurityOrigin::createFromString(url).get());
-    if (!executionContext)
+    ScriptExecutionContext* scriptExecutionContext = assertScriptExecutionContextForOrigin(error, SecurityOrigin::createFromString(url).get());
+    if (!scriptExecutionContext)
         return;
 
-    MetadataRequest::create(requestCallback, url)->start(executionContext);
+    MetadataRequest::create(requestCallback, url)->start(scriptExecutionContext);
 }
 
 void InspectorFileSystemAgent::requestFileContent(ErrorString* error, const String& url, bool readAsText, const int* start, const int* end, const String* charset, PassRefPtr<RequestFileContentCallback> requestCallback)
@@ -647,13 +647,13 @@ void InspectorFileSystemAgent::requestFileContent(ErrorString* error, const Stri
     if (!assertEnabled(error))
         return;
 
-    ExecutionContext* executionContext = assertExecutionContextForOrigin(error, SecurityOrigin::createFromString(url).get());
-    if (!executionContext)
+    ScriptExecutionContext* scriptExecutionContext = assertScriptExecutionContextForOrigin(error, SecurityOrigin::createFromString(url).get());
+    if (!scriptExecutionContext)
         return;
 
     long long startPosition = start ? *start : 0;
     long long endPosition = end ? *end : std::numeric_limits<long long>::max();
-    FileContentRequest::create(requestCallback, url, readAsText, startPosition, endPosition, charset ? *charset : "")->start(executionContext);
+    FileContentRequest::create(requestCallback, url, readAsText, startPosition, endPosition, charset ? *charset : "")->start(scriptExecutionContext);
 }
 
 void InspectorFileSystemAgent::deleteEntry(ErrorString* error, const String& urlString, PassRefPtr<DeleteEntryCallback> requestCallback)
@@ -663,11 +663,11 @@ void InspectorFileSystemAgent::deleteEntry(ErrorString* error, const String& url
 
     KURL url(ParsedURLString, urlString);
 
-    ExecutionContext* executionContext = assertExecutionContextForOrigin(error, SecurityOrigin::create(url).get());
-    if (!executionContext)
+    ScriptExecutionContext* scriptExecutionContext = assertScriptExecutionContextForOrigin(error, SecurityOrigin::create(url).get());
+    if (!scriptExecutionContext)
         return;
 
-    DeleteEntryRequest::create(requestCallback, url)->start(executionContext);
+    DeleteEntryRequest::create(requestCallback, url)->start(scriptExecutionContext);
 }
 
 void InspectorFileSystemAgent::clearFrontend()
@@ -700,7 +700,7 @@ bool InspectorFileSystemAgent::assertEnabled(ErrorString* error)
     return true;
 }
 
-ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(ErrorString* error, SecurityOrigin* origin)
+ScriptExecutionContext* InspectorFileSystemAgent::assertScriptExecutionContextForOrigin(ErrorString* error, SecurityOrigin* origin)
 {
     for (Frame* frame = m_pageAgent->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         if (frame->document() && frame->document()->securityOrigin()->isSameSchemeHostPort(origin))

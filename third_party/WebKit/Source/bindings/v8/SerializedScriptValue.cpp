@@ -1877,7 +1877,7 @@ private:
             return false;
         if (!readWebCoreString(&url))
             return false;
-        RefPtr<DOMFileSystem> fs = DOMFileSystem::create(getExecutionContext(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, url));
+        RefPtr<DOMFileSystem> fs = DOMFileSystem::create(getScriptExecutionContext(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, url));
         *value = toV8(fs.release(), v8::Handle<v8::Object>(), m_isolate);
         return true;
     }

@@ -32,7 +32,7 @@
 #include "modules/quota/StorageQuota.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
 #include "modules/quota/WebStorageQuotaCallbacksImpl.h"
@@ -50,20 +50,20 @@ StorageQuota::StorageQuota(Type type)
     ScriptWrappable::init(this);
 }
 
-void StorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+void StorageQuota::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionContext, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
 {
-    ASSERT(executionContext);
+    ASSERT(scriptExecutionContext);
 
     WebKit::WebStorageQuotaType storageType = static_cast<WebKit::WebStorageQuotaType>(m_type);
     if (storageType != WebKit::WebStorageQuotaTypeTemporary && storageType != WebKit::WebStorageQuotaTypePersistent) {
         // Unknown storage type is requested.
-        executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
     }
 
-    SecurityOrigin* securityOrigin = executionContext->securityOrigin();
+    SecurityOrigin* securityOrigin = scriptExecutionContext->securityOrigin();
     if (securityOrigin->isUnique()) {
-        executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        scriptExecutionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
         return;
     }
 

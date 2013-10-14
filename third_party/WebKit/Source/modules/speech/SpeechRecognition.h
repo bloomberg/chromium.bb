@@ -38,7 +38,7 @@
 namespace WebCore {
 
 class ExceptionState;
-class ExecutionContext;
+class ScriptExecutionContext;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 class SpeechRecognitionResult;
@@ -46,7 +46,7 @@ class SpeechRecognitionResultList;
 
 class SpeechRecognition : public RefCounted<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
 public:
-    static PassRefPtr<SpeechRecognition> create(ExecutionContext*);
+    static PassRefPtr<SpeechRecognition> create(ScriptExecutionContext*);
     ~SpeechRecognition();
 
     // Attributes.
@@ -81,7 +81,7 @@ public:
 
     // EventTarget.
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     // ActiveDOMObject.
     virtual void stop() OVERRIDE;
@@ -104,7 +104,7 @@ public:
 private:
     friend class RefCounted<SpeechRecognition>;
 
-    explicit SpeechRecognition(ExecutionContext*);
+    explicit SpeechRecognition(ScriptExecutionContext*);
 
 
     // EventTarget
