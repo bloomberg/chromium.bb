@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: error vacuuming database (1546 disk I/O error)
+CONSOLE ERROR: error vacuuming database (1546 disk I/O error)
 This test tests the database authorizer.
 SQLITE_CREATE_TABLE statement succeeded.
 SQLITE_CREATE_INDEX statement succeeded.
