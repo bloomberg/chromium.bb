@@ -1567,7 +1567,7 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOne)
     EXPECT_NEAR(1.0f / client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
-TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth)
+TEST_F(WebFrameTest, DISABLED_NoWideViewportAndScaleLessThanOneWithDeviceWidth)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-less-than-1-device-width.html");
