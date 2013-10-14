@@ -382,20 +382,4 @@ bool MaybeServerWrongConfiguration(const std::string& page_language,
   return false;
 }
 
-std::string GetCLDVersion() {
-  switch (GetCLDMajorVersion()) {
-#if !defined(CLD_VERSION) || CLD_VERSION==1
-    case 1:
-      return CompactLangDet::DetectLanguageVersion();
-#endif
-#if !defined(CLD_VERSION) || CLD_VERSION==2
-    case 2:
-      return CLD2::DetectLanguageVersion();
-#endif
-    default:
-      NOTREACHED();
-  }
-  return "";
-}
-
 }  // namespace translate

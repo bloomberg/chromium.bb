@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "components/translate/language_detection/language_detection_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -61,9 +60,16 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
     source->AddString(key, value);
   }
 
-  // TODO(droger): Do not call GetCLDVersion() from here. Use a constant string
-  // instead, see http://crbug.com/297777.
-  std::string cld_version = translate::GetCLDVersion();
+  std::string cld_version = "";
+  // The version strings are hardcoded here to avoid linking with the CLD
+  // library, see http://crbug.com/297777.
+#if CLD_VERSION==1
+  cld_version = "1.6";
+#elif CLD_VERSION==2
+  cld_version = "2";
+#else
+  NOTREACHED();
+#endif
   source->AddString("cld-version", cld_version);
 
   return source;
