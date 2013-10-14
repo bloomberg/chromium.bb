@@ -1,0 +1,10 @@
+Check that the AudioContext constructor throws when the limit on hardware contexts is reached.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS reachHardwareContextsLimit() threw exception SyntaxError: Failed to construct 'AudioContext': number of hardware contexts reached maximum (4)..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -58,6 +58,7 @@
 #include "modules/webaudio/MediaStreamAudioDestinationNode.h"
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
+#include "modules/webaudio/OfflineAudioContext.h"
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 #include "modules/webaudio/OscillatorNode.h"
 #include "modules/webaudio/PannerNode.h"
@@ -95,16 +96,27 @@ bool AudioContext::isSampleRateRangeGood(float sampleRate)
 const unsigned MaxHardwareContexts = 4;
 unsigned AudioContext::s_hardwareContextCount = 0;
 
-PassRefPtr<AudioContext> AudioContext::create(Document* document)
+PassRefPtr<AudioContext> AudioContext::create(Document& document, ExceptionState& es)
 {
-    ASSERT(document);
     ASSERT(isMainThread());
-    if (s_hardwareContextCount >= MaxHardwareContexts)
+    if (s_hardwareContextCount >= MaxHardwareContexts) {
+        es.throwDOMException(
+            SyntaxError,
+            ExceptionMessages::failedToConstruct(
+                "AudioContext",
+                "number of hardware contexts reached maximum (" + String::number(MaxHardwareContexts) + ")."));
         return 0;
+    }
 
-    RefPtr<AudioContext> audioContext(adoptRef(new AudioContext(document)));
+    RefPtr<AudioContext> audioContext(adoptRef(new AudioContext(&document)));
     audioContext->suspendIfNeeded();
     return audioContext.release();
+}
+
+PassRefPtr<AudioContext> AudioContext::create(Document& document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& es)
+{
+    document.addConsoleMessage(JSMessageSource, WarningMessageLevel, "Deprecated AudioContext constructor: use OfflineAudioContext instead");
+    return OfflineAudioContext::create(&document, numberOfChannels, numberOfFrames, sampleRate, es);
 }
 
 // Constructor for rendering to the audio hardware.
