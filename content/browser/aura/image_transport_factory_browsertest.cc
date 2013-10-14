@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 #include "content/browser/aura/image_transport_factory.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/test/content_browser_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,8 +32,13 @@ class MockImageTransportFactoryObserver : public ImageTransportFactoryObserver {
 // Checks that upon context loss, the observer is called and the created
 // resources are reset.
 IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest, TestLostContext) {
+  // This test doesn't make sense in software compositing mode.
+  if (!GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
+    return;
+
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   scoped_refptr<ui::Texture> texture = factory->CreateTransportClient(1.f);
+  ASSERT_TRUE(texture.get());
 
   MockImageTransportFactoryObserver observer;
   factory->AddObserver(&observer);
