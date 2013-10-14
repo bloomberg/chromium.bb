@@ -80,11 +80,13 @@ Status ConsoleLogger::OnEvent(
         line_column = "-";
       }
 
-      log_->AddEntry(level,
-                     base::StringPrintf("%s %s %s",
-                                        origin_cstr,
-                                        line_column.c_str(),
-                                        text.c_str()));
+      std::string source;
+      message_dict->GetString("source", &source);
+      log_->AddEntry(level, source, base::StringPrintf("%s %s %s",
+                                                       origin_cstr,
+                                                       line_column.c_str(),
+                                                       text.c_str()));
+
       return Status(kOk);
     }
   }

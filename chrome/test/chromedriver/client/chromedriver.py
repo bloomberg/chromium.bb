@@ -62,7 +62,8 @@ class ChromeDriver(object):
 
   def __init__(self, server_url, chrome_binary=None, android_package=None,
                chrome_switches=None, chrome_extensions=None,
-               chrome_log_path=None, debugger_address=None):
+               chrome_log_path=None, debugger_address=None,
+               browser_log_level=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -87,9 +88,16 @@ class ChromeDriver(object):
       assert type(debugger_address) is str
       options['debuggerAddress'] = debugger_address
 
+    logging_prefs = {}
+    log_levels = ['ALL', 'DEBUG', 'INFO', 'WARNING', 'SEVERE', 'OFF']
+    if browser_log_level:
+      assert browser_log_level in log_levels
+      logging_prefs['browser'] = browser_log_level
+
     params = {
       'desiredCapabilities': {
-        'chromeOptions': options
+        'chromeOptions': options,
+        'loggingPrefs': logging_prefs
       }
     }
 
@@ -289,3 +297,9 @@ class ChromeDriver(object):
   def Quit(self):
     """Quits the browser and ends the session."""
     self.ExecuteCommand(Command.QUIT)
+
+  def GetLog(self, type):
+    return self.ExecuteCommand(Command.GET_LOG, {'type': type})
+
+  def GetAvailableLogTypes(self):
+    return self.ExecuteCommand(Command.GET_AVAILABLE_LOG_TYPES)

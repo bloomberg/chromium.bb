@@ -10,7 +10,13 @@
 #include "base/values.h"
 
 void Log::AddEntry(Level level, const std::string& message) {
-  AddEntryTimestamped(base::Time::Now(), level, message);
+  AddEntry(level, "", message);
+}
+
+void Log::AddEntry(Level level,
+                   const std::string& source,
+                   const std::string& message) {
+  AddEntryTimestamped(base::Time::Now(), level, source, message);
 }
 
 namespace {

@@ -42,6 +42,7 @@ class WebDriverLog : public Log {
   // Translates a Log entry level into a WebDriver level and stores the entry.
   virtual void AddEntryTimestamped(const base::Time& timestamp,
                                    Level level,
+                                   const std::string& source,
                                    const std::string& message) OVERRIDE;
 
   const std::string& type() const;

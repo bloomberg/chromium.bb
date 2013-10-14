@@ -613,6 +613,13 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals([100, 200], self._driver.GetWindowPosition())
     self.assertEquals([600, 400], self._driver.GetWindowSize())
 
+  def testConsoleLogSources(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/console_log.html'))
+    logs = self._driver.GetLog('browser')
+    self.assertEquals(len(logs), 2)
+    self.assertEquals(logs[0]['source'], 'network')
+    self.assertEquals(logs[1]['source'], 'javascript')
+
   def testContextMenuEventFired(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/context_menu.html'))
     self._driver.MouseMoveTo(self._driver.FindElement('tagName', 'div'))

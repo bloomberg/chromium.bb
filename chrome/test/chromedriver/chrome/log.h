@@ -32,9 +32,15 @@ class Log {
   // Adds an entry to the log.
   virtual void AddEntryTimestamped(const base::Time& timestamp,
                                    Level level,
+                                   const std::string& source,
                                    const std::string& message) = 0;
 
   // Adds an entry to the log, timestamped with the current time.
+  void AddEntry(Level level,
+                const std::string& source,
+                const std::string& message);
+
+  // Adds an entry to the log, timestamped with the current time and no source.
   void AddEntry(Level level, const std::string& message);
 };
 
