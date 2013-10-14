@@ -48,21 +48,28 @@ size_t lowestCommonMultiple(size_t a, size_t b)
 
 namespace WebCore {
 
-PassRefPtr<AnimatableValue> AnimatableRepeatable::interpolateTo(const AnimatableValue* value, double fraction) const
+bool AnimatableRepeatable::interpolateLists(const Vector<RefPtr<AnimatableValue> >& fromValues, const Vector<RefPtr<AnimatableValue> >& toValues, double fraction, Vector<RefPtr<AnimatableValue> >& interpolatedValues)
 {
     // Interpolation behaviour spec: http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
-    const Vector<RefPtr<AnimatableValue> >& otherValues = toAnimatableRepeatable(value)->m_values;
-    ASSERT(!m_values.isEmpty() && !otherValues.isEmpty());
-    Vector<RefPtr<AnimatableValue> > interpolatedValues(lowestCommonMultiple(m_values.size(), otherValues.size()));
-    for (size_t i = 0; i < interpolatedValues.size(); ++i) {
-        const AnimatableValue* from = m_values[i % m_values.size()].get();
-        const AnimatableValue* to = otherValues[i % otherValues.size()].get();
+    ASSERT(interpolatedValues.isEmpty());
+    ASSERT(!fromValues.isEmpty() && !toValues.isEmpty());
+    size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
+    for (size_t i = 0; i < size; ++i) {
+        const AnimatableValue* from = fromValues[i % fromValues.size()].get();
+        const AnimatableValue* to = toValues[i % toValues.size()].get();
         // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
         if (!from->isSameType(to))
-            return defaultInterpolateTo(this, value, fraction);
-        interpolatedValues[i] = interpolate(from, to, fraction);
+            return false;
+        interpolatedValues.append(interpolate(from, to, fraction));
     }
-    return create(interpolatedValues);
+    return true;
+}
+
+PassRefPtr<AnimatableValue> AnimatableRepeatable::interpolateTo(const AnimatableValue* value, double fraction) const
+{
+    Vector<RefPtr<AnimatableValue> > interpolatedValues;
+    bool success = interpolateLists(m_values, toAnimatableRepeatable(value)->m_values, fraction, interpolatedValues);
+    return success ? create(interpolatedValues) : defaultInterpolateTo(this, value, fraction);
 }
 
 PassRefPtr<AnimatableValue> AnimatableRepeatable::addWith(const AnimatableValue* value) const

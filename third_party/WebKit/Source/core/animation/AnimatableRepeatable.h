@@ -50,20 +50,26 @@ public:
 
     const Vector<RefPtr<AnimatableValue> >& values() const { return m_values; }
 
-private:
+protected:
+    AnimatableRepeatable()
+    {
+    }
     AnimatableRepeatable(Vector<RefPtr<AnimatableValue> >& values)
     {
         ASSERT(!values.isEmpty());
         m_values.swap(values);
     }
 
+    static bool interpolateLists(const Vector<RefPtr<AnimatableValue> >& fromValues, const Vector<RefPtr<AnimatableValue> >& toValues, double fraction, Vector<RefPtr<AnimatableValue> >& interpolatedValues);
+
+    Vector<RefPtr<AnimatableValue> > m_values;
+
+private:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
     virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
     virtual AnimatableType type() const OVERRIDE { return TypeRepeatable; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
-
-    Vector<RefPtr<AnimatableValue> > m_values;
 };
 
 inline const AnimatableRepeatable* toAnimatableRepeatable(const AnimatableValue* value)

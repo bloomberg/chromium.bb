@@ -297,6 +297,9 @@ crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-
 # These can't be rebaselined because they time out.
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-forwards.html [ Timeout Pass ]
 
+crbug.com/305070 [ Debug ] animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash ]
+crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash ]
+
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 

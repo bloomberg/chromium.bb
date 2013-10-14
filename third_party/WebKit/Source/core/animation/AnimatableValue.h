@@ -61,8 +61,9 @@ public:
     bool isNeutral() const { return type() == TypeNeutral; }
     bool isRepeatable() const { return type() == TypeRepeatable; }
     bool isSVGLength() const { return type() == TypeSVGLength; }
-    bool isShapeValue() const { return type() == TypeShapeValue; }
     bool isSVGPaint() const { return type() == TypeSVGPaint; }
+    bool isShapeValue() const { return type() == TypeShapeValue; }
+    bool isStrokeDasharrayList() const { return type() == TypeStrokeDasharrayList; }
     bool isTransform() const { return type() == TypeTransform; }
     bool isUnknown() const { return type() == TypeUnknown; }
     bool isVisibility() const { return type() == TypeVisibility; }
@@ -85,8 +86,9 @@ protected:
         TypeNeutral,
         TypeRepeatable,
         TypeSVGLength,
-        TypeShapeValue,
         TypeSVGPaint,
+        TypeShapeValue,
+        TypeStrokeDasharrayList,
         TypeTransform,
         TypeUnknown,
         TypeVisibility,

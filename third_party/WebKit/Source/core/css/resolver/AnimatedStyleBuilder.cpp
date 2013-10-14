@@ -42,6 +42,7 @@
 #include "core/animation/AnimatableSVGLength.h"
 #include "core/animation/AnimatableSVGPaint.h"
 #include "core/animation/AnimatableShapeValue.h"
+#include "core/animation/AnimatableStrokeDasharrayList.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/animation/AnimatableValue.h"
@@ -339,6 +340,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyStopOpacity:
         style->setStopOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
+        return;
+    case CSSPropertyStrokeDasharray:
+        style->setStrokeDashArray(toAnimatableStrokeDasharrayList(value)->toSVGLengthVector());
         return;
     case CSSPropertyStrokeDashoffset:
         style->setStrokeDashOffset(toAnimatableSVGLength(value)->toSVGLength());

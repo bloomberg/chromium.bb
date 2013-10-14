@@ -43,6 +43,7 @@
 #include "core/animation/AnimatableSVGLength.h"
 #include "core/animation/AnimatableSVGPaint.h"
 #include "core/animation/AnimatableShapeValue.h"
+#include "core/animation/AnimatableStrokeDasharrayList.h"
 #include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/animation/AnimatableVisibility.h"
@@ -281,6 +282,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromColor(property, style);
     case CSSPropertyStopOpacity:
         return createFromDouble(style->stopOpacity());
+    case CSSPropertyStrokeDasharray:
+        return AnimatableStrokeDasharrayList::create(style->strokeDashArray());
     case CSSPropertyStrokeDashoffset:
         return AnimatableSVGLength::create(style->strokeDashOffset());
     case CSSPropertyStrokeMiterlimit:
