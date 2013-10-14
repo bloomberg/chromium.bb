@@ -150,11 +150,12 @@ inline bool isHTMLAnchorElement(const Element* element)
     return element->hasTagName(HTMLNames::aTag);
 }
 
-inline HTMLAnchorElement* toHTMLAnchorElement(Node* node)
+inline bool isHTMLAnchorElement(const Element& element)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLAnchorElement(node));
-    return static_cast<HTMLAnchorElement*>(node);
+    return element.hasTagName(HTMLNames::aTag);
 }
+
+DEFINE_NODE_TYPE_CASTS(HTMLAnchorElement, hasTagName(HTMLNames::aTag));
 
 } // namespace WebCore
 

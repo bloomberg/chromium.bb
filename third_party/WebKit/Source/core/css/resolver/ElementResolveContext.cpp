@@ -29,14 +29,14 @@
 
 namespace WebCore {
 
-ElementResolveContext::ElementResolveContext(Element* element)
-    : m_element(element)
-    , m_elementLinkState(element ? element->document().visitedLinkState()->determineLinkState(element) : NotInsideLink)
+ElementResolveContext::ElementResolveContext(Element& element)
+    : m_element(&element)
+    , m_elementLinkState(element.document().visitedLinkState()->determineLinkState(element))
     , m_distributedToInsertionPoint(false)
     , m_resetStyleInheritance(false)
 {
     NodeRenderingTraversal::ParentDetails parentDetails;
-    m_parentNode = NodeRenderingTraversal::parent(element, &parentDetails);
+    m_parentNode = NodeRenderingTraversal::parent(&element, &parentDetails);
     m_distributedToInsertionPoint = parentDetails.insertionPoint();
     m_resetStyleInheritance = parentDetails.resetStyleInheritance();
 

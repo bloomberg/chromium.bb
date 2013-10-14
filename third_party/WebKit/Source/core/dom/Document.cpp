@@ -404,7 +404,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
     , m_styleEngine(StyleEngine::create(*this))
-    , m_visitedLinkState(VisitedLinkState::create(this))
+    , m_visitedLinkState(VisitedLinkState::create(*this))
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
     , m_bParsing(false)

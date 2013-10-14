@@ -45,7 +45,7 @@ public:
     {
     }
 
-    explicit ElementResolveContext(Element*);
+    explicit ElementResolveContext(Element&);
 
     Document& document() const { return m_element->document(); }
     bool isDocumentElement() const { return m_element && m_element == m_element->document().documentElement(); }

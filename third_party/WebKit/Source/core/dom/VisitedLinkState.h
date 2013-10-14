@@ -29,7 +29,6 @@
 #ifndef VisitedLinkState_h
 #define VisitedLinkState_h
 
-#include "XLinkNames.h"
 #include "core/dom/Element.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/LinkHash.h"
@@ -42,27 +41,29 @@ class Document;
 class VisitedLinkState {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<VisitedLinkState> create(Document*);
+    static PassOwnPtr<VisitedLinkState> create(const Document& document)
+    {
+        return adoptPtr(new VisitedLinkState(document));
+    }
 
     void invalidateStyleForAllLinks();
     void invalidateStyleForLink(LinkHash);
-    EInsideLink determineLinkState(Element*);
+
+    EInsideLink determineLinkState(const Element& element)
+    {
+        if (element.isLink())
+            return determineLinkStateSlowCase(element);
+        return NotInsideLink;
+    }
 
 private:
-    explicit VisitedLinkState(Document*);
+    explicit VisitedLinkState(const Document&);
 
-    EInsideLink determineLinkStateSlowCase(Element*);
+    EInsideLink determineLinkStateSlowCase(const Element&);
 
-    Document* m_document;
+    const Document& m_document;
     HashSet<LinkHash, LinkHashHash> m_linksCheckedForVisitedState;
 };
-
-inline EInsideLink VisitedLinkState::determineLinkState(Element* element)
-{
-    if (!element || !element->isLink())
-        return NotInsideLink;
-    return determineLinkStateSlowCase(element);
-}
 
 }
 

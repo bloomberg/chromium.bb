@@ -30,45 +30,31 @@
 #include "core/dom/VisitedLinkState.h"
 
 #include "HTMLNames.h"
+#include "XLinkNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLAnchorElement.h"
-#include "core/page/Page.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {
 
-using namespace HTMLNames;
-
-inline static const AtomicString& linkAttribute(Element* element)
+static inline const AtomicString& linkAttribute(const Element& element)
 {
-    ASSERT(element->isLink());
-    if (element->isHTMLElement())
-        return element->fastGetAttribute(HTMLNames::hrefAttr);
-    ASSERT(element->isSVGElement());
-    return element->getAttribute(XLinkNames::hrefAttr);
+    ASSERT(element.isLink());
+    if (element.isHTMLElement())
+        return element.fastGetAttribute(HTMLNames::hrefAttr);
+    ASSERT(element.isSVGElement());
+    return element.getAttribute(XLinkNames::hrefAttr);
 }
 
-inline static LinkHash linkHashForElement(Document* document, Element* element)
+static inline LinkHash linkHashForElement(const Element& element, const AtomicString& attribute = AtomicString())
 {
+    ASSERT(attribute.isNull() || linkAttribute(element) == attribute);
     if (isHTMLAnchorElement(element))
-        return toHTMLAnchorElement(element)->visitedLinkHash();
-    return visitedLinkHash(document->baseURL(), linkAttribute(element));
+        return toHTMLAnchorElement(element).visitedLinkHash();
+    return visitedLinkHash(element.document().baseURL(), attribute.isNull() ? linkAttribute(element) : attribute);
 }
 
-inline static LinkHash linkHashForElementWithAttribute(Document* document, Element* element, const AtomicString& attribute)
-{
-    ASSERT(linkAttribute(element) == attribute);
-    if (isHTMLAnchorElement(element))
-        return toHTMLAnchorElement(element)->visitedLinkHash();
-    return visitedLinkHash(document->baseURL(), attribute);
-}
-
-PassOwnPtr<VisitedLinkState> VisitedLinkState::create(Document* document)
-{
-    return adoptPtr(new VisitedLinkState(document));
-}
-
-VisitedLinkState::VisitedLinkState(Document* document)
+VisitedLinkState::VisitedLinkState(const Document& document)
     : m_document(document)
 {
 }
@@ -77,7 +63,7 @@ void VisitedLinkState::invalidateStyleForAllLinks()
 {
     if (m_linksCheckedForVisitedState.isEmpty())
         return;
-    for (Element* element = ElementTraversal::firstWithin(m_document); element; element = ElementTraversal::next(element)) {
+    for (Element* element = ElementTraversal::firstWithin(&m_document); element; element = ElementTraversal::next(element)) {
         if (element->isLink())
             element->setNeedsStyleRecalc();
     }
@@ -87,15 +73,17 @@ void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
 {
     if (!m_linksCheckedForVisitedState.contains(linkHash))
         return;
-    for (Element* element = ElementTraversal::firstWithin(m_document); element; element = ElementTraversal::next(element)) {
-        if (element->isLink() && linkHashForElement(m_document, element) == linkHash)
+    for (Element* element = ElementTraversal::firstWithin(&m_document); element; element = ElementTraversal::next(element)) {
+        if (element->isLink() && linkHashForElement(*element) == linkHash)
             element->setNeedsStyleRecalc();
     }
 }
 
-EInsideLink VisitedLinkState::determineLinkStateSlowCase(Element* element)
+EInsideLink VisitedLinkState::determineLinkStateSlowCase(const Element& element)
 {
-    ASSERT(element->isLink());
+    ASSERT(element.isLink());
+    ASSERT(m_document.isActive());
+    ASSERT(m_document == element.document());
 
     const AtomicString& attribute = linkAttribute(element);
 
@@ -109,18 +97,13 @@ EInsideLink VisitedLinkState::determineLinkStateSlowCase(Element* element)
     if (attribute.isEmpty())
         return InsideVisitedLink;
 
-    // We null check the Frame here to avoid canonicalizing and hashing
-    // URLs in documents that aren't attached to Frames (like documents
-    // from XMLHttpRequest).
-    if (!m_document->frame())
-        return InsideUnvisitedLink;
+    if (LinkHash hash = linkHashForElement(element, attribute)) {
+        m_linksCheckedForVisitedState.add(hash);
+        if (WebKit::Platform::current()->isLinkVisited(hash))
+            return InsideVisitedLink;
+    }
 
-    LinkHash hash = linkHashForElementWithAttribute(m_document, element, attribute);
-    if (!hash)
-        return InsideUnvisitedLink;
-
-    m_linksCheckedForVisitedState.add(hash);
-    return WebKit::Platform::current()->isLinkVisited(hash) ? InsideVisitedLink : InsideUnvisitedLink;
+    return InsideUnvisitedLink;
 }
 
 }
