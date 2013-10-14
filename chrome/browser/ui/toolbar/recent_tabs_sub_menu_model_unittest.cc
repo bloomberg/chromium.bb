@@ -140,6 +140,16 @@ TEST_F(RecentTabsSubMenuModelTest, NoTabs) {
   EXPECT_FALSE(model.IsEnabledAt(0));
   EXPECT_FALSE(model.IsEnabledAt(2));
   EXPECT_EQ(0, model.enable_count());
+
+  EXPECT_EQ(NULL, model.GetLabelFontAt(0));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(1));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(2));
+
+  std::string url;
+  string16 title;
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(0, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(1, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(2, &url, &title));
 }
 
 // Test enabled "Recently closed" header with no foreign tabs.
@@ -171,6 +181,20 @@ TEST_F(RecentTabsSubMenuModelTest, RecentlyClosedTabsFromCurrentSession) {
   EXPECT_FALSE(model.IsEnabledAt(4));
   EXPECT_EQ(2, model.enable_count());
   EXPECT_EQ(2, model.execute_count());
+
+  EXPECT_TRUE(model.GetLabelFontAt(0) != NULL);
+  EXPECT_EQ(NULL, model.GetLabelFontAt(1));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(2));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(3));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(4));
+
+  std::string url;
+  string16 title;
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(0, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(1, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(2, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(3, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(4, &url, &title));
 }
 
 // TODO(sail): enable this test when dynamic model is enabled in
@@ -232,7 +256,6 @@ TEST_F(RecentTabsSubMenuModelTest,
   // 1           <separator>
   // 2           No tabs from other Devices
 
-
   int num_items = model.GetItemCount();
   EXPECT_EQ(3, num_items);
   EXPECT_FALSE(model.IsEnabledAt(0));
@@ -268,6 +291,22 @@ TEST_F(RecentTabsSubMenuModelTest,
   EXPECT_FALSE(model.IsEnabledAt(5));
   EXPECT_EQ(3, model.enable_count());
   EXPECT_EQ(3, model.execute_count());
+
+  EXPECT_TRUE(model.GetLabelFontAt(0) != NULL);
+  EXPECT_EQ(NULL, model.GetLabelFontAt(1));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(2));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(3));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(4));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(5));
+
+  std::string url;
+  string16 title;
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(0, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(1, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(2, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(3, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(4, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(5, &url, &title));
 }
 
 // Test disabled "Recently closed" header with multiple sessions, multiple
@@ -336,6 +375,36 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   EXPECT_TRUE(model.IsEnabledAt(12));
   EXPECT_EQ(7, model.enable_count());
   EXPECT_EQ(7, model.execute_count());
+
+  EXPECT_EQ(NULL, model.GetLabelFontAt(0));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(1));
+  EXPECT_TRUE(model.GetLabelFontAt(2) != NULL);
+  EXPECT_EQ(NULL, model.GetLabelFontAt(3));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(4));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(5));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(6));
+  EXPECT_TRUE(model.GetLabelFontAt(7) != NULL);
+  EXPECT_EQ(NULL, model.GetLabelFontAt(8));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(9));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(10));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(11));
+  EXPECT_EQ(NULL, model.GetLabelFontAt(12));
+
+  std::string url;
+  string16 title;
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(0, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(1, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(2, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(3, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(4, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(5, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(6, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(7, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(8, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(9, &url, &title));
+  EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(10, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(11, &url, &title));
+  EXPECT_FALSE(model.GetURLAndTitleForItemAtIndex(12, &url, &title));
 }
 
 TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {

@@ -85,15 +85,16 @@ bool SortTabsByRecency(const SessionTab* t1, const SessionTab* t2) {
 
 // Returns true if the command id identifies a tab menu item.
 bool IsTabModelCommandId(int command_id) {
-  return command_id >= kFirstOtherDevicesTabCommandId ||
-      (command_id >= kFirstLocalTabCommandId &&
-       command_id < kFirstLocalWindowCommandId);
+  return ((command_id >= kFirstLocalTabCommandId &&
+           command_id < kFirstLocalWindowCommandId) ||
+          (command_id >= kFirstOtherDevicesTabCommandId &&
+           command_id < kMinDeviceNameCommandId));
 }
 
 // Returns true if the command id identifies a window menu item.
 bool IsWindowModelCommandId(int command_id) {
   return command_id >= kFirstLocalWindowCommandId &&
-         command_id < RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId;
+         command_id < kFirstOtherDevicesTabCommandId;
 }
 
 bool IsDeviceNameCommandId(int command_id) {
@@ -105,24 +106,20 @@ bool IsDeviceNameCommandId(int command_id) {
 // |first_command_id| as the base command id.
 int TabVectorIndexToCommandId(int tab_vector_index, int first_command_id) {
   int command_id = tab_vector_index + first_command_id;
-  DCHECK(first_command_id == kFirstOtherDevicesTabCommandId ||
-         command_id < kFirstLocalWindowCommandId);
+  DCHECK(IsTabModelCommandId(command_id));
   return command_id;
 }
 
 // Convert |window_vector_index| to command id of menu item.
 int WindowVectorIndexToCommandId(int window_vector_index) {
   int command_id = window_vector_index + kFirstLocalWindowCommandId;
-  DCHECK_LT(command_id, kFirstOtherDevicesTabCommandId);
-  DCHECK_LT(command_id, RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId);
+  DCHECK(IsWindowModelCommandId(command_id));
   return command_id;
 }
 
 // Convert |command_id| of menu item to index in |local_window_items_|.
 int CommandIdToWindowVectorIndex(int command_id) {
-  DCHECK_GE(command_id, kFirstLocalWindowCommandId);
-  DCHECK_LT(command_id, kFirstOtherDevicesTabCommandId);
-  DCHECK_LT(command_id, RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId);
+  DCHECK(IsWindowModelCommandId(command_id));
   return command_id - kFirstLocalWindowCommandId;
 }
 
@@ -478,7 +475,9 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
     // Add the header for the device session.
     DCHECK(!session->session_name.empty());
     AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItem(kMinDeviceNameCommandId + i, UTF8ToUTF16(session->session_name));
+    int command_id = kMinDeviceNameCommandId + i;
+    DCHECK_LE(command_id, kMaxDeviceNameCommandId);
+    AddItem(command_id, UTF8ToUTF16(session->session_name));
     AddDeviceFavicon(GetItemCount() - 1, session->device_type);
 
     // Build tab menu items from sorted session tabs.
@@ -635,12 +634,11 @@ void RecentTabsSubMenuModel::OnFaviconDataAvailable(
 int RecentTabsSubMenuModel::CommandIdToTabVectorIndex(
     int command_id,
     TabNavigationItems** tab_items) {
+  DCHECK(IsTabModelCommandId(command_id));
   if (command_id >= kFirstOtherDevicesTabCommandId) {
     *tab_items = &other_devices_tab_navigation_items_;
     return command_id - kFirstOtherDevicesTabCommandId;
   }
-  DCHECK_GE(command_id, kFirstLocalTabCommandId);
-  DCHECK_LT(command_id, kFirstLocalWindowCommandId);
   *tab_items = &local_tab_navigation_items_;
   return command_id - kFirstLocalTabCommandId;
 }
