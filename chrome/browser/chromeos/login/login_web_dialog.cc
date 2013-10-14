@@ -27,6 +27,10 @@ namespace {
 const double kDefaultWidthRatio = 0.6;
 const double kDefaultHeightRatio = 0.6;
 
+// Default width/height ratio of minimal dialog size.
+const double kMinimumWidthRatio = 0.25;
+const double kMinimumHeightRatio = 0.25;
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,6 +97,12 @@ void LoginWebDialog::GetWebUIMessageHandlers(
 
 void LoginWebDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(width_, height_);
+}
+
+void LoginWebDialog::GetMinimumDialogSize(gfx::Size* size) const {
+  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+  size->SetSize(kMinimumWidthRatio * screen_bounds.width(),
+                kMinimumHeightRatio * screen_bounds.height());
 }
 
 std::string LoginWebDialog::GetDialogArgs() const {

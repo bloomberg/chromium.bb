@@ -65,6 +65,7 @@ class LoginWebDialog : public ui::WebDialogDelegate,
   virtual void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
+  virtual void GetMinimumDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   // NOTE: This function deletes this object at the end.
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;

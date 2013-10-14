@@ -74,6 +74,13 @@ content::WebContents* WebDialogView::web_contents() {
 gfx::Size WebDialogView::GetPreferredSize() {
   gfx::Size out;
   if (delegate_)
+    delegate_->GetDialogSize(&out);
+  return out;
+}
+
+gfx::Size WebDialogView::GetMinimumSize() {
+  gfx::Size out;
+  if (delegate_)
     delegate_->GetMinimumDialogSize(&out);
   return out;
 }

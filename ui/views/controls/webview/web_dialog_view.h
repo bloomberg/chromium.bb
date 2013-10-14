@@ -53,6 +53,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
 
   // Overridden from views::ClientView:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator)
       OVERRIDE;
   virtual void ViewHierarchyChanged(
