@@ -142,6 +142,7 @@ struct weston_wm_window {
 	int override_redirect;
 	int fullscreen;
 	int has_alpha;
+	int delete_window;
 	struct wm_size_hints size_hints;
 	struct motif_wm_hints motif_hints;
 };
@@ -409,6 +410,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 	window->decorate = !window->override_redirect;
 	window->size_hints.flags = 0;
 	window->motif_hints.flags = 0;
+	window->delete_window = 0;
 
 	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
 		reply = xcb_get_property_reply(wm->conn, cookie[i], NULL);
@@ -446,6 +448,12 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 			*(xcb_atom_t *) p = *atom;
 			break;
 		case TYPE_WM_PROTOCOLS:
+			atom = xcb_get_property_value(reply);
+			for (i = 0; i < reply->value_len; i++)
+				if (atom[i] == wm->atom.wm_delete_window)
+					window->delete_window = 1;
+			break;
+
 			break;
 		case TYPE_WM_NORMAL_HINTS:
 			memcpy(&window->size_hints,
@@ -1454,20 +1462,25 @@ weston_wm_window_set_cursor(struct weston_wm *wm, xcb_window_t window_id,
 }
 
 static void
-weston_wm_window_close(struct weston_wm_window *window)
+weston_wm_window_close(struct weston_wm_window *window, xcb_timestamp_t time)
 {
 	xcb_client_message_event_t client_message;
 
-	client_message.response_type = XCB_CLIENT_MESSAGE;
-	client_message.format = 32;
-	client_message.window = window->id;
-	client_message.type = window->wm->atom.wm_protocols;
-	client_message.data.data32[0] = window->wm->atom.wm_delete_window;
-	client_message.data.data32[1] = XCB_TIME_CURRENT_TIME;
+	if (window->delete_window) {
+		client_message.response_type = XCB_CLIENT_MESSAGE;
+		client_message.format = 32;
+		client_message.window = window->id;
+		client_message.type = window->wm->atom.wm_protocols;
+		client_message.data.data32[0] =
+			window->wm->atom.wm_delete_window;
+		client_message.data.data32[1] = time;
 
-	xcb_send_event(window->wm->conn, 0, window->id,
-		       XCB_EVENT_MASK_NO_EVENT,
-		       (char *) &client_message);
+		xcb_send_event(window->wm->conn, 0, window->id,
+			       XCB_EVENT_MASK_NO_EVENT,
+			       (char *) &client_message);
+	} else {
+		xcb_kill_client(window->wm->conn, window->id);
+	}
 }
 
 static void
@@ -1513,7 +1526,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	}
 
 	if (frame_status(window->frame) & FRAME_STATUS_CLOSE) {
-		weston_wm_window_close(window);
+		weston_wm_window_close(window, button->time);
 		frame_status_clear(window->frame, FRAME_STATUS_CLOSE);
 	}
 }
