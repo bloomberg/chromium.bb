@@ -59,7 +59,6 @@ RenderImage::RenderImage(Element* element)
     , m_needsToSetSizeForAltText(false)
     , m_didIncrementVisuallyNonEmptyPixelCount(false)
     , m_isGeneratedContent(false)
-    , m_imageDevicePixelRatio(1.0f)
 {
     updateAltText();
 }

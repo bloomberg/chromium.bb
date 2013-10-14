@@ -63,8 +63,8 @@ public:
     virtual bool imageHasRelativeWidth() const { return m_cachedImage ? m_cachedImage->imageHasRelativeWidth() : false; }
     virtual bool imageHasRelativeHeight() const { return m_cachedImage ? m_cachedImage->imageHasRelativeHeight() : false; }
 
-    virtual LayoutSize imageSize(float multiplier) const { return getImageSize(multiplier, ImageResource::NormalSize); }
-    virtual LayoutSize intrinsicSize(float multiplier) const { return getImageSize(multiplier, ImageResource::IntrinsicSize); }
+    virtual LayoutSize imageSize(float multiplier) const { return m_cachedImage ? m_cachedImage->imageSizeForRenderer(m_renderer, multiplier) : LayoutSize(); }
+    virtual LayoutSize intrinsicSize(float multiplier) const { return m_cachedImage ? m_cachedImage->imageSizeForRenderer(m_renderer, multiplier, ImageResource::IntrinsicSize) : LayoutSize(); }
 
     virtual WrappedImagePtr imagePtr() const { return m_cachedImage.get(); }
 
@@ -75,7 +75,6 @@ protected:
 
 private:
     static Image* nullImage();
-    LayoutSize getImageSize(float multiplier, ImageResource::SizeType) const;
 };
 
 } // namespace WebCore

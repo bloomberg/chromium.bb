@@ -1,12 +1,12 @@
 <html>
 <head>
-<script>
-    if (window.testRunner)
-        testRunner.dumpResourceRequestCallbacks();
-</script>
 <script src="resources/srcset-helper.js"></script>
 <script src="../js/resources/js-test-pre.js"></script>
 <script>
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+    }
+
     function updateSrc() {
         var img = document.getElementById("foo");
         // srcset must be set first, otherwise 'src' is loaded as well
@@ -18,6 +18,8 @@
         updateSrc();
     }, false);
     addEventListener("load", function() {
+        if (internals)
+            shouldBeFalse('internals.isPreloaded("resources/blue-100-px-square.png")');
         shouldBeTrue('document.getElementById("foo").clientWidth==200');
     }, false);
 </script>

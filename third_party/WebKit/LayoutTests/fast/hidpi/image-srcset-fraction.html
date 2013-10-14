@@ -6,6 +6,10 @@
 <script src="resources/srcset-helper.js"></script>
 <script src="../js/resources/js-test-pre.js"></script>
 <script>
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+    }
+
     addEventListener("load", function() {
         if (internals)
             shouldBeTrue('document.getElementById("testimg").clientWidth==200');

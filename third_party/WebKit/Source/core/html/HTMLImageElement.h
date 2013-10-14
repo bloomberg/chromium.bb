@@ -115,7 +115,6 @@ private:
     HTMLFormElement* m_form;
     CompositeOperator m_compositeOperator;
     AtomicString m_bestFitImageURL;
-    float m_imageDevicePixelRatio;
 };
 
 inline HTMLImageElement* toHTMLImageElement(Node* node)
