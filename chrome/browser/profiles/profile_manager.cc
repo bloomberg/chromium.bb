@@ -36,6 +36,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -690,7 +691,23 @@ void ProfileManager::BrowserListObserver::OnBrowserAdded(
     Browser* browser) {}
 
 void ProfileManager::BrowserListObserver::OnBrowserRemoved(
-    Browser* browser) {}
+    Browser* browser) {
+  Profile* profile = browser->profile();
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->profile()->GetOriginalProfile() == profile->GetOriginalProfile())
+      // Not the last window for this profile.
+      return;
+  }
+
+  // If the last browser of a profile that is scheduled for deletion is closed
+  // do that now.
+  base::FilePath path = profile->GetPath();
+  if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles) &&
+      !IsProfileMarkedForDeletion(path)) {
+    g_browser_process->profile_manager()->ScheduleProfileForDeletion(
+        path, ProfileManager::CreateCallback());
+  }
+}
 
 void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
     Browser* browser) {
