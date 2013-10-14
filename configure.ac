@@ -78,8 +78,6 @@ if test x$enable_xkbcommon = xyes; then
 	COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon"
 fi
 
-PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])
-
 AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
 	      enable_setuid_install=yes)
 AM_CONDITIONAL(ENABLE_SETUID_INSTALL, test x$enable_setuid_install = xyes)
@@ -147,8 +145,12 @@ AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor = xyes -a x$e
 if test x$enable_drm_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
   PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.30 gbm mtdev >= 1.1.0])
+
+  # For libdrm usage in launcher-util.c
+  COMPOSITOR_MODULES="$COMPOSITOR_MODULES libdrm"
 fi
 
+PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])
 
 AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor],,
 	      enable_wayland_compositor=yes)
