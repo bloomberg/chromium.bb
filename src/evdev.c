@@ -524,7 +524,7 @@ evdev_handle_device(struct evdev_device *device)
 				break;
 			}
 		}
-		for (i = BTN_MISC; i < KEY_OK; i++) {
+		for (i = BTN_MISC; i < BTN_JOYSTICK; i++) {
 			if (TEST_BIT(key_bits, i)) {
 				device->caps |= EVDEV_BUTTON;
 				break;
