@@ -1298,6 +1298,9 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
 
   if (clip_parent_)
     state->SetInteger("clip_parent", clip_parent_->id());
+
+  state->SetBoolean("can_use_lcd_text", can_use_lcd_text());
+  state->SetBoolean("contents_opaque", contents_opaque());
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }
