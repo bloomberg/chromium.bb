@@ -38,6 +38,7 @@ class OverscrollController {
  public:
   // Creates an overscroll controller for the specified RenderWidgetHost.
   // The RenderWidgetHost owns this overscroll controller.
+  // TODO(jdduke): crbug.com/306194 - Take an OverscrollControllerClient.
   explicit OverscrollController(RenderWidgetHostImpl* widget_host);
   virtual ~OverscrollController();
 

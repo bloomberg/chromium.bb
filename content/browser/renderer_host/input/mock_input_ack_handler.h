@@ -28,7 +28,7 @@ class MockInputAckHandler : public InputAckHandler {
                                  InputEventAckState ack_result) OVERRIDE;
   virtual void OnUnexpectedEventAck(UnexpectedEventAckType type) OVERRIDE;
 
-  void ExpectAckCalled(int times);
+  size_t GetAndResetAckCount();
 
   void set_input_router(InputRouter* input_router) {
     input_router_ = input_router;
@@ -65,7 +65,7 @@ class MockInputAckHandler : public InputAckHandler {
 
   InputRouter* input_router_;
 
-  int ack_count_;
+  size_t ack_count_;
   bool unexpected_event_ack_called_;
   InputEventAckState ack_state_;
   NativeWebKeyboardEvent acked_key_event_;

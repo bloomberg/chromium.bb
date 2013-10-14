@@ -38,7 +38,8 @@ class InputRouterTest : public testing::Test {
 
   void SendInputEventACK(WebKit::WebInputEvent::Type type,
                          InputEventAckState ack_result);
-  void SimulateKeyboardEvent(WebKit::WebInputEvent::Type type);
+  void SimulateKeyboardEvent(WebKit::WebInputEvent::Type type,
+                             bool is_shortcut);
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise);
   void SimulateMouseMove(int x, int y, int modifiers);
   void SimulateWheelEventWithPhase(WebKit::WebMouseWheelEvent::Phase phase);
