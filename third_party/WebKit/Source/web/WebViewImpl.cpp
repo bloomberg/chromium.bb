@@ -1724,8 +1724,8 @@ void WebViewImpl::resize(const WebSize& newSize)
                                  FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
     }
 
-    // Set the fixed layout size from the viewport constraints before resizing.
-    updatePageDefinedPageScaleConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
+    updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
+    updateMainFrameLayoutSize();
 
     WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
     if (agentPrivate)
@@ -2932,34 +2932,6 @@ void WebViewImpl::setDeviceScaleFactor(float scaleFactor)
         updateLayerTreeDeviceScaleFactor();
 }
 
-bool WebViewImpl::isFixedLayoutModeEnabled() const
-{
-    if (!page())
-        return false;
-
-    Frame* frame = page()->mainFrame();
-    if (!frame || !frame->view())
-        return false;
-
-    return frame->view()->useFixedLayout();
-}
-
-void WebViewImpl::enableFixedLayoutMode(bool enable)
-{
-    if (!page())
-        return;
-
-    Frame* frame = page()->mainFrame();
-    if (!frame || !frame->view())
-        return;
-
-    frame->view()->setUseFixedLayout(enable);
-
-    if (m_isAcceleratedCompositingActive)
-        updateLayerTreeViewport();
-}
-
-
 void WebViewImpl::enableAutoResizeMode(const WebSize& minSize, const WebSize& maxSize)
 {
     m_shouldAutoResize = true;
@@ -3026,7 +2998,7 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
         return;
     FrameView* view = page()->mainFrame()->view();
 
-    updatePageDefinedPageScaleConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
+    updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     m_pageScaleConstraintsSet.computeFinalConstraints();
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
@@ -3051,9 +3023,9 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
         view->layout();
 }
 
-void WebViewImpl::updatePageDefinedPageScaleConstraints(const ViewportDescription& description)
+void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription& description)
 {
-    if (!settings()->viewportEnabled() || !isFixedLayoutModeEnabled() || !page() || !m_size.width || !m_size.height)
+    if (!settings()->viewportEnabled() || !page() || !m_size.width || !m_size.height)
         return;
 
     ViewportDescription adjustedDescription = description;
@@ -3066,13 +3038,28 @@ void WebViewImpl::updatePageDefinedPageScaleConstraints(const ViewportDescriptio
     m_pageScaleConstraintsSet.updatePageDefinedConstraints(adjustedDescription, m_size);
     m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedDescription, m_size, page()->settings().layoutFallbackWidth(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode());
 
-    WebSize layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
+    updateMainFrameLayoutSize();
+}
 
-    if (page()->settings().textAutosizingEnabled() && page()->mainFrame() && layoutSize.width != fixedLayoutSize().width)
-        page()->mainFrame()->document()->textAutosizer()->recalculateMultipliers();
+void WebViewImpl::updateMainFrameLayoutSize()
+{
+    if (m_fixedLayoutSizeLock || !mainFrameImpl())
+        return;
 
-    if (page()->mainFrame() && page()->mainFrame()->view() && !m_fixedLayoutSizeLock)
-        page()->mainFrame()->view()->setFixedLayoutSize(layoutSize);
+    FrameView* view = mainFrameImpl()->frameView();
+    if (!view)
+        return;
+
+    WebSize layoutSize = m_size;
+
+    if (settings()->viewportEnabled()) {
+        layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
+
+        if (page()->settings().textAutosizingEnabled() && layoutSize.width != view->layoutSize().width())
+            page()->mainFrame()->document()->textAutosizer()->recalculateMultipliers();
+    }
+
+    view->setLayoutSize(layoutSize);
 }
 
 IntSize WebViewImpl::contentsSize() const
@@ -3143,18 +3130,6 @@ void WebViewImpl::resetScrollAndScaleState()
     resetSavedScrollAndScaleState();
 }
 
-WebSize WebViewImpl::fixedLayoutSize() const
-{
-    if (!page())
-        return WebSize();
-
-    Frame* frame = page()->mainFrame();
-    if (!frame || !frame->view())
-        return WebSize();
-
-    return frame->view()->fixedLayoutSize();
-}
-
 void WebViewImpl::setFixedLayoutSize(const WebSize& layoutSize)
 {
     if (!page())
@@ -3171,9 +3146,9 @@ void WebViewImpl::setFixedLayoutSize(const WebSize& layoutSize)
     m_fixedLayoutSizeLock = layoutSize.width || layoutSize.height;
 
     if (m_fixedLayoutSizeLock)
-        view->setFixedLayoutSize(layoutSize);
+        view->setLayoutSize(layoutSize);
     else
-        view->setFixedLayoutSize(flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize));
+        updateMainFrameLayoutSize();
 }
 
 void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
@@ -4217,7 +4192,7 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)
 
 bool WebViewImpl::shouldDisableDesktopWorkarounds()
 {
-    if (!settings()->viewportEnabled() || !isFixedLayoutModeEnabled())
+    if (!settings()->viewportEnabled())
         return false;
 
     // A document is considered adapted to small screen UAs if one of these holds:
@@ -4227,7 +4202,10 @@ bool WebViewImpl::shouldDisableDesktopWorkarounds()
 
     const PageScaleConstraints& constraints = m_pageScaleConstraintsSet.pageDefinedConstraints();
 
-    return fixedLayoutSize().width == m_size.width
+    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
+        return false;
+
+    return mainFrameImpl()->frameView()->layoutSize().width() == m_size.width
         || (constraints.minimumScale == constraints.maximumScale && constraints.minimumScale != -1);
 }
 

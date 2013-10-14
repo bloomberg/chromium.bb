@@ -141,8 +141,8 @@ public:
     virtual IntPoint minimumScrollPosition() const = 0;
     virtual IntPoint maximumScrollPosition() const = 0;
 
-    enum VisibleContentRectIncludesScrollbars { ExcludeScrollbars, IncludeScrollbars };
-    virtual IntRect visibleContentRect(VisibleContentRectIncludesScrollbars = ExcludeScrollbars) const;
+    enum IncludeScrollbarsInRect { ExcludeScrollbars, IncludeScrollbars };
+    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
     virtual int visibleHeight() const = 0;
     virtual int visibleWidth() const = 0;
     virtual IntSize contentsSize() const = 0;
