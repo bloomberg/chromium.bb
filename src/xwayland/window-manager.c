@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <X11/Xcursor/Xcursor.h>
+#include <linux/input.h>
 
 #include "xwayland.h"
 
@@ -119,6 +120,7 @@ struct weston_wm_window {
 	struct weston_wm *wm;
 	xcb_window_t id;
 	xcb_window_t frame_id;
+	struct frame *frame;
 	cairo_surface_t *cairo_surface;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
@@ -473,6 +475,8 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 
 	if (window->shsurf && window->name)
 		shell_interface->set_title(window->shsurf, window->name);
+	if (window->frame && window->name)
+		frame_set_title(window->frame, window->name);
 }
 
 static void
@@ -485,9 +489,8 @@ weston_wm_window_get_frame_size(struct weston_wm_window *window,
 		*width = window->width;
 		*height = window->height;
 	} else if (window->decorate) {
-		*width = window->width + (t->margin + t->width) * 2;
-		*height = window->height +
-			t->margin * 2 + t->width + t->titlebar_height;
+		*width = frame_width(window->frame);
+		*height = frame_height(window->frame);
 	} else {
 		*width = window->width + t->margin * 2;
 		*height = window->height + t->margin * 2;
@@ -504,8 +507,7 @@ weston_wm_window_get_child_position(struct weston_wm_window *window,
 		*x = 0;
 		*y = 0;
 	} else if (window->decorate) {
-		*x = t->margin + t->width;
-		*y = t->margin + t->titlebar_height;
+		frame_interior(window->frame, x, y, NULL, NULL);
 	} else {
 		*x = t->margin;
 		*y = t->margin;
@@ -564,6 +566,9 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 	if (configure_request->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
 		window->height = configure_request->height;
 
+	if (window->frame)
+		frame_resize_inside(window->frame, window->width, window->height);
+
 	weston_wm_window_get_child_position(window, &x, &y);
 	values[i++] = x;
 	values[i++] = y;
@@ -621,6 +626,9 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	if (window->override_redirect) {
 		window->width = configure_notify->width;
 		window->height = configure_notify->height;
+		if (window->frame)
+			frame_resize_inside(window->frame,
+					    window->width, window->height);
 	}
 }
 
@@ -677,11 +685,15 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 				     XCB_TIME_CURRENT_TIME);
 	}
 
-	if (wm->focus_window)
+	if (wm->focus_window) {
+		frame_unset_flag(wm->focus_window->frame, FRAME_FLAG_ACTIVE);
 		weston_wm_window_schedule_repaint(wm->focus_window);
+	}
 	wm->focus_window = window;
-	if (wm->focus_window)
+	if (wm->focus_window) {
+		frame_set_flag(wm->focus_window->frame, FRAME_FLAG_ACTIVE);
 		weston_wm_window_schedule_repaint(wm->focus_window);
+	}
 }
 
 static void
@@ -758,6 +770,11 @@ weston_wm_window_create_frame(struct weston_wm_window *window)
 	struct weston_wm *wm = window->wm;
 	uint32_t values[3];
 	int x, y, width, height;
+
+	window->frame = frame_create(window->wm->theme,
+				     window->width, window->height,
+				     FRAME_BUTTON_CLOSE, window->name);
+	frame_resize_inside(window->frame, window->width, window->height);
 
 	weston_wm_window_get_frame_size(window, &width, &height);
 	weston_wm_window_get_child_position(window, &x, &y);
@@ -887,7 +904,8 @@ weston_wm_window_draw_decoration(void *data)
 	struct theme *t = wm->theme;
 	cairo_t *cr;
 	int x, y, width, height;
-	const char *title;
+	int32_t input_x, input_y, input_w, input_h;
+
 	uint32_t flags = 0;
 
 	weston_wm_window_read_properties(window);
@@ -906,12 +924,7 @@ weston_wm_window_draw_decoration(void *data)
 		if (wm->focus_window == window)
 			flags |= THEME_FRAME_ACTIVE;
 
-		if (window->name)
-			title = window->name;
-		else
-			title = "untitled";
-
-		theme_render_frame(t, cr, width, height, title, flags);
+		frame_repaint(window->frame, cr);
 	} else {
 		cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 		cairo_set_source_rgba(cr, 0, 0, 0, 0);
@@ -942,10 +955,10 @@ weston_wm_window_draw_decoration(void *data)
 
 	if (window->surface && !window->fullscreen) {
 		pixman_region32_fini(&window->surface->pending.input);
+		frame_input_rect(window->frame, &input_x, &input_y,
+				 &input_w, &input_h);
 		pixman_region32_init_rect(&window->surface->pending.input,
-					  t->margin, t->margin,
-					  width - 2 * t->margin,
-					  height - 2 * t->margin);
+					  input_x, input_y, input_w, input_h);
 	}
 }
 
@@ -1239,6 +1252,10 @@ weston_wm_window_handle_state(struct weston_wm_window *window,
 			shell_interface->set_toplevel(window->shsurf);
 			window->width = window->saved_width;
 			window->height = window->saved_height;
+			if (window->frame)
+				frame_resize_inside(window->frame,
+						    window->width,
+						    window->height);
 			weston_wm_window_configure(window);
 		}
 	}
@@ -1391,9 +1408,9 @@ weston_wm_destroy_cursors(struct weston_wm *wm)
 }
 
 static int
-get_cursor_for_location(struct theme *t, int width, int height, int x, int y)
+get_cursor_for_location(enum theme_location location)
 {
-	int location = theme_get_location(t, x, y, width, height, 0);
+	// int location = theme_get_location(t, x, y, width, height, 0);
 
 	switch (location) {
 		case THEME_LOCATION_RESIZING_TOP:
@@ -1437,6 +1454,23 @@ weston_wm_window_set_cursor(struct weston_wm *wm, xcb_window_t window_id,
 }
 
 static void
+weston_wm_window_close(struct weston_wm_window *window)
+{
+	xcb_client_message_event_t client_message;
+
+	client_message.response_type = XCB_CLIENT_MESSAGE;
+	client_message.format = 32;
+	client_message.window = window->id;
+	client_message.type = window->wm->atom.wm_protocols;
+	client_message.data.data32[0] = window->wm->atom.wm_delete_window;
+	client_message.data.data32[1] = XCB_TIME_CURRENT_TIME;
+
+	xcb_send_event(window->wm->conn, 0, window->id,
+		       XCB_EVENT_MASK_NO_EVENT,
+		       (char *) &client_message);
+}
+
+static void
 weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_button_press_event_t *button = (xcb_button_press_event_t *) event;
@@ -1445,41 +1479,42 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	struct weston_seat *seat = weston_wm_pick_seat(wm);
 	struct weston_wm_window *window;
 	enum theme_location location;
-	struct theme *t = wm->theme;
-	int width, height;
+	enum frame_button_state button_state;
+	uint32_t button_id;
 
 	wm_log("XCB_BUTTON_%s (detail %d)\n",
 	       button->response_type == XCB_BUTTON_PRESS ?
 	       "PRESS" : "RELEASE", button->detail);
 
 	window = hash_table_lookup(wm->window_hash, button->event);
-	weston_wm_window_get_frame_size(window, &width, &height);
+	if (!window || !window->decorate)
+		return;
 
-	if (button->response_type == XCB_BUTTON_PRESS &&
-	    button->detail == 1) {
-		location = theme_get_location(t,
-					      button->event_x,
-					      button->event_y,
-					      width, height, 0);
+	if (button->detail != 1 && button->detail != 2)
+		return;
 
-		switch (location) {
-		case THEME_LOCATION_TITLEBAR:
-			shell_interface->move(window->shsurf, seat);
-			break;
-		case THEME_LOCATION_RESIZING_TOP:
-		case THEME_LOCATION_RESIZING_BOTTOM:
-		case THEME_LOCATION_RESIZING_LEFT:
-		case THEME_LOCATION_RESIZING_RIGHT:
-		case THEME_LOCATION_RESIZING_TOP_LEFT:
-		case THEME_LOCATION_RESIZING_TOP_RIGHT:
-		case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
-		case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
-			shell_interface->resize(window->shsurf,
-						seat, location);
-			break;
-		default:
-			break;
-		}
+	button_state = button->response_type == XCB_BUTTON_PRESS ?
+		FRAME_BUTTON_PRESSED : FRAME_BUTTON_RELEASED;
+	button_id = button->detail == 1 ? BTN_LEFT : BTN_RIGHT;
+
+	location = frame_pointer_button(window->frame, NULL,
+					button_id, button_state);
+	if (frame_status(window->frame) & FRAME_STATUS_REPAINT)
+		weston_wm_window_schedule_repaint(window);
+
+	if (frame_status(window->frame) & FRAME_STATUS_MOVE) {
+		shell_interface->move(window->shsurf, seat);
+		frame_status_clear(window->frame, FRAME_STATUS_MOVE);
+	}
+
+	if (frame_status(window->frame) & FRAME_STATUS_RESIZE) {
+		shell_interface->resize(window->shsurf, seat, location);
+		frame_status_clear(window->frame, FRAME_STATUS_RESIZE);
+	}
+
+	if (frame_status(window->frame) & FRAME_STATUS_CLOSE) {
+		weston_wm_window_close(window);
+		frame_status_clear(window->frame, FRAME_STATUS_CLOSE);
 	}
 }
 
@@ -1488,16 +1523,19 @@ weston_wm_handle_motion(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *) event;
 	struct weston_wm_window *window;
-	int cursor, width, height;
+	enum theme_location location;
+	int cursor;
 
 	window = hash_table_lookup(wm->window_hash, motion->event);
 	if (!window || !window->decorate)
 		return;
 
-	weston_wm_window_get_frame_size(window, &width, &height);
-	cursor = get_cursor_for_location(wm->theme, width, height,
-					 motion->event_x, motion->event_y);
+	location = frame_pointer_motion(window->frame, NULL,
+					motion->event_x, motion->event_y);
+	if (frame_status(window->frame) & FRAME_STATUS_REPAINT)
+		weston_wm_window_schedule_repaint(window);
 
+	cursor = get_cursor_for_location(location);
 	weston_wm_window_set_cursor(wm, window->frame_id, cursor);
 }
 
@@ -1506,16 +1544,19 @@ weston_wm_handle_enter(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *) event;
 	struct weston_wm_window *window;
-	int cursor, width, height;
+	enum theme_location location;
+	int cursor;
 
 	window = hash_table_lookup(wm->window_hash, enter->event);
 	if (!window || !window->decorate)
 		return;
 
-	weston_wm_window_get_frame_size(window, &width, &height);
-	cursor = get_cursor_for_location(wm->theme, width, height,
-					 enter->event_x, enter->event_y);
+	location = frame_pointer_enter(window->frame, NULL,
+				       enter->event_x, enter->event_y);
+	if (frame_status(window->frame) & FRAME_STATUS_REPAINT)
+		weston_wm_window_schedule_repaint(window);
 
+	cursor = get_cursor_for_location(location);
 	weston_wm_window_set_cursor(wm, window->frame_id, cursor);
 }
 
@@ -1528,6 +1569,10 @@ weston_wm_handle_leave(struct weston_wm *wm, xcb_generic_event_t *event)
 	window = hash_table_lookup(wm->window_hash, leave->event);
 	if (!window || !window->decorate)
 		return;
+
+	frame_pointer_leave(window->frame, NULL);
+	if (frame_status(window->frame) & FRAME_STATUS_REPAINT)
+		weston_wm_window_schedule_repaint(window);
 
 	weston_wm_window_set_cursor(wm, window->frame_id, XWM_CURSOR_LEFT_PTR);
 }
@@ -2039,6 +2084,9 @@ send_configure(struct weston_surface *surface,
 		window->height = height - vborder;
 	else
 		window->height = 1;
+
+	if (window->frame)
+		frame_resize_inside(window->frame, window->width, window->height);
 
 	if (window->configure_source)
 		return;
