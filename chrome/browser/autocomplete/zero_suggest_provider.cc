@@ -156,7 +156,7 @@ void ZeroSuggestProvider::StartZeroSuggest(
   Stop(true);
   field_trial_triggered_ = false;
   field_trial_triggered_in_session_ = false;
-  if (!ShouldRunZeroSuggest(url))
+  if (!ShouldRunZeroSuggest(url, page_classification))
     return;
   verbatim_relevance_ = kDefaultVerbatimZeroSuggestRelevance;
   done_ = false;
@@ -186,8 +186,10 @@ ZeroSuggestProvider::ZeroSuggestProvider(
 ZeroSuggestProvider::~ZeroSuggestProvider() {
 }
 
-bool ZeroSuggestProvider::ShouldRunZeroSuggest(const GURL& url) const {
-  if (!ShouldSendURL(url))
+bool ZeroSuggestProvider::ShouldRunZeroSuggest(
+    const GURL& url,
+    AutocompleteInput::PageClassification page_classification) const {
+  if (!ShouldSendURL(url, page_classification))
     return false;
 
   // Don't run if there's no profile or in incognito mode.
@@ -220,8 +222,19 @@ bool ZeroSuggestProvider::ShouldRunZeroSuggest(const GURL& url) const {
   return true;
 }
 
-bool ZeroSuggestProvider::ShouldSendURL(const GURL& url) const {
+bool ZeroSuggestProvider::ShouldSendURL(
+    const GURL& url,
+    AutocompleteInput::PageClassification page_classification) const {
   if (!url.is_valid())
+    return false;
+
+  // TODO(hfung): Show Most Visited on NTP with appropriate verbatim
+  // description when the user actively focuses on the omnibox as discussed in
+  // crbug/305366 if Most Visited (or something similar) will launch.
+  if (page_classification ==
+      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS ||
+      page_classification ==
+      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS)
     return false;
 
   // Only allow HTTP URLs or Google HTTPS URLs (including Google search
@@ -463,6 +476,8 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 
   // Show Most Visited results after ZeroSuggest response is received.
   if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
+    if (!current_url_match_.destination_url.is_valid())
+      return;
     matches_.push_back(current_url_match_);
     int relevance = 600;
     if (num_results > 0) {
