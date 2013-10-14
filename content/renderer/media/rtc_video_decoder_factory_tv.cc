@@ -201,6 +201,20 @@ void RTCVideoDecoderFactoryTv::Initialize(media::DemuxerHost*,
     base::ResetAndReturn(&init_cb_).Run(media::PIPELINE_OK);
 }
 
+void RTCVideoDecoderFactoryTv::Seek(base::TimeDelta time,
+                                    const media::PipelineStatusCB& status_cb) {
+  DCHECK(!status_cb.is_null());
+  status_cb.Run(media::PIPELINE_OK);
+}
+
+void RTCVideoDecoderFactoryTv::Stop(const base::Closure& callback) {
+  DCHECK(!callback.is_null());
+  callback.Run();
+}
+
+void RTCVideoDecoderFactoryTv::OnAudioRendererDisabled() {
+}
+
 DemuxerStream* RTCVideoDecoderFactoryTv::GetStream(DemuxerStream::Type type) {
   base::AutoLock lock(lock_);
   if (type == DemuxerStream::VIDEO)
