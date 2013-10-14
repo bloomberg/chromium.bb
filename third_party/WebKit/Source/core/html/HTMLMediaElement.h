@@ -342,7 +342,6 @@ private:
 
     virtual void didBecomeFullscreenElement();
     virtual void willStopBeingFullscreenElement();
-    virtual bool isInteractiveContent() const OVERRIDE;
 
     // ActiveDOMObject functions.
     virtual void stop();

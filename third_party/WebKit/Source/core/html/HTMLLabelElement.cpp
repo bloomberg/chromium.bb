@@ -117,23 +117,6 @@ void HTMLLabelElement::setHovered(bool over)
         element->setHovered(over);
 }
 
-bool HTMLLabelElement::isInteractiveContent() const
-{
-    return true;
-}
-
-bool HTMLLabelElement::isInInteractiveContent(Node* node) const
-{
-    if (!containsIncludingShadowDOM(node))
-        return false;
-    while (node && this != node) {
-        if (node->isHTMLElement() && toHTMLElement(node)->isInteractiveContent())
-            return true;
-        node = node->parentOrShadowHostNode();
-    }
-    return false;
-}
-
 void HTMLLabelElement::defaultEventHandler(Event* evt)
 {
     static bool processingClick = false;
@@ -144,9 +127,6 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
         // If we can't find a control or if the control received the click
         // event, then there's no need for us to do anything.
         if (!element || (evt->target() && element->containsIncludingShadowDOM(evt->target()->toNode())))
-            return;
-
-        if (evt->target() && isInInteractiveContent(evt->target()->toNode()))
             return;
 
         processingClick = true;

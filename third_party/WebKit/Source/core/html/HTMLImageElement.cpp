@@ -383,9 +383,4 @@ Image* HTMLImageElement::imageContents()
     return m_imageLoader.image()->image();
 }
 
-bool HTMLImageElement::isInteractiveContent() const
-{
-    return fastHasAttribute(usemapAttr);
-}
-
 }

@@ -39,7 +39,6 @@ private:
     virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
-    virtual bool isInteractiveContent() const OVERRIDE;
 
     bool m_isOpen;
 };

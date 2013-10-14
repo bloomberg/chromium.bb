@@ -1578,9 +1578,4 @@ bool HTMLSelectElement::anonymousIndexedSetterRemove(unsigned index, ExceptionSt
     return true;
 }
 
-bool HTMLSelectElement::isInteractiveContent() const
-{
-    return true;
-}
-
 } // namespace

@@ -207,9 +207,4 @@ bool HTMLButtonElement::recalcWillValidate() const
     return m_type == SUBMIT && HTMLFormControlElement::recalcWillValidate();
 }
 
-bool HTMLButtonElement::isInteractiveContent() const
-{
-    return true;
-}
-
 } // namespace

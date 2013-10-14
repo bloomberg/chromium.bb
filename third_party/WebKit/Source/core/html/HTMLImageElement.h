@@ -108,7 +108,7 @@ private:
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
     virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }
-    virtual bool isInteractiveContent() const OVERRIDE;
+
     virtual Image* imageContents() OVERRIDE;
 
     HTMLImageLoader m_imageLoader;

@@ -58,7 +58,6 @@ private:
 
     virtual bool isEnumeratable() const { return true; }
     virtual bool supportLabels() const OVERRIDE { return true; }
-    virtual bool isInteractiveContent() const OVERRIDE;
 
     virtual bool isSuccessfulSubmitButton() const;
     virtual bool isActivatedSubmit() const;

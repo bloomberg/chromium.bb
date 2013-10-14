@@ -101,7 +101,6 @@ private:
     virtual String target() const;
     virtual short tabIndex() const;
     virtual bool draggable() const;
-    virtual bool isInteractiveContent() const OVERRIDE;
 
     void sendPings(const KURL& destinationURL);
 

@@ -90,7 +90,6 @@ private:
     virtual void subtreeHasChanged();
 
     virtual bool isEnumeratable() const { return true; }
-    virtual bool isInteractiveContent() const OVERRIDE;
     virtual bool supportLabels() const OVERRIDE { return true; }
 
     virtual const AtomicString& formControlType() const;

@@ -507,9 +507,4 @@ HTMLFormElement* HTMLObjectElement::virtualForm() const
     return FormAssociatedElement::form();
 }
 
-bool HTMLObjectElement::isInteractiveContent() const
-{
-    return fastHasAttribute(usemapAttr);
-}
-
 }

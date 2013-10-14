@@ -210,9 +210,4 @@ void HTMLEmbedElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) cons
     addSubresourceURL(urls, document().completeURL(getAttribute(srcAttr)));
 }
 
-bool HTMLEmbedElement::isInteractiveContent() const
-{
-    return true;
-}
-
 }
