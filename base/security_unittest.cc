@@ -213,13 +213,7 @@ bool CallocReturnsNull(size_t nmemb, size_t size) {
 }
 
 // Test if calloc() can overflow.
-// Fails on Mac under ASAN. http://crbug.com/304125
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_CallocOverflow DISABLED_CallocOverflow
-#else
-#define MAYBE_CallocOverflow CallocOverflow
-#endif
-TEST(SecurityTest, MAYBE_CallocOverflow) {
+TEST(SecurityTest, CallocOverflow) {
   const size_t kArraySize = 4096;
   const size_t kMaxSizeT = numeric_limits<size_t>::max();
   const size_t kArraySize2 = kMaxSizeT / kArraySize + 10;
