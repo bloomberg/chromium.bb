@@ -74,14 +74,14 @@ template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value,
     return clampTo<T>(round(toAnimatableDouble(value)->toDouble()), min, max);
 }
 
-LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleResolverState& state)
+LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleResolverState& state, NumberRange range = AllValues)
 {
     const AnimatableLengthBox* animatableLengthBox = toAnimatableLengthBox(value);
     return LengthBox(
-        animatableValueToLength(animatableLengthBox->top(), state),
-        animatableValueToLength(animatableLengthBox->right(), state),
-        animatableValueToLength(animatableLengthBox->bottom(), state),
-        animatableValueToLength(animatableLengthBox->left(), state));
+        animatableValueToLength(animatableLengthBox->top(), state, range),
+        animatableValueToLength(animatableLengthBox->right(), state, range),
+        animatableValueToLength(animatableLengthBox->bottom(), state, range),
+        animatableValueToLength(animatableLengthBox->left(), state, range));
 }
 
 LengthSize animatableValueToLengthSize(const AnimatableValue* value, const StyleResolverState& state, NumberRange range)
@@ -186,16 +186,16 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setBorderBottomWidth(animatableValueRoundClampTo<unsigned>(value));
         return;
     case CSSPropertyBorderImageOutset:
-        style->setBorderImageOutset(animatableValueToLengthBox(value, state));
+        style->setBorderImageOutset(animatableValueToLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyBorderImageSlice:
-        style->setBorderImageSlices(animatableValueToLengthBox(value, state));
+        style->setBorderImageSlices(animatableValueToLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyBorderImageSource:
         style->setBorderImageSource(toAnimatableImage(value)->toStyleImage());
         return;
     case CSSPropertyBorderImageWidth:
-        style->setBorderImageWidth(animatableValueToLengthBox(value, state));
+        style->setBorderImageWidth(animatableValueToLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyBorderLeftColor:
         style->setBorderLeftColor(toAnimatableColor(value)->color());

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.target {
+  width: 100px;
+  height: 100px;
+  background-color: black;
+  display: inline-block;
+  border: 10px;
+  border-image-source: linear-gradient(45deg, red, blue, green);
+}
+.replica {
+  background-color: green;
+  margin-right: 2px;
+}
+</style>
+<body>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: 'border-image-width',
+  from: '0px',
+  to: '20px'
+}, [
+  {at: -0.3, is: '0px'}, // CSS border-image-width can't be negative.
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+  {at: 5, is: '100px'},
+  {at: 10, is: '200px'}
+]);
+</script>
+</body>
