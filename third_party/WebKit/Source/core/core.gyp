@@ -644,6 +644,11 @@
             ['exclude', 'Linux\\.cpp$'],
           ],
         }],
+        ['toolkit_uses_gtk == 0', {
+          'sources/': [
+            ['exclude', 'platform/chromium/KeyCodeConversionGtk\\.cpp$'],
+          ],
+        }],
         ['OS=="mac"', {
           'dependencies': [
             '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
