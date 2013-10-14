@@ -81,18 +81,18 @@ drm_set_master(int drm_fd)
 	return -EBADF;
 }
 static int
-drm_check_master(int drm_fd)
+drm_is_master(int drm_fd)
 {
 	drm_magic_t magic;
 	if (drm_fd != -1)
-		return drmGetMagic(drm_fd, &magic) != 0 ||
-		       drmAuthMagic(drm_fd, magic) != 0;
+		return drmGetMagic(drm_fd, &magic) == 0 &&
+		       drmAuthMagic(drm_fd, magic) == 0;
 	return 0;
 }
 #else
 static int drm_drop_master(int drm_fd) {return 0;}
 static int drm_set_master(int drm_fd) {return 0;}
-static int drm_check_master(int drm_fd) {return 1;}
+static int drm_is_master(int drm_fd) {return 1;}
 #endif
 
 int
@@ -121,7 +121,7 @@ weston_launcher_open(struct weston_launcher *launcher,
 
 		if (major(s.st_rdev) == DRM_MAJOR) {
 			launcher->drm_fd = fd;
-			if (!drm_check_master(fd)) {
+			if (!drm_is_master(fd)) {
 				weston_log("drm fd not master\n");
 				close(fd);
 				return -1;
