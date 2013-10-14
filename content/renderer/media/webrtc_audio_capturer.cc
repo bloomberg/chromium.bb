@@ -320,9 +320,13 @@ void WebRtcAudioCapturer::EnablePeerConnectionMode() {
     render_view_id = render_view_id_;
   }
 
+  // Do nothing if the current buffer size is the WebRtc native buffer size.
+  media::AudioParameters params = audio_parameters();
+  if (GetBufferSize(params.sample_rate()) == params.frames_per_buffer())
+    return;
+
   // Create a new audio stream as source which will open the hardware using
   // WebRtc native buffer size.
-  media::AudioParameters params = audio_parameters();
   SetCapturerSource(AudioDeviceFactory::NewInputDevice(render_view_id),
                     params.channel_layout(),
                     static_cast<float>(params.sample_rate()));
@@ -463,9 +467,11 @@ int WebRtcAudioCapturer::GetBufferSize(int sample_rate) const {
   return (2 * sample_rate / 100);
 #endif
 
-  // Use the native hardware buffer size in non peer connection mode.
+#if defined(OS_MACOSX)
+  // Use the native hardware buffer size in non peer connection mode on Mac.
   if (!peer_connection_mode_ && hardware_buffer_size_)
     return hardware_buffer_size_;
+#endif
 
   // WebRtc is running at a buffer size of 10ms data. Use a multiple of 10ms
   // as the buffer size to achieve the best performance for WebRtc.
