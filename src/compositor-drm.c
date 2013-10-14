@@ -33,6 +33,7 @@
 #include <linux/vt.h>
 #include <assert.h>
 #include <sys/mman.h>
+#include <dlfcn.h>
 #include <time.h>
 
 #include <xf86drm.h>
@@ -193,6 +194,8 @@ struct drm_sprite {
 
 	uint32_t formats[];
 };
+
+static struct gl_renderer_interface *gl_renderer;
 
 static const char default_seat[] = "seat0";
 
@@ -1101,7 +1104,7 @@ drm_output_destroy(struct weston_output *output_base)
 	if (c->use_pixman) {
 		drm_output_fini_pixman(output);
 	} else {
-		gl_renderer_output_destroy(output_base);
+		gl_renderer->output_destroy(output_base);
 		gbm_surface_destroy(output->surface);
 	}
 
@@ -1192,7 +1195,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 			return -1;
 		}
 	} else {
-		gl_renderer_output_destroy(&output->base);
+		gl_renderer->output_destroy(&output->base);
 		gbm_surface_destroy(output->surface);
 
 		if (drm_output_init_egl(output, ec) < 0) {
@@ -1262,14 +1265,26 @@ init_egl(struct drm_compositor *ec)
 {
 	EGLint format;
 
+	gl_renderer = weston_load_module("gl-renderer.so",
+					 "gl_renderer_interface");
+	if (!gl_renderer)
+		return -1;
+
+	/* GBM will load a dri driver, but even though they need symbols from
+	 * libglapi, in some version of Mesa they are not linked to it. Since
+	 * only the gl-renderer module links to it, the call above won't make
+	 * these symbols globally available, and loading the DRI driver fails.
+	 * Workaround this by dlopen()'ing libglapi with RTLD_GLOBAL. */
+	dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL);
+
 	ec->gbm = gbm_create_device(ec->drm.fd);
 
 	if (!ec->gbm)
 		return -1;
 
 	format = ec->format;
-	if (gl_renderer_create(&ec->base, ec->gbm,
-			       gl_renderer_opaque_attribs, &format) < 0) {
+	if (gl_renderer->create(&ec->base, ec->gbm,
+			       gl_renderer->opaque_attribs, &format) < 0) {
 		gbm_device_destroy(ec->gbm);
 		return -1;
 	}
@@ -1471,7 +1486,7 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 		return -1;
 	}
 
-	if (gl_renderer_output_create(&output->base, output->surface) < 0) {
+	if (gl_renderer->output_create(&output->base, output->surface) < 0) {
 		weston_log("failed to create gl renderer output state\n");
 		gbm_surface_destroy(output->surface);
 		return -1;

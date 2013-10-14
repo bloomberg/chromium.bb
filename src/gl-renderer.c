@@ -170,7 +170,7 @@ egl_error_string(EGLint code)
 #undef MYERRCODE
 }
 
-WL_EXPORT void
+static void
 gl_renderer_print_egl_error_state(void)
 {
 	EGLint code;
@@ -1440,7 +1440,7 @@ output_apply_border(struct weston_output *output, struct gl_renderer *gr)
 	output->border.right = gr->border.right;
 }
 
-WL_EXPORT void
+static void
 gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
 			  int32_t *edges)
 {
@@ -1475,7 +1475,7 @@ gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t heig
 static int
 gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
 
-WL_EXPORT int
+static int
 gl_renderer_output_create(struct weston_output *output,
 				    EGLNativeWindowType window)
 {
@@ -1514,7 +1514,7 @@ gl_renderer_output_create(struct weston_output *output,
 	return 0;
 }
 
-WL_EXPORT void
+static void
 gl_renderer_output_destroy(struct weston_output *output)
 {
 	struct gl_renderer *gr = get_renderer(output->compositor);
@@ -1529,7 +1529,7 @@ gl_renderer_output_destroy(struct weston_output *output)
 	free(go);
 }
 
-WL_EXPORT EGLSurface
+static EGLSurface
 gl_renderer_output_surface(struct weston_output *output)
 {
 	return get_output_state(output)->egl_surface;
@@ -1602,7 +1602,7 @@ out:
 	return -1;
 }
 
-WL_EXPORT const EGLint gl_renderer_opaque_attribs[] = {
+static const EGLint gl_renderer_opaque_attribs[] = {
 	EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 	EGL_RED_SIZE, 1,
 	EGL_GREEN_SIZE, 1,
@@ -1612,7 +1612,7 @@ WL_EXPORT const EGLint gl_renderer_opaque_attribs[] = {
 	EGL_NONE
 };
 
-WL_EXPORT const EGLint gl_renderer_alpha_attribs[] = {
+static const EGLint gl_renderer_alpha_attribs[] = {
 	EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 	EGL_RED_SIZE, 1,
 	EGL_GREEN_SIZE, 1,
@@ -1622,7 +1622,7 @@ WL_EXPORT const EGLint gl_renderer_alpha_attribs[] = {
 	EGL_NONE
 };
 
-WL_EXPORT int
+static int
 gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	const EGLint *attribs, const EGLint *visual_id)
 {
@@ -1673,7 +1673,7 @@ err_egl:
 	return -1;
 }
 
-WL_EXPORT EGLDisplay
+static EGLDisplay
 gl_renderer_display(struct weston_compositor *ec)
 {
 	return get_renderer(ec)->egl_display;
@@ -1863,3 +1863,16 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 
 	return 0;
 }
+
+WL_EXPORT struct gl_renderer_interface gl_renderer_interface = {
+	.opaque_attribs = gl_renderer_opaque_attribs,
+	.alpha_attribs = gl_renderer_alpha_attribs,
+
+	.create = gl_renderer_create,
+	.display = gl_renderer_display,
+	.output_create = gl_renderer_output_create,
+	.output_destroy = gl_renderer_output_destroy,
+	.output_surface = gl_renderer_output_surface,
+	.set_border = gl_renderer_set_border,
+	.print_egl_error_state = gl_renderer_print_egl_error_state
+};

@@ -95,6 +95,8 @@ struct fbdev_parameters {
 	int use_gl;
 };
 
+struct gl_renderer_interface *gl_renderer;
+
 static const char default_seat[] = "seat0";
 
 static inline struct fbdev_output *
@@ -623,7 +625,7 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 			goto out_shadow_surface;
 	} else {
 		setenv("HYBRIS_EGLPLATFORM", "wayland", 1);
-		if (gl_renderer_output_create(&output->base,
+		if (gl_renderer->output_create(&output->base,
 					(EGLNativeWindowType)NULL) < 0) {
 			weston_log("gl_renderer_output_create failed.\n");
 			goto out_shadow_surface;
@@ -684,7 +686,7 @@ fbdev_output_destroy(struct weston_output *base)
 			output->shadow_buf = NULL;
 		}
 	} else {
-		gl_renderer_output_destroy(base);
+		gl_renderer->output_destroy(base);
 	}
 
 	/* Remove the output. */
@@ -923,8 +925,16 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		if (pixman_renderer_init(&compositor->base) < 0)
 			goto out_launcher;
 	} else {
-		if (gl_renderer_create(&compositor->base, EGL_DEFAULT_DISPLAY,
-			gl_renderer_opaque_attribs, NULL) < 0) {
+		gl_renderer = weston_load_module("gl-renderer.so",
+						 "gl_renderer_interface");
+		if (!gl_renderer) {
+			weston_log("could not load gl renderer\n");
+			goto out_launcher;
+		}
+
+		if (gl_renderer->create(&compositor->base, EGL_DEFAULT_DISPLAY,
+					gl_renderer->opaque_attribs,
+					NULL) < 0) {
 			weston_log("gl_renderer_create failed.\n");
 			goto out_launcher;
 		}

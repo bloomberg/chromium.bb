@@ -62,7 +62,7 @@ AC_ARG_ENABLE(egl, [  --disable-egl],,
 AM_CONDITIONAL(ENABLE_EGL, test x$enable_egl = xyes)
 if test x$enable_egl = xyes; then
 	AC_DEFINE([ENABLE_EGL], [1], [Build Weston with EGL support])
-	COMPOSITOR_MODULES="$COMPOSITOR_MODULES egl >= 7.10 glesv2"
+	PKG_CHECK_MODULES(EGL, [egl >= 7.10 glesv2])
 fi
 
 AC_ARG_ENABLE(xkbcommon,

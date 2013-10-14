@@ -115,6 +115,8 @@ struct x11_output {
 	int32_t                 scale;
 };
 
+struct gl_renderer_interface *gl_renderer;
+
 static struct xkb_keymap *
 x11_compositor_get_keymap(struct x11_compositor *c)
 {
@@ -519,7 +521,7 @@ x11_output_destroy(struct weston_output *output_base)
 		pixman_renderer_output_destroy(output_base);
 		x11_output_deinit_shm(compositor, output);
 	} else
-		gl_renderer_output_destroy(output_base);
+		gl_renderer->output_destroy(output_base);
 
 	xcb_destroy_window(compositor->conn, output->window);
 
@@ -785,6 +787,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	struct wm_normal_hints normal_hints;
 	struct wl_event_loop *loop;
 	int output_width, output_height;
+	int ret;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
 	xcb_atom_t atom_list[1];
 	uint32_t values[2] = {
@@ -905,7 +908,9 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			return NULL;
 		}
 	} else {
-		if (gl_renderer_output_create(&output->base, (EGLNativeWindowType)output->window) < 0)
+		ret = gl_renderer->output_create(&output->base,
+						 (EGLNativeWindowType) output->window);
+		if (ret < 0)
 			return NULL;
 	}
 
@@ -1441,6 +1446,21 @@ parse_transform(const char *transform, const char *output_name)
 	return WL_OUTPUT_TRANSFORM_NORMAL;
 }
 
+static int
+init_gl_renderer(struct x11_compositor *c)
+{
+	int ret;
+
+	gl_renderer = weston_load_module("gl-renderer.so",
+					 "gl_renderer_interface");
+	if (!gl_renderer)
+		return -1;
+
+	ret = gl_renderer->create(&c->base, (EGLNativeDisplayType) c->dpy,
+				  gl_renderer->opaque_attribs, NULL);
+
+	return ret;
+}
 static struct weston_compositor *
 x11_compositor_create(struct wl_display *display,
 		      int fullscreen,
@@ -1497,10 +1517,8 @@ x11_compositor_create(struct wl_display *display,
 		if (pixman_renderer_init(&c->base) < 0)
 			goto err_xdisplay;
 	}
-	else {
-		if (gl_renderer_create(&c->base, (EGLNativeDisplayType)c->dpy, gl_renderer_opaque_attribs,
-				NULL) < 0)
-			goto err_xdisplay;
+	else if (init_gl_renderer(c) < 0) {
+		goto err_xdisplay;
 	}
 	weston_log("Using %s renderer\n", use_pixman ? "pixman" : "gl");
 

@@ -89,6 +89,8 @@ struct wayland_input {
 	struct wayland_output *output;
 };
 
+struct gl_renderer_interface *gl_renderer;
+
 static void
 create_border(struct wayland_compositor *c)
 {
@@ -106,7 +108,7 @@ create_border(struct wayland_compositor *c)
 	edges[2] = c->border.top;
 	edges[3] = c->border.bottom;
 
-	gl_renderer_set_border(&c->base, pixman_image_get_width(image),
+	gl_renderer->set_border(&c->base, pixman_image_get_width(image),
 		pixman_image_get_height(image),
 		pixman_image_get_data(image), edges);
 
@@ -233,7 +235,7 @@ wayland_output_destroy(struct weston_output *output_base)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
 
-	gl_renderer_output_destroy(output_base);
+	gl_renderer->output_destroy(output_base);
 
 	wl_egl_window_destroy(output->parent.egl_window);
 	free(output);
@@ -283,7 +285,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		goto cleanup_output;
 	}
 
-	if (gl_renderer_output_create(&output->base,
+	if (gl_renderer->output_create(&output->base,
 			output->parent.egl_window) < 0)
 		goto cleanup_window;
 
@@ -742,8 +744,14 @@ wayland_compositor_create(struct wl_display *display,
 	wl_display_dispatch(c->parent.wl_display);
 
 	c->base.wl_display = display;
-	if (gl_renderer_create(&c->base, c->parent.wl_display,
-			gl_renderer_alpha_attribs,
+
+	gl_renderer = weston_load_module("gl-renderer.so",
+					 "gl_renderer_interface");
+	if (!gl_renderer)
+		goto err_display;
+
+	if (gl_renderer->create(&c->base, c->parent.wl_display,
+			gl_renderer->alpha_attribs,
 			NULL) < 0)
 		goto err_display;
 
@@ -759,7 +767,7 @@ wayland_compositor_create(struct wl_display *display,
 	if (wayland_compositor_create_output(c, width, height) < 0)
 		goto err_gl;
 
-	/* requires gl_renderer_output_state_create called
+	/* requires gl_renderer->output_state_create called
 	 * by wayland_compositor_create_output */
 	create_border(c);
 

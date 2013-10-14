@@ -28,27 +28,6 @@
 
 #include <EGL/egl.h>
 
-extern const EGLint gl_renderer_opaque_attribs[];
-extern const EGLint gl_renderer_alpha_attribs[];
-
-int
-gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
-	const EGLint *attribs, const EGLint *visual_id);
-EGLDisplay
-gl_renderer_display(struct weston_compositor *ec);
-int
-gl_renderer_output_create(struct weston_output *output,
-				    EGLNativeWindowType window);
-void
-gl_renderer_output_destroy(struct weston_output *output);
-EGLSurface
-gl_renderer_output_surface(struct weston_output *output);
-void
-gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
-			  int32_t *edges);
-
-void
-gl_renderer_print_egl_error_state(void);
 #else
 
 typedef int EGLint;
@@ -58,49 +37,31 @@ typedef intptr_t EGLNativeDisplayType;
 typedef intptr_t EGLNativeWindowType;
 #define EGL_DEFAULT_DISPLAY NULL
 
-static const EGLint gl_renderer_opaque_attribs[];
-static const EGLint gl_renderer_alpha_attribs[];
-
-inline static int
-gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
-	const EGLint *attribs, const EGLint *visual_id)
-{
-	return -1;
-}
-
-inline static EGLDisplay
-gl_renderer_display(struct weston_compositor *ec)
-{
-	return 0;
-}
-
-inline static int
-gl_renderer_output_create(struct weston_output *output,
-				    EGLNativeWindowType window)
-{
-	return -1;
-}
-
-inline static void
-gl_renderer_output_destroy(struct weston_output *output)
-{
-}
-
-inline static EGLSurface
-gl_renderer_output_surface(struct weston_output *output)
-{
-	return 0;
-}
-
-inline static void
-gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
-			  int32_t *edges)
-{
-}
-
-inline static void
-gl_renderer_print_egl_error_state(void)
-{
-}
-
 #endif
+
+struct gl_renderer_interface {
+	const EGLint *opaque_attribs;
+	const EGLint *alpha_attribs;
+
+	int (*create)(struct weston_compositor *ec,
+		      EGLNativeDisplayType display,
+		      const EGLint *attribs,
+		      const EGLint *visual_id);
+
+	EGLDisplay (*display)(struct weston_compositor *ec);
+
+	int (*output_create)(struct weston_output *output,
+			     EGLNativeWindowType window);
+
+	void (*output_destroy)(struct weston_output *output);
+
+	EGLSurface (*output_surface)(struct weston_output *output);
+
+	void (*set_border)(struct weston_compositor *ec,
+			   int32_t width, int32_t height,
+			   void *data, int32_t *edges);
+
+	void (*print_egl_error_state)(void);
+};
+
+struct gl_renderer_interface gl_renderer_interface;

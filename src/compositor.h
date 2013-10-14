@@ -1256,6 +1256,9 @@ weston_transformed_rect(int width, int height,
 			int32_t scale,
 			pixman_box32_t rect);
 
+void *
+weston_load_module(const char *name, const char *entrypoint);
+
 #ifdef  __cplusplus
 }
 #endif

@@ -40,7 +40,6 @@ weston_SOURCES =				\
 	subsurface-server-protocol.h		\
 	bindings.c				\
 	animation.c				\
-	gl-renderer.h				\
 	noop-renderer.c				\
 	pixman-renderer.c			\
 	pixman-renderer.h			\
@@ -49,13 +48,6 @@ weston_SOURCES =				\
 	../shared/zalloc.h			\
 	weston-launch.h				\
 	weston-egl-ext.h
-
-if ENABLE_EGL
-weston_SOURCES +=				\
-	gl-renderer.c				\
-	vertex-clipping.c			\
-	vertex-clipping.h
-endif
 
 git-version.h : .FORCE
 	$(AM_V_GEN)(echo "#define BUILD_ID \"$(shell git --git-dir=$(top_srcdir)/.git describe --always --dirty) $(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%s (%ci)')\"" > $@-new; \
@@ -104,6 +96,7 @@ module_LTLIBRARIES =				\
 	$(tablet_shell)				\
 	$(cms_static)				\
 	$(cms_colord)				\
+	$(gl_renderer)				\
 	$(x11_backend)				\
 	$(drm_backend)				\
 	$(wayland_backend)			\
@@ -119,6 +112,21 @@ else
 noinst_LTLIBRARIES += $(rpi_backend)
 endif
 
+if ENABLE_EGL
+gl_renderer = gl-renderer.la
+gl_renderer_la_LDFLAGS = -module -avoid-version
+gl_renderer_la_LIBADD = $(COMPOSITOR_LIBS) $(EGL_LIBS)
+gl_renderer_la_CFLAGS =				\
+	$(COMPOSITOR_CFLAGS)			\
+	$(EGL_CFLAGS)				\
+	$(GCC_CFLAGS)
+gl_renderer_la_SOURCES =			\
+	gl-renderer.h				\
+	gl-renderer.c				\
+	vertex-clipping.c			\
+	vertex-clipping.h
+endif
+
 if ENABLE_X11_COMPOSITOR
 x11_backend = x11-backend.la
 x11_backend_la_LDFLAGS = -module -avoid-version
@@ -126,6 +134,7 @@ x11_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(X11_COMPOSITOR_LIBS) \
 	../shared/libshared-cairo.la
 x11_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
+	$(EGL_CFLAGS)				\
 	$(PIXMAN_CFLAGS)			\
 	$(CAIRO_CFLAGS)				\
 	$(X11_COMPOSITOR_CFLAGS)		\
@@ -140,6 +149,7 @@ drm_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(DRM_COMPOSITOR_LIBS) \
 	../shared/libshared.la -lrt
 drm_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
+	$(EGL_CFLAGS)				\
 	$(DRM_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
 drm_backend_la_SOURCES =			\
@@ -168,6 +178,7 @@ wayland_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(WAYLAND_COMPOSITOR_LIBS) \
 	../shared/libshared-cairo.la
 wayland_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
+	$(EGL_CFLAGS)				\
 	$(PIXMAN_CFLAGS)			\
 	$(CAIRO_CFLAGS)				\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\
@@ -219,6 +230,7 @@ fbdev_backend_la_LIBADD = \
 	../shared/libshared.la
 fbdev_backend_la_CFLAGS = \
 	$(COMPOSITOR_CFLAGS) \
+	$(EGL_CFLAGS) \
 	$(FBDEV_COMPOSITOR_CFLAGS) \
 	$(PIXMAN_CFLAGS) \
 	$(GCC_CFLAGS)
