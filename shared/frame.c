@@ -64,6 +64,15 @@ struct frame_pointer {
 	int active;
 };
 
+struct frame_touch {
+	struct wl_list link;
+	void *data;
+
+	int x, y;
+
+	struct frame_button *button;
+};
+
 struct frame {
 	int32_t width, height;
 	char *title;
@@ -82,6 +91,7 @@ struct frame {
 
 	struct wl_list buttons;
 	struct wl_list pointers;
+	struct wl_list touches;
 };
 
 static struct frame_button *
@@ -227,6 +237,32 @@ frame_pointer_destroy(struct frame_pointer *pointer)
 	free(pointer);
 }
 
+static struct frame_touch *
+frame_touch_get(struct frame *frame, void *data)
+{
+	struct frame_touch *touch;
+
+	wl_list_for_each(touch, &frame->touches, link)
+		if (touch->data == data)
+			return touch;
+
+	touch = calloc(1, sizeof *touch);
+	if (!touch)
+		return NULL;
+
+	touch->data = data;
+	wl_list_insert(&frame->touches, &touch->link);
+
+	return touch;
+}
+
+static void
+frame_touch_destroy(struct frame_touch *touch)
+{
+	wl_list_remove(&touch->link);
+	free(touch);
+}
+
 struct frame *
 frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
 	     const char *title)
@@ -253,6 +289,7 @@ frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
 
 	wl_list_init(&frame->buttons);
 	wl_list_init(&frame->pointers);
+	wl_list_init(&frame->touches);
 
 	button = frame_button_create(frame, DATADIR "/weston/icon_window.png",
 				     FRAME_STATUS_MENU,
@@ -642,6 +679,61 @@ frame_pointer_button(struct frame *frame, void *data,
 	}
 
 	return location;
+}
+
+void
+frame_touch_down(struct frame *frame, void *data, int32_t id, int x, int y)
+{
+	struct frame_touch *touch = frame_touch_get(frame, data);
+	struct frame_button *button = frame_find_button(frame, x, y);
+	enum theme_location location;
+
+	if (id > 0)
+		return;
+
+	if (button) {
+		touch->button = button;
+		frame_button_press(touch->button);
+		return;
+	}
+
+	location = theme_get_location(frame->theme, x, y,
+				      frame->width, frame->height,
+				      frame->flags & FRAME_FLAG_MAXIMIZED ?
+				      THEME_FRAME_MAXIMIZED : 0);
+
+	switch (location) {
+	case THEME_LOCATION_TITLEBAR:
+		frame->status |= FRAME_STATUS_MOVE;
+		break;
+	case THEME_LOCATION_RESIZING_TOP:
+	case THEME_LOCATION_RESIZING_BOTTOM:
+	case THEME_LOCATION_RESIZING_LEFT:
+	case THEME_LOCATION_RESIZING_RIGHT:
+	case THEME_LOCATION_RESIZING_TOP_LEFT:
+	case THEME_LOCATION_RESIZING_TOP_RIGHT:
+	case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
+	case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
+		frame->status |= FRAME_STATUS_RESIZE;
+		break;
+	default:
+		break;
+	}
+}
+
+void
+frame_touch_up(struct frame *frame, void *data, int32_t id)
+{
+	struct frame_touch *touch = frame_touch_get(frame, data);
+
+	if (id > 0)
+		return;
+
+	if (touch->button) {
+		frame_button_release(touch->button);
+		frame_touch_destroy(touch);
+		return;
+	}
 }
 
 void

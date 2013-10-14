@@ -192,7 +192,11 @@ enum theme_location
 frame_pointer_button(struct frame *frame, void *pointer,
 		     uint32_t button, enum frame_button_state state);
 
-/* TODO: Add Touch */
+void
+frame_touch_down(struct frame *frame, void *data, int32_t id, int x, int y);
+
+void
+frame_touch_up(struct frame *frame, void *data, int32_t id);
 
 void
 frame_repaint(struct frame *frame, cairo_t *cr);
