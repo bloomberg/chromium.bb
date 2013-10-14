@@ -9,7 +9,8 @@ import os
 import sys
 import webapp2
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+from common import ispy_utils
+
 import views
 
 JINJA = jinja2.Environment(
@@ -24,20 +25,21 @@ class DebugViewHandler(webapp2.RequestHandler):
     """Handles get requests to the /debug_view page.
 
     GET Parameters:
-      diff: The path to the diff image on a failure.
-      expected: The path to the expected image on a failure.
-      actual: The path to the actual image on a failure.
+      test_run: The test run.
+      test_name: The test name.
     """
-    diff_path = self.request.get('diff')
-    expected_path = self.request.get('expected')
-    actual_path = self.request.get('actual')
+    test_run = self.request.get('test_run')
+    test_name = self.request.get('test_name')
+    expected_path = ispy_utils.GetTestPath(test_run, test_name, 'expected.png')
+    actual_path = ispy_utils.GetFailurePath(test_run, test_name, 'actual.png')
     data = {}
 
-    def _Encode(url):
+    def _ImagePath(url):
       return '/image?file_path=%s' % url
 
-    data['diff'] = _Encode(diff_path)
-    data['expected'] = _Encode(expected_path)
-    data['actual'] = _Encode(actual_path)
+    data['expected'] = _ImagePath(expected_path)
+    data['actual'] = _ImagePath(actual_path)
+    data['test_run'] = test_run
+    data['test_name'] = test_name
     template = JINJA.get_template('debug_view.html')
     self.response.write(template.render(data))

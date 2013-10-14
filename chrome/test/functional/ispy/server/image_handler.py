@@ -2,19 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Request handler to display an image from ispy.googleplex.com."""
+"""Request handler to display an image from Google Cloud Storage."""
 
 import json
 import os
 import sys
 import webapp2
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+from common import cloud_bucket
+from common import constants
 
-from tests.rendering_test_manager import cloud_bucket
-from tests.rendering_test_manager import cloud_bucket_impl
-
-import ispy_auth_constants
+import gs_bucket
 
 
 class ImageHandler(webapp2.RequestHandler):
@@ -30,9 +28,7 @@ class ImageHandler(webapp2.RequestHandler):
     if not file_path:
       self.error(404)
       return
-    bucket = cloud_bucket_impl.CloudBucketImpl(
-        ispy_auth_constants.KEY, ispy_auth_constants.SECRET,
-        ispy_auth_constants.BUCKET)
+    bucket = gs_bucket.GoogleCloudStorageBucket(constants.BUCKET)
     try:
       image = bucket.DownloadFile(file_path)
     except cloud_bucket.FileNotFoundError:

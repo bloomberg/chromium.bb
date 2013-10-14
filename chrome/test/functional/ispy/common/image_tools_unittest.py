@@ -7,8 +7,7 @@ import sys
 import os
 from PIL import Image
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-from tools import image_tools
+import image_tools
 
 
 def _GenImage(size, color):
@@ -45,28 +44,21 @@ class ImageToolsTest(unittest.TestCase):
 
   def testGetDifferenceWithMask(self):
     self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.black25, self.black25), (0, 0, 0, 255)))
+        self.black25, self.black25)[0], (255, 255, 255, 255)))
     self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.white25, self.white25), (0, 0, 0, 255)))
+        self.white25, self.black25)[0], (210, 0, 0, 255)))
     self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.white25, self.black25), (255, 255, 255, 255)))
+        self.black25, self.black25, mask=self.black25)[0],
+                                      (255, 255, 255, 255)))
     self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.black25, self.black25, mask=self.black25), (0, 0, 0, 255)))
+        self.black25, self.black25, mask=self.white25)[0],
+                                      (225, 225, 225, 255)))
     self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.black25, self.black25, mask=self.white25), (0, 0, 0, 255)))
+        self.black25, self.white25, mask=self.black25)[0],
+                                      (210, 0, 0, 255)))
     self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.black25, self.white25, mask=self.black25), (255, 255, 255, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.black25, self.white25, mask=self.white25), (0, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.black25, self.white25, different_color=(255, 0, 0, 255)),
-                                      (255, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.white25, self.white25, same_color=(255, 0, 0, 255)),
-                                      (255, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools._GetDifferenceWithMask(
-        self.white25, self.white25,
-        mask=self.white25, masked_color=(255, 0, 0, 255)), (255, 0, 0, 255)))
+        self.black25, self.white25, mask=self.white25)[0],
+                                      (225, 225, 225, 255)))
     self.assertRaises(Exception, image_tools._GetDifferenceWithMask,
                       self.white25,
                       self.black50)
@@ -178,43 +170,13 @@ class ImageToolsTest(unittest.TestCase):
     self.assertEquals(list(image_tools.InflateMask(self.black25, 1).getdata()),
                       list(self.black25.getdata()))
 
-  def testVisualizeImageDifferences(self):
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.white25, self.black25), (255, 255, 255, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.white25, self.white25), (0, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.black25, self.black25), (0, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.white25, self.black25, mask=self.white25), (0, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.white25, self.black25, mask=self.black25), (255, 255, 255, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.white25, self.white25, mask=self.white25), (0, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.white25, self.white25, mask=self.black25), (0, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.black25, self.black25, mask=self.black25), (0, 0, 0, 255)))
-    self.assertTrue(_AllPixelsOfColor(image_tools.VisualizeImageDifferences(
-        self.black25, self.black25, mask=self.white25), (0, 0, 0, 255)))
-
-    self.assertRaises(Exception,
-                      image_tools.VisualizeImageDifferences,
-                      self.white25,
-                      self.white50)
-    self.assertRaises(Exception,
-                      image_tools.VisualizeImageDifferences,
-                      self.white25,
-                      self.black25,
-                      mask=self.white50)
-
-  def testSerialization(self):
+  def testPNGEncodeDecode(self):
     self.assertTrue(_AllPixelsOfColor(
-        image_tools.DeserializeImage(
-            image_tools.SerializeImage(self.white25)), (255, 255, 255, 255)))
+        image_tools.DecodePNG(
+            image_tools.EncodePNG(self.white25)), (255, 255, 255, 255)))
     self.assertTrue(_AllPixelsOfColor(
-        image_tools.DeserializeImage(
-            image_tools.SerializeImage(self.black25)), (0, 0, 0, 255)))
+        image_tools.DecodePNG(
+            image_tools.EncodePNG(self.black25)), (0, 0, 0, 255)))
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Abstract injector class for GCS requests."""
+"""Abstract injector class for GS requests."""
 
 
 class FileNotFoundError(Exception):
@@ -10,24 +10,24 @@ class FileNotFoundError(Exception):
   pass
 
 
-class CloudBucket(object):
-  """An abstract injector that wraps GCS requests."""
+class BaseCloudBucket(object):
+  """An abstract base class for working with GS."""
 
   def UploadFile(self, path, contents, content_type):
-    """Uploads a file to GCS.
+    """Uploads a file to GS.
 
     Args:
-      path: where in GCS to upload the file.
+      path: where in GS to upload the file.
       contents: the contents of the file to be uploaded.
       content_type: the MIME Content-Type of the file.
     """
     raise NotImplementedError
 
   def DownloadFile(self, path):
-    """Downsloads a file from GCS.
+    """Downsloads a file from GS.
 
     Args:
-      path: the location in GCS to download the file from.
+      path: the location in GS to download the file from.
 
     Returns:
       String contents of the file downloaded.
@@ -37,33 +37,42 @@ class CloudBucket(object):
     """
     raise NotImplementedError
 
-  def RemoveFile(self, path):
-    """Removes a file from GCS.
+  def UpdateFile(self, path, contents):
+    """Uploads a file to GS.
 
     Args:
-      path: the location in GCS to download the file from.
+      path: location of the file in GS to update.
+      contents: the contents of the file to be updated.
+    """
+    raise NotImplementedError
+
+  def RemoveFile(self, path):
+    """Removes a file from GS.
+
+    Args:
+      path: the location in GS to download the file from.
     """
     raise NotImplementedError
 
   def FileExists(self, path):
-    """Checks if a file exists in GCS.
+    """Checks if a file exists in GS.
 
     Args:
-      path: the location in GCS of the file.
+      path: the location in GS of the file.
 
     Returns:
-      boolean representing whether the file exists in GCS.
+      boolean representing whether the file exists in GS.
     """
     raise NotImplementedError
 
-  def GetURL(self, path):
-    """Gets a URL to an item in GCS from its path.
+  def GetImageURL(self, path):
+    """Gets a URL to an item in GS from its path.
 
     Args:
-      path: the location in GCS of a file.
+      path: the location in GS of a file.
 
     Returns:
-      an url to a file in GCS.
+      an url to a file in GS.
 
     Raises:
       bucket_injector.NotFoundException: if the file is not found.
@@ -71,12 +80,12 @@ class CloudBucket(object):
     raise NotImplementedError
 
   def GetAllPaths(self, prefix):
-    """Gets paths to files in GCS that start with a prefix.
+    """Gets paths to files in GS that start with a prefix.
 
     Args:
-      prefix: the prefix to filter files in GCS.
+      prefix: the prefix to filter files in GS.
 
     Returns:
-      a generator of paths to files in GCS.
+      a generator of paths to files in GS.
     """
     raise NotImplementedError

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ test_run }} failures</title>
+    <style>
+      .image {
+        height: 325px;
+      }
+      .cell {
+        padding-right: 25px;
+        padding-left: 25px;
+        float: left;
+      }
+      .imagelink {
+        border-width: 0px;
+      }
+      .info {
+        padding-bottom: 25px;
+      }
+      .row {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #888;
+        height: 350px;
+      }
+    </style>
+  </head>
+  <body>
+    {% for comp in comparisons %}
+      <div class="row">
+        <div class="cell">
+          Diff<br>
+          <a class="imagelink" href="{{ comp['diff'] }}">
+            <img class="image" src={{ comp['diff'] }}>
+          </a>
+        </div>
+        <div class="cell">
+          Expected<br>
+          <a class="imagelink" href="{{ comp['expected'] }}">
+            <img class="image" src={{ comp['expected'] }}>
+          </a>
+        </div>
+        <div class="cell">
+          Actual<br>
+          <a class="imagelink" href="{{ comp['actual'] }}">
+            <img class="image" src={{ comp['actual'] }}>
+          </a>
+        </div>
+        <div class="cell">
+          <br>
+          <div class="info">
+            {{ comp['test_name'] }}<br>
+            <a href='/debug_view?test_run={{ comp['test_run'] }}&test_name={{ comp['test_name'] }}'>Debug View</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </body>
+</html>

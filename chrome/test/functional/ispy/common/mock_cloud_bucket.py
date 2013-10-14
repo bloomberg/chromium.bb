@@ -8,10 +8,10 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
-from tests.rendering_test_manager import cloud_bucket
+import cloud_bucket
 
 
-class MockCloudBucket(cloud_bucket.CloudBucket):
+class MockCloudBucket(cloud_bucket.BaseCloudBucket):
   """Subclass of CloudBucket used for testing."""
 
   def __init__(self):
@@ -38,6 +38,12 @@ class MockCloudBucket(cloud_bucket.CloudBucket):
       raise cloud_bucket.FileNotFoundError
 
   # override
+  def UpdateFile(self, path, contents):
+    if not self.FileExists(path):
+      raise cloud_bucket.FileNotFoundError
+    self.UploadFile(path, contents, '')
+
+  # override
   def RemoveFile(self, path):
     if self.datastore.has_key(path):
       self.datastore.pop(path)
@@ -47,7 +53,7 @@ class MockCloudBucket(cloud_bucket.CloudBucket):
     return self.datastore.has_key(path)
 
   # override
-  def GetURL(self, path):
+  def GetImageURL(self, path):
     if self.datastore.has_key(path):
       return path
     else:

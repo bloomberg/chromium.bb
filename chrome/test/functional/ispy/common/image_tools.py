@@ -28,9 +28,9 @@ def _AreTheSameSize(images):
 
 
 def _GetDifferenceWithMask(image1, image2, mask=None,
-                           masked_color=(0, 0, 0, 255),
-                           same_color=(0, 0, 0, 255),
-                           different_color=(255, 255, 255, 255)):
+                           masked_color=(225, 225, 225, 255),
+                           same_color=(255, 255, 255, 255),
+                           different_color=(210, 0, 0, 255)):
   """Returns an image representing the difference between the two images.
 
   This function computes the difference between two images taking into
@@ -49,7 +49,8 @@ def _GetDifferenceWithMask(image1, image2, mask=None,
       between images 1 and 2 in the resulting image.
 
   Returns:
-    an image repesenting the difference between the two images.
+    A 2-tuple with an image representing the unmasked difference between the
+    two input images and the number of different pixels.
 
   Raises:
     Exception: if image1, image2, and mask are not the same size.
@@ -61,6 +62,7 @@ def _GetDifferenceWithMask(image1, image2, mask=None,
     raise Exception('images and mask must be the same size.')
   image_diff = Image.new('RGBA', image1.size, (0, 0, 0, 255))
   data = []
+  diff_pixels = 0
   for m, px1, px2 in itertools.izip(image_mask.getdata(),
                                     image1.getdata(),
                                     image2.getdata()):
@@ -70,9 +72,10 @@ def _GetDifferenceWithMask(image1, image2, mask=None,
       data.append(same_color)
     else:
       data.append(different_color)
+      diff_pixels += 1
 
   image_diff.putdata(data)
-  return image_diff
+  return (image_diff, diff_pixels)
 
 
 def CreateMask(images):
@@ -103,7 +106,9 @@ def CreateMask(images):
         image,
         other_image,
         mask,
-        masked_color=(255, 255, 255, 255))
+        masked_color=(255, 255, 255, 255),
+        same_color=(0, 0, 0, 255),
+        different_color=(255, 255, 255, 255))[0]
   return mask
 
 
@@ -133,6 +138,24 @@ def AddMasks(masks):
   return image
 
 
+def ConvertDiffToMask(diff):
+  """Converts a Diff image into a Mask image.
+
+  Args:
+    diff: the diff image to convert.
+
+  Returns:
+    a new mask image where everything that was masked or different in the diff
+    is now masked.
+  """
+  white = (255, 255, 255, 255)
+  black = (0, 0, 0, 255)
+  diff_data = diff.getdata()
+  image = Image.new('RGBA', diff.size, black)
+  image.putdata([black if px == white else white for px in diff_data])
+  return image
+
+
 def VisualizeImageDifferences(image1, image2, mask=None):
   """Returns an image repesenting the unmasked differences between two images.
 
@@ -150,8 +173,8 @@ def VisualizeImageDifferences(image1, image2, mask=None):
       out.
 
   Returns:
-    a black and white image representing the unmasked difference between
-    the two input images.
+    A 2-tuple with an image representing the unmasked difference between the
+    two input images and the number of different pixels.
 
   Raises:
     Exception: if the two images and optional mask are different sizes.
@@ -271,8 +294,8 @@ def SameImage(image1, image2, mask=None):
   return different_pixels == 0
 
 
-def SerializeImage(image):
-  """Returns a base64 encoded version of the file-contents of the image.
+def EncodePNG(image):
+  """Returns the PNG file-contents of the image.
 
   Args:
     image: an RGB image to be encoded.
@@ -282,18 +305,18 @@ def SerializeImage(image):
   """
   f = StringIO.StringIO()
   image.save(f, 'PNG')
-  encoded_image = f.getvalue().encode('base64')
+  encoded_image = f.getvalue()
   f.close()
   return encoded_image
 
 
-def DeserializeImage(encoded_image):
-  """Returns an RGB image from a base64 encoded string.
+def DecodePNG(png):
+  """Returns a RGB image from PNG file-contents.
 
   Args:
-    encoded_image: a base64 encoded string representation of an RGB image.
+    encoded_image: PNG file-contents of an RGB image.
 
   Returns:
     an RGB image
   """
-  return Image.open(StringIO.StringIO(encoded_image.decode('base64')))
+  return Image.open(StringIO.StringIO(png))

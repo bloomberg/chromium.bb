@@ -1,0 +1,117 @@
+# Copyright 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Request handler to serve the main_view page."""
+
+import jinja2
+import json
+import os
+import re
+import sys
+import webapp2
+
+from common import constants
+from common import ispy_utils
+
+import gs_bucket
+import views
+
+JINJA = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(views.__file__)),
+    extensions=['jinja2.ext.autoescape'])
+
+
+class MainViewHandler(webapp2.RequestHandler):
+  """Request handler to serve the main_view page."""
+
+  def get(self):
+    """Handles a get request to the main_view page.
+
+    If the test_run parameter is specified, then a page displaying all of
+    the failed runs in the test_run will be shown. Otherwise a view listing
+    all of the test_runs available for viewing will be displayed.
+    """
+    test_run = self.request.get('test_run')
+    bucket = gs_bucket.GoogleCloudStorageBucket(constants.BUCKET)
+    ispy = ispy_utils.ISpyUtils(bucket)
+    # Load the view.
+    if test_run:
+      self._GetForTestRun(test_run, ispy)
+      return
+    self._GetAllTestRuns(ispy)
+
+  def _GetAllTestRuns(self, ispy):
+    """Renders a list view of all of the test_runs available in GS.
+
+    Args:
+      ispy: An instance of ispy_utils.ISpyUtils.
+    """
+    template = JINJA.get_template('list_view.html')
+    data = {}
+    test_runs = set([re.match(r'^tests/([^/]+)/.+$', path).groups()[0]
+                   for path in ispy.GetAllPaths('tests/')])
+    base_url = '/?test_run=%s'
+    data['links'] = [(test_run, base_url % test_run) for test_run in test_runs]
+    self.response.write(template.render(data))
+
+  def _GetForTestRun(self, test_run, ispy):
+    """Renders a sorted list of failure-rows for a given test_run.
+
+    This method will produce a list of failure-rows that are sorted
+    in descending order by number of different pixels.
+
+    Args:
+      test_run: The name of the test_run to render failure rows from.
+      ispy: An instance of ispy_utils.ISpyUtils.
+    """
+    paths = set([path for path in ispy.GetAllPaths('failures/' + test_run)
+                 if path.endswith('actual.png')])
+    rows = [self._CreateRow(test_run, path, ispy)
+            for path in paths]
+    if rows:
+      # Function that sorts by the different_pixels field in the failure-info.
+      def _Sorter(x, y):
+        return cmp(y['info']['fraction_different'],
+                   x['info']['fraction_different'])
+      template = JINJA.get_template('main_view.html')
+      self.response.write(
+          template.render({'comparisons': sorted(rows, _Sorter),
+                           'test_run': test_run}))
+    else:
+      template = JINJA.get_template('empty_view.html')
+      self.response.write(template.render())
+
+  def _CreateRow(self, test_run, path, ispy):
+    """Creates one failure-row.
+
+    This method builds a dictionary with the data necessary to display a
+    failure in the main_view html template.
+
+    Args:
+      test_run: The name of the test_run the failure is in.
+      path: A path to the failure's actual.png file.
+      ispy: An instance of ispy_utils.ISpyUtils.
+
+    Returns:
+      A dictionary with fields necessary to render a failure-row
+        in the main_view html template.
+    """
+    res = {}
+    pattern = r'^failures/%s/([^/]+)/.+$' % test_run
+    res['test_name'] = re.match(
+        pattern, path).groups()[0]
+    res['test_run'] = test_run
+    res['info'] = json.loads(ispy.cloud_bucket.DownloadFile(
+        ispy_utils.GetFailurePath(res['test_run'], res['test_name'],
+                                  'info.txt')))
+    expected = ispy_utils.GetTestPath(test_run, res['test_name'],
+                                      'expected.png')
+    diff = ispy_utils.GetFailurePath(test_run, res['test_name'], 'diff.png')
+    res['expected_path'] = expected
+    res['diff_path'] = diff
+    res['actual_path'] = path
+    res['expected'] = ispy.cloud_bucket.GetImageURL(expected)
+    res['diff'] = ispy.cloud_bucket.GetImageURL(diff)
+    res['actual'] = ispy.cloud_bucket.GetImageURL(path)
+    return res
