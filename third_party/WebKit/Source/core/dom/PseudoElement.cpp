@@ -77,7 +77,7 @@ void PseudoElement::attach(const AttachContext& context)
     if (!renderer)
         return;
     RenderStyle* style = renderer->style();
-    if (!style->regionThread().isEmpty())
+    if (style->hasFlowFrom())
         return;
     if (style->styleType() != BEFORE && style->styleType() != AFTER)
         return;

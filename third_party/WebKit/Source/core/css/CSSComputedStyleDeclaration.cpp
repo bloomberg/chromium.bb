@@ -1457,7 +1457,7 @@ static PassRefPtr<CSSValue> valueForContentData(const RenderStyle* style)
         } else if (contentData->isText())
             list->append(cssValuePool().createValue(static_cast<const TextContentData*>(contentData)->text(), CSSPrimitiveValue::CSS_STRING));
     }
-    if (!style->regionThread().isNull())
+    if (style->hasFlowFrom())
         list->append(cssValuePool().createValue(style->regionThread(), CSSPrimitiveValue::CSS_STRING));
     return list.release();
 }
@@ -2728,7 +2728,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return cssValuePool().createValue(style->flowThread(), CSSPrimitiveValue::CSS_STRING);
         case CSSPropertyWebkitFlowFrom:
-            if (style->regionThread().isNull())
+            if (!style->hasFlowFrom())
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return cssValuePool().createValue(style->regionThread(), CSSPrimitiveValue::CSS_STRING);
         case CSSPropertyWebkitRegionFragment:

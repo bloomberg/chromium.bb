@@ -168,7 +168,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
     // treat <rt> as ruby text ONLY if it still has its default treatment of block
     if (element->hasTagName(rtTag) && style->display() == BLOCK)
         return new RenderRubyText(element);
-    if (RuntimeEnabledFeatures::cssRegionsEnabled() && style->isDisplayRegionType() && !style->regionThread().isEmpty() && doc.renderView())
+    if (RuntimeEnabledFeatures::cssRegionsEnabled() && style->isDisplayRegionType() && style->hasFlowFrom() && doc.renderView())
         return new RenderRegion(element, 0);
 
     if (style->display() == RUN_IN)

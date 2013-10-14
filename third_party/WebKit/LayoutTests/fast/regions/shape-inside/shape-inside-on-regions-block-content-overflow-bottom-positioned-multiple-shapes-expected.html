@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+    <link href="../resources/region-style.css" rel="stylesheet" type="text/css"/>
     <style>
         #page {
             font: 20px Ahem, sans-serif;
@@ -39,11 +40,11 @@
 </head>
 <body>
     <div id="page">
-        <div id="border1">X X <p>X X X X X<p></div>
-        <div id="region1" class="region"></div>
-        <div id="border2">X<p>X X X X</p><p>X X X X</p></div>
-        <div id="region2" class="region"></div>
-        <div id="overflow">X X X X X X X</div>
+        <div id="region1" class="region forcedStackingContext"></div>
+        <div id="border1" class="forcedStackingContext">X X <p>X X X X X<p></div>
+        <div id="region2" class="region forcedStackingContext"></div>
+        <div id="border2" class="forcedStackingContext">X<p>X X X X</p><p>X X X X</p></div>
+        <div id="overflow" class="forcedStackingContext">X X X X X X X</div>
     </div>
     <p style="margin-top: 22px;">Requires Ahem font. There are two regions (10px padding is applied to the regions) with two ractangle shape-insides, the shape-insides are smaller and have top and left offsets inside the content box. The rectangular shapes boundaries are represented by the blue rectangles. The block content should flow inside the blue ractangles, the overflow should be pushed down below the last region's content box, which means the overflow should start just below the last regions's shape, 10px above the green border box.</p>
     <p>Bug <a href="http://webkit.org/b/117599">117599</a>[CSS Shapes][CSS Regions] Respect bottom positioned shapes and content adjustment inside shapes</p>

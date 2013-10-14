@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="resources/region-style.css" rel="stylesheet" type="text/css"/>
+    <style>
+        #region {
+            background-color: gray;
+            width: 100px;
+            height: 100px;
+        }
+        #sibling-of-region {
+            background-color: green;
+            width: 100px;
+            height: 100px;
+            margin-top: -90px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="region" class="forcedStackingContext"></div>
+    <div id="sibling-of-region" class="forcedStackingContext"></div>
+    <p>This test verifies that if a region appears before a sibling element in DOM order, the region's
+    content paints below the sibling.
+    This test passes if there is no red visible.</p>
+</body>
+</html>

@@ -1177,3 +1177,12 @@ crbug.com/306645 plugins/destroy-plugin-from-callback.html [ Pass Crash ]
 
 crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
 crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
+
+crbug.com/303026 [ Win Linux ] fast/regions/overflow-in-uniform-regions-dynamic.html [ NeedsRebaseline ]
+crbug.com/303026 [ Win Linux ] fast/regions/overflow-in-variable-width-regions.html [ NeedsRebaseline ]
+crbug.com/303026 [ Win Linux ] fast/regions/overflow-moving-below-floats-in-variable-width-regions.html [ NeedsRebaseline ]
+crbug.com/303026 [ Win Linux ] fast/regions/overflow-not-moving-below-floats-in-variable-width-regions.html [ NeedsRebaseline ]
+crbug.com/303026 [ Win Linux ] fast/regions/overflow-rtl-in-variable-width-regions.html [ NeedsRebaseline ]
+crbug.com/303026 [ Win Linux ] fast/regions/overflow-size-change-in-variable-width-regions.html [ NeedsRebaseline ]
+crbug.com/303026 [ Win Linux ] fast/regions/top-overflow-out-of-second-region.html [ NeedsRebaseline ]
+crbug.com/303026 [ Win Linux ] fast/repaint/region-painting-invalidation.html [ NeedsRebaseline ]

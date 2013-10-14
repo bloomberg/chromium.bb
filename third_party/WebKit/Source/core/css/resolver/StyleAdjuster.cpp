@@ -279,6 +279,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         || style->position() == StickyPosition
         || (style->position() == FixedPosition && e && e->document().settings() && e->document().settings()->fixedPositionCreatesStackingContext())
         || isInTopLayer(e, style)
+        || style->hasFlowFrom()
         ))
         style->setZIndex(0);
 

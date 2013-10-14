@@ -2,27 +2,23 @@
 
 <html>
 <head>
-
-    <!-- This test checks that content can be redirected to a region. It also
-     tries out a validation strategy that recreates the intended display
-     using non-region markup. If top does not match the bottom then the 
-     result should be rejected. -->
-
+    <link href="resources/region-style.css" rel="stylesheet" type="text/css"/>
     <style type="text/css">
-        html { -webkit-writing-mode: vertical-rl }
+        html {
+            -webkit-writing-mode: vertical-rl;
+            -webkit-font-smoothing: none;
+        }
 
         #source{
             -webkit-flow-into: main-thread;
         }
 
-        .region { width: 100px; height:300px; -webkit-flow-from: main-thread; border:1px solid black; padding:5px }
-
-        .pass{
-            color: green;
-        }
-        
-        .error{
-            color: red;
+        .region {
+            -webkit-flow-from: main-thread;
+            width: 100px;
+            height: 300px;
+            border: 1px solid black;
+            padding: 5px;
         }
     </style>
 </head>
@@ -48,5 +44,10 @@
     <div class="pass">
         <p>flow content</p>
     </div>
+
+    <p>This test checks that content can be redirected to a region. It also
+     tries out a validation strategy that recreates the intended display
+     using non-region markup. If top does not match the bottom then the 
+     result should be rejected.</p>
 </body>
 </html>

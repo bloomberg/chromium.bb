@@ -65,7 +65,7 @@
     color: green;
 }
 
-.fail {
+.fail, .error {
     font-weight: bold;
     color: red;
 }
@@ -108,4 +108,10 @@
     height: 300px;
     width: 100px;
     background-color: lightgrey;
+}
+
+/* regions create Stacking Contexts */
+.forcedStackingContext {
+    position: relative;
+    z-index: 1;
 }

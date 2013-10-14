@@ -4852,7 +4852,8 @@ bool RenderLayer::shouldBeNormalFlowOnlyIgnoringCompositedScrolling() const
         || renderer()->hasClipPath()
         || renderer()->hasFilter()
         || renderer()->hasBlendMode()
-        || isTransparent();
+        || isTransparent()
+        || renderer()->isRenderRegion();
 
     return couldBeNormalFlow && !preventsElementFromBeingNormalFlow;
 }
