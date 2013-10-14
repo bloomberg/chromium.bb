@@ -526,7 +526,7 @@ def BackgroundTaskRunner(task, *args, **kwargs):
   BackgroundFailure is raised with full stack traces of all exceptions.
 
   Example:
-    # This will run somefunc(1, 'small', 'cow', foo='bar' in the background
+    # This will run somefunc(1, 'small', 'cow', foo='bar') in the background
     # while "more random stuff" is being executed.
 
     def somefunc(arg1, arg2, arg3, foo=None):
