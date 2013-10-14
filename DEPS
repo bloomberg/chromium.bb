@@ -39,7 +39,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
   # and V8 without interference from each other.
-  "webrtc_revision": "4948",
+  "webrtc_revision": "4955",
   "jsoncpp_revision": "248",
   "nss_revision": "223139",
   # Three lines of non-changing comments so that
