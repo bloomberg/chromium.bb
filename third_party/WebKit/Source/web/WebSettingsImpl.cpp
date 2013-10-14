@@ -626,11 +626,6 @@ bool WebSettingsImpl::viewportEnabled() const
     return m_settings->viewportEnabled();
 }
 
-void WebSettingsImpl::setVisualWordMovementEnabled(bool enabled)
-{
-    m_settings->setVisualWordMovementEnabled(enabled);
-}
-
 void WebSettingsImpl::setShouldDisplaySubtitles(bool enabled)
 {
     m_settings->setShouldDisplaySubtitles(enabled);

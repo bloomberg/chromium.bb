@@ -82,7 +82,6 @@ public:
     Element* rootEditableElement() const { return m_selection.rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
     Node* rootEditableElementOrTreeScopeRootNode() const;
-    Element* rootEditableElementRespectingShadowTree() const;
 
     bool rendererIsEditable() const { return m_selection.rendererIsEditable(); }
     bool isContentEditable() const { return m_selection.isContentEditable(); }
@@ -152,8 +151,6 @@ public:
 
     PassRefPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
 
-    void debugRenderer(RenderObject*, bool selected) const;
-
     void nodeWillBeRemoved(Node*);
     void didUpdateCharacterData(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
     void didMergeTextNodes(const Text& oldNode, unsigned offset);
@@ -201,8 +198,6 @@ public:
 
     FloatRect bounds(bool clipToVisibleContent = true) const;
 
-    void getClippedVisibleTextRectangles(Vector<FloatRect>&) const;
-
     HTMLFormElement* currentForm() const;
 
     void revealSelection(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);
@@ -246,8 +241,6 @@ private:
     bool shouldBlinkCaret() const;
 
     bool dispatchSelectStart();
-
-    bool visualWordMovementEnabled() const;
 
     void updateSelectionIfNeeded(const Position& base, const Position& extent, const Position& start, const Position& end);
 

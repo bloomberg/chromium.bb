@@ -118,14 +118,6 @@ Node* FrameSelection::rootEditableElementOrTreeScopeRootNode() const
     return node ? node->treeScope().rootNode() : 0;
 }
 
-Element* FrameSelection::rootEditableElementRespectingShadowTree() const
-{
-    Element* selectionRoot = m_selection.rootEditableElement();
-    if (selectionRoot && selectionRoot->isInShadowTree())
-        selectionRoot = selectionRoot->shadowHost();
-    return selectionRoot;
-}
-
 void FrameSelection::moveTo(const VisiblePosition &pos, EUserTriggered userTriggered, CursorAlignOnScroll align)
 {
     SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
@@ -412,16 +404,10 @@ static Position updatePositionAfterAdoptingTextReplacement(const Position& posit
     return Position(toText(node), positionOffset);
 }
 
-static inline bool nodeIsDetachedFromDocument(const Node& node)
-{
-    Node* highest = node.highestAncestor();
-    return highest->nodeType() == Node::DOCUMENT_FRAGMENT_NODE && !highest->isShadowRoot();
-}
-
 void FrameSelection::didUpdateCharacterData(CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
 {
     // The fragment check is a performance optimization. See http://trac.webkit.org/changeset/30062.
-    if (isNone() || !node || nodeIsDetachedFromDocument(*node))
+    if (isNone() || !node || !node->inDocument())
         return;
 
     Position base = updatePositionAfterAdoptingTextReplacement(m_selection.base(), node, offset, oldLength, newLength);
@@ -450,7 +436,7 @@ static Position updatePostionAfterAdoptingTextNodesMerged(const Position& positi
 
 void FrameSelection::didMergeTextNodes(const Text& oldNode, unsigned offset)
 {
-    if (isNone() || nodeIsDetachedFromDocument(oldNode))
+    if (isNone() || !oldNode.inDocument())
         return;
     Position base = updatePostionAfterAdoptingTextNodesMerged(m_selection.base(), oldNode, offset);
     Position extent = updatePostionAfterAdoptingTextNodesMerged(m_selection.extent(), oldNode, offset);
@@ -474,7 +460,7 @@ static Position updatePostionAfterAdoptingTextNodeSplit(const Position& position
 
 void FrameSelection::didSplitTextNode(const Text& oldNode)
 {
-    if (isNone() || nodeIsDetachedFromDocument(oldNode))
+    if (isNone() || !oldNode.inDocument())
         return;
     Position base = updatePostionAfterAdoptingTextNodeSplit(m_selection.base(), oldNode);
     Position extent = updatePostionAfterAdoptingTextNodeSplit(m_selection.extent(), oldNode);
@@ -1317,71 +1303,6 @@ void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& pai
         CaretBase::paintCaret(m_selection.start().deprecatedNode(), context, paintOffset, clipRect);
 }
 
-void FrameSelection::debugRenderer(RenderObject *r, bool selected) const
-{
-    if (r->node()->isElementNode()) {
-        Element* element = toElement(r->node());
-        fprintf(stderr, "%s%s\n", selected ? "==> " : "    ", element->localName().string().utf8().data());
-    } else if (r->isText()) {
-        RenderText* textRenderer = toRenderText(r);
-        if (!textRenderer->textLength() || !textRenderer->firstTextBox()) {
-            fprintf(stderr, "%s#text (empty)\n", selected ? "==> " : "    ");
-            return;
-        }
-
-        static const int max = 36;
-        String text = textRenderer->text();
-        int textLength = text.length();
-        if (selected) {
-            int offset = 0;
-            if (r->node() == m_selection.start().containerNode())
-                offset = m_selection.start().computeOffsetInContainerNode();
-            else if (r->node() == m_selection.end().containerNode())
-                offset = m_selection.end().computeOffsetInContainerNode();
-
-            int pos;
-            InlineTextBox* box = textRenderer->findNextInlineTextBox(offset, pos);
-            text = text.substring(box->start(), box->len());
-
-            String show;
-            int mid = max / 2;
-            int caret = 0;
-
-            // text is shorter than max
-            if (textLength < max) {
-                show = text;
-                caret = pos;
-            } else if (pos - mid < 0) {
-                // too few characters to left
-                show = text.left(max - 3) + "...";
-                caret = pos;
-            } else if (pos - mid >= 0 && pos + mid <= textLength) {
-                // enough characters on each side
-                show = "..." + text.substring(pos - mid + 3, max - 6) + "...";
-                caret = mid;
-            } else {
-                // too few characters on right
-                show = "..." + text.right(max - 3);
-                caret = pos - (textLength - show.length());
-            }
-
-            show.replace('\n', ' ');
-            show.replace('\r', ' ');
-            fprintf(stderr, "==> #text : \"%s\" at offset %d\n", show.utf8().data(), pos);
-            fprintf(stderr, "           ");
-            for (int i = 0; i < caret; i++)
-                fprintf(stderr, " ");
-            fprintf(stderr, "^\n");
-        } else {
-            if ((int)text.length() > max)
-                text = text.left(max - 3) + "...";
-            else
-                text = text.left(max);
-            fprintf(stderr, "    #text : \"%s\"\n", text.utf8().data());
-        }
-    }
-}
-
 bool FrameSelection::contains(const LayoutPoint& point)
 {
     Document* document = m_frame->document();
@@ -1820,25 +1741,6 @@ FloatRect FrameSelection::bounds(bool clipToVisibleContent) const
     return clipToVisibleContent ? intersection(selectionRect, view->visibleContentRect()) : selectionRect;
 }
 
-void FrameSelection::getClippedVisibleTextRectangles(Vector<FloatRect>& rectangles) const
-{
-    RenderView* root = m_frame->contentRenderer();
-    if (!root)
-        return;
-
-    FloatRect visibleContentRect = m_frame->view()->visibleContentRect();
-
-    Vector<FloatQuad> quads;
-    toNormalizedRange()->textQuads(quads, true);
-
-    size_t size = quads.size();
-    for (size_t i = 0; i < size; ++i) {
-        FloatRect intersectionRect = intersection(quads[i].enclosingBoundingBox(), visibleContentRect);
-        if (!intersectionRect.isEmpty())
-            rectangles.append(intersectionRect);
-    }
-}
-
 // Scans logically forward from "start", including any child frames.
 static HTMLFormElement* scanForForm(Node* start)
 {
@@ -1930,12 +1832,6 @@ bool FrameSelection::dispatchSelectStart()
         return true;
 
     return selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart));
-}
-
-inline bool FrameSelection::visualWordMovementEnabled() const
-{
-    Settings* settings = m_frame ? m_frame->settings() : 0;
-    return settings && settings->visualWordMovementEnabled();
 }
 
 void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor)
