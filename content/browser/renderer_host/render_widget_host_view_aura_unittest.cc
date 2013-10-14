@@ -853,4 +853,46 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   view_->window_->RemoveObserver(&observer);
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+
+  view_->InitAsChild(NULL);
+  view_->GetNativeView()->SetDefaultParentByRootWindow(
+      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  view_->SetSize(view_rect.size());
+
+  MockWindowObserver observer;
+  view_->window_->AddObserver(&observer);
+
+  // Swap a frame.
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->OnSwapCompositorFrame(
+      0, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  // Swap a frame with a different surface id.
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  // Swap an empty frame, with a different surface id.
+  view_->OnSwapCompositorFrame(
+      2, MakeDelegatedFrame(1.f, gfx::Size(), gfx::Rect()));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  // Swap another frame, with a different surface id.
+  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  view_->OnSwapCompositorFrame(
+      3, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  view_->window_->RemoveObserver(&observer);
+}
+
 }  // namespace content

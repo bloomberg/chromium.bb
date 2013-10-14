@@ -1480,8 +1480,10 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
 
     // Drop the cc::DelegatedFrameResourceCollection so that we will not return
     // any resources from the old output surface with the new output surface id.
-    resource_collection_->SetClient(NULL);
-    resource_collection_ = NULL;
+    if (resource_collection_) {
+      resource_collection_->SetClient(NULL);
+      resource_collection_ = NULL;
+    }
     last_output_surface_id_ = output_surface_id;
   }
   if (frame_size.IsEmpty()) {
