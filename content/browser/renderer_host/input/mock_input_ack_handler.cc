@@ -66,10 +66,9 @@ void MockInputAckHandler::OnUnexpectedEventAck(UnexpectedEventAckType type)  {
   unexpected_event_ack_called_ = true;
 }
 
-size_t MockInputAckHandler::GetAndResetAckCount() {
-  size_t ack_count = ack_count_;
+void MockInputAckHandler::ExpectAckCalled(int times) {
+  EXPECT_EQ(times, ack_count_);
   ack_count_ = 0;
-  return ack_count;
 }
 
 void MockInputAckHandler::RecordAckCalled(InputEventAckState ack_result) {

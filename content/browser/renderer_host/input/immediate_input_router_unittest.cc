@@ -130,37 +130,32 @@ class ImmediateInputRouterTest : public InputRouterTest {
   }
 
   bool no_touch_to_renderer() {
-    return input_router()->touch_event_queue_->no_touch_to_renderer();
+    return input_router()->touch_event_queue()->no_touch_to_renderer();
   }
 
   bool TouchEventQueueEmpty() const {
-    return input_router()->touch_event_queue_->empty();
-  }
-
-  size_t GetSentMessageCountAndResetSink() {
-    size_t count = process_->sink().message_count();
-    process_->sink().ClearMessages();
-    return count;
+    return input_router()->touch_event_queue()->empty();
   }
 };
 
 TEST_F(ImmediateInputRouterTest, CoalescesRangeSelection) {
   input_router_->SendInput(scoped_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(1, 2), gfx::Point(3, 4))));
+  EXPECT_EQ(1u, process_->sink().message_count());
   ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
       process_->sink().GetMessageAt(0),
       gfx::Point(1, 2),
       gfx::Point(3, 4));
-  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // Send two more messages without acking.
   input_router_->SendInput(scoped_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(5, 6), gfx::Point(7, 8))));
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0u, process_->sink().message_count());
 
   input_router_->SendInput(scoped_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(9, 10), gfx::Point(11, 12))));
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0u, process_->sink().message_count());
 
   // Now ack the first message.
   {
@@ -169,35 +164,37 @@ TEST_F(ImmediateInputRouterTest, CoalescesRangeSelection) {
   }
 
   // Verify that the two messages are coalesced into one message.
+  EXPECT_EQ(1u, process_->sink().message_count());
   ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
       process_->sink().GetMessageAt(0),
       gfx::Point(9, 10),
       gfx::Point(11, 12));
-  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // Acking the coalesced msg should not send any more msg.
   {
     scoped_ptr<IPC::Message> response(new ViewHostMsg_SelectRange_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0u, process_->sink().message_count());
 }
 
 TEST_F(ImmediateInputRouterTest, CoalescesCaretMove) {
   input_router_->SendInput(
       scoped_ptr<IPC::Message>(new InputMsg_MoveCaret(0, gfx::Point(1, 2))));
+  EXPECT_EQ(1u, process_->sink().message_count());
   ExpectIPCMessageWithArg1<InputMsg_MoveCaret>(
       process_->sink().GetMessageAt(0), gfx::Point(1, 2));
-  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // Send two more messages without acking.
   input_router_->SendInput(
       scoped_ptr<IPC::Message>(new InputMsg_MoveCaret(0, gfx::Point(5, 6))));
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0u, process_->sink().message_count());
 
   input_router_->SendInput(
       scoped_ptr<IPC::Message>(new InputMsg_MoveCaret(0, gfx::Point(9, 10))));
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0u, process_->sink().message_count());
 
   // Now ack the first message.
   {
@@ -206,29 +203,30 @@ TEST_F(ImmediateInputRouterTest, CoalescesCaretMove) {
   }
 
   // Verify that the two messages are coalesced into one message.
+  EXPECT_EQ(1u, process_->sink().message_count());
   ExpectIPCMessageWithArg1<InputMsg_MoveCaret>(
       process_->sink().GetMessageAt(0), gfx::Point(9, 10));
-  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // Acking the coalesced msg should not send any more msg.
   {
     scoped_ptr<IPC::Message> response(new ViewHostMsg_MoveCaret_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0u, process_->sink().message_count());
 }
 
 TEST_F(ImmediateInputRouterTest, HandledInputEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   // Make sure no input event is sent to the renderer.
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0u, process_->sink().message_count());
 
   // OnKeyboardEventAck should be triggered without actual ack.
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ack_handler_->ExpectAckCalled(1);
 
   // As the event was acked already, keyboard event queue should be
   // empty.
@@ -236,39 +234,32 @@ TEST_F(ImmediateInputRouterTest, HandledInputEvent) {
 }
 
 TEST_F(ImmediateInputRouterTest, ClientCanceledKeyboardEvent) {
-  client_->set_filter_state(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  client_->set_allow_send_event(false);
 
-  // Simulate a keyboard event that has no consumer.
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  // Simulate a keyboard event.
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   // Make sure no input event is sent to the renderer.
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-
-
-  // Simulate a keyboard event that should be dropped.
-  client_->set_filter_state(INPUT_EVENT_ACK_STATE_UNKNOWN);
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
-
-  // Make sure no input event is sent to the renderer, and no ack is sent.
-  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
-  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0u, process_->sink().message_count());
+  ack_handler_->ExpectAckCalled(0);
 }
 
 TEST_F(ImmediateInputRouterTest, ShortcutKeyboardEvent) {
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, true);
+  client_->set_is_shortcut(true);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
   EXPECT_TRUE(GetIsShortcutFromHandleInputEventMessage(
       process_->sink().GetMessageAt(0)));
 
   process_->sink().ClearMessages();
 
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  client_->set_is_shortcut(false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
   EXPECT_FALSE(GetIsShortcutFromHandleInputEventMessage(
       process_->sink().GetMessageAt(0)));
 }
 
 TEST_F(ImmediateInputRouterTest, NoncorrespondingKeyEvents) {
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
   SendInputEventACK(WebInputEvent::KeyUp,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -279,7 +270,7 @@ TEST_F(ImmediateInputRouterTest, NoncorrespondingKeyEvents) {
 
 TEST_F(ImmediateInputRouterTest, HandleKeyEventsWeSent) {
   // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
+  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
   ASSERT_TRUE(input_router_->GetLastKeyboardEvent());
   EXPECT_EQ(WebInputEvent::RawKeyDown,
             input_router_->GetLastKeyboardEvent()->type);
@@ -292,7 +283,7 @@ TEST_F(ImmediateInputRouterTest, HandleKeyEventsWeSent) {
   // Send the simulated response from the renderer back.
   SendInputEventACK(WebInputEvent::RawKeyDown,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ack_handler_->ExpectAckCalled(1);
   EXPECT_EQ(WebInputEvent::RawKeyDown,
             ack_handler_->acked_keyboard_event().type);
 }
@@ -302,7 +293,7 @@ TEST_F(ImmediateInputRouterTest, IgnoreKeyEventsWeDidntSend) {
   SendInputEventACK(WebInputEvent::RawKeyDown,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
-  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+  ack_handler_->ExpectAckCalled(0);
 }
 
 // GestureEventFilter tests should be factored out of
@@ -315,9 +306,10 @@ TEST_F(ImmediateInputRouterTest, CoalescesWheelEvents) {
   SimulateWheelEvent(9, -7, 1, false);  // enqueued, different modifiers
 
   // Check that only the first event was sent.
+  EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // Check that the ACK sends the second message via ImmediateInputForwarder
   SendInputEventACK(WebInputEvent::MouseWheel,
@@ -326,26 +318,28 @@ TEST_F(ImmediateInputRouterTest, CoalescesWheelEvents) {
   // so that additional input events can be processed before
   // we turn off coalescing.
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ack_handler_->ExpectAckCalled(1);
+  EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
           InputMsg_HandleInputEvent::ID));
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // One more time.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ack_handler_->ExpectAckCalled(1);
+  EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // After the final ack, the queue should be empty.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  ack_handler_->ExpectAckCalled(1);
+  EXPECT_EQ(0U, process_->sink().message_count());
 
   // FIXME(kouhei): Below is testing gesture event filter. Maybe separate test?
   {
@@ -364,70 +358,72 @@ TEST_F(ImmediateInputRouterTest,
   // Send an initial gesture begin and ACK it.
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
                        WebGestureEvent::Touchpad);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   base::MessageLoop::current()->RunUntilIdle();
 
   // Send a wheel event, should get sent directly.
   SimulateWheelEvent(0, -5, 0, false);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(2U, process_->sink().message_count());
 
   // Send a wheel phase end event before an ACK is received for the previous
   // wheel event, which should get queued.
   SimulateWheelEventWithPhase(WebMouseWheelEvent::PhaseEnded);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(2U, process_->sink().message_count());
 
   // A gesture event should now result in the queued phase ended event being
   // transmitted before it.
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchpad);
+  ASSERT_EQ(4U, process_->sink().message_count());
 
   // Verify the events that were sent.
   const WebInputEvent* input_event =
-      GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
+      GetInputEventFromMessage(*process_->sink().GetMessageAt(2));
   ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(input_event);
   ASSERT_EQ(WebMouseWheelEvent::PhaseEnded, wheel_event->phase);
 
-  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(1));
+  input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(3));
   EXPECT_EQ(WebInputEvent::GestureScrollEnd, input_event->type);
-
-  ASSERT_EQ(2U, GetSentMessageCountAndResetSink());
 }
+
 
 // Tests that touch-events are queued properly.
 TEST_F(ImmediateInputRouterTest, TouchEventQueue) {
   PressTouchPoint(1, 1);
   SendTouchEvent();
-  EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  client_->ExpectSendImmediatelyCalled(true);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
   EXPECT_FALSE(TouchEventQueueEmpty());
 
   // The second touch should not be sent since one is already in queue.
   MoveTouchPoint(0, 5, 5);
   SendTouchEvent();
-  EXPECT_FALSE(client_->GetAndResetFilterEventCalled());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  client_->ExpectSendImmediatelyCalled(false);
+  EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_FALSE(TouchEventQueueEmpty());
 
   // Receive an ACK for the first touch-event.
   SendInputEventACK(WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_FALSE(TouchEventQueueEmpty());
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ack_handler_->ExpectAckCalled(1);
   EXPECT_EQ(WebInputEvent::TouchStart,
             ack_handler_->acked_touch_event().event.type);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
 
   SendInputEventACK(WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_TRUE(TouchEventQueueEmpty());
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ack_handler_->ExpectAckCalled(1);
   EXPECT_EQ(WebInputEvent::TouchMove,
             ack_handler_->acked_touch_event().event.type);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, process_->sink().message_count());
 }
 
 // Tests that the touch-queue is emptied if a page stops listening for touch
@@ -435,7 +431,7 @@ TEST_F(ImmediateInputRouterTest, TouchEventQueue) {
 TEST_F(ImmediateInputRouterTest, TouchEventQueueFlush) {
   input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
   EXPECT_TRUE(client_->has_touch_handler());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_TRUE(TouchEventQueueEmpty());
 
   EXPECT_TRUE(input_router_->ShouldForwardTouchEvent());
@@ -444,14 +440,15 @@ TEST_F(ImmediateInputRouterTest, TouchEventQueueFlush) {
   PressTouchPoint(1, 1);
   SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
 
   // The page stops listening for touch-events. The touch-event queue should now
   // be emptied, but none of the queued touch-events should be sent to the
   // renderer.
   input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
   EXPECT_FALSE(client_->has_touch_handler());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_TRUE(TouchEventQueueEmpty());
   EXPECT_FALSE(input_router_->ShouldForwardTouchEvent());
 }
@@ -461,7 +458,7 @@ TEST_F(ImmediateInputRouterTest, TouchEventQueueFlush) {
 // windows and aura)
 TEST_F(ImmediateInputRouterTest, AckedTouchEventState) {
   input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_TRUE(TouchEventQueueEmpty());
   EXPECT_TRUE(input_router_->ShouldForwardTouchEvent());
 
@@ -477,7 +474,8 @@ TEST_F(ImmediateInputRouterTest, AckedTouchEventState) {
   PressTouchPoint(1, 1);
   SetTouchTimestamp(timestamp);
   SendTouchEvent();
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
   expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
       gfx::Point(1, 1), 0, timestamp));
 
@@ -549,23 +547,25 @@ TEST_F(ImmediateInputRouterTest, UnhandledWheelEvent) {
   SimulateWheelEvent(0, -10, 0, false);  // enqueued
 
   // Check that only the first event was sent.
+  EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // Indicate that the wheel event was unhandled.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   // Check that the correct unhandled wheel event was received.
-  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  ack_handler_->ExpectAckCalled(1);
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_handler_->ack_state());
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -5);
 
   // Check that the second event was sent.
+  EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  process_->sink().ClearMessages();
 
   // Check that the correct unhandled wheel event was received.
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -5);

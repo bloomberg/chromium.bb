@@ -42,11 +42,11 @@ void InputRouterTest::TearDown() {
   browser_context_.reset();
 }
 
-void InputRouterTest::SimulateKeyboardEvent(WebInputEvent::Type type,
-                                            bool is_shortcut) {
+void InputRouterTest::SimulateKeyboardEvent(WebInputEvent::Type type) {
   input_router_->SendKeyboardEvent(MockWebKeyboardEventBuilder::Build(type),
-                                   ui::LatencyInfo(),
-                                   is_shortcut);
+                                   ui::LatencyInfo());
+  client_->ExpectSendCalled(true);
+  EXPECT_EQ(type, client_->sent_key_event().type);
 }
 
 void InputRouterTest::SimulateWheelEvent(float dX,
@@ -57,6 +57,9 @@ void InputRouterTest::SimulateWheelEvent(float dX,
       MouseWheelEventWithLatencyInfo(
           MockWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise),
           ui::LatencyInfo()));
+  client_->ExpectSendCalled(true);
+  EXPECT_EQ(WebInputEvent::MouseWheel, client_->sent_wheel_event().event.type);
+  EXPECT_EQ(dX, client_->sent_wheel_event().event.deltaX);
 }
 
 void InputRouterTest::SimulateMouseMove(int x, int y, int modifiers) {
@@ -64,6 +67,9 @@ void InputRouterTest::SimulateMouseMove(int x, int y, int modifiers) {
       MouseEventWithLatencyInfo(MockWebMouseEventBuilder::Build(
                                     WebInputEvent::MouseMove, x, y, modifiers),
                                 ui::LatencyInfo()));
+  client_->ExpectSendCalled(true);
+  EXPECT_EQ(WebInputEvent::MouseMove, client_->sent_mouse_event().event.type);
+  EXPECT_EQ(x, client_->sent_mouse_event().event.x);
 }
 
 void InputRouterTest::SimulateWheelEventWithPhase(
@@ -71,6 +77,9 @@ void InputRouterTest::SimulateWheelEventWithPhase(
   input_router_->SendWheelEvent(
       MouseWheelEventWithLatencyInfo(
           MockWebMouseWheelEventBuilder::Build(phase), ui::LatencyInfo()));
+  client_->ExpectSendCalled(true);
+  EXPECT_EQ(WebInputEvent::MouseWheel, client_->sent_wheel_event().event.type);
+  EXPECT_EQ(phase, client_->sent_wheel_event().event.phase);
 }
 
 // Inject provided synthetic WebGestureEvent instance.
@@ -78,6 +87,10 @@ void InputRouterTest::SimulateGestureEvent(
     const WebGestureEvent& gesture) {
   GestureEventWithLatencyInfo gesture_with_latency(gesture, ui::LatencyInfo());
   input_router_->SendGestureEvent(gesture_with_latency);
+  client_->ExpectSendCalled(true);
+  EXPECT_EQ(gesture.type, client_->sent_gesture_event().event.type);
+  EXPECT_EQ(gesture.sourceDevice,
+            client_->sent_gesture_event().event.sourceDevice);
 }
 
 // Inject simple synthetic WebGestureEvent instances.

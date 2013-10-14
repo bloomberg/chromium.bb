@@ -16,10 +16,6 @@
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
-namespace IPC {
-class Sender;
-}
-
 namespace ui {
 struct LatencyInfo;
 }
@@ -28,7 +24,7 @@ namespace content {
 
 class InputAckHandler;
 class InputRouterClient;
-class OverscrollController;
+class RenderProcessHost;
 class RenderWidgetHostImpl;
 
 // A default implementation for browser input event routing. Input commands are
@@ -39,7 +35,7 @@ class CONTENT_EXPORT ImmediateInputRouter
       public NON_EXPORTED_BASE(TouchEventQueueClient),
       public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
  public:
-  ImmediateInputRouter(IPC::Sender* sender,
+  ImmediateInputRouter(RenderProcessHost* process,
                        InputRouterClient* client,
                        InputAckHandler* ack_handler,
                        int routing_id);
@@ -54,12 +50,17 @@ class CONTENT_EXPORT ImmediateInputRouter
       const MouseWheelEventWithLatencyInfo& wheel_event) OVERRIDE;
   virtual void SendKeyboardEvent(
       const NativeWebKeyboardEvent& key_event,
-      const ui::LatencyInfo& latency_info,
-      bool is_keyboard_shortcut) OVERRIDE;
+      const ui::LatencyInfo& latency_info) OVERRIDE;
   virtual void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) OVERRIDE;
   virtual void SendTouchEvent(
       const TouchEventWithLatencyInfo& touch_event) OVERRIDE;
+  virtual void SendMouseEventImmediately(
+      const MouseEventWithLatencyInfo& mouse_event) OVERRIDE;
+  virtual void SendTouchEventImmediately(
+      const TouchEventWithLatencyInfo& touch_event) OVERRIDE;
+  virtual void SendGestureEventImmediately(
+      const GestureEventWithLatencyInfo& gesture_event) OVERRIDE;
   virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const OVERRIDE;
   virtual bool ShouldForwardTouchEvent() const OVERRIDE;
   virtual bool ShouldForwardGestureEvent(
@@ -68,23 +69,22 @@ class CONTENT_EXPORT ImmediateInputRouter
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  GestureEventFilter* gesture_event_filter() {
+    return gesture_event_filter_.get();
+  }
+
+  TouchEventQueue* touch_event_queue() {
+    return touch_event_queue_.get();
+  }
+
 private:
   friend class ImmediateInputRouterTest;
-  friend class MockRenderWidgetHost;
-
-  // TouchpadTapSuppressionControllerClient
-  virtual void SendMouseEventImmediately(
-      const MouseEventWithLatencyInfo& mouse_event) OVERRIDE;
 
   // TouchEventQueueClient
-  virtual void SendTouchEventImmediately(
-      const TouchEventWithLatencyInfo& touch_event) OVERRIDE;
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                InputEventAckState ack_result) OVERRIDE;
 
   // GetureEventFilterClient
-  virtual void SendGestureEventImmediately(
-      const GestureEventWithLatencyInfo& gesture_event) OVERRIDE;
   virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
                                  InputEventAckState ack_result) OVERRIDE;
 
@@ -112,60 +112,43 @@ private:
   void OnSelectRangeAck();
   void OnHasTouchEventHandlers(bool has_handlers);
 
-  // Indicates the source of an ack provided to |ProcessInputEventAck()|.
-  // The source is tracked by |current_ack_source_|, which aids in ack routing.
-  enum AckSource {
-    RENDERER,
-    CLIENT,
-    OVERSCROLL_CONTROLLER,
-    ACK_SOURCE_NONE
-  };
-  // Note: This function may result in |this| being deleted, and as such
-  // should be the last method called in any internal chain of event handling.
+  // Handle the event ack. Triggered via |OnInputEventAck()| if the event was
+  // processed in the renderer, or synchonously from |FilterAndSendInputevent()|
+  // if the event was filtered by the |client_| prior to sending.
   void ProcessInputEventAck(WebKit::WebInputEvent::Type event_type,
                             InputEventAckState ack_result,
-                            const ui::LatencyInfo& latency_info,
-                            AckSource ack_source);
+                            const ui::LatencyInfo& latency_info);
 
-  // Dispatches the ack'ed event to |ack_handler_|.
+  // Called by ProcessInputEventAck() to process a keyboard event ack message.
   void ProcessKeyboardAck(WebKit::WebInputEvent::Type type,
                           InputEventAckState ack_result);
 
-  // Forwards a valid |next_mouse_move_| if |type| is MouseMove.
-  void ProcessMouseAck(WebKit::WebInputEvent::Type type,
-                       InputEventAckState ack_result);
-
-  // Dispatches the ack'ed event to |ack_handler_|, forwarding queued events
-  // from |coalesced_mouse_wheel_events_|.
+  // Called by ProcessInputEventAck() to process a wheel event ack message.
+  // This could result in a task being posted to allow additional wheel
+  // input messages to be coalesced.
   void ProcessWheelAck(InputEventAckState ack_result,
                        const ui::LatencyInfo& latency);
 
-  // Forwards the event ack to |gesture_event_filter|, potentially triggering
-  // dispatch of queued gesture events.
-  void ProcessGestureAck(WebKit::WebInputEvent::Type type,
+  // Called by ProcessInputEventAck() to process a gesture event ack message.
+  // This validates the gesture for suppression of touchpad taps and sends one
+  // previously queued coalesced gesture if it exists.
+  void ProcessGestureAck(WebKit::WebInputEvent::Type,
                          InputEventAckState ack_result,
                          const ui::LatencyInfo& latency);
 
-  // Forwards the event ack to |touch_event_queue_|, potentially triggering
-  // dispatch of queued touch events, or the creation of gesture events.
+  // Called on ProcessInputEventAck() to process a touch event ack message.
+  // This can result in a gesture event being generated and sent back to the
+  // renderer.
   void ProcessTouchAck(InputEventAckState ack_result,
                        const ui::LatencyInfo& latency);
 
-  // Forwards |ack_result| to the client's OverscrollController, if necessary.
-  void ProcessAckForOverscroll(const WebKit::WebInputEvent& event,
-                               InputEventAckState ack_result);
-
-  void HandleGestureScroll(const GestureEventWithLatencyInfo& gesture_event);
-
-  void SimulateTouchGestureWithMouse(
-      const MouseEventWithLatencyInfo& mouse_event);
-
-  bool IsInOverscrollGesture() const;
+  void HandleGestureScroll(
+      const GestureEventWithLatencyInfo& gesture_event);
 
   int routing_id() const { return routing_id_; }
 
 
-  IPC::Sender* sender_;
+  RenderProcessHost* process_;
   InputRouterClient* client_;
   InputAckHandler* ack_handler_;
   int routing_id_;
@@ -221,10 +204,6 @@ private:
   // then touch events are sent to the renderer. Otherwise, the touch events are
   // not sent to the renderer.
   bool has_touch_handler_;
-
-  // The source of the ack within the scope of |ProcessInputEventAck()|.
-  // Defaults to ACK_SOURCE_NONE.
-  AckSource current_ack_source_;
 
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
