@@ -148,10 +148,12 @@ body:not(.oobe-display) #progress-dots {
 
 html[build=chrome] #header-sections {
   -webkit-margin-start: -48px;
+  margin-top: -1px;
 }
 
 html[build=chromium] #header-sections {
   -webkit-margin-start: 5px;
+  margin-top: -1px;
 }
 
 .header-section {
