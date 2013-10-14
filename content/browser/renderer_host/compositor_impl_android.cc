@@ -257,12 +257,6 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   root_layer_->SetBounds(size);
 }
 
-void CompositorImpl::SetHasTransparentBackground(bool flag) {
-  has_transparent_background_ = flag;
-  if (host_)
-    host_->set_has_transparent_background(flag);
-}
-
 bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
   if (host_)
     return host_->CompositeAndReadback(pixels, rect);

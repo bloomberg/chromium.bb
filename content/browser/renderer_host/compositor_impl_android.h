@@ -55,7 +55,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual void setDeviceScaleFactor(float factor) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
-  virtual void SetHasTransparentBackground(bool flag) OVERRIDE;
   virtual bool CompositeAndReadback(
       void *pixels, const gfx::Rect& rect) OVERRIDE;
   virtual void Composite() OVERRIDE;
