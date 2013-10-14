@@ -230,6 +230,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyClip:
         style->setClip(animatableValueToLengthBox(value, state));
+        style->setHasClip(true);
         return;
     case CSSPropertyColor:
         style->setColor(toAnimatableColor(value)->color());

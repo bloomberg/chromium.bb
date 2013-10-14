@@ -188,7 +188,8 @@
         // Round numbers to two decimal places.
         replace(/-?\d*\.\d+/g, function(n) {
           return (parseFloat(n).toFixed(2)).
-              replace(/\.0*$/, '');
+              replace(/\.0*$/, '').
+              replace(/^-0$/, '0');
         }).
         // Place whitespace between tokens.
         replace(/([\w\d.]+|[^\s])/g, '$1 ').

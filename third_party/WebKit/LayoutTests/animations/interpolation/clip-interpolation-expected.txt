@@ -1,16 +1,36 @@
-PASS: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [rect(0px, 50px, 70px, 15px)] at -1
-PASS: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [rect(0px, 75px, 80px, 10px)] at 0
-PASS: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [rect(0px, 87.5px, 85px, 7.5px)] at 0.5
-PASS: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [rect(0px, 100px, 90px, 5px)] at 1
-PASS: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [rect(0px, 112.5px, 95px, 2.5px)] at 1.5
-FAIL: clip from [rect(auto, auto, auto, 10px)] to [rect(20px, 50px, 50px, auto)] was [rect(20px 50px 50px 0px)] at 0.4, expected [rect(0px, 0px, 0px, 10px)]
-PASS: clip from [rect(auto, auto, auto, 10px)] to [rect(20px, 50px, 50px, auto)] was [rect(20px, 50px, 50px, 0px)] at 0.6
-FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [rect(0px 50px 50px 0px)] at -1, expected [rect(0px, -50px, 0px, 10px)]
-FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [rect(0px 50px 50px 0px)] at 0.4, expected [rect(0px, 20px, 0px, 10px)]
-FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [rect(0px 50px 50px 0px)] at 0.6, expected [rect(0px, 30px, 50px, 0px)]
-FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [rect(0px 50px 50px 0px)] at 2, expected [rect(0px, 100px, 50px, 0px)]
+     
+     
+     
+     
+     
+FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at -1, expected [rect(0px, 50px, 70px, 15px)]
+FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at 0, expected [rect(0px, 75px, 80px, 10px)]
+FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at 0.25, expected [rect(0px, 81.25px, 82.5px, 8.75px)]
+FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at 0.75, expected [rect(0px, 93.75px, 87.5px, 6.25px)]
+FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at 1, expected [rect(0px, 100px, 90px, 5px)]
+FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at 2, expected [rect(0px, 125px, 100px, 0px)]
+FAIL: clip from [rect(auto, auto, auto, 10px)] to [rect(20px, 50px, 50px, auto)] was [auto] at -1, expected [rect(auto, auto, auto, 10px)]
+FAIL: clip from [rect(auto, auto, auto, 10px)] to [rect(20px, 50px, 50px, auto)] was [auto] at 0, expected [rect(auto, auto, auto, 10px)]
+FAIL: clip from [rect(auto, auto, auto, 10px)] to [rect(20px, 50px, 50px, auto)] was [auto] at 0.25, expected [rect(auto, auto, auto, 10px)]
+FAIL: clip from [rect(auto, auto, auto, 10px)] to [rect(20px, 50px, 50px, auto)] was [auto] at 0.75, expected [rect(20px, 50px, 50px, auto)]
+FAIL: clip from [rect(auto, auto, auto, 10px)] to [rect(20px, 50px, 50px, auto)] was [auto] at 1, expected [rect(20px, 50px, 50px, auto)]
+FAIL: clip from [rect(auto, auto, auto, 10px)] to [rect(20px, 50px, 50px, auto)] was [auto] at 2, expected [rect(20px, 50px, 50px, auto)]
+FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [auto] at -1, expected [rect(auto, -50px, auto, 10px)]
+FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [auto] at 0, expected [rect(auto, 0px, auto, 10px)]
+FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [auto] at 0.25, expected [rect(auto, 12.5px, auto, 10px)]
+FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [auto] at 0.75, expected [rect(auto, 37.5px, 50px, auto)]
+FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [auto] at 1, expected [rect(auto, 50px, 50px, auto)]
+FAIL: clip from [rect(auto, 0px, auto, 10px)] to [rect(auto, 50px, 50px, auto)] was [auto] at 2, expected [rect(auto, 100px, 50px, auto)]
 PASS: clip from [auto] to [rect(0px, 50px, 50px, 0px)] was [auto] at -1
+PASS: clip from [auto] to [rect(0px, 50px, 50px, 0px)] was [auto] at 0
 PASS: clip from [auto] to [rect(0px, 50px, 50px, 0px)] was [auto] at 0.25
 FAIL: clip from [auto] to [rect(0px, 50px, 50px, 0px)] was [auto] at 0.75, expected [rect(0px, 50px, 50px, 0px)]
+FAIL: clip from [auto] to [rect(0px, 50px, 50px, 0px)] was [auto] at 1, expected [rect(0px, 50px, 50px, 0px)]
 FAIL: clip from [auto] to [rect(0px, 50px, 50px, 0px)] was [auto] at 2, expected [rect(0px, 50px, 50px, 0px)]
+FAIL: clip from [rect(0px, 50px, 50px, 0px)] to [auto] was [auto] at -1, expected [rect(0px, 50px, 50px, 0px)]
+FAIL: clip from [rect(0px, 50px, 50px, 0px)] to [auto] was [auto] at 0, expected [rect(0px, 50px, 50px, 0px)]
+FAIL: clip from [rect(0px, 50px, 50px, 0px)] to [auto] was [auto] at 0.25, expected [rect(0px, 50px, 50px, 0px)]
+PASS: clip from [rect(0px, 50px, 50px, 0px)] to [auto] was [auto] at 0.75
+PASS: clip from [rect(0px, 50px, 50px, 0px)] to [auto] was [auto] at 1
+PASS: clip from [rect(0px, 50px, 50px, 0px)] to [auto] was [auto] at 2
 

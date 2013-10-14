@@ -207,7 +207,9 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyBottom:
         return createFromLength(style->bottom(), style);
     case CSSPropertyClip:
-        return createFromLengthBox(style->clip(), style);
+        if (style->hasClip())
+            return createFromLengthBox(style->clip(), style);
+        return AnimatableUnknown::create(CSSPrimitiveValue::create(CSSValueAuto));
     case CSSPropertyColor:
         return createFromColor(property, style);
     case CSSPropertyFillOpacity:
