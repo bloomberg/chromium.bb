@@ -270,7 +270,7 @@ def RunWebkitLayoutTests(options):
                                      'full_results.json')
     if os.path.exists(full_results_path):
       full_results = json.load(open(full_results_path))
-      unexpected_passes, unexpected_flakes, unexpected_failures = (
+      unexpected_passes, unexpected_failures, unexpected_flakes = (
           _ParseLayoutTestResults(full_results))
       if unexpected_failures:
         _PrintDashboardLink('failed', unexpected_failures,
