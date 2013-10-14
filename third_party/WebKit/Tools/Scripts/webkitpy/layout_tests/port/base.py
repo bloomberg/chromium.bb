@@ -1497,49 +1497,52 @@ class Port(object):
 
     def virtual_test_suites(self):
         return [
-            VirtualTestSuite('virtual/gpu/fast/canvas',
+            VirtualTestSuite('gpu',
                              'fast/canvas',
                              ['--enable-accelerated-2d-canvas']),
-            VirtualTestSuite('virtual/gpu/canvas/philip',
+            VirtualTestSuite('gpu',
                              'canvas/philip',
                              ['--enable-accelerated-2d-canvas']),
-            VirtualTestSuite('virtual/threaded/compositing/visibility',
+            VirtualTestSuite('threaded',
                              'compositing/visibility',
                              ['--enable-threaded-compositing']),
-            VirtualTestSuite('virtual/threaded/compositing/webgl',
+            VirtualTestSuite('threaded',
                              'compositing/webgl',
                              ['--enable-threaded-compositing']),
-            VirtualTestSuite('virtual/gpu/fast/hidpi',
+            VirtualTestSuite('gpu',
                              'fast/hidpi',
                              ['--force-compositing-mode']),
-            VirtualTestSuite('virtual/softwarecompositing',
+            VirtualTestSuite('softwarecompositing',
                              'compositing',
-                             ['--enable-software-compositing', '--disable-gpu-compositing']),
-            VirtualTestSuite('virtual/deferred/fast/images',
+                             ['--enable-software-compositing', '--disable-gpu-compositing'],
+                             use_legacy_naming=True),
+            VirtualTestSuite('deferred',
                              'fast/images',
                              ['--enable-deferred-image-decoding', '--enable-per-tile-painting', '--force-compositing-mode']),
-            VirtualTestSuite('virtual/gpu/compositedscrolling/overflow',
+            VirtualTestSuite('gpu/compositedscrolling/overflow',
                              'compositing/overflow',
-                             ['--enable-accelerated-overflow-scroll']),
-            VirtualTestSuite('virtual/gpu/compositedscrolling/scrollbars',
+                             ['--enable-accelerated-overflow-scroll'],
+                             use_legacy_naming=True),
+            VirtualTestSuite('gpu/compositedscrolling/scrollbars',
                              'scrollbars',
-                             ['--enable-accelerated-overflow-scroll']),
-            VirtualTestSuite('virtual/threaded/animations',
+                             ['--enable-accelerated-overflow-scroll'],
+                             use_legacy_naming=True),
+            VirtualTestSuite('threaded',
                              'animations',
                              ['--enable-threaded-compositing']),
-            VirtualTestSuite('virtual/threaded/transitions',
+            VirtualTestSuite('threaded',
                              'transitions',
                              ['--enable-threaded-compositing']),
-            VirtualTestSuite('virtual/web-animations-css/animations',
+            VirtualTestSuite('web-animations-css',
                              'animations',
                              ['--enable-web-animations-css']),
-            VirtualTestSuite('virtual/stable/webexposed',
+            VirtualTestSuite('stable',
                              'webexposed',
                              ['--stable-release-mode']),
-            VirtualTestSuite('virtual/stable/media',
+            VirtualTestSuite('stable',
                              'media/stable',
                              ['--stable-release-mode']),
-            VirtualTestSuite('virtual/android/fullscreen',
+            VirtualTestSuite('android',
                              'fullscreen',
                              ['--force-compositing-mode', '--allow-webui-compositing', '--enable-threaded-compositing',
                               '--enable-fixed-position-compositing', '--enable-accelerated-overflow-scroll', '--enable-accelerated-scrollable-frames',
@@ -1547,10 +1550,10 @@ class Port(object):
                               '--enable-overlay-fullscreen-video', '--enable-overlay-scrollbars', '--enable-overscroll-notifications',
                               '--enable-fixed-layout', '--enable-viewport', '--disable-canvas-aa',
                               '--disable-composited-antialiasing']),
-            VirtualTestSuite('virtual/implsidepainting/inspector/timeline',
+            VirtualTestSuite('implsidepainting',
                              'inspector/timeline',
                              ['--enable-threaded-compositing', '--enable-impl-side-painting', '--force-compositing-mode']),
-            VirtualTestSuite('virtual/fast-text-autosizing',
+            VirtualTestSuite('fasttextautosizing',
                              'fast/text-autosizing',
                              ['--enable-fast-text-autosizing']),
         ]
@@ -1706,8 +1709,14 @@ class Port(object):
         return self.path_from_webkit_base('LayoutTests', 'platform', platform)
 
 class VirtualTestSuite(object):
-    def __init__(self, name, base, args, tests=None):
-        self.name = name
+    def __init__(self, name, base, args, use_legacy_naming=False, tests=None):
+        if use_legacy_naming:
+            self.name = 'virtual/' + name
+        else:
+            if name.find('/') != -1:
+                _log.error("Virtual test suites names cannot contain /'s: %s" % name)
+                return
+            self.name = 'virtual/' + name + '/' + base
         self.base = base
         self.args = args
         self.tests = tests or set()

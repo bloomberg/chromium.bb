@@ -43,6 +43,7 @@ from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port import Port, Driver, DriverOutput
+from webkitpy.layout_tests.port.base import VirtualTestSuite
 from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, TestPort
 
 class PortTest(unittest.TestCase):
@@ -444,3 +445,23 @@ class KeyCompareTest(unittest.TestCase):
         self.assert_cmp('/ab', '/a/a/b', -1)
         self.assert_cmp('/a/a/b', '/ab', 1)
         self.assert_cmp('/foo-bar/baz', '/foo/baz', -1)
+
+
+class VirtualTestSuiteTest(unittest.TestCase):
+    def test_basic(self):
+        suite = VirtualTestSuite('suite', 'base/foo', ['--args'])
+        self.assertEqual(suite.name, 'virtual/suite/base/foo')
+        self.assertEqual(suite.base, 'base/foo')
+        self.assertEqual(suite.args, ['--args'])
+
+    def test_no_slash(self):
+        suite = VirtualTestSuite('suite/bar', 'base/foo', ['--args'])
+        self.assertFalse(hasattr(suite, 'name'))
+        self.assertFalse(hasattr(suite, 'base'))
+        self.assertFalse(hasattr(suite, 'args'))
+
+    def test_legacy(self):
+        suite = VirtualTestSuite('suite/bar', 'base/foo', ['--args'], use_legacy_naming=True)
+        self.assertEqual(suite.name, 'virtual/suite/bar')
+        self.assertEqual(suite.base, 'base/foo')
+        self.assertEqual(suite.args, ['--args'])

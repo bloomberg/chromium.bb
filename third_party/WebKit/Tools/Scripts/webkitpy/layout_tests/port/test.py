@@ -548,8 +548,8 @@ class TestPort(Port):
 
     def virtual_test_suites(self):
         return [
-            VirtualTestSuite('virtual/passes', 'passes', ['--virtual-arg']),
-            VirtualTestSuite('virtual/skipped', 'failures/expected', ['--virtual-arg2']),
+            VirtualTestSuite('passes', 'passes', ['--virtual-arg'], use_legacy_naming=True),
+            VirtualTestSuite('skipped', 'failures/expected', ['--virtual-arg2'], use_legacy_naming=True),
         ]
 
 
