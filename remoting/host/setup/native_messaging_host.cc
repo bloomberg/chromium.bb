@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringize_macros.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/google_api_keys.h"
@@ -497,18 +498,25 @@ int NativeMessagingHostMain() {
 #error Not implemented.
 #endif
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  // Mac OS X requires that the main thread be a UI message loop in order to
+  // receive distributed notifications from the System Preferences pane. An
+  // IO thread is needed for the pairing registry and URL context getter.
+  base::Thread io_thread("io_thread");
+  io_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+
+  base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
   // OAuth client (for credential requests).
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
-      new remoting::URLRequestContextGetter(message_loop.message_loop_proxy()));
+      new remoting::URLRequestContextGetter(io_thread.message_loop_proxy()));
   scoped_ptr<remoting::OAuthClient> oauth_client(
       new remoting::OAuthClient(url_request_context_getter));
 
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 
   scoped_refptr<protocol::PairingRegistry> pairing_registry =
-      CreatePairingRegistry(message_loop.message_loop_proxy());
+      CreatePairingRegistry(io_thread.message_loop_proxy());
   remoting::NativeMessagingHost host(remoting::DaemonController::Create(),
                                      pairing_registry,
                                      oauth_client.Pass(),
