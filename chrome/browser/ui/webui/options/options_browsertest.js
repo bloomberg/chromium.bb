@@ -29,6 +29,17 @@ function OptionsWebUITest() {}
 OptionsWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
+  /** @override */
+  accessibilityIssuesAreErrors: true,
+
+  /** @override */
+  setUp: function() {
+    // user-image-stream is a streaming video element used for capturing a
+    // user image during OOBE.
+    this.accessibilityAuditConfig.ignoreSelectors('videoWithoutCaptions',
+                                                  '.user-image-stream');
+  },
+
   /**
    * Browse to the options page & call our preLoad().
    */
@@ -268,6 +279,14 @@ OptionsWebUINavigationTest.prototype = {
 
   /** @override */
   isAsync: true,
+
+  /** @override */
+  setUp: function () {
+      // user-image-stream is a streaming video element used for capturing a
+      // user image during OOBE.
+      this.accessibilityAuditConfig.ignoreSelectors('videoWithoutCaptions',
+                                                    '.user-image-stream');
+  },
 
   /**
    * Asserts that two non-nested arrays are equal. The arrays must contain only

@@ -210,9 +210,18 @@ cr.define('options', function() {
 
       if (cr.isChromeOS) {
         if (!UIAccountTweaks.loggedInAsGuest()) {
-          $('account-picture-wrapper').onclick = function(event) {
-            OptionsPage.navigateToPage('changePicture');
+          var pictureWrapper = $('account-picture-wrapper');
+          pictureWrapper.setAttribute('role', 'button');
+          pictureWrapper.tabIndex = 0;
+          function activate(event) {
+            if (event.type == 'click' ||
+                (event.type == 'keydown' && event.keyCode == 32)) {
+              OptionsPage.navigateToPage('changePicture');
+            }
           };
+          pictureWrapper.onclick = activate;
+          pictureWrapper.addEventListener('keydown', activate);
+
         }
 
         // Username (canonical email) of the currently logged in user or

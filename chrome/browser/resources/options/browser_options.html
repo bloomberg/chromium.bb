@@ -125,9 +125,9 @@
   <section>
     <h3 i18n-content="sectionTitleSearch"></h3>
       <div>
-        <span class="settings-row"
+        <label for="default-search-engine" class="settings-row"
             i18n-values=".innerHTML:defaultSearchGroupLabel">
-        </span>
+        </label>
         <div class="settings-row">
           <select id="default-search-engine" class="weakrtl"></select>
           <span class="controlled-setting-indicator"
@@ -190,7 +190,8 @@
     <h3 i18n-content="datetimeTitle"></h3>
     <div class="option-control-table">
       <div guest-visibility="disabled">
-        <span class="option-name" i18n-content="timezone"></span>
+        <label for="timezone-select" class="option-name"
+            i18n-content="timezone"></label>
         <div id="timezone-value">
           <select id="timezone-select" class="control"
               i18n-options="timezoneList" data-type="string"

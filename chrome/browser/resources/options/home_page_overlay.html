@@ -1,4 +1,4 @@
-<div id="home-page-overlay" class="page" hidden>
+<div id="home-page-overlay" class="page" role="dialog" hidden>
   <div class="close-button"></div>
   <h1 i18n-content="homePageOverlay"></h1>
   <div class="content-area">
@@ -22,12 +22,15 @@
             pref="homepage_is_newtabpage" value="false"
             metric="Options_Homepage_IsNewTabPage" dialog-pref>
         <span>
-          <label for="homepage-use-url" i18n-content="homePageUseURL"></label>
+          <label id="homepage-use-url-label" i18n-content="homePageUseURL"
+              for="homepage-use-url">
+          </label>
           <span class="controlled-setting-indicator"
               pref="homepage_is_newtabpage" value="false" dialog-pref>
           </span>
           <input id="homepage-url-field" type="url" data-type="url"
               class="weakrtl favicon-cell stretch" pref="homepage"
+              aria-labelledby="homepage-use-url-label"
               dialog-pref>
           </input>
           <span id="homepage-url-field-indicator"

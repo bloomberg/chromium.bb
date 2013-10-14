@@ -60,17 +60,17 @@ var NetInternalsTest = (function() {
       this.accessibilityIssuesAreErrors = true;
       // False positive because a unicode character is used to draw a square.
       // If it was actual text it'd be too low-contrast, but a square is fine.
-      this.accessibilityAuditConfig().ignoreSelectors(
+      this.accessibilityAuditConfig.ignoreSelectors(
           'lowContrastElements', '#timeline-view-selection-ul label');
       // Suppress this error; the black-on-gray button is readable.
-      this.accessibilityAuditConfig().ignoreSelectors(
+      this.accessibilityAuditConfig.ignoreSelectors(
           'lowContrastElements', '#export-view-save-log-file');
       // False positive because the background color highlights and then
       // fades out with a transition when there's an error.
-      this.accessibilityAuditConfig().ignoreSelectors(
+      this.accessibilityAuditConfig.ignoreSelectors(
           'lowContrastElements', '#hsts-view-query-output span');
       // False positives for unknown reason.
-      this.accessibilityAuditConfig().ignoreSelectors(
+      this.accessibilityAuditConfig.ignoreSelectors(
           'focusableElementNotVisibleAndNotAriaHidden',
           '#hsts-view-tab-content *');
 

@@ -40,14 +40,12 @@ WebUIAccessibilityAuditBrowserTest.prototype = {
 
   isAsync: false,
 
-  accessibilityAuditConfig: function() {
-      if (!this.accessibilityAuditConfig_) {
-          testing.Test.prototype.accessibilityAuditConfig.call(this);
-      }
-      this.accessibilityAuditConfig_.auditRulesToRun = ['lowContrastElements',
-                                                        'badAriaRole',
-                                                        'controlsWithoutLabel'];
-      return this.accessibilityAuditConfig_;
+  /** @override */
+  setUp: function() {
+    this.accessibilityAuditConfig.auditRulesToIgnore = [];
+    this.accessibilityAuditConfig.auditRulesToRun = ['lowContrastElements',
+                                                     'badAriaRole',
+                                                     'controlsWithoutLabel'];
   },
 
   tearDown: function() {
@@ -91,7 +89,8 @@ WebUIAccessibilityAuditBrowserTest_ShouldFail.prototype = {
 function addAuditFailures() {
   // Contrast ratio
   var style = document.createElement('style');
-  style.innerText = 'p { color: #ffffff }';
+  style.innerText = 'body { background-color: #ffff }\n' +
+                    'p { color: #ffffff }';
   document.head.appendChild(style);
 
   // Bad ARIA role
@@ -169,7 +168,7 @@ function expectAuditWillRun(times, auditConfig) {
 // |runAccessibilityChecks| and |accessibilityIssuesAreErrors| are true.
 TEST_F('WebUIAccessibilityAuditBrowserTest_ShouldFail', 'testWithAuditFailures',
        function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig());
+  expectAuditWillRun(1, this.accessibilityAuditConfig);
   addAuditFailures();
 });
 
@@ -189,7 +188,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest',
        'testWithAuditFailures_a11yIssuesAreWarnings',
         function() {
   this.accessibilityIssuesAreErrors = false;
-  expectAuditWillRun(1, this.accessibilityAuditConfig());
+  expectAuditWillRun(1, this.accessibilityAuditConfig);
   expectReportConsoleWarning();
 
   this.expectedWarnings = 1;
@@ -245,7 +244,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
 TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail',
        'testWithAuditFailures',
        function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig());
+  expectAuditWillRun(1, this.accessibilityAuditConfig);
   this.enableAccessibilityChecks();
   addAuditFailures();
 });
@@ -255,7 +254,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail',
 TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
        'testRunningAuditManually_noErrors',
        function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig());
+  expectAuditWillRun(1, this.accessibilityAuditConfig);
   expectAccessibilityOk();
 });
 
@@ -264,7 +263,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
 TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail',
        'testRunningAuditManually_withErrors',
        function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig());
+  expectAuditWillRun(1, this.accessibilityAuditConfig);
   addAuditFailures();
   expectAccessibilityOk();
 });
@@ -273,7 +272,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail',
 // accessibility audit to run multiple times.
 TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
        'testRunningAuditManuallySeveralTimes', function() {
-  expectAuditWillRun(2, this.accessibilityAuditConfig());
+  expectAuditWillRun(2, this.accessibilityAuditConfig);
   expectAccessibilityOk();
   expectAccessibilityOk();
 });
@@ -311,7 +310,7 @@ WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings_ShouldFail.prototype = {
 TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
        'testWithAuditFailures',
         function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig());
+  expectAuditWillRun(1, this.accessibilityAuditConfig);
   expectReportConsoleWarning();
   this.expectedWarnings = 1;
   this.expectedErrors = 2;
@@ -325,7 +324,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
 TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings_ShouldFail',
        'testWithAuditFailuresAndIssuesAreErrors',
         function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig());
+  expectAuditWillRun(1, this.accessibilityAuditConfig);
   this.expectedWarnings = 1;
   this.expectedErrors = 2;
 
@@ -341,7 +340,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings_ShouldFail',
 TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
        'testWithAuditFailuresAndExpectA11yOk',
         function() {
-  expectAuditWillRun(2, this.accessibilityAuditConfig());
+  expectAuditWillRun(2, this.accessibilityAuditConfig);
 
   expectAccessibilityOk();
 
@@ -369,8 +368,7 @@ TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
   expectEquals(3, accessibilityResults.length);
 
   accessibilityResults.length = 0;
-
-  this.accessibilityAuditConfig().ignoreSelectors('lowContrastElements', 'P');
+  this.accessibilityAuditConfig.ignoreSelectors('lowContrastElements', '*');
   try {
     assertAccessibilityOk(accessibilityResults);
   } catch (e) {

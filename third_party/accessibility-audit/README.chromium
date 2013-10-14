@@ -2,7 +2,7 @@ Name: Accessibility Audit library, from Accessibility Developer Tools
 Short Name: accessibility-audit
 URL: https://github.com/GoogleChrome/accessibility-developer-tools/
 Version: 0
-Revision: 1932e35896baf576c64ec8ddade00cfb68f81610
+Revision: 3c23a70bf1ef21e494d7ba0ef5622354473f13d0
 License: Apache 2.0
 License File: LICENSE
 Security Critical: no
