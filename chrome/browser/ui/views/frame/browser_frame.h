@@ -16,7 +16,6 @@ class AvatarMenuButton;
 class BrowserRootView;
 class BrowserView;
 class NativeBrowserFrame;
-class NewAvatarButton;
 class NonClientFrameView;
 class SystemMenuModelBuilder;
 
@@ -98,8 +97,6 @@ class BrowserFrame
   bool ShouldLeaveOffsetNearTopBorder();
 
   AvatarMenuButton* GetAvatarMenuButton();
-
-  NewAvatarButton* GetNewAvatarMenuButton();
 
   // Returns the menu model. BrowserFrame owns the returned model.
   ui::MenuModel* GetSystemMenuModel();

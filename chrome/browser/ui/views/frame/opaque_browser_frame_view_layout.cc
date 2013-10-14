@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 
-#include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/views/new_avatar_button.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -50,9 +48,6 @@ const int kAvatarLeftSpacing = 2;
 
 // Space between the right edge of the avatar and the tabstrip.
 const int kAvatarRightSpacing = -4;
-
-// How far the new avatar button is from the closest caption button.
-const int kNewAvatarButtonOffset = 5;
 
 // In restored mode, the New Tab button isn't at the same height as the caption
 // buttons, but the space will look cluttered if it actually slides under them,
@@ -106,8 +101,7 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
       window_icon_(NULL),
       window_title_(NULL),
       avatar_label_(NULL),
-      avatar_button_(NULL),
-      new_avatar_button_(NULL) {
+      avatar_button_(NULL) {
   trailing_buttons_.push_back(views::FRAME_BUTTON_MINIMIZE);
   trailing_buttons_.push_back(views::FRAME_BUTTON_MAXIMIZE);
   trailing_buttons_.push_back(views::FRAME_BUTTON_CLOSE);
@@ -361,24 +355,6 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
   }
 }
 
-void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
-  gfx::Size label_size = new_avatar_button_->GetPreferredSize();
-  int button_size_with_offset = kNewAvatarButtonOffset + label_size.width();
-
-  int button_x = host->width() - trailing_button_start_ -
-      button_size_with_offset;
-  int button_y = CaptionButtonY(false);
-
-  trailing_button_start_ += button_size_with_offset;
-  minimum_size_for_buttons_ += button_size_with_offset;
-
-  new_avatar_button_->SetBounds(
-      button_x,
-      button_y,
-      label_size.width(),
-      button_y + kCaptionButtonHeightWithPadding);
-}
-
 void OpaqueBrowserFrameViewLayout::LayoutAvatar() {
   // Even though the avatar is used for both incognito and profiles we always
   // use the incognito icon to layout the avatar button. The profile icon
@@ -591,9 +567,6 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
     case VIEW_ID_AVATAR_BUTTON:
       avatar_button_ = view;
       break;
-    case VIEW_ID_NEW_AVATAR_BUTTON:
-      new_avatar_button_ = static_cast<NewAvatarButton*>(view);
-      break;
     default:
       NOTIMPLEMENTED() << "Unknown view id " << id;
       break;
@@ -620,11 +593,7 @@ void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
   // on the trailing side.
   leading_button_start_++;
 
-  if (delegate_->IsRegularOrGuestSession() &&
-      profiles::IsNewProfileManagementEnabled())
-    LayoutNewStyleAvatar(host);
-  else
-    LayoutAvatar();
+  LayoutAvatar();
 
   client_view_bounds_ = CalculateClientAreaBounds(
       host->width(), host->height());

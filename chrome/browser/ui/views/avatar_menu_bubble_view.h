@@ -131,6 +131,7 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   bool expanded_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuBubbleView);
+  FRIEND_TEST_ALL_PREFIXES(AvatarMenuButtonTest, SignOut);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_AVATAR_MENU_BUBBLE_VIEW_H_

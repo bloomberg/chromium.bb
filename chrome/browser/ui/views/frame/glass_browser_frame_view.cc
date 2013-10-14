@@ -11,11 +11,9 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/new_avatar_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
@@ -56,8 +54,6 @@ const int kAvatarBottomSpacing = 2;
 const int kAvatarLeftSpacing = 2;
 // Space between the right edge of the avatar and the tabstrip.
 const int kAvatarRightSpacing = -2;
-// How far the new avatar button is from the left of the minimize button.
-const int kNewAvatarButtonOffset = 5;
 // The content left/right images have a shadow built into them.
 const int kContentEdgeShadowThickness = 2;
 // The top 3 px of the tabstrip is shadow; in maximized mode we push this off
@@ -88,12 +84,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   if (browser_view->ShouldShowWindowIcon())
     InitThrobberIcons();
 
-  if (browser_view->IsRegularOrGuestSession() &&
-      profiles::IsNewProfileManagementEnabled())
-    UpdateNewStyleAvatarInfo(this, NewAvatarButton::GLASS_BUTTON);
-  else
-    UpdateAvatarInfo();
-
+  UpdateAvatarInfo();
   if (!browser_view->IsOffTheRecord()) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                    content::NotificationService::AllSources());
@@ -110,12 +101,6 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   int minimize_button_offset =
       std::min(frame()->GetMinimizeButtonOffset(), width());
-
-  // The new avatar button is optionally displayed to the left of the
-  // minimize button.
-  if (browser_view()->ShouldShowAvatar() && new_avatar_button())
-    minimize_button_offset -= new_avatar_button()->width();
-
   int tabstrip_x = browser_view()->ShouldShowAvatar() ?
       (avatar_bounds_.right() + kAvatarRightSpacing) :
       NonClientBorderThickness() + kTabStripIndent;
@@ -222,10 +207,6 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (avatar_button() && avatar_button()->GetMirroredBounds().Contains(point))
     return HTCLIENT;
 
-  if (new_avatar_button() &&
-     new_avatar_button()->GetMirroredBounds().Contains(point))
-   return HTCLIENT;
-
   int frame_component = frame()->client_view()->NonClientHitTest(point);
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
@@ -261,30 +242,14 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void GlassBrowserFrameView::Layout() {
-  if (browser_view()->IsRegularOrGuestSession() &&
-      profiles::IsNewProfileManagementEnabled())
-    LayoutNewStyleAvatar();
-  else
-    LayoutAvatar();
-
+  LayoutAvatar();
   LayoutClientView();
 }
 
 bool GlassBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
-  bool hit_avatar_button = avatar_button() &&
-      avatar_button()->GetMirroredBounds().Intersects(rect);
-  bool hit_new_avatar_button = new_avatar_button() &&
-      new_avatar_button()->GetMirroredBounds().Intersects(rect);
-  return hit_avatar_button || hit_new_avatar_button ||
-         !frame()->client_view()->bounds().Intersects(rect);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// GlassBrowserFrameView, views::ButtonListener overrides:
-void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
-                                          const ui::Event& event) {
-  if (sender == new_avatar_button())
-    ShowProfileChooserViewBubble();
+  return (avatar_button() &&
+          avatar_button()->GetMirroredBounds().Intersects(rect)) ||
+          !frame()->client_view()->bounds().Intersects(rect);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -432,25 +397,6 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
        toolbar_color);
 }
 
-void GlassBrowserFrameView::LayoutNewStyleAvatar() {
-  gfx::Size label_size = new_avatar_button()->GetPreferredSize();
-  int button_size_with_offset = kNewAvatarButtonOffset + label_size.width();
-
-  int button_x = frame()->GetMinimizeButtonOffset() -
-      kNewAvatarButtonOffset - label_size.width();
-
-  if (base::i18n::IsRTL())
-    button_x = width() - frame()->GetMinimizeButtonOffset() +
-        kNewAvatarButtonOffset;
-
-  int button_y = frame()->IsMaximized() ? NonClientTopBorderHeight(false) : 1;
-  new_avatar_button()->SetBounds(
-      button_x,
-      button_y,
-      label_size.width(),
-      button_y + gfx::win::GetSystemMetricsInDIP(SM_CXMENUSIZE));
-}
-
 void GlassBrowserFrameView::LayoutAvatar() {
   // Even though the avatar is used for both incognito and profiles we always
   // use the incognito icon to layout the avatar button. The profile icon
@@ -552,11 +498,7 @@ void GlassBrowserFrameView::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      if (browser_view()->IsRegularOrGuestSession() &&
-          profiles::IsNewProfileManagementEnabled())
-        UpdateNewStyleAvatarInfo(this, NewAvatarButton::GLASS_BUTTON);
-      else
-        UpdateAvatarInfo();
+      UpdateAvatarInfo();
       break;
     default:
       NOTREACHED() << "Got a notification we didn't register for!";

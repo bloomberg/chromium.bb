@@ -55,8 +55,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   }
 
  private:
-  friend class NewAvatarMenuButtonTest;
-  FRIEND_TEST_ALL_PREFIXES(NewAvatarMenuButtonTest, SignOut);
+  friend class AvatarMenuButtonTest;
+  FRIEND_TEST_ALL_PREFIXES(AvatarMenuButtonTest, NewSignOut);
+  FRIEND_TEST_ALL_PREFIXES(AvatarMenuButtonTest, LaunchUserManagerScreen);
 
   typedef std::vector<size_t> Indexes;
   typedef std::map<views::Button*, int> ButtonIndexes;

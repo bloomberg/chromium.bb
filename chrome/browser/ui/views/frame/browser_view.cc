@@ -549,15 +549,6 @@ bool BrowserView::IsOffTheRecord() const {
   return browser_->profile()->IsOffTheRecord();
 }
 
-bool BrowserView::IsGuestSession() const {
-  return browser_->profile()->IsGuestSession();
-}
-
-bool BrowserView::IsRegularOrGuestSession() const {
-  Profile* profile = browser_->profile();
-  return (profile->IsGuestSession() || !profile->IsOffTheRecord());
-}
-
 int BrowserView::GetOTRIconResourceID() const {
   int otr_resource_id = IDR_OTR_ICON;
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
@@ -570,6 +561,10 @@ int BrowserView::GetOTRIconResourceID() const {
   }
 
   return otr_resource_id;
+}
+
+bool BrowserView::IsGuestSession() const {
+  return browser_->profile()->IsGuestSession();
 }
 
 int BrowserView::GetGuestIconResourceID() const {

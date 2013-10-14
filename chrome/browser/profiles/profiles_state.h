@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILES_STATE_H_
 #define CHROME_BROWSER_PROFILES_PROFILES_STATE_H_
 
-#include "base/strings/string16.h"
-
-class Browser;
 class PrefRegistrySimple;
 namespace base { class FilePath; }
 
@@ -28,9 +25,6 @@ base::FilePath GetProfilePrefsPath(const base::FilePath& profile_dir);
 
 // Register multi-profile related preferences in Local State.
 void RegisterPrefs(PrefRegistrySimple* registry);
-
-// Returns the display name of the active on-the-record profile (or guest).
-string16 GetActiveProfileDisplayName(Browser* browser);
 
 }  // namespace profiles
 
