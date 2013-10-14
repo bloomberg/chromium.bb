@@ -370,6 +370,14 @@ class NaclCodeDirective(Directive):
 def setup(app):
   """ Extension registration hook.
   """
+  # linkcheck issues HEAD requests to save time, but some Google properties
+  # reject them and we get spurious 405 responses. Monkey-patch sphinx to
+  # just use normal GET requests.
+  # See: https://bitbucket.org/birkenfeld/sphinx/issue/1292/
+  from sphinx.builders import linkcheck
+  import urllib2
+  linkcheck.HeadRequest = urllib2.Request
+
   app.add_directive('naclcode', NaclCodeDirective)
   app.add_builder(DevsiteBuilder)
 

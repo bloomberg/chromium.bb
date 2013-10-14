@@ -52,7 +52,7 @@ Visibility Styles
 -----------------
 
 `LLVM LangRef: Visibility Styles
-<http://llvm.org/releases/3.3/docs/LangRef.html#visibilitystyles>`_
+<http://llvm.org/releases/3.3/docs/LangRef.html#visibility-styles>`_
 
 PNaCl bitcode does not support visibility styles.
 
@@ -119,7 +119,7 @@ Aliases
 -------
 
 `LLVM LangRef: Aliases
-<http://llvm.org/releases/3.3/docs/LangRef.html#langref_aliases>`_
+<http://llvm.org/releases/3.3/docs/LangRef.html#aliases>`_
 
 PNaCl bitcode does not support aliases.
 
@@ -231,7 +231,7 @@ Constant Expressions
 --------------------
 
 `LLVM LangRef: Constant Expressions
-<http://llvm.org/releases/3.3/docs/LangRef.html#constantexprs>`_
+<http://llvm.org/releases/3.3/docs/LangRef.html#constant-expressions>`_
 
 Constant expressions are only allowed in
 :ref:`global variable initializers <bitcode_globalvariables>`.
@@ -255,7 +255,7 @@ Intrinsic Global Variables
 ==========================
 
 `LLVM LangRef: Intrinsic Global Variables
-<http://llvm.org/releases/3.3/docs/LangRef.html#intrinsicglobalvariables>`_
+<http://llvm.org/releases/3.3/docs/LangRef.html#intrinsic-global-variables>`_
 
 PNaCl bitcode does not support intrinsic global variables.
 

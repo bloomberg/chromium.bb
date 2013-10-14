@@ -66,3 +66,14 @@ to be viewed by in a browser by navigating to::
 
 Serving through a server and not just file:/// because this way the <link>
 relative paths to CSS actually work.
+
+Checking outgoing links for integrity
+-------------------------------------
+
+We use the Sphinx-provided link checker (configured in conf.py and with some
+monkey-patching in the extension) to check the outgoing links from the
+documentation. To run the link checker::
+
+  make linkcheck
+
+And look for "broken" in the output file.
