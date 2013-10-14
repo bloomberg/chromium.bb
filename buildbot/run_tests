@@ -90,8 +90,9 @@ special_tests=(
   ['scripts/merge_package_status_unittest.py']=skip
   ['scripts/upload_package_status_unittest.py']=skip
 
-  # Tests that take >2 minutes to run.
-  ['scripts/cros_portage_upgrade_unittest.py']=skip
+  # Tests that take >2 minutes to run.  All the slow tests are
+  # disabled atm though ...
+  #['scripts/cros_portage_upgrade_unittest.py']=skip
 )
 
 if [[ $# -ne 0 && $1 == "--quick" ]]; then
