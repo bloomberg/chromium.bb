@@ -57,13 +57,11 @@ tests.append(('archive_bitcode',
               both_env.ComponentProgram('bitcode', [bc_main])))
 
 # Link one archive as native, one as bitcode
-# We can't use the is_broken mechanism here because this test will fail to link
-# until the toolchain is rolled. TODO(dschuff) reenable after toolchain roll.
-#mixed_env = native_env.Clone()
-#mixed_env.Append(_LIBFLAGS=['-lbcsym_a', '-lnativesym_b'])
-#mixed_env.Append(IMPLICIT_LIBS=[bclib_a, nativelib_b])
-#tests.append(('archive_mixed',
-#              mixed_env.ComponentProgram('mixed', [bc_main])))
+mixed_env = native_env.Clone()
+mixed_env.Append(_LIBFLAGS=['-lbcsym_a', '-lnativesym_b'])
+mixed_env.Append(IMPLICIT_LIBS=[bclib_a, nativelib_b])
+tests.append(('archive_mixed',
+              mixed_env.ComponentProgram('mixed', [bc_main])))
 
 # Both archives are bitcode, in a group
 bcgroup_env = native_env.Clone()
@@ -94,14 +92,14 @@ tests.append(('archive_mixed_group_reverse',
                   'mixed_group_reverse', [bc_main])))
 
 # Link all as native
-#nativegroup_env = native_env.Clone()
-#nativegroup_env.Append(_LIBFLAGS=['-Wl,--start-group',
-#                                  '-lnativesym_b', '-lnativesym_a',
-#                                  '-Wl,--end-group'])
-#nativegroup_env.Append(IMPLICIT_LIBS=[nativelib_a, nativelib_b])
-#tests.append(('archive_native_group',
-#              nativegroup_env.ComponentProgram(
-#                  'native_group', [native_main])))
+nativegroup_env = native_env.Clone()
+nativegroup_env.Append(_LIBFLAGS=['-Wl,--start-group',
+                                  '-lnativesym_b', '-lnativesym_a',
+                                  '-Wl,--end-group'])
+nativegroup_env.Append(IMPLICIT_LIBS=[nativelib_a, nativelib_b])
+tests.append(('archive_native_group',
+              nativegroup_env.ComponentProgram(
+                  'native_group', [native_main])))
 
 
 
