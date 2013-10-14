@@ -223,8 +223,9 @@ class MediaSourcePlayerTest : public testing::Test {
 
   void CreateAndSetVideoSurface() {
     surface_texture_ = new gfx::SurfaceTexture(0);
-    surface_ = gfx::ScopedJavaSurface(surface_texture_.get());
-    player_.SetVideoSurface(surface_.Pass());
+    gfx::ScopedJavaSurface surface = gfx::ScopedJavaSurface(
+        surface_texture_.get());
+    player_.SetVideoSurface(surface.Pass());
   }
 
  protected:
@@ -232,8 +233,11 @@ class MediaSourcePlayerTest : public testing::Test {
   MockMediaPlayerManager manager_;
   MockDemuxerAndroid* demuxer_;  // Owned by |player_|.
   MediaSourcePlayer player_;
+  // We need to keep the surface texture while the decoder is actively decoding.
+  // Otherwise, it may trigger unexpected crashes on some devices. To switch
+  // surfaces, tests need to create their own surface texture without releasing
+  // this one if they previously called CreateAndSetVideoSurface().
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
-  gfx::ScopedJavaSurface surface_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayerTest);
 };
@@ -390,8 +394,13 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
   // surface first.
   gfx::ScopedJavaSurface empty_surface;
   player_.SetVideoSurface(empty_surface.Pass());
-  // Pass a new non-empty surface.
-  CreateAndSetVideoSurface();
+  // Pass a new non-empty surface, don't call CreateAndSetVideoSurface() as
+  // it will release the old surface_texture_ and might cause unexpected
+  // behaviors on some devices.
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(1));
+  gfx::ScopedJavaSurface surface(surface_texture.get());
+  player_.SetVideoSurface(surface.Pass());
 
   // Wait for the decoder job to finish decoding.
   while(GetMediaDecoderJob(false)->is_decoding())
