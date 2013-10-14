@@ -37,6 +37,7 @@
 #include "WebKit.h"
 #include "WebSharedWorker.h"
 #include "WebSharedWorkerRepository.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -227,7 +228,7 @@ void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassRefPtr
 
     if (!webWorker) {
         // Existing worker does not match this url, so return an error back to the caller.
-        es.throwUninformativeAndGenericDOMException(URLMismatchError);
+        es.throwDOMException(URLMismatchError, ExceptionMessages::failedToConstruct("SharedWorker", "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "')."));
         return;
     }
 
