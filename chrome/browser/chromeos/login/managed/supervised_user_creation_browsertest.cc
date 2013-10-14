@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_stub.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility.h"
 #include "chrome/browser/managed_mode/managed_user_registration_utility_stub.h"
 #include "chrome/common/chrome_switches.h"
@@ -41,12 +42,12 @@ const char kSupervisedUserPassword[] = "simplepassword";
 
 }  // namespace
 
-class SupervisedUserCreationTest : public chromeos::LoginManagerTest {
+class SupervisedUserTest : public chromeos::LoginManagerTest {
  protected:
-  SupervisedUserCreationTest() : LoginManagerTest(true),
-                                 mock_async_method_caller_(NULL),
-                                 network_portal_detector_stub_(NULL),
-                                 registration_utility_stub_(NULL) {
+  SupervisedUserTest() : LoginManagerTest(true),
+                         mock_async_method_caller_(NULL),
+                         network_portal_detector_stub_(NULL),
+                         registration_utility_stub_(NULL) {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -118,6 +119,11 @@ class SupervisedUserCreationTest : public chromeos::LoginManagerTest {
     JSEval(function);
   }
 
+  void PrepareUsers();
+  void CreateSupervisedUser();
+  void SigninAsSupervisedUser();
+  void RemoveSupervisedUser();
+
  protected:
    cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
    NetworkPortalDetectorStub* network_portal_detector_stub_;
@@ -125,18 +131,16 @@ class SupervisedUserCreationTest : public chromeos::LoginManagerTest {
    scoped_ptr<ScopedTestingManagedUserRegistrationUtility> scoped_utility_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationTest);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-    PRE_PRE_PRE_CreateAndRemoveSupervisedUser) {
+void SupervisedUserTest::PrepareUsers() {
   RegisterUser(kTestManager);
   RegisterUser(kTestOtherUser);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-    PRE_PRE_CreateAndRemoveSupervisedUser) {
+void SupervisedUserTest::CreateSupervisedUser() {
   // Create supervised user.
 
   // Navigate to supervised user creation screen.
@@ -235,8 +239,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
   JSEval("$('managed-user-creation-gotit-button').click()");
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-    PRE_CreateAndRemoveSupervisedUser) {
+void SupervisedUserTest::SigninAsSupervisedUser() {
   // Log in as supervised user, make sure that everything works.
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
   // Created supervised user have to be first in a list.
@@ -245,8 +248,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
   LoginUser(user->email());
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-    CreateAndRemoveSupervisedUser) {
+void SupervisedUserTest::RemoveSupervisedUser() {
   // Remove supervised user.
 
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
@@ -265,12 +267,75 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
       .append("querySelector('.action-box-menu-remove').click()"));
   JSExpect("!$('pod-row').pods[0].actionBoxRemoveUserWarningElement.hidden");
 
+  EXPECT_CALL(*mock_async_method_caller_, AsyncRemove(_, _)).Times(1);
+
   // Confirm deletion.
   JSEval(std::string("$('pod-row').pods[0].")
       .append("querySelector('.remove-warning-button').click()"));
 
   // Make sure there is no supervised user in list.
   ASSERT_EQ(2UL, UserManager::Get()->GetUsers().size());
+}
+
+class SupervisedUserCreationTest : public SupervisedUserTest {
+ public:
+  SupervisedUserCreationTest() : SupervisedUserTest() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationTest);
+};
+
+class SupervisedUserOwnerCreationTest : public SupervisedUserTest {
+ public:
+  SupervisedUserOwnerCreationTest() : SupervisedUserTest() {}
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    SupervisedUserTest::SetUpInProcessBrowserTestFixture();
+    cros_settings_provider_.reset(new StubCrosSettingsProvider());
+    cros_settings_provider_->Set(kDeviceOwner, base::StringValue(kTestManager));
+  }
+ private:
+  scoped_ptr<StubCrosSettingsProvider> cros_settings_provider_;
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserOwnerCreationTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+    PRE_PRE_PRE_CreateAndRemoveSupervisedUser) {
+  PrepareUsers();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+    PRE_PRE_CreateAndRemoveSupervisedUser) {
+  CreateSupervisedUser();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+    PRE_CreateAndRemoveSupervisedUser) {
+  SigninAsSupervisedUser();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
+    CreateAndRemoveSupervisedUser) {
+  RemoveSupervisedUser();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
+    PRE_PRE_PRE_CreateAndRemoveSupervisedUser) {
+  PrepareUsers();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
+    PRE_PRE_CreateAndRemoveSupervisedUser) {
+  CreateSupervisedUser();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
+    PRE_CreateAndRemoveSupervisedUser) {
+  SigninAsSupervisedUser();
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
+    CreateAndRemoveSupervisedUser) {
+  RemoveSupervisedUser();
 }
 
 }  // namespace chromeos
