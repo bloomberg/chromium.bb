@@ -359,6 +359,9 @@ void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64 id) {
 }
 
 void ServiceDiscoveryMessageHandler::ShutdownLocalDiscovery() {
+  if (!discovery_task_runner_)
+    return;
+
   discovery_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ServiceDiscoveryMessageHandler::ShutdownOnIOThread,
