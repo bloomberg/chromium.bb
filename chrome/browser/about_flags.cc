@@ -1780,22 +1780,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(cc::switches::kDisableCompositorTouchHitTesting),
   },
   {
-    "enable-accelerated-scrollable-frames",
-     IDS_FLAGS_ENABLE_ACCELERATED_SCROLLABLE_FRAMES_NAME,
-     IDS_FLAGS_ENABLE_ACCELERATED_SCROLLABLE_FRAMES_DESCRIPTION,
-     kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAcceleratedScrollableFrames,
-                               switches::kDisableAcceleratedScrollableFrames)
-  },
-  {
-    "enable-composited-scrolling-for-frames",
-     IDS_FLAGS_ENABLE_COMPOSITED_SCROLLING_FOR_FRAMES_NAME,
-     IDS_FLAGS_ENABLE_COMPOSITED_SCROLLING_FOR_FRAMES_DESCRIPTION,
-     kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableCompositedScrollingForFrames,
-                               switches::kDisableCompositedScrollingForFrames)
-  },
-  {
     "enable-streamlined-hosted-apps",
     IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME,
     IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_DESCRIPTION,

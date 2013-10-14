@@ -90,10 +90,6 @@ const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
 const char kDisableAcceleratedOverflowScroll[] =
     "disable-accelerated-overflow-scroll";
 
-// Disable accelerated compositing for scrollable frames.
-const char kDisableAcceleratedScrollableFrames[] =
-     "disable-accelerated-scrollable-frames";
-
 // Disables the hardware acceleration of plugins.
 const char kDisableAcceleratedPlugins[]     = "disable-accelerated-plugins";
 
@@ -121,10 +117,6 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // Enables browser plugin compositing experiment.
 const char kDisableBrowserPluginCompositing[] =
     "disable-browser-plugin-compositing";
-
-// Disable accelerated scrolling by the compositor for frames.
-const char kDisableCompositedScrollingForFrames[] =
-     "disable-composited-scrolling-for-frames";
 
 // See comment for kEnableCompositingForFixedPosition.
 const char kDisableCompositingForFixedPosition[] =
