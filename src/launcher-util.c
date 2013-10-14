@@ -69,25 +69,20 @@ struct weston_launcher {
 static int
 drm_drop_master(int drm_fd)
 {
-	if (drm_fd != -1)
-		return drmDropMaster(drm_fd);
-	return -EBADF;
+	return drmDropMaster(drm_fd);
 }
 static int
 drm_set_master(int drm_fd)
 {
-	if (drm_fd != -1)
-		return drmSetMaster(drm_fd);
-	return -EBADF;
+	return drmSetMaster(drm_fd);
 }
 static int
 drm_is_master(int drm_fd)
 {
 	drm_magic_t magic;
-	if (drm_fd != -1)
-		return drmGetMagic(drm_fd, &magic) == 0 &&
-		       drmAuthMagic(drm_fd, magic) == 0;
-	return 0;
+
+	return drmGetMagic(drm_fd, &magic) == 0 &&
+		drmAuthMagic(drm_fd, magic) == 0;
 }
 #else
 static int drm_drop_master(int drm_fd) {return 0;}
