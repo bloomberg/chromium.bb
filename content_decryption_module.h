@@ -286,7 +286,8 @@ enum OutputLinkTypes {
   kLinkTypeVGA = 1 << 2,
   kLinkTypeHDMI = 1 << 3,
   kLinkTypeDVI = 1 << 4,
-  kLinkTypeDisplayPort = 1 << 5
+  kLinkTypeDisplayPort = 1 << 5,
+  kLinkTypeNetwork = 1 << 6
 };
 
 //
