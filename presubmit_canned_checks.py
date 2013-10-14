@@ -823,8 +823,9 @@ def CheckOwners(input_api, output_api, source_file_filter=None,
                (needed, '\n    '.join(sorted(missing_files))))]
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
-      output_list.append(output('Suggested OWNERS:\n    %s' %
-                                ('\n    '.join(suggested_owners or []))))
+      output_list.append(output('Suggested OWNERS: ' +
+          '(Use "git-cl owners" to interactively select owners.)\n    %s' %
+          ('\n    '.join(suggested_owners or []))))
     return output_list
 
   if input_api.is_committing and not reviewers:
