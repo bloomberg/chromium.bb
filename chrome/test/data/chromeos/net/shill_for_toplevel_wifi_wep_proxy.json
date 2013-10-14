@@ -4,9 +4,9 @@
     "Mode": "managed",
     "Passphrase": "z123456789012",
     "Profile": "user",
-    "SSID": "ssid",
     "Security": "wep",
     "Type": "wifi",
-    "UIData": "{\"onc_source\":\"user_policy\"}"
+    "UIData": "{\"onc_source\":\"user_policy\"}",
+    "WiFi.HexSSID": "73736964"  // "ssid"
   }
 }

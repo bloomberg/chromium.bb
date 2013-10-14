@@ -6,11 +6,11 @@
     "GUID": "{77db0089-0bc8-4358-929c-123xcv}",
     "Mode": "managed",
     "Profile": "user",
-    "SSID": "SomeWifi-XY",
     "SaveCredentials": true,
     "Security": "802_1x",
     "Type": "wifi",
-    "UIData": "{\"certificate_pattern\":{\"EnrollmentURI\":[\"chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html\"],\"IssuerCAPEMs\":[\"pem1\",\"pem2\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"
+    "UIData": "{\"certificate_pattern\":{\"EnrollmentURI\":[\"chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html\"],\"IssuerCAPEMs\":[\"pem1\",\"pem2\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}",
+    "WiFi.HexSSID": "536F6D65576966692D5859" // "SomeWifi-XY"
   },
   "{a3860e83-f03d-4cb1-bafa-789oij}": {
     "GUID": "{a3860e83-f03d-4cb1-bafa-789oij}",

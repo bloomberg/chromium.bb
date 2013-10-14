@@ -19,6 +19,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
+#include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -652,8 +653,7 @@ bool WifiConfigView::Login() {
     base::DictionaryValue properties;
     properties.SetStringWithoutPathExpansion(
         shill::kTypeProperty, shill::kTypeWifi);
-    properties.SetStringWithoutPathExpansion(
-        shill::kSSIDProperty, GetSsid());
+    shill_property_util::SetSSID(GetSsid(), &properties);
     properties.SetStringWithoutPathExpansion(
         shill::kModeProperty, shill::kModeManaged);
     properties.SetBooleanWithoutPathExpansion(

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chromeos/network/shill_property_util.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/values_util.h"
@@ -288,9 +289,7 @@ ShillClientUnittestBase::CreateExampleServiceProperties() {
   properties->SetWithoutPathExpansion(
       shill::kTypeProperty,
       base::Value::CreateStringValue(shill::kTypeWifi));
-  properties->SetWithoutPathExpansion(
-      shill::kSSIDProperty,
-      base::Value::CreateStringValue("testssid"));
+  shill_property_util::SetSSID("testssid", properties);
   properties->SetWithoutPathExpansion(
       shill::kSecurityProperty,
       base::Value::CreateStringValue(shill::kSecurityPsk));

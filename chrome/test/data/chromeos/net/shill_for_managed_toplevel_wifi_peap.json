@@ -6,9 +6,9 @@
     "GUID": "{485d6076-dd44-6b6d-69787465725f5045}",
     "Mode": "managed",
     "Profile": "default",
-    "SSID": "ssid",
     "Security": "802_1x",
     "Type": "wifi",
-    "UIData": "{\"onc_source\":\"device_policy\"}"
+    "UIData": "{\"onc_source\":\"device_policy\"}",
+    "WiFi.HexSSID": "73736964" // "ssid"
   }
 }

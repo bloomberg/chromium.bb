@@ -5,10 +5,10 @@
     "Mode": "managed",
     "Passphrase": "some passphrase",
     "Profile": "user",
-    "SSID": "OpenWrt",
     "Security": "psk",
     "Type": "wifi",
     "UIData": "{\"onc_source\":\"user_policy\"}",
-    "WiFi.HiddenSSID": false
+    "WiFi.HiddenSSID": false,
+    "WiFi.HexSSID": "4F70656E577274"  // "OpenWrt"
   }
 }

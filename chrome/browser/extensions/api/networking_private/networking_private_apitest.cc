@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
       "      \"WiFi\": {"
       "        \"Passphrase\": \"passphrase\","
       "        \"Recommended\": [ \"AutoConnect\", \"Passphrase\" ],"
-      "        \"SSID\": \"stub_wifi2\","
+      "        \"SSID\": \"wifi2_PSK\","
       "        \"Security\": \"WPA-PSK\" }"
       "    }"
       "  ],"

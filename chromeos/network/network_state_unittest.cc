@@ -75,41 +75,53 @@ class NetworkStateTest : public testing::Test {
 
 }  // namespace
 
-// Seting kNameProperty should set network name after call to
-// InitialPropertiesReceived() in SetStringProperty().
-TEST_F(NetworkStateTest, SsidAscii) {
-  std::string wifi_setname = "SSID TEST";
-  std::string wifi_setname_result = "SSID TEST";
-  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_setname));
-  EXPECT_EQ(network_state_.name(), wifi_setname_result);
+// Setting kNameProperty should set network name after call to
+// InitialPropertiesReceived().
+TEST_F(NetworkStateTest, NameAscii) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeVPN));
+
+  std::string network_setname = "Name TEST";
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, network_setname));
+  EXPECT_FALSE(SignalInitialPropertiesReceived());
+  EXPECT_EQ(network_state_.name(), network_setname);
 }
 
-TEST_F(NetworkStateTest, SsidAsciiWithNull) {
-  std::string wifi_setname = "SSID TEST\x00xxx";
-  std::string wifi_setname_result = "SSID TEST";
-  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_setname));
-  EXPECT_EQ(network_state_.name(), wifi_setname_result);
-}
+TEST_F(NetworkStateTest, NameAsciiWithNull) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeVPN));
 
-// UTF8 SSID
-TEST_F(NetworkStateTest, SsidUtf8) {
-  std::string wifi_utf8 = "UTF-8 \u3042\u3044\u3046";
-  std::string wifi_utf8_result = "UTF-8 \xE3\x81\x82\xE3\x81\x84\xE3\x81\x86";
-  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_utf8));
-  EXPECT_EQ(network_state_.name(), wifi_utf8_result);
+  std::string network_setname = "Name TEST\x00xxx";
+  std::string network_setname_result = "Name TEST";
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, network_setname));
+  EXPECT_FALSE(SignalInitialPropertiesReceived());
+  EXPECT_EQ(network_state_.name(), network_setname_result);
 }
 
 // Truncates invalid UTF-8
-TEST_F(NetworkStateTest, SsidTruncateInvalid) {
-  std::string wifi_setname2 = "SSID TEST \x01\xff!";
-  std::string wifi_setname2_result = "SSID TEST \xEF\xBF\xBD\xEF\xBF\xBD!";
-  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_setname2));
+TEST_F(NetworkStateTest, NameTruncateInvalid) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeVPN));
+
+  std::string network_setname = "SSID TEST \x01\xff!";
+  std::string network_setname_result = "SSID TEST \xEF\xBF\xBD\xEF\xBF\xBD!";
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, network_setname));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
-  EXPECT_EQ(network_state_.name(), wifi_setname2_result);
+  EXPECT_EQ(network_state_.name(), network_setname_result);
+}
+
+// If HexSSID doesn't exist, fallback to NameProperty.
+TEST_F(NetworkStateTest, SsidFromName) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeWifi));
+
+  std::string wifi_utf8 = "UTF-8 \u3042\u3044\u3046";
+  std::string wifi_utf8_result = "UTF-8 \xE3\x81\x82\xE3\x81\x84\xE3\x81\x86";
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, wifi_utf8));
+  EXPECT_FALSE(SignalInitialPropertiesReceived());
+  EXPECT_EQ(network_state_.name(), wifi_utf8_result);
 }
 
 // latin1 SSID -> UTF8 SSID (Hex)
 TEST_F(NetworkStateTest, SsidLatin) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeWifi));
+
   std::string wifi_latin1 = "latin-1 \xc0\xcb\xcc\xd6\xfb";
   std::string wifi_latin1_hex =
       base::HexEncode(wifi_latin1.c_str(), wifi_latin1.length());
@@ -121,8 +133,11 @@ TEST_F(NetworkStateTest, SsidLatin) {
 
 // Hex SSID
 TEST_F(NetworkStateTest, SsidHex) {
-  std::string wifi_hex = "5468697320697320484558205353494421";
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeWifi));
+
   std::string wifi_hex_result = "This is HEX SSID!";
+  std::string wifi_hex =
+      base::HexEncode(wifi_hex_result.c_str(), wifi_hex_result.length());
   EXPECT_FALSE(SetStringProperty(shill::kWifiHexSsid, wifi_hex));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_hex_result);

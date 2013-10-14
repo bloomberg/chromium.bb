@@ -14,6 +14,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
+#include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -216,6 +217,10 @@ void ShillToONCTranslator::TranslateVPN() {
 void ShillToONCTranslator::TranslateWiFiWithState() {
   TranslateWithTableAndSet(
       shill::kSecurityProperty, kWiFiSecurityTable, ::onc::wifi::kSecurity);
+  std::string ssid = shill_property_util::GetSSIDFromProperties(
+      *shill_dictionary_, NULL /* ignore unknown encoding */);
+  if (!ssid.empty())
+    onc_object_->SetStringWithoutPathExpansion(::onc::wifi::kSSID, ssid);
   CopyPropertiesAccordingToSignature();
 }
 

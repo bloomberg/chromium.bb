@@ -17,6 +17,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/network/shill_property_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -333,11 +334,8 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
   std::string profile = "profile path";
-  scoped_ptr<base::StringValue> networkNameValue(
-      base::Value::CreateStringValue(networkName));
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(shill::kSSIDProperty,
-                                base::Value::CreateStringValue(networkName));
+  shill_property_util::SetSSID(networkName, &value);
   value.SetWithoutPathExpansion(shill::kProfileProperty,
                                 base::Value::CreateStringValue(profile));
 
@@ -581,7 +579,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
 TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
   const std::string service_path("test_wifi");
   base::DictionaryValue properties;
-  properties.SetStringWithoutPathExpansion(shill::kSSIDProperty, service_path);
+  shill_property_util::SetSSID(service_path, &properties);
   properties.SetStringWithoutPathExpansion(shill::kNameProperty, service_path);
   properties.SetStringWithoutPathExpansion(shill::kGuidProperty, service_path);
   properties.SetStringWithoutPathExpansion(
@@ -601,12 +599,12 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
 
   EXPECT_FALSE(create_service_path_.empty());
 
-  std::string ssid;
+  std::string guid;
   EXPECT_TRUE(GetServiceStringProperty(
-      create_service_path_, shill::kSSIDProperty, &ssid));
-  std::string actual_profile;
-  EXPECT_EQ(service_path, ssid);
+      create_service_path_, shill::kGuidProperty, &guid));
+  EXPECT_EQ(service_path, guid);
 
+  std::string actual_profile;
   EXPECT_TRUE(GetServiceStringProperty(
       create_service_path_, shill::kProfileProperty, &actual_profile));
   EXPECT_EQ(shill_stub_helper::kSharedProfilePath, actual_profile);

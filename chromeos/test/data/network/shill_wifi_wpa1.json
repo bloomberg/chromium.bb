@@ -3,7 +3,7 @@
   "Mode":"managed",
   "Name":"OpenWrt",
   "Passphrase":"some passphrase",
-  "SSID":"OpenWrt",
   "Security":"wpa",
-  "Type":"wifi"
+  "Type":"wifi",
+  "WiFi.HexSSID": "4F70656E577274" // "OpenWrt"
 }

@@ -99,7 +99,8 @@ const FieldTranslationEntry wifi_fields[] = {
     { ::onc::wifi::kFrequencyList, shill::kWifiFrequencyListProperty},
     { ::onc::wifi::kHiddenSSID, shill::kWifiHiddenSsid},
     { ::onc::wifi::kPassphrase, shill::kPassphraseProperty},
-    { ::onc::wifi::kSSID, shill::kSSIDProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::wifi::kSSID, shill::kWifiHexSsid},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::wifi::kSecurity, shill::kSecurityProperty },
     { ::onc::wifi::kSignalStrength, shill::kSignalStrengthProperty},

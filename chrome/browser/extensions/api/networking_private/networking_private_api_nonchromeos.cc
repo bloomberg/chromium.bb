@@ -60,7 +60,7 @@ bool NetworkingPrivateGetPropertiesFunction::RunImpl() {
      "\"WiFi\":{"
        "\"Frequency\":5000,"
        "\"FrequencyList\":[2400,5000],"
-       "\"SSID\":\"stub_wifi2\","
+       "\"SSID\":\"wifi2_PSK\","
        "\"Security\":\"WPA-PSK\","
        "\"SignalStrength\":80}}";
 
@@ -121,9 +121,9 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunImpl() {
       "      \"UserSetting\": \"FAKE_CREDENTIAL_VPaJDV9x\""
       "    },"
       "    \"SSID\": {"
-      "      \"Active\": \"stub_wifi2\","
+      "      \"Active\": \"wifi2_PSK\","
       "      \"Effective\": \"UserPolicy\","
-      "      \"UserPolicy\": \"stub_wifi2\""
+      "      \"UserPolicy\": \"wifi2_PSK\""
       "    },"
       "    \"Security\": {"
       "      \"Active\": \"WPA-PSK\","

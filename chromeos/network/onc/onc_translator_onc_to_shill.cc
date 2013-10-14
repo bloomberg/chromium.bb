@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
+#include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -155,6 +156,10 @@ void LocalTranslator::TranslateWiFi() {
   onc_object_->GetStringWithoutPathExpansion(::onc::wifi::kSecurity, &security);
   TranslateWithTableAndSet(security, kWiFiSecurityTable,
                            shill::kSecurityProperty);
+
+  std::string ssid;
+  onc_object_->GetStringWithoutPathExpansion(::onc::wifi::kSSID, &ssid);
+  shill_property_util::SetSSID(ssid, shill_dictionary_);
 
   // We currently only support managed and no adhoc networks.
   shill_dictionary_->SetStringWithoutPathExpansion(shill::kModeProperty,

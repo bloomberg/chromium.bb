@@ -3,8 +3,8 @@
   "Mode": "managed",
   "Passphrase": "policy's passphrase",
   "Profile": "/profile/user1/shill",
-  "SSID": "wifi1",
   "Security": "psk",
   "Type": "wifi",
-  "UIData": "{\"onc_source\":\"user_policy\"}"
+  "UIData": "{\"onc_source\":\"user_policy\"}",
+  "WiFi.HexSSID": "7769666931"  // "wifi1"
 }
