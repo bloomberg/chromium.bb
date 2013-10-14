@@ -10,8 +10,10 @@ class StringsDataSource(DataSource):
   JSON configuration file.
   '''
   def __init__(self, server_instance, _):
-    self._cache = server_instance.compiled_host_fs_factory.Create(
-        lambda _, strings_json: Parse(strings_json), StringsDataSource)
+    self._cache = server_instance.compiled_fs_factory.Create(
+        server_instance.host_file_system_provider.GetTrunk(),
+        lambda _, strings_json: Parse(strings_json),
+        StringsDataSource)
     self._strings_json_path = server_instance.strings_json_path
 
   def Cron(self):

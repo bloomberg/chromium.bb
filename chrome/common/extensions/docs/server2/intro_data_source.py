@@ -63,8 +63,13 @@ class IntroDataSource(object):
   of contents dictionary is created, which contains the headings in the intro.
   '''
   class Factory(object):
-    def __init__(self, compiled_fs_factory, ref_resolver_factory, base_paths):
-      self._cache = compiled_fs_factory.Create(self._MakeIntroDict,
+    def __init__(self,
+                 compiled_fs_factory,
+                 file_system,
+                 ref_resolver_factory,
+                 base_paths):
+      self._cache = compiled_fs_factory.Create(file_system,
+                                               self._MakeIntroDict,
                                                IntroDataSource)
       self._ref_resolver = ref_resolver_factory.Create()
       self._base_paths = base_paths

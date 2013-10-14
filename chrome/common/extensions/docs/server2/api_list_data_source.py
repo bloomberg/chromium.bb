@@ -45,7 +45,8 @@ class APIListDataSource(object):
       def NormalizePath(string):
         return string if string.endswith('/') else (string + '/')
       self._public_template_path = NormalizePath(public_template_path)
-      self._cache = compiled_fs_factory.Create(self._CollectDocumentedAPIs,
+      self._cache = compiled_fs_factory.Create(file_system,
+                                               self._CollectDocumentedAPIs,
                                                APIListDataSource)
       self._features_bundle = features_bundle
       self._object_store_creator = object_store_creator

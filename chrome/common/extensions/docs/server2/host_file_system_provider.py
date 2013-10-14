@@ -92,19 +92,21 @@ class HostFileSystemProvider(object):
     return CachingFileSystem(file_system, self._object_store_creator)
 
   @staticmethod
-  def ForLocal(object_store_creator):
+  def ForLocal(object_store_creator, **optargs):
     '''Used in creating a server instance on localhost.
     '''
     return HostFileSystemProvider(
         object_store_creator,
-        constructor_for_test=lambda **_: LocalFileSystem.Create())
+        constructor_for_test=lambda **_: LocalFileSystem.Create(),
+        **optargs)
 
   @staticmethod
-  def ForTest(file_system, object_store_creator):
+  def ForTest(file_system, object_store_creator, **optargs):
     '''Used in creating a test server instance. The HostFileSystemProvider
     returned here will always return |file_system| when its Create() method is
     called.
     '''
     return HostFileSystemProvider(
         object_store_creator,
-        constructor_for_test=lambda **_: file_system)
+        constructor_for_test=lambda **_: file_system,
+        **optargs)

@@ -32,7 +32,8 @@ def _AddPlatformsFromDependencies(feature, features_bundle):
 class _FeaturesCache(object):
   def __init__(self, file_system, compiled_fs_factory, *json_paths):
     self._file_system = file_system
-    self._cache = compiled_fs_factory.Create(self._CreateCache, type(self))
+    self._cache = compiled_fs_factory.Create(
+        file_system, self._CreateCache, type(self))
     self._json_path = json_paths[0]
     self._extra_paths = json_paths[1:]
 

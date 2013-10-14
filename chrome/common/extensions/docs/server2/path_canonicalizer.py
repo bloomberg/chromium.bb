@@ -24,11 +24,12 @@ class PathCanonicalizer(object):
   many incarnations - e.g. there didn't use to be apps/ - there may be old
   paths lying around the webs. We try to redirect those to where they are now.
   '''
-  def __init__(self, compiled_fs_factory):
+  def __init__(self, compiled_fs_factory, file_system):
     # Map of simplified API names (for typo detection) to their real paths.
     def make_public_apis(_, file_names):
       return dict((_SimplifyFileName(name), name) for name in file_names)
-    self._public_apis = compiled_fs_factory.Create(make_public_apis,
+    self._public_apis = compiled_fs_factory.Create(file_system,
+                                                   make_public_apis,
                                                    PathCanonicalizer)
 
   def Canonicalize(self, path):

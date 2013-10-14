@@ -19,26 +19,26 @@ class CompiledFileSystem(object):
   class Factory(object):
     """A class to build a CompiledFileSystem backed by |file_system|.
     """
-    def __init__(self, file_system, object_store_creator):
-      self._file_system = file_system
+    def __init__(self, object_store_creator):
       self._object_store_creator = object_store_creator
 
-    def Create(self, populate_function, cls, category=None):
-      """Create a CompiledFileSystem that populates the cache by calling
-      |populate_function| with (path, data), where |data| is the data that was
-      fetched from |path|.
-      The namespace for the file system is derived like ObjectStoreCreator: from
-      |cls| along with an optional |category|.
+    def Create(self, file_system, populate_function, cls, category=None):
+      """Creates a CompiledFileSystem view over |file_system| that populates
+      its cache by calling |populate_function| with (path, data), where |data|
+      is the data that was fetched from |path| in |file_system|.
+
+      The namespace for the compiled file system is derived similar to
+      ObjectStoreCreator: from |cls| along with an optional |category|.
       """
       assert isinstance(cls, type)
       assert not cls.__name__[0].islower()  # guard against non-class types
-      full_name = [cls.__name__, self._file_system.GetIdentity()]
+      full_name = [cls.__name__, file_system.GetIdentity()]
       if category is not None:
         full_name.append(category)
       def create_object_store(my_category):
         return self._object_store_creator.Create(
             CompiledFileSystem, category='/'.join(full_name + [my_category]))
-      return CompiledFileSystem(self._file_system,
+      return CompiledFileSystem(file_system,
                                 populate_function,
                                 create_object_store('file'),
                                 create_object_store('list'))
@@ -153,13 +153,13 @@ class CompiledFileSystem(object):
       return cache_data
     return Future(delegate=Gettable(resolve))
 
-  def StatFile(self, path):
+  def GetFileVersion(self, path):
     cache_entry = self._file_object_store.Get(path).Get()
     if cache_entry is not None:
       return cache_entry.version
     return self._file_system.Stat(path).version
 
-  def StatFileListing(self, path):
+  def GetFileListingVersion(self, path):
     if not path.endswith('/'):
       path += '/'
     cache_entry = self._list_object_store.Get(path).Get()

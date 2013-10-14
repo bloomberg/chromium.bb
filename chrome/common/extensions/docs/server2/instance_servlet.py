@@ -40,12 +40,9 @@ class OfflineRenderServletDelegate(RenderServlet.Delegate):
         offline=True)
     app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
         object_store_creator)
-    compiled_host_fs_factory = CompiledFileSystem.Factory(
-        host_file_system_provider.GetTrunk(),
-        object_store_creator)
     return ServerInstance(object_store_creator,
                           app_samples_file_system,
-                          compiled_host_fs_factory,
+                          CompiledFileSystem.Factory(object_store_creator),
                           branch_utility,
                           host_file_system_provider)
 

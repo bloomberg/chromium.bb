@@ -66,9 +66,11 @@ class TemplateDataSourceTest(unittest.TestCase):
         data_source.Render(template_name))
 
   def _CreateTemplateDataSource(self, compiled_fs_factory, api_data=None):
+    file_system = LocalFileSystem(self._base_path)
     if api_data is None:
       api_data_factory = APIDataSource.Factory(
       compiled_fs_factory,
+      file_system,
       'fake_path',
       _FakeFactory(),
       TestBranchUtility.CreateWithCannedData())
@@ -88,6 +90,7 @@ class TemplateDataSourceTest(unittest.TestCase):
         self._fake_intro_data_source_factory,
         self._fake_samples_data_source_factory,
         compiled_fs_factory,
+        file_system,
         reference_resolver_factory,
         '.',
         '.',
@@ -95,9 +98,7 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')
-    fetcher = LocalFileSystem(self._base_path)
     compiled_fs_factory = CompiledFileSystem.Factory(
-        fetcher,
         ObjectStoreCreator.ForTest())
     t_data_source = self._CreateTemplateDataSource(
         compiled_fs_factory,
@@ -113,9 +114,7 @@ class TemplateDataSourceTest(unittest.TestCase):
   @DisableLogging('warning')
   def testNotFound(self):
     self._base_path = os.path.join(self._base_path, 'simple')
-    fetcher = LocalFileSystem(self._base_path)
     compiled_fs_factory = CompiledFileSystem.Factory(
-        fetcher,
         ObjectStoreCreator.ForTest())
     t_data_source = self._CreateTemplateDataSource(
         compiled_fs_factory,
@@ -124,9 +123,7 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def testPartials(self):
     self._base_path = os.path.join(self._base_path, 'partials')
-    fetcher = LocalFileSystem(self._base_path)
     compiled_fs_factory = CompiledFileSystem.Factory(
-        fetcher,
         ObjectStoreCreator.ForTest())
     t_data_source = self._CreateTemplateDataSource(compiled_fs_factory)
     self.assertEqual(
@@ -136,10 +133,8 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def testRender(self):
     self._base_path = os.path.join(self._base_path, 'render')
-    fetcher = LocalFileSystem(self._base_path)
     context = json.loads(self._ReadLocalFile('test1.json'))
     compiled_fs_factory = CompiledFileSystem.Factory(
-        fetcher,
         ObjectStoreCreator.ForTest())
     self._RenderTest(
         'test1',

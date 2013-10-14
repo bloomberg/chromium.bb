@@ -77,9 +77,9 @@ class APIDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join(sys.path[0], 'test_data', 'test_json')
     self._compiled_fs_factory = CompiledFileSystem.Factory(
-        TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA),
         ObjectStoreCreator.ForTest())
     self._json_cache = self._compiled_fs_factory.Create(
+        TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA),
         lambda _, json: json_parse.Parse(json),
         APIDataSourceTest,
         'test')

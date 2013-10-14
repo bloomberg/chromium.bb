@@ -33,6 +33,7 @@ class TemplateDataSource(object):
                  intro_data_source_factory,
                  samples_data_source_factory,
                  compiled_fs_factory,
+                 file_system,
                  ref_resolver_factory,
                  public_template_path,
                  private_template_path,
@@ -41,7 +42,8 @@ class TemplateDataSource(object):
       self._api_list_data_source_factory = api_list_data_source_factory
       self._intro_data_source_factory = intro_data_source_factory
       self._samples_data_source_factory = samples_data_source_factory
-      self._cache = compiled_fs_factory.Create(self._CreateTemplate,
+      self._cache = compiled_fs_factory.Create(file_system,
+                                               self._CreateTemplate,
                                                TemplateDataSource)
       self._ref_resolver = ref_resolver_factory.Create()
       self._public_template_path = public_template_path

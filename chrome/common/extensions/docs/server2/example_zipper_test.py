@@ -20,7 +20,7 @@ class ExampleZipperTest(unittest.TestCase):
         LocalFileSystem(os.path.join(sys.path[0], 'test_data')),
         object_store_creator)
     self._example_zipper = ExampleZipper(
-        CompiledFileSystem.Factory(self._file_system, object_store_creator),
+        CompiledFileSystem.Factory(object_store_creator),
         self._file_system,
         'example_zipper')
 

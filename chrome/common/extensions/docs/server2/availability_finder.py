@@ -139,9 +139,9 @@ class AvailabilityFinder(object):
       # SVN data isn't available below version 5.
       return False
     available_channel = None
-    fs_factory = CompiledFileSystem.Factory(file_system,
-                                            self._object_store_creator)
-    features_fs = fs_factory.Create(lambda _, json: json_parse.Parse(json),
+    fs_factory = CompiledFileSystem.Factory(self._object_store_creator)
+    features_fs = fs_factory.Create(file_system,
+                                    lambda _, json: json_parse.Parse(json),
                                     AvailabilityFinder,
                                     category='features')
     if version >= 28:
@@ -168,9 +168,9 @@ class AvailabilityFinder(object):
     determines whether or not an API is available on the given channel,
     |channel_name|.
     '''
-    fs_factory = CompiledFileSystem.Factory(file_system,
-                                            self._object_store_creator)
-    features_fs = fs_factory.Create(lambda _, json: json_parse.Parse(json),
+    fs_factory = CompiledFileSystem.Factory(self._object_store_creator)
+    features_fs = fs_factory.Create(file_system,
+                                    lambda _, json: json_parse.Parse(json),
                                     AvailabilityFinder,
                                     category='features')
     available_channel = (_GetChannelFromApiFeatures(api_name, features_fs)

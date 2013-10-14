@@ -31,18 +31,16 @@ identity = lambda _, x: x
 class ChainedCompiledFileSystemTest(unittest.TestCase):
   def setUp(self):
     object_store_creator = ObjectStoreCreator(start_empty=False)
-    base_file_system = TestFileSystem(_TEST_DATA_BASE)
-    self._base_factory = CompiledFileSystem.Factory(base_file_system,
-                                                    object_store_creator)
-    self._file_system = TestFileSystem(_TEST_DATA_NEW)
-    self._patched_factory = CompiledFileSystem.Factory(self._file_system,
-                                                       object_store_creator)
-    self._chained_factory = ChainedCompiledFileSystem.Factory(
-        [(self._patched_factory, self._file_system),
-         (self._base_factory, base_file_system)])
-    self._base_compiled_fs = self._base_factory.Create(identity, TestFileSystem)
-    self._chained_compiled_fs = self._chained_factory.Create(
-        identity, TestFileSystem)
+    base_file_system = TestFileSystem(_TEST_DATA_BASE, identity='base')
+    self._base_compiled_fs = CompiledFileSystem.Factory(
+        object_store_creator).Create(base_file_system,
+                                     identity,
+                                     ChainedCompiledFileSystemTest)
+    chained_factory = ChainedCompiledFileSystem.Factory([base_file_system],
+                                                        object_store_creator)
+    self._new_file_system = TestFileSystem(_TEST_DATA_NEW, identity='new')
+    self._chained_compiled_fs = chained_factory.Create(
+        self._new_file_system, identity, ChainedCompiledFileSystemTest)
 
   def testGetFromFile(self):
     self.assertEqual(self._chained_compiled_fs.GetFromFile('a.txt').Get(),
@@ -51,22 +49,22 @@ class ChainedCompiledFileSystemTest(unittest.TestCase):
                      'a new file')
     self.assertEqual(self._chained_compiled_fs.GetFromFile('dir/new.txt').Get(),
                      'new file in dir')
-    self._file_system.IncrementStat('a.txt')
+    self._new_file_system.IncrementStat('a.txt')
     self.assertNotEqual(self._chained_compiled_fs.GetFromFile('a.txt').Get(),
                         self._base_compiled_fs.GetFromFile('a.txt').Get())
     self.assertEqual(self._chained_compiled_fs.GetFromFile('a.txt').Get(),
-                     self._file_system.ReadSingle('a.txt').Get())
+                     self._new_file_system.ReadSingle('a.txt').Get())
 
   def testGetFromFileListing(self):
     self.assertEqual(self._chained_compiled_fs.GetFromFile('dir/').Get(),
                      self._base_compiled_fs.GetFromFile('dir/').Get())
-    self._file_system.IncrementStat('dir/')
+    self._new_file_system.IncrementStat('dir/')
     self.assertNotEqual(
         self._chained_compiled_fs.GetFromFileListing('dir/').Get(),
         self._base_compiled_fs.GetFromFileListing('dir/').Get())
     self.assertEqual(
         self._chained_compiled_fs.GetFromFileListing('dir/').Get(),
-        self._file_system.ReadSingle('dir/').Get())
+        self._new_file_system.ReadSingle('dir/').Get())
 
 if __name__ == '__main__':
   unittest.main()

@@ -26,9 +26,10 @@ class TestFileSystem(FileSystem):
   IncrementStat.
   '''
 
-  def __init__(self, obj, relative_to=None):
+  def __init__(self, obj, relative_to=None, identity=None):
     assert obj is not None
     self._obj = obj if relative_to is None else _MoveTo(relative_to, obj)
+    self._identity = identity or type(self).__name__
     self._path_stats = {}
     self._global_stat = 0
 
@@ -113,4 +114,4 @@ class TestFileSystem(FileSystem):
       self._global_stat += 1
 
   def GetIdentity(self):
-    return self.__class__.__name__
+    return self._identity

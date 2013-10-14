@@ -25,9 +25,8 @@ class SamplesDataSource(object):
     '''
     def __init__(self,
                  host_file_system,
-                 compiled_host_fs_factory,
                  app_samples_file_system,
-                 compiled_app_samples_fs_factory,
+                 compiled_fs_factory,
                  ref_resolver_factory,
                  extension_samples_path,
                  base_path):
@@ -36,11 +35,13 @@ class SamplesDataSource(object):
       self._ref_resolver = ref_resolver_factory.Create()
       self._extension_samples_path = extension_samples_path
       self._base_path = base_path
-      self._extensions_cache = compiled_host_fs_factory.Create(
+      self._extensions_cache = compiled_fs_factory.Create(
+          host_file_system,
           self._MakeSamplesList,
           SamplesDataSource,
           category='extensions')
-      self._apps_cache = compiled_app_samples_fs_factory.Create(
+      self._apps_cache = compiled_fs_factory.Create(
+          app_samples_file_system,
           lambda *args: self._MakeSamplesList(*args, is_apps=True),
           SamplesDataSource,
           category='apps')

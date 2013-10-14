@@ -29,7 +29,7 @@ class _PatchServletDelegate(RenderServlet.Delegate):
     return TestBranchUtility.CreateWithCannedData()
 
   def CreateHostFileSystemProvider(self, object_store_creator, **optargs):
-    return HostFileSystemProvider.ForLocal(object_store_creator)
+    return HostFileSystemProvider.ForLocal(object_store_creator, **optargs)
 
 class PatchServletTest(unittest.TestCase):
   def setUp(self):

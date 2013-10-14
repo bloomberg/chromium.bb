@@ -44,7 +44,7 @@ file_system = TestFileSystem({
 class RedirectorTest(unittest.TestCase):
   def setUp(self):
     self._redirector = Redirector(
-        CompiledFileSystem.Factory(file_system, ObjectStoreCreator.ForTest()),
+        CompiledFileSystem.Factory(ObjectStoreCreator.ForTest()),
         file_system,
         'public')
 

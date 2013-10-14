@@ -34,13 +34,8 @@ class _PatchServletDelegate(RenderServlet.Delegate):
     # example is to add documentation for an existing API).
     object_store_creator = ObjectStoreCreator(start_empty=False)
 
-    unpatched_host_file_system_provider = (
-        self._delegate.CreateHostFileSystemProvider(object_store_creator))
-    unpatched_trunk_host_file_system = (
-        unpatched_host_file_system_provider.GetTrunk())
-    unpatched_compiled_fs_factory = CompiledFileSystem.Factory(
-        unpatched_trunk_host_file_system,
-        object_store_creator)
+    unpatched_file_system = self._delegate.CreateHostFileSystemProvider(
+        object_store_creator).GetTrunk()
 
     rietveld_patcher = CachingRietveldPatcher(
         RietveldPatcher(svn_constants.EXTENSIONS_PATH,
@@ -48,8 +43,9 @@ class _PatchServletDelegate(RenderServlet.Delegate):
                         AppEngineUrlFetcher(url_constants.CODEREVIEW_SERVER)),
         object_store_creator)
 
-    patched_file_system = PatchedFileSystem(unpatched_trunk_host_file_system,
+    patched_file_system = PatchedFileSystem(unpatched_file_system,
                                             rietveld_patcher)
+
     patched_host_file_system_provider = (
         self._delegate.CreateHostFileSystemProvider(
             object_store_creator,
@@ -58,13 +54,9 @@ class _PatchServletDelegate(RenderServlet.Delegate):
             offline=False,
             # The trunk file system for this creator should be the patched one.
             default_trunk_instance=patched_file_system))
-    patched_compiled_fs_factory = CompiledFileSystem.Factory(
-        patched_file_system,
-        object_store_creator)
 
     combined_compiled_fs_factory = ChainedCompiledFileSystem.Factory(
-        [(patched_compiled_fs_factory, patched_file_system),
-         (unpatched_compiled_fs_factory, unpatched_trunk_host_file_system)])
+        [unpatched_file_system], object_store_creator)
 
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
 

@@ -13,7 +13,7 @@ class Redirector(object):
     self._root_path = root_path
     self._file_system = file_system
     self._cache = compiled_fs_factory.Create(
-        lambda _, rules: Parse(rules), Redirector)
+        file_system, lambda _, rules: Parse(rules), Redirector)
 
   def Redirect(self, host, path):
     ''' Check if a path should be redirected, first according to host

@@ -553,11 +553,13 @@ class APIDataSource(object):
   class Factory(object):
     def __init__(self,
                  compiled_fs_factory,
+                 file_system,
                  base_path,
                  availability_finder,
                  branch_utility):
       def create_compiled_fs(fn, category):
-        return compiled_fs_factory.Create(fn, APIDataSource, category=category)
+        return compiled_fs_factory.Create(
+            file_system, fn, APIDataSource, category=category)
 
       self._json_cache = create_compiled_fs(
           lambda api_name, api: self._LoadJsonAPI(api, False),

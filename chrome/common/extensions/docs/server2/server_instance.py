@@ -39,9 +39,9 @@ class ServerInstance(object):
         The FileSystem instance which hosts the App samples.
     |compiled_fs_factory|
         Factory used to create CompiledFileSystems, a higher-level cache type
-        than ObjectStores. This can usually be derived from
-        |object_store_creator| and |host_file_system_provider| but under special
-        circumstances a different implementation needs to be passed in.
+        than ObjectStores. This can usually be derived from just
+        |object_store_creator| but under special circumstances a different
+        implementation needs to be passed in.
     |branch_utility|
         Has knowledge of Chrome branches, channels, and versions.
     |host_file_system_provider|
@@ -55,7 +55,7 @@ class ServerInstance(object):
 
     self.app_samples_file_system = app_samples_file_system
 
-    self.compiled_host_fs_factory = compiled_fs_factory
+    self.compiled_fs_factory = compiled_fs_factory
 
     self.host_file_system_provider = host_file_system_provider
     host_fs_at_trunk = host_file_system_provider.GetTrunk()
@@ -69,7 +69,7 @@ class ServerInstance(object):
 
     self.features_bundle = FeaturesBundle(
         host_fs_at_trunk,
-        self.compiled_host_fs_factory,
+        self.compiled_fs_factory,
         self.object_store_creator)
 
     self.availability_finder = AvailabilityFinder(
@@ -79,14 +79,15 @@ class ServerInstance(object):
         host_fs_at_trunk)
 
     self.api_list_data_source_factory = APIListDataSource.Factory(
-        self.compiled_host_fs_factory,
+        self.compiled_fs_factory,
         host_fs_at_trunk,
         svn_constants.PUBLIC_TEMPLATE_PATH,
         self.features_bundle,
         self.object_store_creator)
 
     self.api_data_source_factory = APIDataSource.Factory(
-        self.compiled_host_fs_factory,
+        self.compiled_fs_factory,
+        host_fs_at_trunk,
         svn_constants.API_PATH,
         self.availability_finder,
         branch_utility)
@@ -107,10 +108,8 @@ class ServerInstance(object):
       extension_samples_fs = host_fs_at_trunk
     self.samples_data_source_factory = SamplesDataSource.Factory(
         extension_samples_fs,
-        CompiledFileSystem.Factory(extension_samples_fs, object_store_creator),
         self.app_samples_file_system,
-        CompiledFileSystem.Factory(self.app_samples_file_system,
-                                   object_store_creator),
+        CompiledFileSystem.Factory(object_store_creator),
         self.ref_resolver_factory,
         svn_constants.EXAMPLES_PATH,
         base_path)
@@ -119,19 +118,22 @@ class ServerInstance(object):
         self.samples_data_source_factory)
 
     self.intro_data_source_factory = IntroDataSource.Factory(
-        self.compiled_host_fs_factory,
+        self.compiled_fs_factory,
+        host_fs_at_trunk,
         self.ref_resolver_factory,
         [svn_constants.INTRO_PATH, svn_constants.ARTICLE_PATH])
 
     self.example_zipper = ExampleZipper(
-        self.compiled_host_fs_factory,
+        self.compiled_fs_factory,
         host_fs_at_trunk,
         svn_constants.DOCS_PATH)
 
-    self.path_canonicalizer = PathCanonicalizer(self.compiled_host_fs_factory)
+    self.path_canonicalizer = PathCanonicalizer(
+        self.compiled_fs_factory,
+        host_fs_at_trunk)
 
     self.redirector = Redirector(
-        self.compiled_host_fs_factory,
+        self.compiled_fs_factory,
         host_fs_at_trunk,
         svn_constants.PUBLIC_TEMPLATE_PATH)
 
@@ -144,7 +146,8 @@ class ServerInstance(object):
         self.api_list_data_source_factory,
         self.intro_data_source_factory,
         self.samples_data_source_factory,
-        self.compiled_host_fs_factory,
+        self.compiled_fs_factory,
+        host_fs_at_trunk,
         self.ref_resolver_factory,
         svn_constants.PUBLIC_TEMPLATE_PATH,
         svn_constants.PRIVATE_TEMPLATE_PATH,
@@ -158,8 +161,7 @@ class ServerInstance(object):
     object_store_creator = ObjectStoreCreator.ForTest()
     return ServerInstance(object_store_creator,
                           EmptyDirFileSystem(),
-                          CompiledFileSystem.Factory(file_system,
-                                                     object_store_creator),
+                          CompiledFileSystem.Factory(object_store_creator),
                           TestBranchUtility.CreateWithCannedData(),
                           HostFileSystemProvider.ForTest(file_system,
                                                          object_store_creator),
@@ -174,7 +176,6 @@ class ServerInstance(object):
     return ServerInstance(
         object_store_creator,
         EmptyDirFileSystem(),
-        CompiledFileSystem.Factory(host_file_system_provider.GetTrunk(),
-                                   object_store_creator),
+        CompiledFileSystem.Factory(object_store_creator),
         TestBranchUtility.CreateWithCannedData(),
         host_file_system_provider)

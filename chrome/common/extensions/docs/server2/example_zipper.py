@@ -11,7 +11,8 @@ class ExampleZipper(object):
   def __init__(self, compiled_fs_factory, file_system, base_path):
     self._base_path = base_path.rstrip('/')
     self._file_system = file_system
-    self._zip_cache = compiled_fs_factory.Create(self._MakeZipFile,
+    self._zip_cache = compiled_fs_factory.Create(file_system,
+                                                 self._MakeZipFile,
                                                  ExampleZipper)
 
   def _MakeZipFile(self, base_dir, files):

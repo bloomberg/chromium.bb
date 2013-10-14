@@ -67,17 +67,12 @@ class _FakeFeaturesBundle(object):
 
 class APIListDataSourceTest(unittest.TestCase):
   def setUp(self):
-    file_system = TestFileSystem(deepcopy(_TEST_DATA))
     object_store_creator = ObjectStoreCreator.ForTest()
-    compiled_fs_factory = CompiledFileSystem.Factory(
-        file_system,
-        object_store_creator)
-    features_bundle = _FakeFeaturesBundle()
     self._factory = APIListDataSource.Factory(
-        compiled_fs_factory,
-        file_system,
+        CompiledFileSystem.Factory(object_store_creator),
+        TestFileSystem(deepcopy(_TEST_DATA)),
         'public',
-        features_bundle,
+        _FakeFeaturesBundle(),
         object_store_creator)
 
   def testApps(self):

@@ -204,8 +204,10 @@ class GithubFileSystem(FileSystem):
 
     return StatInfo(version, child_paths or None)
 
-  def GetDebugString(self):
-    return ' %s: %s' % (self._repo_key, self._repo_url)
-
   def GetIdentity(self):
     return '%s' % StringIdentity(self.__class__.__name__ + self._repo_key)
+
+  def __repr__(self):
+    return '<%s: key=%s, url=%s>' % (type(self).__name__,
+                                     self._repo_key,
+                                     self._repo_url)

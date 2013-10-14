@@ -43,8 +43,10 @@ class SidenavDataSource(DataSource):
   navigation bar.
   '''
   def __init__(self, server_instance, request):
-    self._cache = server_instance.compiled_host_fs_factory.Create(
-        self._CreateSidenavDict, SidenavDataSource)
+    self._cache = server_instance.compiled_fs_factory.Create(
+        server_instance.host_file_system_provider.GetTrunk(),
+        self._CreateSidenavDict,
+        SidenavDataSource)
     self._server_instance = server_instance
     self._request = request
 
