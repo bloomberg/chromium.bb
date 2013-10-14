@@ -5,6 +5,7 @@
 """Module that handles the processing of patches to the source tree."""
 
 import calendar
+import inspect
 import logging
 import os
 import random
@@ -16,7 +17,10 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gob_util
 
+
 _MAXIMUM_GERRIT_NUMBER_LENGTH = 6
+REPO_NAME_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-]*(/[a-zA-Z0-9_-]+)*$')
+BRANCH_NAME_RE = re.compile(r'^(refs/heads/)?[a-zA-Z0-9_][a-zA-Z0-9_\-]*$')
 
 
 class PatchException(Exception):
@@ -199,6 +203,26 @@ class PatchCache(object):
     return self.__class__(list(self))
 
 
+def _StripPrefix(text, strict, force_external, force_internal):
+  """Find and/or generate a leading '*' for internal names."""
+  caller_name = inspect.currentframe().f_back.f_code.co_name
+  if force_internal and force_external:
+    raise TypeError("%s: either force_internal or force_external can be set to"
+                    " True, but not both." % caller_name)
+  if not text:
+    raise ValueError("%s invoked w/ an empty value: %r" % (caller_name, text))
+  prefix = '*' if force_internal else ''
+  if text[0] == '*':
+    if strict:
+      raise ValueError(
+          "%s invoked w/ an internally-formatted argument while in strict "
+          "mode: %s" % (caller_name, text))
+    if not force_external:
+      prefix = '*'
+    text = text[1:]
+  return prefix, text
+
+
 def FormatChangeId(text, force_internal=False, force_external=False,
                    strict=False):
   """Format a Change-Id into a standardized form.
@@ -218,23 +242,8 @@ def FormatChangeId(text, force_internal=False, force_external=False,
       a direct git commit message and are trying to ensure the message is
       gerrit compatible.
   """
-  if force_internal and force_external:
-    raise TypeError("FormatChangeId: either force_internal or force_external "
-                    "can be set to True, but not both.")
-
-  if not text:
-    raise ValueError("FormatChangeId invoked w/ an empty value: %r" % (text,))
-
   original_text = text
-  prefix = '*' if force_internal else ''
-  if text[0].startswith('*'):
-    if strict:
-      raise ValueError("FormatChangeId invoked w/ an internally formatted "
-                       "Change-Id while in strict mode: %r" % (original_text,))
-    if not force_external:
-      prefix = '*'
-    text = text[1:]
-
+  prefix, text = _StripPrefix(text, strict, force_external, force_internal)
   if text[0] not in 'iI' or len(text) > 41:
     raise ValueError("FormatChangeId invoked w/ a malformed Change-Id: %r" %
                      (original_text,))
@@ -273,24 +282,8 @@ def FormatSha1(text, force_internal=False, force_external=False, strict=False):
       a direct git commit message and are trying to ensure the message is
       gerrit compatible.
   """
-  if force_internal and force_external:
-    raise TypeError("FormatSha1: either force_internal or force_external "
-                    "can be set to True, but not both.")
-
-  if not text:
-    raise ValueError("FormatSha1 invoked w/ an empty value: %r" % (text,))
-
-
   original_text = text
-  prefix = '*' if force_internal else ''
-  if text[0].startswith('*'):
-    if strict:
-      raise ValueError("FormatSha1 invoked w/ an internally formatted "
-                       "sha1 while in strict mode: %r" % (original_text,))
-    if not force_external:
-      prefix = '*'
-    text = text[1:]
-
+  prefix, text = _StripPrefix(text, strict, force_external, force_internal)
   if not git.IsSHA1(text):
     raise ValueError("FormatSha1 invoked w/ a malformed value: %r "
                      % (original_text,))
@@ -318,24 +311,8 @@ def FormatGerritNumber(text, force_internal=False, force_external=False,
       a direct git commit message and are trying to ensure the message is
       gerrit compatible.
   """
-  if force_internal and force_external:
-    raise TypeError("FormatGerritNumber: either force_internal or "
-                    "force_external can be set to True, but not both.")
-
-  if not text:
-    raise ValueError("FormatGerritNumber invoked w/ an empty value: %r"
-                     % (text,))
-
   original_text = text
-  prefix = '*' if force_internal else ''
-  if text[0].startswith('*'):
-    if strict:
-      raise ValueError("FormatGerritNumber invoked w/ an internally formatted "
-                       "value while in strict mode: %r" % (original_text,))
-    if not force_external:
-      prefix = '*'
-    text = text[1:]
-
+  prefix, text = _StripPrefix(text, strict, force_external, force_internal)
   if not text.isdigit():
     raise ValueError("FormatSha1 invoked w/ a value that isn't a number: %r" %
                      (original_text,))
@@ -348,9 +325,39 @@ def FormatGerritNumber(text, force_internal=False, force_external=False,
   return '%s%s' % (prefix, text)
 
 
+def FormatFullChangeId(text, force_internal=False, force_external=False,
+                       strict=False):
+  """Format a fully-qualified Change-Id into a standardized form.
+
+  A fully-qualified change-id has the form:
+
+    project~branch~Change-Id
+
+  The Change-Id line from the commit message by itself is not guaranteed to
+  uniquely specify a gerrit change, but the fully-qualified change-id *is*
+  guaranteed to be unique.
+
+  Args:
+    text, force_internal, force_external: Refer to FormatChangeId docstring.
+    strict: If True, then it's an error if text starts with '*' to signify an
+    internal change; and the Change-Id portion of text must meet the 'strict'
+    criteria of FormatChangeId.
+  """
+  err_str = "FormatFullChangeId invoked w/ a malformed change-id: %r" % text
+  prefix, text = _StripPrefix(text, strict, force_external, force_internal)
+  fields = text.split('~')
+  if len(fields) != 3:
+    raise ValueError(err_str)
+  project, branch, changeid = fields
+  if not REPO_NAME_RE.match(project) or not BRANCH_NAME_RE.match(branch):
+    raise ValueError(err_str)
+  changeid = FormatChangeId(changeid, strict=strict)
+  return '%s%s~%s~%s' % (prefix, project, branch, changeid)
+
+
 def FormatPatchDep(text, force_internal=False, force_external=False,
                    strict=False, sha1=True, changeId=True,
-                   gerrit_number=True, allow_CL=False):
+                   gerrit_number=True, allow_CL=False, full_changeid=True):
   """Given a patch dependency, ensure it's formatted correctly.
 
   This should be used when the consumer doesn't care what type of dep
@@ -365,6 +372,8 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
     gerrit_number: If False, throw ValueError if the dep is a gerrit number.
     allow_CL: If True, allow CL: prefix; else view it as an error.
       That format is primarily used for -g, and in CQ-DEPEND.
+    full_changeid: If False, throw ValueError if text is a fully-qualified
+      change-id.
   """
   if not text:
     raise ValueError("FormatPatchDep invoked with an empty value: %r"
@@ -384,7 +393,13 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
     target_text = text = text[3:]
 
   text = text.lstrip('*')
-  if text[0:1] in 'Ii':
+  if len(text.split('~')) == 3:
+    if not full_changeid:
+      raise ValueError(
+          "FormatPatchDep: Fully-qualified change-id is not allowed in this "
+          "context: %r" % (original_text,))
+    target = FormatFullChangeId
+  elif text[0:1] in 'Ii':
     if not changeId:
       raise ValueError(
           "FormatPatchDep: ChangeId isn't allowed in this context: %r"
@@ -393,7 +408,7 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
   elif text.isdigit() and len(text) <= _MAXIMUM_GERRIT_NUMBER_LENGTH:
     if not gerrit_number:
       raise ValueError(
-          "FormatPatchDep: ChangeId isn't allowed in this context: %r"
+          "FormatPatchDep: Gerrit number isn't allowed in this context: %r"
           % (original_text,))
     target = FormatGerritNumber
   elif not sha1:

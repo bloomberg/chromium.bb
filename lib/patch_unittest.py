@@ -747,6 +747,24 @@ class TestFormatting(cros_test_lib.TestCase):
          ('0123456789ABCDEF', '0123456789abcdef')],
         fixup=fixup)
 
+  @staticmethod
+  def _FullChangeIdFixup(value):
+    pieces = value.split('~')
+    pieces[-1] = TestFormatting._ChangeIdFixup(pieces[-1])
+    return '~'.join(pieces)
+
+  def testFormatFullChangeId(self):
+    fixup = self._FullChangeIdFixup
+    self._assertBad(
+        cros_patch.FormatFullChangeId,
+        ['foo', 'foo~bar', 'foo~bar~baz', 'foo~refs/bar~*I1234'],
+        fixup=fixup, allow_CL=True)
+    self._assertGood(
+        cros_patch.FormatFullChangeId,
+        [('foo~bar~ifade', 'foo~bar~Ifade'),
+         ('foo/bar/baz~refs/heads/_my-branch_~Iface',) * 2],
+        fixup=fixup)
+
   def testFormatPatchDeps(self):
     sha1 = self._Sha1Fixup
     changeId = self._ChangeIdFixup
