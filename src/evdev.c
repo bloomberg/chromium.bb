@@ -524,16 +524,16 @@ evdev_handle_device(struct evdev_device *device)
 				break;
 			}
 		}
-		for (i = BTN_MISC; i < BTN_JOYSTICK; i++) {
-			if (TEST_BIT(key_bits, i)) {
-				device->caps |= EVDEV_BUTTON;
-				break;
-			}
-		}
 		if (TEST_BIT(key_bits, BTN_TOUCH)) {
 			device->caps |= EVDEV_TOUCH;
 		}
-
+		for (i = BTN_MISC; i < BTN_JOYSTICK; i++) {
+			if (TEST_BIT(key_bits, i)) {
+				device->caps |= EVDEV_BUTTON;
+				device->caps &= ~EVDEV_TOUCH;
+				break;
+			}
+		}
 	}
 	if (TEST_BIT(ev_bits, EV_LED)) {
 		device->caps |= EVDEV_KEYBOARD;
