@@ -16,6 +16,8 @@
 #include "printing/backend/print_backend_consts.h"
 #include "url/gurl.h"
 
+namespace printing {
+
 // This section contains helper code for PPD parsing for semantic capabilities.
 namespace {
 
@@ -113,8 +115,8 @@ void MarkLpOptions(const std::string& printer_name, ppd_file_t** ppd) {
 #endif  // !defined(OS_MACOSX)
 
 bool GetBasicColorModelSettings(ppd_file_t* ppd,
-                                int* color_model_for_black,
-                                int* color_model_for_color,
+                                ColorModel* color_model_for_black,
+                                ColorModel* color_model_for_color,
                                 bool* color_is_default) {
   ppd_option_t* color_model = ppdFindOption(ppd, kColorModel);
   if (!color_model)
@@ -158,8 +160,8 @@ bool GetBasicColorModelSettings(ppd_file_t* ppd,
 }
 
 bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
-                                  int* color_model_for_black,
-                                  int* color_model_for_color,
+                                  ColorModel* color_model_for_black,
+                                  ColorModel* color_model_for_color,
                                   bool* color_is_default) {
   ppd_option_t* printout_mode = ppdFindOption(ppd, kPrintoutMode);
   if (!printout_mode)
@@ -195,8 +197,8 @@ bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
 }
 
 bool GetColorModeSettings(ppd_file_t* ppd,
-                          int* color_model_for_black,
-                          int* color_model_for_color,
+                          ColorModel* color_model_for_black,
+                          ColorModel* color_model_for_color,
                           bool* color_is_default) {
   // Samsung printers use "ColorMode" attribute in their ppds.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kColorMode);
@@ -223,8 +225,8 @@ bool GetColorModeSettings(ppd_file_t* ppd,
 }
 
 bool GetHPColorSettings(ppd_file_t* ppd,
-                        int* color_model_for_black,
-                        int* color_model_for_color,
+                        ColorModel* color_model_for_black,
+                        ColorModel* color_model_for_color,
                         bool* color_is_default) {
   // HP printers use "Color/Color Model" attribute in their ppds.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, printing::kColor);
@@ -249,8 +251,8 @@ bool GetHPColorSettings(ppd_file_t* ppd,
 }
 
 bool GetProcessColorModelSettings(ppd_file_t* ppd,
-                                  int* color_model_for_black,
-                                  int* color_model_for_color,
+                                  ColorModel* color_model_for_black,
+                                  ColorModel* color_model_for_color,
                                   bool* color_is_default) {
   // Canon printers use "ProcessColorModel" attribute in their ppds.
   ppd_option_t* color_mode_option =  ppdFindOption(ppd, kProcessColorModel);
@@ -279,8 +281,8 @@ bool GetProcessColorModelSettings(ppd_file_t* ppd,
 }
 
 bool GetColorModelSettings(ppd_file_t* ppd,
-                           int* cm_black,
-                           int* cm_color,
+                           ColorModel* cm_black,
+                           ColorModel* cm_color,
                            bool* is_color) {
   bool is_color_device = false;
   ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, NULL);
@@ -296,12 +298,10 @@ bool GetColorModelSettings(ppd_file_t* ppd,
       GetProcessColorModelSettings(ppd, cm_black, cm_color, is_color);
 }
 
-}  // namespace
-
-namespace printing {
-
 // Default port for IPP print servers.
-static const int kDefaultIPPServerPort = 631;
+const int kDefaultIPPServerPort = 631;
+
+}  // namespace
 
 // Helper wrapper around http_t structure, with connection and cleanup
 // functionality.
@@ -316,11 +316,10 @@ HttpConnectionCUPS::HttpConnectionCUPS(const GURL& print_server_url,
   if (port == url_parse::PORT_UNSPECIFIED)
     port = kDefaultIPPServerPort;
 
-  http_ = httpConnectEncrypt(print_server_url.host().c_str(), port,
-                             encryption);
+  http_ = httpConnectEncrypt(print_server_url.host().c_str(), port, encryption);
   if (http_ == NULL) {
-    LOG(ERROR) << "CP_CUPS: Failed connecting to print server: " <<
-               print_server_url;
+    LOG(ERROR) << "CP_CUPS: Failed connecting to print server: "
+               << print_server_url;
   }
 }
 
@@ -337,7 +336,7 @@ http_t* HttpConnectionCUPS::http() {
   return http_;
 }
 
-bool parsePpdCapabilities(
+bool ParsePpdCapabilities(
     const std::string& printer_name,
     const std::string& printer_capabilities,
     PrinterSemanticCapsAndDefaults* printer_info) {
@@ -378,12 +377,14 @@ bool parsePpdCapabilities(
   }
 
   bool is_color = false;
-  int cm_color = 0, cm_black = 0;
+  ColorModel cm_color = UNKNOWN_COLOR_MODEL, cm_black = UNKNOWN_COLOR_MODEL;
   if (!GetColorModelSettings(ppd, &cm_black, &cm_color, &is_color)) {
     VLOG(1) << "Unknown printer color model";
   }
 
-  caps.color_changeable = (cm_color && cm_black && (cm_color != cm_black));
+  caps.color_changeable = ((cm_color != UNKNOWN_COLOR_MODEL) &&
+                           (cm_black != UNKNOWN_COLOR_MODEL) &&
+                           (cm_color != cm_black));
   caps.color_default = is_color;
 
   ppdClose(ppd);

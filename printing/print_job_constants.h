@@ -99,7 +99,7 @@ enum VerticalHeaderFooterPosition {
 };
 
 // Print job color mode values.
-enum ColorModels {
+enum ColorModel {
   UNKNOWN_COLOR_MODEL,
   GRAY,
   COLOR,

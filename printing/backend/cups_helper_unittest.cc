@@ -32,7 +32,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexLongEdge) {
       "*CloseGroup: General\n");
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
   EXPECT_TRUE(caps.duplex_capable);
@@ -57,7 +57,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
       "*CloseGroup: General\n");
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
   EXPECT_TRUE(caps.duplex_capable);
@@ -81,7 +81,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
       "*CloseGroup: General\n");
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
   EXPECT_FALSE(caps.duplex_capable);
@@ -114,7 +114,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexLongEdge) {
       "*CloseGroup: General\n");
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_TRUE(caps.color_default);
   EXPECT_TRUE(caps.duplex_capable);
@@ -151,7 +151,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
       "*CloseGroup: General\n");
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::parsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
   EXPECT_TRUE(caps.duplex_capable);

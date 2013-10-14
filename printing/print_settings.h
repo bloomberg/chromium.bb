@@ -16,8 +16,8 @@
 
 namespace printing {
 
-// Returns true if color model is selected.
-PRINTING_EXPORT bool isColorModelSelected(int model);
+// Returns true if |color_mode| is color and not B&W.
+PRINTING_EXPORT bool IsColorModelSelected(int color_mode);
 
 #if defined(USE_CUPS)
 // Get the color model setting name and value for the |color_mode|.

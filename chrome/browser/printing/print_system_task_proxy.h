@@ -7,11 +7,9 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 
 class PrintPreviewHandler;
@@ -25,21 +23,6 @@ namespace printing {
 class PrintBackend;
 struct PrinterCapsAndDefaults;
 }
-
-#if defined(UNIT_TEST) && defined(USE_CUPS) && !defined(OS_MACOSX)
-typedef struct cups_option_s cups_option_t;
-
-namespace printing_internal {
-// Helper function to parse the lpoptions custom settings. |num_options| and
-// |options| will be updated if the custom settings for |printer_name| are
-// found, otherwise nothing is done.
-// NOTE: This function is declared here so it can be exposed for unit testing.
-void parse_lpoptions(const base::FilePath& filepath,
-                     const std::string& printer_name, int* num_options,
-                     cups_option_t** options);
-}  // namespace printing_internal
-
-#endif
 
 class PrintSystemTaskProxy
     : public base::RefCountedThreadSafe<
@@ -59,20 +42,6 @@ class PrintSystemTaskProxy
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<PrintSystemTaskProxy>;
-
-#if defined(UNIT_TEST) && defined(USE_CUPS)
-  FRIEND_TEST_ALL_PREFIXES(PrintSystemTaskProxyTest, DetectDuplexModeCUPS);
-  FRIEND_TEST_ALL_PREFIXES(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS);
-#endif
-
-  bool ParsePrinterCapabilities(
-      const printing::PrinterCapsAndDefaults& printer_info,
-      const std::string& printer_name,
-      bool* set_color_as_default,
-      int* printer_color_space_for_color,
-      int* printer_color_space_for_black,
-      bool* set_duplex_as_default,
-      int* default_duplex_setting_value);
 
   void SendDefaultPrinter(const std::string& default_printer,
                           const std::string& cloud_print_data);

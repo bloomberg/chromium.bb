@@ -214,7 +214,7 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
   int color_mode = 0;
   if (settings.GetInteger(printing::kSettingColor, &color_mode)) {
     ReportPrintSettingHistogram(
-        printing::isColorModelSelected(color_mode) ? COLOR : BLACK_AND_WHITE);
+        printing::IsColorModelSelected(color_mode) ? COLOR : BLACK_AND_WHITE);
   }
 
   bool headers = false;
@@ -245,7 +245,7 @@ void PrintToPdfCallback(Metafile* metafile, const base::FilePath& path) {
       base::Bind(&base::DeletePointer<Metafile>, metafile));
 }
 
-static base::LazyInstance<printing::StickySettings> sticky_settings =
+base::LazyInstance<printing::StickySettings> g_sticky_settings =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -325,7 +325,7 @@ class PrintPreviewHandler::AccessTokenService
 
 // static
 printing::StickySettings* PrintPreviewHandler::GetStickySettings() {
-  return sticky_settings.Pointer();
+  return g_sticky_settings.Pointer();
 }
 
 PrintPreviewHandler::PrintPreviewHandler()

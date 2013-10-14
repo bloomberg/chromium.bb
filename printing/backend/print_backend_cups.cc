@@ -10,9 +10,7 @@
 #include <errno.h>
 #include <pthread.h>
 
-#if defined(OS_MACOSX)
-#include <AvailabilityMacros.h>
-#else
+#if !defined(OS_MACOSX)
 #include <gcrypt.h>
 #endif
 
@@ -26,10 +24,6 @@
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend_consts.h"
 #include "url/gurl.h"
-
-#if (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 4)
-const int CUPS_PRINTER_SCANNER = 0x2000000;  // Scanner-only device
-#endif
 
 #if !defined(OS_MACOSX)
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
@@ -163,7 +157,7 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
     return false;
   }
 
-  for (int printer_index = 0; printer_index < num_dests; printer_index++) {
+  for (int printer_index = 0; printer_index < num_dests; ++printer_index) {
     const cups_dest_t& printer = destinations[printer_index];
 
     // CUPS can have 'printers' that are actually scanners. (not MFC)
@@ -197,7 +191,7 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
       printer_info.options[kDriverInfoTagName] = *drv_info;
 
     // Store printer options.
-    for (int opt_index = 0; opt_index < printer.num_options; opt_index++) {
+    for (int opt_index = 0; opt_index < printer.num_options; ++opt_index) {
       printer_info.options[printer.options[opt_index].name] =
           printer.options[opt_index].value;
     }
@@ -230,7 +224,7 @@ bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
   if (!GetPrinterCapsAndDefaults(printer_name, &info) )
     return false;
 
-  return parsePpdCapabilities(
+  return ParsePpdCapabilities(
       printer_name, info.printer_capabilities, printer_info);
 }
 
@@ -271,7 +265,7 @@ std::string PrintBackendCUPS::GetPrinterDriverInfo(
   cups_dest_t* destinations = NULL;
   int num_dests = GetDests(&destinations);
   std::string result;
-  for (int printer_index = 0; printer_index < num_dests; printer_index++) {
+  for (int printer_index = 0; printer_index < num_dests; ++printer_index) {
     const cups_dest_t& printer = destinations[printer_index];
     if (printer_name == printer.name) {
       const char* info = cupsGetOption(kCUPSPrinterMakeModelOpt,
@@ -301,7 +295,7 @@ bool PrintBackendCUPS::IsValidPrinter(const std::string& printer_name) {
 }
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
-    const DictionaryValue* print_backend_settings) {
+    const base::DictionaryValue* print_backend_settings) {
 #if !defined(OS_MACOSX)
   // Initialize gcrypt library.
   g_gcrypt_initializer.Get();

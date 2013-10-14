@@ -4,8 +4,6 @@
 
 #include "chrome/browser/printing/print_system_task_proxy.h"
 
-#include <ctype.h>
-
 #include <string>
 
 #include "base/bind.h"
@@ -16,11 +14,6 @@
 #include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
-
-#if defined(USE_CUPS)
-#include <cups/cups.h>
-#include <cups/ppd.h>
-#endif
 
 using content::BrowserThread;
 
@@ -63,19 +56,18 @@ void PrintSystemTaskProxy::SendDefaultPrinter(
 
 void PrintSystemTaskProxy::EnumeratePrinters() {
   VLOG(1) << "Enumerate printers start";
-  ListValue* printers = new ListValue;
+  base::ListValue* printers = new base::ListValue;
   printing::PrinterList printer_list;
   print_backend_->EnumeratePrinters(&printer_list);
 
   if (!has_logged_printers_count_) {
     // Record the total number of printers.
-    UMA_HISTOGRAM_COUNTS("PrintPreview.NumberOfPrinters",
-                         printer_list.size());
+    UMA_HISTOGRAM_COUNTS("PrintPreview.NumberOfPrinters", printer_list.size());
   }
   int i = 0;
   for (printing::PrinterList::iterator iter = printer_list.begin();
        iter != printer_list.end(); ++iter, ++i) {
-    DictionaryValue* printer_info = new DictionaryValue;
+    base::DictionaryValue* printer_info = new base::DictionaryValue;
     std::string printerName;
 #if defined(OS_MACOSX)
     // On Mac, |iter->printer_description| specifies the printer name and
@@ -97,7 +89,7 @@ void PrintSystemTaskProxy::EnumeratePrinters() {
       base::Bind(&PrintSystemTaskProxy::SetupPrinterList, this, printers));
 }
 
-void PrintSystemTaskProxy::SetupPrinterList(ListValue* printers) {
+void PrintSystemTaskProxy::SetupPrinterList(base::ListValue* printers) {
   if (handler_.get())
     handler_->SetupPrinterList(*printers);
   delete printers;
@@ -115,7 +107,7 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&PrintSystemTaskProxy::SendFailedToGetPrinterCapabilities,
-        this, printer_name));
+                   this, printer_name));
     return;
   }
 
@@ -125,11 +117,11 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&PrintSystemTaskProxy::SendFailedToGetPrinterCapabilities,
-        this, printer_name));
+                   this, printer_name));
     return;
   }
 
-  DictionaryValue settings_info;
+  base::DictionaryValue settings_info;
   settings_info.SetString(kPrinterId, printer_name);
   settings_info.SetBoolean(kDisableColorOption, !info.color_changeable);
   settings_info.SetBoolean(printing::kSettingSetColorAsDefault,
@@ -139,7 +131,7 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
   // Refactor pld API code below
   if (info.duplex_capable) {
     settings_info.SetBoolean(kSetDuplexAsDefault,
-                            info.duplex_default != printing::SIMPLEX);
+                             info.duplex_default != printing::SIMPLEX);
     settings_info.SetInteger(kPrinterDefaultDuplexValue,
                              printing::LONG_EDGE);
   } else {
@@ -155,7 +147,7 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
 }
 
 void PrintSystemTaskProxy::SendPrinterCapabilities(
-    DictionaryValue* settings_info) {
+    base::DictionaryValue* settings_info) {
   if (handler_.get())
     handler_->SendPrinterCapabilities(*settings_info);
   delete settings_info;

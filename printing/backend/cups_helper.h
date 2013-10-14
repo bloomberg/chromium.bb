@@ -36,7 +36,7 @@ class PRINTING_EXPORT HttpConnectionCUPS {
 
 // Helper function to parse and convert PPD capabilitites to
 // semantic options.
-PRINTING_EXPORT bool parsePpdCapabilities(
+PRINTING_EXPORT bool ParsePpdCapabilities(
     const std::string& printer_name,
     const std::string& printer_capabilities,
     PrinterSemanticCapsAndDefaults* printer_info);
