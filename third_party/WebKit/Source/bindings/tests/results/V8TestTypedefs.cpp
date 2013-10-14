@@ -342,8 +342,9 @@ static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
+    bool arrayArgIsNull = args[0]->IsNull();
     V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0], args.GetIsolate()));
-    imp->nullableArrayArg(arrayArg);
+    imp->nullableArrayArg(arrayArgIsNull ? 0 : &arrayArg);
 
     return;
 }

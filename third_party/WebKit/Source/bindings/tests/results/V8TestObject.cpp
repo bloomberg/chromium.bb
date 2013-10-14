@@ -3923,8 +3923,9 @@ static void overloadedMethod7Method(const v8::FunctionCallbackInfo<v8::Value>& a
         return;
     }
     TestObj* imp = V8TestObject::toNative(args.Holder());
+    bool arrayArgIsNull = args[0]->IsNull();
     V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0], args.GetIsolate()));
-    imp->overloadedMethod(arrayArg);
+    imp->overloadedMethod(arrayArgIsNull ? 0 : &arrayArg);
 
     return;
 }
@@ -4571,6 +4572,38 @@ static void variadicNodeMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::variadicNodeMethodMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void methodWithNullableArgumentsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 3)) {
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableArguments", "TestObject", ExceptionMessages::notEnoughArguments(3, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(args.Holder());
+    bool strIsNull = args[0]->IsNull();
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strStringResource, args[0]);
+    String str = strStringResource;
+    bool lIsNull = args[1]->IsNull();
+    V8TRYCATCH_VOID(int, l, toInt32(args[1]));
+    V8TRYCATCH_VOID(TestObj*, obj, V8TestObject::HasInstance(args[2], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[2])) : 0);
+    if (UNLIKELY(args.Length() <= 3)) {
+        imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj);
+
+        return;
+    }
+    bool dIsNull = args[3]->IsNull();
+    V8TRYCATCH_VOID(double, d, static_cast<double>(args[3]->NumberValue()));
+    imp->methodWithNullableArguments(strIsNull ? 0 : &str, lIsNull ? 0 : &l, obj, dIsNull ? 0 : &d);
+
+    return;
+}
+
+static void methodWithNullableArgumentsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::methodWithNullableArgumentsMethod(args);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -5237,6 +5270,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"strictFunction", TestObjV8Internal::strictFunctionMethodCallback, 0, 3},
     {"variadicStringMethod", TestObjV8Internal::variadicStringMethodMethodCallback, 0, 2},
     {"variadicDoubleMethod", TestObjV8Internal::variadicDoubleMethodMethodCallback, 0, 2},
+    {"methodWithNullableArguments", TestObjV8Internal::methodWithNullableArgumentsMethodCallback, 0, 3},
     {"perWorldMethod", TestObjV8Internal::perWorldMethodMethodCallback, TestObjV8Internal::perWorldMethodMethodCallbackForMainWorld, 0},
     {"overloadedPerWorldMethod", TestObjV8Internal::overloadedPerWorldMethodMethodCallback, TestObjV8Internal::overloadedPerWorldMethodMethodCallbackForMainWorld, 1},
     {"activityLoggedMethod1", TestObjV8Internal::activityLoggedMethod1MethodCallback, 0, 1},

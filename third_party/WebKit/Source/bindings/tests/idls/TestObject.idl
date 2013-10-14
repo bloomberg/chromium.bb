@@ -268,10 +268,11 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     readonly attribute long? nullableLongAttribute;
     readonly attribute boolean? nullableBooleanAttribute;
     readonly attribute DOMString? nullableStringAttribute;
-
     attribute long? nullableLongSettableAttribute;
-
     [GetterRaisesException] attribute long? nullableStringValue;
+
+    // Nullable arguments.
+    void methodWithNullableArguments(DOMString? str, long? l, TestObject? obj, optional double? d);
 
     [PerWorldBindings] readonly attribute TestObject perWorldReadOnlyAttribute;
     [PerWorldBindings] attribute TestObject perWorldAttribute;

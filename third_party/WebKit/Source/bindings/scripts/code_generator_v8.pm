@@ -2475,7 +2475,14 @@ sub GenerateParametersCheck
         } elsif ($nativeType =~ /^V8StringResource/) {
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
             my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]";
-            $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $parameterName, "    ", "args.GetIsolate()");
+            my $stringResourceParameterName = $parameterName;
+            my $isNullable = $parameter->isNullable && !IsRefPtrType($parameter->type);
+            if ($isNullable) {
+                $parameterCheckString .= "    bool ${parameterName}IsNull = $jsValue->IsNull();\n";
+                $stringResourceParameterName .= "StringResource";
+            }
+            $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $stringResourceParameterName, "    ", "args.GetIsolate()");
+            $parameterCheckString .= "    String $parameterName = $stringResourceParameterName;\n" if $isNullable;
             if (IsEnumType($parameter->type)) {
                 my @enumValues = ValidEnumValues($parameter->type);
                 my @validEqualities = ();
@@ -2508,6 +2515,8 @@ sub GenerateParametersCheck
             }
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
             my $jsValue = $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]";
+            my $isNullable = $parameter->isNullable && !IsRefPtrType($parameter->type);
+            $parameterCheckString .= "    bool ${parameterName}IsNull = $jsValue->IsNull();\n" if $isNullable;
             $parameterCheckString .= JSValueToNativeStatement($parameter->type, $parameter->extendedAttributes, $jsValue, $parameterName, "    ", "args.GetIsolate()");
             if ($nativeType eq 'Dictionary' or $nativeType eq 'ScriptPromise') {
                 my $humanFriendlyIndex = $paramIndex + 1;
@@ -5055,6 +5064,8 @@ sub GenerateFunctionCallString
 END
         } elsif ($parameter->type eq "SVGMatrix" and $interfaceName eq "SVGTransformList") {
             push @arguments, "$paramName.get()";
+        } elsif ($parameter->isNullable && !IsRefPtrType($parameter->type)) {
+            push @arguments, "${paramName}IsNull ? 0 : &$paramName";
         } else {
             push @arguments, $paramName;
         }
