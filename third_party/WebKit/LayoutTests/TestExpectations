@@ -126,9 +126,6 @@ crbug.com/35387 [ Mac ] plugins/reentrant-update-widget-positions.html [ Timeout
 crbug.com/108833 [ Debug ] plugins/geturlnotify-during-document-teardown.html [ Crash ]
 webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ Crash ]
 
-crbug.com/100798 [ Debug ] fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
-crbug.com/100798 [ Debug ] fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
-
 crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
 
 # -----------------------------------------------------------------
@@ -566,9 +563,6 @@ webkit.org/b/87652 http/tests/appcache/load-from-appcache-defer-resume-crash.htm
 webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Failure Pass ]
 
 webkit.org/b/89702 virtual/softwarecompositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
-
-# webkitIsFullScreen does not have the correct value after an iframe exits fullscreen
-webkit.org/b/90704 fullscreen/exit-full-screen-iframe.html [ Failure Pass ]
 
 webkit.org/b/90746 fast/multicol/column-span-parent-continuation-crash.html [ Pass Timeout ]
 
