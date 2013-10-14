@@ -25,11 +25,6 @@
       'src/include/',
     ],
     'conditions': [
-      ['OS == "win"', {
-        'include_dirs': [
-          'src/port/win',
-        ],
-      }],
       ['use_snappy', {
         'defines': [
           'USE_SNAPPY=1',
@@ -60,13 +55,6 @@
           'src/include/',
           'src/',
           '.',
-        ],
-        'conditions': [
-          ['OS == "win"', {
-            'include_dirs': [
-              'src/port/win',
-            ],
-          }],
         ],
       },
       # Patch posted for upstream, can be removed once that's landed and
