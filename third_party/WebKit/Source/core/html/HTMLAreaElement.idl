@@ -27,4 +27,5 @@ interface HTMLAreaElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString target;
 };
 
+// Force rebuild: crbug.com/307023
 HTMLAreaElement implements URLUtils;
