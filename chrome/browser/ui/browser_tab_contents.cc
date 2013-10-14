@@ -22,6 +22,8 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/plugins/plugin_observer.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
@@ -164,6 +166,11 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
 
   if (profile->IsManaged()) {
     ManagedModeNavigationObserver::CreateForWebContents(web_contents);
+  }
+
+  if (predictors::ResourcePrefetchPredictorFactory::GetForProfile(profile)) {
+    predictors::ResourcePrefetchPredictorTabHelper::CreateForWebContents(
+        web_contents);
   }
 
 #if defined(ENABLE_PRINTING)

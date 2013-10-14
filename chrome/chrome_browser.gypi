@@ -1579,6 +1579,8 @@
         'browser/predictors/resource_prefetch_predictor.h',
         'browser/predictors/resource_prefetch_predictor_factory.cc',
         'browser/predictors/resource_prefetch_predictor_factory.h',
+        'browser/predictors/resource_prefetch_predictor_tab_helper.cc',
+        'browser/predictors/resource_prefetch_predictor_tab_helper.h',
         'browser/predictors/resource_prefetch_predictor_tables.cc',
         'browser/predictors/resource_prefetch_predictor_tables.h',
         'browser/predictors/resource_prefetcher.cc',

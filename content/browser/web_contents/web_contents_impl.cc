@@ -2348,12 +2348,6 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidLoadResourceFromMemoryCache(details));
 
-  // TODO(avi): Remove. http://crbug.com/170921
-  NotificationService::current()->Notify(
-      NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
-      Source<NavigationController>(&controller_),
-      Details<LoadFromMemoryCacheDetails>(&details));
-
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     scoped_refptr<net::URLRequestContextGetter> request_context(
         resource_type == ResourceType::MEDIA ?
@@ -3280,6 +3274,10 @@ void WebContentsImpl::DocumentAvailableInMainFrame(
 void WebContentsImpl::DocumentOnLoadCompletedInMainFrame(
     RenderViewHost* render_view_host,
     int32 page_id) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DocumentOnLoadCompletedInMainFrame(page_id));
+
+  // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
       NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       Source<WebContents>(this),

@@ -36,7 +36,7 @@ struct NavigationID {
   // constructor.
   NavigationID();
   NavigationID(const NavigationID& other);
-  explicit NavigationID(const content::WebContents& web_contents);
+  explicit NavigationID(content::WebContents* web_contents);
   bool operator<(const NavigationID& rhs) const;
   bool operator==(const NavigationID& rhs) const;
 

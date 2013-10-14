@@ -390,15 +390,15 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/style1.css",
       ResourceType::STYLESHEET, "text/css", false);
-  predictor_->RecordUrlResponse(resource1);
+  predictor_->RecordURLResponse(resource1);
   URLRequestSummary resource2 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/script1.js",
       ResourceType::SCRIPT, "text/javascript", false);
-  predictor_->RecordUrlResponse(resource2);
+  predictor_->RecordURLResponse(resource2);
   URLRequestSummary resource3 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/script2.js",
       ResourceType::SCRIPT, "text/javascript", false);
-  predictor_->RecordUrlResponse(resource3);
+  predictor_->RecordURLResponse(resource3);
 
   PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
   host_data.resources.push_back(ResourceRow(std::string(),
@@ -447,35 +447,31 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/style1.css",
       ResourceType::STYLESHEET, "text/css", false);
-  predictor_->RecordUrlResponse(resource1);
+  predictor_->RecordURLResponse(resource1);
   URLRequestSummary resource2 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/script1.js",
       ResourceType::SCRIPT, "text/javascript", false);
-  predictor_->RecordUrlResponse(resource2);
+  predictor_->RecordURLResponse(resource2);
   URLRequestSummary resource3 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/script2.js",
       ResourceType::SCRIPT, "text/javascript", false);
-  predictor_->RecordUrlResponse(resource3);
+  predictor_->RecordURLResponse(resource3);
   URLRequestSummary resource4 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/script1.js",
       ResourceType::SCRIPT, "text/javascript", true);
-  predictor_->RecordUrlResponse(resource4);
+  predictor_->RecordURLResponse(resource4);
   URLRequestSummary resource5 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/image1.png",
       ResourceType::IMAGE, "image/png", false);
-  predictor_->RecordUrlResponse(resource5);
+  predictor_->RecordURLResponse(resource5);
   URLRequestSummary resource6 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/image2.png",
       ResourceType::IMAGE, "image/png", false);
-  predictor_->RecordUrlResponse(resource6);
+  predictor_->RecordURLResponse(resource6);
   URLRequestSummary resource7 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/style2.css",
-      ResourceType::STYLESHEET, "text/css", false);
-  predictor_->OnSubresourceLoadedFromMemory(
-      resource7.navigation_id,
-      resource7.resource_url,
-      resource7.mime_type,
-      resource7.resource_type);
+      ResourceType::STYLESHEET, "text/css", true);
+  predictor_->RecordURLResponse(resource7);
 
   PrefetchData url_data(PREFETCH_KEY_TYPE_URL, "http://www.google.com/");
   url_data.resources.push_back(ResourceRow(std::string(),
@@ -545,35 +541,31 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/style1.css",
       ResourceType::STYLESHEET, "text/css", false);
-  predictor_->RecordUrlResponse(resource1);
+  predictor_->RecordURLResponse(resource1);
   URLRequestSummary resource2 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/script1.js",
       ResourceType::SCRIPT, "text/javascript", false);
-  predictor_->RecordUrlResponse(resource2);
+  predictor_->RecordURLResponse(resource2);
   URLRequestSummary resource3 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/script2.js",
       ResourceType::SCRIPT, "text/javascript", false);
-  predictor_->RecordUrlResponse(resource3);
+  predictor_->RecordURLResponse(resource3);
   URLRequestSummary resource4 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/script1.js",
       ResourceType::SCRIPT, "text/javascript", true);
-  predictor_->RecordUrlResponse(resource4);
+  predictor_->RecordURLResponse(resource4);
   URLRequestSummary resource5 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/image1.png",
       ResourceType::IMAGE, "image/png", false);
-  predictor_->RecordUrlResponse(resource5);
+  predictor_->RecordURLResponse(resource5);
   URLRequestSummary resource6 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/image2.png",
       ResourceType::IMAGE, "image/png", false);
-  predictor_->RecordUrlResponse(resource6);
+  predictor_->RecordURLResponse(resource6);
   URLRequestSummary resource7 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/style2.css",
-      ResourceType::STYLESHEET, "text/css", false);
-  predictor_->OnSubresourceLoadedFromMemory(
-      resource7.navigation_id,
-      resource7.resource_url,
-      resource7.mime_type,
-      resource7.resource_type);
+      ResourceType::STYLESHEET, "text/css", true);
+  predictor_->RecordURLResponse(resource7);
 
   PrefetchData url_data(PREFETCH_KEY_TYPE_URL, "http://www.google.com/");
   url_data.resources.push_back(ResourceRow(std::string(),
@@ -673,11 +665,11 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, 1, "http://www.nike.com",  "http://nike.com/style1.css",
       ResourceType::STYLESHEET, "text/css", false);
-  predictor_->RecordUrlResponse(resource1);
+  predictor_->RecordURLResponse(resource1);
   URLRequestSummary resource2 = CreateURLRequestSummary(
       1, 1, "http://www.nike.com",  "http://nike.com/image2.png",
       ResourceType::IMAGE, "image/png", false);
-  predictor_->RecordUrlResponse(resource2);
+  predictor_->RecordURLResponse(resource2);
 
   EXPECT_CALL(
       *mock_tables_.get(),

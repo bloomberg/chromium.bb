@@ -17,6 +17,8 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -66,6 +68,8 @@ void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
   // Set the view type.
   extensions::SetViewType(contents, extensions::VIEW_TYPE_TAB_CONTENTS);
 
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(contents);
@@ -98,6 +102,11 @@ void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
   TabSpecificContentSettings::CreateForWebContents(contents);
   TranslateTabHelper::CreateForWebContents(contents);
   WindowAndroidHelper::CreateForWebContents(contents);
+
+  if (predictors::ResourcePrefetchPredictorFactory::GetForProfile(profile)) {
+    predictors::ResourcePrefetchPredictorTabHelper::CreateForWebContents(
+        contents);
+  }
 }
 
 // TODO(dtrainor): Refactor so we do not need this method.

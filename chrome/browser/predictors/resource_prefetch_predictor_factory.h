@@ -9,8 +9,6 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-class Profile;
-
 namespace predictors {
 
 class ResourcePrefetchPredictor;
@@ -18,7 +16,8 @@ class ResourcePrefetchPredictor;
 class ResourcePrefetchPredictorFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static ResourcePrefetchPredictor* GetForProfile(Profile* profile);
+  static ResourcePrefetchPredictor* GetForProfile(
+      content::BrowserContext* context);
   static ResourcePrefetchPredictorFactory* GetInstance();
 
  private:

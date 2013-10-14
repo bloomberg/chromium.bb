@@ -155,7 +155,7 @@ void ResourcePrefetchPredictorObserver::OnRequestRedirected(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictor::RecordUrlRedirect,
+      base::Bind(&ResourcePrefetchPredictor::RecordURLRedirect,
                  predictor_,
                  summary));
 
@@ -187,7 +187,7 @@ void ResourcePrefetchPredictorObserver::OnResponseStarted(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictor::RecordUrlResponse,
+      base::Bind(&ResourcePrefetchPredictor::RecordURLResponse,
                  predictor_,
                  summary));
 

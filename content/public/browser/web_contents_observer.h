@@ -147,8 +147,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       const LoadCommittedDetails& details,
       const FrameNavigateParams& params) {}
 
-  // This method is invoked once the window.document object was created.
+  // This method is invoked once the window.document object of the main frame
+  // was created.
   virtual void DocumentAvailableInMainFrame() {}
+
+  // This method is invoked once the onload handler of the main frame has
+  // completed.
+  virtual void DocumentOnLoadCompletedInMainFrame(int32 page_id) {}
 
   // This method is invoked when the document in the given frame finished
   // loading. At this point, scripts marked as defer were executed, and

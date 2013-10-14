@@ -15,9 +15,9 @@ namespace predictors {
 
 // static
 ResourcePrefetchPredictor* ResourcePrefetchPredictorFactory::GetForProfile(
-    Profile* profile) {
+    content::BrowserContext* context) {
   return static_cast<ResourcePrefetchPredictor*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
@@ -39,7 +39,7 @@ ResourcePrefetchPredictorFactory::~ResourcePrefetchPredictorFactory() {}
 BrowserContextKeyedService*
     ResourcePrefetchPredictorFactory::BuildServiceInstanceFor(
         content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
 
   ResourcePrefetchPredictorConfig config;
   if (!IsSpeculativeResourcePrefetchingEnabled(profile, &config))

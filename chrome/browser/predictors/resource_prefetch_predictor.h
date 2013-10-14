@@ -49,14 +49,14 @@ class ResourcePrefetcherManager;
 // The overall flow of the resource prefetching algorithm is as follows:
 //
 // * ResourcePrefetchPredictorObserver - Listens for URL requests, responses and
-//   redirects on the IO thread(via RDHostDelegate) and post tasks to the
-//   ResourcePrefetchPredictor on the UI thread. This is owned by the
-//   ProfileIOData for the profile.
+//   redirects on the IO thread (via ResourceDispatcherHostDelegate) and posts
+//   tasks to the ResourcePrefetchPredictor on the UI thread. This is owned by
+//   the ProfileIOData for the profile.
 // * ResourcePrefetchPredictorTables - Persists ResourcePrefetchPredictor data
 //   to a sql database. Runs entirely on the DB thread. Owned by the
 //   PredictorDatabase.
 // * ResourcePrefetchPredictor - Learns about resource requirements per URL in
-//   the UI thread through the ResourcePrefetchPredictorObserver and perisists
+//   the UI thread through the ResourcePrefetchPredictorObserver and persists
 //   it to disk in the DB thread through the ResourcePrefetchPredictorTables. It
 //   initiates resource prefetching using the ResourcePrefetcherManager. Owned
 //   by profile.
@@ -110,8 +110,11 @@ class ResourcePrefetchPredictor
   // predictor of main frame and resource requests. Should only be called if the
   // corresponding Should* functions return true.
   void RecordURLRequest(const URLRequestSummary& request);
-  void RecordUrlResponse(const URLRequestSummary& response);
-  void RecordUrlRedirect(const URLRequestSummary& response);
+  void RecordURLResponse(const URLRequestSummary& response);
+  void RecordURLRedirect(const URLRequestSummary& response);
+
+  // Called when the main frame of a page completes loading.
+  void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
 
   // Called by ResourcePrefetcherManager to notify that prefetching has finished
   // for a navigation. Should take ownership of |requests|.
@@ -191,10 +194,6 @@ class ResourcePrefetchPredictor
   void OnMainFrameResponse(const URLRequestSummary& response);
   void OnMainFrameRedirect(const URLRequestSummary& response);
   void OnSubresourceResponse(const URLRequestSummary& response);
-  void OnSubresourceLoadedFromMemory(const NavigationID& navigation_id,
-                                     const GURL& resource_url,
-                                     const std::string& mime_type,
-                                     ResourceType::Type resource_type);
 
   // Called when onload completes for a navigation. We treat this point as the
   // "completion" of the navigation. The resources requested by the page upto

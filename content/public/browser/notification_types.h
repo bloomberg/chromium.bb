@@ -73,6 +73,7 @@ enum NotificationType {
 
   // Corresponds to ViewHostMsg_DocumentOnLoadCompletedInMainFrame. The source
   // is the WebContents and the details the page_id.
+  // DEPRECATED: Use WebContentsObserver::DocumentOnLoadCompletedInMainFrame()
   NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
 
   // A content load is starting.  The source will be a
@@ -87,13 +88,6 @@ enum NotificationType {
   // are optional.
   // DEPRECATED: Use WebContentsObserver::DidStopLoading()
   NOTIFICATION_LOAD_STOP,
-
-  // Content was loaded from an in-memory cache.  The source will be a
-  // Source<NavigationController> corresponding to the tab in which the load
-  // occurred.  Details in the form of a LoadFromMemoryCacheDetails object
-  // are provided.
-  // DEPRECATED: Use WebContentsObserver::DidLoadResourceFromMemoryCache()
-  NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
 
   // A response has been received for a resource request.  The source will be
   // a Source<WebContents> corresponding to the tab in which the request was

@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/load_from_memory_cache_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -303,10 +302,6 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
     DCHECK(config_.IsURLLearningEnabled());
   if (config_.IsHostPrefetchingEnabled())
     DCHECK(config_.IsHostLearningEnabled());
-
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                              content::NotificationService::AllSources());
 }
 
 ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {
@@ -322,7 +317,7 @@ void ResourcePrefetchPredictor::RecordURLRequest(
   OnMainFrameRequest(request);
 }
 
-void ResourcePrefetchPredictor::RecordUrlResponse(
+void ResourcePrefetchPredictor::RecordURLResponse(
     const URLRequestSummary& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (initialization_state_ != INITIALIZED)
@@ -334,7 +329,7 @@ void ResourcePrefetchPredictor::RecordUrlResponse(
     OnSubresourceResponse(response);
 }
 
-void ResourcePrefetchPredictor::RecordUrlRedirect(
+void ResourcePrefetchPredictor::RecordURLRedirect(
     const URLRequestSummary& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (initialization_state_ != INITIALIZED)
@@ -342,6 +337,30 @@ void ResourcePrefetchPredictor::RecordUrlRedirect(
 
   CHECK_EQ(response.resource_type, ResourceType::MAIN_FRAME);
   OnMainFrameRedirect(response);
+}
+
+void ResourcePrefetchPredictor::RecordMainFrameLoadComplete(
+    const NavigationID& navigation_id) {
+  switch (initialization_state_) {
+    case NOT_INITIALIZED:
+      StartInitialization();
+      break;
+    case INITIALIZING:
+      break;
+    case INITIALIZED: {
+      RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD);
+      // WebContents can return an empty URL if the navigation entry
+      // corresponding to the navigation has not been created yet.
+      if (navigation_id.main_frame_url.is_empty())
+        RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_EMPTY_URL);
+      else
+        OnNavigationComplete(navigation_id);
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected initialization_state_: "
+                   << initialization_state_;
+  }
 }
 
 void ResourcePrefetchPredictor::FinishedPrefetchForNavigation(
@@ -365,48 +384,6 @@ void ResourcePrefetchPredictor::Observe(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (type) {
-    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      switch (initialization_state_) {
-        case NOT_INITIALIZED:
-          StartInitialization();
-          break;
-        case INITIALIZING:
-          break;
-        case INITIALIZED: {
-          RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD);
-          const content::WebContents* web_contents =
-              content::Source<content::WebContents>(source).ptr();
-          NavigationID navigation_id(*web_contents);
-          // WebContents can return an empty URL if the navigation entry
-          // corresponding to the navigation has not been created yet.
-          if (navigation_id.main_frame_url.is_empty())
-            RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_EMPTY_URL);
-          else
-            OnNavigationComplete(navigation_id);
-          break;
-        }
-        default:
-          NOTREACHED() << "Unexpected initialization_state_: "
-                       << initialization_state_;
-      }
-      break;
-    }
-
-    case content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE: {
-      const content::LoadFromMemoryCacheDetails* load_details =
-          content::Details<content::LoadFromMemoryCacheDetails>(details).ptr();
-      const content::WebContents* web_contents =
-          content::Source<content::NavigationController>(
-              source).ptr()->GetWebContents();
-
-      NavigationID navigation_id(*web_contents);
-      OnSubresourceLoadedFromMemory(navigation_id,
-                                    load_details->url,
-                                    load_details->mime_type,
-                                    load_details->resource_type);
-      break;
-    }
-
     case chrome::NOTIFICATION_HISTORY_LOADED: {
       DCHECK_EQ(initialization_state_, INITIALIZING);
       notification_registrar_.Remove(this,
@@ -518,23 +495,6 @@ void ResourcePrefetchPredictor::OnSubresourceResponse(
   }
 
   inflight_navigations_[response.navigation_id]->push_back(response);
-}
-
-void ResourcePrefetchPredictor::OnSubresourceLoadedFromMemory(
-    const NavigationID& navigation_id,
-    const GURL& resource_url,
-    const std::string& mime_type,
-    ResourceType::Type resource_type) {
-  if (inflight_navigations_.find(navigation_id) == inflight_navigations_.end())
-    return;
-
-  URLRequestSummary summary;
-  summary.navigation_id = navigation_id;
-  summary.resource_url = resource_url;
-  summary.mime_type = mime_type;
-  summary.resource_type = GetResourceTypeFromMimeType(mime_type, resource_type);
-  summary.was_cached = true;
-  inflight_navigations_[navigation_id]->push_back(summary);
 }
 
 void ResourcePrefetchPredictor::OnNavigationComplete(
@@ -732,9 +692,6 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(initialization_state_, INITIALIZING);
 
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
-                              content::NotificationService::AllSources());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                               content::Source<Profile>(profile_));

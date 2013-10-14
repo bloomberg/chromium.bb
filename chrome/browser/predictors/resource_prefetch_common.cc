@@ -167,10 +167,10 @@ NavigationID::NavigationID(const NavigationID& other)
       creation_time(other.creation_time) {
 }
 
-NavigationID::NavigationID(const content::WebContents& web_contents)
-    : render_process_id(web_contents.GetRenderProcessHost()->GetID()),
-      render_view_id(web_contents.GetRenderViewHost()->GetRoutingID()),
-      main_frame_url(web_contents.GetURL()) {
+NavigationID::NavigationID(content::WebContents* web_contents)
+    : render_process_id(web_contents->GetRenderProcessHost()->GetID()),
+      render_view_id(web_contents->GetRenderViewHost()->GetRoutingID()),
+      main_frame_url(web_contents->GetURL()) {
 }
 
 bool NavigationID::is_valid() const {
