@@ -531,9 +531,9 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     // FIXME: Would be even better to somehow get the user's default font here.
     // For now we'll pick the default that the user would get without changing
     // any prefs.
-    static AtomicString timesStr("Times New Roman");
-    static AtomicString courierStr("Courier New");
-    static AtomicString arialStr("Arial");
+    DEFINE_STATIC_LOCAL(AtomicString, timesStr, "Times New Roman");
+    DEFINE_STATIC_LOCAL(AtomicString, courierStr, "Courier New");
+    DEFINE_STATIC_LOCAL(AtomicString, arialStr, "Arial");
 
     AtomicString& fontStr = timesStr;
     if (generic == FontDescription::SansSerifFamily)
