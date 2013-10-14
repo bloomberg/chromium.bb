@@ -57,6 +57,7 @@ class ChangeQueue {
     // Used to transfer ownership of the contained notification.
     scoped_ptr<Notification> PassNotification();
 
+    Notification* notification() const { return notification_.get(); }
     const std::string& id() const { return id_; }
     ChangeType type() const { return type_; }
     bool by_user() const { return by_user_; }
@@ -100,6 +101,10 @@ class ChangeQueue {
   // against the ID of all changes post-update, not the id of the notification
   // as it stands in the notification list.
   bool Has(const std::string& id) const;
+
+  // Returns a Change that can be modified by the caller.  ChangeQueue retains
+  // ownership of the Change; pointers should not be retained.
+  Notification* GetLatestNotification(const std::string& id) const;
 
  private:
   void Replace(const std::string& id, scoped_ptr<Change> change);
@@ -196,6 +201,15 @@ bool ChangeQueue::Has(const std::string& id) const {
   ScopedVector<Change>::const_iterator iter =
       std::find_if(changes_.begin(), changes_.end(), ChangeFinder(id));
   return iter != changes_.end();
+}
+
+Notification* ChangeQueue::GetLatestNotification(const std::string& id) const {
+  ScopedVector<Change>::const_iterator iter =
+      std::find_if(changes_.begin(), changes_.end(), ChangeFinder(id));
+  if (iter == changes_.end())
+    return NULL;
+
+  return (*iter)->notification();
 }
 
 void ChangeQueue::Replace(const std::string& changed_id,
@@ -606,7 +620,18 @@ void MessageCenterImpl::RemoveAllNotifications(bool by_user) {
 
 void MessageCenterImpl::SetNotificationIcon(const std::string& notification_id,
                                         const gfx::Image& image) {
-  if (notification_list_->SetNotificationIcon(notification_id, image)) {
+  bool updated = false;
+  Notification* queue_notification = notification_queue_->GetLatestNotification(
+      notification_id);
+
+  if (queue_notification) {
+    queue_notification->set_icon(image);
+    updated = true;
+  } else {
+    updated = notification_list_->SetNotificationIcon(notification_id, image);
+  }
+
+  if (updated) {
     FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                       OnNotificationUpdated(notification_id));
   }
@@ -614,7 +639,18 @@ void MessageCenterImpl::SetNotificationIcon(const std::string& notification_id,
 
 void MessageCenterImpl::SetNotificationImage(const std::string& notification_id,
                                          const gfx::Image& image) {
-  if (notification_list_->SetNotificationImage(notification_id, image)) {
+  bool updated = false;
+  Notification* queue_notification = notification_queue_->GetLatestNotification(
+      notification_id);
+
+  if (queue_notification) {
+    queue_notification->set_image(image);
+    updated = true;
+  } else {
+    updated = notification_list_->SetNotificationImage(notification_id, image);
+  }
+
+  if (updated) {
     FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                       OnNotificationUpdated(notification_id));
   }
@@ -623,10 +659,19 @@ void MessageCenterImpl::SetNotificationImage(const std::string& notification_id,
 void MessageCenterImpl::SetNotificationButtonIcon(
     const std::string& notification_id, int button_index,
     const gfx::Image& image) {
-  if (!HasNotification(notification_id))
-    return;
-  if (notification_list_->SetNotificationButtonIcon(notification_id,
-                                                    button_index, image)) {
+  bool updated = false;
+  Notification* queue_notification = notification_queue_->GetLatestNotification(
+      notification_id);
+
+  if (queue_notification) {
+    queue_notification->SetButtonIcon(button_index, image);
+    updated = true;
+  } else {
+    updated = notification_list_->SetNotificationButtonIcon(
+        notification_id, button_index, image);
+  }
+
+  if (updated) {
     FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                       OnNotificationUpdated(notification_id));
   }
