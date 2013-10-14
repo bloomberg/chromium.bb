@@ -69,9 +69,14 @@ static void AddExternalClearKey(
   info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
   info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
 #endif  // defined(USE_PROPRIETARY_CODECS)
-
   info.pepper_type = kExternalClearKeyPepperType;
 
+  concrete_key_systems->push_back(info);
+
+  // A key system that Chrome thinks is supported by ClearKeyCdm, but actually
+  // will be refused by ClearKeyCdm. This is to test the CDM initialization
+  // failure case.
+  info.key_system += ".initializefail";
   concrete_key_systems->push_back(info);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)

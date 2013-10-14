@@ -60,6 +60,7 @@ static bool g_ffmpeg_lib_initialized = InitializeFFmpegLibraries();
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
 const char kClearKeyCdmVersion[] = "0.1.0.1";
+const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 const int64 kSecondsPerMinute = 60;
 const int64 kMsPerSecond = 1000;
 const int64 kInitialTimerDelayMs = 200;
@@ -129,6 +130,11 @@ void* CreateCdmInstance(
     const char* key_system, int key_system_size,
     GetCdmHostFunc get_cdm_host_func, void* user_data) {
   DVLOG(1) << "CreateCdmInstance()";
+
+  if (std::string(key_system, key_system_size) != kExternalClearKeyKeySystem) {
+    DVLOG(1) << "Unsupported key system.";
+    return NULL;
+  }
 
   if (cdm_interface_version != cdm::kCdmInterfaceVersion)
     return NULL;

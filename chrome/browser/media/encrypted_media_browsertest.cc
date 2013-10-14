@@ -306,3 +306,14 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, WVParentThrowsException) {
                         kWebMAudioOnly, "com.widevine", SRC, kEmeGkrException);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
+
+#if defined(ENABLE_PEPPER_CDMS)
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ExternalClearKeyInitializeCDMFail) {
+  RunEncryptedMediaTest("encrypted_media_player.html",
+                        "bear-a-enc_a.webm",
+                        kWebMAudioOnly,
+                        "org.chromium.externalclearkey.initializefail",
+                        SRC,
+                        kEmeKeyError);
+}
+#endif  // defined(ENABLE_PEPPER_CDMS)

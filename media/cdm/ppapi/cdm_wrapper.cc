@@ -586,6 +586,7 @@ class CdmWrapper : public pp::Instance,
   void SendKeyAdded(const std::string& key_system,
                     const std::string& session_id);
 
+  // TODO(jrummell): Drop the |key_system| parameter.
   void SendKeyErrorInternal(const std::string& key_system,
                             const std::string& session_id,
                             cdm::MediaKeyError error_code,
@@ -707,25 +708,29 @@ bool CdmWrapper::CreateCdmInstance(const std::string& key_system) {
   return (cdm_ != NULL);
 }
 
+// No KeyErrors should be reported in this function because they cannot be
+// bubbled up in the WD EME API. Those errors will be reported during session
+// creation (aka GenerateKeyRequest).
 void CdmWrapper::Initialize(const std::string& key_system,
                             bool can_challenge_platform) {
   PP_DCHECK(!key_system.empty());
   PP_DCHECK(key_system_.empty() || (key_system_ == key_system && cdm_));
 
-  if (!cdm_) {
-    if (!CreateCdmInstance(key_system)) {
-      // TODO(jrummell): Is UnknownKeyError the correct response?
-      SendUnknownKeyError(key_system, std::string());
-      return;
-    }
-  }
+  if (!cdm_ && !CreateCdmInstance(key_system))
+    return;
+
   PP_DCHECK(cdm_);
   key_system_ = key_system;
 }
 
 void CdmWrapper::GenerateKeyRequest(const std::string& type,
                                     pp::VarArrayBuffer init_data) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
+  // Initialize() doesn't report an error, so GenerateKeyRequest() can be called
+  // even if Initialize() failed.
+  if (!cdm_) {
+    SendUnknownKeyError(key_system_, std::string());
+    return;
+  }
 
 #if defined(CHECK_DOCUMENT_URL)
   PP_URLComponents_Dev url_components = {};
@@ -749,7 +754,8 @@ void CdmWrapper::GenerateKeyRequest(const std::string& type,
 void CdmWrapper::AddKey(const std::string& session_id,
                         pp::VarArrayBuffer key,
                         pp::VarArrayBuffer init_data) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
+  // TODO(jrummell): In EME WD, AddKey() can only be called on valid sessions.
+  // We should be able to DCHECK(cdm_) when addressing http://crbug.com/249976.
   if (!cdm_) {
     SendUnknownKeyError(key_system_, session_id);
     return;
@@ -779,7 +785,8 @@ void CdmWrapper::AddKey(const std::string& session_id,
 }
 
 void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
+  // TODO(jrummell): In EME WD, AddKey() can only be called on valid sessions.
+  // We should be able to DCHECK(cdm_) when addressing http://crbug.com/249976.
   if (!cdm_) {
     SendUnknownKeyError(key_system_, session_id);
     return;
@@ -797,7 +804,6 @@ void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
 
 void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
                          const PP_EncryptedBlockInfo& encrypted_block_info) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
   PP_DCHECK(!encrypted_buffer.is_null());
 
   // Release a buffer that the caller indicated it is finished with.
@@ -827,8 +833,6 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
 void CdmWrapper::InitializeAudioDecoder(
     const PP_AudioDecoderConfig& decoder_config,
     pp::Buffer_Dev extra_data_buffer) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
-
   cdm::Status status = cdm::kSessionError;
   if (cdm_) {
     cdm::AudioDecoderConfig cdm_decoder_config;
@@ -854,8 +858,6 @@ void CdmWrapper::InitializeAudioDecoder(
 void CdmWrapper::InitializeVideoDecoder(
     const PP_VideoDecoderConfig& decoder_config,
     pp::Buffer_Dev extra_data_buffer) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
-
   cdm::Status status = cdm::kSessionError;
   if (cdm_) {
     cdm::VideoDecoderConfig cdm_decoder_config;
@@ -883,7 +885,7 @@ void CdmWrapper::InitializeVideoDecoder(
 
 void CdmWrapper::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
                                      uint32_t request_id) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
+  PP_DCHECK(cdm_);  // InitializeXxxxxDecoder should have succeeded.
   if (cdm_) {
     cdm_->DeinitializeDecoder(
         PpDecryptorStreamTypeToCdmStreamType(decoder_type));
@@ -897,7 +899,7 @@ void CdmWrapper::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
 
 void CdmWrapper::ResetDecoder(PP_DecryptorStreamType decoder_type,
                               uint32_t request_id) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
+  PP_DCHECK(cdm_);  // InitializeXxxxxDecoder should have succeeded.
   if (cdm_)
     cdm_->ResetDecoder(PpDecryptorStreamTypeToCdmStreamType(decoder_type));
 
@@ -910,8 +912,7 @@ void CdmWrapper::DecryptAndDecode(
     PP_DecryptorStreamType decoder_type,
     pp::Buffer_Dev encrypted_buffer,
     const PP_EncryptedBlockInfo& encrypted_block_info) {
-  PP_DCHECK(cdm_);  // Initialize() should have succeeded.
-
+  PP_DCHECK(cdm_);  // InitializeXxxxxDecoder should have succeeded.
   // Release a buffer that the caller indicated it is finished with.
   allocator_.Release(encrypted_block_info.tracking_info.buffer_id);
 
@@ -1027,7 +1028,6 @@ void CdmWrapper::SendKeyErrorInternal(const std::string& key_system,
                                       const std::string& session_id,
                                       cdm::MediaKeyError error_code,
                                       uint32_t system_code) {
-  PP_DCHECK(!key_system.empty());
   PostOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError,
                                            SessionInfo(key_system_, session_id),
                                            error_code,
@@ -1063,7 +1063,6 @@ void CdmWrapper::KeyError(int32_t result,
                           cdm::MediaKeyError error_code,
                           uint32_t system_code) {
   PP_DCHECK(result == PP_OK);
-  PP_DCHECK(!session_info.key_system.empty());
   pp::ContentDecryptor_Private::KeyError(
       session_info.key_system, session_info.session_id,
       error_code, system_code);
