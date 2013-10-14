@@ -800,7 +800,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
 }
 
 #if ENABLE(CSS3_TEXT)
-void StyleBuilderFunctions::applyValueCSSPropetyWebkitTextUnderlinePosition(StyleResolverState& state, CSSValue* value)
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextUnderlinePosition(StyleResolverState& state, CSSValue* value)
 {
     // This is true if value is 'auto' or 'alphabetic'.
     if (value->isPrimitiveValue()) {
