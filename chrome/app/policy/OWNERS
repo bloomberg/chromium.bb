@@ -4,6 +4,7 @@ joaodasilva@chromium.org
 bartfab@chromium.org
 atwilson@chromium.org
 pneubeck@chromium.org
+dconnelly@chromium.org
 
 # Updating policy_templates.json can have drastic effects for systems depending
 # on policy definitions (for example, Google's cloud management tools for
