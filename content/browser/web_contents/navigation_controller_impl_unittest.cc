@@ -11,14 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-//  These are only used for commented out tests.  If someone wants to enable
-//  them, they should be moved to chrome first.
-//  #include "chrome/browser/history/history_service.h"
-//  #include "chrome/browser/profiles/profile_manager.h"
-//  #include "chrome/browser/sessions/session_service.h"
-//  #include "chrome/browser/sessions/session_service_factory.h"
-//  #include "chrome/browser/sessions/session_service_test_helper.h"
-//  #include "chrome/browser/sessions/session_types.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
@@ -30,7 +22,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_state.h"
@@ -202,9 +193,19 @@ class NavigationControllerTest
   }
 
   // WebContentsObserver:
+  virtual void NavigateToPendingEntry(
+      const GURL& url,
+      NavigationController::ReloadType reload_type) OVERRIDE {
+    navigated_url_ = url;
+  }
+
   virtual void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) OVERRIDE {
     navigation_entry_committed_counter_++;
+  }
+
+  const GURL& navigated_url() const {
+    return navigated_url_;
   }
 
   NavigationControllerImpl& controller_impl() {
@@ -212,6 +213,7 @@ class NavigationControllerTest
   }
 
  protected:
+  GURL navigated_url_;
   size_t navigation_entry_committed_counter_;
 };
 
@@ -1155,31 +1157,11 @@ TEST_F(NavigationControllerTest, Reload_GeneratesNewPage) {
   EXPECT_FALSE(controller.CanGoForward());
 }
 
-class TestNavigationObserver : public RenderViewHostObserver {
- public:
-  explicit TestNavigationObserver(RenderViewHost* render_view_host)
-      : RenderViewHostObserver(render_view_host) {
-  }
-
-  const GURL& navigated_url() const {
-    return navigated_url_;
-  }
-
- protected:
-  virtual void Navigate(const GURL& url) OVERRIDE {
-    navigated_url_ = url;
-  }
-
- private:
-  GURL navigated_url_;
-};
-
 #if !defined(OS_ANDROID)  // http://crbug.com/157428
 TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
   RegisterForAllNavNotifications(&notifications, &controller);
-  TestNavigationObserver observer(test_rvh());
 
   const GURL original_url("http://foo1");
   const GURL final_url("http://foo2");
@@ -1204,7 +1186,7 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   EXPECT_EQ(0U, notifications.size());
 
   // The reload is pending.  The request should point to the original URL.
-  EXPECT_EQ(original_url, observer.navigated_url());
+  EXPECT_EQ(original_url, navigated_url());
   EXPECT_EQ(controller.GetEntryCount(), 1);
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
   EXPECT_EQ(controller.GetPendingEntryIndex(), 0);
@@ -3794,183 +3776,5 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
   EXPECT_FALSE(controller.CanGoForward());
   EXPECT_EQ(url4, controller.GetVisibleEntry()->GetURL());
 }
-
-/* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
-   (but not Vista) cleaning up the directory after they run.
-   This should be fixed.
-
-// NavigationControllerHistoryTest ---------------------------------------------
-
-class NavigationControllerHistoryTest : public NavigationControllerTest {
- public:
-  NavigationControllerHistoryTest()
-      : url0("http://foo1"),
-        url1("http://foo1"),
-        url2("http://foo1"),
-        profile_manager_(NULL) {
-  }
-
-  virtual ~NavigationControllerHistoryTest() {
-    // Prevent our base class from deleting the profile since profile's
-    // lifetime is managed by profile_manager_.
-    STLDeleteElements(&windows_);
-  }
-
-  // testing::Test overrides.
-  virtual void SetUp() {
-    NavigationControllerTest::SetUp();
-
-    // Force the session service to be created.
-    SessionService* service = new SessionService(profile());
-    SessionServiceFactory::SetForTestProfile(profile(), service);
-    service->SetWindowType(window_id, Browser::TYPE_TABBED);
-    service->SetWindowBounds(window_id, gfx::Rect(0, 1, 2, 3), false);
-    service->SetTabIndexInWindow(window_id,
-                                 controller.session_id(), 0);
-    controller.SetWindowID(window_id);
-
-    session_helper_.SetService(service);
-  }
-
-  virtual void TearDown() {
-    // Release profile's reference to the session service. Otherwise the file
-    // will still be open and we won't be able to delete the directory below.
-    session_helper_.ReleaseService(); // profile owns this
-    SessionServiceFactory::SetForTestProfile(profile(), NULL);
-
-    // Make sure we wait for history to shut down before continuing. The task
-    // we add will cause our message loop to quit once it is destroyed.
-    HistoryService* history = HistoryServiceFactory::GetForProfiles(
-        profile(), Profile::IMPLICIT_ACCESS);
-    if (history) {
-      history->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
-      base::MessageLoop::current()->Run();
-    }
-
-    // Do normal cleanup before deleting the profile directory below.
-    NavigationControllerTest::TearDown();
-
-    ASSERT_TRUE(base::DeleteFile(test_dir_, true));
-    ASSERT_FALSE(base::PathExists(test_dir_));
-  }
-
-  // Deletes the current profile manager and creates a new one. Indirectly this
-  // shuts down the history database and reopens it.
-  void ReopenDatabase() {
-    session_helper_.SetService(NULL);
-    SessionServiceFactory::SetForTestProfile(profile(), NULL);
-
-    SessionService* service = new SessionService(profile());
-    SessionServiceFactory::SetForTestProfile(profile(), service);
-    session_helper_.SetService(service);
-  }
-
-  void GetLastSession() {
-    SessionServiceFactory::GetForProfile(profile())->TabClosed(
-        controller.window_id(), controller.session_id(), false);
-
-    ReopenDatabase();
-    Time close_time;
-
-    session_helper_.ReadWindows(&windows_);
-  }
-
-  CancelableRequestConsumer consumer;
-
-  // URLs for testing.
-  const GURL url0;
-  const GURL url1;
-  const GURL url2;
-
-  std::vector<SessionWindow*> windows_;
-
-  SessionID window_id;
-
-  SessionServiceTestHelper session_helper_;
-
- private:
-  ProfileManager* profile_manager_;
-  base::FilePath test_dir_;
-};
-
-// A basic test case. Navigates to a single url, and make sure the history
-// db matches.
-TEST_F(NavigationControllerHistoryTest, Basic) {
-  NavigationControllerImpl& controller = controller_impl();
-  controller.LoadURL(url0, GURL(), PAGE_TRANSITION_LINK);
-  test_rvh()->SendNavigate(0, url0);
-
-  GetLastSession();
-
-  session_helper_.AssertSingleWindowWithSingleTab(windows_, 1);
-  session_helper_.AssertTabEquals(0, 0, 1, *(windows_[0]->tabs[0]));
-  TabNavigation nav1(0, url0, GURL(), string16(),
-                     webkit_glue::CreateHistoryStateForURL(url0),
-                     PAGE_TRANSITION_LINK);
-  session_helper_.AssertNavigationEquals(nav1,
-                                         windows_[0]->tabs[0]->navigations[0]);
-}
-
-// Navigates to three urls, then goes back and make sure the history database
-// is in sync.
-TEST_F(NavigationControllerHistoryTest, NavigationThenBack) {
-  NavigationControllerImpl& controller = controller_impl();
-  test_rvh()->SendNavigate(0, url0);
-  test_rvh()->SendNavigate(1, url1);
-  test_rvh()->SendNavigate(2, url2);
-
-  controller.GoBack();
-  test_rvh()->SendNavigate(1, url1);
-
-  GetLastSession();
-
-  session_helper_.AssertSingleWindowWithSingleTab(windows_, 3);
-  session_helper_.AssertTabEquals(0, 1, 3, *(windows_[0]->tabs[0]));
-
-  TabNavigation nav(0, url0, GURL(), string16(),
-                    webkit_glue::CreateHistoryStateForURL(url0),
-                    PAGE_TRANSITION_LINK);
-  session_helper_.AssertNavigationEquals(nav,
-                                         windows_[0]->tabs[0]->navigations[0]);
-  nav.set_url(url1);
-  session_helper_.AssertNavigationEquals(nav,
-                                         windows_[0]->tabs[0]->navigations[1]);
-  nav.set_url(url2);
-  session_helper_.AssertNavigationEquals(nav,
-                                         windows_[0]->tabs[0]->navigations[2]);
-}
-
-// Navigates to three urls, then goes back twice, then loads a new url.
-TEST_F(NavigationControllerHistoryTest, NavigationPruning) {
-  NavigationControllerImpl& controller = controller_impl();
-  test_rvh()->SendNavigate(0, url0);
-  test_rvh()->SendNavigate(1, url1);
-  test_rvh()->SendNavigate(2, url2);
-
-  controller.GoBack();
-  test_rvh()->SendNavigate(1, url1);
-
-  controller.GoBack();
-  test_rvh()->SendNavigate(0, url0);
-
-  test_rvh()->SendNavigate(3, url2);
-
-  // Now have url0, and url2.
-
-  GetLastSession();
-
-  session_helper_.AssertSingleWindowWithSingleTab(windows_, 2);
-  session_helper_.AssertTabEquals(0, 1, 2, *(windows_[0]->tabs[0]));
-
-  TabNavigation nav(0, url0, GURL(), string16(),
-                    webkit_glue::CreateHistoryStateForURL(url0),
-                    PAGE_TRANSITION_LINK);
-  session_helper_.AssertNavigationEquals(nav,
-                                         windows_[0]->tabs[0]->navigations[0]);
-  nav.set_url(url2);
-  session_helper_.AssertNavigationEquals(nav,
-                                         windows_[0]->tabs[0]->navigations[1]);
-}
-*/
 
 }  // namespace content

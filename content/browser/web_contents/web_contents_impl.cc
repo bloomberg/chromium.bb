@@ -224,6 +224,7 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
         controller.GetLastCommittedEntryIndex();
     params->current_history_list_length = controller.GetEntryCount();
   }
+  params->url = entry.GetURL();
   if (!entry.GetBaseURLForDataURL().is_empty()) {
     params->base_url_for_data_url = entry.GetBaseURLForDataURL();
     params->history_url_for_data_url = entry.GetVirtualURL();
@@ -243,23 +244,11 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   // Avoid downloading when in view-source mode.
   params->allow_download = !entry.IsViewSourceMode();
   params->is_post = entry.GetHasPostData();
-  if(entry.GetBrowserInitiatedPostData()) {
-      params->browser_initiated_post_data.assign(
-          entry.GetBrowserInitiatedPostData()->front(),
-          entry.GetBrowserInitiatedPostData()->front() +
-              entry.GetBrowserInitiatedPostData()->size());
-
-  }
-
-  if (reload_type == NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL &&
-      entry.GetOriginalRequestURL().is_valid() && !entry.GetHasPostData()) {
-    // We may have been redirected when navigating to the current URL.
-    // Use the URL the user originally intended to visit, if it's valid and if a
-    // POST wasn't involved; the latter case avoids issues with sending data to
-    // the wrong page.
-    params->url = entry.GetOriginalRequestURL();
-  } else {
-    params->url = entry.GetURL();
+  if (entry.GetBrowserInitiatedPostData()) {
+    params->browser_initiated_post_data.assign(
+        entry.GetBrowserInitiatedPostData()->front(),
+        entry.GetBrowserInitiatedPostData()->front() +
+            entry.GetBrowserInitiatedPostData()->size());
   }
 
   params->can_load_local_resources = entry.GetCanLoadLocalResources();

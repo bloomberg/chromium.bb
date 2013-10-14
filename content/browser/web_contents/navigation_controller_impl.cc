@@ -303,6 +303,15 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
   if (!entry)
     return;
 
+  if (reload_type == NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL &&
+      entry->GetOriginalRequestURL().is_valid() && !entry->GetHasPostData()) {
+    // We may have been redirected when navigating to the current URL.
+    // Use the URL the user originally intended to visit, if it's valid and if a
+    // POST wasn't involved; the latter case avoids issues with sending data to
+    // the wrong page.
+    entry->SetURL(entry->GetOriginalRequestURL());
+  }
+
   if (g_check_for_repost && check_for_repost &&
       entry->GetHasPostData()) {
     // The user is asking to reload a page with POST data. Prompt to make sure
