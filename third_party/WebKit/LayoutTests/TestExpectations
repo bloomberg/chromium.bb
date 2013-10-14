@@ -1046,7 +1046,6 @@ crbug.com/293932 [ Android ] svg/batik/text/textAnchor3.svg [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] svg/canvas/canvas-pattern-svg.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ ImageOnlyFailure ]
-crbug.com/301660 [ XP ] svg/dynamic-updates/SVGMarkerElement-svgdom-setOrientToAngle-call.html [ NeedsRebaseline ]
 
 # Needs triaging.
 crbug.com/289883 [ Android ] virtual/softwarecompositing/overflow/get-transform-from-non-box-container.html [ Timeout ]
