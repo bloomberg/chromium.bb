@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -34,6 +35,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
+  MOCK_METHOD1(OnLogEvent, void(NTPLoggingEventType event));
 };
 
 }  // namespace

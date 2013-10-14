@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
+#include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -425,6 +426,12 @@ void SearchTabHelper::OnUndoMostVisitedDeletion(const GURL& url) {
 void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
   if (instant_service_)
     instant_service_->UndoAllMostVisitedDeletions();
+}
+
+void SearchTabHelper::OnLogEvent(NTPLoggingEventType event) {
+  NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(web_contents());
+  if (data)
+    data->LogEvent(event);
 }
 
 void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {

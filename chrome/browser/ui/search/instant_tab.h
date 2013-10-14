@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/search/instant_page.h"
-#include "chrome/common/ntp_logging_events.h"
 
 class Profile;
 
@@ -22,10 +21,6 @@ class InstantTab : public InstantPage {
   // Start observing |contents| for messages. Sends a message to determine if
   // the page supports the Instant API.
   void Init(content::WebContents* contents);
-
-  // Used to signal that an event has occurred on the New Tab Page.
-  static void LogEvent(content::WebContents* contents,
-                       NTPLoggingEventType event);
 
   // Used to log in UMA the total number of mouseovers over NTP tiles/titles.
   static void EmitMouseoverCount(content::WebContents* contents);

@@ -84,6 +84,19 @@ TEST_F(SearchIPCRouterPolicyTest, ProcessUndoAllMostVisitedDeletions) {
       ShouldProcessUndoAllMostVisitedDeletions());
 }
 
+TEST_F(SearchIPCRouterPolicyTest, ProcessLogEvent) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessLogEvent());
+}
+
+TEST_F(SearchIPCRouterPolicyTest, DoNotProcessLogEvent) {
+  // Process message only if the underlying page is an InstantNTP.
+  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessLogEvent());
+}
+
 TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
@@ -100,6 +113,8 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
       ShouldProcessUndoMostVisitedDeletion());
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldProcessUndoAllMostVisitedDeletions());
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessLogEvent());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendSetDisplayInstantResults) {

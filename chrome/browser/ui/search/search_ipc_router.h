@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -48,6 +49,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
     // Called when the SearchBox wants to undo all Most Visited deletions.
     virtual void OnUndoAllMostVisitedDeletions() = 0;
+
+    // Called to signal that an event has occurred on the New Tab Page.
+    virtual void OnLogEvent(NTPLoggingEventType event) = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -64,6 +68,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
+    virtual bool ShouldProcessLogEvent() = 0;
     virtual bool ShouldSendSetPromoInformation() = 0;
     virtual bool ShouldSendSetDisplayInstantResults() = 0;
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
@@ -109,6 +114,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            PageURLDoesntBelongToInstantRenderer);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            ProcessVoiceSearchSupportMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessLogEvent);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, DoNotProcessLogEvent);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            SendSetDisplayInstantResults);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
@@ -144,6 +151,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            DoNotSendSetPromoInformationMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessLogEventMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreLogEventMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            ProcessDeleteMostVisitedItemMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
@@ -169,6 +178,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnDeleteMostVisitedItem(int page_id, const GURL& url) const;
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_id) const;
+  void OnLogEvent(int page_id, NTPLoggingEventType event) const;
 
   // Used by unit tests to set a fake delegate.
   void set_delegate(Delegate* delegate);

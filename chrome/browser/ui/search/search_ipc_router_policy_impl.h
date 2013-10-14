@@ -36,6 +36,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   virtual bool ShouldProcessDeleteMostVisitedItem() OVERRIDE;
   virtual bool ShouldProcessUndoMostVisitedDeletion() OVERRIDE;
   virtual bool ShouldProcessUndoAllMostVisitedDeletions() OVERRIDE;
+  virtual bool ShouldProcessLogEvent() OVERRIDE;
   virtual bool ShouldSendSetPromoInformation() OVERRIDE;
   virtual bool ShouldSendSetDisplayInstantResults() OVERRIDE;
   virtual bool ShouldSendSetSuggestionToPrefetch() OVERRIDE;

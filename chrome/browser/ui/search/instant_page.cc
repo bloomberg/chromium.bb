@@ -6,7 +6,6 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/render_messages.h"
@@ -88,7 +87,6 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
                         OnSearchBoxNavigate);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
                         OnSearchBoxPaste);
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_LogEvent, OnLogEvent);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -166,12 +164,7 @@ void InstantPage::OnSearchBoxPaste(int page_id, const string16& text) {
   delegate_->PasteIntoOmnibox(contents(), text);
 }
 
-void InstantPage::OnLogEvent(int page_id, NTPLoggingEventType event) {
-  if (!contents()->IsActiveEntry(page_id))
-    return;
 
-  InstantTab::LogEvent(contents(), event);
-}
 
 void InstantPage::ClearContents() {
   if (contents())

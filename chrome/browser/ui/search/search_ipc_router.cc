@@ -89,6 +89,7 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
                         OnUndoMostVisitedDeletion);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
                         OnUndoAllMostVisitedDeletions);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_LogEvent, OnLogEvent);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -157,6 +158,14 @@ void SearchIPCRouter::OnUndoAllMostVisitedDeletions(int page_id) const {
     return;
 
   delegate_->OnUndoAllMostVisitedDeletions();
+}
+
+void SearchIPCRouter::OnLogEvent(int page_id, NTPLoggingEventType event) const {
+  if (!web_contents()->IsActiveEntry(page_id) ||
+      !policy_->ShouldProcessLogEvent())
+    return;
+
+  delegate_->OnLogEvent(event);
 }
 
 void SearchIPCRouter::set_delegate(Delegate* delegate) {
