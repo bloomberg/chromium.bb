@@ -70,8 +70,6 @@ public:
     String hash() const;
     String origin() const;
 
-    String toString() const { return href(); }
-
     PassRefPtr<DOMStringList> ancestorOrigins() const;
 
 private:

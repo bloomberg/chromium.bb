@@ -41,11 +41,9 @@ public:
     virtual void setInput(const String&) = 0;
 
     static void setHref(DOMURLUtils*, const String&);
-    static String origin(DOMURLUtils*);
+
     static void setProtocol(DOMURLUtils*, const String&);
-    static String username(DOMURLUtils*);
     static void setUsername(DOMURLUtils*, const String&);
-    static String password(DOMURLUtils*);
     static void setPassword(DOMURLUtils*, const String&);
     static void setHost(DOMURLUtils*, const String&);
     static void setHostname(DOMURLUtils*, const String&);

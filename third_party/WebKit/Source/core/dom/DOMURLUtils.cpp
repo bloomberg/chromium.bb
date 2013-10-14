@@ -27,25 +27,13 @@
 #include "config.h"
 #include "core/dom/DOMURLUtils.h"
 
-#include "weborigin/KURL.h"
 #include "weborigin/KnownPorts.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
 void DOMURLUtils::setHref(DOMURLUtils* impl, const String& value)
 {
     impl->setInput(value);
-}
-
-String DOMURLUtils::origin(DOMURLUtils* impl)
-{
-    const KURL& url = impl->url();
-    if (url.isNull())
-        return "";
-
-    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
-    return origin->toString();
 }
 
 void DOMURLUtils::setProtocol(DOMURLUtils* impl, const String& value)
@@ -57,11 +45,6 @@ void DOMURLUtils::setProtocol(DOMURLUtils* impl, const String& value)
     impl->setURL(url);
 }
 
-String DOMURLUtils::username(DOMURLUtils* impl)
-{
-    return impl->url().user();
-}
-
 void DOMURLUtils::setUsername(DOMURLUtils* impl, const String& value)
 {
     KURL url = impl->url();
@@ -69,11 +52,6 @@ void DOMURLUtils::setUsername(DOMURLUtils* impl, const String& value)
         return;
     url.setUser(value);
     impl->setURL(url);
-}
-
-String DOMURLUtils::password(DOMURLUtils* impl)
-{
-    return impl->url().pass();
 }
 
 void DOMURLUtils::setPassword(DOMURLUtils* impl, const String& value)

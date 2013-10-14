@@ -31,11 +31,12 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/DOMURLUtilsReadOnly.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/loader/FrameLoader.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
+#include "core/loader/FrameLoader.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 
@@ -70,61 +71,49 @@ String Location::protocol() const
 {
     if (!m_frame)
         return String();
-
-    return url().protocol() + ":";
+    return DOMURLUtilsReadOnly::protocol(url());
 }
 
 String Location::host() const
 {
     if (!m_frame)
         return String();
-
-    // Note: this is the IE spec. The NS spec swaps the two, it says
-    // "The hostname property is the concatenation of the host and port properties, separated by a colon."
-    const KURL& url = this->url();
-    return url.hasPort() ? url.host() + ":" + String::number(url.port()) : url.host();
+    return DOMURLUtilsReadOnly::host(url());
 }
 
 String Location::hostname() const
 {
     if (!m_frame)
         return String();
-
-    return url().host();
+    return DOMURLUtilsReadOnly::hostname(url());
 }
 
 String Location::port() const
 {
     if (!m_frame)
         return String();
-
-    const KURL& url = this->url();
-    return url.hasPort() ? String::number(url.port()) : "";
+    return DOMURLUtilsReadOnly::port(url());
 }
 
 String Location::pathname() const
 {
     if (!m_frame)
         return String();
-
-    const KURL& url = this->url();
-    return url.path().isEmpty() ? "/" : url.path();
+    return DOMURLUtilsReadOnly::pathname(url());
 }
 
 String Location::search() const
 {
     if (!m_frame)
         return String();
-
-    const KURL& url = this->url();
-    return url.query().isEmpty() ? emptyString() : "?" + url.query();
+    return DOMURLUtilsReadOnly::search(url());
 }
 
 String Location::origin() const
 {
     if (!m_frame)
         return String();
-    return SecurityOrigin::create(url())->toString();
+    return DOMURLUtilsReadOnly::origin(url());
 }
 
 PassRefPtr<DOMStringList> Location::ancestorOrigins() const
@@ -142,8 +131,7 @@ String Location::hash() const
     if (!m_frame)
         return String();
 
-    const String& fragmentIdentifier = url().fragmentIdentifier();
-    return fragmentIdentifier.isEmpty() ? emptyString() : "#" + fragmentIdentifier;
+    return DOMURLUtilsReadOnly::hash(url());
 }
 
 void Location::setHref(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& url)

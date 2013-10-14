@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/dom/DOMURLUtilsReadOnly.h"
 
-#include "weborigin/KURL.h"
 #include "weborigin/KnownPorts.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
@@ -40,14 +40,15 @@ String DOMURLUtilsReadOnly::href(DOMURLUtilsReadOnly* impl)
     return url.string();
 }
 
-String DOMURLUtilsReadOnly::protocol(DOMURLUtilsReadOnly* impl)
+String DOMURLUtilsReadOnly::origin(const KURL& url)
 {
-    return impl->url().protocol() + ":";
+    if (url.isNull())
+        return "";
+    return SecurityOrigin::create(url)->toString();
 }
 
-String DOMURLUtilsReadOnly::host(DOMURLUtilsReadOnly* impl)
+String DOMURLUtilsReadOnly::host(const KURL& url)
 {
-    const KURL& url = impl->url();
     if (url.hostEnd() == url.pathStart())
         return url.host();
     if (isDefaultPortForProtocol(url.port(), url.protocol()))
@@ -55,34 +56,23 @@ String DOMURLUtilsReadOnly::host(DOMURLUtilsReadOnly* impl)
     return url.host() + ":" + String::number(url.port());
 }
 
-String DOMURLUtilsReadOnly::hostname(DOMURLUtilsReadOnly* impl)
+String DOMURLUtilsReadOnly::port(const KURL& url)
 {
-    return impl->url().host();
-}
-
-String DOMURLUtilsReadOnly::port(DOMURLUtilsReadOnly* impl)
-{
-    const KURL& url = impl->url();
     if (url.hasPort())
         return String::number(url.port());
 
     return emptyString();
 }
 
-String DOMURLUtilsReadOnly::pathname(DOMURLUtilsReadOnly* impl)
+String DOMURLUtilsReadOnly::search(const KURL& url)
 {
-    return impl->url().path();
-}
-
-String DOMURLUtilsReadOnly::search(DOMURLUtilsReadOnly* impl)
-{
-    String query = impl->url().query();
+    String query = url.query();
     return query.isEmpty() ? emptyString() : "?" + query;
 }
 
-String DOMURLUtilsReadOnly::hash(DOMURLUtilsReadOnly* impl)
+String DOMURLUtilsReadOnly::hash(const KURL& url)
 {
-    String fragmentIdentifier = impl->url().fragmentIdentifier();
+    String fragmentIdentifier = url.fragmentIdentifier();
     if (fragmentIdentifier.isEmpty())
         return emptyString();
     return AtomicString(String("#" + fragmentIdentifier));
