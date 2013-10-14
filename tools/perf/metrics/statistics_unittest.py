@@ -74,7 +74,7 @@ class StatisticsUnitTest(unittest.TestCase):
       relaxed_samples = Relax(samples)
       d_relaxed = statistics.Discrepancy(relaxed_samples)
 
-      self.assertLessEqual(d_relaxed, d)
+      self.assertTrue(d_relaxed <= d)
 
   def testDiscrepancyAnalytic(self):
     """Computes discrepancy for sample sets with known statistics."""
@@ -129,9 +129,9 @@ class StatisticsUnitTest(unittest.TestCase):
     d_rel_d = statistics.FrameDiscrepancy(time_stamps_d, False,
                                            interval_multiplier)
 
-    self.assertLess(d_abs_a, d_abs_b)
-    self.assertLess(d_rel_a, d_rel_b)
-    self.assertLess(d_rel_d, d_rel_c)
+    self.assertTrue(d_abs_a < d_abs_b)
+    self.assertTrue(d_rel_a < d_rel_b)
+    self.assertTrue(d_rel_d < d_rel_c)
     self.assertEquals(round(d_abs_d, 2), round(d_abs_c, 2))
 
   def testPercentile(self):
