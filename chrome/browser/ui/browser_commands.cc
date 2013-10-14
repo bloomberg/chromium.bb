@@ -923,7 +923,7 @@ void OpenFeedbackDialog(Browser* browser) {
 
 void ToggleBookmarkBar(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowBookmarksBar"));
-  browser->window()->ToggleBookmarkBar();
+  ToggleBookmarkBarWhenVisible(browser->profile());
 }
 
 void ShowAppMenu(Browser* browser) {

@@ -12,6 +12,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -305,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   EXPECT_EQ(NSMinY(alertFrame), NSMinY(toolbarFrame));
 
   // Open sheet with normal browser window, persistent bookmark bar.
-  browser()->window()->ToggleBookmarkBar();
+  chrome::ToggleBookmarkBarWhenVisible(browser()->profile());
   EXPECT_TRUE([controller() isBookmarkBarVisible]);
   alertFrame = [controller() window:window
                   willPositionSheet:nil
@@ -315,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
 
   // Make sure the profile does not have the bookmark visible so that
   // we'll create the shortcut window without the bookmark bar.
-  browser()->window()->ToggleBookmarkBar();
+  chrome::ToggleBookmarkBarWhenVisible(browser()->profile());
   // Open application mode window.
   gfx::Rect initial_bounds(0, 0, 400, 400);
   OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"),

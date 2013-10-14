@@ -208,9 +208,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
                                         Profile* profile) = 0;
 
-  // Shows or hides the bookmark bar depending on its current visibility.
-  virtual void ToggleBookmarkBar() = 0;
-
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;
 

@@ -19,7 +19,6 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -485,14 +484,6 @@ gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
     return gfx::Rect();
   NSRect tabRect = [controller_ selectedTabGrowBoxRect];
   return gfx::Rect(NSRectToCGRect(tabRect));
-}
-
-// This is called from Browser, which in turn is called directly from
-// a menu option.  All we do here is set a preference.  The act of
-// setting the preference sends notifications to all windows who then
-// know what to do.
-void BrowserWindowCocoa::ToggleBookmarkBar() {
-  chrome::ToggleBookmarkBarWhenVisible(browser_->profile());
 }
 
 void BrowserWindowCocoa::AddFindBar(
