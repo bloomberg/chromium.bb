@@ -114,6 +114,8 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
 bool CollectDriverInfoGL(GPUInfo* gpu_info) {
   gpu_info->driver_version = GetDriverVersionFromString(
       gpu_info->gl_version_string);
+  gpu_info->gpu.vendor_string = gpu_info->gl_vendor;
+  gpu_info->gpu.device_string = gpu_info->gl_renderer;
   return true;
 }
 

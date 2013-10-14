@@ -36,6 +36,7 @@ struct GPU_EXPORT GPUInfo {
     // The strings that describe the GPU.
     // In Linux these strings are obtained through libpci.
     // In Win/MacOSX, these two strings are not filled at the moment.
+    // In Android, these are respectively GL_VENDOR and GL_RENDERER.
     std::string vendor_string;
     std::string device_string;
   };

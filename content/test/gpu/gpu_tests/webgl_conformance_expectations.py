@@ -5,13 +5,18 @@
 from telemetry.page import test_expectations
 
 # Valid expectation conditions are:
-# win xp vista win7
-# mac leopard snowleopard lion mountainlion
-# linux chromeos android
-# nvidia amd intel
-# Specific gpu's can be listed as a tuple with vendor name and device ID.
-# Example: ('nvidia', 0x1234)
-# Device ID's must be paired with a gpu vendor.
+#
+# Operating systems:
+#     win, xp, vista, win7, mac, leopard, snowleopard, lion, mountainlion,
+#     linux, chromeos, android
+#
+# GPU vendors:
+#     amd, arm, broadcom, hisilicon, intel, imagination, nvidia, qualcomm,
+#     vivante
+#
+# Specific GPUs can be listed as a tuple with vendor name and device ID.
+# Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
+# Device IDs must be paired with a GPU vendor.
 
 class WebGLConformanceExpectations(test_expectations.TestExpectations):
   def SetExpectations(self):
