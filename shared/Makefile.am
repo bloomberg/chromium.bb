@@ -10,6 +10,7 @@ libshared_la_SOURCES =				\
 	os-compatibility.h
 
 libshared_cairo_la_CFLAGS =			\
+	-DDATADIR='"$(datadir)"'		\
 	$(GCC_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(PIXMAN_CFLAGS)			\
@@ -29,4 +30,5 @@ libshared_cairo_la_SOURCES =			\
 	image-loader.c				\
 	image-loader.h				\
 	cairo-util.c				\
+	frame.c					\
 	cairo-util.h

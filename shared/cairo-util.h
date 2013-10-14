@@ -23,6 +23,7 @@
 #ifndef _CAIRO_UTIL_H
 #define _CAIRO_UTIL_H
 
+#include <stdint.h>
 #include <cairo.h>
 
 void
@@ -85,5 +86,115 @@ enum theme_location {
 
 enum theme_location
 theme_get_location(struct theme *t, int x, int y, int width, int height, int flags);
+
+struct frame;
+
+enum frame_status {
+	FRAME_STATUS_NONE = 0,
+	FRAME_STATUS_REPAINT = 0x1,
+	FRAME_STATUS_MINIMIZE = 0x2,
+	FRAME_STATUS_MAXIMIZE = 0x4,
+	FRAME_STATUS_CLOSE = 0x8,
+	FRAME_STATUS_MENU = 0x10,
+	FRAME_STATUS_RESIZE = 0x20,
+	FRAME_STATUS_MOVE = 0x40,
+	FRAME_STATUS_ALL = 0x7f
+};
+
+enum frame_flag {
+	FRAME_FLAG_ACTIVE = 0x1,
+	FRAME_FLAG_MAXIMIZED = 0x2
+};
+
+enum {
+	FRAME_BUTTON_NONE = 0,
+	FRAME_BUTTON_CLOSE = 0x1,
+	FRAME_BUTTON_MAXIMIZE = 0x2,
+	FRAME_BUTTON_MINIMIZE = 0x4,
+	FRAME_BUTTON_ALL = 0x7
+};
+
+enum frame_button_state {
+	FRAME_BUTTON_RELEASED = 0,
+	FRAME_BUTTON_PRESSED = 1
+};
+
+struct frame *
+frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
+	     const char *title);
+
+void
+frame_destroy(struct frame *frame);
+
+/* May set FRAME_STATUS_REPAINT */
+int
+frame_set_title(struct frame *frame, const char *title);
+
+/* May set FRAME_STATUS_REPAINT */
+void
+frame_set_flag(struct frame *frame, enum frame_flag flag);
+
+/* May set FRAME_STATUS_REPAINT */
+void
+frame_unset_flag(struct frame *frame, enum frame_flag flag);
+
+/* May set FRAME_STATUS_REPAINT */
+void
+frame_resize(struct frame *frame, int32_t width, int32_t height);
+
+/* May set FRAME_STATUS_REPAINT */
+void
+frame_resize_inside(struct frame *frame, int32_t width, int32_t height);
+
+int32_t
+frame_width(struct frame *frame);
+
+int32_t
+frame_height(struct frame *frame);
+
+void
+frame_interior(struct frame *frame, int32_t *x, int32_t *y,
+	       int32_t *width, int32_t *height);
+void
+frame_input_rect(struct frame *frame, int32_t *x, int32_t *y,
+		 int32_t *width, int32_t *height);
+void
+frame_opaque_rect(struct frame *frame, int32_t *x, int32_t *y,
+		  int32_t *width, int32_t *height);
+
+uint32_t
+frame_status(struct frame *frame);
+
+void
+frame_status_clear(struct frame *frame, enum frame_status status);
+
+/* May set FRAME_STATUS_REPAINT */
+enum theme_location
+frame_pointer_enter(struct frame *frame, void *pointer, int x, int y);
+
+/* May set FRAME_STATUS_REPAINT */
+enum theme_location
+frame_pointer_motion(struct frame *frame, void *pointer, int x, int y);
+
+/* May set FRAME_STATUS_REPAINT */
+void
+frame_pointer_leave(struct frame *frame, void *pointer);
+
+/* May set:
+ *	FRAME_STATUS_MINIMIZE
+ *	FRAME_STATUS_MAXIMIZE
+ *	FRAME_STATUS_CLOSE
+ *	FRAME_STATUS_MENU
+ *	FRAME_STATUS_RESIZE
+ *	FRAME_STATUS_MOVE
+ */
+enum theme_location
+frame_pointer_button(struct frame *frame, void *pointer,
+		     uint32_t button, enum frame_button_state state);
+
+/* TODO: Add Touch */
+
+void
+frame_repaint(struct frame *frame, cairo_t *cr);
 
 #endif
