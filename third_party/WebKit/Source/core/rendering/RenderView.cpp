@@ -629,8 +629,6 @@ static RenderObject* rendererAfterPosition(RenderObject* object, unsigned offset
 
 IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
 {
-    document().updateStyleIfNeeded();
-
     typedef HashMap<RenderObject*, OwnPtr<RenderSelectionInfo> > SelectionMap;
     SelectionMap selectedObjects;
 
@@ -671,8 +669,6 @@ IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
 
 void RenderView::repaintSelection() const
 {
-    document().updateStyleIfNeeded();
-
     HashSet<RenderBlock*> processedBlocks;
 
     RenderObject* end = rendererAfterPosition(m_selectionEnd, m_selectionEndPos);

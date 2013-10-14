@@ -1540,10 +1540,13 @@ void FrameSelection::focusedOrActiveStateChanged()
 {
     bool activeAndFocused = isFocusedAndActive();
 
+    RefPtr<Document> document = m_frame->document();
+    document->updateStyleIfNeeded();
+
     // Because RenderObject::selectionBackgroundColor() and
     // RenderObject::selectionForegroundColor() check if the frame is active,
     // we have to update places those colors were painted.
-    if (RenderView* view = m_frame->document()->renderView())
+    if (RenderView* view = document->renderView())
         view->repaintSelection();
 
     // Caret appears in the active frame.
@@ -1559,7 +1562,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     // Because StyleResolver::checkOneSelector() and
     // RenderTheme::isFocused() check if the frame is active, we have to
     // update style and theme state that depended on those.
-    if (Element* element = m_frame->document()->focusedElement()) {
+    if (Element* element = document->focusedElement()) {
         element->setNeedsStyleRecalc();
         if (RenderObject* renderer = element->renderer()) {
             if (renderer && renderer->style()->hasAppearance())
@@ -1568,7 +1571,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     }
 
     // Secure keyboard entry is set by the active frame.
-    if (m_frame->document()->useSecureKeyboardEntryWhenActive())
+    if (document->useSecureKeyboardEntryWhenActive())
         setUseSecureKeyboardEntry(activeAndFocused);
 }
 
@@ -1805,12 +1808,15 @@ String FrameSelection::selectedTextForClipboard() const
 
 FloatRect FrameSelection::bounds(bool clipToVisibleContent) const
 {
-    RenderView* root = m_frame->contentRenderer();
-    FrameView* view = m_frame->view();
-    if (!root || !view)
-        return LayoutRect();
+    m_frame->document()->updateStyleIfNeeded();
 
-    LayoutRect selectionRect = root->selectionBounds(clipToVisibleContent);
+    FrameView* view = m_frame->view();
+    RenderView* renderView = m_frame->contentRenderer();
+
+    if (!view || !renderView)
+        return FloatRect();
+
+    LayoutRect selectionRect = renderView->selectionBounds(clipToVisibleContent);
     return clipToVisibleContent ? intersection(selectionRect, view->visibleContentRect()) : selectionRect;
 }
 
