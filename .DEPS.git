@@ -18,11 +18,13 @@ deps = {
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@a6772271f71672e889776bfe49ec4efd9da036df',
     'third_party':
-        Var('git_url') + '/native_client/src/third_party.git@51f94e3470cddedb3e171c46cff17f59060aee2f',
+        Var('git_url') + '/native_client/src/third_party.git@fd5d8e052b402b1886f39a35688e40b881739d81',
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@b37daf5968200da8ff520ce65c4e5bce4047dd15',
     'third_party/lss':
         Var('git_url') + '/external/linux-syscall-support/lss.git@833a10e5529d400827756f4f8396809e837248a0',
+    'third_party/valgrind':
+        Var('git_url') + '/chromium/deps/valgrind.git@684ce00f66fdc9ac9d560068c3e69a9ecc3a2bf5',
     'tools/clang':
         Var('git_url') + '/chromium/src/tools/clang.git@6ee5028c0cbdb8b6dcd748e73426cb31c5bf3b8a',
     'tools/gyp':
