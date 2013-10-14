@@ -61,6 +61,9 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
   return app;
 }
 
+const char kDefaultApps[] = "Packaged App 1,Packaged App 2,Hosted App";
+const size_t kDefaultAppCount = 3u;
+
 }  // namespace
 
 class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
@@ -105,8 +108,7 @@ TEST_F(ExtensionAppModelBuilderTest, Build) {
   ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
 
   // The apps list would have 3 extension apps in the profile.
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
@@ -149,12 +151,10 @@ TEST_F(ExtensionAppModelBuilderTest, DisableAndEnable) {
 
   service_->DisableExtension(kHostedAppId,
                              extensions::Extension::DISABLE_NONE);
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 
   service_->EnableExtension(kHostedAppId);
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, Uninstall) {
@@ -186,8 +186,7 @@ TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
 
 TEST_F(ExtensionAppModelBuilderTest, Reinstall) {
   ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 
   // Install kPackagedApp1Id again should not create a new entry.
   extensions::InstallTracker* tracker =
@@ -195,8 +194,7 @@ TEST_F(ExtensionAppModelBuilderTest, Reinstall) {
   tracker->OnBeginExtensionInstall(
       kPackagedApp1Id, "", gfx::ImageSkia(), true, true);
 
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
@@ -209,8 +207,7 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
   sorting->SetPageOrdinal(kHostedAppId, package_app_page.CreateBefore());
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 
   syncer::StringOrdinal app1_ordinal =
       sorting->GetAppLaunchOrdinal(kPackagedApp1Id);
@@ -221,8 +218,7 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalPrefsChange) {
                                app1_ordinal.CreateBetween(app2_ordinal));
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
@@ -235,20 +231,17 @@ TEST_F(ExtensionAppModelBuilderTest, OnExtensionMoved) {
   service_->OnExtensionMoved(kHostedAppId, kPackagedApp1Id, kPackagedApp2Id);
   // Old behavior: This would be "Packaged App 1,Hosted App,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 
   service_->OnExtensionMoved(kHostedAppId, kPackagedApp2Id, std::string());
-  // Old behavior: This would be "Packaged App 1,Packaged App 2,Hosted App"
-  // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  // Old behavior: This would be restored to the default order.
+  // New behavior: Sorting order still doesn't change.
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 
   service_->OnExtensionMoved(kHostedAppId, std::string(), kPackagedApp1Id);
   // Old behavior: This would be "Hosted App,Packaged App 1,Packaged App 2"
   // New behavior: Sorting order doesn't change.
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
-            GetModelContent(model_.get()));
+  EXPECT_EQ(std::string(kDefaultApps), GetModelContent(model_.get()));
 }
 
 TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
@@ -288,4 +281,19 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
   // By default, conflicted items are sorted by their app ids (= order added).
   EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
             GetModelContent(model_.get()));
+}
+
+TEST_F(ExtensionAppModelBuilderTest, SwitchProfile) {
+  ExtensionAppModelBuilder builder(profile_.get(), model_.get(), NULL);
+  EXPECT_EQ(kDefaultAppCount, model_->apps()->item_count());
+
+  // Switch to a profile with no apps, ensure all apps are removed.
+  TestingProfile::Builder profile_builder;
+  scoped_ptr<TestingProfile> profile2(profile_builder.Build());
+  builder.SwitchProfile(profile2.get());
+  EXPECT_EQ(0u, model_->apps()->item_count());
+
+  // Switch back to the main profile, ensure apps are restored.
+  builder.SwitchProfile(profile_.get());
+  EXPECT_EQ(kDefaultAppCount, model_->apps()->item_count());
 }

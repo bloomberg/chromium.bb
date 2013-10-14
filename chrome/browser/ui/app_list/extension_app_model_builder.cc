@@ -161,7 +161,7 @@ void ExtensionAppModelBuilder::SwitchProfile(Profile* profile) {
 
   // Delete any extension apps.
   app_list::AppListModel::Apps* app_list = model_->apps();
-  for (size_t i = 0; i < app_list->item_count(); ++i) {
+  for (int i = static_cast<int>(app_list->item_count()) - 1; i >= 0; --i) {
     app_list::AppListItemModel* item = app_list->GetItemAt(i);
     if (item->GetAppType() == ExtensionAppItem::kAppType)
       app_list->DeleteAt(i);
@@ -170,13 +170,17 @@ void ExtensionAppModelBuilder::SwitchProfile(Profile* profile) {
   if (tracker_)
     tracker_->RemoveObserver(this);
 
-  tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
+  if (extensions::ExtensionSystem::Get(profile_)->extension_service())
+    tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
+  else
+    tracker_ = NULL;
 
   PopulateApps();
   UpdateHighlight();
 
   // Start observing after model is built.
-  tracker_->AddObserver(this);
+  if (tracker_)
+    tracker_->AddObserver(this);
 }
 
 void ExtensionAppModelBuilder::PopulateApps() {
