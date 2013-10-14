@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/child/child_process.h"
 #include "content/child/child_thread.h"
-#include "content/common/worker_messages.h"
+#include "content/common/message_port_messages.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannelClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -53,7 +53,7 @@ WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
   }
 
   if (message_port_id_ != MSG_ROUTING_NONE)
-    Send(new WorkerProcessHostMsg_DestroyMessagePort(message_port_id_));
+    Send(new MessagePortHostMsg_DestroyMessagePort(message_port_id_));
 
   if (route_id_ != MSG_ROUTING_NONE)
     ChildThread::current()->RemoveRoute(route_id_);
@@ -106,7 +106,7 @@ void WebMessagePortChannelImpl::postMessage(
     delete channels;
   }
 
-  IPC::Message* msg = new WorkerProcessHostMsg_PostMessage(
+  IPC::Message* msg = new MessagePortHostMsg_PostMessage(
       message_port_id_, message, message_port_ids);
   Send(msg);
 }
@@ -140,7 +140,7 @@ void WebMessagePortChannelImpl::Init() {
 
   if (route_id_ == MSG_ROUTING_NONE) {
     DCHECK(message_port_id_ == MSG_ROUTING_NONE);
-    Send(new WorkerProcessHostMsg_CreateMessagePort(
+    Send(new MessagePortHostMsg_CreateMessagePort(
         &route_id_, &message_port_id_));
   }
 
@@ -156,7 +156,7 @@ void WebMessagePortChannelImpl::Entangle(
     return;
   }
 
-  Send(new WorkerProcessHostMsg_Entangle(
+  Send(new MessagePortHostMsg_Entangle(
       message_port_id_, channel->message_port_id()));
 }
 
@@ -172,7 +172,7 @@ void WebMessagePortChannelImpl::QueueMessages() {
   // sends us an ack, whose receipt we know means that no more messages are
   // in-flight.  We then send the queued messages to the browser, which prepends
   // them to the ones it queued and it sends them to the new endpoint.
-  Send(new WorkerProcessHostMsg_QueueMessages(message_port_id_));
+  Send(new MessagePortHostMsg_QueueMessages(message_port_id_));
 
   // The process could potentially go away while we're still waiting for
   // in-flight messages.  Ensure it stays alive.
@@ -194,8 +194,8 @@ void WebMessagePortChannelImpl::Send(IPC::Message* message) {
 bool WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebMessagePortChannelImpl, message)
-    IPC_MESSAGE_HANDLER(WorkerProcessMsg_Message, OnMessage)
-    IPC_MESSAGE_HANDLER(WorkerProcessMsg_MessagesQueued, OnMessagesQueued)
+    IPC_MESSAGE_HANDLER(MessagePortMsg_Message, OnMessage)
+    IPC_MESSAGE_HANDLER(MessagePortMsg_MessagesQueued, OnMessagesQueued)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -243,7 +243,7 @@ void WebMessagePortChannelImpl::OnMessagesQueued() {
     }
   }
 
-  Send(new WorkerProcessHostMsg_SendQueuedMessages(
+  Send(new MessagePortHostMsg_SendQueuedMessages(
       message_port_id_, queued_messages));
 
   message_port_id_ = MSG_ROUTING_NONE;

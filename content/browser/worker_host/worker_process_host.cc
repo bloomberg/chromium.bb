@@ -25,6 +25,8 @@
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/message_port_message_filter.h"
+#include "content/browser/message_port_service.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/database_message_filter.h"
@@ -33,7 +35,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/worker_host/message_port_service.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/child_process_host_impl.h"
@@ -223,10 +224,15 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       get_contexts_callback);
   process_->AddFilter(resource_message_filter);
 
-  worker_message_filter_ = new WorkerMessageFilter(
-      render_process_id, resource_context_, partition_,
-      base::Bind(&WorkerServiceImpl::next_worker_route_id,
-                 base::Unretained(WorkerServiceImpl::GetInstance())));
+  MessagePortMessageFilter* message_port_message_filter =
+      new MessagePortMessageFilter(
+          base::Bind(&WorkerServiceImpl::next_worker_route_id,
+                     base::Unretained(WorkerServiceImpl::GetInstance())));
+  process_->AddFilter(message_port_message_filter);
+  worker_message_filter_ = new WorkerMessageFilter(render_process_id,
+                                                   resource_context_,
+                                                   partition_,
+                                                   message_port_message_filter);
   process_->AddFilter(worker_message_filter_.get());
   process_->AddFilter(new AppCacheDispatcherHost(
       partition_.appcache_service(), process_->GetData().id));
@@ -400,7 +406,9 @@ void WorkerProcessHost::RelayMessage(
     }
     new_routing_id = filter->GetNextRoutingID();
     MessagePortService::GetInstance()->UpdateMessagePort(
-        sent_message_port_id, filter, new_routing_id);
+        sent_message_port_id,
+        filter->message_port_message_filter(),
+        new_routing_id);
 
     // Resend the message with the new routing id.
     filter->Send(new WorkerMsg_Connect(
