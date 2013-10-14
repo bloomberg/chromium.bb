@@ -36,11 +36,11 @@ function test()
             timer.finish(backendTimerCookie);
             transferTimerCookie = timer.start("transfer-snapshot");
             var profiles = type.getProfiles();
-            InspectorTest.addSniffer(profiles[0], "_updateTransferProgress", onUpdateTransferProgress, true);
+            InspectorTest.addSniffer(profiles[0]._transferHandler, "_updateProgress", onUpdateProgress, true);
             InspectorTest.addSniffer(profiles[0], "_wasShown", step2);
         }
 
-        function onUpdateTransferProgress(saved, total)
+        function onUpdateProgress(saved, total)
         {
             if (saved !== total)
                 return;
