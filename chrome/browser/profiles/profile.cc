@@ -126,9 +126,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // kApplicationLocale only in local state.
   // In the future we may want to maintain kApplicationLocale
   // in user's profile for other platforms as well.
-  registry->RegisterStringPref(prefs::kApplicationLocale,
-                               std::string(),
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kApplicationLocale,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterStringPref(
       prefs::kApplicationLocaleBackup,
       std::string(),
