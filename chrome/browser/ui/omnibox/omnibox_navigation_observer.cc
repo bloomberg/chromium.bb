@@ -4,29 +4,63 @@
 
 #include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/intranet_redirect_detector.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 
-using content::NavigationController;
+
+// Helpers --------------------------------------------------------------------
+
+namespace {
+
+// HTTP 2xx, 401, and 407 all indicate that the target address exists.
+bool ResponseCodeIndicatesSuccess(int response_code) {
+  return ((response_code / 100) == 2) || (response_code == 401) ||
+      (response_code == 407);
+}
+
+// Returns true if |final_url| doesn't represent an ISP hijack of
+// |original_url|, based on the IntranetRedirectDetector's RedirectOrigin().
+bool IsValidNavigation(const GURL& original_url, const GURL& final_url) {
+  const GURL& redirect_url(IntranetRedirectDetector::RedirectOrigin());
+  return !redirect_url.is_valid() ||
+      net::registry_controlled_domains::SameDomainOrHost(
+          original_url, final_url,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) ||
+      !net::registry_controlled_domains::SameDomainOrHost(
+          final_url, redirect_url,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+}
+
+}  // namespace
+
+
+// OmniboxNavigationObserver --------------------------------------------------
 
 OmniboxNavigationObserver::OmniboxNavigationObserver(
     const GURL& alternate_nav_url)
     : alternate_nav_url_(alternate_nav_url),
-      controller_(NULL),
-      state_(NOT_STARTED),
-      navigated_to_entry_(false) {
+      load_state_(LOAD_NOT_SEEN),
+      fetch_state_(FETCH_NOT_COMPLETE) {
+  if (alternate_nav_url_.is_valid()) {
+    fetcher_.reset(net::URLFetcher::Create(alternate_nav_url,
+                                           net::URLFetcher::HEAD, this));
+    fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+    fetcher_->SetStopOnRedirect(true);
+  }
+  // We need to start by listening to AllSources, since we don't know which tab
+  // the navigation might occur in.
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  content::NotificationService::AllSources());
 }
@@ -38,107 +72,61 @@ void OmniboxNavigationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_NAV_ENTRY_PENDING: {
-      // If we've already received a notification for the same controller, we
-      // should delete ourselves as that indicates that the page is being
-      // re-loaded so this instance is now stale.
-      NavigationController* controller =
-          content::Source<NavigationController>(source).ptr();
-      if (controller_ == controller) {
-        delete this;
-      } else if (!controller_ && alternate_nav_url_.is_valid()) {
-        // Start listening for the commit notification.
-        DCHECK(controller->GetPendingEntry());
-        registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                       content::Source<NavigationController>(
-                          controller));
-        StartFetch(controller);
-      }
-      break;
-    }
+  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_PENDING, type);
+  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
+                    content::NotificationService::AllSources());
+  content::NavigationController* controller =
+      content::Source<content::NavigationController>(source).ptr();
+  if (fetcher_) {
+    fetcher_->SetRequestContext(
+        controller->GetBrowserContext()->GetRequestContext());
+  }
+  WebContentsObserver::Observe(controller->GetWebContents());
+  // NavigateToPendingEntry() will be called for this load as well.
+}
 
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
-      // The page was navigated, we can show the infobar now if necessary.
-      registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                        content::Source<NavigationController>(controller_));
-      navigated_to_entry_ = true;
-      ShowInfoBarIfPossible();
-      // WARNING: |this| may be deleted!
-      break;
+void OmniboxNavigationObserver::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  load_state_ = LOAD_COMMITTED;
+  if (!fetcher_ || (fetch_state_ != FETCH_NOT_COMPLETE))
+    OnAllLoadingFinished();  // deletes |this|!
+}
 
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
-      // We have been closed. In order to prevent the URLFetcher from trying to
-      // access the controller that will be invalid, we delete ourselves.
-      // This deletes the URLFetcher and insures its callback won't be called.
-      delete this;
-      break;
+void OmniboxNavigationObserver::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  delete this;
+}
 
-    default:
-      NOTREACHED();
+void OmniboxNavigationObserver::NavigateToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  if (load_state_ == LOAD_NOT_SEEN) {
+    load_state_ = LOAD_PENDING;
+    if (fetcher_)
+      fetcher_->Start();
+  } else {
+    delete this;
   }
 }
 
 void OmniboxNavigationObserver::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK_EQ(fetcher_.get(), source);
-  SetStatusFromURLFetch(
-      source->GetURL(), source->GetStatus(), source->GetResponseCode());
-  ShowInfoBarIfPossible();
-  // WARNING: |this| may be deleted!
+  const net::URLRequestStatus& status = source->GetStatus();
+  int response_code = source->GetResponseCode();
+  fetch_state_ =
+      (status.is_success() && ResponseCodeIndicatesSuccess(response_code)) ||
+      ((status.status() == net::URLRequestStatus::CANCELED) &&
+       ((response_code / 100) == 3) &&
+       IsValidNavigation(alternate_nav_url_, source->GetURL())) ?
+          FETCH_SUCCEEDED : FETCH_FAILED;
+  if (load_state_ == LOAD_COMMITTED)
+    OnAllLoadingFinished();  // deletes |this|!
 }
 
-void OmniboxNavigationObserver::StartFetch(NavigationController* controller) {
-  controller_ = controller;
-  content::WebContents* web_contents = controller_->GetWebContents();
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::Source<content::WebContents>(web_contents));
-
-  DCHECK_EQ(NOT_STARTED, state_);
-  state_ = IN_PROGRESS;
-  fetcher_.reset(net::URLFetcher::Create(GURL(alternate_nav_url_),
-                                         net::URLFetcher::HEAD, this));
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetRequestContext(
-      controller_->GetBrowserContext()->GetRequestContext());
-  fetcher_->SetStopOnRedirect(true);
-  fetcher_->Start();
-}
-
-void OmniboxNavigationObserver::SetStatusFromURLFetch(
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code) {
-  if (status.is_success()) {
-    // HTTP 2xx, 401, and 407 all indicate that the target address exists.
-    state_ = (((response_code / 100) == 2) || (response_code == 401) ||
-        (response_code == 407)) ? SUCCEEDED : FAILED;
-  } else {
-    // If we got HTTP 3xx, we'll have auto-canceled; treat this as evidence the
-    // target address exists as long as we're not redirected to a common
-    // location every time, lest we annoy the user with infobars on everything
-    // they type.  See comments on IntranetRedirectDetector.
-    if (status.status() == net::URLRequestStatus::CANCELED &&
-        (response_code / 100) == 3) {
-      const bool same_domain_or_host =
-          net::registry_controlled_domains::SameDomainOrHost(
-              url,
-              IntranetRedirectDetector::RedirectOrigin(),
-              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-      state_ = same_domain_or_host ? FAILED : SUCCEEDED;
-    } else {
-      state_ = FAILED;
-    }
-  }
-}
-
-void OmniboxNavigationObserver::ShowInfoBarIfPossible() {
-  if (navigated_to_entry_ && (state_ == SUCCEEDED)) {
+void OmniboxNavigationObserver::OnAllLoadingFinished() {
+  if (fetch_state_ == FETCH_SUCCEEDED) {
     AlternateNavInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(controller_->GetWebContents()),
-        alternate_nav_url_);
-  } else if (state_ != FAILED) {
-    return;
+        InfoBarService::FromWebContents(web_contents()), alternate_nav_url_);
   }
   delete this;
 }

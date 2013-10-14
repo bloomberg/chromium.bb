@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -34,55 +35,60 @@ class URLRequestStatus;
 // (2) Omnibox navigations that complete successfully are added to the
 //     Shortcuts backend.  TODO(pkasting): Not yet implemented.
 //
+// TODO(pkasting): Probably NOTIFICATION_OMNIBOX_OPENED_URL should disappear and
+// everyone who listened to it should be triggered from this class instead.
+//
 // The memory management of this object is a bit tricky. The OmniboxEditModel
 // will create us and be responsible for us until we attach as an observer
 // after a pending load starts (it will delete us if this doesn't happen).
 // Once this pending load starts, we're responsible for deleting ourselves.
 class OmniboxNavigationObserver : public content::NotificationObserver,
+                                  public content::WebContentsObserver,
                                   public net::URLFetcherDelegate {
  public:
-  enum State {
-    NOT_STARTED,
-    IN_PROGRESS,
-    SUCCEEDED,
-    FAILED,
+  enum LoadState {
+    LOAD_NOT_SEEN,
+    LOAD_PENDING,
+    LOAD_COMMITTED,
   };
 
   explicit OmniboxNavigationObserver(const GURL& alternate_nav_url);
   virtual ~OmniboxNavigationObserver();
 
-  State state() const { return state_; }
+  LoadState load_state() const { return load_state_; }
 
  private:
+  enum FetchState {
+    FETCH_NOT_COMPLETE,
+    FETCH_SUCCEEDED,
+    FETCH_FAILED,
+  };
+
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // content::WebContentsObserver:
+  virtual void NavigateToPendingEntry(
+      const GURL& url,
+      content::NavigationController::ReloadType reload_type) OVERRIDE;
+  virtual void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
+
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // Sets |controller_| to the supplied pointer and begins fetching
-  // |alternate_nav_url_|.
-  void StartFetch(content::NavigationController* controller);
-
-  // Sets |state_| to either SUCCEEDED or FAILED depending on the result of the
-  // fetch.
-  void SetStatusFromURLFetch(const GURL& url,
-                             const net::URLRequestStatus& status,
-                             int response_code);
-
-  // Displays the infobar if all conditions are met (the page has loaded and
-  // the fetch of the alternate URL succeeded).  Unless we're still waiting on
-  // one of the above conditions to finish, this will also delete us, as whether
-  // or not we show an infobar, there is no reason to live further.
-  void ShowInfoBarIfPossible();
+  // Once the load has committed and any URL fetch has completed, this displays
+  // the alternate nav infobar if necessary, and deletes |this|.
+  void OnAllLoadingFinished();
 
   GURL alternate_nav_url_;
   scoped_ptr<net::URLFetcher> fetcher_;
-  content::NavigationController* controller_;
-  State state_;
-  bool navigated_to_entry_;
+  LoadState load_state_;
+  FetchState fetch_state_;
 
   content::NotificationRegistrar registrar_;
 

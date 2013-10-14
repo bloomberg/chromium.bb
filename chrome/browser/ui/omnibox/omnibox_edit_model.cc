@@ -65,9 +65,10 @@
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
 
-using content::UserMetricsAction;
 using predictors::AutocompleteActionPredictor;
-using predictors::AutocompleteActionPredictorFactory;
+
+
+// Helpers --------------------------------------------------------------------
 
 namespace {
 
@@ -141,8 +142,8 @@ void RecordPercentageMatchHistogram(const string16& old_text,
 
 }  // namespace
 
-///////////////////////////////////////////////////////////////////////////////
-// OmniboxEditModel::State
+
+// OmniboxEditModel::State ----------------------------------------------------
 
 OmniboxEditModel::State::State(bool user_input_in_progress,
                                const string16& user_text,
@@ -165,8 +166,8 @@ OmniboxEditModel::State::State(bool user_input_in_progress,
 OmniboxEditModel::State::~State() {
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// OmniboxEditModel
+
+// OmniboxEditModel -----------------------------------------------------------
 
 OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
@@ -325,9 +326,9 @@ void OmniboxEditModel::OnChanged() {
 
   AutocompleteActionPredictor::Action recommended_action =
       AutocompleteActionPredictor::ACTION_NONE;
-  AutocompleteActionPredictor* action_predictor =
-      user_input_in_progress_ ?
-      AutocompleteActionPredictorFactory::GetForProfile(profile_) : NULL;
+  AutocompleteActionPredictor* action_predictor = user_input_in_progress_ ?
+      predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_) :
+      NULL;
   if (action_predictor) {
     action_predictor->RegisterTransitionalMatches(user_text_, result());
     // Confer with the AutocompleteActionPredictor to determine what action, if
@@ -487,7 +488,7 @@ void OmniboxEditModel::Revert() {
                                   has_focus() ? permanent_text_.length() : 0,
                                   false, true);
   AutocompleteActionPredictor* action_predictor =
-      AutocompleteActionPredictorFactory::GetForProfile(profile_);
+      predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_);
   if (action_predictor)
     action_predictor->ClearTransitionalMatches();
 }
@@ -716,7 +717,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         return;
       }
 
-      content::RecordAction(UserMetricsAction("AcceptedKeyword"));
+      content::RecordAction(content::UserMetricsAction("AcceptedKeyword"));
       TemplateURLServiceFactory::GetForProfile(profile_)->IncrementUsageCount(
           template_url);
     } else {
@@ -767,7 +768,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     if (TemplateURLServiceFactory::GetForProfile(profile_)->
         IsSearchResultsPageFromDefaultSearchProvider(destination_url)) {
       content::RecordAction(
-          UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
+          content::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
     }
 
     if (destination_url.is_valid()) {
@@ -781,7 +782,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
           destination_url, disposition,
           content::PageTransitionFromInt(
               match.transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR));
-      if (observer->state() != OmniboxNavigationObserver::NOT_STARTED)
+      if (observer->load_state() != OmniboxNavigationObserver::LOAD_NOT_SEEN)
         ignore_result(observer.release());  // The observer will delete itself.
     }
   }
@@ -810,7 +811,7 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
       DisplayTextFromUserText(CurrentMatch(NULL).fill_into_edit),
       save_original_selection, true);
 
-  content::RecordAction(UserMetricsAction("AcceptedKeywordHint"));
+  content::RecordAction(content::UserMetricsAction("AcceptedKeywordHint"));
   UMA_HISTOGRAM_ENUMERATION(kEnteredKeywordModeHistogram, entered_method,
                             ENTERED_KEYWORD_MODE_NUM_ITEMS);
 
