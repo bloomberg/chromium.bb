@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
@@ -223,7 +224,16 @@ public class ContentViewRenderView extends FrameLayout {
             TraceEvent.instant("requestRender:now");
             mNeedToRender = false;
             mPendingRenders++;
-            getHandler().postAtFrontOfQueue(mRenderRunnable);
+
+            // The handler can be null if we are detached from the window.  Calling
+            // {@link View#post(Runnable)} properly handles this case, but we lose the front of
+            // queue behavior.  That is okay for this edge case.
+            Handler handler = getHandler();
+            if (handler != null) {
+                handler.postAtFrontOfQueue(mRenderRunnable);
+            } else {
+                post(mRenderRunnable);
+            }
             mVSyncAdapter.requestUpdate();
         } else if (mPendingRenders <= 0) {
             assert mPendingRenders == 0;
