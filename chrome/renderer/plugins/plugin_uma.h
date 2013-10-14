@@ -86,3 +86,4 @@ class PluginUMAReporter {
 };
 
 #endif  // CHROME_RENDERER_PLUGINS_PLUGIN_UMA_H_
+

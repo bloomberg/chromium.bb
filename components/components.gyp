@@ -19,7 +19,6 @@
     'json_schema.gypi',
     'navigation_interception.gypi',
     'onc.gypi',
-    'plugins.gypi',
     'policy.gypi',
     'sessions.gypi',
     'startup_metric_utils.gypi',
