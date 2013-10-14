@@ -51,8 +51,6 @@ public:
     virtual bool cancelEvent(Event*) OVERRIDE;
     virtual void close() OVERRIDE;
 
-    void enqueueScrollEventForNode(Node*);
-
 private:
     explicit DocumentEventQueue(ScriptExecutionContext*);
 
@@ -61,7 +59,6 @@ private:
 
     OwnPtr<DocumentEventQueueTimer> m_pendingEventTimer;
     ListHashSet<RefPtr<Event>, 16> m_queuedEvents;
-    HashSet<Node*> m_nodesWithQueuedScrollEvents;
     bool m_isClosed;
 
     friend class DocumentEventQueueTimer;

@@ -26,17 +26,20 @@
 #ifndef ScriptedAnimationController_h
 #define ScriptedAnimationController_h
 
+#include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringImpl.h"
 
 namespace WebCore {
 
 class Document;
+class Event;
+class EventTarget;
 class RequestAnimationFrameCallback;
 
-class ScriptedAnimationController : public RefCounted<ScriptedAnimationController>
-{
+class ScriptedAnimationController : public RefCounted<ScriptedAnimationController> {
 public:
     static PassRefPtr<ScriptedAnimationController> create(Document* document)
     {
@@ -47,9 +50,11 @@ public:
 
     typedef int CallbackId;
 
-    CallbackId registerCallback(PassRefPtr<RequestAnimationFrameCallback>);
+    int registerCallback(PassRefPtr<RequestAnimationFrameCallback>);
     void cancelCallback(CallbackId);
     void serviceScriptedAnimations(double monotonicTimeNow);
+
+    void scheduleEvent(PassRefPtr<Event>);
 
     void suspend();
     void resume();
@@ -63,8 +68,10 @@ private:
     Document* m_document;
     CallbackId m_nextCallbackId;
     int m_suspendCount;
+    Vector<RefPtr<Event> > m_eventQueue;
+    ListHashSet<std::pair<const EventTarget*, const StringImpl*> > m_scheduledEventTargets;
 
-    void scheduleAnimation();
+    void scheduleAnimationIfNeeded();
 };
 
 }
