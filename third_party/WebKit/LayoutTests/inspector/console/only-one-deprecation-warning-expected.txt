@@ -1,2 +1,2 @@
-CONSOLE MESSAGE: The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead.
+CONSOLE WARNING: The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead.
 This test passes if only one deprecation warning is presented in the console.

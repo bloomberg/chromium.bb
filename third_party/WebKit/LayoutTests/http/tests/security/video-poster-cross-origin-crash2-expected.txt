@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: Cross-origin image load denied by Cross-Origin Resource Sharing policy.
+CONSOLE ERROR: Cross-origin image load denied by Cross-Origin Resource Sharing policy.
 Test passes if it doesn't crash.
 
 

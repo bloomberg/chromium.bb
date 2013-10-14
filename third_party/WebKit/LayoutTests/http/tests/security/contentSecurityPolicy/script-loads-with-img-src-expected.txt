@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: Unrecognized Content-Security-Policy directive 'script-img'.
+CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'script-img'.
 
 
 

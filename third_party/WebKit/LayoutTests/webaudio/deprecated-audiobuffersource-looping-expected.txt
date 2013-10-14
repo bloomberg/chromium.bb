@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.
+CONSOLE WARNING: AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.
 Tests AudioBufferSourceNode looping with a variety of loop points.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

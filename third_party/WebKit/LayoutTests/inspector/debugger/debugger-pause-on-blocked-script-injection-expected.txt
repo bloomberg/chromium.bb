@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self'".
+CONSOLE ERROR: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self'".
 
 Tests that pause on exception works for inline scripts blocked by CSP.
 

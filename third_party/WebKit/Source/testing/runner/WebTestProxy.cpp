@@ -1313,7 +1313,22 @@ void WebTestProxyBase::didAddMessageToConsole(const WebConsoleMessage& message, 
     // This matches win DumpRenderTree's UIDelegate.cpp.
     if (!m_logConsoleOutput)
         return;
-    m_delegate->printMessage(string("CONSOLE MESSAGE: "));
+    string level;
+    switch (message.level) {
+    case WebConsoleMessage::LevelDebug:
+        level = "DEBUG";
+        break;
+    case WebConsoleMessage::LevelLog:
+        level = "MESSAGE";
+        break;
+    case WebConsoleMessage::LevelWarning:
+        level = "WARNING";
+        break;
+    case WebConsoleMessage::LevelError:
+        level = "ERROR";
+        break;
+    }
+    m_delegate->printMessage(string("CONSOLE ") + level + ": ");
     if (sourceLine) {
         char buffer[40];
         snprintf(buffer, sizeof(buffer), "line %d: ", sourceLine);

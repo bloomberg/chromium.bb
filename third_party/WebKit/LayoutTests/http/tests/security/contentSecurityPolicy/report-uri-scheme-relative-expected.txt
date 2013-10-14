@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 3: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self'".
+CONSOLE ERROR: line 3: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self'".
 
 PingLoader dispatched to 'http://127.0.0.1:8080/security/contentSecurityPolicy/resources/save-report.php?test=report-uri-scheme-relative.html'.
 CSP report received:

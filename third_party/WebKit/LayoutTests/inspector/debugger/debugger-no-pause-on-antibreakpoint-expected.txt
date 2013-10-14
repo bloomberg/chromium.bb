@@ -1,5 +1,5 @@
-CONSOLE MESSAGE: line 9: Uncaught ReferenceError: unknown_var is not defined
-CONSOLE MESSAGE: line 23: Uncaught TypeError: Object 3 has no method 'changeValueTo'
+CONSOLE ERROR: line 9: Uncaught ReferenceError: unknown_var is not defined
+CONSOLE ERROR: line 23: Uncaught TypeError: Object 3 has no method 'changeValueTo'
 Tests that anti-breakpoint works.
 
 Debugger was enabled.

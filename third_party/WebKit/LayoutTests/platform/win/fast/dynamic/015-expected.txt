@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 16: Uncaught IndexSizeError: Index or size was negative, or greater than the allowed value.
+CONSOLE ERROR: line 16: Uncaught IndexSizeError: Index or size was negative, or greater than the allowed value.
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600

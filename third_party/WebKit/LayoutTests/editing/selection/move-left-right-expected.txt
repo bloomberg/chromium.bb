@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 37: Uncaught TypeError: Cannot read property '0' of null
+CONSOLE ERROR: line 37: Uncaught TypeError: Cannot read property '0' of null
 abc
 אבג
 

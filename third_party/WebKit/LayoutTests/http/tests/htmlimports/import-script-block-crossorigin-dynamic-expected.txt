@@ -1,5 +1,5 @@
-CONSOLE MESSAGE: Script from origin 'http://127.0.0.1:8000' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://localhost:8000' is therefore not allowed access.
-CONSOLE MESSAGE: Script from origin 'http://127.0.0.1:8000' has been blocked from loading by Cross-Origin Resource Sharing policy: The 'Access-Control-Allow-Origin' whitelists only 'http://127.0.0.1:8000'. Origin 'http://localhost:8000' is not in the list, and is therefore not allowed access.
+CONSOLE ERROR: Script from origin 'http://127.0.0.1:8000' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://localhost:8000' is therefore not allowed access.
+CONSOLE ERROR: Script from origin 'http://127.0.0.1:8000' has been blocked from loading by Cross-Origin Resource Sharing policy: The 'Access-Control-Allow-Origin' whitelists only 'http://127.0.0.1:8000'. Origin 'http://localhost:8000' is not in the list, and is therefore not allowed access.
 This test ensures that crossorigin-marked script elements are blocked properly
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

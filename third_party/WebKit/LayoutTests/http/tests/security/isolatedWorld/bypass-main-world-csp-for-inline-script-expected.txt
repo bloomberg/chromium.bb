@@ -1,12 +1,12 @@
 CONSOLE MESSAGE: line 22: Injecting in main world: this should fail.
-CONSOLE MESSAGE: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-eval'".
+CONSOLE ERROR: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-eval'".
 
 CONSOLE MESSAGE: line 26: Injecting into isolated world without bypass: this should fail.
-CONSOLE MESSAGE: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-eval'".
+CONSOLE ERROR: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-eval'".
 
 CONSOLE MESSAGE: line 30: Starting to bypass main world's CSP: this should pass!
 CONSOLE MESSAGE: line 1: EXECUTED in isolated world.
 CONSOLE MESSAGE: line 35: Injecting into main world again: this should fail.
-CONSOLE MESSAGE: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-eval'".
+CONSOLE ERROR: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-eval'".
 
 This test ensures that scripts run in isolated worlds marked with their own Content Security Policy aren't affected by the page's content security policy. Extensions, for example, should be able to inject inline JavaScript (even though it's probably a bad idea to do so).

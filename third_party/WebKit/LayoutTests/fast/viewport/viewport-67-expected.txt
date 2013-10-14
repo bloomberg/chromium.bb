@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 3: The value "100;" for key "width" was truncated to its numeric prefix.
-CONSOLE MESSAGE: line 3: Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.
+CONSOLE WARNING: line 3: The value "100;" for key "width" was truncated to its numeric prefix.
+CONSOLE WARNING: line 3: Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.
 ALERT: viewport size 320x352 scale 1 with limits [1, 5] and userScalable true
 

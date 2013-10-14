@@ -1,6 +1,6 @@
-CONSOLE MESSAGE: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'nonce-noncynonce'".
+CONSOLE ERROR: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'nonce-noncynonce'".
 
-CONSOLE MESSAGE: line 11: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'nonce-noncynonce'".
+CONSOLE ERROR: line 11: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'nonce-noncynonce'".
 
 Style correctly whitelisted via a 'nonce-*' expression in 'style-src' should be applied to the page.
 

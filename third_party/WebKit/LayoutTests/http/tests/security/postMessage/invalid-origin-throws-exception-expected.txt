@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: Unable to post message to asdf://. Recipient has origin http://localhost:8000.
+CONSOLE ERROR: Unable to post message to asdf://. Recipient has origin http://localhost:8000.
 
 window.location.href = http://127.0.0.1:8000/security/postMessage/invalid-origin-throws-exception.html
 waiting...

@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 9: Uncaught Error: Error calling method on NPObject.
+CONSOLE ERROR: line 9: Uncaught Error: Error calling method on NPObject.
 
 This tests that call a plugin object (NPObject) as a function invokes invokeDefault() function on the object.
 

@@ -1,3 +1,3 @@
-CONSOLE MESSAGE: 'window.performance.webkit*' methods have been deprecated. Please use the unprefixed 'window.performance.*' methods instead.
-CONSOLE MESSAGE: 'window.performance.webkitGet*' methods have been deprecated. Please use the unprefixed 'performance.get*' methods instead.
+CONSOLE WARNING: 'window.performance.webkit*' methods have been deprecated. Please use the unprefixed 'window.performance.*' methods instead.
+CONSOLE WARNING: 'window.performance.webkitGet*' methods have been deprecated. Please use the unprefixed 'performance.get*' methods instead.
 Calling prefixed window.performance APIs should generate deprecation warnings.

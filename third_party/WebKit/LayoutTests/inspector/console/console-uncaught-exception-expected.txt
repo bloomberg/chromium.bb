@@ -1,6 +1,6 @@
-CONSOLE MESSAGE: line 18: Uncaught Error: Exception in inline script.
-CONSOLE MESSAGE: line 11: Uncaught Error: Exception in 'load' event listener.
-CONSOLE MESSAGE: line 6: Uncaught Error: Exception in setTimeout callback.
+CONSOLE ERROR: line 18: Uncaught Error: Exception in inline script.
+CONSOLE ERROR: line 11: Uncaught Error: Exception in 'load' event listener.
+CONSOLE ERROR: line 6: Uncaught Error: Exception in setTimeout callback.
 Tests that uncaught exceptions are logged into console.Bug 47250.
 
 

@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: error vacuuming database (1546 disk I/O error)
+CONSOLE ERROR: error vacuuming database (1546 disk I/O error)
 Test the database authorizer.
 Beginning write transaction:
 SQLITE_CREATE_TABLE allowed.

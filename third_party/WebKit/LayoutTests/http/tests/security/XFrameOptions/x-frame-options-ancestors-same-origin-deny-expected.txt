@@ -2,7 +2,7 @@ http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-sa
 http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-ancestor.html - didReceiveResponse <NSURLResponse http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-ancestor.html, http status code 200>
 http://localhost:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-ancestor.html - didFinishLoading
 http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-deny.cgi - willSendRequest <NSURLRequest URL http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-deny.cgi, main document URL http://127.0.0.1:8000/security/XFrameOptions/x-frame-options-ancestors-same-origin-deny.html, http method GET> redirectResponse (null)
-CONSOLE MESSAGE: Refused to display 'http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-deny.cgi' in a frame because it set 'X-Frame-Options' to 'sameorigin'.
+CONSOLE ERROR: Refused to display 'http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-parent-same-origin-deny.cgi' in a frame because it set 'X-Frame-Options' to 'sameorigin'.
 This tests verifies that 'X-Frame-Options: SAMEORIGIN' blocks sameorigin.com -> crossorigin.com -> sameorigin.com ancestor chains.
 
 There should be content in the iframe below, but not in its child frame.

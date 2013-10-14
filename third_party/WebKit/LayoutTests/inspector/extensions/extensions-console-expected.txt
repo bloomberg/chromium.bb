@@ -1,13 +1,13 @@
 CONSOLE MESSAGE: line 46: log message
-CONSOLE MESSAGE: line 47: debug message
-CONSOLE MESSAGE: line 48: warning message
-CONSOLE MESSAGE: line 49: error message
+CONSOLE DEBUG: line 47: debug message
+CONSOLE WARNING: line 48: warning message
+CONSOLE ERROR: line 49: error message
 CONSOLE MESSAGE: line 50: log message with two parameters, an integer: %d and a string: %s
 CONSOLE MESSAGE: line 1: log message from evaluated code
 CONSOLE MESSAGE: line 46: log message
-CONSOLE MESSAGE: line 47: debug message
-CONSOLE MESSAGE: line 48: warning message
-CONSOLE MESSAGE: line 49: error message
+CONSOLE DEBUG: line 47: debug message
+CONSOLE WARNING: line 48: warning message
+CONSOLE ERROR: line 49: error message
 CONSOLE MESSAGE: line 50: log message with two parameters, an integer: %d and a string: %s
 CONSOLE MESSAGE: line 1: log message from evaluated code
 Tests methods of webInspector.console extension API

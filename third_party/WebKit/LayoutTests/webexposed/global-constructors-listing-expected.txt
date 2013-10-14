@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 This test documents the Constructor properties on the global window object.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

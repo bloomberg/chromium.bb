@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: HTMLShadowElement.olderShadowRoot is deprecated.
+CONSOLE WARNING: HTMLShadowElement.olderShadowRoot is deprecated.
 Confirms shadow.olderShadowRoot returns correct ShadowRoot
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 2: 42
+CONSOLE ERROR: line 2: 42
 Tests that console.error does not throw exception when executed in console on call frame.
 
 Debugger was enabled.

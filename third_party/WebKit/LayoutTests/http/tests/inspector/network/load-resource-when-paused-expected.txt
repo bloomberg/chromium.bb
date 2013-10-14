@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 9: Uncaught ReferenceError: unknown_var is not defined
+CONSOLE ERROR: line 9: Uncaught ReferenceError: unknown_var is not defined
 Tests that loading external resources works when inspected page is paused.
 
 Debugger was enabled.

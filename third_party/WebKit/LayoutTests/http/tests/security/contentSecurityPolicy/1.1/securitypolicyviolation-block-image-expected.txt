@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: Refused to load the image 'http://127.0.0.1:8000/security/resources/abe.png' because it violates the following Content Security Policy directive: "img-src 'none'".
+CONSOLE ERROR: Refused to load the image 'http://127.0.0.1:8000/security/resources/abe.png' because it violates the following Content Security Policy directive: "img-src 'none'".
 
 Check that a SecurityPolicyViolationEvent is fired upon blocking an image.
 

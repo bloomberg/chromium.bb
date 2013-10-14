@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 7: Uncaught ReferenceError: foo is not defined
+CONSOLE ERROR: line 7: Uncaught ReferenceError: foo is not defined
 This tests that unhandled exceptions in a worker's onerror handler trigger 'worker.onerror'.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

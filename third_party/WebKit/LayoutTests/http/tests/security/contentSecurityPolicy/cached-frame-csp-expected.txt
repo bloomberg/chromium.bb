@@ -1,6 +1,6 @@
-CONSOLE MESSAGE: line 5: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'none'".
+CONSOLE ERROR: line 5: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'none'".
 
-CONSOLE MESSAGE: line 5: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'none'".
+CONSOLE ERROR: line 5: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'none'".
 
 Check that a CSP header added by a 304 response does not override one from the original request.
 

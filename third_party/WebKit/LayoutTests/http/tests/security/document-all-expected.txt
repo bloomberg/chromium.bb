@@ -1,2 +1,2 @@
-CONSOLE MESSAGE: line 1: Uncaught TypeError: Illegal constructor
+CONSOLE ERROR: line 1: Uncaught TypeError: Illegal constructor
 

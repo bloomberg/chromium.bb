@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 1: Refused to execute JavaScript URL because it violates the following Content Security Policy directive: "script-src 'self'".
+CONSOLE ERROR: line 1: Refused to execute JavaScript URL because it violates the following Content Security Policy directive: "script-src 'self'".
 
 Tests that pause on exception works for inline script URLs blocked by CSP.
 

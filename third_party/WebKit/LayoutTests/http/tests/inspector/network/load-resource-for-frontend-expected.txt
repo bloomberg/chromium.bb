@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: Not allowed to load local resource: index.html
+CONSOLE ERROR: Not allowed to load local resource: index.html
 CONSOLE MESSAGE: line 6: XHR loaded: 1
 
 Running: testNetworkResourceNonCached

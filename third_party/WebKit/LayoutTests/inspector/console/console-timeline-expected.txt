@@ -1,30 +1,30 @@
-CONSOLE MESSAGE: Timeline 'one' started.
-CONSOLE MESSAGE: Timeline 'one' finished.
-CONSOLE MESSAGE: Timeline 'one' started.
-CONSOLE MESSAGE: Timeline 'one' started.
-CONSOLE MESSAGE: Timeline 'two' started.
-CONSOLE MESSAGE: Timeline 'two' started.
-CONSOLE MESSAGE: Timeline 'two' finished.
-CONSOLE MESSAGE: Timeline 'one' finished.
-CONSOLE MESSAGE: Timeline 'two' finished.
-CONSOLE MESSAGE: Timeline 'one' finished.
-CONSOLE MESSAGE: Timeline 'one' started.
-CONSOLE MESSAGE: Timeline 'two' was not started.
-CONSOLE MESSAGE: Timeline 'one' finished.
-CONSOLE MESSAGE: Timeline 'one' started.
-CONSOLE MESSAGE: Timeline 'one' finished.
-CONSOLE MESSAGE: Timeline 'one' started.
-CONSOLE MESSAGE: Timeline 'two' started.
-CONSOLE MESSAGE: Timeline 'one' terminated.
-CONSOLE MESSAGE: Timeline 'two' terminated.
-CONSOLE MESSAGE: Timeline 'one' started.
-CONSOLE MESSAGE: Timeline 'two' started.
-CONSOLE MESSAGE: Timeline 'one' terminated.
-CONSOLE MESSAGE: Timeline 'two' terminated.
-CONSOLE MESSAGE: Timeline 'one' started.
-CONSOLE MESSAGE: Timeline 'two' started.
-CONSOLE MESSAGE: Timeline 'one' terminated.
-CONSOLE MESSAGE: Timeline 'two' terminated.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'two' finished.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'two' finished.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' was not started.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'one' terminated.
+CONSOLE DEBUG: Timeline 'two' terminated.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'one' terminated.
+CONSOLE DEBUG: Timeline 'two' terminated.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'one' terminated.
+CONSOLE DEBUG: Timeline 'two' terminated.
 Tests console.timeline and timelineEnd commands.
 
 

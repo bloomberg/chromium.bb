@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 11: Test message.
+CONSOLE ERROR: line 11: Test message.
 Tests that the script formatting changes console line numbers.
 
 Debugger was enabled.

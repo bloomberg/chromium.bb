@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: Unrecognized Content-Security-Policy directive ':script-src'.
+CONSOLE ERROR: Unrecognized Content-Security-Policy directive ':script-src'.
 
 Directives starting with an invalid character should be logged and ignored.
 

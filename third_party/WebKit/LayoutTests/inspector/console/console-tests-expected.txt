@@ -1,8 +1,8 @@
 CONSOLE MESSAGE: line 9: log
-CONSOLE MESSAGE: line 10: debug
+CONSOLE DEBUG: line 10: debug
 CONSOLE MESSAGE: line 11: info
-CONSOLE MESSAGE: line 12: warn
-CONSOLE MESSAGE: line 13: error
+CONSOLE WARNING: line 12: warn
+CONSOLE ERROR: line 13: error
 CONSOLE MESSAGE: line 15: repeated
 CONSOLE MESSAGE: line 15: repeated
 CONSOLE MESSAGE: line 15: repeated

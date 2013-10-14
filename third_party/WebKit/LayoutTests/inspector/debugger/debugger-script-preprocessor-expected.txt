@@ -2,13 +2,13 @@ CONSOLE MESSAGE: line 2: preprocessed script1.js.js
 CONSOLE MESSAGE: line 86: preprocessed debugger-script-preprocessor_html.js
 CONSOLE MESSAGE: line 2: eval works
 CONSOLE MESSAGE: line 2: verify href: debugger-script-preprocessor.html
-CONSOLE MESSAGE: line 18: Uncaught Error: fake internal preprocessor error
+CONSOLE ERROR: line 18: Uncaught Error: fake internal preprocessor error
 CONSOLE MESSAGE: line 94: preprocessed debugger-script-preprocessor_html_onload.js
-CONSOLE MESSAGE: line 1: Uncaught Error: failingPreprocessor throws
-CONSOLE MESSAGE: The preprocessor must compile to a function.
-CONSOLE MESSAGE: The preprocessor must compile to a function.
-CONSOLE MESSAGE: line 2: Uncaught SyntaxError: Unexpected identifier
-CONSOLE MESSAGE: The preprocessor must compile to a function.
+CONSOLE ERROR: line 1: Uncaught Error: failingPreprocessor throws
+CONSOLE ERROR: The preprocessor must compile to a function.
+CONSOLE ERROR: The preprocessor must compile to a function.
+CONSOLE ERROR: line 2: Uncaught SyntaxError: Unexpected identifier
+CONSOLE ERROR: The preprocessor must compile to a function.
 Tests script preprocessor (ability to preprocess all scripts upon reload).
 
 Debugger was enabled.

@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: body.scrollTop is deprecated in strict mode. Please use 'documentElement.scrollTop' if in strict mode and 'body.scrollTop' only if in quirks mode.
-CONSOLE MESSAGE: body.scrollLeft is deprecated in strict mode. Please use 'documentElement.scrollLeft' if in strict mode and 'body.scrollLeft' only if in quirks mode.
+CONSOLE WARNING: body.scrollTop is deprecated in strict mode. Please use 'documentElement.scrollTop' if in strict mode and 'body.scrollTop' only if in quirks mode.
+CONSOLE WARNING: body.scrollLeft is deprecated in strict mode. Please use 'documentElement.scrollLeft' if in strict mode and 'body.scrollLeft' only if in quirks mode.
 ALERT: 387 tests of 387 passed, 0 failed.
 
