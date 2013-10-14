@@ -376,9 +376,6 @@ const char kEnableCompositingForFixedPosition[] =
 const char kEnableCompositingForTransition[] =
      "enable-transition-compositing";
 
-// Enables CSS3 custom filters
-const char kEnableCssShaders[]              = "enable-css-shaders";
-
 // Defer image decoding in WebKit until painting.
 const char kEnableDeferredImageDecoding[]   = "enable-deferred-image-decoding";
 

@@ -115,7 +115,6 @@ CONTENT_EXPORT extern const char kEnableBrowserPluginDragDrop[];
 extern const char kEnableCompositedScrollingForFrames[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableCompositingForTransition[];
-CONTENT_EXPORT extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kEnableDeferredImageDecoding[];
 CONTENT_EXPORT extern const char kEnableDeadlineScheduling[];
 CONTENT_EXPORT extern const char kEnableDelegatedRenderer[];

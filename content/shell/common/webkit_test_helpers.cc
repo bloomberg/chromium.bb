@@ -41,7 +41,6 @@ void ExportLayoutTestSpecificPreferences(
   to->caret_browsing_enabled = from.caretBrowsingEnabled;
   to->allow_displaying_insecure_content = from.allowDisplayOfInsecureContent;
   to->allow_running_insecure_content = from.allowRunningOfInsecureContent;
-  to->css_shaders_enabled = from.cssCustomFilterEnabled;
   to->should_respect_image_orientation = from.shouldRespectImageOrientation;
   to->asynchronous_spell_checking_enabled =
       from.asynchronousSpellCheckingEnabled;

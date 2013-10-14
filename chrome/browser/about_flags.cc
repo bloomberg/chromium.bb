@@ -907,13 +907,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)
   },
   {
-    "enable-css-shaders",
-    IDS_FLAGS_CSS_SHADERS_NAME,
-    IDS_FLAGS_CSS_SHADERS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableCssShaders)
-  },
-  {
     "disable-ntp-other-sessions-menu",
     IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_NAME,
     IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_DESCRIPTION,

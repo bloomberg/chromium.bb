@@ -6386,12 +6386,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental Web Platform features.">
         Enable experimental Web Platform features that are in development.
       </message>
-      <message name="IDS_FLAGS_CSS_SHADERS_NAME" desc="Name for the flag to enable CSS Shaders.">
-        Enable CSS Shaders.
-      </message>
-      <message name="IDS_FLAGS_CSS_SHADERS_DESCRIPTION" desc="Description for the flag to enable CSS Shaders.">
-        Enable filter effects on DOM elements using custom GLSL shaders. More info at https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#feCustomElement.
-      </message>
       <message name="IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_NAME" desc="Name for the flag to disable the 'Other devices' menu on the NTP.">
         Disable NTP 'Other devices' menu.
       </message>

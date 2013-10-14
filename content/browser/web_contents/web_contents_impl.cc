@@ -558,10 +558,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
   prefs.fullscreen_enabled =
       !command_line.HasSwitch(switches::kDisableFullScreen);
-  prefs.css_sticky_position_enabled =
-      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
-  prefs.css_shaders_enabled =
-      command_line.HasSwitch(switches::kEnableCssShaders);
   prefs.lazy_layout_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
   prefs.region_based_columns_enabled =

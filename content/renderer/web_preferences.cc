@@ -289,8 +289,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setEnableScrollAnimator(prefs.enable_scroll_animator);
   settings->setVisualWordMovementEnabled(prefs.visual_word_movement_enabled);
 
-  settings->setCSSStickyPositionEnabled(prefs.css_sticky_position_enabled);
-  settings->setExperimentalCSSCustomFilterEnabled(prefs.css_shaders_enabled);
   settings->setRegionBasedColumnsEnabled(prefs.region_based_columns_enabled);
 
   WebRuntimeFeatures::enableLazyLayout(prefs.lazy_layout_enabled);
