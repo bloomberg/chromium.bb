@@ -469,9 +469,50 @@ static inline void ensureCharacterGetsLineBox(LineMidpointState& lineMidpointSta
     stopIgnoringSpaces(lineMidpointState, InlineIterator(0, textParagraphSeparator.m_obj, textParagraphSeparator.m_pos));
 }
 
+static inline BidiRun* createRun(int start, int end, RenderObject* obj, InlineBidiResolver& resolver)
+{
+    return new BidiRun(start, end, obj, resolver.context(), resolver.dir());
+}
+
 void RenderBlock::appendRunsForObject(BidiRunList<BidiRun>& runs, int start, int end, RenderObject* obj, InlineBidiResolver& resolver)
 {
-    adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, resolver, AppendingRunsForObject, &runs);
+    if (start > end || shouldSkipCreatingRunsForObject(obj))
+        return;
+
+    LineMidpointState& lineMidpointState = resolver.midpointState();
+    bool haveNextMidpoint = (lineMidpointState.currentMidpoint < lineMidpointState.numMidpoints);
+    InlineIterator nextMidpoint;
+    if (haveNextMidpoint)
+        nextMidpoint = lineMidpointState.midpoints[lineMidpointState.currentMidpoint];
+    if (lineMidpointState.betweenMidpoints) {
+        if (!(haveNextMidpoint && nextMidpoint.m_obj == obj))
+            return;
+        // This is a new start point. Stop ignoring objects and
+        // adjust our start.
+        lineMidpointState.betweenMidpoints = false;
+        start = nextMidpoint.m_pos;
+        lineMidpointState.currentMidpoint++;
+        if (start < end)
+            return appendRunsForObject(runs, start, end, obj, resolver);
+    } else {
+        if (!haveNextMidpoint || (obj != nextMidpoint.m_obj)) {
+            runs.addRun(createRun(start, end, obj, resolver));
+            return;
+        }
+
+        // An end midpoint has been encountered within our object.  We
+        // need to go ahead and append a run with our endpoint.
+        if (static_cast<int>(nextMidpoint.m_pos + 1) <= end) {
+            lineMidpointState.betweenMidpoints = true;
+            lineMidpointState.currentMidpoint++;
+            if (nextMidpoint.m_pos != UINT_MAX) { // UINT_MAX means stop at the object and don't include any of it.
+                if (static_cast<int>(nextMidpoint.m_pos + 1) > start)
+                    runs.addRun(createRun(start, nextMidpoint.m_pos + 1, obj, resolver));
+                return appendRunsForObject(runs, nextMidpoint.m_pos + 1, end, obj, resolver);
+            }
+        } else
+           runs.addRun(createRun(start, end, obj, resolver));
+    }
 }
 
 static inline InlineBox* createInlineBoxForRenderer(RenderObject* obj, bool isRootLineBox, bool isOnlyRun = false)
@@ -1236,15 +1277,6 @@ static inline void setupResolverToResumeInIsolate(InlineBidiResolver& resolver, 
     }
 }
 
-static void restoreIsolatedMidpointStates(InlineBidiResolver& topResolver, InlineBidiResolver& isolatedResolver)
-{
-    while (!isolatedResolver.isolatedRuns().isEmpty()) {
-        BidiRun* run = isolatedResolver.isolatedRuns().last();
-        isolatedResolver.isolatedRuns().removeLast();
-        topResolver.setMidpointStateForIsolatedRun(run, isolatedResolver.midpointStateForIsolatedRun(run));
-    }
-}
-
 // FIXME: BidiResolver should have this logic.
 static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& endOfRuns, VisualDirectionOverride override, bool previousLineBrokeCleanly, bool isNewUBAParagraph)
 {
@@ -1271,8 +1303,6 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
         ASSERT(isolatedInline);
 
         InlineBidiResolver isolatedResolver;
-        LineMidpointState& isolatedLineMidpointState = isolatedResolver.midpointState();
-        isolatedLineMidpointState = topResolver.midpointStateForIsolatedRun(isolatedRun);
         EUnicodeBidi unicodeBidi = isolatedInline->style()->unicodeBidi();
         TextDirection direction = isolatedInline->style()->direction();
         if (unicodeBidi == Plaintext) {
@@ -1309,8 +1339,8 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
         // to the top resolver's list for later processing.
         if (!isolatedResolver.isolatedRuns().isEmpty()) {
             topResolver.isolatedRuns().append(isolatedResolver.isolatedRuns());
+            isolatedResolver.isolatedRuns().clear();
             currentRoot = isolatedInline;
-            restoreIsolatedMidpointStates(topResolver, isolatedResolver);
         }
     }
 }
