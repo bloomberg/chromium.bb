@@ -7,13 +7,11 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/common/crash_keys.h"
 #include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
-#include "printing/print_settings.h"
 
 using content::BrowserThread;
 
@@ -24,75 +22,12 @@ const char kPrinterDefaultDuplexValue[] = "printerDefaultDuplexValue";
 
 PrintSystemTaskProxy::PrintSystemTaskProxy(
     const base::WeakPtr<PrintPreviewHandler>& handler,
-    printing::PrintBackend* print_backend,
-    bool has_logged_printers_count)
+    printing::PrintBackend* print_backend)
     : handler_(handler),
-      print_backend_(print_backend),
-      has_logged_printers_count_(has_logged_printers_count) {
+      print_backend_(print_backend) {
 }
 
 PrintSystemTaskProxy::~PrintSystemTaskProxy() {
-}
-
-void PrintSystemTaskProxy::GetDefaultPrinter() {
-  VLOG(1) << "Get default printer start";
-
-  VLOG(1) << "Get default printer finished, found: "
-          << print_backend_->GetDefaultPrinterName();
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrintSystemTaskProxy::SendDefaultPrinter, this,
-                 print_backend_->GetDefaultPrinterName(),
-                 std::string()));
-}
-
-void PrintSystemTaskProxy::SendDefaultPrinter(
-    const std::string& default_printer,
-    const std::string& cloud_print_data) {
-  if (handler_.get())
-    handler_->SendInitialSettings(default_printer, cloud_print_data);
-}
-
-void PrintSystemTaskProxy::EnumeratePrinters() {
-  VLOG(1) << "Enumerate printers start";
-  base::ListValue* printers = new base::ListValue;
-  printing::PrinterList printer_list;
-  print_backend_->EnumeratePrinters(&printer_list);
-
-  if (!has_logged_printers_count_) {
-    // Record the total number of printers.
-    UMA_HISTOGRAM_COUNTS("PrintPreview.NumberOfPrinters", printer_list.size());
-  }
-  int i = 0;
-  for (printing::PrinterList::iterator iter = printer_list.begin();
-       iter != printer_list.end(); ++iter, ++i) {
-    base::DictionaryValue* printer_info = new base::DictionaryValue;
-    std::string printerName;
-#if defined(OS_MACOSX)
-    // On Mac, |iter->printer_description| specifies the printer name and
-    // |iter->printer_name| specifies the device name / printer queue name.
-    printerName = iter->printer_description;
-#else
-    printerName = iter->printer_name;
-#endif
-    printer_info->SetString(printing::kSettingPrinterName, printerName);
-    printer_info->SetString(printing::kSettingDeviceName, iter->printer_name);
-    VLOG(1) << "Found printer " << printerName
-            << " with device name " << iter->printer_name;
-    printers->Append(printer_info);
-  }
-  VLOG(1) << "Enumerate printers finished, found " << i << " printers";
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrintSystemTaskProxy::SetupPrinterList, this, printers));
-}
-
-void PrintSystemTaskProxy::SetupPrinterList(base::ListValue* printers) {
-  if (handler_.get())
-    handler_->SetupPrinterList(*printers);
-  delete printers;
 }
 
 void PrintSystemTaskProxy::GetPrinterCapabilities(

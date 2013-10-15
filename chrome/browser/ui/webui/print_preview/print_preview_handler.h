@@ -151,9 +151,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // window opens behind the initiator window.
   void HandleForceOpenNewTab(const base::ListValue* args);
 
-  void SendInitialSettings(
-      const std::string& default_printer,
-      const std::string& cloud_print_data);
+  void SendInitialSettings(const std::string& default_printer);
 
   // Send OAuth2 access token.
   void SendAccessToken(const std::string& type,
@@ -168,7 +166,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void SendFailedToGetPrinterCapabilities(const std::string& printer_name);
 
   // Send the list of printers to the Web UI.
-  void SetupPrinterList(const base::ListValue& printers);
+  void SetupPrinterList(const base::ListValue* printers);
 
   // Send whether cloud print integration should be enabled.
   void SendCloudPrintEnabled();

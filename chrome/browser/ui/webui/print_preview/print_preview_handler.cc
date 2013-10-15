@@ -245,6 +245,45 @@ void PrintToPdfCallback(Metafile* metafile, const base::FilePath& path) {
       base::Bind(&base::DeletePointer<Metafile>, metafile));
 }
 
+std::string GetDefaultPrinterOnFileThread(
+    scoped_refptr<printing::PrintBackend> print_backend) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  std::string default_printer = print_backend->GetDefaultPrinterName();
+  VLOG(1) << "Default Printer: " << default_printer;
+  return default_printer;
+}
+
+void EnumeratePrintersOnFileThread(
+    scoped_refptr<printing::PrintBackend> print_backend,
+    base::ListValue* printers) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  VLOG(1) << "Enumerate printers start";
+  printing::PrinterList printer_list;
+  print_backend->EnumeratePrinters(&printer_list);
+
+  for (printing::PrinterList::iterator it = printer_list.begin();
+       it != printer_list.end(); ++it) {
+    base::DictionaryValue* printer_info = new base::DictionaryValue;
+    std::string printer_name;
+#if defined(OS_MACOSX)
+    // On Mac, |it->printer_description| specifies the printer name and
+    // |it->printer_name| specifies the device name / printer queue name.
+    printer_name = it->printer_description;
+#else
+    printer_name = it->printer_name;
+#endif
+    printer_info->SetString(printing::kSettingPrinterName, printer_name);
+    printer_info->SetString(printing::kSettingDeviceName, it->printer_name);
+    VLOG(1) << "Found printer " << printer_name
+            << " with device name " << it->printer_name;
+    printers->Append(printer_info);
+  }
+  VLOG(1) << "Enumerate printers finished, found " << printers->GetSize()
+          << " printers";
+}
+
 base::LazyInstance<printing::StickySettings> g_sticky_settings =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -402,15 +441,13 @@ WebContents* PrintPreviewHandler::preview_web_contents() const {
 }
 
 void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
-  scoped_refptr<PrintSystemTaskProxy> task =
-      new PrintSystemTaskProxy(AsWeakPtr(),
-                               print_backend_.get(),
-                               has_logged_printers_count_);
-  has_logged_printers_count_ = true;
-
-  BrowserThread::PostTask(
+  base::ListValue* results = new base::ListValue;
+  BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&PrintSystemTaskProxy::EnumeratePrinters, task.get()));
+      base::Bind(&EnumeratePrintersOnFileThread, print_backend_,
+                 base::Unretained(results)),
+      base::Bind(&PrintPreviewHandler::SetupPrinterList, AsWeakPtr(),
+                 base::Owned(results)));
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
@@ -641,9 +678,7 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
     return;
 
   scoped_refptr<PrintSystemTaskProxy> task =
-      new PrintSystemTaskProxy(AsWeakPtr(),
-                               print_backend_.get(),
-                               has_logged_printers_count_);
+      new PrintSystemTaskProxy(AsWeakPtr(), print_backend_.get());
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -791,13 +826,10 @@ void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
 }
 
 void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
-  scoped_refptr<PrintSystemTaskProxy> task =
-      new PrintSystemTaskProxy(AsWeakPtr(),
-                                print_backend_.get(),
-                                has_logged_printers_count_);
-  BrowserThread::PostTask(
+  BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
+      base::Bind(&GetDefaultPrinterOnFileThread, print_backend_),
+      base::Bind(&PrintPreviewHandler::SendInitialSettings, AsWeakPtr()));
   SendCloudPrintEnabled();
 }
 
@@ -846,10 +878,9 @@ void PrintPreviewHandler::HandleForceOpenNewTab(const ListValue* args) {
 }
 
 void PrintPreviewHandler::SendInitialSettings(
-    const std::string& default_printer,
-    const std::string& cloud_print_data) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
+    const std::string& default_printer) {
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(web_ui()->GetController());
 
   base::DictionaryValue initial_settings;
   initial_settings.SetString(kInitiatorTitle,
@@ -912,8 +943,13 @@ void PrintPreviewHandler::SendFailedToGetPrinterCapabilities(
                                    printer_name_value);
 }
 
-void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
-  web_ui()->CallJavascriptFunction("setPrinters", printers);
+void PrintPreviewHandler::SetupPrinterList(const base::ListValue* printers) {
+  if (!has_logged_printers_count_) {
+    UMA_HISTOGRAM_COUNTS("PrintPreview.NumberOfPrinters", printers->GetSize());
+    has_logged_printers_count_ = true;
+  }
+
+  web_ui()->CallJavascriptFunction("setPrinters", *printers);
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
