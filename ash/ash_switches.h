@@ -51,9 +51,6 @@ ASH_EXPORT extern const char kAshEnableImmersiveFullscreen[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
-#if defined(OS_CHROMEOS)
-ASH_EXPORT extern const char kAshEnableMultiProfileShelfMenu[];
-#endif
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableStickyEdges[];
@@ -95,9 +92,6 @@ ASH_EXPORT bool UseFullMultiProfileMode();
 
 // Returns true if overview mode should be activated for window switching.
 ASH_EXPORT bool UseOverviewMode();
-
-// Returns true if the MultiProfile shelf menu should be shown.
-ASH_EXPORT bool ShowMultiProfileShelfMenu();
 
 #if defined(OS_CHROMEOS)
 // Returns true if new audio handler should be used.

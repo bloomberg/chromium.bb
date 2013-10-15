@@ -186,8 +186,7 @@ bool HandleToggleSpokenFeedback() {
 }
 
 bool SwitchToNextUser() {
-  if (!Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() ||
-      !ash::switches::ShowMultiProfileShelfMenu())
+  if (!Shell::GetInstance()->delegate()->IsMultiProfilesEnabled())
     return false;
   ash::SessionStateDelegate* delegate =
       ash::Shell::GetInstance()->session_state_delegate();

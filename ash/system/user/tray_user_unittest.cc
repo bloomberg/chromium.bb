@@ -69,10 +69,6 @@ TrayUserTest::TrayUserTest()
 }
 
 void TrayUserTest::SetUp() {
-#if defined(OS_CHROMEOS)
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshEnableMultiProfileShelfMenu);
-#endif
   ash::test::AshTestBase::SetUp();
   shelf_ = Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   tray_ = Shell::GetPrimaryRootWindowController()->GetSystemTray();

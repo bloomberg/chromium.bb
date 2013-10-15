@@ -1032,10 +1032,7 @@ void UserView::ToggleAddUserMenuOption() {
 }
 
 bool UserView::SupportsMultiProfile() {
-  // Until the final UX team verdict has been given we disable this
-  // functionality.
-  return Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
-         switches::ShowMultiProfileShelfMenu();
+  return Shell::GetInstance()->delegate()->IsMultiProfilesEnabled();
 }
 
 AddUserView::AddUserView(UserCard* owner, views::ButtonListener* listener)

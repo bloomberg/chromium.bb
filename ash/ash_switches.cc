@@ -114,10 +114,6 @@ const char kAshEnableImmersiveFullscreen[] = "ash-enable-immersive-fullscreen";
 // Enable memory monitoring.
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 #endif
-#if defined(OS_CHROMEOS)
-// Enable the shelf menu for multi profile usage.
-const char kAshEnableMultiProfileShelfMenu[] = "ash-enable-multi-profile-shelf";
-#endif
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
@@ -236,16 +232,6 @@ bool UseFullMultiProfileMode() {
 
 bool UseOverviewMode() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableOverviewMode);
-}
-
-// Returns true if the MultiProfile shelf menu should be shown.
-bool ShowMultiProfileShelfMenu() {
-#if defined(OS_CHROMEOS)
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(kAshEnableMultiProfileShelfMenu);
-#else
-  return false;
-#endif
 }
 
 #if defined(OS_CHROMEOS)
