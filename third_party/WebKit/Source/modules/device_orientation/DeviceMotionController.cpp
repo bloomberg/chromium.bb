@@ -91,8 +91,7 @@ void DeviceMotionController::unregisterWithDispatcher()
 
 bool DeviceMotionController::isNullEvent(Event* event)
 {
-    ASSERT(event->type() == EventTypeNames::devicemotion);
-    DeviceMotionEvent* motionEvent = static_cast<DeviceMotionEvent*>(event);
+    DeviceMotionEvent* motionEvent = toDeviceMotionEvent(event);
     return !motionEvent->deviceMotionData()->canProvideEventData();
 }
 

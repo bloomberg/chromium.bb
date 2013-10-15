@@ -114,7 +114,7 @@ private:
 
 inline WheelEvent* toWheelEvent(Event* event)
 {
-    ASSERT(event && event->isWheelEvent());
+    ASSERT_WITH_SECURITY_IMPLICATION(!event || event->isWheelEvent());
     return static_cast<WheelEvent*>(event);
 }
 
