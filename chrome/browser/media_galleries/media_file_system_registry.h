@@ -39,6 +39,9 @@ namespace fileapi {
 class IsolatedContext;
 }
 
+// Contains information about a particular filesystem being provided to a
+// client, including metadata like the name and ID, and API handles like the
+// fsid (filesystem ID) used to hook up the API objects.
 struct MediaFileSystemInfo {
   MediaFileSystemInfo(const string16& fs_name,
                       const base::FilePath& fs_path,
@@ -85,15 +88,21 @@ class MediaFileSystemRegistry
   virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
 
  private:
+  class MediaFileSystemContextImpl;
+
+  friend class MediaFileSystemContextImpl;
   friend class MediaFileSystemRegistryTest;
   friend class TestMediaFileSystemContext;
-  class MediaFileSystemContextImpl;
 
   // Map an extension to the ExtensionGalleriesHost.
   typedef std::map<std::string /*extension_id*/,
                    scoped_refptr<ExtensionGalleriesHost> > ExtensionHostMap;
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
+
+  // Map a filesystem id (fsid) to the reference to an MTP device.
+  typedef std::map<std::string, scoped_refptr<ScopedMTPDeviceMapEntry> >
+      MTPDeviceEntryMap;
 
   // Map a MTP or PTP device location to the raw pointer of
   // ScopedMTPDeviceMapEntry. It is safe to store a raw pointer in this
@@ -109,19 +118,25 @@ class MediaFileSystemRegistry
 
   // Returns ScopedMTPDeviceMapEntry object for the given |device_location|.
   scoped_refptr<ScopedMTPDeviceMapEntry> GetOrCreateScopedMTPDeviceMapEntry(
-      const base::FilePath::StringType& device_location);
+      const base::FilePath::StringType& device_location,
+      const std::string& fsid);
+
+  void RevokeMTPFileSystem(const std::string& fsid);
+
+  void OnExtensionGalleriesHostEmpty(Profile* profile,
+                                     const std::string& extension_id);
 
   // Removes the ScopedMTPDeviceMapEntry associated with the given
   // |device_location|.
   void RemoveScopedMTPDeviceMapEntry(
       const base::FilePath::StringType& device_location);
 
-  void OnExtensionGalleriesHostEmpty(Profile* profile,
-                                     const std::string& extension_id);
-
   // Only accessed on the UI thread. This map owns all the
   // ExtensionGalleriesHost objects created.
   ExtensionGalleriesHostMap extension_hosts_map_;
+
+  // Contains a map of fsid to ScopedMTPDeviceMapEntry.
+  MTPDeviceEntryMap mtp_device_map_;
 
   // Only accessed on the UI thread.
   MTPDeviceDelegateMap mtp_device_delegate_map_;

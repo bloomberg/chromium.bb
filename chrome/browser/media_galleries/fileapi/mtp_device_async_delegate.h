@@ -17,9 +17,8 @@ class FilePath;
 // Asynchronous delegate for media transfer protocol (MTP) device to perform
 // media device isolated file system operations. Class that implements this
 // delegate does the actual communication with the MTP device.
-// ScopedMTPDeviceMapEntry class manages the lifetime of the delegate via
-// MTPDeviceMapService class. Member functions and callbacks runs on the IO
-// thread.
+// The lifetime of the delegate is managed by the MTPDeviceMapService class.
+// Member functions and callbacks run on the IO thread.
 class MTPDeviceAsyncDelegate {
  public:
   // A callback to be called when GetFileInfo method call succeeds.

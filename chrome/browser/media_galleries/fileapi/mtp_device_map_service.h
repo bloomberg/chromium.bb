@@ -15,6 +15,7 @@ class MTPDeviceAsyncDelegate;
 
 // This class provides media transfer protocol (MTP) device delegate to
 // complete media file system operations.
+// Lives on the IO thread in production.
 class MTPDeviceMapService {
  public:
   static MTPDeviceMapService* GetInstance();

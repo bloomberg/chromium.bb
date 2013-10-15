@@ -4,13 +4,15 @@
 
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 
+#include "chrome/browser/media_galleries/media_file_system_context.h"
+
 ScopedMTPDeviceMapEntry::ScopedMTPDeviceMapEntry(
     const base::FilePath::StringType& device_location,
-    const base::Closure& on_destruction_callback)
+    MediaFileSystemContext* context)
     : device_location_(device_location),
-      on_destruction_callback_(on_destruction_callback) {
+      context_(context) {
 }
 
 ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
-  on_destruction_callback_.Run();
+  context_->RemoveScopedMTPDeviceMapEntry(device_location_);
 }

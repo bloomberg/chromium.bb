@@ -5,30 +5,26 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_SCOPED_MTP_DEVICE_MAP_ENTRY_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_SCOPED_MTP_DEVICE_MAP_ENTRY_H_
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
 
+class MediaFileSystemContext;
 class MTPDeviceAsyncDelegate;
 
 // ScopedMTPDeviceMapEntry manages the reference count on a particular
 // MTP device location. These objects are held reference counted in
 // the ExtensionGalleriesHost objects. When a particular location is
-// destroyed, the constructor-time callback tells the MediaFileSystemRegistry
-// to erase it from the system-wide map, and it is also removed from
-// the MTPServiceMap at that point.
-// TODO(gbillock): Move this to media_file_system_registry.
+// destroyed, the MediaFileSystemContext is notified, and the attendant
+// delegates are subsequently erased from the system-wide MTPServiceMap.
 class ScopedMTPDeviceMapEntry
     : public base::RefCountedThreadSafe<
           ScopedMTPDeviceMapEntry, content::BrowserThread::DeleteOnUIThread> {
  public:
-  // |on_destruction_callback| is called when ScopedMTPDeviceMapEntry gets
-  // destroyed.
   // Created on the UI thread.
   ScopedMTPDeviceMapEntry(const base::FilePath::StringType& device_location,
-                          const base::Closure& on_destruction_callback);
+                          MediaFileSystemContext* context);
 
  private:
   // Friend declarations for ref counted implementation.
@@ -47,8 +43,8 @@ class ScopedMTPDeviceMapEntry
   // The MTP or PTP device location.
   const base::FilePath::StringType device_location_;
 
-  // Called when the object is destroyed.
-  base::Closure on_destruction_callback_;
+  // Notified when the object is destroyed.
+  MediaFileSystemContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMTPDeviceMapEntry);
 };

@@ -76,27 +76,6 @@ void InitMTPDeviceAsyncDelegate(
           base::Bind(&OnMTPDeviceAsyncDelegateCreated, device_location)));
 }
 
-}  // namespace
-
-MediaFileSystemInfo::MediaFileSystemInfo(const string16& fs_name,
-                                         const base::FilePath& fs_path,
-                                         const std::string& filesystem_id,
-                                         MediaGalleryPrefId pref_id,
-                                         const std::string& transient_device_id,
-                                         bool removable,
-                                         bool media_device)
-    : name(fs_name),
-      path(fs_path),
-      fsid(filesystem_id),
-      pref_id(pref_id),
-      transient_device_id(transient_device_id),
-      removable(removable),
-      media_device(media_device) {
-}
-
-MediaFileSystemInfo::MediaFileSystemInfo() {}
-MediaFileSystemInfo::~MediaFileSystemInfo() {}
-
 // Tracks the liveness of multiple RenderProcessHosts that the caller is
 // interested in. Once all of the RPHs have closed or been terminated a call
 // back informs the caller.
@@ -220,6 +199,27 @@ class RPHReferenceManager : public content::NotificationObserver {
   RPHRefCount refs_;
 };
 
+}  // namespace
+
+MediaFileSystemInfo::MediaFileSystemInfo(const string16& fs_name,
+                                         const base::FilePath& fs_path,
+                                         const std::string& filesystem_id,
+                                         MediaGalleryPrefId pref_id,
+                                         const std::string& transient_device_id,
+                                         bool removable,
+                                         bool media_device)
+    : name(fs_name),
+      path(fs_path),
+      fsid(filesystem_id),
+      pref_id(pref_id),
+      transient_device_id(transient_device_id),
+      removable(removable),
+      media_device(media_device) {
+}
+
+MediaFileSystemInfo::MediaFileSystemInfo() {}
+MediaFileSystemInfo::~MediaFileSystemInfo() {}
+
 // The main owner of this class is
 // |MediaFileSystemRegistry::extension_hosts_map_|, but a callback may
 // temporarily hold a reference.
@@ -285,11 +285,6 @@ class ExtensionGalleriesHost
     file_system_context_->RevokeFileSystem(gallery->second.fsid);
     pref_id_map_.erase(gallery);
 
-    MediaDeviceEntryReferencesMap::iterator mtp_device_host =
-        media_device_map_references_.find(id);
-    if (mtp_device_host != media_device_map_references_.end())
-      media_device_map_references_.erase(mtp_device_host);
-
     if (pref_id_map_.empty()) {
       rph_refs_.Reset();
       CleanUp();
@@ -314,7 +309,6 @@ class ExtensionGalleriesHost
     DCHECK(rph_refs_.empty());
     DCHECK(pref_id_map_.empty());
 
-    DCHECK(media_device_map_references_.empty());
   }
 
   void GetMediaFileSystemsForAttachedDevices(
@@ -352,11 +346,8 @@ class ExtensionGalleriesHost
         fsid = file_system_context_->RegisterFileSystemForMassStorage(
             device_id, path);
       } else {
-        scoped_refptr<ScopedMTPDeviceMapEntry> mtp_device_host;
         fsid = file_system_context_->RegisterFileSystemForMTPDevice(
-            device_id, path, &mtp_device_host);
-        DCHECK(mtp_device_host.get());
-        media_device_map_references_[pref_id] = mtp_device_host;
+            device_id, path);
       }
       if (fsid.empty())
         continue;
@@ -400,8 +391,6 @@ class ExtensionGalleriesHost
     }
     pref_id_map_.clear();
 
-    media_device_map_references_.clear();
-
     no_references_callback_.Run();
   }
 
@@ -414,10 +403,6 @@ class ExtensionGalleriesHost
 
   // A map from the gallery preferences id to the file system information.
   PrefIdFsInfoMap pref_id_map_;
-
-  // A map from the gallery preferences id to the corresponding media device
-  // host object.
-  MediaDeviceEntryReferencesMap media_device_map_references_;
 
   // The set of render processes and web contents that may have references to
   // the file system ids this instance manages.
@@ -581,8 +566,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   }
 
   virtual std::string RegisterFileSystemForMTPDevice(
-      const std::string& device_id, const base::FilePath& path,
-      scoped_refptr<ScopedMTPDeviceMapEntry>* entry) OVERRIDE {
+      const std::string& device_id, const base::FilePath& path) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 
@@ -593,8 +577,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
         IsolatedContext::GetInstance()->RegisterFileSystemForPath(
             fileapi::kFileSystemTypeDeviceMedia, path, &fs_name);
     CHECK(!fsid.empty());
-    DCHECK(entry);
-    *entry = registry_->GetOrCreateScopedMTPDeviceMapEntry(path.value());
+    registry_->GetOrCreateScopedMTPDeviceMapEntry(path.value(), fsid);
     return fsid;
   }
 
@@ -605,6 +588,13 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
       return;
 
     IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+
+    registry_->RevokeMTPFileSystem(fsid);
+  }
+
+  virtual void RemoveScopedMTPDeviceMapEntry(
+      const base::FilePath::StringType& device_location) OVERRIDE {
+    registry_->RemoveScopedMTPDeviceMapEntry(device_location);
   }
 
  private:
@@ -681,20 +671,27 @@ void MediaFileSystemRegistry::OnGalleryRemoved(
 
 scoped_refptr<ScopedMTPDeviceMapEntry>
 MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
-    const base::FilePath::StringType& device_location) {
+    const base::FilePath::StringType& device_location,
+    const std::string& fsid) {
   MTPDeviceDelegateMap::iterator delegate_it =
       mtp_device_delegate_map_.find(device_location);
   if (delegate_it != mtp_device_delegate_map_.end())
     return delegate_it->second;
+
   scoped_refptr<ScopedMTPDeviceMapEntry> mtp_device_host =
-      new ScopedMTPDeviceMapEntry(
-          device_location,
-          base::Bind(&MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry,
-                     base::Unretained(this),
-                     device_location));
+      new ScopedMTPDeviceMapEntry(device_location, file_system_context_.get());
+  // Note that this initializes the delegate asynchronously, but since
+  // the delegate will only be used from the IO thread, it is guaranteed
+  // to be created before use of it expects it to be there.
   InitMTPDeviceAsyncDelegate(device_location);
   mtp_device_delegate_map_[device_location] = mtp_device_host.get();
+  mtp_device_map_[fsid] = mtp_device_host;
   return mtp_device_host;
+}
+
+void MediaFileSystemRegistry::RevokeMTPFileSystem(const std::string& fsid) {
+  // If this was an MTP device, remove reference to it.
+  mtp_device_map_.erase(fsid);
 }
 
 void MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry(
