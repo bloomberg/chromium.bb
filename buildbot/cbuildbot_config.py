@@ -13,7 +13,7 @@ import optparse
 import sys
 import urllib
 
-GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
+GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
 
 # Contains the valid build config suffixes in the order that they are dumped.
 CONFIG_TYPE_RELEASE = 'release'
