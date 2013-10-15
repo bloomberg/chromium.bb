@@ -16,7 +16,6 @@
 #include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
-namespace test {
 
 class NotificationListTest : public testing::Test {
  public:
@@ -34,17 +33,9 @@ class NotificationListTest : public testing::Test {
   // notification.
   std::string AddNotification(
       const message_center::RichNotificationData& optional_fields) {
-    std::string new_id = base::StringPrintf(kIdFormat, counter_);
-    scoped_ptr<Notification> notification(new Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        new_id,
-        UTF8ToUTF16(base::StringPrintf(kTitleFormat, counter_)),
-        UTF8ToUTF16(base::StringPrintf(kMessageFormat, counter_)),
-        gfx::Image(),
-        UTF8ToUTF16(kDisplaySource),
-        NotifierId(NotifierId::APPLICATION, kExtensionId),
-        optional_fields,
-        NULL));
+    std::string new_id;
+    scoped_ptr<Notification> notification(
+        MakeNotification(optional_fields, &new_id));
     notification_list_->AddNotification(notification.Pass());
     counter_++;
     return new_id;
@@ -52,6 +43,28 @@ class NotificationListTest : public testing::Test {
 
   std::string AddNotification() {
     return AddNotification(message_center::RichNotificationData());
+  }
+
+  // Construct a new notification for testing, but don't add it to the list yet.
+  scoped_ptr<Notification> MakeNotification(
+      const message_center::RichNotificationData& optional_fields,
+      std::string* id_out) {
+    *id_out = base::StringPrintf(kIdFormat, counter_);
+    scoped_ptr<Notification> notification(new Notification(
+        message_center::NOTIFICATION_TYPE_SIMPLE,
+        *id_out,
+        UTF8ToUTF16(base::StringPrintf(kTitleFormat, counter_)),
+        UTF8ToUTF16(base::StringPrintf(kMessageFormat, counter_)),
+        gfx::Image(),
+        UTF8ToUTF16(kDisplaySource),
+        NotifierId(NotifierId::APPLICATION, kExtensionId),
+        optional_fields,
+        NULL));
+    return notification.Pass();
+  }
+
+  scoped_ptr<Notification> MakeNotification(std::string* id_out) {
+    return MakeNotification(message_center::RichNotificationData(), id_out);
   }
 
   // Utility methods of AddNotification.
@@ -664,6 +677,19 @@ TEST_F(NotificationListTest, UnreadCountNoNegative) {
   EXPECT_EQ(1u, notification_list()->unread_count());
 }
 
+TEST_F(NotificationListTest, TestPushingShownNotification) {
+  // Create a notification and mark it as shown.
+  std::string id1;
+  scoped_ptr<Notification> notification(MakeNotification(&id1));
+  notification->set_shown_as_popup(true);
+
+  // Call PushNotification on this notification.
+  notification_list()->PushNotification(notification.Pass());
+
+  // Ensure it is still marked as shown.
+  EXPECT_TRUE(GetNotification(id1)->shown_as_popup());
+}
+
 TEST_F(NotificationListTest, TestHasNotificationOfType) {
   std::string id = AddNotification();
 
@@ -690,5 +716,4 @@ TEST_F(NotificationListTest, TestHasNotificationOfType) {
       id, message_center::NOTIFICATION_TYPE_PROGRESS));
 }
 
-}  // namespace test
 }  // namespace message_center

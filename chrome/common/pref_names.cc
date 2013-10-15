@@ -1250,6 +1250,11 @@ extern const char kEnabledSyncedNotificationSendingServices[] =
 extern const char kInitializedSyncedNotificationSendingServices[] =
     "synced_notification.initialized_sending_services";
 
+// Boolean pref containing whether this is the first run of the Synced
+// Notification feature.
+extern const char kSyncedNotificationFirstRun[] =
+    "synced_notification.first_run";
+
 // Dictionary pref that keeps track of per-extension settings. The keys are
 // extension ids.
 const char kExtensionsPref[] = "extensions.settings";

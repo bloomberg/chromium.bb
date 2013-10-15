@@ -70,7 +70,8 @@ SyncedNotification::SyncedNotification(const syncer::SyncData& sync_data)
     : notification_manager_(NULL),
       notifier_service_(NULL),
       profile_(NULL),
-      active_fetcher_count_(0) {
+      active_fetcher_count_(0),
+      toast_state_(true) {
   Update(sync_data);
 }
 
@@ -303,6 +304,11 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
                                  replace_key,
                                  rich_notification_data,
                                  delegate.get());
+
+    // In case the notification is not supposed to be toasted, pretend that it
+    // has already been shown.
+    ui_notification.set_shown_as_popup(!toast_state_);
+
     notification_manager->Add(ui_notification, profile);
   } else {
     // In this case we have a Webkit Notification, not a Rich Notification.
@@ -691,6 +697,10 @@ std::string SyncedNotification::GetSendingServiceId() const {
   // hardcoded to the name of our first service using synced notifications.
   // Once the new protocol is built, remove this hardcoding.
   return kFirstSyncedNotificationServiceId;
+}
+
+void SyncedNotification::SetToastState(bool toast_state) {
+  toast_state_ = toast_state;
 }
 
 }  // namespace notifier

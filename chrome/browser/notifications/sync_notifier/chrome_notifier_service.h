@@ -30,6 +30,7 @@ namespace notifier {
 
 extern const char kFirstSyncedNotificationServiceId[];
 extern const char kServiceEnabledOnce[];
+extern const char kSyncedNotificationFirstRun[];
 
 // The ChromeNotifierService holds notifications which represent the state of
 // delivered notifications for chrome. These are obtained from the sync service
@@ -132,14 +133,20 @@ class ChromeNotifierService : public syncer::SyncableService,
   void OnInitializedSendingServiceListPrefChanged(
       std::set<std::string>* ids_field);
 
+  // Called when our "first run" boolean pref has been changed.
+  void OnSyncedNotificationFirstRunBooleanPrefChanged(bool* new_value);
+
   // Convert our internal set of strings to a list value.
   // The second param is an outparam which the function fills in.
   void BuildServiceListValueInplace(
-      std::set<std::string> services, std::vector<std::string>* string_vector);
+      std::set<std::string> services, base::ListValue* list_value);
 
   // Preferences for storing which SyncedNotificationServices are enabled
   StringListPrefMember enabled_sending_services_prefs_;
   StringListPrefMember initialized_sending_services_prefs_;
+
+  // Preferences to avoid toasting on SyncedNotification first run.
+  BooleanPrefMember synced_notification_first_run_prefs_;
 
   // Back pointer to the owning profile.
   Profile* const profile_;
@@ -147,6 +154,7 @@ class ChromeNotifierService : public syncer::SyncableService,
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   std::set<std::string> enabled_sending_services_;
   std::set<std::string> initialized_sending_services_;
+  bool synced_notification_first_run_;
   static bool avoid_bitmap_fetching_for_test_;
 
   // TODO(petewil): Consider whether a map would better suit our data.

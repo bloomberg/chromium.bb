@@ -136,7 +136,9 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   bool is_message_center_visible() const { return message_center_visible_; }
 
  private:
-  friend class test::NotificationListTest;
+  friend class NotificationListTest;
+  FRIEND_TEST_ALL_PREFIXES(NotificationListTest,
+                           TestPushingShownNotification);
 
   // Iterates through the list and returns the first notification matching |id|.
   Notifications::iterator GetNotification(const std::string& id);
