@@ -21,16 +21,11 @@
 
 namespace cc {
 
-// Temporary diagnostic.
-static bool s_safe_to_delete_drawable_tile = false;
-
 class DrawableTile : public LayerTilingData::Tile {
  public:
   static scoped_ptr<DrawableTile> Create() {
     return make_scoped_ptr(new DrawableTile());
   }
-
-  virtual ~DrawableTile() { CHECK(s_safe_to_delete_drawable_tile); }
 
   ResourceProvider::ResourceId resource_id() const { return resource_id_; }
   void set_resource_id(ResourceProvider::ResourceId resource_id) {
@@ -54,10 +49,6 @@ TiledLayerImpl::TiledLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id), skips_draw_(true) {}
 
 TiledLayerImpl::~TiledLayerImpl() {
-  s_safe_to_delete_drawable_tile = true;
-  if (tiler_)
-    tiler_->reset();
-  s_safe_to_delete_drawable_tile = false;
 }
 
 ResourceProvider::ResourceId TiledLayerImpl::ContentsResourceId() const {
@@ -87,10 +78,6 @@ DrawableTile* TiledLayerImpl::CreateTile(int i, int j) {
   scoped_ptr<DrawableTile> tile(DrawableTile::Create());
   DrawableTile* added_tile = tile.get();
   tiler_->AddTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
-
-  // Temporary diagnostic checks.
-  CHECK(added_tile);
-  CHECK(TileAt(i, j));
 
   return added_tile;
 }
@@ -261,8 +248,6 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
 }
 
 void TiledLayerImpl::SetTilingData(const LayerTilingData& tiler) {
-  s_safe_to_delete_drawable_tile = true;
-
   if (tiler_) {
     tiler_->reset();
   } else {
@@ -272,8 +257,6 @@ void TiledLayerImpl::SetTilingData(const LayerTilingData& tiler) {
                                          : LayerTilingData::NO_BORDER_TEXELS);
   }
   *tiler_ = tiler;
-
-  s_safe_to_delete_drawable_tile = false;
 }
 
 void TiledLayerImpl::PushTileProperties(
@@ -308,11 +291,7 @@ Region TiledLayerImpl::VisibleContentOpaqueRegion() const {
 }
 
 void TiledLayerImpl::DidLoseOutputSurface() {
-  s_safe_to_delete_drawable_tile = true;
-  // Temporary diagnostic check.
-  CHECK(tiler_);
   tiler_->reset();
-  s_safe_to_delete_drawable_tile = false;
 }
 
 const char* TiledLayerImpl::LayerTypeAsString() const {
