@@ -31,8 +31,8 @@
 #ifndef ScriptController_h
 #define ScriptController_h
 
-#include "bindings/v8/ScriptInstance.h"
 #include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/SharedPersistent.h"
 
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "wtf/Forward.h"
@@ -109,7 +109,7 @@ public:
     // Creates a property of the global object of a frame.
     void bindToWindowObject(Frame*, const String& key, NPObject*);
 
-    PassScriptInstance createScriptInstanceForWidget(Widget*);
+    PassRefPtr<SharedPersistent<v8::Object> > createPluginWrapper(Widget*);
 
     void enableEval();
     void disableEval(const String& errorMessage);

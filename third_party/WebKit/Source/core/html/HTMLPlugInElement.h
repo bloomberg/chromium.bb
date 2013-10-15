@@ -23,9 +23,8 @@
 #ifndef HTMLPlugInElement_h
 #define HTMLPlugInElement_h
 
+#include "bindings/v8/SharedPersistent.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-
-#include "bindings/v8/ScriptInstance.h"
 
 struct NPObject;
 
@@ -41,7 +40,7 @@ public:
 
     void resetInstance();
 
-    PassScriptInstance getInstance();
+    SharedPersistent<v8::Object>* pluginWrapper();
 
     Widget* pluginWidget() const;
 
@@ -96,7 +95,7 @@ private:
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool isPluginElement() const;
 
-    mutable ScriptInstance m_instance;
+    mutable RefPtr<SharedPersistent<v8::Object> > m_pluginWrapper;
     NPObject* m_NPObject;
     bool m_isCapturingMouseEvents;
     bool m_inBeforeLoadEventHandler;

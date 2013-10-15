@@ -53,7 +53,7 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
 
 HTMLPlugInElement::~HTMLPlugInElement()
 {
-    ASSERT(!m_instance); // cleared in detach()
+    ASSERT(!m_pluginWrapper); // cleared in detach()
 
     if (m_NPObject) {
         _NPN_ReleaseObject(m_NPObject);
@@ -90,7 +90,7 @@ void HTMLPlugInElement::removeAllEventListeners()
 
 void HTMLPlugInElement::detach(const AttachContext& context)
 {
-    m_instance.clear();
+    resetInstance();
 
     if (m_isCapturingMouseEvents) {
         if (Frame* frame = document().frame())
@@ -108,10 +108,10 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 
 void HTMLPlugInElement::resetInstance()
 {
-    m_instance.clear();
+    m_pluginWrapper.clear();
 }
 
-PassScriptInstance HTMLPlugInElement::getInstance()
+SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
 {
     Frame* frame = document().frame();
     if (!frame)
@@ -119,13 +119,11 @@ PassScriptInstance HTMLPlugInElement::getInstance()
 
     // If the host dynamically turns off JavaScript (or Java) we will still return
     // the cached allocated Bindings::Instance.  Not supporting this edge-case is OK.
-    if (m_instance)
-        return m_instance;
-
-    if (Widget* widget = pluginWidget())
-        m_instance = frame->script()->createScriptInstanceForWidget(widget);
-
-    return m_instance;
+    if (!m_pluginWrapper) {
+        if (Widget* widget = pluginWidget())
+            m_pluginWrapper = frame->script()->createPluginWrapper(widget);
+    }
+    return m_pluginWrapper.get();
 }
 
 bool HTMLPlugInElement::dispatchBeforeLoadEvent(const String& sourceURL)

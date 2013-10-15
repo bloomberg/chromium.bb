@@ -33,7 +33,7 @@
 #include "V8HTMLAppletElement.h"
 #include "V8HTMLEmbedElement.h"
 #include "V8HTMLObjectElement.h"
-#include "bindings/v8/ScriptInstance.h"
+#include "bindings/v8/SharedPersistent.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8NPObject.h"
 #include "core/page/UseCounter.h"
@@ -47,11 +47,11 @@ template <class C>
 static void npObjectNamedGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* imp = C::toNative(info.Holder());
-    ScriptInstance scriptInstance = imp->getInstance();
-    if (!scriptInstance)
+    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
+    if (!wrapper)
         return;
 
-    v8::Local<v8::Object> instance = scriptInstance->newLocal(info.GetIsolate());
+    v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
 
@@ -62,11 +62,11 @@ template <class C>
 static void npObjectNamedSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* imp = C::toNative(info.Holder());
-    ScriptInstance scriptInstance = imp->getInstance();
-    if (!scriptInstance)
+    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
+    if (!wrapper)
         return;
 
-    v8::Local<v8::Object> instance = scriptInstance->newLocal(info.GetIsolate());
+    v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
 
@@ -128,11 +128,11 @@ template <class C>
 void npObjectIndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* imp = C::toNative(info.Holder());
-    ScriptInstance scriptInstance = imp->getInstance();
-    if (!scriptInstance)
+    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
+    if (!wrapper)
         return;
 
-    v8::Local<v8::Object> instance = scriptInstance->newLocal(info.GetIsolate());
+    v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
 
@@ -143,11 +143,11 @@ template <class C>
 void npObjectIndexedSetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     HTMLPlugInElement* imp = C::toNative(info.Holder());
-    ScriptInstance scriptInstance = imp->getInstance();
-    if (!scriptInstance)
+    RefPtr<SharedPersistent<v8::Object> > wrapper = imp->pluginWrapper();
+    if (!wrapper)
         return;
 
-    v8::Local<v8::Object> instance = scriptInstance->newLocal(info.GetIsolate());
+    v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
 

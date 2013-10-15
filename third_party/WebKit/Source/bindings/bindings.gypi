@@ -56,8 +56,6 @@
             'v8/ScriptGCEvent.h',
             'v8/ScriptHeapSnapshot.cpp',
             'v8/ScriptHeapSnapshot.h',
-            'v8/ScriptInstance.cpp',
-            'v8/ScriptInstance.h',
             'v8/ScriptObject.cpp',
             'v8/ScriptObject.h',
             'v8/ScriptPreprocessor.cpp',

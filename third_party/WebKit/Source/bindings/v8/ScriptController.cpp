@@ -364,7 +364,7 @@ void ScriptController::disableEval(const String& errorMessage)
     v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(errorMessage, m_isolate));
 }
 
-PassScriptInstance ScriptController::createScriptInstanceForWidget(Widget* widget)
+PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(Widget* widget)
 {
     ASSERT(widget);
 
@@ -404,7 +404,7 @@ PassScriptInstance ScriptController::createScriptInstanceForWidget(Widget* widge
     // Track the plugin object. We've been given a reference to the object.
     m_pluginObjects.set(widget, npObject);
 
-    return V8ScriptInstance::create(wrapper, m_isolate);
+    return SharedPersistent<v8::Object>::create(wrapper, m_isolate);
 }
 
 void ScriptController::cleanupScriptObjectsForPlugin(Widget* nativeHandle)
