@@ -80,11 +80,15 @@ public abstract class TabBase implements NavigationClient {
      */
     private ContentViewCore mContentViewCore;
 
-    // Observers and Delegates.
+    /**
+     * A list of TabBase observers.  These are used to broadcast TabBase events to listeners.
+     */
+    private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
+
+    // Content layer Observers and Delegates
     private ContentViewClient mContentViewClient;
     private WebContentsObserverAndroid mWebContentsObserver;
     private TabBaseChromeWebContentsDelegateAndroid mWebContentsDelegate;
-    private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
 
     /**
      * A basic {@link ChromeWebContentsDelegateAndroid} that forwards some calls to the registered
@@ -108,6 +112,19 @@ public abstract class TabBase implements NavigationClient {
         public void toggleFullscreenModeForTab(boolean enableFullscreen) {
             for (TabObserver observer: mObservers) {
                 observer.onToggleFullscreenMode(TabBase.this, enableFullscreen);
+            }
+        }
+    }
+
+    private class TabBaseWebContentsObserverAndroid extends WebContentsObserverAndroid {
+        public TabBaseWebContentsObserverAndroid(ContentViewCore contentViewCore) {
+            super(contentViewCore);
+        }
+
+        @Override
+        public void navigationEntryCommitted() {
+            if (getNativePage() != null) {
+                pushNativePageStateToNavigationEntry();
             }
         }
     }
@@ -415,6 +432,7 @@ public abstract class TabBase implements NavigationClient {
         if (mNativePage == nativePage) return;
         destroyNativePageInternal();
         mNativePage = nativePage;
+        pushNativePageStateToNavigationEntry();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
     }
 
@@ -456,7 +474,7 @@ public abstract class TabBase implements NavigationClient {
 
         mContentViewCore = mContentView.getContentViewCore();
         mWebContentsDelegate = createWebContentsDelegate();
-        mWebContentsObserver = createWebContentsObserverAndroid(mContentViewCore);
+        mWebContentsObserver = new TabBaseWebContentsObserverAndroid(mContentViewCore);
 
         if (mContentViewClient != null) mContentViewCore.setContentViewClient(mContentViewClient);
 
@@ -538,16 +556,6 @@ public abstract class TabBase implements NavigationClient {
      */
     protected TabBaseChromeWebContentsDelegateAndroid createWebContentsDelegate() {
         return new TabBaseChromeWebContentsDelegateAndroid();
-    }
-
-    /**
-     * A helper method to allow subclasses to build their own observer.
-     * @param contentViewCore The {@link ContentViewCore} this observer should be built for.
-     * @return An instance of a {@link WebContentsObserverAndroid}.
-     */
-    protected WebContentsObserverAndroid createWebContentsObserverAndroid(
-            ContentViewCore contentViewCore) {
-        return null;
     }
 
     /**
@@ -643,6 +651,12 @@ public abstract class TabBase implements NavigationClient {
         return sIdCounter.getAndIncrement();
     }
 
+    private void pushNativePageStateToNavigationEntry() {
+        assert mNativeTabAndroid != 0 && getNativePage() != null;
+        nativeSetActiveNavigationEntryTitleForUrl(mNativeTabAndroid, getNativePage().getUrl(),
+                getNativePage().getTitle());
+    }
+
     /**
      * Ensures the counter is at least as high as the specified value.  The counter should always
      * point to an unused ID (which will be handed out next time a request comes in).  Exposed so
@@ -665,4 +679,6 @@ public abstract class TabBase implements NavigationClient {
     private native Profile nativeGetProfileAndroid(int nativeTabAndroid);
     private native void nativeLaunchBlockedPopups(int nativeTabAndroid);
     private native int nativeGetSecurityLevel(int nativeTabAndroid);
+    private native void nativeSetActiveNavigationEntryTitleForUrl(int nativeTabAndroid, String url,
+            String title);
 }

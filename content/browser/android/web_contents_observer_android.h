@@ -68,6 +68,8 @@ class WebContentsObserverAndroid : public WebContentsObserver {
                              const GURL& validated_url,
                              bool is_main_frame,
                              RenderViewHost* render_view_host) OVERRIDE;
+  virtual void NavigationEntryCommitted(
+      const LoadCommittedDetails& load_details) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
   virtual void DidChangeVisibleSSLState() OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;

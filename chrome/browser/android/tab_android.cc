@@ -5,6 +5,7 @@
 #include "chrome/browser/android/tab_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
@@ -329,6 +331,26 @@ void TabAndroid::LaunchBlockedPopups(JNIEnv* env, jobject obj) {
 ToolbarModel::SecurityLevel TabAndroid::GetSecurityLevel(JNIEnv* env,
                                                          jobject obj) {
   return ToolbarModelImpl::GetSecurityLevelForWebContents(web_contents());
+}
+
+void TabAndroid::SetActiveNavigationEntryTitleForUrl(JNIEnv* env,
+                                                     jobject obj,
+                                                     jstring jurl,
+                                                     jstring jtitle) {
+  DCHECK(web_contents());
+
+  string16 title;
+  if (jtitle)
+    title = base::android::ConvertJavaStringToUTF16(env, jtitle);
+
+  std::string url;
+  if (jurl)
+    url = base::android::ConvertJavaStringToUTF8(env, jurl);
+
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  if (entry && url == entry->GetVirtualURL().spec())
+    entry->SetTitle(title);
 }
 
 bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {

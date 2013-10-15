@@ -134,6 +134,10 @@ class TabAndroid : public CoreTabHelperDelegate,
                                                                jobject obj);
   void LaunchBlockedPopups(JNIEnv* env, jobject obj);
   ToolbarModel::SecurityLevel GetSecurityLevel(JNIEnv* env, jobject obj);
+  void SetActiveNavigationEntryTitleForUrl(JNIEnv* env,
+                                           jobject obj,
+                                           jstring jurl,
+                                           jstring jtitle);
 
  protected:
   virtual ~TabAndroid();
