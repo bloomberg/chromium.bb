@@ -114,9 +114,11 @@ bool PendingExtensionManager::AddFromSync(
 
   const bool kIsFromSync = true;
   const Manifest::Location kSyncLocation = Manifest::INTERNAL;
+  const bool kMarkAcknowledged = false;
 
   return AddExtensionImpl(id, update_url, Version(), should_allow_install,
-                          kIsFromSync, install_silently, kSyncLocation);
+                          kIsFromSync, install_silently, kSyncLocation,
+                          Extension::NO_FLAGS, kMarkAcknowledged);
 }
 
 bool PendingExtensionManager::AddFromExtensionImport(
@@ -134,15 +136,19 @@ bool PendingExtensionManager::AddFromExtensionImport(
   const bool kIsFromSync = false;
   const bool kInstallSilently = true;
   const Manifest::Location kManifestLocation = Manifest::INTERNAL;
+  const bool kMarkAcknowledged = false;
 
   return AddExtensionImpl(id, update_url, Version(), should_allow_install,
-                          kIsFromSync, kInstallSilently, kManifestLocation);
+                          kIsFromSync, kInstallSilently, kManifestLocation,
+                          Extension::NO_FLAGS, kMarkAcknowledged);
 }
 
 bool PendingExtensionManager::AddFromExternalUpdateUrl(
     const std::string& id,
     const GURL& update_url,
-    Manifest::Location location) {
+    Manifest::Location location,
+    int creation_flags,
+    bool mark_acknowledged) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const bool kIsFromSync = false;
@@ -167,14 +173,16 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
 
   return AddExtensionImpl(id, update_url, Version(), &AlwaysInstall,
                           kIsFromSync, kInstallSilently,
-                          location);
+                          location, creation_flags, mark_acknowledged);
 }
 
 
 bool PendingExtensionManager::AddFromExternalFile(
     const std::string& id,
     Manifest::Location install_source,
-    const Version& version) {
+    const Version& version,
+    int creation_flags,
+    bool mark_acknowledged) {
   // TODO(skerner): AddFromSync() checks to see if the extension is
   // installed, but this method assumes that the caller already
   // made sure it is not installed.  Make all AddFrom*() methods
@@ -190,7 +198,9 @@ bool PendingExtensionManager::AddFromExternalFile(
       &AlwaysInstall,
       kIsFromSync,
       kInstallSilently,
-      install_source);
+      install_source,
+      creation_flags,
+      mark_acknowledged);
 }
 
 void PendingExtensionManager::GetPendingIdsForUpdateCheck(
@@ -219,7 +229,9 @@ bool PendingExtensionManager::AddExtensionImpl(
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,
-    Manifest::Location install_source) {
+    Manifest::Location install_source,
+    int creation_flags,
+    bool mark_acknowledged) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PendingExtensionInfo info(id,
@@ -228,7 +240,9 @@ bool PendingExtensionManager::AddExtensionImpl(
                             should_allow_install,
                             is_from_sync,
                             install_silently,
-                            install_source);
+                            install_source,
+                            creation_flags,
+                            mark_acknowledged);
 
   if (const PendingExtensionInfo* pending = GetById(id)) {
     // Bugs in this code will manifest as sporadic incorrect extension

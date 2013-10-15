@@ -566,7 +566,9 @@ class ExtensionService
   virtual bool OnExternalExtensionUpdateUrlFound(
       const std::string& id,
       const GURL& update_url,
-      extensions::Manifest::Location location) OVERRIDE;
+      extensions::Manifest::Location location,
+      int creation_flags,
+      bool mark_acknowledged) OVERRIDE;
 
   virtual void OnExternalProviderReady(
       const extensions::ExternalProviderInterface* provider) OVERRIDE;

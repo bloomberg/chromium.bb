@@ -246,7 +246,9 @@ void ExtensionService::AddProviderForTesting(
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(
     const std::string& id,
     const GURL& update_url,
-    Manifest::Location location) {
+    Manifest::Location location,
+    int creation_flags,
+    bool mark_acknowledged) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(Extension::IdIsValid(id));
 
@@ -265,7 +267,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   // source.  In this case, signal that this extension will not be
   // installed by returning false.
   if (!pending_extension_manager()->AddFromExternalUpdateUrl(
-          id, update_url, location)) {
+          id, update_url, location, creation_flags, mark_acknowledged)) {
     return false;
   }
 
@@ -668,10 +670,14 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   scoped_refptr<CrxInstaller> installer(
       CrxInstaller::Create(this, client.Pass()));
   installer->set_expected_id(id);
+  int creation_flags = Extension::NO_FLAGS;
   if (pending_extension_info) {
     installer->set_install_source(pending_extension_info->install_source());
     if (pending_extension_info->install_silently())
       installer->set_allow_silent_install(true);
+    creation_flags = pending_extension_info->creation_flags();
+    if (pending_extension_info->mark_acknowledged())
+      AcknowledgeExternalExtension(id);
   } else if (extension) {
     installer->set_install_source(extension->location());
   }
@@ -680,7 +686,6 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   // Note that we ignore some older extensions with blank auto-update URLs
   // because we are mostly concerned with restrictions on NaCl extensions,
   // which are newer.
-  int creation_flags = Extension::NO_FLAGS;
   if ((extension && extension->from_webstore()) ||
       (extension && extensions::ManifestURL::UpdatesFromGallery(extension)) ||
       (!extension && extension_urls::IsWebstoreUpdateUrl(
@@ -697,6 +702,9 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 
   if (extension && extension->was_installed_by_default())
     creation_flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
+
+  if (extension && extension->requires_permissions_consent())
+    creation_flags |= Extension::REQUIRE_PERMISSIONS_CONSENT;
 
   installer->set_creation_flags(creation_flags);
 
@@ -2813,7 +2821,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
 
   // If the extension is already pending, don't start an install.
   if (!pending_extension_manager()->AddFromExternalFile(
-          id, location, *version)) {
+          id, location, *version, creation_flags, mark_acknowledged)) {
     return false;
   }
 

@@ -305,6 +305,7 @@ void SetupPendingExtensionManagerForTest(
         (i % 2 == 0) ? &ShouldInstallThemesOnly : &ShouldInstallExtensionsOnly;
     const bool kIsFromSync = true;
     const bool kInstallSilently = true;
+    const bool kMarkAcknowledged = false;
     std::string id = id_util::GenerateId(base::StringPrintf("extension%i", i));
 
     pending_extension_manager->AddForTesting(
@@ -314,7 +315,9 @@ void SetupPendingExtensionManagerForTest(
                              should_allow_install,
                              kIsFromSync,
                              kInstallSilently,
-                             Manifest::INTERNAL));
+                             Manifest::INTERNAL,
+                             Extension::NO_FLAGS,
+                             kMarkAcknowledged));
   }
 }
 
@@ -995,13 +998,16 @@ class ExtensionUpdaterTest : public testing::Test {
     if (pending) {
       const bool kIsFromSync = true;
       const bool kInstallSilently = true;
+      const bool kMarkAcknowledged = false;
       PendingExtensionManager* pending_extension_manager =
           service->pending_extension_manager();
       pending_extension_manager->AddForTesting(
           PendingExtensionInfo(id, test_url, version,
                                &ShouldAlwaysInstall, kIsFromSync,
                                kInstallSilently,
-                               Manifest::INTERNAL));
+                               Manifest::INTERNAL,
+                               Extension::NO_FLAGS,
+                               kMarkAcknowledged));
     }
 
     // Call back the ExtensionUpdater with a 200 response and some test data

@@ -15,14 +15,18 @@ PendingExtensionInfo::PendingExtensionInfo(
     ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,
-    Manifest::Location install_source)
+    Manifest::Location install_source,
+    int creation_flags,
+    bool mark_acknowledged)
     : id_(id),
       update_url_(update_url),
       version_(version),
       should_allow_install_(should_allow_install),
       is_from_sync_(is_from_sync),
       install_silently_(install_silently),
-      install_source_(install_source) {}
+      install_source_(install_source),
+      creation_flags_(creation_flags),
+      mark_acknowledged_(mark_acknowledged) {}
 
 PendingExtensionInfo::PendingExtensionInfo()
     : update_url_(),

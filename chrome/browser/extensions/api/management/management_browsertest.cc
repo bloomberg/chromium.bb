@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
 
   EXPECT_TRUE(pending_extension_manager->AddFromExternalUpdateUrl(
       kExtensionId, GURL("http://localhost/autoupdate/manifest"),
-      Manifest::EXTERNAL_PREF_DOWNLOAD));
+      Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS, false));
 
   // Run autoupdate and make sure version 2 of the extension was installed.
   service->updater()->CheckNow(params);
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
   // because of the killbit.
   EXPECT_FALSE(pending_extension_manager->AddFromExternalUpdateUrl(
       kExtensionId, GURL("http://localhost/autoupdate/manifest"),
-      Manifest::EXTERNAL_PREF_DOWNLOAD));
+      Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS, false));
   EXPECT_FALSE(pending_extension_manager->IsIdPending(kExtensionId))
       << "External reinstall of a killed extension shouldn't work.";
   EXPECT_TRUE(extension_prefs->IsExternalExtensionUninstalled(kExtensionId))

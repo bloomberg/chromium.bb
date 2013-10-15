@@ -275,7 +275,8 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
         continue;
       }
       service_->OnExternalExtensionUpdateUrlFound(
-          extension_id, update_url, download_location_);
+          extension_id, update_url, download_location_, creation_flags,
+          auto_acknowledge_);
     }
   }
 

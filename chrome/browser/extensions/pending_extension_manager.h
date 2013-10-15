@@ -90,7 +90,9 @@ class PendingExtensionManager {
   // to be fetched, installed, and activated.
   bool AddFromExternalUpdateUrl(const std::string& id,
                                 const GURL& update_url,
-                                Manifest::Location location);
+                                Manifest::Location location,
+                                int creation_flags,
+                                bool mark_acknowledged);
 
   // Add a pending extension record for an external CRX file.
   // Return true if the CRX should be installed, false if an existing
@@ -98,7 +100,9 @@ class PendingExtensionManager {
   bool AddFromExternalFile(
       const std::string& id,
       Manifest::Location location,
-      const base::Version& version);
+      const base::Version& version,
+      int creation_flags,
+      bool mark_acknowledged);
 
   // Get the list of pending IDs that should be installed from an update URL.
   // Pending extensions that will be installed from local files will not be
@@ -118,7 +122,9 @@ class PendingExtensionManager {
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       bool install_silently,
-      Manifest::Location install_source);
+      Manifest::Location install_source,
+      int creation_flags,
+      bool mark_acknowledged);
 
   // Add a pending extension record directly.  Used for unit tests that need
   // to set an inital state. Use friendship to allow the tests to call this

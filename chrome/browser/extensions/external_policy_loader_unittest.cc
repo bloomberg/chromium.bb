@@ -81,7 +81,7 @@ class MockExternalPolicyProviderVisitor
 
   virtual bool OnExternalExtensionUpdateUrlFound(
       const std::string& id, const GURL& update_url,
-      Manifest::Location location) OVERRIDE {
+      Manifest::Location location, int unused1, bool unused2) OVERRIDE {
     // Extension has the correct location.
     EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, location);
 
