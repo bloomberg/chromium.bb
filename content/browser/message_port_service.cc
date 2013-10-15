@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/worker_host/message_port_service.h"
+#include "content/browser/message_port_service.h"
 
-#include "content/browser/worker_host/worker_message_filter.h"
-#include "content/common/worker_messages.h"
+#include "content/browser/message_port_message_filter.h"
+#include "content/common/message_port_messages.h"
 
 namespace content {
 
@@ -13,7 +13,7 @@ struct MessagePortService::MessagePort {
   // |filter| and |route_id| are what we need to send messages to the port.
   // |filter| is just a weak pointer since we get notified when its process has
   // gone away and remove it.
-  WorkerMessageFilter* filter;
+  MessagePortMessageFilter* filter;
   int route_id;
   // A globally unique id for this message port.
   int message_port_id;
@@ -26,7 +26,7 @@ struct MessagePortService::MessagePort {
   // in-flight. This flag ensures that the latter type get flushed through the
   // system.
   // This flag should only be set to true in response to
-  // WorkerProcessHostMsg_QueueMessages.
+  // MessagePortHostMsg_QueueMessages.
   bool queue_messages;
   QueuedMessages queued_messages;
 };
@@ -44,7 +44,7 @@ MessagePortService::~MessagePortService() {
 
 void MessagePortService::UpdateMessagePort(
     int message_port_id,
-    WorkerMessageFilter* filter,
+    MessagePortMessageFilter* filter,
     int routing_id) {
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
@@ -56,8 +56,8 @@ void MessagePortService::UpdateMessagePort(
   port.route_id = routing_id;
 }
 
-void MessagePortService::OnWorkerMessageFilterClosing(
-    WorkerMessageFilter* filter) {
+void MessagePortService::OnMessagePortMessageFilterClosing(
+    MessagePortMessageFilter* filter) {
   // Check if the (possibly) crashed process had any message ports.
   for (MessagePorts::iterator iter = message_ports_.begin();
        iter != message_ports_.end();) {
@@ -69,7 +69,7 @@ void MessagePortService::OnWorkerMessageFilterClosing(
 }
 
 void MessagePortService::Create(int route_id,
-                                WorkerMessageFilter* filter,
+                                MessagePortMessageFilter* filter,
                                 int* message_port_id) {
   *message_port_id = ++next_message_port_id_;
 
@@ -173,7 +173,7 @@ void MessagePortService::PostMessageTo(
   }
 
   // Now send the message to the entangled port.
-  entangled_port.filter->Send(new WorkerProcessMsg_Message(
+  entangled_port.filter->Send(new MessagePortMsg_Message(
       entangled_port.route_id, message, sent_message_port_ids,
       new_routing_ids));
 }
@@ -186,7 +186,7 @@ void MessagePortService::QueueMessages(int message_port_id) {
 
   MessagePort& port = message_ports_[message_port_id];
   if (port.filter) {
-    port.filter->Send(new WorkerProcessMsg_MessagesQueued(port.route_id));
+    port.filter->Send(new MessagePortMsg_MessagesQueued(port.route_id));
     port.queue_messages = true;
     port.filter = NULL;
   }
