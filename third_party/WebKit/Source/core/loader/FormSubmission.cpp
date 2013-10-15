@@ -203,7 +203,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
             isMultiPartForm = false;
         }
     }
-    WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataBuilder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.inputEncoding());
+    WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataBuilder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.inputEncoding(), document.defaultCharset());
     RefPtr<DOMFormData> domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
     Vector<pair<String, String> > formValues;
 

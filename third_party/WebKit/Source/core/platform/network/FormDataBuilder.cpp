@@ -74,7 +74,7 @@ static void appendQuotedString(Vector<char>& buffer, const CString& string)
     }
 }
 
-WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& acceptCharset, const String& inputEncoding)
+WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& acceptCharset, const String& inputEncoding, const String& defaultCharset)
 {
     String normalizedAcceptCharset = acceptCharset;
     normalizedAcceptCharset.replace(',', ' ');
@@ -88,6 +88,13 @@ WTF::TextEncoding FormDataBuilder::encodingFromAcceptCharset(const String& accep
     for (Vector<String>::const_iterator it = charsets.begin(); it != end; ++it) {
         if ((encoding = WTF::TextEncoding(*it)).isValid())
             return encoding;
+    }
+
+    if (inputEncoding.isEmpty()) {
+        if (defaultCharset.isEmpty())
+            return WTF::UTF8Encoding();
+
+        return defaultCharset;
     }
 
     return inputEncoding;

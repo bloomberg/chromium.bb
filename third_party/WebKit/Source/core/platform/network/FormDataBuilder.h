@@ -33,7 +33,7 @@ namespace WebCore {
 class FormDataBuilder {
     WTF_MAKE_NONCOPYABLE(FormDataBuilder);
 public:
-    static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, const String& inputEncoding);
+    static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, const String& inputEncoding, const String& defaultCharset);
 
     // Helper functions used by HTMLFormElement for multi-part form data
     static Vector<char> generateUniqueBoundaryString();
