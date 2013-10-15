@@ -1207,7 +1207,6 @@ internal_paladin.add_config('mario-paladin',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
   boards=['x86-mario'],
-  gs_path='gs://chromeos-x86-mario/pre-flight-master',
   paladin_builder_name='mario paladin',
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 )
