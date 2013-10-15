@@ -52,6 +52,7 @@ MultitouchMouseInterpreter::MultitouchMouseInterpreter(
                                 1.75),
       moving_min_rel_amount_(prop_reg, "Moving Min Rel Magnitude", 0.1) {
   InitName();
+  memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
 void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
@@ -112,7 +113,7 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   result_.type = kGestureTypeNull;
   extra_result_.type = kGestureTypeNull;
 
-  InterpretMouseEvent(*state_buffer_.Get(1), *state_buffer_.Get(0), &result_);
+  InterpretMouseEvent(prev_state_, *state_buffer_.Get(0), &result_);
   origin_.PushGesture(result_);
 
   Gesture* result;
@@ -153,6 +154,11 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   if (should_interpret_multitouch)
     InterpretMultitouchEvent(result);
   origin_.PushGesture(*result);
+
+  // We don't keep finger data here, this is just for standard mouse:
+  prev_state_ = *hwstate;
+  prev_state_.fingers = NULL;
+  prev_state_.finger_cnt = 0;
 
   prev_gs_fingers_ = gs_fingers_;
   prev_gesture_type_ = current_gesture_type_;

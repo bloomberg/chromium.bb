@@ -43,7 +43,10 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
  private:
   void InterpretMultitouchEvent(Gesture* result);
 
+  // We keep this for finger tracking:
   HardwareStateBuffer state_buffer_;
+  // We keep this for standard mouse tracking:
+  HardwareState prev_state_;
   ScrollEventBuffer scroll_buffer_;
 
   FingerMap prev_gs_fingers_;
