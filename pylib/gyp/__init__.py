@@ -106,8 +106,6 @@ def Load(build_files, format, default_variables={},
   # so we can default things and the generators only have to provide what
   # they need.
   generator_input_info = {
-    'generator_wants_absolute_build_file_paths':
-        getattr(generator, 'generator_wants_absolute_build_file_paths', False),
     'generator_handles_variants':
         getattr(generator, 'generator_handles_variants', False),
     'non_configuration_keys':

@@ -106,9 +106,6 @@ invalid_configuration_keys = [
   'type',
 ]
 
-# Controls how the generator want the build file paths.
-absolute_build_file_paths = False
-
 # Controls whether or not the generator supports multiple toolsets.
 multiple_toolsets = False
 
@@ -344,10 +341,6 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
       variables['DEPTH'] = '.'
     else:
       variables['DEPTH'] = d.replace('\\', '/')
-
-  # If the generator needs absolue paths, then do so.
-  if absolute_build_file_paths:
-    build_file_path = os.path.abspath(build_file_path)
 
   if build_file_path in data['target_build_files']:
     # Already loaded.
@@ -586,7 +579,6 @@ def LoadTargetBuildFilesParallel(build_files, data, aux_data,
       global_flags = {
         'path_sections': globals()['path_sections'],
         'non_configuration_keys': globals()['non_configuration_keys'],
-        'absolute_build_file_paths': globals()['absolute_build_file_paths'],
         'multiple_toolsets': globals()['multiple_toolsets']}
 
       if not parallel_state.pool:
@@ -2600,10 +2592,6 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   global non_configuration_keys
   non_configuration_keys = base_non_configuration_keys[:]
   non_configuration_keys.extend(generator_input_info['non_configuration_keys'])
-
-  global absolute_build_file_paths
-  absolute_build_file_paths = \
-      generator_input_info['generator_wants_absolute_build_file_paths']
 
   global multiple_toolsets
   multiple_toolsets = generator_input_info[
