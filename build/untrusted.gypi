@@ -225,7 +225,7 @@
                 'tool_name': 'newlib',
                 'out_newlib64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_newlib64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
+                'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -254,7 +254,7 @@
                    '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_newlib64) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_newlib64)',
                  ],
                },
              ],
@@ -264,7 +264,7 @@
              'variables': {
                 'tool_name': 'newlib',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_newlib64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
+                'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                 'out_newlib64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
@@ -294,7 +294,7 @@
                    '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_newlib64) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_newlib64)',
                  ],
                },
              ],
@@ -305,7 +305,7 @@
                 'tool_name': 'irt',
                 'out_newlib64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_newlib64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
+                'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -334,7 +334,7 @@
                    '--compile_flags=--target=x86_64-nacl ^(compile_flags) >(_compile_flags) -gline-tables-only ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=--target=x86_64-nacl -arch x86-64 --pnacl-allow-translate --pnacl-allow-native -Wt,-mtls-use-call -Wn,-Trodata-segment=<(NACL_IRT_DATA_START) -Wn,-Ttext-segment=<(NACL_IRT_TEXT_START) -B>(tc_lib_dir_irt64) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_newlib64)',
                  ],
                },
              ],
@@ -344,7 +344,7 @@
              'variables': {
                 'tool_name': 'irt',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_newlib64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
+                'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                 'out_newlib64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
@@ -374,7 +374,7 @@
                    '--compile_flags=--target=x86_64-nacl ^(compile_flags) >(_compile_flags) -gline-tables-only ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=--target=x86_64-nacl -B>(tc_lib_dir_irt64) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_newlib64)',
                  ],
                },
              ],
@@ -385,7 +385,7 @@
                 'tool_name': 'newlib',
                 'out_newlib32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_newlib32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
+                'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -414,7 +414,7 @@
                    '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_newlib32) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_newlib32)',
                  ],
                },
              ],
@@ -425,7 +425,7 @@
                 'tool_name': 'newlib',
                 'out_newlib32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_newlib32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
+                'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -454,7 +454,7 @@
                    '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_newlib32) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_newlib32)',
                  ],
                },
              ],
@@ -465,7 +465,7 @@
                 'tool_name': 'irt',
                 'out_newlib32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_newlib32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
+                'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -494,7 +494,7 @@
                    '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_irt32) -Wl,--build-id,--section-start,.note.gnu.build-id=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_newlib32)',
                  ],
                },
              ],
@@ -505,7 +505,7 @@
                 'tool_name': 'irt',
                 'out_newlib32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_newlib32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
+                'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -534,7 +534,7 @@
                    '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_irt32) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_newlib32)',
                  ],
                },
              ],
@@ -551,7 +551,7 @@
                'tool_name': 'newlib',
                'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
                'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-               'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+               'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
@@ -580,7 +580,7 @@
                   '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
+                  '--source-list=^(source_list_newlib_arm)',
                 ],
               },
             ],
@@ -591,7 +591,7 @@
               'tool_name': 'newlib',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+              'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
@@ -620,7 +620,7 @@
                   '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
+                  '--source-list=^(source_list_newlib_arm)',
                 ],
               },
             ],
@@ -631,7 +631,7 @@
                'tool_name': 'irt',
                'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
                'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-               'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+               'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
@@ -660,7 +660,7 @@
                   '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_irt_arm) -Wl,-Trodata-segment=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
+                  '--source-list=^(source_list_newlib_arm)',
                 ],
               },
             ],
@@ -671,7 +671,7 @@
               'tool_name': 'irt',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+              'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
@@ -700,7 +700,7 @@
                   '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_irt_arm) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources) ^(native_sources))',
+                  '--source-list=^(source_list_newlib_arm)',
                 ],
               },
             ],
@@ -713,7 +713,7 @@
               'tool_name': 'newlib',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
+              'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
             },
             'actions': [
               {
@@ -742,7 +742,7 @@
                   '--compile_flags=--target=armv7-unknown-nacl-gnueabi -mfloat-abi=hard ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
+                  '--source-list=^(source_list_newlib_arm)',
                 ],
               },
             ],
@@ -759,7 +759,7 @@
                'tool_name': 'newlib',
                'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips.nexe',
                'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
-               'source_list_newlib_mips%': '<(tool_name)-mips.>(_target_name).source_list.gypcmd',
+               'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
@@ -788,7 +788,7 @@
                   '--compile_flags= ^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_mips) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_mips) ^(_sources) ^(sources) ^(native_sources))',
+                  '--source-list=^(source_list_newlib_mips)',
                 ],
               },
             ],
@@ -799,7 +799,7 @@
               'tool_name': 'newlib',
               'out_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
               'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
-              'source_list_newlib_mips%': '<(tool_name)-mips.>(_target_name).source_list.gypcmd',
+              'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
             },
             'actions': [
               {
@@ -828,7 +828,7 @@
                   '--compile_flags= ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_mips) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_mips) ^(_sources) ^(sources))',
+                  '--source-list=^(source_list_newlib_mips)',
                 ],
               },
             ],
@@ -839,7 +839,7 @@
                'tool_name': 'irt',
                'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips.nexe',
                'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
-               'source_list_newlib_mips%': '<(tool_name)-mips.>(_target_name).source_list.gypcmd',
+               'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
             },
             'actions': [
               {
@@ -868,7 +868,7 @@
                   '--compile_flags= ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags= -arch mips --pnacl-allow-translate --pnacl-allow-native -Wt,-mtls-use-call --pnacl-disable-abi-check -Wl,-Trodata-segment=<(NACL_IRT_DATA_START) -Wl,-Ttext-segment=<(NACL_IRT_TEXT_START) -B>(tc_lib_dir_irt_mips) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_mips) ^(_sources) ^(sources))',
+                  '--source-list=^(source_list_newlib_mips)',
                 ],
               },
             ],
@@ -879,7 +879,7 @@
               'tool_name': 'irt',
               'out_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
               'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
-              'source_list_newlib_mips%': '<(tool_name)-mips.>(_target_name).source_list.gypcmd',
+              'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
             },
             'actions': [
               {
@@ -908,7 +908,7 @@
                   '--compile_flags= ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_irt_mips) ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_mips) ^(_sources) ^(sources))',
+                  '--source-list=^(source_list_newlib_mips)',
                 ],
               },
             ],
@@ -925,7 +925,7 @@
                 'tool_name': 'glibc',
                 'out_glibc64%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x64.nexe',
                 'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_glibc64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
+                'source_list_glibc64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -954,7 +954,7 @@
                    '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_glibc64) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_glibc64)',
                  ],
                },
              ],
@@ -966,6 +966,7 @@
                 'out_glibc32%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x32.nexe',
                 'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
                 'source_list_glibc32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
+                'source_list_glibc32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -994,7 +995,7 @@
                    '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_glibc32) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_glibc32)',
                  ],
                },
              ],
@@ -1004,7 +1005,7 @@
              'variables': {
                 'tool_name': 'glibc',
                 'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_glibc64%': '<(tool_name)-x86-64.>(_target_name).source_list.gypcmd',
+                'source_list_glibc64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                 'out_glibc64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
@@ -1034,7 +1035,7 @@
                    '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_glibc64) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_glibc64)',
                  ],
                },
              ],
@@ -1045,7 +1046,7 @@
                 'tool_name': 'glibc',
                 'out_glibc32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
                 'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_glibc32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
+                'source_list_glibc32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -1074,7 +1075,7 @@
                    '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_glibc32) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_glibc32)',
                  ],
                },
              ],
@@ -1084,7 +1085,7 @@
              'variables': {
                 'tool_name': 'glibc',
                 'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64-so/>(_target_name)',
-                'source_list_glibc64%': '<(tool_name)-x86-64-so.>(_target_name).source_list.gypcmd',
+                'source_list_glibc64%': '^|(<(tool_name)-x86-64-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                 'out_glibc64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nso_target)',
              },
              'actions': [
@@ -1114,7 +1115,7 @@
                    '--compile_flags=-m64 -fPIC ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_glibc64) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_glibc64)',
                  ],
                },
              ],
@@ -1125,7 +1126,7 @@
                 'tool_name': 'glibc',
                 'out_glibc32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nso_target)',
                 'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32-so/>(_target_name)',
-                'source_list_glibc32%': '<(tool_name)-x86-32-so.>(_target_name).source_list.gypcmd',
+                'source_list_glibc32%': '^|(<(tool_name)-x86-32-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
@@ -1154,7 +1155,7 @@
                    '--compile_flags=-m32 -fPIC ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
-                   '--source-list=^|(<(source_list_glibc32) ^(_sources) ^(sources))',
+                   '--source-list=^(source_list_glibc32)',
                  ],
                },
              ],
@@ -1208,7 +1209,7 @@
           'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
           'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
           'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-          'source_list_pnacl_newlib%': '<(tool_name).>(_target_name).source_list.gypcmd',
+          'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
           'link_flags': [
             '-O3',
           ],
@@ -1241,7 +1242,7 @@
               '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
               '--defines=^(defines) >(_defines)',
               '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
-              '--source-list=^|(<(source_list_pnacl_newlib) ^(_sources) ^(sources))',
+              '--source-list=^(source_list_pnacl_newlib)',
             ],
           }],
           'target_conditions': [
@@ -1327,7 +1328,7 @@
         'variables': {
           'tool_name': 'pnacl_newlib',
           'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)-pnacl/>(_target_name)',
-          'source_list_pnacl_newlib%': '<(tool_name).>(_target_name).source_list.gypcmd',
+          'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
           'out_pnacl_newlib%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib/>(nlib_target)',
         },
         'actions': [
@@ -1357,7 +1358,7 @@
               '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
               '--defines=^(defines) >(_defines)',
               '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-              '--source-list=^|(<(source_list_pnacl_newlib) ^(_sources) ^(sources))',
+              '--source-list=^(source_list_pnacl_newlib)',
             ],
           },
         ],
