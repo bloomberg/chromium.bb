@@ -257,7 +257,6 @@ const char kGetScreenBrightnessPercent[] = "GetScreenBrightnessPercent";
 const char kSetScreenBrightnessPercent[] = "SetScreenBrightnessPercent";
 const char kDecreaseKeyboardBrightness[] = "DecreaseKeyboardBrightness";
 const char kIncreaseKeyboardBrightness[] = "IncreaseKeyboardBrightness";
-const char kRequestIdleNotification[] = "RequestIdleNotification";
 const char kRequestRestartMethod[] = "RequestRestart";
 const char kRequestShutdownMethod[] = "RequestShutdown";
 const char kRequestSuspendMethod[] = "RequestSuspend";
@@ -272,7 +271,6 @@ const char kHandleSuspendReadinessMethod[] = "HandleSuspendReadiness";
 // Signals emitted by powerd.
 const char kCleanShutdown[] = "CleanShutdown";
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
-const char kIdleNotifySignal[] = "IdleNotify";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPeripheralBatteryStatusSignal[] = "PeripheralBatteryStatus";
 const char kPowerStateChangedSignal[] = "PowerStateChanged";
