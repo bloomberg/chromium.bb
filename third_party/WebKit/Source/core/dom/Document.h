@@ -207,7 +207,7 @@ enum DocumentClass {
 
 typedef unsigned char DocumentClassFlags;
 
-class Document : public ContainerNode, public TreeScope, public ExecutionContext, public DocumentSupplementable {
+class Document : public ContainerNode, public TreeScope, public ExecutionContext, public ExecutionContextClient, public DocumentSupplementable {
 public:
     static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {
@@ -577,7 +577,6 @@ public:
     KURL completeURL(const String&, const KURL& baseURLOverride) const;
 
     virtual String userAgent(const KURL&) const;
-
     virtual void disableEval(const String& errorMessage);
 
     bool canNavigate(Frame* targetFrame);

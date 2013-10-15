@@ -58,7 +58,7 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ExecutionContext, public WorkerSupplementable, public EventTargetWithInlineData {
+    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ExecutionContext, public ExecutionContextClient, public WorkerSupplementable, public EventTargetWithInlineData {
     public:
         virtual ~WorkerGlobalScope();
 
@@ -73,7 +73,6 @@ namespace WebCore {
         KURL completeURL(const String&) const;
 
         virtual String userAgent(const KURL&) const;
-
         virtual void disableEval(const String& errorMessage) OVERRIDE;
 
         WorkerScriptController* script() { return m_script.get(); }
@@ -96,11 +95,13 @@ namespace WebCore {
         virtual void importScripts(const Vector<String>& urls, ExceptionState&);
         WorkerNavigator* navigator() const;
 
-        // ExecutionContext
+        // ExecutionContextClient
         virtual WorkerEventQueue* eventQueue() const OVERRIDE;
 
         virtual bool isContextThread() const OVERRIDE;
         virtual bool isJSExecutionForbidden() const OVERRIDE;
+
+        virtual double timerAlignmentInterval() const OVERRIDE;
 
         WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
         // These methods are used for GC marking. See JSWorkerGlobalScope::visitChildrenVirtual(SlotVisitor&) in
@@ -146,6 +147,7 @@ namespace WebCore {
     private:
         virtual void refExecutionContext() OVERRIDE { ref(); }
         virtual void derefExecutionContext() OVERRIDE { deref(); }
+        virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
         virtual void refEventTarget() OVERRIDE { ref(); }
         virtual void derefEventTarget() OVERRIDE { deref(); }

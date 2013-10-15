@@ -201,32 +201,39 @@ void ExecutionContext::reportException(PassRefPtr<ErrorEvent> event, PassRefPtr<
     }
 
     // First report the original exception and only then all the nested ones.
-    if (!dispatchErrorEvent(errorEvent, corsStatus))
-        logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
+    if (!dispatchErrorEvent(errorEvent, corsStatus) && m_client)
+        m_client->logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
 
     if (!m_pendingExceptions)
         return;
 
     for (size_t i = 0; i < m_pendingExceptions->size(); i++) {
         PendingException* e = m_pendingExceptions->at(i).get();
-        logExceptionToConsole(e->m_errorMessage, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
+        if (m_client)
+            m_client->logExceptionToConsole(e->m_errorMessage, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
     }
     m_pendingExceptions.clear();
 }
 
 void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber)
 {
-    addMessage(source, level, message, sourceURL, lineNumber, 0);
+    if (!m_client)
+        return;
+    m_client->addMessage(source, level, message, sourceURL, lineNumber, 0);
 }
 
 void ExecutionContext::addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state)
 {
-    addMessage(source, level, message, String(), 0, state);
+    if (!m_client)
+        return;
+    m_client->addMessage(source, level, message, String(), 0, state);
 }
 
 bool ExecutionContext::dispatchErrorEvent(PassRefPtr<ErrorEvent> event, AccessControlStatus corsStatus)
 {
-    EventTarget* target = errorEventTarget();
+    if (!m_client)
+        return false;
+    EventTarget* target = m_client->errorEventTarget();
     if (!target)
         return false;
 
@@ -286,19 +293,86 @@ void ExecutionContext::didChangeTimerAlignmentInterval()
         iter->value->didChangeAlignmentInterval();
 }
 
+EventQueue* ExecutionContext::eventQueue() const
+{
+    if (!m_client)
+        return 0;
+    return m_client->eventQueue();
+}
+
+const KURL& ExecutionContext::url() const
+{
+    if (!m_client) {
+        DEFINE_STATIC_LOCAL(KURL, emptyURL, ());
+        return emptyURL;
+    }
+
+    return m_client->virtualURL();
+}
+
+KURL ExecutionContext::completeURL(const String& url) const
+{
+
+    if (!m_client) {
+        DEFINE_STATIC_LOCAL(KURL, emptyURL, ());
+        return emptyURL;
+    }
+
+    return m_client->virtualCompleteURL(url);
+}
+
+void ExecutionContext::userEventWasHandled()
+{
+    if (!m_client)
+        return;
+    m_client->userEventWasHandled();
+}
+
+void ExecutionContext::disableEval(const String& errorMessage)
+{
+    if (!m_client)
+        return;
+    return m_client->disableEval(errorMessage);
+}
+
+DOMWindow* ExecutionContext::executingWindow() const
+{
+    if (!m_client)
+        return 0;
+    return m_client->executingWindow();
+}
+
+String ExecutionContext::userAgent(const KURL& url) const
+{
+    if (!m_client)
+        return String();
+    return m_client->userAgent(url);
+}
+
 double ExecutionContext::timerAlignmentInterval() const
 {
-    return DOMTimer::visiblePageAlignmentInterval();
+    if (!m_client)
+        return DOMTimer::visiblePageAlignmentInterval();
+    return m_client->timerAlignmentInterval();
+}
+
+void ExecutionContext::postTask(PassOwnPtr<ExecutionContextTask> task)
+{
+    if (!m_client)
+        return;
+    m_client->postTask(task);
+}
+
+PassOwnPtr<LifecycleNotifier> ExecutionContext::createLifecycleNotifier()
+{
+    if (!m_client)
+        return PassOwnPtr<LifecycleNotifier>();
+    return m_client->createLifecycleNotifier();
 }
 
 ContextLifecycleNotifier* ExecutionContext::lifecycleNotifier()
 {
     return static_cast<ContextLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
-}
-
-PassOwnPtr<LifecycleNotifier> ExecutionContext::createLifecycleNotifier()
-{
-    return ContextLifecycleNotifier::create(this);
 }
 
 bool ExecutionContext::isIteratingOverObservers() const

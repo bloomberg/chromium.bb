@@ -29,6 +29,7 @@
 #define ExecutionContext_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ExecutionContextClient.h"
 #include "core/dom/SecurityContext.h"
 #include "core/events/ErrorEvent.h"
 #include "core/fetch/CrossOriginAccessControl.h"
@@ -63,20 +64,20 @@ public:
     ExecutionContext();
     virtual ~ExecutionContext();
 
-    virtual bool isDocument() const { return false; }
-    virtual bool isWorkerGlobalScope() const { return false; }
-
-    virtual bool isJSExecutionForbidden() const = 0;
-
-    virtual DOMWindow* executingWindow() { return 0; }
-    virtual void userEventWasHandled() { }
-
-    const KURL& url() const { return virtualURL(); }
-    KURL completeURL(const String& url) const { return virtualCompleteURL(url); }
-
-    virtual String userAgent(const KURL&) const = 0;
-
-    virtual void disableEval(const String& errorMessage) = 0;
+    // Delegating to ExecutionContextClient
+    void setClient(ExecutionContextClient* client) { m_client = client; }
+    bool isDocument() const { return m_client && m_client->isDocument(); }
+    bool isWorkerGlobalScope() { return m_client && m_client->isWorkerGlobalScope(); }
+    bool isJSExecutionForbidden() { return m_client && m_client->isJSExecutionForbidden(); }
+    EventQueue* eventQueue() const;
+    const KURL& url() const;
+    KURL completeURL(const String& url) const;
+    void userEventWasHandled();
+    void disableEval(const String& errorMessage);
+    DOMWindow* executingWindow() const;
+    String userAgent(const KURL&) const;
+    void postTask(PassOwnPtr<ExecutionContextTask>);
+    double timerAlignmentInterval() const;
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
     void reportException(PassRefPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
@@ -110,15 +111,10 @@ public:
     void ref() { refExecutionContext(); }
     void deref() { derefExecutionContext(); }
 
-    virtual void postTask(PassOwnPtr<ExecutionContextTask>) = 0; // Executes the task on context's thread asynchronously.
-
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
 
     void didChangeTimerAlignmentInterval();
-    virtual double timerAlignmentInterval() const;
-
-    virtual EventQueue* eventQueue() const = 0;
 
     void setDatabaseContext(DatabaseContext*);
 
@@ -129,12 +125,6 @@ protected:
 private:
     friend class DOMTimer; // For installNewTimeout() and removeTimeoutByID() below.
 
-    virtual const KURL& virtualURL() const = 0;
-    virtual KURL virtualCompleteURL(const String&) const = 0;
-
-    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) = 0;
-    virtual EventTarget* errorEventTarget() = 0;
-    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
     bool dispatchErrorEvent(PassRefPtr<ErrorEvent>, AccessControlStatus);
 
     void closeMessagePorts();
@@ -147,6 +137,7 @@ private:
     int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
     void removeTimeoutByID(int timeoutID); // This makes underlying DOMTimer instance destructed.
 
+    ExecutionContextClient* m_client;
     HashSet<MessagePort*> m_messagePorts;
 
     int m_circularSequentialID;

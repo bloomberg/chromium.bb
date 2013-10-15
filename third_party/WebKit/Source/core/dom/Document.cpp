@@ -462,6 +462,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_fonts(0)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
 {
+    setClient(this);
     ScriptWrappable::init(this);
 
     if (m_frame) {
@@ -567,6 +568,7 @@ Document::~Document()
         ASSERT(!m_nodeListCounts[i]);
 
     clearDocumentScope();
+    setClient(0);
 
     InspectorCounters::decrementCounter(InspectorCounters::DocumentCounter);
 }

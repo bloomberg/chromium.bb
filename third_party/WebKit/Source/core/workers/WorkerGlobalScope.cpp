@@ -89,6 +89,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_workerClients(workerClients)
 {
     ScriptWrappable::init(this);
+    setClient(this);
     setSecurityOrigin(SecurityOrigin::create(url));
     m_workerClients->reattachThread();
 }
@@ -102,6 +103,8 @@ WorkerGlobalScope::~WorkerGlobalScope()
 
     // Notify proxy that we are going away. This can free the WorkerThread object, so do not access it after this.
     thread()->workerReportingProxy().workerGlobalScopeDestroyed();
+
+    setClient(0);
 }
 
 void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& policy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
@@ -143,6 +146,11 @@ String WorkerGlobalScope::userAgent(const KURL&) const
 void WorkerGlobalScope::disableEval(const String& errorMessage)
 {
     m_script->disableEval(errorMessage);
+}
+
+double WorkerGlobalScope::timerAlignmentInterval() const
+{
+    return DOMTimer::visiblePageAlignmentInterval();
 }
 
 WorkerLocation* WorkerGlobalScope::location() const
@@ -319,6 +327,11 @@ bool WorkerGlobalScope::idleNotification()
 WorkerEventQueue* WorkerGlobalScope::eventQueue() const
 {
     return m_eventQueue.get();
+}
+
+PassOwnPtr<LifecycleNotifier> WorkerGlobalScope::createLifecycleNotifier()
+{
+    return ContextLifecycleNotifier::create(this);
 }
 
 } // namespace WebCore
