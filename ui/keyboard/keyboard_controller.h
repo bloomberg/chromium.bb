@@ -35,6 +35,14 @@ class KeyboardLayoutManager;
 class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
                                            public aura::WindowObserver {
  public:
+  // Different ways to hide the keyboard.
+  enum HideReason {
+    // System initiated.
+    HIDE_REASON_AUTOMATIC,
+    // User initiated.
+    HIDE_REASON_MANUAL,
+  };
+
   // Takes ownership of |proxy|.
   explicit KeyboardController(KeyboardControllerProxy* proxy);
   virtual ~KeyboardController();
@@ -45,8 +53,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Hides virtual keyboard and notifies observer bounds change.
   // This function should be called with a delay to avoid layout flicker
-  // when the focus of input field quickly change.
-  void HideKeyboard();
+  // when the focus of input field quickly change. |automatic| is true when the
+  // call is made by the system rather than initiated by the user.
+  void HideKeyboard(HideReason reason);
 
   // Management of the observer list.
   virtual void AddObserver(KeyboardControllerObserver* observer);

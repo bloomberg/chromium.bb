@@ -25,6 +25,14 @@ enum CursorMoveDirection {
   kCursorMoveDown = 0x08
 };
 
+// An enumeration of different keyboard control events that should be logged.
+enum KeyboardControlEvent {
+  KEYBOARD_CONTROL_SHOW = 0,
+  KEYBOARD_CONTROL_HIDE_AUTO,
+  KEYBOARD_CONTROL_HIDE_USER,
+  KEYBOARD_CONTROL_MAX,
+};
+
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
 
@@ -56,6 +64,9 @@ KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
 // resources in the returned array.
 KEYBOARD_EXPORT const GritResourceMap* GetKeyboardExtensionResources(
     size_t* size);
+
+// Logs the keyboard control event as a UMA stat.
+void LogKeyboardControlEvent(KeyboardControlEvent event);
 
 }  // namespace keyboard
 

@@ -18,6 +18,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace {
 
@@ -149,8 +150,13 @@ aura::Window* KeyboardController::GetContainerWindow() {
   return container_.get();
 }
 
-void KeyboardController::HideKeyboard() {
+void KeyboardController::HideKeyboard(HideReason reason) {
   keyboard_visible_ = false;
+
+  keyboard::LogKeyboardControlEvent(
+      reason == HIDE_REASON_AUTOMATIC ?
+          keyboard::KEYBOARD_CONTROL_HIDE_AUTO :
+          keyboard::KEYBOARD_CONTROL_HIDE_USER);
 
   FOR_EACH_OBSERVER(KeyboardControllerObserver,
                     observer_list_,
@@ -199,6 +205,12 @@ void KeyboardController::OnTextInputStateChanged(
   if (was_showing != should_show) {
     if (should_show) {
       keyboard_visible_ = true;
+
+      // If the controller is in the process of hiding the keyboard, do not log
+      // the stat here since the keyboard will not actually be shown.
+      if (!WillHideKeyboard())
+        keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
+
       weak_factory_.InvalidateWeakPtrs();
       if (container_->IsVisible())
         return;
@@ -215,7 +227,7 @@ void KeyboardController::OnTextInputStateChanged(
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&KeyboardController::HideKeyboard,
-                     weak_factory_.GetWeakPtr()),
+                     weak_factory_.GetWeakPtr(), HIDE_REASON_AUTOMATIC),
           base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
     }
   }

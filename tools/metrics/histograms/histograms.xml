@@ -18608,6 +18608,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="VirtualKeyboard.KeyboardControlEvent"
+    enum="KeyboardControlEvent">
+  <summary>
+    A count of various control events that can occur on the virtual keyboard,
+    such as showing and hiding.
+  </summary>
+</histogram>
+
 <histogram name="VirtualKeyboard.KeystrokesBetweenBackspace">
   <summary>
     Counts the number of keys typed by the virtual keyboard between each
@@ -22917,6 +22925,12 @@ other types of suffix sets.
   <int value="1" label="PeerConnection00"/>
   <int value="2" label="DeprecatedPeerConnection"/>
   <int value="3" label="RTCPeerConnection"/>
+</enum>
+
+<enum name="KeyboardControlEvent" type="int">
+  <int value="0" label="Keyboard was shown."/>
+  <int value="1" label="Keyboard was automatically hidden."/>
+  <int value="2" label="Keyboard was hidden by the user."/>
 </enum>
 
 <enum name="LanguageCode" type="int">

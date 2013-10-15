@@ -6,6 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "content/public/browser/browser_thread.h"
@@ -87,7 +88,15 @@ bool VirtualKeyboardPrivateHideKeyboardFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  ash::Shell::GetInstance()->keyboard_controller()->HideKeyboard();
+  UMA_HISTOGRAM_ENUMERATION(
+      "VirtualKeyboard.KeyboardControlEvent",
+      keyboard::KEYBOARD_CONTROL_HIDE_USER,
+      keyboard::KEYBOARD_CONTROL_MAX);
+
+  // Pass HIDE_REASON_MANUAL since calls to HideKeyboard as part of this API
+  // would be user generated.
+  ash::Shell::GetInstance()->keyboard_controller()->HideKeyboard(
+      keyboard::KeyboardController::HIDE_REASON_MANUAL);
 
   return true;
 #endif

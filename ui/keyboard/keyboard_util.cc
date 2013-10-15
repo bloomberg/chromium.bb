@@ -200,4 +200,11 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
   return kKeyboardResources;
 }
 
+void LogKeyboardControlEvent(KeyboardControlEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "VirtualKeyboard.KeyboardControlEvent",
+      event,
+      keyboard::KEYBOARD_CONTROL_MAX);
+}
+
 }  // namespace keyboard
