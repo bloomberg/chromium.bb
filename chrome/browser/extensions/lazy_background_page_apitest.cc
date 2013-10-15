@@ -285,9 +285,9 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, MAYBE_WaitForNTP) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   // The extension should've opened a new tab to an extension page.
-  EXPECT_EQ(
-      std::string(chrome::kChromeUINewTabURL),
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec());
+  EXPECT_TRUE(chrome::IsNTPURL(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetURL(),
+      browser()->profile()));
 
   // Lazy Background Page still exists, because the extension created a new tab
   // to an extension page.

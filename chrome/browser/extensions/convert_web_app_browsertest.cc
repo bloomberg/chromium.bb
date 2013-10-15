@@ -53,8 +53,14 @@ class ExtensionFromWebAppTest
   }
 };
 
-// TODO(samarth): Delete along with rest of NTP4 code.
-IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, DISABLED_Basic) {
+#if defined(OS_CHROMEOS)
+// The Apps tab is not included in the new tab page in Chrome OS.
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, MAYBE_Basic) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))

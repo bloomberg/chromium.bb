@@ -160,9 +160,7 @@ class TabStripControllerTest : public CocoaProfileTest {
 
 // Test adding and removing tabs and making sure that views get added to
 // the tab strip.
-// TODO(samarth): fix for Instant Extended and re-enable.
-// http://crbug.com/307205.
-TEST_F(TabStripControllerTest, DISABLED_AddRemoveTabs) {
+TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_TRUE(model_->empty());
   CreateTab();
   EXPECT_EQ(model_->count(), 1);
@@ -176,9 +174,7 @@ TEST_F(TabStripControllerTest, RearrangeTabs) {
   // TODO(pinkerton): Implement http://crbug.com/10899
 }
 
-// TODO(samarth): fix for Instant Extended and re-enable.
-// http://crbug.com/307205.
-TEST_F(TabStripControllerTest, DISABLED_CorrectToolTipText) {
+TEST_F(TabStripControllerTest, CorrectToolTipText) {
   // Set tab 1 tooltip.
   TabView* tab1 = CreateTab();
   [tab1 setToolTip:@"Tab1"];
@@ -255,9 +251,7 @@ TEST_F(TabStripControllerTest, TabCloseDuringDrag) {
   [[controller_ dragController] maybeStartDrag:event forTab:tab];
 }
 
-// TODO(samarth): fix for Instant Extended and re-enable.
-// http://crbug.com/307205.
-TEST_F(TabStripControllerTest, DISABLED_ViewAccessibility_Contents) {
+TEST_F(TabStripControllerTest, ViewAccessibility_Contents) {
   NSArray* attrs = [tab_strip_ accessibilityAttributeNames];
   ASSERT_TRUE([attrs containsObject:NSAccessibilityContentsAttribute]);
 
@@ -272,9 +266,7 @@ TEST_F(TabStripControllerTest, DISABLED_ViewAccessibility_Contents) {
   ASSERT_TRUE([contentsArray containsObject:tab2]);
 }
 
-// TODO(samarth): fix for Instant Extended and re-enable.
-// http://crbug.com/307205.
-TEST_F(TabStripControllerTest, DISABLED_ViewAccessibility_Value) {
+TEST_F(TabStripControllerTest, ViewAccessibility_Value) {
   NSArray* attrs = [tab_strip_ accessibilityAttributeNames];
   ASSERT_TRUE([attrs containsObject:NSAccessibilityValueAttribute]);
 

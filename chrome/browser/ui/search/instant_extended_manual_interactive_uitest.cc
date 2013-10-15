@@ -72,7 +72,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::EnableQueryExtractionForTesting();
+    chrome::EnableInstantExtendedAPIForTesting();
   }
 
   content::WebContents* active_tab() {

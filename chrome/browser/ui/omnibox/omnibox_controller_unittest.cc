@@ -73,6 +73,7 @@ TEST_F(OmniboxControllerTest, CheckDefaultAutocompleteProviders) {
   int providers_with_instant_extended = observed_providers;
   // TODO(beaudoin): remove TYPE_SEARCH once it's no longer needed to pass
   // the Instant suggestion through via FinalizeInstantQuery.
+  chrome::EnableInstantExtendedAPIForTesting();
   CreateController();
   AssertProviders(providers_with_instant_extended);
 }

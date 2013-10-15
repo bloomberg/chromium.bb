@@ -71,8 +71,7 @@ InstantService::InstantService(Profile* profile)
       browser_instant_controller_object_count_(0),
       weak_ptr_factory_(this) {
   // Stub for unit tests.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-      base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI)
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return;
 
   registrar_.Add(this,

@@ -140,6 +140,10 @@ bool ShouldShowInstantNTP();
 // field trials.
 bool ShouldShowRecentTabsOnNTP();
 
+// Returns true if Instant Extended should be disabled on the search results
+// page.
+bool ShouldSuppressInstantExtendedOnSRP();
+
 // Transforms the input |url| into its "effective URL". The returned URL
 // facilitates grouping process-per-site. The |url| is transformed, for
 // example, from
@@ -193,20 +197,26 @@ bool ShouldPrefetchSearchResultsOnSRP();
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------
 
-// Forces query in the omnibox to be enabled for tests.
-void EnableQueryExtractionForTesting();
+// Forces the Instant Extended API to be enabled for tests.
+void EnableInstantExtendedAPIForTesting();
+
+// Forces the Instant Extended API to be disabled for tests.
+void DisableInstantExtendedAPIForTesting();
 
 // Type for a collection of experiment configuration parameters.
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
 
-// Finds the active field trial group name and parses out the configuration
-// flags. On success, |flags| will be filled with the field trial flags. |flags|
-// must not be NULL.  Returns true iff the active field trial is successfully
-// parsed and not disabled.
+// Finds the active field trial group name and parses out the group number and
+// configuration flags. On success, |flags| will be filled with the field trial
+// flags. |flags| must not be NULL. If not NULL, |group_number| will receive the
+// experiment group number.
+// Returns true iff the active field trial is successfully parsed and not
+// disabled.
 // Note that |flags| may be successfully populated in some cases when false is
 // returned - in these cases it should not be used.
 // Exposed for testing only.
-bool GetFieldTrialInfo(FieldTrialFlags* flags);
+bool GetFieldTrialInfo(FieldTrialFlags* flags,
+                       uint64* group_number);
 
 // Given a FieldTrialFlags object, returns the string value of the provided
 // flag.
@@ -230,6 +240,10 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
 
 // Returns the Cacheable New Tab Page URL for the given |profile|.
 GURL GetNewTabPageURL(Profile* profile);
+
+// Let tests reset the gate that prevents metrics from being sent more than
+// once.
+void ResetInstantExtendedOptInStateGateForTest();
 
 }  // namespace chrome
 

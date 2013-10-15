@@ -35,7 +35,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,8 +101,8 @@ class ProfileManagerTest : public testing::Test {
         new UnittestProfileManager(temp_dir_.path()));
 
 #if defined(OS_CHROMEOS)
-    CommandLine* cl = CommandLine::ForCurrentProcess();
-    cl->AppendSwitch(switches::kTestType);
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  cl->AppendSwitch(switches::kTestType);
 #endif
   }
 
@@ -139,9 +138,6 @@ class ProfileManagerTest : public testing::Test {
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
-
-  // The existence of this object enables tests via RenderViewHostTester.
-  content::RenderViewHostTestEnabler rvh_test_enabler_;
 };
 
 TEST_F(ProfileManagerTest, GetProfile) {

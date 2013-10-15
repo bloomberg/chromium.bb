@@ -66,6 +66,8 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
 class SearchIPCRouterTest : public ChromeRenderViewHostTestHarness {
  public:
   virtual void SetUp() {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableInstantExtendedAPI);
     ChromeRenderViewHostTestHarness::SetUp();
     SearchTabHelper::CreateForWebContents(web_contents());
   }

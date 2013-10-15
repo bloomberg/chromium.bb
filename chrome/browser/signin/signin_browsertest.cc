@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
   // Navigating away should change the process.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIOmniboxURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_FALSE(signin->HasSigninProcess());
 
   ui_test_utils::NavigateToURL(browser(), signin::GetPromoURL(
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
             signin->IsSigninProcess(active_tab_process_id));
 
   // Navigating away should change the process.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIOmniboxURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(kNonSigninURL));
   EXPECT_FALSE(signin->IsSigninProcess(
       active_tab->GetRenderProcessHost()->GetID()));
 }
@@ -192,9 +192,7 @@ class BackOnNTPCommitObserver : public content::WebContentsObserver {
 // that occur if the user clicks on the "Skip for now" link at the signin page
 // and initiates a back navigation between the point of Commit and
 // DidStopLoading of the NTP.
-// TODO(samarth): this test doesn't make sense with a prerendered NTP. But
-// re-enable it when we are using a cached NTP and no longer prerendering it.
-IN_PROC_BROWSER_TEST_F(SigninBrowserTest, DISABLED_SigninSkipForNowAndGoBack) {
+IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
   GURL ntp_url(chrome::kChromeUINewTabURL);
   GURL start_url = signin::GetPromoURL(signin::SOURCE_START_PAGE, true);
   GURL skip_url = signin::GetLandingURL("ntp", 1);

@@ -47,9 +47,6 @@ chrome.test.runTests([
     chrome.tabs.create({ url: getURL('browserThenRendererInitiated/a.html') });
   },
 
-  /*
-  // TODO(samarth): Disabled because it fails with the Instant Extended NTP. See
-  // http://crbug.com/306813.
   function newTab() {
     // Test for crbug.com/27208.
     expect([
@@ -59,7 +56,6 @@ chrome.test.runTests([
 
     chrome.tabs.create({ url: 'chrome://newtab/' });
   },
-  */
 
   /*
   // TODO(rafaelw) -- This is disabled because this test is flakey.

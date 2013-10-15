@@ -348,14 +348,9 @@ bool GeolocationBrowserTest::Initialize(InitializationOptions options) {
         browser()->profile(), current_url_);
   } else {
     current_browser_ = browser();
-    if (options == INITIALIZATION_NEWTAB) {
-      ui_test_utils::NavigateToURLWithDisposition(
-          current_browser_, current_url_, NEW_FOREGROUND_TAB,
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-    } else {
-      ui_test_utils::NavigateToURL(current_browser_, current_url_);
-    }
+    if (options == INITIALIZATION_NEWTAB)
+      chrome::NewTab(current_browser_);
+    ui_test_utils::NavigateToURL(current_browser_, current_url_);
   }
   LOG(WARNING) << "after navigate";
 

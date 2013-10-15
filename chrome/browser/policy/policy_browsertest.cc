@@ -747,9 +747,7 @@ class LocalePolicyTest : public PolicyTest {
 IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
   // Verifies that the default locale can be overridden with policy.
   EXPECT_EQ("fr", g_browser_process->GetApplicationLocale());
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL), CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   string16 french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   string16 title;
   EXPECT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &title));
@@ -788,9 +786,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 
   // The NTP has special handling of the bookmark bar.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL), CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 
   policies.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY,
@@ -1000,7 +996,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   MakeRequestFail make_request_fail("search.example");
 
-  chrome::EnableQueryExtractionForTesting();
+  chrome::EnableInstantExtendedAPIForTesting();
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
@@ -1333,8 +1329,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
 }
 
-// TODO(samarth): remove along with the NTP4 code.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_WebStoreIconHidden) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, WebStoreIconHidden) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -1707,8 +1702,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
-  contents = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(chrome::IsNTPURL(contents->GetURL(), browser()->profile()));
+  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(chrome::IsNTPURL(contents->GetURL(),browser()->profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
@@ -2389,10 +2384,12 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
   // a restore.
   ui_test_utils::NavigateToURL(browser(), GURL(kRestoredURLs[0]));
   for (size_t i = 1; i < arraysize(kRestoredURLs); ++i) {
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), GURL(kRestoredURLs[i]), NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::AddSelectedTabWithURL(browser(), GURL(kRestoredURLs[i]),
+                                  content::PAGE_TRANSITION_LINK);
+    observer.Wait();
   }
 }
 
@@ -2407,12 +2404,7 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, RunTest) {
   int size = static_cast<int>(expected_urls_.size());
   EXPECT_EQ(size, model->count());
   for (int i = 0; i < size && i < model->count(); ++i) {
-    if (expected_urls_[i] == GURL(chrome::kChromeUINewTabURL)) {
-      EXPECT_TRUE(chrome::IsNTPURL(model->GetWebContentsAt(i)->GetURL(),
-                                   browser()->profile()));
-    } else {
-      EXPECT_EQ(expected_urls_[i], model->GetWebContentsAt(i)->GetURL());
-    }
+    EXPECT_EQ(expected_urls_[i], model->GetWebContentsAt(i)->GetURL());
   }
 }
 

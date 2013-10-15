@@ -153,6 +153,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   virtual void SetUp() OVERRIDE;
 
  protected:
+  void ResetDefaultTemplateURL();
   void NavigateAndCheckText(const GURL& url,
                             const string16& expected_text,
                             const string16& expected_replace_text,
@@ -160,6 +161,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
                             bool should_display_url);
 
  private:
+  void ResetTemplateURLForInstant(const GURL& instant_url);
   void NavigateAndCheckTextImpl(const GURL& url,
                                 bool allow_search_term_replacement,
                                 const string16 expected_text,
@@ -184,6 +186,10 @@ void ToolbarModelTest::SetUp() {
   UIThreadSearchTermsData::SetGoogleBaseURL("http://google.com/");
 }
 
+void ToolbarModelTest::ResetDefaultTemplateURL() {
+  ResetTemplateURLForInstant(GURL("http://does/not/exist"));
+}
+
 void ToolbarModelTest::NavigateAndCheckText(
     const GURL& url,
     const string16& expected_text,
@@ -193,10 +199,24 @@ void ToolbarModelTest::NavigateAndCheckText(
   NavigateAndCheckTextImpl(url, false, expected_text,
                            would_perform_search_term_replacement,
                            should_display_url);
-  NavigateAndCheckTextImpl(url, true,
-                           expected_replace_text,
+  NavigateAndCheckTextImpl(url, true, expected_replace_text,
                            would_perform_search_term_replacement,
                            should_display_url);
+}
+
+void ToolbarModelTest::ResetTemplateURLForInstant(const GURL& instant_url) {
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("Google");
+  data.SetURL("{google:baseURL}search?q={searchTerms}");
+  data.instant_url = instant_url.spec();
+  data.search_terms_replacement_key = "{google:instantExtendedEnabledKey}";
+  TemplateURL* search_template_url = new TemplateURL(profile(), data);
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  template_url_service->Add(search_template_url);
+  template_url_service->SetDefaultSearchProvider(search_template_url);
+  ASSERT_NE(0, search_template_url->id());
+  template_url_service->Load();
 }
 
 void ToolbarModelTest::NavigateAndCheckTextImpl(
@@ -205,6 +225,10 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(
     const string16 expected_text,
     bool would_perform_search_term_replacement,
     bool should_display_url) {
+  // The URL being navigated to should be treated as the Instant URL. Else
+  // there will be no search term extraction.
+  ResetTemplateURLForInstant(url);
+
   // Check while loading.
   content::NavigationController* controller =
       &browser()->tab_strip_model()->GetWebContentsAt(0)->GetController();
@@ -254,19 +278,19 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
   AddTab(browser(), GURL(content::kAboutBlankURL));
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url,
-                         test_item.expected_text,
+    NavigateAndCheckText(test_item.url, test_item.expected_text,
                          test_item.expected_replace_text_inactive, false,
                          test_item.should_display_url);
   }
 
-  chrome::EnableQueryExtractionForTesting();
+  // Once we enable it, query extraction and search term replacement are
+  // enabled by default.
+  chrome::EnableInstantExtendedAPIForTesting();
   EXPECT_TRUE(chrome::IsQueryExtractionEnabled());
   EXPECT_TRUE(browser()->toolbar_model()->search_term_replacement_enabled());
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url,
-                         test_item.expected_text,
+    NavigateAndCheckText(test_item.url, test_item.expected_text,
                          test_item.expected_replace_text_active,
                          test_item.would_perform_search_term_replacement,
                          test_item.should_display_url);
@@ -276,8 +300,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
   browser()->toolbar_model()->set_search_term_replacement_enabled(false);
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url,
-                         test_item.expected_text,
+    NavigateAndCheckText(test_item.url, test_item.expected_text,
                          test_item.expected_replace_text_inactive, false,
                          test_item.should_display_url);
   }
@@ -285,7 +308,8 @@ TEST_F(ToolbarModelTest, ShouldDisplayURL) {
 
 // Verify that search terms are extracted while the page is loading.
 TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
-  chrome::EnableQueryExtractionForTesting();
+  chrome::EnableInstantExtendedAPIForTesting();
+  ResetDefaultTemplateURL();
   AddTab(browser(), GURL(content::kAboutBlankURL));
 
   // While loading, we should be willing to extract search terms.
@@ -311,7 +335,7 @@ TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
 // search terms from URLs that start with that base URL even when they're not
 // secure.
 TEST_F(ToolbarModelTest, GoogleBaseURL) {
-  chrome::EnableQueryExtractionForTesting();
+  chrome::EnableInstantExtendedAPIForTesting();
   AddTab(browser(), GURL(content::kAboutBlankURL));
 
   // If the Google base URL wasn't specified on the command line, then if it's

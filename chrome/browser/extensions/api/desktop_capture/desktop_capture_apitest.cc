@@ -142,8 +142,7 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-// TODO(samarth): fix timeouts with Instant Extended. http://crbug.com/307077.
-IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_ChooseDesktopMedia) {
+IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, ChooseDesktopMedia) {
   // Each of the following expectations corresponds to one test in
   // chrome/test/data/extensions/api_test/desktop_capture/test.js .
   FakeDesktopMediaPickerFactory::Expectation picker_expectations[] = {
@@ -174,8 +173,7 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_ChooseDesktopMedia) {
   ASSERT_TRUE(RunExtensionTest("desktop_capture")) << message_;
 }
 
-// TODO(samarth): fix timeouts with Instant Extended. http://crbug.com/307077.
-IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
+IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, Delegation) {
   // Initialize test server.
   base::FilePath test_data;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));

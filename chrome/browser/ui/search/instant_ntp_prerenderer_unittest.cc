@@ -122,6 +122,7 @@ private:
 class InstantNTPPrerendererTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
+    chrome::EnableInstantExtendedAPIForTesting();
     instant_service_ = InstantServiceFactory::GetForProfile(&profile_);
     instant_ntp_prerenderer_.reset(
         new TestableInstantNTPPrerenderer(&profile_, instant_service_));

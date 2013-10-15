@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_renderer_host.h"
 
 namespace content {
 class TestBrowserThreadBundle;
@@ -63,9 +62,6 @@ class CocoaProfileTest : public CocoaTest {
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;  // Weak; owned by profile_manager_.
   scoped_ptr<Browser> browser_;
-
-  // The existence of this object enables tests via RenderViewHostTester.
-  content::RenderViewHostTestEnabler rvh_test_enabler_;
 
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 };

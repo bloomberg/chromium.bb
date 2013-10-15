@@ -5,7 +5,6 @@
 var secondWindowId;
 var thirdWindowId;
 var testTabId;
-var kChromeUINewTabURL = "chrome-search://local-ntp/local-ntp.html";
 
 function clickLink(id) {
   var clickEvent = document.createEvent('MouseEvents');
@@ -16,12 +15,12 @@ function clickLink(id) {
 chrome.test.runTests([
 
   function setupTwoWindows() {
-    createWindow(["about:blank", kChromeUINewTabURL, pageUrl("a")], {},
+    createWindow(["about:blank", "chrome://newtab/", pageUrl("a")], {},
                 pass(function(winId, tabIds) {
       secondWindowId = winId;
       testTabId = tabIds[2];
 
-      createWindow([kChromeUINewTabURL, pageUrl("b")], {},
+      createWindow(["chrome://newtab/", pageUrl("b")], {},
                            pass(function(winId, tabIds) {
         thirdWindowId = winId;
       }));
@@ -40,7 +39,7 @@ chrome.test.runTests([
         assertEq((i == 0), tabs[i].active && tabs[i].selected);
       }
       assertEq("about:blank", tabs[0].url);
-      assertEq(kChromeUINewTabURL, tabs[1].url);
+      assertEq("chrome://newtab/", tabs[1].url);
       assertEq(pageUrl("a"), tabs[2].url);
     }));
 
@@ -51,7 +50,7 @@ chrome.test.runTests([
         assertEq(thirdWindowId, tabs[i].windowId);
         assertEq(i, tabs[i].index);
       }
-      assertEq(kChromeUINewTabURL, tabs[0].url);
+      assertEq("chrome://newtab/", tabs[0].url);
       assertEq(pageUrl("b"), tabs[1].url);
     }));
   },

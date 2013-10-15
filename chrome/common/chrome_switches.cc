@@ -368,6 +368,9 @@ const char kDisableExtensionsHttpThrottling[] =
 const char kDisableExtensionsResourceWhitelist[] =
     "disable-extensions-resource-whitelist";
 
+// Disable Instant extended API.
+const char kDisableInstantExtendedAPI[]     = "disable-instant-extended-api";
+
 // Disables improved SafeBrowsing download protection.
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
@@ -382,6 +385,9 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // is needed for a domain which shares an IP with an existing connection,
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
+
+// Disable always using the local NTP for the first NTP load of a new window.
+const char kDisableLocalFirstLoadNTP[] = "disable-local-first-load-ntp";
 
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
@@ -630,6 +636,10 @@ const char kEnableHttp2Draft04[]            = "enable-http2-draft-04";
 // Enables the inline sign in flow on Chrome desktop.
 const char kEnableInlineSignin[]            = "enable-inline-signin";
 
+// Enable Instant extended API. On mobile, this merely enables query extraction,
+// not the rest of the instant-extended functionality.
+const char kEnableInstantExtendedAPI[]      = "enable-instant-extended-api";
+
 // Enables IPv6 support, even if probes suggest that it may not be fully
 // supported. Some probes may require internet connections, and this flag will
 // allow support independent of application testing. This flag overrides
@@ -643,6 +653,9 @@ const char kEnableIPCFuzzing[]              = "enable-ipc-fuzzing";
 // is needed for a domain which shares an IP with an existing connection,
 // attempt to use the existing connection.
 const char kEnableIPPooling[]               = "enable-ip-pooling";
+
+// Enable always using the local NTP for the first NTP load of a new window.
+const char kEnableLocalFirstLoadNTP[] = "enable-local-first-load-ntp";
 
 // Enables support for user profiles that are managed by another user and can
 // have restrictions applied.
@@ -699,9 +712,6 @@ const char kDisablePnaclInstall[]           = "disable-pnacl-install";
 // Some tracking will still take place at startup, but it will be turned off
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
-
-// Enables query in the omnibox.
-const char kEnableQueryExtraction[]         = "enable-query-extraction";
 
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";

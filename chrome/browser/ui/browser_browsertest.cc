@@ -26,8 +26,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -942,14 +940,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
                      base::FilePath(kTitle1File)));
   content::RenderProcessHost::iterator it(
       content::RenderProcessHost::AllHostsIterator());
-  const InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser()->profile());
   for (; !it.IsAtEnd(); it.Advance()) {
-    // Ignore renderers in the Instant process (that may have been prerendered).
-    if (instant_service && instant_service->IsInstantProcess(
-        it.GetCurrentValue()->GetID())) {
-      continue;
-    }
     base::TimeDelta renderer_td =
         it.GetCurrentValue()->GetChildProcessIdleTime();
     base::TimeDelta browser_td = base::TimeTicks::Now() - start;
@@ -1020,8 +1011,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 
   // Urls that should not have shortcuts.
   GURL new_tab_url(chrome::kChromeUINewTabURL);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), new_tab_url, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+  ui_test_utils::NavigateToURL(browser(), new_tab_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 
   GURL history_url(chrome::kChromeUIHistoryURL);
@@ -2433,7 +2423,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_GetSizeForNewRenderView) {
   ASSERT_TRUE(https_test_server.Start());
 
   // Start with NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome-internal://newtab"));
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
   ASSERT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -2490,7 +2480,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_GetSizeForNewRenderView) {
 
   // Navigate from NTP to a non-NTP page, resizing WebContentsView while
   // navigation entry is pending.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome-internal://newtab"));
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
   gfx::Size wcv_resize_insets(-34, -57);
   observer.set_wcv_resize_insets(wcv_resize_insets);
   ui_test_utils::NavigateToURL(browser(),

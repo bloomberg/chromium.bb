@@ -75,10 +75,6 @@ InstantNTPPrerenderer::~InstantNTPPrerenderer() {
 }
 
 void InstantNTPPrerenderer::ReloadInstantNTP() {
-  // Stub out for unit tests that don't run on the UI message loop.
-  if (base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI)
-    return;
-
   ResetNTP(GetInstantURL());
 }
 

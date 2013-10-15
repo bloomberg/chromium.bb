@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportNothing,
   EXPECT_EQ(first_run::AUTO_IMPORT_CALLED, first_run::auto_import_state());
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
   EXPECT_EQ(1, tab->GetMaxPageID());
 }

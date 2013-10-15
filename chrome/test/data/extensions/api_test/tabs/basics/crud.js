@@ -19,7 +19,7 @@ chrome.test.runTests([
       assertEq(1, tab.index);
       assertEq(firstWindowId, tab.windowId);
       assertEq(false, tab.selected);
-      assertEq("chrome-search://local-ntp/local-ntp.html", tab.url);
+      assertEq("chrome://newtab/", tab.url);
       assertEq(false, tab.pinned);
     }));
   },
@@ -68,7 +68,7 @@ chrome.test.runTests([
     var verify_default = function() {
       return pass(function(win) {
         assertEq(1, win.tabs.length);
-        assertEq("chrome-search://local-ntp/local-ntp.html", win.tabs[0].url);
+        assertEq("chrome://newtab/", win.tabs[0].url);
       });
     };
 

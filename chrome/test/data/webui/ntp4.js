@@ -20,8 +20,7 @@ NTP4WebUITest.prototype = {
 
 // Test loading new tab page and selecting each card doesn't have console
 // errors.
-// TODO(samarth): remove along with NTP4 code.
-TEST_F('NTP4WebUITest', 'DISABLED_TestBrowsePages', function() {
+TEST_F('NTP4WebUITest', 'TestBrowsePages', function() {
   // This tests the ntp4 new tab page which is not used on touch builds.
   var cardSlider = ntp.getCardSlider();
   assertNotEquals(null, cardSlider);
@@ -43,8 +42,7 @@ TEST_F('NTP4WebUITest', 'DISABLED_NTPHasThumbnails', function() {
     assertEquals(0, apps.length, 'There should be no apps.');
 });
 
-// TODO(samarth): remove along with NTP4 code.
-TEST_F('NTP4WebUITest', 'DISABLED_NTPHasNavDots', function() {
+TEST_F('NTP4WebUITest', 'NTPHasNavDots', function() {
   var navDots = document.querySelectorAll('.dot');
   if (loadTimeData.getBoolean('showApps'))
     assertGE(navDots.length, 2, 'There should be at least two navdots.');
@@ -63,8 +61,7 @@ TEST_F('NTP4WebUITest', 'DISABLED_NTPHasSelectedPageAndDot', function() {
                'There should be exactly one selected tile page.');
 });
 
-// TODO(samarth): remove along with NTP4 code.
-TEST_F('NTP4WebUITest', 'DISABLED_NTPHasNoLoginNameWhenSignedOut', function() {
+TEST_F('NTP4WebUITest', 'NTPHasNoLoginNameWhenSignedOut', function() {
   var userName = document.querySelector('#login-status-header .profile-name');
   assertEquals(null, userName, 'Login name shouldn\'t exist when signed out.');
 });
@@ -91,9 +88,7 @@ NTP4LoggedInWebUITest.prototype = {
 // The following test is irrelevant to Chrome on Chrome OS.
 GEN('#if !defined(OS_CHROMEOS)');
 
-// TODO(samarth): delete along with rest of NTP4 code.
-TEST_F('NTP4LoggedInWebUITest', 'DISABLED_NTPHasLoginNameWhenSignedIn',
-    function() {
+TEST_F('NTP4LoggedInWebUITest', 'NTPHasLoginNameWhenSignedIn', function() {
   var userName = document.querySelector('#login-status-header .profile-name');
   assertNotEquals(userName, null, 'The logged-in user name can\'t be found.');
   assertEquals('user@gmail.com', userName.textContent,

@@ -5,7 +5,7 @@
 var firstWindowId;
 var secondWindowId;
 var moveTabIds = {};
-var kChromeUINewTabURL = "chrome-search://local-ntp/local-ntp.html";
+var kChromeUINewTabURL = "chrome://newtab/";
 
 chrome.test.runTests([
   // Do a series of moves and removes so that we get the following

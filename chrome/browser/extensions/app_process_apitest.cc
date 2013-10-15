@@ -93,7 +93,7 @@ class AppApiTest : public ExtensionApiTest {
     EXPECT_FALSE(browser()->tab_strip_model()->GetWebContentsAt(1)->GetWebUI());
 
     content::WindowedNotificationObserver tab_added_observer(
-        content::NOTIFICATION_LOAD_STOP,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
     chrome::NewTab(browser());
     tab_added_observer.Wait();
@@ -282,8 +282,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessBackgroundInstances) {
 
 // Tests that bookmark apps do not use the app process model and are treated
 // like normal web pages instead.  http://crbug.com/104636.
-// Timing out on Windows. Flaky on other platforms. http://crbug.com/238777
-IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_BookmarkAppGetsNormalProcess) {
+// Timing out on Windows. http://crbug.com/238777
+#if defined(OS_WIN)
+#define MAYBE_BookmarkAppGetsNormalProcess DISABLED_BookmarkAppGetsNormalProcess
+#else
+#define MAYBE_BookmarkAppGetsNormalProcess BookmarkAppGetsNormalProcess
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   extensions::ProcessMap* process_map = service->process_map();
@@ -377,18 +382,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
   // Open two tabs in the app.
   GURL base_url = GetTestBaseURL("app_process");
 
-  content::WindowedNotificationObserver tab_added_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
   chrome::NewTab(browser());
-  tab_added_observer.Wait();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
-
-  content::WindowedNotificationObserver tab_added_observer2(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
   chrome::NewTab(browser());
-  tab_added_observer2.Wait();
   // Wait until the second tab finishes its redirect train (2 hops).
   // 1. We navigate to redirect.html
   // 2. Renderer navigates and finishes, counting as a load stop.

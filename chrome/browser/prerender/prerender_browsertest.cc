@@ -2005,7 +2005,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
   // Show the task manager. This populates the model.
   chrome::OpenTaskManager(current_browser());
   // Wait for the model of task manager to start.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
   // Start with two resources.
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
@@ -2035,9 +2035,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
   // There should be no tabs with the Prerender prefix.
   const string16 tab_prefix =
       l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX, string16());
-  const string16 instant_tab_prefix =
-      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX,
-                                 string16());
   num_prerender_tabs = 0;
   int num_tabs_with_prerender_page_title = 0;
   model->Refresh();
@@ -2046,14 +2043,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
       string16 tab_title = model->GetResourceTitle(i);
       if (StartsWith(tab_title, prefix, true)) {
         ++num_prerender_tabs;
-      } else if (StartsWith(tab_title, tab_prefix, true)) {
+      } else {
+        EXPECT_TRUE(StartsWith(tab_title, tab_prefix, true));
+
         // The prerender tab should now be a normal tab but the title should be
         // the same. Depending on timing, there may be more than one of these.
         const string16 tab_page_title = tab_title.substr(tab_prefix.length());
         if (prerender_page_title.compare(tab_page_title) == 0)
           ++num_tabs_with_prerender_page_title;
-      } else {
-        EXPECT_TRUE(StartsWith(tab_title, instant_tab_prefix, true));
       }
     }
   }

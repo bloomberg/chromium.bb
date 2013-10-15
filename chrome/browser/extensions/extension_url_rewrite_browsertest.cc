@@ -76,7 +76,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURL) {
   // Navigate to chrome://newtab and check that the location bar text is blank.
-  GURL url(chrome::kChromeSearchLocalNtpUrl);
+  GURL url(chrome::kChromeUINewTabURL);
   TestURLNotShown(url);
   // Check that the actual URL corresponds to chrome://newtab.
   EXPECT_EQ(url, GetNavigationEntry()->GetURL());
