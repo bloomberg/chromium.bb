@@ -34,7 +34,9 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 
 
+#if NACL_LINUX && defined(NACL_ENABLE_TMPFS_REDIRECT_VAR)
 static const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
+#endif
 
 /*
  * The pathname or SHM-namespace prefixes for memory objects created
