@@ -62,8 +62,8 @@ typedef void (*app_indicator_set_icon_theme_path_func)(
     AppIndicator* self,
     const gchar* icon_theme_path);
 
-bool attempted_load = false;
-bool opened = false;
+bool g_attempted_load = false;
+bool g_opened = false;
 
 // Retrieved functions from libappindicator.
 app_indicator_new_func app_indicator_new = NULL;
@@ -76,10 +76,10 @@ app_indicator_set_icon_full_func app_indicator_set_icon_full = NULL;
 app_indicator_set_icon_theme_path_func app_indicator_set_icon_theme_path = NULL;
 
 void EnsureMethodsLoaded() {
-
-  if (attempted_load)
+  if (g_attempted_load)
     return;
-  attempted_load = true;
+
+  g_attempted_load = true;
 
   void* indicator_lib = dlopen("libappindicator.so", RTLD_LAZY);
   if (!indicator_lib) {
@@ -92,7 +92,7 @@ void EnsureMethodsLoaded() {
     return;
   }
 
-  opened = true;
+  g_opened = true;
 
   app_indicator_new = reinterpret_cast<app_indicator_new_func>(
       dlsym(indicator_lib, "app_indicator_new"));
@@ -120,6 +120,45 @@ void EnsureMethodsLoaded() {
           dlsym(indicator_lib, "app_indicator_set_icon_theme_path"));
 }
 
+base::FilePath CreateTempImageFile(gfx::ImageSkia* image_ptr,
+                                   int icon_change_count,
+                                   std::string id) {
+  scoped_ptr<gfx::ImageSkia> image(image_ptr);
+
+  scoped_refptr<base::RefCountedMemory> png_data =
+      gfx::Image(*image.get()).As1xPNGBytes();
+  if (png_data->size() == 0) {
+    // If the bitmap could not be encoded to PNG format, skip it.
+    LOG(WARNING) << "Could not encode icon";
+    return base::FilePath();
+  }
+
+  base::FilePath temp_dir;
+  base::FilePath new_file_path;
+
+  // Create a new temporary directory for each image since using a single
+  // temporary directory seems to have issues when changing icons in quick
+  // succession.
+  if (!file_util::CreateNewTempDirectory("", &temp_dir))
+    return base::FilePath();
+  new_file_path =
+      temp_dir.Append(id + base::StringPrintf("_%d.png", icon_change_count));
+  int bytes_written =
+      file_util::WriteFile(new_file_path,
+                           reinterpret_cast<const char*>(png_data->front()),
+                           png_data->size());
+
+  if (bytes_written != static_cast<int>(png_data->size()))
+    return base::FilePath();
+  return new_file_path;
+}
+
+void DeleteTempImagePath(const base::FilePath& icon_file_path) {
+  if (icon_file_path.empty())
+    return;
+  base::DeleteFile(icon_file_path, true);
+}
+
 }  // namespace
 
 namespace libgtk2ui {
@@ -145,17 +184,18 @@ AppIndicatorIcon::~AppIndicatorIcon() {
     g_object_unref(icon_);
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
-        base::Bind(&AppIndicatorIcon::DeletePath, icon_file_path_.DirName()));
+        base::Bind(&DeleteTempImagePath, icon_file_path_.DirName()));
   }
 }
 
+// static
 bool AppIndicatorIcon::CouldOpen() {
   EnsureMethodsLoaded();
-  return opened;
+  return g_opened;
 }
 
 void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
-  if (!opened)
+  if (!g_opened)
     return;
 
   ++icon_change_count_;
@@ -168,7 +208,7 @@ void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
           ->GetTaskRunnerWithShutdownBehavior(
                 base::SequencedWorkerPool::SKIP_ON_SHUTDOWN).get(),
       FROM_HERE,
-      base::Bind(&AppIndicatorIcon::CreateTempImageFile,
+      base::Bind(&CreateTempImageFile,
                  safe_image.release(),
                  icon_change_count_,
                  id_),
@@ -202,7 +242,7 @@ void AppIndicatorIcon::SetToolTip(const string16& tool_tip) {
 }
 
 void AppIndicatorIcon::UpdatePlatformContextMenu(ui::MenuModel* model) {
-  if (!opened)
+  if (!g_opened)
     return;
 
   if (gtk_menu_) {
@@ -221,35 +261,35 @@ void AppIndicatorIcon::RefreshPlatformContextMenu() {
       GTK_CONTAINER(gtk_menu_), SetMenuItemInfo, &block_activation_);
 }
 
-void AppIndicatorIcon::SetImageFromFile(base::FilePath icon_file_path) {
+void AppIndicatorIcon::SetImageFromFile(const base::FilePath& icon_file_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!icon_file_path.empty()) {
-    base::FilePath old_path = icon_file_path_;
-    icon_file_path_ = icon_file_path;
+  if (icon_file_path.empty())
+    return;
 
-    std::string icon_name =
-        icon_file_path_.BaseName().RemoveExtension().value();
-    std::string icon_dir = icon_file_path_.DirName().value();
-    if (!icon_) {
-      icon_ =
-          app_indicator_new_with_path(id_.c_str(),
-                                      icon_name.c_str(),
-                                      APP_INDICATOR_CATEGORY_APPLICATION_STATUS,
-                                      icon_dir.c_str());
-      app_indicator_set_status(icon_, APP_INDICATOR_STATUS_ACTIVE);
+  base::FilePath old_path = icon_file_path_;
+  icon_file_path_ = icon_file_path;
 
-      SetMenu();
-    } else {
-      // Currently we are creating a new temp directory every time the icon is
-      // set. So we need to set the directory each time.
-      app_indicator_set_icon_theme_path(icon_, icon_dir.c_str());
-      app_indicator_set_icon_full(icon_, icon_name.c_str(), "icon");
+  std::string icon_name =
+      icon_file_path_.BaseName().RemoveExtension().value();
+  std::string icon_dir = icon_file_path_.DirName().value();
+  if (!icon_) {
+    icon_ =
+        app_indicator_new_with_path(id_.c_str(),
+                                    icon_name.c_str(),
+                                    APP_INDICATOR_CATEGORY_APPLICATION_STATUS,
+                                    icon_dir.c_str());
+    app_indicator_set_status(icon_, APP_INDICATOR_STATUS_ACTIVE);
+    SetMenu();
+  } else {
+    // Currently we are creating a new temp directory every time the icon is
+    // set. So we need to set the directory each time.
+    app_indicator_set_icon_theme_path(icon_, icon_dir.c_str());
+    app_indicator_set_icon_full(icon_, icon_name.c_str(), "icon");
 
-      // Delete previous icon directory.
-      content::BrowserThread::GetBlockingPool()->PostTask(
-          FROM_HERE,
-          base::Bind(&AppIndicatorIcon::DeletePath, old_path.DirName()));
-    }
+    // Delete previous icon directory.
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE,
+        base::Bind(&DeleteTempImagePath, old_path.DirName()));
   }
 }
 
@@ -294,47 +334,6 @@ void AppIndicatorIcon::DestroyMenu() {
   menu_model_ = NULL;
 }
 
-base::FilePath AppIndicatorIcon::CreateTempImageFile(gfx::ImageSkia* image_ptr,
-                                                     int icon_change_count,
-                                                     std::string id) {
-  scoped_ptr<gfx::ImageSkia> image(image_ptr);
-
-  scoped_refptr<base::RefCountedMemory> png_data =
-      gfx::Image(*image.get()).As1xPNGBytes();
-  if (png_data->size() == 0) {
-    // If the bitmap could not be encoded to PNG format, skip it.
-    LOG(WARNING) << "Could not encode icon";
-    return base::FilePath();
-  }
-
-  base::FilePath temp_dir;
-  base::FilePath new_file_path;
-
-  // Create a new temporary directory for each image since using a single
-  // temporary directory seems to have issues when changing icons in quick
-  // succession.
-  if (!file_util::CreateNewTempDirectory("", &temp_dir))
-    return base::FilePath();
-  new_file_path =
-      temp_dir.Append(id + base::StringPrintf("_%d.png", icon_change_count));
-  int bytes_written =
-      file_util::WriteFile(new_file_path,
-                           reinterpret_cast<const char*>(png_data->front()),
-                           png_data->size());
-
-  if (bytes_written != static_cast<int>(png_data->size())) {
-    return base::FilePath();
-  }
-
-  return new_file_path;
-}
-
-void AppIndicatorIcon::DeletePath(base::FilePath icon_file_path) {
-  if (!icon_file_path.empty()) {
-    base::DeleteFile(icon_file_path, true);
-  }
-}
-
 void AppIndicatorIcon::OnClick(GtkWidget* menu_item) {
   if (delegate())
     delegate()->OnClick();
@@ -345,7 +344,6 @@ void AppIndicatorIcon::OnMenuItemActivated(GtkWidget* menu_item) {
     return;
 
   ui::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(menu_item));
-
   if (!model) {
     // There won't be a model for "native" submenus like the "Input Methods"
     // context menu. We don't need to handle activation messages for submenus

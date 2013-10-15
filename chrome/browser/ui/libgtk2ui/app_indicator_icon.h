@@ -6,9 +6,7 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_APP_INDICATOR_ICON_H_
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
-#include "ui/base/models/menu_model.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 
 typedef struct _AppIndicator AppIndicator;
@@ -18,15 +16,19 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 namespace libgtk2ui {
 
 class AppIndicatorIcon : public views::StatusIconLinux {
  public:
   // The id uniquely identifies the new status icon from other chrome status
   // icons.
-  explicit AppIndicatorIcon(std::string id,
-                            const gfx::ImageSkia& image,
-                            const string16& tool_tip);
+  AppIndicatorIcon(std::string id,
+                   const gfx::ImageSkia& image,
+                   const string16& tool_tip);
   virtual ~AppIndicatorIcon();
 
   // Indicates whether libappindicator so could be opened.
@@ -40,7 +42,7 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   virtual void RefreshPlatformContextMenu() OVERRIDE;
 
  private:
-  void SetImageFromFile(base::FilePath icon_file_path);
+  void SetImageFromFile(const base::FilePath& icon_file_path);
   void SetMenu();
 
   // Adds a menu item to the top of the existing gtk_menu as a replacement for
@@ -49,11 +51,6 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   // status icon click by despatching a click event.
   void CreateClickActionReplacement();
   void DestroyMenu();
-
-  static base::FilePath CreateTempImageFile(gfx::ImageSkia* image,
-                                            int icon_change_count,
-                                            std::string id);
-  static void DeletePath(base::FilePath icon_file_path);
 
   // Callback for when the status icon click replacement menu item is clicked.
   CHROMEGTK_CALLBACK_0(AppIndicatorIcon, void, OnClick);
@@ -73,6 +70,8 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   base::FilePath icon_file_path_;
   int icon_change_count_;
   bool block_activation_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppIndicatorIcon);
 };
 
 }  // namespace libgtk2ui
