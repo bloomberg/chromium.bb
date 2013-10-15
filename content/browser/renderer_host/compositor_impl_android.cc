@@ -358,35 +358,34 @@ CreateGpuProcessViewContext(
     const WebKit::WebGraphicsContext3D::Attributes attributes,
     int surface_id,
     base::WeakPtr<CompositorImpl> compositor_impl) {
-  BrowserGpuChannelHostFactory* factory =
-      BrowserGpuChannelHostFactory::instance();
-  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
-  if (!gpu_channel_host)
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-
+  GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
   GURL url("chrome://gpu/Compositor::createContext3D");
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+      new WebGraphicsContext3DCommandBufferImpl(surface_id,
+                                                url,
+                                                factory,
+                                                compositor_impl));
   static const size_t kBytesPerPixel = 4;
   gfx::DeviceDisplayInfo display_info;
   size_t full_screen_texture_size_in_bytes =
       display_info.GetDisplayHeight() *
       display_info.GetDisplayWidth() *
       kBytesPerPixel;
-  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
-  limits.command_buffer_size = 64 * 1024;
-  limits.start_transfer_buffer_size = 64 * 1024;
-  limits.min_transfer_buffer_size = 64 * 1024;
-  limits.max_transfer_buffer_size = std::min(
-      3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
-  limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
-  return make_scoped_ptr(
-      new WebGraphicsContext3DCommandBufferImpl(surface_id,
-                                                url,
-                                                gpu_channel_host.get(),
-                                                compositor_impl,
-                                                attributes,
-                                                false,
-                                                limits));
+  if (!context->Initialize(
+          attributes,
+          false,
+          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
+          64 * 1024,  // command buffer size
+          64 * 1024,  // start transfer buffer size
+          64 * 1024,  // min transfer buffer size
+          std::min(3 * full_screen_texture_size_in_bytes,
+                   kDefaultMaxTransferBufferSize),
+          2 * 1024 * 1024  // mapped memory limit
+  )) {
+    LOG(ERROR) << "Failed to create 3D context for compositor.";
+    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
+  }
+  return context.Pass();
 }
 
 scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(

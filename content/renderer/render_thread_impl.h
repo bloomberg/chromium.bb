@@ -18,6 +18,7 @@
 #include "content/child/child_thread.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -164,7 +165,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
   // time this routine returns.
-  GpuChannelHost* EstablishGpuChannelSync(CauseForGpuLaunch);
+  virtual GpuChannelHost* EstablishGpuChannelSync(CauseForGpuLaunch) OVERRIDE;
 
 
   // These methods modify how the next message is sent.  Normally, when sending

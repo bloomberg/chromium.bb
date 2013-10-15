@@ -22,7 +22,6 @@
 #include "content/child/npapi/webplugin.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/input_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -2797,13 +2796,13 @@ RenderWidget::CreateGraphicsContext3D(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuCompositing))
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
-  if (!gpu_channel_host)
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+      new WebGraphicsContext3DCommandBufferImpl(
+          surface_id(),
+          GetURLForGraphicsContext3D(),
+          RenderThreadImpl::current(),
+          weak_ptr_factory_.GetWeakPtr()));
 
-  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 #if defined(OS_ANDROID)
   // If we raster too fast we become upload bound, and pending
   // uploads consume memory. For maximum upload throughput, we would
@@ -2823,23 +2822,22 @@ RenderWidget::CreateGraphicsContext3D(
   static const size_t kBytesPerMegabyte = 1024 * 1024;
   // We keep the MappedMemoryReclaimLimit the same as the upload limit
   // to avoid unnecessarily stalling the compositor thread.
-  limits.mapped_memory_reclaim_limit =
+  const size_t mapped_memory_reclaim_limit =
       max_transfer_buffer_usage_mb * kBytesPerMegabyte;
+#else
+  const size_t mapped_memory_reclaim_limit =
+      WebGraphicsContext3DCommandBufferImpl::kNoLimit;
 #endif
-
-  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
-  if (!is_threaded_compositing_enabled_)
-    swap_client = weak_ptr_factory_.GetWeakPtr();
-
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-      new WebGraphicsContext3DCommandBufferImpl(
-          surface_id(),
-          GetURLForGraphicsContext3D(),
-          gpu_channel_host.get(),
-          swap_client,
+  if (!context->Initialize(
           attributes,
           false /* bind generates resources */,
-          limits));
+          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
+          kDefaultCommandBufferSize,
+          kDefaultStartTransferBufferSize,
+          kDefaultMinTransferBufferSize,
+          kDefaultMaxTransferBufferSize,
+          mapped_memory_reclaim_limit))
+    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   return context.Pass();
 }
 
