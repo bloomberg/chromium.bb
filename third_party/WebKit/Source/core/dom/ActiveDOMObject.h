@@ -35,10 +35,10 @@ namespace WebCore {
 
 class ActiveDOMObject : public ContextLifecycleObserver {
 public:
-    ActiveDOMObject(ScriptExecutionContext*);
+    ActiveDOMObject(ExecutionContext*);
 
     // suspendIfNeeded() should be called exactly once after object construction to synchronize
-    // the suspend state with that in ScriptExecutionContext.
+    // the suspend state with that in ExecutionContext.
     void suspendIfNeeded();
 #if !ASSERT_DISABLED
     bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }

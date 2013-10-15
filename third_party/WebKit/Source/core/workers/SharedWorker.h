@@ -40,7 +40,7 @@ class ExceptionState;
 
 class SharedWorker : public AbstractWorker, public ScriptWrappable {
 public:
-    static PassRefPtr<SharedWorker> create(ScriptExecutionContext*, const String& url, const String& name, ExceptionState&);
+    static PassRefPtr<SharedWorker> create(ExecutionContext*, const String& url, const String& name, ExceptionState&);
     virtual ~SharedWorker();
 
     MessagePort* port() const { return m_port.get(); }
@@ -48,7 +48,7 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
-    explicit SharedWorker(ScriptExecutionContext*);
+    explicit SharedWorker(ExecutionContext*);
 
     RefPtr<MessagePort> m_port;
 };

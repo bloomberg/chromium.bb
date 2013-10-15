@@ -27,12 +27,12 @@
 #include "config.h"
 #include "core/dom/ContextLifecycleObserver.h"
 
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 
 namespace WebCore {
 
-ContextLifecycleObserver::ContextLifecycleObserver(ScriptExecutionContext* scriptExecutionContext, Type type)
-    : LifecycleObserver(scriptExecutionContext, type)
+ContextLifecycleObserver::ContextLifecycleObserver(ExecutionContext* executionContext, Type type)
+    : LifecycleObserver(executionContext, type)
 {
 }
 
@@ -40,9 +40,9 @@ ContextLifecycleObserver::~ContextLifecycleObserver()
 {
 }
 
-ScriptExecutionContext* ContextLifecycleObserver::scriptExecutionContext() const
+ExecutionContext* ContextLifecycleObserver::executionContext() const
 {
-    return static_cast<ScriptExecutionContext*>(m_lifecycleContext);
+    return static_cast<ExecutionContext*>(m_lifecycleContext);
 }
 
 } // namespace WebCore

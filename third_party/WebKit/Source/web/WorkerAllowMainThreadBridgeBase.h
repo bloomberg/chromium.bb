@@ -81,8 +81,8 @@ protected:
     void postTaskToMainThread(PassOwnPtr<AllowParams>);
 
 private:
-    static void allowTask(WebCore::ScriptExecutionContext*, PassOwnPtr<AllowParams>, PassRefPtr<WorkerAllowMainThreadBridgeBase>);
-    static void didComplete(WebCore::ScriptExecutionContext*, PassRefPtr<WorkerAllowMainThreadBridgeBase>, bool);
+    static void allowTask(WebCore::ExecutionContext*, PassOwnPtr<AllowParams>, PassRefPtr<WorkerAllowMainThreadBridgeBase>);
+    static void didComplete(WebCore::ExecutionContext*, PassRefPtr<WorkerAllowMainThreadBridgeBase>, bool);
 
     Mutex m_mutex;
     WebWorkerBase* m_webWorkerBase;

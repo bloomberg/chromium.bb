@@ -38,14 +38,14 @@
 
 namespace WebCore {
 
-PassRefPtr<RTCVoidRequestImpl> RTCVoidRequestImpl::create(ScriptExecutionContext* context, PassRefPtr<VoidCallback> successCallback, PassRefPtr<RTCErrorCallback> errorCallback)
+PassRefPtr<RTCVoidRequestImpl> RTCVoidRequestImpl::create(ExecutionContext* context, PassRefPtr<VoidCallback> successCallback, PassRefPtr<RTCErrorCallback> errorCallback)
 {
     RefPtr<RTCVoidRequestImpl> request = adoptRef(new RTCVoidRequestImpl(context, successCallback, errorCallback));
     request->suspendIfNeeded();
     return request.release();
 }
 
-RTCVoidRequestImpl::RTCVoidRequestImpl(ScriptExecutionContext* context, PassRefPtr<VoidCallback> successCallback, PassRefPtr<RTCErrorCallback> errorCallback)
+RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, PassRefPtr<VoidCallback> successCallback, PassRefPtr<RTCErrorCallback> errorCallback)
     : ActiveDOMObject(context)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)

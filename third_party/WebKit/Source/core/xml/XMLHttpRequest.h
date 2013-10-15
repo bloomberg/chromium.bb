@@ -55,7 +55,7 @@ typedef int ExceptionCode;
 class XMLHttpRequest : public ScriptWrappable, public RefCounted<XMLHttpRequest>, public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<XMLHttpRequest> create(ScriptExecutionContext*, PassRefPtr<SecurityOrigin> = 0);
+    static PassRefPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = 0);
     ~XMLHttpRequest();
 
     // These exact numeric values are important because JS expects them.
@@ -88,7 +88,7 @@ public:
     virtual void stop();
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     const KURL& url() const { return m_url; }
     String statusText(ExceptionState&) const;
@@ -145,7 +145,7 @@ public:
     using RefCounted<XMLHttpRequest>::deref;
 
 private:
-    XMLHttpRequest(ScriptExecutionContext*, PassRefPtr<SecurityOrigin>);
+    XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
 
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }

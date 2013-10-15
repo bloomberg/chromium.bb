@@ -88,7 +88,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
 
     SQLTransaction* transaction = V8SQLTransaction::toNative(args.Holder());
 
-    ScriptExecutionContext* scriptExecutionContext = getScriptExecutionContext();
+    ExecutionContext* executionContext = getExecutionContext();
 
     RefPtr<SQLStatementCallback> callback;
     if (args.Length() > 2 && !isUndefinedOrNull(args[2])) {
@@ -96,7 +96,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             setDOMException(TypeMismatchError, args.GetIsolate());
             return;
         }
-        callback = V8SQLStatementCallback::create(args[2], scriptExecutionContext);
+        callback = V8SQLStatementCallback::create(args[2], executionContext);
     }
 
     RefPtr<SQLStatementErrorCallback> errorCallback;
@@ -105,7 +105,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
             setDOMException(TypeMismatchError, args.GetIsolate());
             return;
         }
-        errorCallback = V8SQLStatementErrorCallback::create(args[3], scriptExecutionContext);
+        errorCallback = V8SQLStatementErrorCallback::create(args[3], executionContext);
     }
 
     ExceptionState es(args.GetIsolate());

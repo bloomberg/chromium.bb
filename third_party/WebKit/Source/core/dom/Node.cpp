@@ -1994,7 +1994,7 @@ const AtomicString& Node::interfaceName() const
     return EventTargetNames::Node;
 }
 
-ScriptExecutionContext* Node::scriptExecutionContext() const
+ExecutionContext* Node::executionContext() const
 {
     return document().contextDocument().get();
 }

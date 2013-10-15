@@ -34,7 +34,7 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "core/page/Page.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
@@ -47,7 +47,7 @@ namespace WebCore {
 
 namespace {
 
-void fileSystemNotAllowed(ScriptExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void fileSystemNotAllowed(ExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     callbacks->didFail(FileError::ABORT_ERR);
 }
@@ -58,7 +58,7 @@ LocalFileSystemBase::~LocalFileSystemBase()
 {
 }
 
-void LocalFileSystemBase::resolveURL(ScriptExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystemBase::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     if (!client() || !client()->allowFileSystem(context)) {
         context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks));
@@ -67,7 +67,7 @@ void LocalFileSystemBase::resolveURL(ScriptExecutionContext* context, const KURL
     WebKit::Platform::current()->fileSystem()->resolveURL(fileSystemURL, callbacks);
 }
 
-void LocalFileSystemBase::requestFileSystem(ScriptExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystemBase::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     if (!client() || !client()->allowFileSystem(context)) {
         context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks));
@@ -77,7 +77,7 @@ void LocalFileSystemBase::requestFileSystem(ScriptExecutionContext* context, Fil
     WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebKit::WebFileSystemType>(type), callbacks);
 }
 
-void LocalFileSystemBase::deleteFileSystem(ScriptExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystemBase::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     ASSERT(context);
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
@@ -114,7 +114,7 @@ LocalFileSystem::~LocalFileSystem()
 {
 }
 
-LocalFileSystem* LocalFileSystem::from(ScriptExecutionContext* context)
+LocalFileSystem* LocalFileSystem::from(ExecutionContext* context)
 {
     return static_cast<LocalFileSystem*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
 }

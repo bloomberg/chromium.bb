@@ -104,7 +104,7 @@ ChromiumDataObjectItem::ChromiumDataObjectItem(const String& kind, const String&
 {
 }
 
-void ChromiumDataObjectItem::getAsString(PassRefPtr<StringCallback> callback, ScriptExecutionContext* context) const
+void ChromiumDataObjectItem::getAsString(PassRefPtr<StringCallback> callback, ExecutionContext* context) const
 {
     if (!callback || kind() != DataTransferItem::kindString)
         return;

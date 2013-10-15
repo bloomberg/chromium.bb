@@ -439,18 +439,18 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
     return V8Window::toNative(window);
 }
 
-ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context> context)
+ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
 {
     v8::Handle<v8::Object> global = context->Global();
     v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), MainWorld));
     if (!windowWrapper.IsEmpty())
-        return V8Window::toNative(windowWrapper)->scriptExecutionContext();
+        return V8Window::toNative(windowWrapper)->executionContext();
     windowWrapper = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), IsolatedWorld));
     if (!windowWrapper.IsEmpty())
-        return V8Window::toNative(windowWrapper)->scriptExecutionContext();
+        return V8Window::toNative(windowWrapper)->executionContext();
     v8::Handle<v8::Object> workerWrapper = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::GetTemplate(context->GetIsolate(), WorkerWorld));
     if (!workerWrapper.IsEmpty())
-        return V8WorkerGlobalScope::toNative(workerWrapper)->scriptExecutionContext();
+        return V8WorkerGlobalScope::toNative(workerWrapper)->executionContext();
     // FIXME: Is this line of code reachable?
     return 0;
 }
@@ -467,7 +467,7 @@ DOMWindow* activeDOMWindow()
     return toDOMWindow(context);
 }
 
-ScriptExecutionContext* activeScriptExecutionContext()
+ExecutionContext* activeExecutionContext()
 {
     v8::Handle<v8::Context> context = v8::Context::GetCalling();
     if (context.IsEmpty()) {
@@ -476,7 +476,7 @@ ScriptExecutionContext* activeScriptExecutionContext()
         // entered context.
         context = v8::Context::GetEntered();
     }
-    return toScriptExecutionContext(context);
+    return toExecutionContext(context);
 }
 
 DOMWindow* firstDOMWindow()
@@ -500,7 +500,7 @@ Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
     return 0;
 }
 
-v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, DOMWrapperWorld* world)
+v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld* world)
 {
     if (context->isDocument()) {
         ASSERT(world);
@@ -602,7 +602,7 @@ void setMainThreadIsolate(v8::Isolate* isolate)
     mainIsolate = isolate;
 }
 
-v8::Isolate* toIsolate(ScriptExecutionContext* context)
+v8::Isolate* toIsolate(ExecutionContext* context)
 {
     if (context && context->isDocument())
         return mainThreadIsolate();

@@ -67,7 +67,7 @@ V8AbstractEventListener::~V8AbstractEventListener()
         InspectorCounters::decrementCounter(InspectorCounters::JSEventListenerCounter);
 }
 
-void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event* event)
+void V8AbstractEventListener::handleEvent(ExecutionContext* context, Event* event)
 {
     // Don't reenter V8 if execution was terminated in this instance of V8.
     if (context->isJSExecutionForbidden())
@@ -102,7 +102,7 @@ void V8AbstractEventListener::setListenerObject(v8::Handle<v8::Object> listener)
     m_listener.makeWeak(this, &makeWeakCallback);
 }
 
-void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context, Event* event, v8::Local<v8::Value> jsEvent)
+void V8AbstractEventListener::invokeEventHandler(ExecutionContext* context, Event* event, v8::Local<v8::Value> jsEvent)
 {
     // If jsEvent is empty, attempt to set it as a hidden value would crash v8.
     if (jsEvent.IsEmpty())
@@ -182,7 +182,7 @@ bool V8AbstractEventListener::shouldPreventDefault(v8::Local<v8::Value> returnVa
     return returnValue->IsBoolean() && !returnValue->BooleanValue();
 }
 
-v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ScriptExecutionContext* context, Event* event)
+v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ExecutionContext* context, Event* event)
 {
     v8::Isolate* isolate = toV8Context(context, world())->GetIsolate();
     v8::Local<v8::Object> listener = m_listener.newLocal(isolate);

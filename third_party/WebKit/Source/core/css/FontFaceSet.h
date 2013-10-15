@@ -53,7 +53,7 @@ class Font;
 class FontResource;
 class FontsReadyPromiseResolver;
 class LoadFontPromiseResolver;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class FontFaceSet : public RefCounted<FontFaceSet>, public ActiveDOMObject, public EventTargetWithInlineData {
 public:
@@ -74,7 +74,7 @@ public:
 
     AtomicString status() const;
 
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
     using RefCounted<FontFaceSet>::ref;

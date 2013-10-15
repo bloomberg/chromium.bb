@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 class SecurityOrigin;
 
 // FIXME: There is no real distinction between frontend vs backend contexts in Blink.
@@ -45,7 +45,7 @@ public:
     bool isContextThread() const;
 
 private:
-    explicit DatabaseBackendContext(ScriptExecutionContext* scriptContext)
+    explicit DatabaseBackendContext(ExecutionContext* scriptContext)
         : DatabaseContext(scriptContext) { }
 
     friend class DatabaseManager;

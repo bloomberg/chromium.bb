@@ -43,7 +43,7 @@ class IDBAny;
 class IDBCallbacks;
 class IDBCursorBackendInterface;
 class IDBRequest;
-class ScriptExecutionContext;
+class ExecutionContext;
 class SharedBuffer;
 
 class IDBCursor : public ScriptWrappable, public WTF::RefCountedBase {
@@ -61,15 +61,15 @@ public:
 
     // Implement the IDL
     const String& direction() const { return directionToString(m_direction); }
-    ScriptValue key(ScriptExecutionContext*);
-    ScriptValue primaryKey(ScriptExecutionContext*);
-    ScriptValue value(ScriptExecutionContext*);
+    ScriptValue key(ExecutionContext*);
+    ScriptValue primaryKey(ExecutionContext*);
+    ScriptValue value(ExecutionContext*);
     IDBAny* source() const { return m_source.get(); }
 
     PassRefPtr<IDBRequest> update(ScriptState*, ScriptValue&, ExceptionState&);
     void advance(unsigned long, ExceptionState&);
-    void continueFunction(ScriptExecutionContext*, const ScriptValue& key, ExceptionState&);
-    PassRefPtr<IDBRequest> deleteFunction(ScriptExecutionContext*, ExceptionState&);
+    void continueFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+    PassRefPtr<IDBRequest> deleteFunction(ExecutionContext*, ExceptionState&);
 
     bool isKeyDirty() const { return m_keyDirty; }
     bool isPrimaryKeyDirty() const { return m_primaryKeyDirty; }

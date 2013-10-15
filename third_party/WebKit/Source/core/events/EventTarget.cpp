@@ -76,7 +76,7 @@ MessagePort* EventTarget::toMessagePort()
 
 inline DOMWindow* EventTarget::executingWindow()
 {
-    if (ScriptExecutionContext* context = scriptExecutionContext())
+    if (ExecutionContext* context = executionContext())
         return context->executingWindow();
     return 0;
 }
@@ -161,7 +161,7 @@ bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionState& es)
         return false;
     }
 
-    if (!scriptExecutionContext())
+    if (!executionContext())
         return false;
 
     return dispatchEvent(event);
@@ -311,7 +311,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (event->immediatePropagationStopped())
             break;
 
-        ScriptExecutionContext* context = scriptExecutionContext();
+        ExecutionContext* context = executionContext();
         if (!context)
             break;
 
@@ -325,7 +325,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     }
     d->firingEventIterators->removeLast();
     if (userEventWasHandled) {
-        if (ScriptExecutionContext* context = scriptExecutionContext())
+        if (ExecutionContext* context = executionContext())
             context->userEventWasHandled();
     }
 }

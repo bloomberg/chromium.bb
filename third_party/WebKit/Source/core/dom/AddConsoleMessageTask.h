@@ -41,7 +41,7 @@ public:
     {
         return adoptPtr(new AddConsoleMessageTask(source, level, message));
     }
-    virtual void performTask(ScriptExecutionContext*);
+    virtual void performTask(ExecutionContext*);
 private:
     AddConsoleMessageTask(MessageSource source, MessageLevel level, const String& message)
         : m_source(source)

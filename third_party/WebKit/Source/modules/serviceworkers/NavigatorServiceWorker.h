@@ -51,12 +51,12 @@ public:
     static NavigatorServiceWorker* from(Navigator*);
     static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator* navigator) { return static_cast<NavigatorServiceWorker*>(Supplement<Navigator>::from(navigator, supplementName())); }
 
-    static ScriptPromise registerServiceWorker(ScriptExecutionContext*, Navigator*, const String& pattern, const String& src, ExceptionState&);
-    static ScriptPromise unregisterServiceWorker(ScriptExecutionContext*, Navigator*, const String& pattern, ExceptionState&);
+    static ScriptPromise registerServiceWorker(ExecutionContext*, Navigator*, const String& pattern, const String& src, ExceptionState&);
+    static ScriptPromise unregisterServiceWorker(ExecutionContext*, Navigator*, const String& pattern, ExceptionState&);
 
 private:
-    ScriptPromise registerServiceWorker(ScriptExecutionContext*, const String& pattern, const String& src, ExceptionState&);
-    ScriptPromise unregisterServiceWorker(ScriptExecutionContext*, const String& pattern, ExceptionState&);
+    ScriptPromise registerServiceWorker(ExecutionContext*, const String& pattern, const String& src, ExceptionState&);
+    ScriptPromise unregisterServiceWorker(ExecutionContext*, const String& pattern, ExceptionState&);
 
     explicit NavigatorServiceWorker(Navigator*);
 

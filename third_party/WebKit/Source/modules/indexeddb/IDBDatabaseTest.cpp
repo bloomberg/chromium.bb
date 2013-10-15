@@ -49,7 +49,7 @@ public:
     {
     }
 
-    ScriptExecutionContext* scriptExecutionContext()
+    ExecutionContext* executionContext()
     {
         return m_document.get();
     }
@@ -106,7 +106,7 @@ TEST_F(IDBDatabaseTest, BackendRetention)
 
     EXPECT_EQ(1, proxy->refCount()); // local
 
-    RefPtr<IDBDatabase> db = IDBDatabase::create(scriptExecutionContext(), proxy, connection);
+    RefPtr<IDBDatabase> db = IDBDatabase::create(executionContext(), proxy, connection);
 
     EXPECT_EQ(2, proxy->refCount()); // local and db
 

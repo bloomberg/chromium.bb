@@ -119,7 +119,7 @@ interface InspectorInstrumentation {
     void didChangeRegionOverset([Keep] Document*, NamedFlow*);
 
     [DOMDebugger, Inline=FastReturn]
-    void willSendXMLHttpRequest(ScriptExecutionContext*, const String& url);
+    void willSendXMLHttpRequest(ExecutionContext*, const String& url);
 
     [DOMDebugger, Inline=FastReturn]
     void didFireWebGLError(Element*, const String& errorName);
@@ -134,19 +134,19 @@ interface InspectorInstrumentation {
     void didScheduleResourceRequest([Keep] Document*, const String& url);
 
     [DOMDebugger, Timeline, Inline=FastReturn]
-    void didInstallTimer([Keep] ScriptExecutionContext*, int timerId, int timeout, bool singleShot);
+    void didInstallTimer([Keep] ExecutionContext*, int timerId, int timeout, bool singleShot);
 
     [DOMDebugger, Timeline, Inline=FastReturn]
-    void didRemoveTimer([Keep] ScriptExecutionContext*, int timerId);
+    void didRemoveTimer([Keep] ExecutionContext*, int timerId);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willCallFunction([Keep] ScriptExecutionContext*, const String& scriptName, int scriptLine);
+    InspectorInstrumentationCookie willCallFunction([Keep] ExecutionContext*, const String& scriptName, int scriptLine);
 
     [Timeline, Inline=FastReturn]
     void didCallFunction(const InspectorInstrumentationCookie&);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEvent([Keep] ScriptExecutionContext*, XMLHttpRequest*);
+    InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEvent([Keep] ExecutionContext*, XMLHttpRequest*);
 
     [Timeline, Inline=FastReturn]
     void didDispatchXHRReadyStateChangeEvent(const InspectorInstrumentationCookie&);
@@ -158,7 +158,7 @@ interface InspectorInstrumentation {
     void didDispatchEvent(const InspectorInstrumentationCookie&);
 
     [DOMDebugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willHandleEvent(ScriptExecutionContext*, Event*);
+    InspectorInstrumentationCookie willHandleEvent(ExecutionContext*, Event*);
 
     [Debugger, Inline=FastReturn]
     void didHandleEvent(const InspectorInstrumentationCookie&);
@@ -182,7 +182,7 @@ interface InspectorInstrumentation {
     void didCreateIsolatedContext([Keep] Frame*, ScriptState*, SecurityOrigin*);
 
     [DOMDebugger, Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willFireTimer([Keep] ScriptExecutionContext*, int timerId);
+    InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
 
     [Debugger, Timeline, Inline=FastReturn]
     void didFireTimer(const InspectorInstrumentationCookie&);
@@ -203,7 +203,7 @@ interface InspectorInstrumentation {
     void didResizeMainFrame(Page*);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willDispatchXHRLoadEvent([Keep] ScriptExecutionContext*, XMLHttpRequest*);
+    InspectorInstrumentationCookie willDispatchXHRLoadEvent([Keep] ExecutionContext*, XMLHttpRequest*);
 
     [Timeline, Inline=FastReturn]
     void didDispatchXHRLoadEvent(const InspectorInstrumentationCookie&);
@@ -286,28 +286,28 @@ interface InspectorInstrumentation {
     void didFailLoading(Frame* frame, unsigned long identifier, DocumentLoader*, const ResourceError&);
 
     [Resource]
-    void documentThreadableLoaderStartedLoadingForClient(ScriptExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
+    void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
 
     [Resource]
-    void willLoadXHR(ScriptExecutionContext*, ThreadableLoaderClient* client, const String& method, const KURL& url, bool async, PassRefPtr<FormData>, const HTTPHeaderMap& headers, bool includeCredentials);
+    void willLoadXHR(ExecutionContext*, ThreadableLoaderClient* client, const String& method, const KURL& url, bool async, PassRefPtr<FormData>, const HTTPHeaderMap& headers, bool includeCredentials);
 
     [Resource]
-    void didFailXHRLoading(ScriptExecutionContext*, ThreadableLoaderClient* client);
+    void didFailXHRLoading(ExecutionContext*, ThreadableLoaderClient* client);
 
     [Console, Resource]
-    void didFinishXHRLoading(ScriptExecutionContext*, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String& url, const String& sendURL, unsigned sendLineNumber);
+    void didFinishXHRLoading(ExecutionContext*, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String& url, const String& sendURL, unsigned sendLineNumber);
 
     [Resource]
-    void didReceiveXHRResponse(ScriptExecutionContext*, unsigned long identifier);
+    void didReceiveXHRResponse(ExecutionContext*, unsigned long identifier);
 
     [Resource]
-    void scriptImported(ScriptExecutionContext*, unsigned long identifier, const String& sourceString);
+    void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
 
     [Debugger]
-    void scriptExecutionBlockedByCSP(ScriptExecutionContext*, const String& directiveText);
+    void scriptExecutionBlockedByCSP(ExecutionContext*, const String& directiveText);
 
     [Resource]
-    void didReceiveScriptResponse(ScriptExecutionContext*, unsigned long identifier);
+    void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);
 
     [Timeline, Inspector, DOM, Page]
     void domContentLoadedEventFired([Keep] Frame*);
@@ -376,13 +376,13 @@ interface InspectorInstrumentation {
     void didDispatchDOMStorageEvent(Page* page, const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin);
 
     [Worker]
-    void didStartWorkerGlobalScope(ScriptExecutionContext*, WorkerGlobalScopeProxy* proxy, const KURL& url);
+    void didStartWorkerGlobalScope(ExecutionContext*, WorkerGlobalScopeProxy* proxy, const KURL& url);
 
     [WorkerRuntime]
     void willEvaluateWorkerScript([Keep] WorkerGlobalScope* context, int workerThreadStartMode);
 
     [Worker]
-    void workerGlobalScopeTerminated(ScriptExecutionContext*, WorkerGlobalScopeProxy* proxy);
+    void workerGlobalScopeTerminated(ExecutionContext*, WorkerGlobalScopeProxy* proxy);
 
     [Profiler, Timeline]
     void willProcessTask(WorkerGlobalScope* context);
@@ -442,35 +442,35 @@ interface InspectorConsoleInstrumentation {
     // FIXME: Convert to ScriptArguments to match non-worker context.
     // Use the same implementation as above as a similar method dispatched on Page.
     [Console]
-    void addMessageToConsole(ScriptExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0);
 
     // Use the same implementation as above as a similar method dispatched on Page.
     [Console]
-    void addMessageToConsole(ScriptExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* state, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* state, unsigned long requestIdentifier = 0);
 
     [Console, Debugger]
-    void addMessageToConsole(ScriptExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);
+    void addMessageToConsole(ExecutionContext* context, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);
 
     [Console]
-    void consoleCount(ScriptExecutionContext* context, ScriptState* state, PassRefPtr<ScriptArguments> arguments);
+    void consoleCount(ExecutionContext* context, ScriptState* state, PassRefPtr<ScriptArguments> arguments);
 
     [Timeline, Console]
-    void consoleTime([Keep] ScriptExecutionContext* context, const String& title);
+    void consoleTime([Keep] ExecutionContext* context, const String& title);
 
     [Console, Timeline]
-    void consoleTimeEnd([Keep] ScriptExecutionContext* context, const String& title, ScriptState* state);
+    void consoleTimeEnd([Keep] ExecutionContext* context, const String& title, ScriptState* state);
 
     [Timeline, Inline=FastReturn]
-    void consoleTimeStamp([Keep] ScriptExecutionContext* context, const String& title);
+    void consoleTimeStamp([Keep] ExecutionContext* context, const String& title);
 
     [Console, Inline=FastReturn]
-    void consoleTimeline([Keep] ScriptExecutionContext* context, const String& title, ScriptState* state);
+    void consoleTimeline([Keep] ExecutionContext* context, const String& title, ScriptState* state);
 
     [Console, Inline=FastReturn]
-    void consoleTimelineEnd([Keep] ScriptExecutionContext* context, const String& title, ScriptState* state);
+    void consoleTimelineEnd([Keep] ExecutionContext* context, const String& title, ScriptState* state);
 
     [Profiler]
-    void addProfile(ScriptExecutionContext* context, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack);
+    void addProfile(ExecutionContext* context, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack);
 }
 
 interface InspectorDatabaseInstrumentation {
@@ -478,7 +478,7 @@ interface InspectorDatabaseInstrumentation {
 #include "modules/webdatabase/Database.h"
 
     [Database]
-    void didOpenDatabase(ScriptExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version);
+    void didOpenDatabase(ExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version);
 }
 
 interface InspectorOverrides {
@@ -486,7 +486,7 @@ interface InspectorOverrides {
     bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
 
     [Worker, Inline=FastReturn]
-    bool shouldPauseDedicatedWorkerOnStart(ScriptExecutionContext* context);
+    bool shouldPauseDedicatedWorkerOnStart(ExecutionContext* context);
 
     [Page, Inline=FastReturn]
     GeolocationPosition* overrideGeolocationPosition(Page* page, [DefaultReturn] GeolocationPosition* position);
@@ -495,7 +495,7 @@ interface InspectorOverrides {
     DeviceOrientationData* overrideDeviceOrientation(Page* page, [DefaultReturn] DeviceOrientationData* deviceOrientation);
 
     [Profiler]
-    String getCurrentUserInitiatedProfileName(ScriptExecutionContext* context, bool incrementProfileNumber);
+    String getCurrentUserInitiatedProfileName(ExecutionContext* context, bool incrementProfileNumber);
 }
 
 

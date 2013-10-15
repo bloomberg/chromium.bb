@@ -41,9 +41,9 @@ bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
 PassOwnPtr<ScriptSourceCode> preprocessImpl(InstrumentingAgents*, Frame*, const ScriptSourceCode&);
 String preprocessEventListenerImpl(InstrumentingAgents*, Frame*, const String& source, const String& url, const String& functionName);
 
-bool canvasAgentEnabled(ScriptExecutionContext*);
-bool consoleAgentEnabled(ScriptExecutionContext*);
-bool timelineAgentEnabled(ScriptExecutionContext*);
+bool canvasAgentEnabled(ExecutionContext*);
+bool consoleAgentEnabled(ExecutionContext*);
+bool timelineAgentEnabled(ExecutionContext*);
 
 inline bool profilerEnabled(WorkerGlobalScope* scope)
 {

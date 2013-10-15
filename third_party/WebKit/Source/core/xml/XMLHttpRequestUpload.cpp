@@ -46,9 +46,9 @@ const AtomicString& XMLHttpRequestUpload::interfaceName() const
     return EventTargetNames::XMLHttpRequestUpload;
 }
 
-ScriptExecutionContext* XMLHttpRequestUpload::scriptExecutionContext() const
+ExecutionContext* XMLHttpRequestUpload::executionContext() const
 {
-    return m_xmlHttpRequest->scriptExecutionContext();
+    return m_xmlHttpRequest->executionContext();
 }
 
 void XMLHttpRequestUpload::dispatchEventAndLoadEnd(PassRefPtr<Event> event)

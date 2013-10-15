@@ -386,7 +386,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     ExceptionState es(args.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
-    ScriptExecutionContext* scriptContext = getScriptExecutionContext();
+    ExecutionContext* scriptContext = getExecutionContext();
     RefPtr<TestObj> result = SupportTestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;

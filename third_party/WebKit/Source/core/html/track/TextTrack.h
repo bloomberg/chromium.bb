@@ -56,7 +56,7 @@ public:
 
 class TextTrack : public TrackBase, public ScriptWrappable {
 public:
-    static PassRefPtr<TextTrack> create(ScriptExecutionContext* context, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
+    static PassRefPtr<TextTrack> create(ExecutionContext* context, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {
         return adoptRef(new TextTrack(context, client, kind, label, language, AddTrack));
     }
@@ -137,7 +137,7 @@ public:
     void removeAllCues();
 
 protected:
-    TextTrack(ScriptExecutionContext*, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType);
+    TextTrack(ExecutionContext*, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType);
 #if ENABLE(WEBVTT_REGIONS)
     TextTrackRegionList* regionList();
 #endif

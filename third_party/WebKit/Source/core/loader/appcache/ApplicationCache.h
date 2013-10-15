@@ -70,7 +70,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete);
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
 

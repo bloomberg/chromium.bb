@@ -70,7 +70,7 @@ static const float lineHeight = 5.33;
 // Default scrolling animation time period (s).
 static const float scrollTime = 0.433;
 
-TextTrackRegion::TextTrackRegion(ScriptExecutionContext* context)
+TextTrackRegion::TextTrackRegion(ExecutionContext* context)
     : ContextLifecycleObserver(context)
     , m_id(emptyString())
     , m_width(defaultWidth)

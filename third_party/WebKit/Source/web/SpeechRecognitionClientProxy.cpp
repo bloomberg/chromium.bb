@@ -34,7 +34,7 @@
 #include "WebSpeechRecognitionParams.h"
 #include "WebSpeechRecognitionResult.h"
 #include "WebSpeechRecognizer.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognition.h"
 #include "modules/speech/SpeechRecognitionError.h"
@@ -61,7 +61,7 @@ void SpeechRecognitionClientProxy::start(SpeechRecognition* recognition, const S
     for (unsigned long i = 0; i < grammarList->length(); ++i)
         webSpeechGrammars[i] = grammarList->item(i);
 
-    WebSpeechRecognitionParams params(webSpeechGrammars, lang, continuous, interimResults, maxAlternatives, WebSecurityOrigin(recognition->scriptExecutionContext()->securityOrigin()));
+    WebSpeechRecognitionParams params(webSpeechGrammars, lang, continuous, interimResults, maxAlternatives, WebSecurityOrigin(recognition->executionContext()->securityOrigin()));
     m_recognizer->start(WebSpeechRecognitionHandle(recognition), params, this);
 }
 

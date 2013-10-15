@@ -33,16 +33,16 @@
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class SpeechGrammar : public ScriptWrappable, public RefCounted<SpeechGrammar> {
 public:
     static PassRefPtr<SpeechGrammar> create(); // FIXME: The spec is not clear on what the constructor should look like.
     static PassRefPtr<SpeechGrammar> create(const KURL& src, double weight);
 
-    const KURL& src(ScriptExecutionContext*) const { return m_src; }
+    const KURL& src(ExecutionContext*) const { return m_src; }
     const KURL& src() const { return m_src; }
-    void setSrc(ScriptExecutionContext*, const String& src);
+    void setSrc(ExecutionContext*, const String& src);
 
     double weight() const { return m_weight; }
     void setWeight(double weight) { m_weight = weight; }

@@ -40,8 +40,8 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePortChannel.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/ContentSecurityPolicy.h"
@@ -99,7 +99,7 @@ public:
 
     ~SharedWorkerScriptLoader();
     void load();
-    static void stopAllLoadersForContext(ScriptExecutionContext*);
+    static void stopAllLoadersForContext(ExecutionContext*);
 
 private:
     // WorkerScriptLoaderClient callbacks
@@ -108,7 +108,7 @@ private:
 
     virtual void connected();
 
-    const ScriptExecutionContext* loadingContext() { return m_worker->scriptExecutionContext(); }
+    const ExecutionContext* loadingContext() { return m_worker->executionContext(); }
 
     void sendConnect();
 
@@ -128,7 +128,7 @@ static Vector<SharedWorkerScriptLoader*>& pendingLoaders()
     return loaders;
 }
 
-void SharedWorkerScriptLoader::stopAllLoadersForContext(ScriptExecutionContext* context)
+void SharedWorkerScriptLoader::stopAllLoadersForContext(ExecutionContext* context)
 {
     // Walk our list of pending loaders and shutdown any that belong to this context.
     Vector<SharedWorkerScriptLoader*>& loaders = pendingLoaders();
@@ -159,14 +159,14 @@ void SharedWorkerScriptLoader::load()
         m_worker->setPendingActivity(m_worker.get());
         m_loading = true;
 
-        m_scriptLoader->loadAsynchronously(m_worker->scriptExecutionContext(), m_url, DenyCrossOriginRequests, this);
+        m_scriptLoader->loadAsynchronously(m_worker->executionContext(), m_url, DenyCrossOriginRequests, this);
     }
 }
 
 void SharedWorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
 {
     m_responseAppCacheID = response.appCacheID();
-    InspectorInstrumentation::didReceiveScriptResponse(m_worker->scriptExecutionContext(), identifier);
+    InspectorInstrumentation::didReceiveScriptResponse(m_worker->executionContext(), identifier);
 }
 
 void SharedWorkerScriptLoader::notifyFinished()
@@ -175,9 +175,9 @@ void SharedWorkerScriptLoader::notifyFinished()
         m_worker->dispatchEvent(Event::createCancelable(EventTypeNames::error));
         delete this;
     } else {
-        InspectorInstrumentation::scriptImported(m_worker->scriptExecutionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
+        InspectorInstrumentation::scriptImported(m_worker->executionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
         // Pass the script off to the worker, then send a connect event.
-        m_webWorker->startWorkerContext(m_url, m_name, m_worker->scriptExecutionContext()->userAgent(m_url), m_scriptLoader->script(), m_worker->scriptExecutionContext()->contentSecurityPolicy()->deprecatedHeader(), static_cast<WebKit::WebContentSecurityPolicyType>(m_worker->scriptExecutionContext()->contentSecurityPolicy()->deprecatedHeaderType()), m_responseAppCacheID);
+        m_webWorker->startWorkerContext(m_url, m_name, m_worker->executionContext()->userAgent(m_url), m_scriptLoader->script(), m_worker->executionContext()->contentSecurityPolicy()->deprecatedHeader(), static_cast<WebKit::WebContentSecurityPolicyType>(m_worker->executionContext()->contentSecurityPolicy()->deprecatedHeaderType()), m_responseAppCacheID);
         sendConnect();
     }
 }
@@ -216,8 +216,8 @@ void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassRefPtr
     ASSERT(repository);
 
     // No nested workers (for now) - connect() should only be called from document context.
-    ASSERT(worker->scriptExecutionContext()->isDocument());
-    Document* document = toDocument(worker->scriptExecutionContext());
+    ASSERT(worker->executionContext()->isDocument());
+    Document* document = toDocument(worker->executionContext());
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
     OwnPtr<WebSharedWorker> webWorker;
     webWorker = adoptPtr(webFrame->client()->createSharedWorker(webFrame, url, name, getId(document)));

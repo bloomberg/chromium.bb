@@ -28,7 +28,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
@@ -37,9 +37,9 @@ namespace WebCore {
 
 namespace {
 
-bool isPolicyActiveInContext(ScriptExecutionContext* context)
+bool isPolicyActiveInContext(ExecutionContext* context)
 {
-    // If the ScriptExecutionContext has been destroyed, there's no active policy.
+    // If the ExecutionContext has been destroyed, there's no active policy.
     if (!context)
         return false;
 
@@ -47,7 +47,7 @@ bool isPolicyActiveInContext(ScriptExecutionContext* context)
 }
 
 template<bool (ContentSecurityPolicy::*allowWithType)(const String&, const String&, const KURL&, ContentSecurityPolicy::ReportingStatus) const>
-bool isAllowedWithType(ScriptExecutionContext* context, const String& type)
+bool isAllowedWithType(ExecutionContext* context, const String& type)
 {
     if (!isPolicyActiveInContext(context))
         return true;
@@ -56,7 +56,7 @@ bool isAllowedWithType(ScriptExecutionContext* context, const String& type)
 }
 
 template<bool (ContentSecurityPolicy::*allowWithURL)(const KURL&, ContentSecurityPolicy::ReportingStatus) const>
-bool isAllowedWithURL(ScriptExecutionContext* context, const String& url)
+bool isAllowedWithURL(ExecutionContext* context, const String& url)
 {
     if (!isPolicyActiveInContext(context))
         return true;
@@ -69,7 +69,7 @@ bool isAllowedWithURL(ScriptExecutionContext* context, const String& url)
 }
 
 template<bool (ContentSecurityPolicy::*allowWithContext)(const String&, const WTF::OrdinalNumber&, ContentSecurityPolicy::ReportingStatus) const>
-bool isAllowed(ScriptExecutionContext* context)
+bool isAllowed(ExecutionContext* context)
 {
     if (!isPolicyActiveInContext(context))
         return true;
@@ -79,7 +79,7 @@ bool isAllowed(ScriptExecutionContext* context)
 
 } // namespace
 
-DOMSecurityPolicy::DOMSecurityPolicy(ScriptExecutionContext* context)
+DOMSecurityPolicy::DOMSecurityPolicy(ExecutionContext* context)
     : ContextLifecycleObserver(context)
 {
     ScriptWrappable::init(this);
@@ -91,7 +91,7 @@ DOMSecurityPolicy::~DOMSecurityPolicy()
 
 bool DOMSecurityPolicy::isActive() const
 {
-    return isPolicyActiveInContext(scriptExecutionContext());
+    return isPolicyActiveInContext(executionContext());
 }
 
 PassRefPtr<DOMStringList> DOMSecurityPolicy::reportURIs() const
@@ -99,19 +99,19 @@ PassRefPtr<DOMStringList> DOMSecurityPolicy::reportURIs() const
     RefPtr<DOMStringList> result = DOMStringList::create();
 
     if (isActive())
-        scriptExecutionContext()->contentSecurityPolicy()->gatherReportURIs(*result.get());
+        executionContext()->contentSecurityPolicy()->gatherReportURIs(*result.get());
 
     return result.release();
 }
 
 bool DOMSecurityPolicy::allowsInlineScript() const
 {
-    return isAllowed<&ContentSecurityPolicy::allowInlineScript>(scriptExecutionContext());
+    return isAllowed<&ContentSecurityPolicy::allowInlineScript>(executionContext());
 }
 
 bool DOMSecurityPolicy::allowsInlineStyle() const
 {
-    return isAllowed<&ContentSecurityPolicy::allowInlineStyle>(scriptExecutionContext());
+    return isAllowed<&ContentSecurityPolicy::allowInlineStyle>(executionContext());
 }
 
 bool DOMSecurityPolicy::allowsEval() const
@@ -119,58 +119,58 @@ bool DOMSecurityPolicy::allowsEval() const
     if (!isActive())
         return true;
 
-    return scriptExecutionContext()->contentSecurityPolicy()->allowEval(0, ContentSecurityPolicy::SuppressReport);
+    return executionContext()->contentSecurityPolicy()->allowEval(0, ContentSecurityPolicy::SuppressReport);
 }
 
 
 bool DOMSecurityPolicy::allowsConnectionTo(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowConnectToSource>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowConnectToSource>(executionContext(), url);
 }
 
 bool DOMSecurityPolicy::allowsFontFrom(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowFontFromSource>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowFontFromSource>(executionContext(), url);
 }
 
 bool DOMSecurityPolicy::allowsFormAction(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowFormAction>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowFormAction>(executionContext(), url);
 }
 
 bool DOMSecurityPolicy::allowsFrameFrom(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowChildFrameFromSource>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowChildFrameFromSource>(executionContext(), url);
 }
 
 bool DOMSecurityPolicy::allowsImageFrom(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowImageFromSource>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowImageFromSource>(executionContext(), url);
 }
 
 bool DOMSecurityPolicy::allowsMediaFrom(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowMediaFromSource>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowMediaFromSource>(executionContext(), url);
 }
 
 bool DOMSecurityPolicy::allowsObjectFrom(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowObjectFromSource>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowObjectFromSource>(executionContext(), url);
 }
 
 bool DOMSecurityPolicy::allowsPluginType(const String& type) const
 {
-    return isAllowedWithType<&ContentSecurityPolicy::allowPluginType>(scriptExecutionContext(), type);
+    return isAllowedWithType<&ContentSecurityPolicy::allowPluginType>(executionContext(), type);
 }
 
 bool DOMSecurityPolicy::allowsScriptFrom(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowScriptFromSource>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowScriptFromSource>(executionContext(), url);
 }
 
 bool DOMSecurityPolicy::allowsStyleFrom(const String& url) const
 {
-    return isAllowedWithURL<&ContentSecurityPolicy::allowStyleFromSource>(scriptExecutionContext(), url);
+    return isAllowedWithURL<&ContentSecurityPolicy::allowStyleFromSource>(executionContext(), url);
 }
 
 } // namespace WebCore

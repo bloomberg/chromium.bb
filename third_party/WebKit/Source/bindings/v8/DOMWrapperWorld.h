@@ -44,7 +44,7 @@ namespace WebCore {
 
 class DOMDataStore;
 class ScriptController;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 enum WorldIdConstants {
     MainWorldId = 0,

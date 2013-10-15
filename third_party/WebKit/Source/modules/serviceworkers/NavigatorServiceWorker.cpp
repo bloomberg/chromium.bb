@@ -90,12 +90,12 @@ NavigatorServiceWorker* NavigatorServiceWorker::from(Navigator* navigator)
     return supplement;
 }
 
-ScriptPromise NavigatorServiceWorker::registerServiceWorker(ScriptExecutionContext* context, Navigator* navigator, const String& pattern, const String& url, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, const String& url, ExceptionState& es)
 {
     return from(navigator)->registerServiceWorker(context, pattern, url, es);
 }
 
-ScriptPromise NavigatorServiceWorker::registerServiceWorker(ScriptExecutionContext* scriptExecutionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* executionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     Frame* frame = m_navigator->frame();
@@ -107,29 +107,29 @@ ScriptPromise NavigatorServiceWorker::registerServiceWorker(ScriptExecutionConte
 
     RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
 
-    KURL patternURL = scriptExecutionContext->completeURL(pattern);
+    KURL patternURL = executionContext->completeURL(pattern);
     if (documentOrigin->canRequest(patternURL)) {
         es.throwSecurityError("Can only register for patterns in the document's origin.");
         return ScriptPromise();
     }
 
-    KURL scriptURL = scriptExecutionContext->completeURL(scriptSrc);
+    KURL scriptURL = executionContext->completeURL(scriptSrc);
     if (documentOrigin->canRequest(scriptURL)) {
         es.throwSecurityError("Script must be in document's origin.");
         return ScriptPromise();
     }
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptExecutionContext);
-    ensureProvider()->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter(resolver, scriptExecutionContext));
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ensureProvider()->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter(resolver, executionContext));
     return resolver->promise();
 }
 
-ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ScriptExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
 {
     return from(navigator)->unregisterServiceWorker(context, pattern, es);
 }
 
-ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ScriptExecutionContext* scriptExecutionContext, const String& pattern, ExceptionState& es)
+ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     Frame* frame = m_navigator->frame();
@@ -140,14 +140,14 @@ ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ScriptExecutionCon
 
     RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
 
-    KURL patternURL = scriptExecutionContext->completeURL(pattern);
+    KURL patternURL = executionContext->completeURL(pattern);
     if (documentOrigin->canRequest(patternURL)) {
         es.throwSecurityError("Can only unregister for patterns in the document's origin.");
         return ScriptPromise();
     }
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptExecutionContext);
-    ensureProvider()->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter(resolver, scriptExecutionContext));
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ensureProvider()->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter(resolver, executionContext));
     return resolver->promise();
 }
 

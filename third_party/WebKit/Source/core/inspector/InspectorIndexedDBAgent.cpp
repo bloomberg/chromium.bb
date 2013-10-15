@@ -99,7 +99,7 @@ public:
         return this == &other;
     }
 
-    virtual void handleEvent(ScriptExecutionContext*, Event* event) OVERRIDE
+    virtual void handleEvent(ExecutionContext*, Event* event) OVERRIDE
     {
         if (!m_requestCallback->isActive())
             return;
@@ -138,15 +138,15 @@ private:
 
 class ExecutableWithDatabase : public RefCounted<ExecutableWithDatabase> {
 public:
-    ExecutableWithDatabase(ScriptExecutionContext* context)
+    ExecutableWithDatabase(ExecutionContext* context)
         : m_context(context) { }
     virtual ~ExecutableWithDatabase() { };
     void start(IDBFactory*, SecurityOrigin*, const String& databaseName);
     virtual void execute(PassRefPtr<IDBDatabase>) = 0;
     virtual RequestCallback* requestCallback() = 0;
-    ScriptExecutionContext* context() { return m_context; };
+    ExecutionContext* context() { return m_context; };
 private:
-    ScriptExecutionContext* m_context;
+    ExecutionContext* m_context;
 };
 
 class OpenDatabaseCallback : public EventListener {
@@ -163,7 +163,7 @@ public:
         return this == &other;
     }
 
-    virtual void handleEvent(ScriptExecutionContext*, Event* event) OVERRIDE
+    virtual void handleEvent(ExecutionContext*, Event* event) OVERRIDE
     {
         if (event->type() != EventTypeNames::success) {
             m_executableWithDatabase->requestCallback()->sendFailure("Unexpected event type.");
@@ -207,10 +207,10 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
     idbOpenDBRequest->addEventListener(EventTypeNames::success, callback, false);
 }
 
-static PassRefPtr<IDBTransaction> transactionForDatabase(ScriptExecutionContext* scriptExecutionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IDBTransaction::modeReadOnly())
+static PassRefPtr<IDBTransaction> transactionForDatabase(ExecutionContext* executionContext, IDBDatabase* idbDatabase, const String& objectStoreName, const String& mode = IDBTransaction::modeReadOnly())
 {
     TrackExceptionState es;
-    RefPtr<IDBTransaction> idbTransaction = idbDatabase->transaction(scriptExecutionContext, objectStoreName, mode, es);
+    RefPtr<IDBTransaction> idbTransaction = idbDatabase->transaction(executionContext, objectStoreName, mode, es);
     if (es.hadException())
         return 0;
     return idbTransaction;
@@ -263,7 +263,7 @@ static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
 
 class DatabaseLoader : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DatabaseLoader> create(ScriptExecutionContext* context, PassRefPtr<RequestDatabaseCallback> requestCallback)
+    static PassRefPtr<DatabaseLoader> create(ExecutionContext* context, PassRefPtr<RequestDatabaseCallback> requestCallback)
     {
         return adoptRef(new DatabaseLoader(context, requestCallback));
     }
@@ -314,7 +314,7 @@ public:
 
     virtual RequestCallback* requestCallback() { return m_requestCallback.get(); }
 private:
-    DatabaseLoader(ScriptExecutionContext* context, PassRefPtr<RequestDatabaseCallback> requestCallback)
+    DatabaseLoader(ExecutionContext* context, PassRefPtr<RequestDatabaseCallback> requestCallback)
         : ExecutableWithDatabase(context)
         , m_requestCallback(requestCallback) { }
     RefPtr<RequestDatabaseCallback> m_requestCallback;
@@ -407,7 +407,7 @@ public:
         return this == &other;
     }
 
-    virtual void handleEvent(ScriptExecutionContext* context, Event* event) OVERRIDE
+    virtual void handleEvent(ExecutionContext* context, Event* event) OVERRIDE
     {
         if (event->type() != EventTypeNames::success) {
             m_requestCallback->sendFailure("Unexpected event type.");
@@ -487,7 +487,7 @@ private:
 
 class DataLoader : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DataLoader> create(ScriptExecutionContext* context, PassRefPtr<RequestDataCallback> requestCallback, const InjectedScript& injectedScript, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+    static PassRefPtr<DataLoader> create(ExecutionContext* context, PassRefPtr<RequestDataCallback> requestCallback, const InjectedScript& injectedScript, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
     {
         return adoptRef(new DataLoader(context, requestCallback, injectedScript, objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
     }
@@ -528,8 +528,8 @@ public:
     }
 
     virtual RequestCallback* requestCallback() { return m_requestCallback.get(); }
-    DataLoader(ScriptExecutionContext* scriptExecutionContext, PassRefPtr<RequestDataCallback> requestCallback, const InjectedScript& injectedScript, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
-        : ExecutableWithDatabase(scriptExecutionContext)
+    DataLoader(ExecutionContext* executionContext, PassRefPtr<RequestDataCallback> requestCallback, const InjectedScript& injectedScript, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
+        : ExecutableWithDatabase(executionContext)
         , m_requestCallback(requestCallback)
         , m_injectedScript(injectedScript)
         , m_objectStoreName(objectStoreName)
@@ -695,7 +695,7 @@ public:
         return this == &other;
     }
 
-    virtual void handleEvent(ScriptExecutionContext*, Event* event) OVERRIDE
+    virtual void handleEvent(ExecutionContext*, Event* event) OVERRIDE
     {
         if (!m_requestCallback->isActive())
             return;
@@ -719,12 +719,12 @@ private:
 
 class ClearObjectStore : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<ClearObjectStore> create(ScriptExecutionContext* context, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    static PassRefPtr<ClearObjectStore> create(ExecutionContext* context, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
     {
         return adoptRef(new ClearObjectStore(context, objectStoreName, requestCallback));
     }
 
-    ClearObjectStore(ScriptExecutionContext* context, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    ClearObjectStore(ExecutionContext* context, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
         : ExecutableWithDatabase(context)
         , m_objectStoreName(objectStoreName)
         , m_requestCallback(requestCallback)

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/crypto/WorkerGlobalScopeCrypto.h"
 
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/crypto/WorkerCrypto.h"
 
 namespace WebCore {

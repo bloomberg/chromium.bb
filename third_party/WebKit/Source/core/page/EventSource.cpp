@@ -40,7 +40,7 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
@@ -57,7 +57,7 @@ namespace WebCore {
 
 const unsigned long long EventSource::defaultReconnectDelay = 3000;
 
-inline EventSource::EventSource(ScriptExecutionContext* context, const KURL& url, const Dictionary& eventSourceInit)
+inline EventSource::EventSource(ExecutionContext* context, const KURL& url, const Dictionary& eventSourceInit)
     : ActiveDOMObject(context)
     , m_url(url)
     , m_withCredentials(false)
@@ -72,7 +72,7 @@ inline EventSource::EventSource(ScriptExecutionContext* context, const KURL& url
     eventSourceInit.get("withCredentials", m_withCredentials);
 }
 
-PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& es)
+PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& es)
 {
     if (url.isEmpty()) {
         es.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");
@@ -124,7 +124,7 @@ void EventSource::connect()
     if (!m_lastEventId.isEmpty())
         request.setHTTPHeaderField("Last-Event-ID", m_lastEventId);
 
-    SecurityOrigin* origin = scriptExecutionContext()->securityOrigin();
+    SecurityOrigin* origin = executionContext()->securityOrigin();
 
     ThreadableLoaderOptions options;
     options.sendLoadCallbacks = SendCallbacks;
@@ -135,9 +135,9 @@ void EventSource::connect()
     options.crossOriginRequestPolicy = UseAccessControl;
     options.dataBufferingPolicy = DoNotBufferData;
     options.securityOrigin = origin;
-    options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(scriptExecutionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
+    options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;
 
-    m_loader = ThreadableLoader::create(scriptExecutionContext(), this, request, options);
+    m_loader = ThreadableLoader::create(executionContext(), this, request, options);
 
     if (m_loader)
         m_requestInFlight = true;
@@ -207,9 +207,9 @@ const AtomicString& EventSource::interfaceName() const
     return EventTargetNames::EventSource;
 }
 
-ScriptExecutionContext* EventSource::scriptExecutionContext() const
+ExecutionContext* EventSource::executionContext() const
 {
-    return ActiveDOMObject::scriptExecutionContext();
+    return ActiveDOMObject::executionContext();
 }
 
 void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& response)
@@ -231,7 +231,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
             message.append(charset);
             message.appendLiteral("\") that is not UTF-8. Aborting the connection.");
             // FIXME: We are missing the source line.
-            scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message.toString());
+            executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message.toString());
         }
     } else {
         // To keep the signal-to-noise ratio low, we only log 200-response with an invalid MIME type.
@@ -241,7 +241,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
             message.append(response.mimeType());
             message.appendLiteral("\") that is not \"text/event-stream\". Aborting the connection.");
             // FIXME: We are missing the source line.
-            scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message.toString());
+            executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message.toString());
         }
     }
 
@@ -293,7 +293,7 @@ void EventSource::didFail(const ResourceError& error)
 void EventSource::didFailAccessControlCheck(const ResourceError& error)
 {
     String message = "EventSource cannot load " + error.failingURL() + ". " + error.localizedDescription();
-    scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
+    executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 
     abortConnectionAttempt();
 }

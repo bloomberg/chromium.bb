@@ -44,7 +44,7 @@
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/platform/CrossThreadCopier.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -128,12 +128,12 @@ bool allowDatabaseForWorker(WebFrame* frame, const WebString& name, const WebStr
 
 namespace WebCore {
 
-bool DatabaseObserver::canEstablishDatabase(ScriptExecutionContext* scriptExecutionContext, const String& name, const String& displayName, unsigned long estimatedSize)
+bool DatabaseObserver::canEstablishDatabase(ExecutionContext* executionContext, const String& name, const String& displayName, unsigned long estimatedSize)
 {
-    ASSERT(scriptExecutionContext->isContextThread());
-    ASSERT(scriptExecutionContext->isDocument() || scriptExecutionContext->isWorkerGlobalScope());
-    if (scriptExecutionContext->isDocument()) {
-        Document* document = toDocument(scriptExecutionContext);
+    ASSERT(executionContext->isContextThread());
+    ASSERT(executionContext->isDocument() || executionContext->isWorkerGlobalScope());
+    if (executionContext->isDocument()) {
+        Document* document = toDocument(executionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         if (!webFrame)
             return false;
@@ -143,7 +143,7 @@ bool DatabaseObserver::canEstablishDatabase(ScriptExecutionContext* scriptExecut
         if (webView->permissionClient())
             return webView->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
     } else {
-        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(scriptExecutionContext);
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(executionContext);
         WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
         WebView* view = webWorker->view();
         if (!view)
@@ -156,19 +156,19 @@ bool DatabaseObserver::canEstablishDatabase(ScriptExecutionContext* scriptExecut
 
 void DatabaseObserver::databaseOpened(DatabaseBackendBase* database)
 {
-    ASSERT(database->databaseContext()->scriptExecutionContext()->isContextThread());
+    ASSERT(database->databaseContext()->executionContext()->isContextThread());
     WebDatabase::observer()->databaseOpened(WebDatabase(database));
 }
 
 void DatabaseObserver::databaseModified(DatabaseBackendBase* database)
 {
-    ASSERT(database->databaseContext()->scriptExecutionContext()->isContextThread());
+    ASSERT(database->databaseContext()->executionContext()->isContextThread());
     WebDatabase::observer()->databaseModified(WebDatabase(database));
 }
 
 void DatabaseObserver::databaseClosed(DatabaseBackendBase* database)
 {
-    ASSERT(database->databaseContext()->scriptExecutionContext()->isContextThread());
+    ASSERT(database->databaseContext()->executionContext()->isContextThread());
     WebDatabase::observer()->databaseClosed(WebDatabase(database));
 }
 

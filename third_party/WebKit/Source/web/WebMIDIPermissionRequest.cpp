@@ -67,7 +67,7 @@ bool WebMIDIPermissionRequest::equals(const WebMIDIPermissionRequest& n) const
 
 WebSecurityOrigin WebMIDIPermissionRequest::securityOrigin() const
 {
-    return WebSecurityOrigin(m_private->scriptExecutionContext()->securityOrigin());
+    return WebSecurityOrigin(m_private->executionContext()->securityOrigin());
 }
 
 void WebMIDIPermissionRequest::setIsAllowed(bool allowed)

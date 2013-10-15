@@ -46,7 +46,7 @@ class CSPDirectiveList;
 class DOMStringList;
 class JSONObject;
 class KURL;
-class ScriptExecutionContext;
+class ExecutionContext;
 class SecurityOrigin;
 
 typedef int SandboxFlags;
@@ -55,9 +55,9 @@ typedef Vector<OwnPtr<CSPDirectiveList> > CSPDirectiveListVector;
 class ContentSecurityPolicy {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<ContentSecurityPolicy> create(ScriptExecutionContext* scriptExecutionContext)
+    static PassOwnPtr<ContentSecurityPolicy> create(ExecutionContext* executionContext)
     {
-        return adoptPtr(new ContentSecurityPolicy(scriptExecutionContext));
+        return adoptPtr(new ContentSecurityPolicy(executionContext));
     }
     ~ContentSecurityPolicy();
 
@@ -133,12 +133,12 @@ public:
 
     bool experimentalFeaturesEnabled() const;
 
-    static bool shouldBypassMainWorld(ScriptExecutionContext*);
+    static bool shouldBypassMainWorld(ExecutionContext*);
 
-    ScriptExecutionContext* scriptExecutionContext() { return m_scriptExecutionContext; }
+    ExecutionContext* executionContext() { return m_executionContext; }
 
 private:
-    explicit ContentSecurityPolicy(ScriptExecutionContext*);
+    explicit ContentSecurityPolicy(ExecutionContext*);
 
     void logToConsole(const String& message) const;
     void addPolicyFromHeaderValue(const String&, HeaderType);
@@ -146,7 +146,7 @@ private:
     bool shouldSendViolationReport(const String&) const;
     void didSendViolationReport(const String&);
 
-    ScriptExecutionContext* m_scriptExecutionContext;
+    ExecutionContext* m_executionContext;
     bool m_overrideInlineStyleAllowed;
     CSPDirectiveListVector m_policies;
 

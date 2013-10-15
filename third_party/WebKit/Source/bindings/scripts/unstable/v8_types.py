@@ -507,7 +507,7 @@ CPP_VALUE_TO_V8_VALUE = {
     'double': 'v8::Number::New({cpp_value})',
     'void': 'v8Undefined()',
     # Special cases
-    'EventHandler': '{cpp_value} ? v8::Handle<v8::Value>(V8AbstractEventListener::cast({cpp_value})->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null({isolate}))',
+    'EventHandler': '{cpp_value} ? v8::Handle<v8::Value>(V8AbstractEventListener::cast({cpp_value})->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null({isolate}))',
     # General
     'array': 'v8Array({cpp_value}, {isolate})',
     'default': 'toV8({cpp_value}, {creation_context}, {isolate})',

@@ -47,7 +47,7 @@ namespace WebCore {
     class ExceptionState;
     class KURL;
     class MessagePortChannel;
-    class ScriptExecutionContext;
+    class ExecutionContext;
     class SharedWorker;
     class SharedWorkerProxy;
 

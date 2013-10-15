@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseObserver.h"
@@ -46,7 +46,7 @@ public:
         return adoptPtr(new NotifyDatabaseChangedTask(database));
     }
 
-    virtual void performTask(ScriptExecutionContext*)
+    virtual void performTask(ExecutionContext*)
     {
         WebCore::DatabaseObserver::databaseModified(m_database.get());
     }
@@ -62,9 +62,9 @@ private:
 
 void SQLTransactionClient::didCommitWriteTransaction(DatabaseBackendBase* database)
 {
-    ScriptExecutionContext* scriptExecutionContext = database->databaseContext()->scriptExecutionContext();
-    if (!scriptExecutionContext->isContextThread()) {
-        scriptExecutionContext->postTask(NotifyDatabaseChangedTask::create(database));
+    ExecutionContext* executionContext = database->databaseContext()->executionContext();
+    if (!executionContext->isContextThread()) {
+        executionContext->postTask(NotifyDatabaseChangedTask::create(database));
         return;
     }
 
@@ -75,7 +75,7 @@ bool SQLTransactionClient::didExceedQuota(DatabaseBackendBase* database)
 {
     // Chromium does not allow users to manually change the quota for an origin (for now, at least).
     // Don't do anything.
-    ASSERT(database->databaseContext()->scriptExecutionContext()->isContextThread());
+    ASSERT(database->databaseContext()->executionContext()->isContextThread());
     return false;
 }
 

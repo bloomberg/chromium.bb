@@ -31,12 +31,12 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
 
-V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, ScriptExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
+V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, ExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     : ActiveDOMCallback(context)
     , m_callback(isolate, callback)
     , m_world(DOMWrapperWorld::current())
@@ -53,7 +53,7 @@ void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, 
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -78,7 +78,7 @@ void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, 
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(scriptExecutionContext(), callback, thisObject, 2, argv, m_isolate);
+    ScriptController::callFunction(executionContext(), callback, thisObject, 2, argv, m_isolate);
 }
 
 void V8MutationCallback::makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, V8MutationCallback* callback)

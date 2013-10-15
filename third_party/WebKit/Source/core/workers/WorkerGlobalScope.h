@@ -29,7 +29,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/WorkerScriptController.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
@@ -58,13 +58,13 @@ namespace WebCore {
     class WorkerNavigator;
     class WorkerThread;
 
-    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ScriptExecutionContext, public WorkerSupplementable, public EventTargetWithInlineData {
+    class WorkerGlobalScope : public RefCounted<WorkerGlobalScope>, public ScriptWrappable, public ExecutionContext, public WorkerSupplementable, public EventTargetWithInlineData {
     public:
         virtual ~WorkerGlobalScope();
 
         virtual bool isWorkerGlobalScope() const OVERRIDE { return true; }
 
-        virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+        virtual ExecutionContext* executionContext() const OVERRIDE;
 
         virtual bool isSharedWorkerGlobalScope() const { return false; }
         virtual bool isDedicatedWorkerGlobalScope() const { return false; }
@@ -96,7 +96,7 @@ namespace WebCore {
         virtual void importScripts(const Vector<String>& urls, ExceptionState&);
         WorkerNavigator* navigator() const;
 
-        // ScriptExecutionContext
+        // ExecutionContext
         virtual WorkerEventQueue* eventQueue() const OVERRIDE;
 
         virtual bool isContextThread() const OVERRIDE;
@@ -144,8 +144,8 @@ namespace WebCore {
         void addMessageToWorkerConsole(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState*);
 
     private:
-        virtual void refScriptExecutionContext() OVERRIDE { ref(); }
-        virtual void derefScriptExecutionContext() OVERRIDE { deref(); }
+        virtual void refExecutionContext() OVERRIDE { ref(); }
+        virtual void derefExecutionContext() OVERRIDE { deref(); }
 
         virtual void refEventTarget() OVERRIDE { ref(); }
         virtual void derefEventTarget() OVERRIDE { deref(); }
@@ -180,7 +180,7 @@ namespace WebCore {
         double m_timeOrigin;
     };
 
-inline WorkerGlobalScope* toWorkerGlobalScope(ScriptExecutionContext* context)
+inline WorkerGlobalScope* toWorkerGlobalScope(ExecutionContext* context)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!context || context->isWorkerGlobalScope());
     return static_cast<WorkerGlobalScope*>(context);

@@ -38,14 +38,14 @@
 
 namespace WebCore {
 
-PassRefPtr<MIDIAccessPromise> MIDIAccessPromise::create(ScriptExecutionContext* context, const Dictionary& options)
+PassRefPtr<MIDIAccessPromise> MIDIAccessPromise::create(ExecutionContext* context, const Dictionary& options)
 {
     RefPtr<MIDIAccessPromise> midiAccessPromise(adoptRef(new MIDIAccessPromise(context, options)));
     midiAccessPromise->suspendIfNeeded();
     return midiAccessPromise.release();
 }
 
-MIDIAccessPromise::MIDIAccessPromise(ScriptExecutionContext* context, const Dictionary& options)
+MIDIAccessPromise::MIDIAccessPromise(ExecutionContext* context, const Dictionary& options)
     : ActiveDOMObject(context)
     , m_state(Pending)
     , m_options(adoptPtr(new MIDIOptions(options)))
@@ -96,7 +96,7 @@ void MIDIAccessPromise::then(PassRefPtr<MIDISuccessCallback> successCallback, Pa
     // Lazily request access.
     if (!m_access) {
         setPendingActivity(this);
-        m_access = MIDIAccess::create(scriptExecutionContext(), this);
+        m_access = MIDIAccess::create(executionContext(), this);
     }
 
     switch (m_state) {

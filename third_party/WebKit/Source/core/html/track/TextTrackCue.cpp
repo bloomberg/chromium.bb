@@ -206,7 +206,7 @@ RenderObject* TextTrackCueBox::createRenderer(RenderStyle*)
 
 // ----------------------------
 
-TextTrackCue::TextTrackCue(ScriptExecutionContext* context, double start, double end, const String& content)
+TextTrackCue::TextTrackCue(ExecutionContext* context, double start, double end, const String& content)
     : m_startTime(start)
     , m_endTime(end)
     , m_content(content)
@@ -219,7 +219,7 @@ TextTrackCue::TextTrackCue(ScriptExecutionContext* context, double start, double
     , m_cueAlignment(Middle)
     , m_webVTTNodeTree(0)
     , m_track(0)
-    , m_scriptExecutionContext(context)
+    , m_executionContext(context)
     , m_isActive(false)
     , m_pauseOnExit(false)
     , m_snapToLines(true)
@@ -227,7 +227,7 @@ TextTrackCue::TextTrackCue(ScriptExecutionContext* context, double start, double
     , m_displayTreeShouldChange(true)
     , m_displayDirection(CSSValueLtr)
 {
-    ASSERT(m_scriptExecutionContext->isDocument());
+    ASSERT(m_executionContext->isDocument());
     ScriptWrappable::init(this);
 }
 
@@ -514,7 +514,7 @@ void TextTrackCue::invalidateCueIndex()
 void TextTrackCue::createWebVTTNodeTree()
 {
     if (!m_webVTTNodeTree)
-        m_webVTTNodeTree = WebVTTParser::create(0, m_scriptExecutionContext)->createDocumentFragmentFromCueText(m_content);
+        m_webVTTNodeTree = WebVTTParser::create(0, m_executionContext)->createDocumentFragmentFromCueText(m_content);
 }
 
 void TextTrackCue::copyWebVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerNode* parent)
@@ -798,7 +798,7 @@ void TextTrackCue::markFutureAndPastNodes(ContainerNode* root, double previousTi
         if (child->nodeName() == timestampTag) {
             unsigned position = 0;
             String timestamp = child->nodeValue();
-            double currentTimestamp = WebVTTParser::create(0, m_scriptExecutionContext)->collectTimeStamp(timestamp, &position);
+            double currentTimestamp = WebVTTParser::create(0, m_executionContext)->collectTimeStamp(timestamp, &position);
             ASSERT(currentTimestamp != -1);
 
             if (currentTimestamp > movieTime)
@@ -1208,9 +1208,9 @@ const AtomicString& TextTrackCue::interfaceName() const
     return EventTargetNames::TextTrackCue;
 }
 
-ScriptExecutionContext* TextTrackCue::scriptExecutionContext() const
+ExecutionContext* TextTrackCue::executionContext() const
 {
-    return m_scriptExecutionContext;
+    return m_executionContext;
 }
 
 bool TextTrackCue::operator==(const TextTrackCue& cue) const

@@ -38,7 +38,7 @@ namespace WebCore {
 class CSSStyleSheet;
 class DOMWindow;
 class Document;
-class ScriptExecutionContext;
+class ExecutionContext;
 class StyleSheetContents;
 
 // UseCounter is used for counting the number of times features of
@@ -235,7 +235,7 @@ public:
     // Be considerate to developers' consoles: features should only send deprecation warnings
     // when we're actively interested in removing them from the platform.
     static void countDeprecation(const DOMWindow*, Feature);
-    static void countDeprecation(ScriptExecutionContext*, Feature);
+    static void countDeprecation(ExecutionContext*, Feature);
     static void countDeprecation(const Document&, Feature);
     String deprecationMessage(Feature);
 

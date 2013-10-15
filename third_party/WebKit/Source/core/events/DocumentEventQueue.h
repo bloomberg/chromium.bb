@@ -39,11 +39,11 @@ namespace WebCore {
 class Event;
 class DocumentEventQueueTimer;
 class Node;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class DocumentEventQueue : public RefCounted<DocumentEventQueue>, public EventQueue {
 public:
-    static PassRefPtr<DocumentEventQueue> create(ScriptExecutionContext*);
+    static PassRefPtr<DocumentEventQueue> create(ExecutionContext*);
     virtual ~DocumentEventQueue();
 
     // EventQueue
@@ -52,7 +52,7 @@ public:
     virtual void close() OVERRIDE;
 
 private:
-    explicit DocumentEventQueue(ScriptExecutionContext*);
+    explicit DocumentEventQueue(ExecutionContext*);
 
     void pendingEventTimerFired();
     void dispatchEvent(PassRefPtr<Event>);

@@ -43,7 +43,7 @@ class ChromiumDataObjectItem;
 class Clipboard;
 class File;
 class StringCallback;
-class ScriptExecutionContext;
+class ExecutionContext;
 
 class DataTransferItem : public RefCounted<DataTransferItem>, public ScriptWrappable {
 public:
@@ -56,7 +56,7 @@ public:
     String kind() const;
     String type() const;
 
-    void getAsString(ScriptExecutionContext*, PassRefPtr<StringCallback>) const;
+    void getAsString(ExecutionContext*, PassRefPtr<StringCallback>) const;
     PassRefPtr<Blob> getAsFile() const;
 
     Clipboard* clipboard() { return m_clipboard.get(); }

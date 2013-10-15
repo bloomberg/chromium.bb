@@ -71,12 +71,12 @@ namespace WebCore {
 
         virtual bool operator==(const EventListener& other) { return this == &other; }
 
-        virtual void handleEvent(ScriptExecutionContext*, Event*);
+        virtual void handleEvent(ExecutionContext*, Event*);
 
         virtual bool isLazy() const { return false; }
 
         // Returns the listener object, either a function or an object.
-        v8::Local<v8::Object> getListenerObject(ScriptExecutionContext* context)
+        v8::Local<v8::Object> getListenerObject(ExecutionContext* context)
         {
             // prepareListenerObject can potentially deref this event listener
             // as it may attempt to compile a function (lazy event listener), get an error
@@ -115,20 +115,20 @@ namespace WebCore {
     protected:
         V8AbstractEventListener(bool isAttribute, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
-        virtual void prepareListenerObject(ScriptExecutionContext*) { }
+        virtual void prepareListenerObject(ExecutionContext*) { }
 
         void setListenerObject(v8::Handle<v8::Object> listener);
 
-        void invokeEventHandler(ScriptExecutionContext*, Event*, v8::Local<v8::Value> jsEvent);
+        void invokeEventHandler(ExecutionContext*, Event*, v8::Local<v8::Value> jsEvent);
 
         // Get the receiver object to use for event listener call.
-        v8::Local<v8::Object> getReceiverObject(ScriptExecutionContext*, Event*);
+        v8::Local<v8::Object> getReceiverObject(ExecutionContext*, Event*);
 
     private:
         // Implementation of EventListener function.
         virtual bool virtualisAttribute() const { return m_isAttribute; }
 
-        virtual v8::Local<v8::Value> callListenerFunction(ScriptExecutionContext*, v8::Handle<v8::Value> jsevent, Event*) = 0;
+        virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsevent, Event*) = 0;
 
         virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
 

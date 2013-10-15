@@ -92,7 +92,7 @@ const AtomicString& TextTrack::showingKeyword()
     return ended;
 }
 
-TextTrack::TextTrack(ScriptExecutionContext* context, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType type)
+TextTrack::TextTrack(ExecutionContext* context, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType type)
     : TrackBase(context, TrackBase::TextTrack)
     , m_cues(0)
 #if ENABLE(WEBVTT_REGIONS)

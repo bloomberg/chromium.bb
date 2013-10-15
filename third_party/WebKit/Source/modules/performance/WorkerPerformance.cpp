@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-WorkerPerformance::WorkerPerformance(ScriptExecutionContext* context)
+WorkerPerformance::WorkerPerformance(ExecutionContext* context)
     : ContextLifecycleObserver(context)
 {
 }
@@ -48,7 +48,7 @@ WorkerPerformance::~WorkerPerformance()
 
 double WorkerPerformance::now() const
 {
-    ScriptExecutionContext* context = scriptExecutionContext();
+    ExecutionContext* context = executionContext();
     ASSERT(context);
     WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     return 1000.0 * (monotonicallyIncreasingTime() - workerGlobalScope->timeOrigin());

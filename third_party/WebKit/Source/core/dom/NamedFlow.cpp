@@ -235,7 +235,7 @@ const AtomicString& NamedFlow::interfaceName() const
     return EventTargetNames::NamedFlow;
 }
 
-ScriptExecutionContext* NamedFlow::scriptExecutionContext() const
+ExecutionContext* NamedFlow::executionContext() const
 {
     return m_flowManager->document();
 }

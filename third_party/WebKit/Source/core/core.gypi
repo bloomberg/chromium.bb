@@ -1926,7 +1926,7 @@
             'dom/ScriptableDocumentParser.h',
             'dom/ScriptedAnimationController.cpp',
             'dom/ScriptedAnimationController.h',
-            'dom/ScriptExecutionContext.cpp',
+            'dom/ExecutionContext.cpp',
             'dom/ScriptLoader.cpp',
             'dom/ScriptLoader.h',
             'dom/ScriptRunner.cpp',

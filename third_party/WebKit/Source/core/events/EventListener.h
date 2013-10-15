@@ -27,7 +27,7 @@ namespace WebCore {
 
     class DOMWrapperWorld;
     class Event;
-    class ScriptExecutionContext;
+    class ExecutionContext;
 
     class EventListener : public RefCounted<EventListener> {
     public:
@@ -43,7 +43,7 @@ namespace WebCore {
 
         virtual ~EventListener() { }
         virtual bool operator==(const EventListener&) = 0;
-        virtual void handleEvent(ScriptExecutionContext*, Event*) = 0;
+        virtual void handleEvent(ExecutionContext*, Event*) = 0;
         virtual bool wasCreatedFromMarkup() const { return false; }
         virtual DOMWrapperWorld* world() const { return 0; }
 

@@ -203,7 +203,7 @@ void XMLHttpRequestProgressEventThrottle::resume()
         return;
     }
 
-    // Do not dispatch events inline here, since ScriptExecutionContext is iterating over
+    // Do not dispatch events inline here, since ExecutionContext is iterating over
     // the list of active DOM objects to resume them, and any activated JS event-handler
     // could insert new active DOM objects to the list.
     // m_deferEvents is kept true until all deferred events have been dispatched.

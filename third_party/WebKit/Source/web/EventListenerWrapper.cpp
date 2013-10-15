@@ -58,7 +58,7 @@ bool EventListenerWrapper::operator==(const EventListener& listener)
     return this == &listener;
 }
 
-void EventListenerWrapper::handleEvent(ScriptExecutionContext* context, Event* event)
+void EventListenerWrapper::handleEvent(ExecutionContext* context, Event* event)
 {
     if (!m_webDOMEventListener)
         return;

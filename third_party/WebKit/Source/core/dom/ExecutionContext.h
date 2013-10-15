@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef ScriptExecutionContext_h
-#define ScriptExecutionContext_h
+#ifndef ExecutionContext_h
+#define ExecutionContext_h
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/SecurityContext.h"
@@ -58,10 +58,10 @@ class PublicURLManager;
 class ScriptCallStack;
 class ScriptState;
 
-class ScriptExecutionContext : public LifecycleContext, public SecurityContext {
+class ExecutionContext : public LifecycleContext, public SecurityContext {
 public:
-    ScriptExecutionContext();
-    virtual ~ScriptExecutionContext();
+    ExecutionContext();
+    virtual ~ExecutionContext();
 
     virtual bool isDocument() const { return false; }
     virtual bool isWorkerGlobalScope() const { return false; }
@@ -107,8 +107,8 @@ public:
     void destroyedMessagePort(MessagePort*);
     const HashSet<MessagePort*>& messagePorts() const { return m_messagePorts; }
 
-    void ref() { refScriptExecutionContext(); }
-    void deref() { derefScriptExecutionContext(); }
+    void ref() { refExecutionContext(); }
+    void deref() { derefExecutionContext(); }
 
     virtual void postTask(PassOwnPtr<ExecutionContextTask>) = 0; // Executes the task on context's thread asynchronously.
 
@@ -139,8 +139,8 @@ private:
 
     void closeMessagePorts();
 
-    virtual void refScriptExecutionContext() = 0;
-    virtual void derefScriptExecutionContext() = 0;
+    virtual void refExecutionContext() = 0;
+    virtual void derefExecutionContext() = 0;
     virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
     // Implementation details for DOMTimer. No other classes should call these functions.
@@ -165,11 +165,11 @@ private:
     RefPtr<DatabaseContext> m_databaseContext;
 
     // The location of this member is important; to make sure contextDestroyed() notification on
-    // ScriptExecutionContext's members (notably m_timeouts) is called before they are destructed,
+    // ExecutionContext's members (notably m_timeouts) is called before they are destructed,
     // m_lifecycleNotifer should be placed *after* such members.
     OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
 };
 
 } // namespace WebCore
 
-#endif // ScriptExecutionContext_h
+#endif // ExecutionContext_h

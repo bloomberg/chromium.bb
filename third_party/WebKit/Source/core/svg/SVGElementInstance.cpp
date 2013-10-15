@@ -203,7 +203,7 @@ const AtomicString& SVGElementInstance::interfaceName() const
     return EventTargetNames::SVGElementInstance;
 }
 
-ScriptExecutionContext* SVGElementInstance::scriptExecutionContext() const
+ExecutionContext* SVGElementInstance::executionContext() const
 {
     return &m_element->document();
 }

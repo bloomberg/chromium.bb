@@ -33,7 +33,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/DOMError.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventQueue.h"
 #include "core/events/ThreadLocalEventNames.h"
@@ -47,7 +47,7 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBRequest> IDBRequest::create(ScriptExecutionContext* context, PassRefPtr<IDBAny> source, IDBTransaction* transaction)
+PassRefPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBTransaction* transaction)
 {
     RefPtr<IDBRequest> request(adoptRef(new IDBRequest(context, source, IDBDatabaseBackendInterface::NormalTask, transaction)));
     request->suspendIfNeeded();
@@ -57,7 +57,7 @@ PassRefPtr<IDBRequest> IDBRequest::create(ScriptExecutionContext* context, PassR
     return request.release();
 }
 
-PassRefPtr<IDBRequest> IDBRequest::create(ScriptExecutionContext* context, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType taskType, IDBTransaction* transaction)
+PassRefPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType taskType, IDBTransaction* transaction)
 {
     RefPtr<IDBRequest> request(adoptRef(new IDBRequest(context, source, taskType, transaction)));
     request->suspendIfNeeded();
@@ -67,7 +67,7 @@ PassRefPtr<IDBRequest> IDBRequest::create(ScriptExecutionContext* context, PassR
     return request.release();
 }
 
-IDBRequest::IDBRequest(ScriptExecutionContext* context, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType taskType, IDBTransaction* transaction)
+IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType taskType, IDBTransaction* transaction)
     : ActiveDOMObject(context)
     , m_result(0)
     , m_contextStopped(false)
@@ -89,7 +89,7 @@ IDBRequest::IDBRequest(ScriptExecutionContext* context, PassRefPtr<IDBAny> sourc
 
 IDBRequest::~IDBRequest()
 {
-    ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !scriptExecutionContext());
+    ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
 }
 
 PassRefPtr<IDBAny> IDBRequest::result(ExceptionState& es) const
@@ -145,7 +145,7 @@ void IDBRequest::markEarlyDeath()
 void IDBRequest::abort()
 {
     ASSERT(!m_requestAborted);
-    if (m_contextStopped || !scriptExecutionContext())
+    if (m_contextStopped || !executionContext())
         return;
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
     if (m_readyState == DONE)
@@ -154,7 +154,7 @@ void IDBRequest::abort()
     // Enqueued events may be the only reference to this object.
     RefPtr<IDBRequest> self(this);
 
-    EventQueue* eventQueue = scriptExecutionContext()->eventQueue();
+    EventQueue* eventQueue = executionContext()->eventQueue();
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
         bool removed = eventQueue->cancelEvent(m_enqueuedEvents[i].get());
         ASSERT_UNUSED(removed, removed);
@@ -178,7 +178,7 @@ void IDBRequest::setCursorDetails(IndexedDB::CursorType cursorType, IndexedDB::C
 void IDBRequest::setPendingCursor(PassRefPtr<IDBCursor> cursor)
 {
     ASSERT(m_readyState == DONE);
-    ASSERT(scriptExecutionContext());
+    ASSERT(executionContext());
     ASSERT(m_transaction);
     ASSERT(!m_pendingCursor);
     ASSERT(cursor == getResultCursor());
@@ -227,7 +227,7 @@ void IDBRequest::checkForReferenceCycle()
 
 bool IDBRequest::shouldEnqueueEvent() const
 {
-    if (m_contextStopped || !scriptExecutionContext())
+    if (m_contextStopped || !executionContext())
         return false;
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
     if (m_requestAborted)
@@ -419,9 +419,9 @@ const AtomicString& IDBRequest::interfaceName() const
     return EventTargetNames::IDBRequest;
 }
 
-ScriptExecutionContext* IDBRequest::scriptExecutionContext() const
+ExecutionContext* IDBRequest::executionContext() const
 {
-    return ActiveDOMObject::scriptExecutionContext();
+    return ActiveDOMObject::executionContext();
 }
 
 bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
@@ -431,7 +431,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
     ASSERT(!m_contextStopped);
     ASSERT(m_hasPendingActivity);
     ASSERT(m_enqueuedEvents.size());
-    ASSERT(scriptExecutionContext());
+    ASSERT(executionContext());
     ASSERT(event->target() == this);
     ASSERT_WITH_MESSAGE(m_readyState < DONE, "When dispatching event %s, m_readyState < DONE(%d), was %d", event->type().string().utf8().data(), DONE, m_readyState);
 
@@ -516,7 +516,7 @@ void IDBRequest::transactionDidFinishAndDispatch()
     ASSERT(m_transaction);
     ASSERT(m_transaction->isVersionChange());
     ASSERT(m_readyState == DONE);
-    ASSERT(scriptExecutionContext());
+    ASSERT(executionContext());
     m_transaction.clear();
     m_readyState = PENDING;
 }
@@ -525,12 +525,12 @@ void IDBRequest::enqueueEvent(PassRefPtr<Event> event)
 {
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
 
-    if (m_contextStopped || !scriptExecutionContext())
+    if (m_contextStopped || !executionContext())
         return;
 
     ASSERT_WITH_MESSAGE(m_readyState == PENDING || m_didFireUpgradeNeededEvent, "When queueing event %s, m_readyState was %d", event->type().string().utf8().data(), m_readyState);
 
-    EventQueue* eventQueue = scriptExecutionContext()->eventQueue();
+    EventQueue* eventQueue = executionContext()->eventQueue();
     event->setTarget(this);
 
     if (eventQueue->enqueueEvent(event.get()))

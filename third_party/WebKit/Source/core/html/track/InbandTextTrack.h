@@ -39,7 +39,7 @@ class TextTrackCue;
 
 class InbandTextTrack : public TextTrack, public InbandTextTrackPrivateClient {
 public:
-    static PassRefPtr<InbandTextTrack> create(ScriptExecutionContext*, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
+    static PassRefPtr<InbandTextTrack> create(ExecutionContext*, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
     virtual ~InbandTextTrack();
 
     virtual bool isClosedCaptions() const OVERRIDE;
@@ -51,7 +51,7 @@ public:
     void trackRemoved();
 
 private:
-    InbandTextTrack(ScriptExecutionContext*, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
+    InbandTextTrack(ExecutionContext*, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
 
     virtual void addWebVTTCue(InbandTextTrackPrivate*, double, double, const String&, const String&, const String&) OVERRIDE;
 

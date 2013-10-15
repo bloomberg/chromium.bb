@@ -31,8 +31,8 @@
 #ifndef WorkerRunLoop_h
 #define WorkerRunLoop_h
 
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "wtf/MessageQueue.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -75,7 +75,7 @@ namespace WebCore {
             static PassOwnPtr<Task> create(PassOwnPtr<ExecutionContextTask>, const String& mode);
             ~Task() { }
             const String& mode() const { return m_mode; }
-            void performTask(const WorkerRunLoop&, ScriptExecutionContext*);
+            void performTask(const WorkerRunLoop&, ExecutionContext*);
 
         private:
             Task(PassOwnPtr<ExecutionContextTask>, const String& mode);

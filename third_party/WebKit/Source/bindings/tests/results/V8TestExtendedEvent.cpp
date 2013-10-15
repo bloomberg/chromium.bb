@@ -87,7 +87,7 @@ static void keyLocationAttributeGetter(v8::Local<v8::String> name, const v8::Pro
 static void keyLocationAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeScriptExecutionContext(), UseCounter::KeyboardEventKeyLocation);
+    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::KeyboardEventKeyLocation);
     EventV8Internal::keyLocationAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -126,7 +126,7 @@ bool fillEventInit(EventInit& eventInit, const Dictionary& options)
 
     options.get("location", eventInit.location);
     if (options.get("keyLocation", eventInit.location))
-        UseCounter::countDeprecation(activeScriptExecutionContext(), UseCounter::KeyboardEventKeyLocation);
+        UseCounter::countDeprecation(activeExecutionContext(), UseCounter::KeyboardEventKeyLocation);
     return true;
 }
 

@@ -56,7 +56,7 @@ class NotificationCenter;
 class NotificationPermissionCallback;
 class ResourceError;
 class ResourceResponse;
-class ScriptExecutionContext;
+class ExecutionContext;
 class ThreadableLoader;
 
 class Notification : public RefCounted<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
@@ -64,9 +64,9 @@ class Notification : public RefCounted<Notification>, public ScriptWrappable, pu
 public:
     Notification();
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    static PassRefPtr<Notification> create(const String& title, const String& body, const String& iconURI, ScriptExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
+    static PassRefPtr<Notification> create(const String& title, const String& body, const String& iconURI, ExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
 #endif
-    static PassRefPtr<Notification> create(ScriptExecutionContext*, const String& title, const Dictionary& options);
+    static PassRefPtr<Notification> create(ExecutionContext*, const String& title, const Dictionary& options);
 
     virtual ~Notification();
 
@@ -116,7 +116,7 @@ public:
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
+    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
     // ActiveDOMObject interface
@@ -129,15 +129,15 @@ public:
 
     void finalize();
 
-    static const String& permission(ScriptExecutionContext*);
+    static const String& permission(ExecutionContext*);
     static const String& permissionString(NotificationClient::Permission);
-    static void requestPermission(ScriptExecutionContext*, PassRefPtr<NotificationPermissionCallback> = 0);
+    static void requestPermission(ExecutionContext*, PassRefPtr<NotificationPermissionCallback> = 0);
 
 private:
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    Notification(const String& title, const String& body, const String& iconURI, ScriptExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter>);
+    Notification(const String& title, const String& body, const String& iconURI, ExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter>);
 #endif
-    Notification(ScriptExecutionContext*, const String& title);
+    Notification(ExecutionContext*, const String& title);
 
     void setBody(const String& body) { m_body = body; }
 

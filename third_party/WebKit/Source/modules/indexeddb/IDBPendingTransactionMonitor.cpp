@@ -36,7 +36,7 @@ namespace WebCore {
 typedef Vector<RefPtr<IDBTransaction> > TransactionList;
 static ThreadSpecific<TransactionList>& transactions()
 {
-    // FIXME: Move the Vector to ScriptExecutionContext to avoid dealing with
+    // FIXME: Move the Vector to ExecutionContext to avoid dealing with
     // thread-local storage.
     AtomicallyInitializedStatic(ThreadSpecific<TransactionList>*, transactions = new ThreadSpecific<TransactionList>);
     return *transactions;

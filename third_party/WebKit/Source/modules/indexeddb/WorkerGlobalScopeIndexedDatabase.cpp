@@ -29,7 +29,7 @@
 
 #include "modules/indexeddb/WorkerGlobalScopeIndexedDatabase.h"
 
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBFactory.h"
 #include "modules/indexeddb/IDBFactoryBackendInterface.h"
 

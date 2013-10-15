@@ -647,7 +647,7 @@ static void readonlyEventHandlerAttributeAttributeGetter(v8::Local<v8::String> n
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     EventListener* value = imp->readonlyEventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate()));
-    v8SetReturnValue(info, value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(value)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    v8SetReturnValue(info, value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(value)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void readonlyEventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -725,17 +725,17 @@ static void cachedAttributeReadonlyAnyAttributeAttributeGetterCallback(v8::Local
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void callWithScriptExecutionContextReadonlyAnyAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void callWithExecutionContextReadonlyAnyAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ScriptExecutionContext* scriptContext = getScriptExecutionContext();
-    v8SetReturnValue(info, imp->callWithScriptExecutionContextReadonlyAnyAttribute(scriptContext).v8Value());
+    ExecutionContext* scriptContext = getExecutionContext();
+    v8SetReturnValue(info, imp->callWithExecutionContextReadonlyAnyAttribute(scriptContext).v8Value());
 }
 
-static void callWithScriptExecutionContextReadonlyAnyAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void callWithExecutionContextReadonlyAnyAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::callWithScriptExecutionContextReadonlyAnyAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::callWithExecutionContextReadonlyAnyAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -863,7 +863,7 @@ static void deprecatedReadonlyLongAttributeAttributeGetter(v8::Local<v8::String>
 static void deprecatedReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeScriptExecutionContext(), UseCounter::ReadonlyLongAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::ReadonlyLongAttribute);
     TestObjectPythonV8Internal::deprecatedReadonlyLongAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -1003,7 +1003,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"activityLogAccessReadonlyLongAttribute", TestObjectPythonV8Internal::activityLogAccessReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"activityLogGetterReadonlyLongAttribute", TestObjectPythonV8Internal::activityLogGetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cachedAttributeReadonlyAnyAttribute", TestObjectPythonV8Internal::cachedAttributeReadonlyAnyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"callWithScriptExecutionContextReadonlyAnyAttribute", TestObjectPythonV8Internal::callWithScriptExecutionContextReadonlyAnyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"callWithExecutionContextReadonlyAnyAttribute", TestObjectPythonV8Internal::callWithExecutionContextReadonlyAnyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"checkSecurityForNodeReadonlyDocumentAttribute", TestObjectPythonV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #if ENABLE(Condition)
     {"conditionalReadonlyLongAttribute", TestObjectPythonV8Internal::conditionalReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

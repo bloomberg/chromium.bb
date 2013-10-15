@@ -77,9 +77,9 @@ public:
     void didRemoveDOMNode(Node*);
     void willModifyDOMAttr(Element*, const AtomicString&, const AtomicString&);
     void willSendXMLHttpRequest(const String& url);
-    void didInstallTimer(ScriptExecutionContext*, int timerId, int timeout, bool singleShot);
-    void didRemoveTimer(ScriptExecutionContext*, int timerId);
-    void willFireTimer(ScriptExecutionContext*, int timerId);
+    void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
+    void didRemoveTimer(ExecutionContext*, int timerId);
+    void willFireTimer(ExecutionContext*, int timerId);
     void didRequestAnimationFrame(Document*, int callbackId);
     void didCancelAnimationFrame(Document*, int callbackId);
     void willFireAnimationFrame(Document*, int callbackId);

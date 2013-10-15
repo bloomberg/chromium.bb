@@ -42,7 +42,7 @@ namespace WebCore {
 
 class BlobDataHandle;
 class FileReaderLoaderClient;
-class ScriptExecutionContext;
+class ExecutionContext;
 class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
@@ -62,8 +62,8 @@ public:
     FileReaderLoader(ReadType, FileReaderLoaderClient*);
     ~FileReaderLoader();
 
-    void start(ScriptExecutionContext*, PassRefPtr<BlobDataHandle>);
-    void start(ScriptExecutionContext*, const Stream&, unsigned readSize);
+    void start(ExecutionContext*, PassRefPtr<BlobDataHandle>);
+    void start(ExecutionContext*, const Stream&, unsigned readSize);
     void cancel();
 
     // ThreadableLoaderClient
@@ -82,7 +82,7 @@ public:
     void setDataType(const String& dataType) { m_dataType = dataType; }
 
 private:
-    void startInternal(ScriptExecutionContext*, const Stream*, PassRefPtr<BlobDataHandle>);
+    void startInternal(ExecutionContext*, const Stream*, PassRefPtr<BlobDataHandle>);
     void terminate();
     void cleanup();
     void failed(FileError::ErrorCode);

@@ -70,7 +70,7 @@ class ResourceRequest;
 class ResourceResponse;
 class ScriptArguments;
 class ScriptCallStack;
-class ScriptExecutionContext;
+class ExecutionContext;
 class ScriptState;
 class TimelineTraceEventProcessor;
 class WebSocketHandshakeRequest;
@@ -130,7 +130,7 @@ public:
     void didCommitLoad();
 
     // Methods called from WebCore.
-    bool willCallFunction(ScriptExecutionContext*, const String& scriptName, int scriptLine);
+    bool willCallFunction(ExecutionContext*, const String& scriptName, int scriptLine);
     void didCallFunction();
 
     bool willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath);
@@ -165,27 +165,27 @@ public:
     bool willWriteHTML(Document*, unsigned startLine);
     void didWriteHTML(unsigned endLine);
 
-    void didInstallTimer(ScriptExecutionContext*, int timerId, int timeout, bool singleShot);
-    void didRemoveTimer(ScriptExecutionContext*, int timerId);
-    bool willFireTimer(ScriptExecutionContext*, int timerId);
+    void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
+    void didRemoveTimer(ExecutionContext*, int timerId);
+    bool willFireTimer(ExecutionContext*, int timerId);
     void didFireTimer();
 
-    bool willDispatchXHRReadyStateChangeEvent(ScriptExecutionContext*, XMLHttpRequest*);
+    bool willDispatchXHRReadyStateChangeEvent(ExecutionContext*, XMLHttpRequest*);
     void didDispatchXHRReadyStateChangeEvent();
-    bool willDispatchXHRLoadEvent(ScriptExecutionContext*, XMLHttpRequest*);
+    bool willDispatchXHRLoadEvent(ExecutionContext*, XMLHttpRequest*);
     void didDispatchXHRLoadEvent();
 
     bool willEvaluateScript(Frame*, const String&, int);
     void didEvaluateScript();
 
-    void consoleTimeStamp(ScriptExecutionContext*, const String& title);
+    void consoleTimeStamp(ExecutionContext*, const String& title);
     void domContentLoadedEventFired(Frame*);
     void loadEventFired(Frame*);
 
-    void consoleTime(ScriptExecutionContext*, const String&);
-    void consoleTimeEnd(ScriptExecutionContext*, const String&, ScriptState*);
-    void consoleTimeline(ScriptExecutionContext*, const String& title, ScriptState*);
-    void consoleTimelineEnd(ScriptExecutionContext*, const String& title, ScriptState*);
+    void consoleTime(ExecutionContext*, const String&);
+    void consoleTimeEnd(ExecutionContext*, const String&, ScriptState*);
+    void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
+    void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
 
     void didScheduleResourceRequest(Document*, const String& url);
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);

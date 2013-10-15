@@ -140,7 +140,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
         ASSERT(!args[i].IsEmpty());
     }
 
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, getScriptExecutionContext(), thisObject, m_arguments.size(), args.get(), m_scriptState->isolate());
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, getExecutionContext(), thisObject, m_arguments.size(), args.get(), m_scriptState->isolate());
     if (!scope.success()) {
         hadException = true;
         return ScriptValue();
@@ -203,7 +203,7 @@ ScriptValue ScriptCallback::call()
     for (size_t i = 0; i < m_arguments.size(); ++i)
         args[i] = m_arguments[i].v8Value();
 
-    v8::Handle<v8::Value> result = ScriptController::callFunction(m_scriptState->scriptExecutionContext(), function, object, m_arguments.size(), args.get(), m_scriptState->isolate());
+    v8::Handle<v8::Value> result = ScriptController::callFunction(m_scriptState->executionContext(), function, object, m_arguments.size(), args.get(), m_scriptState->isolate());
     return ScriptValue(result, m_scriptState->isolate());
 }
 

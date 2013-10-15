@@ -84,7 +84,7 @@ MediaKeys::~MediaKeys()
         m_sessions[i]->close();
 }
 
-PassRefPtr<MediaKeySession> MediaKeys::createSession(ScriptExecutionContext* context, const String& type, Uint8Array* initData, ExceptionState& es)
+PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& type, Uint8Array* initData, ExceptionState& es)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession>:
     // The createSession(type, initData) method must run the following steps:

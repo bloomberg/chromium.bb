@@ -44,7 +44,7 @@ CALLBACK_INTERFACE_H_INCLUDES = set([
     'bindings/v8/ScopedPersistent.h',
 ])
 CALLBACK_INTERFACE_CPP_INCLUDES = set([
-    'core/dom/ScriptExecutionContext.h',
+    'core/dom/ExecutionContext.h',
     'bindings/v8/V8Binding.h',
     'bindings/v8/V8Callback.h',
     'wtf/Assertions.h',

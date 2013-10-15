@@ -96,7 +96,7 @@ namespace WebCore {
         void setDocument(PassRefPtr<Document>);
 
         virtual const AtomicString& interfaceName() const OVERRIDE;
-        virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+        virtual ExecutionContext* executionContext() const OVERRIDE;
 
         virtual DOMWindow* toDOMWindow();
 
@@ -137,9 +137,9 @@ namespace WebCore {
 
         Element* frameElement() const;
 
-        void focus(ScriptExecutionContext* = 0);
+        void focus(ExecutionContext* = 0);
         void blur();
-        void close(ScriptExecutionContext* = 0);
+        void close(ExecutionContext* = 0);
         void print();
         void stop();
 

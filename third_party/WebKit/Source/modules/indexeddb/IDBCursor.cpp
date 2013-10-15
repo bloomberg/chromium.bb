@@ -30,7 +30,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBAny.h"
@@ -171,7 +171,7 @@ void IDBCursor::advance(unsigned long count, ExceptionState& es)
     m_backend->advance(count, m_request);
 }
 
-void IDBCursor::continueFunction(ScriptExecutionContext* context, const ScriptValue& keyValue, ExceptionState& es)
+void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& es)
 {
     DOMRequestState requestState(context);
     RefPtr<IDBKey> key = keyValue.isUndefined() ? 0 : scriptValueToIDBKey(&requestState, keyValue);
@@ -227,7 +227,7 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionState& es)
     m_backend->continueFunction(key, m_request);
 }
 
-PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& es)
 {
     IDB_TRACE("IDBCursor::delete");
     if (m_transaction->isFinished()) {
@@ -291,21 +291,21 @@ void IDBCursor::checkForReferenceCycle()
     m_request.clear();
 }
 
-ScriptValue IDBCursor::key(ScriptExecutionContext* context)
+ScriptValue IDBCursor::key(ExecutionContext* context)
 {
     m_keyDirty = false;
     DOMRequestState requestState(context);
     return idbKeyToScriptValue(&requestState, m_key);
 }
 
-ScriptValue IDBCursor::primaryKey(ScriptExecutionContext* context)
+ScriptValue IDBCursor::primaryKey(ExecutionContext* context)
 {
     m_primaryKeyDirty = false;
     DOMRequestState requestState(context);
     return idbKeyToScriptValue(&requestState, m_primaryKey);
 }
 
-ScriptValue IDBCursor::value(ScriptExecutionContext* context)
+ScriptValue IDBCursor::value(ExecutionContext* context)
 {
     ASSERT(isCursorWithValue());
 

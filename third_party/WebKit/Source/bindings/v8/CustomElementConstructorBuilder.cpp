@@ -133,7 +133,7 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
 {
     ASSERT(!m_prototype.IsEmpty());
 
-    RefPtr<ScriptExecutionContext> scriptExecutionContext(toScriptExecutionContext(m_context));
+    RefPtr<ExecutionContext> executionContext(toExecutionContext(m_context));
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
@@ -144,7 +144,7 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
     v8::Handle<v8::Function> leftView = retrieveCallback(isolate, "leftViewCallback");
     v8::Handle<v8::Function> attributeChanged = retrieveCallback(isolate, "attributeChangedCallback");
 
-    m_callbacks = V8CustomElementLifecycleCallbacks::create(scriptExecutionContext.get(), m_prototype, created, enteredView, leftView, attributeChanged);
+    m_callbacks = V8CustomElementLifecycleCallbacks::create(executionContext.get(), m_prototype, created, enteredView, leftView, attributeChanged);
     return m_callbacks.get();
 }
 
