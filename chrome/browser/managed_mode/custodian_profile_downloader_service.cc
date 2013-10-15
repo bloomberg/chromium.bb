@@ -16,6 +16,10 @@ CustodianProfileDownloaderService::CustodianProfileDownloaderService(
 
 CustodianProfileDownloaderService::~CustodianProfileDownloaderService() {}
 
+void CustodianProfileDownloaderService::Shutdown() {
+  profile_downloader_.reset();
+}
+
 void CustodianProfileDownloaderService::DownloadProfile(
     const DownloadProfileCallback& callback) {
   // The user must be logged in.

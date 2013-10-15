@@ -20,6 +20,9 @@ class CustodianProfileDownloaderService : public BrowserContextKeyedService,
 
   virtual ~CustodianProfileDownloaderService();
 
+  // BrowserContextKeyedService:
+  virtual void Shutdown() OVERRIDE;
+
   // Downloads the GAIA account information for the |custodian_profile_|.
   // This is a best-effort attempt with no error reporting nor timeout.
   // If the download is successful, the profile's full (display) name will

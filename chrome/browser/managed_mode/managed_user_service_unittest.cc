@@ -8,6 +8,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/managed_mode/custodian_profile_downloader_service.h"
+#include "chrome/browser/managed_mode/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -26,6 +28,10 @@
 using content::MessageLoopRunner;
 
 namespace {
+
+void OnProfileDownloadedFail(const string16& full_name) {
+  ASSERT_TRUE(false) << "Profile download should not have succeeded.";
+}
 
 class ManagedModeURLFilterObserver : public ManagedModeURLFilter::Observer {
  public:
@@ -131,6 +137,19 @@ TEST_F(ManagedUserServiceTest, GetManualExceptionsForHost) {
             managed_user_service_->GetManualBehaviorForURL(kBlurpURL));
   EXPECT_EQ(ManagedUserService::MANUAL_NONE,
             managed_user_service_->GetManualBehaviorForURL(kMooseURL));
+}
+
+// Ensure that the CustodianProfileDownloaderService shuts down cleanly. If no
+// DCHECK is hit when the service is destroyed, this test passed.
+TEST_F(ManagedUserServiceTest, ShutDownCustodianProfileDownloader) {
+  CustodianProfileDownloaderService* downloader_service =
+      CustodianProfileDownloaderServiceFactory::GetForProfile(
+          &profile_);
+
+  // Emulate being logged in, then start to download a profile so a
+  // ProfileDownloader gets created.
+  profile_.GetPrefs()->SetString(prefs::kGoogleServicesUsername, "Logged In");
+  downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }
 
 class ManagedUserServiceExtensionTest : public ExtensionServiceTestBase {
