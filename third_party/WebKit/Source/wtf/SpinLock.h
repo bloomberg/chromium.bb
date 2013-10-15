@@ -42,8 +42,10 @@ namespace WTF {
 
 ALWAYS_INLINE void spinLockLock(int volatile* lock)
 {
-    while (atomicIncrement(lock) != 1)
+    while (atomicIncrement(lock) != 1) {
         atomicDecrement(lock);
+        while (*lock) { } // Avoid livelock.
+    }
 }
 
 ALWAYS_INLINE void spinLockUnlock(int volatile* lock)
