@@ -32,6 +32,13 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
 
   void SetImageBounds(gfx::Size image_bounds);
 
+  // Sets a UV transform to be used at draw time. Defaults to (0, 0) and (1, 1).
+  void SetUV(gfx::PointF top_left, gfx::PointF bottom_right);
+
+  // Sets an opacity value per vertex. It will be multiplied by the layer
+  // opacity value.
+  void SetVertexOpacity(const float vertex_opacity[4]);
+
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
@@ -50,6 +57,10 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
   gfx::Size image_bounds_;
 
   UIResourceId ui_resource_id_;
+
+  gfx::PointF uv_top_left_;
+  gfx::PointF uv_bottom_right_;
+  float vertex_opacity_[4];
 
  private:
   virtual const char* LayerTypeAsString() const OVERRIDE;

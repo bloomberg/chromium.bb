@@ -55,13 +55,49 @@ scoped_refptr<UIResourceLayer> UIResourceLayer::Create() {
   return make_scoped_refptr(new UIResourceLayer());
 }
 
-UIResourceLayer::UIResourceLayer() {}
+UIResourceLayer::UIResourceLayer()
+    : Layer(),
+      uv_top_left_(0.f, 0.f),
+      uv_bottom_right_(1.f, 1.f) {
+  vertex_opacity_[0] = 1.0f;
+  vertex_opacity_[1] = 1.0f;
+  vertex_opacity_[2] = 1.0f;
+  vertex_opacity_[3] = 1.0f;
+}
 
 UIResourceLayer::~UIResourceLayer() {}
 
 scoped_ptr<LayerImpl> UIResourceLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return UIResourceLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
+}
+
+void UIResourceLayer::SetUV(gfx::PointF top_left, gfx::PointF bottom_right) {
+  if (uv_top_left_ == top_left && uv_bottom_right_ == bottom_right)
+    return;
+  uv_top_left_ = top_left;
+  uv_bottom_right_ = bottom_right;
+  SetNeedsCommit();
+}
+
+void UIResourceLayer::SetVertexOpacity(float bottom_left,
+                                       float top_left,
+                                       float top_right,
+                                       float bottom_right) {
+  // Indexing according to the quad vertex generation:
+  // 1--2
+  // |  |
+  // 0--3
+  if (vertex_opacity_[0] == bottom_left &&
+      vertex_opacity_[1] == top_left &&
+      vertex_opacity_[2] == top_right &&
+      vertex_opacity_[3] == bottom_right)
+    return;
+  vertex_opacity_[0] = bottom_left;
+  vertex_opacity_[1] = top_left;
+  vertex_opacity_[2] = top_right;
+  vertex_opacity_[3] = bottom_right;
+  SetNeedsCommit();
 }
 
 void UIResourceLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -121,6 +157,8 @@ void UIResourceLayer::PushPropertiesTo(LayerImpl* layer) {
         layer_tree_host()->GetUIResourceSize(ui_resource_holder_->id());
     layer_impl->SetUIResourceId(ui_resource_holder_->id());
     layer_impl->SetImageBounds(image_size);
+    layer_impl->SetUV(uv_top_left_, uv_bottom_right_);
+    layer_impl->SetVertexOpacity(vertex_opacity_);
   }
 }
 
