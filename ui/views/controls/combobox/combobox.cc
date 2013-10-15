@@ -239,12 +239,14 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
   bool show_menu = false;
   int new_index = kNoSelection;
   switch (e.key_code()) {
-    // Show the menu on Space.
-    case ui::VKEY_SPACE:
+    // Show the menu on F4 without modifiers.
+    case ui::VKEY_F4:
+      if (e.IsAltDown() || e.IsAltGrDown() || e.IsControlDown())
+        return false;
       show_menu = true;
       break;
 
-    // Show the menu on Alt+Down (like Windows) or move to the next item if any.
+    // Move to the next item if any, or show the menu on Alt+Down like Windows.
     case ui::VKEY_DOWN:
       if (e.IsAltDown())
         show_menu = true;
@@ -435,8 +437,8 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   gfx::Rect bounds(menu_position, lb.size());
 
   dropdown_open_ = true;
-  if (dropdown_list_menu_runner_->RunMenuAt(
-          GetWidget(), NULL, bounds, MenuItemView::TOPLEFT, source_type, 0) ==
+  if (dropdown_list_menu_runner_->RunMenuAt(GetWidget(), NULL, bounds,
+          MenuItemView::TOPLEFT, source_type, MenuRunner::COMBOBOX) ==
       MenuRunner::MENU_DELETED)
     return;
   dropdown_open_ = false;

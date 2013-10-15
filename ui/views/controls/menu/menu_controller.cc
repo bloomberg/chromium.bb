@@ -1104,6 +1104,10 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
         return false;
       break;
 
+    case ui::VKEY_F4:
+      if (!accept_on_f4_)
+        break;
+      // Fallthrough to accept on F4, so combobox menus match Windows behavior.
     case ui::VKEY_RETURN:
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
@@ -1167,7 +1171,8 @@ MenuController::MenuController(ui::NativeTheme* theme,
       message_loop_depth_(0),
       menu_config_(theme),
       closing_event_time_(base::TimeDelta()),
-      menu_start_time_(base::TimeTicks()) {
+      menu_start_time_(base::TimeTicks()),
+      accept_on_f4_(false) {
   active_instance_ = this;
 }
 

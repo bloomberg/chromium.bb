@@ -62,6 +62,10 @@ class VIEWS_EXPORT MenuRunner {
     // The menu is a context menu (not necessarily nested), for example right
     // click on a link on a website in the browser.
     CONTEXT_MENU  = 1 << 3,
+
+    // The menu should behave like a Windows native Combobox dropdow menu.
+    // This behavior includes accepting the pending item and closing on F4.
+    COMBOBOX  = 1 << 4,
   };
 
   enum RunResult {

@@ -101,6 +101,8 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
   // Returns the time from the event which closed the menu - or 0.
   base::TimeDelta closing_event_time() const { return closing_event_time_; }
 
+  void set_accept_on_f4(bool accept_on_f4) { accept_on_f4_ = accept_on_f4; }
+
   // Various events, forwarded from the submenu.
   //
   // NOTE: the coordinates of the events are in that of the
@@ -581,6 +583,9 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
   // If a mouse press triggered this menu, this will have its location (in
   // screen coordinates). Otherwise this will be (0, 0).
   gfx::Point menu_start_mouse_press_loc_;
+
+  // Whether the menu should accept on F4, like Windows native Combobox menus.
+  bool accept_on_f4_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };
