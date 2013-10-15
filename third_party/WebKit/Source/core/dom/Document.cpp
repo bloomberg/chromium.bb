@@ -1956,7 +1956,8 @@ void Document::attach(const AttachContext& context)
     m_renderView->setIsInWindow(true);
     setRenderer(m_renderView);
 
-    recalcStyle(Force);
+    m_renderView->setStyle(StyleResolver::styleForDocument(*this));
+    view()->updateCompositingLayersAfterStyleChange();
 
     m_styleResolverThrowawayTimer.startRepeating(60);
 
