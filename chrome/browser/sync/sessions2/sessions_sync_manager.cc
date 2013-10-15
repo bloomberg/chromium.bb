@@ -4,12 +4,22 @@
 
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/network_time/navigation_time_helper.h"
+#endif
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
+#include "chrome/browser/sync/glue/synced_window_delegate.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/common/url_constants.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/api/time.h"
 
+using content::NavigationEntry;
+using sessions::SerializedNavigationEntry;
 using syncer::SyncChange;
 using syncer::SyncData;
 
@@ -19,15 +29,17 @@ namespace browser_sync {
 // TODO(zea): pull this from the server.
 static const int kMaxSyncFavicons = 200;
 
-static const int kInvalidTabNodeId = -1;
+// The maximum number of navigations in each direction we care to sync.
+static const int kMaxSyncNavigationCount = 6;
 
 SessionsSyncManager::SessionsSyncManager(
     Profile* profile,
     scoped_ptr<SyncPrefs> sync_prefs,
     SyncInternalApiDelegate* delegate)
     : favicon_cache_(profile, kMaxSyncFavicons),
+      profile_(profile),
       delegate_(delegate),
-      local_session_header_node_id_(kInvalidTabNodeId) {
+      local_session_header_node_id_(TabNodePool2::kInvalidTabNodeID) {
   sync_prefs_ = sync_prefs.Pass();
 }
 
@@ -54,7 +66,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   error_handler_ = error_handler.Pass();
   sync_processor_ = sync_processor.Pass();
 
-  local_session_header_node_id_ = kInvalidTabNodeId;
+  local_session_header_node_id_ = TabNodePool2::kInvalidTabNodeID;
   scoped_ptr<DeviceInfo> local_device_info(delegate_->GetLocalDeviceInfo());
   syncer::SyncChangeList new_changes;
 
@@ -105,12 +117,175 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 void SessionsSyncManager::AssociateWindows(
     ReloadTabsOption option,
     syncer::SyncChangeList* change_output) {
-  NOTIMPLEMENTED() << "TODO(tim)";
+  const std::string local_tag = current_machine_tag();
+  sync_pb::SessionSpecifics specifics;
+  specifics.set_session_tag(local_tag);
+  sync_pb::SessionHeader* header_s = specifics.mutable_header();
+  SyncedSession* current_session = session_tracker_.GetSession(local_tag);
+  current_session->modified_time = base::Time::Now();
+  header_s->set_client_name(current_session_name_);
+  header_s->set_device_type(DeviceInfo::GetLocalDeviceType());
+
+  session_tracker_.ResetSessionTracking(local_tag);
+  std::set<SyncedWindowDelegate*> windows =
+      SyncedWindowDelegate::GetSyncedWindowDelegates();
+
+  for (std::set<SyncedWindowDelegate*>::const_iterator i =
+           windows.begin(); i != windows.end(); ++i) {
+    // Make sure the window has tabs and a viewable window. The viewable window
+    // check is necessary because, for example, when a browser is closed the
+    // destructor is not necessarily run immediately. This means its possible
+    // for us to get a handle to a browser that is about to be removed. If
+    // the tab count is 0 or the window is NULL, the browser is about to be
+    // deleted, so we ignore it.
+    if (ShouldSyncWindow(*i) && (*i)->GetTabCount() && (*i)->HasWindow()) {
+      sync_pb::SessionWindow window_s;
+      SessionID::id_type window_id = (*i)->GetSessionId();
+      DVLOG(1) << "Associating window " << window_id << " with "
+               << (*i)->GetTabCount() << " tabs.";
+      window_s.set_window_id(window_id);
+      // Note: We don't bother to set selected tab index anymore. We still
+      // consume it when receiving foreign sessions, as reading it is free, but
+      // it triggers too many sync cycles with too little value to make setting
+      // it worthwhile.
+      if ((*i)->IsTypeTabbed()) {
+        window_s.set_browser_type(
+            sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
+      } else {
+        window_s.set_browser_type(
+            sync_pb::SessionWindow_BrowserType_TYPE_POPUP);
+      }
+
+      bool found_tabs = false;
+      for (int j = 0; j < (*i)->GetTabCount(); ++j) {
+        SessionID::id_type tab_id = (*i)->GetTabIdAt(j);
+        SyncedTabDelegate* synced_tab = (*i)->GetTabAt(j);
+
+        // GetTabAt can return a null tab; in that case just skip it.
+        if (!synced_tab)
+          continue;
+
+        if (!synced_tab->HasWebContents()) {
+          // For tabs without WebContents update the |tab_id|, as it could have
+          // changed after a session restore.
+          // Note: We cannot check if a tab is valid if it has no WebContents.
+          // We assume any such tab is valid and leave the contents of
+          // corresponding sync node unchanged.
+          if (synced_tab->GetSyncId() > TabNodePool2::kInvalidTabNodeID &&
+              tab_id > TabNodePool2::kInvalidTabID) {
+            UpdateTabIdIfNecessary(*synced_tab, tab_id, change_output);
+            found_tabs = true;
+            window_s.add_tab(tab_id);
+          }
+          continue;
+        }
+
+        if (RELOAD_TABS == option)
+          AssociateTab(synced_tab, change_output);
+
+        // If the tab is valid, it would have been added to the tracker either
+        // by the above AssociateTab call (at association time), or by the
+        // change processor calling AssociateTab for all modified tabs.
+        // Therefore, we can key whether this window has valid tabs based on
+        // the tab's presence in the tracker.
+        const SessionTab* tab = NULL;
+        if (session_tracker_.LookupSessionTab(local_tag, tab_id, &tab)) {
+          found_tabs = true;
+          window_s.add_tab(tab_id);
+        }
+      }
+      if (found_tabs) {
+        sync_pb::SessionWindow* header_window = header_s->add_window();
+        *header_window = window_s;
+
+        // Update this window's representation in the synced session tracker.
+        session_tracker_.PutWindowInSession(local_tag, window_id);
+        BuildSyncedSessionFromSpecifics(local_tag,
+                                        window_s,
+                                        current_session->modified_time,
+                                        current_session->windows[window_id]);
+      }
+    }
+  }
+  local_tab_pool_.DeleteUnassociatedTabNodes(change_output);
+  session_tracker_.CleanupSession(local_tag);
+
+  // Always update the header.  Sync takes care of dropping this update
+  // if the entity specifics are identical (i.e windows, client name did
+  // not change).
+  sync_pb::EntitySpecifics entity;
+  entity.mutable_session()->CopyFrom(specifics);
+  syncer::SyncData data = syncer::SyncData::CreateLocalData(
+        current_machine_tag(), current_session_name_, entity);
+  change_output->push_back(syncer::SyncChange(
+        FROM_HERE, syncer::SyncChange::ACTION_UPDATE, data));
 }
 
 void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
                                        syncer::SyncChangeList* change_output) {
-  NOTIMPLEMENTED() << "TODO(tim)";
+  DCHECK(tab->HasWebContents());
+  SessionID::id_type tab_id = tab->GetSessionId();
+  if (tab->IsBeingDestroyed()) {
+    // This tab is closing.
+    TabLinksMap::iterator tab_iter = local_tab_map_.find(tab_id);
+    if (tab_iter == local_tab_map_.end()) {
+      // We aren't tracking this tab (for example, sync setting page).
+      return;
+    }
+    local_tab_pool_.FreeTabNode(tab_iter->second->tab_node_id(),
+                                change_output);
+    local_tab_map_.erase(tab_iter);
+    return;
+  }
+  if (!ShouldSyncTab(*tab))
+    return;
+
+  TabLinksMap::iterator local_tab_map_iter = local_tab_map_.find(tab_id);
+  TabLink* tab_link = NULL;
+  int tab_node_id(TabNodePool2::kInvalidTabNodeID);
+
+  if (local_tab_map_iter == local_tab_map_.end()) {
+    tab_node_id = tab->GetSyncId();
+    // If there is an old sync node for the tab, reuse it.  If this is a new
+    // tab, get a sync node for it.
+    if (!local_tab_pool_.IsUnassociatedTabNode(tab_node_id)) {
+      tab_node_id = local_tab_pool_.GetFreeTabNode(change_output);
+      tab->SetSyncId(tab_node_id);
+    }
+    local_tab_pool_.AssociateTabNode(tab_node_id, tab_id);
+    tab_link = new TabLink(tab_node_id, tab);
+    local_tab_map_[tab_id] = make_linked_ptr<TabLink>(tab_link);
+  } else {
+    // This tab is already associated with a sync node, reuse it.
+    // Note: on some platforms the tab object may have changed, so we ensure
+    // the tab link is up to date.
+    tab_link = local_tab_map_iter->second.get();
+    local_tab_map_iter->second->set_tab(tab);
+  }
+  DCHECK(tab_link);
+  DCHECK_NE(tab_link->tab_node_id(), TabNodePool2::kInvalidTabNodeID);
+  DVLOG(1) << "Reloading tab " << tab_id << " from window "
+           << tab->GetWindowId();
+
+  // Write to sync model.
+  sync_pb::EntitySpecifics specifics;
+  LocalTabDelegateToSpecifics(*tab, specifics.mutable_session());
+  syncer::SyncData data = syncer::SyncData::CreateLocalData(
+      TabNodePool2::TabIdToTag(current_machine_tag_,
+                               tab_node_id),
+      current_session_name_,
+      specifics);
+  change_output->push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_UPDATE, data));
+
+  const GURL new_url = GetCurrentVirtualURL(*tab);
+  if (new_url != tab_link->url()) {
+    tab_link->set_url(new_url);
+    favicon_cache_.OnFaviconVisited(new_url, GetCurrentFaviconURL(*tab));
+  }
+
+  session_tracker_.GetSession(current_machine_tag())->modified_time =
+      base::Time::Now();
 }
 
 void SessionsSyncManager::OnLocalTabModified(
@@ -123,8 +298,46 @@ void SessionsSyncManager::OnBrowserOpened() {
 }
 
 bool SessionsSyncManager::ShouldSyncTab(const SyncedTabDelegate& tab) const {
-  NOTIMPLEMENTED() << "TODO(tim)";
-  return true;
+  if (tab.profile() != profile_)
+    return false;
+
+  if (SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
+          tab.GetWindowId()) == NULL) {
+    return false;
+  }
+
+  // Does the tab have a valid NavigationEntry?
+  if (tab.ProfileIsManaged() && tab.GetBlockedNavigations()->size() > 0)
+    return true;
+
+  int entry_count = tab.GetEntryCount();
+  if (entry_count == 0)
+    return false;  // This deliberately ignores a new pending entry.
+
+  int pending_index = tab.GetPendingEntryIndex();
+  bool found_valid_url = false;
+  for (int i = 0; i < entry_count; ++i) {
+    const content::NavigationEntry* entry = (i == pending_index) ?
+       tab.GetPendingEntry() : tab.GetEntryAtIndex(i);
+    if (!entry)
+      return false;
+    const GURL& virtual_url = entry->GetVirtualURL();
+    if (virtual_url.is_valid() &&
+        !virtual_url.SchemeIs(chrome::kChromeUIScheme) &&
+        !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
+        !virtual_url.SchemeIsFile()) {
+      found_valid_url = true;
+    }
+  }
+  return found_valid_url;
+}
+
+// static.
+bool SessionsSyncManager::ShouldSyncWindow(
+    const SyncedWindowDelegate* window) {
+  if (window->IsApp())
+    return false;
+  return window->IsTypeTabbed() || window->IsTypePopup();
 }
 
 void SessionsSyncManager::ForwardRelevantFaviconUpdatesToFaviconCache(
@@ -299,7 +512,7 @@ void SessionsSyncManager::InitializeCurrentMachineTag() {
 void SessionsSyncManager::PopulateSessionHeaderFromSpecifics(
     const sync_pb::SessionHeader& header_specifics,
     base::Time mtime,
-    SyncedSession* session_header) const {
+    SyncedSession* session_header) {
   if (header_specifics.has_client_name())
     session_header->session_name = header_specifics.client_name();
   if (header_specifics.has_device_type()) {
@@ -425,6 +638,143 @@ bool SessionsSyncManager::DisassociateForeignSession(
   }
   DVLOG(1) << "Disassociating session " << foreign_session_tag;
   return session_tracker_.DeleteSession(foreign_session_tag);
+}
+
+// static
+GURL SessionsSyncManager::GetCurrentVirtualURL(
+    const SyncedTabDelegate& tab_delegate) {
+  const int current_index = tab_delegate.GetCurrentEntryIndex();
+  const int pending_index = tab_delegate.GetPendingEntryIndex();
+  const NavigationEntry* current_entry =
+      (current_index == pending_index) ?
+      tab_delegate.GetPendingEntry() :
+      tab_delegate.GetEntryAtIndex(current_index);
+  return current_entry->GetVirtualURL();
+}
+
+// static
+GURL SessionsSyncManager::GetCurrentFaviconURL(
+    const SyncedTabDelegate& tab_delegate) {
+  const int current_index = tab_delegate.GetCurrentEntryIndex();
+  const int pending_index = tab_delegate.GetPendingEntryIndex();
+  const NavigationEntry* current_entry =
+      (current_index == pending_index) ?
+      tab_delegate.GetPendingEntry() :
+      tab_delegate.GetEntryAtIndex(current_index);
+  return (current_entry->GetFavicon().valid ?
+          current_entry->GetFavicon().url :
+          GURL());
+}
+
+void SessionsSyncManager::LocalTabDelegateToSpecifics(
+    const SyncedTabDelegate& tab_delegate,
+    sync_pb::SessionSpecifics* specifics) {
+  SessionTab* session_tab = NULL;
+  session_tab =
+      session_tracker_.GetTab(current_machine_tag(),
+                              tab_delegate.GetSessionId(),
+                              tab_delegate.GetSyncId());
+  SetSessionTabFromDelegate(tab_delegate, base::Time::Now(), session_tab);
+  sync_pb::SessionTab tab_s = session_tab->ToSyncData();
+  specifics->set_session_tag(current_machine_tag_);
+  specifics->set_tab_node_id(tab_delegate.GetSyncId());
+  specifics->mutable_tab()->CopyFrom(tab_s);
+}
+
+void SessionsSyncManager::UpdateTabIdIfNecessary(
+    const SyncedTabDelegate& tab_delegate,
+    SessionID::id_type new_tab_id,
+    syncer::SyncChangeList* change_output) {
+  DCHECK_NE(tab_delegate.GetSyncId(), TabNodePool2::kInvalidTabNodeID);
+  SessionID::id_type old_tab_id =
+      local_tab_pool_.GetTabIdFromTabNodeId(tab_delegate.GetSyncId());
+  if (old_tab_id != new_tab_id) {
+    // Rewrite the tab.  We don't have a way to get the old
+    // specifics here currently.
+    // TODO(tim): Is this too slow?  Should we cache specifics?
+    sync_pb::EntitySpecifics specifics;
+    LocalTabDelegateToSpecifics(tab_delegate,
+                                specifics.mutable_session());
+
+    // Update tab node pool with the new association.
+    local_tab_pool_.ReassociateTabNode(tab_delegate.GetSyncId(), new_tab_id);
+    syncer::SyncData data = syncer::SyncData::CreateLocalData(
+        TabNodePool2::TabIdToTag(current_machine_tag_,
+                                 tab_delegate.GetSyncId()),
+        current_session_name_, specifics);
+    change_output->push_back(syncer::SyncChange(
+        FROM_HERE, syncer::SyncChange::ACTION_UPDATE, data));
+  }
+}
+
+// static.
+void SessionsSyncManager::SetSessionTabFromDelegate(
+      const SyncedTabDelegate& tab_delegate,
+      base::Time mtime,
+      SessionTab* session_tab) {
+  DCHECK(session_tab);
+  session_tab->window_id.set_id(tab_delegate.GetWindowId());
+  session_tab->tab_id.set_id(tab_delegate.GetSessionId());
+  session_tab->tab_visual_index = 0;
+  session_tab->current_navigation_index = tab_delegate.GetCurrentEntryIndex();
+  session_tab->pinned = tab_delegate.IsPinned();
+  session_tab->extension_app_id = tab_delegate.GetExtensionAppId();
+  session_tab->user_agent_override.clear();
+  session_tab->timestamp = mtime;
+  const int current_index = tab_delegate.GetCurrentEntryIndex();
+  const int pending_index = tab_delegate.GetPendingEntryIndex();
+  const int min_index = std::max(0, current_index - kMaxSyncNavigationCount);
+  const int max_index = std::min(current_index + kMaxSyncNavigationCount,
+                                 tab_delegate.GetEntryCount());
+  bool is_managed = tab_delegate.ProfileIsManaged();
+  session_tab->navigations.clear();
+
+#if !defined(OS_ANDROID)
+  // For getting navigation time in network time.
+  NavigationTimeHelper* nav_time_helper =
+      tab_delegate.HasWebContents() ?
+          NavigationTimeHelper::FromWebContents(tab_delegate.GetWebContents()) :
+          NULL;
+#endif
+
+  for (int i = min_index; i < max_index; ++i) {
+    const NavigationEntry* entry = (i == pending_index) ?
+        tab_delegate.GetPendingEntry() : tab_delegate.GetEntryAtIndex(i);
+    DCHECK(entry);
+    if (!entry->GetVirtualURL().is_valid())
+      continue;
+
+    scoped_ptr<content::NavigationEntry> network_time_entry(
+        content::NavigationEntry::Create(*entry));
+#if !defined(OS_ANDROID)
+    if (nav_time_helper) {
+      network_time_entry->SetTimestamp(
+          nav_time_helper->GetNavigationTime(entry));
+    }
+#endif
+
+    session_tab->navigations.push_back(
+        SerializedNavigationEntry::FromNavigationEntry(i, *network_time_entry));
+    if (is_managed) {
+      session_tab->navigations.back().set_blocked_state(
+          SerializedNavigationEntry::STATE_ALLOWED);
+    }
+  }
+
+  if (is_managed) {
+    const std::vector<const NavigationEntry*>& blocked_navigations =
+        *tab_delegate.GetBlockedNavigations();
+    int offset = session_tab->navigations.size();
+    for (size_t i = 0; i < blocked_navigations.size(); ++i) {
+      session_tab->navigations.push_back(
+          SerializedNavigationEntry::FromNavigationEntry(
+              i + offset, *blocked_navigations[i]));
+      session_tab->navigations.back().set_blocked_state(
+          SerializedNavigationEntry::STATE_BLOCKED);
+      // TODO(bauerb): Add categories
+    }
+  }
+  session_tab->session_storage_persistent_id.clear();
 }
 
 };  // namespace browser_sync
