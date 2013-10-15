@@ -501,16 +501,6 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
   return cdm::kSuccess;
 }
 
-void ClearKeyCdm::OnPlatformChallengeResponse(
-    const cdm::PlatformChallengeResponse& response) {
-  NOTIMPLEMENTED();
-}
-
-void ClearKeyCdm::OnQueryOutputProtectionStatus(
-    uint32_t link_mask, uint32_t output_protection_mask) {
-  NOTIMPLEMENTED();
-};
-
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
 int64 ClearKeyCdm::CurrentTimeStampInMicroseconds() const {
   return output_timestamp_base_in_microseconds_ +
