@@ -226,7 +226,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
     }
 
     // Slow path.
-    SelectorChecker selectorChecker(document(), m_mode);
+    SelectorChecker selectorChecker(m_context.element()->document(), m_mode);
     SelectorChecker::SelectorCheckingContext context(ruleData.selector(), m_context.element(), SelectorChecker::VisitedMatchEnabled);
     context.elementStyle = m_style.get();
     context.scope = scope;

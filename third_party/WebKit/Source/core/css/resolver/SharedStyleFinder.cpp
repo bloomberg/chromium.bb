@@ -90,7 +90,7 @@ bool SharedStyleFinder::canShareStyleWithControl(const ElementResolveContext& co
     if (element->isDefaultButtonForForm() != context.element()->isDefaultButtonForForm())
         return false;
 
-    if (context.document().containsValidityStyleRules()) {
+    if (element->document().containsValidityStyleRules()) {
         bool willValidate = element->willValidate();
 
         if (willValidate != context.element()->willValidate())
@@ -245,7 +245,7 @@ bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& co
     if (element->isWebVTTElement() && context.element()->isWebVTTElement() && toWebVTTElement(element)->isPastNode() != toWebVTTElement(context.element())->isPastNode())
         return false;
 
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&context.document())) {
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&element->document())) {
         if (element == fullscreen->webkitCurrentFullScreenElement() || context.element() == fullscreen->webkitCurrentFullScreenElement())
             return false;
     }

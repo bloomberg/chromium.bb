@@ -31,7 +31,7 @@ namespace WebCore {
 
 StyleResolverState::StyleResolverState(Document& document, Element* element, RenderStyle* parentStyle, RenderRegion* regionForStyling)
     : m_elementContext(element ? ElementResolveContext(*element) : ElementResolveContext())
-    , m_document(element ? m_elementContext.document() : document)
+    , m_document(document)
     , m_style(0)
     , m_parentStyle(parentStyle)
     , m_regionForStyling(regionForStyling)

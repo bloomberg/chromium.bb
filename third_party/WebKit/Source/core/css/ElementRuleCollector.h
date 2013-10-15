@@ -104,8 +104,6 @@ public:
     void sortAndTransferMatchedRulesWithOnlySortBySpecificity();
 
 private:
-    Document& document() { return m_context.document(); }
-
     void collectRuleIfMatches(const RuleData&, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
     void collectMatchingRulesForList(const Vector<RuleData>*, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
     void collectMatchingRulesForList(const RuleData*, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
