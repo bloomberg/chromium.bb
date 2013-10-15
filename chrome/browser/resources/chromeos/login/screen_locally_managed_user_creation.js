@@ -967,7 +967,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
     /**
      * Handles selection change.
-     * @param {cr.Event} e Selection change event.
+     * @param {Event} e Selection change event.
      * @private
      */
     handleSelect_: function(e) {
@@ -1006,7 +1006,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
     /**
      * Handle photo updated event.
-     * @param {cr.Event} e Event with 'dataURL' property containing a data URL.
+     * @param {Event} e Event with 'dataURL' property containing a data URL.
      */
     handlePhotoUpdated_: function(e) {
       chrome.send('supervisedUserPhotoTaken', [e.dataURL]);

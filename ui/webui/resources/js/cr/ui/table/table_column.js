@@ -8,7 +8,6 @@
 
 cr.define('cr.ui.table', function() {
   /** @const */ var EventTarget = cr.EventTarget;
-  /** @const */ var Event = cr.Event;
 
   /**
    * A table column that wraps column ids and settings.

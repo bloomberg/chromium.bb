@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  /** @const */ var Event = cr.Event;
   /** @const */ var EventTarget = cr.EventTarget;
 
   /**

@@ -268,7 +268,7 @@ cr.define('pluginSettings.ui', function() {
 
     /**
      * Called when the selection changes.
-     * @param {!cr.Event} ce The change event.
+     * @param {!Event} ce The change event.
      * @private
      */
     handleSelectionChange_: function(ce) {

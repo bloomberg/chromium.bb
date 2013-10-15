@@ -395,11 +395,11 @@ cr.define('cloudprint', function() {
      * Creates a Google Cloud Print interface error that is ready to dispatch.
      * @param {!CloudPrintInterface.EventType} type Type of the error.
      * @param {!CloudPrintRequest} request Request that has been completed.
-     * @return {!cr.Event} Google Cloud Print interface error event.
+     * @return {!Event} Google Cloud Print interface error event.
      * @private
      */
     createErrorEvent_: function(type, request) {
-      var errorEvent = new cr.Event(type);
+      var errorEvent = new Event(type);
       errorEvent.status = request.xhr.status;
       if (request.xhr.status == 200) {
         errorEvent.errorCode = request.result['errorCode'];
@@ -414,7 +414,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Called when a native layer receives access token.
-     * @param {cr.Event} evt Contains the authetication type and access token.
+     * @param {Event} evt Contains the authetication type and access token.
      * @private
      */
     onAccessTokenReady_: function(event) {
@@ -480,7 +480,7 @@ cr.define('cloudprint', function() {
           }
         });
         var searchDoneEvent =
-            new cr.Event(CloudPrintInterface.EventType.SEARCH_DONE);
+            new Event(CloudPrintInterface.EventType.SEARCH_DONE);
         searchDoneEvent.printers = printerList;
         searchDoneEvent.origin = request.origin;
         searchDoneEvent.isRecent = isRecent;
@@ -500,7 +500,7 @@ cr.define('cloudprint', function() {
      */
     onSubmitDone_: function(request) {
       if (request.xhr.status == 200 && request.result['success']) {
-        var submitDoneEvent = new cr.Event(
+        var submitDoneEvent = new Event(
             CloudPrintInterface.EventType.SUBMIT_DONE);
         submitDoneEvent.jobId = request.result['job']['id'];
         this.dispatchEvent(submitDoneEvent);
@@ -530,7 +530,7 @@ cr.define('cloudprint', function() {
           return;
         }
         var printerDoneEvent =
-            new cr.Event(CloudPrintInterface.EventType.PRINTER_DONE);
+            new Event(CloudPrintInterface.EventType.PRINTER_DONE);
         printerDoneEvent.printer = printer;
         this.dispatchEvent(printerDoneEvent);
       } else {

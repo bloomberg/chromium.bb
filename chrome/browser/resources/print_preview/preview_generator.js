@@ -233,7 +233,7 @@ cr.define('print_preview', function() {
      * @private
      */
     dispatchPageReadyEvent_: function(previewIndex, pageNumber, previewUid) {
-      var pageGenEvent = new cr.Event(PreviewGenerator.EventType.PAGE_READY);
+      var pageGenEvent = new Event(PreviewGenerator.EventType.PAGE_READY);
       pageGenEvent.previewIndex = previewIndex;
       pageGenEvent.previewUrl = 'chrome://print/' + previewUid.toString() +
           '/' + (pageNumber - 1) + '/print.pdf';
@@ -248,7 +248,7 @@ cr.define('print_preview', function() {
      * @private
      */
     dispatchPreviewStartEvent_: function(previewUid, index) {
-      var previewStartEvent = new cr.Event(
+      var previewStartEvent = new Event(
           PreviewGenerator.EventType.PREVIEW_START);
       if (!this.documentInfo_.isModifiable) {
         index = -1;
@@ -291,7 +291,7 @@ cr.define('print_preview', function() {
     /**
      * Called when the page layout of the document is ready. Always occurs
      * as a result of a preview request.
-     * @param {cr.Event} event Contains layout info about the document.
+     * @param {Event} event Contains layout info about the document.
      * @private
      */
     onPageLayoutReady_: function(event) {
@@ -328,7 +328,7 @@ cr.define('print_preview', function() {
     /**
      * Called when the document page count is received from the native layer.
      * Always occurs as a result of a preview request.
-     * @param {cr.Event} event Contains the document's page count.
+     * @param {Event} event Contains the document's page count.
      * @private
      */
     onPageCountReady_: function(event) {
@@ -341,7 +341,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when the print preview should be reloaded.
-     * @param {cr.Event} event Contains the preview UID and request ID.
+     * @param {Event} event Contains the preview UID and request ID.
      * @private
      */
     onPreviewReload_: function(event) {
@@ -361,7 +361,7 @@ cr.define('print_preview', function() {
     /**
      * Called when a page's preview has been generated. Dispatches a
      * PAGE_READY event.
-     * @param {cr.Event} event Contains the page index and preview UID.
+     * @param {Event} event Contains the page index and preview UID.
      * @private
      */
     onPagePreviewReady_: function(event) {
@@ -383,7 +383,7 @@ cr.define('print_preview', function() {
     /**
      * Called when the preview generation is complete. Dispatches a
      * DOCUMENT_READY event.
-     * @param {cr.Event} event Contains the preview UID and response ID.
+     * @param {Event} event Contains the preview UID and response ID.
      * @private
      */
     onPreviewGenerationDone_: function(event) {

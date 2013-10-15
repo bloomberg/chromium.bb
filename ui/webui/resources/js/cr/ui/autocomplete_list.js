@@ -233,7 +233,7 @@ cr.define('cr.ui', function() {
           break;
         case 'Up':
         case 'Down':
-          var newEvent = new cr.Event(event.type);
+          var newEvent = new Event(event.type);
           newEvent.keyIdentifier = event.keyIdentifier;
           this.dispatchEvent(newEvent);
           handled = true;

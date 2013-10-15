@@ -208,7 +208,7 @@ VolumeInfoList.prototype = {
 /**
  * Adds the event listener to listen the change of volume info.
  * @param {string} type The name of the event.
- * @param {function(cr.Event)} handler The handler for the event.
+ * @param {function(Event)} handler The handler for the event.
  */
 VolumeInfoList.prototype.addEventListener = function(type, handler) {
   this.model_.addEventListener(type, handler);
@@ -217,7 +217,7 @@ VolumeInfoList.prototype.addEventListener = function(type, handler) {
 /**
  * Removes the event listener.
  * @param {string} type The name of the event.
- * @param {function(cr.Event)} handler The handler to be removed.
+ * @param {function(Event)} handler The handler to be removed.
  */
 VolumeInfoList.prototype.removeEventListener = function(type, handler) {
   this.model_.removeEventListener(type, handler);
@@ -469,7 +469,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     if (event.status === 'success' && !requested &&
         this.volumeInfoList.find(mountPath)) {
       console.warn('Mounted volume without a request: ', mountPath);
-      var e = new cr.Event('externally-unmounted');
+      var e = new Event('externally-unmounted');
       e.mountPath = mountPath;
       this.dispatchEvent(e);
     }

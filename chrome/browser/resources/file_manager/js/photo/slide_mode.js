@@ -950,7 +950,7 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
         this.showSpinner_(false);
         this.flashSavedLabel_();
 
-        var e = new cr.Event('content');
+        var e = new Event('content');
         e.item = item;
         e.oldUrl = oldUrl;
         e.metadata = this.selectedImageMetadata_;
