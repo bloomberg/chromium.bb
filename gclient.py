@@ -55,6 +55,12 @@
 #         "action":  ["python", "src/build/gyp_chromium"]},
 #     ]
 #
+# Pre-DEPS Hooks
+#   DEPS files may optionally contain a list named "pre_deps_hooks".  These are
+#   the same as normal hooks, except that they run before the DEPS are
+#   processed. Pre-DEPS run with "sync" and "revert" unless the --noprehooks
+#   flag is used.
+# 
 # Specifying a target OS
 #   An optional key named "target_os" may be added to a gclient file to specify
 #   one or more additional operating systems that should be considered when
@@ -286,6 +292,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # This is in both .gclient and DEPS files:
     self._deps_hooks = []
 
+    self._pre_deps_hooks = []
+
     # Calculates properties:
     self._parsed_url = None
     self._dependencies = []
@@ -297,6 +305,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._deps_parsed = False
     # This dependency has been processed, i.e. checked out
     self._processed = False
+    # This dependency had its pre-DEPS hooks run
+    self._pre_deps_hooks_ran = False
     # This dependency had its hook run
     self._hooks_ran = False
     # This is the scm used to checkout self.url. It may be used by dependencies
@@ -548,6 +558,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if 'action' in hook:
         hooks_to_run.append(hook)
 
+    self._pre_deps_hooks = [self.GetHookAction(hook, []) for hook in
+                            local_scope.get('pre_deps_hooks', [])]
+
     self.add_dependencies_and_close(deps_to_add, hooks_to_run)
     logging.info('ParseDepsFile(%s) done' % self.name)
 
@@ -648,8 +661,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # Always parse the DEPS file.
     self.ParseDepsFile()
-
     self._run_is_done(file_list or [], parsed_url)
+    if command in ('update', 'revert') and not options.noprehooks:
+      self.RunPreDepsHooks()
 
     if self.recursion_limit:
       # Parse the dependencies of this dependency.
@@ -791,6 +805,32 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           print "Hook '%s' took %.2f secs" % (
               gclient_utils.CommandToStr(hook), elapsed_time)
 
+  def RunPreDepsHooks(self):
+    assert self.processed
+    assert self.deps_parsed
+    assert not self.pre_deps_hooks_ran
+    assert not self.hooks_ran
+    for s in self.dependencies:
+      assert not s.processed
+    self._pre_deps_hooks_ran = True
+    for hook in self.pre_deps_hooks:
+      try:
+        start_time = time.time()
+        gclient_utils.CheckCallAndFilterAndHeader(
+            hook, cwd=self.root.root_dir, always=True)
+      except (gclient_utils.Error, subprocess2.CalledProcessError), e:
+        # Use a discrete exit status code of 2 to indicate that a hook action
+        # failed.  Users of this script may wish to treat hook action failures
+        # differently from VC failures.
+        print >> sys.stderr, 'Error: %s' % str(e)
+        sys.exit(2)
+      finally:
+        elapsed_time = time.time() - start_time
+        if elapsed_time > 10:
+          print "Hook '%s' took %.2f secs" % (
+              gclient_utils.CommandToStr(hook), elapsed_time)
+
+
   def subtree(self, include_all):
     """Breadth first recursion excluding root node."""
     dependencies = self.dependencies
@@ -830,6 +870,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   @property
   @gclient_utils.lockedmethod
+  def pre_deps_hooks(self):
+    return tuple(self._pre_deps_hooks)
+
+  @property
+  @gclient_utils.lockedmethod
   def parsed_url(self):
     return self._parsed_url
 
@@ -843,6 +888,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   @gclient_utils.lockedmethod
   def processed(self):
     return self._processed
+
+  @property
+  @gclient_utils.lockedmethod
+  def pre_deps_hooks_ran(self):
+    return self._pre_deps_hooks_ran
 
   @property
   @gclient_utils.lockedmethod
@@ -1555,6 +1605,8 @@ def CMDsync(parser, args):
                     help='force update even for unchanged modules')
   parser.add_option('-n', '--nohooks', action='store_true',
                     help='don\'t run hooks after the update is complete')
+  parser.add_option('-p', '--noprehooks', action='store_true',
+                    help='don\'t run pre-DEPS hooks', default=False)
   parser.add_option('-r', '--revision', action='append',
                     dest='revisions', metavar='REV', default=[],
                     help='Enforces revision/hash for the solutions with the '
@@ -1660,6 +1712,8 @@ def CMDrevert(parser, args):
                          'references')
   parser.add_option('-n', '--nohooks', action='store_true',
                     help='don\'t run hooks after the revert is complete')
+  parser.add_option('-p', '--noprehooks', action='store_true',
+                    help='don\'t run pre-DEPS hooks', default=False)
   parser.add_option('--upstream', action='store_true',
                     help='Make repo state match upstream branch.')
   (options, args) = parser.parse_args(args)
@@ -1793,6 +1847,8 @@ class OptionParser(optparse.OptionParser):
       options.head = None
     if not hasattr(options, 'nohooks'):
       options.nohooks = True
+    if not hasattr(options, 'noprehooks'):
+      options.noprehooks = True
     if not hasattr(options, 'deps_os'):
       options.deps_os = None
     if not hasattr(options, 'manually_grab_svn_rev'):

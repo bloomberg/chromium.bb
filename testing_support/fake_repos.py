@@ -439,7 +439,7 @@ class FakeReposBase(object):
 
 class FakeRepos(FakeReposBase):
   """Implements populateSvn() and populateGit()."""
-  NB_GIT_REPOS = 4
+  NB_GIT_REPOS = 5
 
   def populateSvn(self):
     """Creates a few revisions of changes including DEPS files."""
@@ -559,7 +559,7 @@ hooks = [
 
   def populateGit(self):
     # Testing:
-    # - dependency disapear
+    # - dependency disappear
     # - dependency renamed
     # - versioned and unversioned reference
     # - relative and full reference
@@ -655,6 +655,55 @@ hooks = [
         'hash': self.git_hashes['repo_2'][1][0][:7]
       },
       'origin': 'git/repo_1@2\n',
+    })
+
+    self._commit_git('repo_5', {'origin': 'git/repo_5@1\n'})
+    self._commit_git('repo_5', {
+      'DEPS': """
+deps = {
+  'src/repo1': '%(git_base)srepo_1@%(hash1)s',
+  'src/repo2': '%(git_base)srepo_2@%(hash2)s',
+}
+
+# Hooks to run after a project is processed but before its dependencies are
+# processed.
+pre_deps_hooks = [
+  {
+    'action': ['python', '-c',
+               'print "pre-deps hook"; open(\\'src/git_pre_deps_hooked\\', \\'w\\').write(\\'git_pre_deps_hooked\\')'],
+  }
+]
+""" % {
+         'git_base': self.git_base,
+         'hash1': self.git_hashes['repo_1'][2][0][:7],
+         'hash2': self.git_hashes['repo_2'][1][0][:7],
+      },
+    'origin': 'git/repo_5@2\n',
+    })
+    self._commit_git('repo_5', {
+      'DEPS': """
+deps = {
+  'src/repo1': '%(git_base)srepo_1@%(hash1)s',
+  'src/repo2': '%(git_base)srepo_2@%(hash2)s',
+}
+
+# Hooks to run after a project is processed but before its dependencies are
+# processed.
+pre_deps_hooks = [
+  {
+    'action': ['python', '-c',
+               'print "pre-deps hook"; open(\\'src/git_pre_deps_hooked\\', \\'w\\').write(\\'git_pre_deps_hooked\\')'],
+  },
+  {
+    'action': ['python', '-c', 'import sys; sys.exit(1)'],
+  }
+]
+""" % {
+         'git_base': self.git_base,
+         'hash1': self.git_hashes['repo_1'][2][0][:7],
+         'hash2': self.git_hashes['repo_2'][1][0][:7],
+      },
+    'origin': 'git/repo_5@3\n',
     })
 
 

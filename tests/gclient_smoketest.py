@@ -1067,6 +1067,82 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
+  def testPreDepsHooks(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_5', '--name', 'src'])
+    expectation = [
+        ('running', self.root_dir),                 # git clone repo_5
+        ('running', self.root_dir + '/src'),        # git checkout src
+        ('running', self.root_dir),                 # pre-deps hook
+        ('running', self.root_dir),                 # git clone repo_1
+        ('running', self.root_dir + '/src/repo1'),  # git checkout repo1
+        ('running', self.root_dir),                 # git clone repo_1
+        ('running', self.root_dir + '/src/repo2'),  # git checkout repo2
+    ]
+    out = self.parseGclient(['sync', '--deps', 'mac', '--jobs=1',
+                             '--revision', 'src@' + self.githash('repo_5', 2)],
+                            expectation)
+    self.assertEquals(2, len(out[2]))
+    self.assertEquals('pre-deps hook', out[2][1])
+    tree = self.mangle_git_tree(('repo_5@2', 'src'),
+                                ('repo_1@2', 'src/repo1'),
+                                ('repo_2@1', 'src/repo2')
+                                )
+    tree['src/git_pre_deps_hooked'] = 'git_pre_deps_hooked'
+    self.assertTree(tree)
+
+    os.remove(join(self.root_dir, 'src', 'git_pre_deps_hooked'))
+
+    # Pre-DEPS hooks don't run with runhooks.
+    self.gclient(['runhooks', '--deps', 'mac'])
+    tree = self.mangle_git_tree(('repo_5@2', 'src'),
+                                ('repo_1@2', 'src/repo1'),
+                                ('repo_2@1', 'src/repo2')
+                                )
+    self.assertTree(tree)
+
+    # Pre-DEPS hooks run when syncing with --nohooks.
+    self.gclient(['sync', '--deps', 'mac', '--nohooks',
+                  '--revision', 'src@' + self.githash('repo_5', 2)])
+    tree = self.mangle_git_tree(('repo_5@2', 'src'),
+                                ('repo_1@2', 'src/repo1'),
+                                ('repo_2@1', 'src/repo2')
+                                )
+    tree['src/git_pre_deps_hooked'] = 'git_pre_deps_hooked'
+    self.assertTree(tree)
+
+    os.remove(join(self.root_dir, 'src', 'git_pre_deps_hooked'))
+
+    # Pre-DEPS hooks don't run with --noprehooks
+    self.gclient(['sync', '--deps', 'mac', '--noprehooks',
+                  '--revision', 'src@' + self.githash('repo_5', 2)])
+    tree = self.mangle_git_tree(('repo_5@2', 'src'),
+                                ('repo_1@2', 'src/repo1'),
+                                ('repo_2@1', 'src/repo2')
+                                )
+    self.assertTree(tree)
+
+  def testPreDepsHooksError(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_5', '--name', 'src'])
+    expectated_stdout = [
+        ('running', self.root_dir),                 # git clone repo_5
+        ('running', self.root_dir + '/src'),        # git checkout src
+        ('running', self.root_dir),                 # pre-deps hook
+        ('running', self.root_dir),                 # pre-deps hook (fails)
+    ]
+    expected_stderr = ('Error: Command /usr/bin/python -c import sys; '
+                       'sys.exit(1) returned non-zero exit status 1 in %s\n'
+                       % self.root_dir)
+    stdout, stderr, retcode = self.gclient(['sync', '--deps', 'mac', '--jobs=1',
+                                            '--revision',
+                                            'src@' + self.githash('repo_5', 3)])
+    self.assertEquals(stderr, expected_stderr)
+    self.assertEquals(2, retcode)
+    self.checkBlock(stdout, expectated_stdout)
+
   def testRevInfo(self):
     if not self.enabled:
       return
