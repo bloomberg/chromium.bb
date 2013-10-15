@@ -298,3 +298,51 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y) {
     this.animate_();
 };
 
+/**
+ * Runs asynchronous closures in a queue.
+ * @constructor
+ */
+camera.util.Queue = function() {
+  /**
+   * @type {Array.<function(function())>}
+   * @private
+   */
+  this.closures_ = [];
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.running_ = false;
+
+  // End of properties. Seal the object.
+  Object.seal(this);
+};
+
+/**
+ * Runs a task within the queue.
+ * @param {function(function())} closure Closure to be run with a completion
+ *     callback.
+ */
+camera.util.Queue.prototype.run = function(closure) {
+  this.closures_.push(closure);
+  if (!this.running_)
+    this.continue_();
+};
+
+/**
+ * Continues executing further enqueued closures, or stops the queue if nothing
+ * pending.
+ * @private
+ */
+camera.util.Queue.prototype.continue_ = function() {
+  if (!this.closures_.length) {
+    this.running_ = false;
+    return;
+  }
+
+  this.running_ = true;
+  var closure = this.closures_.shift();
+  closure(this.continue_.bind(this));
+};
+

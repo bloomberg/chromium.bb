@@ -23,6 +23,13 @@ camera.views.Camera = function(context) {
   camera.View.call(this, context);
 
   /**
+   * Gallery model used to save taken pictures.
+   * @type {camera.models.Gallery}
+   * @private
+   */
+  this.model_ = null;
+
+  /**
    * Video element to catch the stream and plot it later onto a canvas.
    * @type {Video}
    * @private
@@ -258,6 +265,21 @@ camera.views.Camera.prototype = {
 };
 
 /**
+ * Initializes the view.
+ * @override
+ */
+camera.views.Camera.prototype.initialize = function(callback) {
+  camera.models.Gallery.getInstance(function(model) {
+    this.model_ = model;
+    callback();
+  }.bind(this), function() {
+    // TODO(mtomasz): Add error handling.
+    console.error('Unable to initialize the file system.');
+    callback();
+  });
+};
+
+/**
  * Enters the view.
  * @override
  */
@@ -478,7 +500,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
     picturePreview.appendChild(img);
 
     // Call the callback with the picture.
-    this.context.onPictureTaken(dataURL);
+    this.model_.addPicture(dataURL);
   }.bind(this), 0);
 };
 
