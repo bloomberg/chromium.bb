@@ -144,6 +144,12 @@ void Shell::Initialize() {
       gfx::Size(kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip));
 }
 
+gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
+  if (!initial_size.IsEmpty())
+    return initial_size;
+  return gfx::Size(kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip);
+}
+
 Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
                               const GURL& url,
                               SiteInstance* site_instance,
@@ -151,11 +157,7 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
                               const gfx::Size& initial_size) {
   WebContents::CreateParams create_params(browser_context, site_instance);
   create_params.routing_id = routing_id;
-  if (!initial_size.IsEmpty())
-    create_params.initial_size = initial_size;
-  else
-    create_params.initial_size =
-        gfx::Size(kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip);
+  create_params.initial_size = AdjustWindowSize(initial_size);
   WebContents* web_contents = WebContents::Create(create_params);
   Shell* shell = CreateShell(web_contents, create_params.initial_size);
   if (!url.is_empty())
@@ -174,6 +176,17 @@ void Shell::LoadURLForFrame(const GURL& url, const std::string& frame_name) {
   params.frame_name = frame_name;
   web_contents_->GetController().LoadURLWithParams(params);
   web_contents_->GetView()->Focus();
+}
+
+void Shell::AddNewContents(WebContents* source,
+                           WebContents* new_contents,
+                           WindowOpenDisposition disposition,
+                           const gfx::Rect& initial_pos,
+                           bool user_gesture,
+                           bool* was_blocked) {
+  CreateShell(new_contents, AdjustWindowSize(initial_pos.size()));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    NotifyDoneForwarder::CreateForWebContents(new_contents);
 }
 
 void Shell::GoBackOrForward(int offset) {
@@ -290,16 +303,6 @@ bool Shell::CanOverscrollContent() const {
 #else
   return false;
 #endif
-}
-
-void Shell::WebContentsCreated(WebContents* source_contents,
-                               int64 source_frame_id,
-                               const string16& frame_name,
-                               const GURL& target_url,
-                               WebContents* new_contents) {
-  CreateShell(new_contents, source_contents->GetView()->GetContainerSize());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    NotifyDoneForwarder::CreateForWebContents(new_contents);
 }
 
 void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {

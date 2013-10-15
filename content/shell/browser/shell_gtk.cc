@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
@@ -103,7 +104,8 @@ void Shell::PlatformSetIsLoading(bool loading) {
 void Shell::PlatformCreateWindow(int width, int height) {
   ui_elements_height_ = 0;
   if (headless_) {
-    SizeTo(width, height);
+    content_width_ = width;
+    content_height_ = height;
     return;
   }
 
@@ -225,8 +227,10 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
-  if (headless_)
+  if (headless_) {
+    SizeTo(content_width_, content_height_);
     return;
+  }
 
   WebContentsView* content_view = web_contents_->GetView();
   gtk_container_add(GTK_CONTAINER(vbox_), content_view->GetNativeView());
@@ -236,19 +240,18 @@ void Shell::SizeTo(int width, int height) {
   content_width_ = width;
   content_height_ = height;
 
-  // Prefer setting the top level window's size (if we have one), rather than
-  // setting the inner widget's minimum size (so that the user can shrink the
-  // window if she wants).
   if (window_) {
     gtk_window_resize(window_, width, height + ui_elements_height_);
   } else if (web_contents_) {
-    gtk_widget_set_size_request(web_contents_->GetView()->GetNativeView(),
-                                width, height);
+    RenderWidgetHostView* render_widget_host_view =
+        web_contents_->GetRenderWidgetHostView();
+    if (render_widget_host_view)
+      render_widget_host_view->SetSize(gfx::Size(width, height));
   }
 }
 
 void Shell::PlatformResizeSubViews() {
-  SizeTo(content_width_, content_height_);
+  // Not needed; the subviews are bound.
 }
 
 void Shell::Close() {

@@ -110,6 +110,12 @@ class Shell : public WebContentsDelegate,
   // WebContentsDelegate
   virtual WebContents* OpenURLFromTab(WebContents* source,
                                       const OpenURLParams& params) OVERRIDE;
+  virtual void AddNewContents(WebContents* source,
+                              WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
   virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual void LoadProgressChanged(WebContents* source,
@@ -124,11 +130,6 @@ class Shell : public WebContentsDelegate,
                                   bool last_unlocked_by_target) OVERRIDE;
   virtual void CloseContents(WebContents* source) OVERRIDE;
   virtual bool CanOverscrollContent() const OVERRIDE;
-  virtual void WebContentsCreated(WebContents* source_contents,
-                                  int64 source_frame_id,
-                                  const string16& frame_name,
-                                  const GURL& target_url,
-                                  WebContents* new_contents) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       WebContents* web_contents) OVERRIDE;
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
@@ -164,6 +165,10 @@ class Shell : public WebContentsDelegate,
 
   // Helper for one time initialization of application
   static void PlatformInitialize(const gfx::Size& default_window_size);
+
+  // Adjust the size when Blink sends 0 for width and/or height.
+  // This happens when Blink requests a default-sized window.
+  static gfx::Size AdjustWindowSize(const gfx::Size& initial_size);
 
   // All the methods that begin with Platform need to be implemented by the
   // platform specific Shell implementation.
