@@ -250,12 +250,15 @@ window.onunload = function() {
 
 /**
  * Create the peer connection if none is up (this is just convenience to
- * avoid having a separate button for that).
+ * avoid having a separate button for that). Initialize useRtpDataChannel
+ * variable based on the 'data-channel-type-rtp' element's checked status.
  * @private
  */
 function ensureHasPeerConnection_() {
-  if (getReadyState() == 'no-peer-connection')
-    preparePeerConnection();
+  if (getReadyState() == 'no-peer-connection') {
+    var useRtpDataChannel = $('data-channel-type-rtp').checked;
+    preparePeerConnection(false, useRtpDataChannel);
+  }
 }
 
 /**

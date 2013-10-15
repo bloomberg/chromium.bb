@@ -72,9 +72,9 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     ConnectToPeerConnectionServer("peer 2", to_tab);
 
     std::string javascript = enable_logging ?
-        base::StringPrintf("preparePeerConnection(\"%s\")",
+        base::StringPrintf("preparePeerConnection(\"%s\", true)",
             kTestLoggingSessionId) :
-        "preparePeerConnection(false)";
+        "preparePeerConnection(false, true)";
     EXPECT_EQ("ok-peerconnection-created",
               ExecuteJavascript(javascript, from_tab));
     EXPECT_EQ("ok-added",
