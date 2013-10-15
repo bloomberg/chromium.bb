@@ -816,6 +816,7 @@ void ProfileSyncService::ShutdownImpl(
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
   cached_passphrase_.clear();
+  access_token_.clear();
   encryption_pending_ = false;
   encrypt_everything_ = false;
   encrypted_types_ = syncer::SyncEncryptionHandler::SensitiveTypes();
