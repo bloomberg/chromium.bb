@@ -48,9 +48,19 @@ class MOJO_SYSTEM_EXPORT RawChannel {
   // (passed in on creation).
   class Delegate {
    public:
+    enum FatalError {
+      FATAL_ERROR_UNKNOWN = 0,
+      FATAL_ERROR_FAILED_READ,
+      FATAL_ERROR_FAILED_WRITE
+    };
+
     // Called when a message is read. This may call |Shutdown()| on the
     // |RawChannel|, but must not destroy it.
     virtual void OnReadMessage(const MessageInTransit& message) = 0;
+
+    // Called when there's a fatal error, which leads to the channel no longer
+    // being viable.
+    virtual void OnFatalError(FatalError fatal_error) = 0;
 
    protected:
     virtual ~Delegate() {}

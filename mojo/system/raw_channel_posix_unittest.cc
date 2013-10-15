@@ -99,9 +99,9 @@ class RawChannelPosixTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     if (fds_[0] != -1)
-      close(fds_[0]);
+      CHECK_EQ(close(fds_[0]), 0);
     if (fds_[1] != -1)
-      close(fds_[1]);
+      CHECK_EQ(close(fds_[1]), 0);
 
     io_thread_.Stop();
   }
@@ -128,6 +128,9 @@ class WriteOnlyRawChannelDelegate : public RawChannel::Delegate {
 
   // |RawChannel::Delegate| implementation:
   virtual void OnReadMessage(const MessageInTransit& /*message*/) OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void OnFatalError(FatalError /*fatal_error*/) OVERRIDE {
     NOTREACHED();
   }
 
@@ -221,13 +224,13 @@ TEST_F(RawChannelPosixTest, WriteMessage) {
 
   // Write and read, for a variety of sizes.
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
-    rc->WriteMessage(MakeTestMessage(size));
+    EXPECT_TRUE(rc->WriteMessage(MakeTestMessage(size)));
     EXPECT_TRUE(checker.ReadAndCheckNextMessage(size)) << size;
   }
 
   // Write/queue and read afterwards, for a variety of sizes.
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1)
-    rc->WriteMessage(MakeTestMessage(size));
+    EXPECT_TRUE(rc->WriteMessage(MakeTestMessage(size)));
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1)
     EXPECT_TRUE(checker.ReadAndCheckNextMessage(size)) << size;
 
@@ -246,8 +249,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
         position_(0) {}
   virtual ~ReadCheckerRawChannelDelegate() {}
 
-  // |RawChannel::Delegate| implementation:
-  // Called on the I/O thread.
+  // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(const MessageInTransit& message) OVERRIDE {
     size_t position;
     size_t expected_size;
@@ -270,6 +272,9 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
 
     if (should_signal)
       done_event_.Signal();
+  }
+  virtual void OnFatalError(FatalError /*fatal_error*/) OVERRIDE {
+    NOTREACHED();
   }
 
   // Wait for all the messages (of sizes |expected_sizes_|) to be seen.
@@ -359,8 +364,8 @@ class RawChannelWriterThread : public base::SimpleThread {
     static const int kMaxRandomMessageSize = 25000;
 
     while (left_to_write_-- > 0) {
-      raw_channel_->WriteMessage(MakeTestMessage(
-          static_cast<uint32_t>(base::RandInt(1, kMaxRandomMessageSize))));
+      EXPECT_TRUE(raw_channel_->WriteMessage(MakeTestMessage(
+          static_cast<uint32_t>(base::RandInt(1, kMaxRandomMessageSize)))));
     }
   }
 
@@ -378,8 +383,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
         count_(0) {}
   virtual ~ReadCountdownRawChannelDelegate() {}
 
-  // |RawChannel::Delegate| implementation:
-  // Called on the I/O thread.
+  // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(const MessageInTransit& message) OVERRIDE {
     EXPECT_LT(count_, expected_count_);
     count_++;
@@ -388,6 +392,9 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
 
     if (count_ >= expected_count_)
       done_event_.Signal();
+  }
+  virtual void OnFatalError(FatalError /*fatal_error*/) OVERRIDE {
+    NOTREACHED();
   }
 
   // Wait for all the messages to have been seen.
@@ -460,6 +467,98 @@ TEST_F(RawChannelPosixTest, WriteMessageAndOnReadMessage) {
                   FROM_HERE,
                   base::Bind(&RawChannel::Shutdown,
                              base::Unretained(writer_rc.get())));
+}
+
+// RawChannelPosixTest.OnFatalError --------------------------------------------
+
+class FatalErrorRecordingRawChannelDelegate : public RawChannel::Delegate {
+ public:
+  FatalErrorRecordingRawChannelDelegate()
+      : got_fatal_error_event_(false, false),
+        on_fatal_error_call_count_(0),
+        last_fatal_error_(FATAL_ERROR_UNKNOWN) {}
+  virtual ~FatalErrorRecordingRawChannelDelegate() {}
+
+  // |RawChannel::Delegate| implementation:
+  virtual void OnReadMessage(const MessageInTransit& /*message*/) OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
+    CHECK_EQ(on_fatal_error_call_count_, 0);
+    on_fatal_error_call_count_++;
+    last_fatal_error_ = fatal_error;
+    got_fatal_error_event_.Signal();
+  }
+
+  FatalError WaitForFatalError() {
+    got_fatal_error_event_.Wait();
+    CHECK_EQ(on_fatal_error_call_count_, 1);
+    return last_fatal_error_;
+  }
+
+ private:
+  base::WaitableEvent got_fatal_error_event_;
+
+  int on_fatal_error_call_count_;
+  FatalError last_fatal_error_;
+
+  DISALLOW_COPY_AND_ASSIGN(FatalErrorRecordingRawChannelDelegate);
+};
+
+// Tests fatal errors.
+// TODO(vtl): Figure out how to make reading fail reliably. (I'm not convinced
+// that it does.)
+TEST_F(RawChannelPosixTest, OnFatalError) {
+  FatalErrorRecordingRawChannelDelegate delegate;
+  scoped_ptr<RawChannel> rc(RawChannel::Create(PlatformChannelHandle(fd(0)),
+                                               &delegate,
+                                               message_loop()));
+  // |RawChannel::Create()| takes ownership of the FD.
+  clear_fd(0);
+
+  PostTaskAndWait(message_loop(),
+                  FROM_HERE,
+                  base::Bind(&RawChannel::Init, base::Unretained(rc.get())));
+
+  // Close the other end, which should make writing fail.
+  CHECK_EQ(close(fd(1)), 0);
+  clear_fd(1);
+
+  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
+
+  // TODO(vtl): In theory, it's conceivable that closing the other end might
+  // lead to read failing. In practice, it doesn't seem to.
+  EXPECT_EQ(RawChannel::Delegate::FATAL_ERROR_FAILED_WRITE,
+            delegate.WaitForFatalError());
+
+  PostTaskAndWait(message_loop(),
+                  FROM_HERE,
+                  base::Bind(&RawChannel::Shutdown,
+                             base::Unretained(rc.get())));
+
+}
+
+// RawChannelPosixTest.WriteMessageAfterShutdown -------------------------------
+
+// Makes sure that calling |WriteMessage()| after |Shutdown()| behaves
+// correctly.
+TEST_F(RawChannelPosixTest, WriteMessageAfterShutdown) {
+  WriteOnlyRawChannelDelegate delegate;
+  scoped_ptr<RawChannel> rc(RawChannel::Create(PlatformChannelHandle(fd(0)),
+                                               &delegate,
+                                               message_loop()));
+  // |RawChannel::Create()| takes ownership of the FD.
+  clear_fd(0);
+
+  PostTaskAndWait(message_loop(),
+                  FROM_HERE,
+                  base::Bind(&RawChannel::Init, base::Unretained(rc.get())));
+  PostTaskAndWait(message_loop(),
+                  FROM_HERE,
+                  base::Bind(&RawChannel::Shutdown,
+                             base::Unretained(rc.get())));
+
+  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
 }
 
 }  // namespace
