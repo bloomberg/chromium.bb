@@ -50,6 +50,7 @@ SRC_RESOURCES= \
 	src/js/tracker.js \
 	src/js/util.js \
 	src/js/view.js \
+	src/js/views/browser.js \
 	src/js/views/camera.js \
 	src/js/views/gallery.js \
 	src/sounds/shutter.ogg \
