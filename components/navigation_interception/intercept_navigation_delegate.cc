@@ -46,7 +46,7 @@ bool CheckIfShouldIgnoreNavigationOnUIThread(RenderViewHost* source,
   return intercept_navigation_delegate->ShouldIgnoreNavigation(params);
 }
 
-} // namespace
+}  // namespace
 
 // static
 void InterceptNavigationDelegate::Associate(

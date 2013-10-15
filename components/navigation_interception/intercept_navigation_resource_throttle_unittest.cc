@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/navigation_interception/intercept_navigation_resource_throttle.h"
@@ -57,7 +56,7 @@ MATCHER(NavigationParamsUrlIsSafe, "") {
   return arg.url() != GURL(kUnsafeTestUrl);
 }
 
-} // namespace
+}  // namespace
 
 
 // MockInterceptCallbackReceiver ----------------------------------------------
@@ -192,10 +191,8 @@ class InterceptNavigationResourceThrottleTest
     if (web_contents())
       web_contents()->SetDelegate(NULL);
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&base::DeletePointer<TestIOThreadState>, io_thread_state_));
+    content::BrowserThread::DeleteSoon(
+        content::BrowserThread::IO, FROM_HERE, io_thread_state_);
 
     RenderViewHostTestHarness::TearDown();
   }
@@ -234,7 +231,6 @@ class InterceptNavigationResourceThrottleTest
   void SetUpWebContentsDelegateAndDrainRunLoop(
       ShouldIgnoreNavigationCallbackAction callback_action,
       bool* defer) {
-
     ON_CALL(*mock_callback_receiver_, ShouldIgnoreNavigation(_, _))
       .WillByDefault(Return(callback_action == IgnoreNavigation));
     EXPECT_CALL(*mock_callback_receiver_,
@@ -280,7 +276,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   SetUpWebContentsDelegateAndDrainRunLoop(DontIgnoreNavigation, &defer);
 
   EXPECT_TRUE(defer);
-  EXPECT_TRUE(io_thread_state_);
+  ASSERT_TRUE(io_thread_state_);
   EXPECT_TRUE(io_thread_state_->request_resumed());
 }
 
@@ -290,7 +286,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   SetUpWebContentsDelegateAndDrainRunLoop(IgnoreNavigation, &defer);
 
   EXPECT_TRUE(defer);
-  EXPECT_TRUE(io_thread_state_);
+  ASSERT_TRUE(io_thread_state_);
   EXPECT_TRUE(io_thread_state_->request_cancelled());
 }
 
@@ -332,7 +328,7 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(defer);
-  EXPECT_TRUE(io_thread_state_);
+  ASSERT_TRUE(io_thread_state_);
   EXPECT_TRUE(io_thread_state_->request_resumed());
 }
 
