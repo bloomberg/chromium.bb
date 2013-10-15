@@ -68,12 +68,6 @@ bool SharedStyleFinder::canShareStyleWithControl(const ElementResolveContext& co
 
     HTMLInputElement* thisInputElement = toHTMLInputElement(element);
     HTMLInputElement* otherInputElement = toHTMLInputElement(context.element());
-    if (thisInputElement->elementData() != otherInputElement->elementData()) {
-        if (thisInputElement->fastGetAttribute(typeAttr) != otherInputElement->fastGetAttribute(typeAttr))
-            return false;
-        if (thisInputElement->fastGetAttribute(readonlyAttr) != otherInputElement->fastGetAttribute(readonlyAttr))
-            return false;
-    }
 
     if (thisInputElement->isAutofilled() != otherInputElement->isAutofilled())
         return false;
@@ -124,6 +118,12 @@ static inline bool elementHasDirectionAuto(Element* element)
     return element->isHTMLElement() && toHTMLElement(element)->hasDirectionAuto();
 }
 
+static inline const AtomicString& typeAttributeValue(const Element* element)
+{
+    // type is animatable in SVG so we need to go down the slow path here.
+    return element->isSVGElement() ? element->getAttribute(typeAttr) : element->fastGetAttribute(typeAttr);
+}
+
 bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(const ElementResolveContext& context, Element* sharingCandidate) const
 {
     if (context.element()->elementData() == sharingCandidate->elementData())
@@ -131,6 +131,13 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(con
     if (context.element()->fastGetAttribute(XMLNames::langAttr) != sharingCandidate->fastGetAttribute(XMLNames::langAttr))
         return false;
     if (context.element()->fastGetAttribute(langAttr) != sharingCandidate->fastGetAttribute(langAttr))
+        return false;
+
+    // These two checks must be here since RuleSet has a specail case to allow style sharing between elements
+    // with type and readonly attributes whereas other attribute selectors prevent sharing.
+    if (typeAttributeValue(context.element()) != typeAttributeValue(sharingCandidate))
+        return false;
+    if (context.element()->fastGetAttribute(readonlyAttr) != sharingCandidate->fastGetAttribute(readonlyAttr))
         return false;
 
     if (!m_elementAffectedByClassRules) {
