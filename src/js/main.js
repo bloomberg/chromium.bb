@@ -19,7 +19,6 @@ camera.Camera = function() {
    * @private
    */
   this.context_ = new camera.Camera.Context(
-      this.onPictureTaken_.bind(this),
       this.onError_.bind(this),
       this.onErrorRecovered_.bind(this));
 
@@ -76,15 +75,13 @@ camera.Camera = function() {
 /**
  * Creates context for the views.
  *
- * @param {function(string)} onPictureTaken Callback to be called, when a
- *     picture is added.
  * @param {function(string, string, opt_string)} onError Callback to be called,
  *     when an error occurs. Arguments: identifier, first line, second line.
  * @param {function(string)} onErrorRecovered Callback to be called,
  *     when the error goes away. The argument is the error id.
  * @constructor
  */
-camera.Camera.Context = function(onPictureTaken, onError, onErrorRecovered) {
+camera.Camera.Context = function(onError, onErrorRecovered) {
   camera.View.Context.call(this);
 
   /**
@@ -96,11 +93,6 @@ camera.Camera.Context = function(onPictureTaken, onError, onErrorRecovered) {
    * @type {boolean}
    */
   this.hasError = false;
-
-  /**
-   * @type {function(string)}
-   */
-  this.onPictureTaken = onPictureTaken;
 
   /**
    * @type {function(string, string, string)}
@@ -117,7 +109,7 @@ camera.Camera.Context = function(onPictureTaken, onError, onErrorRecovered) {
 };
 
 camera.Camera.Context.prototype = {
-  __proto__: camera.View.Context.prototype,
+  __proto__: camera.View.Context.prototype
 };
 
 camera.Camera.prototype = {
@@ -227,15 +219,6 @@ camera.Camera.prototype.onMaximizeClicked_ = function() {
  */
 camera.Camera.prototype.onCloseClicked_ = function() {
   chrome.app.window.current().close();
-};
-
-/**
- * Adds a picture taken in the camera view to the gallery view.
- * @param {string} dataURL Picture data.
- * @private
- */
-camera.Camera.prototype.onPictureTaken_ = function(dataURL) {
-  this.galleryView_.addPicture(dataURL);
 };
 
 /**

@@ -43,6 +43,7 @@ SRC_RESOURCES= \
 	src/js/effects/tilt-shift.js \
 	src/js/effects/vintage.js \
 	src/js/main.js \
+	src/js/models/gallery.js \
 	src/js/processor.js \
 	src/js/test.js \
 	src/js/test_cases.js \
