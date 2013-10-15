@@ -10,6 +10,18 @@
     },
     "platforms": ["chromeos"],
     "description": "none",
+    "types": [
+      {
+        "id": "WallpaperLayout",
+        "type": "string",
+        "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
+      },
+      {
+        "id": "WallpaperSource",
+        "type": "string",
+        "enum": [ "ONLINE", "CUSTOM" ]
+      }
+    ],
     "functions": [
       {
         "name": "getStrings",
@@ -41,14 +53,12 @@
             "name": "url"
           },
           {
-            "type": "string",
             "name": "layout",
-            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
+            "$ref": "WallpaperLayout"
           },
           {
-            "type": "string",
             "name": "source",
-            "enum": [ "ONLINE", "CUSTOM" ]
+            "$ref": "WallpaperSource"
           },
           {
             "type": "function",
@@ -73,9 +83,8 @@
             "name": "wallpaper"
           },
           {
-            "type": "string",
             "name": "layout",
-            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
+            "$ref": "WallpaperLayout"
           },
           {
             "type": "string",
@@ -106,9 +115,8 @@
             "name": "wallpaper"
           },
           {
-            "type": "string",
             "name": "layout",
-            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
+            "$ref": "WallpaperLayout"
           },
           {
             "type": "boolean",
@@ -139,9 +147,8 @@
         "nodoc": "true",
         "parameters": [
           {
-            "type": "string",
             "name": "layout",
-            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
+            "$ref": "WallpaperLayout"
           },
           {
             "type": "function",
@@ -176,9 +183,8 @@
             "description": "URL of ONLINE wallpaper or file name of CUSTOM wallpaper"
           },
           {
-            "type": "string",
-            "name": "type",
-            "enum": [ "ONLINE", "CUSTOM" ]
+            "name": "source",
+            "$ref": "WallpaperSource"
           },
           {
             "type": "function",
@@ -227,9 +233,8 @@
         "nodoc": "true",
         "parameters": [
           {
-            "type": "string",
             "name": "source",
-            "enum": [ "ONLINE", "CUSTOM" ]
+            "$ref": "WallpaperSource"
           },
           {
             "type": "function",

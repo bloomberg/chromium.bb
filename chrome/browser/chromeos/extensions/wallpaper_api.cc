@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_api.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/threading/worker_pool.h"
@@ -15,6 +16,8 @@
 using base::BinaryValue;
 using content::BrowserThread;
 
+namespace set_wallpaper = extensions::api::wallpaper::SetWallpaper;
+
 WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction() {
 }
 
@@ -22,29 +25,15 @@ WallpaperSetWallpaperFunction::~WallpaperSetWallpaperFunction() {
 }
 
 bool WallpaperSetWallpaperFunction::RunImpl() {
-  DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
-
-  BinaryValue* input = NULL;
-  details->GetBinary("wallpaperData", &input);
-
-  std::string layout_string;
-  details->GetString("layout", &layout_string);
-  EXTENSION_FUNCTION_VALIDATE(!layout_string.empty());
-  layout_ = wallpaper_api_util::GetLayoutEnum(layout_string);
-
-  details->GetBoolean("thumbnail", &generate_thumbnail_);
-  details->GetString("name", &file_name_);
-
-  EXTENSION_FUNCTION_VALIDATE(!file_name_.empty());
+  params = set_wallpaper::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   // Gets email address and username hash while at UI thread.
   email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
   user_id_hash_ =
       chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
 
-  image_data_.assign(input->GetBuffer(), input->GetSize());
-  StartDecode(image_data_);
+  StartDecode(*(params->details.wallpaper_data));
 
   return true;
 }
@@ -53,11 +42,12 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& wallpaper) {
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
-  chromeos::UserImage::RawImage raw_image(image_data_.begin(),
-                                          image_data_.end());
+  chromeos::UserImage::RawImage raw_image(
+      params->details.wallpaper_data->begin(),
+      params->details.wallpaper_data->end());
   chromeos::UserImage image(wallpaper, raw_image);
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      chromeos::kThumbnailWallpaperSubDir, user_id_hash_, file_name_);
+      chromeos::kThumbnailWallpaperSubDir, user_id_hash_, params->details.name);
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
@@ -65,16 +55,17 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       BrowserThread::GetBlockingPool()->
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
-
+  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+      set_wallpaper::Params::Details::ToString(params->details.layout));
   wallpaper_manager->SetCustomWallpaper(email_,
                                         user_id_hash_,
-                                        file_name_,
-                                        layout_,
+                                        params->details.name,
+                                        layout,
                                         chromeos::User::CUSTOMIZED,
                                         image);
   unsafe_wallpaper_decoder_ = NULL;
 
-  if (generate_thumbnail_) {
+  if (params->details.thumbnail) {
     wallpaper.EnsureRepsForSupportedScales();
     scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
     // Generates thumbnail before call api function callback. We can then
