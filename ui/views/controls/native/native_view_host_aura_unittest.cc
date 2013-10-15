@@ -15,6 +15,27 @@
 
 namespace views {
 
+// Testing wrapper of the NativeViewHost
+class NativeViewHostTesting : public NativeViewHost {
+ public:
+  NativeViewHostTesting() {}
+  virtual ~NativeViewHostTesting() {
+    destroyed_count_++;
+  }
+
+  static void ResetDestroyedCount() {
+    destroyed_count_ = 0;
+  }
+
+  static int destroyed_count() {
+    return destroyed_count_;
+  }
+
+ private:
+  static int destroyed_count_;
+};
+int NativeViewHostTesting::destroyed_count_ = 0;
+
 class NativeViewHostAuraTest : public ViewsTestBase {
  public:
   NativeViewHostAuraTest() {
@@ -30,6 +51,14 @@ class NativeViewHostAuraTest : public ViewsTestBase {
 
   Widget* child() {
     return child_.get();
+  }
+
+  aura::Window* clipping_window() {
+    return &(native_host()->clipping_window_);
+  }
+
+  Widget* toplevel() {
+    return toplevel_.get();
   }
 
   void CreateHost() {
@@ -50,7 +79,7 @@ class NativeViewHostAuraTest : public ViewsTestBase {
     child_->SetContentsView(test_view);
 
     // Owned by |toplevel|.
-    host_.reset(new NativeViewHost);
+    host_.reset(new NativeViewHostTesting);
     toplevel_->GetRootView()->AddChildView(host_.get());
     host_->Attach(child_->GetNativeView());
   }
@@ -59,9 +88,22 @@ class NativeViewHostAuraTest : public ViewsTestBase {
     host_.reset();
   }
 
+  NativeViewHostTesting* ReleaseHost() {
+    return host_.release();
+  }
+
+  void DestroyTopLevel() {
+    toplevel_.reset();
+  }
+
+  gfx::Point CalculateNativeViewOrigin(gfx::Rect input_rect,
+                                       gfx::Rect native_rect) {
+    return native_host()->CalculateNativeViewOrigin(input_rect, native_rect);
+  }
+
  private:
   scoped_ptr<Widget> toplevel_;
-  scoped_ptr<NativeViewHost> host_;
+  scoped_ptr<NativeViewHostTesting> host_;
   scoped_ptr<Widget> child_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostAuraTest);
@@ -93,6 +135,97 @@ TEST_F(NativeViewHostAuraTest, HostViewPropertyKey) {
 
   DestroyHost();
   EXPECT_FALSE(child_win->GetProperty(views::kHostViewKey));
+}
+
+// Tests that the values being calculated by CalculateNativeViewOrigin are
+// correct.
+TEST_F(NativeViewHostAuraTest, CalculateNewNativeViewOrigin) {
+  CreateHost();
+
+  gfx::Rect clip_rect(0, 0, 50, 50);
+  gfx::Rect contents_rect(50, 50, 100, 100);
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_NORTHWEST);
+  EXPECT_EQ(gfx::Point(0, 0).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_NORTH);
+  EXPECT_EQ(gfx::Point(-25, 0).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_NORTHEAST);
+  EXPECT_EQ(gfx::Point(-50, 0).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_EAST);
+  EXPECT_EQ(gfx::Point(-50, -25).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_SOUTHEAST);
+  EXPECT_EQ(gfx::Point(-50, -50).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_SOUTH);
+  EXPECT_EQ(gfx::Point(-25, -50).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_SOUTHWEST);
+  EXPECT_EQ(gfx::Point(0, -50).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_WEST);
+  EXPECT_EQ(gfx::Point(0, -25).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_CENTER);
+  EXPECT_EQ(gfx::Point(-25, -25).ToString(),
+            CalculateNativeViewOrigin(clip_rect, contents_rect).ToString());
+
+  DestroyHost();
+}
+
+// Test that the fast resize path places the clipping and content windows were
+// they are supposed to be.
+TEST_F(NativeViewHostAuraTest, FastResizePath) {
+  CreateHost();
+  host()->set_fast_resize(false);
+  toplevel()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  native_host()->ShowWidget(0, 0, 100, 100);
+  host()->set_fast_resize(true);
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_CENTER);
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+            host()->native_view()->layer()->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+            clipping_window()->layer()->bounds().ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_NORTHWEST);
+  native_host()->ShowWidget(0, 0, 50, 50);
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
+            host()->native_view()->layer()->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
+            clipping_window()->layer()->bounds().ToString());
+
+  host()->set_fast_resize_gravity(NativeViewHost::GRAVITY_SOUTHEAST);
+  native_host()->ShowWidget(0, 0, 50, 50);
+  EXPECT_EQ(gfx::Rect(-50, -50, 100, 100).ToString(),
+            host()->native_view()->layer()->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
+            clipping_window()->layer()->bounds().ToString());
+
+  DestroyHost();
+}
+
+// Test that destroying the top level widget before destroying the attached
+// NativeViewHost works correctly. Specifically the associated NVH should be
+// destroyed and there shouldn't be any errors.
+TEST_F(NativeViewHostAuraTest, DestroyWidget) {
+  NativeViewHostTesting::ResetDestroyedCount();
+  CreateHost();
+  ReleaseHost();
+  EXPECT_EQ(0, NativeViewHostTesting::destroyed_count());
+  DestroyTopLevel();
+  EXPECT_EQ(1, NativeViewHostTesting::destroyed_count());
 }
 
 }  // namespace views

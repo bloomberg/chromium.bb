@@ -16,7 +16,6 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/events/event.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
-#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_delegate.h"
 
@@ -96,6 +95,10 @@ void WebView::LoadInitialURL(const GURL& url) {
 
 void WebView::SetFastResize(bool fast_resize) {
   wcv_holder_->set_fast_resize(fast_resize);
+}
+
+void WebView::SetFastResizeGravity(NativeViewHost::Gravity gravity) {
+  wcv_holder_->set_fast_resize_gravity(gravity);
 }
 
 void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
