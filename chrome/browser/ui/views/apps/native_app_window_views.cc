@@ -550,8 +550,8 @@ void NativeAppWindowViews::OnViewWasResized() {
 
   SkRegion* rgn = new SkRegion;
   if (!window_->IsFullscreen()) {
-    if (draggable_region())
-      rgn->op(*draggable_region(), SkRegion::kUnion_Op);
+    if (draggable_region_)
+      rgn->op(*draggable_region_, SkRegion::kUnion_Op);
     if (!window_->IsMaximized()) {
       if (frameless_)
         rgn->op(0, 0, width, kResizeInsideBoundsSize, SkRegion::kUnion_Op);
