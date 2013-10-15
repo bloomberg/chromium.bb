@@ -357,33 +357,41 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
-#if defined(USE_AURA)
-  // TODO(gpu): Fix this test in software compositing mode:
-  // http://crbug.com/306790.
-  if (!content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
-    return;
-#endif
   // Accelerated canvas 2D is not supported on XP.
   if (gpu::GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
 
-  bool is_blacklisted = false;
+  enum Canvas2DState {
+    ENABLED,
+    BLACKLISTED,  // Disabled via the blacklist.
+    DISABLED,     // Not disabled via the blacklist, but expected to be disabled
+                  // by configuration.
+  } expected_state = ENABLED;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Blacklist rule #24 disables accelerated_2d_canvas on Linux.
   // TODO(gab): Enable GPU control lists on Linux.
-  // is_blacklisted = true;
+  // expected_state = BLACKLISTED;
 #elif defined(OS_WIN)
   // Blacklist rule #67 disables accelerated_2d_canvas on XP.
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    is_blacklisted = true;
+    expected_state = BLACKLISTED;
 #endif
 
-  EXPECT_EQ(is_blacklisted,
+#if defined(USE_AURA)
+  // Canvas 2D is always disabled in software compositing mode, make sure it is
+  // marked as such if it wasn't blacklisted already.
+  if (expected_state == ENABLED &&
+      !content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
+    expected_state = DISABLED;
+  }
+#endif
+
+  EXPECT_EQ(expected_state == BLACKLISTED,
             GpuDataManager::GetInstance()->IsFeatureBlacklisted(
                 gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-  RunEventTest(url, kAcceleratedCanvasCreationEvent, !is_blacklisted);
+  RunEventTest(url, kAcceleratedCanvasCreationEvent, expected_state == ENABLED);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
