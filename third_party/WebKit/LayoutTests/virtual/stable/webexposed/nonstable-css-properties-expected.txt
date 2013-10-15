@@ -75,6 +75,14 @@ el.style.setProperty('grid-template', '"test"')
 el.style.getPropertyValue('grid-template') is null
 getComputedStyle(el).getPropertyValue('grid-template') is null
 
+el.style.setProperty('text-align-last', 'start')
+el.style.getPropertyValue('text-align-last') is null
+getComputedStyle(el).getPropertyValue('text-align-last') is null
+
+el.style.setProperty('text-indent', '10px')
+el.style.getPropertyValue('text-indent') is 10px
+getComputedStyle(el).getPropertyValue('text-indent') is null
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
