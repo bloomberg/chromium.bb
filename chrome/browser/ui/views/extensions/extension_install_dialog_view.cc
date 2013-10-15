@@ -128,6 +128,10 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  // views::WidgetDelegate
+  virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual bool ShouldShowCloseButton() const OVERRIDE;
+
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
@@ -417,10 +421,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       icon_row_span = 4;
     } else if (prompt.ShouldShowPermissions()) {
       size_t permission_count = prompt.GetPermissionCount();
-      if (is_first_run()) {
-        // In first run case we have separator.
-        icon_row_span = 1;
-      } else if (permission_count > 0) {
+      if (permission_count > 0) {
         // Also span the permission header and each of the permission rows (all
         // have a padding row above it).
         icon_row_span = 3 + permission_count * 2;
@@ -490,7 +491,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
     if (prompt.GetPermissionCount() > 0) {
-      if (is_inline_install() || is_first_run()) {
+      if (is_inline_install()) {
         layout->StartRow(0, column_set_id);
         layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
                         3, 1, views::GridLayout::FILL, views::GridLayout::FILL);
@@ -705,6 +706,14 @@ void ExtensionInstallDialogView::Layout() {
 
 gfx::Size ExtensionInstallDialogView::GetPreferredSize() {
   return dialog_size_;
+}
+
+bool ExtensionInstallDialogView::ShouldShowWindowTitle() const {
+  return false;
+}
+
+bool ExtensionInstallDialogView::ShouldShowCloseButton() const {
+  return false;
 }
 
 // static

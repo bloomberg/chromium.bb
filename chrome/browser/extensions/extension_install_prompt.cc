@@ -59,7 +59,7 @@ static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE,
   IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE,
   IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE,
-  0, // The prompt should be extension description.
+  IDS_EXTENSION_FIRST_RUN_PROMPT_TITLE,
 };
 static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
@@ -69,7 +69,7 @@ static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING,
   0,  // External installs use different strings for extensions/apps.
   IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING,
-  0,  // First run dialog use the extension name.
+  IDS_EXTENSION_FIRST_RUN_PROMPT_HEADING,
 };
 static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -99,7 +99,7 @@ static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON,
   IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON,
   IDS_CLOSE,
-  IDS_EXTENSION_PROMPT_FIRST_RUN_DECLINE_BUTTON
+  0,  // Platform dependent cancel button.
 };
 static const int kPermissionsHeaderIds[
     ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -277,8 +277,6 @@ string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
   } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
     return l10n_util::GetStringFUTF16(
         resource_id, UTF8ToUTF16(extension_->name()));
-  } else if (type_ == DEFAULT_INSTALL_FIRST_RUN_PROMPT) {
-    return UTF8ToUTF16(extension_->name());
   }
 
   return l10n_util::GetStringUTF16(resource_id);
@@ -298,8 +296,6 @@ string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
     else
       resource_id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_EXTENSION;
     return l10n_util::GetStringUTF16(resource_id);
-  } else if (type_ == DEFAULT_INSTALL_FIRST_RUN_PROMPT) {
-    return UTF8ToUTF16(extension_->description());
   } else {
     return l10n_util::GetStringFUTF16(
         kHeadingIds[type_], UTF8ToUTF16(extension_->name()));
