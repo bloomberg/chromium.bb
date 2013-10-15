@@ -34,7 +34,6 @@
 #include "core/frame/FrameView.h"
 #include "core/platform/ColorChooserClient.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/LocalizedStrings.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLocalizedString.h"
 

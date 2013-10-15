@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/text/PlatformLocale.h"
 
-#include "platform/LocalizedStrings.h"
 #include "platform/text/DateTimeFormat.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"

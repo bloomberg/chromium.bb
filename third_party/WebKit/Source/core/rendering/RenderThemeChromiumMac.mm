@@ -54,7 +54,6 @@
 #import "core/rendering/RenderSlider.h"
 #import "core/rendering/RenderView.h"
 #import "platform/LayoutTestSupport.h"
-#import "platform/LocalizedStrings.h"
 #import "platform/SharedBuffer.h"
 #import "platform/text/PlatformLocale.h"
 

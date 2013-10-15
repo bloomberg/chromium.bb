@@ -44,7 +44,6 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "platform/LocalizedStrings.h"
 #include "wtf/text/StringBuilder.h"
 
 using std::min;

@@ -46,7 +46,6 @@
 #include "core/frame/Frame.h"
 #include "core/platform/network/FormDataList.h"
 #include "core/rendering/RenderTextControlMultiLine.h"
-#include "platform/LocalizedStrings.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"

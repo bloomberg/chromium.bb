@@ -65,7 +65,6 @@
 #include "core/page/Page.h"
 #include "core/platform/network/FormDataList.h"
 #include "core/rendering/RenderTheme.h"
-#include "platform/LocalizedStrings.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
 
