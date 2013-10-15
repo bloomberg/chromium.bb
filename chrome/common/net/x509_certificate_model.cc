@@ -6,6 +6,8 @@
 
 #include <unicode/uidna.h>
 
+#include <algorithm>
+
 #include "base/strings/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
