@@ -106,12 +106,13 @@ class DownloadRequestLimiter
     }
 
     // content::WebContentsObserver overrides.
+    virtual void AboutToNavigateRenderView(
+        content::RenderViewHost* render_view_host) OVERRIDE;
     // Invoked when a user gesture occurs (mouse click, enter or space). This
     // may result in invoking Remove on DownloadRequestLimiter.
     virtual void DidGetUserGesture() OVERRIDE;
-
-    virtual void AboutToNavigateRenderView(
-        content::RenderViewHost* render_view_host) OVERRIDE;
+    virtual void WebContentsDestroyed(
+        content::WebContents* web_contents) OVERRIDE;
 
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
@@ -242,7 +243,7 @@ class DownloadRequestLimiter
   // Removes the specified TabDownloadState from the internal map and deletes
   // it. This has the effect of resetting the status for the tab to
   // ALLOW_ONE_DOWNLOAD.
-  void Remove(TabDownloadState* state);
+  void Remove(TabDownloadState* state, content::WebContents* contents);
 
   static HostContentSettingsMap* content_settings_;
   static HostContentSettingsMap* GetContentSettings(

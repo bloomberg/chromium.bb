@@ -42,12 +42,8 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       factory_(this) {
   content::Source<NavigationController> notification_source(
       &contents->GetController());
-  content::Source<content::WebContents> web_contents_source(contents);
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  notification_source);
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 web_contents_source);
-
   NavigationEntry* active_entry = originating_web_contents ?
       originating_web_contents->GetController().GetActiveEntry() :
       contents->GetController().GetActiveEntry();
@@ -63,23 +59,6 @@ DownloadRequestLimiter::TabDownloadState::~TabDownloadState() {
   DCHECK(!factory_.HasWeakPtrs());
 }
 
-void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
-  if (is_showing_prompt()) {
-    // Don't change the state if the user clicks on the page somewhere.
-    return;
-  }
-
-  // See PromptUserForDownload(): if there's no InfoBarService, then
-  // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  if ((status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS) &&
-      (!InfoBarService::FromWebContents(web_contents()) ||
-       (status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED))) {
-    // Revert to default status.
-    host_->Remove(this);
-    // WARNING: We've been deleted.
-  }
-}
-
 void DownloadRequestLimiter::TabDownloadState::AboutToNavigateRenderView(
     content::RenderViewHost* render_view_host) {
   switch (status_) {
@@ -89,7 +68,7 @@ void DownloadRequestLimiter::TabDownloadState::AboutToNavigateRenderView(
       // are expecting DownloadRequestLimiter to behave as if they had just
       // initially navigated to this page. See http://crbug.com/171372
       NotifyCallbacks(false);
-      host_->Remove(this);
+      host_->Remove(this, web_contents());
       // WARNING: We've been deleted.
       break;
     case DOWNLOADS_NOT_ALLOWED:
@@ -104,6 +83,34 @@ void DownloadRequestLimiter::TabDownloadState::AboutToNavigateRenderView(
     default:
       NOTREACHED();
   }
+}
+
+void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
+  if (is_showing_prompt()) {
+    // Don't change the state if the user clicks on the page somewhere.
+    return;
+  }
+
+  // See PromptUserForDownload(): if there's no InfoBarService, then
+  // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
+  if ((status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS) &&
+      (!InfoBarService::FromWebContents(web_contents()) ||
+       (status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED))) {
+    // Revert to default status.
+    host_->Remove(this, web_contents());
+    // WARNING: We've been deleted.
+  }
+}
+
+void DownloadRequestLimiter::TabDownloadState::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  // Tab closed, no need to handle closing the dialog as it's owned by the
+  // WebContents.
+
+  NotifyCallbacks(false);
+  // Note that web_contents() is NULL at this point.
+  host_->Remove(this, web_contents);
+  // WARNING: We've been deleted.
 }
 
 void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
@@ -160,43 +167,36 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_PENDING, type);
   content::NavigationController* controller = &web_contents()->GetController();
-  if (type == content::NOTIFICATION_NAV_ENTRY_PENDING) {
-    DCHECK_EQ(controller, content::Source<NavigationController>(source).ptr());
+  DCHECK_EQ(controller, content::Source<NavigationController>(source).ptr());
 
-    // NOTE: Resetting state on a pending navigate isn't ideal. In particular it
-    // is possible that queued up downloads for the page before the pending
-    // navigation will be delivered to us after we process this request. If this
-    // happens we may let a download through that we shouldn't have. But this is
-    // rather rare, and it is difficult to get 100% right, so we don't deal with
-    // it.
-    NavigationEntry* entry = controller->GetPendingEntry();
-    if (!entry)
+  // NOTE: Resetting state on a pending navigate isn't ideal. In particular it
+  // is possible that queued up downloads for the page before the pending
+  // navigation will be delivered to us after we process this request. If this
+  // happens we may let a download through that we shouldn't have. But this is
+  // rather rare, and it is difficult to get 100% right, so we don't deal with
+  // it.
+  NavigationEntry* entry = controller->GetPendingEntry();
+  if (!entry)
+    return;
+
+  // Redirects don't count.
+  if (content::PageTransitionIsRedirect(entry->GetTransitionType()))
+    return;
+
+  if (status_ == DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS ||
+      status_ == DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) {
+    // User has either allowed all downloads or canceled all downloads. Only
+    // reset the download state if the user is navigating to a different host
+    // (or host is empty).
+    if (!initial_page_host_.empty() && !entry->GetURL().host().empty() &&
+        entry->GetURL().host() == initial_page_host_)
       return;
-
-    // Redirects don't count.
-    if (content::PageTransitionIsRedirect(entry->GetTransitionType()))
-      return;
-
-    if (status_ == DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS ||
-        status_ == DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) {
-      // User has either allowed all downloads or canceled all downloads. Only
-      // reset the download state if the user is navigating to a different host
-      // (or host is empty).
-      if (!initial_page_host_.empty() && !entry->GetURL().host().empty() &&
-          entry->GetURL().host() == initial_page_host_)
-        return;
-    }
-  } else {
-    DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
-    DCHECK_EQ(controller,
-              &content::Source<content::WebContents>(source)->GetController());
-    // Tab closed, no need to handle closing the dialog as it's owned by the
-    // WebContents.
   }
 
   NotifyCallbacks(false);
-  host_->Remove(this);
+  host_->Remove(this, web_contents());
 }
 
 void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
@@ -438,8 +438,9 @@ void DownloadRequestLimiter::ScheduleNotification(const Callback& callback,
       BrowserThread::IO, FROM_HERE, base::Bind(callback, allow));
 }
 
-void DownloadRequestLimiter::Remove(TabDownloadState* state) {
-  DCHECK(ContainsKey(state_map_, state->web_contents()));
-  state_map_.erase(state->web_contents());
+void DownloadRequestLimiter::Remove(TabDownloadState* state,
+                                    content::WebContents* contents) {
+  DCHECK(ContainsKey(state_map_, contents));
+  state_map_.erase(contents);
   delete state;
 }
