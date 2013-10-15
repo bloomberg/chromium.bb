@@ -132,37 +132,26 @@ class MockInputRouter : public InputRouter {
   }
   virtual void SendMouseEvent(
       const MouseEventWithLatencyInfo& mouse_event) OVERRIDE {
-    if (client_->OnSendMouseEvent(mouse_event))
-      sent_mouse_event_ = true;
+    sent_mouse_event_ = true;
   }
   virtual void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) OVERRIDE {
-    if (client_->OnSendWheelEvent(wheel_event))
-      sent_wheel_event_ = true;
+    sent_wheel_event_ = true;
   }
   virtual void SendKeyboardEvent(
       const NativeWebKeyboardEvent& key_event,
-      const ui::LatencyInfo& latency_info) OVERRIDE {
-    bool is_shortcut = false;
-    if (client_->OnSendKeyboardEvent(key_event, latency_info, &is_shortcut))
-      sent_keyboard_event_ = true;
+      const ui::LatencyInfo& latency_info,
+      bool is_shortcut) OVERRIDE {
+    sent_keyboard_event_ = true;
   }
   virtual void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) OVERRIDE {
-    if (client_->OnSendGestureEvent(gesture_event))
-      sent_gesture_event_ = true;
+    sent_gesture_event_ = true;
   }
   virtual void SendTouchEvent(
       const TouchEventWithLatencyInfo& touch_event) OVERRIDE {
-    if (client_->OnSendTouchEvent(touch_event))
-      send_touch_event_not_cancelled_ = true;
+    send_touch_event_not_cancelled_ = true;
   }
-  virtual void SendMouseEventImmediately(
-      const MouseEventWithLatencyInfo& mouse_event) OVERRIDE {}
-  virtual void SendTouchEventImmediately(
-      const TouchEventWithLatencyInfo& touch_event) OVERRIDE {}
-  virtual void SendGestureEventImmediately(
-      const GestureEventWithLatencyInfo& gesture_event) OVERRIDE {}
   virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const OVERRIDE {
     NOTREACHED();
     return NULL;
@@ -225,40 +214,40 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     hung_renderer_delay_ms_ = delay_ms;
   }
 
-  unsigned GestureEventLastQueueEventSize() {
+  unsigned GestureEventLastQueueEventSize() const {
     return gesture_event_filter()->coalesced_gesture_events_.size();
   }
 
-  WebGestureEvent GestureEventSecondFromLastQueueEvent() {
+  WebGestureEvent GestureEventSecondFromLastQueueEvent() const {
     return gesture_event_filter()->coalesced_gesture_events_.at(
       GestureEventLastQueueEventSize() - 2).event;
   }
 
-  WebGestureEvent GestureEventLastQueueEvent() {
+  WebGestureEvent GestureEventLastQueueEvent() const {
     return gesture_event_filter()->coalesced_gesture_events_.back().event;
   }
 
-  unsigned GestureEventDebouncingQueueSize() {
+  unsigned GestureEventDebouncingQueueSize() const {
     return gesture_event_filter()->debouncing_deferral_queue_.size();
   }
 
-  WebGestureEvent GestureEventQueueEventAt(int i) {
+  WebGestureEvent GestureEventQueueEventAt(int i) const {
     return gesture_event_filter()->coalesced_gesture_events_.at(i).event;
   }
 
-  bool shouldDeferTapDownEvents() {
+  bool shouldDeferTapDownEvents() const {
     return gesture_event_filter()->maximum_tap_gap_time_ms_ != 0;
   }
 
-  bool ScrollingInProgress() {
+  bool ScrollingInProgress() const {
     return gesture_event_filter()->scrolling_in_progress_;
   }
 
-  bool FlingInProgress() {
+  bool FlingInProgress() const {
     return gesture_event_filter()->fling_in_progress_;
   }
 
-  bool WillIgnoreNextACK() {
+  bool WillIgnoreNextACK() const {
     return gesture_event_filter()->ignore_next_ack_;
   }
 
@@ -326,12 +315,16 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     unresponsive_timer_fired_ = true;
   }
 
-  TouchEventQueue* touch_event_queue() const {
-    return immediate_input_router_->touch_event_queue();
+  const TouchEventQueue* touch_event_queue() const {
+    return immediate_input_router_->touch_event_queue_.get();
   }
 
-  GestureEventFilter* gesture_event_filter() const {
-    return immediate_input_router_->gesture_event_filter();
+  const GestureEventFilter* gesture_event_filter() const {
+    return immediate_input_router_->gesture_event_filter_.get();
+  }
+
+  GestureEventFilter* gesture_event_filter() {
+    return immediate_input_router_->gesture_event_filter_.get();
   }
 
  private:

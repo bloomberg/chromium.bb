@@ -17,6 +17,8 @@ struct LatencyInfo;
 
 namespace content {
 
+class OverscrollController;
+
 class CONTENT_EXPORT InputRouterClient {
  public:
   virtual ~InputRouterClient() {}
@@ -40,26 +42,10 @@ class CONTENT_EXPORT InputRouterClient {
   // Called when the renderer notifies that it has touch event handlers.
   virtual void OnHasTouchEventHandlers(bool has_handlers) = 0;
 
-  // Called upon Send*Event. Should return true if the event should be sent, and
-  // false if the event should be dropped.
-  virtual bool OnSendKeyboardEvent(
-      const NativeWebKeyboardEvent& key_event,
-      const ui::LatencyInfo& latency_info,
-      bool* is_shortcut) = 0;
-  virtual bool OnSendWheelEvent(
-      const MouseWheelEventWithLatencyInfo& wheel_event) = 0;
-  virtual bool OnSendMouseEvent(
-      const MouseEventWithLatencyInfo& mouse_event) = 0;
-  virtual bool OnSendTouchEvent(
-      const TouchEventWithLatencyInfo& touch_event) = 0;
-  virtual bool OnSendGestureEvent(
-      const GestureEventWithLatencyInfo& gesture_event) = 0;
-  virtual bool OnSendMouseEventImmediately(
-      const MouseEventWithLatencyInfo& mouse_event) = 0;
-  virtual bool OnSendTouchEventImmediately(
-      const TouchEventWithLatencyInfo& touch_event) = 0;
-  virtual bool OnSendGestureEventImmediately(
-      const GestureEventWithLatencyInfo& gesture_event) = 0;
+  // Returns an optional OverscrollController.  If non-NULL, the controller
+  // will be fed events and event acks by the router, when appropriate.
+  // TODO(jdduke): crbug.com/306133 - Move the controller to the router.
+  virtual OverscrollController* GetOverscrollController() const = 0;
 
   // Certain router implementations require periodic flushing of queued events.
   // When this method is called, the client should ensure a timely call, either
