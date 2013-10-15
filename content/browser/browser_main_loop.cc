@@ -699,7 +699,6 @@ void BrowserMainLoop::RunMainMessageLoopParts() {
 }
 
 void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
-
   if (!created_threads_) {
     // Called early, nothing to do
     return;
@@ -713,6 +712,11 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       BrowserThread::IO, FROM_HERE,
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
+
+  if (RenderProcessHost::run_renderer_in_process() &&
+      !RenderProcessHost::AllHostsIterator().IsAtEnd()) {
+    delete RenderProcessHost::AllHostsIterator().GetCurrentValue();
+  }
 
   if (parts_) {
     TRACE_EVENT0("shutdown",
