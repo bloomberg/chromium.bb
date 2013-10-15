@@ -78,7 +78,7 @@ function getObject(interface) {
             assert_true(e instanceof HTMLElement);
             return e;
         case "SVGElement":
-            var e = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            var e = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             assert_true(e instanceof SVGElement);
             return e;
         case "Document":
@@ -102,7 +102,7 @@ function testSet(interface, attribute) {
     }, "Set " + interface + "." + attribute);
 }
 function testReflect(interface, attribute) {
-   test(function() {
+    test(function() {
         var element = getObject(interface);
         assert_equals(element.getAttribute(attribute), null, "Initially null");
         element.setAttribute(attribute, "return");
@@ -136,6 +136,9 @@ attributes.forEach(function(attribute) {
     testSet("HTMLElement", attribute);
     testEnumerate("HTMLElement", attribute);
     testReflect("HTMLElement", attribute);
+    testSet("SVGElement", attribute);
+    testEnumerate("SVGElement", attribute);
+    testReflect("SVGElement", attribute);
     testSet("Document", attribute);
     testEnumerate("Document", attribute);
     testSet("Window", attribute);

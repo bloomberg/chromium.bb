@@ -3,6 +3,9 @@ FAIL No Element.onabort assert_false: expected false got true
 PASS Set HTMLElement.onabort 
 FAIL Enumerate HTMLElement.onabort assert_true: expected true got undefined
 PASS Reflect HTMLElement.onabort 
+PASS Set SVGElement.onabort 
+FAIL Enumerate SVGElement.onabort assert_true: expected true got undefined
+FAIL Reflect SVGElement.onabort assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onabort 
 FAIL Enumerate Document.onabort assert_true: expected true got undefined
 PASS Set Window.onabort 
@@ -11,6 +14,9 @@ FAIL No Element.onblur assert_false: expected false got true
 PASS Set HTMLElement.onblur 
 FAIL Enumerate HTMLElement.onblur assert_true: expected true got undefined
 PASS Reflect HTMLElement.onblur 
+PASS Set SVGElement.onblur 
+FAIL Enumerate SVGElement.onblur assert_true: expected true got undefined
+FAIL Reflect SVGElement.onblur assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onblur 
 FAIL Enumerate Document.onblur assert_true: expected true got undefined
 PASS Set Window.onblur 
@@ -19,6 +25,9 @@ FAIL No Element.onerror assert_false: expected false got true
 PASS Set HTMLElement.onerror 
 FAIL Enumerate HTMLElement.onerror assert_true: expected true got undefined
 PASS Reflect HTMLElement.onerror 
+PASS Set SVGElement.onerror 
+FAIL Enumerate SVGElement.onerror assert_true: expected true got undefined
+FAIL Reflect SVGElement.onerror assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onerror 
 FAIL Enumerate Document.onerror assert_true: expected true got undefined
 PASS Set Window.onerror 
@@ -27,6 +36,9 @@ FAIL No Element.onfocus assert_false: expected false got true
 PASS Set HTMLElement.onfocus 
 FAIL Enumerate HTMLElement.onfocus assert_true: expected true got undefined
 PASS Reflect HTMLElement.onfocus 
+PASS Set SVGElement.onfocus 
+FAIL Enumerate SVGElement.onfocus assert_true: expected true got undefined
+FAIL Reflect SVGElement.onfocus assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onfocus 
 FAIL Enumerate Document.onfocus assert_true: expected true got undefined
 PASS Set Window.onfocus 
@@ -35,6 +47,9 @@ PASS No Element.oncancel
 FAIL Set HTMLElement.oncancel assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.oncancel assert_true: expected true got undefined
 FAIL Reflect HTMLElement.oncancel assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.oncancel assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.oncancel assert_true: expected true got undefined
+FAIL Reflect SVGElement.oncancel assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.oncancel assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.oncancel assert_true: expected true got undefined
 FAIL Set Window.oncancel assert_equals: Initially null expected null but got undefined
@@ -43,6 +58,9 @@ PASS No Element.oncanplay
 FAIL Set HTMLElement.oncanplay assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.oncanplay assert_true: expected true got undefined
 FAIL Reflect HTMLElement.oncanplay assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.oncanplay assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.oncanplay assert_true: expected true got undefined
+FAIL Reflect SVGElement.oncanplay assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.oncanplay assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.oncanplay assert_true: expected true got undefined
 FAIL Set Window.oncanplay assert_equals: Return null after setting string expected null but got ""
@@ -51,6 +69,9 @@ PASS No Element.oncanplaythrough
 FAIL Set HTMLElement.oncanplaythrough assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.oncanplaythrough assert_true: expected true got undefined
 FAIL Reflect HTMLElement.oncanplaythrough assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.oncanplaythrough assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.oncanplaythrough assert_true: expected true got undefined
+FAIL Reflect SVGElement.oncanplaythrough assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.oncanplaythrough assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.oncanplaythrough assert_true: expected true got undefined
 FAIL Set Window.oncanplaythrough assert_equals: Return null after setting string expected null but got ""
@@ -59,6 +80,9 @@ FAIL No Element.onchange assert_false: expected false got true
 PASS Set HTMLElement.onchange 
 FAIL Enumerate HTMLElement.onchange assert_true: expected true got undefined
 PASS Reflect HTMLElement.onchange 
+PASS Set SVGElement.onchange 
+FAIL Enumerate SVGElement.onchange assert_true: expected true got undefined
+FAIL Reflect SVGElement.onchange assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onchange 
 FAIL Enumerate Document.onchange assert_true: expected true got undefined
 PASS Set Window.onchange 
@@ -67,6 +91,9 @@ FAIL No Element.onclick assert_false: expected false got true
 PASS Set HTMLElement.onclick 
 FAIL Enumerate HTMLElement.onclick assert_true: expected true got undefined
 PASS Reflect HTMLElement.onclick 
+PASS Set SVGElement.onclick 
+FAIL Enumerate SVGElement.onclick assert_true: expected true got undefined
+PASS Reflect SVGElement.onclick 
 PASS Set Document.onclick 
 FAIL Enumerate Document.onclick assert_true: expected true got undefined
 PASS Set Window.onclick 
@@ -75,6 +102,9 @@ PASS No Element.onclose
 FAIL Set HTMLElement.onclose assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onclose assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onclose assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onclose assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onclose assert_true: expected true got undefined
+FAIL Reflect SVGElement.onclose assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onclose assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onclose assert_true: expected true got undefined
 FAIL Set Window.onclose assert_equals: Initially null expected null but got undefined
@@ -83,6 +113,9 @@ FAIL No Element.oncontextmenu assert_false: expected false got true
 PASS Set HTMLElement.oncontextmenu 
 FAIL Enumerate HTMLElement.oncontextmenu assert_true: expected true got undefined
 PASS Reflect HTMLElement.oncontextmenu 
+PASS Set SVGElement.oncontextmenu 
+FAIL Enumerate SVGElement.oncontextmenu assert_true: expected true got undefined
+FAIL Reflect SVGElement.oncontextmenu assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.oncontextmenu 
 FAIL Enumerate Document.oncontextmenu assert_true: expected true got undefined
 PASS Set Window.oncontextmenu 
@@ -91,6 +124,9 @@ PASS No Element.oncuechange
 FAIL Set HTMLElement.oncuechange assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.oncuechange assert_true: expected true got undefined
 FAIL Reflect HTMLElement.oncuechange assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.oncuechange assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.oncuechange assert_true: expected true got undefined
+FAIL Reflect SVGElement.oncuechange assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.oncuechange assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.oncuechange assert_true: expected true got undefined
 FAIL Set Window.oncuechange assert_equals: Initially null expected null but got undefined
@@ -99,6 +135,9 @@ FAIL No Element.ondblclick assert_false: expected false got true
 PASS Set HTMLElement.ondblclick 
 FAIL Enumerate HTMLElement.ondblclick assert_true: expected true got undefined
 PASS Reflect HTMLElement.ondblclick 
+PASS Set SVGElement.ondblclick 
+FAIL Enumerate SVGElement.ondblclick assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondblclick assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondblclick 
 FAIL Enumerate Document.ondblclick assert_true: expected true got undefined
 PASS Set Window.ondblclick 
@@ -107,6 +146,9 @@ FAIL No Element.ondrag assert_false: expected false got true
 PASS Set HTMLElement.ondrag 
 FAIL Enumerate HTMLElement.ondrag assert_true: expected true got undefined
 PASS Reflect HTMLElement.ondrag 
+PASS Set SVGElement.ondrag 
+FAIL Enumerate SVGElement.ondrag assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondrag assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondrag 
 FAIL Enumerate Document.ondrag assert_true: expected true got undefined
 PASS Set Window.ondrag 
@@ -115,6 +157,9 @@ FAIL No Element.ondragend assert_false: expected false got true
 PASS Set HTMLElement.ondragend 
 FAIL Enumerate HTMLElement.ondragend assert_true: expected true got undefined
 PASS Reflect HTMLElement.ondragend 
+PASS Set SVGElement.ondragend 
+FAIL Enumerate SVGElement.ondragend assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondragend assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragend 
 FAIL Enumerate Document.ondragend assert_true: expected true got undefined
 PASS Set Window.ondragend 
@@ -123,6 +168,9 @@ FAIL No Element.ondragenter assert_false: expected false got true
 PASS Set HTMLElement.ondragenter 
 FAIL Enumerate HTMLElement.ondragenter assert_true: expected true got undefined
 PASS Reflect HTMLElement.ondragenter 
+PASS Set SVGElement.ondragenter 
+FAIL Enumerate SVGElement.ondragenter assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondragenter assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragenter 
 FAIL Enumerate Document.ondragenter assert_true: expected true got undefined
 PASS Set Window.ondragenter 
@@ -131,6 +179,9 @@ PASS No Element.ondragexit
 FAIL Set HTMLElement.ondragexit assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.ondragexit assert_true: expected true got undefined
 FAIL Reflect HTMLElement.ondragexit assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.ondragexit assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.ondragexit assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondragexit assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.ondragexit assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.ondragexit assert_true: expected true got undefined
 FAIL Set Window.ondragexit assert_equals: Initially null expected null but got undefined
@@ -139,6 +190,9 @@ FAIL No Element.ondragleave assert_false: expected false got true
 PASS Set HTMLElement.ondragleave 
 FAIL Enumerate HTMLElement.ondragleave assert_true: expected true got undefined
 PASS Reflect HTMLElement.ondragleave 
+PASS Set SVGElement.ondragleave 
+FAIL Enumerate SVGElement.ondragleave assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondragleave assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragleave 
 FAIL Enumerate Document.ondragleave assert_true: expected true got undefined
 PASS Set Window.ondragleave 
@@ -147,6 +201,9 @@ FAIL No Element.ondragover assert_false: expected false got true
 PASS Set HTMLElement.ondragover 
 FAIL Enumerate HTMLElement.ondragover assert_true: expected true got undefined
 PASS Reflect HTMLElement.ondragover 
+PASS Set SVGElement.ondragover 
+FAIL Enumerate SVGElement.ondragover assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondragover assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragover 
 FAIL Enumerate Document.ondragover assert_true: expected true got undefined
 PASS Set Window.ondragover 
@@ -155,6 +212,9 @@ FAIL No Element.ondragstart assert_false: expected false got true
 PASS Set HTMLElement.ondragstart 
 FAIL Enumerate HTMLElement.ondragstart assert_true: expected true got undefined
 PASS Reflect HTMLElement.ondragstart 
+PASS Set SVGElement.ondragstart 
+FAIL Enumerate SVGElement.ondragstart assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondragstart assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragstart 
 FAIL Enumerate Document.ondragstart assert_true: expected true got undefined
 PASS Set Window.ondragstart 
@@ -163,6 +223,9 @@ FAIL No Element.ondrop assert_false: expected false got true
 PASS Set HTMLElement.ondrop 
 FAIL Enumerate HTMLElement.ondrop assert_true: expected true got undefined
 PASS Reflect HTMLElement.ondrop 
+PASS Set SVGElement.ondrop 
+FAIL Enumerate SVGElement.ondrop assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondrop assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondrop 
 FAIL Enumerate Document.ondrop assert_true: expected true got undefined
 PASS Set Window.ondrop 
@@ -171,6 +234,9 @@ PASS No Element.ondurationchange
 FAIL Set HTMLElement.ondurationchange assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.ondurationchange assert_true: expected true got undefined
 FAIL Reflect HTMLElement.ondurationchange assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.ondurationchange assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.ondurationchange assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondurationchange assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.ondurationchange assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.ondurationchange assert_true: expected true got undefined
 FAIL Set Window.ondurationchange assert_equals: Return null after setting string expected null but got ""
@@ -179,6 +245,9 @@ PASS No Element.onemptied
 FAIL Set HTMLElement.onemptied assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onemptied assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onemptied assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onemptied assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onemptied assert_true: expected true got undefined
+FAIL Reflect SVGElement.onemptied assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onemptied assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onemptied assert_true: expected true got undefined
 FAIL Set Window.onemptied assert_equals: Return null after setting string expected null but got ""
@@ -187,6 +256,9 @@ PASS No Element.onended
 FAIL Set HTMLElement.onended assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onended assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onended assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onended assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onended assert_true: expected true got undefined
+FAIL Reflect SVGElement.onended assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onended assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onended assert_true: expected true got undefined
 FAIL Set Window.onended assert_equals: Return null after setting string expected null but got ""
@@ -195,6 +267,9 @@ FAIL No Element.oninput assert_false: expected false got true
 PASS Set HTMLElement.oninput 
 FAIL Enumerate HTMLElement.oninput assert_true: expected true got undefined
 PASS Reflect HTMLElement.oninput 
+PASS Set SVGElement.oninput 
+FAIL Enumerate SVGElement.oninput assert_true: expected true got undefined
+FAIL Reflect SVGElement.oninput assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.oninput 
 FAIL Enumerate Document.oninput assert_true: expected true got undefined
 PASS Set Window.oninput 
@@ -203,6 +278,9 @@ FAIL No Element.oninvalid assert_false: expected false got true
 PASS Set HTMLElement.oninvalid 
 FAIL Enumerate HTMLElement.oninvalid assert_true: expected true got undefined
 PASS Reflect HTMLElement.oninvalid 
+PASS Set SVGElement.oninvalid 
+FAIL Enumerate SVGElement.oninvalid assert_true: expected true got undefined
+FAIL Reflect SVGElement.oninvalid assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.oninvalid 
 FAIL Enumerate Document.oninvalid assert_true: expected true got undefined
 PASS Set Window.oninvalid 
@@ -211,6 +289,9 @@ FAIL No Element.onkeydown assert_false: expected false got true
 PASS Set HTMLElement.onkeydown 
 FAIL Enumerate HTMLElement.onkeydown assert_true: expected true got undefined
 PASS Reflect HTMLElement.onkeydown 
+PASS Set SVGElement.onkeydown 
+FAIL Enumerate SVGElement.onkeydown assert_true: expected true got undefined
+FAIL Reflect SVGElement.onkeydown assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onkeydown 
 FAIL Enumerate Document.onkeydown assert_true: expected true got undefined
 PASS Set Window.onkeydown 
@@ -219,6 +300,9 @@ FAIL No Element.onkeypress assert_false: expected false got true
 PASS Set HTMLElement.onkeypress 
 FAIL Enumerate HTMLElement.onkeypress assert_true: expected true got undefined
 PASS Reflect HTMLElement.onkeypress 
+PASS Set SVGElement.onkeypress 
+FAIL Enumerate SVGElement.onkeypress assert_true: expected true got undefined
+FAIL Reflect SVGElement.onkeypress assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onkeypress 
 FAIL Enumerate Document.onkeypress assert_true: expected true got undefined
 PASS Set Window.onkeypress 
@@ -227,6 +311,9 @@ FAIL No Element.onkeyup assert_false: expected false got true
 PASS Set HTMLElement.onkeyup 
 FAIL Enumerate HTMLElement.onkeyup assert_true: expected true got undefined
 PASS Reflect HTMLElement.onkeyup 
+PASS Set SVGElement.onkeyup 
+FAIL Enumerate SVGElement.onkeyup assert_true: expected true got undefined
+FAIL Reflect SVGElement.onkeyup assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onkeyup 
 FAIL Enumerate Document.onkeyup assert_true: expected true got undefined
 PASS Set Window.onkeyup 
@@ -235,6 +322,9 @@ FAIL No Element.onload assert_false: expected false got true
 PASS Set HTMLElement.onload 
 FAIL Enumerate HTMLElement.onload assert_true: expected true got undefined
 PASS Reflect HTMLElement.onload 
+PASS Set SVGElement.onload 
+FAIL Enumerate SVGElement.onload assert_true: expected true got undefined
+PASS Reflect SVGElement.onload 
 PASS Set Document.onload 
 FAIL Enumerate Document.onload assert_true: expected true got undefined
 PASS Set Window.onload 
@@ -243,6 +333,9 @@ PASS No Element.onloadeddata
 FAIL Set HTMLElement.onloadeddata assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onloadeddata assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onloadeddata assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onloadeddata assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onloadeddata assert_true: expected true got undefined
+FAIL Reflect SVGElement.onloadeddata assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onloadeddata assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onloadeddata assert_true: expected true got undefined
 FAIL Set Window.onloadeddata assert_equals: Return null after setting string expected null but got ""
@@ -251,6 +344,9 @@ PASS No Element.onloadedmetadata
 FAIL Set HTMLElement.onloadedmetadata assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onloadedmetadata assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onloadedmetadata assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onloadedmetadata assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onloadedmetadata assert_true: expected true got undefined
+FAIL Reflect SVGElement.onloadedmetadata assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onloadedmetadata assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onloadedmetadata assert_true: expected true got undefined
 FAIL Set Window.onloadedmetadata assert_equals: Return null after setting string expected null but got ""
@@ -259,6 +355,9 @@ PASS No Element.onloadstart
 FAIL Set HTMLElement.onloadstart assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onloadstart assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onloadstart assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onloadstart assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onloadstart assert_true: expected true got undefined
+FAIL Reflect SVGElement.onloadstart assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onloadstart assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onloadstart assert_true: expected true got undefined
 FAIL Set Window.onloadstart assert_equals: Return null after setting string expected null but got ""
@@ -267,6 +366,9 @@ FAIL No Element.onmousedown assert_false: expected false got true
 PASS Set HTMLElement.onmousedown 
 FAIL Enumerate HTMLElement.onmousedown assert_true: expected true got undefined
 PASS Reflect HTMLElement.onmousedown 
+PASS Set SVGElement.onmousedown 
+FAIL Enumerate SVGElement.onmousedown assert_true: expected true got undefined
+PASS Reflect SVGElement.onmousedown 
 PASS Set Document.onmousedown 
 FAIL Enumerate Document.onmousedown assert_true: expected true got undefined
 PASS Set Window.onmousedown 
@@ -275,6 +377,9 @@ FAIL No Element.onmouseenter assert_false: expected false got true
 PASS Set HTMLElement.onmouseenter 
 FAIL Enumerate HTMLElement.onmouseenter assert_true: expected true got undefined
 PASS Reflect HTMLElement.onmouseenter 
+PASS Set SVGElement.onmouseenter 
+FAIL Enumerate SVGElement.onmouseenter assert_true: expected true got undefined
+PASS Reflect SVGElement.onmouseenter 
 PASS Set Document.onmouseenter 
 FAIL Enumerate Document.onmouseenter assert_true: expected true got undefined
 PASS Set Window.onmouseenter 
@@ -283,6 +388,9 @@ FAIL No Element.onmouseleave assert_false: expected false got true
 PASS Set HTMLElement.onmouseleave 
 FAIL Enumerate HTMLElement.onmouseleave assert_true: expected true got undefined
 PASS Reflect HTMLElement.onmouseleave 
+PASS Set SVGElement.onmouseleave 
+FAIL Enumerate SVGElement.onmouseleave assert_true: expected true got undefined
+PASS Reflect SVGElement.onmouseleave 
 PASS Set Document.onmouseleave 
 FAIL Enumerate Document.onmouseleave assert_true: expected true got undefined
 PASS Set Window.onmouseleave 
@@ -291,6 +399,9 @@ FAIL No Element.onmousemove assert_false: expected false got true
 PASS Set HTMLElement.onmousemove 
 FAIL Enumerate HTMLElement.onmousemove assert_true: expected true got undefined
 PASS Reflect HTMLElement.onmousemove 
+PASS Set SVGElement.onmousemove 
+FAIL Enumerate SVGElement.onmousemove assert_true: expected true got undefined
+PASS Reflect SVGElement.onmousemove 
 PASS Set Document.onmousemove 
 FAIL Enumerate Document.onmousemove assert_true: expected true got undefined
 PASS Set Window.onmousemove 
@@ -299,6 +410,9 @@ FAIL No Element.onmouseout assert_false: expected false got true
 PASS Set HTMLElement.onmouseout 
 FAIL Enumerate HTMLElement.onmouseout assert_true: expected true got undefined
 PASS Reflect HTMLElement.onmouseout 
+PASS Set SVGElement.onmouseout 
+FAIL Enumerate SVGElement.onmouseout assert_true: expected true got undefined
+PASS Reflect SVGElement.onmouseout 
 PASS Set Document.onmouseout 
 FAIL Enumerate Document.onmouseout assert_true: expected true got undefined
 PASS Set Window.onmouseout 
@@ -307,6 +421,9 @@ FAIL No Element.onmouseover assert_false: expected false got true
 PASS Set HTMLElement.onmouseover 
 FAIL Enumerate HTMLElement.onmouseover assert_true: expected true got undefined
 PASS Reflect HTMLElement.onmouseover 
+PASS Set SVGElement.onmouseover 
+FAIL Enumerate SVGElement.onmouseover assert_true: expected true got undefined
+PASS Reflect SVGElement.onmouseover 
 PASS Set Document.onmouseover 
 FAIL Enumerate Document.onmouseover assert_true: expected true got undefined
 PASS Set Window.onmouseover 
@@ -315,6 +432,9 @@ FAIL No Element.onmouseup assert_false: expected false got true
 PASS Set HTMLElement.onmouseup 
 FAIL Enumerate HTMLElement.onmouseup assert_true: expected true got undefined
 PASS Reflect HTMLElement.onmouseup 
+PASS Set SVGElement.onmouseup 
+FAIL Enumerate SVGElement.onmouseup assert_true: expected true got undefined
+PASS Reflect SVGElement.onmouseup 
 PASS Set Document.onmouseup 
 FAIL Enumerate Document.onmouseup assert_true: expected true got undefined
 PASS Set Window.onmouseup 
@@ -323,6 +443,9 @@ FAIL No Element.onmousewheel assert_false: expected false got true
 PASS Set HTMLElement.onmousewheel 
 FAIL Enumerate HTMLElement.onmousewheel assert_true: expected true got undefined
 PASS Reflect HTMLElement.onmousewheel 
+PASS Set SVGElement.onmousewheel 
+FAIL Enumerate SVGElement.onmousewheel assert_true: expected true got undefined
+FAIL Reflect SVGElement.onmousewheel assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onmousewheel 
 FAIL Enumerate Document.onmousewheel assert_true: expected true got undefined
 PASS Set Window.onmousewheel 
@@ -331,6 +454,9 @@ PASS No Element.onpause
 FAIL Set HTMLElement.onpause assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onpause assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onpause assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onpause assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onpause assert_true: expected true got undefined
+FAIL Reflect SVGElement.onpause assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onpause assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onpause assert_true: expected true got undefined
 FAIL Set Window.onpause assert_equals: Return null after setting string expected null but got ""
@@ -339,6 +465,9 @@ PASS No Element.onplay
 FAIL Set HTMLElement.onplay assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onplay assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onplay assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onplay assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onplay assert_true: expected true got undefined
+FAIL Reflect SVGElement.onplay assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onplay assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onplay assert_true: expected true got undefined
 FAIL Set Window.onplay assert_equals: Return null after setting string expected null but got ""
@@ -347,6 +476,9 @@ PASS No Element.onplaying
 FAIL Set HTMLElement.onplaying assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onplaying assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onplaying assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onplaying assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onplaying assert_true: expected true got undefined
+FAIL Reflect SVGElement.onplaying assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onplaying assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onplaying assert_true: expected true got undefined
 FAIL Set Window.onplaying assert_equals: Return null after setting string expected null but got ""
@@ -355,6 +487,9 @@ PASS No Element.onprogress
 FAIL Set HTMLElement.onprogress assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onprogress assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onprogress assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onprogress assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onprogress assert_true: expected true got undefined
+FAIL Reflect SVGElement.onprogress assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onprogress assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onprogress assert_true: expected true got undefined
 FAIL Set Window.onprogress assert_equals: Return null after setting string expected null but got ""
@@ -363,6 +498,9 @@ PASS No Element.onratechange
 FAIL Set HTMLElement.onratechange assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onratechange assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onratechange assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onratechange assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onratechange assert_true: expected true got undefined
+FAIL Reflect SVGElement.onratechange assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onratechange assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onratechange assert_true: expected true got undefined
 FAIL Set Window.onratechange assert_equals: Return null after setting string expected null but got ""
@@ -371,6 +509,9 @@ FAIL No Element.onreset assert_false: expected false got true
 PASS Set HTMLElement.onreset 
 FAIL Enumerate HTMLElement.onreset assert_true: expected true got undefined
 PASS Reflect HTMLElement.onreset 
+PASS Set SVGElement.onreset 
+FAIL Enumerate SVGElement.onreset assert_true: expected true got undefined
+FAIL Reflect SVGElement.onreset assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onreset 
 FAIL Enumerate Document.onreset assert_true: expected true got undefined
 PASS Set Window.onreset 
@@ -379,6 +520,9 @@ FAIL No Element.onscroll assert_false: expected false got true
 PASS Set HTMLElement.onscroll 
 FAIL Enumerate HTMLElement.onscroll assert_true: expected true got undefined
 PASS Reflect HTMLElement.onscroll 
+PASS Set SVGElement.onscroll 
+FAIL Enumerate SVGElement.onscroll assert_true: expected true got undefined
+FAIL Reflect SVGElement.onscroll assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onscroll 
 FAIL Enumerate Document.onscroll assert_true: expected true got undefined
 PASS Set Window.onscroll 
@@ -387,6 +531,9 @@ PASS No Element.onseeked
 FAIL Set HTMLElement.onseeked assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onseeked assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onseeked assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onseeked assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onseeked assert_true: expected true got undefined
+FAIL Reflect SVGElement.onseeked assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onseeked assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onseeked assert_true: expected true got undefined
 FAIL Set Window.onseeked assert_equals: Return null after setting string expected null but got ""
@@ -395,6 +542,9 @@ PASS No Element.onseeking
 FAIL Set HTMLElement.onseeking assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onseeking assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onseeking assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onseeking assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onseeking assert_true: expected true got undefined
+FAIL Reflect SVGElement.onseeking assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onseeking assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onseeking assert_true: expected true got undefined
 FAIL Set Window.onseeking assert_equals: Return null after setting string expected null but got ""
@@ -403,6 +553,9 @@ FAIL No Element.onselect assert_false: expected false got true
 PASS Set HTMLElement.onselect 
 FAIL Enumerate HTMLElement.onselect assert_true: expected true got undefined
 PASS Reflect HTMLElement.onselect 
+PASS Set SVGElement.onselect 
+FAIL Enumerate SVGElement.onselect assert_true: expected true got undefined
+FAIL Reflect SVGElement.onselect assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onselect 
 FAIL Enumerate Document.onselect assert_true: expected true got undefined
 PASS Set Window.onselect 
@@ -411,6 +564,9 @@ PASS No Element.onshow
 FAIL Set HTMLElement.onshow assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onshow assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onshow assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onshow assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onshow assert_true: expected true got undefined
+FAIL Reflect SVGElement.onshow assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onshow assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onshow assert_true: expected true got undefined
 FAIL Set Window.onshow assert_equals: Initially null expected null but got undefined
@@ -419,6 +575,9 @@ PASS No Element.onsort
 FAIL Set HTMLElement.onsort assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onsort assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onsort assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onsort assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onsort assert_true: expected true got undefined
+FAIL Reflect SVGElement.onsort assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onsort assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onsort assert_true: expected true got undefined
 FAIL Set Window.onsort assert_equals: Initially null expected null but got undefined
@@ -427,6 +586,9 @@ PASS No Element.onstalled
 FAIL Set HTMLElement.onstalled assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onstalled assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onstalled assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onstalled assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onstalled assert_true: expected true got undefined
+FAIL Reflect SVGElement.onstalled assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onstalled assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onstalled assert_true: expected true got undefined
 FAIL Set Window.onstalled assert_equals: Return null after setting string expected null but got ""
@@ -435,6 +597,9 @@ FAIL No Element.onsubmit assert_false: expected false got true
 PASS Set HTMLElement.onsubmit 
 FAIL Enumerate HTMLElement.onsubmit assert_true: expected true got undefined
 PASS Reflect HTMLElement.onsubmit 
+PASS Set SVGElement.onsubmit 
+FAIL Enumerate SVGElement.onsubmit assert_true: expected true got undefined
+FAIL Reflect SVGElement.onsubmit assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onsubmit 
 FAIL Enumerate Document.onsubmit assert_true: expected true got undefined
 PASS Set Window.onsubmit 
@@ -443,6 +608,9 @@ PASS No Element.onsuspend
 FAIL Set HTMLElement.onsuspend assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onsuspend assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onsuspend assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onsuspend assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onsuspend assert_true: expected true got undefined
+FAIL Reflect SVGElement.onsuspend assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onsuspend assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onsuspend assert_true: expected true got undefined
 FAIL Set Window.onsuspend assert_equals: Return null after setting string expected null but got ""
@@ -451,6 +619,9 @@ PASS No Element.ontimeupdate
 FAIL Set HTMLElement.ontimeupdate assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.ontimeupdate assert_true: expected true got undefined
 FAIL Reflect HTMLElement.ontimeupdate assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.ontimeupdate assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.ontimeupdate assert_true: expected true got undefined
+FAIL Reflect SVGElement.ontimeupdate assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.ontimeupdate assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.ontimeupdate assert_true: expected true got undefined
 FAIL Set Window.ontimeupdate assert_equals: Return null after setting string expected null but got ""
@@ -459,6 +630,9 @@ PASS No Element.onvolumechange
 FAIL Set HTMLElement.onvolumechange assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onvolumechange assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onvolumechange assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onvolumechange assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onvolumechange assert_true: expected true got undefined
+FAIL Reflect SVGElement.onvolumechange assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onvolumechange assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onvolumechange assert_true: expected true got undefined
 FAIL Set Window.onvolumechange assert_equals: Return null after setting string expected null but got ""
@@ -467,6 +641,9 @@ PASS No Element.onwaiting
 FAIL Set HTMLElement.onwaiting assert_equals: Initially null expected null but got undefined
 FAIL Enumerate HTMLElement.onwaiting assert_true: expected true got undefined
 FAIL Reflect HTMLElement.onwaiting assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onwaiting assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.onwaiting assert_true: expected true got undefined
+FAIL Reflect SVGElement.onwaiting assert_equals: Convert to function expected "function" but got "undefined"
 FAIL Set Document.onwaiting assert_equals: Initially null expected null but got undefined
 FAIL Enumerate Document.onwaiting assert_true: expected true got undefined
 FAIL Set Window.onwaiting assert_equals: Return null after setting string expected null but got ""
