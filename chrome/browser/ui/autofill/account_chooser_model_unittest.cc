@@ -37,6 +37,7 @@ class MockAccountChooserModelDelegate : public AccountChooserModelDelegate {
 
   MOCK_METHOD0(AccountChoiceChanged, void());
   MOCK_METHOD0(UpdateAccountChooserView, void());
+  MOCK_METHOD0(AccountChooserWillShow, void());
 };
 
 class AccountChooserModelTest : public testing::Test {

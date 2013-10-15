@@ -185,6 +185,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // SuggestionsMenuModelDelegate implementation.
+  virtual void SuggestionsMenuWillShow() OVERRIDE;
   virtual void SuggestionItemSelected(SuggestionsMenuModel* model,
                                       size_t index) OVERRIDE;
 
@@ -211,6 +212,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void OnPersonalDataChanged() OVERRIDE;
 
   // AccountChooserModelDelegate implementation.
+  virtual void AccountChooserWillShow() OVERRIDE;
   virtual void AccountChoiceChanged() OVERRIDE;
   virtual void UpdateAccountChooserView() OVERRIDE;
 

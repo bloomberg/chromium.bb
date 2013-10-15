@@ -42,6 +42,10 @@ AccountChooserModel::AccountChooserModel(
 AccountChooserModel::~AccountChooserModel() {
 }
 
+void AccountChooserModel::MenuWillShow() {
+  ui::SimpleMenuModel::MenuWillShow();
+}
+
 void AccountChooserModel::SelectActiveWalletAccount() {
   ExecuteCommand(kWalletAccountsStartId + active_wallet_account_, 0);
 }
@@ -123,6 +127,10 @@ void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
 
   ReconstructMenuItems();
   delegate_->AccountChoiceChanged();
+}
+
+void AccountChooserModel::MenuWillShow(ui::SimpleMenuModel* source) {
+  delegate_->AccountChooserWillShow();
 }
 
 void AccountChooserModel::SetHadWalletError() {

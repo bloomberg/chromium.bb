@@ -99,6 +99,10 @@ void SuggestionsMenuModel::SetEnabled(const std::string& item_key,
   items_[GetItemIndex(item_key)].enabled = enabled;
 }
 
+void SuggestionsMenuModel::MenuWillShow() {
+  ui::SimpleMenuModel::MenuWillShow();
+}
+
 bool SuggestionsMenuModel::IsCommandIdChecked(
     int command_id) const {
   return checked_item_ == command_id;
@@ -120,6 +124,10 @@ bool SuggestionsMenuModel::GetAcceleratorForCommandId(
 
 void SuggestionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   delegate_->SuggestionItemSelected(this, command_id);
+}
+
+void SuggestionsMenuModel::MenuWillShow(ui::SimpleMenuModel* source) {
+  delegate_->SuggestionsMenuWillShow();
 }
 
 size_t SuggestionsMenuModel::GetItemIndex(const std::string& item_key) {
