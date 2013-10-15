@@ -428,6 +428,10 @@ def RunGPUTests(options):
   bb_annotations.PrintNamedStep('gpu_tests')
   RunCmd(['content/test/gpu/run_gpu_test',
           '--browser=android-content-shell', 'pixel'])
+  bb_annotations.PrintNamedStep('webgl_conformance_tests')
+  RunCmd(['content/test/gpu/run_gpu_test',
+          '--browser=android-content-shell', 'webgl_conformance',
+          '--webgl-conformance-version=1.0.1'])
 
 
 def GetTestStepCmds():
