@@ -33,12 +33,12 @@
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
+#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
+#include "core/frame/Frame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/PingLoader.h"
-#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
-#include "core/frame/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/ParsingUtilities.h"
 #include "core/platform/network/FormData.h"
@@ -359,20 +359,18 @@ void CSPSourceList::parse(const UChar* begin, const UChar* end)
             if (isDirectiveName(host))
                 m_policy->reportDirectiveAsSourceExpression(m_directiveName, host);
             m_list.append(CSPSource(m_policy, scheme, host, port, path, hostHasWildcard, portHasWildcard));
-        } else
+        } else {
             m_policy->reportInvalidSourceExpression(m_directiveName, String(beginSource, position - beginSource));
+        }
 
         ASSERT(position == end || isASCIISpace(*position));
-     }
+    }
 }
 
 // source            = scheme ":"
 //                   / ( [ scheme "://" ] host [ port ] [ path ] )
 //                   / "'self'"
-//
-bool CSPSourceList::parseSource(const UChar* begin, const UChar* end,
-                                String& scheme, String& host, int& port, String& path,
-                                bool& hostHasWildcard, bool& portHasWildcard)
+bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, bool& hostHasWildcard, bool& portHasWildcard)
 {
     if (begin == end)
         return false;
@@ -1036,21 +1034,18 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
 bool CSPDirectiveList::allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute JavaScript URL because it violates the following Content Security Policy directive: "));
-    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+    if (reportingStatus == ContentSecurityPolicy::SendReport)
         return checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, contextURL, contextLine, true);
-    } else {
-        return checkInline(operativeDirective(m_scriptSrc.get()));
-    }
+
+    return checkInline(operativeDirective(m_scriptSrc.get()));
 }
 
 bool CSPDirectiveList::allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     DEFINE_STATIC_LOCAL(String, consoleMessage, ("Refused to execute inline event handler because it violates the following Content Security Policy directive: "));
-    if (reportingStatus == ContentSecurityPolicy::SendReport) {
+    if (reportingStatus == ContentSecurityPolicy::SendReport)
         return checkInlineAndReportViolation(operativeDirective(m_scriptSrc.get()), consoleMessage, contextURL, contextLine, true);
-    } else {
-        return checkInline(operativeDirective(m_scriptSrc.get()));
-    }
+    return checkInline(operativeDirective(m_scriptSrc.get()));
 }
 
 bool CSPDirectiveList::allowInlineScript(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
@@ -1332,13 +1327,13 @@ void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value
 
     // value1
     //       ^
-    if (equalIgnoringCase("allow", begin, position - begin))
+    if (equalIgnoringCase("allow", begin, position - begin)) {
         m_reflectedXSSDisposition = AllowReflectedXSS;
-    else if (equalIgnoringCase("filter", begin, position - begin))
+    } else if (equalIgnoringCase("filter", begin, position - begin)) {
         m_reflectedXSSDisposition = FilterReflectedXSS;
-    else if (equalIgnoringCase("block", begin, position - begin))
+    } else if (equalIgnoringCase("block", begin, position - begin)) {
         m_reflectedXSSDisposition = BlockReflectedXSS;
-    else {
+    } else {
         m_reflectedXSSDisposition = ReflectedXSSInvalid;
         m_policy->reportInvalidReflectedXSS(value);
         return;
@@ -1358,29 +1353,29 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
 {
     ASSERT(!name.isEmpty());
 
-    if (equalIgnoringCase(name, defaultSrc))
+    if (equalIgnoringCase(name, defaultSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_defaultSrc);
-    else if (equalIgnoringCase(name, scriptSrc))
+    } else if (equalIgnoringCase(name, scriptSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_scriptSrc);
-    else if (equalIgnoringCase(name, objectSrc))
+    } else if (equalIgnoringCase(name, objectSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_objectSrc);
-    else if (equalIgnoringCase(name, frameSrc))
+    } else if (equalIgnoringCase(name, frameSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_frameSrc);
-    else if (equalIgnoringCase(name, imgSrc))
+    } else if (equalIgnoringCase(name, imgSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_imgSrc);
-    else if (equalIgnoringCase(name, styleSrc))
+    } else if (equalIgnoringCase(name, styleSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_styleSrc);
-    else if (equalIgnoringCase(name, fontSrc))
+    } else if (equalIgnoringCase(name, fontSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_fontSrc);
-    else if (equalIgnoringCase(name, mediaSrc))
+    } else if (equalIgnoringCase(name, mediaSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_mediaSrc);
-    else if (equalIgnoringCase(name, connectSrc))
+    } else if (equalIgnoringCase(name, connectSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_connectSrc);
-    else if (equalIgnoringCase(name, sandbox))
+    } else if (equalIgnoringCase(name, sandbox)) {
         applySandboxPolicy(name, value);
-    else if (equalIgnoringCase(name, reportURI))
+    } else if (equalIgnoringCase(name, reportURI)) {
         parseReportURI(name, value);
-    else if (m_policy->experimentalFeaturesEnabled()) {
+    } else if (m_policy->experimentalFeaturesEnabled()) {
         if (equalIgnoringCase(name, baseURI))
             setCSPDirective<SourceListDirective>(name, value, m_baseURI);
         else if (equalIgnoringCase(name, formAction))
@@ -1391,9 +1386,9 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
             parseReflectedXSS(name, value);
         else
             m_policy->reportUnsupportedDirective(name);
-    }
-    else
+    } else {
         m_policy->reportUnsupportedDirective(name);
+    }
 }
 
 ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContext* executionContext)
