@@ -26,6 +26,17 @@ High Level Structure
 
 A PNaCl portable executable (**pexe** in short) is a single LLVM IR module.
 
+Data Model
+----------
+
+The data model for PNaCl bitcode is fixed at little-endian ILP32: pointers are
+32 bits in size. 64-bit integer types are also supported natively via the i64
+type (for example, a front-end can generate these from the C/C++ type
+``long long``).
+
+Floating point support is fixed at IEEE 754 32-bit and 64-bit values (f32 and
+f64, respectively).
+
 .. _bitcode_linkagetypes:
 
 Linkage Types
@@ -216,8 +227,6 @@ A pointer is *normalized* if it's either:
 * *inherent*
 * Is the return value of a ``bitcast`` instruction.
 * Is the return value of a ``inttoptr`` instruction.
-
-Note: the size of a pointer in PNaCl is 32 bits.
 
 Undefined Values
 ----------------
