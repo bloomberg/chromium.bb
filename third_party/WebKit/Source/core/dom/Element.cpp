@@ -1519,18 +1519,21 @@ bool Element::recalcStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
 
-    if (hasCustomStyleCallbacks())
-        willRecalcStyle(change);
-
     if (hasRareData() && (change > NoChange || needsStyleRecalc())) {
         ElementRareData* data = elementRareData();
         data->resetStyleState();
         data->clearComputedStyle();
     }
 
-    // Active InsertionPoints have no renderers so they never need to go through a recalc.
-    if ((change >= Inherit || needsStyleRecalc()) && parentRenderStyle() && !isActiveInsertionPoint(this))
-        change = recalcOwnStyle(change);
+    if ((change >= Inherit || needsStyleRecalc()) && parentRenderStyle()) {
+        if (hasCustomStyleCallbacks())
+            willRecalcStyle(change);
+        // Active InsertionPoints have no renderers so they never need to go through a recalc.
+        if (!isActiveInsertionPoint(this))
+            change = recalcOwnStyle(change);
+        if (hasCustomStyleCallbacks())
+            didRecalcStyle(change);
+    }
 
     // If we reattached we don't need to recalc the style of our descendants anymore.
     if (change < Reattach)
@@ -1538,9 +1541,6 @@ bool Element::recalcStyle(StyleRecalcChange change)
 
     clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
-
-    if (hasCustomStyleCallbacks())
-        didRecalcStyle(change);
 
     return change == Reattach;
 }
