@@ -71,6 +71,7 @@ config.kRietveldURL = "https://codereview.chromium.org";
 var kTenMinutesInMilliseconds = 10 * 60 * 1000;
 config.kUpdateFrequency = kTenMinutesInMilliseconds;
 config.kRelativeTimeUpdateFrequency = 1000 * 60;
+config.kTreeStatusUpdateFrequency = 1000 * 30;
 
 config.currentBuilders = function() {
     return config.kPlatforms[config.currentPlatform].builders;

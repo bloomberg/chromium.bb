@@ -35,7 +35,13 @@ James, a web developer from Birmingham, UK.
                                          img-src 'self' https://ajax.googleapis.com http://build.chromium.org https://storage.googleapis.com;
                                          media-src 'self' http://build.chromium.org https://storage.googleapis.com;
                                          frame-src 'self' http://build.chromium.org http://test-results.appspot.com https://storage.googleapis.com;
-                                         connect-src 'self' http://blink.lc/ http://build.chromium.org https://codereview.chromium.org https://storage.googleapis.com">
+                                         connect-src 'self'
+                                                     http://blink.lc/
+                                                     http://build.chromium.org
+                                                     https://codereview.chromium.org
+                                                     https://storage.googleapis.com
+                                                     http://blink-status.appspot.com
+                                                     http://chromium-status.appspot.com">
 <title>Garden-O-Matic</title>
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,700">
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/themes/base/jquery-ui.css">
@@ -54,6 +60,7 @@ James, a web developer from Birmingham, UK.
 <script src="scripts/net.js"></script>
 <script src="scripts/rollbot.js"></script>
 <script src="scripts/svn-log.js"></script>
+<script src="scripts/treestatus.js"></script>
 <script src="scripts/builders.js"></script>
 <script src="scripts/checkout.js"></script>
 <script src="scripts/results.js"></script>

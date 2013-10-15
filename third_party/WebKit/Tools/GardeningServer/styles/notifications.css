@@ -31,6 +31,7 @@ ul.actions>li {
 ol.notifications {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 ol.notifications ul {

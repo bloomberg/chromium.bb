@@ -44,6 +44,15 @@ function updatePartyTime()
         $('#onebar').removeClass('partytime');
 }
 
+function updateTreeStatus()
+{
+    var oldTreeStatus = document.querySelector('.treestatus');
+    oldTreeStatus.remove();
+
+    var newTreeStatus = new ui.TreeStatus();
+    document.querySelector('.topbar').appendChild(newTreeStatus);
+}
+
 function update()
 {
     if (g_revisionHint)
@@ -94,6 +103,8 @@ function update()
 $(document).ready(function() {
     g_updateTimerId = window.setInterval(update, config.kUpdateFrequency);
 
+    window.setInterval(updateTreeStatus, config.kTreeStatusUpdateFrequency);
+
     pixelzoomer.installEventListeners();
 
     onebar = new ui.onebar();
@@ -115,13 +126,20 @@ $(document).ready(function() {
     g_info = new ui.notifications.Stream();
     g_nonLayoutTestFailureBuilders = new controllers.FailingBuilders(g_info);
 
+    var unexpected = onebar.unexpected();
+    var topBar = document.createElement('div');
+    topBar.className = 'topbar';
+    unexpected.appendChild(topBar);
+
     // FIXME: This should be an Action object.
     var updateButton = document.body.insertBefore(document.createElement('button'), document.body.firstChild);
     updateButton.addEventListener("click", update);
     updateButton.textContent = 'update';
+    topBar.appendChild(updateButton);
 
-    var unexpected = onebar.unexpected();
-    unexpected.appendChild(updateButton);
+    var treeStatus = new ui.TreeStatus();
+    topBar.appendChild(treeStatus);
+
     unexpected.appendChild(g_info);
     unexpected.appendChild(unexpectedFailuresView);
 

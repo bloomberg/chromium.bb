@@ -197,4 +197,30 @@ test("StatusArea", 3, function() {
     statusArea.close();
 });
 
+var openTreeJson = {
+    "username": "erg@chromium.org",
+    "date": "2013-10-14 20:22:00.887390",
+    "message": "Tree is open",
+    "can_commit_freely": true,
+    "general_state": "open"
+};
+
+test("TreeStatus", 2, function() {
+    var simulator = new NetworkSimulator();
+
+    simulator.get = function(url, callback)
+    {
+        simulator.scheduleCallback(function() {
+            callback(openTreeJson);
+        });
+    };
+
+    var treestatus;
+    simulator.runTest(function() {
+        treeStatus = new ui.TreeStatus();
+    });
+    equal(treeStatus.innerHTML, '<div> blink status: <span>OPEN</span></div><div> chromium status: <span>OPEN</span></div>');
+});
+
+
 })();

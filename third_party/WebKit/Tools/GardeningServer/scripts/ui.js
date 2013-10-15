@@ -194,6 +194,25 @@ ui.RelativeTime = base.extends('time', {
     }
 });
 
+ui.TreeStatus = base.extends('div',  {
+    addStatus: function(name)
+    {
+        var label = document.createElement('div');
+        label.textContent = " " + name + ' status: ';
+        this.appendChild(label);
+        var statusSpan = document.createElement('span');
+        statusSpan.textContent = '(Loading...) ';
+        label.appendChild(statusSpan);
+        treestatus.fetchTreeStatus(treestatus.urlByName(name), statusSpan);
+    },
+    init: function()
+    {
+        this.className = 'treestatus';
+        this.addStatus('blink');
+        this.addStatus('chromium');
+    },
+});
+
 ui.StatusArea = base.extends('div',  {
     init: function()
     {

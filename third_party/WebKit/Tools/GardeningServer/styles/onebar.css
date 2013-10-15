@@ -50,6 +50,7 @@
 
 #unexpected {
     min-height: 550px;
+    padding: 0 8px;
 }
 
 #onebar.partytime #unexpected {
@@ -94,4 +95,15 @@
     display: block;
     box-shadow: 2px 2px #ccc;
     z-index: 1;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+}
+
+.treestatus {
+    display: inline-block;
+    margin: 4px;
+    font-size: 11px;
 }
