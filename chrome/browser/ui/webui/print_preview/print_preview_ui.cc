@@ -340,16 +340,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
 
 PrintPreviewUI::TestingDelegate *g_testing_delegate_ = NULL;
 
-bool IsAutoCancelEnabledForTesting() {
-  return (g_testing_delegate_ != NULL &&
-          g_testing_delegate_->IsAutoCancelEnabled());
-}
-
-void NotifyDelegateThatPreviewIsReadyForTesting() {
-  if (g_testing_delegate_ != NULL)
-    g_testing_delegate_->PreviewIsReady();
-}
-
 }  // namespace
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
@@ -464,6 +454,8 @@ void PrintPreviewUI::OnShowSystemDialog() {
 void PrintPreviewUI::OnDidGetPreviewPageCount(
     const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
   DCHECK_GT(params.page_count, 0);
+  if (g_testing_delegate_)
+    g_testing_delegate_->DidGetPreviewPageCount(params.page_count);
   base::FundamentalValue count(params.page_count);
   base::FundamentalValue request_id(params.preview_request_id);
   web_ui()->CallJavascriptFunction("onDidGetPreviewPageCount",
@@ -507,10 +499,11 @@ void PrintPreviewUI::OnDidPreviewPage(int page_number,
   base::FundamentalValue number(page_number);
   base::FundamentalValue ui_identifier(id_);
   base::FundamentalValue request_id(preview_request_id);
-  NotifyDelegateThatPreviewIsReadyForTesting();
+  if (g_testing_delegate_)
+    g_testing_delegate_->DidRenderPreviewPage(*web_ui()->GetWebContents());
   web_ui()->CallJavascriptFunction(
       "onDidPreviewPage", number, ui_identifier, request_id);
-  if (IsAutoCancelEnabledForTesting())
+  if (g_testing_delegate_ && g_testing_delegate_->IsAutoCancelEnabled())
     web_ui()->CallJavascriptFunction("autoCancelForTesting");
 }
 
@@ -599,6 +592,6 @@ void PrintPreviewUI::OnPrintPreviewScalingDisabled() {
 }
 
 // static
-void PrintPreviewUI::SetTestingDelegate(TestingDelegate* delegate) {
+void PrintPreviewUI::SetDelegateForTesting(TestingDelegate* delegate) {
   g_testing_delegate_ = delegate;
 }

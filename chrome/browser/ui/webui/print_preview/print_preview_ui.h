@@ -151,11 +151,13 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // also instructs the dialog to auto-cancel, which is used for testing only.
   class TestingDelegate {
    public:
-    virtual void PreviewIsReady() = 0;
     virtual bool IsAutoCancelEnabled() = 0;
+    virtual void DidGetPreviewPageCount(int page_count) = 0;
+    virtual void DidRenderPreviewPage(
+        const content::WebContents& preview_dialog) = 0;
   };
 
-  static void SetTestingDelegate(TestingDelegate* delegate);
+  static void SetDelegateForTesting(TestingDelegate* delegate);
 
  private:
   friend class PrintPreviewHandlerTest;

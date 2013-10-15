@@ -120,15 +120,15 @@ class TabsAddedNotificationObserver
 
 class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
  public:
-  ScopedPreviewTestingDelegate(bool auto_cancel)
+  explicit ScopedPreviewTestingDelegate(bool auto_cancel)
       : auto_cancel_(auto_cancel),
-        waiting_for_ready_(false),
-        waiting_runner_(new content::MessageLoopRunner) {
-    PrintPreviewUI::SetTestingDelegate(this);
+        total_page_count_(1),
+        rendered_page_count_(0) {
+    PrintPreviewUI::SetDelegateForTesting(this);
   }
 
   ~ScopedPreviewTestingDelegate() {
-    PrintPreviewUI::SetTestingDelegate(NULL);
+    PrintPreviewUI::SetDelegateForTesting(NULL);
   }
 
   // PrintPreviewUI::TestingDelegate implementation.
@@ -137,22 +137,40 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
   }
 
   // PrintPreviewUI::TestingDelegate implementation.
-  virtual void PreviewIsReady() OVERRIDE {
-    waiting_runner_->Quit();
-    waiting_for_ready_ = false;
+  virtual void DidGetPreviewPageCount(int page_count) OVERRIDE {
+    total_page_count_ = page_count;
+  }
+
+  // PrintPreviewUI::TestingDelegate implementation.
+  virtual void DidRenderPreviewPage(const content::WebContents& preview_dialog)
+      OVERRIDE {
+    dialog_size_ = preview_dialog.GetView()->GetContainerSize();
+    ++rendered_page_count_;
+    CHECK(rendered_page_count_ <= total_page_count_);
+    if (waiting_runner_ && rendered_page_count_ == total_page_count_) {
+      waiting_runner_->Quit();
+    }
   }
 
   void WaitUntilPreviewIsReady() {
-    if (!waiting_for_ready_) {
-      waiting_for_ready_ = true;
+    CHECK(!waiting_runner_);
+    if (rendered_page_count_ < total_page_count_) {
+      waiting_runner_ = new content::MessageLoopRunner;
       waiting_runner_->Run();
+      waiting_runner_ = NULL;
     }
+  }
+
+  gfx::Size dialog_size() {
+    return dialog_size_;
   }
 
  private:
   bool auto_cancel_;
-  bool waiting_for_ready_;
+  int total_page_count_;
+  int rendered_page_count_;
   scoped_refptr<content::MessageLoopRunner> waiting_runner_;
+  gfx::Size dialog_size_;
 };
 
 bool CopyTestDataAndSetCommandLineArg(
@@ -1077,7 +1095,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
       GetRenderWidgetHostView()->HasFocus());
 }
 
-// The next two tests will only run automatically with Chrome branded builds
+// The next three tests will only run automatically with Chrome branded builds
 // because they require the PDF preview plug-in. To run these tests manually for
 // Chromium (non-Chrome branded) builds in a development environment:
 //
@@ -1121,6 +1139,32 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ScopedPreviewTestingDelegate preview_delegate(false);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
   preview_delegate.WaitUntilPreviewIsReady();
+  GetFirstShellWindow()->GetBaseWindow()->Close();
+}
+
+// This test currently only passes on OS X (on other platforms the print preview
+// dialog's size is limited by the size of the window being printed).
+#if !defined(GOOGLE_CHROME_BUILD) || !defined(OS_MACOSX)
+#define MAYBE_PrintPreviewShouldNotBeTooSmall \
+    DISABLED_PrintPreviewShouldNotBeTooSmall
+#else
+#define MAYBE_PrintPreviewShouldNotBeTooSmall \
+    PrintPreviewShouldNotBeTooSmall
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       MAYBE_PrintPreviewShouldNotBeTooSmall) {
+  // Print preview dialogs with widths less than 410 pixels will have preview
+  // areas that are too small, and ones with heights less than 191 pixels will
+  // have vertical scrollers for their controls that are too small.
+  gfx::Size minimum_dialog_size(410, 191);
+  ScopedPreviewTestingDelegate preview_delegate(false);
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/print_api")) << message_;
+  preview_delegate.WaitUntilPreviewIsReady();
+  EXPECT_GE(preview_delegate.dialog_size().width(),
+            minimum_dialog_size.width());
+  EXPECT_GE(preview_delegate.dialog_size().height(),
+            minimum_dialog_size.height());
   GetFirstShellWindow()->GetBaseWindow()->Close();
 }
 
