@@ -59,6 +59,7 @@
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
+#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/geometry/FloatQuad.h"
@@ -1212,11 +1213,22 @@ bool CanvasRenderingContext2D::shouldDrawShadows() const
     return alphaChannel(state().m_shadowColor) && (state().m_shadowBlur || !state().m_shadowOffset.isZero());
 }
 
-static LayoutSize sizeFor(HTMLImageElement* image)
+enum ImageSizeType {
+    ImageSizeAfterDevicePixelRatio,
+    ImageSizeBeforeDevicePixelRatio
+};
+
+static LayoutSize sizeFor(HTMLImageElement* image, ImageSizeType sizeType)
 {
-    if (ImageResource* cachedImage = image->cachedImage())
-        return cachedImage->imageSizeForRenderer(image->renderer(), 1.0f); // FIXME: Not sure about this.
-    return IntSize();
+    LayoutSize size;
+    ImageResource* cachedImage = image->cachedImage();
+    if (cachedImage) {
+        size = cachedImage->imageSizeForRenderer(image->renderer(), 1.0f); // FIXME: Not sure about this.
+
+        if (sizeType == ImageSizeAfterDevicePixelRatio && image->renderer() && image->renderer()->isRenderImage() && cachedImage->image() && !cachedImage->image()->hasRelativeWidth())
+            size.scale(toRenderImage(image->renderer())->imageDevicePixelRatio());
+    }
+    return size;
 }
 
 static IntSize sizeFor(HTMLVideoElement* video)
@@ -1367,8 +1379,8 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float
         es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
-    LayoutSize size = sizeFor(image);
-    drawImage(image, x, y, size.width(), size.height(), es);
+    LayoutSize destRectSize = sizeFor(image, ImageSizeAfterDevicePixelRatio);
+    drawImage(image, x, y, destRectSize.width(), destRectSize.height(), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
@@ -1378,8 +1390,8 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
         es.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return;
     }
-    LayoutSize size = sizeFor(image);
-    drawImage(image, FloatRect(0, 0, size.width(), size.height()), FloatRect(x, y, width, height), es);
+    LayoutSize sourceRectSize = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
+    drawImage(image, FloatRect(0, 0, sourceRectSize.width(), sourceRectSize.height()), FloatRect(x, y, width, height), es);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
@@ -1409,7 +1421,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
     if (!cachedImage || !image->complete())
         return;
 
-    LayoutSize size = sizeFor(image);
+    LayoutSize size = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
     if (!size.width() || !size.height()) {
         es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;

@@ -154,10 +154,13 @@ ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, const St
     return pickBestImageCandidate(deviceScaleFactor, imageCandidates);
 }
 
-String bestFitSourceForImageAttributes(float deviceScaleFactor, const String& srcAttribute, const String& srcsetAttribute)
+ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, const String& srcAttribute, const String& srcsetAttribute)
 {
-    if (srcsetAttribute.isNull())
-        return srcAttribute;
+    if (srcsetAttribute.isNull()) {
+        if (srcAttribute.isNull())
+            return ImageCandidate();
+        return ImageCandidate(srcAttribute, 0, srcAttribute.length(), 1);
+    }
 
     Vector<ImageCandidate> imageCandidates;
 
@@ -166,7 +169,7 @@ String bestFitSourceForImageAttributes(float deviceScaleFactor, const String& sr
     if (!srcAttribute.isEmpty())
         imageCandidates.append(ImageCandidate(srcAttribute, 0, srcAttribute.length(), 1.0));
 
-    return pickBestImageCandidate(deviceScaleFactor, imageCandidates).toString();
+    return pickBestImageCandidate(deviceScaleFactor, imageCandidates);
 }
 
 String bestFitSourceForImageAttributes(float deviceScaleFactor, const String& srcAttribute, ImageCandidate& srcsetImageCandidate)

@@ -61,6 +61,9 @@ public:
 
     String altText() const { return m_altText; }
 
+    inline void setImageDevicePixelRatio(float factor) { m_imageDevicePixelRatio = factor; }
+    float imageDevicePixelRatio() const { return m_imageDevicePixelRatio; }
+
 protected:
     virtual bool needsPreferredWidthsRecalculation() const OVERRIDE FINAL;
     virtual RenderBox* embeddedContentBox() const OVERRIDE FINAL;
@@ -112,6 +115,7 @@ private:
     bool m_needsToSetSizeForAltText;
     bool m_didIncrementVisuallyNonEmptyPixelCount;
     bool m_isGeneratedContent;
+    float m_imageDevicePixelRatio;
 
     friend class RenderImageScaleObserver;
 };

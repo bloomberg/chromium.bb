@@ -28,6 +28,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 
@@ -277,8 +278,11 @@ void RenderReplaced::computeAspectRatioInformationForRenderBox(RenderBox* conten
             ASSERT(!isPercentageIntrinsicSize);
 
         // Handle zoom & vertical writing modes here, as the embedded document doesn't know about them.
-        if (!isPercentageIntrinsicSize)
+        if (!isPercentageIntrinsicSize) {
             intrinsicSize.scale(style()->effectiveZoom());
+            if (isRenderImage())
+                intrinsicSize.scale(toRenderImage(this)->imageDevicePixelRatio());
+        }
 
         if (rendererHasAspectRatio(this) && isPercentageIntrinsicSize)
             intrinsicRatio = 1;

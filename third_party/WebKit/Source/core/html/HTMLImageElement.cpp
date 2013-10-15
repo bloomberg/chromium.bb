@@ -47,6 +47,7 @@ HTMLImageElement::HTMLImageElement(const QualifiedName& tagName, Document& docum
     , m_imageLoader(this)
     , m_form(form)
     , m_compositeOperator(CompositeSourceOver)
+    , m_imageDevicePixelRatio(1.0f)
 {
     ASSERT(hasTagName(imgTag));
     ScriptWrappable::init(this);
@@ -120,8 +121,15 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (renderer() && renderer()->isImage())
             toRenderImage(renderer())->updateAltText();
     } else if (name == srcAttr || name == srcsetAttr) {
-        if (RuntimeEnabledFeatures::srcsetEnabled())
-            m_bestFitImageURL = bestFitSourceForImageAttributes(document().devicePixelRatio(), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
+        if (RuntimeEnabledFeatures::srcsetEnabled()) {
+            ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
+            m_bestFitImageURL = candidate.toString();
+            float candidateScaleFactor = candidate.scaleFactor();
+            if (candidateScaleFactor > 0)
+                m_imageDevicePixelRatio = 1 / candidateScaleFactor;
+            if (renderer() && renderer()->isImage())
+                toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
+        }
         m_imageLoader.updateFromElementIgnoringPreviousError();
     }
     else if (name == usemapAttr)
@@ -156,6 +164,7 @@ RenderObject* HTMLImageElement::createRenderer(RenderStyle* style)
 
     RenderImage* image = new RenderImage(this);
     image->setImageResource(RenderImageResource::create());
+    image->setImageDevicePixelRatio(m_imageDevicePixelRatio);
     return image;
 }
 
