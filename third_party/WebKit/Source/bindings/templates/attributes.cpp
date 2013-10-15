@@ -77,6 +77,9 @@ static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name
     {% if attribute.deprecate_as %}
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
+    {% if attribute.measure_as %}
+    UseCounter::count(activeDOMWindow(), UseCounter::{{attribute.measure_as}});
+    {% endif %}
     {% if attribute.is_activity_logging_getter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger())

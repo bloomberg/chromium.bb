@@ -159,3 +159,11 @@ def runtime_enabled_function_name(definition_or_member):
 # [ImplementedAs]
 def cpp_name(definition_or_member):
     return definition_or_member.extended_attributes.get('ImplementedAs', definition_or_member.name)
+
+
+# [MeasureAs]
+def generate_measure_as(definition_or_member, contents, includes):
+    if 'MeasureAs' not in definition_or_member.extended_attributes:
+        return
+    contents['measure_as'] = definition_or_member.extended_attributes['MeasureAs']
+    includes.add('core/page/UseCounter.h')

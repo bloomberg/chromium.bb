@@ -118,6 +118,8 @@ def generate_attribute_and_includes(interface, attribute):
     is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
     if is_check_security_for_node:
         includes.add('bindings/v8/BindingSecurity.h')
+    v8_utilities.generate_measure_as(attribute, contents, includes)  # [MeasureAs]
+
     # [DeprecateAs]
     v8_utilities.generate_deprecate_as(attribute, contents, includes)
     if is_check_security_for_node or is_getter_raises_exception:
