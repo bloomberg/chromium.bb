@@ -7,19 +7,10 @@
 
 # runtime errors
 # some output incorrect
-anagram
 sphereflake
 
 # FP nan/inf handling
 voronoi
-# burg's nexe output matches the reference output, but not the native gcc
-# binary's output... so maybe this is a bug in gcc, or ???
-# Workaround may be to set USE_REFERENCE_OUTPUT = 1 in burg's Makefile.
-burg
-# rand() inconsistency http://llvm.org/bugs/show_bug.cgi?id=11629
-puzzle
-automotive-bitcount
-telecomm-fft
 
 # SSE tests use -msse* flags, which our le32 frontend doesn't understand.
 sse.isamax
@@ -54,7 +45,7 @@ SingleSource/Regression/C/PR1386 O0f
 # The following tests use C++ exception handling, which is not yet
 # supported for PNaCl's stable ABI.  When the -lowerinvoke pass is
 # applied, the "throw" statements in these tests fail at run time.
-SingleSource/Benchmarks/Shootout-C++/except
+SingleSource/Benchmarks/Shootout-C++/EH/except
 SingleSource/Regression/C++/EH/ctor_dtor_count
 SingleSource/Regression/C++/EH/ctor_dtor_count-2
 SingleSource/Regression/C++/EH/exception_spec_test
@@ -67,3 +58,22 @@ SingleSource/Regression/C++/EH/throw_rethrow_test
 # at run time with "exception not caught", even without the
 # -lowerinvoke pass applied.
 SingleSource/Regression/C++/EH/inlined_cleanup
+
+############################################################################
+# TODO(stichnot)
+# New failures in updated LLVM test suite, still to be triaged
+############################################################################
+# exec failure
+MultiSource/Applications/ALAC/encode/alacconvert-encode
+# compile failure
+MultiSource/Benchmarks/7zip/7zip-benchmark
+# exec failure
+SingleSource/Regression/C++/EH/recursive-throw
+# exec failure
+MultiSource/Applications/ALAC/decode/alacconvert-decode
+# exec failure
+SingleSource/Benchmarks/Linpack/linpack-pc
+# exec failures on ARM
+SingleSource/Benchmarks/SmallPT/smallpt arm
+MultiSource/Benchmarks/SciMark2-C/scimark2 arm
+SingleSource/Benchmarks/CoyoteBench/almabench arm
