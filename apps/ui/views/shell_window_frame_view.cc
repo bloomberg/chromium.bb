@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/extensions/shell_window_frame_view.h"
+#include "apps/ui/views/shell_window_frame_view.h"
 
+#include "apps/native_app_window.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/apps/native_app_window_views.h"
 #include "extensions/common/draggable_region.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
@@ -20,48 +20,47 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "chrome/browser/shell_integration.h"
-#include "chrome/browser/web_applications/web_app.h"
-#include "ui/base/win/shell.h"
-#endif
-
-#if defined(USE_ASH)
-#include "ash/ash_constants.h"
-#include "chrome/browser/ui/ash/ash_util.h"
-#include "ui/aura/env.h"
-#endif
+#include "ui/views/widget/widget_delegate.h"
 
 #if defined(USE_AURA)
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #endif
 
 namespace {
-const int kResizeInsideBoundsSize = 5;
-const int kResizeAreaCornerSize = 16;
-
 // Height of the chrome-style caption, in pixels.
 const int kCaptionHeight = 25;
 }  // namespace
 
+namespace apps {
 
 const char ShellWindowFrameView::kViewClassName[] =
     "browser/ui/views/extensions/ShellWindowFrameView";
 
-ShellWindowFrameView::ShellWindowFrameView(NativeAppWindowViews* window)
+ShellWindowFrameView::ShellWindowFrameView(NativeAppWindow* window)
     : window_(window),
       frame_(NULL),
-      close_button_(NULL) {
+      close_button_(NULL),
+      maximize_button_(NULL),
+      restore_button_(NULL),
+      minimize_button_(NULL),
+      resize_inside_bounds_size_(0),
+      resize_area_corner_size_(0) {
 }
 
 ShellWindowFrameView::~ShellWindowFrameView() {
 }
 
-void ShellWindowFrameView::Init(views::Widget* frame) {
+void ShellWindowFrameView::Init(views::Widget* frame,
+                                int resize_inside_bounds_size,
+                                int resize_outside_bounds_size,
+                                int resize_outside_scale_for_touch,
+                                int resize_area_corner_size) {
   frame_ = frame;
+  resize_inside_bounds_size_ = resize_inside_bounds_size;
+  resize_area_corner_size_ = resize_area_corner_size;
 
-  if (!window_->frameless()) {
+  if (!window_->IsFrameless()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(views::CustomButton::STATE_NORMAL,
@@ -108,36 +107,30 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
   }
 
 #if defined(USE_AURA)
-  int resize_inside_bounds_size = kResizeInsideBoundsSize;
   aura::Window* window = frame->GetNativeWindow();
-#if defined(USE_ASH)
-  if (chrome::IsNativeWindowInAsh(window)) {
-    gfx::Insets mouse_insets = gfx::Insets(-ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize,
-                                           -ash::kResizeOutsideBoundsSize);
-    gfx::Insets touch_insets = mouse_insets.Scale(
-        ash::kResizeOutsideBoundsScaleForTouch);
+  // Some Aura implementations (Ash) allow resize handles outside the window.
+  if (resize_outside_bounds_size > 0) {
+    gfx::Insets mouse_insets = gfx::Insets(-resize_outside_bounds_size,
+                                           -resize_outside_bounds_size,
+                                           -resize_outside_bounds_size,
+                                           -resize_outside_bounds_size);
+    gfx::Insets touch_insets =
+        mouse_insets.Scale(resize_outside_scale_for_touch);
     // Ensure we get resize cursors for a few pixels outside our bounds.
     window->SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
-
-    // If the window is in ash, the inside area used for resizing will be
-    // smaller due to the fact that outside area is also used for resizing.
-    resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
   }
-#endif
   // Ensure we get resize cursors just inside our bounds as well.
   // TODO(jeremya): do we need to update these when in fullscreen/maximized?
   window->set_hit_test_bounds_override_inner(
-      gfx::Insets(resize_inside_bounds_size, resize_inside_bounds_size,
-                  resize_inside_bounds_size, resize_inside_bounds_size));
+      gfx::Insets(resize_inside_bounds_size_, resize_inside_bounds_size_,
+                  resize_inside_bounds_size_, resize_inside_bounds_size_));
 #endif
 }
 
 // views::NonClientFrameView implementation.
 
 gfx::Rect ShellWindowFrameView::GetBoundsForClientView() const {
-  if (window_->frameless() || frame_->IsFullscreen())
+  if (window_->IsFrameless() || frame_->IsFullscreen())
     return bounds();
   return gfx::Rect(0, kCaptionHeight, width(),
       std::max(0, height() - kCaptionHeight));
@@ -145,7 +138,7 @@ gfx::Rect ShellWindowFrameView::GetBoundsForClientView() const {
 
 gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const {
-  if (window_->frameless()) {
+  if (window_->IsFrameless()) {
     gfx::Rect window_bounds = client_bounds;
     // Enforce minimum size (1, 1) in case that client_bounds is passed with
     // empty size. This could occur when the frameless window is being
@@ -170,24 +163,19 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   if (frame_->IsFullscreen())
     return HTCLIENT;
 
-  int resize_inside_bounds_size = kResizeInsideBoundsSize;
-  int resize_area_corner_size = kResizeAreaCornerSize;
-
-#if defined(USE_ASH)
+  gfx::Rect expanded_bounds = bounds();
+#if defined(USE_AURA)
+  // Some Aura implementations (Ash) optionally allow resize handles just
+  // outside the window bounds.
   aura::Window* window = frame_->GetNativeWindow();
-  if (chrome::IsNativeWindowInAsh(window)) {
-    gfx::Rect expanded_bounds = bounds();
-    int outside_bounds = ash::kResizeOutsideBoundsSize;
-    if (aura::Env::GetInstance()->is_touch_down())
-      outside_bounds *= ash::kResizeOutsideBoundsScaleForTouch;
-    expanded_bounds.Inset(-outside_bounds, -outside_bounds);
-    if (!expanded_bounds.Contains(point))
-      return HTNOWHERE;
-
-    resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
-    resize_area_corner_size = ash::kResizeAreaCornerSize;
-  }
+  if (aura::Env::GetInstance()->is_touch_down())
+    expanded_bounds.Inset(window->hit_test_bounds_override_outer_touch());
+  else
+    expanded_bounds.Inset(window->hit_test_bounds_override_outer_mouse());
 #endif
+  // Points outside the (possibly expanded) bounds can be discarded.
+  if (!expanded_bounds.Contains(point))
+    return HTNOWHERE;
 
   // Check the frame first, as we allow a small area overlapping the contents
   // to be used for resize handles.
@@ -198,22 +186,23 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   // fullscreen, as it can't be resized in those states.
   int resize_border =
       (frame_->IsMaximized() || frame_->IsFullscreen()) ? 0 :
-      resize_inside_bounds_size;
+      resize_inside_bounds_size_;
   int frame_component = GetHTComponentForFrame(point,
                                                resize_border,
                                                resize_border,
-                                               resize_area_corner_size,
-                                               resize_area_corner_size,
+                                               resize_area_corner_size_,
+                                               resize_area_corner_size_,
                                                can_ever_resize);
   if (frame_component != HTNOWHERE)
     return frame_component;
 
   // Check for possible draggable region in the client area for the frameless
   // window.
-  if (window_->frameless() &&
-      window_->draggable_region() &&
-      window_->draggable_region()->contains(point.x(), point.y()))
-    return HTCAPTION;
+  if (window_->IsFrameless()) {
+    SkRegion* draggable_region = window_->GetDraggableRegion();
+    if (draggable_region && draggable_region->contains(point.x(), point.y()))
+      return HTCAPTION;
+  }
 
   int client_component = frame_->client_view()->NonClientHitTest(point);
   if (client_component != HTNOWHERE)
@@ -243,7 +232,7 @@ gfx::Size ShellWindowFrameView::GetPreferredSize() {
 }
 
 void ShellWindowFrameView::Layout() {
-  if (window_->frameless())
+  if (window_->IsFrameless())
     return;
   gfx::Size close_size = close_button_->GetPreferredSize();
   const int kButtonOffsetY = 0;
@@ -290,7 +279,7 @@ void ShellWindowFrameView::Layout() {
 }
 
 void ShellWindowFrameView::OnPaint(gfx::Canvas* canvas) {
-  if (window_->frameless())
+  if (window_->IsFrameless())
     return;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -325,7 +314,7 @@ const char* ShellWindowFrameView::GetClassName() const {
 
 gfx::Size ShellWindowFrameView::GetMinimumSize() {
   gfx::Size min_size = frame_->client_view()->GetMinimumSize();
-  if (window_->frameless())
+  if (window_->IsFrameless())
     return min_size;
 
   // Ensure we can display the top of the caption area.
@@ -358,7 +347,7 @@ gfx::Size ShellWindowFrameView::GetMaximumSize() {
 
 void ShellWindowFrameView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
-  DCHECK(!window_->frameless());
+  DCHECK(!window_->IsFrameless());
   if (sender == close_button_)
     frame_->Close();
   else if (sender == maximize_button_)
@@ -368,3 +357,5 @@ void ShellWindowFrameView::ButtonPressed(views::Button* sender,
   else if (sender == minimize_button_)
     frame_->Minimize();
 }
+
+}  // namespace apps

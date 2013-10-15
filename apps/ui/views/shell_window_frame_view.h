@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_FRAME_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_FRAME_VIEW_H_
+#ifndef APPS_UI_VIEWS_SHELL_WINDOW_FRAME_VIEW_H_
+#define APPS_UI_VIEWS_SHELL_WINDOW_FRAME_VIEW_H_
 
 #include <string>
 
@@ -27,7 +27,9 @@ class ImageButton;
 class Widget;
 }
 
-class NativeAppWindowViews;
+namespace apps {
+
+class NativeAppWindow;
 
 // A frameless or non-Ash, non-panel NonClientFrameView for app windows.
 class ShellWindowFrameView : public views::NonClientFrameView,
@@ -35,10 +37,17 @@ class ShellWindowFrameView : public views::NonClientFrameView,
  public:
   static const char kViewClassName[];
 
-  explicit ShellWindowFrameView(NativeAppWindowViews* window);
+  explicit ShellWindowFrameView(NativeAppWindow* window);
   virtual ~ShellWindowFrameView();
 
-  void Init(views::Widget* frame);
+  // Initializes this for the window |frame|. Sets the number of pixels for
+  // which a click is interpreted as a resize for the inner and outer border of
+  // the window and the lower-right corner resize handle.
+  void Init(views::Widget* frame,
+            int resize_inside_bounds_size,
+            int resize_outside_bounds_size,
+            int resize_outside_scale_for_touch,
+            int resize_area_corner_size);
 
  private:
   // views::NonClientFrameView implementation.
@@ -64,14 +73,22 @@ class ShellWindowFrameView : public views::NonClientFrameView,
   virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
       OVERRIDE;
 
-  NativeAppWindowViews* window_;
+  NativeAppWindow* window_;
   views::Widget* frame_;
   views::ImageButton* close_button_;
   views::ImageButton* maximize_button_;
   views::ImageButton* restore_button_;
   views::ImageButton* minimize_button_;
 
+  // Allow resize for clicks this many pixels inside the bounds.
+  int resize_inside_bounds_size_;
+
+  // Size in pixels of the lower-right corner resize handle.
+  int resize_area_corner_size_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_FRAME_VIEW_H_
+}  // namespace apps
+
+#endif  // APPS_UI_VIEWS_SHELL_WINDOW_FRAME_VIEW_H_

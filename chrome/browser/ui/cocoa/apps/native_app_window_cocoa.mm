@@ -681,6 +681,10 @@ void NativeAppWindowCocoa::UpdateDraggableRegions(
   InstallDraggableRegionViews();
 }
 
+SkRegion* NativeAppWindowCocoa::GetDraggableRegion() {
+  return draggable_region_.get();
+}
+
 void NativeAppWindowCocoa::UpdateDraggableRegionsForSystemDrag(
     const std::vector<extensions::DraggableRegion>& regions,
     const extensions::DraggableRegion* draggable_area) {
@@ -826,6 +830,10 @@ void NativeAppWindowCocoa::RenderViewHostChanged(
     content::RenderViewHost* old_host,
     content::RenderViewHost* new_host) {
   web_contents()->GetView()->Focus();
+}
+
+bool NativeAppWindowCocoa::IsFrameless() const {
+  return !has_frame_;
 }
 
 gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {

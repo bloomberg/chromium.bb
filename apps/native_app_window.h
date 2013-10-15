@@ -22,6 +22,9 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) = 0;
 
+  // Returns the region used by frameless windows for dragging. May return NULL.
+  virtual SkRegion* GetDraggableRegion() = 0;
+
   // Called when the region that accepts input events is changed.
   // If |region| is NULL, then the entire window will accept input events.
   virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) = 0;
@@ -42,6 +45,10 @@ class NativeAppWindow : public ui::BaseWindow,
   // the renderer.
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
+
+  // Returns true if the window has no frame, as for a window opened by
+  // chrome.app.window.create with the option 'frame' set to 'none'.
+  virtual bool IsFrameless() const = 0;
 
   // Returns the difference between the window bounds (including titlebar and
   // borders) and the content bounds, if any.

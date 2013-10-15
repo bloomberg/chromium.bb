@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/native_app_window_views.h"
 
+#include "apps/ui/views/shell_window_frame_view.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
-#include "chrome/browser/ui/views/extensions/shell_window_frame_view.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -40,6 +40,7 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/ash_constants.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
@@ -60,6 +61,7 @@ const int kMinPanelHeight = 100;
 const int kDefaultPanelWidth = 200;
 const int kDefaultPanelHeight = 300;
 const int kResizeInsideBoundsSize = 5;
+const int kResizeAreaCornerSize = 16;
 
 struct AcceleratorMapping {
   ui::KeyboardCode keycode;
@@ -297,6 +299,36 @@ void NativeAppWindowViews::InitializePanelWindow(
 #endif
 }
 
+bool NativeAppWindowViews::ShouldUseChromeStyleFrame() const {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAppsUseNativeFrame) || frameless_;
+}
+
+apps::ShellWindowFrameView* NativeAppWindowViews::CreateShellWindowFrameView() {
+  // By default the user can resize the window from slightly inside the bounds.
+  int resize_inside_bounds_size = kResizeInsideBoundsSize;
+  int resize_outside_bounds_size = 0;
+  int resize_outside_scale_for_touch = 1;
+  int resize_area_corner_size = kResizeAreaCornerSize;
+#if defined(USE_ASH)
+  // For Aura windows on the Ash desktop the sizes are different and the user
+  // can resize the window from slightly outside the bounds as well.
+  if (chrome::IsNativeWindowInAsh(window_->GetNativeWindow())) {
+    resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
+    resize_outside_bounds_size = ash::kResizeOutsideBoundsSize;
+    resize_outside_scale_for_touch = ash::kResizeOutsideBoundsScaleForTouch;
+    resize_area_corner_size = ash::kResizeAreaCornerSize;
+  }
+#endif
+  apps::ShellWindowFrameView* frame_view = new apps::ShellWindowFrameView(this);
+  frame_view->Init(window_,
+                   resize_inside_bounds_size,
+                   resize_outside_bounds_size,
+                   resize_outside_scale_for_touch,
+                   resize_area_corner_size);
+  return frame_view;
+}
+
 // ui::BaseWindow implementation.
 
 bool NativeAppWindowViews::IsActive() const {
@@ -423,8 +455,12 @@ bool NativeAppWindowViews::IsAlwaysOnTop() const {
   }
 }
 
+bool NativeAppWindowViews::IsFrameless() const {
+  return frameless_;
+}
+
 gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
-  if (frameless())
+  if (frameless_)
     return gfx::Insets();
 
   // The pretend client_bounds passed in need to be large enough to ensure that
@@ -535,11 +571,6 @@ void NativeAppWindowViews::OnViewWasResized() {
                     OnPositionRequiresUpdate());
 }
 
-bool NativeAppWindowViews::ShouldUseChromeStyleFrame() const {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAppsUseNativeFrame) || frameless_;
-}
-
 // WidgetDelegate implementation.
 
 void NativeAppWindowViews::OnWidgetMove() {
@@ -627,11 +658,8 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     }
   }
 #endif
-  if (ShouldUseChromeStyleFrame()) {
-    ShellWindowFrameView* frame_view = new ShellWindowFrameView(this);
-    frame_view->Init(window_);
-    return frame_view;
-  }
+  if (ShouldUseChromeStyleFrame())
+    return CreateShellWindowFrameView();
   return views::WidgetDelegateView::CreateNonClientFrameView(widget);
 }
 
@@ -793,6 +821,10 @@ void NativeAppWindowViews::UpdateDraggableRegions(
 
   draggable_region_.reset(ShellWindow::RawDraggableRegionsToSkRegion(regions));
   OnViewWasResized();
+}
+
+SkRegion* NativeAppWindowViews::GetDraggableRegion() {
+  return draggable_region_.get();
 }
 
 void NativeAppWindowViews::HandleKeyboardEvent(

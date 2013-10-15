@@ -23,6 +23,10 @@
 class ExtensionKeybindingRegistryViews;
 class Profile;
 
+namespace apps {
+class ShellWindowFrameView;
+}
+
 namespace content {
 class RenderViewHost;
 class WebContents;
@@ -45,9 +49,6 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
                        const apps::ShellWindow::CreateParams& params);
   virtual ~NativeAppWindowViews();
 
-  bool frameless() const { return frameless_; }
-  SkRegion* draggable_region() { return draggable_region_.get(); }
-
  private:
   void InitializeDefaultWindow(
       const apps::ShellWindow::CreateParams& create_params);
@@ -56,6 +57,9 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   void OnViewWasResized();
 
   bool ShouldUseChromeStyleFrame() const;
+
+  // Caller owns the returned object.
+  apps::ShellWindowFrameView* CreateShellWindowFrameView();
 
 #if defined(OS_WIN)
   void OnShortcutInfoLoaded(
@@ -141,8 +145,10 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) OVERRIDE;
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
+  virtual SkRegion* GetDraggableRegion() OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual bool IsFrameless() const OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;

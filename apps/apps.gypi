@@ -70,6 +70,8 @@
         'shell_window_registry.h',
         'switches.cc',
         'switches.h',
+        'ui/views/shell_window_frame_view.cc',
+        'ui/views/shell_window_frame_view.h',
       ],
       'conditions': [
         ['chromeos==1',
@@ -86,6 +88,16 @@
             ],
           }
         ],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '../ui/base/strings/ui_strings.gyp:ui_strings',
+            '../ui/views/views.gyp:views',
+          ],
+        }, {  # toolkit_views==0
+          'sources/': [
+            ['exclude', 'ui/views/'],
+          ],
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

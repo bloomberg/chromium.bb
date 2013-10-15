@@ -604,6 +604,8 @@ gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
   return FALSE;
 }
 
+// NativeAppWindow implementation:
+
 void NativeAppWindowGtk::SetFullscreen(bool fullscreen) {
   content_thinks_its_fullscreen_ = fullscreen;
   if (fullscreen){
@@ -664,4 +666,12 @@ void NativeAppWindowGtk::UpdateDraggableRegions(
     return;
 
   draggable_region_.reset(ShellWindow::RawDraggableRegionsToSkRegion(regions));
+}
+
+SkRegion* NativeAppWindowGtk::GetDraggableRegion() {
+  return draggable_region_.get();
+}
+
+bool NativeAppWindowGtk::IsFrameless() const {
+  return frameless_;
 }
