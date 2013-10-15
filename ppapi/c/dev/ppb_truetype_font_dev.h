@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_truetype_font_dev.idl modified Wed Apr 17 15:38:46 2013. */
+/* From dev/ppb_truetype_font_dev.idl modified Tue Oct 15 05:52:52 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_TRUETYPE_FONT_DEV_H_
 #define PPAPI_C_DEV_PPB_TRUETYPE_FONT_DEV_H_
@@ -266,7 +266,8 @@ struct PPB_TrueTypeFont_Dev_0_1 {
    * @param[in] table A 4 byte value indicating which table to copy.
    * For example, 'glyf' will cause the outline table to be copied into the
    * output array. A zero tag value will cause the entire font to be copied.
-   * @param[in] offset The offset into the font table.
+   * @param[in] offset The offset into the font table. Passing an offset
+   * greater than or equal to the table size will succeed with 0 bytes copied.
    * @param[in] max_data_length The maximum number of bytes to transfer from
    * <code>offset</code>.
    * @param[in] output A <code>PP_ArrayOutput</code> to hold the font data.

@@ -219,19 +219,19 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
   if (table_size == GDI_ERROR)
     return PP_ERROR_FAILED;
 
-  // TODO(bbudge1) add check for when offset > file size
   DWORD safe_offset = std::min(static_cast<DWORD>(offset), table_size);
   DWORD safe_length = std::min(table_size - safe_offset,
                                static_cast<DWORD>(max_data_length));
   data->resize(safe_length);
-  if (max_data_length == 0)
+  if (safe_length == 0) {
     table_size = 0;
-  else
+  } else {
     table_size = GetFontData(hdc, table_tag, safe_offset,
                              reinterpret_cast<uint8_t*>(&(*data)[0]),
                              safe_length);
-  if (table_size == GDI_ERROR)
-    return PP_ERROR_FAILED;
+    if (table_size == GDI_ERROR)
+      return PP_ERROR_FAILED;
+  }
   return static_cast<int32_t>(table_size);
 }
 

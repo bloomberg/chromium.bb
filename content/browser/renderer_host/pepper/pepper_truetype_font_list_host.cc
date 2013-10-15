@@ -82,13 +82,9 @@ int32_t FontMessageFilter::OnHostMsgGetFontFamilies(
   // Sort the names in case the host platform returns them out of order.
   std::sort(font_families.begin(), font_families.end());
 
-  int32_t result = base::checked_numeric_cast<int32_t>(font_families.size());
-  ppapi::host::ReplyMessageContext reply_context =
-      context->MakeReplyMessageContext();
-  reply_context.params.set_result(result);
   context->reply_msg =
       PpapiPluginMsg_TrueTypeFontSingleton_GetFontFamiliesReply(font_families);
-  return result;
+  return base::checked_numeric_cast<int32_t>(font_families.size());
 }
 
 int32_t FontMessageFilter::OnHostMsgGetFontsInFamily(
@@ -98,14 +94,10 @@ int32_t FontMessageFilter::OnHostMsgGetFontsInFamily(
   std::vector<ppapi::proxy::SerializedTrueTypeFontDesc> fonts_in_family;
   GetFontsInFamily_SlowBlocking(family, &fonts_in_family);
 
-  int32_t result = base::checked_numeric_cast<int32_t>(fonts_in_family.size());
-  ppapi::host::ReplyMessageContext reply_context =
-      context->MakeReplyMessageContext();
-  reply_context.params.set_result(result);
   context->reply_msg =
       PpapiPluginMsg_TrueTypeFontSingleton_GetFontsInFamilyReply(
           fonts_in_family);
-  return result;
+  return base::checked_numeric_cast<int32_t>(fonts_in_family.size());
 }
 
 }  // namespace

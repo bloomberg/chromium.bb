@@ -249,7 +249,8 @@ interface PPB_TrueTypeFont_Dev {
    * @param[in] table A 4 byte value indicating which table to copy.
    * For example, 'glyf' will cause the outline table to be copied into the
    * output array. A zero tag value will cause the entire font to be copied.
-   * @param[in] offset The offset into the font table.
+   * @param[in] offset The offset into the font table. Passing an offset
+   * greater than or equal to the table size will succeed with 0 bytes copied.
    * @param[in] max_data_length The maximum number of bytes to transfer from
    * <code>offset</code>.
    * @param[in] output A <code>PP_ArrayOutput</code> to hold the font data.
