@@ -851,17 +851,7 @@ class RemoteInspectorClient(object):
             reply_dict['id'])
         if 'frameTree' in reply_dict['result']:
           self._url = reply_dict['result']['frameTree']['frame']['url']
-      elif 'method' in reply_dict:
-        # This is an auxiliary message sent from the remote Chrome instance.
-        if reply_dict['method'] == self._agent_name + '.addProfileHeader':
-          snapshot_req = (
-              self._remote_inspector_thread.GetFirstUnfulfilledRequest(
-                  self._agent_name + '.takeHeapSnapshot'))
-          if snapshot_req:
-            snapshot_req.results['uid'] = reply_dict['params']['header']['uid']
-        elif reply_dict['method'] == self._agent_name + '.addHeapSnapshotChunk':
-          self._current_heap_snapshot.append(reply_dict['params']['chunk'])
-        elif reply_dict['method'] == self._agent_name + '.finishHeapSnapshot':
+        elif request.method == self._agent_name + '.getHeapSnapshot':
           # A heap snapshot has been completed.  Analyze and output the data.
           self._logger.debug('Heap snapshot taken: %s', self._url)
           # TODO(dennisjeffrey): Parse the heap snapshot on-the-fly as the data
@@ -888,6 +878,16 @@ class RemoteInspectorClient(object):
           done_condition.acquire()
           done_condition.notify()
           done_condition.release()
+      elif 'method' in reply_dict:
+        # This is an auxiliary message sent from the remote Chrome instance.
+        if reply_dict['method'] == self._agent_name + '.addProfileHeader':
+          snapshot_req = (
+              self._remote_inspector_thread.GetFirstUnfulfilledRequest(
+                  self._agent_name + '.takeHeapSnapshot'))
+          if snapshot_req:
+            snapshot_req.results['uid'] = reply_dict['params']['header']['uid']
+        elif reply_dict['method'] == self._agent_name + '.addHeapSnapshotChunk':
+          self._current_heap_snapshot.append(reply_dict['params']['chunk'])
 
     # Tell the remote inspector to take a v8 heap snapshot, then wait until
     # the snapshot information is available to return.
