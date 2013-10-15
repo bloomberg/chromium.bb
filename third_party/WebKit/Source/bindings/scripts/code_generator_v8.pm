@@ -3040,19 +3040,21 @@ sub GenerateAttributeConfigurationParameters
     my $setter;
     my $getterForMainWorld;
     my $setterForMainWorld;
-    my $propAttribute = "v8::None";
 
     my $isConstructor = ($attribute->type =~ /Constructor$/);
 
     # Check attributes.
     # As per Web IDL specification, constructor properties on the ECMAScript global object should be
     # configurable and should not be enumerable.
+    my @propAttributeList;
     if ($attrExt->{"NotEnumerable"} || $isConstructor) {
-        $propAttribute .= " | v8::DontEnum";
+        push(@propAttributeList, "v8::DontEnum");
     }
     if ($attrExt->{"Unforgeable"} && !$isConstructor) {
-        $propAttribute .= " | v8::DontDelete";
+        push(@propAttributeList, "v8::DontDelete");
     }
+    @propAttributeList = ("v8::None") unless @propAttributeList;
+    my $propAttribute = join(" | ", @propAttributeList);
 
     my $on_proto = "0 /* on instance */";
     my $data = "0";  # no data

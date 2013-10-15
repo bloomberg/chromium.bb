@@ -78,6 +78,7 @@ def generate_attribute_and_includes(interface, attribute):
         'is_nullable': attribute.is_nullable,
         'is_static': attribute.is_static,
         'name': attribute.name,
+        'property_attributes': property_attributes(attribute),
         'v8_type': v8_types.v8_type(idl_type),
     }
     if has_extended_attribute(attribute, ('Custom', 'CustomGetter')):
@@ -188,3 +189,11 @@ def access_control_list(attribute):
     if 'DoNotCheckSecurityOnGetter' in extended_attributes:
         return ['v8::ALL_CAN_READ']
     return ['v8::DEFAULT']
+
+
+# [NotEnumerable]
+def property_attributes(attribute):
+    property_attributes_list = []
+    if 'NotEnumerable' in attribute.extended_attributes:
+        property_attributes_list.append('v8::DontEnum')
+    return property_attributes_list or ['v8::None']

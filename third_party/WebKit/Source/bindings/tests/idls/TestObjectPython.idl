@@ -114,6 +114,7 @@ interface TestObjectPython {
     [CustomGetter, ImplementedAs=implementedAsNameWithCustomGetter] readonly attribute long customGetterImplementedAsReadonlyLongAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
     [MeasureAs=TestFeature] readonly attribute long measureAsReadonlyLongAttribute;
+    [NotEnumerable] readonly attribute long notEnumerableReadonlyLongAttribute;
     [RaisesException] readonly attribute long raisesExceptionReadonlyLongAttribute;
     [RuntimeEnabled=FeatureName] readonly attribute long enabledAtRuntimeReadonlyLongAttribute;
     [Conditional=Condition, RuntimeEnabled=FeatureName] readonly attribute long conditionalEnabledAtRuntimeReadonlyLongAttribute;

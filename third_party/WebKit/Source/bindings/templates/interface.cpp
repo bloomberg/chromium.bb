@@ -9,7 +9,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attribu
     {% for attribute in attributes
        if not (attribute.runtime_enabled_function_name or attribute.is_static) %}
     {% filter conditional(attribute.conditional_string) %}
-    {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>({{attribute.property_attributes | join(' | ')}}), 0 /* on instance */},
     {% endfilter %}
     {% endfor %}
 };
