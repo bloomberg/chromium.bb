@@ -489,6 +489,11 @@ TimeTicks TimeTicks::HighResNow() {
 }
 
 // static
+bool TimeTicks::IsHighResNowFastAndReliable() {
+  return CPUReliablySupportsHighResTime();
+}
+
+// static
 TimeTicks TimeTicks::ThreadNow() {
   NOTREACHED();
   return TimeTicks();

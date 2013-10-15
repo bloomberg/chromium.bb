@@ -544,6 +544,8 @@ class BASE_EXPORT TimeTicks {
   // SHOULD ONLY BE USED WHEN IT IS REALLY NEEDED.
   static TimeTicks HighResNow();
 
+  static bool IsHighResNowFastAndReliable();
+
   // Returns true if ThreadNow() is supported on this system.
   static bool IsThreadNowSupported() {
 #if defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)

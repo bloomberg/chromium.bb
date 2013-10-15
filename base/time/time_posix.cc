@@ -268,6 +268,11 @@ TimeTicks TimeTicks::HighResNow() {
 }
 
 // static
+bool TimeTicks::IsHighResNowFastAndReliable() {
+  return true;
+}
+
+// static
 TimeTicks TimeTicks::ThreadNow() {
 #if defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)
   return ClockNow(CLOCK_THREAD_CPUTIME_ID);

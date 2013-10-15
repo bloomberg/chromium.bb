@@ -190,6 +190,11 @@ TimeTicks TimeTicks::HighResNow() {
 }
 
 // static
+bool TimeTicks::IsHighResNowFastAndReliable() {
+  return true;
+}
+
+// static
 TimeTicks TimeTicks::ThreadNow() {
   NOTREACHED();
   return TimeTicks();
