@@ -160,6 +160,73 @@ private:
     const WebVector<unsigned char> m_publicExponent;
 };
 
+class WebCryptoAesGcmParams : public WebCryptoAlgorithmParams {
+public:
+    WebCryptoAesGcmParams(const unsigned char* iv, unsigned ivSize, bool hasAdditionalData, const unsigned char* additionalData, unsigned additionalDataSize, bool hasTagLength, unsigned char tagLength)
+        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesGcmParams)
+        , m_iv(iv, ivSize)
+        , m_hasAdditionalData(hasAdditionalData)
+        , m_additionalData(additionalData, additionalDataSize)
+        , m_hasTagLength(hasTagLength)
+        , m_tagLength(tagLength)
+    {
+    }
+
+    const WebVector<unsigned char>& iv() const { return m_iv; }
+
+    bool hasAdditionalData() const { return m_hasAdditionalData; }
+    bool getAdditionalData(const WebVector<unsigned char>*& additionalData)
+    {
+        if (!m_hasAdditionalData)
+            return false;
+        additionalData = &m_additionalData;
+        return true;
+    }
+
+    bool hasTagLength() const { return m_hasTagLength; }
+    bool getTagLength(unsigned& tagLength)
+    {
+        if (!m_hasTagLength)
+            return false;
+        tagLength = m_tagLength;
+        return true;
+    }
+
+private:
+    const WebVector<unsigned char> m_iv;
+    const bool m_hasAdditionalData;
+    const WebVector<unsigned char> m_additionalData;
+    const bool m_hasTagLength;
+    const unsigned char m_tagLength;
+};
+
+class WebCryptoRsaOaepParams : public WebCryptoAlgorithmParams {
+public:
+    WebCryptoRsaOaepParams(const WebCryptoAlgorithm& hash, bool hasLabel, const unsigned char* label, unsigned labelSize)
+        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaOaepParams)
+        , m_hash(hash)
+        , m_hasLabel(hasLabel)
+        , m_label(label, labelSize)
+    {
+    }
+
+    const WebCryptoAlgorithm& hash() const { return m_hash; }
+
+    bool hasLabel() const { return m_hasLabel; }
+    bool getLabel(const WebVector<unsigned char>*& label)
+    {
+        if (!m_hasLabel)
+            return false;
+        label = &m_label;
+        return true;
+    }
+
+private:
+    const WebCryptoAlgorithm m_hash;
+    const bool m_hasLabel;
+    const WebVector<unsigned char> m_label;
+};
+
 } // namespace WebKit
 
 #endif

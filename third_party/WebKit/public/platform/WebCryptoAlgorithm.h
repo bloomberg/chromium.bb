@@ -50,6 +50,8 @@ enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdSha256,
     WebCryptoAlgorithmIdSha384,
     WebCryptoAlgorithmIdSha512,
+    WebCryptoAlgorithmIdAesGcm,
+    WebCryptoAlgorithmIdRsaOaep,
 #if BLINK_IMPLEMENTATION
     NumberOfWebCryptoAlgorithmId,
 #endif
@@ -63,6 +65,8 @@ enum WebCryptoAlgorithmParamsType {
     WebCryptoAlgorithmParamsTypeHmacKeyParams,
     WebCryptoAlgorithmParamsTypeRsaSsaParams,
     WebCryptoAlgorithmParamsTypeRsaKeyGenParams,
+    WebCryptoAlgorithmParamsTypeAesGcmParams,
+    WebCryptoAlgorithmParamsTypeRsaOaepParams,
 };
 
 class WebCryptoAesCbcParams;
@@ -71,6 +75,8 @@ class WebCryptoHmacParams;
 class WebCryptoHmacKeyParams;
 class WebCryptoRsaSsaParams;
 class WebCryptoRsaKeyGenParams;
+class WebCryptoAesGcmParams;
+class WebCryptoRsaOaepParams;
 
 class WebCryptoAlgorithmParams;
 class WebCryptoAlgorithmPrivate;
@@ -109,6 +115,8 @@ public:
     BLINK_EXPORT const WebCryptoHmacKeyParams* hmacKeyParams() const;
     BLINK_EXPORT const WebCryptoRsaSsaParams* rsaSsaParams() const;
     BLINK_EXPORT const WebCryptoRsaKeyGenParams* rsaKeyGenParams() const;
+    BLINK_EXPORT const WebCryptoAesGcmParams* aesGcmParams() const;
+    BLINK_EXPORT const WebCryptoRsaOaepParams* rsaOaepParams() const;
 
 private:
     BLINK_EXPORT void assign(const WebCryptoAlgorithm& other);

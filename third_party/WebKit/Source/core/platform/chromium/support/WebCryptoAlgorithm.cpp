@@ -113,6 +113,20 @@ const WebCryptoRsaKeyGenParams* WebCryptoAlgorithm::rsaKeyGenParams() const
     return 0;
 }
 
+const WebCryptoAesGcmParams* WebCryptoAlgorithm::aesGcmParams() const
+{
+    if (paramsType() == WebCryptoAlgorithmParamsTypeAesGcmParams)
+        return static_cast<WebCryptoAesGcmParams*>(m_private->params.get());
+    return 0;
+}
+
+const WebCryptoRsaOaepParams* WebCryptoAlgorithm::rsaOaepParams() const
+{
+    if (paramsType() == WebCryptoAlgorithmParamsTypeRsaOaepParams)
+        return static_cast<WebCryptoRsaOaepParams*>(m_private->params.get());
+    return 0;
+}
+
 void WebCryptoAlgorithm::assign(const WebCryptoAlgorithm& other)
 {
     m_private = other.m_private;

@@ -37,6 +37,7 @@
 #include "V8HmacParams.h"
 #include "V8RsaKeyGenParams.h"
 #include "V8RsaSsaParams.h"
+#include "platform/NotImplemented.h"
 
 namespace WebCore {
 
@@ -60,6 +61,11 @@ v8::Handle<v8::Object> wrap(Algorithm* impl, v8::Handle<v8::Object> creationCont
         return wrap(static_cast<RsaSsaParams*>(impl), creationContext, isolate);
     case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         return wrap(static_cast<RsaKeyGenParams*>(impl), creationContext, isolate);
+    case WebKit::WebCryptoAlgorithmParamsTypeAesGcmParams:
+    case WebKit::WebCryptoAlgorithmParamsTypeRsaOaepParams:
+        // TODO
+        notImplemented();
+        break;
     }
 
     ASSERT_NOT_REACHED();

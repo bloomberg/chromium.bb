@@ -34,6 +34,7 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/NotImplemented.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "wtf/ArrayBuffer.h"
@@ -433,6 +434,11 @@ bool parseAlgorithmParams(const Dictionary& raw, WebKit::WebCryptoAlgorithmParam
     case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         context.add("RsaKeyGenParams");
         return parseRsaKeyGenParams(raw, params, context, es);
+    case WebKit::WebCryptoAlgorithmParamsTypeAesGcmParams:
+    case WebKit::WebCryptoAlgorithmParamsTypeRsaOaepParams:
+        // TODO
+        notImplemented();
+        break;
     }
     ASSERT_NOT_REACHED();
     return false;
