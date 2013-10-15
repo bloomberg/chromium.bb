@@ -258,7 +258,8 @@ TEST_F(QuicEndToEndTest, LargePostWithNoPacketLoss) {
   CheckResponse(consumer, "HTTP/1.1 200 OK", kResponseBody);
 }
 
-TEST_F(QuicEndToEndTest, LargePostWithPacketLoss) {
+// http://crbug.com/307284
+TEST_F(QuicEndToEndTest, DISABLED_LargePostWithPacketLoss) {
   // FLAGS_fake_packet_loss_percentage = 30;
   InitializePostRequest(1024 * 1024);
 
