@@ -154,13 +154,6 @@ void OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
   old_overscroll_ = overscroll;
 }
 
-void OverscrollGlow::Release(base::TimeTicks current_time) {
-  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
-    edge_effects_[i]->Release(current_time);
-  }
-  old_overscroll_ = old_velocity_ = gfx::Vector2dF();
-}
-
 bool OverscrollGlow::Animate(base::TimeTicks current_time) {
   if (!NeedsAnimate())
     return false;
@@ -247,6 +240,13 @@ void OverscrollGlow::Absorb(base::TimeTicks current_time,
     edge_effects_[i]->Absorb(current_time, std::abs(overscroll_velocities[i]));
     GetOppositeEdge(i)->Release(current_time);
   }
+}
+
+void OverscrollGlow::Release(base::TimeTicks current_time) {
+  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
+    edge_effects_[i]->Release(current_time);
+  }
+  old_overscroll_ = old_velocity_ = gfx::Vector2dF();
 }
 
 void OverscrollGlow::ReleaseAxis(Axis axis, base::TimeTicks current_time) {

@@ -47,11 +47,6 @@ class OverscrollGlow {
                       gfx::Vector2dF overscroll,
                       gfx::Vector2dF velocity);
 
-  // Triggers glow recession for any active edges.
-  // Note: This does not actually release any resources; the name mirrors that
-  //       in Android's OverscrollGlow class.
-  void Release(base::TimeTicks current_time);
-
   // Returns true if the effect still needs animation ticks.
   bool Animate(base::TimeTicks current_time);
 
@@ -90,7 +85,7 @@ class OverscrollGlow {
               gfx::Vector2dF velocity,
               gfx::Vector2dF overscroll,
               gfx::Vector2dF old_overscroll);
-
+  void Release(base::TimeTicks current_time);
   void ReleaseAxis(Axis axis, base::TimeTicks current_time);
 
   EdgeEffect* GetOppositeEdge(int edge_index);
