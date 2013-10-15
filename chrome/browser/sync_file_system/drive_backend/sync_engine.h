@@ -140,9 +140,9 @@ class SyncEngine : public RemoteFileSyncService,
   ObserverList<FileStatusObserver> file_status_observers_;
   RemoteChangeProcessor* remote_change_processor_;
 
-  // TODO: This should be the last member in this class.
+  scoped_ptr<SyncTaskManager> task_manager_;
+
   base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
-  SyncTaskManager task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);
 };

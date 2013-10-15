@@ -30,8 +30,7 @@ SyncEngine::SyncEngine(
       drive_service_(drive_service.Pass()),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
-      weak_ptr_factory_(this),
-      task_manager_(weak_ptr_factory_.GetWeakPtr()) {
+      weak_ptr_factory_(this) {
 }
 
 SyncEngine::~SyncEngine() {
@@ -39,13 +38,15 @@ SyncEngine::~SyncEngine() {
 }
 
 void SyncEngine::Initialize() {
-  task_manager_.Initialize(SYNC_STATUS_OK);
+  DCHECK(!task_manager_);
+  task_manager_.reset(new SyncTaskManager(weak_ptr_factory_.GetWeakPtr()));
+  task_manager_->Initialize(SYNC_STATUS_OK);
 
   SyncEngineInitializer* initializer =
       new SyncEngineInitializer(task_runner_.get(),
                                 drive_service_.get(),
                                 base_dir_.Append(kDatabaseName));
-  task_manager_.ScheduleSyncTask(
+  task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(initializer),
       base::Bind(&SyncEngine::DidInitialize, weak_ptr_factory_.GetWeakPtr(),
                  initializer));
@@ -62,7 +63,7 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
 void SyncEngine::RegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_.ScheduleSyncTask(
+  task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(new RegisterAppTask(this, origin.host())),
       callback);
 }
@@ -70,7 +71,7 @@ void SyncEngine::RegisterOrigin(
 void SyncEngine::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_.ScheduleTask(
+  task_manager_->ScheduleTask(
       base::Bind(&SyncEngine::DoEnableApp,
                  weak_ptr_factory_.GetWeakPtr(),
                  origin.host()),
@@ -80,7 +81,7 @@ void SyncEngine::EnableOrigin(
 void SyncEngine::DisableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  task_manager_.ScheduleTask(
+  task_manager_->ScheduleTask(
       base::Bind(&SyncEngine::DoDisableApp,
                  weak_ptr_factory_.GetWeakPtr(),
                  origin.host()),
@@ -91,7 +92,7 @@ void SyncEngine::UninstallOrigin(
     const GURL& origin,
     UninstallFlag flag,
     const SyncStatusCallback& callback) {
-  task_manager_.ScheduleSyncTask(
+  task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(new UninstallAppTask(this, origin.host(), flag)),
       callback);
 }
@@ -99,7 +100,7 @@ void SyncEngine::UninstallOrigin(
 void SyncEngine::ProcessRemoteChange(
     const SyncFileCallback& callback) {
   RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer;
-  task_manager_.ScheduleSyncTask(
+  task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidProcessRemoteChange,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -172,7 +173,7 @@ void SyncEngine::ApplyLocalChange(
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
   LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer;
-  task_manager_.ScheduleSyncTask(
+  task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidApplyLocalChange,
                  weak_ptr_factory_.GetWeakPtr(),
