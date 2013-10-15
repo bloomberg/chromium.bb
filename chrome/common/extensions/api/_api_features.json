@@ -291,6 +291,11 @@
     "dependencies": ["permission:fontSettings"],
     "contexts": ["blessed_extension"]
   },
+  "hangoutsPrivate": {
+    "channel": "stable",
+    "contexts": ["blessed_extension"],
+    "whitelist": ["eigpckmcflhchknfhifenfgmjncfgcak"]
+  },
   "history": {
     "dependencies": ["permission:history"],
     "contexts": ["blessed_extension"]

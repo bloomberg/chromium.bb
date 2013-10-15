@@ -9,19 +9,33 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
+#include "chrome/browser/ui/app_list/search/people/person.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/common/extensions/api/hangouts_private.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace OnHangoutRequested =
+    extensions::api::hangouts_private::OnHangoutRequested;
+
+using extensions::api::hangouts_private::User;
+using extensions::api::hangouts_private::HangoutRequest;
 
 namespace {
 
 const int kIconSize = 32;
 const char kImageSizePath[] = "s32-p/";
 const char kEmailUrlPrefix[] = "mailto:";
+
+const char kHangoutsExtensionId[] = "eigpckmcflhchknfhifenfgmjncfgcak";
 
 // Add a query parameter to specify the size to fetch the image in. The
 // original profile image can be of an arbitrary size, we ask the server to
@@ -38,31 +52,21 @@ GURL GetImageUrl(const GURL& url) {
 
 namespace app_list {
 
-PeopleResult::PeopleResult(Profile* profile,
-                           const std::string& id,
-                           const std::string& display_name,
-                           const std::string& email,
-                           double interaction_rank,
-                           const GURL& image_url)
-    : profile_(profile),
-      id_(id),
-      display_name_(display_name),
-      email_(email),
-      interaction_rank_(interaction_rank),
-      image_url_(image_url),
-      weak_factory_(this) {
-  set_id(id_);
-  set_title(UTF8ToUTF16(display_name_));
-  set_relevance(interaction_rank_);
-  set_details(UTF8ToUTF16(email_));
+PeopleResult::PeopleResult(Profile* profile, scoped_ptr<Person> person)
+    : profile_(profile), person_(person.Pass()), weak_factory_(this) {
+  set_id(person_->id);
+  set_title(UTF8ToUTF16(person_->display_name));
+  set_relevance(person_->interaction_rank);
+  set_details(UTF8ToUTF16(person_->email));
 
+  is_chat_available_ = IsChatAvailable();
   SetDefaultActions();
 
   image_ = gfx::ImageSkia(
       new UrlIconSource(base::Bind(&PeopleResult::OnIconLoaded,
                                    weak_factory_.GetWeakPtr()),
                         profile_->GetRequestContext(),
-                        GetImageUrl(image_url_),
+                        GetImageUrl(person_->image_url),
                         kIconSize,
                         IDR_PROFILE_PICTURE_LOADING),
       gfx::Size(kIconSize, kIconSize));
@@ -73,21 +77,32 @@ PeopleResult::~PeopleResult() {
 }
 
 void PeopleResult::Open(int event_flags) {
+  // Action 0 will always be our default action.
   InvokeAction(0, event_flags);
 }
 
 void PeopleResult::InvokeAction(int action_index, int event_flags) {
-  DCHECK_EQ(0, action_index);
-  // Currently we support only one action, sending mail.
-  SendEmail();
+  if (!is_chat_available_) {
+    // If the hangouts app is not available, the only option we are showing
+    // to the user is 'Send Email'.
+    SendEmail();
+  } else {
+    switch (action_index) {
+      case 0:
+        OpenChat();
+        break;
+      case 1:
+        SendEmail();
+        break;
+      default:
+        LOG(ERROR) << "Invalid people search action: " << action_index;
+    }
+  }
 }
 
 scoped_ptr<ChromeSearchResult> PeopleResult::Duplicate() {
-  return scoped_ptr<ChromeSearchResult>(new PeopleResult(profile_, id_,
-                                                         display_name_,
-                                                         email_,
-                                                         interaction_rank_,
-                                                         image_url_)).Pass();
+  return scoped_ptr<ChromeSearchResult>(
+      new PeopleResult(profile_, person_->Duplicate().Pass())).Pass();
 }
 
 void PeopleResult::OnIconLoaded() {
@@ -104,6 +119,13 @@ void PeopleResult::SetDefaultActions() {
   Actions actions;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  if (is_chat_available_) {
+    actions.push_back(Action(
+        *bundle.GetImageSkiaNamed(IDR_PEOPLE_SEARCH_ACTION_CHAT),
+        *bundle.GetImageSkiaNamed(IDR_PEOPLE_SEARCH_ACTION_CHAT_HOVER),
+        *bundle.GetImageSkiaNamed(IDR_PEOPLE_SEARCH_ACTION_CHAT_PRESSED),
+        l10n_util::GetStringUTF16(IDS_PEOPLE_SEARCH_ACTION_CHAT_TOOLTIP)));
+  }
   actions.push_back(Action(
       *bundle.GetImageSkiaNamed(IDR_PEOPLE_SEARCH_ACTION_EMAIL),
       *bundle.GetImageSkiaNamed(IDR_PEOPLE_SEARCH_ACTION_EMAIL_HOVER),
@@ -112,13 +134,48 @@ void PeopleResult::SetDefaultActions() {
   SetActions(actions);
 }
 
+void PeopleResult::OpenChat() {
+  HangoutRequest request;
+
+  request.type = extensions::api::hangouts_private::HANGOUT_TYPE_CHAT;
+
+  // from: the user this chat request is originating from.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  DCHECK(token_service);
+  request.from = token_service->GetPrimaryAccountId();
+
+  // to: list of users with whom to start this hangout is with.
+  linked_ptr<User> target(new User());
+  target->id = person_->owner_id;
+  request.to.push_back(target);
+
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(OnHangoutRequested::kEventName,
+                            OnHangoutRequested::Create(request)));
+
+  // TODO(rkc): Change this once we remove the hangoutsPrivate API.
+  // See crbug.com/306672
+  extensions::ExtensionSystem::Get(
+      profile_)->event_router()->DispatchEventToExtension(
+          kHangoutsExtensionId, event.Pass());
+}
+
 void PeopleResult::SendEmail() {
   chrome::NavigateParams params(profile_,
-                                GURL(kEmailUrlPrefix + email_),
+                                GURL(kEmailUrlPrefix + person_->email),
                                 content::PAGE_TRANSITION_LINK);
   // If no window exists, this will open a new window this one tab.
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
+}
+
+bool PeopleResult::IsChatAvailable() {
+  // TODO(rkc): Change this once we remove the hangoutsPrivate API.
+  // See crbug.com/306672
+  return extensions::ExtensionSystem::Get(
+      profile_)->event_router()->ExtensionHasEventListener(
+          kHangoutsExtensionId, OnHangoutRequested::kEventName);
 }
 
 ChromeSearchResultType PeopleResult::GetType() {

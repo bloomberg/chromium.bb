@@ -16,14 +16,11 @@ class Profile;
 
 namespace app_list {
 
+struct Person;
+
 class PeopleResult : public ChromeSearchResult {
  public:
-  PeopleResult(Profile* profile,
-               const std::string& id,
-               const std::string& display_name,
-               const std::string& email,
-               double interaction_rank,
-               const GURL& image_url);
+  PeopleResult(Profile* profile, scoped_ptr<Person> person);
   virtual ~PeopleResult();
 
   // ChromeSearchResult overides:
@@ -35,17 +32,20 @@ class PeopleResult : public ChromeSearchResult {
  private:
   void OnIconLoaded();
   void SetDefaultActions();
+  void OpenChat();
   void SendEmail();
 
+  bool IsChatAvailable();
+
   Profile* profile_;
-  const std::string id_;
-  const std::string display_name_;
-  const std::string email_;
-  const double interaction_rank_;
-  const GURL image_url_;
+  scoped_ptr<Person> person_;
 
   gfx::ImageSkia image_;
   base::WeakPtrFactory<PeopleResult> weak_factory_;
+
+  // Caches whether or not the hangouts app is available for us to
+  // send chat/video reqeusts to.
+  bool is_chat_available_;
 
   DISALLOW_COPY_AND_ASSIGN(PeopleResult);
 };

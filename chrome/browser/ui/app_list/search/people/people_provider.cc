@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/app_list/search/common/json_response_fetcher.h"
 #include "chrome/browser/ui/app_list/search/people/people_result.h"
+#include "chrome/browser/ui/app_list/search/people/person.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -28,15 +29,6 @@ namespace app_list {
 namespace {
 
 const char kKeyItems[] = "items";
-const char kKeyId[] = "person.id";
-const char kKeyNames[] = "person.names";
-const char kKeyDisplayName[] = "displayName";
-const char kKeyEmails[] = "person.emails";
-const char kKeyEmailValue[] = "value";
-const char kKeySortKeys[] = "person.sortKeys";
-const char kKeyInteractionRank[] = "interactionRank";
-const char kKeyImages[] = "person.images";
-const char kKeyUrl[] = "url";
 
 const char kAccessTokenField[] = "access_token";
 const char kQueryField[] = "query";
@@ -46,23 +38,6 @@ const char kPeopleSearchUrl[] =
 // OAuth2 scope for access to the Google+ People Search API.
 const char kPeopleSearchOAuth2Scope[] =
     "https://www.googleapis.com/auth/plus.peopleapi.readwrite";
-
-// Get's the value associated with the key in the first dictionary in the list.
-std::string GetFirstValue(const ListValue& list, const char key[]) {
-  ListValue::const_iterator it = list.begin();
-  if (it == list.end())
-    return std::string();
-
-  base::DictionaryValue* dict;
-  if (!(*it)->GetAsDictionary(&dict))
-    return std::string();
-
-  std::string value;
-  if (!dict || !dict->GetString(key, &value))
-    return std::string();
-
-  return value;
-}
 
 }  // namespace
 
@@ -204,62 +179,11 @@ scoped_ptr<ChromeSearchResult> PeopleProvider::CreateResult(
     const base::DictionaryValue& dict) {
   scoped_ptr<ChromeSearchResult> result;
 
-  std::string id;
-  if (!dict.GetString(kKeyId, &id))
+  scoped_ptr<Person> person = Person::Create(dict);
+  if (!person)
     return result.Pass();
 
-  // Get the display name.
-  const base::ListValue* names;
-  if (!dict.GetList(kKeyNames, &names))
-    return result.Pass();
-  std::string display_name;
-  display_name = GetFirstValue(*names, kKeyDisplayName);
-
-  // Get the email.
-  const base::ListValue* emails;
-  if (!dict.GetList(kKeyEmails, &emails))
-    return result.Pass();
-  std::string email;
-  email = GetFirstValue(*emails, kKeyEmailValue);
-
-  // Get the interaction rank.
-  const base::DictionaryValue* sort_keys;
-  if (!dict.GetDictionary(kKeySortKeys, &sort_keys))
-    return result.Pass();
-  std::string interaction_rank_string;
-  if (!sort_keys->GetString(kKeyInteractionRank, &interaction_rank_string))
-    return result.Pass();
-
-  double interaction_rank;
-  if (!base::StringToDouble(interaction_rank_string, &interaction_rank))
-    return result.Pass();
-
-  // If there has been no interaction with this user, the result
-  // is meaningless, hence discard it.
-  if (interaction_rank == 0.0)
-    return result.Pass();
-
-  // Get the image URL.
-  const base::ListValue* images;
-  if (!dict.GetList(kKeyImages, &images))
-    return result.Pass();
-  std::string image_url_string;
-  image_url_string = GetFirstValue(*images, kKeyUrl);
-
-  if (id.empty() ||
-      display_name.empty() ||
-      email.empty() ||
-      interaction_rank_string.empty() ||
-      image_url_string.empty()) {
-    return result.Pass();
-  }
-
-  GURL image_url(image_url_string);
-  if (!image_url.is_valid())
-    return result.Pass();
-
-  result.reset(new PeopleResult(
-      profile_, id, display_name, email, interaction_rank, image_url));
+  result.reset(new PeopleResult(profile_, person.Pass()));
   return result.Pass();
 }
 

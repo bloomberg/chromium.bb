@@ -60,6 +60,7 @@
               'file_browser_private.json',
               'file_system.idl',
               'font_settings.json',
+              'hangouts_private.idl',
               'history.json',
               'i18n.json',
               'identity.idl',
