@@ -527,6 +527,17 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue(json_string.find('"num_regressions":2') != -1)
         self.assertTrue(json_string.find('"num_flaky":0') != -1)
 
+    def test_text_then_crash(self):
+        # This tests that if a test fails two different ways, we treat it as a failure rather than a flaky.
+        # We use the initial failure for simplicity and consistency w/ the flakiness dashboard, even if
+        # the second failure is worse.
+
+        # Unfortunately, we can't run just the one test and get it to retry automatically, so we have to run the whole directory.
+        details, _, _ = logging_run(['failures/unexpected'], tests_included=True)
+        self.assertNotEqual(details.exit_code, 0)
+        self.assertEqual(details.summarized_failing_results['tests']['failures']['unexpected']['text_then_crash.html']['actual'],
+                         'TEXT CRASH')
+
     def test_pixel_test_directories(self):
         host = MockHost()
 
@@ -629,7 +640,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         host = MockHost()
         details, err, _ = logging_run(['--debug-rwt-logging', 'failures/unexpected'], tests_included=True, host=host)
-        self.assertEqual(details.exit_code, 17)  # FIXME: This should be a constant in test.py .
+        self.assertEqual(details.exit_code, test.UNEXPECTED_FAILURES - 6)  # FIXME: This should be a constant in test.py .
         self.assertTrue('Retrying' in err.getvalue())
 
     def test_retrying_default_value_test_list(self):
@@ -644,7 +655,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         filename = '/tmp/foo.txt'
         host.filesystem.write_text_file(filename, 'failures')
         details, err, _ = logging_run(['--debug-rwt-logging', '--test-list=%s' % filename], tests_included=True, host=host)
-        self.assertEqual(details.exit_code, 17)
+        self.assertEqual(details.exit_code, test.UNEXPECTED_FAILURES - 6)
         self.assertTrue('Retrying' in err.getvalue())
 
     def test_retrying_and_flaky_tests(self):

@@ -101,11 +101,11 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 107
+TOTAL_TESTS = 108
 TOTAL_SKIPS = 27
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_FAILURES = 23
+UNEXPECTED_FAILURES = 24
 
 def unit_test_list():
     tests = TestList()
@@ -173,6 +173,7 @@ layer at (0,0) size 800x34
               actual_checksum='text-image-checksum_fail-checksum')
     tests.add('failures/unexpected/skip_pass.html')
     tests.add('failures/unexpected/text.html', actual_text='text_fail-txt')
+    tests.add('failures/unexpected/text_then_crash.html')
     tests.add('failures/unexpected/timeout.html', timeout=True)
     tests.add('http/tests/passes/text.html')
     tests.add('http/tests/passes/image.html')
@@ -591,9 +592,19 @@ class TestDriver(Driver):
         audio = None
         actual_text = test.actual_text
 
-        if 'flaky' in test_name and not test_name in self._port._flakes:
+        if 'flaky/text.html' in test_name and not test_name in self._port._flakes:
             self._port._flakes.add(test_name)
             actual_text = 'flaky text failure'
+
+        if 'text_then_crash.html' in test_name:
+            if test_name in self._port._flakes:
+                crashed_process_name = self._port.driver_name()
+                crashed_pid = 1
+                test.crash = True
+            else:
+                self._port._flakes.add(test_name)
+                actual_text = 'text failure'
+
 
         if actual_text and test_args and test_name == 'passes/args.html':
             actual_text = actual_text + ' ' + ' '.join(test_args)

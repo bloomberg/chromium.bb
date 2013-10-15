@@ -181,14 +181,9 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
                 num_flaky += 1
             elif retry_results:
                 retry_result_type = retry_results.unexpected_results_by_name[test_name].type
-                if result_type != retry_result_type:
-                    if enabled_pixel_tests_in_retry and result_type == test_expectations.TEXT and retry_result_type == test_expectations.IMAGE_PLUS_TEXT:
-                        num_regressions += 1
-                    else:
-                        num_flaky += 1
+                num_regressions += 1
+                if not keywords[retry_result_type] in actual:
                     actual.append(keywords[retry_result_type])
-                else:
-                    num_regressions += 1
             else:
                 num_regressions += 1
 
