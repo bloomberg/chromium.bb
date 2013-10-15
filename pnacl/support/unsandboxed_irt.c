@@ -109,7 +109,7 @@ DEFINE_STUB(gettod)
 DEFINE_STUB(clock)
 DEFINE_STUB(nanosleep)
 DEFINE_STUB(sched_yield)
-static struct nacl_irt_basic irt_basic = {
+static const struct nacl_irt_basic irt_basic = {
   irt_exit,
   USE_STUB(irt_basic, gettod),
   USE_STUB(irt_basic, clock),
@@ -123,7 +123,7 @@ DEFINE_STUB(dup2)
 DEFINE_STUB(read)
 DEFINE_STUB(seek)
 DEFINE_STUB(getdents)
-static struct nacl_irt_fdio irt_fdio = {
+static const struct nacl_irt_fdio irt_fdio = {
   irt_close,
   USE_STUB(irt_fdio, dup),
   USE_STUB(irt_fdio, dup2),
@@ -136,13 +136,13 @@ static struct nacl_irt_fdio irt_fdio = {
 
 DEFINE_STUB(munmap)
 DEFINE_STUB(mprotect)
-static struct nacl_irt_memory irt_memory = {
+static const struct nacl_irt_memory irt_memory = {
   irt_mmap,
   USE_STUB(irt_memory, munmap),
   USE_STUB(irt_memory, mprotect),
 };
 
-static struct nacl_irt_tls irt_tls = {
+static const struct nacl_irt_tls irt_tls = {
   tls_init,
   tls_get,
 };
