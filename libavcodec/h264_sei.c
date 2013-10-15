@@ -285,7 +285,8 @@ int ff_h264_decode_sei(H264Context *h)
             av_log(h->avctx, AV_LOG_DEBUG, "SEI %d len:%d\n", type, size);
 
         if (size > get_bits_left(&h->gb) / 8) {
-            av_log(h->avctx, AV_LOG_ERROR, "SEI truncated\n");
+            av_log(h->avctx, AV_LOG_ERROR, "SEI type %d size %d truncated at %d\n",
+                   type, 8*size, get_bits_left(&h->gb));
             return AVERROR_INVALIDDATA;
         }
         next = get_bits_count(&h->gb) + 8 * size;
@@ -318,6 +319,9 @@ int ff_h264_decode_sei(H264Context *h)
         case SEI_TYPE_FRAME_PACKING:
             if (decode_frame_packing(h, size) < 0)
                 return -1;
+            break;
+        default:
+            av_log(h->avctx, AV_LOG_DEBUG, "unknown SEI type %d\n", type);
         }
         skip_bits_long(&h->gb, next - get_bits_count(&h->gb));
 

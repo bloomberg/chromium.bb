@@ -9,9 +9,10 @@ To illustrate the sorts of things that are possible, we consider the
 following filtergraph.
 
 @example
+                [main]
 input --> split ---------------------> overlay --> output
             |                             ^
-            |                             |
+            |[tmp]                  [flip]|
             +-----> crop --> vflip -------+
 @end example
 
@@ -344,6 +345,33 @@ aconvert=fltp:stereo
 Convert input to unsigned 8-bit, automatically select out channel layout:
 @example
 aconvert=u8:auto
+@end example
+@end itemize
+
+@section adelay
+
+Delay one or more audio channels.
+
+Samples in delayed channel are filled with silence.
+
+The filter accepts the following option:
+
+@table @option
+@item delays
+Set list of delays in milliseconds for each channel separated by '|'.
+At least one delay greater than 0 should be provided.
+Unused delays will be silently ignored. If number of given delays is
+smaller than number of channels all remaining channels will not be delayed.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Delay first channel by 1.5 seconds, the third channel by 0.5 seconds and leave
+the second channel (and any other channels that may be present) unchanged.
+@example
+adelay=1500:0:500
 @end example
 @end itemize
 
@@ -1372,6 +1400,117 @@ ffmpeg -i fl -i fr -i fc -i sl -i sr -i lfe -filter_complex
 'join=inputs=6:channel_layout=5.1:map=0.0-FL|1.0-FR|2.0-FC|3.0-SL|4.0-SR|5.0-LFE'
 out
 @end example
+
+@section ladspa
+
+Load a LADSPA (Linux Audio Developer's Simple Plugin API) plugin.
+
+To enable compilation of this filter you need to configure FFmpeg with
+@code{--enable-ladspa}.
+
+@table @option
+@item file, f
+Specifies the name of LADSPA plugin library to load. If the environment
+variable @env{LADSPA_PATH} is defined, the LADSPA plugin is searched in
+each one of the directories specified by the colon separated list in
+@env{LADSPA_PATH}, otherwise in the standard LADSPA paths, which are in
+this order: @file{HOME/.ladspa/lib/}, @file{/usr/local/lib/ladspa/},
+@file{/usr/lib/ladspa/}.
+
+@item plugin, p
+Specifies the plugin within the library. Some libraries contain only
+one plugin, but others contain many of them. If this is not set filter
+will list all available plugins within the specified library.
+
+@item controls, c
+Set the '|' separated list of controls which are zero or more floating point
+values that determine the behavior of the loaded plugin (for example delay,
+threshold or gain).
+Controls need to be defined using the following syntax:
+c0=@var{value0}|c1=@var{value1}|c2=@var{value2}|..., where
+@var{valuei} is the value set on the @var{i}-th control.
+If @option{controls} is set to @code{help}, all available controls and
+their valid ranges are printed.
+
+@item sample_rate, s
+Specify the sample rate, default to 44100. Only used if plugin have
+zero inputs.
+
+@item nb_samples, n
+Set the number of samples per channel per each output frame, default
+is 1024. Only used if plugin have zero inputs.
+
+@item duration, d
+Set the minimum duration of the sourced audio. See the function
+@code{av_parse_time()} for the accepted format, also check the "Time duration"
+section in the ffmpeg-utils manual.
+Note that the resulting duration may be greater than the specified duration,
+as the generated audio is always cut at the end of a complete frame.
+If not specified, or the expressed duration is negative, the audio is
+supposed to be generated forever.
+Only used if plugin have zero inputs.
+
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+List all available plugins within amp (LADSPA example plugin) library:
+@example
+ladspa=file=amp
+@end example
+
+@item
+List all available controls and their valid ranges for @code{vcf_notch}
+plugin from @code{VCF} library:
+@example
+ladspa=f=vcf:p=vcf_notch:c=help
+@end example
+
+@item
+Simulate low quality audio equipment using @code{Computer Music Toolkit} (CMT)
+plugin library:
+@example
+ladspa=file=cmt:plugin=lofi:controls=c0=22|c1=12|c2=12
+@end example
+
+@item
+Add reverberation to the audio using TAP-plugins
+(Tom's Audio Processing plugins):
+@example
+ladspa=file=tap_reverb:tap_reverb
+@end example
+
+@item
+Generate white noise, with 0.2 amplitude:
+@example
+ladspa=file=cmt:noise_source_white:c=c0=.2
+@end example
+
+@item
+Generate 20 bpm clicks using plugin @code{C* Click - Metronome} from the
+@code{C* Audio Plugin Suite} (CAPS) library:
+@example
+ladspa=file=caps:Click:c=c1=20'
+@end example
+
+@item
+Apply @code{C* Eq10X2 - Stereo 10-band equaliser} effect:
+@example
+ladspa=caps:Eq10X2:c=c0=-48|c9=-24|c3=12|c4=2
+@end example
+@end itemize
+
+@subsection Commands
+
+This filter supports the following commands:
+@table @option
+@item cN
+Modify the @var{N}-th control value.
+
+If the specified value is not valid, it is ignored and prior one is kept.
+@end table
 
 @section lowpass
 
@@ -3239,16 +3378,6 @@ Either a string (e.g. "yellow") or in 0xRRGGBB[AA] format
 (e.g. "0xff00ff"), possibly followed by an alpha specifier.
 The default value of @var{boxcolor} is "white".
 
-@item draw
-Set an expression which specifies if the text should be drawn. If the
-expression evaluates to 0, the text is not drawn. This is useful for
-specifying that the text should be drawn only when specific conditions
-are met.
-
-Default value is "1".
-
-See below for the list of accepted constants and functions.
-
 @item expansion
 Select how the @var{text} is expanded. Can be either @code{none},
 @code{strftime} (deprecated) or
@@ -3548,7 +3677,7 @@ drawtext="fontsize=60:fontfile=FreeSerif.ttf:fontcolor=green:text=g:x=(w-max_gly
 @item
 Show text for 1 second every 3 seconds:
 @example
-drawtext="fontfile=FreeSerif.ttf:fontcolor=white:x=100:y=x/dar:draw=lt(mod(t\,3)\,1):text='blink'"
+drawtext="fontfile=FreeSerif.ttf:fontcolor=white:x=100:y=x/dar:enable=lt(mod(t\,3)\,1):text='blink'"
 @end example
 
 @item
@@ -4569,7 +4698,7 @@ It accepts the following values:
 @item levels
 standard histogram that display color components distribution in an image.
 Displays color graph for each color component. Shows distribution
-of the Y, U, V, A or G, B, R components, depending on input format,
+of the Y, U, V, A or R, G, B components, depending on input format,
 in current frame. Bellow each graph is color component scale meter.
 
 @item color
@@ -4621,6 +4750,12 @@ Default value is @code{10}. Allowed range is [1, 255].
 @item waveform_mode
 Set mode for @code{waveform}. Can be either @code{row}, or @code{column}.
 Default is @code{row}.
+
+@item waveform_mirror
+Set mirroring mode for @code{waveform}. @code{0} means unmirrored, @code{1}
+means mirrored. In mirrored mode, higher values will be represented on the left
+side for @code{row} mode and at the top for @code{column} mode. Default is
+@code{0} (unmirrored).
 
 @item display_mode
 Set display mode for @code{waveform} and @code{levels}.
@@ -5184,16 +5319,11 @@ the named filter.
 
 The list of the currently supported filters follows:
 @table @var
-@item dint
 @item eq2
 @item eq
-@item fil
 @item fspp
 @item ilpack
-@item phase
 @item pp7
-@item pullup
-@item qp
 @item softpulldown
 @item uspp
 @end table
@@ -5854,6 +5984,67 @@ It accepts the following values:
 Default value is @samp{linear}.
 @end table
 
+@section phase
+
+Delay interlaced video by one field time so that the field order changes.
+
+The intended use is to fix PAL movies that have been captured with the
+opposite field order to the film-to-video transfer.
+
+A description of the accepted parameters follows.
+
+@table @option
+@item mode
+Set phase mode.
+
+It accepts the following values:
+@table @samp
+@item t
+Capture field order top-first, transfer bottom-first.
+Filter will delay the bottom field.
+
+@item b
+Capture field order bottom-first, transfer top-first.
+Filter will delay the top field.
+
+@item p
+Capture and transfer with the same field order. This mode only exists
+for the documentation of the other options to refer to, but if you
+actually select it, the filter will faithfully do nothing.
+
+@item a
+Capture field order determined automatically by field flags, transfer
+opposite.
+Filter selects among @samp{t} and @samp{b} modes on a frame by frame
+basis using field flags. If no field information is available,
+then this works just like @samp{u}.
+
+@item u
+Capture unknown or varying, transfer opposite.
+Filter selects among @samp{t} and @samp{b} on a frame by frame basis by
+analyzing the images and selecting the alternative that produces best
+match between the fields.
+
+@item T
+Capture top-first, transfer unknown or varying.
+Filter selects among @samp{t} and @samp{p} using image analysis.
+
+@item B
+Capture bottom-first, transfer unknown or varying.
+Filter selects among @samp{b} and @samp{p} using image analysis.
+
+@item A
+Capture determined by field flags, transfer unknown or varying.
+Filter selects among @samp{t}, @samp{b} and @samp{p} using field flags and
+image analysis. If no field information is available, then this works just
+like @samp{U}. This is the default mode.
+
+@item U
+Both capture and transfer unknown or varying.
+Filter selects among @samp{t}, @samp{b} and @samp{p} using image analysis only.
+@end table
+@end table
+
 @section pixdesctest
 
 Pixel format descriptor test filter, mainly useful for internal
@@ -6109,6 +6300,68 @@ On this example the input file being processed is compared with the
 reference file @file{ref_movie.mpg}. The PSNR of each individual frame
 is stored in @file{stats.log}.
 
+@section pullup
+
+Pulldown reversal (inverse telecine) filter, capable of handling mixed
+hard-telecine, 24000/1001 fps progressive, and 30000/1001 fps progressive
+content.
+
+The pullup filter is designed to take advantage of future context in making
+its decisions. This filter is stateless in the sense that it does not lock
+onto a pattern to follow, but it instead looks forward to the following
+fields in order to identify matches and rebuild progressive frames.
+
+To produce content with an even framerate, insert the fps filter after
+pullup, use @code{fps=24000/1001} if the input frame rate is 29.97fps,
+@code{fps=24} for 30fps and the (rare) telecined 25fps input.
+
+The filter accepts the following options:
+
+@table @option
+@item jl
+@item jr
+@item jt
+@item jb
+These options set the amount of "junk" to ignore at the left, right, top, and
+bottom of the image, respectively. Left and right are in units of 8 pixels,
+while top and bottom are in units of 2 lines.
+The default is 8 pixels on each side.
+
+@item sb
+Set the strict breaks. Setting this option to 1 will reduce the chances of
+filter generating an occasional mismatched frame, but it may also cause an
+excessive number of frames to be dropped during high motion sequences.
+Conversely, setting it to -1 will make filter match fields more easily.
+This may help processing of video where there is slight blurring between
+the fields, but may also cause there to be interlaced frames in the output.
+Default value is @code{0}.
+
+@item mp
+Set the metric plane to use. It accepts the following values:
+@table @samp
+@item l
+Use luma plane.
+
+@item u
+Use chroma blue plane.
+
+@item v
+Use chroma red plane.
+@end table
+
+This option may be set to use chroma plane instead of the default luma plane
+for doing filter's computations. This may improve accuracy on very clean
+source material, but more likely will decrease accuracy, especially if there
+is chroma noise (rainbow effect) or any grayscale video.
+The main purpose of setting @option{mp} to a chroma plane is to reduce CPU
+load and make pullup usable in realtime on slow machines.
+@end table
+
+For example to inverse telecined NTSC input:
+@example
+pullup,fps=24000/1001
+@end example
+
 @section removelogo
 
 Suppress a TV station logo, using an image file to determine which
@@ -6312,7 +6565,11 @@ the next filter, the scale filter will convert the input to the
 requested format.
 
 @subsection Options
-The filter accepts the following options:
+The filter accepts the following options, or any of the options
+supported by the libswscale scaler.
+
+See @ref{scaler_options,,the ffmpeg-scaler manual,ffmpeg-scaler} for
+the complete list of scaler options.
 
 @table @option
 @item width, w
@@ -6348,8 +6605,10 @@ are flagged as interlaced or not.
 Default value is @samp{0}.
 
 @item flags
-Set libswscale scaling flags. If not explictly specified the filter
-applies a bilinear scaling algorithm.
+Set libswscale scaling flags. See
+@ref{sws_flags,,the ffmpeg-scaler manual,ffmpeg-scaler} for the
+complete list of values. If not explictly specified the filter applies
+the default flags.
 
 @item size, s
 Set the video size, the value must be a valid abbreviation or in the
@@ -6414,23 +6673,6 @@ Set full range (0-255 in case of 8-bit luma).
 
 @item mpeg/tv
 Set "MPEG" range (16-235 in case of 8-bit luma).
-@end table
-
-@item sws_dither
-Set the dithering algorithm
-
-@table @samp
-@item auto
-Choose automatically.
-
-@item none
-No dithering
-
-@item bayer
-bayer dither
-
-@item ed
-error diffusion dither
 @end table
 
 @item force_original_aspect_ratio
@@ -7580,34 +7822,39 @@ fill the border black
 @item invert
 @table @samp
 @item 0
- keep transforms normal (default)
+keep transforms normal (default)
 @item 1
- invert transforms
+invert transforms
 @end table
-
 
 @item relative
 consider transforms as
 @table @samp
 @item 0
- absolute
+absolute
 @item 1
- relative to previous frame (default)
+relative to previous frame (default)
 @end table
-
 
 @item zoom
 percentage to zoom (default: 0)
 @table @samp
 @item >0
-  zoom in
+zoom in
 @item <0
-  zoom out
+zoom out
 @end table
 
 @item optzoom
-if 1 then optimal zoom value is determined (default).
-Optimal zoom means no (or only little) border should be visible.
+set optimal zooming to avoid borders
+@table @samp
+@item 0
+disabled
+@item 1
+optimal static zoom value is determined (only very strong movements will lead to visible borders) (default)
+@item 2
+optimal adaptive zoom value is determined (no borders will be visible)
+@end table
 Note that the value given at zoom is added to the one calculated
 here.
 
@@ -7781,6 +8028,45 @@ vignette='PI/4+random(1)*PI/50':eval=frame
 @end example
 
 @end itemize
+
+@section w3fdif
+
+Deinterlace the input video ("w3fdif" stands for "Weston 3 Field
+Deinterlacing Filter").
+
+Based on the process described by Martin Weston for BBC R&D, and
+implemented based on the de-interlace algorithm written by Jim
+Easterbrook for BBC R&D, the Weston 3 field deinterlacing filter
+uses filter coefficients calculated by BBC R&D.
+
+There are two sets of filter coefficients, so called "simple":
+and "complex". Which set of filter coefficients is used can
+be set by passing an optional parameter:
+
+@table @option
+@item filter
+Set the interlacing filter coefficients. Accepts one of the following values:
+
+@table @samp
+@item simple
+Simple filter coefficient set.
+@item complex
+More-complex filter coefficient set.
+@end table
+Default value is @samp{complex}.
+
+@item deint
+Specify which frames to deinterlace. Accept one of the following values:
+
+@table @samp
+@item all
+Deinterlace all frames,
+@item interlaced
+Only deinterlace frames marked as interlaced.
+@end table
+
+Default value is @samp{all}.
+@end table
 
 @anchor{yadif}
 @section yadif
@@ -8906,13 +9192,13 @@ select='not(mod(n\,100))'
 @item
 Select only frames contained in the 10-20 time interval:
 @example
-select='gte(t\,10)*lte(t\,20)'
+select=between(t\,10\,20)
 @end example
 
 @item
 Select only I frames contained in the 10-20 time interval:
 @example
-select='gte(t\,10)*lte(t\,20)*eq(pict_type\,I)'
+select=between(t\,10\,20)*eq(pict_type\,I)
 @end example
 
 @item
@@ -9126,9 +9412,6 @@ tell if the current frame is interlaced
 @item T
 the time in seconds of the current frame
 
-@item TB
-the time base
-
 @item POS
 original position in the file of the frame, or undefined if undefined
 for the current frame
@@ -9151,6 +9434,10 @@ instead.
 
 @item RTCSTART
 wallclock (RTC) time at the start of the movie in microseconds
+
+@item TB
+timebase of the input timestamps
+
 @end table
 
 @subsection Examples

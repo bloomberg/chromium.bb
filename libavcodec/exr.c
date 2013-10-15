@@ -501,13 +501,13 @@ static int decode_frame(AVCodecContext *avctx,
 
     version = bytestream_get_byte(&buf);
     if (version != 2) {
-        av_log(avctx, AV_LOG_ERROR, "Unsupported version %d\n", version);
+        avpriv_report_missing_feature(avctx, "Version %d", version);
         return AVERROR_PATCHWELCOME;
     }
 
     flags = bytestream_get_le24(&buf);
     if (flags & 0x2) {
-        av_log(avctx, AV_LOG_ERROR, "Tile based images are not supported\n");
+        avpriv_report_missing_feature(avctx, "Tile support");
         return AVERROR_PATCHWELCOME;
     }
 
@@ -523,7 +523,7 @@ static int decode_frame(AVCodecContext *avctx,
             channel_list_end = buf + variable_buffer_data_size;
             while (channel_list_end - buf >= 19) {
                 EXRChannel *channel;
-                int current_pixel_type = -1;
+                enum ExrPixelType current_pixel_type;
                 int channel_index = -1;
                 int xsub, ysub;
 
@@ -556,7 +556,7 @@ static int decode_frame(AVCodecContext *avctx,
                 xsub = bytestream_get_le32(&buf);
                 ysub = bytestream_get_le32(&buf);
                 if (xsub != 1 || ysub != 1) {
-                    av_log(avctx, AV_LOG_ERROR, "Unsupported subsampling %dx%d\n", xsub, ysub);
+                    avpriv_report_missing_feature(avctx, "Subsampling %dx%d", xsub, ysub);
                     return AVERROR_PATCHWELCOME;
                 }
 
@@ -715,7 +715,7 @@ static int decode_frame(AVCodecContext *avctx,
         s->scan_lines_per_block = 16;
         break;
     default:
-        av_log(avctx, AV_LOG_ERROR, "Compression type %d is not supported\n", s->compr);
+        avpriv_report_missing_feature(avctx, "Compression %d", s->compr);
         return AVERROR_PATCHWELCOME;
     }
 
@@ -804,11 +804,11 @@ static av_cold int decode_end(AVCodecContext *avctx)
 
 AVCodec ff_exr_decoder = {
     .name               = "exr",
+    .long_name          = NULL_IF_CONFIG_SMALL("OpenEXR image"),
     .type               = AVMEDIA_TYPE_VIDEO,
     .id                 = AV_CODEC_ID_EXR,
     .priv_data_size     = sizeof(EXRContext),
     .close              = decode_end,
     .decode             = decode_frame,
     .capabilities       = CODEC_CAP_DR1 | CODEC_CAP_FRAME_THREADS | CODEC_CAP_SLICE_THREADS,
-    .long_name          = NULL_IF_CONFIG_SMALL("OpenEXR image"),
 };

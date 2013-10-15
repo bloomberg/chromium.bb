@@ -38,7 +38,6 @@
 #include "libmpcodecs/img_format.h"
 #include "libmpcodecs/cpudetect.h"
 #include "libmpcodecs/av_helpers.h"
-#include "libmpcodecs/vf_scale.h"
 #include "libmpcodecs/libvo/fastmemcpy.h"
 
 #include "libswscale/swscale.h"
@@ -123,31 +122,21 @@ static const struct {
     {0, AV_PIX_FMT_NONE}
 };
 
-extern const vf_info_t ff_vf_info_dint;
 extern const vf_info_t ff_vf_info_eq2;
 extern const vf_info_t ff_vf_info_eq;
-extern const vf_info_t ff_vf_info_fil;
 extern const vf_info_t ff_vf_info_fspp;
 extern const vf_info_t ff_vf_info_ilpack;
-extern const vf_info_t ff_vf_info_phase;
 extern const vf_info_t ff_vf_info_pp7;
-extern const vf_info_t ff_vf_info_pullup;
-extern const vf_info_t ff_vf_info_qp;
 extern const vf_info_t ff_vf_info_softpulldown;
 extern const vf_info_t ff_vf_info_uspp;
 
 
 static const vf_info_t* const filters[]={
-    &ff_vf_info_dint,
     &ff_vf_info_eq2,
     &ff_vf_info_eq,
-    &ff_vf_info_fil,
     &ff_vf_info_fspp,
     &ff_vf_info_ilpack,
-    &ff_vf_info_phase,
     &ff_vf_info_pp7,
-    &ff_vf_info_pullup,
-    &ff_vf_info_qp,
     &ff_vf_info_softpulldown,
     &ff_vf_info_uspp,
 
@@ -790,11 +779,11 @@ static const AVFilterPad mp_outputs[] = {
 };
 
 AVFilter avfilter_vf_mp = {
-    .name      = "mp",
-    .description = NULL_IF_CONFIG_SMALL("Apply a libmpcodecs filter to the input video."),
-    .init = init,
-    .uninit = uninit,
-    .priv_size = sizeof(MPContext),
+    .name          = "mp",
+    .description   = NULL_IF_CONFIG_SMALL("Apply a libmpcodecs filter to the input video."),
+    .init          = init,
+    .uninit        = uninit,
+    .priv_size     = sizeof(MPContext),
     .query_formats = query_formats,
     .inputs        = mp_inputs,
     .outputs       = mp_outputs,
