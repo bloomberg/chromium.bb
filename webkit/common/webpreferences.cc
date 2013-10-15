@@ -56,7 +56,6 @@ WebPreferences::WebPreferences()
       privileged_webgl_extensions_enabled(false),
       webgl_errors_to_console_enabled(true),
       accelerated_compositing_for_overflow_scroll_enabled(false),
-      universal_accelerated_compositing_for_overflow_scroll_enabled(false),
       accelerated_compositing_for_scrollable_frames_enabled(false),
       composited_scrolling_for_frames_enabled(false),
       mock_scrollbars_enabled(false),

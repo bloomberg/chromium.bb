@@ -397,15 +397,6 @@ const Experiment kExperiments[] = {
                                switches::kDisableAcceleratedOverflowScroll)
   },
   {
-    "force-universal-accelerated-composited-scrolling",
-     IDS_FLAGS_FORCE_UNIVERSAL_ACCELERATED_OVERFLOW_SCROLL_MODE_NAME,
-     IDS_FLAGS_FORCE_UNIVERSAL_ACCELERATED_OVERFLOW_SCROLL_MODE_DESCRIPTION,
-     kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(
-         switches::kEnableUniversalAcceleratedOverflowScroll,
-         switches::kDisableUniversalAcceleratedOverflowScroll)
-  },
-  {
     "present-with-GDI",
     IDS_FLAGS_PRESENT_WITH_GDI_NAME,
     IDS_FLAGS_PRESENT_WITH_GDI_DESCRIPTION,
