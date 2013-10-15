@@ -481,7 +481,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initCommands_ = function() {
-    var handler = new CommandHandler(this);
+    this.commandHandler = new CommandHandler(this);
 
     // TODO(hirono): Move the following block to the UI part.
     var commandButtons = this.dialogDom_.querySelectorAll('button[command]');
@@ -661,7 +661,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
          DialogType.FULL_PAGE]);
 
     this.selectionHandler_ = null;
-    this.ctrlKeyPressed_ = false;
 
     this.metadataCache_ = MetadataCache.createFull();
 
@@ -804,7 +803,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         }.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
-    this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
 
     // This capturing event is only used to distinguish focusing using
     // keyboard from focusing using mouse.
@@ -1730,13 +1728,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @return {boolean} True if the ctrl key is pressed now.
-   */
-  FileManager.prototype.isCtrlKeyPressed = function() {
-    return this.ctrlKeyPressed_;
-  };
-
-  /**
    * Overrides default handling for clicks on hyperlinks.
    * In a packaged apps links with targer='_blank' open in a new tab by
    * default, other links do not open at all.
@@ -1840,7 +1831,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   FileManager.prototype.onDriveConnectionChanged_ = function() {
     var connection = this.volumeManager_.getDriveConnectionState();
-    this.updateCommands();
+    if (this.commandHandler)
+      this.commandHandler.updateAvailability();
     if (this.dialogContainer_)
       this.dialogContainer_.setAttribute('connection', connection.type);
     this.shareDialog_.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
@@ -2339,25 +2331,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             PathUtil.getRootPath(event.newDirEntry.fullPath))
       this.closeOnUnmount_ = false;
 
-    this.updateCommands();
+    if (this.commandHandler)
+      this.commandHandler.updateAvailability();
     this.updateUnformattedDriveStatus_();
     this.updateTitle_();
     this.updateGearMenu_();
     this.previewPanel_.currentPath_ = this.getCurrentDirectory();
-  };
-
-  /**
-   * Updates commands' states by emiting canExecute events. Should be used
-   * only if there is need to reevaluate states without an user action, eg.
-   * external events.
-   */
-  FileManager.prototype.updateCommands = function() {
-    var commands = this.dialogDom_.querySelectorAll('command');
-    for (var i = 0; i < commands.length; i++) {
-      // Commands may not have been decorated yet.
-      if (commands[i].canExecuteChange)
-        commands[i].canExecuteChange();
-    }
   };
 
   // TODO(haruki): Rename this method. "Drive" here does not refer
@@ -2378,7 +2357,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
       // Update 'canExecute' for format command so the format button's disabled
       // property is properly set.
-      this.updateCommands();
+      if (this.commandHandler)
+        this.commandHandler.updateAvailability();
     } else {
       this.dialogDom_.removeAttribute('unformatted');
     }
@@ -2612,7 +2592,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.grid_.endBatchUpdates();
     }
 
-    this.updateCommands();
+    if (this.commandHandler)
+      this.commandHandler.updateAvailability();
     this.table_.list.startBatchUpdates();
     this.grid_.startBatchUpdates();
     this.scanInProgress_ = true;
@@ -2644,7 +2625,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    this.updateCommands();
+    if (this.commandHandler)
+      this.commandHandler.updateAvailability();
     this.hideSpinnerLater_();
     this.refreshCurrentDirectoryMetadata_();
 
@@ -2711,7 +2693,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    this.updateCommands();
+    if (this.commandHandler)
+      this.commandHandler.updateAvailability();
     this.hideSpinnerLater_();
     if (this.scanCompletedTimer_) {
       clearTimeout(this.scanCompletedTimer_);
@@ -2850,10 +2833,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     switch (util.getKeyModifiers(event) + event.keyCode) {
-      case 'Ctrl-17':  // Ctrl => Show hidden setting
-        this.setCtrlKeyPressed_(true);
-        return;
-
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
         this.fileFilter_.setFilterHidden(
             !this.fileFilter_.isFilterHiddenOn());
@@ -2875,24 +2854,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           this.cancelButton_.click();
         }
         break;
-    }
-  };
-
-  /**
-   * KeyUp event handler for the document.
-   * @param {Event} event Key event.
-   * @private
-   */
-  FileManager.prototype.onKeyUp_ = function(event) {
-    if (event.srcElement === this.renameInput_) {
-      // Ignore keydown handler in the rename input box.
-      return;
-    }
-
-    switch (util.getKeyModifiers(event) + event.keyCode) {
-      case '17':  // Ctrl => Hide hidden setting
-        this.setCtrlKeyPressed_(false);
-        return;
     }
   };
 
@@ -3757,19 +3718,5 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.preferences_ = prefs;
       callback(prefs);
     }.bind(this));
-  };
-
-  /**
-   * Set the flag expressing whether the ctrl key is pressed or not.
-   * @param {boolean} flag New value of the flag
-   * @private
-   */
-  FileManager.prototype.setCtrlKeyPressed_ = function(flag) {
-    this.ctrlKeyPressed_ = flag;
-    // Before the DOM is constructed, the key event can be handled.
-    var cacheClearCommand =
-        this.document_.querySelector('#drive-clear-local-cache');
-    if (cacheClearCommand)
-      cacheClearCommand.canExecuteChange();
   };
 })();

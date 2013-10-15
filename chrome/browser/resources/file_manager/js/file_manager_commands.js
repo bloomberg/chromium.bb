@@ -110,17 +110,6 @@ CommandUtil.canExecuteVisibleOnDriveOnly = function(event, fileManager) {
 };
 
 /**
- * Checks if command should be visible on drive with pressing ctrl key.
- * @param {Event} event Command event to mark.
- * @param {FileManager} fileManager FileManager to use.
- */
-CommandUtil.canExecuteVisibleOnDriveWithCtrlKeyOnly =
-    function(event, fileManager) {
-  event.canExecute = fileManager.isOnDrive() && fileManager.isCtrlKeyPressed();
-  event.command.setHidden(!event.canExecute);
-};
-
-/**
  * Sets as the command as always enabled.
  * @param {Event} event Command event to mark.
  */
@@ -143,6 +132,29 @@ CommandUtil.getSingleEntry = function(event, fileManager) {
     return selection.entries[0];
   }
   return null;
+};
+
+/**
+ * Obtains target entries that can be pinned from the selection.
+ * If directories are included in the selection, it just returns an empty
+ * array to avoid confusing because pinning directory is not supported
+ * currently.
+ *
+ * @return {Array.<Entry>} Target entries.
+ */
+CommandUtil.getPinTargetEntries = function() {
+  var hasDirectory = false;
+  var results = fileManager.getSelection().entries.filter(function(entry) {
+    hasDirectory = hasDirectory || entry.isDirectory;
+    if (!entry || hasDirectory)
+      return false;
+    var metadata = fileManager.metadataCache_.getCached(entry, 'drive');
+    if (!metadata || metadata.hosted)
+      return false;
+    entry.pinned = metadata.pinned;
+    return true;
+  });
+  return hasDirectory ? [] : results;
 };
 
 /**
@@ -208,24 +220,55 @@ CommandUtil.createVolumeSwitchCommand = function(index) {
 
 /**
  * Handle of the command events.
- * @param {FileManager} fileManager Document of Files.app's UI.
+ * @param {FileManager} fileManager FileManager.
  * @constructor
  */
 var CommandHandler = function(fileManager) {
-  // Set member variable.
+  /**
+   * FileManager.
+   * @type {FileManager}
+   * @private
+   */
   this.fileManager_ = fileManager;
-  Object.freeze(this);
+
+  /**
+   * Command elements.
+   * @type {Object.<string, cr.ui.Command>}
+   * @private
+   */
+  this.commands_ = {};
+
+  /**
+   * Whether the ctrl key is pressed or not.
+   * @type {boolean}
+   * @private
+   */
+  this.ctrlKeyPressed_ = false;
+
+  Object.seal(this);
 
   // Decorate command tags in the document.
   var commands = fileManager.document.querySelectorAll('command');
   for (var i = 0; i < commands.length; i++) {
     cr.ui.Command.decorate(commands[i]);
+    this.commands_[commands[i].id] = commands[i];
   }
 
   // Register events.
   fileManager.document.addEventListener('command', this.onCommand_.bind(this));
   fileManager.document.addEventListener('canExecute',
                                         this.onCanExecute_.bind(this));
+  fileManager.document.addEventListener('keydown', this.onKeyDown_.bind(this));
+  fileManager.document.addEventListener('keyup', this.onKeyUp_.bind(this));
+};
+
+/**
+ * Updates the availability of all commands.
+ */
+CommandHandler.prototype.updateAvailability = function() {
+  for (var id in this.commands_) {
+    this.commands_[id].canExecuteChange();
+  }
 };
 
 /**
@@ -235,7 +278,7 @@ var CommandHandler = function(fileManager) {
  */
 CommandHandler.prototype.onCommand_ = function(event) {
   var handler = CommandHandler.COMMANDS_[event.command.id];
-  handler.execute.call(handler, event, this.fileManager_);
+  handler.execute.call(this, event, this.fileManager_);
 };
 
 /**
@@ -245,7 +288,35 @@ CommandHandler.prototype.onCommand_ = function(event) {
  */
 CommandHandler.prototype.onCanExecute_ = function(event) {
   var handler = CommandHandler.COMMANDS_[event.command.id];
-  handler.canExecute.call(handler, event, this.fileManager_);
+  handler.canExecute.call(this, event, this.fileManager_);
+};
+
+/**
+ * Handle key down event.
+ * @param {Event} event Key down event.
+ * @private
+ */
+CommandHandler.prototype.onKeyDown_ = function(event) {
+  // 17 is the keycode of Ctrl key and it means the event is not for other keys
+  // with Ctrl modifier but for ctrl key itself.
+  if (util.getKeyModifiers(event) + event.keyCode == 'Ctrl-17') {
+    this.ctrlKeyPressed_ = true;
+    this.updateAvailability();
+  }
+};
+
+/**
+ * Handle key up event.
+ * @param {Event} event Key up event.
+ * @private
+ */
+CommandHandler.prototype.onKeyUp_ = function(event) {
+  // 17 is the keycode of Ctrl key and it means the event is not for other keys
+  // with Ctrl modifier but for ctrl key itself.
+  if (util.getKeyModifiers(event) + event.keyCode == '17') {
+    this.ctrlKeyPressed_ = false;
+    this.updateAvailability();
+  }
 };
 
 /**
@@ -482,7 +553,10 @@ CommandHandler.COMMANDS_['drive-clear-local-cache'] = {
   execute: function(event, fileManager) {
     chrome.fileBrowserPrivate.clearDriveCache();
   },
-  canExecute: CommandUtil.canExecuteVisibleOnDriveWithCtrlKeyOnly
+  canExecute: function(event, fileManager) {
+    event.canExecute = fileManager.isOnDrive() && this.ctrlKeyPressed_;
+    event.command.setHidden(!event.canExecute);
+  }
 };
 
 /**
@@ -564,7 +638,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = {
   execute: function(event, fileManager) {
     var pin = !event.command.checked;
     event.command.checked = pin;
-    var entries = this.getTargetEntries_();
+    var entries = CommandUtil.getPinTargetEntries();
     var currentEntry;
     var error = false;
     var steps = {
@@ -613,7 +687,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = {
   },
 
   canExecute: function(event, fileManager) {
-    var entries = this.getTargetEntries_();
+    var entries = CommandUtil.getPinTargetEntries();
     var checked = true;
     for (var i = 0; i < entries.length; i++) {
       checked = checked && entries[i].pinned;
@@ -626,30 +700,6 @@ CommandHandler.COMMANDS_['toggle-pinned'] = {
       event.canExecute = false;
       event.command.setHidden(true);
     }
-  },
-
-  /**
-   * Obtains target entries from the selection.
-   * If directories are included in the selection, it just returns an empty
-   * array to avoid confusing because pinning directory is not supported
-   * currently.
-   *
-   * @return {Array.<Entry>} Target entries.
-   * @private
-   */
-  getTargetEntries_: function() {
-    var hasDirectory = false;
-    var results = fileManager.getSelection().entries.filter(function(entry) {
-      hasDirectory = hasDirectory || entry.isDirectory;
-      if (!entry || hasDirectory)
-        return false;
-      var metadata = fileManager.metadataCache_.getCached(entry, 'drive');
-        if (!metadata || metadata.hosted)
-          return false;
-      entry.pinned = metadata.pinned;
-      return true;
-    });
-    return hasDirectory ? [] : results;
   }
 };
 
