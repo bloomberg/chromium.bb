@@ -140,14 +140,15 @@ def _SetEnvForNativeSdk(env, sdk_path):
   tool_map = NACL_TOOL_MAP[env['TARGET_ARCHITECTURE']]
   subarch_spec = tool_map[env['TARGET_SUBARCH']]
   tooldir = subarch_spec['tooldir']
+  # We need to pass it extra options for the subarch we are building.
+  as_mode_flag = subarch_spec['as_flag']
+  cc_mode_flag = subarch_spec['cc_flag']
+  ld_mode_flag = subarch_spec['ld_flag']
   if os.path.exists(os.path.join(sdk_path, tooldir)):
     # The tooldir for the build target exists.
     # The tools there do the right thing without special options.
     tool_prefix = tooldir
     libdir = os.path.join(tooldir, 'lib')
-    as_mode_flag = ''
-    cc_mode_flag = ''
-    ld_mode_flag = ''
   else:
     # We're building for a target for which there is no matching tooldir.
     # For example, for x86-32 when only <sdk_path>/x86_64-nacl/ exists.
@@ -159,10 +160,6 @@ def _SetEnvForNativeSdk(env, sdk_path):
       if os.path.exists(os.path.join(sdk_path, tooldir)):
         # OK, this is the other subarch to use as tooldir.
         tool_prefix = tooldir
-        # We need to pass it extra options for the subarch we are building.
-        as_mode_flag = subarch_spec['as_flag']
-        cc_mode_flag = subarch_spec['cc_flag']
-        ld_mode_flag = subarch_spec['ld_flag']
         # The lib directory may have an alternate name, i.e.
         # 'lib32' in the x86_64-nacl tooldir.
         libdir = os.path.join(tooldir, subarch_spec.get('other_libdir', 'lib'))
@@ -328,6 +325,12 @@ def _SetEnvForPnacl(env, root):
   env.Replace(# Replace header and lib paths.
               NACL_SDK_INCLUDE=pnacl_include,
               NACL_SDK_LIB=pnacl_lib,
+              # Remove arch-specific flags (if any)
+              BASE_LINKFLAGS='',
+              BASE_CFLAGS='',
+              BASE_CXXFLAGS='',
+              BASE_ASFLAGS='',
+              BASE_ASPPFLAGS='',
               # Replace the normal unix tools with the PNaCl ones.
               CC=pnacl_cc + pnacl_cc_flags,
               CXX=pnacl_cxx + pnacl_cxx_flags,
