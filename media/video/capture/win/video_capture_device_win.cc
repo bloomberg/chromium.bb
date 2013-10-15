@@ -11,10 +11,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/metro.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
 #include "media/base/media_switches.h"
 #include "media/video/capture/win/video_capture_device_mf_win.h"
 
+using base::win::ScopedCoMem;
 using base::win::ScopedComPtr;
 using base::win::ScopedVariant;
 
@@ -504,7 +506,9 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
   for (int i = 0; i < count; ++i) {
     hr = stream_config->GetStreamCaps(i, &media_type,
                                       reinterpret_cast<BYTE*>(&caps));
-    if (FAILED(hr)) {
+    // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
+    // macros here since they'll trigger incorrectly.
+    if (hr != S_OK) {
       DVLOG(2) << "Failed to GetStreamCaps";
       return false;
     }
@@ -512,21 +516,18 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
     if (media_type->majortype == MEDIATYPE_Video &&
         media_type->formattype == FORMAT_VideoInfo) {
       VideoCaptureCapabilityWin capability(i);
-      REFERENCE_TIME time_per_frame = 0;
-
       VIDEOINFOHEADER* h =
           reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
       capability.width = h->bmiHeader.biWidth;
       capability.height = h->bmiHeader.biHeight;
-      time_per_frame = h->AvgTimePerFrame;
 
-      // Try to get the max frame rate from IAMVideoControl.
+      // Try to get a better |time_per_frame| from IAMVideoControl.  If not, use
+      // the value from VIDEOINFOHEADER.
+      REFERENCE_TIME time_per_frame = h->AvgTimePerFrame;
       if (video_control) {
-        LONGLONG* max_fps_ptr;
-        LONG list_size;
-        SIZE size;
-        size.cx = capability.width;
-        size.cy = capability.height;
+        ScopedCoMem<LONGLONG> max_fps;
+        LONG list_size = 0;
+        SIZE size = { capability.width, capability.height };
 
         // GetFrameRateList doesn't return max frame rate always
         // eg: Logitech Notebook. This may be due to a bug in that API
@@ -534,24 +535,19 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
         // a util method written. Can't assume the first value will return
         // the max fps.
         hr = video_control->GetFrameRateList(output_capture_pin_, i, size,
-                                             &list_size, &max_fps_ptr);
-
-        if (SUCCEEDED(hr) && list_size > 0) {
-          int min_time =  *std::min_element(max_fps_ptr,
-                                            max_fps_ptr + list_size);
-          capability.frame_rate = (min_time > 0) ?
-              kSecondsToReferenceTime / min_time : 0;
-        } else {
-          // Get frame rate from VIDEOINFOHEADER.
-          capability.frame_rate = (time_per_frame > 0) ?
-              static_cast<int>(kSecondsToReferenceTime / time_per_frame) : 0;
+                                             &list_size, &max_fps);
+        // Sometimes |list_size| will be > 0, but max_fps will be NULL.  Some
+        // drivers may return an HRESULT of S_FALSE which SUCCEEDED() translates
+        // into success, so explicitly check S_OK.  See http://crbug.com/306237.
+        if (hr == S_OK && list_size > 0 && max_fps) {
+          time_per_frame = *std::min_element(max_fps.get(),
+                                             max_fps.get() + list_size);
         }
-      } else {
-        // Get frame rate from VIDEOINFOHEADER since IAMVideoControl is
-        // not supported.
-        capability.frame_rate = (time_per_frame > 0) ?
-            static_cast<int>(kSecondsToReferenceTime / time_per_frame) : 0;
       }
+
+      capability.frame_rate = (time_per_frame > 0) ?
+          static_cast<int>(kSecondsToReferenceTime / time_per_frame) : 0;
+
       // DirectShow works at the moment only on integer frame_rate but the
       // best capability matching class works on rational frame rates.
       capability.frame_rate_numerator = capability.frame_rate;

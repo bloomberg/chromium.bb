@@ -52,6 +52,10 @@ class ScopedCoMem {
     mem_ptr_ = ptr;
   }
 
+  T* get() const {
+    return mem_ptr_;
+  }
+
  private:
   T* mem_ptr_;
 
