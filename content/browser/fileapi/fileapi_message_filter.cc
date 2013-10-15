@@ -307,7 +307,7 @@ void FileAPIMessageFilter::OnCopy(
     return;
   }
   if (!security_policy_->CanReadFileSystemFile(process_id_, src_url) ||
-      !security_policy_->CanCreateFileSystemFile(process_id_, dest_url)) {
+      !security_policy_->CanCopyIntoFileSystemFile(process_id_, dest_url)) {
     Send(new FileSystemMsg_DidFail(request_id,
                                    base::PLATFORM_FILE_ERROR_SECURITY));
     return;

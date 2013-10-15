@@ -135,6 +135,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanCreateFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
   bool CanCreateReadWriteFileSystemFile(int child_id,
                                         const fileapi::FileSystemURL& url);
+  bool CanCopyIntoFileSystemFile(int child_id,
+                                 const fileapi::FileSystemURL& url);
 
   // Returns true if the specified child_id has been granted WebUIBindings.
   // The browser should check this property before assuming the child process is
