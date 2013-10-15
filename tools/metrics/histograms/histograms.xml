@@ -25547,6 +25547,20 @@ other types of suffix sets.
   <int value="66" label="Prerender Service hinting url lookup timed out"/>
   <int value="67" label="Prerender Service candidate url lookup timed out"/>
   <int value="68" label="Continue prerender check service whitelist"/>
+  <int value="69" label="Continue prerender check next URL local"/>
+  <int value="70" label="Continue prerender check next URL service"/>
+  <int value="71" label="AddVisit relevant transition repeat URL"/>
+  <int value="72" label="AddVisit relevant transition new URL"/>
+  <int value="73" label="Tab Helper namespace mismatch: no namespace"/>
+  <int value="74" label="Tab Helper namespace mismatch: merge issued"/>
+  <int value="75" label="Namespace mismatch: merge result received"/>
+  <int value="76" label="Namespace mismatch: merge result namespace not found"/>
+  <int value="77" label="Namespace mismatch: merge result not logging"/>
+  <int value="78" label="Namespace mismatch: merge result no transactions"/>
+  <int value="79"
+      label="Namespace mismatch: merge result too many transactions"/>
+  <int value="80" label="Namespace mismatch: merge result not mergeable"/>
+  <int value="81" label="Namespace mismatch: merge result mergeable"/>
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">
