@@ -75,6 +75,7 @@ class LocallyManagedUserCreationScreen
       const std::string& manager_password) OVERRIDE;
   virtual void AbortFlow() OVERRIDE;
   virtual void FinishFlow() OVERRIDE;
+  virtual void OnPageSelected(const std::string& page) OVERRIDE;
 
   // LocallyManagedUserController::StatusConsumer overrides.
   virtual void OnCreationError(
@@ -112,7 +113,7 @@ class LocallyManagedUserCreationScreen
   scoped_ptr<LocallyManagedUserCreationController> controller_;
 
   bool on_error_screen_;
-  bool on_image_screen_;
+  std::string last_page_;
 
   gfx::ImageSkia user_photo_;
   scoped_refptr<ImageDecoder> image_decoder_;

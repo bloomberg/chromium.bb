@@ -159,6 +159,9 @@ void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
   AddCallback("supervisedUserCheckCameraPresence",
               &LocallyManagedUserCreationScreenHandler::
                   HandleCheckCameraPresence);
+  AddCallback("currentSupervisedUserPage",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleCurrentSupervisedUserPage);
 }
 
 void LocallyManagedUserCreationScreenHandler::PrepareToShow() {}
@@ -341,6 +344,17 @@ void LocallyManagedUserCreationScreenHandler::HandleSelectImage(
     const std::string& image_type) {
   if (delegate_)
     delegate_->OnImageSelected(image_type, image_url);
+}
+
+void LocallyManagedUserCreationScreenHandler::HandleCurrentSupervisedUserPage(
+    const std::string& page) {
+  if (delegate_)
+    delegate_->OnPageSelected(page);
+}
+
+void LocallyManagedUserCreationScreenHandler::ShowPage(
+    const std::string& page) {
+  CallJS("showPage", page);
 }
 
 void LocallyManagedUserCreationScreenHandler::SetCameraPresent(bool present) {

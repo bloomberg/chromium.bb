@@ -26,6 +26,9 @@ namespace chromeos {
 
 namespace {
 
+const char kNameOfIntroScreen[] = "intro";
+const char kNameOfNewUserParametersScreen[] = "username";
+
 void ConfigureErrorScreen(ErrorScreen* screen,
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalStatus status) {
@@ -62,7 +65,7 @@ LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
       weak_factory_(this),
       actor_(actor),
       on_error_screen_(false),
-      on_image_screen_(false),
+      last_page_(kNameOfIntroScreen),
       image_decoder_(NULL),
       apply_photo_after_decoding_(false),
       selected_image_(0) {
@@ -88,8 +91,8 @@ void LocallyManagedUserCreationScreen::Show() {
     actor_->Show();
     // TODO(antrim) : temorary hack (until upcoming hackaton). Should be
     // removed once we have screens reworked.
-    if (on_image_screen_)
-      actor_->ShowTutorialPage();
+    if (on_error_screen_)
+      actor_->ShowPage(last_page_);
     else
       actor_->ShowIntroPage();
   }
@@ -98,6 +101,10 @@ void LocallyManagedUserCreationScreen::Show() {
   if (detector && !on_error_screen_)
     detector->AddAndFireObserver(this);
   on_error_screen_ = false;
+}
+
+void LocallyManagedUserCreationScreen::OnPageSelected(const std::string& page) {
+  last_page_ = page;
 }
 
 void LocallyManagedUserCreationScreen::OnPortalDetectionCompleted(
@@ -189,6 +196,7 @@ void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
   controller_->SetManagerProfile(manager_profile);
   if (actor_)
     actor_->ShowUsernamePage();
+  last_page_ = kNameOfNewUserParametersScreen;
 }
 
 void LocallyManagedUserCreationScreen::OnManagerCryptohomeAuthenticated() {

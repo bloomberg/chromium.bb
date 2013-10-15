@@ -50,6 +50,7 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
     virtual void OnImageSelected(const std::string& image_url,
                                  const std::string& image_type) = 0;
     virtual void OnImageAccepted() = 0;
+    virtual void OnPageSelected(const std::string& page) = 0;
   };
 
   LocallyManagedUserCreationScreenHandler();
@@ -75,6 +76,9 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
                      const string16& message,
                      const string16& button_text);
 
+  // Navigates to specified page.
+  void ShowPage(const std::string& page);
+
   void SetCameraPresent(bool enabled);
 
   // BaseScreenHandler implementation:
@@ -93,6 +97,7 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void HandleFinishLocalManagedUserCreation();
   void HandleAbortLocalManagedUserCreation();
   void HandleRetryLocalManagedUserCreation(const base::ListValue* args);
+  void HandleCurrentSupervisedUserPage(const std::string& current_page);
 
   void HandleAuthenticateManager(const std::string& raw_manager_username,
                                  const std::string& manager_password);

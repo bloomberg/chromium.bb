@@ -212,6 +212,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       'showStatusError',
       'showTutorialPage',
       'showUsernamePage',
+      'showPage',
       'setDefaultImages',
       'setCameraPresent',
     ],
@@ -729,6 +730,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       } else {
         this.getScreenElement('image-grid').stopCamera();
       }
+      chrome.send('currentSupervisedUserPage', [this.currentPage_]);
     },
 
     setButtonDisabledStatus: function(buttonName, status) {
@@ -927,6 +929,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
     showTutorialPage: function() {
       this.setVisiblePage_('created');
+    },
+
+    showPage: function(page) {
+      this.setVisiblePage_(page);
     },
 
     showErrorPage: function(errorTitle, errorText, errorButtonText) {
