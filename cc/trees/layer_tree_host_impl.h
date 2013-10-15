@@ -525,6 +525,7 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandlerClient* input_handler_client_;
   bool did_lock_scrolling_layer_;
   bool should_bubble_scrolls_;
+  bool last_scroll_did_bubble_;
   bool wheel_scrolling_;
   int scroll_layer_id_when_mouse_over_scrollbar_;
 

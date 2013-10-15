@@ -198,6 +198,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       input_handler_client_(NULL),
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
+      last_scroll_did_bubble_(false),
       wheel_scrolling_(false),
       scroll_layer_id_when_mouse_over_scrollbar_(0),
       tile_priorities_dirty_(false),
@@ -1989,6 +1990,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     active_tree_->SetCurrentlyScrollingLayer(
         potentially_scrolling_layer_impl);
     should_bubble_scrolls_ = (type != NonBubblingGesture);
+    last_scroll_did_bubble_ = false;
     wheel_scrolling_ = (type == Wheel);
     client_->RenewTreePriority();
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
@@ -2092,6 +2094,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
   bool did_scroll_y = false;
   bool consume_by_top_controls = top_controls_manager_ &&
       (CurrentlyScrollingLayer() == RootScrollLayer() || scroll_delta.y() < 0);
+  last_scroll_did_bubble_ = false;
 
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
@@ -2132,10 +2135,15 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     did_scroll_x |= did_move_layer_x;
     did_scroll_y |= did_move_layer_y;
     if (!did_move_layer_x && !did_move_layer_y) {
-      if (should_bubble_scrolls_ || !did_lock_scrolling_layer_)
+      if (!did_lock_scrolling_layer_)
         continue;
-      else
-        break;
+
+      if (should_bubble_scrolls_) {
+        last_scroll_did_bubble_ = true;
+        continue;
+      }
+
+      break;
     }
 
     if (layer_impl == RootScrollLayer())
@@ -2271,7 +2279,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
   }
 
   if (!wheel_scrolling_)
-    should_bubble_scrolls_ = false;
+    should_bubble_scrolls_ = last_scroll_did_bubble_;
 
   return ScrollStarted;
 }

@@ -5349,6 +5349,54 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, TouchFlingShouldBubbleIfPrecedingScrollBubbled) {
+  // When flinging via touch, bubble scrolls if the touch scroll
+  // immediately preceding the fling bubbled.
+  gfx::Size surface_size(10, 10);
+  gfx::Size root_content_size(10, 20);
+  gfx::Size child_content_size(40, 40);
+  scoped_ptr<LayerImpl> root = CreateScrollableLayer(1, root_content_size);
+  scoped_ptr<LayerImpl> child = CreateScrollableLayer(2, child_content_size);
+
+  root->AddChild(child.Pass());
+
+  host_impl_->SetViewportSize(surface_size);
+  host_impl_->active_tree()->SetRootLayer(root.Pass());
+  host_impl_->active_tree()->DidBecomeActive();
+  InitializeRendererAndDrawFrame();
+  {
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->ScrollBegin(gfx::Point(),
+                                      InputHandler::Gesture));
+
+    // Touch scroll before starting the fling. The second scroll should bubble.
+    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 100)));
+    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 5)));
+
+    scoped_ptr<ScrollAndScaleSet> scroll_info =
+        host_impl_->ProcessScrollDeltas();
+
+    // The root should have (partially) scrolled.
+    EXPECT_EQ(2u, scroll_info->scrolls.size());
+    ExpectContains(*scroll_info.get(),
+                   host_impl_->active_tree()->root_layer()->id(),
+                   gfx::Vector2d(0, 5));
+
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->FlingScrollBegin());
+
+    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 5)));
+    host_impl_->ScrollEnd();
+
+    // The root should have (fully) scrolled from the fling.
+    scroll_info = host_impl_->ProcessScrollDeltas();
+    EXPECT_EQ(2u, scroll_info->scrolls.size());
+    ExpectContains(*scroll_info.get(),
+                   host_impl_->active_tree()->root_layer()->id(),
+                   gfx::Vector2d(0, 10));
+  }
+}
+
 TEST_F(LayerTreeHostImplTest, WheelFlingShouldBubble) {
   // When flinging via wheel, the root should eventually scroll (we should
   // bubble).
@@ -5379,7 +5427,7 @@ TEST_F(LayerTreeHostImplTest, WheelFlingShouldBubble) {
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
 
-    // Only the root should have scrolled.
+    // The root should have scrolled.
     ASSERT_EQ(2u, scroll_info->scrolls.size());
     ExpectContains(*scroll_info.get(),
                    host_impl_->active_tree()->root_layer()->id(),
