@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_renderer_host.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -205,6 +206,9 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   BookmarkModel* model_;
   scoped_ptr<BookmarkBarView> bb_view_;
   TestingPageNavigator navigator_;
+
+  // The existence of this object enables tests via RenderViewHostTester.
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 
  private:
   void AddTestData(bool big_menu) {

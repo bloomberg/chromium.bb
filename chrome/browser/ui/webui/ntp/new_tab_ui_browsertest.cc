@@ -40,16 +40,10 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeInternalLoadsNTP) {
   ASSERT_FALSE(empty_inner_html);
 }
 
-#if defined(OS_WIN)
-// Flaky on Windows (http://crbug.com/174819)
-#define MAYBE_LoadNTPInExistingProcess DISABLED_LoadNTPInExistingProcess
-#else
-#define MAYBE_LoadNTPInExistingProcess LoadNTPInExistingProcess
-#endif
-
 // Ensure loading a NTP with an existing SiteInstance in a reused process
 // doesn't cause us to kill the process.  See http://crbug.com/104258.
-IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, MAYBE_LoadNTPInExistingProcess) {
+// TODO(samarth): remove along with NTP4 code.
+IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, DISABLED_LoadNTPInExistingProcess) {
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -112,7 +106,8 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, MAYBE_LoadNTPInExistingProcess) {
 // Loads chrome://hang/ into two NTP tabs, ensuring we don't crash.
 // See http://crbug.com/59859.
 // If this flakes, use http://crbug.com/87200.
-IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeHangInNTP) {
+// TODO(samarth): remove along with NTP4 code.
+IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, DISABLED_ChromeHangInNTP) {
   // Bring up a new tab page.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
@@ -143,7 +138,9 @@ class NewTabUIProcessPerTabTest : public NewTabUIBrowserTest {
 // Ensures that we don't load the normal page in the NTP process (and thus
 // crash), as in http://crbug.com/69224.
 // If this flakes, use http://crbug.com/87200
-IN_PROC_BROWSER_TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
+// TODO(samarth): remove along with NTP4 code.
+IN_PROC_BROWSER_TEST_F(NewTabUIProcessPerTabTest,
+                       DISABLED_NavBeforeNTPCommits) {
   // Bring up a new tab page.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 

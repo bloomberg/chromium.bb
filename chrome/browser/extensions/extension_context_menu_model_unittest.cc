@@ -13,12 +13,16 @@
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace {
 
 class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
+ protected:
+  // The existence of this object enables tests via RenderViewHostTester.
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 };
 
 // Tests that applicable menu items are disabled when a ManagementPolicy

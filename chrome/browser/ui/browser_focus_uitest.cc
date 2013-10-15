@@ -907,11 +907,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnNavigate) {
+// This functionality is currently broken. http://crbug.com/304865.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnNavigate) {
   // Needed on Mac.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   // Load the NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL), CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
 
   // Navigate to another page.

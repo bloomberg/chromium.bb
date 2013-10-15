@@ -650,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
-  const GURL webui_url("chrome://newtab");
+  const GURL webui_url("chrome://omnibox");
   ui_test_utils::NavigateToURL(browser(), webui_url);
   const content::WebContents* old_tab =
       browser()->tab_strip_model()->GetActiveWebContents();

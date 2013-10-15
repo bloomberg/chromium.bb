@@ -15,6 +15,7 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Dummy implementation that's good enough for the tests; we don't test
@@ -55,6 +56,9 @@ class BookmarkBarGtkUnittest : public testing::Test {
   BookmarkModel* model_;
 
   content::TestBrowserThreadBundle thread_bundle_;
+
+  // The existence of this object enables tests via RenderViewHostTester.
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;

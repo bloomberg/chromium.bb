@@ -1287,8 +1287,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
       FindBarController::kKeepResultsInFindBox);
 
   // Now create a second tab and load the same page.
-  chrome::AddBlankTabAt(browser(), -1, true);
-  ui_test_utils::NavigateToURL(browser(), url);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   WebContents* web_contents_2 =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(web_contents_1, web_contents_2);
@@ -1521,8 +1523,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(ASCIIToUTF16("1 of 1"), GetMatchCountText());
 
   // Next, do a search in a second tab.
-  chrome::AddBlankTabAt(browser(), -1, true);
-  ui_test_utils::NavigateToURL(browser(), url);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   WebContents* web_contents_2 =
       browser()->tab_strip_model()->GetActiveWebContents();
   FindInPageWchar(web_contents_2, L"text", kFwd, kIgnoreCase, &ordinal);

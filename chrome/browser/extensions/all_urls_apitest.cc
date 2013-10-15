@@ -54,8 +54,8 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, MAYBE_WhitelistedExtension) {
 
   std::string url;
 
-  // Now verify we run content scripts on chrome://newtab/.
-  url = "chrome://newtab/";
+  // Now verify we run content scripts on chrome://omnibox/.
+  url = "chrome://omnibox/";
   ExtensionTestMessageListener listener1a("content script: " + url, false);
   ExtensionTestMessageListener listener1b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));

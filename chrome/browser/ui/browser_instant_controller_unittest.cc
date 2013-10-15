@@ -97,6 +97,7 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
 };
 
 TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
+  chrome::EnableQueryExtractionForTesting();
   size_t num_tests = arraysize(kTabReloadTestCases);
   ScopedVector<FakeWebContentsObserver> observers;
   for (size_t i = 0; i < num_tests; ++i) {
@@ -135,6 +136,7 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
 }
 
 TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
+  chrome::EnableQueryExtractionForTesting();
   const size_t num_tests = arraysize(kTabReloadTestCases);
   ScopedVector<FakeWebContentsObserver> observers;
   for (size_t i = 0; i < num_tests; ++i) {

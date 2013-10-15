@@ -16,8 +16,6 @@
 class SearchIPCRouterPolicyTest : public ChromeRenderViewHostTestHarness {
  public:
   virtual void SetUp() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableInstantExtendedAPI);
     ChromeRenderViewHostTestHarness::SetUp();
     SearchTabHelper::CreateForWebContents(web_contents());
   }

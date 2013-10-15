@@ -47,11 +47,11 @@ class NavigationNotificationObserver : public content::NotificationObserver {
 
 typedef InProcessBrowserTest ChromeURLDataManagerTest;
 
-// Makes sure navigating to the new tab page results in a http status code
+// Makes sure navigating to the omnibox page results in a http status code
 // of 200.
 IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, 200) {
   NavigationNotificationObserver observer;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIOmniboxURL));
   EXPECT_TRUE(observer.got_navigation());
   EXPECT_EQ(200, observer.http_status_code());
 }

@@ -218,7 +218,8 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
-  // Tests with Instant Extended disabled.
+  // Instant Extended only works on non-mobile platforms.
+#if defined(OS_IOS) || defined(OS_ANDROID)
   // Tests for rule 1.
   ExpectRuleValue("rule1-1-0-value",
                   "rule1", AutocompleteInput::NEW_TAB_PAGE);  // exact match
@@ -257,14 +258,7 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   // Tests for rule 5 (a missing rule).
   ExpectRuleValue("",
                   "rule5", AutocompleteInput::OTHER);      // no rule at all
-
-  // Now change the Instant Extended state and run analogous tests.
-  // Instant Extended only works on non-mobile platforms.
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  chrome::ResetInstantExtendedOptInStateGateForTest();
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableInstantExtendedAPI);
-
+#else
   // Tests with Instant Extended enabled.
   // Tests for rule 1.
   ExpectRuleValue("rule1-4-1-value",
@@ -297,5 +291,5 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   // Tests for rule 5 (a missing rule).
   ExpectRuleValue("",
                   "rule5", AutocompleteInput::OTHER);      // no rule at all
-#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+#endif  // defined(OS_IOS) || defined(OS_ANDROID)
 }

@@ -71,7 +71,11 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
   // Verify that the expected stability metrics were recorded.
   const PrefService* prefs = g_browser_process->local_state();
   EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityLaunchCount));
-  EXPECT_EQ(3, prefs->GetInteger(prefs::kStabilityPageLoadCount));
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(4, prefs->GetInteger(prefs::kStabilityPageLoadCount));
+#else
+  EXPECT_EQ(5, prefs->GetInteger(prefs::kStabilityPageLoadCount));
+#endif
   EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that prefs::kStabilityExitedCleanly
   // is set to true, but this preference isn't set until the browser
@@ -107,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
 
   // Verify that the expected stability metrics were recorded.
   EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityLaunchCount));
-  EXPECT_EQ(4, prefs->GetInteger(prefs::kStabilityPageLoadCount));
+  EXPECT_EQ(6, prefs->GetInteger(prefs::kStabilityPageLoadCount));
   EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that prefs::kStabilityExitedCleanly
   // is set to true, but this preference isn't set until the browser

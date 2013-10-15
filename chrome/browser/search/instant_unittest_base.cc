@@ -25,7 +25,6 @@
 #include "content/public/browser/notification_source.h"
 
 void InstantUnitTestBase::SetUp() {
-  chrome::EnableInstantExtendedAPIForTesting();
   BrowserWithTestWindowTest::SetUp();
 
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(

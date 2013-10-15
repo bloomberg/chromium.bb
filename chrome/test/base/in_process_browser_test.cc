@@ -22,6 +22,8 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -413,6 +415,22 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // Pump any pending events that were created as a result of creating a
   // browser.
   content::RunAllPendingInMessageLoop();
+
+  if (browser_) {
+    // InstantService prerenders an Instant NTP on the first browser creation.
+    // Since many tests listen for load notifications, the NTP load can confuse
+    // them unless we first wait for the NTP contents to finish loading before
+    // running the test.
+    InstantService* instant_service = InstantServiceFactory::GetForProfile(
+        browser_->profile());
+    if (instant_service && instant_service->GetNTPContents() &&
+        instant_service->GetNTPContents()->IsLoading()) {
+      content::WindowedNotificationObserver observer(
+          content::NOTIFICATION_LOAD_STOP,
+          content::NotificationService::AllSources());
+      observer.Wait();
+    }
+  }
 
   SetUpOnMainThread();
 #if defined(OS_MACOSX)

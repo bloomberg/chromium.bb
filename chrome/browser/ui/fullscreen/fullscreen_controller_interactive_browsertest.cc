@@ -760,7 +760,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   AcceptCurrentFullscreenOrMouseLockRequest();
   ASSERT_TRUE(IsMouseLocked());
 
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://omnibox"));
 
   ASSERT_FALSE(IsMouseLocked());
 }

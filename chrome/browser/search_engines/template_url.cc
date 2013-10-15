@@ -186,7 +186,7 @@ bool IsTemplateParameterString(const std::string& param) {
 
 bool ShowingSearchTermsOnSRP() {
   return chrome::IsInstantExtendedAPIEnabled() &&
-      !chrome::ShouldSuppressInstantExtendedOnSRP();
+      chrome::IsQueryExtractionEnabled();
 }
 
 }  // namespace

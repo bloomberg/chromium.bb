@@ -64,8 +64,6 @@ class InstantPageTest : public ChromeRenderViewHostTestHarness {
 };
 
 void InstantPageTest::SetUp() {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableInstantExtendedAPI);
   ChromeRenderViewHostTestHarness::SetUp();
   SearchTabHelper::CreateForWebContents(web_contents());
 }

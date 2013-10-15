@@ -74,8 +74,6 @@ class SearchModelTest : public ChromeRenderViewHostTestHarness {
 };
 
 void SearchModelTest::SetUp() {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableInstantExtendedAPI);
   ChromeRenderViewHostTestHarness::SetUp();
   SearchTabHelper::CreateForWebContents(web_contents());
   SearchTabHelper* search_tab_helper =

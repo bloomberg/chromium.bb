@@ -58,9 +58,9 @@ IN_PROC_BROWSER_TEST_F(WebCacheManagerBrowserTest, CrashOnceOnly) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_EQ(
-      WebCacheManager::GetInstance()->active_renderers_.size(), 1U);
+      2U, WebCacheManager::GetInstance()->active_renderers_.size());
   EXPECT_EQ(
-      WebCacheManager::GetInstance()->inactive_renderers_.size(), 0U);
+      0U, WebCacheManager::GetInstance()->inactive_renderers_.size());
   EXPECT_EQ(
-      WebCacheManager::GetInstance()->stats_.size(), 1U);
+      2U, WebCacheManager::GetInstance()->stats_.size());
 }

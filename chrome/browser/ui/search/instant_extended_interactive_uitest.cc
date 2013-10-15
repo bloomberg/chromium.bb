@@ -155,7 +155,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
   }
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::EnableInstantExtendedAPIForTesting();
+    chrome::EnableQueryExtractionForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
@@ -281,7 +281,7 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::EnableInstantExtendedAPIForTesting();
+    chrome::EnableQueryExtractionForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
@@ -332,7 +332,6 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::EnableInstantExtendedAPIForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");

@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/render_view_test.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -76,6 +77,10 @@ class WindowPositionerTest : public AshTestBase {
 
  private:
   WindowPositioner* window_positioner_;
+
+  // The existence of this object enables tests via
+  // RenderViewHostTester.
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 
   // These two need to be deleted after everything else is gone.
   TestingProfile profile_;

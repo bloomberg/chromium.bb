@@ -14,8 +14,6 @@ typedef BrowserWithTestWindowTest SearchDelegateTest;
 // Test the propagation of search "mode" changes from the tab's search model to
 // the browser's search model.
 TEST_F(SearchDelegateTest, SearchModel) {
-  chrome::EnableInstantExtendedAPIForTesting();
-
   // Initial state.
   EXPECT_TRUE(browser()->search_model()->mode().is_default());
 

@@ -54,8 +54,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
 
   // Show the task manager.
   chrome::ShowTaskManager(browser());
-  // Expect to see the browser and the New Tab Page renderer.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  // Expect to see the browser and the New Tab Page renderers.
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
 
   // Show a notification.
   NotificationUIManager* notifications =
@@ -73,11 +73,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
       GURL(), GURL(content), ASCIIToUTF16("Test 2"), string16(), del2.get());
 
   notifications->Add(n1, browser()->profile());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
-  notifications->Add(n2, browser()->profile());
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
+  notifications->Add(n2, browser()->profile());
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(4);
   notifications->CancelById(n1.notification_id());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
   notifications->CancelById(n2.notification_id());
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
 }

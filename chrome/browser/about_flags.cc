@@ -647,27 +647,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableTabGroupsContextMenu)
   },
   {
-    "enable-instant-extended-api",
-    IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API,
-    IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API_DESCRIPTION,
-    kOsMac | kOsWin | kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInstantExtendedAPI,
-                              switches::kDisableInstantExtendedAPI)
-  },
-  {
     "use-cacheable-new-tab-page",
     IDS_FLAGS_ENABLE_INSTANT_EXTENDED_CACHEABLE_NTP,
     IDS_FLAGS_ENABLE_INSTANT_EXTENDED_CACHEABLE_NTP_DESCRIPTION,
     kOsMac | kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kUseCacheableNewTabPage)
-  },
-  {
-    "enable-local-first-load-ntp",
-    IDS_FLAGS_ENABLE_LOCAL_FIRST_LOAD_NTP,
-    IDS_FLAGS_ENABLE_LOCAL_FIRST_LOAD_NTP_DESCRIPTION,
-    kOsMac | kOsWin | kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLocalFirstLoadNTP,
-                              switches::kDisableLocalFirstLoadNTP)
   },
 #if defined(OS_ANDROID)
   {
