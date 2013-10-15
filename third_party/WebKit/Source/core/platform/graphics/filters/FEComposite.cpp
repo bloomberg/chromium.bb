@@ -45,7 +45,7 @@ namespace WebCore {
 
 class CompositeImageFilter : public SkImageFilter {
 public:
-    CompositeImageFilter(SkXfermode::Mode mode, SkImageFilter* background, SkImageFilter* foreground, const SkIRect* cropRect) : SkImageFilter(background, foreground, cropRect), m_mode(mode)
+    CompositeImageFilter(SkXfermode::Mode mode, SkImageFilter* background, SkImageFilter* foreground, const CropRect* cropRect) : SkImageFilter(background, foreground, cropRect), m_mode(mode)
     {
     }
 
@@ -412,7 +412,7 @@ PassRefPtr<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder*
         SkAutoTUnref<SkXfermode> mode(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4)));
         return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get()));
     }
-    SkIRect cropRect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
     return adoptRef(new CompositeImageFilter(toXfermode(m_type), background.get(), foreground.get(), &cropRect));
 }
 

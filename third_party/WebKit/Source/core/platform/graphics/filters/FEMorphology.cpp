@@ -270,7 +270,7 @@ PassRefPtr<SkImageFilter> FEMorphology::createImageFilter(SkiaImageFilterBuilder
     RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     SkScalar radiusX = SkFloatToScalar(filter()->applyHorizontalScale(m_radiusX));
     SkScalar radiusY = SkFloatToScalar(filter()->applyVerticalScale(m_radiusY));
-    SkIRect rect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
     if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
         return adoptRef(new SkDilateImageFilter(radiusX, radiusY, input.get(), &rect));
     return adoptRef(new SkErodeImageFilter(radiusX, radiusY, input.get(), &rect));

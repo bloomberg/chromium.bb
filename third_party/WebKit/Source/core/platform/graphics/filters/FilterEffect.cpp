@@ -481,17 +481,31 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder
     return 0;
 }
 
-SkIRect FilterEffect::getCropRect(const FloatSize& cropOffset) const
+SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) const
 {
-    SkIRect rect;
+    SkRect rect = SkRect::MakeEmpty();
+    uint32_t flags = 0;
     FloatRect boundaries = effectBoundaries();
     FloatSize resolution = filter()->filterResolution();
     boundaries.scale(resolution.width(), resolution.height());
-    rect.fLeft = hasX() ? static_cast<int>(boundaries.x()) + cropOffset.width() : 0;
-    rect.fTop = hasY() ? static_cast<int>(boundaries.y()) + cropOffset.height() : 0;
-    rect.fRight = hasWidth() ? rect.fLeft + static_cast<int>(boundaries.width()) : SK_MaxS32;
-    rect.fBottom = hasHeight() ? rect.fTop + static_cast<int>(boundaries.height()) : SK_MaxS32;
-    return rect;
+    boundaries.move(cropOffset);
+    if (hasX()) {
+        rect.fLeft = boundaries.x();
+        flags |= SkImageFilter::CropRect::kHasLeft_CropEdge;
+    }
+    if (hasY()) {
+        rect.fTop = boundaries.y();
+        flags |= SkImageFilter::CropRect::kHasTop_CropEdge;
+    }
+    if (hasWidth()) {
+        rect.fRight = rect.fLeft + boundaries.width();
+        flags |= SkImageFilter::CropRect::kHasRight_CropEdge;
+    }
+    if (hasHeight()) {
+        rect.fBottom = rect.fTop + boundaries.height();
+        flags |= SkImageFilter::CropRect::kHasBottom_CropEdge;
+    }
+    return SkImageFilter::CropRect(rect, flags);
 }
 
 } // namespace WebCore

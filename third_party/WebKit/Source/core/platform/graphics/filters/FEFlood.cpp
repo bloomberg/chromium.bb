@@ -38,7 +38,7 @@ namespace {
 
 class FloodImageFilter : public SkImageFilter {
 public:
-    FloodImageFilter(const SkColor& color, const SkIRect* cropRect)
+    FloodImageFilter(const SkColor& color, const CropRect* cropRect)
         : SkImageFilter(0, 0, cropRect)
         , m_color(color)
     {
@@ -139,7 +139,7 @@ PassRefPtr<SkImageFilter> FEFlood::createImageFilter(SkiaImageFilterBuilder* bui
 {
     Color color = colorWithOverrideAlpha(floodColor().rgb(), floodOpacity());
 
-    SkIRect rect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
     return adoptRef(new FloodImageFilter(color.rgb(), &rect));
 }
 

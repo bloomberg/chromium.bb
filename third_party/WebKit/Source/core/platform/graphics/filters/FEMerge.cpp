@@ -70,7 +70,7 @@ PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder* bui
         inputRefs[i] = builder->build(inputEffect(i), operatingColorSpace());
         inputs[i] = inputRefs[i].get();
     }
-    SkIRect rect = getCropRect(builder->cropOffset());
+    SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
     return adoptRef(new SkMergeImageFilter(inputs.get(), size, 0, &rect));
 }
 
