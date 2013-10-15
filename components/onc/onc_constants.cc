@@ -60,6 +60,7 @@ const char kActivateOverNonCellularNetwork[] = "ActivateOverNonCellularNetwork";
 const char kActivationState[] = "ActivationState";
 const char kAllowRoaming[] = "AllowRoaming";
 const char kAPN[] = "APN";
+const char kAPNList[] = "APNList";
 const char kCarrier[] = "Carrier";
 const char kESN[] = "ESN";
 const char kFamily[] = "Family";

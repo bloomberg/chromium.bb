@@ -31,6 +31,9 @@ const OncValueSignature kIntegerListSignature = {
 const OncValueSignature kIPConfigListSignature = {
   Value::TYPE_LIST, NULL, &kIPConfigSignature
 };
+const OncValueSignature kCellularApnListSignature = {
+  Value::TYPE_LIST, NULL, &kCellularApnSignature
+};
 
 const OncFieldSignature issuer_subject_pattern_fields[] = {
     { ::onc::certificate::kCommonName, &kStringSignature},
@@ -201,7 +204,8 @@ const OncFieldSignature cellular_apn_fields[] = {
 
 const OncFieldSignature cellular_fields[] = {
     { ::onc::kRecommended, &kRecommendedSignature},
-    { ::onc::cellular::kAPN, &kCellularApnSignature}, {NULL}};
+    { ::onc::cellular::kAPN, &kCellularApnSignature },
+    { ::onc::cellular::kAPNList, &kCellularApnListSignature}, {NULL}};
 
 const OncFieldSignature cellular_with_state_fields[] = {
     { ::onc::cellular::kActivateOverNonCellularNetwork, &kBoolSignature},

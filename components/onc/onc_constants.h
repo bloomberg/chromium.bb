@@ -82,6 +82,7 @@ ONC_EXPORT extern const char kActivateOverNonCellularNetwork[];
 ONC_EXPORT extern const char kActivationState[];
 ONC_EXPORT extern const char kAllowRoaming[];
 ONC_EXPORT extern const char kAPN[];
+ONC_EXPORT extern const char kAPNList[];
 ONC_EXPORT extern const char kCarrier[];
 ONC_EXPORT extern const char kESN[];
 ONC_EXPORT extern const char kFamily[];

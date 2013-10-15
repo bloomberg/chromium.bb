@@ -77,6 +77,13 @@ class ShillToONCTranslator {
   // |onc_field_name|.
   void TranslateAndAddNestedObject(const std::string& onc_field_name);
 
+  // Translates a list of nested objects and adds the list to |onc_object_| at
+  // |onc_field_name|. If there are errors while parsing individual objects or
+  // if the resulting list contains no entries, the result will not be added to
+  // |onc_object_|.
+  void TranslateAndAddListOfObjects(const std::string& onc_field_name,
+                                    const base::ListValue& list);
+
   // Applies function CopyProperty to each field of |value_signature| and its
   // base signatures.
   void CopyPropertiesAccordingToSignature(
@@ -235,6 +242,11 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         shill::kCellularApnProperty, &dictionary)) {
     TranslateAndAddNestedObject(::onc::cellular::kAPN, *dictionary);
   }
+  const base::ListValue* list = NULL;
+  if (shill_dictionary_->GetListWithoutPathExpansion(
+          shill::kCellularApnListProperty, &list)) {
+    TranslateAndAddListOfObjects(::onc::cellular::kAPNList, *list);
+  }
 }
 
 void ShillToONCTranslator::TranslateNetworkWithState() {
@@ -294,6 +306,41 @@ void ShillToONCTranslator::TranslateAndAddNestedObject(
   if (nested_object->empty())
     return;
   onc_object_->SetWithoutPathExpansion(onc_field_name, nested_object.release());
+}
+
+void ShillToONCTranslator::TranslateAndAddListOfObjects(
+    const std::string& onc_field_name,
+    const base::ListValue& list) {
+  const OncFieldSignature* field_signature =
+      GetFieldSignature(*onc_signature_, onc_field_name);
+  if (field_signature->value_signature->onc_type != Value::TYPE_LIST) {
+    LOG(ERROR) << "ONC Field name: '" << onc_field_name << "' has type '"
+               << field_signature->value_signature->onc_type
+               << "', expected: base::Value::TYPE_LIST.";
+    return;
+  }
+  DCHECK(field_signature->value_signature->onc_array_entry_signature);
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  for (base::ListValue::const_iterator it = list.begin();
+       it != list.end(); ++it) {
+    const base::DictionaryValue* shill_value = NULL;
+    if (!(*it)->GetAsDictionary(&shill_value))
+      continue;
+    ShillToONCTranslator nested_translator(
+        *shill_value,
+        *field_signature->value_signature->onc_array_entry_signature);
+    scoped_ptr<base::DictionaryValue> nested_object =
+        nested_translator.CreateTranslatedONCObject();
+    if (nested_object->empty())
+      // The nested object couldn't be parsed, so simply omit it.
+      continue;
+    result->Append(nested_object.release());
+  }
+  if (result->empty())
+    // There are no entries in the list, so there is no need to expose this
+    // field.
+    return;
+  onc_object_->SetWithoutPathExpansion(onc_field_name, result.release());
 }
 
 void ShillToONCTranslator::CopyPropertiesAccordingToSignature() {
