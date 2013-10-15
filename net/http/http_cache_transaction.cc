@@ -101,6 +101,23 @@ void RecordOfflineStatus(int load_flags, RequestOfflineStatus status) {
   }
 }
 
+// TODO(rvargas): Remove once we get the data.
+void RecordVaryHeaderHistogram(const net::HttpResponseInfo* response) {
+  enum VaryType {
+    VARY_NOT_PRESENT,
+    VARY_UA,
+    VARY_OTHER,
+    VARY_MAX
+  };
+  VaryType vary = VARY_NOT_PRESENT;
+  if (response->vary_data.is_valid()) {
+    vary = VARY_OTHER;
+    if (response->headers->HasHeaderValue("vary", "user-agent"))
+      vary = VARY_UA;
+  }
+  UMA_HISTOGRAM_ENUMERATION("HttpCache.Vary", vary, VARY_MAX);
+}
+
 }  // namespace
 
 namespace net {
@@ -962,6 +979,8 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
       NonErrorResponse(new_response->headers->response_code())) {
     cache_->DoomMainEntryForUrl(request_->url);
   }
+
+  RecordVaryHeaderHistogram(new_response);
 
   // Are we expecting a response to a conditional query?
   if (mode_ == READ_WRITE || mode_ == UPDATE) {

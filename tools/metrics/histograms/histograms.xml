@@ -1921,6 +1921,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DiskCache.0.FilesAge" units="hours">
+  <summary>The age of the cache's files (wall time).</summary>
+</histogram>
+
+<histogram name="DiskCache.2.FilesAge" units="hours">
+  <summary>
+    The age of the cache's files (wall time). Media-specific cache.
+  </summary>
+</histogram>
+
+<histogram name="DiskCache.3.FilesAge" units="hours">
+  <summary>The age of the cache's files (wall time). AppCache.</summary>
+</histogram>
+
+<histogram name="DiskCache.4.FilesAge" units="hours">
+  <summary>The age of the cache's files (wall time). ShaderCache.</summary>
+</histogram>
+
 <histogram name="DiskCache.TotalIOTime" units="milliseconds">
   <obsolete>
     Deprecated.
@@ -4968,6 +4986,10 @@ other types of suffix sets.
 
 <histogram name="HttpCache.ReadErrorRestartable" enum="NetErrorCodes">
   <summary>Net error results from restartable cache read errors.</summary>
+</histogram>
+
+<histogram name="HttpCache.Vary" enum="VaryType">
+  <summary>The type of Vary header for a given GET response.</summary>
 </histogram>
 
 <histogram name="Import.ImporterType.AutoImport" enum="ImporterType">
@@ -27382,6 +27404,12 @@ other types of suffix sets.
   <int value="0" label="Seed Not Empty"/>
   <int value="1" label="Seed Empty"/>
   <int value="2" label="Seed Corrupt"/>
+</enum>
+
+<enum name="VaryType" type="int">
+  <int value="0" label="No Vary header present"/>
+  <int value="1" label="Vary:User-Agent"/>
+  <int value="2" label="Other"/>
 </enum>
 
 <enum name="VAVDAH264DecoderFailure" type="int">
