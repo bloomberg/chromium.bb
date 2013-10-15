@@ -50,10 +50,10 @@ function test()
         InspectorTest.addResult(message + ":");
         var result = [];
         var crumbs = WebInspector.panel("elements").crumbsElement;
-        var crumb = crumbs.firstChild;
+        var crumb = crumbs.lastChild;
         while (crumb) {
             result.unshift(crumb.textContent);
-            crumb = crumb.nextSibling;
+            crumb = crumb.previousSibling;
         }
         InspectorTest.addResult(result.join(" > "));
     }
