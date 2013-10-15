@@ -92,28 +92,64 @@ camera.util.waitForTransitionCompletion = function(
  *
  * @param {HTMLElement} element Element to be visible.
  * @param {camera.util.SmoothScroller} scroller Scroller to be used.
+ * @param {=boolean} opt_immediate True for immediate scroll.
  */
-camera.util.ensureVisible = function(element, scroller) {
+camera.util.ensureVisible = function(element, scroller, opt_immediate) {
   var parent = scroller.element;
   var scrollLeft = parent.scrollLeft;
   var scrollTop = parent.scrollTop;
+
   if (element.offsetTop < parent.scrollTop)
-    scrollTop = element.offsetTop - element.offsetHeight * 0.5;
+    scrollTop = Math.round(element.offsetTop - element.offsetHeight * 0.5);
   if (element.offsetTop + element.offsetHeight >
       scrollTop + parent.offsetHeight) {
-    scrollTop = element.offsetTop + element.offsetHeight * 1.5 -
-        parent.offsetHeight;
+    scrollTop = Math.round(element.offsetTop + element.offsetHeight * 1.5 -
+        parent.offsetHeight);
   }
   if (element.offsetLeft < parent.scrollLeft)
-    scrollLeft = element.offsetLeft - element.offsetWidth * 0.5;
+    scrollLeft = Math.round(element.offsetLeft - element.offsetWidth * 0.5);
   if (element.offsetLeft + element.offsetWidth >
       scrollLeft + parent.offsetWidth) {
-    scrollLeft = element.offsetLeft + element.offsetWidth * 1.5 -
-        parent.offsetWidth;
+    scrollLeft = Math.round(element.offsetLeft + element.offsetWidth * 1.5 -
+        parent.offsetWidth);
   }
   if (scrollTop != parent.scrollTop ||
       scrollLeft != parent.scrollLeft) {
+    if (opt_immediate) {
+      parent.scrollLeft = scrollLeft;
+      parent.scrollTop = scrollTop;
+    } else {
+      scroller.scrollTo(scrollLeft, scrollTop);
+    }
+  }
+};
+
+/**
+ * Scrolls the parent of the element so the element is centered.
+ *
+ * @param {HTMLElement} element Element to be visible.
+ * @param {camera.util.SmoothScroller} scroller Scroller to be used.
+ * @param {=boolean} opt_immediate True for immediate scroll.
+ */
+camera.util.scrollToCenter = function(element, scroller, opt_immediate) {
+  var parent = scroller.element;
+  var scrollLeft = Math.round(element.offsetLeft + element.offsetWidth / 2 -
+    parent.offsetWidth / 2);
+  var scrollTop = Math.round(element.offsetTop + element.offsetHeight / 2 -
+    parent.offsetHeight / 2);
+
+  if (scrollTop != parent.scrollTop ||
+      scrollLeft != parent.scrollLeft) {
     scroller.scrollTo(scrollLeft, scrollTop);
+  }
+  if (scrollTop != parent.scrollTop ||
+      scrollLeft != parent.scrollLeft) {
+    if (opt_immediate) {
+      parent.scrollLeft = scrollLeft;
+      parent.scrollTop = scrollTop;
+    } else {
+      scroller.scrollTo(scrollLeft, scrollTop);
+    }
   }
 };
 
@@ -431,4 +467,153 @@ camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
  */
 camera.util.PointerTracker.prototype.onTouchMove_ = function(event) {
   this.callback_();
+};
+
+/**
+ * Tracks scrolling and calls a callback, when scrolling is started and ended.
+ *
+ * @param {HTMLElement} element Element to be tracked.
+ * @param {function()} onScrollStarted Callback called when scrolling is
+ *     started.
+ * @param {function()} onScrollEnded Callback called when scrolling is ended.
+ * @constructor
+ */
+camera.util.ScrollTracker = function(element, onScrollStarted, onScrollEnded) {
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.element_ = element;
+
+  /**
+   * @type {function()}
+   * @private
+   */
+  this.onScrollStarted_ = onScrollStarted;
+
+  /**
+   * @type {function()}
+   * @private
+   */
+  this.onScrollEnded_ = onScrollEnded;
+
+  /**
+   * Timer to probe for scroll changes, every 100 ms.
+   * @type {?number}
+   * @private
+   */
+  this.timer_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.scrolling_ = false;
+
+  /**
+   * @type {Array.<number>}
+   * @private
+   */
+  this.lastScrollPosition_ = [0, 0];
+
+  /**
+   * Whether the touch screen is currently touched.
+   * @type {boolean}
+   * @private
+   */
+  this.touchPressed_ = false;
+
+  /**
+   * Whether the touch screen is currently touched.
+   * @type {boolean}
+   * @private
+   */
+  this.mousePressed_ = false;
+
+  // End of properties. Seal the object.
+  Object.seal(this);
+
+  // Register event handlers.
+  this.element_.addEventListener('mousedown', this.onMouseDown_.bind(this));
+  this.element_.addEventListener('touchstart', this.onTouchStart_.bind(this));
+  window.addEventListener('mouseup', this.onMouseUp_.bind(this));
+  window.addEventListener('touchend', this.onTouchEnd_.bind(this));
+};
+
+/**
+ * Handles pressing the mouse button.
+ * @param {Event} event Mouse down event.
+ * @private
+ */
+camera.util.ScrollTracker.prototype.onMouseDown_ = function(event) {
+  this.mousePressed_ = true;
+};
+
+/**
+ * Handles releasing the mouse button.
+ * @param {Event} event Mouse up event.
+ * @private
+ */
+camera.util.ScrollTracker.prototype.onMouseUp_ = function(event) {
+  this.mousePressed_ = false;
+};
+
+/**
+ * Handles touching the screen.
+ * @param {Event} event Mouse down event.
+ * @private
+ */
+camera.util.ScrollTracker.prototype.onTouchStart_ = function(event) {
+  this.touchPressed_ = true;
+};
+
+/**
+ * Handles releasing touching of the screen.
+ * @param {Event} event Mouse up event.
+ * @private
+ */
+camera.util.ScrollTracker.prototype.onTouchEnd_ = function(event) {
+  this.touchPressed_ = false;
+};
+
+/**
+ * Starts monitoring.
+ */
+camera.util.ScrollTracker.prototype.start = function() {
+  if (this.timer_ !== null)
+    return;
+  this.timer_ = setInterval(this.probe_.bind(this), 100);
+};
+
+/**
+ * Stops monitoring.
+ */
+camera.util.ScrollTracker.prototype.stop = function() {
+  if (this.timer_ === null)
+    return;
+  clearTimeout(this.timer_);
+  this.timer_ = null;
+};
+
+/**
+ * Probes for scrolling changes.
+ * @private
+ */
+camera.util.ScrollTracker.prototype.probe_ = function() {
+  var scrollLeft = this.element_.scrollLeft;
+  var scrollTop = this.element_.scrollTop;
+
+  if (scrollLeft != this.lastScrollPosition_[0] ||
+      scrollTop != this.lastScrollPosition_[1]) {
+    if (!this.scrolling_)
+      this.onScrollStarted_();
+    this.scrolling_ = true;
+  } else {
+    if (!this.mousePressed_ && !this.touchPressed_ && this.scrolling_) {
+      this.onScrollEnded_();
+      this.scrolling_ = false;
+    }
+  }
+
+  this.lastScrollPosition_ = [scrollLeft, scrollTop];
 };

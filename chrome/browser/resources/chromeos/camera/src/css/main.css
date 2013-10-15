@@ -127,12 +127,14 @@ body.expanded #corner-buttons button {
   z-index: 2;  /* Hack to enable touch scrolling in gallery. */
 }
 
-body:not(.gallery) #corner-buttons {
+body:not(.gallery):not(.browser) #corner-buttons {
   display: none;
 }
 
 body.gallery #side-buttons .gallery-button,
-body.gallery #corner-buttons .gallery-button {
+body.gallery #corner-buttons .gallery-button,
+body.browser #side-buttons .gallery-button,
+body.browser #corner-buttons .gallery-button {
   background-color: rgb(66, 129, 244);
 }
 
@@ -150,11 +152,14 @@ body.gallery #corner-buttons .gallery-button {
 
 
 body.gallery #main-canvas-wrapper,
-body.gallery #main-fast-canvas-wrapper {
+body.gallery #main-fast-canvas-wrapper,
+body.browser #main-canvas-wrapper,
+body.browser #main-fast-canvas-wrapper {
   display: none;
 }
 
-body.gallery #toolbar {
+body.gallery #toolbar,
+body.browser #toolbar {
   display: none;
 }
 
@@ -330,7 +335,8 @@ body.show-shutter #shutter {
   top: 25%;
 }
 
-body.gallery #picture-preview {
+body.gallery #picture-preview,
+body.browser #picture-preview {
   display: none;
 }
 
@@ -345,11 +351,9 @@ body.gallery #picture-preview {
   width: 100%;
 }
 
-#gallery {
-  -webkit-box-align: start;
-  -webkit-box-pack: start;
+#gallery,
+#browser {
   bottom: 0;
-  display: -webkit-box;
   left: 0;
   margin: 10px;
   overflow: auto;
@@ -376,7 +380,52 @@ body.gallery #picture-preview {
   border-color: rgb(66, 129, 244);
 }
 
-body:not(.gallery) #gallery {
+#browser {
+  background-color: rgba(0, 0, 0, 0.8);
+  visibility: hidden;
+}
+
+body.browser #browser {
+  -webkit-animation: showBrowser 200ms;
+  visibility: visible;
+}
+
+#browser .padder {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  height: 100%;
+}
+
+#browser img {
+  -webkit-transform: scale(0.9);
+  border: 10px solid white;
+  display: -webkit-box;
+  pointer-events: auto;
+  transition: -webkit-transform 200ms;
+  width: 80%;
+}
+
+#browser div.bounds-padder {
+  display: -webkit-box;
+  height: 1px;  /* Required to make the element visible. */
+  width: 50%;
+}
+
+#browser img.selected {
+  -webkit-transform: scale(1);
+}
+
+body:not(.gallery):not(.browser) #gallery {
   display: none;
+}
+
+@-webkit-keyframes showBrowser {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
