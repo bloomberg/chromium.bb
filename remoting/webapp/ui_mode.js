@@ -132,7 +132,8 @@ remoting.setMode = function(mode) {
     // TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772
     // is fixed.
     var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
-    htmlNode.classList.remove('no-scroll');
+    htmlNode.classList.remove('no-horizontal-scroll');
+    htmlNode.classList.remove('no-vertical-scroll');
   }
 };
 
