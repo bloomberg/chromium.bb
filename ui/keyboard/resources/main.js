@@ -59,3 +59,9 @@ function flattenKeysets(content) {
 addEventListener('resize', onResize);
 
 addEventListener('load', onResize);
+
+// Prevents all default actions of touch. Keyboard should use its own gesture
+// recognizer.
+addEventListener('touchstart', function(e) { e.preventDefault() });
+addEventListener('touchend', function(e) { e.preventDefault() });
+addEventListener('touchmove', function(e) { e.preventDefault() });

@@ -39,16 +39,20 @@ function checkShiftChording(lowerShift, upperShift) {
   var upper = lowerShift.upperCaseKeysetId;
   // Check that we're testing from correct initial state.
   assertEquals(lower, keyboard.keyset, "Invalid initial keyset.");
-  var mockEvent = {pointerId:1, isPrimary:true};
-  lowerShift.down(mockEvent);
+  var mockEventOnLower = { pointerId:1, isPrimary:true, target:lowerShift };
+  var mockEventOnUpper = { pointerId:1, isPrimary:true, target:upperShift };
+  lowerShift.down(mockEventOnLower);
   assertEquals(upper, keyboard.keyset,
       "Unexpected keyset transition on shift key down.");
   // Some alphanumeric character
   mockTypeCharacter('A', 0x41, true);
   assertEquals(upper, keyboard.keyset,
       "Did not remain in uppercase on key press while chording.");
+  lowerShift.out(mockEventOnLower);
+  assertEquals(upper, keyboard.keyset,
+      "Did not remain in uppercase on a finger movement while chording.");
   mockTimer.tick(1000);
-  upperShift.up(mockEvent);
+  upperShift.up(mockEventOnUpper);
   assertEquals(lower, keyboard.keyset,
       "Did not revert to lowercase after chording.");
 }

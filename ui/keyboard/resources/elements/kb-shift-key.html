@@ -26,10 +26,11 @@
       };
 
       /**
-       * The id of the shift key that may trigger chording.
-       * @type {int}
+       * The pointerdown event on shiftkey that may eventually trigger chording
+       * state. pointerId and eventTarget are the two fields that is used now.
+       * @type {PointerEvent}
        */
-      var chordingId = undefined;
+      var enterChordingEvent = undefined;
 
       /**
        * Uses a closure to define one long press timer among all shift keys
@@ -47,7 +48,8 @@
       Polymer('kb-shift-key', {
         /**
          * Defines how capslock effects keyset transition. We always transition
-         * from the lowerCaseKeysetId to the upperCaseKeysetId if capslock is on.
+         * from the lowerCaseKeysetId to the upperCaseKeysetId if capslock is
+         * on.
          * @type {string}
          */
         lowerCaseKeysetId: 'lower',
@@ -57,9 +59,9 @@
           if (state == KEY_STATES.PRESSED) {
             state = KEY_STATES.TAPPED;
           } else if (state == KEY_STATES.CHORDING) {
-            // Leaves chording only if the shift key that triggered 
-            // it is released.
-            if (event.pointerId == chordingId)
+            // Leaves chording only if the pointer that triggered it is
+            // released.
+            if (event.pointerId == enterChordingEvent.pointerId)
               state = KEY_STATES.UNLOCKED;
             else
               return;
@@ -69,7 +71,13 @@
 
         out: function(event) {
           // Sliding off the shift key while chording is treated as a key-up.
-          if (state == KEY_STATES.CHORDING && event.pointerId == chordingId) {
+          // Note that we switch to a new keyset on shift keydown, and a finger
+          // movement on the new shift key will trigger this function being
+          // called on the old shift key. We should not end chording in that
+          // case.
+          if (state == KEY_STATES.CHORDING &&
+              event.pointerId == enterChordingEvent.pointerId &&
+              event.target != enterChordingEvent.target) {
             state = KEY_STATES.UNLOCKED;
             var detail = this.populateDetails('out');
             this.fire("key-out", detail);
@@ -96,7 +104,7 @@
               console.error("Undefined shift key state: " + state);
               break;
           }
-          chordingId = event.pointerId;
+          enterChordingEvent = event;
           // Trigger parent behaviour.
           this.super([event]);
           this.fire('enable-sel');
