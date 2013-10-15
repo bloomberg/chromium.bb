@@ -140,6 +140,8 @@ class RenderWidgetHostViewGtkWidget {
                      G_CALLBACK(OnRealize), host_view);
     g_signal_connect(widget, "configure-event",
                      G_CALLBACK(OnConfigureEvent), host_view);
+    g_signal_connect(widget, "size-allocate",
+                     G_CALLBACK(OnSizeAllocate), host_view);
     g_signal_connect(widget, "key-press-event",
                      G_CALLBACK(OnKeyPressReleaseEvent), host_view);
     g_signal_connect(widget, "key-release-event",
@@ -202,6 +204,14 @@ class RenderWidgetHostViewGtkWidget {
                                    RenderWidgetHostViewGtk* host_view) {
     host_view->MarkCachedWidgetCenterStale();
     host_view->UpdateScreenInfo(host_view->GetNativeView());
+    return FALSE;
+  }
+
+  static gboolean OnSizeAllocate(GtkWidget* widget,
+                                 GdkRectangle* allocation,
+                                 RenderWidgetHostViewGtk* host_view) {
+    if (!host_view->IsPopup() && !host_view->is_fullscreen_)
+      host_view->SetSize(gfx::Size(allocation->width, allocation->height));
     return FALSE;
   }
 

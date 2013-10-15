@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -233,8 +234,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        show_state_after_show_(ui::SHOW_STATE_DEFAULT),
        suppress_window_raise_(false),
        accel_group_(NULL),
-       fullscreen_exit_bubble_type_(
-           FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
+       is_fullscreen_(false) {
 }
 
 BrowserWindowGtk::~BrowserWindowGtk() {
@@ -872,16 +872,30 @@ bool BrowserWindowGtk::ShouldDrawContentDropShadow() const {
 }
 
 void BrowserWindowGtk::EnterFullscreen(
-      const GURL& url, FullscreenExitBubbleType type) {
+    const GURL& url, FullscreenExitBubbleType type) {
+  if (IsFullscreen())
+    return;  // Nothing to do.
+  is_fullscreen_ = true;
+
   // gtk_window_(un)fullscreen asks the window manager to toggle the EWMH
   // for fullscreen windows.  Not all window managers support this.
   gtk_window_fullscreen(window_);
-  fullscreen_exit_bubble_type_ = type;
+
+  browser_->WindowFullscreenStateChanged();
+  UpdateCustomFrame();
+  toolbar_->Hide();
+  tabstrip_->Hide();
+  if (bookmark_bar_.get())
+    gtk_widget_hide(bookmark_bar_->widget());
+  if (!chrome::IsRunningInAppMode()) {
+    UpdateFullscreenExitBubbleContent(url, type);
+  }
+  gtk_widget_hide(titlebar_widget());
+  gtk_widget_hide(toolbar_border_);
 }
 
 void BrowserWindowGtk::UpdateFullscreenExitBubbleContent(
-     const GURL& url,
-      FullscreenExitBubbleType bubble_type) {
+    const GURL& url, FullscreenExitBubbleType bubble_type) {
   if (!window_) {
     // Don't create a fullscreen bubble for a closing window.
     return;
@@ -899,6 +913,10 @@ void BrowserWindowGtk::UpdateFullscreenExitBubbleContent(
 }
 
 void BrowserWindowGtk::ExitFullscreen() {
+  if (!IsFullscreen())
+    return;  // Nothing to do.
+  is_fullscreen_ = false;
+
   // Work around a bug where if we try to unfullscreen, metacity immediately
   // fullscreens us again.  This is a little flickery and not necessary if
   // there's a gnome-panel, but it's not easy to detect whether there's a
@@ -912,6 +930,12 @@ void BrowserWindowGtk::ExitFullscreen() {
 
   if (unmaximize_before_unfullscreen)
     gtk_window_maximize(window_);
+
+  browser_->WindowFullscreenStateChanged();
+  gtk_widget_show(titlebar_widget());
+  UpdateFullscreenExitBubbleContent(GURL(), FEB_TYPE_NONE);
+  UpdateCustomFrame();
+  ShowSupportedWindowFeatures();
 }
 
 bool BrowserWindowGtk::ShouldHideUIForFullscreen() const {
@@ -919,7 +943,7 @@ bool BrowserWindowGtk::ShouldHideUIForFullscreen() const {
 }
 
 bool BrowserWindowGtk::IsFullscreen() const {
-  return (state_ & GDK_WINDOW_STATE_FULLSCREEN);
+  return is_fullscreen_;
 }
 
 bool BrowserWindowGtk::IsFullscreenBubbleVisible() const {
@@ -1359,35 +1383,6 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
                                          GdkEventWindowState* event) {
   state_ = event->new_window_state;
 
-  if (event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN) {
-    browser_->WindowFullscreenStateChanged();
-    if (state_ & GDK_WINDOW_STATE_FULLSCREEN) {
-      UpdateCustomFrame();
-      toolbar_->Hide();
-      tabstrip_->Hide();
-      if (bookmark_bar_.get())
-        gtk_widget_hide(bookmark_bar_->widget());
-      bool is_kiosk =
-          CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
-      if (!is_kiosk && !fullscreen_exit_bubble_.get()) {
-        fullscreen_exit_bubble_.reset(new FullscreenExitBubbleGtk(
-            GTK_FLOATING_CONTAINER(render_area_floating_container_),
-            browser(),
-            GURL(),
-            fullscreen_exit_bubble_type_));
-      }
-      gtk_widget_hide(titlebar_widget());
-      gtk_widget_hide(toolbar_border_);
-    } else {
-      fullscreen_exit_bubble_type_ =
-          FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
-      gtk_widget_show(titlebar_widget());
-      fullscreen_exit_bubble_.reset();
-      UpdateCustomFrame();
-      ShowSupportedWindowFeatures();
-    }
-  }
-
   if (event->changed_mask & GDK_WINDOW_STATE_MAXIMIZED) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_BROWSER_WINDOW_MAXIMIZED,
@@ -1675,8 +1670,11 @@ void BrowserWindowGtk::InitWidgets() {
 
   status_bubble_.reset(new StatusBubbleGtk(browser_->profile()));
 
-  contents_container_.reset(new TabContentsContainerGtk(status_bubble_.get()));
-  devtools_container_.reset(new TabContentsContainerGtk(NULL));
+  contents_container_.reset(new TabContentsContainerGtk(
+      status_bubble_.get(),
+      implicit_cast<content::WebContentsDelegate*>(browser_.get())->
+          EmbedsFullscreenWidget()));
+  devtools_container_.reset(new TabContentsContainerGtk(NULL, false));
   ViewIDUtil::SetID(devtools_container_->widget(), VIEW_ID_DEV_TOOLS_DOCKED);
 
   contents_hsplit_ = gtk_hpaned_new();

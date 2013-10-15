@@ -573,9 +573,13 @@ class BrowserWindowGtk
   // The accelerator group used to handle accelerators, owned by this object.
   GtkAccelGroup* accel_group_;
 
-  scoped_ptr<FullscreenExitBubbleGtk> fullscreen_exit_bubble_;
+  // Set to true while this BrowserWindowGtk is fullscreened.  This is needed
+  // because GTK cannot ensure requests to fullscreen the window will be honored
+  // by all window managers; and therefore bit-testing |state_| is not a
+  // reliable "is fullscreened" test.  http://crbug.com/286545
+  bool is_fullscreen_;
 
-  FullscreenExitBubbleType fullscreen_exit_bubble_type_;
+  scoped_ptr<FullscreenExitBubbleGtk> fullscreen_exit_bubble_;
 
   content::NotificationRegistrar registrar_;
 
