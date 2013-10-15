@@ -883,15 +883,6 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	                           config) < 0)
 		goto out_free;
 
-	/* Check if we run fbdev-backend using weston-launch */
-	compositor->base.launcher =
-		weston_launcher_connect(&compositor->base, param->tty);
-	if (compositor->base.launcher == NULL && geteuid() != 0) {
-		weston_log("fatal: fbdev backend should be run "
-			   "using weston-launch binary or as root\n");
-		goto out_compositor;
-	}
-
 	compositor->udev = udev_new();
 	if (compositor->udev == NULL) {
 		weston_log("Failed to initialize udev context.\n");
@@ -905,7 +896,8 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	compositor->base.launcher =
 		weston_launcher_connect(&compositor->base, param->tty);
 	if (!compositor->base.launcher) {
-		weston_log("Failed to set up launcher.\n");
+		weston_log("fatal: fbdev backend should be run "
+			   "using weston-launch binary or as root\n");
 		goto out_udev;
 	}
 
