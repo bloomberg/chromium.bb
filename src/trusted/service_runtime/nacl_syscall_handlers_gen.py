@@ -302,6 +302,9 @@ def PrintSyscallTableInitializer(protos, ostr):
   for syscall_number, func_name, alist in protos:
     assign.append("  NaClAddSyscall(%s, &%sDecoder);" %
                   (syscall_number, func_name))
+    # These inlines are no-ops that should be optimized away.
+    # Emit the call just so that they are not reported as unused.
+    assign.append("  AssertSameType_%s();" % func_name)
   print >>ostr, TABLE_INITIALIZER % "\n".join(assign)
 
 
