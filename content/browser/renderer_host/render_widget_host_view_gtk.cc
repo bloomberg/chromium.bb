@@ -1295,6 +1295,16 @@ gfx::GLSurfaceHandle RenderWidgetHostViewGtk::GetCompositingSurface() {
   return gfx::GLSurfaceHandle(compositing_surface_, gfx::NATIVE_TRANSPORT);
 }
 
+void RenderWidgetHostViewGtk::ResizeCompositingSurface(const gfx::Size& size) {
+  GtkWidget* widget = view_.get();
+  GdkWindow* window = gtk_widget_get_window(widget);
+  if (window) {
+    Display* display = GDK_WINDOW_XDISPLAY(window);
+    gdk_window_resize(window, size.width(), size.height());
+    XSync(display, False);
+  }
+}
+
 bool RenderWidgetHostViewGtk::LockMouse() {
   if (mouse_locked_)
     return true;

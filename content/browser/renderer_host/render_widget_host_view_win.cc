@@ -2555,6 +2555,18 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   return surface_handle;
 }
 
+void RenderWidgetHostViewWin::ResizeCompositingSurface(const gfx::Size& size) {
+  // Ensure window does not have zero area because D3D cannot create a zero
+  // area swap chain.
+  ::SetWindowPos(compositor_host_window_,
+      NULL,
+      0, 0,
+      std::max(1, size.width()),
+      std::max(1, size.height()),
+      SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
+          SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOMOVE);
+}
+
 void RenderWidgetHostViewWin::OnAcceleratedCompositingStateChange() {
   bool show = render_widget_host_->is_accelerated_compositing_active();
   // When we first create the compositor, we will get a show request from
