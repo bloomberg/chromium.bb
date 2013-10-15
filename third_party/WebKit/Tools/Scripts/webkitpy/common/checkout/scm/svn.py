@@ -152,7 +152,7 @@ class SVN(SCM):
     def exists(self, path):
         return not self._run_svn(["info", path], return_exit_code=True, decode_output=False)
 
-    def _changed_files(self, git_commit=None):
+    def changed_files(self, git_commit=None):
         status_command = [self.executable_name, "status"]
         status_command.extend(self._patch_directories)
         # ACDMR: Addded, Conflicted, Deleted, Modified or Replaced

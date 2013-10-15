@@ -104,7 +104,7 @@ class SCM:
     def exists(self, path):
         self._subclass_must_implement()
 
-    def _changed_files(self, git_commit=None):
+    def changed_files(self, git_commit=None):
         self._subclass_must_implement()
 
     def _added_files(self):

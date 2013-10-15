@@ -578,49 +578,49 @@ class GitSVNTest(SCMTestBase):
 
     def test_changed_files_local_plus_working_copy(self):
         self._one_local_commit_plus_working_copy_changes()
-        files = self.scm._changed_files()
+        files = self.scm.changed_files()
         self.assertIn('test_file_commit1', files)
         self.assertIn('test_file_commit2', files)
 
         # working copy should *not* be in the list.
-        files = self.scm._changed_files('trunk..')
+        files = self.scm.changed_files('trunk..')
         self.assertIn('test_file_commit1', files)
         self.assertNotIn('test_file_commit2', files)
 
         # working copy *should* be in the list.
-        files = self.scm._changed_files('trunk....')
+        files = self.scm.changed_files('trunk....')
         self.assertIn('test_file_commit1', files)
         self.assertIn('test_file_commit2', files)
 
     def test_changed_files_git_commit(self):
         self._two_local_commits()
-        files = self.scm._changed_files(git_commit="HEAD^")
+        files = self.scm.changed_files(git_commit="HEAD^")
         self.assertIn('test_file_commit1', files)
         self.assertNotIn('test_file_commit2', files)
 
     def test_changed_files_git_commit_range(self):
         self._three_local_commits()
-        files = self.scm._changed_files(git_commit="HEAD~2..HEAD")
+        files = self.scm.changed_files(git_commit="HEAD~2..HEAD")
         self.assertNotIn('test_file_commit0', files)
         self.assertIn('test_file_commit1', files)
         self.assertIn('test_file_commit2', files)
 
     def test_changed_files_working_copy_only(self):
         self._one_local_commit_plus_working_copy_changes()
-        files = self.scm._changed_files(git_commit="HEAD....")
+        files = self.scm.changed_files(git_commit="HEAD....")
         self.assertNotIn('test_file_commit1', files)
         self.assertIn('test_file_commit2', files)
 
     def test_changed_files_multiple_local_commits(self):
         self._two_local_commits()
-        files = self.scm._changed_files()
+        files = self.scm.changed_files()
         self.assertIn('test_file_commit2', files)
         self.assertIn('test_file_commit1', files)
 
     def test_changed_files_not_synced(self):
         self._run(['git', 'checkout', '-b', 'my-branch', 'trunk~3'])
         self._two_local_commits()
-        files = self.scm._changed_files()
+        files = self.scm.changed_files()
         self.assertNotIn('test_file2', files)
         self.assertIn('test_file_commit2', files)
         self.assertIn('test_file_commit1', files)
@@ -634,13 +634,13 @@ class GitSVNTest(SCMTestBase):
         self._run(['git', 'add', 'test_file_commit0'])
 
         # equivalent to 'git diff my-branch..HEAD, should not include working changes
-        files = self.scm._changed_files(git_commit='UPSTREAM..')
+        files = self.scm.changed_files(git_commit='UPSTREAM..')
         self.assertNotIn('test_file_commit1', files)
         self.assertIn('test_file_commit2', files)
         self.assertNotIn('test_file_commit0', files)
 
         # equivalent to 'git diff my-branch', *should* include working changes
-        files = self.scm._changed_files(git_commit='UPSTREAM....')
+        files = self.scm.changed_files(git_commit='UPSTREAM....')
         self.assertNotIn('test_file_commit1', files)
         self.assertIn('test_file_commit2', files)
         self.assertIn('test_file_commit0', files)
