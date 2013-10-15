@@ -452,7 +452,7 @@ crbug.com/82881 http/tests/appcache/interrupted-update.html [ Failure Pass ]
 crbug.com/83290 [ Win ] http/tests/misc/link-rel-prefetch-and-subresource.html [ Pass Timeout ]
 
 # CSS Regions tests for region styling and scoped styles
-webkit.org/b/49142 fast/regions/style-scoped-in-flow-override-region-styling-multiple-regions.html [ ImageOnlyFailure ]
+webkit.org/b/49142 fast/regions/style-scoped/style-scoped-in-flow-override-region-styling-multiple-regions.html [ ImageOnlyFailure ]
 
 # CSS Regions tests for <dialog>
 crbug.com/244792 [ Mac ] fast/regions/dialog-fragmentation.html [ ImageOnlyFailure ]
