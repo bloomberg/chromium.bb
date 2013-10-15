@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.favicon;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -75,6 +76,15 @@ public class FaviconHelper {
     }
 
     /**
+     * Return the dominant color of a given bitmap in {@link Color} format.
+     * @param image The bitmap image to find the dominant color for.
+     * @return The dominant color in {@link Color} format.
+     */
+    public int getDominantColorForBitmap(Bitmap image) {
+        return nativeGetDominantColorForBitmap(mNativeFaviconHelper, image);
+    }
+
+    /**
      * Get 16x16 Favicon bitmap for the requested arguments. Only retrives favicons in synced
      * session storage. (e.g. favicons synced from other devices). TODO (apiccion) provide a way
      * to obtain higher resolution favicons.
@@ -95,4 +105,6 @@ public class FaviconHelper {
             FaviconImageCallback faviconImageCallback);
     private static native Bitmap nativeGetSyncedFaviconImageForURL(int nativeFaviconHelper,
             Profile profile, String pageUrl);
+    private static native int nativeGetDominantColorForBitmap(int nativeFaviconHelper,
+            Bitmap image);
 }
