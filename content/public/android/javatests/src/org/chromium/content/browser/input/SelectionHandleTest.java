@@ -396,16 +396,11 @@ public class SelectionHandleTest extends ContentShellTestBase {
         touchCommon.longPressView(getContentView(), centerX, centerY);
 
         assertWaitForHandlesShowingEquals(true);
+        assertWaitForHandleViewStopped(getStartHandle());
 
         // No words wrap in the sample text so handles should be at the same y
         // position.
         assertEquals(getStartHandle().getPositionY(), getEndHandle().getPositionY());
-
-        // In ContentShell, the handles are initially misplaced when they first appear. This is
-        // fixed after the first time they are dragged (or the page is scrolled).
-        // TODO(cjhopman): Fix this problem in ContentShell: http://crbug.com/243836
-        dragHandleTo(getStartHandle(), centerX - 40, centerY - 40, 1);
-        assertWaitForHandleViewStopped(getStartHandle());
     }
 
     private void clickToDismissHandles() throws Throwable {

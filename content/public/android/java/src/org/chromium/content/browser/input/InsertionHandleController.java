@@ -18,6 +18,8 @@ import android.widget.PopupWindow;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.chromium.content.browser.PositionObserver;
+
 /**
  * CursorController for inserting text at the cursor position.
  */
@@ -37,9 +39,13 @@ public abstract class InsertionHandleController implements CursorController {
 
     private Context mContext;
 
-    public InsertionHandleController(View parent) {
+    private PositionObserver mPositionObserver;
+
+    public InsertionHandleController(View parent, PositionObserver positionObserver) {
         mParent = parent;
+
         mContext = parent.getContext();
+        mPositionObserver = positionObserver;
     }
 
     /** Allows the handle to be shown automatically when cursor position changes */
@@ -167,7 +173,9 @@ public abstract class InsertionHandleController implements CursorController {
     }
 
     private void createHandleIfNeeded() {
-        if (mHandle == null) mHandle = new HandleView(this, HandleView.CENTER, mParent);
+        if (mHandle == null) {
+            mHandle = new HandleView(this, HandleView.CENTER, mParent, mPositionObserver);
+        }
     }
 
     private void showHandleIfNeeded() {

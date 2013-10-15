@@ -377,6 +377,8 @@ public class ContentViewCore
 
     private Runnable mDeferredHandleFadeInRunnable;
 
+    private PositionObserver mPositionObserver;
+
     // Size of the viewport in physical pixels as set from onSizeChanged.
     private int mViewportWidthPix;
     private int mViewportHeightPix;
@@ -717,6 +719,7 @@ public class ContentViewCore
         mHardwareAccelerated = hasHardwareAcceleration(mContext);
 
         mContainerView = containerView;
+        mPositionObserver = new ViewPositionObserver(mContainerView);
 
         int windowNativePointer = windowAndroid != null ? windowAndroid.getNativePointer() : 0;
 
@@ -1999,7 +2002,8 @@ public class ContentViewCore
 
     private SelectionHandleController getSelectionHandleController() {
         if (mSelectionHandleController == null) {
-            mSelectionHandleController = new SelectionHandleController(getContainerView()) {
+            mSelectionHandleController = new SelectionHandleController(
+                    getContainerView(), mPositionObserver) {
                 @Override
                 public void selectBetweenCoordinates(int x1, int y1, int x2, int y2) {
                     if (mNativeContentViewCore != 0 && !(x1 == x2 && y1 == y2)) {
@@ -2025,7 +2029,8 @@ public class ContentViewCore
 
     private InsertionHandleController getInsertionHandleController() {
         if (mInsertionHandleController == null) {
-            mInsertionHandleController = new InsertionHandleController(getContainerView()) {
+            mInsertionHandleController = new InsertionHandleController(
+                    getContainerView(), mPositionObserver) {
                 private static final int AVERAGE_LINE_HEIGHT = 14;
 
                 @Override
