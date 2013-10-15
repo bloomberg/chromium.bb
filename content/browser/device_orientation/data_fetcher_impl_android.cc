@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/singleton.h"
-#include "content/browser/device_orientation/orientation.h"
 #include "jni/DeviceMotionAndOrientation_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -46,54 +45,22 @@ DataFetcherImplAndroid* DataFetcherImplAndroid::GetInstance() {
                    LeakySingletonTraits<DataFetcherImplAndroid> >::get();
 }
 
-const DeviceData* DataFetcherImplAndroid::GetDeviceData(
-    DeviceData::Type type) {
-  if (type != DeviceData::kTypeOrientation)
-    return NULL;
-  return GetOrientation();
-}
-
-const Orientation* DataFetcherImplAndroid::GetOrientation() {
-  // Do we have a new orientation value? (It's safe to do this outside the lock
-  // because we only skip the lock if the value is null. We always enter the
-  // lock if we're going to make use of the new value.)
-  if (next_orientation_.get()) {
-    base::AutoLock autolock(next_orientation_lock_);
-    next_orientation_.swap(current_orientation_);
-  }
-  if (!current_orientation_.get())
-    return new Orientation();
-  return current_orientation_.get();
-}
-
 void DataFetcherImplAndroid::GotOrientation(
     JNIEnv*, jobject, double alpha, double beta, double gamma) {
-  {
-    // TODO(timvolodine): remove this part once Device Orientation is
-    // completely implemented using shared memory.
-    base::AutoLock autolock(next_orientation_lock_);
+  if (!device_orientation_buffer_)
+    return;
 
-    Orientation* orientation = new Orientation();
-    orientation->set_alpha(alpha);
-    orientation->set_beta(beta);
-    orientation->set_gamma(gamma);
-    orientation->set_absolute(true);
-    next_orientation_ = orientation;
-  }
+  device_orientation_buffer_->seqlock.WriteBegin();
+  device_orientation_buffer_->data.alpha = alpha;
+  device_orientation_buffer_->data.hasAlpha = true;
+  device_orientation_buffer_->data.beta = beta;
+  device_orientation_buffer_->data.hasBeta = true;
+  device_orientation_buffer_->data.gamma = gamma;
+  device_orientation_buffer_->data.hasGamma = true;
+  device_orientation_buffer_->seqlock.WriteEnd();
 
-  if (device_orientation_buffer_) {
-    device_orientation_buffer_->seqlock.WriteBegin();
-    device_orientation_buffer_->data.alpha = alpha;
-    device_orientation_buffer_->data.hasAlpha = true;
-    device_orientation_buffer_->data.beta = beta;
-    device_orientation_buffer_->data.hasBeta = true;
-    device_orientation_buffer_->data.gamma = gamma;
-    device_orientation_buffer_->data.hasGamma = true;
-    device_orientation_buffer_->seqlock.WriteEnd();
-
-    if (!is_orientation_buffer_ready_)
-      SetOrientationBufferReadyStatus(true);
-  }
+  if (!is_orientation_buffer_ready_)
+    SetOrientationBufferReadyStatus(true);
 }
 
 void DataFetcherImplAndroid::GotAcceleration(

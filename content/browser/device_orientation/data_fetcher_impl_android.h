@@ -16,7 +16,6 @@
 template<typename T> struct DefaultSingletonTraits;
 
 namespace content {
-class Orientation;
 
 // Android implementation of DeviceOrientation API.
 
@@ -26,9 +25,7 @@ class Orientation;
 // previous value if any). Chrome calls GetDeviceData() which reads the most
 // recent value. Repeated calls to GetDeviceData() will return the same value.
 
-// TODO(timvolodine): Simplify this class and remove GetDeviceData() method,
-// once Device Orientation switches to shared memory implementation.
-// Also rename this class to SensorManagerAndroid.
+// TODO(timvolodine): rename this class to SensorManagerAndroid.
 class CONTENT_EXPORT DataFetcherImplAndroid {
  public:
   // Must be called at startup, before GetInstance().
@@ -46,8 +43,6 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
                                        double x, double y, double z);
   void GotRotationRate(JNIEnv*, jobject,
                        double alpha, double beta, double gamma);
-
-  const DeviceData* GetDeviceData(DeviceData::Type type);
 
   virtual bool Start(DeviceData::Type event_type);
   virtual void Stop(DeviceData::Type event_type);
@@ -69,8 +64,6 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
  private:
   friend struct DefaultSingletonTraits<DataFetcherImplAndroid>;
 
-  const Orientation* GetOrientation();
-
   void CheckMotionBufferReadyToRead();
   void SetMotionBufferReadyStatus(bool ready);
   void ClearInternalMotionBuffers();
@@ -83,12 +76,6 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
     RECEIVED_MOTION_DATA_ROTATION_RATE = 2,
     RECEIVED_MOTION_DATA_MAX = 3,
   };
-  // Value returned by GetDeviceData.
-  scoped_refptr<Orientation> current_orientation_;
-
-  // 1-element buffer, written by GotOrientation, read by GetDeviceData.
-  base::Lock next_orientation_lock_;
-  scoped_refptr<Orientation> next_orientation_;
 
   // The Java provider of orientation info.
   base::android::ScopedJavaGlobalRef<jobject> device_orientation_;

@@ -329,7 +329,6 @@
         'browser/child_process_security_policy_unittest.cc',
         'browser/device_orientation/data_fetcher_impl_android_unittest.cc',
         'browser/device_orientation/data_fetcher_shared_memory_base_unittest.cc',
-        'browser/device_orientation/provider_unittest.cc',
         'browser/devtools/devtools_http_handler_unittest.cc',
         'browser/devtools/devtools_manager_unittest.cc',
         'browser/dom_storage/dom_storage_area_unittest.cc',

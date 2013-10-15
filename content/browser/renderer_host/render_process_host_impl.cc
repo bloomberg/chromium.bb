@@ -45,7 +45,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/device_orientation/device_motion_message_filter.h"
 #include "content/browser/device_orientation/device_orientation_message_filter.h"
-#include "content/browser/device_orientation/orientation_message_filter.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -649,7 +648,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(browser_context),
       StreamContext::GetFor(browser_context)));
-  AddFilter(new OrientationMessageFilter());
   AddFilter(new FileUtilitiesMessageFilter(GetID()));
   AddFilter(new MimeRegistryMessageFilter());
   AddFilter(new DatabaseMessageFilter(
