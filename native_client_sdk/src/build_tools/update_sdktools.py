@@ -107,7 +107,7 @@ def UpdateManifestFileToRevision(filename, revision):
 
 
 def main(args):
-  parser = optparse.OptionParser()
+  parser = optparse.OptionParser(description=__doc__)
   parser.add_option('-r', '--revision',
       help='set revision manually, rather than using the latest version')
   options, args = parser.parse_args(args[1:])
