@@ -679,6 +679,14 @@ bool Document::hasManifest() const
     return documentElement() && isHTMLHtmlElement(documentElement()) && documentElement()->hasAttribute(manifestAttr);
 }
 
+Location* Document::location() const
+{
+    if (!frame())
+        return 0;
+
+    return domWindow()->location();
+}
+
 void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);

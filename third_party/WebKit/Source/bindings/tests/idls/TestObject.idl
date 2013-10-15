@@ -305,6 +305,10 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [DeprecateAs=StaticMethod] static void deprecatedStaticMethod();
 
     [DeprecateAs=Constant] const unsigned short DEPRECATED_CONSTANT = 1;
+
+    // PutForwards
+    [PutForwards=href] readonly attribute TestNode location;
+    [PutForwards=hrefThrows] readonly attribute TestNode locationWithException;
 };
 
 // The following comment should not generate any code

@@ -24,6 +24,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
 #include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -62,6 +63,62 @@ namespace TestNodeV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
+static void hrefAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestNode* imp = V8TestNode::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->href(), info.GetIsolate());
+}
+
+static void hrefAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestNodeV8Internal::hrefAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void hrefAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestNode* imp = V8TestNode::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
+    imp->setHref(v);
+}
+
+static void hrefAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestNodeV8Internal::hrefAttributeSetter(name, value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void hrefThrowsAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestNode* imp = V8TestNode::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->hrefThrows(), info.GetIsolate());
+}
+
+static void hrefThrowsAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestNodeV8Internal::hrefThrowsAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void hrefThrowsAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestNode* imp = V8TestNode::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
+    ExceptionState es(info.GetIsolate());
+    imp->setHrefThrows(v, es);
+    es.throwIfNeeded();
+}
+
+static void hrefThrowsAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestNodeV8Internal::hrefThrowsAttributeSetter(name, value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
 
@@ -73,6 +130,11 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 }
 
 } // namespace TestNodeV8Internal
+
+static const V8DOMConfiguration::AttributeConfiguration V8TestNodeAttributes[] = {
+    {"href", TestNodeV8Internal::hrefAttributeGetterCallback, TestNodeV8Internal::hrefAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"hrefThrows", TestNodeV8Internal::hrefThrowsAttributeGetterCallback, TestNodeV8Internal::hrefThrowsAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+};
 
 void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
@@ -96,7 +158,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNodeTemplate(v8::Handle<v
 
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestNode", V8Node::GetTemplate(isolate, currentWorldType), V8TestNode::internalFieldCount,
-        0, 0,
+        V8TestNodeAttributes, WTF_ARRAY_LENGTH(V8TestNodeAttributes),
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestNode::constructorCallback);

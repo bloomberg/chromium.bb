@@ -80,6 +80,7 @@ NotEnumerable
 OverrideBuiltins
 PerContextEnabled=*
 PerWorldBindings
+PutForwards=*
 RaisesException
 ReadOnly
 Reflect=|*

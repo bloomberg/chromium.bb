@@ -120,6 +120,7 @@ class LayoutPoint;
 class LayoutRect;
 class LiveNodeListBase;
 class Locale;
+class Location;
 class MediaQueryList;
 class MediaQueryMatcher;
 class MouseEventWithHitTestResults;
@@ -310,6 +311,8 @@ public:
     }
 
     bool hasManifest() const;
+
+    Location* location() const;
 
     PassRefPtr<Element> createElement(const AtomicString& name, ExceptionState&);
     PassRefPtr<DocumentFragment> createDocumentFragment();

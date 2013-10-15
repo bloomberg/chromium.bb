@@ -168,7 +168,6 @@
             'v8/custom/V8DeviceMotionEventCustom.cpp',
             'v8/custom/V8DeviceOrientationEventCustom.cpp',
             'v8/custom/V8DocumentCustom.cpp',
-            'v8/custom/V8DocumentLocationCustom.cpp',
             'v8/custom/V8EntryCustom.cpp',
             'v8/custom/V8EntrySyncCustom.cpp',
             'v8/custom/V8EventCustom.cpp',

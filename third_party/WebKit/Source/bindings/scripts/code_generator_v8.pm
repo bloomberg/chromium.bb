@@ -1119,7 +1119,7 @@ sub IsReadonly
 {
     my $attribute = shift;
     my $attrExt = $attribute->extendedAttributes;
-    return $attribute->isReadOnly && !$attrExt->{"Replaceable"};
+    return $attribute->isReadOnly && !$attrExt->{"Replaceable"} && !$attrExt->{"PutForwards"};
 }
 
 sub GetV8ClassName
@@ -1789,6 +1789,18 @@ sub GenerateNormalAttributeSetterCallback
     $implementation{nameSpaceInternal}->add($code);
 }
 
+sub FindAttributeWithName
+{
+    my $interface = shift;
+    my $attrName = shift;
+
+    foreach my $attribute (@{$interface->attributes}) {
+        if ($attribute->name eq $attrName) {
+            return $attribute;
+        }
+    }
+}
+
 sub GenerateNormalAttributeSetter
 {
     my $attribute = shift;
@@ -1850,6 +1862,23 @@ END
         $code .= <<END;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
 END
+    } elsif($attrExt->{"PutForwards"}) {
+        my $destinationAttrName = $attrExt->{"PutForwards"};
+        my $destinationInterface = ParseInterface($attrType);
+        die "[PutForwards=x] value must be a wrapper type" unless $destinationInterface;
+        my $destinationAttribute = FindAttributeWithName($destinationInterface, $destinationAttrName);
+        die "[PutForwards=x] could not find $destinationAttrName in interface $attrType" unless $destinationAttribute;
+        $code .= <<END;
+    ${implClassName}* proxyImp = ${v8ClassName}::toNative(info.Holder());
+    ${attrType}* imp = proxyImp->${attrName}();
+    if (!imp)
+        return;
+END
+        # Override attribute and fall through to forward setter call.
+        $attribute = $destinationAttribute;
+        $attrName = $attribute->name;
+        $attrType = $attribute->type;
+        $attrExt = $attribute->extendedAttributes;
     } else {
         my $reflect = $attribute->extendedAttributes->{"Reflect"};
         if ($reflect && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {

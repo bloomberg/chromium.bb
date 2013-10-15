@@ -130,7 +130,7 @@ callback CustomElementConstructor = Element ();
 
     [PerWorldBindings] NodeList getElementsByName([Default=Undefined] optional DOMString elementName);
 
-    [Custom, Replaceable, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] readonly attribute Location location;
+    [PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, PutForwards=href] readonly attribute Location location;
 
     // IE extensions
     [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined, TreatNullAs=NullString] attribute DOMString charset;
