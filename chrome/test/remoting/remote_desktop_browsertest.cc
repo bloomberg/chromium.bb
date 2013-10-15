@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remote_desktop_browsertest.h"
+#include "chrome/test/remoting/remote_desktop_browsertest.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/test/remoting/key_code_conv.h"
+#include "chrome/test/remoting/waiter.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
-#include "remoting/test/key_code_conv.h"
-#include "remoting/test/waiter.h"
 
 using extensions::Extension;
 

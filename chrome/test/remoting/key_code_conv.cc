@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/test/key_code_conv.h"
+#include "chrome/test/remoting/key_code_conv.h"
 
-#include "remoting/test/key_code_map.h"
+#include "chrome/test/remoting/key_code_map.h"
 
 namespace remoting {
 

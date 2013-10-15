@@ -6,8 +6,8 @@
 //  1. ui/base/keycodes/keycode_converter_data.h
 //  2. ui/events/keycodes/keyboard_codes.h
 //  3. third_party/WebKit/Source/core/platform/chromium/KeyboardCodes.h
-#ifndef REMOTING_TEST_KEY_CODE_MAP_H_
-#define REMOTING_TEST_KEY_CODE_MAP_H_
+#ifndef CHROME_TEST_REMOTING_KEY_CODE_MAP_H_
+#define CHROME_TEST_REMOTING_KEY_CODE_MAP_H_
 
 #include "base/basictypes.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -91,4 +91,4 @@ const KeyCodeMap key_code_map[] = {
 
 }  // namespace remoting
 
-#endif  // REMOTING_TEST_KEY_CODE_MAP_H_
+#endif  // CHROME_TEST_REMOTING_KEY_CODE_MAP_H_

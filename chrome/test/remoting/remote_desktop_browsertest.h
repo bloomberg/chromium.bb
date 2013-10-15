@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTE_DESKTOP_BROWSER_TEST_H_
-#define REMOTE_DESKTOP_BROWSER_TEST_H_
+#ifndef CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
+#define CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -31,7 +31,7 @@ inline void _ASSERT_TRUE(bool condition) {
   return;
 }
 
-}
+}  // namespace
 
 namespace remoting {
 
@@ -287,4 +287,4 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
 
 }  // namespace remoting
 
-#endif  // REMOTE_DESKTOP_BROWSER_TEST_H_
+#endif  // CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_

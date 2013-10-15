@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_TEST_WAITER_H_
-#define REMOTING_TEST_WAITER_H_
+#ifndef CHROME_TEST_REMOTING_WAITER_H_
+#define CHROME_TEST_REMOTING_WAITER_H_
 
 #include "base/timer/timer.h"
 
@@ -19,7 +19,7 @@ namespace remoting {
 // the wait will keep running.
 class TimeoutWaiter {
  public:
-  TimeoutWaiter(base::TimeDelta timeout);
+  explicit TimeoutWaiter(base::TimeDelta timeout);
   virtual ~TimeoutWaiter();
 
   // Returns true in case of success.
@@ -71,4 +71,4 @@ class ConditionalTimeoutWaiter : public TimeoutWaiter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_TEST_WAITER_H_
+#endif  // CHROME_TEST_REMOTING_WAITER_H_

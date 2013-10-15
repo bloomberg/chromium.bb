@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_TEST_KEY_CODE_CONV_H_
-#define REMOTING_TEST_KEY_CODE_CONV_H_
+#ifndef CHROME_TEST_REMOTING_KEY_CODE_CONV_H_
+#define CHROME_TEST_REMOTING_KEY_CODE_CONV_H_
 
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -22,4 +22,4 @@ void GetKeyValuesFromChar(
 
 }  // namespace remoting
 
-#endif  // REMOTING_TEST_KEY_CODE_CONV_H_
+#endif  // CHROME_TEST_REMOTING_KEY_CODE_CONV_H_

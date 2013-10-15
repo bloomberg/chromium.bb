@@ -4,8 +4,8 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "remoting/test/remote_desktop_browsertest.h"
-#include "remoting/test/waiter.h"
+#include "chrome/test/remoting/remote_desktop_browsertest.h"
+#include "chrome/test/remoting/waiter.h"
 
 namespace remoting {
 
