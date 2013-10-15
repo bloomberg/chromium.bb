@@ -149,7 +149,7 @@ struct TestFaviconData {
   std::string image_16;
   std::string image_32;
   std::string image_64;
-  int last_visit_time;
+  int64 last_visit_time;
   bool is_bookmarked;
 };
 
@@ -1714,6 +1714,62 @@ TEST_F(SyncFaviconCacheTest, NullFaviconVisitTime) {
   }
   EXPECT_EQ(0U, GetTaskCount());
   EXPECT_EQ((unsigned long)kFaviconBatchSize, GetFaviconCount());
+}
+
+// If another synced client has a clock skewed towards the future, it's possible
+// that favicons added locally will be expired as they are added. Ensure this
+// doesn't crash (see crbug.com/306150).
+TEST_F(SyncFaviconCacheTest, VisitFaviconClockSkew) {
+  EXPECT_EQ(0U, GetFaviconCount());
+  const int kClockSkew = 20;  // 20 minutes in the future.
+
+  // Set up sync with kMaxSyncFavicons starting kClockSkew minutes in the
+  // future.
+  syncer::SyncDataList initial_image_data, initial_tracking_data;
+  for (int i = 0; i < kMaxSyncFavicons; ++i) {
+    sync_pb::EntitySpecifics image_specifics, tracking_specifics;
+    TestFaviconData test_data = BuildFaviconData(i);
+    test_data.last_visit_time =
+        syncer::TimeToProtoTime(
+            base::Time::Now() + base::TimeDelta::FromMinutes(kClockSkew));
+    FillImageSpecifics(test_data,
+                       image_specifics.mutable_favicon_image());
+    initial_image_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           image_specifics,
+                                           base::Time()));
+    FillTrackingSpecifics(test_data,
+                          tracking_specifics.mutable_favicon_tracking());
+    initial_tracking_data.push_back(
+        syncer::SyncData::CreateRemoteData(1,
+                                           tracking_specifics,
+                                           base::Time()));
+  }
+  SetUpInitialSync(initial_image_data, initial_tracking_data);
+
+  // Visit some new favicons with local time, which will be expired as they
+  // are added.
+  EXPECT_EQ(0U, GetTaskCount());
+  for (int i = 0; i < kClockSkew; ++i) {
+    TestFaviconData test_data = BuildFaviconData(i + kMaxSyncFavicons);
+    cache()->OnFaviconVisited(test_data.page_url, test_data.icon_url);
+    OnCustomFaviconDataAvailable(test_data);
+
+    // The changes will be an add followed by a delete for both the image and
+    // tracking info.
+    syncer::SyncChangeList changes = processor()->GetAndResetChangeList();
+    ASSERT_EQ(changes.size(), 4U);
+    ASSERT_EQ(changes[0].change_type(), syncer::SyncChange::ACTION_ADD);
+    ASSERT_EQ(changes[0].sync_data().GetDataType(), syncer::FAVICON_IMAGES);
+    ASSERT_EQ(changes[1].change_type(), syncer::SyncChange::ACTION_DELETE);
+    ASSERT_EQ(changes[1].sync_data().GetDataType(), syncer::FAVICON_IMAGES);
+    ASSERT_EQ(changes[2].change_type(), syncer::SyncChange::ACTION_ADD);
+    ASSERT_EQ(changes[2].sync_data().GetDataType(), syncer::FAVICON_TRACKING);
+    ASSERT_EQ(changes[3].change_type(), syncer::SyncChange::ACTION_DELETE);
+    ASSERT_EQ(changes[3].sync_data().GetDataType(), syncer::FAVICON_TRACKING);
+  }
+  EXPECT_EQ(0U, GetTaskCount());
+  EXPECT_EQ((unsigned long)kMaxSyncFavicons, GetFaviconCount());
 }
 
 }  // namespace browser_sync
