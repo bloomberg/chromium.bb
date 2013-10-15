@@ -624,8 +624,11 @@ mode-buildbot-tc-x8632-linux() {
   echo "@@@BUILD_STEP test unsandboxed mode@@@"
   # Test translation to an unsandboxed executable.
   # TODO(mseaborn): Run more tests here when they pass.
-  ./scons run_hello_world_test_irt bitcode=1 pnacl_unsandboxed=1 \
-    --mode=nacl_irt_test platform=x86-32 -j8
+  ./scons bitcode=1 pnacl_unsandboxed=1 \
+    --mode=nacl_irt_test platform=x86-32 -j8 \
+    run_hello_world_test_irt \
+    run_irt_futex_test_irt \
+    run_thread_test_irt
 }
 
 mode-buildbot-tc-x8632-mac() {

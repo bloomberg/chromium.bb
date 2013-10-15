@@ -403,6 +403,8 @@ def RunHostLD(infile, outfile):
   lib_dir = env.getone('BASE_LIB_NATIVE') + 'linux-x86-32'
   driver_tools.Run(['gcc', '-m32', infile,
                     os.path.join(lib_dir, 'unsandboxed_irt.o'),
+                    '-lpthread',
+                    '-lrt',  # For clock_gettime()
                     '-o', outfile])
 
 def RunLLC(infile, outfile, outfiletype):

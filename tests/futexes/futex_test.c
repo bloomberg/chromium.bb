@@ -143,23 +143,20 @@ void test_futex_wait_timeout(void) {
 }
 
 void test_futex_wait_efault(void) {
-  /* Check that the timeout address is checked for validity. */
-  void *bad_address = (void *) ~(uintptr_t) 0;
-  int futex_value = 123;
-  int rc = futex_wait(&futex_value, futex_value, bad_address);
-#if !TEST_IRT_FUTEX && !TEST_FUTEX_SYSCALLS && defined(__GLIBC__)
-  ASSERT_EQ(rc, EINTR);
-#else
-  ASSERT_EQ(rc, EFAULT);
-#endif
-
   /*
-   * Check that the wait address is checked for validity.  The syscall
-   * implementation needs to do this, but the untrusted
+   * Check that untrusted addresses are checked for validity.  The
+   * syscall implementation needs to do this, but the untrusted
    * implementations don't.
    */
   if (TEST_FUTEX_SYSCALLS) {
-    int rc = futex_wait(bad_address, futex_value, NULL);
+    /* Check that the timeout address is checked for validity. */
+    void *bad_address = (void *) ~(uintptr_t) 0;
+    int futex_value = 123;
+    int rc = futex_wait(&futex_value, futex_value, bad_address);
+    ASSERT_EQ(rc, EFAULT);
+
+    /* Check that the wait address is checked for validity. */
+    rc = futex_wait(bad_address, futex_value, NULL);
     ASSERT_EQ(rc, EFAULT);
   }
 }
