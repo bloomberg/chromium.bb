@@ -43,10 +43,6 @@ import v8_types
 ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
 
 
-def cpp_implemented_as_name(definition_or_member):
-    return definition_or_member.extended_attributes.get('ImplementedAs', definition_or_member.name)
-
-
 def has_extended_attribute(definition_or_member, extended_attribute_list):
     return any(extended_attribute in definition_or_member.extended_attributes
                for extended_attribute in extended_attribute_list)
@@ -158,3 +154,8 @@ def runtime_enabled_function_name(definition_or_member):
         return None
     feature_name = extended_attributes['RuntimeEnabled']
     return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)
+
+
+# [ImplementedAs]
+def cpp_name(definition_or_member):
+    return definition_or_member.extended_attributes.get('ImplementedAs', definition_or_member.name)

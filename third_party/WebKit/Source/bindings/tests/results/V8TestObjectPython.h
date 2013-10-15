@@ -47,6 +47,8 @@ public:
 #if ENABLE(Condition)
     static void customGetterReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
 #endif // ENABLE(Condition)
+    static void customImplementedAsReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customGetterImplementedAsReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestObjectPython* impl)
     {

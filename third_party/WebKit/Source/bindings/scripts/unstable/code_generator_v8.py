@@ -54,7 +54,7 @@ templates_dir = os.path.join(module_path, os.pardir, os.pardir, 'templates')
 import v8_callback_interface
 import v8_interface
 import v8_types
-from v8_utilities import cpp_implemented_as_name, generate_conditional_string, v8_class_name
+from v8_utilities import cpp_name, generate_conditional_string, v8_class_name
 
 
 class CodeGeneratorV8:
@@ -88,7 +88,7 @@ class CodeGeneratorV8:
         self.header_template = jinja_env.get_template(header_template_filename)
         self.cpp_template = jinja_env.get_template(cpp_template_filename)
 
-        class_name = cpp_implemented_as_name(self.interface)
+        class_name = cpp_name(self.interface)
         self.include_for_cpp_class = posixpath.join(relative_dir_posix, class_name + '.h')
         enumerations = definitions.enumerations
         if enumerations:

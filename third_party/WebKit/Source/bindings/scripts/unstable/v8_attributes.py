@@ -37,7 +37,7 @@ For details, see bug http://crbug.com/239771
 
 import v8_types
 import v8_utilities
-from v8_utilities import has_extended_attribute, uncapitalize
+from v8_utilities import cpp_name, has_extended_attribute, uncapitalize
 
 
 def generate_attributes(interface):
@@ -146,7 +146,7 @@ def getter_expression(interface, attribute, contents):
 
 
 def getter_name(interface, attribute):
-    getter_method_name = uncapitalize(attribute.name)
+    getter_method_name = uncapitalize(cpp_name(attribute))
     if attribute.is_static:
         return '%s::%s' % (interface.name, getter_method_name)
     return 'imp->%s' % getter_method_name
