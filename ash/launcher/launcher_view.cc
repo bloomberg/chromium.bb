@@ -794,11 +794,10 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   else
     end_position = std::max(end_position, reserved_icon_space);
 
-  if (bounds) {
-    bounds->overflow_bounds.set_size(gfx::Size(
-        shelf->PrimaryAxisValue(w, width()),
-        shelf->PrimaryAxisValue(height(), h)));
-  }
+  bounds->overflow_bounds.set_size(gfx::Size(
+      shelf->PrimaryAxisValue(w, width()),
+      shelf->PrimaryAxisValue(height(), h)));
+
   if (ash::switches::UseAlternateShelfLayout()) {
     last_visible_index_ = DetermineLastVisibleIndex(
         end_position - button_size);
@@ -852,10 +851,8 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     for (int i = first_panel_index; i <= last_hidden_index_; ++i)
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
 
-    if (bounds) {
-      bounds->overflow_bounds.set_x(x);
-      bounds->overflow_bounds.set_y(y);
-    }
+    bounds->overflow_bounds.set_x(x);
+    bounds->overflow_bounds.set_y(y);
     if (!ash::switches::UseAlternateShelfLayout()) {
       // Position app list after overflow button.
       gfx::Rect app_list_bounds = view_model_->ideal_bounds(last_button_index);
@@ -1358,7 +1355,8 @@ int LauncherView::CancelDrag(int modified_index) {
 }
 
 gfx::Size LauncherView::GetPreferredSize() {
-  CalculateIdealBounds(NULL);
+  IdealBounds ideal_bounds;
+  CalculateIdealBounds(&ideal_bounds);
 
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
   const int preferred_size = shelf->GetPreferredShelfSize();
@@ -1421,7 +1419,8 @@ void LauncherView::LauncherItemAdded(int model_index) {
   // button before this animation completes it doesn't appear at some random
   // spot (because it was in the middle of animating from 0,0 0x0 to its
   // target).
-  CalculateIdealBounds(NULL);
+  IdealBounds ideal_bounds;
+  CalculateIdealBounds(&ideal_bounds);
   view->SetBoundsRect(view_model_->ideal_bounds(model_index));
 
   // The first animation moves all the views to their target position. |view|
