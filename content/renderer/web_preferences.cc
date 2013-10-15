@@ -347,6 +347,7 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setIgnoreMainFrameOverflowHiddenQuirk(
       prefs.ignore_main_frame_overflow_hidden_quirk);
   settings->setMainFrameClipsContent(false);
+  settings->setShrinksStandaloneImagesToFit(false);
 #endif
 
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
