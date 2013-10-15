@@ -287,11 +287,14 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyFlexBasis:
         style->setFlexBasis(animatableValueToLength(value, state, NonNegativeValues));
         return;
-    case CSSPropertyFontSize:
-        style->setFontSize(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0));
-        return;
     case CSSPropertyFloodColor:
         style->setFloodColor(toAnimatableColor(value)->color());
+        return;
+    case CSSPropertyFloodOpacity:
+        style->setFloodOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
+        return;
+    case CSSPropertyFontSize:
+        style->setFontSize(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0));
         return;
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state, NonNegativeValues));
