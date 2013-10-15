@@ -25,17 +25,22 @@ class QuicChromeAlarm : public QuicAlarm {
       : QuicAlarm(delegate),
         clock_(clock),
         task_runner_(task_runner),
-        task_posted_(false),
+        task_deadline_(QuicTime::Zero()),
         weak_factory_(this) {}
 
  protected:
   virtual void SetImpl() OVERRIDE {
     DCHECK(deadline().IsInitialized());
-    if (task_posted_) {
-      // Since tasks can not be un-posted, OnAlarm will be invoked which
-      // will notice that deadline has not yet been reached, and will set
-      // the alarm for the new deadline.
-      return;
+    if (task_deadline_.IsInitialized()) {
+      if (task_deadline_ <= deadline()) {
+        // Since tasks can not be un-posted, OnAlarm will be invoked which
+        // will notice that deadline has not yet been reached, and will set
+        // the alarm for the new deadline.
+        return;
+      }
+      // The scheduled task is after new deadline.  Invalidate the weak ptrs
+      // so that task does not execute when we're not expecting it.
+      weak_factory_.InvalidateWeakPtrs();
     }
 
     int64 delay_us = deadline().Subtract(clock_->Now()).ToMicroseconds();
@@ -46,7 +51,7 @@ class QuicChromeAlarm : public QuicAlarm {
         FROM_HERE,
         base::Bind(&QuicChromeAlarm::OnAlarm, weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMicroseconds(delay_us));
-    task_posted_ = true;
+    task_deadline_ = deadline();
   }
 
   virtual void CancelImpl() OVERRIDE {
@@ -57,8 +62,8 @@ class QuicChromeAlarm : public QuicAlarm {
 
  private:
   void OnAlarm() {
-    DCHECK(task_posted_);
-    task_posted_ = false;
+    DCHECK(task_deadline_.IsInitialized());
+    task_deadline_ = QuicTime::Zero();
     // The alarm may have been cancelled.
     if (!deadline().IsInitialized()) {
       return;
@@ -75,7 +80,12 @@ class QuicChromeAlarm : public QuicAlarm {
 
   const QuicClock* clock_;
   base::TaskRunner* task_runner_;
-  bool task_posted_;
+  // If a task has been posted to the message loop, this is the time it
+  // was scheduled to fire.  Tracking this allows us to avoid posting a
+  // new tast if the new deadline is in the future, but permits us to
+  // post a new task when the new deadline now earlier than when
+  // previously posted.
+  QuicTime task_deadline_;
   base::WeakPtrFactory<QuicChromeAlarm> weak_factory_;
 };
 

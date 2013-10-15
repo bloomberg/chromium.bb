@@ -310,6 +310,7 @@ void QuicClientSession::OnCryptoHandshakeMessageReceived(
 }
 
 void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
+  DCHECK(!connection()->connected());
   logger_.OnConnectionClose(error, from_peer);
   if (from_peer) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
@@ -330,6 +331,7 @@ void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
   }
+  socket_->Close();
   QuicSession::ConnectionClose(error, from_peer);
   NotifyFactoryOfSessionCloseLater();
 }

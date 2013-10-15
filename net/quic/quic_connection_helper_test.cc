@@ -39,6 +39,7 @@ class TestDelegate : public QuicAlarm::Delegate {
   }
 
   bool fired() const { return fired_; }
+  void Clear() { fired_= false; }
 
  private:
   bool fired_;
@@ -306,6 +307,35 @@ TEST_F(QuicConnectionHelperTest, CreateAlarmAndReset) {
   runner_->RunNextTask();
   EXPECT_EQ(QuicTime::Zero().Add(new_delta), clock_.Now());
   EXPECT_TRUE(delegate->fired());
+}
+
+TEST_F(QuicConnectionHelperTest, CreateAlarmAndResetEarlier) {
+  TestDelegate* delegate = new TestDelegate();
+  scoped_ptr<QuicAlarm> alarm(helper_->CreateAlarm(delegate));
+
+  QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(3);
+  alarm->Set(clock_.Now().Add(delta));
+  alarm->Cancel();
+  QuicTime::Delta new_delta = QuicTime::Delta::FromMicroseconds(1);
+  alarm->Set(clock_.Now().Add(new_delta));
+
+  // Both alarm tasks will be posted.
+  ASSERT_EQ(3u, runner_->GetPostedTasks().size());
+
+  // The earlier task will execute and will fire the alarm.
+  runner_->RunNextTask();
+  EXPECT_EQ(QuicTime::Zero().Add(new_delta), clock_.Now());
+  EXPECT_TRUE(delegate->fired());
+  delegate->Clear();
+
+  // The latter task is still posted.
+  ASSERT_EQ(2u, runner_->GetPostedTasks().size());
+
+  // When the latter task is executed, the weak ptr will be invalid and
+  // the alarm will not fire.
+  runner_->RunNextTask();
+  EXPECT_EQ(QuicTime::Zero().Add(delta), clock_.Now());
+  EXPECT_FALSE(delegate->fired());
 }
 
 TEST_F(QuicConnectionHelperTest, TestRTORetransmission) {
