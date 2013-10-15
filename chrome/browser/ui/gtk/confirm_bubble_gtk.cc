@@ -63,6 +63,10 @@ void ConfirmBubbleGtk::Show() {
   GtkWidget* toplevel = gtk_widget_get_toplevel(anchor_);
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(GTK_WINDOW(toplevel));
+  // If the top level window is not a browser window but instead a pop-up
+  // dialog, |browser_window| will be null.
+  if (!browser_window)
+    return;
   GtkThemeService* theme_service = GtkThemeService::GetFrom(
       browser_window->browser()->profile());
 
