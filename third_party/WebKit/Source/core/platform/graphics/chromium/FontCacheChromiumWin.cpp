@@ -290,9 +290,11 @@ static bool fontContainsCharacter(const FontPlatformData* fontData,
         return true;
     }
 
-    static Vector<char, 512> glyphsetBuffer;
-    glyphsetBuffer.resize(GetFontUnicodeRanges(hdc, 0));
-    GLYPHSET* glyphset = reinterpret_cast<GLYPHSET*>(glyphsetBuffer.data());
+    static Vector<char, 512>* gGlyphsetBuffer = 0;
+    if (!gGlyphsetBuffer)
+        gGlyphsetBuffer = new Vector<char, 512>();
+    gGlyphsetBuffer->resize(GetFontUnicodeRanges(hdc, 0));
+    GLYPHSET* glyphset = reinterpret_cast<GLYPHSET*>(gGlyphsetBuffer->data());
     // In addition, refering to the OS/2 table and converting the codepage list
     // to the coverage map might be faster.
     count = GetFontUnicodeRanges(hdc, glyphset);

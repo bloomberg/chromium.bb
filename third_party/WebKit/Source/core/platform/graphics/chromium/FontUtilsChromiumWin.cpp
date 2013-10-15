@@ -401,22 +401,24 @@ bool getDerivedFontData(const UChar* family,
     ASSERT(*family);
 
     // It does not matter that we leak font data when we exit.
-    static FontDataCache fontDataCache;
+    static FontDataCache* gFontDataCache = 0;
+    if (!gFontDataCache)
+        gFontDataCache = new FontDataCache();
 
     // FIXME: This comes up pretty high in the profile so that
     // we need to measure whether using SHA256 (after coercing all the
     // fields to char*) is faster than String::format.
     String fontKey = String::format("%1d:%d:%ls", style, logfont->lfHeight, family);
-    FontDataCache::iterator iter = fontDataCache.find(fontKey);
+    FontDataCache::iterator iter = gFontDataCache->find(fontKey);
     FontData* derived;
-    if (iter == fontDataCache.end()) {
+    if (iter == gFontDataCache->end()) {
         ASSERT(wcslen(family) < LF_FACESIZE);
         wcscpy_s(logfont->lfFaceName, LF_FACESIZE, family);
         // FIXME: CreateFontIndirect always comes up with
         // a font even if there's no font matching the name. Need to
         // check it against what we actually want (as is done in
         // FontCacheWin.cpp)
-        FontDataCache::AddResult entry = fontDataCache.add(fontKey, FontData());
+        FontDataCache::AddResult entry = gFontDataCache->add(fontKey, FontData());
         derived = &entry.iterator->value;
         derived->hfont = CreateFontIndirect(logfont);
         // GetAscent may return kUndefinedAscent, but we still want to

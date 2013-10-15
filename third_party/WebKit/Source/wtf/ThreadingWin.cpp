@@ -170,8 +170,10 @@ void initializeThreading()
 
 static HashMap<DWORD, HANDLE>& threadMap()
 {
-    static HashMap<DWORD, HANDLE> map;
-    return map;
+    static HashMap<DWORD, HANDLE>* gMap;
+    if (!gMap)
+        gMap = new HashMap<DWORD, HANDLE>();
+    return *gMap;
 }
 
 static void storeThreadHandleByIdentifier(DWORD threadID, HANDLE threadHandle)
