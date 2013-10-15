@@ -127,8 +127,6 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   content::NotificationRegistrar registrar_;
 
-  bool browser_opened_ever_;
-
   base::WeakPtrFactory<ExtensionAppShimHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandler);

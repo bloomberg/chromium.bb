@@ -54,6 +54,10 @@ class AppShimHandler {
   // Setting this to NULL removes the default handler.
   static void SetDefaultHandler(AppShimHandler* handler);
 
+  // Terminate Chrome if a browser window has never been opened, there are no
+  // shell windows, and the app list is not visible.
+  static void MaybeTerminate();
+
   // Invoked by the shim host when the shim process is launched. The handler
   // must call OnAppLaunchComplete to inform the shim of the result.
   // |launch_type| indicates the type of launch.

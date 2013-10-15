@@ -619,6 +619,8 @@ void AppListService::InitAll(Profile* initial_profile) {
   [window_ close];
   window_.reset();
   animation_.reset();
+
+  apps::AppShimHandler::MaybeTerminate();
 }
 
 @end

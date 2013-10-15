@@ -342,19 +342,6 @@ TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
   // Quitting when it's the last shim should terminate.
   EXPECT_CALL(*delegate_, MaybeTerminate());
   handler_->OnAppDeactivated(&profile_a_, kTestAppIdB);
-
-  // Launch a shim again.
-  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
-  RegisterOnlyLaunch(&host_aa_);
-  EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
-
-  // Quitting after a browser window has opened should not terminate.
-  handler_->Observe(chrome::NOTIFICATION_BROWSER_OPENED,
-                    content::NotificationService::AllSources(),
-                    content::NotificationService::NoDetails());
-  EXPECT_CALL(*delegate_, MaybeTerminate())
-      .Times(0);
-  handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {

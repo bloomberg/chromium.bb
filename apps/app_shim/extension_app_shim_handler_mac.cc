@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
@@ -44,13 +43,6 @@ void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
 
   // This should never get an error since it only loads existing profiles.
   DCHECK_EQ(Profile::CREATE_STATUS_CREATED, status);
-}
-
-void TerminateIfNoShellWindows() {
-  bool shell_windows_left =
-      apps::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0);
-  if (!shell_windows_left)
-    chrome::AttemptExit();
 }
 
 void SetAppHidden(Profile* profile, const std::string& app_id, bool hidden) {
@@ -158,16 +150,11 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
 }
 
 void ExtensionAppShimHandler::Delegate::MaybeTerminate() {
-  // Post this to give ShellWindows a chance to remove themselves from the
-  // registry.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&TerminateIfNoShellWindows));
+  AppShimHandler::MaybeTerminate();
 }
 
 ExtensionAppShimHandler::ExtensionAppShimHandler()
     : delegate_(new Delegate),
-      browser_opened_ever_(false),
       weak_factory_(this) {
   // This is instantiated in BrowserProcessImpl::PreMainMessageLoopRun with
   // AppShimHostManager. Since PROFILE_CREATED is not fired until
@@ -176,8 +163,6 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -399,14 +384,6 @@ void ExtensionAppShimHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
-    registrar_.Remove(
-        this, chrome::NOTIFICATION_BROWSER_OPENED,
-        content::NotificationService::AllBrowserContextsAndSources());
-    browser_opened_ever_ = true;
-    return;
-  }
-
   Profile* profile = content::Source<Profile>(source).ptr();
   if (profile->IsOffTheRecord())
     return;
@@ -461,7 +438,7 @@ void ExtensionAppShimHandler::OnAppDeactivated(Profile* profile,
   if (host)
     host->OnAppClosed();
 
-  if (!browser_opened_ever_ && hosts_.empty())
+  if (hosts_.empty())
     delegate_->MaybeTerminate();
 }
 
