@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "core/animation/AnimatableLength.h"
+#include "core/animation/AnimatableValueTestHelper.h"
 
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -39,6 +40,8 @@
 #include "wtf/MathExtras.h"
 
 #include <gtest/gtest.h>
+
+#define EXPECT_ROUNDTRIP(a, f) EXPECT_REFV_EQ(a, f(a.get()))
 
 using namespace WebCore;
 
@@ -70,21 +73,9 @@ protected:
         ));
     }
 
-    bool testToCSSValue(CSSValue* cssValue)
+    PassRefPtr<CSSValue> toCSSValue(CSSValue* cssValue)
     {
-        return testToCSSValue(cssValue, cssValue);
-    }
-    bool testToCSSValue(CSSValue* cssValueExpected, CSSValue* cssValue)
-    {
-        return AnimatableLength::create(cssValue)->toCSSValue()->equals(*cssValueExpected);
-    }
-    bool testInterpolate(CSSValue* cssValueExpected, AnimatableLength* numberA, AnimatableLength* numberB, double fraction)
-    {
-        return toAnimatableLength(AnimatableValue::interpolate(numberA, numberB, fraction).get())->toCSSValue()->equals(*cssValueExpected);
-    }
-    bool testAdd(CSSValue* cssValueExpected, AnimatableLength* numberA, AnimatableLength* numberB)
-    {
-        return toAnimatableLength(AnimatableValue::add(numberA, numberB).get())->toCSSValue()->equals(*cssValueExpected);
+        return AnimatableLength::create(cssValue)->toCSSValue();
     }
 
     RefPtr<RenderStyle> style;
@@ -138,27 +129,29 @@ TEST_F(AnimatableLengthTest, Create)
     ));
 }
 
+
 TEST_F(AnimatableLengthTest, ToCSSValue)
 {
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_PX).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_CM).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_MM).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_IN).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_PT).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_PC).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_EMS).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_EXS).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_REMS).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_PERCENTAGE).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_VW).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_VH).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_VMIN).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_VMAX).get()));
 
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(createCalc(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_IN)).get()));
-    EXPECT_TRUE(testToCSSValue(CSSPrimitiveValue::create(createCalc(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_IN)).get(),
-        createCalc(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_IN).get()));
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_PX), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_CM), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_MM), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_IN), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_PT), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_PC), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_EMS), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_EXS), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_REMS), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_PERCENTAGE), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_VW), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_VH), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_VMIN), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(-5, CSSPrimitiveValue::CSS_VMAX), toCSSValue);
+
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(createCalc(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_IN)), toCSSValue);
+    EXPECT_ROUNDTRIP(CSSPrimitiveValue::create(createCalc(3, CSSPrimitiveValue::CSS_PX, 5, CSSPrimitiveValue::CSS_IN)), toCSSValue);
 }
+
 
 TEST_F(AnimatableLengthTest, ToLength)
 {
@@ -210,48 +203,56 @@ TEST_F(AnimatableLengthTest, Interpolate)
 {
     RefPtr<AnimatableLength> from10px = create(10, CSSPrimitiveValue::CSS_PX);
     RefPtr<AnimatableLength> to20pxAsInches = create(20.0 / 96, CSSPrimitiveValue::CSS_IN);
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(5,  CSSPrimitiveValue::CSS_PX).get(), from10px.get(), to20pxAsInches.get(), -0.5));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX).get(), from10px.get(), to20pxAsInches.get(),  0));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(14, CSSPrimitiveValue::CSS_PX).get(), from10px.get(), to20pxAsInches.get(),  0.4));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(15, CSSPrimitiveValue::CSS_PX).get(), from10px.get(), to20pxAsInches.get(),  0.5));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(16, CSSPrimitiveValue::CSS_PX).get(), from10px.get(), to20pxAsInches.get(),  0.6));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(20.0 / 96, CSSPrimitiveValue::CSS_IN).get(), from10px.get(), to20pxAsInches.get(),  1));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(25, CSSPrimitiveValue::CSS_PX).get(), from10px.get(), to20pxAsInches.get(),  1.5));
+
+    EXPECT_REFV_EQ(create(5,  CSSPrimitiveValue::CSS_PX),
+        AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(), -0.5));
+
+    EXPECT_REFV_EQ(create(10, CSSPrimitiveValue::CSS_PX),
+        AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(),  0));
+    EXPECT_REFV_EQ(create(14, CSSPrimitiveValue::CSS_PX),
+        AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(),  0.4));
+    EXPECT_REFV_EQ(create(15, CSSPrimitiveValue::CSS_PX),
+        AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(),  0.5));
+    EXPECT_REFV_EQ(create(16, CSSPrimitiveValue::CSS_PX),
+        AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(),  0.6));
+    EXPECT_REFV_EQ(create(20.0 / 96, CSSPrimitiveValue::CSS_IN),
+        AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(),  1));
+    EXPECT_REFV_EQ(create(25, CSSPrimitiveValue::CSS_PX),
+        AnimatableValue::interpolate(from10px.get(), to20pxAsInches.get(),  1.5));
 
     RefPtr<AnimatableLength> from10em = create(10, CSSPrimitiveValue::CSS_EMS);
     RefPtr<AnimatableLength> to20rem = create(20, CSSPrimitiveValue::CSS_REMS);
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(createCalc(15, CSSPrimitiveValue::CSS_EMS, -10, CSSPrimitiveValue::CSS_REMS)).get(),
-        from10em.get(), to20rem.get(), -0.5));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS).get(),
-        from10em.get(), to20rem.get(),  0));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(createCalc(6, CSSPrimitiveValue::CSS_EMS, 8, CSSPrimitiveValue::CSS_REMS)).get(),
-        from10em.get(), to20rem.get(),  0.4));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(createCalc(5, CSSPrimitiveValue::CSS_EMS, 10, CSSPrimitiveValue::CSS_REMS)).get(),
-        from10em.get(), to20rem.get(),  0.5));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(createCalc(4, CSSPrimitiveValue::CSS_EMS, 12, CSSPrimitiveValue::CSS_REMS)).get(),
-        from10em.get(), to20rem.get(),  0.6));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_REMS).get(),
-        from10em.get(), to20rem.get(),  1));
-    EXPECT_TRUE(testInterpolate(CSSPrimitiveValue::create(createCalc(-5, CSSPrimitiveValue::CSS_EMS, 30, CSSPrimitiveValue::CSS_REMS)).get(),
-        from10em.get(), to20rem.get(),  1.5));
+    EXPECT_REFV_EQ(create(15, CSSPrimitiveValue::CSS_EMS, -10, CSSPrimitiveValue::CSS_REMS),
+        AnimatableValue::interpolate(from10em.get(), to20rem.get(), -0.5));
+    EXPECT_REFV_EQ(create(10, CSSPrimitiveValue::CSS_EMS),
+        AnimatableValue::interpolate(from10em.get(), to20rem.get(),  0));
+    EXPECT_REFV_EQ(create(6, CSSPrimitiveValue::CSS_EMS, 8, CSSPrimitiveValue::CSS_REMS),
+        AnimatableValue::interpolate(from10em.get(), to20rem.get(),  0.4));
+    EXPECT_REFV_EQ(create(5, CSSPrimitiveValue::CSS_EMS, 10, CSSPrimitiveValue::CSS_REMS),
+        AnimatableValue::interpolate(from10em.get(), to20rem.get(),  0.5));
+    EXPECT_REFV_EQ(create(4, CSSPrimitiveValue::CSS_EMS, 12, CSSPrimitiveValue::CSS_REMS),
+        AnimatableValue::interpolate(from10em.get(), to20rem.get(),  0.6));
+    EXPECT_REFV_EQ(create(20, CSSPrimitiveValue::CSS_REMS),
+        AnimatableValue::interpolate(from10em.get(), to20rem.get(),  1));
+    EXPECT_REFV_EQ(create(-5, CSSPrimitiveValue::CSS_EMS, 30, CSSPrimitiveValue::CSS_REMS),
+        AnimatableValue::interpolate(from10em.get(), to20rem.get(),  1.5));
 }
 
 TEST_F(AnimatableLengthTest, Add)
 {
-    EXPECT_TRUE(testAdd(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX).get(), create(10, CSSPrimitiveValue::CSS_PX).get(), create(0, CSSPrimitiveValue::CSS_MM).get()));
-    EXPECT_TRUE(testAdd(CSSPrimitiveValue::create(100, CSSPrimitiveValue::CSS_PX).get(), create(4, CSSPrimitiveValue::CSS_PX).get(), create(1, CSSPrimitiveValue::CSS_IN).get()));
-    EXPECT_TRUE(testAdd(
-        CSSPrimitiveValue::create(createCalc(10, CSSPrimitiveValue::CSS_EMS, 20, CSSPrimitiveValue::CSS_REMS)).get(),
-        create(10, CSSPrimitiveValue::CSS_EMS).get(),
-        create(20, CSSPrimitiveValue::CSS_REMS).get()));
-    EXPECT_TRUE(testAdd(
-        CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_EMS).get(),
-        create(10, CSSPrimitiveValue::CSS_EMS).get(),
-        create(0, CSSPrimitiveValue::CSS_REMS).get()));
-    EXPECT_TRUE(testAdd(
-        CSSPrimitiveValue::create(20, CSSPrimitiveValue::CSS_REMS).get(),
-        create(0, CSSPrimitiveValue::CSS_EMS).get(),
-        create(20, CSSPrimitiveValue::CSS_REMS).get()));
+    EXPECT_REFV_EQ(create(10, CSSPrimitiveValue::CSS_PX),
+        AnimatableValue::add(create(10, CSSPrimitiveValue::CSS_PX).get(), create(0, CSSPrimitiveValue::CSS_MM).get()));
+    EXPECT_REFV_EQ(create(100, CSSPrimitiveValue::CSS_PX),
+        AnimatableValue::add(create(4, CSSPrimitiveValue::CSS_PX).get(), create(1, CSSPrimitiveValue::CSS_IN).get()));
+    EXPECT_REFV_EQ(
+        create(10, CSSPrimitiveValue::CSS_EMS, 20, CSSPrimitiveValue::CSS_REMS),
+        AnimatableValue::add(create(10, CSSPrimitiveValue::CSS_EMS).get(), create(20, CSSPrimitiveValue::CSS_REMS).get()));
+    EXPECT_REFV_EQ(
+        create(10, CSSPrimitiveValue::CSS_EMS),
+        AnimatableValue::add(create(10, CSSPrimitiveValue::CSS_EMS).get(), create(0, CSSPrimitiveValue::CSS_REMS).get()));
+    EXPECT_REFV_EQ(
+        create(20, CSSPrimitiveValue::CSS_REMS),
+        AnimatableValue::add(create(0, CSSPrimitiveValue::CSS_EMS).get(), create(20, CSSPrimitiveValue::CSS_REMS).get()));
 }
 
 }

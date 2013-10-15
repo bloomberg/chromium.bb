@@ -50,6 +50,10 @@ public:
     {
         return isSameType(value) && equalTo(value);
     }
+    bool equals(const AnimatableValue& value) const
+    {
+        return equals(&value);
+    }
 
     bool isClipPathOperation() const { return type() == TypeClipPathOperation; }
     bool isColor() const { return type() == TypeColor; }
