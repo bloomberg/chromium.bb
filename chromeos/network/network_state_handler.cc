@@ -400,8 +400,8 @@ const FavoriteState* NetworkStateHandler::GetEAPForEthernet(
     NET_LOG_ERROR(
         "GetEAPForEthernet",
         base::StringPrintf("Unknown device %s of connected ethernet service %s",
-                           service_path.c_str(),
-                           network->device_path().c_str()));
+                           network->device_path().c_str(),
+                           service_path.c_str()));
     return NULL;
   }
   if (!device->eap_authentication_completed())
