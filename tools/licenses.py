@@ -87,7 +87,6 @@ ADDITIONAL_PATHS = (
     os.path.join('native_client_sdk'),
     os.path.join('net', 'tools', 'spdyshark'),
     os.path.join('ppapi'),
-    os.path.join('sandbox', 'linux', 'seccomp-legacy'),
     os.path.join('sdch', 'open-vcdiff'),
     os.path.join('testing', 'gmock'),
     os.path.join('testing', 'gtest'),
@@ -111,11 +110,6 @@ SPECIAL_CASES = {
     os.path.join('native_client'): {
         "Name": "native client",
         "URL": "http://code.google.com/p/nativeclient",
-        "License": "BSD",
-    },
-    os.path.join('sandbox', 'linux', 'seccomp-legacy'): {
-        "Name": "seccompsandbox",
-        "URL": "http://code.google.com/p/seccompsandbox",
         "License": "BSD",
     },
     os.path.join('sdch', 'open-vcdiff'): {
