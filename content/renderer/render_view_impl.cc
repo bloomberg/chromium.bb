@@ -597,6 +597,9 @@ static bool ShouldUseAcceleratedCompositingForOverflowScroll(
     float device_scale_factor) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
+  if (command_line.HasSwitch(switches::kDisableAcceleratedOverflowScroll))
+    return false;
+
   if (command_line.HasSwitch(switches::kEnableAcceleratedOverflowScroll))
     return true;
 
