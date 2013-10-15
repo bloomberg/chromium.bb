@@ -123,11 +123,11 @@ inline static PassRefPtr<AnimatableValue> createFromFillLayers(const FillLayer* 
             if (!fillLayer->isImageSet())
                 break;
             values.append(AnimatableImage::create(fillLayer->image()));
-        } else if (property == CSSPropertyBackgroundPositionX) {
+        } else if (property == CSSPropertyBackgroundPositionX || property == CSSPropertyWebkitMaskPositionX) {
             if (!fillLayer->isXPositionSet())
                 break;
             values.append(createFromLength(fillLayer->xPosition(), style));
-        } else if (property == CSSPropertyBackgroundPositionY) {
+        } else if (property == CSSPropertyBackgroundPositionY || property == CSSPropertyWebkitMaskPositionY) {
             if (!fillLayer->isYPositionSet())
                 break;
             values.append(createFromLength(fillLayer->yPosition(), style));
@@ -320,6 +320,10 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return AnimatableImage::create(style->maskBoxImageSource());
     case CSSPropertyWebkitMaskImage:
         return AnimatableImage::create(style->maskImage());
+    case CSSPropertyWebkitMaskPositionX:
+        return createFromFillLayers<CSSPropertyWebkitMaskPositionX>(style->maskLayers(), style);
+    case CSSPropertyWebkitMaskPositionY:
+        return createFromFillLayers<CSSPropertyWebkitMaskPositionY>(style->maskLayers(), style);
     case CSSPropertyWebkitPerspective:
         return createFromDouble(style->perspective());
     case CSSPropertyWebkitPerspectiveOriginX:
