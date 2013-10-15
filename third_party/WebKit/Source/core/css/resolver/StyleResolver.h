@@ -227,9 +227,6 @@ public:
         return m_styleTree.ensureScopedStyleResolver(scope ? *scope : document());
     }
 
-    // FIXME: Used by SharingStyleFinder, but should be removed.
-    bool styleSharingCandidateMatchesRuleSet(const ElementResolveContext&, RenderStyle*, RuleSet*);
-
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
     enum CSSRuleFilter {
         UAAndUserCSSRules   = 1 << 1,

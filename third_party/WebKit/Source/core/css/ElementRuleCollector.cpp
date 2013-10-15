@@ -53,6 +53,10 @@ ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
     , m_matchingUARules(false)
 { }
 
+ElementRuleCollector::~ElementRuleCollector()
+{
+}
+
 MatchResult& ElementRuleCollector::matchedResult()
 {
     return m_result;
@@ -259,7 +263,7 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, Select
             if (m_mode == SelectorChecker::CollectingRules)
                 return;
             // FIXME: Matching should not modify the style directly.
-            if (dynamicPseudo < FIRST_INTERNAL_PSEUDOID)
+            if (m_style && dynamicPseudo < FIRST_INTERNAL_PSEUDOID)
                 m_style->setHasPseudoStyle(dynamicPseudo);
         } else {
             // Update our first/last rule indices in the matched rules array.

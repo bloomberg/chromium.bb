@@ -35,7 +35,6 @@ class StyleResolver;
 
 class SharedStyleFinder {
 public:
-    // FIXME: StyleResolver* only used for calling styleSharingCandidateMatchesRuleSet.
     // RuleSets are passed non-const as the act of matching against them can cause them
     // to be compacted. :(
     SharedStyleFinder(const RuleFeatureSet& features, RuleSet* siblingRuleSet,
@@ -48,7 +47,7 @@ public:
     { }
 
     // FIXME: It is not necessarily safe to call this method more than once.
-    RenderStyle* locateSharedStyle(const ElementResolveContext&, RenderStyle* newStyle);
+    RenderStyle* locateSharedStyle(const ElementResolveContext&);
 
 private:
     Element* findElementForStyleSharing(const ElementResolveContext&) const;
@@ -61,6 +60,7 @@ private:
     bool canShareStyleWithElement(const ElementResolveContext&, Element*) const;
     bool canShareStyleWithControl(const ElementResolveContext&, Element*) const;
     bool sharingCandidateHasIdenticalStyleAffectingAttributes(const ElementResolveContext&, Element*) const;
+    bool matchesRuleSet(const ElementResolveContext&, RuleSet*);
 
     bool m_elementAffectedByClassRules;
     const RuleFeatureSet& m_features;

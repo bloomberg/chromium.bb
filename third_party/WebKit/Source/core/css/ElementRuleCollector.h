@@ -76,7 +76,8 @@ private:
 class ElementRuleCollector {
     WTF_MAKE_NONCOPYABLE(ElementRuleCollector);
 public:
-    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle*);
+    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle* = 0);
+    ~ElementRuleCollector();
 
     void setCanUseFastReject(bool canUseFastReject) { m_canUseFastReject = canUseFastReject; }
     bool canUseFastReject() const { return m_canUseFastReject; }

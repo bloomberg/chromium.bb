@@ -574,15 +574,6 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
     }
 }
 
-bool StyleResolver::styleSharingCandidateMatchesRuleSet(const ElementResolveContext& context, RenderStyle* style, RuleSet* ruleSet)
-{
-    if (!ruleSet)
-        return false;
-
-    ElementRuleCollector collector(context, m_selectorFilter, style);
-    return collector.hasAnyMatchingRules(ruleSet);
-}
-
 PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document, CSSFontSelector* fontSelector)
 {
     const Frame* frame = document.frame();
@@ -659,7 +650,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint() && state.parentStyle()) {
         SharedStyleFinder styleFinder(m_features, m_siblingRuleSet.get(), m_uncommonAttributeRuleSet.get(), this);
-        RefPtr<RenderStyle> sharedStyle = styleFinder.locateSharedStyle(state.elementContext(), state.style());
+        RefPtr<RenderStyle> sharedStyle = styleFinder.locateSharedStyle(state.elementContext());
         if (sharedStyle)
             return sharedStyle.release();
     }
