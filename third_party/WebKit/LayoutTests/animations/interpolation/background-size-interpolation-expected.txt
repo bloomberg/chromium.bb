@@ -1,8 +1,3 @@
-      
-      
-      
-      
-      
 FAIL: background-size from [0px 0px, 0px 0px, contain, cover] to [40px 40px, 40px 40px, contain, cover] was [-10px -10px, -10px -10px, auto, auto] at -0.25, expected [ 0px  0px,  0px  0px, contain, cover]
 FAIL: background-size from [0px 0px, 0px 0px, contain, cover] to [40px 40px, 40px 40px, contain, cover] was [0px 0px, 0px 0px, auto, auto] at 0, expected [ 0px  0px,  0px  0px, contain, cover]
 FAIL: background-size from [0px 0px, 0px 0px, contain, cover] to [40px 40px, 40px 40px, contain, cover] was [10px 10px, 10px 10px, auto, auto] at 0.25, expected [ 0px  0px,  0px  0px, contain, cover]

@@ -122,13 +122,15 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
             case CSSPropertyBackgroundImage:
             case CSSPropertyBackgroundPositionX:
             case CSSPropertyBackgroundPositionY:
+            case CSSPropertyBackgroundSize:
                 fillLayer = new FillLayer(BackgroundFillLayer);
                 break;
             case CSSPropertyWebkitMaskPositionX:
             case CSSPropertyWebkitMaskPositionY:
                 fillLayer = new FillLayer(MaskFillLayer);
                 break;
-            default: ASSERT_NOT_REACHED();
+            default:
+                ASSERT_NOT_REACHED();
             }
             prev->setNext(fillLayer);
         }
