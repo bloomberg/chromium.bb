@@ -33,6 +33,8 @@
 
 #include "WebCommon.h"
 
+#include <algorithm>
+
 #if BLINK_IMPLEMENTATION
 #include "platform/geometry/FloatSize.h"
 #else

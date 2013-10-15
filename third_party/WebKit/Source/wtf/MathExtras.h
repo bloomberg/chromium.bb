@@ -113,7 +113,7 @@ inline float log2f(float num)
 }
 #endif
 
-#if COMPILER(MSVC)
+#if COMPILER(MSVC) && (_MSC_VER < 1800)
 
 namespace std {
 
