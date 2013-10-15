@@ -240,15 +240,10 @@ public:
 
     virtual float deviceScaleFactor() const;
     virtual void setDeviceScaleFactor(float);
-
+    virtual bool isFixedLayoutModeEnabled() const;
+    virtual void enableFixedLayoutMode(bool enable);
+    virtual WebSize fixedLayoutSize() const;
     virtual void setFixedLayoutSize(const WebSize&);
-
-    // DEPRECATED: Will be removed soon.
-    // See https://codereview.chromium.org/23819019/
-    virtual bool isFixedLayoutModeEnabled() const { return true; }
-    virtual void enableFixedLayoutMode(bool) { }
-    virtual WebSize fixedLayoutSize() const { return WebSize(); }
-
     virtual void enableAutoResizeMode(
         const WebSize& minSize,
         const WebSize& maxSize);
@@ -451,8 +446,7 @@ public:
         return m_maxAutoSize;
     }
 
-    void updateMainFrameLayoutSize();
-    void updatePageDefinedViewportConstraints(const WebCore::ViewportDescription&);
+    void updatePageDefinedPageScaleConstraints(const WebCore::ViewportDescription&);
 
     // Start a system drag and drop operation.
     void startDragging(
