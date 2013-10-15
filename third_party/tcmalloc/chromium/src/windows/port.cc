@@ -41,6 +41,7 @@
 #include <assert.h>
 #include <stdarg.h>    // for va_list, va_start, va_end
 #include <windows.h>
+#include <algorithm>
 #include "port.h"
 #include "base/logging.h"
 #include "base/spinlock.h"
