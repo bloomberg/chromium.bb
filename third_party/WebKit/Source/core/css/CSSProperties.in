@@ -116,6 +116,7 @@ text-decoration-line use_handlers_for=CSSPropertyTextDecoration
 text-decoration-color custom_all
 text-decoration-style type_name=TextDecorationStyle
 text-indent custom_all
+text-justify type_name=TextJustify
 text-overflow type_name=TextOverflow
 text-rendering custom_all
 text-transform

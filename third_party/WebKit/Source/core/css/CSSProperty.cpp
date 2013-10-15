@@ -309,6 +309,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyTabSize:
     case CSSPropertyTextAlign:
     case CSSPropertyTextAlignLast:
+    case CSSPropertyTextJustify:
     case CSSPropertyTextAnchor:
     case CSSPropertyTextIndent:
     case CSSPropertyTextRendering:

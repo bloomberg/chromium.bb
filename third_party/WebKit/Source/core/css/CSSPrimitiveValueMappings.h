@@ -2420,6 +2420,45 @@ template<> inline CSSPrimitiveValue::operator TextAlignLast() const
     return TextAlignLastAuto;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextJustify e)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_VALUE_ID;
+    switch (e) {
+    case TextJustifyAuto:
+        m_value.valueID = CSSValueAuto;
+        break;
+    case TextJustifyNone:
+        m_value.valueID = CSSValueNone;
+        break;
+    case TextJustifyInterWord:
+        m_value.valueID = CSSValueInterWord;
+        break;
+    case TextJustifyDistribute:
+        m_value.valueID = CSSValueDistribute;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator TextJustify() const
+{
+    switch (m_value.valueID) {
+    case CSSValueAuto:
+        return TextJustifyAuto;
+    case CSSValueNone:
+        return TextJustifyNone;
+    case CSSValueInterWord:
+        return TextJustifyInterWord;
+    case CSSValueDistribute:
+        return TextJustifyDistribute;
+    default:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return TextJustifyAuto;
+}
+
 template<> inline CSSPrimitiveValue::operator TextDecoration() const
 {
     ASSERT(isValueID());

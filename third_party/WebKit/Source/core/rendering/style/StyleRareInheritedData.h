@@ -94,6 +94,7 @@ public:
     unsigned textEmphasisMark : 3; // TextEmphasisMark
     unsigned textEmphasisPosition : 1; // TextEmphasisPosition
     unsigned m_textAlignLast : 3; // TextAlignLast
+    unsigned m_textJustify : 2; // TextJustify
     unsigned m_textOrientation : 2; // TextOrientation
     unsigned m_textIndentLine : 1; // TextIndentEachLine
     unsigned m_lineBoxContain: 7; // LineBoxContain

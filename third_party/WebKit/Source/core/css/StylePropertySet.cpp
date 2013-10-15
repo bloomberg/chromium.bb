@@ -422,6 +422,7 @@ static const CSSPropertyID staticBlockProperties[] = {
     CSSPropertyTextAlign,
     CSSPropertyTextAlignLast,
     CSSPropertyTextIndent,
+    CSSPropertyTextJustify,
     CSSPropertyWidows
 };
 

@@ -74,6 +74,7 @@ static void setPropertySwitchesFromRuntimeFeatures()
     setCSSPropertiesEnabled(css3TextDecorationProperties, WTF_ARRAY_LENGTH(css3TextDecorationProperties), RuntimeEnabledFeatures::css3TextDecorationsEnabled());
     CSSPropertyID css3TextProperties[] = {
         CSSPropertyTextAlignLast,
+        CSSPropertyTextJustify,
     };
     setCSSPropertiesEnabled(css3TextProperties, WTF_ARRAY_LENGTH(css3TextProperties), RuntimeEnabledFeatures::css3TextEnabled());
     CSSPropertyID cssGridLayoutProperties[] = {

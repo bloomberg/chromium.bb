@@ -75,6 +75,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , textEmphasisMark(TextEmphasisMarkNone)
     , textEmphasisPosition(TextEmphasisPositionOver)
     , m_textAlignLast(RenderStyle::initialTextAlignLast())
+    , m_textJustify(RenderStyle::initialTextJustify())
     , m_textOrientation(TextOrientationVerticalRight)
     , m_textIndentLine(RenderStyle::initialTextIndentLine())
     , m_lineBoxContain(RenderStyle::initialLineBoxContain())
@@ -127,6 +128,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , textEmphasisMark(o.textEmphasisMark)
     , textEmphasisPosition(o.textEmphasisPosition)
     , m_textAlignLast(o.m_textAlignLast)
+    , m_textJustify(o.m_textJustify)
     , m_textOrientation(o.m_textOrientation)
     , m_textIndentLine(o.m_textIndentLine)
     , m_lineBoxContain(o.m_lineBoxContain)
@@ -198,6 +200,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && textEmphasisMark == o.textEmphasisMark
         && textEmphasisPosition == o.textEmphasisPosition
         && m_textAlignLast == o.m_textAlignLast
+        && m_textJustify == o.m_textJustify
         && m_textOrientation == o.m_textOrientation
         && m_textIndentLine == o.m_textIndentLine
         && m_lineBoxContain == o.m_lineBoxContain

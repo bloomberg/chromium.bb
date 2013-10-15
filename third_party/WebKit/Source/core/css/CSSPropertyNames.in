@@ -195,6 +195,7 @@ text-decoration-line
 text-decoration-style
 text-decoration-color
 text-indent
+text-justify
 text-line-through-color
 text-line-through-mode
 text-line-through-style

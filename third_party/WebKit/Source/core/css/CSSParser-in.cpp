@@ -708,6 +708,12 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
             && ((valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto))
             return true;
         break;
+    case CSSPropertyTextJustify:
+        // auto | none | inter-word | distribute
+        if (RuntimeEnabledFeatures::css3TextEnabled()
+            && (valueID == CSSValueInterWord || valueID == CSSValueDistribute || valueID == CSSValueAuto || valueID == CSSValueNone))
+            return true;
+        break;
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextOverlineMode:
     case CSSPropertyTextUnderlineMode:
@@ -950,8 +956,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyMixBlendMode:
     case CSSPropertyIsolation:
         return RuntimeEnabledFeatures::cssCompositingEnabled();
-    case CSSPropertyTextAlignLast:
-        return RuntimeEnabledFeatures::css3TextEnabled();
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:
@@ -981,6 +985,8 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyResize:
     case CSSPropertySpeak:
     case CSSPropertyTableLayout:
+    case CSSPropertyTextAlignLast:
+    case CSSPropertyTextJustify:
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextLineThroughStyle:
     case CSSPropertyTextOverflow:
@@ -2829,6 +2835,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertySpeak:
     case CSSPropertyTableLayout:
     case CSSPropertyTextAlignLast:
+    case CSSPropertyTextJustify:
     case CSSPropertyTextLineThroughMode:
     case CSSPropertyTextLineThroughStyle:
     case CSSPropertyTextOverflow:

@@ -543,6 +543,7 @@ public:
     TextIndentLine textIndentLine() const { return static_cast<TextIndentLine>(rareInheritedData->m_textIndentLine); }
     ETextAlign textAlign() const { return static_cast<ETextAlign>(inherited_flags._text_align); }
     TextAlignLast textAlignLast() const { return static_cast<TextAlignLast>(rareInheritedData->m_textAlignLast); }
+    TextJustify textJustify() const { return static_cast<TextJustify>(rareInheritedData->m_textJustify); }
     ETextTransform textTransform() const { return static_cast<ETextTransform>(inherited_flags._text_transform); }
     TextDecoration textDecorationsInEffect() const { return static_cast<TextDecoration>(inherited_flags._text_decorations); }
     TextDecoration textDecoration() const { return static_cast<TextDecoration>(visual->textDecoration); }
@@ -1059,6 +1060,7 @@ public:
     void setTextIndentLine(TextIndentLine v) { SET_VAR(rareInheritedData, m_textIndentLine, v); }
     void setTextAlign(ETextAlign v) { inherited_flags._text_align = v; }
     void setTextAlignLast(TextAlignLast v) { SET_VAR(rareInheritedData, m_textAlignLast, v); }
+    void setTextJustify(TextJustify v) { SET_VAR(rareInheritedData, m_textJustify, v); }
     void setTextTransform(ETextTransform v) { inherited_flags._text_transform = v; }
     void addToTextDecorationsInEffect(TextDecoration v) { inherited_flags._text_decorations |= v; }
     void setTextDecorationsInEffect(TextDecoration v) { inherited_flags._text_decorations = v; }
@@ -1530,6 +1532,7 @@ public:
     static Length initialLineHeight() { return Length(-100.0, Percent); }
     static ETextAlign initialTextAlign() { return TASTART; }
     static TextAlignLast initialTextAlignLast() { return TextAlignLastAuto; }
+    static TextJustify initialTextJustify() { return TextJustifyAuto; }
     static TextDecoration initialTextDecoration() { return TextDecorationNone; }
 #if ENABLE(CSS3_TEXT)
     static TextUnderlinePosition initialTextUnderlinePosition() { return TextUnderlinePositionAuto; }

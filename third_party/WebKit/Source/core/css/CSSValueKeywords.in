@@ -229,6 +229,13 @@ justify
 -webkit-center
 -webkit-match-parent
 //
+// CSS_PROP_TEXT_JUSTIFY:
+//
+//auto
+//none
+inter-word
+distribute
+//
 // CSS_PROP_LIST_STYLE_POSITION:
 //
 outside

@@ -373,6 +373,10 @@ enum TextAlignLast {
     TextAlignLastAuto, TextAlignLastStart, TextAlignLastEnd, TextAlignLastLeft, TextAlignLastRight, TextAlignLastCenter, TextAlignLastJustify
 };
 
+enum TextJustify {
+    TextJustifyAuto, TextJustifyNone, TextJustifyInterWord, TextJustifyDistribute
+};
+
 #if ENABLE(CSS3_TEXT)
 enum TextUnderlinePosition {
     // FIXME: Implement support for 'under left' and 'under right' values.
