@@ -78,6 +78,13 @@ public abstract class InsertionHandleController implements CursorController {
         showPastePopup();
     }
 
+    /**
+     * @return whether the handle is being dragged.
+     */
+    public boolean isDragging() {
+        return mHandle != null && mHandle.isDragging();
+    }
+
     /** Shows the handle at the given coordinates, as long as automatic showing is allowed */
     public void onCursorPositionChanged() {
         if (mAllowAutomaticShowing) {
