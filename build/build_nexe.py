@@ -225,6 +225,20 @@ class Builder(object):
     self.finalize_pexe = options.finalize_pexe and arch == 'pnacl'
     self.gomacc = GetGomaPath(self.osname, arch, toolname)
 
+    # Use unoptimized native objects for debug IRT builds for faster compiles.
+    if (self.is_pnacl_toolchain
+        and (self.outtype == 'nlib'
+             or self.outtype == 'nexe')
+        and self.arch != 'pnacl'):
+      if (options.build_config is not None
+          and options.build_config == 'Debug'):
+        self.compile_options.extend(['--pnacl-allow-translate',
+                                     '--pnacl-allow-native',
+                                     '-arch', self.arch,
+                                     '-O0'])
+        # Also use fast translation because we are still translating libc/libc++
+        self.link_options.append('-Wt,-O0')
+
     self.Log('Compile options: %s' % self.compile_options)
     self.Log('Linker options: %s' % self.link_options)
 
@@ -682,6 +696,8 @@ def Main(argv):
                     help='Enable verbosity', action='store_true')
   parser.add_option('-t', '--toolpath', dest='toolpath',
                     help='Set the path for of the toolchains.')
+  parser.add_option('--config-name', dest='build_config',
+                    help='GYP build configuration name (Release/Debug)')
   options, files = parser.parse_args(argv[1:])
 
   if not argv:
