@@ -3424,6 +3424,26 @@ template<> inline CSSPrimitiveValue::operator ObjectFit() const
     }
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EFillSizeType fillSize)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_VALUE_ID;
+    switch (fillSize) {
+    case Contain:
+        m_value.valueID = CSSValueContain;
+        break;
+    case Cover:
+        m_value.valueID = CSSValueCover;
+        break;
+    case SizeNone:
+        m_value.valueID = CSSValueNone;
+        break;
+    case SizeLength:
+    default:
+        ASSERT_NOT_REACHED();
+    }
+}
+
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontSmoothingMode smoothing)
     : CSSValue(PrimitiveClass)
 {

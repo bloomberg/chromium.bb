@@ -93,6 +93,15 @@ LengthSize animatableValueToLengthSize(const AnimatableValue* value, const Style
         animatableValueToLength(animatableLengthSize->height(), state, range));
 }
 
+template <CSSPropertyID property>
+void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, const StyleResolverState& state)
+{
+    if (value->isLengthSize())
+        fillLayer->setSize(FillSize(SizeLength, animatableValueToLengthSize(value, state, NonNegativeValues)));
+    else
+        state.styleMap().mapFillSize(property, fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
+}
+
 SVGLength animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
 {
     SVGLength length = toAnimatableSVGLength(value)->toSVGLength();
@@ -135,6 +144,9 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
         case CSSPropertyWebkitMaskPositionY:
             fillLayer->setYPosition(animatableValueToLength(values[i].get(), state));
             break;
+        case CSSPropertyBackgroundSize:
+            setFillSize<property>(fillLayer, values[i].get(), state);
+            break;
         default:
             ASSERT_NOT_REACHED();
         }
@@ -153,6 +165,9 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
         case CSSPropertyBackgroundPositionY:
         case CSSPropertyWebkitMaskPositionY:
             fillLayer->clearYPosition();
+            break;
+        case CSSPropertyBackgroundSize:
+            fillLayer->clearSize();
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -184,6 +199,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyBackgroundPositionY:
         setOnFillLayers<CSSPropertyBackgroundPositionY>(style->accessBackgroundLayers(), value, state);
+        return;
+    case CSSPropertyBackgroundSize:
+        setOnFillLayers<CSSPropertyBackgroundSize>(style->accessBackgroundLayers(), value, state);
         return;
     case CSSPropertyBaselineShift:
         style->setBaselineShiftValue(toAnimatableSVGLength(value)->toSVGLength());

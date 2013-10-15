@@ -50,6 +50,7 @@
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/platform/Length.h"
 #include "core/platform/LengthBox.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -82,7 +83,7 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
     case FitContent:
         return AnimatableUnknown::create(CSSPrimitiveValue::create(length));
     case Undefined:
-        return AnimatableUnknown::create(CSSPrimitiveValue::create(CSSValueNone));
+        return AnimatableUnknown::create(CSSValueNone);
     case ExtendToZoom: // Does not apply to elements.
     case Relative: // Does not get used by interpolable properties.
         ASSERT_NOT_REACHED();
@@ -97,7 +98,7 @@ inline static PassRefPtr<AnimatableValue> createFromDouble(double value, Animata
     return AnimatableDouble::create(value, constraint);
 }
 
-inline static PassRefPtr<AnimatableValue> createFromLengthBox(const LengthBox lengthBox, const RenderStyle* style)
+inline static PassRefPtr<AnimatableValue> createFromLengthBox(const LengthBox& lengthBox, const RenderStyle* style)
 {
     return AnimatableLengthBox::create(
         createFromLength(lengthBox.left(), style),
@@ -106,11 +107,26 @@ inline static PassRefPtr<AnimatableValue> createFromLengthBox(const LengthBox le
         createFromLength(lengthBox.bottom(), style));
 }
 
-inline static PassRefPtr<AnimatableValue> createFromLengthSize(const LengthSize lengthSize, const RenderStyle* style)
+inline static PassRefPtr<AnimatableValue> createFromLengthSize(const LengthSize& lengthSize, const RenderStyle* style)
 {
     return AnimatableLengthSize::create(
         createFromLength(lengthSize.width(), style),
         createFromLength(lengthSize.height(), style));
+}
+
+inline static PassRefPtr<AnimatableValue> createFromFillSize(const FillSize& fillSize, const RenderStyle* style)
+{
+    switch (fillSize.type) {
+    case SizeLength:
+        return createFromLengthSize(fillSize.size, style);
+    case Contain:
+    case Cover:
+    case SizeNone:
+        return AnimatableUnknown::create(CSSPrimitiveValue::create(fillSize.type));
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
 }
 
 template<CSSPropertyID property>
@@ -131,6 +147,10 @@ inline static PassRefPtr<AnimatableValue> createFromFillLayers(const FillLayer* 
             if (!fillLayer->isYPositionSet())
                 break;
             values.append(createFromLength(fillLayer->yPosition(), style));
+        } else if (property == CSSPropertyBackgroundSize) {
+            if (!fillLayer->isSizeSet())
+                break;
+            values.append(createFromFillSize(fillLayer->size(), style));
         } else {
             ASSERT_NOT_REACHED();
         }
@@ -170,6 +190,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromFillLayers<CSSPropertyBackgroundPositionX>(style->backgroundLayers(), style);
     case CSSPropertyBackgroundPositionY:
         return createFromFillLayers<CSSPropertyBackgroundPositionY>(style->backgroundLayers(), style);
+    case CSSPropertyBackgroundSize:
+        return createFromFillLayers<CSSPropertyBackgroundSize>(style->backgroundLayers(), style);
     case CSSPropertyBaselineShift:
         return AnimatableSVGLength::create(style->baselineShiftValue());
     case CSSPropertyBorderBottomColor:

@@ -31,7 +31,9 @@
 #ifndef AnimatableUnknown_h
 #define AnimatableUnknown_h
 
+#include "CSSValueKeywords.h"
 #include "core/animation/AnimatableValue.h"
+#include "core/css/CSSValuePool.h"
 
 namespace WebCore {
 
@@ -42,6 +44,10 @@ public:
     static PassRefPtr<AnimatableUnknown> create(PassRefPtr<CSSValue> value)
     {
         return adoptRef(new AnimatableUnknown(value));
+    }
+    static PassRefPtr<AnimatableUnknown> create(CSSValueID value)
+    {
+        return adoptRef(new AnimatableUnknown(cssValuePool().createIdentifierValue(value)));
     }
 
     PassRefPtr<CSSValue> toCSSValue() const { return m_value; }
