@@ -3,7 +3,7 @@
 
 <p>
 The goal of this doc is to get you started
-on building packaged apps with the
+on building Chrome Apps with the
 <a href="http://www.sencha.com/products/extjs">Sencha Ext JS</a> framework.
 To achieve this goal,
 we will dive into a media player app built by Sencha.
@@ -28,7 +28,7 @@ to build a media player app using Sencha Ext JS:
   <li>Create <a href="app_lifecycle.html#eventpage">event page</a>,
     <code>background.js</code>.</li>
   <li><a href="app_external.html#sandboxing">Sandbox</a> app's logic.</li>
-  <li>Communicate between packaged app and sandboxed files.</li>
+  <li>Communicate between Chrome App and sandboxed files.</li>
   <li>Discover media servers.</li>
   <li>Explore and play media.</li>
   <li>Save media offline.</li>
@@ -37,7 +37,7 @@ to build a media player app using Sencha Ext JS:
 <h2 id="first">Create manifest</h2>
 
 <p>
-All packaged apps require a
+All Chrome Apps require a
 <a href="manifest.html">manifest file</a>
 which contains the information Chrome needs to launch apps.
 As indicated in the manifest,
@@ -49,9 +49,9 @@ accessed and played regardless of connectivity.
 <p>
 The "sandbox" field is used
 to sandbox the app's main logic in a unique origin.
-All sandboxed content is exempt from the packaged app
+All sandboxed content is exempt from the Chrome App
 <a href="contentSecurityPolicy.html">Content Security Policy</a>,
-but cannot directly access the packaged app APIs. 
+but cannot directly access the Chrome App APIs. 
 The manifest also includes the "socket" permission;
 the media player app uses the <a href="socket.html">socket API</a>
 to connect to a media server over the network.
@@ -94,7 +94,7 @@ to connect to a media server over the network.
 <h2 id="second">Create event page</h2>
 
 <p>
-All packaged apps require <code>background.js</code>
+All Chrome Apps require <code>background.js</code>
 to launch the application.
 The media player's main page, <code>index.html</code>,
 opens in a window with the specified dimensions:
@@ -116,7 +116,7 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
 
 <h2 id="three">Sandbox app's logic</h2>
 
-<p>Packaged apps run in a controlled environment
+<p>Chrome Apps run in a controlled environment
 that enforces a strict <a href="contentSecurityPolicy.html">Content Security Policy (CSP)</a>.
 The media player app needs some higher privileges to render the Ext JS components.
 To comply with CSP and execute the app logic,
@@ -145,7 +145,7 @@ that acts as a sandbox environment:
 
 <p>
 The <a href="http://senchaprosvcs.github.com/GooglePlayer/docs/output/source/app.html#VP-Application">app.js</a> script executes all the Ext JS code and renders the media player views.
-Since this script is sandboxed, it cannot directly access the packaged app APIs.
+Since this script is sandboxed, it cannot directly access the Chrome App APIs.
 Communication between <code>app.js</code> and non-sandboxed files is done using the
 <a href="https://developer.mozilla.org/en-US/docs/DOM/window.postMessage">HTML5 Post Message API</a>.
 </p>
@@ -153,11 +153,11 @@ Communication between <code>app.js</code> and non-sandboxed files is done using 
 <h2 id="four">Communicate between files</h2>
 
 <p>
-In order for the media player app to access packaged app APIs,
+In order for the media player app to access Chrome App APIs,
 like query the network for media servers, <code>app.js</code> posts messages
 to <a href="https://github.com/GoogleChrome/sencha-video-player-app/blob/master/index.js">index.js</a>.
 Unlike the sandboxed <code>app.js</code>,
-<code>index.js</code> can directly access the packaged app APIs.
+<code>index.js</code> can directly access the Chrome App APIs.
 </p>
 
 <p>
@@ -252,7 +252,7 @@ calls <a href="https://github.com/GoogleChrome/sencha-video-player-app/blob/mast
 </p>
 
 <p>
-The <code>Upnp library</code> uses the packaged app
+The <code>Upnp library</code> uses the Chrome App
 <a href="app_network.html">socket API</a>
 to connect the media player app with any discovered media servers
 and receive media data from the media server.
@@ -362,7 +362,7 @@ into a document.
 
 <p>
 <code>Upnp.js</code> connects to discovered media servers
-and receives media data using the packaged app socket API:
+and receives media data using the Chrome App socket API:
 </p>
 
 <pre data-filename="Upnp.js">

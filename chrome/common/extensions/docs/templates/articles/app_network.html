@@ -1,7 +1,7 @@
 <h1>Network Communications</h1>
 
 <p>
-Packaged apps can act as a network client
+Chrome Apps can act as a network client
 for TCP and UDP connections.
 This doc shows you how to use TCP and UDP
 to send and receive data over the network.
@@ -21,7 +21,7 @@ and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/udp"
 <h2 id="manifest">Manifest requirements</h2>
 
 <p>
-For packaged apps that use TCP or UDP,
+For Chrome Apps that use TCP or UDP,
 add the "socket" permission to the manifest
 and specify the IP end point permission rules.
 For example:
@@ -66,7 +66,7 @@ Examples of socket permission rules:
 <h2 id="tcp">Using TCP</h2>
 
 <p>
-Packaged apps can make connections to any service that supports TCP.
+Chrome Apps can make connections to any service that supports TCP.
 </p>
 
 <h3 id="connecting">Connecting to a socket</h3>
@@ -120,7 +120,7 @@ chrome.socket.read(socketId, null, function(readInfo) {
 <h2 id="udp">Using UDP</h2>
 
 <p>
-Packaged apps can make connections to any service that supports UDP.
+Chrome Apps can make connections to any service that supports UDP.
 </p>
 
 <h3 id="sending">Sending data</h3>

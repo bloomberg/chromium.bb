@@ -2,7 +2,7 @@
 
 
 <p>
-The <a href="app_architecture.html#security">packaged apps security model</a> disallows
+The <a href="app_architecture.html#security">Chrome Apps security model</a> disallows
 external content in iframes and
 the use of inline scripting and <code>eval()</code>.
 You can override these restrictions,
@@ -83,7 +83,7 @@ sample.
 <p>
 The <code>webview</code> tag allows you to embed external web content in your
 app, for example, a web page. It replaces iframes that point to remote URLs,
-which are disabled inside packaged apps. Unlike iframes, the
+which are disabled inside Chrome Apps. Unlike iframes, the
 <code>webview</code> tag runs in a separate process. This means that an exploit
 inside of it will still be isolated and won't be able to gain elevated
 privileges. Further, since its storage (cookies, etc.) is isolated from the app,
@@ -269,13 +269,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
 Generally speaking on the web,
 you want to specify the exact origin
 from where the message is sent.
-Packaged apps have no access
+Chrome Apps have no access
 to the unique origin of sandboxed content,
 so you can only whitelist all origins
 as acceptable origins ('*').
 On the receiving end,
 you generally want to check the origin;
-but since packaged apps content is contained,
+but since Chrome Apps content is contained,
 it isn't necessary.
 To find out more,
 see <a href="https://developer.mozilla.org/en/DOM/window.postMessage">window.postMessage</a>.

@@ -6,10 +6,10 @@ If you're unfamiliar with Content Security Policy (CSP),
 <a href="http://www.html5rocks.com/en/tutorials/security/content-security-policy/">An Introduction to Content Security Policy</a>
 is a good starting point.
 It covers the broader web platform view of CSP;
-packaged apps CSP isn't as flexible.
+Chrome App CSP isn't as flexible.
 You should read the
 <a href="/extensions/contentSecurityPolicy.html">Chrome extension Content Security Policy</a>
-as it's the foundation for the packaged app CSP.
+as it's the foundation for the Chrome App CSP.
 For brevity's sake,
 we don't repeat the same information here.
 </p>
@@ -25,19 +25,19 @@ you'll need to learn how to do fundamental tasks differently.
 
 <p>
 The purpose of this doc is to tell you
-exactly what the CSP policy is for packaged apps,
+exactly what the CSP policy is for Chrome Apps,
 what you need to do to comply with it,
 and how you can still do those fundamental tasks
 in a way that is CSP&ndash;compliant.
 </p>
 
-<h2 id="what">What is the CSP for packaged apps?</h2>
+<h2 id="what">What is the CSP for Chrome Apps?</h2>
 
-<p>The content security policy for packaged apps restricts
+<p>The content security policy for Chrome Apps restricts
 you from doing the following:</p>
 
 <ul>
-	<li>You can’t use inline scripting in your packaged app pages.
+	<li>You can’t use inline scripting in your Chrome App pages.
 		The restriction bans both &lt;script> blocks and
 		event handlers (&lt;button onclick="...">).</li>
 	<li>You can’t reference any external resources in any of your app files
@@ -60,18 +60,18 @@ media-src *;
 </pre>
 
 <p>
-Your packaged app can only refer to scripts and objects
+Your Chrome App can only refer to scripts and objects
 within your app, with the exception of media files
 (apps can refer to video and audio outside the package).
 Chrome extensions will let you relax the default Content Security Policy;
-packaged apps won’t.
+Chrome Apps won’t.
 </p>
 
 <h2 id="how">How to comply with CSP</h2>
 
 <p>
 All JavaScript and all resources should be local
-(everything gets packaged in your packaged app).
+(everything gets packaged in your Chrome App).
 </p>
 
 <h2 id="but">"But then how do I..."</h2>
@@ -96,7 +96,7 @@ but it will require some work on your part and there are restrictions.
 You will need to use sandboxing to isolate any content
 that you want to do ‘eval’ things to.
 Sandboxing lifts CSP on the content that you specify.
-If you want to use the very powerful Chrome APIs in your packaged app,
+If you want to use the very powerful Chrome APIs in your Chrome App,
 your sandboxed content can't directly interact with these APIs
 (see <a href="app_external.html#sandboxing">Sandbox local content</a>).
 </p>

@@ -22,13 +22,13 @@ our client-side applications are much more complex than before.
 Application development requires collaboration from multiple developers.
 Writing <strong>maintainable</strong> and
 <strong>reusable</strong> code is crucial in the new web app era.
-The Chrome packaged app, with its rich client-side features, is no exception. 
+The Chrome App, with its rich client-side features, is no exception.
 </p>
 
 <p>
 Design patterns are important to write maintainable and reusable code.
 A pattern is a reusable solution that can be applied to commonly occurring problems in software design &mdash;
-in our case &mdash; writing Chrome packaged apps.
+in our case &mdash; writing Chrome Apps.
 We recommend that developers decouple the app
 into a series of independent components following the MVC pattern.
 </p>
@@ -90,7 +90,7 @@ it is stored in an instance of the model.
 <p>
 View is what's presented to the users and how users interact with the app.
 The view is made with HTML, CSS, JavaScript and often templates.
-This part of your Chrome packaged app has access to the DOM.
+This part of your Chrome App has access to the DOM.
 </p>
 
 <p>
@@ -115,7 +115,7 @@ when the user checks an item as completed,
 the click is forwarded to the controller.
 The controller modifies the model to mark item as completed.
 If the data needs to be persistent, it also makes an async save to the server.
-In rich client-side web app development such as Chrome packaged apps,
+In rich client-side web app development such as Chrome Apps,
 keeping the data persistent in local storage is also crucial.
 In this case, the controller also handles saving the data
 to the client-side storage such as <a href="app_storage.html">FileSystem API</a>.
@@ -159,7 +159,7 @@ to application developers and it enables:
 <p>
 There are many different ways of implementing persistence
 with an MVC framework, each with different trade&ndash;offs.
-When writing Chrome packaged apps,
+When writing Chrome Apps,
 choose the frameworks with MVC and persistence patterns
 that feel natural to you and fit you application needs.
 </p>
@@ -196,7 +196,7 @@ against your persistent data layer
 This is interesting in the modern web app design
 because you often interact with more than one persistent data layer
 such as a remote server and browser’s local storage.
-Chrome package apps provides both
+Chrome Apps provides both
 <a href="storage.html">Chrome Storage API</a> and
 <a href="fileSystem.html">HTML 5 fileSystem API</a> for client side storage.
 </p>
@@ -286,9 +286,9 @@ Cons:
 <h3 id="recommended">Recommended MVC frameworks</h3>
 
 <p>
-MVC is crucial to designing Chrome packaged apps.
+MVC is crucial to designing Chrome Apps.
 We recommend the following <a href="contentSecurityPolicy.html">CSP&ndash;Compliant</a> MVC frameworks
-for writing secure and scalable Chrome packaged apps:
+for writing secure and scalable Chrome Apps:
 </p>
 
 <ul>
