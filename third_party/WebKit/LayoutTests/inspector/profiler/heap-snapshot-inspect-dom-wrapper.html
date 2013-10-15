@@ -16,9 +16,9 @@ function test()
     WebInspector.showPanel("profiles");
     WebInspector.panels.profiles._createTemporaryProfile("HEAP");
     var heapProfileType =  WebInspector.panels.profiles.getProfileType("HEAP");
-    InspectorTest.addSniffer(heapProfileType, "finishHeapSnapshot", finishHeapSnapshot);
+    heapProfileType.addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, finishHeapSnapshot);
     InspectorTest.addSniffer(heapProfileType, "_snapshotReceived", snapshotReceived);
-    HeapProfilerAgent.takeHeapSnapshot(function() { });
+    heapProfileType._takeHeapSnapshot(function() {});
 
     function finishHeapSnapshot(uid)
     {

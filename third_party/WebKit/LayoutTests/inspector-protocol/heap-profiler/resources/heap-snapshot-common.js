@@ -28,8 +28,18 @@ InspectorTest.takeHeapSnapshot = function(callback)
         var profileId = messageObject["params"]["header"]["uid"];
         InspectorTest.sendCommand("HeapProfiler.getHeapSnapshot", { "uid": profileId }, didGetHeapSnapshot);
 
+        var chunks = [];
+        InspectorTest.eventHandler["HeapProfiler.addHeapSnapshotChunk"] = function(messageObject)
+        {
+            chunks.push(messageObject["params"]["chunk"]);
+        }
+
         function didGetHeapSnapshot(messageObject)
         {
+            var serializedSnapshot = chunks.join("");
+            var parsed = JSON.parse(serializedSnapshot);
+            var snapshot = new WebInspector.JSHeapSnapshot(parsed, new WebInspector.HeapSnapshotProgress());
+            callback(snapshot);
             InspectorTest.log("SUCCESS: didGetHeapSnapshot");
             InspectorTest.sendCommand("HeapProfiler.removeProfile", { "uid": profileId }, didRemoveSnapshot);
         }
@@ -38,21 +48,6 @@ InspectorTest.takeHeapSnapshot = function(callback)
         {
             InspectorTest.completeTest();
         }
-
-    }
-
-    var chunks = [];
-    InspectorTest.eventHandler["HeapProfiler.addHeapSnapshotChunk"] = function(messageObject)
-    {
-        chunks.push(messageObject["params"]["chunk"]);
-    }
-
-    InspectorTest.eventHandler["HeapProfiler.finishHeapSnapshot"] = function(messageObject)
-    {
-        var serializedSnapshot = chunks.join("");
-        var parsed = JSON.parse(serializedSnapshot);
-        var snapshot = new WebInspector.JSHeapSnapshot(parsed, new WebInspector.HeapSnapshotProgress());
-        callback(snapshot);
     }
 
     InspectorTest.sendCommand("HeapProfiler.takeHeapSnapshot", {});

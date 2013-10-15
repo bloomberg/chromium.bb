@@ -33,10 +33,10 @@ function test()
         }
 
         InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
-        function getHeapSnapshotMock(uid) {
+        function getHeapSnapshotMock(uid, callback) {
             for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
                 dispatcher.addHeapSnapshotChunk(uid, sourceStringified.slice(i, i + partSize));
-            dispatcher.finishHeapSnapshot(uid);
+            callback();
         }
 
         dispatcher.addProfileHeader({

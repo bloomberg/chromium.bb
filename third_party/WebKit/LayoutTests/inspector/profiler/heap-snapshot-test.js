@@ -694,13 +694,13 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
         maxJSObjectId: snapshot.maxJSObjectId
     });
     delete snapshot.maxJSObjectId;
-    function pushGeneratedSnapshot(uid)
+    function pushGeneratedSnapshot(uid, callback)
     {
         snapshot.snapshot.typeId = "HEAP";
         snapshot.snapshot.title = profile.title;
         snapshot.snapshot.uid = profile.uid;
         profileType.addHeapSnapshotChunk(uid, JSON.stringify(snapshot));
-        profileType.finishHeapSnapshot(uid);
+        callback();
     }
     InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", pushGeneratedSnapshot);
     InspectorTest._takeAndOpenSnapshotCallback = callback;

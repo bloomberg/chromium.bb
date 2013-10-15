@@ -217,7 +217,7 @@ void InspectorHeapProfilerAgent::getHeapSnapshot(ErrorString* errorString, int r
         OutputStream(InspectorFrontend::HeapProfiler* frontend, unsigned uid)
             : m_frontend(frontend), m_uid(uid) { }
         void Write(const String& chunk) { m_frontend->addHeapSnapshotChunk(m_uid, chunk); }
-        void Close() { m_frontend->finishHeapSnapshot(m_uid); }
+        void Close() { }
     private:
         InspectorFrontend::HeapProfiler* m_frontend;
         int m_uid;
