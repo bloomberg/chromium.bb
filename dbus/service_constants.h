@@ -1123,17 +1123,14 @@ const char kNfcAdapterServiceName[] = "org.neard";
 const char kNfcAdapterInterface[] = "org.neard.Adapter";
 
 // NFC Adapter methods.
-const char kGetProperties[] = "GetProperties";
-const char kSetProperty[] = "SetProperty";
 const char kStartEmulation[] = "StartEmulation";
 const char kStartPollLoop[] = "StartPollLoop";
 const char kStopEmulation[] = "StopEmulation";
 const char kStopPollLoop[] = "StopPollLoop";
 
 // NFC Adapter signals.
-const char kPropertyChanged[] = "PropertyChanged";
-const char kTagFound[] = "TagFound";
-const char kTagLost[] = "TagLost";
+const char kTagFoundSignal[] = "TagFound";
+const char kTagLostSignal[] = "TagLost";
 
 // NFC Adapter properties.
 const char kDevicesProperty[] = "Devices";
@@ -1156,12 +1153,7 @@ const char kNfcDeviceServiceName[] = "org.neard";
 const char kNfcDeviceInterface[] = "org.neard.Device";
 
 // NFC Device methods.
-const char kGetProperties[] = "GetProperties";
-const char kSetProperty[] = "SetProperty";
 const char kPush[] = "Push";
-
-// NFC Device signals.
-const char kPropertyChanged[] = "PropertyChanged";
 
 // NFC Device properties.
 const char kRecordsProperty[] = "Records";
@@ -1175,17 +1167,14 @@ const char kNfcManagerServicePath[] = "/";
 const char kNfcManagerInterface[] = "org.neard.Manager";
 
 // NFC Manager methods.
-const char kGetProperties[] = "GetProperties";
-const char kSetProperty[] = "SetProperty";
 const char kRegisterHandoverAgent[] = "RegisterHandoverAgent";
 const char kUnregisterHandoverAgent[] = "UnregisterHandoverAgent";
 const char kRegisterNDEFAgent[] = "RegisterNDEFAgent";
 const char kUnregisterNDEFAgent[] = "UnregisterNDEFAgent";
 
 // NFC Manager signals.
-const char kPropertyChanged[] = "PropertyChanged";
-const char kAdapterAdded[] = "AdapterAdded";
-const char kAdapterRemoved[] = "AdapterRemoved";
+const char kAdapterAddedSignal[] = "AdapterAdded";
+const char kAdapterRemovedSignal[] = "AdapterRemoved";
 
 // NFC Manager properties.
 const char kAdaptersProperty[] = "Adapters";
@@ -1201,12 +1190,7 @@ const char kNfcTagServiceName[] = "org.neard";
 const char kNfcTagInterface[] = "org.neard.Tag";
 
 // NFC Tag methods.
-const char kGetProperties[] = "GetProperties";
-const char kSetProperty[] = "SetProperty";
 const char kWrite[] = "Write";
-
-// NFC Tag signals.
-const char kPropertyChanged[] = "PropertyChanged";
 
 // NFC Tag properties.
 const char kProtocolProperty[] = "Protocol";
@@ -1226,9 +1210,6 @@ namespace nfc_record {
 // NFC Record service identifiers.
 const char kNfcRecordServiceName[] = "org.neard";
 const char kNfcRecordInterface[] = "org.neard.Record";
-
-// NFC Record methods.
-const char kGetProperties[] = "GetProperties";
 
 // NFC Record properties.
 const char kTypeProperty[] = "Type";
@@ -1288,14 +1269,19 @@ const char kNDEFProperty[] = "NDEF";
 const char kRecordProperty[] = "Record";
 }  // namespace nfc_ndef_agent
 
-namespace nfc_protocol {
+namespace nfc_common {
 // NFC Adapter/Tag protocol values.
-const char kFelica[] = "Felica";
-const char kMifare[] = "MIFARE";
-const char kJewel[] = "Jewel";
-const char kIsoDep[] = "ISO-DEP";
-const char kNfcDep[] = "NFC-DEP";
-}  // namespace nfc_protocol
+const char kProtocolFelica[] = "Felica";
+const char kProtocolMifare[] = "MIFARE";
+const char kProtocolJewel[] = "Jewel";
+const char kProtocolIsoDep[] = "ISO-DEP";
+const char kProtocolNfcDep[] = "NFC-DEP";
+
+// Common methods for NFC property access and signals.
+const char kGetProperties[] = "GetProperties";
+const char kSetProperty[] = "SetProperty";
+const char kPropertyChangedSignal[] = "PropertyChanged";
+}  // namespace nfc_common
 
 namespace nfc_error {
 // NFC errors.
