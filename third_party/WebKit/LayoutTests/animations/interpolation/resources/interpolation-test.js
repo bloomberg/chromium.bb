@@ -220,6 +220,20 @@
     return targetContainer;
   }
 
+  function sanitizeUrls(value) {
+    var matches = value.match(/url\([^\)]*\)/g);
+    if (matches !== null) {
+      for (var i = 0; i < matches.length; ++i) {
+        var url = /url\(([^\)]*)\)/g.exec(matches[i])[1];
+        var anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.pathname = '...' + anchor.pathname.substring(anchor.pathname.lastIndexOf('/'));
+        value = value.replace(matches[i], 'url(' + anchor.href + ')');
+      }
+    }
+    return value;
+  }
+
   function makeInterpolationTest(fraction, testId, caseId, params, expectation) {
     console.assert(expectation === undefined || !isRefTest);
     // If the prefixed property is not supported, try to unprefix it.
@@ -251,7 +265,7 @@
         var pass = normalizeValue(value) === normalizeValue(parsedExpectation);
         result = pass ? 'PASS: ' : 'FAIL: ';
         reason = pass ? '' : ', expected [' + expectation + ']';
-        value = pass ? expectation : value;
+        value = pass ? expectation : sanitizeUrls(value);
       }
       return result + params.property + ' from [' + params.from + '] to ' +
           '[' + params.to + '] was [' + value + ']' +

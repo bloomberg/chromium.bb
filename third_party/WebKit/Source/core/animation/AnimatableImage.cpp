@@ -39,7 +39,8 @@ namespace WebCore {
 
 PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
 {
-    const AnimatableImage* image = toAnimatableImage(value);
+    if (fraction <= 0 || fraction >= 1)
+        return defaultInterpolateTo(this, value, fraction);
     RefPtr<CSSValue> fromValue = this->toCSSValue();
     if (!fromValue->isImageValue() && !fromValue->isImageGeneratorValue()) {
         if (!m_image->isImageResource())
@@ -47,6 +48,7 @@ PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue
         ImageResource* resource = static_cast<ImageResource*>(m_image->data());
         fromValue = CSSImageValue::create(resource->url(), m_image.get());
     }
+    const AnimatableImage* image = toAnimatableImage(value);
     RefPtr<CSSValue> toValue = image->toCSSValue();
     if (!toValue->isImageValue() && !toValue->isImageGeneratorValue()) {
         if (!image->m_image->isImageResource())
@@ -55,7 +57,7 @@ PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue
         toValue = CSSImageValue::create(resource->url(), image->m_image.get());
     }
     RefPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(fromValue, toValue);
-    crossfadeValue->setPercentage(CSSPrimitiveValue::create(clampTo<double>(fraction, 0.0, 1.0), CSSPrimitiveValue::CSS_NUMBER));
+    crossfadeValue->setPercentage(CSSPrimitiveValue::create(fraction, CSSPrimitiveValue::CSS_NUMBER));
     return create(StyleGeneratedImage::create(crossfadeValue.get()).get());
 }
 
