@@ -53,7 +53,14 @@ static FuncNameMapping g_function_map[] = {
   {"readdir", HandleReaddir},
   {"closedir", HandleClosedir},
   {"mkdir", HandleMkdir},
+  {"rmdir", HandleRmdir},
+  {"chdir", HandleChdir},
+  {"getcwd", HandleGetcwd},
   {"gethostbyname", HandleGethostbyname},
+  {"connect", HandleConnect},
+  {"send", HandleSend},
+  {"recv", HandleRecv},
+  {"close", HandleClose},
   {NULL, NULL},
 };
 
@@ -63,7 +70,8 @@ static pthread_t g_handle_message_thread;
 /**
  * Create a new PP_Var from a C string.
  * @param[in] str The string to convert.
- * @return A new PP_Var with the contents of |str|. */
+ * @return A new PP_Var with the contents of |str|.
+ */
 struct PP_Var CStrToVar(const char* str) {
   if (ppb_var_interface != NULL) {
     return ppb_var_interface->VarFromUtf8(str, strlen(str));
@@ -97,7 +105,8 @@ char* VprintfToNewString(const char* format, va_list args) {
  * Printf to a newly allocated C string.
  * @param[in] format A print format string.
  * @param[in] ... The printf arguments.
- * @return The newly constructed string. Caller takes ownership. */
+ * @return The newly constructed string. Caller takes ownership.
+ */
 char* PrintfToNewString(const char* format, ...) {
   va_list args;
   char* result;
@@ -111,7 +120,8 @@ char* PrintfToNewString(const char* format, ...) {
  * Printf to a new PP_Var.
  * @param[in] format A print format string.
  * @param[in] ... The printf arguments.
- * @return A new PP_Var. */
+ * @return A new PP_Var.
+ */
 struct PP_Var PrintfToVar(const char* format, ...) {
   if (ppb_var_interface != NULL) {
     char* string;
@@ -136,7 +146,8 @@ struct PP_Var PrintfToVar(const char* format, ...) {
  * @param[in] var The PP_Var to convert.
  * @param[out] buffer The buffer to write to.
  * @param[in] length The length of |buffer|.
- * @return The number of characters written. */
+ * @return The number of characters written.
+ */
 uint32_t VarToCStr(struct PP_Var var, char* buffer, uint32_t length) {
   if (ppb_var_interface != NULL) {
     uint32_t var_length;
@@ -172,7 +183,8 @@ uint32_t VarToCStr(struct PP_Var var, char* buffer, uint32_t length) {
  * @param[out] out_function The function name.
  * @param[out] out_params An array of strings, one for each parameter parsed.
  * @param[in] max_params The maximum number of parameters to parse.
- * @return The number of parameters parsed. */
+ * @return The number of parameters parsed.
+ */
 static size_t ParseMessage(char* message,
                            char** out_function,
                            char** out_params,
@@ -208,7 +220,8 @@ static size_t ParseMessage(char* message,
 /**
  * Given a function name, look up its handler function.
  * @param[in] function_name The function name to look up.
- * @return The handler function mapped to |function_name|. */
+ * @return The handler function mapped to |function_name|.
+ */
 static HandleFunc GetFunctionByName(const char* function_name) {
   FuncNameMapping* map_iter = g_function_map;
   for (; map_iter->name; ++map_iter) {
@@ -220,9 +233,11 @@ static HandleFunc GetFunctionByName(const char* function_name) {
   return NULL;
 }
 
-/** Handle as message from JavaScript on the worker thread.
+/**
+ * Handle as message from JavaScript on the worker thread.
  *
- * @param[in] message The message to parse and handle. */
+ * @param[in] message The message to parse and handle.
+ */
 static void HandleMessage(char* message) {
   char* function_name;
   char* params[MAX_PARAMS];
@@ -248,15 +263,12 @@ static void HandleMessage(char* message) {
     /* Error. */
     struct PP_Var var;
     if (output != NULL) {
-      var = PrintfToVar("Error: Function \"%s\" returned error %d. "
-                        "Additional output: %s",
-                        function_name,
-                        result,
-                        output);
+      var = PrintfToVar("Error: \"%s\" failed: %d: %s.", function_name,
+                        result, output);
       free(output);
     } else {
       var = PrintfToVar(
-          "Error: Function \"%s\" returned error %d.", function_name, result);
+          "Error: \"%s\" failed: %d.", function_name, result);
     }
 
     /* Post the error to JavaScript, so the user can see it. */
@@ -271,9 +283,11 @@ static void HandleMessage(char* message) {
   }
 }
 
-/** A worker thread that handles messages from JavaScript.
+/**
+ * A worker thread that handles messages from JavaScript.
  * @param[in] user_data Unused.
- * @return unused. */
+ * @return unused.
+ */
 void* HandleMessageThread(void* user_data) {
   while (1) {
     char* message = DequeueMessage();

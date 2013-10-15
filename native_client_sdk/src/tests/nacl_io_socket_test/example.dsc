@@ -25,7 +25,6 @@
   'DEST': 'tests',
   'NAME': 'nacl_io_socket_test',
   'TITLE': 'NaCl IO Socket test',
-  'PRE': '''\nCHROME_ARGS = --allow-nacl-socket-api=localhost\n''',
   'SOCKET_PERMISSIONS': [
     "tcp-listen:*:*",
     "tcp-connect",

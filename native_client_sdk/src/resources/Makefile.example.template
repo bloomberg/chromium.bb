@@ -32,6 +32,10 @@ VALID_TOOLCHAINS := {{' '.join(tools)}}
 NACL_SDK_ROOT ?= $(abspath $(CURDIR)/{{rel_sdk}})
 include $(NACL_SDK_ROOT)/tools/common.mk
 
+[[if desc.get('SOCKET_PERMISSIONS'):]]
+CHROME_ARGS += --allow-nacl-socket-api=localhost
+[[]]
+
 TARGET = {{targets[0]['NAME']}}
 [[ExpandDict('DEPS', targets[0].get('DEPS', []))]]
 [[ExpandDict('LIBS', targets[0].get('LIBS', []), pre_list=['$(DEPS)'])]]

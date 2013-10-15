@@ -1,18 +1,19 @@
 /* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 #include "handlers.h"
 
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -31,12 +32,14 @@
 
 /**
  * A mapping from int -> FILE*, so the JavaScript messages can refer to an open
- * File. */
+ * File.
+ */
 static FILE* g_OpenFiles[MAX_OPEN_FILES];
 
 /**
  * A mapping from int -> DIR*, so the JavaScript messages can refer to an open
- * Directory. */
+ * Directory.
+ */
 static void* g_OpenDirs[MAX_OPEN_DIRS];
 
 /**
@@ -111,14 +114,16 @@ static void* GetFromIndexString(void** map,
  * Add the file to the g_OpenFiles map.
  * @param[in] file The file to add to g_OpenFiles.
  * @return int The index of the FILE in g_OpenFiles, or -1 if there are too many
- *     open files. */
+ *             open files.
+ */
 static int AddFileToMap(FILE* file) {
   return AddToMap((void**)g_OpenFiles, MAX_OPEN_FILES, file);
 }
 
 /**
  * Remove the file from the g_OpenFiles map.
- * @param[in] i The index of the file handle to remove. */
+ * @param[in] i The index of the file handle to remove.
+ */
 static void RemoveFileFromMap(int i) {
   RemoveFromMap((void**)g_OpenFiles, MAX_OPEN_FILES, i);
 }
@@ -140,14 +145,16 @@ static FILE* GetFileFromIndexString(const char* s, int* file_index) {
  * Add the dir to the g_OpenDirs map.
  * @param[in] dir The dir to add to g_OpenDirs.
  * @return int The index of the DIR in g_OpenDirs, or -1 if there are too many
- *     open dirs. */
+ *             open dirs.
+ */
 static int AddDirToMap(DIR* dir) {
   return AddToMap((void**)g_OpenDirs, MAX_OPEN_DIRS, dir);
 }
 
 /**
  * Remove the dir from the g_OpenDirs map.
- * @param[in] i The index of the dir handle to remove. */
+ * @param[in] i The index of the dir handle to remove.
+ */
 static void RemoveDirFromMap(int i) {
   RemoveFromMap((void**)g_OpenDirs, MAX_OPEN_DIRS, i);
 }
@@ -179,7 +186,8 @@ static DIR* GetDirFromIndexString(const char* s, int* dir_index) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleFopen(int num_params, char** params, char** output) {
   FILE* file;
   int file_index;
@@ -187,7 +195,7 @@ int HandleFopen(int num_params, char** params, char** output) {
   const char* mode;
 
   if (num_params != 2) {
-    *output = PrintfToNewString("Error: fopen takes 2 parameters.");
+    *output = PrintfToNewString("fopen takes 2 parameters.");
     return 1;
   }
 
@@ -196,14 +204,14 @@ int HandleFopen(int num_params, char** params, char** output) {
 
   file = fopen(filename, mode);
   if (!file) {
-    *output = PrintfToNewString("Error: fopen returned a NULL FILE*.");
+    *output = PrintfToNewString("fopen returned a NULL FILE*.");
     return 2;
   }
 
   file_index = AddFileToMap(file);
   if (file_index == -1) {
     *output = PrintfToNewString(
-        "Error: Example only allows %d open file handles.", MAX_OPEN_FILES);
+        "Example only allows %d open file handles.", MAX_OPEN_FILES);
     return 3;
   }
 
@@ -226,7 +234,8 @@ int HandleFopen(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleFwrite(int num_params, char** params, char** output) {
   FILE* file;
   const char* file_index_string;
@@ -235,7 +244,7 @@ int HandleFwrite(int num_params, char** params, char** output) {
   size_t bytes_written;
 
   if (num_params != 2) {
-    *output = PrintfToNewString("Error: fwrite takes 2 parameters.");
+    *output = PrintfToNewString("fwrite takes 2 parameters.");
     return 1;
   }
 
@@ -246,7 +255,7 @@ int HandleFwrite(int num_params, char** params, char** output) {
 
   if (!file) {
     *output =
-        PrintfToNewString("Error: Unknown file handle %s.", file_index_string);
+        PrintfToNewString("Unknown file handle %s.", file_index_string);
     return 2;
   }
 
@@ -254,7 +263,7 @@ int HandleFwrite(int num_params, char** params, char** output) {
 
   if (ferror(file)) {
     *output = PrintfToNewString(
-        "Error: Wrote %d bytes, but ferror() returns true.", bytes_written);
+        "Wrote %d bytes, but ferror() returns true.", bytes_written);
     return 3;
   }
 
@@ -278,7 +287,8 @@ int HandleFwrite(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleFread(int num_params, char** params, char** output) {
   FILE* file;
   const char* file_index_string;
@@ -287,7 +297,7 @@ int HandleFread(int num_params, char** params, char** output) {
   size_t bytes_read;
 
   if (num_params != 2) {
-    *output = PrintfToNewString("Error: fread takes 2 parameters.");
+    *output = PrintfToNewString("fread takes 2 parameters.");
     return 1;
   }
 
@@ -297,7 +307,7 @@ int HandleFread(int num_params, char** params, char** output) {
 
   if (!file) {
     *output =
-        PrintfToNewString("Error: Unknown file handle %s.", file_index_string);
+        PrintfToNewString("Unknown file handle %s.", file_index_string);
     return 2;
   }
 
@@ -307,7 +317,7 @@ int HandleFread(int num_params, char** params, char** output) {
 
   if (ferror(file)) {
     *output = PrintfToNewString(
-        "Error: Read %d bytes, but ferror() returns true.", bytes_read);
+        "Read %d bytes, but ferror() returns true.", bytes_read);
     return 3;
   }
 
@@ -335,7 +345,8 @@ int HandleFread(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleFseek(int num_params, char** params, char** output) {
   FILE* file;
   const char* file_index_string;
@@ -344,7 +355,7 @@ int HandleFseek(int num_params, char** params, char** output) {
   int result;
 
   if (num_params != 3) {
-    *output = PrintfToNewString("Error: fseek takes 3 parameters.");
+    *output = PrintfToNewString("fseek takes 3 parameters.");
     return 1;
   }
 
@@ -355,20 +366,20 @@ int HandleFseek(int num_params, char** params, char** output) {
 
   if (!file) {
     *output =
-        PrintfToNewString("Error: Unknown file handle %s.", file_index_string);
+        PrintfToNewString("Unknown file handle %s.", file_index_string);
     return 2;
   }
 
   result = fseek(file, offset, whence);
   if (result) {
-    *output = PrintfToNewString("Error: fseek returned error %d.", result);
+    *output = PrintfToNewString("fseek returned error %d.", result);
     return 3;
   }
 
   offset = ftell(file);
   if (offset < 0) {
     *output = PrintfToNewString(
-        "Error: fseek succeeded, but ftell returned error %d.", offset);
+        "fseek succeeded, but ftell returned error %d.", offset);
     return 4;
   }
 
@@ -389,7 +400,8 @@ int HandleFseek(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleFclose(int num_params, char** params, char** output) {
   FILE* file;
   int file_index;
@@ -397,7 +409,7 @@ int HandleFclose(int num_params, char** params, char** output) {
   int result;
 
   if (num_params != 1) {
-    *output = PrintfToNewString("Error: fclose takes 1 parameters.");
+    *output = PrintfToNewString("fclose takes 1 parameters.");
     return 1;
   }
 
@@ -405,13 +417,13 @@ int HandleFclose(int num_params, char** params, char** output) {
   file = GetFileFromIndexString(file_index_string, &file_index);
   if (!file) {
     *output =
-        PrintfToNewString("Error: Unknown file handle %s.", file_index_string);
+        PrintfToNewString("Unknown file handle %s.", file_index_string);
     return 2;
   }
 
   result = fclose(file);
   if (result) {
-    *output = PrintfToNewString("Error: fclose returned error %d.", result);
+    *output = PrintfToNewString("fclose returned error %d.", result);
     return 3;
   }
 
@@ -435,14 +447,15 @@ int HandleFclose(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleStat(int num_params, char** params, char** output) {
   const char* filename;
   int result;
   struct stat buf;
 
   if (num_params != 1) {
-    *output = PrintfToNewString("Error: stat takes 1 parameter.");
+    *output = PrintfToNewString("stat takes 1 parameter.");
     return 1;
   }
 
@@ -451,7 +464,7 @@ int HandleStat(int num_params, char** params, char** output) {
   memset(&buf, 0, sizeof(buf));
   result = stat(filename, &buf);
   if (result == -1) {
-    *output = PrintfToNewString("Error: stat returned error %d.", errno);
+    *output = PrintfToNewString("stat returned error %d.", errno);
     return 2;
   }
 
@@ -473,10 +486,11 @@ int HandleStat(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleOpendir(int num_params, char** params, char** output) {
 #if defined(WIN32)
-  *output = PrintfToNewString("Error: Win32 does not support opendir.");
+  *output = PrintfToNewString("Win32 does not support opendir.");
   return 1;
 #else
   DIR* dir;
@@ -484,7 +498,7 @@ int HandleOpendir(int num_params, char** params, char** output) {
   const char* dirname;
 
   if (num_params != 1) {
-    *output = PrintfToNewString("Error: opendir takes 1 parameter.");
+    *output = PrintfToNewString("opendir takes 1 parameter.");
     return 1;
   }
 
@@ -492,14 +506,14 @@ int HandleOpendir(int num_params, char** params, char** output) {
 
   dir = opendir(dirname);
   if (!dir) {
-    *output = PrintfToNewString("Error: opendir returned a NULL DIR*.");
+    *output = PrintfToNewString("opendir returned a NULL DIR*.");
     return 2;
   }
 
   dir_index = AddDirToMap(dir);
   if (dir_index == -1) {
     *output = PrintfToNewString(
-        "Error: Example only allows %d open dir handles.", MAX_OPEN_DIRS);
+        "Example only allows %d open dir handles.", MAX_OPEN_DIRS);
     return 3;
   }
 
@@ -522,10 +536,11 @@ int HandleOpendir(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleReaddir(int num_params, char** params, char** output) {
 #if defined(WIN32)
-  *output = PrintfToNewString("Error: Win32 does not support readdir.");
+  *output = PrintfToNewString("Win32 does not support readdir.");
   return 1;
 #else
   DIR* dir;
@@ -533,7 +548,7 @@ int HandleReaddir(int num_params, char** params, char** output) {
   struct dirent* entry;
 
   if (num_params != 1) {
-    *output = PrintfToNewString("Error: readdir takes 1 parameter.");
+    *output = PrintfToNewString("readdir takes 1 parameter.");
     return 1;
   }
 
@@ -541,8 +556,7 @@ int HandleReaddir(int num_params, char** params, char** output) {
   dir = GetDirFromIndexString(dir_index_string, NULL);
 
   if (!dir) {
-    *output = PrintfToNewString("Error: Unknown dir handle %s.",
-                                dir_index_string);
+    *output = PrintfToNewString("Unknown dir handle %s.", dir_index_string);
     return 2;
   }
 
@@ -571,10 +585,11 @@ int HandleReaddir(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleClosedir(int num_params, char** params, char** output) {
 #if defined(WIN32)
-  *output = PrintfToNewString("Error: Win32 does not support closedir.");
+  *output = PrintfToNewString("Win32 does not support closedir.");
   return 1;
 #else
   DIR* dir;
@@ -583,21 +598,21 @@ int HandleClosedir(int num_params, char** params, char** output) {
   int result;
 
   if (num_params != 1) {
-    *output = PrintfToNewString("Error: closedir takes 1 parameters.");
+    *output = PrintfToNewString("closedir takes 1 parameters.");
     return 1;
   }
 
   dir_index_string = params[0];
   dir = GetDirFromIndexString(dir_index_string, &dir_index);
   if (!dir) {
-    *output = PrintfToNewString("Error: Unknown dir handle %s.",
+    *output = PrintfToNewString("Unknown dir handle %s.",
                                 dir_index_string);
     return 2;
   }
 
   result = closedir(dir);
   if (result) {
-    *output = PrintfToNewString("Error: closedir returned error %d.", result);
+    *output = PrintfToNewString("closedir returned error %d.", result);
     return 3;
   }
 
@@ -622,14 +637,15 @@ int HandleClosedir(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleMkdir(int num_params, char** params, char** output) {
   const char* dirname;
   int result;
   int mode;
 
   if (num_params != 2) {
-    *output = PrintfToNewString("Error: mkdir takes 2 parameters.");
+    *output = PrintfToNewString("mkdir takes 2 parameters.");
     return 1;
   }
 
@@ -638,11 +654,94 @@ int HandleMkdir(int num_params, char** params, char** output) {
 
   result = mkdir(dirname, mode);
   if (result != 0) {
-    *output = PrintfToNewString("Error: mkdir returned error: %d", errno);
+    *output = PrintfToNewString("mkdir returned error: %d", errno);
     return 2;
   }
 
   *output = PrintfToNewString("mkdir\1%s", dirname);
+  return 0;
+}
+
+/**
+ * Handle a call to rmdir() made by JavaScript.
+ *
+ * rmdir expects 1 parameter:
+ *   0: The name of the directory to remove
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
+int HandleRmdir(int num_params, char** params, char** output) {
+  if (num_params != 1) {
+    *output = PrintfToNewString("rmdir takes 1 parameter.");
+    return 1;
+  }
+
+  const char* dirname = params[0];
+  int result = rmdir(dirname);
+  if (result != 0) {
+    *output = PrintfToNewString("rmdir returned error: %d", errno);
+    return 2;
+  }
+
+  *output = PrintfToNewString("rmdir\1%s", dirname);
+  return 0;
+}
+
+/**
+ * Handle a call to chdir() made by JavaScript.
+ *
+ * chdir expects 1 parameter:
+ *   0: The name of the directory
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
+int HandleChdir(int num_params, char** params, char** output) {
+  if (num_params != 1) {
+    *output = PrintfToNewString("chdir takes 1 parameter.");
+    return 1;
+  }
+
+  const char* dirname = params[0];
+  int result = chdir(dirname);
+  if (result != 0) {
+    *output = PrintfToNewString("chdir returned error: %d", errno);
+    return 2;
+  }
+
+  *output = PrintfToNewString("chdir\1%s", dirname);
+  return 0;
+}
+
+/**
+ * Handle a call to getcwd() made by JavaScript.
+ *
+ * getcwd expects 0 parameters.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
+int HandleGetcwd(int num_params, char** params, char** output) {
+  if (num_params != 0) {
+    *output = PrintfToNewString("getcwd takes 0 parameters.");
+    return 1;
+  }
+
+  char cwd[PATH_MAX];
+  char* result = getcwd(cwd, PATH_MAX);
+  if (result == NULL) {
+    *output = PrintfToNewString("getcwd returned error: %d", errno);
+    return 1;
+  }
+
+  *output = PrintfToNewString("getcwd\1%s", cwd);
   return 0;
 }
 
@@ -662,7 +761,8 @@ int HandleMkdir(int num_params, char** params, char** output) {
  * @param[in] num_params The number of params in |params|.
  * @param[in] params An array of strings, parameters to this function.
  * @param[out] output A string to write informational function output to.
- * @return An errorcode; 0 means success, anything else is a failure. */
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
 int HandleGethostbyname(int num_params, char** params, char** output) {
   struct hostent* info;
   struct in_addr **addr_list;
@@ -674,7 +774,7 @@ int HandleGethostbyname(int num_params, char** params, char** output) {
   int i;
 
   if (num_params != 1) {
-    *output = PrintfToNewString("Error: gethostbyname takes 1 parameter.");
+    *output = PrintfToNewString("gethostbyname takes 1 parameter.");
     return 1;
   }
 
@@ -682,7 +782,7 @@ int HandleGethostbyname(int num_params, char** params, char** output) {
 
   info = gethostbyname(name);
   if (!info) {
-    *output = PrintfToNewString("Error: gethostbyname failed, error is \"%s\"",
+    *output = PrintfToNewString("gethostbyname failed, error is \"%s\"",
                                 hstrerror(h_errno));
     return 2;
   }
@@ -706,7 +806,7 @@ int HandleGethostbyname(int num_params, char** params, char** output) {
 
   *output = (char*) calloc(output_len + 1, 1);
   if (!*output) {
-    *output = PrintfToNewString("Error: out of memory.");
+    *output = PrintfToNewString("out of memory.");
     return 3;
   }
   snprintf(*output, non_variable_len + 1, "gethostbyname\1%s\1%s",
@@ -722,5 +822,151 @@ int HandleGethostbyname(int num_params, char** params, char** output) {
       sprintf(*output + current_pos, "\1%s", inet6_addr_str);
     }
   }
+  return 0;
+}
+
+/**
+ * Handle a call to connect() made by JavaScript.
+ *
+ * This call expects 2 parameters:
+ *   0: The hostname to connect to.
+ *   1: The port number to connect to.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
+int HandleConnect(int num_params, char** params, char** output) {
+  if (num_params != 2) {
+    *output = PrintfToNewString("connect takes 2 parameters.");
+    return 1;
+  }
+
+  struct sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+  const char* hostname = params[0];
+  int port = strtol(params[1], NULL, 10);
+
+  // Lookup host
+  struct hostent* hostent = gethostbyname(hostname);
+  if (hostent == NULL) {
+    *output = PrintfToNewString("gethostbyname() returned error: %d", errno);
+    return 1;
+  }
+
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(port);
+  memcpy(&addr.sin_addr.s_addr, hostent->h_addr_list[0], hostent->h_length);
+
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    *output = PrintfToNewString("socket() failed: %s", strerror(errno));
+    return 1;
+  }
+
+  int result = connect(sock, (struct sockaddr*)&addr, addrlen);
+  if (result != 0) {
+    *output = PrintfToNewString("connect() failed: %s", strerror(errno));
+    close(sock);
+    return 1;
+  }
+
+  *output = PrintfToNewString("connect\1%d", sock);
+  return 0;
+}
+
+/**
+ * Handle a call to send() made by JavaScript.
+ *
+ * This call expects 2 parameters:
+ *   0: The socket file descriptor to send using.
+ *   1: The NULL terminated string to send.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
+int HandleSend(int num_params, char** params, char** output) {
+  if (num_params != 2) {
+    *output = PrintfToNewString("send takes 2 parameters.");
+    return 1;
+  }
+
+  int sock = strtol(params[0], NULL, 10);
+  const char* buffer = params[1];
+  int result = send(sock, buffer, strlen(buffer), 0);
+  if (result <= 0) {
+    *output = PrintfToNewString("send failed: %s", strerror(errno));
+    return 1;
+  }
+
+  *output = PrintfToNewString("send\1%d", result);
+  return 0;
+}
+
+/**
+ * Handle a call to recv() made by JavaScript.
+ *
+ * This call expects 2 parameters:
+ *   0: The socket file descriptor to recv from.
+ *   1: The size of the buffer to pass to recv.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
+int HandleRecv(int num_params, char** params, char** output) {
+  if (num_params != 2) {
+    *output = PrintfToNewString("recv takes 2 parameters.");
+    return 1;
+  }
+
+  int sock = strtol(params[0], NULL, 10);
+  int buffersize = strtol(params[1], NULL, 10);
+  if (buffersize < 0 || buffersize > 65 * 1024) {
+    *output = PrintfToNewString("recv buffersize must be between 0 and 65k.");
+    return 1;
+  }
+
+  char* buffer = alloca(buffersize);
+  memset(buffer, 0, buffersize);
+  int result = recv(sock, buffer, buffersize, 0);
+  if (result <= 0) {
+    *output = PrintfToNewString("recv failed: %s", strerror(errno));
+    return 2;
+  }
+
+  *output = PrintfToNewString("recv\1%d\1%s", result, buffer);
+  return 0;
+}
+
+/**
+ * Handle a call to close() made by JavaScript.
+ *
+ * This call expects 1 parameters:
+ *   0: The socket file descriptor to close.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
+int HandleClose(int num_params, char** params, char** output) {
+  if (num_params != 1) {
+    *output = PrintfToNewString("close takes 1 parameters.");
+    return 1;
+  }
+
+  int sock = strtol(params[0], NULL, 10);
+  int result = close(sock);
+  if (result != 0) {
+    *output = PrintfToNewString("close returned error: %d", errno);
+    return 2;
+  }
+
+  *output = PrintfToNewString("close\1%d", sock);
   return 0;
 }

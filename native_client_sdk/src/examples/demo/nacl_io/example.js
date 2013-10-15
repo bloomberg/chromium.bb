@@ -194,20 +194,85 @@ function mkdirResult(dirname) {
   common.logMessage('Directory ' + dirname + ' created successfully.');
 }
 
+function rmdir(e) {
+  var dirname = document.getElementById('rmdirDirname').value;
+  nacl_module.postMessage(makeCall('rmdir', dirname));
+}
+
+function rmdirResult(dirname) {
+  common.logMessage('Directory ' + dirname + ' removed successfully.');
+}
+
+function chdir(e) {
+  var dirname = document.getElementById('chdirDirname').value;
+  nacl_module.postMessage(makeCall('chdir', dirname));
+}
+
+function chdirResult(dirname) {
+  common.logMessage('Changed directory to: ' + dirname + '.');
+}
+
+function getcwd(e) {
+  nacl_module.postMessage(makeCall('getcwd'));
+}
+
+function getcwdResult(dirname) {
+  common.logMessage('getcwd: ' + dirname + '.');
+}
+
 function gethostbyname(e) {
   var name = document.getElementById('gethostbynameName').value;
   nacl_module.postMessage(makeCall('gethostbyname', name));
 }
 
-
 function gethostbynameResult(name, addr_type) {
-  common.logMessage('gethostbyname returned successfully\n');
-  common.logMessage('h_name = ' + name + '.\n');
-  common.logMessage('h_addr_type = ' + addr_type + '.\n');
+  common.logMessage('gethostbyname returned successfully');
+  common.logMessage('h_name = ' + name + '.');
+  common.logMessage('h_addr_type = ' + addr_type + '.');
   for (var i = 2; i < arguments.length; i++) {
-    common.logMessage('Address number ' + (i-1) + ' = ' + arguments[i] + '.\n');
+    common.logMessage('Address number ' + (i-1) + ' = ' + arguments[i] + '.');
   }
-  common.logMessage('\n');
+}
+
+function connect(e) {
+  var host = document.getElementById('connectHost').value;
+  var port = document.getElementById('connectPort').value;
+  nacl_module.postMessage(makeCall('connect', host, port));
+}
+
+function connectResult(sockhandle) {
+  common.logMessage('connected');
+  addNameToSelectElements('.sock-handle', sockhandle, '[socket]');
+}
+
+function recv(e) {
+  var handle = document.getElementById('recvHandle').value;
+  var bufferSize = document.getElementById('recvBufferSize').value;
+  nacl_module.postMessage(makeCall('recv', handle, bufferSize));
+}
+
+function recvResult(messageLen, message) {
+  common.logMessage("received " + messageLen + ' bytes: ' + message);
+}
+
+function send(e) {
+  var handle = document.getElementById('sendHandle').value;
+  var message = document.getElementById('sendMessage').value;
+  nacl_module.postMessage(makeCall('send', handle, message));
+}
+
+function sendResult(sentBytes) {
+  common.logMessage("sent bytes: " + sentBytes);
+}
+
+function close(e) {
+  var handle = document.getElementById('closeHandle').value;
+  nacl_module.postMessage(makeCall('close', handle));
+}
+
+function closeResult(sock) {
+  removeNameFromSelectElements('.sock-handle', sock, "[socket]");
+  common.logMessage("closed socket: " + sock);
 }
 
 /**

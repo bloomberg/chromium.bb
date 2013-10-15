@@ -11,7 +11,6 @@
   'DATA': [
     'example.js',
   ],
-  'PRE': '''\nCHROME_ARGS = --allow-nacl-socket-api=localhost\n''',
   'DEST': 'examples/api',
   'NAME': 'socket',
   'TITLE': 'socket',

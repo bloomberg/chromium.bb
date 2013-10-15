@@ -226,6 +226,7 @@ def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,
     target['CXXFLAGS'].insert(0, '-Wall')
 
   template_dict = {
+    'desc': desc,
     'rel_sdk': '/'.join(['..'] * (len(desc['DEST'].split('/')) + 1)),
     'pre': desc.get('PRE', ''),
     'post': desc.get('POST', ''),

@@ -46,16 +46,12 @@ found in the LICENSE file.
   <p><b>File Operations:</b></p>
   <div>
     <span>
-      <input type="radio" id="radiofopen" name="filegroup" checked="checked">fopen
-      <input type="radio" id="radiofclose" name="filegroup">fclose
-      <input type="radio" id="radiofread" name="filegroup">fread
-      <input type="radio" id="radiofwrite" name="filegroup">fwrite
-      <input type="radio" id="radiofseek" name="filegroup">fseek
-      <input type="radio" id="radiostat" name="filegroup">stat
-      <input type="radio" id="radioopendir" name="filegroup">opendir
-      <input type="radio" id="radioreaddir" name="filegroup">readdir
-      <input type="radio" id="radioclosedir" name="filegroup">closedir
-      <input type="radio" id="radiomkdir" name="filegroup">mkdir
+      <input type="radio" id="radiofopen" name="group" checked="checked">fopen
+      <input type="radio" id="radiofclose" name="group">fclose
+      <input type="radio" id="radiofread" name="group">fread
+      <input type="radio" id="radiofwrite" name="group">fwrite
+      <input type="radio" id="radiofseek" name="group">fseek
+      <input type="radio" id="radiostat" name="group">stat
     </span>
   </div>
   <div class="function" id="fopen">
@@ -116,6 +112,19 @@ found in the LICENSE file.
       <button>stat</button>
     </span>
   </div>
+  <hr>
+  <p><b>Directory Operations:</b></p>
+  <div>
+    <span>
+      <input type="radio" id="radioopendir" name="group">opendir
+      <input type="radio" id="radioreaddir" name="group">readdir
+      <input type="radio" id="radioclosedir" name="group">closedir
+      <input type="radio" id="radiomkdir" name="group">mkdir
+      <input type="radio" id="radiormdir" name="group">rmdir
+      <input type="radio" id="radiochdir" name="group">chdir
+      <input type="radio" id="radiogetcwd" name="group">getcwd
+    </span>
+  </div>
   <div class="function" id="opendir" hidden>
     <span>
       Dirname:
@@ -144,18 +153,72 @@ found in the LICENSE file.
       <button>mkdir</button>
     </span>
   </div>
+  <div class="function" id="rmdir" hidden>
+    <span>
+      Dirname:
+      <input type="text" id="rmdirDirname">
+      <button>rmdir</button>
+    </span>
+  </div>
+  <div class="function" id="chdir" hidden>
+    <span>
+      Dirname:
+      <input type="text" id="chdirDirname">
+      <button>chdir</button>
+    </span>
+  </div>
+  <div class="function" id="getcwd" hidden>
+    <span>
+      <button>getcwd</button>
+    </span>
+  </div>
   <hr>
   <p><b>Socket Operations:</b></p>
   <div>
     <span>
-      <input type="radio" id="radiogethostbyname" name="socketgroup" checked="checked">gethostbyname
+      <input type="radio" id="radiogethostbyname" name="group">gethostbyname
+      <input type="radio" id="radioconnect" name="group">connect
+      <input type="radio" id="radiosend" name="group">send
+      <input type="radio" id="radiorecv" name="group">recv
+      <input type="radio" id="radioclose" name="group">close
     </span>
   </div>
-  <div class="function" id="gethostbyname">
+  <div class="function" id="gethostbyname" hidden>
     <span>
-      Name:
-      <input type="text" id="gethostbynameName">
+      Hostname:
+      <input type="text" id="gethostbynameName" value="google.com">
       <button>gethostbyname</button>
+    </span>
+  </div>
+  <div class="function" id="connect" hidden>
+    <span>
+      Host:
+      <input type="text" id="connectHost" value="google.com">
+      Port:
+      <input type="text" id="connectPort" value="80">
+      <button>connect</button>
+    </span>
+  </div>
+  <div class="function" id="send" hidden>
+    <span>
+      <select class="sock-handle" id="sendHandle"></select>
+      Message:
+      <input type="text" id="sendMessage" value="Hello!">
+      <button>send</button>
+    </span>
+  </div>
+  <div class="function" id="recv" hidden>
+    <span>
+      <select class="sock-handle" id="recvHandle"></select>
+      Buffer Size:
+      <input type="text" id="recvBufferSize" value="256">
+      <button>recv</button>
+    </span>
+  </div>
+  <div class="function" id="close" hidden>
+    <span>
+      <select class="sock-handle" id="closeHandle"></select>
+      <button>close</button>
     </span>
   </div>
 
