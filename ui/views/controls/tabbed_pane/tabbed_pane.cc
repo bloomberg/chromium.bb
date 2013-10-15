@@ -230,7 +230,7 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
         SkIntToScalar(selected_tab->height()) - kTabBorderThickness;
     SkScalar tab_width =
         SkIntToScalar(selected_tab->width()) - kTabBorderThickness;
-    SkScalar tab_start = SkIntToScalar(selected_tab->x());
+    SkScalar tab_start = SkIntToScalar(selected_tab->GetMirroredX());
     path.moveTo(0, line_y);
     path.rLineTo(tab_start, 0);
     path.rLineTo(0, -tab_height);
