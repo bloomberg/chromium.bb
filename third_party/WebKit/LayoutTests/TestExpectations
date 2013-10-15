@@ -1056,9 +1056,6 @@ crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
 crbug.com/260899 [ Mac ] fast/forms/select-overflow-scroll-inherited.html [ NeedsRebaseline ]
 crbug.com/260899 [ Mac ] fast/forms/select-overflow-scroll.html [ NeedsRebaseline ]
 
-# Pre-landing "binary" file (actually UTF-16) - enable with http://crrev.com/23532016
-Bug(jsbell) fast/encoding/utf-16-odd-byte.html [ Skip ]
-
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Pass ImageOnlyFailure ]
 crbug.com/284779 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass Crash ]
