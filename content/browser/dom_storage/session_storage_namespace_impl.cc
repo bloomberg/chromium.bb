@@ -58,4 +58,22 @@ SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
 SessionStorageNamespaceImpl::~SessionStorageNamespaceImpl() {
 }
 
+void SessionStorageNamespaceImpl::AddTransactionLogProcessId(int process_id) {
+  session_->AddTransactionLogProcessId(process_id);
+}
+
+void SessionStorageNamespaceImpl::RemoveTransactionLogProcessId(
+    int process_id) {
+  session_->RemoveTransactionLogProcessId(process_id);
+}
+
+void SessionStorageNamespaceImpl::CanMerge(
+    int process_id,
+    SessionStorageNamespace* other,
+    const MergeResultCallback& callback) {
+  SessionStorageNamespaceImpl* other_impl =
+      static_cast<SessionStorageNamespaceImpl*>(other);
+  session_->CanMerge(process_id, other_impl->session_, callback);
+}
+
 }  // namespace content

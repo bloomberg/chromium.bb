@@ -419,4 +419,38 @@ void DOMStorageContextImpl::DeleteNextUnusedNamespaceInCommitSequence() {
   }
 }
 
+void DOMStorageContextImpl::AddTransactionLogProcessId(int64 namespace_id,
+                                                       int process_id) {
+  DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
+  StorageNamespaceMap::const_iterator it = namespaces_.find(namespace_id);
+  if (it == namespaces_.end())
+    return;
+  it->second->AddTransactionLogProcessId(process_id);
+}
+
+void DOMStorageContextImpl::RemoveTransactionLogProcessId(int64 namespace_id,
+                                                       int process_id) {
+  DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
+  StorageNamespaceMap::const_iterator it = namespaces_.find(namespace_id);
+  if (it == namespaces_.end())
+    return;
+  it->second->RemoveTransactionLogProcessId(process_id);
+}
+
+SessionStorageNamespace::MergeResult
+DOMStorageContextImpl::CanMergeSessionStorage(
+    int64 namespace1_id, int process_id, int64 namespace2_id) {
+  DCHECK_NE(kLocalStorageNamespaceId, namespace1_id);
+  DCHECK_NE(kLocalStorageNamespaceId, namespace2_id);
+  StorageNamespaceMap::const_iterator it = namespaces_.find(namespace1_id);
+  if (it == namespaces_.end())
+    return SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND;
+  DOMStorageNamespace* ns1 = it->second;
+  it = namespaces_.find(namespace2_id);
+  if (it == namespaces_.end())
+    return SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND;
+  DOMStorageNamespace* ns2 = it->second;
+  return ns1->CanMerge(process_id, ns2);
+}
+
 }  // namespace content

@@ -43,6 +43,12 @@ class SessionStorageNamespaceImpl
   SessionStorageNamespaceImpl* Clone();
   bool IsFromContext(DOMStorageContextWrapper* context);
 
+  virtual void AddTransactionLogProcessId(int process_id) OVERRIDE;
+  virtual void RemoveTransactionLogProcessId(int process_id) OVERRIDE;
+  virtual void CanMerge(int process_id,
+                        SessionStorageNamespace* other,
+                        const MergeResultCallback& callback) OVERRIDE;
+
  private:
   explicit SessionStorageNamespaceImpl(DOMStorageSession* clone);
   virtual ~SessionStorageNamespaceImpl();

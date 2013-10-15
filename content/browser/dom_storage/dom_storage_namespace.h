@@ -6,11 +6,14 @@
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_NAMESPACE_H_
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -73,6 +76,30 @@ class CONTENT_EXPORT DOMStorageNamespace
 
   unsigned int CountInMemoryAreas() const;
 
+  void AddTransactionLogProcessId(int process_id);
+  void RemoveTransactionLogProcessId(int process_id);
+  SessionStorageNamespace::MergeResult CanMerge(int process_id,
+                                                DOMStorageNamespace* other);
+
+  enum LogType {
+    TRANSACTION_READ,
+    TRANSACTION_WRITE,
+    TRANSACTION_REMOVE,
+    TRANSACTION_CLEAR
+  };
+
+  struct TransactionRecord {
+    LogType transaction_type;
+    GURL origin;
+    base::string16 key;
+    base::NullableString16 value;
+    TransactionRecord();
+    ~TransactionRecord();
+  };
+
+  void AddTransaction(int process_id, const TransactionRecord& transaction);
+  bool IsLoggingRenderer(int process_id);
+
  private:
   friend class base::RefCountedThreadSafe<DOMStorageNamespace>;
 
@@ -87,6 +114,13 @@ class CONTENT_EXPORT DOMStorageNamespace
   };
   typedef std::map<GURL, AreaHolder> AreaMap;
 
+  struct TransactionData {
+    bool max_log_size_exceeded;
+    std::vector<TransactionRecord> log;
+    TransactionData();
+    ~TransactionData();
+  };
+
   ~DOMStorageNamespace();
 
   // Returns a pointer to the area holder in our map or NULL.
@@ -98,6 +132,7 @@ class CONTENT_EXPORT DOMStorageNamespace
   AreaMap areas_;
   scoped_refptr<DOMStorageTaskRunner> task_runner_;
   scoped_refptr<SessionStorageDatabase> session_storage_database_;
+  std::map<int, TransactionData*> transactions_;
 };
 
 }  // namespace content

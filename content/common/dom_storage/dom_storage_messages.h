@@ -67,9 +67,12 @@ IPC_MESSAGE_CONTROL1(DOMStorageHostMsg_CloseStorageArea,
 
 // Retrieves the set of key/value pairs for the area. Used to prime
 // the renderer-side cache. A completion notification is sent in response.
-IPC_SYNC_MESSAGE_CONTROL1_1(DOMStorageHostMsg_LoadStorageArea,
+// The response will also indicate whether the renderer should send
+// messagse to the browser for get operations for logging purposes.
+IPC_SYNC_MESSAGE_CONTROL1_2(DOMStorageHostMsg_LoadStorageArea,
                             int /* connection_id */,
-                            content::DOMStorageValuesMap)
+                            content::DOMStorageValuesMap,
+                            bool /* send_log_get_messages */)
 
 // Set a value that's associated with a key in a storage area.
 // A completion notification is sent in response.
@@ -78,6 +81,12 @@ IPC_MESSAGE_CONTROL4(DOMStorageHostMsg_SetItem,
                      string16 /* key */,
                      string16 /* value */,
                      GURL /* page_url */)
+
+// Logs that a get operation was performed on a key/value pair.
+IPC_MESSAGE_CONTROL3(DOMStorageHostMsg_LogGetItem,
+                     int /* connection_id */,
+                     string16 /* key */,
+                     base::NullableString16 /* value */)
 
 // Remove the value associated with a key in a storage area.
 // A completion notification is sent in response.

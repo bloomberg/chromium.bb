@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -170,6 +171,12 @@ class CONTENT_EXPORT DOMStorageContextImpl
   // alive. This function is used for deleting possible leftover data after an
   // unclean exit.
   void StartScavengingUnusedSessionStorage();
+
+  void AddTransactionLogProcessId(int64 namespace_id, int process_id);
+  void RemoveTransactionLogProcessId(int64 namespace_id, int process_id);
+
+  SessionStorageNamespace::MergeResult CanMergeSessionStorage(
+      int64 namespace1_id, int process_id, int64 namespace2_id);
 
  private:
   friend class DOMStorageContextImplTest;

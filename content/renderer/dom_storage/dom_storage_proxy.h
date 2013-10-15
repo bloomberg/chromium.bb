@@ -21,6 +21,7 @@ class DOMStorageProxy : public base::RefCounted<DOMStorageProxy> {
 
   virtual void LoadArea(int connection_id,
                         DOMStorageValuesMap* values,
+                        bool* send_log_get_messages,
                         const CompletionCallback& callback) = 0;
 
   virtual void SetItem(int connection_id,
@@ -28,6 +29,10 @@ class DOMStorageProxy : public base::RefCounted<DOMStorageProxy> {
                        const base::string16& value,
                        const GURL& page_url,
                        const CompletionCallback& callback) = 0;
+
+  virtual void LogGetItem(int connection_id,
+                          const base::string16& key,
+                          const base::NullableString16& value) = 0;
 
   virtual void RemoveItem(int connection_id,
                           const base::string16& key,

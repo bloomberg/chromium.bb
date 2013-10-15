@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_transition_types.h"
@@ -1268,6 +1267,8 @@ void PrerenderLocalPredictor::OnTabHelperURLSeen(
 
   PrerenderProperties* best_matched_prerender = NULL;
   bool session_storage_namespace_matches = false;
+  SessionStorageNamespace* tab_session_storage_namespace =
+      web_contents->GetController().GetDefaultSessionStorageNamespace();
   for (int i = 0; i < static_cast<int>(issued_prerenders_.size()); i++) {
     PrerenderProperties* p = issued_prerenders_[i];
     DCHECK(p != NULL);
@@ -1279,17 +1280,56 @@ void PrerenderLocalPredictor::OnTabHelperURLSeen(
     if (!best_matched_prerender || !session_storage_namespace_matches) {
       best_matched_prerender = p;
       session_storage_namespace_matches =
-          p->prerender_handle->Matches(
-              url,
-              web_contents->GetController().
-              GetDefaultSessionStorageNamespace());
+          p->prerender_handle->Matches(url, tab_session_storage_namespace);
     }
   }
   if (best_matched_prerender) {
     RecordEvent(EVENT_TAB_HELPER_URL_SEEN_MATCH);
     best_matched_prerender->would_have_matched = true;
-    if (session_storage_namespace_matches)
+    if (session_storage_namespace_matches) {
       RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH);
+    } else {
+      SessionStorageNamespace* prerender_session_storage_namespace =
+          best_matched_prerender->prerender_handle->
+          GetSessionStorageNamespace();
+      if (!prerender_session_storage_namespace) {
+        RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_NO_NAMESPACE);
+      } else {
+        RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_MERGE_ISSUED);
+        prerender_session_storage_namespace->CanMerge(
+            best_matched_prerender->prerender_handle->GetChildId(),
+            tab_session_storage_namespace,
+            base::Bind(&PrerenderLocalPredictor::ProcessNamespaceMergeResult,
+                       weak_factory_.GetWeakPtr()));
+      }
+    }
+  }
+}
+
+void PrerenderLocalPredictor::ProcessNamespaceMergeResult(
+    content::SessionStorageNamespace::MergeResult result) {
+  RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_RECEIVED);
+  switch (result) {
+    case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND:
+      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_FOUND);
+      break;
+    case content::SessionStorageNamespace::MERGE_RESULT_NOT_LOGGING:
+      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_LOGGING);
+      break;
+    case content::SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS:
+      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NO_TRANSACTIONS);
+      break;
+    case content::SessionStorageNamespace::MERGE_RESULT_TOO_MANY_TRANSACTIONS:
+      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_TOO_MANY_TRANSACTIONS);
+      break;
+    case content::SessionStorageNamespace::MERGE_RESULT_NOT_MERGEABLE:
+      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_MERGEABLE);
+      break;
+    case content::SessionStorageNamespace::MERGE_RESULT_MERGEABLE:
+      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_MERGEABLE);
+      break;
+    default:
+      NOTREACHED();
   }
 }
 

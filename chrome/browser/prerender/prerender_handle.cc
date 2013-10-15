@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "content/public/browser/web_contents.h"
 
 namespace prerender {
 
@@ -135,6 +136,19 @@ bool PrerenderHandle::RepresentingSamePrerenderAs(
     PrerenderHandle* other) const {
   return other && other->prerender_data_.get() && prerender_data_.get()
       && prerender_data_.get() == other->prerender_data_.get();
+}
+
+content::SessionStorageNamespace*
+PrerenderHandle::GetSessionStorageNamespace() const {
+  if (!prerender_data_.get())
+    return NULL;
+  return prerender_data_->contents()->GetSessionStorageNamespace();
+}
+
+int PrerenderHandle::GetChildId() const {
+  if (!prerender_data_.get())
+    return -1;
+  return prerender_data_->contents()->child_id();
 }
 
 }  // namespace prerender

@@ -4,16 +4,27 @@
 
 #include "content/browser/dom_storage/dom_storage_namespace.h"
 
+#include <set>
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/session_storage_database.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 
 namespace content {
+
+namespace {
+
+static const unsigned int kMaxTransactionLogEntries = 8 * 1024;
+
+}  // namespace
 
 DOMStorageNamespace::DOMStorageNamespace(
     const base::FilePath& directory,
@@ -36,6 +47,7 @@ DOMStorageNamespace::DOMStorageNamespace(
 }
 
 DOMStorageNamespace::~DOMStorageNamespace() {
+  STLDeleteValues(&transactions_);
 }
 
 DOMStorageArea* DOMStorageNamespace::OpenStorageArea(const GURL& origin) {
@@ -168,6 +180,104 @@ DOMStorageNamespace::GetAreaHolder(const GURL& origin) {
   if (found == areas_.end())
     return NULL;
   return &(found->second);
+}
+
+void DOMStorageNamespace::AddTransactionLogProcessId(int process_id) {
+  DCHECK(process_id != ChildProcessHostImpl::kInvalidChildProcessId);
+  DCHECK(transactions_.count(process_id) == 0);
+  TransactionData* transaction_data = new TransactionData;
+  transactions_[process_id] = transaction_data;
+}
+
+void DOMStorageNamespace::RemoveTransactionLogProcessId(int process_id) {
+  DCHECK(process_id != ChildProcessHostImpl::kInvalidChildProcessId);
+  DCHECK(transactions_.count(process_id) == 1);
+  delete transactions_[process_id];
+  transactions_.erase(process_id);
+}
+
+SessionStorageNamespace::MergeResult DOMStorageNamespace::CanMerge(
+    int process_id,
+    DOMStorageNamespace* other) {
+  if (transactions_.count(process_id) < 1)
+    return SessionStorageNamespace::MERGE_RESULT_NOT_LOGGING;
+  TransactionData* data = transactions_[process_id];
+  if (data->max_log_size_exceeded)
+    return SessionStorageNamespace::MERGE_RESULT_TOO_MANY_TRANSACTIONS;
+  if (data->log.size() < 1)
+    return SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS;
+
+  // skip_areas and skip_keys store areas and (area, key) pairs, respectively,
+  // that have already been handled previously. Any further modifications to
+  // them will not change the result of the hypothetical merge.
+  std::set<GURL> skip_areas;
+  typedef std::pair<GURL, base::string16> OriginKey;
+  std::set<OriginKey> skip_keys;
+  // Indicates whether we could still merge the namespaces preserving all
+  // individual transactions.
+  for (unsigned int i = 0; i < data->log.size(); i++) {
+    TransactionRecord& transaction = data->log[i];
+    if (transaction.transaction_type == TRANSACTION_CLEAR) {
+      skip_areas.insert(transaction.origin);
+      continue;
+    }
+    if (skip_areas.find(transaction.origin) != skip_areas.end())
+      continue;
+    if (skip_keys.find(OriginKey(transaction.origin, transaction.key))
+        != skip_keys.end()) {
+      continue;
+    }
+    if (transaction.transaction_type == TRANSACTION_REMOVE ||
+        transaction.transaction_type == TRANSACTION_WRITE) {
+      skip_keys.insert(OriginKey(transaction.origin, transaction.key));
+      continue;
+    }
+    if (transaction.transaction_type == TRANSACTION_READ) {
+      DOMStorageArea* area = other->OpenStorageArea(transaction.origin);
+      base::NullableString16 other_value = area->GetItem(transaction.key);
+      other->CloseStorageArea(area);
+      if (transaction.value != other_value)
+        return SessionStorageNamespace::MERGE_RESULT_NOT_MERGEABLE;
+      continue;
+    }
+    NOTREACHED();
+  }
+  return SessionStorageNamespace::MERGE_RESULT_MERGEABLE;
+}
+
+bool DOMStorageNamespace::IsLoggingRenderer(int process_id) {
+  DCHECK(process_id != ChildProcessHostImpl::kInvalidChildProcessId);
+  if (transactions_.count(process_id) < 1)
+    return false;
+  return !transactions_[process_id]->max_log_size_exceeded;
+}
+
+void DOMStorageNamespace::AddTransaction(
+    int process_id, const TransactionRecord& transaction) {
+  if (!IsLoggingRenderer(process_id))
+    return;
+  TransactionData* transaction_data = transactions_[process_id];
+  DCHECK(transaction_data);
+  if (transaction_data->max_log_size_exceeded)
+    return;
+  transaction_data->log.push_back(transaction);
+  if (transaction_data->log.size() > kMaxTransactionLogEntries) {
+    transaction_data->max_log_size_exceeded = true;
+    transaction_data->log.clear();
+  }
+}
+
+DOMStorageNamespace::TransactionData::TransactionData()
+    : max_log_size_exceeded(false) {
+}
+
+DOMStorageNamespace::TransactionData::~TransactionData() {
+}
+
+DOMStorageNamespace::TransactionRecord::TransactionRecord() {
+}
+
+DOMStorageNamespace::TransactionRecord::~TransactionRecord() {
 }
 
 // AreaHolder

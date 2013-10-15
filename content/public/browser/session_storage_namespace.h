@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
 namespace content {
@@ -30,6 +31,33 @@ class SessionStorageNamespace
   virtual void SetShouldPersist(bool should_persist) = 0;
 
   virtual bool should_persist() const = 0;
+
+  // SessionStorageNamespaces can be merged. These merges happen based on
+  // a transaction log of operations on the session storage namespace since
+  // this function has been called. Transaction logging will be restricted
+  // to the processes indicated.
+  virtual void AddTransactionLogProcessId(int process_id) = 0;
+  // When transaction logging for a process is no longer required, the log
+  // can be removed to save space.
+  virtual void RemoveTransactionLogProcessId(int process_id) = 0;
+
+  enum MergeResult {
+    MERGE_RESULT_NAMESPACE_NOT_FOUND,
+    MERGE_RESULT_NOT_LOGGING,
+    MERGE_RESULT_NO_TRANSACTIONS,
+    MERGE_RESULT_TOO_MANY_TRANSACTIONS,
+    MERGE_RESULT_NOT_MERGEABLE,
+    MERGE_RESULT_MERGEABLE,
+    MERGE_RESULT_MAX_VALUE
+  };
+
+  typedef base::Callback<void(MergeResult)> MergeResultCallback;
+
+  // Determines whether the transaction log for the process specified can
+  // be merged into the other session storage namespace supplied.
+  virtual void CanMerge(int process_id,
+                        SessionStorageNamespace* other,
+                        const MergeResultCallback& callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<SessionStorageNamespace>;

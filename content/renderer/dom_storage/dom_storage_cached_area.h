@@ -86,6 +86,11 @@ class CONTENT_EXPORT DOMStorageCachedArea
   GURL origin_;
   scoped_refptr<DOMStorageMap> map_;
   scoped_refptr<DOMStorageProxy> proxy_;
+  // Sometimes, we need to send  messages to the browser for each get access,
+  // for logging purposes. However, we only do this for a fixed maximum number
+  // of gets. Here, we keep track of how many remaining get log messages we
+  // need to send.
+  int remaining_log_get_messages_;
   base::WeakPtrFactory<DOMStorageCachedArea> weak_factory_;
 };
 

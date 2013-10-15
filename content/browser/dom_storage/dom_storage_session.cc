@@ -7,11 +7,32 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 
 namespace content {
+
+namespace {
+
+void PostCanMergeTaskResult(
+    const SessionStorageNamespace::MergeResultCallback& callback,
+    SessionStorageNamespace::MergeResult result) {
+  callback.Run(result);
+}
+
+void RunCanMergeTaskAndPostResult(
+    const base::Callback<SessionStorageNamespace::MergeResult(void)>& task,
+    scoped_refptr<base::SingleThreadTaskRunner> result_loop,
+    const SessionStorageNamespace::MergeResultCallback& callback) {
+  SessionStorageNamespace::MergeResult result = task.Run();
+  result_loop->PostTask(
+      FROM_HERE, base::Bind(&PostCanMergeTaskResult, callback, result));
+}
+
+}  // namespace
 
 DOMStorageSession::DOMStorageSession(DOMStorageContextImpl* context)
     : context_(context),
@@ -79,6 +100,36 @@ DOMStorageSession::~DOMStorageSession() {
       FROM_HERE,
       base::Bind(&DOMStorageContextImpl::DeleteSessionNamespace,
                  context_, namespace_id_, should_persist_));
+}
+
+void DOMStorageSession::AddTransactionLogProcessId(int process_id) {
+  context_->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&DOMStorageContextImpl::AddTransactionLogProcessId,
+                 context_, namespace_id_, process_id));
+}
+
+void DOMStorageSession::RemoveTransactionLogProcessId(int process_id) {
+  context_->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&DOMStorageContextImpl::RemoveTransactionLogProcessId,
+                 context_, namespace_id_, process_id));
+}
+
+void DOMStorageSession::CanMerge(
+    int process_id,
+    DOMStorageSession* other,
+    const SessionStorageNamespace::MergeResultCallback& callback) {
+  scoped_refptr<base::SingleThreadTaskRunner> current_loop(
+      base::ThreadTaskRunnerHandle::Get());
+  context_->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&RunCanMergeTaskAndPostResult,
+                 base::Bind(&DOMStorageContextImpl::CanMergeSessionStorage,
+                            context_, namespace_id_, process_id,
+                            other->namespace_id_),
+                 current_loop,
+                 callback));
 }
 
 }  // namespace content

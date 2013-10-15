@@ -203,6 +203,7 @@ class PrerenderContents : public content::NotificationObserver,
 
   Origin origin() const { return origin_; }
   uint8 experiment_id() const { return experiment_id_; }
+  int child_id() const { return child_id_; }
 
   base::TimeTicks load_start_time() const { return load_start_time_; }
 
@@ -279,6 +280,8 @@ class PrerenderContents : public content::NotificationObserver,
   // Reissues any pending prerender requests from the prerendered page.  Also
   // clears the list of pending requests. Sends notifications.
   void PrepareForUse();
+
+  content::SessionStorageNamespace* GetSessionStorageNamespace() const;
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,

@@ -82,6 +82,13 @@ class PrerenderHandle : public base::NonThreadSafe,
   // the other PrerenderHandle object specified.
   bool RepresentingSamePrerenderAs(PrerenderHandle* other) const;
 
+  // Retrieves the SessionStorageNamespace of the underlying prerender, if
+  // available.
+  content::SessionStorageNamespace* GetSessionStorageNamespace() const;
+
+  // Returns the child id of the prerender.
+  int GetChildId() const;
+
  private:
   friend class PrerenderManager;
 
