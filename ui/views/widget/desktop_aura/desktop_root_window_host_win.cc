@@ -885,6 +885,11 @@ void DesktopRootWindowHostWin::SetWindowTransparency() {
 }
 
 bool DesktopRootWindowHostWin::IsModalWindowActive() const {
+  // This function can get called during window creation which occurs before
+  // root_window_ has been created.
+  if (!root_window_)
+    return false;
+
   aura::Window::Windows::const_iterator index;
   for (index = root_window_->children().begin();
        index != root_window_->children().end();
