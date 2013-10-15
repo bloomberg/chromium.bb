@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "crypto/random.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/media.h"
 #include "net/socket/ssl_server_socket.h"
@@ -42,6 +43,7 @@
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
+#include "third_party/libjingle/source/talk/base/helpers.h"
 #include "url/gurl.h"
 
 // Windows defines 'PostMessage', so we have to undef it.
@@ -74,6 +76,12 @@ const char kChromeExtensionUrlScheme[] = "chrome-extension";
 // Maximum width and height of a mouse cursor supported by PPAPI.
 const int kMaxCursorWidth = 32;
 const int kMaxCursorHeight = 32;
+
+// Size of the random seed blob used to initialize RNG in libjingle. Libjingle
+// uses the seed only for OpenSSL builds. OpenSSL needs at least 32 bytes of
+// entropy (see http://wiki.openssl.org/index.php/Random_Numbers), but stores
+// 1039 bytes of state, so we initialize it with 1k or random data.
+const int kRandomSeedSize = 1024;
 
 std::string ConnectionStateToString(protocol::ConnectionToHost::State state) {
   // Values returned by this function must match the
@@ -201,6 +209,13 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 
   // Resister this instance to handle debug log messsages.
   RegisterLoggingInstance();
+
+#if defined(USE_OPENSSL)
+  // Initialize random seed for libjingle. It's necessary only with OpenSSL.
+  char random_seed[kRandomSeedSize];
+  crypto::RandBytes(random_seed, sizeof(random_seed));
+  talk_base::InitRandom(random_seed, sizeof(random_seed));
+#endif  // defined(USE_OPENSSL)
 
   // Send hello message.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
