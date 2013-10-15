@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <linux/input.h>
@@ -414,7 +415,13 @@ evdev_device_data(int fd, uint32_t mask, void *data)
 			len = read(fd, &ev, sizeof ev);
 
 		if (len < 0 || len % sizeof ev[0] != 0) {
-			/* FIXME: call evdev_device_destroy when errno is ENODEV. */
+			if (len < 0 && errno != EAGAIN && errno != EINTR) {
+				weston_log("device %s died\n",
+					   device->devnode);
+				wl_event_source_remove(device->source);
+				device->source = NULL;
+			}
+
 			return 1;
 		}
 
