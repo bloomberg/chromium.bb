@@ -369,8 +369,7 @@ void TextureImageTransportSurface::ReleaseFrontTexture() {
   front_mailbox_name_ = MailboxName();
   glFlush();
   CHECK_GL_ERROR();
-  GpuHostMsg_AcceleratedSurfaceRelease_Params params;
-  helper_->SendAcceleratedSurfaceRelease(params);
+  helper_->SendAcceleratedSurfaceRelease();
 }
 
 void TextureImageTransportSurface::CreateBackTexture() {

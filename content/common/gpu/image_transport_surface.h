@@ -24,7 +24,6 @@
 struct AcceleratedSurfaceMsg_BufferPresented_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
-struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 namespace gfx {
 class GLSurface;
@@ -120,8 +119,7 @@ class ImageTransportHelper
       GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params);
   void SendAcceleratedSurfacePostSubBuffer(
       GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params);
-  void SendAcceleratedSurfaceRelease(
-      GpuHostMsg_AcceleratedSurfaceRelease_Params params);
+  void SendAcceleratedSurfaceRelease();
   void SendResizeView(const gfx::Size& size);
   void SendUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);

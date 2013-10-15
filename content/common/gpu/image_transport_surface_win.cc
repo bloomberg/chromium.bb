@@ -182,8 +182,7 @@ void PbufferImageTransportSurface::SetFrontbufferAllocation(bool allocation) {
 }
 
 void PbufferImageTransportSurface::DestroySurface() {
-  GpuHostMsg_AcceleratedSurfaceRelease_Params params;
-  helper_->SendAcceleratedSurfaceRelease(params);
+  helper_->SendAcceleratedSurfaceRelease();
 }
 
 std::string PbufferImageTransportSurface::GetExtensions() {

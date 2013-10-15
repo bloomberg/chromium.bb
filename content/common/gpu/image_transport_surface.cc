@@ -12,6 +12,7 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/sync_point_manager.h"
 #include "content/common/gpu/texture_image_transport_surface.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gl/gl_implementation.h"
@@ -107,10 +108,9 @@ void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
   manager_->Send(new GpuHostMsg_AcceleratedSurfacePostSubBuffer(params));
 }
 
-void ImageTransportHelper::SendAcceleratedSurfaceRelease(
-    GpuHostMsg_AcceleratedSurfaceRelease_Params params) {
+void ImageTransportHelper::SendAcceleratedSurfaceRelease() {
+  GpuHostMsg_AcceleratedSurfaceRelease_Params params;
   params.surface_id = stub_->surface_id();
-  params.route_id = route_id_;
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceRelease(params));
 }
 

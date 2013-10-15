@@ -75,7 +75,6 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
-  IPC_STRUCT_MEMBER(int32, route_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
