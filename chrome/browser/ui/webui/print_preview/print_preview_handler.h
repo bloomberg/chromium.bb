@@ -7,14 +7,11 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "build/build_config.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "printing/print_job_constants.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class PrintSystemTaskProxy;
@@ -32,12 +29,10 @@ class WebContents;
 namespace printing {
 struct PageSizeMargins;
 class PrintBackend;
-class StickySettings;
 }
 
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler : public content::WebUIMessageHandler,
-                            public base::SupportsWeakPtr<PrintPreviewHandler>,
                             public ui::SelectFileDialog::Listener,
                             public printing::PrintViewManagerObserver {
  public:
@@ -72,10 +67,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void ShowSystemDialog();
 
  private:
-  // TODO(abodenha@chromium.org) See http://crbug.com/136843
-  // PrintSystemTaskProxy should not need to be a friend.
-  friend class PrintSystemTaskProxy;
-
   content::WebContents* preview_web_contents() const;
 
   // Gets the list of printers. |args| is unused.
@@ -108,8 +99,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void HandleShowSystemDialog(const base::ListValue* args);
 
   // Callback for the signin dialog to call once signin is complete.
-  static void OnSigninComplete(
-      const base::WeakPtr<PrintPreviewHandler>& handler);
+  void OnSigninComplete();
 
   // Brings up a dialog to allow the user to sign into cloud print.
   // |args| is unused.
@@ -159,7 +149,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information.
-  void SendPrinterCapabilities(const base::DictionaryValue& settings_info);
+  void SendPrinterCapabilities(const base::DictionaryValue* settings_info);
 
   // Sends error notification to the Web UI when unable to return the printer
   // capabilities.
@@ -198,8 +188,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Populates |settings| according to the current locale.
   void GetNumberFormatAndMeasurementSystem(base::DictionaryValue* settings);
 
-  static printing::StickySettings* GetStickySettings();
-
   bool GetPreviewDataAndTitle(scoped_refptr<base::RefCountedBytes>* data,
                               string16* title) const;
 
@@ -230,6 +218,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Holds token service to get OAuth2 access tokens.
   class AccessTokenService;
   scoped_ptr<AccessTokenService> token_service_;
+
+  base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandler);
 };
