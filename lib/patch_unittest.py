@@ -666,7 +666,7 @@ class TestFormatting(cros_test_lib.TestCase):
   def _assertBad(self, functor, values, fixup=str, allow_CL=False, **kwds):
     values = map(fixup, values)
     pass_allow_CL = kwds.pop('pass_allow', False)
-    for prefix in ([""] + ['CL:'] if allow_CL else []):
+    for prefix in ([""] + (['CL:'] if allow_CL else [])):
       if pass_allow_CL:
         kwds['allow_CL'] = bool(prefix)
       for value in values:
@@ -678,7 +678,7 @@ class TestFormatting(cros_test_lib.TestCase):
   def _assertGood(self, functor, values, fixup=str, allow_CL=False, **kwds):
     pass_allow_CL = kwds.pop('pass_allow', False)
     values = [map(fixup, x) for x in values]
-    for prefix in ([""] + ['CL:'] if allow_CL else []):
+    for prefix in ([""] + (['CL:'] if allow_CL else [])):
       if pass_allow_CL:
         kwds['allow_CL'] = bool(prefix)
       for value, expected in values:
@@ -692,7 +692,7 @@ class TestFormatting(cros_test_lib.TestCase):
   def _ChangeIdFixup(value):
     s = value.lstrip('iI*')
     l = len(value)
-    return '%s%s' % (value[0:l-len(s)], s.ljust(40 - len(s), "0"))
+    return '%s%s' % (value[0:l-len(s)], s.ljust(40, "0"))
 
   def testFormatChangeId(self):
     fixup = self._ChangeIdFixup
@@ -718,7 +718,7 @@ class TestFormatting(cros_test_lib.TestCase):
         ['is', 'i1325', '01234567', '012345a', '**12345', '+123', '/0123'],
         allow_CL=True)
     self._assertGood(
-        cros_patch.FormatChangeId,
+        cros_patch.FormatGerritNumber,
         [('1',) * 2,
          ('123',) * 2,
          ('123456',) * 2,
