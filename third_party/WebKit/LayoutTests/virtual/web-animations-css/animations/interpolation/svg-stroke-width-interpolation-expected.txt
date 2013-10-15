@@ -1,4 +1,3 @@
-     
 PASS: stroke-width from [0px] to [20px] was [0px] at -0.3
 PASS: stroke-width from [0px] to [20px] was [0px] at 0
 PASS: stroke-width from [0px] to [20px] was [6px] at 0.3

@@ -1,8 +1,3 @@
-     
-     
-     
-     
-     
 FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at -1, expected [rect(0px, 50px, 70px, 15px)]
 FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at 0, expected [rect(0px, 75px, 80px, 10px)]
 FAIL: clip from [rect(0px, 75px, 80px, 10px)] to [rect(0px, 100px, 90px, 5px)] was [auto] at 0.25, expected [rect(0px, 81.25px, 82.5px, 8.75px)]

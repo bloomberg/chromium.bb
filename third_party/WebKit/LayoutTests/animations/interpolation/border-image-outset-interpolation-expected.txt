@@ -1,4 +1,3 @@
-             
 FAIL: border-image-outset from [0px] to [5px] was [-1.5px] at -0.3, expected [0px]
 PASS: border-image-outset from [0px] to [5px] was [0px] at 0
 PASS: border-image-outset from [0px] to [5px] was [0.5px] at 0.1

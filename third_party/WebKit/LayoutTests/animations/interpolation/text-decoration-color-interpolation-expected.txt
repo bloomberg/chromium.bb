@@ -1,4 +1,3 @@
-TTTTTT TTTTTT TTTTTT TTTTTT TTTTTT TTTTTT TTTTTT
 FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at -5, expected [#ffff00]
 FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at -0.4, expected [#ffe700]
 FAIL: text-decoration-color from [orange] to [blue] was [rgb(0, 0, 0)] at 0, expected [orange]

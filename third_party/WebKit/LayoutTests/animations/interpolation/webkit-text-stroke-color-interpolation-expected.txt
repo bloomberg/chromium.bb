@@ -1,4 +1,3 @@
-TT TT TT TT TT TT
 PASS: -webkit-text-stroke-color from [black] to [orange] was [black] at -0.3
 PASS: -webkit-text-stroke-color from [black] to [orange] was [black] at 0
 PASS: -webkit-text-stroke-color from [black] to [orange] was [rgb(77, 50, 0)] at 0.3

@@ -1,4 +1,3 @@
-     
 PASS: outline-color from [white] to [orange] was [white] at -0.3
 PASS: outline-color from [white] to [orange] was [white] at 0
 PASS: outline-color from [white] to [orange] was [rgb(255, 228, 179)] at 0.3

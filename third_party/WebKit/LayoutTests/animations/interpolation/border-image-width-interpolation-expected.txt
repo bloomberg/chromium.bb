@@ -1,4 +1,3 @@
-       
 FAIL: border-image-width from [0px] to [20px] was [-6px] at -0.3, expected [0px]
 PASS: border-image-width from [0px] to [20px] was [0px] at 0
 PASS: border-image-width from [0px] to [20px] was [6px] at 0.3

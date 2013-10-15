@@ -1,4 +1,3 @@
-      
 PASS: flood-color from [orange] to [blue] was [#ffff00] at -5
 PASS: flood-color from [orange] to [blue] was [#ffe700] at -0.4
 PASS: flood-color from [orange] to [blue] was [orange] at 0

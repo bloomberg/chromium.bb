@@ -1,15 +1,3 @@
-The helipad
-The helipad
-The helipad
-The helipad
-The helipad
-The helipad
-The helipad
-The helipad
-The helipad
-The helipad
-The helipad
-The helipad
 PASS: text-indent from [0px] to [50px] was [-15px] at -0.3
 PASS: text-indent from [0px] to [50px] was [0] at 0
 PASS: text-indent from [0px] to [50px] was [15px] at 0.3

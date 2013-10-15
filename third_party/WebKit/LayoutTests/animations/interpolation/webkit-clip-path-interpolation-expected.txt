@@ -1,5 +1,3 @@
-     
-     
 PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(-7.5px, -7.5px, 115px, 115px, 0px, 0px)] at -0.3
 PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(0px, 0px, 100px, 100px)] at 0
 PASS: -webkit-clip-path from [rectangle(0px, 0px, 100px, 100px, 0px, 0px)] to [rectangle(25px, 25px, 50px, 50px, 10px, 10px)] was [rectangle(7.5px, 7.5px, 85px, 85px, 3px, 3px)] at 0.3

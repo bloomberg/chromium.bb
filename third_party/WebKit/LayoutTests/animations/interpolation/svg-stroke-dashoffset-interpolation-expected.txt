@@ -1,4 +1,3 @@
-      
 PASS: stroke-dashoffset from [-10px] to [10px] was [-15px] at -0.25
 PASS: stroke-dashoffset from [-10px] to [10px] was [-10px] at 0
 PASS: stroke-dashoffset from [-10px] to [10px] was [-5px] at 0.25

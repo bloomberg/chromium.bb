@@ -1,4 +1,3 @@
-     
 PASS: max-height from [0px] to [100px] was [0] at -0.5
 PASS: max-height from [0px] to [100px] was [0] at 0
 PASS: max-height from [0px] to [100px] was [30px] at 0.3

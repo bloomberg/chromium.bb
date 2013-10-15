@@ -1,10 +1,4 @@
- 
- 
- 
- 
- 
- 
- PASS: -webkit-perspective from [50px] to [100px] was [none] at -20
+PASS: -webkit-perspective from [50px] to [100px] was [none] at -20
 PASS: -webkit-perspective from [50px] to [100px] was [35px] at -0.3
 PASS: -webkit-perspective from [50px] to [100px] was [50px] at 0
 PASS: -webkit-perspective from [50px] to [100px] was [65px] at 0.3

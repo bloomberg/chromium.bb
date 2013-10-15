@@ -1,5 +1,3 @@
-     
- 
 PASS: stroke from [orange] to [blue] was [#ffe700] at -0.4
 PASS: stroke from [orange] to [blue] was [orange] at 0
 PASS: stroke from [orange] to [blue] was [#cc8433] at 0.2

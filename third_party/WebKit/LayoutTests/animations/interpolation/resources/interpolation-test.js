@@ -103,6 +103,7 @@
       var results = document.createElement('div');
       results.style.whiteSpace = 'pre';
       results.textContent = resultString;
+      results.id = 'results';
       document.body.appendChild(results);
     }
   }
@@ -298,6 +299,9 @@
     }
     if (window.testRunner) {
       if (!isRefTest) {
+        var results = document.querySelector('#results');
+        document.documentElement.textContent = '';
+        document.documentElement.appendChild(results);
         testRunner.dumpAsText();
       }
       testRunner.notifyDone();

@@ -1,9 +1,4 @@
- 
- 
- 
- 
- 
- PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [-30% 20%] at -0.3
+PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [-30% 20%] at -0.3
 PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [0% 50%] at 0
 PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [30% 80%] at 0.3
 PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [60% 110%] at 0.6

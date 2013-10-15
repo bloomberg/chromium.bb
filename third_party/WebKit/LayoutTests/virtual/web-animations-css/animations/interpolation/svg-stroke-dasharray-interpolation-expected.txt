@@ -1,12 +1,3 @@
-         
-       
-       
-       
-       
-       
-       
-       
-       
 PASS: stroke-dasharray from [5 10] to [15 20] was [ 0  4] at -0.6
 PASS: stroke-dasharray from [5 10] to [15 20] was [ 1  6] at -0.4
 PASS: stroke-dasharray from [5 10] to [15 20] was [ 3  8] at -0.2

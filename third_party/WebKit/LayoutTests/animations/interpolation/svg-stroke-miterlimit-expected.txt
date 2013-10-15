@@ -1,4 +1,3 @@
-     
 FAIL: stroke-miterlimit from [1] to [3] was [0.20000000298023224] at -0.4, expected [1]
 PASS: stroke-miterlimit from [1] to [3] was [1] at 0
 PASS: stroke-miterlimit from [1] to [3] was [1.4] at 0.2

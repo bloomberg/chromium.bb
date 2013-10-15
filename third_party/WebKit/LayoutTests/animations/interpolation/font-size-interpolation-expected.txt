@@ -1,4 +1,3 @@
-TTTT TTTT TTTT TTTT TTTT TTTT TTTT
 PASS: font-size from [4px] to [14px] was [0px] at -2
 PASS: font-size from [4px] to [14px] was [1px] at -0.3
 PASS: font-size from [4px] to [14px] was [4px] at 0

@@ -1,14 +1,4 @@
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- PASS: width from [0px] to [100px] was [0px] at -0.3
+PASS: width from [0px] to [100px] was [0px] at -0.3
 PASS: width from [0px] to [100px] was [0px] at 0
 PASS: width from [0px] to [100px] was [30px] at 0.3
 PASS: width from [0px] to [100px] was [60px] at 0.6

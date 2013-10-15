@@ -1,4 +1,3 @@
-    
 PASS: left from [-10px] to [10px] was [-16px] at -0.3
 PASS: left from [-10px] to [10px] was [-10px] at 0
 PASS: left from [-10px] to [10px] was [0px] at 0.5

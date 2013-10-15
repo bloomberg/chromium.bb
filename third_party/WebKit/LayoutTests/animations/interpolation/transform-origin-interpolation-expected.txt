@@ -1,4 +1,3 @@
-     
 FAIL: -webkit-transform-origin from [0% 50%] to [100% 150%] was [-15px 9.984375px] at -0.3, expected [-30% 20%]
 PASS: -webkit-transform-origin from [0% 50%] to [100% 150%] was [0% 50%] at 0
 PASS: -webkit-transform-origin from [0% 50%] to [100% 150%] was [30% 80%] at 0.3
