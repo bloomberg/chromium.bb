@@ -30,6 +30,7 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/vector2d.h"
 #include "ui/gfx/vector3d_f.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/window_util.h"
@@ -208,25 +209,33 @@ gfx::Rect GetLayerWorldBoundsAfterTransform(ui::Layer* layer,
 // Augment the host window so that the enclosing bounds of the full
 // animation will fit inside of it.
 void AugmentWindowSize(aura::Window* window,
-                       const gfx::Transform& start_transform,
                        const gfx::Transform& end_transform) {
   aura::client::AnimationHost* animation_host =
       aura::client::GetAnimationHost(window);
   if (!animation_host)
     return;
 
-  gfx::Rect world_at_start =
-      GetLayerWorldBoundsAfterTransform(window->layer(), start_transform);
+  const gfx::Rect& world_at_start = window->bounds();
   gfx::Rect world_at_end =
       GetLayerWorldBoundsAfterTransform(window->layer(), end_transform);
   gfx::Rect union_in_window_space =
       gfx::UnionRects(world_at_start, world_at_end);
-  gfx::Rect current_bounds = window->bounds();
-  gfx::Rect result(union_in_window_space.x() - current_bounds.x(),
-                   union_in_window_space.y() - current_bounds.y(),
-                   union_in_window_space.width() - current_bounds.width(),
-                   union_in_window_space.height() - current_bounds.height());
-  animation_host->SetHostTransitionBounds(result);
+
+  // Calculate the top left and bottom right deltas to be added to the window
+  // bounds.
+  gfx::Vector2d top_left_delta(world_at_start.x() - union_in_window_space.x(),
+                               world_at_start.y() - union_in_window_space.y());
+
+  gfx::Vector2d bottom_right_delta(
+      union_in_window_space.x() + union_in_window_space.width() -
+          (world_at_start.x() + world_at_start.width()),
+      union_in_window_space.y() + union_in_window_space.height() -
+          (world_at_start.y() + world_at_start.height()));
+
+  DCHECK(top_left_delta.x() >= 0 && top_left_delta.y() >= 0 &&
+         bottom_right_delta.x() >= 0 && bottom_right_delta.y() >= 0);
+
+  animation_host->SetHostTransitionOffsets(top_left_delta, bottom_right_delta);
 }
 
 // Shows a window using an animation, animating its opacity from 0.f to 1.f,
@@ -237,7 +246,7 @@ void AnimateShowWindowCommon(aura::Window* window,
                              const gfx::Transform& end_transform) {
   window->layer()->set_delegate(window);
 
-  AugmentWindowSize(window, start_transform, end_transform);
+  AugmentWindowSize(window, end_transform);
 
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(start_transform);
@@ -259,7 +268,7 @@ void AnimateShowWindowCommon(aura::Window* window,
 // its visibility to false, and its transform to |end_transform|.
 void AnimateHideWindowCommon(aura::Window* window,
                              const gfx::Transform& end_transform) {
-  AugmentWindowSize(window, gfx::Transform(), end_transform);
+  AugmentWindowSize(window, end_transform);
   window->layer()->set_delegate(NULL);
 
   // Property sets within this scope will be implicitly animated.

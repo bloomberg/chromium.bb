@@ -9,7 +9,7 @@
 #include "ui/aura/aura_export.h"
 
 namespace gfx {
-class Rect;
+class Vector2d;
 }
 
 namespace aura {
@@ -23,7 +23,13 @@ class AURA_EXPORT AnimationHost {
  public:
   // Ensure the host window is at least this large so that transitions have
   // sufficient space.
-  virtual void SetHostTransitionBounds(const gfx::Rect& bounds) = 0;
+  // The |top_left_delta| parameter contains the offset to be subtracted from
+  // the window bounds for the top left corner.
+  // The |bottom_right_delta| parameter contains the offset to be added to the
+  // window bounds for the bottom right.
+  virtual void SetHostTransitionOffsets(
+      const gfx::Vector2d& top_left_delta,
+      const gfx::Vector2d& bottom_right_delta) = 0;
 
   // Called after the window has faded out on a hide.
   virtual void OnWindowHidingAnimationCompleted() = 0;

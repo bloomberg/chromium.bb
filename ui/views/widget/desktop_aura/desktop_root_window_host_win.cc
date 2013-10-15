@@ -19,6 +19,7 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
+#include "ui/gfx/vector2d.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_win.h"
@@ -429,18 +430,28 @@ gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
   gfx::Rect bounds(WidgetSizeIsClientSize() ?
       message_handler_->GetClientAreaBoundsInScreen() :
       message_handler_->GetWindowBoundsInScreen());
-  gfx::Rect without_expansion(bounds.x() - window_expansion_.x(),
-                              bounds.y() - window_expansion_.y(),
-                              bounds.width() - window_expansion_.width(),
-                              bounds.height() - window_expansion_.height());
+
+  // If the window bounds were expanded we need to return the original bounds
+  // To achieve this we do the reverse of the expansion, i.e. add the
+  // window_expansion_top_left_delta_ to the origin and subtract the
+  // window_expansion_bottom_right_delta_ from the width and height.
+  gfx::Rect without_expansion(
+      bounds.x() + window_expansion_top_left_delta_.x(),
+      bounds.y() + window_expansion_top_left_delta_.y(),
+      bounds.width() - window_expansion_bottom_right_delta_.x(),
+      bounds.height() - window_expansion_bottom_right_delta_.y());
   return without_expansion;
 }
 
 void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
-  gfx::Rect expanded(bounds.x() + window_expansion_.x(),
-                     bounds.y() + window_expansion_.y(),
-                     bounds.width() + window_expansion_.width(),
-                     bounds.height() + window_expansion_.height());
+  // If the window bounds have to be expanded we need to subtract the
+  // window_expansion_top_left_delta_ from the origin and add the
+  // window_expansion_bottom_right_delta_ to the width and height
+  gfx::Rect expanded(
+      bounds.x() - window_expansion_top_left_delta_.x(),
+      bounds.y() - window_expansion_top_left_delta_.y(),
+      bounds.width() + window_expansion_bottom_right_delta_.x(),
+      bounds.height() + window_expansion_bottom_right_delta_.y());
   message_handler_->SetBounds(expanded);
 }
 
@@ -517,10 +528,12 @@ void DesktopRootWindowHostWin::PrepareForShutdown() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, aura::AnimationHost implementation:
 
-void DesktopRootWindowHostWin::SetHostTransitionBounds(
-    const gfx::Rect& bounds) {
+void DesktopRootWindowHostWin::SetHostTransitionOffsets(
+    const gfx::Vector2d& top_left_delta,
+    const gfx::Vector2d& bottom_right_delta) {
   gfx::Rect bounds_without_expansion = GetBounds();
-  window_expansion_ = bounds;
+  window_expansion_top_left_delta_ = top_left_delta;
+  window_expansion_bottom_right_delta_ = bottom_right_delta;
   SetBounds(bounds_without_expansion);
 }
 

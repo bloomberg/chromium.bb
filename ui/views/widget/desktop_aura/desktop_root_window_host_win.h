@@ -126,7 +126,9 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void PrepareForShutdown() OVERRIDE;
 
   // Overridden from aura::client::AnimationHost
-  virtual void SetHostTransitionBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void SetHostTransitionOffsets(
+      const gfx::Vector2d& top_left_delta,
+      const gfx::Vector2d& bottom_right_delta) OVERRIDE;
   virtual void OnWindowHidingAnimationCompleted() OVERRIDE;
 
   // Overridden from HWNDMessageHandlerDelegate:
@@ -241,11 +243,11 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
 
   scoped_ptr<DesktopDragDropClientWin> drag_drop_client_;
 
-  // Extra size added to the host window. Typically, the window size matches
-  // the contained content, however, when performing a translating or scaling
-  // animation the window has to be enlarged so that the content is not
-  // clipped.
-  gfx::Rect window_expansion_;
+  // When certain windows are being shown, we augment the window size
+  // temporarily for animation. The following two members contain the top left
+  // and bottom right offsets which are used to enlarge the window.
+  gfx::Vector2d window_expansion_top_left_delta_;
+  gfx::Vector2d window_expansion_bottom_right_delta_;
 
   // Whether the window close should be converted to a hide, and then actually
   // closed on the completion of the hide animation. This is cached because
