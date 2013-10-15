@@ -169,12 +169,16 @@ TEST_F(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
   skia::RefPtr<SkColorFilter> colorFilter(skia::AdoptRef(
       new SkColorMatrixFilter(matrix)));
   // We filter only the bottom 200x100 pixels of the foreground.
-  SkIRect cropRect = SkIRect::MakeXYWH(0, 100, 200, 100);
+#if SK_CROP_RECT_IS_INT
+  SkIRect crop_rect = SkIRect::MakeXYWH(0, 100, 200, 100);
+#else
+  SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
+#endif
   skia::RefPtr<SkImageFilter> filter =
       skia::AdoptRef(SkColorFilterImageFilter::Create(
           colorFilter.get(),
           NULL,
-          &cropRect));
+          &crop_rect));
   FilterOperations filters;
   filters.Append(FilterOperation::CreateReferenceFilter(filter));
 
