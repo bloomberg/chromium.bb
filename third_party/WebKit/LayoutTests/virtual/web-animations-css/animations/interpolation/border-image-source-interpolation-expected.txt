@@ -1,6 +1,3 @@
-     
-     
-     
 PASS: border-image-source from [url(../resources/green-100.png)] to [url(../resources/stripes-100.png)] was [url(../resources/green-100.png)] at -0.3
 PASS: border-image-source from [url(../resources/green-100.png)] to [url(../resources/stripes-100.png)] was [url(../resources/green-100.png)] at 0
 PASS: border-image-source from [url(../resources/green-100.png)] to [url(../resources/stripes-100.png)] was [-webkit-cross-fade(url(../resources/green-100.png), url(../resources/stripes-100.png), 0.3)] at 0.3

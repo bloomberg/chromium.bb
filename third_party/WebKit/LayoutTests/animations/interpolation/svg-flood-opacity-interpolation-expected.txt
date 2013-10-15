@@ -1,4 +1,3 @@
-      
 FAIL: flood-opacity from [0.25] to [0.75] was [-0.25] at -1, expected [0]
 PASS: flood-opacity from [0.25] to [0.75] was [0.125] at -0.25
 PASS: flood-opacity from [0.25] to [0.75] was [0.25] at 0

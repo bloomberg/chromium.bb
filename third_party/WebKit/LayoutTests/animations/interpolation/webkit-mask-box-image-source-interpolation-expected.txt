@@ -1,19 +1,4 @@
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- FAIL: -webkit-mask-box-image-source from [url(../resources/green-100.png)] to [url(../resources/stripes-100.png)] was [-webkit-cross-fade(url(file:///.../green-100.png), url(file:///.../stripes-100.png), -0.29999999999999993)] at -0.3, expected [url(../resources/green-100.png)]
+FAIL: -webkit-mask-box-image-source from [url(../resources/green-100.png)] to [url(../resources/stripes-100.png)] was [-webkit-cross-fade(url(file:///.../green-100.png), url(file:///.../stripes-100.png), -0.29999999999999993)] at -0.3, expected [url(../resources/green-100.png)]
 PASS: -webkit-mask-box-image-source from [url(../resources/green-100.png)] to [url(../resources/stripes-100.png)] was [url(../resources/green-100.png)] at 0
 PASS: -webkit-mask-box-image-source from [url(../resources/green-100.png)] to [url(../resources/stripes-100.png)] was [-webkit-cross-fade(url(../resources/green-100.png), url(../resources/stripes-100.png), 0.3)] at 0.3
 PASS: -webkit-mask-box-image-source from [url(../resources/green-100.png)] to [url(../resources/stripes-100.png)] was [-webkit-cross-fade(url(../resources/green-100.png), url(../resources/stripes-100.png), 0.6)] at 0.6
