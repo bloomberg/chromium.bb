@@ -17,6 +17,11 @@ specific_include_rules = {
   r"configuration_policy_handler_list|"
   r"managed_mode_policy_provider|"
   r"policy_browsertest|"
+  r"policy_path_parser|"
+  r"policy_path_parser_linux|"
+  r"policy_path_parser_mac|"
+  r"policy_path_parser_unittest|"
+  r"policy_path_parser_win|"
   r"policy_prefs_browsertest|"
   r"profile_policy_connector|"
   r"profile_policy_connector_factory|"
@@ -41,6 +46,7 @@ specific_include_rules = {
     "+chrome/browser/chrome_notification_types.h",
     "+chrome/browser/download/download_prefs.h",
     "+chrome/browser/extensions/external_policy_loader.h",
+    "+chrome/browser/policy/policy_path_parser.h",
     "+chrome/browser/prefs/proxy_config_dictionary.h",
     "+chrome/browser/prefs/proxy_prefs.h",
     "+chrome/browser/prefs/session_startup_pref.h",
@@ -64,9 +70,5 @@ specific_include_rules = {
     "+chrome/browser/prefs/proxy_config_dictionary.h",
     "+chrome/common/content_settings.h",
     "+chrome/common/pref_names.h",
-  ],
-
-  r"policy_path_parser_win\.cc": [
-    "+chrome/common/chrome_switches.h",
   ],
 }
