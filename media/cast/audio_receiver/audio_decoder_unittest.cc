@@ -45,6 +45,7 @@ TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
   uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
   size_t payload_size = payload.size() * sizeof(int16);
 
+  // TODO(pwestin): change API to size_t to avoid casts.
   audio_decoder_->IncomingParsedRtpPacket(payload_data,
       static_cast<int>(payload_size), rtp_header);
 
@@ -92,6 +93,7 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
   uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
   size_t payload_size = payload.size() * sizeof(int16);
 
+  // TODO(pwestin): change API to size_t to avoid casts.
   audio_decoder_->IncomingParsedRtpPacket(payload_data,
       static_cast<int>(payload_size), rtp_header);
 
@@ -117,8 +119,10 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
 
   rtp_header.webrtc.header.sequenceNumber++;
   rtp_header.webrtc.header.timestamp += (audio_config.frequency / 100) * 2 * 2;
-  audio_decoder_->IncomingParsedRtpPacket(payload_data, payload_size,
-                                          rtp_header);
+
+  // TODO(pwestin): change API to size_t to avoid casts.
+  audio_decoder_->IncomingParsedRtpPacket(payload_data,
+      static_cast<int>(payload_size), rtp_header);
 
   EXPECT_TRUE(audio_decoder_->GetRawAudioFrame(number_of_10ms_blocks,
                                                desired_frequency,
@@ -157,6 +161,7 @@ TEST_F(AudioDecoderTest, Pcm16Resample) {
   uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
   size_t payload_size = payload.size() * sizeof(int16);
 
+  // TODO(pwestin): change API to size_t to avoid casts.
   audio_decoder_->IncomingParsedRtpPacket(payload_data,
       static_cast<int>(payload_size), rtp_header);
 

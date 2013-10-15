@@ -144,7 +144,12 @@ void AudioEncoder::EncodeAudioFrameThread(
     memcpy(&webrtc_audio_frame.data_[0],
            &audio_frame->samples[i * samples_per_10ms * audio_frame->channels],
            samples_per_10ms * audio_frame->channels * sizeof(int16));
-    webrtc_audio_frame.samples_per_channel_ = samples_per_10ms;
+
+    // The webrtc API is int and we have a size_t; the cast should never be an
+    // issue since the normal values are in the 480 range.
+    DCHECK_GE(1000u, samples_per_10ms);
+    webrtc_audio_frame.samples_per_channel_ =
+        static_cast<int>(samples_per_10ms);
     webrtc_audio_frame.sample_rate_hz_ = audio_frame->frequency;
     webrtc_audio_frame.num_channels_ = audio_frame->channels;
 
@@ -152,7 +157,7 @@ void AudioEncoder::EncodeAudioFrameThread(
     if (audio_encoder_->Add10MsData(webrtc_audio_frame) != 0) {
       DCHECK(false) << "Invalid webrtc return value";
     }
-    timestamp_ += samples_per_10ms;
+    timestamp_ += static_cast<uint32>(samples_per_10ms);
   }
   // We are done with the audio frame release it.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,

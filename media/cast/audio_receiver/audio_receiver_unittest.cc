@@ -111,8 +111,10 @@ class AudioReceiverTest : public ::testing::Test {
 
 TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
   Configure(true);
-  receiver_->IncomingParsedRtpPacket(
-      payload_.data(), payload_.size(), rtp_header_);
+
+  // TODO(pwestin): change API to size_t to avoid casts.
+  receiver_->IncomingParsedRtpPacket(payload_.data(),
+      static_cast<int>(payload_.size()), rtp_header_);
   EncodedAudioFrame audio_frame;
   base::TimeTicks playout_time;
   test_audio_encoder_callback_->SetExpectedResult(0, testing_clock_.NowTicks());
