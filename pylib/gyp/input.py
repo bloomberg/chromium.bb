@@ -225,17 +225,19 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
   aux_data[build_file_path] = {}
 
   # Scan for includes and merge them in.
-  try:
-    if is_target:
-      LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
-                                    aux_data, variables, includes, check)
-    else:
-      LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
-                                    aux_data, variables, None, check)
-  except Exception, e:
-    gyp.common.ExceptionAppend(e,
-                               'while reading includes of ' + build_file_path)
-    raise
+  if ('skip_includes' not in build_file_data or
+      not build_file_data['skip_includes']):
+    try:
+      if is_target:
+        LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
+                                      aux_data, variables, includes, check)
+      else:
+        LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
+                                      aux_data, variables, None, check)
+    except Exception, e:
+      gyp.common.ExceptionAppend(e,
+                                 'while reading includes of ' + build_file_path)
+      raise
 
   return build_file_data
 
