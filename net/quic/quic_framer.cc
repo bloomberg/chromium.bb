@@ -1838,10 +1838,9 @@ void QuicFramer::set_version(const QuicVersion version) {
       (quic_version_ <= QUIC_VERSION_10 && version > QUIC_VERSION_10)) {
     // TODO(rtenneti): remove the following code after we delete
     // QUIC_VERSION_10.
-    alternative_decrypter_.reset();
-    SetDecrypter(QuicDecrypter::Create(GetNullTag(version)));
-    encrypter_[ENCRYPTION_NONE].reset(QuicEncrypter::Create(GetNullTag(
-        version)));
+    decrypter_.reset(QuicDecrypter::Create(GetNullTag(version)));
+    encrypter_[ENCRYPTION_NONE].reset(
+        QuicEncrypter::Create(GetNullTag(version)));
   }
   quic_version_ = version;
 }
