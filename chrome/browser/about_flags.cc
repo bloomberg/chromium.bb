@@ -1773,6 +1773,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableStreamlinedHostedApps)
   },
+  {
+    "enable-service-worker",
+    IDS_FLAGS_ENABLE_SERVICE_WORKER_NAME,
+    IDS_FLAGS_ENABLE_SERVICE_WORKER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableServiceWorker)
+  },
 };
 
 const Experiment* experiments = kExperiments;

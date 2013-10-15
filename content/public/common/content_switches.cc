@@ -520,6 +520,10 @@ const char kEnableStatsTable[]              = "enable-stats-table";
 // cookies on cross-site requests.
 const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
 
+// Enable support for ServiceWorker. See
+// https://github.com/slightlyoff/ServiceWorker for more information.
+const char kEnableServiceWorker[]           = "enable-service-worker";
+
 // Enable use of experimental TCP sockets API for sending data in the
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";

@@ -947,6 +947,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePinch,
     switches::kEnablePreparsedJsCaching,
     switches::kEnablePruneGpuCommandBuffers,
+    switches::kEnableServiceWorker,
     switches::kEnableSkiaBenchmarking,
     switches::kEnableSoftwareCompositing,
     switches::kEnableSpeechSynthesis,

@@ -91,6 +91,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableScriptedSpeech(false);
 #endif
 
+  if (command_line.HasSwitch(switches::kEnableServiceWorker))
+    WebRuntimeFeatures::enableServiceWorker(true);
+
   if (command_line.HasSwitch(switches::kDisableWebAudio))
     WebRuntimeFeatures::enableWebAudio(false);
 
