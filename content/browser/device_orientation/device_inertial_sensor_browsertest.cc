@@ -151,10 +151,7 @@ class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
 };
 
 
-// TODO(timvolodine): enable this test once the blink side has switched to
-// the shared memory implementation (crbug.com/298066).
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-    DISABLED_OrientationTest) {
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, OrientationTest) {
   // The test page will register an event handler for orientation events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
