@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -33,7 +34,6 @@ namespace corewm {
 TooltipController::TooltipController(scoped_ptr<Tooltip> tooltip)
     : tooltip_window_(NULL),
       tooltip_window_at_mouse_press_(NULL),
-      mouse_pressed_(false),
       tooltip_(tooltip.Pass()),
       tooltips_enabled_(true) {
   tooltip_timer_.Start(FROM_HERE,
@@ -110,19 +110,13 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_PRESSED:
       if ((event->flags() & ui::EF_IS_NON_CLIENT) == 0) {
         // We don't get a release for non-client areas.
-        mouse_pressed_ = true;
         tooltip_window_at_mouse_press_ = target;
         if (target)
           tooltip_text_at_mouse_press_ = aura::client::GetTooltipText(target);
       }
       tooltip_->Hide();
       break;
-    case ui::ET_MOUSE_RELEASED:
-      mouse_pressed_ = false;
-      break;
     case ui::ET_MOUSE_CAPTURE_CHANGED:
-      // We will not received a mouse release, so reset mouse pressed state.
-      mouse_pressed_ = false;
     case ui::ET_MOUSEWHEEL:
       // Hide the tooltip for click, release, drag, wheel events.
       if (tooltip_->IsVisible())
@@ -173,8 +167,9 @@ void TooltipController::TooltipShownTimerFired() {
 }
 
 void TooltipController::UpdateIfRequired() {
-  if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress() ||
-      !IsCursorVisible()) {
+  if (!tooltips_enabled_ ||
+      aura::Env::GetInstance()->IsMouseButtonDown() ||
+      IsDragDropInProgress() || !IsCursorVisible()) {
     tooltip_->Hide();
     return;
   }

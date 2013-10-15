@@ -80,7 +80,6 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
   // These fields are for tracking state when the user presses a mouse button.
   aura::Window* tooltip_window_at_mouse_press_;
   base::string16 tooltip_text_at_mouse_press_;
-  bool mouse_pressed_;
 
   scoped_ptr<Tooltip> tooltip_;
 
