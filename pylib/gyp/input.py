@@ -57,7 +57,7 @@ def IsPathSection(section):
     section = section[:-1]
   return section in path_sections or is_path_section_match_re.search(section)
 
-# base_non_configuraiton_keys is a list of key names that belong in the target
+# base_non_configuration_keys is a list of key names that belong in the target
 # itself and should not be propagated into its configurations.  It is merged
 # with a list that can come from the generator to
 # create non_configuration_keys.
@@ -84,7 +84,6 @@ base_non_configuration_keys = [
   'toolset',
   'toolsets',
   'type',
-  'variants',
 
   # Sections that can be found inside targets or configurations, but that
   # should not be propagated from targets into their configurations.
@@ -2601,10 +2600,6 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   global non_configuration_keys
   non_configuration_keys = base_non_configuration_keys[:]
   non_configuration_keys.extend(generator_input_info['non_configuration_keys'])
-
-  # TODO(mark) handle variants if the generator doesn't want them directly.
-  generator_handles_variants = \
-      generator_input_info['generator_handles_variants']
 
   global absolute_build_file_paths
   absolute_build_file_paths = \
