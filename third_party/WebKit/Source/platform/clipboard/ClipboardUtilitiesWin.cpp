@@ -27,6 +27,7 @@
 #include "config.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 #include <shlwapi.h>
@@ -41,6 +42,19 @@ static const unsigned maxFilenameLength = 255;
 static bool isInvalidFileCharacter(UChar c)
 {
     return !(PathGetCharType(c) & (GCT_LFNCHAR | GCT_SHORTCHAR));
+}
+
+void replaceNewlinesWithWindowsStyleNewlines(String& str)
+{
+    DEFINE_STATIC_LOCAL(String, windowsNewline, ("\r\n"));
+    StringBuilder result;
+    for (unsigned index = 0; index < str.length(); ++index) {
+        if (str[index] != '\n' || (index > 0 && str[index - 1] == '\r'))
+            result.append(str[index]);
+        else
+            result.append(windowsNewline);
+    }
+    str = result.toString();
 }
 
 void validateFilename(String& name, String& extension)

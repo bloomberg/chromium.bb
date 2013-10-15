@@ -32,25 +32,9 @@
 #include "platform/clipboard/ClipboardUtilities.h"
 
 #include "weborigin/KURL.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-#if OS(WIN)
-void replaceNewlinesWithWindowsStyleNewlines(String& str)
-{
-    DEFINE_STATIC_LOCAL(String, windowsNewline, ("\r\n"));
-    StringBuilder result;
-    for (unsigned index = 0; index < str.length(); ++index) {
-        if (str[index] != '\n' || (index > 0 && str[index - 1] == '\r'))
-            result.append(str[index]);
-        else
-            result.append(windowsNewline);
-    }
-    str = result.toString();
-}
-#endif
 
 void replaceNBSPWithSpace(String& str)
 {
