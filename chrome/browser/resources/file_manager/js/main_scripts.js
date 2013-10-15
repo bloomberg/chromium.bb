@@ -108,6 +108,7 @@
 //<include src="ui/file_manager_ui.js"/>
 //<include src="ui/preview_panel.js"/>
 //<include src="ui/progress_center_panel.js"/>
+//<include src="ui/search_box.js"/>
 //<include src="url_constants.js"/>
 //<include src="volume_manager_wrapper.js"/>
 //<include src="media/media_util.js"/>

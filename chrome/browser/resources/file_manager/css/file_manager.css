@@ -471,6 +471,7 @@ div.splitter {
   background-color: #fff;
   border-style: none;
   color: #333;
+  cursor: default;
   display: block;
   height: 48px;
   line-height: 1em;
@@ -482,6 +483,11 @@ div.splitter {
 
 #search-box input::-webkit-search-cancel-button {
   -webkit-appearance: none;
+}
+
+#search-box.has-cursor input,
+#search-box.has-text input {
+  cursor: text;
 }
 
 #search-box .clear {

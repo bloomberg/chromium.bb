@@ -730,6 +730,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.initAdditionalUI_ = function(callback) {
     this.initDialogs_();
+    this.ui_.initAdditionalUI();
 
     this.dialogDom_.addEventListener('drop', function(e) {
       // Prevent opening an URL by dropping it onto the page.
@@ -876,87 +877,30 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.filePopup_ = null;
 
-    this.searchBoxWrapper_ =
-        this.dialogDom_.querySelector('#search-box');
-    this.searchBox_ = this.dialogDom_.querySelector('#search-box input');
+    this.searchBoxWrapper_ = this.ui_.searchBox.element;
+    this.searchBox_ = this.ui_.searchBox.inputElement;
     this.searchBox_.addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
-    this.searchBox_.addEventListener(
-        'keydown', this.onSearchBoxKeyDown_.bind(this));
-    this.searchBox_.addEventListener(
-        'focus', function() {
-          this.searchBoxWrapper_.classList.toggle('has-cursor', true);
-          this.searchBox_.tabIndex = '99';  // See: go/filesapp-tabindex.
-        }.bind(this));
-    this.searchBox_.addEventListener(
-        'blur', function() {
-          this.searchBoxWrapper_.classList.toggle('has-cursor', false);
-          this.searchBox_.tabIndex = '-1';
-        }.bind(this));
+    this.ui_.searchBox.clearButton.addEventListener(
+        'click', this.onSearchClearButtonClick_.bind(this));
 
-    this.searchTextMeasure_ = new TextMeasure(this.searchBox_);
-    this.searchIcon_ = this.dialogDom_.querySelector('#search-box .icon');
-    this.searchIcon_.addEventListener(
-        'click',
-        function() { this.searchBox_.focus(); }.bind(this));
-    this.searchClearButton_ =
-        this.dialogDom_.querySelector('#search-box .clear');
-    this.searchClearButton_.addEventListener(
-        'click',
-        function() {
-          this.searchBox_.value = '';
-          this.onSearchBoxUpdate_();
-        }.bind(this));
     this.lastSearchQuery_ = '';
 
-    var autocompleteList = new cr.ui.AutocompleteList();
-    autocompleteList.id = 'autocomplete-list';
-    autocompleteList.autoExpands = true;
-    autocompleteList.requestSuggestions =
+    this.autocompleteList_ = this.ui_.searchBox.autocompleteList;
+    this.autocompleteList_.requestSuggestions =
         this.requestAutocompleteSuggestions_.bind(this);
-    // function(item) {}.bind(this) does not work here, as it's a constructor.
-    var self = this;
-    autocompleteList.itemConstructor = function(item) {
-      return self.createAutocompleteListItem_(item);
-    };
 
-    // Do nothing when a suggestion is selected.
-    autocompleteList.handleSelectedSuggestion = function(selectedItem) {};
     // Instead, open the suggested item when Enter key is pressed or
     // mouse-clicked.
-    autocompleteList.handleEnterKeydown = function(event) {
+    this.autocompleteList_.handleEnterKeydown = function(event) {
       this.openAutocompleteSuggestion_();
       this.lastAutocompleteQuery_ = '';
       this.autocompleteList_.suggestions = [];
     }.bind(this);
-    autocompleteList.addEventListener('mousedown', function(event) {
+    this.autocompleteList_.addEventListener('mousedown', function(event) {
       this.openAutocompleteSuggestion_();
       this.lastAutocompleteQuery_ = '';
       this.autocompleteList_.suggestions = [];
-    }.bind(this));
-    autocompleteList.addEventListener('mouseover', function(event) {
-      // Change the selection by a mouse over instead of just changing the
-      // color of moused over element with :hover in CSS. Here's why:
-      //
-      // 1) The user selects an item A with up/down keys (item A is highlighted)
-      // 2) Then the user moves the cursor to another item B
-      //
-      // If we just change the color of moused over element (item B), both
-      // the item A and B are highlighted. This is bad. We should change the
-      // selection so only the item B is highlighted.
-      if (event.target.itemInfo)
-        autocompleteList.selectedItem = event.target.itemInfo;
-    }.bind(this));
-
-    var container = this.document_.querySelector('.dialog-header');
-    container.appendChild(autocompleteList);
-    this.autocompleteList_ = autocompleteList;
-
-    this.searchBox_.addEventListener('focus', function(event) {
-      this.autocompleteList_.attachToInput(this.searchBox_);
-    }.bind(this));
-    this.searchBox_.addEventListener('blur', function(event) {
-      this.autocompleteList_.detach();
     }.bind(this));
 
     this.defaultActionMenuItem_ =
@@ -1447,10 +1391,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.navigationList_)
       this.navigationList_.redraw();
 
-    // Hide the search box if there is not enough space.
-    this.searchBoxWrapper_.classList.toggle(
-        'too-short',
-        this.searchBoxWrapper_.clientWidth < 100);
+    this.ui_.searchBox.updateSizeRelatedStyle();
 
     this.previewPanel_.breadcrumbs.truncate();
   };
@@ -2330,17 +2271,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Updates search box value when directory gets changed.
-   * @private
-   */
-  FileManager.prototype.updateSearchBoxOnDirChange_ = function() {
-    if (!this.searchBox_.disabled) {
-      this.searchBox_.value = '';
-      this.updateSearchBoxStyles_();
-    }
-  };
-
-  /**
    * Update the gear menu.
    * @private
    */
@@ -2399,7 +2329,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
     this.selectionHandler_.onFileSelectionChanged();
-    this.updateSearchBoxOnDirChange_();
+    this.ui_.searchBox.clear();
     util.updateAppState(this.getCurrentDirectory());
 
     // If the current directory is moved from the device's volume, do not
@@ -3461,7 +3391,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {
     var searchString = this.searchBox_.value;
 
-    this.updateSearchBoxStyles_();
     if (this.isOnDrive()) {
       // When the search text is changed, finishes the search and showes back
       // the last directory by passing an empty string to
@@ -3480,37 +3409,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Handles special keys such as Escape on the search box.
-   *
-   * @param {Event} event The keydown event.
+   * Handle the search clear button click.
    * @private
    */
-  FileManager.prototype.onSearchBoxKeyDown_ = function(event) {
-    // Handle only Esc key now.
-    if (event.keyCode != 27) return;
-    if (this.searchBox_.value) return;
-    var currentList = this.listType_ == FileManager.ListType.DETAIL ?
-        this.table_.list : this.grid_;
-    currentList.focus();
-    if (currentList.dataModel.length != 0 &&
-        currentList.selectionModel.selectedIndex == -1) {
-      currentList.selectionModel.selectedIndex = 0;
-    }
-  };
-
-  /**
-   * Updates search box's CSS classes.
-   * These classes are refered from CSS.
-   *
-   * @private
-   */
-  FileManager.prototype.updateSearchBoxStyles_ = function() {
-    var TEXT_BOX_PADDING = 16; // in px.
-    this.searchBoxWrapper_.classList.toggle('has-text',
-                                            !!this.searchBox_.value);
-    var width = this.searchTextMeasure_.getWidth(this.searchBox_.value) +
-                TEXT_BOX_PADDING;
-    this.searchBox_.style.width = width + 'px';
+  FileManager.prototype.onSearchClearButtonClick_ = function() {
+    this.ui_.searchBox.clear();
+    this.onSearchBoxUpdate_();
   };
 
   /**
@@ -3622,39 +3526,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         // Keeps the items in the suggestion list.
         this.autocompleteList_.suggestions = [headerItem].concat(suggestions);
       }.bind(this));
-  };
-
-  /**
-   * Creates a ListItem element for autocomple.
-   *
-   * @param {Object} item An object representing a suggestion.
-   * @return {HTMLElement} Element containing the autocomplete suggestions.
-   * @private
-   */
-  FileManager.prototype.createAutocompleteListItem_ = function(item) {
-    var li = new cr.ui.ListItem();
-    li.itemInfo = item;
-
-    var icon = this.document_.createElement('div');
-    icon.className = 'detail-icon';
-
-    var text = this.document_.createElement('div');
-    text.className = 'detail-text';
-
-    if (item.isHeaderItem) {
-      icon.setAttribute('search-icon');
-      text.innerHTML =
-          strf('SEARCH_DRIVE_HTML', util.htmlEscape(item.searchQuery));
-    } else {
-      var iconType = FileType.getIcon(item.entry);
-      icon.setAttribute('file-type-icon', iconType);
-      // highlightedBaseName is a piece of HTML with meta characters properly
-      // escaped. See the comment at fileBrowserPrivate.searchDriveMetadata().
-      text.innerHTML = item.highlightedBaseName;
-    }
-    li.appendChild(icon);
-    li.appendChild(text);
-    return li;
   };
 
   /**

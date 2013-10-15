@@ -60,6 +60,12 @@ var FileManagerUI = function(element) {
    */
   this.suggestAppsDialog = null;
 
+  /**
+   * Search box.
+   * @type {SearchBox}
+   */
+  this.searchBox = null;
+
   Object.seal(this);
 };
 
@@ -83,4 +89,12 @@ FileManagerUI.prototype.initDialogs = function() {
       new cr.filebrowser.DefaultActionDialog(this.element_);
   this.suggestAppsDialog = new SuggestAppsDialog(
       this.element_, appState.suggestAppsDialogState || {});
+};
+
+/**
+ * Initialize here elements, which are expensive
+ * or hidden in the beginning.
+ */
+FileManagerUI.prototype.initAdditionalUI = function() {
+  this.searchBox = new SearchBox(this.element_.querySelector('#search-box'));
 };
