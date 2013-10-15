@@ -197,8 +197,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
-    ASSERT_EQ(ResourceProvider::GetGLDataFormat(BoundTexture(target)->format),
-              format);
+    ASSERT_EQ(GLDataFormat(BoundTexture(target)->format), format);
     ASSERT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
     ASSERT_TRUE(pixels);
     SetPixels(xoffset, yoffset, width, height, pixels);

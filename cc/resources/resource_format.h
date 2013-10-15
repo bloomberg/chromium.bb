@@ -10,6 +10,7 @@
 
 namespace cc {
 
+// Keep in sync with arrays below.
 enum ResourceFormat {
   RGBA_8888,
   RGBA_4444,
@@ -19,7 +20,7 @@ enum ResourceFormat {
   RESOURCE_FORMAT_MAX = RGB_565,
 };
 
-SkBitmap::Config SkBitmapConfigFromFormat(ResourceFormat format);
+SkBitmap::Config SkBitmapConfig(ResourceFormat format);
 
 }  // namespace cc
 

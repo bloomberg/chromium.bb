@@ -26,6 +26,7 @@
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/size.h"
@@ -344,10 +345,6 @@ class CC_EXPORT ResourceProvider {
   bool CanLockForWrite(ResourceId id);
 
   static GLint GetActiveTextureUnit(WebKit::WebGraphicsContext3D* context);
-  static size_t BytesPerPixel(ResourceFormat format);
-  static GLenum GetGLDataType(ResourceFormat format);
-  static GLenum GetGLDataFormat(ResourceFormat format);
-  static GLenum GetGLInternalFormat(ResourceFormat format);
 
  private:
   struct Resource {
@@ -487,6 +484,49 @@ class CC_EXPORT ResourceProvider {
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };
+
+
+// TODO(epenner): Move these format conversions to resource_format.h
+// once that builds on mac (npapi.h currently #includes OpenGL.h).
+inline unsigned BytesPerPixel(ResourceFormat format) {
+  DCHECK_LE(format, RESOURCE_FORMAT_MAX);
+  static const unsigned format_bytes_per_pixel[RESOURCE_FORMAT_MAX + 1] = {
+    4,  // RGBA_8888
+    2,  // RGBA_4444
+    4,  // BGRA_8888
+    1,  // LUMINANCE_8
+    2   // RGB_565
+  };
+  return format_bytes_per_pixel[format];
+}
+
+inline GLenum GLDataType(ResourceFormat format) {
+  DCHECK_LE(format, RESOURCE_FORMAT_MAX);
+  static const unsigned format_gl_data_type[RESOURCE_FORMAT_MAX + 1] = {
+    GL_UNSIGNED_BYTE,           // RGBA_8888
+    GL_UNSIGNED_SHORT_4_4_4_4,  // RGBA_4444
+    GL_UNSIGNED_BYTE,           // BGRA_8888
+    GL_UNSIGNED_BYTE,           // LUMINANCE_8
+    GL_UNSIGNED_SHORT_5_6_5     // RGB_565
+  };
+  return format_gl_data_type[format];
+}
+
+inline GLenum GLDataFormat(ResourceFormat format) {
+  DCHECK_LE(format, RESOURCE_FORMAT_MAX);
+  static const unsigned format_gl_data_format[RESOURCE_FORMAT_MAX + 1] = {
+    GL_RGBA,       // RGBA_8888
+    GL_RGBA,       // RGBA_4444
+    GL_BGRA_EXT,   // BGRA_8888
+    GL_LUMINANCE,  // LUMINANCE_8
+    GL_RGB         // RGB_565
+  };
+  return format_gl_data_format[format];
+}
+
+inline GLenum GLInternalFormat(ResourceFormat format) {
+  return GLDataFormat(format);
+}
 
 }  // namespace cc
 

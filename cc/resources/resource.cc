@@ -13,8 +13,5 @@ size_t Resource::bytes() const {
   return MemorySizeBytes(size_, format_);
 }
 
-size_t Resource::MemorySizeBytes(gfx::Size size, ResourceFormat format) {
-  return ResourceProvider::BytesPerPixel(format) * size.width() * size.height();
-}
 
 }  // namespace cc

@@ -223,8 +223,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   void ChangeBitmapConfigIfNeeded(const SkBitmap& bitmap,
                                   void* buffer) {
     TRACE_EVENT0("cc", "RasterWorkerPoolTaskImpl::ChangeBitmapConfigIfNeeded");
-    SkBitmap::Config config = SkBitmapConfigFromFormat(
-        resource()->format());
+    SkBitmap::Config config = SkBitmapConfig(resource()->format());
     if (bitmap.getConfig() != config) {
       SkBitmap bitmap_dest;
       IdentityAllocator allocator(buffer);

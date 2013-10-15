@@ -6,7 +6,7 @@
 
 namespace cc {
 
-SkBitmap::Config SkBitmapConfigFromFormat(ResourceFormat format) {
+SkBitmap::Config SkBitmapConfig(ResourceFormat format) {
   switch (format) {
     case RGBA_4444:
       return SkBitmap::kARGB_4444_Config;

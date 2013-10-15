@@ -1393,12 +1393,12 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
       context3d->asyncTexImage2DCHROMIUM(
           GL_TEXTURE_2D,
           0, /* level */
-          GetGLInternalFormat(resource->format),
+          GLInternalFormat(resource->format),
           resource->size.width(),
           resource->size.height(),
           0, /* border */
-          GetGLDataFormat(resource->format),
-          GetGLDataType(resource->format),
+          GLDataFormat(resource->format),
+          GLDataType(resource->format),
           NULL);
     } else {
       context3d->asyncTexSubImage2DCHROMIUM(
@@ -1408,8 +1408,8 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
           0, /* y */
           resource->size.width(),
           resource->size.height(),
-          GetGLDataFormat(resource->format),
-          GetGLDataType(resource->format),
+          GLDataFormat(resource->format),
+          GLDataType(resource->format),
           NULL);
     }
     context3d->endQueryEXT(GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM);
@@ -1548,12 +1548,12 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   } else {
     GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D,
                                          0,
-                                         GetGLInternalFormat(format),
+                                         GLInternalFormat(format),
                                          size.width(),
                                          size.height(),
                                          0,
-                                         GetGLDataFormat(format),
-                                         GetGLDataType(format),
+                                         GLDataFormat(format),
+                                         GLDataType(format),
                                          NULL));
   }
 }
@@ -1656,56 +1656,6 @@ GLint ResourceProvider::GetActiveTextureUnit(WebGraphicsContext3D* context) {
 WebKit::WebGraphicsContext3D* ResourceProvider::Context3d() const {
   ContextProvider* context_provider = output_surface_->context_provider();
   return context_provider ? context_provider->Context3d() : NULL;
-}
-
-size_t ResourceProvider::BytesPerPixel(ResourceFormat format) {
-  switch (format) {
-    case RGBA_8888:
-    case BGRA_8888:
-      return 4;
-    case RGBA_4444:
-    case RGB_565:
-      return 2;
-    case LUMINANCE_8:
-      return 1;
-  }
-  NOTREACHED();
-  return 4;
-}
-
-GLenum ResourceProvider::GetGLDataType(ResourceFormat format) {
-  switch (format) {
-    case RGBA_4444:
-      return GL_UNSIGNED_SHORT_4_4_4_4;
-    case RGBA_8888:
-    case BGRA_8888:
-    case LUMINANCE_8:
-      return GL_UNSIGNED_BYTE;
-    case RGB_565:
-      return GL_UNSIGNED_SHORT_5_6_5;
-  }
-  NOTREACHED();
-  return GL_UNSIGNED_BYTE;
-}
-
-GLenum ResourceProvider::GetGLDataFormat(ResourceFormat format) {
-  switch (format) {
-    case RGBA_8888:
-    case RGBA_4444:
-      return GL_RGBA;
-    case BGRA_8888:
-      return GL_BGRA_EXT;
-    case LUMINANCE_8:
-      return GL_LUMINANCE;
-    case RGB_565:
-      return GL_RGB;
-  }
-  NOTREACHED();
-  return GL_RGBA;
-}
-
-GLenum ResourceProvider::GetGLInternalFormat(ResourceFormat format) {
-  return GetGLDataFormat(format);
 }
 
 }  // namespace cc

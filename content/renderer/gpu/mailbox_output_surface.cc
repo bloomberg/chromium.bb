@@ -86,12 +86,12 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       context3d->texImage2D(
           GL_TEXTURE_2D,
           0,
-          ResourceProvider::GetGLInternalFormat(format_),
+          GLInternalFormat(format_),
           surface_size_.width(),
           surface_size_.height(),
           0,
-          ResourceProvider::GetGLDataFormat(format_),
-          ResourceProvider::GetGLDataType(format_),
+          GLDataFormat(format_),
+          GLDataType(format_),
           NULL);
       context3d->genMailboxCHROMIUM(current_backing_.mailbox.name);
       context3d->produceTextureCHROMIUM(

@@ -190,7 +190,7 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
   const uint8* pixel_source;
-  unsigned bytes_per_pixel = ResourceProvider::BytesPerPixel(format);
+  unsigned bytes_per_pixel = BytesPerPixel(format);
   // Use 4-byte row alignment (OpenGL default) for upload performance.
   // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
   unsigned upload_image_stride =
@@ -222,8 +222,8 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
                           dest_offset.y(),
                           source_rect.width(),
                           source_rect.height(),
-                          ResourceProvider::GetGLDataFormat(format),
-                          ResourceProvider::GetGLDataType(format),
+                          GLDataFormat(format),
+                          GLDataType(format),
                           pixel_source);
 }
 
@@ -243,7 +243,7 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
   // Offset from image-rect to source-rect.
   gfx::Vector2d offset(source_rect.origin() - image_rect.origin());
 
-  unsigned bytes_per_pixel = ResourceProvider::BytesPerPixel(format);
+  unsigned bytes_per_pixel = BytesPerPixel(format);
   // Use 4-byte row alignment (OpenGL default) for upload performance.
   // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
   unsigned upload_image_stride =
@@ -257,10 +257,8 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
                                          dest_offset.y(),
                                          source_rect.width(),
                                          source_rect.height(),
-                                         ResourceProvider::GetGLDataFormat(
-                                             format),
-                                         ResourceProvider::GetGLDataType(
-                                             format),
+                                         GLDataFormat(format),
+                                         GLDataType(format),
                                          GL_WRITE_ONLY));
 
   if (!pixel_dest) {

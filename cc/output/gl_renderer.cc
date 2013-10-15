@@ -1677,7 +1677,7 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
   uint8_t* bitmap_pixels = NULL;
   SkBitmap on_demand_tile_raster_bitmap_dest;
-  SkBitmap::Config config = SkBitmapConfigFromFormat(quad->texture_format);
+  SkBitmap::Config config = SkBitmapConfig(quad->texture_format);
   if (on_demand_tile_raster_bitmap_.getConfig() != config) {
     on_demand_tile_raster_bitmap_.copyTo(&on_demand_tile_raster_bitmap_dest,
                                          config);
@@ -2430,7 +2430,7 @@ void GLRenderer::GetFramebufferTexture(
       context_->copyTexImage2D(
           GL_TEXTURE_2D,
           0,
-          ResourceProvider::GetGLDataFormat(texture_format),
+          GLDataFormat(texture_format),
           window_rect.x(),
           window_rect.y(),
           window_rect.width(),
