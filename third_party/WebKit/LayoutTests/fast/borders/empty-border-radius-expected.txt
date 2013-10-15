@@ -1,0 +1,1 @@
+Test for crbug.com/303383: elements with border radius and 0px height are invisible. If this test passes, we can see a line with green color.

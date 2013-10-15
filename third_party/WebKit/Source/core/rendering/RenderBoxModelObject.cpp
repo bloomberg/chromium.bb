@@ -1885,7 +1885,7 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
             graphicsContext->clipRoundedRect(outerBorder);
         // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
         // The inside will be clipped out later (in clipBorderSideForComplexInnerPath)
-        if (innerBorder.isRenderable())
+        if (innerBorder.isRenderable() && !innerBorder.isEmpty())
             graphicsContext->clipOutRoundedRect(innerBorder);
     }
 
@@ -2349,7 +2349,9 @@ void RenderBoxModelObject::clipBorderSideForComplexInnerPath(GraphicsContext* gr
     BoxSide side, const class BorderEdge edges[])
 {
     graphicsContext->clip(calculateSideRectIncludingInner(outerBorder, edges, side));
-    graphicsContext->clipOutRoundedRect(calculateAdjustedInnerBorder(innerBorder, side));
+    RoundedRect adjustedInnerRect = calculateAdjustedInnerBorder(innerBorder, side);
+    if (!adjustedInnerRect.isEmpty())
+        graphicsContext->clipOutRoundedRect(adjustedInnerRect);
 }
 
 void RenderBoxModelObject::getBorderEdgeInfo(BorderEdge edges[], const RenderStyle* style, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const

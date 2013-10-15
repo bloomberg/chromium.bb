@@ -1218,3 +1218,6 @@ crbug.com/306645 plugins/destroy-plugin-from-callback.html [ Pass Crash ]
 
 crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
 crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ Pass ImageOnlyFailure ]
+
+crbug.com/303922 fast/borders/border-radius-with-empty-inner-border.html [ NeedsRebaseline ]
+crbug.com/303383 fast/borders/empty-border-radius.html [ NeedsRebaseline ]

@@ -1,0 +1,1 @@
+Test for crbug.com/303922: border-radius makes border not appear on empty block elements. If passes, we can see a rounded top border.
