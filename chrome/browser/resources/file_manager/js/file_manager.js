@@ -1010,6 +1010,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // This event is published by DragSelector because drag end event is not
     // published at the end of drag selection.
     this.table_.list.addEventListener('dragselectionend', dragEndBound);
+    this.grid_.addEventListener('dragselectionend', dragEndBound);
 
     // TODO(mtomasz, yoshiki): Create navigation list earlier, and here just
     // attach the directory model.
