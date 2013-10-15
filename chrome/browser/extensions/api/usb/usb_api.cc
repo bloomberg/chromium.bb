@@ -329,10 +329,11 @@ void RequestUsbDevicesAccess(
     callback.Run(devices.Pass());
     return;
   }
-  (*devices->begin())->RequestUsbAcess(
+  std::vector<scoped_refptr<UsbDevice> >::iterator i = devices->begin();
+  (*i)->RequestUsbAcess(
       interface_id,
       base::Bind(RequestUsbDevicesAccessHelper, base::Passed(devices.Pass()),
-                 devices->begin(), interface_id, callback));
+                 i, interface_id, callback));
 }
 #endif  // OS_CHROMEOS
 
