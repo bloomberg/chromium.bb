@@ -53,6 +53,7 @@ SKIP_PYTHON = set([
 ])
 
 input_directory = os.path.join('bindings', 'tests', 'idls')
+support_input_directory = os.path.join('bindings', 'tests', 'idls', 'testing')
 reference_directory = os.path.join('bindings', 'tests', 'results')
 reference_event_names_filename = os.path.join(reference_directory, 'EventInterfaces.in')
 
@@ -87,6 +88,7 @@ class BindingsTests(object):
         self.test_python = test_python
         self.executive = executive
         _, self.interface_dependencies_filename = provider.newtempfile()
+        _, self.derived_sources_list_filename = provider.newtempfile()
         if reset_results:
             self.event_names_filename = os.path.join(reference_directory, 'EventInterfaces.in')
         else:
@@ -136,13 +138,20 @@ class BindingsTests(object):
         return 0
 
     def generate_interface_dependencies(self):
-        idl_files_list_file, idl_files_list_filename = provider.newtempfile()
+        idl_files_list_file, main_idl_files_list_filename = provider.newtempfile()
         idl_paths = [os.path.join(input_directory, input_file)
                      for input_file in os.listdir(input_directory)
                      if input_file.endswith('.idl')]
         idl_files_list_contents = ''.join(idl_path + '\n'
                                           for idl_path in idl_paths)
         os.write(idl_files_list_file, idl_files_list_contents)
+        support_idl_files_list_file, support_idl_files_list_filename = provider.newtempfile()
+        support_idl_paths = [os.path.join(support_input_directory, input_file)
+                     for input_file in os.listdir(support_input_directory)
+                     if input_file.endswith('.idl')]
+        support_idl_files_list_contents = ''.join(idl_path + '\n'
+                                          for idl_path in support_idl_paths)
+        os.write(support_idl_files_list_file, support_idl_files_list_contents)
 
         # Dummy files, required by compute_dependencies but not checked
         _, window_constructors_file = provider.newtempfile()
@@ -151,8 +160,10 @@ class BindingsTests(object):
         _, dedicatedworkerglobalscope_constructors_file = provider.newtempfile()
         cmd = ['python',
                'bindings/scripts/compute_dependencies.py',
-               '--idl-files-list', idl_files_list_filename,
+               '--main-idl-files-list', main_idl_files_list_filename,
+               '--support-idl-files-list', support_idl_files_list_filename,
                '--interface-dependencies-file', self.interface_dependencies_filename,
+               '--bindings-derived-sources-file', self.derived_sources_list_filename,
                '--window-constructors-file', window_constructors_file,
                '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,
                '--sharedworkerglobalscope-constructors-file', sharedworkerglobalscope_constructors_file,
@@ -201,14 +212,14 @@ class BindingsTests(object):
                     for (reference_filename, work_filename) in file_pairs])
 
     def run_tests(self):
-        def generate_and_check_output_pl(idl_filename):
+        def generate_and_check_output_pl(idl_filename, directory):
             # Generate output into the reference directory if resetting
             # results, or a temp directory if not.
             if self.reset_results:
                 work_directory = reference_directory
             else:
                 work_directory = provider.newtempdir()
-            idl_path = os.path.join(input_directory, idl_filename)
+            idl_path = os.path.join(directory, idl_filename)
             if self.generate_from_idl_pl(idl_path, work_directory):
                 return False
             if self.reset_results:
@@ -232,9 +243,10 @@ class BindingsTests(object):
         else:
             passed = self.identical_file(reference_event_names_filename,
                                          self.event_names_filename)
-        passed &= all([generate_and_check_output_pl(input_file)
-                       for input_file in os.listdir(input_directory)
-                       if input_file.endswith('.idl')])
+        for directory in [input_directory, support_input_directory]:
+            passed &= all([generate_and_check_output_pl(input_file, directory)
+                           for input_file in os.listdir(directory)
+                           if input_file.endswith('.idl')])
         print
         if self.test_python:
             print 'Python:'

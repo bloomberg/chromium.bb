@@ -3490,7 +3490,7 @@
             'svg/properties/SVGAnimatedPathSegListPropertyTearOff.h',
             'svg/properties/SVGPathSegListPropertyTearOff.cpp',
         ],
-        'webcore_test_support_idl_files': [
+        'webcore_testing_support_idl_files': [
           'testing/GCObservation.idl',
           'testing/Internals.idl',
           'testing/InternalProfilers.idl',
@@ -3499,6 +3499,8 @@
           'testing/LayerRectList.idl',
           'testing/MallocStatistics.idl',
           'testing/TypeConversions.idl',
+        ],
+        'generated_webcore_testing_support_idl_files': [
           '<(SHARED_INTERMEDIATE_DIR)/blink/InternalSettingsGenerated.idl',
           '<(SHARED_INTERMEDIATE_DIR)/blink/InternalRuntimeFlags.idl',
         ],

@@ -37,10 +37,17 @@
   ],
 
   'variables': {
-    'idl_files': [
+    'main_idl_files': [
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
       '<@(svg_idl_files)',
+    ],
+    'support_idl_files': [
+      '<@(webcore_testing_support_idl_files)',
+    ],
+    'testing_support_idl_files': [
+      '<@(webcore_testing_support_idl_files)',
+      '<@(generated_webcore_testing_support_idl_files)',
     ],
     'compiler_module_files': [
         'scripts/idl_compiler.py',
@@ -140,15 +147,19 @@
       'variables': {
         # Write sources into a file, so that the action command line won't
         # exceed OS limits.
-        'idl_files_list': '<|(idl_files_list.tmp <@(idl_files))',
+        'main_idl_files_list': '<|(main_idl_files_list.tmp <@(main_idl_files))',
+        'support_idl_files_list': '<|(support_idl_files_list.tmp <@(support_idl_files))',
       },
       'inputs': [
         'scripts/compute_dependencies.py',
-        '<(idl_files_list)',
-        '<@(idl_files)',
+        '<(main_idl_files_list)',
+        '<!@(cat <(main_idl_files_list))',
+        '<(support_idl_files_list)',
+        '<!@(cat <(support_idl_files_list))',
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
          '<@(generated_global_constructors_idl_files)',
          '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
        ],
@@ -156,10 +167,14 @@
        'action': [
          'python',
          'scripts/compute_dependencies.py',
-         '--idl-files-list',
-         '<(idl_files_list)',
+         '--main-idl-files-list',
+         '<(main_idl_files_list)',
+         '--support-idl-files-list',
+         '<(support_idl_files_list)',
          '--interface-dependencies-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
+         '--bindings-derived-sources-file',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
          '--window-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
          '--workerglobalscope-constructors-file',
@@ -186,8 +201,8 @@
         '../core/core_derived_sources.gyp:generate_test_support_idls',
       ],
       'sources': [
-        '<@(idl_files)',
-        '<@(webcore_test_support_idl_files)',
+        '<@(main_idl_files)',
+        '<@(testing_support_idl_files)',
       ],
       'rules': [{
         'rule_name': 'binding',
@@ -209,7 +224,7 @@
           #
           # If a new partial interface is added, need to regyp to update these
           # dependencies, as these are computed statically at gyp runtime.
-          '<!@pymod_do_main(list_idl_files_with_partial_interface <@(idl_files))',
+          '<!@pymod_do_main(list_idl_files_with_partial_interface <@(main_idl_files))',
           # Generated IDLs are all partial interfaces, hence everything
           # potentially depends on them.
           '<@(generated_global_constructors_idl_files)',
@@ -249,7 +264,7 @@
           '--interfaceDependenciesFile',
           '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
           '--additionalIdlFiles',
-          '<(webcore_test_support_idl_files)',
+          '<(testing_support_idl_files)',
           '<@(preprocessor)',
           '<@(write_file_only_if_changed)',
           '<(RULE_INPUT_PATH)',
@@ -268,7 +283,7 @@
         'action_name': 'derived_sources_all_in_one',
         'inputs': [
           '../build/scripts/action_derivedsourcesallinone.py',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
         ],
         'outputs': [
           '<@(derived_sources_aggregate_files)',
@@ -276,7 +291,7 @@
         'action': [
           'python',
           '../build/scripts/action_derivedsourcesallinone.py',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
           '--',
           '<@(derived_sources_aggregate_files)',
         ],
