@@ -742,7 +742,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     uint32 output_surface_id;
     unsigned frame_id;
   };
-  std::vector<ReleasedFrameInfo> released_software_frames_;
+  scoped_ptr<ReleasedFrameInfo> released_software_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

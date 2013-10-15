@@ -1614,13 +1614,10 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
 
 void RenderWidgetHostViewAura::SendSoftwareFrameAck(uint32 output_surface_id) {
   unsigned software_frame_id = 0;
-  if (!released_software_frames_.empty()) {
-    unsigned released_output_surface_id =
-        released_software_frames_.back().output_surface_id;
-    if (released_output_surface_id == output_surface_id) {
-      software_frame_id = released_software_frames_.back().frame_id;
-      released_software_frames_.pop_back();
-    }
+  if (released_software_frame_ &&
+      released_software_frame_->output_surface_id == output_surface_id) {
+    software_frame_id = released_software_frame_->frame_id;
+    released_software_frame_.reset();
   }
 
   cc::CompositorFrameAck ack;
@@ -1632,24 +1629,25 @@ void RenderWidgetHostViewAura::SendSoftwareFrameAck(uint32 output_surface_id) {
 }
 
 void RenderWidgetHostViewAura::SendReclaimSoftwareFrames() {
-  while (!released_software_frames_.empty()) {
-    cc::CompositorFrameAck ack;
-    ack.last_software_frame_id = released_software_frames_.back().frame_id;
-    RenderWidgetHostImpl::SendReclaimCompositorResources(
-        host_->GetRoutingID(),
-        released_software_frames_.back().output_surface_id,
-        host_->GetProcess()->GetID(),
-        ack);
-    released_software_frames_.pop_back();
-  }
+  if (!released_software_frame_)
+    return;
+  cc::CompositorFrameAck ack;
+  ack.last_software_frame_id = released_software_frame_->frame_id;
+  RenderWidgetHostImpl::SendReclaimCompositorResources(
+      host_->GetRoutingID(),
+      released_software_frame_->output_surface_id,
+      host_->GetProcess()->GetID(),
+      ack);
+  released_software_frame_.reset();
 }
 
 void RenderWidgetHostViewAura::ReleaseSoftwareFrame(
     uint32 output_surface_id,
     unsigned software_frame_id) {
   SendReclaimSoftwareFrames();
-  released_software_frames_.push_back(
-      ReleasedFrameInfo(output_surface_id, software_frame_id));
+  DCHECK(!released_software_frame_);
+  released_software_frame_.reset(new ReleasedFrameInfo(
+      output_surface_id, software_frame_id));
 }
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
