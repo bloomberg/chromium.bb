@@ -853,7 +853,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // it.
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GPUChannelFactory");
-    BrowserGpuChannelHostFactory::Terminate();
+    if (BrowserGpuChannelHostFactory::instance())
+      BrowserGpuChannelHostFactory::Terminate();
   }
 
   // Must happen after the I/O thread is shutdown since this class lives on the
@@ -910,9 +911,26 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if !defined(OS_IOS)
   HistogramSynchronizer::GetInstance();
 
-  BrowserGpuChannelHostFactory::Initialize();
+  // Initialize the GpuDataManager before we set up the MessageLoops because
+  // otherwise we'll trigger the assertion about doing IO on the UI thread.
+  GpuDataManagerImpl::GetInstance()->Initialize();
+
+  bool always_uses_gpu = IsForceCompositingModeEnabled();
+  bool established_gpu_channel = false;
+#if defined(USE_AURA) || defined(OS_ANDROID)
+  established_gpu_channel =
+      !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) ||
+      parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
+      parsed_command_line_.HasSwitch(switches::kInProcessGPU);
 #if defined(USE_AURA)
+  if (GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
+    BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
+  else
+    always_uses_gpu = false;
   ImageTransportFactory::Initialize();
+#elif defined(OS_ANDROID)
+  BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
+#endif
 #endif
 
 #if defined(OS_LINUX)
@@ -934,10 +952,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       "BrowserMainLoop::BrowserThreadsStarted:InitMediaStreamManager");
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
   }
-
-  // Initialize the GpuDataManager before we set up the MessageLoops because
-  // otherwise we'll trigger the assertion about doing IO on the UI thread.
-  GpuDataManagerImpl::GetInstance()->Initialize();
 
   {
     TRACE_EVENT0("startup",
@@ -969,12 +983,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // When running the GPU thread in-process, avoid optimistically starting it
   // since creating the GPU thread races against creation of the one-and-only
   // ChildProcess instance which is created by the renderer thread.
-  bool always_uses_gpu = IsForceCompositingModeEnabled();
-#if defined(USE_AURA)
-  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
-    always_uses_gpu = false;
-#endif
   if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL) &&
+      !established_gpu_channel &&
       always_uses_gpu &&
       !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
       !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&

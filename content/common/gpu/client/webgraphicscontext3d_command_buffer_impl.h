@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/gfx/native_widget_types.h"
@@ -50,7 +49,6 @@ using WebKit::WebGraphicsMemoryAllocation;
 
 namespace content {
 class GpuChannelHost;
-class GpuChannelHostFactory;
 struct GpuMemoryAllocationForRenderer;
 
 const size_t kDefaultCommandBufferSize = 1024 * 1024;
@@ -79,26 +77,26 @@ class WebGraphicsContext3DCommandBufferImpl
     kNoLimit = 0,
   };
 
+  struct SharedMemoryLimits {
+    SharedMemoryLimits();
+
+    size_t command_buffer_size;
+    size_t start_transfer_buffer_size;
+    size_t min_transfer_buffer_size;
+    size_t max_transfer_buffer_size;
+    size_t mapped_memory_reclaim_limit;
+  };
+
   WebGraphicsContext3DCommandBufferImpl(
       int surface_id,
       const GURL& active_url,
-      GpuChannelHostFactory* factory,
-      const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client);
+      GpuChannelHost* host,
+      const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
+      const Attributes& attributes,
+      bool bind_generates_resources,
+      const SharedMemoryLimits& limits);
 
   virtual ~WebGraphicsContext3DCommandBufferImpl();
-
-  bool Initialize(const Attributes& attributes,
-                  bool bind_generates_resources,
-                  CauseForGpuLaunch cause,
-                  size_t command_buffer_size,
-                  size_t start_transfer_buffer_size,
-                  size_t min_transfer_buffer_size,
-                  size_t max_transfer_buffer_size,
-                  size_t mapped_memory_reclaim_limit);
-
-  bool InitializeWithDefaultBufferSizes(const Attributes& attributes,
-                                        bool bind_generates_resources,
-                                        CauseForGpuLaunch cause);
 
   // The following 3 IDs let one uniquely identify this context.
   // Gets the GPU process ID for this context.
@@ -126,12 +124,12 @@ class WebGraphicsContext3DCommandBufferImpl
   // on any failure.
   static CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl*
       CreateOffscreenContext(
-          GpuChannelHostFactory* factory,
+          GpuChannelHost* host,
           const WebGraphicsContext3D::Attributes& attributes,
           const GURL& active_url);
 
   size_t GetMappedMemoryLimit() {
-    return mapped_memory_limit_;
+    return mem_limits_.mapped_memory_reclaim_limit;
   }
 
   //----------------------------------------------------------------------
@@ -712,9 +710,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   bool initialize_failed_;
 
-  // The channel factory to talk to the GPU process
-  GpuChannelHostFactory* factory_;
-
   bool visible_;
   bool free_command_buffer_when_invisible_;
 
@@ -754,11 +749,7 @@ class WebGraphicsContext3DCommandBufferImpl
   int frame_number_;
   bool bind_generates_resources_;
   bool use_echo_for_swap_ack_;
-  size_t command_buffer_size_;
-  size_t start_transfer_buffer_size_;
-  size_t min_transfer_buffer_size_;
-  size_t max_transfer_buffer_size_;
-  size_t mapped_memory_limit_;
+  SharedMemoryLimits mem_limits_;
 
   uint32_t flush_id_;
 };

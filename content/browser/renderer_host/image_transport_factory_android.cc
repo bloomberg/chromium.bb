@@ -56,34 +56,38 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
 };
 
 CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
+  BrowserGpuChannelHostFactory* factory =
+      BrowserGpuChannelHostFactory::instance();
+  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->EstablishGpuChannelSync(
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+  DCHECK(gpu_channel_host);
+
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
-  GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
   GURL url("chrome://gpu/ImageTransportFactoryAndroid");
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
-  context_.reset(new WebGraphicsContext3DCommandBufferImpl(0, // offscreen
-                                                           url,
-                                                           factory,
-                                                           swap_client));
   static const size_t kBytesPerPixel = 4;
   gfx::DeviceDisplayInfo display_info;
-  size_t full_screen_texture_size_in_bytes =
-      display_info.GetDisplayHeight() *
-      display_info.GetDisplayWidth() *
-      kBytesPerPixel;
+  size_t full_screen_texture_size_in_bytes = display_info.GetDisplayHeight() *
+                                             display_info.GetDisplayWidth() *
+                                             kBytesPerPixel;
+  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
+  limits.command_buffer_size = 64 * 1024;
+  limits.start_transfer_buffer_size = 64 * 1024;
+  limits.min_transfer_buffer_size = 64 * 1024;
+  limits.max_transfer_buffer_size = std::min(
+      3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
+  limits.mapped_memory_reclaim_limit =
+      WebGraphicsContext3DCommandBufferImpl::kNoLimit;
+  context_.reset(
+      new WebGraphicsContext3DCommandBufferImpl(0,  // offscreen
+                                                url,
+                                                gpu_channel_host.get(),
+                                                swap_client,
+                                                attrs,
+                                                false,
+                                                limits));
   context_->setContextLostCallback(context_lost_listener_.get());
-  context_->Initialize(
-      attrs,
-      false,
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
-      64 * 1024,  // command buffer size
-      64 * 1024,  // starting buffer size
-      64 * 1024,  // min buffer size
-      std::min(3 * full_screen_texture_size_in_bytes,
-               kDefaultMaxTransferBufferSize),
-      WebGraphicsContext3DCommandBufferImpl::kNoLimit
-  );
-
   if (context_->makeContextCurrent())
     context_->pushGroupMarkerEXT(
         base::StringPrintf("CmdBufferImageTransportFactory-%p",
