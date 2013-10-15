@@ -56,6 +56,8 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   virtual bool GetCollectStatsConsent() OVERRIDE;
+
+  virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) OVERRIDE;
 #endif
 
 #if defined(OS_ANDROID)
@@ -64,8 +66,6 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
 
 #if defined(OS_MACOSX)
   virtual void InstallAdditionalFilters(BreakpadRef breakpad) OVERRIDE;
-
-  virtual bool ReportingIsEnforcedByPolicy() OVERRIDE;
 #endif
 
  private:

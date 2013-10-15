@@ -33,7 +33,6 @@
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "policy/policy_constants.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"
 
@@ -215,31 +214,6 @@ void SetPluginPath(const std::wstring& path) {
   }
 }
 
-// Determine whether configuration management allows loading the crash reporter.
-// Since the configuration management infrastructure is not initialized at this
-// point, we read the corresponding registry key directly. The return status
-// indicates whether policy data was successfully read. If it is true, |result|
-// contains the value set by policy.
-static bool MetricsReportingControlledByPolicy(bool* result) {
-  string16 key_name = UTF8ToUTF16(policy::key::kMetricsReportingEnabled);
-  DWORD value = 0;
-  base::win::RegKey hklm_policy_key(HKEY_LOCAL_MACHINE,
-                                    policy::kRegistryChromePolicyKey, KEY_READ);
-  if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
-    *result = value != 0;
-    return true;
-  }
-
-  base::win::RegKey hkcu_policy_key(HKEY_CURRENT_USER,
-                                    policy::kRegistryChromePolicyKey, KEY_READ);
-  if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
-    *result = value != 0;
-    return true;
-  }
-
-  return false;
-}
-
 // Appends the breakpad dump path to |g_custom_entries|.
 void SetBreakpadDumpPath() {
   DCHECK(g_custom_entries);
@@ -330,7 +304,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   // Check whether configuration management controls crash reporting.
   bool crash_reporting_enabled = true;
   bool controlled_by_policy =
-      MetricsReportingControlledByPolicy(&crash_reporting_enabled);
+      breakpad::GetBreakpadClient()->ReportingIsEnforcedByPolicy(
+          &crash_reporting_enabled);
   const CommandLine& command = *CommandLine::ForCurrentProcess();
   bool use_crash_service =
       !controlled_by_policy &&
@@ -652,7 +627,8 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
   // Check whether configuration management controls crash reporting.
   bool crash_reporting_enabled = true;
   bool controlled_by_policy =
-      MetricsReportingControlledByPolicy(&crash_reporting_enabled);
+      breakpad::GetBreakpadClient()->ReportingIsEnforcedByPolicy(
+          &crash_reporting_enabled);
 
   const CommandLine& command = *CommandLine::ForCurrentProcess();
   bool use_crash_service =

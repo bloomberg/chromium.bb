@@ -120,6 +120,10 @@ class BreakpadClient {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Returns true if the user has given consent to collect stats.
   virtual bool GetCollectStatsConsent();
+
+  // Returns true if breakpad is enforced via management policies. In that
+  // case, |breakpad_enabled| is set to the value enforced by policies.
+  virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled);
 #endif
 
 #if defined(OS_ANDROID)
@@ -130,9 +134,6 @@ class BreakpadClient {
 #if defined(OS_MACOSX)
   // Install additional breakpad filter callbacks.
   virtual void InstallAdditionalFilters(BreakpadRef breakpad);
-
-  // Returns true if breakpad is enforced via management policies.
-  virtual bool ReportingIsEnforcedByPolicy();
 #endif
 };
 

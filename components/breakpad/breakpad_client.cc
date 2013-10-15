@@ -107,6 +107,10 @@ bool BreakpadClient::IsRunningUnattended() {
 bool BreakpadClient::GetCollectStatsConsent() {
   return false;
 }
+
+bool BreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
+  return false;
+}
 #endif
 
 #if defined(OS_ANDROID)
@@ -117,10 +121,6 @@ int BreakpadClient::GetAndroidMinidumpDescriptor() {
 
 #if defined(OS_MACOSX)
 void BreakpadClient::InstallAdditionalFilters(BreakpadRef breakpad) {
-}
-
-bool BreakpadClient::ReportingIsEnforcedByPolicy() {
-  return false;
 }
 #endif
 

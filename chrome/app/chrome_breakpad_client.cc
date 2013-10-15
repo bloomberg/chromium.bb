@@ -28,6 +28,7 @@
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
+#include "policy/policy_constants.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
@@ -256,6 +257,31 @@ void ChromeBreakpadClient::RecordCrashDumpAttempt(bool is_real_crash) {
                      reinterpret_cast<BYTE*>(&value_dword),
                      sizeof(value_dword));
   }
+}
+
+bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
+// Determine whether configuration management allows loading the crash reporter.
+// Since the configuration management infrastructure is not initialized at this
+// point, we read the corresponding registry key directly. The return status
+// indicates whether policy data was successfully read. If it is true,
+// |breakpad_enabled| contains the value set by policy.
+  string16 key_name = UTF8ToUTF16(policy::key::kMetricsReportingEnabled);
+  DWORD value = 0;
+  base::win::RegKey hklm_policy_key(HKEY_LOCAL_MACHINE,
+                                    policy::kRegistryChromePolicyKey, KEY_READ);
+  if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
+    *breakpad_enabled = value != 0;
+    return true;
+  }
+
+  base::win::RegKey hkcu_policy_key(HKEY_CURRENT_USER,
+                                    policy::kRegistryChromePolicyKey, KEY_READ);
+  if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
+    *breakpad_enabled = value != 0;
+    return true;
+  }
+
+  return false;
 }
 #endif
 

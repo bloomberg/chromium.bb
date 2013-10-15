@@ -166,10 +166,7 @@ void InitCrashReporter() {
   if (is_browser) {
     // Since the configuration management infrastructure is possibly not
     // initialized when this code runs, read the policy preference directly.
-    if (GetBreakpadClient()->ReportingIsEnforcedByPolicy()) {
-      // Controlled by configuration manangement.
-      enable_breakpad = true;
-    } else {
+    if (!GetBreakpadClient()->ReportingIsEnforcedByPolicy(&enable_breakpad)) {
       // Controlled by the user. The crash reporter may be enabled by
       // preference or through an environment variable, but the kDisableBreakpad
       // switch overrides both.

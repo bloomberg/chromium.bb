@@ -42,15 +42,18 @@ void ChromeBreakpadClient::InstallAdditionalFilters(BreakpadRef breakpad) {
 #endif
 }
 
-bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy() {
+bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
   base::ScopedCFTypeRef<CFStringRef> key(
       base::SysUTF8ToCFStringRef(policy::key::kMetricsReportingEnabled));
   Boolean key_valid;
   Boolean metrics_reporting_enabled = CFPreferencesGetAppBooleanValue(key,
       kCFPreferencesCurrentApplication, &key_valid);
-  return key_valid &&
-         CFPreferencesAppValueIsForced(key, kCFPreferencesCurrentApplication) &&
-         metrics_reporting_enabled;
+  if (key_valid &&
+      CFPreferencesAppValueIsForced(key, kCFPreferencesCurrentApplication)) {
+    *breakpad_enabled = metrics_reporting_enabled;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace chrome
