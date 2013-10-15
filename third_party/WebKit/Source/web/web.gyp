@@ -44,15 +44,16 @@
             'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
-                'picker_resources',
-                '../platform/blink_platform.gyp:blink_common',
                 '../core/core.gyp:webcore',
                 '../modules/modules.gyp:modules',
+                '../platform/blink_platform.gyp:blink_common',
+                '../platform/blink_platform.gyp:blink_platform',
                 '<(DEPTH)/skia/skia.gyp:skia',
                 '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+                'picker_resources',
             ],
             'export_dependent_settings': [
                 '<(DEPTH)/skia/skia.gyp:skia',

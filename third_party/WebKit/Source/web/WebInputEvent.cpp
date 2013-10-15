@@ -32,7 +32,7 @@
 #include "WebInputEvent.h"
 
 #include <ctype.h>
-#include "core/platform/chromium/KeyboardCodes.h"
+#include "platform/KeyboardCodes.h"
 #include "wtf/Assertions.h"
 #include "wtf/StringExtras.h"
 
