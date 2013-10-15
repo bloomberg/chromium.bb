@@ -29,7 +29,6 @@
 		16C7CE18147D4A4300776EAD /* minidump_file_writer-inl.h in Headers */ = {isa = PBXBuildFile; fileRef = 16C7CC04147D4A4300776EAD /* minidump_file_writer-inl.h */; };
 		16C7CE19147D4A4300776EAD /* minidump_file_writer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 16C7CC05147D4A4300776EAD /* minidump_file_writer.cc */; };
 		16C7CE1A147D4A4300776EAD /* minidump_file_writer.h in Headers */ = {isa = PBXBuildFile; fileRef = 16C7CC06147D4A4300776EAD /* minidump_file_writer.h */; };
-		16C7CE1B147D4A4300776EAD /* minidump_file_writer_unittest.cc in Sources */ = {isa = PBXBuildFile; fileRef = 16C7CC07147D4A4300776EAD /* minidump_file_writer_unittest.cc */; };
 		16C7CE40147D4A4300776EAD /* convert_UTF.c in Sources */ = {isa = PBXBuildFile; fileRef = 16C7CC4A147D4A4300776EAD /* convert_UTF.c */; };
 		16C7CE41147D4A4300776EAD /* convert_UTF.h in Headers */ = {isa = PBXBuildFile; fileRef = 16C7CC4B147D4A4300776EAD /* convert_UTF.h */; };
 		16C7CE78147D4A4300776EAD /* GTMLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 16C7CC88147D4A4300776EAD /* GTMLogger.h */; };
@@ -362,6 +361,8 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "Breakpad" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -407,7 +408,6 @@
 				16C7CDFE147D4A4300776EAD /* protected_memory_allocator.cc in Sources */,
 				16C7CE09147D4A4300776EAD /* uploader.mm in Sources */,
 				16C7CE19147D4A4300776EAD /* minidump_file_writer.cc in Sources */,
-				16C7CE1B147D4A4300776EAD /* minidump_file_writer_unittest.cc in Sources */,
 				16C7CE40147D4A4300776EAD /* convert_UTF.c in Sources */,
 				16C7CE79147D4A4300776EAD /* GTMLogger.m in Sources */,
 				16C7CE7B147D4A4300776EAD /* HTTPMultipartUpload.m in Sources */,
