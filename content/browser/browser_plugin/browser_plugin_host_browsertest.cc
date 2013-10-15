@@ -583,11 +583,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
 }
 
 // Always failing in the win7_aura try bot. See http://crbug.com/181107.
-// Times out under AddressSanitizer on the Mac when compiled 32-bit, and always
-// times out on the Mac when compiled 64-bit. See http://crbug.com/297576.
-#if (defined(OS_WIN) && defined(USE_AURA)) || \
-    (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)) || \
-    (defined(OS_MACOSX) && defined(__LP64__))
+// Times out on the Mac. See http://crbug.com/297576.
+#if (defined(OS_WIN) && defined(USE_AURA)) || defined(OS_MACOSX)
 #define MAYBE_AcceptDragEvents DISABLED_AcceptDragEvents
 #else
 #define MAYBE_AcceptDragEvents AcceptDragEvents
