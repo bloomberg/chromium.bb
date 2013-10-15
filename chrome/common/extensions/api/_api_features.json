@@ -113,7 +113,7 @@
     "contexts": ["blessed_extension"]
   },
   "chromeosInfoPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:chromeosInfoPrivate"],
     "contexts": ["blessed_extension"]
   },
@@ -196,12 +196,12 @@
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
   "echoPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:echoPrivate"],
     "contexts": ["blessed_extension"]
   },
   "enterprise.platformKeysPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:enterprise.platformKeysPrivate"],
     "contexts": ["blessed_extension"]
   },
@@ -268,18 +268,18 @@
     "contexts": ["blessed_extension"]
   },
   "fileBrowserHandler": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:fileBrowserHandler"],
     "contexts": ["blessed_extension"]
   },
   "fileBrowserHandlerInternal": {
     "internal": true,
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "channel": "stable",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
   "fileBrowserPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:fileBrowserPrivate"],
     "contexts": ["blessed_extension"]
   },
@@ -326,12 +326,12 @@
     "contexts": ["blessed_extension"]
   },
   "input.ime": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:input"],
     "contexts": ["blessed_extension"]
   },
   "inputMethodPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:inputMethodPrivate"],
     "contexts": ["blessed_extension"]
   },
@@ -374,7 +374,7 @@
     "contexts": ["blessed_extension"]
   },
   "mediaPlayerPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:mediaPlayerPrivate"],
     "contexts": ["blessed_extension"]
   },
@@ -391,7 +391,7 @@
     "contexts": ["blessed_extension"]
   },
   "networkingPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:networkingPrivate"],
     "contexts": ["blessed_extension"]
   },
@@ -576,7 +576,7 @@
     "contexts": ["blessed_extension"]
   },
   "terminalPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:terminalPrivate"],
     "contexts": ["blessed_extension"]
   },
@@ -612,17 +612,17 @@
     "contexts": ["blessed_extension"]
   },
   "virtualKeyboardPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:virtualKeyboardPrivate"],
     "contexts": ["blessed_extension"]
   },
   "wallpaper": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:wallpaper"],
     "contexts": ["blessed_extension"]
   },
   "wallpaperPrivate": {
-    "platform": "chromeos",
+    "platforms": ["chromeos"],
     "dependencies": ["permission:wallpaperPrivate"],
     "contexts": ["blessed_extension"]
   },

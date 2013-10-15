@@ -40,8 +40,7 @@ class SimpleFeature : public Feature {
   Location location() const { return location_; }
   void set_location(Location location) { location_ = location; }
 
-  Platform platform() const { return platform_; }
-  void set_platform(Platform platform) { platform_ = platform; }
+  std::set<Platform>* platforms() { return &platforms_; }
 
   int min_manifest_version() const { return min_manifest_version_; }
   void set_min_manifest_version(int min_manifest_version) {
@@ -109,7 +108,7 @@ class SimpleFeature : public Feature {
   std::set<Context> contexts_;
   URLPatternSet matches_;
   Location location_;  // we only care about component/not-component now
-  Platform platform_;  // we only care about chromeos/not-chromeos now
+  std::set<Platform> platforms_;
   int min_manifest_version_;
   int max_manifest_version_;
   chrome::VersionInfo::Channel channel_;

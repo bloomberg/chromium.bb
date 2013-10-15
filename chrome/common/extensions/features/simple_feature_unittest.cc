@@ -174,7 +174,7 @@ TEST_F(ExtensionSimpleFeatureTest, Context) {
   SimpleFeature feature;
   feature.GetContexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
-  feature.set_platform(Feature::CHROMEOS_PLATFORM);
+  feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
   feature.set_min_manifest_version(21);
   feature.set_max_manifest_version(25);
 
@@ -270,7 +270,7 @@ TEST_F(ExtensionSimpleFeatureTest, Location) {
 
 TEST_F(ExtensionSimpleFeatureTest, Platform) {
   SimpleFeature feature;
-  feature.set_platform(Feature::CHROMEOS_PLATFORM);
+  feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature.IsAvailableToManifest(std::string(),
                                           Manifest::TYPE_UNKNOWN,
@@ -353,7 +353,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParseNull) {
   EXPECT_TRUE(feature->extension_types()->empty());
   EXPECT_TRUE(feature->GetContexts()->empty());
   EXPECT_EQ(Feature::UNSPECIFIED_LOCATION, feature->location());
-  EXPECT_EQ(Feature::UNSPECIFIED_PLATFORM, feature->platform());
+  EXPECT_TRUE(feature->platforms()->empty());
   EXPECT_EQ(0, feature->min_manifest_version());
   EXPECT_EQ(0, feature->max_manifest_version());
 }
@@ -432,12 +432,35 @@ TEST_F(ExtensionSimpleFeatureTest, ParseLocation) {
   EXPECT_EQ(Feature::COMPONENT_LOCATION, feature->location());
 }
 
-TEST_F(ExtensionSimpleFeatureTest, ParsePlatform) {
+TEST_F(ExtensionSimpleFeatureTest, ParsePlatforms) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  value->SetString("platform", "chromeos");
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
+  base::ListValue* platforms = new base::ListValue();
+  value->Set("platforms", platforms);
   feature->Parse(value.get());
-  EXPECT_EQ(Feature::CHROMEOS_PLATFORM, feature->platform());
+  EXPECT_TRUE(feature->platforms()->empty());
+
+  platforms->AppendString("chromeos");
+  feature->Parse(value.get());
+  EXPECT_FALSE(feature->platforms()->empty());
+  EXPECT_EQ(Feature::CHROMEOS_PLATFORM, *feature->platforms()->begin());
+
+  platforms->Clear();
+  platforms->AppendString("windows");
+  feature->Parse(value.get());
+  EXPECT_FALSE(feature->platforms()->empty());
+  EXPECT_EQ(Feature::WIN_PLATFORM, *feature->platforms()->begin());
+
+  platforms->Clear();
+  platforms->AppendString("windows");
+  platforms->AppendString("chromeos");
+  feature->Parse(value.get());
+  std::set<Feature::Platform> expected_platforms;
+  expected_platforms.insert(Feature::CHROMEOS_PLATFORM);
+  expected_platforms.insert(Feature::WIN_PLATFORM);
+
+  EXPECT_FALSE(feature->platforms()->empty());
+  EXPECT_EQ(expected_platforms, *feature->platforms());
 }
 
 TEST_F(ExtensionSimpleFeatureTest, ManifestVersion) {
@@ -456,7 +479,7 @@ TEST_F(ExtensionSimpleFeatureTest, Inheritance) {
   feature.extension_types()->insert(Manifest::TYPE_THEME);
   feature.GetContexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.set_location(Feature::COMPONENT_LOCATION);
-  feature.set_platform(Feature::CHROMEOS_PLATFORM);
+  feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
   feature.set_min_manifest_version(1);
   feature.set_max_manifest_version(2);
 
@@ -499,7 +522,7 @@ TEST_F(ExtensionSimpleFeatureTest, Equals) {
   feature.extension_types()->insert(Manifest::TYPE_THEME);
   feature.GetContexts()->insert(Feature::UNBLESSED_EXTENSION_CONTEXT);
   feature.set_location(Feature::COMPONENT_LOCATION);
-  feature.set_platform(Feature::CHROMEOS_PLATFORM);
+  feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
   feature.set_min_manifest_version(18);
   feature.set_max_manifest_version(25);
 
@@ -522,7 +545,7 @@ TEST_F(ExtensionSimpleFeatureTest, Equals) {
   EXPECT_FALSE(feature2.Equals(feature));
 
   feature2 = feature;
-  feature2.set_platform(Feature::UNSPECIFIED_PLATFORM);
+  feature.platforms()->insert(Feature::UNSPECIFIED_PLATFORM);
   EXPECT_FALSE(feature2.Equals(feature));
 
   feature2 = feature;

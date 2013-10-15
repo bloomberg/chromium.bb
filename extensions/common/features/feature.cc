@@ -17,6 +17,12 @@ namespace extensions {
 Feature::Platform Feature::GetCurrentPlatform() {
 #if defined(OS_CHROMEOS)
   return CHROMEOS_PLATFORM;
+#elif defined(OS_LINUX)
+  return LINUX_PLATFORM;
+#elif defined(OS_MACOSX)
+  return MACOSX_PLATFORM;
+#elif defined(OS_WIN)
+  return WIN_PLATFORM;
 #else
   return UNSPECIFIED_PLATFORM;
 #endif

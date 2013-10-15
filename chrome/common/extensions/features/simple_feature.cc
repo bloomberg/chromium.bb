@@ -39,6 +39,9 @@ struct Mappings {
     locations["component"] = Feature::COMPONENT_LOCATION;
 
     platforms["chromeos"] = Feature::CHROMEOS_PLATFORM;
+    platforms["linux"] = Feature::LINUX_PLATFORM;
+    platforms["macosx"] = Feature::MACOSX_PLATFORM;
+    platforms["windows"] = Feature::WIN_PLATFORM;
 
     channels["trunk"] = VersionInfo::CHANNEL_UNKNOWN;
     channels["canary"] = VersionInfo::CHANNEL_CANARY;
@@ -186,7 +189,6 @@ std::string HashExtensionId(const std::string& extension_id) {
 
 SimpleFeature::SimpleFeature()
   : location_(UNSPECIFIED_LOCATION),
-    platform_(UNSPECIFIED_PLATFORM),
     min_manifest_version_(0),
     max_manifest_version_(0),
     channel_(VersionInfo::CHANNEL_UNKNOWN),
@@ -200,7 +202,7 @@ SimpleFeature::SimpleFeature(const SimpleFeature& other)
       contexts_(other.contexts_),
       matches_(other.matches_),
       location_(other.location_),
-      platform_(other.platform_),
+      platforms_(other.platforms_),
       min_manifest_version_(other.min_manifest_version_),
       max_manifest_version_(other.max_manifest_version_),
       channel_(other.channel_),
@@ -217,7 +219,7 @@ bool SimpleFeature::Equals(const SimpleFeature& other) const {
       contexts_ == other.contexts_ &&
       matches_ == other.matches_ &&
       location_ == other.location_ &&
-      platform_ == other.platform_ &&
+      platforms_ == other.platforms_ &&
       min_manifest_version_ == other.min_manifest_version_ &&
       max_manifest_version_ == other.max_manifest_version_ &&
       channel_ == other.channel_ &&
@@ -235,8 +237,8 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
                         g_mappings.Get().contexts);
   ParseEnum<Location>(value, "location", &location_,
                       g_mappings.Get().locations);
-  ParseEnum<Platform>(value, "platform", &platform_,
-                      g_mappings.Get().platforms);
+  ParseEnumSet<Platform>(value, "platforms", &platforms_,
+                         g_mappings.Get().platforms);
   value->GetInteger("min_manifest_version", &min_manifest_version_);
   value->GetInteger("max_manifest_version", &max_manifest_version_);
   ParseEnum<VersionInfo::Channel>(
@@ -298,7 +300,8 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (location_ != UNSPECIFIED_LOCATION && location_ != location)
     return CreateAvailability(INVALID_LOCATION, type);
 
-  if (platform_ != UNSPECIFIED_PLATFORM && platform_ != platform)
+  if (!platforms_.empty() &&
+      platforms_.find(platform) == platforms_.end())
     return CreateAvailability(INVALID_PLATFORM, type);
 
   if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)

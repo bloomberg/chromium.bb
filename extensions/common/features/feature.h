@@ -20,7 +20,8 @@ class Extension;
 // Represents a single feature accessible to an extension developer, such as a
 // top-level manifest key, a permission, or a programmatic API. A feature can
 // express requirements for where it can be accessed, and supports testing
-// support for those requirements.
+// support for those requirements. If platforms are not specified, then feature
+// is available on all platforms.
 class Feature {
  public:
   // The JavaScript contexts the feature is supported in.
@@ -49,7 +50,10 @@ class Feature {
   // The platforms the feature is supported in.
   enum Platform {
     UNSPECIFIED_PLATFORM,
-    CHROMEOS_PLATFORM
+    CHROMEOS_PLATFORM,
+    LINUX_PLATFORM,
+    MACOSX_PLATFORM,
+    WIN_PLATFORM
   };
 
   // Whether a feature is available in a given situation or not, and if not,

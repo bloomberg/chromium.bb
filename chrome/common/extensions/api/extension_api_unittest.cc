@@ -720,7 +720,7 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
         Feature::BLESSED_EXTENSION_CONTEXT));
 
     EXPECT_EQ(Feature::UNSPECIFIED_LOCATION, feature->location());
-    EXPECT_EQ(Feature::UNSPECIFIED_PLATFORM, feature->platform());
+    EXPECT_TRUE(feature->platforms()->empty());
     EXPECT_EQ(0, feature->min_manifest_version());
     EXPECT_EQ(0, feature->max_manifest_version());
   }
