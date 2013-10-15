@@ -22,11 +22,6 @@
 #include "ui/base/dragdrop/drag_source_win.h"
 #endif
 
-#if defined(USE_AURA)
-#include "base/memory/scoped_ptr.h"
-#include "ui/compositor/layer.h"
-#endif
-
 namespace content {
 class WebContents;
 }
@@ -338,11 +333,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   int page_flip_delay_in_ms_;
 
   views::BoundsAnimator bounds_animator_;
-
-#if defined(USE_AURA)
-  // The layer used in transition animation for start page.
-  scoped_ptr<ui::Layer> animating_start_page_layer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

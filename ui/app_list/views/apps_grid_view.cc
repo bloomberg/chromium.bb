@@ -23,9 +23,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "content/public/browser/web_contents_view.h"
 #include "ui/aura/root_window.h"
-#include "ui/views/corewm/window_util.h"
 #endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -1168,37 +1166,7 @@ void AppsGridView::LayoutStartPage() {
     start_page_bounds.Offset(transition.progress * page_width * dir, 0);
   }
 
-#if defined(USE_AURA)
-  if (pagination_model_->has_transition()) {
-    // Duplicates the start page contents layer and use it for the transition
-    // animation. This is needed because NativeViewHostAura::InstallClip
-    // is not implemented and the contents would be visible outside the
-    // launcher bubble.
-    if (!animating_start_page_layer_) {
-      aura::Window* content_window =
-          start_page_view_->web_contents()->GetView()->GetNativeView();
-      animating_start_page_layer_.reset(
-          views::corewm::RecreateWindowLayers(content_window, false));
-      // Schedules a redraw to avoid flickering when |start_page_view_| is
-      // made visible again later.
-      content_window->layer()->ScheduleDraw();
-
-      start_page_view_->SetVisible(false);
-      parent()->layer()->Add(animating_start_page_layer_.get());
-    }
-    animating_start_page_layer_->SetBounds(
-        ConvertRectToParent(start_page_bounds));
-  } else if (current_page == 0) {
-    // Clean up and restore |start_page_view_| when it becomes current.
-    animating_start_page_layer_.reset();
-    start_page_view_->SetBoundsRect(start_page_bounds);
-    start_page_view_->SetVisible(true);
-  } else {
-    start_page_view_->SetVisible(false);
-  }
-#else
   start_page_view_->SetBoundsRect(start_page_bounds);
-#endif
 }
 
 void AppsGridView::ListItemsAdded(size_t start, size_t count) {
