@@ -8,39 +8,61 @@
 #include <map>
 
 #include "ash/ash_export.h"
+#include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 class LauncherItemDelegate;
+class LauncherModel;
 
-// LauncherItemDelegateManager helps Launcher/LauncherView to choose right
-// LauncherItemDelegate based on LauncherItemType.
-// When new LauncherItemDelegate is created, it must be registered by
-// RegisterLauncherItemDelegate(). If not, Launcher/LauncherView can't get
-// LauncherItem's LauncherItemDelegate.
-// TODO(simon.hong81): This class should own all LauncherItemDelegate.
-class ASH_EXPORT LauncherItemDelegateManager {
+namespace test {
+class LauncherItemDelegateManagerTestAPI;
+}
+
+// LauncherItemDelegateManager manages the set of LauncherItemDelegates for the
+// launcher. LauncherItemDelegateManager does not create LauncherItemDelegates,
+// rather it is expected that someone else invokes SetLauncherItemDelegate
+// appropriately. On the other hand, LauncherItemDelegateManager destroys
+// LauncherItemDelegates when the corresponding item from the model is removed.
+class ASH_EXPORT LauncherItemDelegateManager
+    : public ash::LauncherModelObserver {
  public:
-  LauncherItemDelegateManager();
+  explicit LauncherItemDelegateManager(ash::LauncherModel* model);
   virtual ~LauncherItemDelegateManager();
 
-  // Returns LauncherItemDelegate for |item_type|.
-  // This class doesn't own each LauncherItemDelegate for now.
-  LauncherItemDelegate* GetLauncherItemDelegate(
-      ash::LauncherItemType item_type);
+  // Set |item_delegate| for |id| and take an ownership.
+  void SetLauncherItemDelegate(
+      ash::LauncherID id,
+      scoped_ptr<ash::LauncherItemDelegate> item_delegate);
 
-  // Register |item_delegate| for |type|.
-  // For now, This class doesn't own |item_delegate|.
-  // TODO(simon.hong81): Register LauncherItemDelegate with LauncherID.
-  void RegisterLauncherItemDelegate(
-      ash::LauncherItemType type, LauncherItemDelegate* item_delegate);
+  // Returns LauncherItemDelegate for |item_type|. Always returns non-NULL.
+  LauncherItemDelegate* GetLauncherItemDelegate(ash::LauncherID id);
+
+  // ash::LauncherModelObserver overrides:
+  virtual void LauncherItemAdded(int model_index) OVERRIDE;
+  virtual void LauncherItemRemoved(int index, ash::LauncherID id) OVERRIDE;
+  virtual void LauncherItemMoved(int start_index, int targetindex) OVERRIDE;
+  virtual void LauncherItemChanged(
+      int index,
+      const ash::LauncherItem& old_item) OVERRIDE;
+  virtual void LauncherStatusChanged() OVERRIDE;
 
  private:
-  typedef std::map<ash::LauncherItemType, LauncherItemDelegate*>
-      LauncherItemTypeToItemDelegateMap;
+  friend class ash::test::LauncherItemDelegateManagerTestAPI;
 
-  LauncherItemTypeToItemDelegateMap item_type_to_item_delegate_map_;
+  typedef std::map<ash::LauncherID, LauncherItemDelegate*>
+      LauncherIDToItemDelegateMap;
+
+  // Remove and destroy LauncherItemDelegate for |id|.
+  void RemoveLauncherItemDelegate(ash::LauncherID id);
+
+  // Clear all exsiting LauncherItemDelegate for test.
+  // Not owned by LauncherItemDelegate.
+  ash::LauncherModel* model_;
+
+  LauncherIDToItemDelegateMap id_to_item_delegate_map_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherItemDelegateManager);
 };

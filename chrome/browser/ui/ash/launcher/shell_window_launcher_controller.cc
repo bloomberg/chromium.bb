@@ -7,7 +7,6 @@
 #include "apps/shell_window.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -42,7 +41,6 @@ ShellWindowLauncherController::ShellWindowLauncherController(
   }
 }
 
-
 ShellWindowLauncherController::~ShellWindowLauncherController() {
   registry_->RemoveObserver(this);
   if (activation_client_)
@@ -52,8 +50,6 @@ ShellWindowLauncherController::~ShellWindowLauncherController() {
        iter != window_to_app_launcher_id_map_.end(); ++iter) {
     iter->first->RemoveObserver(this);
   }
-  STLDeleteContainerPairSecondPointers(
-      app_controller_map_.begin(), app_controller_map_.end());
 }
 
 void ShellWindowLauncherController::OnShellWindowAdded(
@@ -138,7 +134,6 @@ void ShellWindowLauncherController::OnWindowDestroying(aura::Window* window) {
     ash::LauncherID launcher_id = controller->launcher_id();
     owner_->CloseLauncherItem(launcher_id);
     app_controller_map_.erase(iter2);
-    delete controller;
   }
 }
 

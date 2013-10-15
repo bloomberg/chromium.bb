@@ -108,8 +108,10 @@ void Launcher::ActivateLauncherItem(int index) {
                      false);
 
   const ash::LauncherItem& item = launcher_view_->model()->items()[index];
-  Shell::GetInstance()->launcher_item_delegate_manager()->
-      GetLauncherItemDelegate(item.type)->ItemSelected(item, event);
+  ash::LauncherItemDelegate* item_delegate =
+      Shell::GetInstance()->launcher_item_delegate_manager()->
+          GetLauncherItemDelegate(item.id);
+  item_delegate->ItemSelected(event);
 }
 
 void Launcher::CycleWindowLinear(CycleDirection direction) {

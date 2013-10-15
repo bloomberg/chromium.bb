@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/shell.h"
+#include "ash/test/launcher_item_delegate_manager_test_api.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
+#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -194,7 +197,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   virtual ~TestV2AppLauncherItemController() {}
 
   // Override for LauncherItemController:
-  virtual string16 GetTitle() OVERRIDE { return string16(); }
   virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE {
     return true;
   }
@@ -203,8 +205,8 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE {}
   virtual void Activate(ash::LaunchSource source) OVERRIDE {}
   virtual void Close() OVERRIDE {}
-  virtual void Clicked(const ui::Event& event) OVERRIDE {}
-  virtual void OnRemoved() OVERRIDE {}
+  virtual void ItemSelected(const ui::Event& event) OVERRIDE {}
+  virtual string16 GetTitle() OVERRIDE { return string16(); }
   virtual ChromeLauncherAppMenuItems GetApplicationList(
       int event_flags) OVERRIDE {
     ChromeLauncherAppMenuItems items;
@@ -212,6 +214,12 @@ class TestV2AppLauncherItemController : public LauncherItemController {
     items.push_back(new ChromeLauncherAppMenuItem(string16(), NULL, false));
     return items.Pass();
   }
+  virtual ui::MenuModel* CreateContextMenu(
+      aura::RootWindow* root_window) OVERRIDE { return NULL; }
+  virtual ash::LauncherMenuModel* CreateApplicationMenu(
+      int event_flags) OVERRIDE { return NULL; }
+  virtual bool IsDraggable() OVERRIDE { return false; }
+  virtual bool ShouldShowTooltip() OVERRIDE { return false; }
 
  private:
 
@@ -222,7 +230,8 @@ class TestV2AppLauncherItemController : public LauncherItemController {
 
 class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
-  ChromeLauncherControllerTest() : extension_service_(NULL) {
+  ChromeLauncherControllerTest() : test_controller_(NULL),
+                                   extension_service_(NULL) {
     SetHostDesktopType(chrome::HOST_DESKTOP_TYPE_ASH);
   }
 
@@ -235,6 +244,14 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     model_.reset(new ash::LauncherModel);
     model_observer_.reset(new TestLauncherModelObserver);
     model_->AddObserver(model_observer_.get());
+
+    if (ash::Shell::HasInstance()) {
+      item_delegate_manager_ =
+          ash::Shell::GetInstance()->launcher_item_delegate_manager();
+    } else {
+      item_delegate_manager_ =
+          new ash::LauncherItemDelegateManager(model_.get());
+    }
 
     DictionaryValue manifest;
     manifest.SetString(extensions::manifest_keys::kName,
@@ -309,7 +326,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   // Creates a running V2 app (not pinned) of type |app_id|.
   virtual void CreateRunningV2App(const std::string& app_id) {
-    DCHECK(!test_controller_.get());
+    DCHECK(!test_controller_);
     ash::LauncherID id =
         launcher_controller_->CreateAppShortcutLauncherItemWithType(
             app_id,
@@ -317,9 +334,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             ash::TYPE_PLATFORM_APP);
     DCHECK(id);
     // Change the created launcher controller into a V2 app controller.
-    test_controller_.reset(new TestV2AppLauncherItemController(app_id,
-        launcher_controller_.get()));
-    launcher_controller_->SetItemController(id, test_controller_.get());
+    test_controller_ = new TestV2AppLauncherItemController(app_id,
+        launcher_controller_.get());
+    launcher_controller_->SetItemController(id, test_controller_);
   }
 
   // Sets the stage for a multi user test.
@@ -361,13 +378,14 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   virtual void TearDown() OVERRIDE {
+    if (!ash::Shell::HasInstance())
+      delete item_delegate_manager_;
     model_->RemoveObserver(model_observer_.get());
     model_observer_.reset();
     launcher_controller_.reset();
     model_.reset();
 
     BrowserWithTestWindowTest::TearDown();
-    test_controller_.reset();
   }
 
   void AddAppListLauncherItem() {
@@ -380,6 +398,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     AddAppListLauncherItem();
     launcher_controller_.reset(
         new ChromeLauncherController(profile(), model_.get()));
+    if (!ash::Shell::HasInstance())
+      SetLauncherItemDelegateManager(item_delegate_manager_);
     launcher_controller_->Init();
   }
 
@@ -395,6 +415,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   void SetAppTabHelper(ChromeLauncherController::AppTabHelper* helper) {
     launcher_controller_->SetAppTabHelperForTest(helper);
+  }
+
+  void SetLauncherItemDelegateManager(
+      ash::LauncherItemDelegateManager* manager) {
+    launcher_controller_->SetLauncherItemDelegateManagerForTest(manager);
   }
 
   void InsertPrefValue(base::ListValue* pref_value,
@@ -537,9 +562,13 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_ptr<ChromeLauncherController> launcher_controller_;
   scoped_ptr<TestLauncherModelObserver> model_observer_;
   scoped_ptr<ash::LauncherModel> model_;
-  scoped_ptr<TestV2AppLauncherItemController> test_controller_;
+
+  // |item_delegate_manager_| owns |test_controller_|.
+  LauncherItemController* test_controller_;
 
   ExtensionService* extension_service_;
+
+  ash::LauncherItemDelegateManager* item_delegate_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerTest);
 };
@@ -1503,7 +1532,8 @@ bool CheckMenuCreation(ChromeLauncherController* controller,
   }
 
   scoped_ptr<ash::LauncherMenuModel> menu(
-      controller->CreateApplicationMenu(item, 0));
+      new LauncherApplicationMenuItemModel(
+          controller->GetApplicationList(item, 0)));
   // The first element in the menu is a spacing separator. On some systems
   // (e.g. Windows) such things do not exist. As such we check the existence
   // and adjust dynamically.
@@ -1667,7 +1697,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
   // item is per definition already the active tab).
   {
     scoped_ptr<ash::LauncherMenuModel> menu(
-        launcher_controller_->CreateApplicationMenu(item_gmail, 0));
+        new LauncherApplicationMenuItemModel(
+            launcher_controller_->GetApplicationList(item_gmail, 0)));
     // The first element in the menu is a spacing separator. On some systems
     // (e.g. Windows) such things do not exist. As such we check the existence
     // and adjust dynamically.
@@ -1680,7 +1711,8 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
   // Execute the first item.
   {
     scoped_ptr<ash::LauncherMenuModel> menu(
-        launcher_controller_->CreateApplicationMenu(item_gmail, 0));
+        new LauncherApplicationMenuItemModel(
+            launcher_controller_->GetApplicationList(item_gmail, 0)));
     int first_item =
         (menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR) ? 1 : 0;
     menu->ActivatedAt(first_item + 2);
@@ -1741,11 +1773,14 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
 
   // Test adding an app panel
   std::string app_id = extension1_->id();
-  ShellWindowLauncherItemController app_panel_controller(
-      LauncherItemController::TYPE_APP_PANEL, "id", app_id,
-      launcher_controller_.get());
+  ShellWindowLauncherItemController* app_panel_controller =
+      new ShellWindowLauncherItemController(
+          LauncherItemController::TYPE_APP_PANEL,
+          "id",
+          app_id,
+          launcher_controller_.get());
   ash::LauncherID launcher_id1 = launcher_controller_->CreateAppLauncherItem(
-      &app_panel_controller, app_id, ash::STATUS_RUNNING);
+      app_panel_controller, app_id, ash::STATUS_RUNNING);
   int panel_index = model_observer_->last_index();
   EXPECT_EQ(3, model_observer_->added());
   EXPECT_EQ(0, model_observer_->changed());
@@ -1756,7 +1791,7 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
   EXPECT_EQ(0, launcher_controller_->GetLauncherIDForAppID(app_id));
 
   // Setting the app image image should not change the panel if it set its icon
-  app_panel_controller.set_image_set_by_controller(true);
+  app_panel_controller->set_image_set_by_controller(true);
   gfx::ImageSkia image;
   launcher_controller_->SetAppImage(app_id, image);
   EXPECT_EQ(0, model_observer_->changed());
@@ -1764,8 +1799,15 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
 
   // Add a second app panel and verify that it get the same index as the first
   // one had, being added to the left of the existing panel.
+  ShellWindowLauncherItemController* app_panel_controller2 =
+      new ShellWindowLauncherItemController(
+          LauncherItemController::TYPE_APP_PANEL,
+          "id",
+          app_id,
+          launcher_controller_.get());
+
   ash::LauncherID launcher_id2 = launcher_controller_->CreateAppLauncherItem(
-      &app_panel_controller, app_id, ash::STATUS_RUNNING);
+      app_panel_controller2, app_id, ash::STATUS_RUNNING);
   EXPECT_EQ(panel_index, model_observer_->last_index());
   EXPECT_EQ(1, model_observer_->added());
   model_observer_->clear_counts();
@@ -1869,14 +1911,27 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[3].type);
 
   launcher_controller_.reset();
+  if (!ash::Shell::HasInstance()) {
+    delete item_delegate_manager_;
+  } else {
+    // Clear already registered LauncherItemDelegate.
+    ash::test::LauncherItemDelegateManagerTestAPI test(item_delegate_manager_);
+    test.RemoveAllLauncherItemDelegateForTest();
+  }
   model_.reset(new ash::LauncherModel);
+
+  AddAppListLauncherItem();
   launcher_controller_.reset(
       ChromeLauncherController::CreateInstance(profile(), model_.get()));
   app_tab_helper = new TestAppTabHelperImpl;
   app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   app_tab_helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
   SetAppTabHelper(app_tab_helper);
-  AddAppListLauncherItem();
+  if (!ash::Shell::HasInstance()) {
+    item_delegate_manager_ =
+        new ash::LauncherItemDelegateManager(model_.get());
+    SetLauncherItemDelegateManager(item_delegate_manager_);
+  }
   launcher_controller_->Init();
 
   // Check LauncherItems are restored after resetting ChromeLauncherController.
@@ -1912,7 +1967,15 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   EXPECT_EQ(initial_size + 1, model_->items().size());
 
   launcher_controller_.reset();
+  if (!ash::Shell::HasInstance()) {
+    delete item_delegate_manager_;
+  } else {
+    // Clear already registered LauncherItemDelegate.
+    ash::test::LauncherItemDelegateManagerTestAPI test(item_delegate_manager_);
+    test.RemoveAllLauncherItemDelegateForTest();
+  }
   model_.reset(new ash::LauncherModel);
+
   AddAppListLauncherItem();
   launcher_controller_.reset(
       ChromeLauncherController::CreateInstance(profile(), model_.get()));
@@ -1921,6 +1984,11 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   SetAppTabHelper(app_tab_helper);
   app_icon_loader = new TestAppIconLoaderImpl;
   SetAppIconLoader(app_icon_loader);
+  if (!ash::Shell::HasInstance()) {
+    item_delegate_manager_ =
+        new ash::LauncherItemDelegateManager(model_.get());
+    SetLauncherItemDelegateManager(item_delegate_manager_);
+  }
   launcher_controller_->Init();
 
   EXPECT_EQ(1, app_icon_loader->fetch_count());

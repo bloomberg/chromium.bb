@@ -39,6 +39,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
@@ -485,13 +486,30 @@ SystemTray* Shell::GetPrimarySystemTray() {
 
 LauncherDelegate* Shell::GetLauncherDelegate() {
   if (!launcher_delegate_) {
-    // Creates LauncherItemDelegateManager before LauncherDelegate.
-    launcher_item_delegate_manager_.reset(new LauncherItemDelegateManager);
     launcher_model_.reset(new LauncherModel);
+    // Creates LauncherItemDelegateManager before LauncherDelegate.
+    launcher_item_delegate_manager_.reset(
+        new LauncherItemDelegateManager(launcher_model_.get()));
+
     launcher_delegate_.reset(
         delegate_->CreateLauncherDelegate(launcher_model_.get()));
-    app_list_shelf_item_delegate_.reset(
+    scoped_ptr<LauncherItemDelegate> controller(
         new internal::AppListShelfItemDelegate);
+
+    ash::LauncherID app_list_id = 0;
+    // TODO(simon.hong81): Make function for this in shelf_util.h
+    // Finding the launcher model's location of the app list and setting its
+    // LauncherItemDelegate.
+    for (size_t i = 0; i < launcher_model_->items().size(); ++i) {
+      if (launcher_model_->items()[i].type == ash::TYPE_APP_LIST) {
+        app_list_id = launcher_model_->items()[i].id;
+        break;
+      }
+    }
+    DCHECK(app_list_id);
+    launcher_item_delegate_manager_->SetLauncherItemDelegate(
+        app_list_id,
+        controller.Pass());
   }
   return launcher_delegate_.get();
 }
@@ -645,6 +663,9 @@ Shell::~Shell() {
   user_action_client_.reset();
   visibility_controller_.reset();
   launcher_delegate_.reset();
+  // |launcher_item_delegate_manager_| observes |launcher_model_|. It must be
+  // destroyed before |launcher_model_| is destroyed.
+  launcher_item_delegate_manager_.reset();
   launcher_model_.reset();
   video_detector_.reset();
 

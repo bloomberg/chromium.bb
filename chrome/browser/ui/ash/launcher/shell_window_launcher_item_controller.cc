@@ -6,11 +6,14 @@
 
 #include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "ash/launcher/launcher_model.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
+#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
@@ -81,20 +84,6 @@ void ShellWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
     last_active_shell_window_ = *iter;
 }
 
-string16 ShellWindowLauncherItemController::GetTitle() {
-  // For panels return the title of the contents if set.
-  // Otherwise return the title of the app.
-  if (type() == TYPE_APP_PANEL && !shell_windows_.empty()) {
-    ShellWindow* shell_window = shell_windows_.front();
-    if (shell_window->web_contents()) {
-      string16 title = shell_window->web_contents()->GetTitle();
-      if (!title.empty())
-        return title;
-    }
-  }
-  return GetAppTitle();
-}
-
 bool ShellWindowLauncherItemController::IsCurrentlyShownInWindow(
     aura::Window* window) const {
   ShellWindowList::const_iterator iter =
@@ -140,7 +129,36 @@ void ShellWindowLauncherItemController::Close() {
   }
 }
 
-void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
+void ShellWindowLauncherItemController::ActivateIndexedApp(size_t index) {
+  if (index >= shell_windows_.size())
+    return;
+  ShellWindowList::iterator it = shell_windows_.begin();
+  std::advance(it, index);
+  ShowAndActivateOrMinimize(*it);
+}
+
+ChromeLauncherAppMenuItems
+ShellWindowLauncherItemController::GetApplicationList(int event_flags) {
+  ChromeLauncherAppMenuItems items;
+  items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
+  int index = 0;
+  for (ShellWindowList::iterator iter = shell_windows_.begin();
+       iter != shell_windows_.end(); ++iter) {
+    ShellWindow* shell_window = *iter;
+    scoped_ptr<gfx::Image> image(shell_window->GetAppListIcon());
+    items.push_back(new ChromeLauncherAppMenuItemV2App(
+        shell_window->GetTitle(),
+        image.get(),  // Will be copied
+        app_id(),
+        launcher_controller(),
+        index,
+        index == 0 /* has_leading_separator */));
+    ++index;
+  }
+  return items.Pass();
+}
+
+void ShellWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   if (shell_windows_.empty())
     return;
   if (type() == TYPE_APP_PANEL) {
@@ -171,33 +189,42 @@ void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
   }
 }
 
-void ShellWindowLauncherItemController::ActivateIndexedApp(size_t index) {
-  if (index >= shell_windows_.size())
-    return;
-  ShellWindowList::iterator it = shell_windows_.begin();
-  std::advance(it, index);
-  ShowAndActivateOrMinimize(*it);
+base::string16 ShellWindowLauncherItemController::GetTitle() {
+  // For panels return the title of the contents if set.
+  // Otherwise return the title of the app.
+  if (type() == TYPE_APP_PANEL && !shell_windows_.empty()) {
+    ShellWindow* shell_window = shell_windows_.front();
+    if (shell_window->web_contents()) {
+      string16 title = shell_window->web_contents()->GetTitle();
+      if (!title.empty())
+        return title;
+    }
+  }
+  return GetAppTitle();
 }
 
-ChromeLauncherAppMenuItems
-ShellWindowLauncherItemController::GetApplicationList(int event_flags) {
-  ChromeLauncherAppMenuItems items;
-  items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
-  int index = 0;
-  for (ShellWindowList::iterator iter = shell_windows_.begin();
-       iter != shell_windows_.end(); ++iter) {
-    ShellWindow* shell_window = *iter;
-    scoped_ptr<gfx::Image> image(shell_window->GetAppListIcon());
-    items.push_back(new ChromeLauncherAppMenuItemV2App(
-        shell_window->GetTitle(),
-        image.get(),  // Will be copied
-        app_id(),
-        launcher_controller(),
-        index,
-        index == 0 /* has_leading_separator */));
-    ++index;
-  }
-  return items.Pass();
+ui::MenuModel* ShellWindowLauncherItemController::CreateContextMenu(
+    aura::RootWindow* root_window) {
+  ash::LauncherItem item =
+      *(launcher_controller()->model()->ItemByID(launcher_id()));
+  return new LauncherContextMenu(launcher_controller(), &item, root_window);
+}
+
+ash::LauncherMenuModel*
+ShellWindowLauncherItemController::CreateApplicationMenu(int event_flags) {
+  return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
+}
+
+bool ShellWindowLauncherItemController::IsDraggable() {
+  if (type() == TYPE_APP_PANEL)
+    return true;
+  return launcher_controller()->CanPin() ? true : false;
+}
+
+bool ShellWindowLauncherItemController::ShouldShowTooltip() {
+  if (type() == TYPE_APP_PANEL && IsVisible())
+    return false;
+  return true;
 }
 
 void ShellWindowLauncherItemController::OnWindowPropertyChanged(

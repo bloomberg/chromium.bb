@@ -8,7 +8,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
+#include "ash/test/test_launcher_item_delegate.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -23,14 +23,6 @@ TestLauncherDelegate::TestLauncherDelegate(LauncherModel* model)
     : model_(model) {
   CHECK(!instance_);
   instance_ = this;
-
-  ash::LauncherItemDelegateManager* manager =
-      ash::Shell::GetInstance()->launcher_item_delegate_manager();
-  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_PANEL, this);
-  manager->RegisterLauncherItemDelegate(ash::TYPE_APP_SHORTCUT, this);
-  manager->RegisterLauncherItemDelegate(ash::TYPE_BROWSER_SHORTCUT, this);
-  manager->RegisterLauncherItemDelegate(ash::TYPE_PLATFORM_APP, this);
-  manager->RegisterLauncherItemDelegate(ash::TYPE_WINDOWED_APP, this);
 }
 
 TestLauncherDelegate::~TestLauncherDelegate() {
@@ -54,6 +46,13 @@ void TestLauncherDelegate::AddLauncherItem(
   item.status = status;
   model_->Add(item);
   window->AddObserver(this);
+
+  ash::LauncherItemDelegateManager* manager =
+      ash::Shell::GetInstance()->launcher_item_delegate_manager();
+  // |manager| owns TestLauncherItemDelegate.
+  scoped_ptr<LauncherItemDelegate> delegate(
+      new TestLauncherItemDelegate(window));
+  manager->SetLauncherItemDelegate(window_to_id_[window], delegate.Pass());
 }
 
 void TestLauncherDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
@@ -80,55 +79,11 @@ void TestLauncherDelegate::OnWindowHierarchyChanging(
     RemoveLauncherItemForWindow(params.target);
 }
 
-void TestLauncherDelegate::ItemSelected(const ash::LauncherItem& item,
-                                       const ui::Event& event) {
-  aura::Window* window = GetWindowByID(item.id);
-  if (window->type() == aura::client::WINDOW_TYPE_PANEL)
-    ash::wm::MoveWindowToEventRoot(window, event);
-  window->Show();
-  ash::wm::ActivateWindow(window);
-}
-
-base::string16 TestLauncherDelegate::GetTitle(const ash::LauncherItem& item) {
-  aura::Window* window = GetWindowByID(item.id);
-  return window ? window->title() : base::string16();
-}
-
-ui::MenuModel* TestLauncherDelegate::CreateContextMenu(
-    const ash::LauncherItem& item,
-    aura::RootWindow* root) {
-  return NULL;
-}
-
-ash::LauncherMenuModel* TestLauncherDelegate::CreateApplicationMenu(
-    const ash::LauncherItem& item,
-    int event_flags) {
-  return NULL;
-}
-
 ash::LauncherID TestLauncherDelegate::GetIDByWindow(aura::Window* window) {
   WindowToID::const_iterator found = window_to_id_.find(window);
   if (found == window_to_id_.end())
     return 0;
   return found->second;
-}
-
-aura::Window* TestLauncherDelegate::GetWindowByID(ash::LauncherID id) {
-  for (WindowToID::const_iterator it = window_to_id_.begin();
-      it != window_to_id_.end();
-      it++) {
-    if (it->second == id)
-      return it->first;
-  }
-  return NULL;
-}
-
-bool TestLauncherDelegate::IsDraggable(const ash::LauncherItem& item) {
-  return true;
-}
-
-bool TestLauncherDelegate::ShouldShowTooltip(const ash::LauncherItem& item) {
-  return true;
 }
 
 void TestLauncherDelegate::OnLauncherCreated(Launcher* launcher) {

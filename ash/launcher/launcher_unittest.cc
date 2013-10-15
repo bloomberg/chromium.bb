@@ -4,14 +4,15 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
+#include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_view.h"
-
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
 #include "ash/test/launcher_view_test_api.h"
+#include "ash/test/test_launcher_item_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
@@ -34,7 +35,8 @@ class LauncherTest : public ash::test::AshTestBase {
  public:
   LauncherTest() : launcher_(NULL),
                    launcher_view_(NULL),
-                   launcher_model_(NULL) {
+                   launcher_model_(NULL),
+                   item_delegate_manager_(NULL) {
   }
 
   virtual ~LauncherTest() {}
@@ -48,6 +50,8 @@ class LauncherTest : public ash::test::AshTestBase {
     ash::test::LauncherTestAPI test(launcher_);
     launcher_view_ = test.launcher_view();
     launcher_model_ = launcher_view_->model();
+    item_delegate_manager_ =
+        Shell::GetInstance()->launcher_item_delegate_manager();
 
     test_.reset(new ash::test::LauncherViewTestAPI(launcher_view_));
   }
@@ -68,6 +72,10 @@ class LauncherTest : public ash::test::AshTestBase {
     return launcher_model_;
   }
 
+  LauncherItemDelegateManager* item_manager() {
+    return item_delegate_manager_;
+  }
+
   ash::test::LauncherViewTestAPI* test_api() {
     return test_.get();
   }
@@ -76,6 +84,7 @@ class LauncherTest : public ash::test::AshTestBase {
   Launcher* launcher_;
   LauncherView* launcher_view_;
   LauncherModel* launcher_model_;
+  LauncherItemDelegateManager* item_delegate_manager_;
   scoped_ptr<ash::test::LauncherViewTestAPI> test_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherTest);
@@ -111,6 +120,12 @@ TEST_F(LauncherTest, checkHoverAfterMenu) {
   item.type = TYPE_PLATFORM_APP;
   item.status = STATUS_RUNNING;
   int index = launcher_model()->Add(item);
+
+  scoped_ptr<LauncherItemDelegate> delegate(
+      new ash::test::TestLauncherItemDelegate(NULL));
+  item_manager()->SetLauncherItemDelegate(launcher_model()->items()[index].id,
+                                          delegate.Pass());
+
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
   LauncherButton* button = test_api()->GetButton(index);
   button->AddState(LauncherButton::STATE_HOVERED);

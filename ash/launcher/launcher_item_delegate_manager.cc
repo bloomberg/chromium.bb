@@ -4,28 +4,72 @@
 
 #include "ash/launcher/launcher_item_delegate_manager.h"
 
+#include "ash/launcher/launcher_item_delegate.h"
+#include "ash/launcher/launcher_model.h"
+#include "ash/shell.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace ash {
 
-LauncherItemDelegateManager::LauncherItemDelegateManager() {
+LauncherItemDelegateManager::LauncherItemDelegateManager(
+    ash::LauncherModel* model) : model_(model) {
+  DCHECK(model_);
+  model_->AddObserver(this);
 }
 
 LauncherItemDelegateManager::~LauncherItemDelegateManager() {
+  model_->RemoveObserver(this);
+  STLDeleteContainerPairSecondPointers(id_to_item_delegate_map_.begin(),
+                                       id_to_item_delegate_map_.end());
 }
 
-void LauncherItemDelegateManager::RegisterLauncherItemDelegate(
-    ash::LauncherItemType type, LauncherItemDelegate* item_delegate) {
-  // When a new |item_delegate| is registered with an exsiting |type|, it will
-  // get overwritten.
-  item_type_to_item_delegate_map_[type] = item_delegate;
+void LauncherItemDelegateManager::SetLauncherItemDelegate(
+    ash::LauncherID id,
+    scoped_ptr<LauncherItemDelegate> item_delegate) {
+  // If another LauncherItemDelegate is already registered for |id|, we assume
+  // that this request is replacing LauncherItemDelegate for |id| with
+  // |item_delegate|.
+  RemoveLauncherItemDelegate(id);
+  id_to_item_delegate_map_[id] = item_delegate.release();
 }
 
 LauncherItemDelegate* LauncherItemDelegateManager::GetLauncherItemDelegate(
-    ash::LauncherItemType item_type) {
-  DCHECK(item_type_to_item_delegate_map_.find(item_type) !=
-      item_type_to_item_delegate_map_.end());
-  return item_type_to_item_delegate_map_[item_type];
+    ash::LauncherID id) {
+  if (model_->ItemIndexByID(id) != -1) {
+    // Each LauncherItem has to have a LauncherItemDelegate.
+    DCHECK(id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end());
+    return id_to_item_delegate_map_[id];
+  }
+  return NULL;
+}
+
+void LauncherItemDelegateManager::LauncherItemAdded(int index) {
+}
+
+void LauncherItemDelegateManager::LauncherItemRemoved(int index,
+                                                      ash::LauncherID id) {
+  RemoveLauncherItemDelegate(id);
+}
+
+void LauncherItemDelegateManager::LauncherItemMoved(int start_index,
+                                                    int target_index) {
+}
+
+void LauncherItemDelegateManager::LauncherItemChanged(
+    int index,
+    const LauncherItem& old_item) {
+}
+
+void LauncherItemDelegateManager::LauncherStatusChanged() {
+}
+
+void LauncherItemDelegateManager::RemoveLauncherItemDelegate(
+    ash::LauncherID id) {
+  if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end()) {
+    delete id_to_item_delegate_map_[id];
+    id_to_item_delegate_map_.erase(id);
+  }
 }
 
 }  // namespace ash
