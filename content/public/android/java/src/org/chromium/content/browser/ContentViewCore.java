@@ -429,8 +429,6 @@ public class ContentViewCore
     private boolean mUnfocusOnNextSizeChanged = false;
     private final Rect mFocusPreOSKViewportRect = new Rect();
 
-    private boolean mNeedUpdateOrientationChanged;
-
     // Used to keep track of whether we should try to undo the last zoom-to-textfield operation.
     private boolean mScrolledAndZoomedFocusedEditableNode = false;
 
@@ -753,6 +751,7 @@ public class ContentViewCore
         };
 
         mPid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
+        sendOrientationChangeEvent();
     }
 
     @CalledByNative
@@ -1549,7 +1548,18 @@ public class ContentViewCore
             manager.restartInput(mContainerView);
         }
         mContainerViewInternals.super_onConfigurationChanged(newConfig);
-        mNeedUpdateOrientationChanged = true;
+        // Make sure the size is up to date in JavaScript's window.onorientationchanged.
+        mContainerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                mContainerView.removeOnLayoutChangeListener(this);
+                sendOrientationChangeEvent();
+            }
+        });
+        // To request layout has side effect, but it seems OK as it only happen in
+        // onConfigurationChange and layout has to be changed in most case.
+        mContainerView.requestLayout();
         TraceEvent.end();
     }
 
@@ -1616,11 +1626,6 @@ public class ContentViewCore
         } else if (mUnfocusOnNextSizeChanged) {
             undoScrollFocusedEditableNodeIntoViewIfNeeded(true);
             mUnfocusOnNextSizeChanged = false;
-        }
-
-        if (mNeedUpdateOrientationChanged) {
-            sendOrientationChangeEvent();
-            mNeedUpdateOrientationChanged = false;
         }
     }
 
@@ -1955,12 +1960,6 @@ public class ContentViewCore
      * Get the screen orientation from the OS and push it to WebKit.
      *
      * TODO(husky): Add a hook for mock orientations.
-     *
-     * TODO(husky): Currently each new tab starts with an orientation of 0 until you actually
-     * rotate the device. This is wrong if you actually started in landscape mode. To fix this, we
-     * need to push the correct orientation, but only after WebKit's Frame object has been fully
-     * initialized. Need to find a good time to do that. onPageFinished() would probably work but
-     * it isn't implemented yet.
      */
     private void sendOrientationChangeEvent() {
         if (mNativeContentViewCore == 0) return;

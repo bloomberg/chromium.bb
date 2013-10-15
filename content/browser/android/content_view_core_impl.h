@@ -19,6 +19,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
@@ -35,7 +36,8 @@ struct MenuItem;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
-                            public NotificationObserver {
+                            public NotificationObserver,
+                            public WebContentsObserver {
  public:
   static ContentViewCoreImpl* FromWebContents(WebContents* web_contents);
   ContentViewCoreImpl(JNIEnv* env,
@@ -313,6 +315,9 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
+  // WebContentsObserver implementation.
+  virtual void RenderViewReady() OVERRIDE;
+
   // --------------------------------------------------------------------------
   // Other private methods and data
   // --------------------------------------------------------------------------
@@ -342,6 +347,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Update focus state of the RenderWidgetHostView.
   void SetFocusInternal(bool focused);
 
+  // Send device_orientation_ to renderer.
+  void SendOrientationChangeEventInternal();
+
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
 
@@ -370,6 +378,10 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // The owning window that has a hold of main application activity.
   ui::WindowAndroid* window_android_;
+
+  // The cache of device's current orientation set from Java side, this value
+  // will be sent to Renderer once it is ready.
+  int device_orientation_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };

@@ -159,7 +159,8 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          WebContents* web_contents,
                                          ui::ViewAndroid* view_android,
                                          ui::WindowAndroid* window_android)
-    : java_ref_(env, obj),
+    : WebContentsObserver(web_contents),
+      java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::Layer::Create()),
       tab_crashed_(false),
@@ -168,7 +169,8 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       expected_browser_composite_time_(base::TimeDelta::FromMicroseconds(
           kDefaultVSyncIntervalMicros * kDefaultBrowserCompositeVSyncFraction)),
       view_android_(view_android),
-      window_android_(window_android) {
+      window_android_(window_android),
+      device_orientation_(0) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
@@ -287,6 +289,11 @@ void ContentViewCoreImpl::Observe(int type,
       break;
     }
   }
+}
+
+void ContentViewCoreImpl::RenderViewReady() {
+  if (device_orientation_ != 0)
+    SendOrientationChangeEventInternal();
 }
 
 RenderWidgetHostViewAndroid*
@@ -855,13 +862,10 @@ void ContentViewCoreImpl::SetFocusInternal(bool focused) {
 void ContentViewCoreImpl::SendOrientationChangeEvent(JNIEnv* env,
                                                      jobject obj,
                                                      jint orientation) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->UpdateScreenInfo(rwhv->GetNativeView());
-
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  rvhi->SendOrientationChangeEvent(orientation);
+  if (device_orientation_ != orientation) {
+    device_orientation_ = orientation;
+    SendOrientationChangeEventInternal();
+  }
 }
 
 jboolean ContentViewCoreImpl::SendTouchEvent(JNIEnv* env,
@@ -1581,6 +1585,16 @@ void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,
     if (host_impl)
       host_impl->SetAccessibilityMode(AccessibilityModeOff);
   }
+}
+
+void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->UpdateScreenInfo(rwhv->GetNativeView());
+
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  rvhi->SendOrientationChangeEvent(device_orientation_);
 }
 
 // This is called for each ContentView.
