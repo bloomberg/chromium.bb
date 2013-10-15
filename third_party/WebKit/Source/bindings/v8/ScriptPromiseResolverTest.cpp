@@ -56,8 +56,8 @@ public:
     {
         m_perContextData = V8PerContextData::create(m_context.newLocal(m_isolate));
         m_perContextData->init();
-        m_resolver = ScriptPromiseResolver::create();
-        m_promise = m_resolver->promise();
+        m_promise = ScriptPromise::createPending();
+        m_resolver = ScriptPromiseResolver::create(m_promise);
     }
 
     void TearDown()
@@ -100,20 +100,6 @@ TEST_F(ScriptPromiseResolverTest, initialState)
     EXPECT_TRUE(result()->IsUndefined());
 }
 
-TEST_F(ScriptPromiseResolverTest, fulfill)
-{
-    EXPECT_TRUE(m_resolver->isPending());
-    EXPECT_EQ(V8PromiseCustom::Pending, state());
-    EXPECT_TRUE(result()->IsUndefined());
-
-    m_resolver->fulfill(ScriptValue(v8::Integer::New(3, m_isolate), m_isolate));
-
-    EXPECT_FALSE(m_resolver->isPending());
-    EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
-    ASSERT_TRUE(result()->IsNumber());
-    EXPECT_EQ(3, result().As<v8::Integer>()->Value());
-}
-
 TEST_F(ScriptPromiseResolverTest, resolve)
 {
     EXPECT_TRUE(m_resolver->isPending());
@@ -142,33 +128,33 @@ TEST_F(ScriptPromiseResolverTest, reject)
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
 }
 
-TEST_F(ScriptPromiseResolverTest, fulfillOverFulfill)
+TEST_F(ScriptPromiseResolverTest, resolveOverResolve)
 {
     EXPECT_TRUE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
-    m_resolver->fulfill(ScriptValue(v8::Integer::New(3, m_isolate), m_isolate));
+    m_resolver->resolve(ScriptValue(v8::Integer::New(3, m_isolate), m_isolate));
 
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
 
-    m_resolver->fulfill(ScriptValue(v8::Integer::New(4, m_isolate), m_isolate));
+    m_resolver->resolve(ScriptValue(v8::Integer::New(4, m_isolate), m_isolate));
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
 }
 
-TEST_F(ScriptPromiseResolverTest, rejectOverFulfill)
+TEST_F(ScriptPromiseResolverTest, rejectOverResolve)
 {
     EXPECT_TRUE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Pending, state());
     EXPECT_TRUE(result()->IsUndefined());
 
-    m_resolver->fulfill(ScriptValue(v8::Integer::New(3, m_isolate), m_isolate));
+    m_resolver->resolve(ScriptValue(v8::Integer::New(3, m_isolate), m_isolate));
 
     EXPECT_FALSE(m_resolver->isPending());
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
@@ -180,19 +166,6 @@ TEST_F(ScriptPromiseResolverTest, rejectOverFulfill)
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state());
     ASSERT_TRUE(result()->IsNumber());
     EXPECT_EQ(3, result().As<v8::Integer>()->Value());
-}
-
-TEST_F(ScriptPromiseResolverTest, detach)
-{
-    EXPECT_TRUE(m_resolver->isPending());
-    EXPECT_EQ(V8PromiseCustom::Pending, state());
-    EXPECT_TRUE(result()->IsUndefined());
-
-    m_resolver->detach();
-
-    EXPECT_FALSE(m_resolver->isPending());
-    EXPECT_EQ(V8PromiseCustom::Rejected, state());
-    EXPECT_TRUE(result()->IsUndefined());
 }
 
 } // namespace

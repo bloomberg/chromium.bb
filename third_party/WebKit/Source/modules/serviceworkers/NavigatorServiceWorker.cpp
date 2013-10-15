@@ -119,9 +119,10 @@ ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* ex
         return ScriptPromise();
     }
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ScriptPromise promise = ScriptPromise::createPending(executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
     ensureProvider()->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter(resolver, executionContext));
-    return resolver->promise();
+    return promise;
 }
 
 ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
@@ -146,9 +147,10 @@ ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* 
         return ScriptPromise();
     }
 
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ScriptPromise promise = ScriptPromise::createPending(executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
     ensureProvider()->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter(resolver, executionContext));
-    return resolver->promise();
+    return promise;
 }
 
 void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()

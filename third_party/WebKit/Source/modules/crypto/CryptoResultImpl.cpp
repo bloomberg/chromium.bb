@@ -50,9 +50,9 @@ CryptoResultImpl::~CryptoResultImpl()
     ASSERT(m_finished);
 }
 
-PassRefPtr<CryptoResultImpl> CryptoResultImpl::create()
+PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptPromise promise)
 {
-    return adoptRef(new CryptoResultImpl);
+    return adoptRef(new CryptoResultImpl(promise));
 }
 
 void CryptoResultImpl::completeWithError()
@@ -63,35 +63,30 @@ void CryptoResultImpl::completeWithError()
 
 void CryptoResultImpl::completeWithBuffer(const WebKit::WebArrayBuffer& buffer)
 {
-    m_promiseResolver->fulfill(PassRefPtr<ArrayBuffer>(buffer));
+    m_promiseResolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
     finish();
 }
 
 void CryptoResultImpl::completeWithBoolean(bool b)
 {
-    m_promiseResolver->fulfill(ScriptValue::createBoolean(b));
+    m_promiseResolver->resolve(ScriptValue::createBoolean(b));
     finish();
 }
 
 void CryptoResultImpl::completeWithKey(const WebKit::WebCryptoKey& key)
 {
-    m_promiseResolver->fulfill(Key::create(key));
+    m_promiseResolver->resolve(Key::create(key));
     finish();
 }
 
 void CryptoResultImpl::completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey)
 {
-    m_promiseResolver->fulfill(KeyPair::create(publicKey, privateKey));
+    m_promiseResolver->resolve(KeyPair::create(publicKey, privateKey));
     finish();
 }
 
-ScriptPromise CryptoResultImpl::promise()
-{
-    return m_promiseResolver->promise();
-}
-
-CryptoResultImpl::CryptoResultImpl()
-    : m_promiseResolver(ScriptPromiseResolver::create())
+CryptoResultImpl::CryptoResultImpl(ScriptPromise promise)
+    : m_promiseResolver(ScriptPromiseResolver::create(promise))
     , m_finished(false) { }
 
 void CryptoResultImpl::finish()

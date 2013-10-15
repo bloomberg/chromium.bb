@@ -28,40 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CryptoResultImpl_h
-#define CryptoResultImpl_h
-
+#include "config.h"
 #include "bindings/v8/ScriptPromise.h"
-#include "core/platform/CryptoResult.h"
-#include "public/platform/WebCrypto.h"
-#include "wtf/Forward.h"
+
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/custom/V8PromiseCustom.h"
+
+#include <v8.h>
 
 namespace WebCore {
 
-class ScriptPromiseResolver;
+ScriptPromise ScriptPromise::createPending(ExecutionContext* context)
+{
+    ASSERT(v8::Context::InContext());
+    ASSERT(context);
+    v8::Isolate* isolate = toIsolate(context);
+    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(toV8Context(context, DOMWrapperWorld::current())->Global(), isolate);
+    return ScriptPromise(promise, isolate);
+}
 
-// Wrapper around a Promise to notify completion of the crypto operation.
-// Platform cannot know about Promises which are declared in bindings.
-class CryptoResultImpl : public CryptoResult {
-public:
-    ~CryptoResultImpl();
-
-    static PassRefPtr<CryptoResultImpl> create(ScriptPromise);
-
-    virtual void completeWithError() OVERRIDE;
-    virtual void completeWithBuffer(const WebKit::WebArrayBuffer&) OVERRIDE;
-    virtual void completeWithBoolean(bool) OVERRIDE;
-    virtual void completeWithKey(const WebKit::WebCryptoKey&) OVERRIDE;
-    virtual void completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey) OVERRIDE;
-
-private:
-    explicit CryptoResultImpl(ScriptPromise);
-    void finish();
-
-    RefPtr<ScriptPromiseResolver> m_promiseResolver;
-    bool m_finished;
-};
+ScriptPromise ScriptPromise::createPending()
+{
+    ASSERT(v8::Context::InContext());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(v8::Object::New(), isolate);
+    return ScriptPromise(promise, isolate);
+}
 
 } // namespace WebCore
-
-#endif
