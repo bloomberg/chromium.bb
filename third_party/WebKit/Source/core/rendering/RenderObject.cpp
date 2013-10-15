@@ -1899,6 +1899,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     updateImage(oldStyle ? oldStyle->maskBoxImage().image() : 0, m_style ? m_style->maskBoxImage().image() : 0);
 
     updateShapeImage(oldStyle ? oldStyle->shapeInside() : 0, m_style ? m_style->shapeInside() : 0);
+    updateShapeImage(oldStyle ? oldStyle->shapeOutside() : 0, m_style ? m_style->shapeOutside() : 0);
 
     // We need to ensure that view->maximalOutlineSize() is valid for any repaints that happen
     // during styleDidChange (it's used by clippedOverflowRectForRepaint()).
@@ -2753,6 +2754,7 @@ void RenderObject::postDestroy()
             maskBoxImage->removeClient(this);
 
         removeShapeImageClient(m_style->shapeInside());
+        removeShapeImageClient(m_style->shapeOutside());
     }
 
     delete this;
