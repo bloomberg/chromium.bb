@@ -309,8 +309,17 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
 
   base::FilePath idb_directory = GetFilePath(origin_url);
   EnsureDiskUsageCacheInitialized(origin_url);
-  const bool recursive = true;
-  bool deleted = base::DeleteFile(idb_directory, recursive);
+  bool deleted = LevelDBDatabase::Destroy(idb_directory);
+  if (!deleted) {
+    LOG(WARNING) << "Failed to delete LevelDB database: "
+                 << idb_directory.AsUTF8Unsafe();
+  } else {
+    // LevelDB does not delete empty directories; work around this.
+    // TODO(jsbell): Remove when upstream bug is fixed.
+    // https://code.google.com/p/leveldb/issues/detail?id=209
+    const bool kNonRecursive = false;
+    base::DeleteFile(idb_directory, kNonRecursive);
+  }
 
   QueryDiskAndUpdateQuotaUsage(origin_url);
   if (deleted) {

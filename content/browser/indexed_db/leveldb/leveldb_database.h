@@ -40,6 +40,11 @@ class LevelDBSnapshot {
   const leveldb::Snapshot* snapshot_;
 };
 
+class CONTENT_EXPORT LevelDBLock {
+public:
+  virtual ~LevelDBLock() {}
+};
+
 class CONTENT_EXPORT LevelDBDatabase {
  public:
   static leveldb::Status Open(const base::FilePath& file_name,
@@ -49,6 +54,8 @@ class CONTENT_EXPORT LevelDBDatabase {
   static scoped_ptr<LevelDBDatabase> OpenInMemory(
       const LevelDBComparator* comparator);
   static bool Destroy(const base::FilePath& file_name);
+  static scoped_ptr<LevelDBLock> LockForTesting(
+      const base::FilePath& file_name);
   virtual ~LevelDBDatabase();
 
   bool Put(const base::StringPiece& key, std::string* value);

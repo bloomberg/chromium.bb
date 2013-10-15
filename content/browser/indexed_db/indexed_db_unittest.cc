@@ -190,4 +190,29 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   EXPECT_FALSE(base::DirectoryExists(test_path));
 }
 
+TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const GURL kTestOrigin("http://test/");
+
+  scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
+      temp_dir.path(), special_storage_policy_, NULL, task_runner_);
+
+  base::FilePath test_path = idb_context->GetFilePathForTesting(
+      webkit_database::GetIdentifierFromOrigin(kTestOrigin));
+  ASSERT_TRUE(file_util::CreateDirectory(test_path));
+
+  scoped_ptr<LevelDBLock> lock =
+      LevelDBDatabase::LockForTesting(test_path);
+  ASSERT_TRUE(lock);
+
+  idb_context->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &IndexedDBContextImpl::DeleteForOrigin, idb_context, kTestOrigin));
+  FlushIndexedDBTaskRunner();
+
+  EXPECT_TRUE(base::DirectoryExists(test_path));
+}
+
 }  // namespace content

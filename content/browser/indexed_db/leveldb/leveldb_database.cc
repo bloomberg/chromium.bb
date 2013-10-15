@@ -116,6 +116,30 @@ bool LevelDBDatabase::Destroy(const base::FilePath& file_name) {
   return s.ok();
 }
 
+namespace {
+class LockImpl : public LevelDBLock {
+ public:
+  explicit LockImpl(leveldb::Env* env, leveldb::FileLock* lock)
+      : env_(env), lock_(lock) {}
+  virtual ~LockImpl() { env_->UnlockFile(lock_); }
+ private:
+  leveldb::Env* env_;
+  leveldb::FileLock* lock_;
+};
+}
+
+scoped_ptr<LevelDBLock> LevelDBDatabase::LockForTesting(
+    const base::FilePath& file_name) {
+  leveldb::Env* env = leveldb::IDBEnv();
+  base::FilePath lock_path = file_name.AppendASCII("LOCK");
+  leveldb::FileLock* lock = NULL;
+  leveldb::Status status = env->LockFile(lock_path.AsUTF8Unsafe(), &lock);
+  if (!status.ok())
+    return scoped_ptr<LevelDBLock>();
+  DCHECK(lock);
+  return scoped_ptr<LevelDBLock>(new LockImpl(env, lock));
+}
+
 static int CheckFreeSpace(const char* const type,
                           const base::FilePath& file_name) {
   std::string name =
