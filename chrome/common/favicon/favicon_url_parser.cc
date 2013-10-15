@@ -8,8 +8,8 @@
 #include "chrome/common/favicon/favicon_types.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/layout.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/webui/web_ui_util.h"
 
 namespace {
 

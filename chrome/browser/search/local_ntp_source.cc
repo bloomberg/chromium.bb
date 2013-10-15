@@ -23,7 +23,7 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/webui/jstemplate_builder.h"
+#include "ui/base/webui/jstemplate_builder.h"
 #include "url/gurl.h"
 
 namespace {

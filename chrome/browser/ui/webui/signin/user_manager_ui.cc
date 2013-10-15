@@ -13,7 +13,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/webui/web_ui_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 // JS file names.
 const char kStringsJSPath[] = "strings.js";

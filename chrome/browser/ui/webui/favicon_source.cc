@@ -22,7 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/webui/web_ui_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 FaviconSource::IconRequest::IconRequest()
     : size_in_dip(gfx::kFaviconSize),

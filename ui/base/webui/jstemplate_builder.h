@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 // - given a json data object, run the jstemplate javascript which fills in
 //   template values
 
-#ifndef UI_WEBUI_JSTEMPLATE_BUILDER_H_
-#define UI_WEBUI_JSTEMPLATE_BUILDER_H_
+#ifndef UI_BASE_WEBUI_JSTEMPLATE_BUILDER_H_
+#define UI_BASE_WEBUI_JSTEMPLATE_BUILDER_H_
 
 #include <string>
 
@@ -88,4 +88,4 @@ UI_EXPORT void AppendI18nTemplateProcessHtml(std::string* output);
 
 }  // namespace webui
 
-#endif  // UI_WEBUI_JSTEMPLATE_BUILDER_H_
+#endif  // UI_BASE_WEBUI_JSTEMPLATE_BUILDER_H_

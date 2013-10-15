@@ -17,8 +17,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/webui/web_ui_util.h"
 #include "webkit/common/webpreferences.h"
 
 namespace {

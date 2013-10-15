@@ -3,6 +3,7 @@ include_rules = [
   "+grit/ui_resources.h",
   "+grit/ui_unscaled_resources.h",
   "+grit/ui_strings.h",
+  "+grit/webui_resources.h",
   "+net",
   "+skia/ext",
   "+third_party/skia",

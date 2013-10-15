@@ -79,7 +79,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/webui/web_ui_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

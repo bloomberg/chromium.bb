@@ -88,7 +88,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/webui/web_ui_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"

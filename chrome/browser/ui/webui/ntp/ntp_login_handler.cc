@@ -42,9 +42,9 @@
 #include "net/base/escape.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
-#include "ui/webui/web_ui_util.h"
 
 using content::OpenURLParams;
 using content::Referrer;

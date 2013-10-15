@@ -279,6 +279,10 @@
         'base/ui_export.h',
         'base/view_prop.cc',
         'base/view_prop.h',
+        'base/webui/jstemplate_builder.cc',
+        'base/webui/jstemplate_builder.h',
+        'base/webui/web_ui_util.cc',
+        'base/webui/web_ui_util.h',
         'base/win/accessibility_ids_win.h',
         'base/win/accessibility_misc_utils.cc',
         'base/win/accessibility_misc_utils.h',
@@ -321,10 +325,6 @@
         'base/x/x11_util.cc',
         'base/x/x11_util.h',
         'base/x/x11_util_internal.h',
-        'webui/jstemplate_builder.cc',
-        'webui/jstemplate_builder.h',
-        'webui/web_ui_util.cc',
-        'webui/web_ui_util.h',
       ],
       'target_conditions': [
         ['OS == "ios"', {

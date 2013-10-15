@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // A helper function for using JsTemplate. See jstemplate_builder.h for more
 // info.
 
-#include "ui/webui/jstemplate_builder.h"
+#include "ui/base/webui/jstemplate_builder.h"
 
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"

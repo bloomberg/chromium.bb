@@ -51,11 +51,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/webui/jstemplate_builder.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
-#include "ui/webui/jstemplate_builder.h"
-#include "ui/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"

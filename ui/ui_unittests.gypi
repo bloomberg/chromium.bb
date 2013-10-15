@@ -167,6 +167,7 @@
         'base/test/data/resource.h',
         'base/text/bytes_formatting_unittest.cc',
         'base/view_prop_unittest.cc',
+        'base/webui/web_ui_util_unittest.cc',
         'events/event_dispatcher_unittest.cc',
         'events/event_unittest.cc',
         'events/latency_info_unittest.cc',
@@ -186,7 +187,6 @@
         'gfx/transform_util_unittest.cc',
         'gfx/utf16_indexing_unittest.cc',
         'shell_dialogs/select_file_dialog_win_unittest.cc',
-        'webui/web_ui_util_unittest.cc',
       ],
       'include_dirs': [
         '../',

@@ -29,7 +29,7 @@
 #include "grit/component_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/webui/web_ui_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 using autofill::AutofillCountry;
 using autofill::ServerFieldType;

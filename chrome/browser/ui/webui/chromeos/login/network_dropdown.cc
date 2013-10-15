@@ -15,10 +15,10 @@
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/webui/web_ui_util.h"
 
 namespace {
 

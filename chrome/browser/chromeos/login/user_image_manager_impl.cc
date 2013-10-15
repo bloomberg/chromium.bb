@@ -34,8 +34,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/webui/web_ui_util.h"
 
 using content::BrowserThread;
 

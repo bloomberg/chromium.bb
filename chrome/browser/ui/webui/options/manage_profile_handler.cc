@@ -37,7 +37,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/webui/web_ui_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if defined(ENABLE_SETTINGS_APP)
 #include "chrome/browser/ui/app_list/app_list_service.h"
