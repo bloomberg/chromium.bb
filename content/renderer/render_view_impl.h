@@ -1166,6 +1166,9 @@ class CONTENT_EXPORT RenderViewImpl
 
   gfx::RectF ClientRectToPhysicalWindowRect(const gfx::RectF& rect) const;
 
+  // Helper for LatencyInfo construction.
+  int64 GetLatencyComponentId();
+
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.

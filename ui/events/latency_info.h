@@ -52,6 +52,9 @@ enum LatencyComponentType {
   // Timestamp when the frame is swapped (i.e. when the rendering caused by
   // input event actually takes effect).
   INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
+  // Frame number when a window snapshot was requested. The snapshot
+  // is taken when the rendering results actually reach the screen.
+  WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT
 };
 
 struct EVENTS_EXPORT LatencyInfo {

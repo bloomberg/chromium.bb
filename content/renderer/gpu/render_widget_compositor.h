@@ -51,6 +51,9 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
                               bool animate);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
+  // Like setNeedsRedraw but forces the frame to be drawn, without early-outs.
+  // Redraw will be forced after the next commit
+  void SetNeedsForcedRedraw();
   void SetLatencyInfo(const ui::LatencyInfo& latency_info);
   int GetLayerTreeId() const;
   void NotifyInputThrottledUntilCommit();

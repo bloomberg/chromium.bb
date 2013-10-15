@@ -637,6 +637,99 @@ class LayerTreeHostTestCompositeAndReadbackAfterForcedDraw
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackAfterForcedDraw);
 
+class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestSetNextCommitForcesRedraw()
+      : num_draws_(0),
+        bounds_(50, 50),
+        invalid_rect_(10, 10, 20, 20),
+        root_layer_(ContentLayer::Create(&client_)) {
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    root_layer_->SetIsDrawable(true);
+    root_layer_->SetBounds(bounds_);
+    layer_tree_host()->SetRootLayer(root_layer_);
+    layer_tree_host()->SetViewportSize(bounds_);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (num_draws_ == 3 && host_impl->settings().impl_side_painting)
+      host_impl->SetNeedsRedrawRect(invalid_rect_);
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    EXPECT_TRUE(result);
+
+    gfx::RectF root_damage_rect;
+    if (!frame_data->render_passes.empty())
+      root_damage_rect = frame_data->render_passes.back()->damage_rect;
+
+    switch (num_draws_) {
+      case 0:
+        EXPECT_RECT_EQ(gfx::Rect(bounds_), root_damage_rect);
+        break;
+      case 1:
+      case 2:
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), root_damage_rect);
+        break;
+      case 3:
+        EXPECT_RECT_EQ(invalid_rect_, root_damage_rect);
+        break;
+      case 4:
+        EXPECT_RECT_EQ(gfx::Rect(bounds_), root_damage_rect);
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    return result;
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    switch (num_draws_) {
+      case 0:
+      case 1:
+        // Cycle through a couple of empty commits to ensure we're observing the
+        // right behavior
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        // Should force full frame damage on the next commit
+        PostSetNextCommitForcesRedrawToMainThread();
+        PostSetNeedsCommitToMainThread();
+        if (host_impl->settings().impl_side_painting)
+          host_impl->BlockNotifyReadyToActivateForTesting(true);
+        else
+          num_draws_++;
+        break;
+      case 3:
+        host_impl->BlockNotifyReadyToActivateForTesting(false);
+        break;
+      default:
+        EndTest();
+        break;
+    }
+    num_draws_++;
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_EQ(5, num_draws_);
+  }
+
+ private:
+  int num_draws_;
+  const gfx::Size bounds_;
+  const gfx::Rect invalid_rect_;
+  FakeContentLayerClient client_;
+  scoped_refptr<ContentLayer> root_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNextCommitForcesRedraw);
+
 // If the layerTreeHost says it can't draw, Then we should not try to draw.
 class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
  public:

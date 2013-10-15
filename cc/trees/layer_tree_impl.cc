@@ -40,7 +40,8 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       contents_textures_purged_(false),
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
-      needs_full_tree_sync_(true) {
+      needs_full_tree_sync_(true),
+      next_activation_forces_redraw_(false) {
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
@@ -110,6 +111,11 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // The request queue should have been processed and does not require a push.
   DCHECK_EQ(ui_resource_request_queue_.size(), 0u);
+
+  if (next_activation_forces_redraw_) {
+    layer_tree_host_impl_->SetFullRootLayerDamage();
+    next_activation_forces_redraw_ = false;
+  }
 
   target_tree->SetLatencyInfo(latency_info_);
   latency_info_.Clear();

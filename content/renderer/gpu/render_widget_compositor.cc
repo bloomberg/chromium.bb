@@ -382,6 +382,11 @@ void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
 
+void RenderWidgetCompositor::SetNeedsForcedRedraw() {
+  layer_tree_host_->SetNextCommitForcesRedraw();
+  setNeedsRedraw();
+}
+
 void RenderWidgetCompositor::SetLatencyInfo(
     const ui::LatencyInfo& latency_info) {
   layer_tree_host_->SetLatencyInfo(latency_info);

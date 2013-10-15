@@ -117,6 +117,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostSetNeedsRedrawToMainThread();
   void PostSetNeedsRedrawRectToMainThread(gfx::Rect damage_rect);
   void PostSetVisibleToMainThread(bool visible);
+  void PostSetNextCommitForcesRedrawToMainThread();
 
   void DoBeginTest();
   void Timeout();
@@ -138,6 +139,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchSetNeedsRedraw();
   void DispatchSetNeedsRedrawRect(gfx::Rect damage_rect);
   void DispatchSetVisible(bool visible);
+  void DispatchSetNextCommitForcesRedraw();
   void DispatchComposite();
   void DispatchDidAddAnimation();
 

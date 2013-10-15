@@ -23,6 +23,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -193,6 +194,7 @@
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "third_party/WebKit/public/web/default/WebRenderTheme.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -2253,15 +2255,32 @@ bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 void RenderViewImpl::GetWindowSnapshot(const WindowSnapshotCallback& callback) {
   int id = next_snapshot_id_++;
   pending_snapshots_.insert(std::make_pair(id, callback));
-  Send(new ViewHostMsg_GetWindowSnapshot(routing_id_, id));
+  ui::LatencyInfo latency_info;
+  latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+                                GetLatencyComponentId(),
+                                id);
+  if (RenderWidgetCompositor* rwc = compositor()) {
+    rwc->SetLatencyInfo(latency_info);
+  } else {
+    latency_info_.MergeWith(latency_info);
+  }
+  ScheduleCompositeWithForcedRedraw();
 }
 
 void RenderViewImpl::OnWindowSnapshotCompleted(const int snapshot_id,
     const gfx::Size& size, const std::vector<unsigned char>& png) {
-  PendingSnapshotMap::iterator it = pending_snapshots_.find(snapshot_id);
-  DCHECK(it != pending_snapshots_.end());
-  it->second.Run(size, png);
-  pending_snapshots_.erase(it);
+
+  // Any pending snapshots with a lower ID than the one received are considered
+  // to be implicitly complete, and returned the same snapshot data.
+  PendingSnapshotMap::iterator it = pending_snapshots_.begin();
+  while(it != pending_snapshots_.end()) {
+      if (it->first <= snapshot_id) {
+        it->second.Run(size, png);
+        pending_snapshots_.erase(it++);
+      } else {
+        ++it;
+      }
+  }
 }
 
 // WebKit::WebViewClient ------------------------------------------------------
@@ -2744,6 +2763,12 @@ gfx::RectF RenderViewImpl::ClientRectToPhysicalWindowRect(
   gfx::RectF window_rect = rect;
   window_rect.Scale(device_scale_factor_ * webview()->pageScaleFactor());
   return window_rect;
+}
+
+int64 RenderViewImpl::GetLatencyComponentId() {
+  // Note: this must match the logic in RenderWidgetHostImpl.
+  return GetRoutingID() | (static_cast<int64>(
+      RenderThreadImpl::current()->renderer_process_id()) << 32);
 }
 
 void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {

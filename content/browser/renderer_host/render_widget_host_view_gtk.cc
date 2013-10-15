@@ -1069,7 +1069,7 @@ void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
   ack_params.sync_point = 0;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(
       params.route_id, gpu_host_id, ack_params);
-  host_->FrameSwapped(params.latency_info);
+  RenderWidgetHostImpl::CompositorFrameDrawn(params.latency_info);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfacePostSubBuffer(
@@ -1079,7 +1079,7 @@ void RenderWidgetHostViewGtk::AcceleratedSurfacePostSubBuffer(
   ack_params.sync_point = 0;
   RenderWidgetHostImpl::AcknowledgeBufferPresent(
       params.route_id, gpu_host_id, ack_params);
-  host_->FrameSwapped(params.latency_info);
+  RenderWidgetHostImpl::CompositorFrameDrawn(params.latency_info);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {

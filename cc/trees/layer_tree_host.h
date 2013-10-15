@@ -215,6 +215,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   void SetNextCommitWaitsForActivation();
 
+  void SetNextCommitForcesRedraw();
+
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
                           base::Time wall_clock_time);
 
@@ -456,6 +458,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   };
   LCDTextMetrics lcd_text_metrics_;
   int tree_id_;
+  bool next_commit_forces_redraw_;
 
   scoped_refptr<Layer> page_scale_layer_;
   scoped_refptr<Layer> inner_viewport_scroll_layer_;

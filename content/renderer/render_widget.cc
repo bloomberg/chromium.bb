@@ -582,6 +582,34 @@ void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
     screen_metrics_emulator_->OnShowContextMenu(params);
 }
 
+void RenderWidget::ScheduleCompositeWithForcedRedraw() {
+  if (compositor_) {
+    // Regardless of whether threaded compositing is enabled, always
+    // use this mechanism to force the compositor to redraw. However,
+    // the invalidation code path below is still needed for the
+    // non-threaded case.
+    compositor_->SetNeedsForcedRedraw();
+  }
+  ScheduleCompositeImpl(true);
+}
+
+void RenderWidget::ScheduleCompositeImpl(bool force_redraw) {
+  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get() &&
+      compositor_) {
+    if (!force_redraw) {
+      compositor_->setNeedsRedraw();
+    }
+  } else {
+    // TODO(nduca): replace with something a little less hacky.  The reason this
+    // hack is still used is because the Invalidate-DoDeferredUpdate loop
+    // contains a lot of host-renderer synchronization logic that is still
+    // important for the accelerated compositing case. The option of simply
+    // duplicating all that code is less desirable than "faking out" the
+    // invalidation path using a magical damage rect.
+    didInvalidateRect(WebRect(0, 0, 1, 1));
+  }
+}
+
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
@@ -1883,18 +1911,7 @@ void RenderWidget::didCompleteSwapBuffers() {
 }
 
 void RenderWidget::scheduleComposite() {
-  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get() &&
-      compositor_) {
-    compositor_->setNeedsRedraw();
-  } else {
-    // TODO(nduca): replace with something a little less hacky.  The reason this
-    // hack is still used is because the Invalidate-DoDeferredUpdate loop
-    // contains a lot of host-renderer synchronization logic that is still
-    // important for the accelerated compositing case. The option of simply
-    // duplicating all that code is less desirable than "faking out" the
-    // invalidation path using a magical damage rect.
-    didInvalidateRect(WebRect(0, 0, 1, 1));
-  }
+  ScheduleCompositeImpl(false);
 }
 
 void RenderWidget::scheduleAnimation() {

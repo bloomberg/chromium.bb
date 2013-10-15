@@ -11,6 +11,7 @@
 
 #include "base/memory/memory_pressure_listener.h"
 #include "base/observer_list.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -343,6 +344,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Retrieve current gamepad data.
   void SampleGamepads(WebKit::WebGamepads* data);
 
+  // Get the browser process's notion of the renderer process's ID.
+  // This is the first argument to RenderWidgetHost::FromID. Ideally
+  // this would be available on all platforms via base::Process.
+  base::ProcessId renderer_process_id() const;
+
  private:
   // ChildThread
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -374,6 +380,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void OnNetworkStateChanged(bool online);
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);
+  void OnSetRendererProcessID(base::ProcessId process_id);
   void OnSetWebKitSharedTimersSuspended(bool suspend);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
@@ -485,6 +492,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<WebRTCIdentityService> webrtc_identity_service_;
 
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
+
+  base::ProcessId renderer_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

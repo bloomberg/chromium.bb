@@ -806,6 +806,11 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetHistoryLengthAndPrune,
                     int, /* merge_history_length */
                     int32 /* minimum_page_id */)
 
+// Tells the renderer the browser's notion of its process ID.
+// Some subsystems, like LatencyInfo, require this to be known to the renderer.
+IPC_MESSAGE_CONTROL1(ViewMsg_SetRendererProcessID,
+                     base::ProcessId /* process_id */)
+
 // Tells the renderer to create a new view.
 // This message is slightly different, the view it takes (via
 // ViewMsg_New_Params) is the view to create, the message itself is sent as a
@@ -1859,10 +1864,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
                     GURL /* source_url */,
                     std::string  /* message */,
                     base::ListValue /* args */)
-
-// Requests a snapshot of the given window.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_GetWindowSnapshot,
-                    int /* snapshot_id */)
 
 // A renderer sends this to the browser process when it wants to create a ppapi
 // plugin.  The browser will create the plugin process if necessary, and will

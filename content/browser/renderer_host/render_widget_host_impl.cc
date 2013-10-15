@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 
 #include <math.h>
+#include <set>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -57,6 +58,7 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/vector2d_conversions.h"
+#include "ui/snapshot/snapshot.h"
 #include "webkit/common/cursors/webcursor.h"
 #include "webkit/common/webpreferences.h"
 
@@ -209,6 +211,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   }
 
   is_threaded_compositing_enabled_ = IsThreadedCompositingEnabled();
+
 
   g_routing_id_widget_map.Get().insert(std::make_pair(
       RenderWidgetHostID(process->GetID(), routing_id_), this));
@@ -2381,6 +2384,14 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
 }
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
+  ui::LatencyInfo::LatencyComponent window_snapshot_component;
+  if (latency_info.FindLatency(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+                               GetLatencyComponentId(),
+                               &window_snapshot_component)) {
+    WindowSnapshotReachedScreen(
+        static_cast<int>(window_snapshot_component.sequence_number));
+  }
+
   ui::LatencyInfo::LatencyComponent rwh_component;
   ui::LatencyInfo::LatencyComponent swap_component;
   if (!latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
@@ -2430,23 +2441,54 @@ void RenderWidgetHostImpl::DidReceiveRendererFrame() {
   view_->DidReceiveRendererFrame();
 }
 
+void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
+
+  std::vector<unsigned char> png;
+
+  // This feature is behind the kEnableGpuBenchmarking command line switch
+  // because it poses security concerns and should only be used for testing.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableGpuBenchmarking)) {
+    gfx::Rect view_bounds = GetView()->GetViewBounds();
+    gfx::Rect snapshot_bounds(view_bounds.size());
+    gfx::Size snapshot_size = snapshot_bounds.size();
+
+    if (ui::GrabViewSnapshot(GetView()->GetNativeView(),
+                             &png, snapshot_bounds)) {
+      Send(new ViewMsg_WindowSnapshotCompleted(
+          GetRoutingID(), snapshot_id, snapshot_size, png));
+      return;
+    }
+  }
+
+  Send(new ViewMsg_WindowSnapshotCompleted(
+      GetRoutingID(), snapshot_id, gfx::Size(), png));
+}
+
 // static
 void RenderWidgetHostImpl::CompositorFrameDrawn(
     const ui::LatencyInfo& latency_info) {
+  std::set<RenderWidgetHostImpl*> rwhi_set;
+
   for (ui::LatencyInfo::LatencyMap::const_iterator b =
            latency_info.latency_components.begin();
        b != latency_info.latency_components.end();
        ++b) {
-    if (b->first.first != ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT)
-      continue;
-    // Matches with GetLatencyComponentId
-    int routing_id = b->first.second & 0xffffffff;
-    int process_id = (b->first.second >> 32) & 0xffffffff;
-    RenderWidgetHost* rwh =
-        RenderWidgetHost::FromID(process_id, routing_id);
-    if (!rwh)
-      continue;
-    RenderWidgetHostImpl::From(rwh)->FrameSwapped(latency_info);
+    if (b->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
+        b->first.first == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
+      // Matches with GetLatencyComponentId
+      int routing_id = b->first.second & 0xffffffff;
+      int process_id = (b->first.second >> 32) & 0xffffffff;
+      RenderWidgetHost* rwh =
+          RenderWidgetHost::FromID(process_id, routing_id);
+      if (!rwh) {
+        continue;
+      }
+      RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
+      if (rwhi_set.insert(rwhi).second)
+        rwhi->FrameSwapped(latency_info);
+    }
   }
 }
 

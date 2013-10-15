@@ -133,7 +133,8 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       partial_texture_update_requests_(0),
       in_paint_layer_contents_(false),
       total_frames_used_for_lcd_text_metrics_(0),
-      tree_id_(s_next_tree_id++) {
+      tree_id_(s_next_tree_id++),
+      next_commit_forces_redraw_(false) {
   if (settings_.accelerated_animation_enabled)
     animation_registrar_ = AnimationRegistrar::Create();
   s_num_layer_tree_instances++;
@@ -323,10 +324,16 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     DCHECK(!host_impl->pending_tree());
     host_impl->CreatePendingTree();
     sync_tree = host_impl->pending_tree();
+    if (next_commit_forces_redraw_)
+      sync_tree->ForceRedrawNextActivation();
   } else {
+    if (next_commit_forces_redraw_)
+      host_impl->SetFullRootLayerDamage();
     contents_texture_manager_->ReduceMemory(host_impl->resource_provider());
     sync_tree = host_impl->active_tree();
   }
+
+  next_commit_forces_redraw_ = false;
 
   sync_tree->set_source_frame_number(source_frame_number());
 
@@ -563,6 +570,10 @@ bool LayerTreeHost::CommitRequested() const {
 
 void LayerTreeHost::SetNextCommitWaitsForActivation() {
   proxy_->SetNextCommitWaitsForActivation();
+}
+
+void LayerTreeHost::SetNextCommitForcesRedraw() {
+  next_commit_forces_redraw_ = true;
 }
 
 void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,

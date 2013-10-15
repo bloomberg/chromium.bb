@@ -414,6 +414,13 @@ void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
                  visible));
 }
 
+void LayerTreeTest::PostSetNextCommitForcesRedrawToMainThread() {
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchSetNextCommitForcesRedraw,
+                 main_thread_weak_ptr_));
+}
+
 void LayerTreeTest::DoBeginTest() {
   client_ = LayerTreeHostClientForTesting::Create(this);
 
@@ -556,6 +563,13 @@ void LayerTreeTest::DispatchSetVisible(bool visible) {
   // deferred because the LTH was not visible, re-schedule the composite now.
   if (layer_tree_host_->visible() && schedule_when_set_visible_true_)
     ScheduleComposite();
+}
+
+void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
+  DCHECK(!proxy() || proxy()->IsMainThread());
+
+  if (layer_tree_host_)
+    layer_tree_host_->SetNextCommitForcesRedraw();
 }
 
 void LayerTreeTest::DispatchComposite() {

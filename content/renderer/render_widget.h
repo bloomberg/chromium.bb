@@ -241,6 +241,8 @@ class CONTENT_EXPORT RenderWidget
   void DisableScreenMetricsEmulation();
   void SetPopupOriginAdjustmentsForEmulation(ScreenMetricsEmulator* emulator);
 
+  void ScheduleCompositeWithForcedRedraw();
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -546,6 +548,8 @@ class CONTENT_EXPORT RenderWidget
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   bool OnSnapshotHelper(const gfx::Rect& src_subrect, SkBitmap* bitmap);
+
+  void ScheduleCompositeImpl(bool force_redraw);
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
