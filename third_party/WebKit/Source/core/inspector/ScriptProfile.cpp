@@ -85,6 +85,7 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor
         .setScriptId(String::number(node->GetScriptId()))
         .setUrl(toWebCoreString(node->GetScriptResourceName()))
         .setLineNumber(node->GetLineNumber())
+        .setColumnNumber(node->GetColumnNumber())
         .setHitCount(node->GetHitCount())
         .setCallUID(node->GetCallUid())
         .setChildren(children.release())
