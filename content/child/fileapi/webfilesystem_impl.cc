@@ -345,14 +345,6 @@ void WebFileSystemImpl::openFileSystem(
       make_scoped_ptr(waitable_results));
 }
 
-void WebFileSystemImpl::openFileSystem(
-    const WebKit::WebURL& storage_partition,
-    WebKit::WebFileSystemType type,
-    bool create_unused,
-    WebFileSystemCallbacks callbacks) {
-  openFileSystem(storage_partition, type, callbacks);
-}
-
 void WebFileSystemImpl::resolveURL(
     const WebKit::WebURL& filesystem_url,
     WebFileSystemCallbacks callbacks) {

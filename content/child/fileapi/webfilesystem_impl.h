@@ -53,14 +53,6 @@ class WebFileSystemImpl
       const WebKit::WebURL& storage_partition,
       const WebKit::WebFileSystemType type,
       WebKit::WebFileSystemCallbacks);
-
-  // TODO(tzik): Clean up this version after the interface is changed in Blink.
-  virtual void openFileSystem(
-      const WebKit::WebURL& storage_partition,
-      const WebKit::WebFileSystemType type,
-      bool create_unused,
-      WebKit::WebFileSystemCallbacks);
-
   virtual void resolveURL(
       const WebKit::WebURL& filesystem_url,
       WebKit::WebFileSystemCallbacks) OVERRIDE;
