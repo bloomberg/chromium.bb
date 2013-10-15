@@ -76,6 +76,8 @@ const int kUserIconSize = 27;
 const int kUserIconLargeSize = 32;
 const int kUserIconLargeCornerRadius = 2;
 const int kUserLabelToIconPadding = 5;
+// When using multi login, this spacing is added between user icons.
+const int kTrayLabelSpacing = 1;
 
 // When a hover border is used, it is starting this many pixels before the icon
 // position.
@@ -1298,7 +1300,12 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
       alignment == SHELF_ALIGNMENT_TOP) {
     if (avatar_) {
       if (switches::UseAlternateShelfLayout()) {
-        avatar_->set_border(NULL);
+        if (multiprofile_index_) {
+          avatar_->set_border(
+              views::Border::CreateEmptyBorder(0, kTrayLabelSpacing, 0, 0));
+        } else {
+          avatar_->set_border(NULL);
+        }
         avatar_->SetCornerRadii(0, corner_radius, corner_radius, 0);
       } else {
         avatar_->set_border(views::Border::CreateEmptyBorder(
@@ -1317,7 +1324,12 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   } else {
     if (avatar_) {
       if (switches::UseAlternateShelfLayout()) {
-        avatar_->set_border(NULL);
+        if (multiprofile_index_) {
+          avatar_->set_border(
+              views::Border::CreateEmptyBorder(kTrayLabelSpacing, 0, 0, 0));
+        } else {
+          avatar_->set_border(NULL);
+        }
         avatar_->SetCornerRadii(0, 0, corner_radius, corner_radius);
       } else {
         SetTrayImageItemBorder(avatar_, alignment);
