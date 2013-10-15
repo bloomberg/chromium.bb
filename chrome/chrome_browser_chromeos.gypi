@@ -31,6 +31,7 @@
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
+        'cloud_policy_proto',
         'common',
         'common/extensions/api/api.gyp:api',
         'common_net',
