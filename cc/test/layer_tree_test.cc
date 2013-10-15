@@ -640,6 +640,10 @@ void LayerTreeTest::RunTest(bool threaded,
   AfterTest();
 }
 
+void LayerTreeTest::RunTestWithImplSidePainting() {
+  RunTest(true, false, true);
+}
+
 scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
   scoped_ptr<FakeOutputSurface> output_surface;
   if (delegating_renderer_)

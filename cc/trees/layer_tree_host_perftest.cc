@@ -142,6 +142,12 @@ TEST_F(LayerTreeHostPerfTestJsonReader, TenTenSingleThread) {
   RunTest(false, false, false);
 }
 
+TEST_F(LayerTreeHostPerfTestJsonReader, TenTenThreadedImplSide) {
+  SetTestName("10_10_threaded_impl_side");
+  ReadTestFile("10_10_layer_tree");
+  RunTestWithImplSidePainting();
+}
+
 // Simulates a tab switcher scene with two stacks of 10 tabs each.
 TEST_F(LayerTreeHostPerfTestJsonReader,
        TenTenSingleThread_FullDamageEachFrame) {
@@ -149,6 +155,14 @@ TEST_F(LayerTreeHostPerfTestJsonReader,
   SetTestName("10_10_single_thread_full_damage_each_frame");
   ReadTestFile("10_10_layer_tree");
   RunTest(false, false, false);
+}
+
+TEST_F(LayerTreeHostPerfTestJsonReader,
+       TenTenThreadedImplSide_FullDamageEachFrame) {
+  full_damage_each_frame_ = true;
+  SetTestName("10_10_threaded_impl_side_full_damage_each_frame");
+  ReadTestFile("10_10_layer_tree");
+  RunTestWithImplSidePainting();
 }
 
 // Invalidates a leaf layer in the tree on the main thread after every commit.
@@ -185,6 +199,12 @@ TEST_F(LayerTreeHostPerfTestLeafInvalidates, TenTenSingleThread) {
   RunTest(false, false, false);
 }
 
+TEST_F(LayerTreeHostPerfTestLeafInvalidates, TenTenThreadedImplSide) {
+  SetTestName("10_10_threaded_impl_side_leaf_invalidates");
+  ReadTestFile("10_10_layer_tree");
+  RunTestWithImplSidePainting();
+}
+
 // Simulates main-thread scrolling on each frame.
 class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
  public:
@@ -207,20 +227,20 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
   scoped_refptr<Layer> scrollable_;
 };
 
-TEST_F(ScrollingLayerTreePerfTest, LongScrollablePage) {
+TEST_F(ScrollingLayerTreePerfTest, LongScrollablePageSingleThread) {
   SetTestName("long_scrollable_page");
   ReadTestFile("long_scrollable_page");
   RunTest(false, false, false);
 }
 
-class ImplSidePaintingPerfTest : public LayerTreeHostPerfTestJsonReader {
- protected:
-  // Run test with impl-side painting.
-  void RunTestWithImplSidePainting() { RunTest(true, false, true); }
-};
+TEST_F(ScrollingLayerTreePerfTest, LongScrollablePageThreadedImplSide) {
+  SetTestName("long_scrollable_page_threaded_impl_side");
+  ReadTestFile("long_scrollable_page");
+  RunTestWithImplSidePainting();
+}
 
 // Simulates a page with several large, transformed and animated layers.
-TEST_F(ImplSidePaintingPerfTest, HeavyPage) {
+TEST_F(LayerTreeHostPerfTestJsonReader, HeavyPageThreadedImplSide) {
   animation_driven_drawing_ = true;
   measure_commit_cost_ = true;
   SetTestName("heavy_page");
@@ -228,7 +248,8 @@ TEST_F(ImplSidePaintingPerfTest, HeavyPage) {
   RunTestWithImplSidePainting();
 }
 
-class PageScaleImplSidePaintingPerfTest : public ImplSidePaintingPerfTest {
+class PageScaleImplSidePaintingPerfTest
+    : public LayerTreeHostPerfTestJsonReader {
  public:
   PageScaleImplSidePaintingPerfTest()
       : max_scale_(16.f), min_scale_(1.f / max_scale_) {}

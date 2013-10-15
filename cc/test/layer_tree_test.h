@@ -146,6 +146,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual void RunTest(bool threaded,
                        bool delegating_renderer,
                        bool impl_side_painting);
+  virtual void RunTestWithImplSidePainting();
 
   bool HasImplThread() { return proxy() ? proxy()->HasImplThread() : false; }
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() {
