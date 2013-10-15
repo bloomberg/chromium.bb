@@ -8,8 +8,6 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -18,7 +16,6 @@ class InfoBarDelegate;
 // Provides access to creating, removing and enumerating info bars
 // attached to a tab.
 class InfoBarService : public content::WebContentsObserver,
-                       public content::NotificationObserver,
                        public content::WebContentsUserData<InfoBarService> {
  public:
   // Changes whether infobars are enabled.  The default is true.
@@ -79,12 +76,11 @@ class InfoBarService : public content::WebContentsObserver,
 
   // content::WebContentsObserver:
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+  virtual void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   void RemoveInfoBarInternal(InfoBarDelegate* infobar, bool animate);
   void RemoveAllInfoBars(bool animate);
@@ -95,8 +91,6 @@ class InfoBarService : public content::WebContentsObserver,
 
   InfoBars infobars_;
   bool infobars_enabled_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarService);
 };

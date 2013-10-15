@@ -35,20 +35,6 @@ InfoBarDelegate* InfoBarService::AddInfoBar(
   // TODO(pkasting): Remove InfoBarService arg from delegate constructors and
   // instead use a setter from here.
 
-  // Add ourselves as an observer for navigations the first time a delegate is
-  // added. We use this notification to expire InfoBars that need to expire on
-  // page transitions.  We must do this before calling Notify() below;
-  // otherwise, if that call causes a call to RemoveInfoBar(), we'll try to
-  // unregister for the NAV_ENTRY_COMMITTED notification, which we won't have
-  // yet registered here, and we'll fail the "was registered" DCHECK in
-  // NotificationRegistrar::Remove().
-  if (infobars_.size() == 1) {
-    registrar_.Add(
-        this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<content::NavigationController>(
-            &web_contents()->GetController()));
-  }
-
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::Source<InfoBarService>(this),
@@ -92,9 +78,6 @@ InfoBarService::InfoBarService(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       infobars_enabled_(true) {
   DCHECK(web_contents);
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::Source<content::WebContents>(web_contents));
 }
 
 InfoBarService::~InfoBarService() {
@@ -111,6 +94,27 @@ void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
   RemoveAllInfoBars(true);
 }
 
+void InfoBarService::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  // NOTE: It is not safe to change the following code to count upwards or
+  // use iterators, as the RemoveInfoBar() call synchronously modifies our
+  // delegate list.
+  for (size_t i = infobars_.size(); i > 0; --i) {
+    InfoBarDelegate* infobar = infobars_[i - 1];
+    if (infobar->ShouldExpire(load_details))
+      RemoveInfoBar(infobar);
+  }
+}
+
+void InfoBarService::WebContentsDestroyed(content::WebContents* web_contents) {
+  // The WebContents is going away; be aggressively paranoid and delete
+  // ourselves lest other parts of the system attempt to add infobars or use
+  // us otherwise during the destruction.
+  web_contents->RemoveUserData(UserDataKey());
+  // That was the equivalent of "delete this". This object is now destroyed;
+  // returning from this function is the only safe thing to do.
+}
+
 bool InfoBarService::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InfoBarService, message)
@@ -121,40 +125,6 @@ bool InfoBarService::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void InfoBarService::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    DCHECK(&web_contents()->GetController() ==
-           content::Source<content::NavigationController>(source).ptr());
-
-    content::LoadCommittedDetails& committed_details =
-        *(content::Details<content::LoadCommittedDetails>(details).ptr());
-
-    // NOTE: It is not safe to change the following code to count upwards or
-    // use iterators, as the RemoveInfoBar() call synchronously modifies our
-    // delegate list.
-    for (size_t i = infobars_.size(); i > 0; --i) {
-      InfoBarDelegate* infobar = infobars_[i - 1];
-      if (infobar->ShouldExpire(committed_details))
-        RemoveInfoBar(infobar);
-    }
-
-    return;
-  }
-
-  DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
-  // The WebContents is going away; be aggressively paranoid and delete
-  // ourselves lest other parts of the system attempt to add infobars or use
-  // us otherwise during the destruction.
-  DCHECK_EQ(web_contents(),
-            content::Source<content::WebContents>(source).ptr());
-  web_contents()->RemoveUserData(UserDataKey());
-  // That was the equivalent of "delete this". This object is now destroyed;
-  // returning from this function is the only safe thing to do.
-  return;
 }
 
 void InfoBarService::RemoveInfoBarInternal(InfoBarDelegate* infobar,
@@ -172,19 +142,6 @@ void InfoBarService::RemoveInfoBarInternal(InfoBarDelegate* infobar,
   // Remove the infobar before notifying, so that if any observers call back to
   // AddInfoBar() or similar, we don't dupe-check against this infobar.
   infobars_.erase(i);
-
-  // Remove ourselves as an observer if we are tracking no more InfoBars.  We
-  // must do this before calling Notify() below; otherwise, if that call
-  // causes a call to AddInfoBar(), we'll try to register for the
-  // NAV_ENTRY_COMMITTED notification, which we won't have yet unregistered
-  // here, and we'll fail the "not already registered" DCHECK in
-  // NotificationRegistrar::Add().
-  if (infobars_.empty()) {
-    registrar_.Remove(
-        this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::Source<content::NavigationController>(
-            &web_contents()->GetController()));
-  }
 
   InfoBarRemovedDetails removed_details(infobar, animate);
   content::NotificationService::current()->Notify(
