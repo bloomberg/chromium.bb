@@ -89,7 +89,6 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/settings/timezone_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -230,7 +229,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public drive::JobListObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
-                           public system::TimezoneSettings::Observer,
                            public chromeos::LoginState::Observer,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
@@ -286,8 +284,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     input_method::InputMethodManager::Get()->AddObserver(this);
     UpdateClockType();
-
-    system::TimezoneSettings::GetInstance()->AddObserver(this);
 
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
@@ -346,7 +342,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
     input_method::InputMethodManager::Get()->RemoveObserver(this);
-    system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
     bluetooth_adapter_->RemoveObserver(this);
@@ -1126,11 +1121,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   DriveIntegrationService* FindDriveIntegrationService() {
     return user_profile_ ?
         DriveIntegrationServiceFactory::FindForProfile(user_profile_) : NULL;
-  }
-
-  // Overridden from system::TimezoneSettings::Observer.
-  virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshClock();
   }
 
   // Overridden from BluetoothAdapter::Observer.

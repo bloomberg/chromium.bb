@@ -13,16 +13,22 @@ namespace internal {
 SystemClockObserver::SystemClockObserver() {
   chromeos::DBusThreadManager::Get()->GetSystemClockClient()
       ->AddObserver(this);
+  chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
 }
 
 SystemClockObserver::~SystemClockObserver() {
   chromeos::DBusThreadManager::Get()->GetSystemClockClient()
       ->RemoveObserver(this);
+  chromeos::system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
 
 void SystemClockObserver::SystemClockUpdated() {
   Shell::GetInstance()->system_tray_notifier()
       ->NotifySystemClockTimeUpdated();
+}
+
+void SystemClockObserver::TimezoneChanged(const icu::TimeZone& timezone) {
+  Shell::GetInstance()->system_tray_notifier()->NotifyRefreshClock();
 }
 
 }  // namespace internal
