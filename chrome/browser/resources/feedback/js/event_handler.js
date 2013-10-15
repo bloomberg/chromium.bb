@@ -20,6 +20,27 @@ var TRACING_CHECKBOX_HEIGHT = 29;
 
 var initialFeedbackInfo = null;
 
+var whitelistedExtensionIds = [
+  'bpmcpldpdmajfigpchkicefoigmkfalc', // QuickOffice
+  'ehibbfinohgbchlgdbfpikodjaojhccn', // QuickOffice
+  'efjnaogkjbogokcnohkmnjdojkikgobo', // G+ Photos
+  'ebpbnabdhheoknfklmpddcdijjkmklkp', // G+ Photoes
+  'endkpmfloggdajndjpoekmkjnkolfdbf', // Feedback Extension
+  'mlocfejafidcakdddnndjdngfmncfbeg', // Connectivity Diagnostics
+  'ganomidahfnpdchomfgdoppjmmedlhia', // Connectivity Diagnostics
+  'eemlkeanncmjljgehlbplemhmdmalhdc'  // Connectivity Diagnostics
+];
+
+/**
+ * Function to determine whether or not a given extension id is whitelisted to
+ * invoke the feedback UI.
+ * @param {string} id the id of the sender extension.
+ * @return {boolean} Whether or not this sender is whitelisted.
+ */
+function senderWhitelisted(id) {
+  return id && whitelistedExtensionIds.indexOf(id) != -1;
+}
+
 /**
  * Callback which gets notified once our feedback UI has loaded and is ready to
  * receive its initial feedback info object.
@@ -42,7 +63,7 @@ function feedbackReadyHandler(request, sender, sendResponse) {
  * @param {function(Object)} sendResponse Callback for sending a response.
  */
 function requestFeedbackHandler(request, sender, sendResponse) {
-  if (request.requestFeedback)
+  if (request.requestFeedback && senderWhitelisted(sender.id))
     startFeedbackUI(request.feedbackInfo);
 }
 
