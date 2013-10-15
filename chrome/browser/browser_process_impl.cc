@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/debug/leak_annotations.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -339,6 +340,14 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     // this might cause a nested message loop to run, and we don't want pending
     // tasks to run once teardown has started.
     print_job_manager_->Shutdown();
+#endif
+
+#if defined(LEAK_SANITIZER)
+    // Check for memory leaks now, before we start shutting down threads. Doing
+    // this early means we won't report any shutdown-only leaks (as they have
+    // not yet happened at this point).
+    // If leaks are found, this will make the process exit immediately.
+    __lsan_do_leak_check();
 #endif
 
     CHECK(base::MessageLoop::current()->is_running());

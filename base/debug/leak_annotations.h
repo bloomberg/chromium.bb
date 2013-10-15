@@ -35,10 +35,14 @@
 
 #elif defined(LEAK_SANITIZER) && !defined(OS_NACL)
 
+// Public LSan API from <sanitizer/lsan_interface.h>.
 extern "C" {
 void __lsan_disable();
 void __lsan_enable();
 void __lsan_ignore_object(const void *p);
+
+// Invoke leak detection immediately. If leaks are found, the process will exit.
+void __lsan_do_leak_check();
 }  // extern "C"
 
 class ScopedLeakSanitizerDisabler {
