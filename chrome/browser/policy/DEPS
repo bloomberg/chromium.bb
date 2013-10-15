@@ -14,6 +14,7 @@ include_rules = [
 specific_include_rules = {
   # These files will stay.
   r"(browser_policy_connector|"
+  r"configuration_policy_handler_list|"
   r"managed_mode_policy_provider|"
   r"policy_browsertest|"
   r"policy_prefs_browsertest|"
@@ -52,13 +53,6 @@ specific_include_rules = {
   r"configuration_policy_handler\.h": [
     "+chrome/browser/prefs/incognito_mode_prefs.h",
     "+chrome/common/content_settings.h",
-  ],
-
-  r"configuration_policy_handler_list\.cc": [
-    "+chrome/common/extensions/manifest.h",
-    "+chrome/common/pref_names.h",
-    "+chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h",
-    "+chromeos/dbus/power_policy_controller.h",
   ],
 
   r"configuration_policy_handler_unittest\.cc": [
