@@ -7,91 +7,44 @@ from telemetry import test
 from measurements import endure
 
 
-class EndureCalendarForwardBackward(test.Test):
+class _EndureBenchmark(test.Test):
   test = endure.Endure
+  # Default options for endure benchmarks. Could be overridden in subclasses.
+  options = {
+      'output_format': 'csv',
+      'skip_navigate_on_repeat': True,
+      'page_repeat_secs': 7200,
+      'perf_stats_interval': '100s'
+  }
+
+class EndureCalendarForwardBackward(_EndureBenchmark):
   page_set = 'page_sets/calendar_forward_backward.json'
-  options = {
-      'output_format': 'csv',
-      'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 3600,
-      'perf_stats_interval': 30
-  }
 
 
-class EndureBrowserControl(test.Test):
-  test = endure.Endure
+class EndureBrowserControl(_EndureBenchmark):
   page_set = 'page_sets/browser_control.json'
-  options = {
-      'output_format': 'csv',
-      'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 3600,
-      'perf_stats_interval': 30
-  }
 
 
-class EndureBrowserControlClick(test.Test):
-  test = endure.Endure
+class EndureBrowserControlClick(_EndureBenchmark):
   page_set = 'page_sets/browser_control_click.json'
-  options = {
-      'output_format': 'csv',
-      'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 3600,
-      'perf_stats_interval': 30
-  }
 
 
-
-class EndureGmailAltThreadlistConversation(test.Test):
-  test = endure.Endure
+class EndureGmailAltThreadlistConversation(_EndureBenchmark):
   page_set = 'page_sets/gmail_alt_threadlist_conversation.json'
-  options = {
-      'output_format': 'csv',
-      'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 3600,
-      'perf_stats_interval': 30
-  }
 
 
-class EndureGmailAltTwoLabels(test.Test):
-  test = endure.Endure
+class EndureGmailAltTwoLabels(_EndureBenchmark):
   page_set = 'page_sets/gmail_alt_two_labels.json'
-  options = {
-      'output_format': 'csv',
-      'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 3600,
-      'perf_stats_interval': 30
-  }
 
 
-class EndureGmailExpandCollapseConversation(test.Test):
-  test = endure.Endure
+class EndureGmailExpandCollapseConversation(_EndureBenchmark):
   page_set = 'page_sets/gmail_expand_collapse_conversation.json'
-  options = {
-      'output_format': 'csv',
-      'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 3600,
-      'perf_stats_interval': 30
-  }
 
 
-class EndureIndexedDBOffline(test.Test):
-  test = endure.Endure
+class EndureIndexedDBOffline(_EndureBenchmark):
   page_set = 'page_sets/indexeddb_offline.json'
-  options = {
-      'output_format': 'csv',
-      'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 3600,
-      'perf_stats_interval': 30
-  }
 
 
-class EndurePlusAltPostsPhotos(test.Test):
-  test = endure.Endure
+class EndurePlusAltPostsPhotos(_EndureBenchmark):
   page_set = 'page_sets/plus_alt_posts_photos.json'
-  options = {
-      'output_format': 'csv',
-      'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 3600,
-      'perf_stats_interval': 30
-  }
 
