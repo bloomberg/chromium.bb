@@ -1,45 +1,12 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <script src="resources/javascriptURL-execution-context.js"></script>
     <script>
-        window.onload = function()
-        {
-            if (window.testRunner) {
-                testRunner.dumpAsText();
-                testRunner.dumpChildFramesAsText();
-                testRunner.waitUntilDone();
-            }
-
-            if (window.testRunner) {
-                setTimeout(pollForTest, 1);
-            } else {
-                alert("This test requires it be run in DRT.");
-            }
-        }
-
-        pollForTest = function()
-        {
-            if (!testRunner.globalFlag) {
-                setTimeout(pollForTest, 1);
-                return;
-            }
-            runTest();
-            testRunner.notifyDone();
-        }
-
-        runTest = function()
-        {
-            var frame = document.getElementById('aFrame');
-            var newSrc = document.createAttribute("src");
-            newSrc.value = 'javascript:"FAIL: this should not have been loaded."';
-            frame.setAttributeNode(newSrc);
-            newSrc.value = ' javascript:"FAIL: this should not have been loaded."';
-            frame.setAttributeNode(newSrc);
-            newSrc.value = 'java\0script:"FAIL: this should not have been loaded."';
-            frame.setAttributeNode(newSrc);
-            newSrc.value = 'javascript\t:"FAIL: this should not have been loaded."';
-            frame.setAttributeNode(newSrc);
-            newSrc.value = 'javascript\1:"FAIL: this should not have been loaded."';
-            frame.setAttributeNode(newSrc);
+        function setter(frame, url) {
+            var newNode = document.createAttribute('src');
+            newNode.value = url;
+            frame.setAttributeNode(newNode);
         }
     </script>
 </head>

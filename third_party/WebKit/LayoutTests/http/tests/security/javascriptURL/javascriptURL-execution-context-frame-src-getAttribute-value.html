@@ -1,41 +1,11 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <script src="resources/javascriptURL-execution-context.js"></script>
     <script>
-        window.onload = function()
-        {
-            if (window.testRunner) {
-                testRunner.dumpAsText();
-                testRunner.dumpChildFramesAsText();
-                testRunner.waitUntilDone();
-            }
-
-            if (window.testRunner) {
-                setTimeout(pollForTest, 1);
-            } else {
-                alert("This test requires it be run in DRT.");
-            }
-        }
-
-        pollForTest = function()
-        {
-            if (!testRunner.globalFlag) {
-                setTimeout(pollForTest, 1);
-                return;
-            }
-            runTest();
-            testRunner.notifyDone();
-        }
-
-        runTest = function()
-        {
-            // Get old Attribute node and use Attribute.value.
-            var oldSrc = document.getElementById('aFrame').getAttributeNode('src');
-            oldSrc.value = 'javascript:"FAIL: this should not have been loaded."';
-            oldSrc.value = ' javascript:"FAIL: this should not have been loaded."';
-            oldSrc.value = 'java\0script:"FAIL: this should not have been loaded."';
-            oldSrc.value = 'javascript\t:"FAIL: this should not have been loaded."';
-            oldSrc.value = 'javascript\1:"FAIL: this should not have been loaded."';
-
+        function setter(frame, url) {
+            var node = frame.getAttributeNode('src');
+            node.value = url;
         }
     </script>
 </head>

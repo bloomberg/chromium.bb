@@ -1,9 +1,9 @@
-CONSOLE MESSAGE: line 22: Caught exception while setting frame's location to 'javascript:"FAIL: this should not have been loaded."'. 'SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
-CONSOLE MESSAGE: line 24: PASS: Exception was 'Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
-CONSOLE MESSAGE: line 22: Caught exception while setting frame's location to ' javascript:"FAIL: this should not have been loaded."'. 'SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
-CONSOLE MESSAGE: line 24: PASS: Exception was 'Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
-CONSOLE MESSAGE: line 22: Caught exception while setting frame's location to 'javascript	:"FAIL: this should not have been loaded."'. 'SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
-CONSOLE MESSAGE: line 24: PASS: Exception was 'Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
+CONSOLE MESSAGE: line 19: Caught exception while setting frame's location to 'javascript:"FAIL: this should not have been loaded."'. 'SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
+CONSOLE MESSAGE: line 21: PASS: Exception was 'Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
+CONSOLE MESSAGE: line 19: Caught exception while setting frame's location to ' javascript:"FAIL: this should not have been loaded."'. 'SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
+CONSOLE MESSAGE: line 21: PASS: Exception was 'Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
+CONSOLE MESSAGE: line 19: Caught exception while setting frame's location to 'javascript	:"FAIL: this should not have been loaded."'. 'SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
+CONSOLE MESSAGE: line 21: PASS: Exception was 'Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
 
 
 --------
