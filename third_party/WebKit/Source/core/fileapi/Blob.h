@@ -34,7 +34,6 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/URLRegistry.h"
 #include "core/platform/network/BlobData.h"
-#include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -48,47 +47,32 @@ class Blob : public ScriptWrappable, public URLRegistrable, public RefCounted<Bl
 public:
     static PassRefPtr<Blob> create()
     {
-        return adoptRef(new Blob);
+        return adoptRef(new Blob(BlobDataHandle::create()));
     }
 
-    static PassRefPtr<Blob> create(PassOwnPtr<BlobData> blobData, long long size)
+    static PassRefPtr<Blob> create(PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRef(new Blob(blobData, size));
-    }
-
-    // For deserialization.
-    static PassRefPtr<Blob> create(const KURL& srcURL, const String& type, long long size)
-    {
-        return adoptRef(new Blob(srcURL, type, size));
+        return adoptRef(new Blob(blobDataHandle));
     }
 
     virtual ~Blob();
 
-    const KURL& url() const { return m_internalURL; }
-    const String& type() const { return m_type; }
-
-    virtual unsigned long long size() const { return static_cast<unsigned long long>(m_size); }
+    String uuid() const { return m_blobDataHandle->uuid(); }
+    String type() const {  return m_blobDataHandle->type(); }
+    virtual unsigned long long size() const { return m_blobDataHandle->size(); }
     virtual bool isFile() const { return false; }
-
-    // URLRegistrable
-    virtual URLRegistry& registry() const OVERRIDE;
-
+    PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
     PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
 
+    // URLRegistrable to support PublicURLs.
+    virtual URLRegistry& registry() const OVERRIDE;
+
 protected:
+    explicit Blob(PassRefPtr<BlobDataHandle>);
+
+private:
     Blob();
-    Blob(PassOwnPtr<BlobData>, long long size);
-
-    // For deserialization.
-    Blob(const KURL& srcURL, const String& type, long long size);
-
-    // This is an internal URL referring to the blob data associated with this object. It serves
-    // as an identifier for this blob. The internal URL is never used to source the blob's content
-    // into an HTML or for FileRead'ing, public blob URLs must be used for those purposes.
-    KURL m_internalURL;
-
-    String m_type;
-    long long m_size;
+    RefPtr<BlobDataHandle> m_blobDataHandle;
 };
 
 } // namespace WebCore

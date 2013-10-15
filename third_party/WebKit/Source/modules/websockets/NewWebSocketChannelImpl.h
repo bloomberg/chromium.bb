@@ -72,7 +72,7 @@ public:
     virtual String extensions() OVERRIDE;
     virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
     virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(const Blob&) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
     virtual unsigned long bufferedAmount() const OVERRIDE;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
@@ -102,11 +102,11 @@ private:
 
     struct Message {
         explicit Message(const String&);
-        explicit Message(const Blob&);
+        explicit Message(PassRefPtr<BlobDataHandle>);
         explicit Message(PassRefPtr<ArrayBuffer>);
         MessageType type;
         CString text;
-        RefPtr<Blob> blob;
+        RefPtr<BlobDataHandle> blobDataHandle;
         RefPtr<ArrayBuffer> arrayBuffer;
     };
 

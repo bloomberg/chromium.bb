@@ -45,7 +45,7 @@ Stream::Stream(const String& mediaType)
 
     // Create a new internal URL for a stream and register it with the provided
     // media type.
-    m_internalURL = BlobURL::createInternalURL();
+    m_internalURL = BlobURL::createInternalStreamURL();
     BlobRegistry::registerStreamURL(m_internalURL, m_mediaType);
 }
 

@@ -50,9 +50,9 @@ public:
     }
 
     // For deserialization.
-    static PassRefPtr<File> create(const String& path, const KURL& srcURL, const String& type)
+    static PassRefPtr<File> create(const String& path, PassRefPtr<BlobDataHandle> blobDataHandle)
     {
-        return adoptRef(new File(path, srcURL, type));
+        return adoptRef(new File(path, blobDataHandle));
     }
 
     static PassRefPtr<File> createWithRelativePath(const String& path, const String& relativePath);
@@ -97,10 +97,8 @@ public:
 
 private:
     File(const String& path, ContentTypeLookupPolicy);
-
-    // For deserialization.
-    File(const String& path, const KURL& srcURL, const String& type);
     File(const String& path, const String& name, ContentTypeLookupPolicy);
+    File(const String& path, PassRefPtr<BlobDataHandle>);
     File(const String& name, const FileMetadata&);
     File(const KURL& fileSystemURL, const FileMetadata&);
 

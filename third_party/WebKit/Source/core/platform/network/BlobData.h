@@ -40,6 +40,8 @@
 
 namespace WebCore {
 
+class BlobDataHandle;
+
 class RawData : public ThreadSafeRefCounted<RawData> {
 public:
     static PassRefPtr<RawData> create()
@@ -102,19 +104,19 @@ struct BlobDataItem {
     }
 
     // Constructor for Blob type.
-    BlobDataItem(const KURL& url, long long offset, long long length)
+    BlobDataItem(PassRefPtr<BlobDataHandle> blobDataHandle, long long offset, long long length)
         : type(Blob)
-        , url(url)
+        , blobDataHandle(blobDataHandle)
         , offset(offset)
         , length(length)
         , expectedModificationTime(invalidFileTime())
     {
     }
 
-    // Constructor for URL type (e.g. FileSystem files).
-    BlobDataItem(const KURL& url, long long offset, long long length, double expectedModificationTime)
-        : type(URL)
-        , url(url)
+    // Constructor for FileSystem file type.
+    BlobDataItem(const KURL& fileSystemURL, long long offset, long long length, double expectedModificationTime)
+        : type(FileSystemURL)
+        , fileSystemURL(fileSystemURL)
         , offset(offset)
         , length(length)
         , expectedModificationTime(expectedModificationTime)
@@ -128,17 +130,13 @@ struct BlobDataItem {
         Data,
         File,
         Blob,
-        URL
+        FileSystemURL
     } type;
 
-    // For Data type.
-    RefPtr<RawData> data;
-
-    // For File type.
-    String path;
-
-    // For Blob or URL type.
-    KURL url;
+    RefPtr<RawData> data; // For Data type.
+    String path; // For File type.
+    KURL fileSystemURL; // For FileSystemURL type.
+    RefPtr<BlobDataHandle> blobDataHandle; // For Blob type.
 
     long long offset;
     long long length;
@@ -180,8 +178,8 @@ public:
     void appendData(PassRefPtr<RawData>, long long offset, long long length);
     void appendFile(const String& path);
     void appendFile(const String& path, long long offset, long long length, double expectedModificationTime);
-    void appendBlob(const KURL&, long long offset, long long length);
-    void appendURL(const KURL&, long long offset, long long length, double expectedModificationTime);
+    void appendBlob(PassRefPtr<BlobDataHandle>, long long offset, long long length);
+    void appendFileSystemURL(const KURL&, long long offset, long long length, double expectedModificationTime);
 
 private:
     friend class BlobRegistryImpl;
@@ -197,21 +195,41 @@ private:
     BlobDataItemList m_items;
 };
 
-// FIXME: This class is mostly place holder until I get farther along with
-// https://bugs.webkit.org/show_bug.cgi?id=108733 and more specifically with landing
-// https://codereview.chromium.org/11192017/.
+
 class BlobDataHandle : public ThreadSafeRefCounted<BlobDataHandle> {
 public:
+    // For empty blob construction.
+    static PassRefPtr<BlobDataHandle> create()
+    {
+        return adoptRef(new BlobDataHandle());
+    }
+
+    // For initial creation.
     static PassRefPtr<BlobDataHandle> create(PassOwnPtr<BlobData> data, long long size)
     {
         return adoptRef(new BlobDataHandle(data, size));
     }
 
+    // For deserialization of script values and ipc messages.
+    static PassRefPtr<BlobDataHandle> create(const String& uuid, const String& type, long long size)
+    {
+        return adoptRef(new BlobDataHandle(uuid, type, size));
+    }
+
+    String uuid() const { return m_uuid.isolatedCopy(); }
+    String type() const { return m_type.isolatedCopy(); }
+    unsigned long long size() { return m_size; }
+
     ~BlobDataHandle();
 
 private:
+    BlobDataHandle();
     BlobDataHandle(PassOwnPtr<BlobData>, long long size);
-    KURL m_internalURL;
+    BlobDataHandle(const String& uuid, const String& type, long long size);
+
+    const String m_uuid;
+    const String m_type;
+    const long long m_size;
 };
 
 } // namespace WebCore

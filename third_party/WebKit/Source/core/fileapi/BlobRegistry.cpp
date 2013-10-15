@@ -104,7 +104,6 @@ public:
 
 static WebBlobRegistry* blobRegistry()
 {
-    ASSERT(isMainThread());
     return WebKit::Platform::current()->blobRegistry();
 }
 
@@ -133,66 +132,31 @@ static void removeFromOriginMap(const KURL& url)
         originMap()->remove(url.string());
 }
 
-static void registerBlobURLTask(void* context)
+void BlobRegistry::registerBlobData(const String& uuid, PassOwnPtr<BlobData> data)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    if (WebBlobRegistry* registry = blobRegistry()) {
-        WebBlobData webBlobData(blobRegistryContext->blobData.release());
-        registry->registerBlobURL(blobRegistryContext->url, webBlobData);
-    }
+    blobRegistry()->registerBlobData(uuid, WebKit::WebBlobData(data));
 }
 
-void BlobRegistry::registerBlobURL(const KURL& url, PassOwnPtr<BlobData> blobData)
+void BlobRegistry::addBlobDataRef(const String& uuid)
 {
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry()) {
-            WebBlobData webBlobData(blobData);
-            registry->registerBlobURL(url, webBlobData);
-        }
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, blobData));
-        callOnMainThread(&registerBlobURLTask, context.leakPtr());
-    }
+    blobRegistry()->addBlobDataRef(uuid);
 }
 
-static void registerBlobURLFromTask(void* context)
+void BlobRegistry::removeBlobDataRef(const String& uuid)
 {
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    if (WebBlobRegistry* registry = blobRegistry())
-        registry->registerBlobURL(blobRegistryContext->url, blobRegistryContext->srcURL);
+    blobRegistry()->removeBlobDataRef(uuid);
 }
 
-void BlobRegistry::registerBlobURL(SecurityOrigin* origin, const KURL& url, const KURL& srcURL)
+void BlobRegistry::registerPublicBlobURL(SecurityOrigin* origin, const KURL& url, PassRefPtr<BlobDataHandle> handle)
 {
     saveToOriginMap(origin, url);
-
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->registerBlobURL(url, srcURL);
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, srcURL));
-        callOnMainThread(&registerBlobURLFromTask, context.leakPtr());
-    }
+    blobRegistry()->registerPublicBlobURL(url, handle->uuid());
 }
 
-static void unregisterBlobURLTask(void* context)
-{
-    OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    if (WebBlobRegistry* registry = blobRegistry())
-        registry->unregisterBlobURL(blobRegistryContext->url);
-}
-
-void BlobRegistry::unregisterBlobURL(const KURL& url)
+void BlobRegistry::revokePublicBlobURL(const KURL& url)
 {
     removeFromOriginMap(url);
-
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->unregisterBlobURL(url);
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        callOnMainThread(&unregisterBlobURLTask, context.leakPtr());
-    }
+    blobRegistry()->revokePublicBlobURL(url);
 }
 
 static void registerStreamURLTask(void* context)

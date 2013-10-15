@@ -110,7 +110,7 @@ void BlobBuilder::append(Blob* blob)
     } else {
         long long blobSize = static_cast<long long>(blob->size());
         m_size += blobSize;
-        m_items.append(BlobDataItem(blob->url(), 0, blobSize));
+        m_items.append(BlobDataItem(blob->blobDataHandle(), 0, blobSize));
     }
 }
 
@@ -128,11 +128,11 @@ PassRefPtr<Blob> BlobBuilder::getBlob(const String& contentType)
     blobData->setContentType(contentType);
     blobData->swapItems(m_items);
 
-    RefPtr<Blob> blob = Blob::create(blobData.release(), m_size);
+    RefPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), m_size));
 
-    // After creating a blob from the current blob data, we do not need to keep the data around any more. Instead, we only
-    // need to keep a reference to the URL of the blob just created.
-    m_items.append(BlobDataItem(blob->url(), 0, m_size));
+    // After creating a blob from the current blob data, we do not need to keep the data around any more.
+    // Instead, we only need to keep a reference to the blob data just created.
+    m_items.append(BlobDataItem(blob->blobDataHandle(), 0, m_size));
 
     return blob;
 }

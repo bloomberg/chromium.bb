@@ -38,20 +38,20 @@
 namespace WebCore {
 
 class BlobData;
+class BlobDataHandle;
 class KURL;
 class RawData;
 class SecurityOrigin;
 
-// A bridging class for calling WebKit::WebBlobRegistry methods on the main
-// thread. Each method gets the WebBlobRegistry implementation instance and
-// calls the corresponding method (the same name) on it using callOnMainThread()
-// if necessary.
+// A bridging class for calling WebKit::WebBlobRegistry methods.
 class BlobRegistry {
 public:
     // Methods for controlling Blobs.
-    static void registerBlobURL(const KURL&, PassOwnPtr<BlobData>);
-    static void registerBlobURL(SecurityOrigin*, const KURL&, const KURL& srcURL);
-    static void unregisterBlobURL(const KURL&);
+    static void registerBlobData(const String& uuid, PassOwnPtr<BlobData>);
+    static void addBlobDataRef(const String& uuid);
+    static void removeBlobDataRef(const String& uuid);
+    static void registerPublicBlobURL(SecurityOrigin*, const KURL&, PassRefPtr<BlobDataHandle>);
+    static void revokePublicBlobURL(const KURL&);
 
     // Methods for controlling Streams.
     static void registerStreamURL(const KURL&, const String&);

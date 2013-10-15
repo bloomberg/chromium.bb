@@ -340,7 +340,7 @@ void WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionState& es)
 
 void WebSocket::send(Blob* binaryData, ExceptionState& es)
 {
-    LOG(Network, "WebSocket %p send() Sending Blob '%s'", this, binaryData->url().elidedString().utf8().data());
+    LOG(Network, "WebSocket %p send() Sending Blob '%s'", this, binaryData->uuid().utf8().data());
     ASSERT(binaryData);
     if (m_state == CONNECTING) {
         es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "WebSocket", "already in CONNECTING state."));
@@ -351,7 +351,7 @@ void WebSocket::send(Blob* binaryData, ExceptionState& es)
         return;
     }
     ASSERT(m_channel);
-    handleSendResult(m_channel->send(*binaryData), es);
+    handleSendResult(m_channel->send(binaryData->blobDataHandle()), es);
 }
 
 void WebSocket::close(unsigned short code, const String& reason, ExceptionState& es)
@@ -549,11 +549,9 @@ void WebSocket::didReceiveBinaryData(PassOwnPtr<Vector<char> > binaryData)
         binaryData->swap(*rawData->mutableData());
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendData(rawData.release(), 0, BlobDataItem::toEndOfFile);
-        RefPtr<Blob> blob = Blob::create(blobData.release(), size);
-
+        RefPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
         if (!m_stopped)
             dispatchEvent(MessageEvent::create(blob.release(), SecurityOrigin::create(m_url)->toString()));
-
         break;
     }
 

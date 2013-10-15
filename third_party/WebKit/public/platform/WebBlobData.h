@@ -35,6 +35,8 @@
 #include "WebThreadSafeData.h"
 #include "WebURL.h"
 
+#define USE_BLOB_UUIDS
+
 #if BLINK_IMPLEMENTATION
 namespace WebCore { class BlobData; }
 namespace WTF { template <typename T> class PassOwnPtr; }
@@ -47,21 +49,14 @@ class WebBlobDataPrivate;
 class WebBlobData {
 public:
     struct Item {
-        // TypeURL is DEPRECATED
-        enum { TypeData, TypeFile, TypeBlob, TypeFileSystemURL, TypeURL = TypeFileSystemURL } type;
+        enum { TypeData, TypeFile, TypeBlob, TypeFileSystemURL } type;
         WebThreadSafeData data;
+        WebString blobUUID;
         WebString filePath;
         WebURL fileSystemURL;
         long long offset;
         long long length; // -1 means go to the end of the file/blob.
         double expectedModificationTime; // 0.0 means that the time is not set.
-
-        // DEPRECATED, use fileSystemURL
-        WebURL url;
-
-        // FIXME: deprecate url and use uuid
-        WebURL blobURL;
-        WebString blobUUID;
     };
 
     ~WebBlobData() { reset(); }

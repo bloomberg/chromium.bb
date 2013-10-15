@@ -80,11 +80,11 @@ FileReaderLoader::~FileReaderLoader()
         if (m_urlForReadingIsStream)
             BlobRegistry::unregisterStreamURL(m_urlForReading);
         else
-            BlobRegistry::unregisterBlobURL(m_urlForReading);
+            BlobRegistry::revokePublicBlobURL(m_urlForReading);
     }
 }
 
-void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContext, const KURL& url)
+void FileReaderLoader::startInternal(ScriptExecutionContext* scriptExecutionContext, const Stream* stream, PassRefPtr<BlobDataHandle> blobData)
 {
     // The blob is read by routing through the request handling layer given a temporary public url.
     m_urlForReading = BlobURL::createPublicURL(scriptExecutionContext->securityOrigin());
@@ -93,10 +93,13 @@ void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContex
         return;
     }
 
-    if (m_urlForReadingIsStream)
-        BlobRegistry::registerStreamURL(scriptExecutionContext->securityOrigin(), m_urlForReading, url);
-    else
-        BlobRegistry::registerBlobURL(scriptExecutionContext->securityOrigin(), m_urlForReading, url);
+    if (blobData) {
+        ASSERT(!stream);
+        BlobRegistry::registerPublicBlobURL(scriptExecutionContext->securityOrigin(), m_urlForReading, blobData);
+    } else {
+        ASSERT(stream);
+        BlobRegistry::registerStreamURL(scriptExecutionContext->securityOrigin(), m_urlForReading, stream->url());
+    }
 
     // Construct and load the request.
     ResourceRequest request(m_urlForReading);
@@ -121,10 +124,10 @@ void FileReaderLoader::startForURL(ScriptExecutionContext* scriptExecutionContex
         ThreadableLoader::loadResourceSynchronously(scriptExecutionContext, request, *this, options);
 }
 
-void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Blob& blob)
+void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, PassRefPtr<BlobDataHandle> blobData)
 {
     m_urlForReadingIsStream = false;
-    startForURL(scriptExecutionContext, blob.url());
+    startInternal(scriptExecutionContext, 0, blobData);
 }
 
 void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, const Stream& stream, unsigned readSize)
@@ -136,7 +139,7 @@ void FileReaderLoader::start(ScriptExecutionContext* scriptExecutionContext, con
     }
 
     m_urlForReadingIsStream = true;
-    startForURL(scriptExecutionContext, stream.url());
+    startInternal(scriptExecutionContext, &stream, 0);
 }
 
 void FileReaderLoader::cancel()

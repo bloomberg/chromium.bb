@@ -45,7 +45,7 @@ WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendFile(path);
-    RefPtr<Blob> blob = Blob::create(blobData.release(), size);
+    RefPtr<Blob> blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
     return WebBlob(blob);
 }
 
@@ -70,11 +70,11 @@ void WebBlob::assign(const WebBlob& other)
     m_private = other.m_private;
 }
 
-WebURL WebBlob::url()
+WebString WebBlob::uuid()
 {
     if (!m_private.get())
-        return WebURL();
-    return m_private->url();
+        return WebString();
+    return m_private->uuid();
 }
 
 v8::Handle<v8::Value>  WebBlob::toV8Value()

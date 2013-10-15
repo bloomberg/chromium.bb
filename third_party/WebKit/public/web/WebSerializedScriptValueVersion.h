@@ -38,7 +38,7 @@ namespace WebKit {
 // Embedders may serialize this as out-of-band metadata along with
 // collections of serialized data so that version skew can be detected
 // before deserializing individual values.
-const unsigned kSerializedScriptValueVersion = 2;
+const unsigned kSerializedScriptValueVersion = 3;
 
 } // namespace WebKit
 

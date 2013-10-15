@@ -261,7 +261,7 @@ void FileWriter::doOperation(Operation operation)
         ASSERT(m_blobBeingWritten.get());
         ASSERT(m_readyState == WRITING);
         setPendingActivity(this);
-        writer()->write(position(), WebKit::WebURL(m_blobBeingWritten->url()));
+        writer()->write(position(), m_blobBeingWritten->uuid());
         break;
     case OperationTruncate:
         ASSERT(m_operationInProgress == OperationNone);

@@ -300,7 +300,7 @@ Blob* XMLHttpRequest::responseBlob()
             blobData->setContentType(responseMIMEType()); // responseMIMEType defaults to text/xml which may be incorrect.
             m_binaryResponseBuilder.clear();
         }
-        m_responseBlob = Blob::create(blobData.release(), size);
+        m_responseBlob = Blob::create(BlobDataHandle::create(blobData.release(), size));
     }
 
     return m_responseBlob.get();
@@ -665,7 +665,7 @@ void XMLHttpRequest::send(const String& body, ExceptionState& es)
 
 void XMLHttpRequest::send(Blob* body, ExceptionState& es)
 {
-    LOG(Network, "XMLHttpRequest %p send() Blob '%s'", this, body->url().elidedString().utf8().data());
+    LOG(Network, "XMLHttpRequest %p send() Blob '%s'", this, body->uuid().utf8().data());
 
     if (!initSend(es))
         return;
@@ -687,7 +687,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& es)
         if (body->isFile())
             m_requestEntityBody->appendFile(toFile(body)->path());
         else
-            m_requestEntityBody->appendBlob(body->url());
+            m_requestEntityBody->appendBlob(body->uuid(), body->blobDataHandle());
     }
 
     createRequest(es);

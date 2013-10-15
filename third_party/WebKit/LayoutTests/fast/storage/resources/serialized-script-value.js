@@ -93,3 +93,24 @@ function _testSerialization(bytesPerElement, obj, values, oldFormat, serializeEx
     }
     expectBufferValue(bytesPerElement, values, serialized);
 }
+
+function testBlobSerialization() {
+    debug("");
+    self.blobObj1 = new Blob(['Hi'], {type: 'text/plain'});
+    self.blobObj2 = internals.deserializeBuffer(internals.serializeObject(blobObj1));
+    shouldBeTrue("areValuesIdentical(blobObj1, blobObj2)");
+    self.dictionaryWithBlob1 = {blob: blobObj1, string: 'stringValue'};
+    self.dictionaryWithBlob2 = internals.deserializeBuffer(internals.serializeObject(dictionaryWithBlob1));
+    shouldBeTrue("areValuesIdentical(dictionaryWithBlob1, dictionaryWithBlob2)");
+
+    // Compare contents too.
+    var xhr1 = new XMLHttpRequest();
+    xhr1.open("GET", URL.createObjectURL(self.blobObj1), false);
+    xhr1.send();
+    self.blobContent1 = xhr1.response;
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open("GET", URL.createObjectURL(self.blobObj2), false);
+    xhr2.send();
+    self.blobContent2 = xhr2.response;
+    shouldBe("self.blobContent1", "self.blobContent2");
+}

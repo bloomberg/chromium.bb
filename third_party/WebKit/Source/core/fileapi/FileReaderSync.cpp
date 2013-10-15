@@ -99,7 +99,7 @@ String FileReaderSync::readAsDataURL(ScriptExecutionContext* scriptExecutionCont
 
 void FileReaderSync::startLoading(ScriptExecutionContext* scriptExecutionContext, FileReaderLoader& loader, const Blob& blob, ExceptionState& es)
 {
-    loader.start(scriptExecutionContext, blob);
+    loader.start(scriptExecutionContext, blob.blobDataHandle());
     if (loader.errorCode())
         FileError::throwDOMException(es, loader.errorCode());
 }

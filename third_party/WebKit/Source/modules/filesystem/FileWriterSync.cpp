@@ -52,7 +52,7 @@ void FileWriterSync::write(Blob* data, ExceptionState& es)
     }
 
     prepareForWrite();
-    writer()->write(position(), WebKit::WebURL(data->url()));
+    writer()->write(position(), data->uuid());
     ASSERT(m_complete);
     if (m_error) {
         FileError::throwDOMException(es, m_error);

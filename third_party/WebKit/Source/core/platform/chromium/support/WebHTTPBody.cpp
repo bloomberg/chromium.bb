@@ -79,8 +79,6 @@ bool WebHTTPBody::elementAt(size_t index, Element& result) const
     result.fileStart = 0;
     result.fileLength = 0;
     result.modificationTime = invalidFileTime();
-    result.url = KURL();
-    result.blobURL = KURL();
     result.blobUUID.reset();
 
     switch (element.m_type) {
@@ -97,13 +95,11 @@ bool WebHTTPBody::elementAt(size_t index, Element& result) const
         break;
     case FormDataElement::encodedBlob:
         result.type = Element::TypeBlob;
-        result.url = element.m_url; // DEPRECATED, should be able to remove after https://codereview.chromium.org/23223003/ lands
-        result.blobURL = element.m_url; // FIXME: deprecate this.
+        result.blobUUID = element.m_blobUUID;
         break;
-    case FormDataElement::encodedURL:
+    case FormDataElement::encodedFileSystemURL:
         result.type = Element::TypeFileSystemURL;
-        result.url = element.m_url; // DEPRECATED
-        result.fileSystemURL = element.m_url;
+        result.fileSystemURL = element.m_fileSystemURL;
         result.fileStart = element.m_fileStart;
         result.fileLength = element.m_fileLength;
         result.modificationTime = element.m_expectedFileModificationTime;
@@ -141,19 +137,13 @@ void WebHTTPBody::appendFileSystemURLRange(const WebURL& url, long long start, l
     // Currently we only support filesystem URL.
     ASSERT(KURL(url).protocolIs("filesystem"));
     ensureMutable();
-    m_private->appendURLRange(url, start, length, modificationTime);
+    m_private->appendFileSystemURLRange(url, start, length, modificationTime);
 }
 
-void WebHTTPBody::appendURLRange(const WebURL& url, long long start, long long length, double modificationTime)
+void WebHTTPBody::appendBlob(const WebString& uuid)
 {
-    appendFileSystemURLRange(url, start, length, modificationTime);
-}
-
-void WebHTTPBody::appendBlob(const WebURL& blobURL)
-{
-    ASSERT(KURL(blobURL).protocolIs("blob"));
     ensureMutable();
-    m_private->appendBlob(blobURL);
+    m_private->appendBlob(uuid, 0);
 }
 
 long long WebHTTPBody::identifier() const

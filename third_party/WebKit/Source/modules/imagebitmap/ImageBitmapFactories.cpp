@@ -37,6 +37,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/ScriptState.h"
+#include "core/fileapi/Blob.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
@@ -315,7 +316,7 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(ImageBitmapFactories*
 
 void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ScriptExecutionContext* context, Blob* blob)
 {
-    m_loader.start(context, *blob);
+    m_loader.start(context, blob->blobDataHandle());
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()

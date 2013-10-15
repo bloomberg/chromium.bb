@@ -46,9 +46,9 @@ namespace WebCore {
 
 namespace {
 
-const CString utf8BlobURL(Blob* blob)
+const CString utf8BlobUUID(Blob* blob)
 {
-    return blob->url().string().utf8();
+    return blob->uuid().utf8();
 }
 
 const CString utf8FilePath(Blob* blob)
@@ -97,7 +97,7 @@ void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& es)
     if (!blob)
         return;
 
-    LOG(FileAPI, "FileReader: reading as array buffer: %s %s\n", utf8BlobURL(blob).data(), utf8FilePath(blob).data());
+    LOG(FileAPI, "FileReader: reading as array buffer: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsArrayBuffer, es);
 }
@@ -107,7 +107,7 @@ void FileReader::readAsBinaryString(Blob* blob, ExceptionState& es)
     if (!blob)
         return;
 
-    LOG(FileAPI, "FileReader: reading as binary: %s %s\n", utf8BlobURL(blob).data(), utf8FilePath(blob).data());
+    LOG(FileAPI, "FileReader: reading as binary: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsBinaryString, es);
 }
@@ -117,7 +117,7 @@ void FileReader::readAsText(Blob* blob, const String& encoding, ExceptionState& 
     if (!blob)
         return;
 
-    LOG(FileAPI, "FileReader: reading as text: %s %s\n", utf8BlobURL(blob).data(), utf8FilePath(blob).data());
+    LOG(FileAPI, "FileReader: reading as text: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     m_encoding = encoding;
     readInternal(blob, FileReaderLoader::ReadAsText, es);
@@ -133,7 +133,7 @@ void FileReader::readAsDataURL(Blob* blob, ExceptionState& es)
     if (!blob)
         return;
 
-    LOG(FileAPI, "FileReader: reading as data URL: %s %s\n", utf8BlobURL(blob).data(), utf8FilePath(blob).data());
+    LOG(FileAPI, "FileReader: reading as data URL: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsDataURL, es);
 }
@@ -157,7 +157,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
     m_loader = adoptPtr(new FileReaderLoader(m_readType, this));
     m_loader->setEncoding(m_encoding);
     m_loader->setDataType(m_blob->type());
-    m_loader->start(scriptExecutionContext(), *m_blob);
+    m_loader->start(scriptExecutionContext(), m_blob->blobDataHandle());
 }
 
 static void delayedAbort(ScriptExecutionContext*, FileReader* reader)

@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-class Blob;
+class BlobDataHandle;
 class FileReaderLoaderClient;
 class ScriptExecutionContext;
 class Stream;
@@ -62,7 +62,7 @@ public:
     FileReaderLoader(ReadType, FileReaderLoaderClient*);
     ~FileReaderLoader();
 
-    void start(ScriptExecutionContext*, const Blob&);
+    void start(ScriptExecutionContext*, PassRefPtr<BlobDataHandle>);
     void start(ScriptExecutionContext*, const Stream&, unsigned readSize);
     void cancel();
 
@@ -82,10 +82,7 @@ public:
     void setDataType(const String& dataType) { m_dataType = dataType; }
 
 private:
-    // We have start() methods for Blob and Stream instead of exposing this
-    // method so that users don't misuse this by calling with non Blob/Stream
-    // URL.
-    void startForURL(ScriptExecutionContext*, const KURL&);
+    void startInternal(ScriptExecutionContext*, const Stream*, PassRefPtr<BlobDataHandle>);
     void terminate();
     void cleanup();
     void failed(FileError::ErrorCode);
@@ -107,7 +104,6 @@ private:
     bool m_isRawDataConverted;
 
     String m_stringResult;
-    RefPtr<Blob> m_blobResult;
 
     // The decoder used to decode the text data.
     RefPtr<TextResourceDecoder> m_decoder;

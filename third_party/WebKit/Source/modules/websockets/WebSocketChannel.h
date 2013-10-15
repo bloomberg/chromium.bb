@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class Blob;
+class BlobDataHandle;
 class KURL;
 class ScriptExecutionContext;
 class WebSocketChannelClient;
@@ -80,7 +80,7 @@ public:
     virtual String extensions() = 0; // Will be available after didConnect() callback is invoked.
     virtual SendResult send(const String& message) = 0;
     virtual SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) = 0;
-    virtual SendResult send(const Blob&) = 0;
+    virtual SendResult send(PassRefPtr<BlobDataHandle>) = 0;
     virtual unsigned long bufferedAmount() const = 0;
     virtual void close(int code, const String& reason) = 0;
 

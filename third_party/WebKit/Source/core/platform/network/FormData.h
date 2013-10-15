@@ -20,6 +20,7 @@
 #ifndef FormData_h
 #define FormData_h
 
+#include "core/platform/network/BlobData.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -32,6 +33,7 @@ class TextEncoding;
 
 namespace WebCore {
 
+class BlobDataHandle;
 class FormDataList;
 
 class FormDataElement {
@@ -40,18 +42,20 @@ public:
     explicit FormDataElement(const Vector<char>& array) : m_type(data), m_data(array) { }
 
     FormDataElement(const String& filename, long long fileStart, long long fileLength, double expectedFileModificationTime) : m_type(encodedFile), m_filename(filename), m_fileStart(fileStart), m_fileLength(fileLength), m_expectedFileModificationTime(expectedFileModificationTime) { }
-    explicit FormDataElement(const KURL& blobURL) : m_type(encodedBlob), m_url(blobURL) { }
-    FormDataElement(const KURL& url, long long start, long long length, double expectedFileModificationTime) : m_type(encodedURL), m_url(url), m_fileStart(start), m_fileLength(length), m_expectedFileModificationTime(expectedFileModificationTime) { }
+    explicit FormDataElement(const String& blobUUID, PassRefPtr<BlobDataHandle> optionalHandle) : m_type(encodedBlob), m_blobUUID(blobUUID), m_optionalBlobDataHandle(optionalHandle) { }
+    FormDataElement(const KURL& fileSystemURL, long long start, long long length, double expectedFileModificationTime) : m_type(encodedFileSystemURL), m_fileSystemURL(fileSystemURL), m_fileStart(start), m_fileLength(length), m_expectedFileModificationTime(expectedFileModificationTime) { }
 
     enum Type {
         data,
-        encodedFile
-        , encodedBlob
-        , encodedURL
+        encodedFile,
+        encodedBlob,
+        encodedFileSystemURL
     } m_type;
     Vector<char> m_data;
     String m_filename;
-    KURL m_url; // For Blob or URL.
+    String m_blobUUID;
+    RefPtr<BlobDataHandle> m_optionalBlobDataHandle;
+    KURL m_fileSystemURL;
     long long m_fileStart;
     long long m_fileLength;
     double m_expectedFileModificationTime;
@@ -69,9 +73,9 @@ inline bool operator==(const FormDataElement& a, const FormDataElement& b)
     if (a.m_type == FormDataElement::encodedFile)
         return a.m_filename == b.m_filename && a.m_fileStart == b.m_fileStart && a.m_fileLength == b.m_fileLength && a.m_expectedFileModificationTime == b.m_expectedFileModificationTime;
     if (a.m_type == FormDataElement::encodedBlob)
-        return a.m_url == b.m_url;
-    if (a.m_type == FormDataElement::encodedURL)
-        return a.m_url == b.m_url;
+        return a.m_blobUUID == b.m_blobUUID;
+    if (a.m_type == FormDataElement::encodedFileSystemURL)
+        return a.m_fileSystemURL == b.m_fileSystemURL;
 
     return true;
 }
@@ -102,9 +106,9 @@ public:
     void appendData(const void* data, size_t);
     void appendFile(const String& filePath);
     void appendFileRange(const String& filename, long long start, long long length, double expectedModificationTime);
-    void appendBlob(const KURL& blobURL);
-    void appendURL(const KURL&);
-    void appendURLRange(const KURL&, long long start, long long length, double expectedModificationTime);
+    void appendBlob(const String& blobUUID, PassRefPtr<BlobDataHandle> optionalHandle);
+    void appendFileSystemURL(const KURL&);
+    void appendFileSystemURLRange(const KURL&, long long start, long long length, double expectedModificationTime);
 
     void flatten(Vector<char>&) const; // omits files
     String flattenToString() const; // omits files

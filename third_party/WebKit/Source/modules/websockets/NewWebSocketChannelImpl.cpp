@@ -139,7 +139,7 @@ bool isClean(int code)
 
 class NewWebSocketChannelImpl::BlobLoader : public FileReaderLoaderClient {
 public:
-    BlobLoader(const Blob&, NewWebSocketChannelImpl*);
+    BlobLoader(PassRefPtr<BlobDataHandle>, NewWebSocketChannelImpl*);
     virtual ~BlobLoader() { }
 
     void cancel();
@@ -155,11 +155,11 @@ private:
     FileReaderLoader m_loader;
 };
 
-NewWebSocketChannelImpl::BlobLoader::BlobLoader(const Blob& blob, NewWebSocketChannelImpl* channel)
+NewWebSocketChannelImpl::BlobLoader::BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, NewWebSocketChannelImpl* channel)
     : m_channel(channel)
     , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
 {
-    m_loader.start(channel->scriptExecutionContext(), blob);
+    m_loader.start(channel->scriptExecutionContext(), blobDataHandle);
 }
 
 void NewWebSocketChannelImpl::BlobLoader::cancel()
@@ -311,10 +311,10 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message
     return SendSuccess;
 }
 
-WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const Blob& blob)
+WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHandle> blobDataHandle)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p sendBlob(%s, %s, %llu)", this, blob.url().string().utf8().data(), blob.type().utf8().data(), blob.size());
-    m_messages.append(Message(blob));
+    LOG(Network, "NewWebSocketChannelImpl %p sendBlob(%s, %s, %llu)", this, blobDataHandle->uuid().utf8().data(), blobDataHandle->type().utf8().data(), blobDataHandle->size());
+    m_messages.append(Message(blobDataHandle));
     sendInternal();
     return SendSuccess;
 }
@@ -438,9 +438,9 @@ NewWebSocketChannelImpl::Message::Message(const String& text)
     : type(MessageTypeText)
     , text(text.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD)) { }
 
-NewWebSocketChannelImpl::Message::Message(const Blob& blob)
+NewWebSocketChannelImpl::Message::Message(PassRefPtr<BlobDataHandle> blobDataHandle)
     : type(MessageTypeBlob)
-    , blob(Blob::create(blob.url(), blob.type(), blob.size())) { }
+    , blobDataHandle(blobDataHandle) { }
 
 NewWebSocketChannelImpl::Message::Message(PassRefPtr<ArrayBuffer> arrayBuffer)
     : type(MessageTypeArrayBuffer)
@@ -466,7 +466,7 @@ void NewWebSocketChannelImpl::sendInternal()
         }
         case MessageTypeBlob:
             ASSERT(!m_blobLoader);
-            m_blobLoader = adoptPtr(new BlobLoader(*message.blob, this));
+            m_blobLoader = adoptPtr(new BlobLoader(message.blobDataHandle, this));
             break;
         case MessageTypeArrayBuffer: {
             WebSocketHandle::MessageType type =

@@ -201,6 +201,10 @@ PASS bufferView.length is expectedBufferValues.length
 
 Serialize undefined:
 PASS thrownException.code is expectedException
+
+PASS areValuesIdentical(blobObj1, blobObj2) is true
+PASS areValuesIdentical(dictionaryWithBlob1, dictionaryWithBlob2) is true
+PASS self.blobContent1 is self.blobContent2
 PASS successfullyParsed is true
 
 TEST COMPLETE

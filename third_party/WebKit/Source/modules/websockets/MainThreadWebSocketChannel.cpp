@@ -160,9 +160,9 @@ WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const ArrayBuffer&
     return WebSocketChannel::SendSuccess;
 }
 
-WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const Blob& binaryData)
+WebSocketChannel::SendResult MainThreadWebSocketChannel::send(PassRefPtr<BlobDataHandle> binaryData)
 {
-    LOG(Network, "MainThreadWebSocketChannel %p send() Sending Blob '%s'", this, binaryData.url().elidedString().utf8().data());
+    LOG(Network, "MainThreadWebSocketChannel %p send() Sending Blob '%s'", this, binaryData->uuid().utf8().data());
     enqueueBlobFrame(WebSocketFrame::OpCodeBinary, binaryData);
     processOutgoingFrameQueue();
     return WebSocketChannel::SendSuccess;
@@ -708,13 +708,13 @@ void MainThreadWebSocketChannel::enqueueRawFrame(WebSocketFrame::OpCode opCode, 
     m_outgoingFrameQueue.append(frame.release());
 }
 
-void MainThreadWebSocketChannel::enqueueBlobFrame(WebSocketFrame::OpCode opCode, const Blob& blob)
+void MainThreadWebSocketChannel::enqueueBlobFrame(WebSocketFrame::OpCode opCode, PassRefPtr<BlobDataHandle> blobData)
 {
     ASSERT(m_outgoingFrameQueueStatus == OutgoingFrameQueueOpen);
     OwnPtr<QueuedFrame> frame = adoptPtr(new QueuedFrame);
     frame->opCode = opCode;
     frame->frameType = QueuedFrameTypeBlob;
-    frame->blobData = Blob::create(blob.url(), blob.type(), blob.size());
+    frame->blobData = blobData;
     m_outgoingFrameQueue.append(frame.release());
 }
 
@@ -744,7 +744,7 @@ void MainThreadWebSocketChannel::processOutgoingFrameQueue()
                 ASSERT(!m_blobLoader);
                 m_blobLoader = adoptPtr(new FileReaderLoader(FileReaderLoader::ReadAsArrayBuffer, this));
                 m_blobLoaderStatus = BlobLoaderStarted;
-                m_blobLoader->start(m_document, *frame->blobData);
+                m_blobLoader->start(m_document, frame->blobData);
                 m_outgoingFrameQueue.prepend(frame.release());
                 return;
 

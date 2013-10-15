@@ -38,22 +38,19 @@ namespace WebCore {
 class KURL;
 class SecurityOrigin;
 
-// Blob URLs are of the form
+// Public blob URLs are of the form
 //     blob:%escaped_origin%/%UUID%
-// For public urls, the origin of the host page is encoded in the URL value to
+// The origin of the host page is encoded in the URL value to
 // allow easy lookup of the origin when security checks need to be performed.
 // When loading blobs via ResourceHandle or when reading blobs via FileReader
 // the loader conducts security checks that examine the origin of host page
-// encoded in the public blob url. The origin baked into internal blob urls
-// is a simple constant value, "blobinternal://", internal urls should not
-// be used with ResourceHandle or FileReader.
+// encoded in the blob url.
 class BlobURL {
 public:
     static KURL createPublicURL(SecurityOrigin*);
-    static KURL createInternalURL();
     static String getOrigin(const KURL&);
-    static String getIdentifier(const KURL&);
-    static const char* blobProtocol() { return kBlobProtocol; }
+
+    static KURL createInternalStreamURL();
 
 private:
     static KURL createBlobURL(const String& originString);

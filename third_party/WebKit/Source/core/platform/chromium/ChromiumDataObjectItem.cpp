@@ -144,7 +144,7 @@ PassRefPtr<Blob> ChromiumDataObjectItem::getAsFile() const
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendData(rawData, 0, -1);
         blobData->setContentType(mimeTypeImagePng);
-        return Blob::create(blobData.release(), data->size());
+        return Blob::create(BlobDataHandle::create(blobData.release(), data->size()));
     }
 
     return 0;

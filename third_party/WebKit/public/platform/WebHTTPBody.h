@@ -31,6 +31,7 @@
 #ifndef WebHTTPBody_h
 #define WebHTTPBody_h
 
+#include "WebBlobData.h"
 #include "WebData.h"
 #include "WebNonCopyable.h"
 #include "WebString.h"
@@ -55,12 +56,6 @@ public:
         long long fileLength; // -1 means to the end of the file.
         double modificationTime;
         WebURL fileSystemURL;
-
-        // DEPRECATED, use fileSystemURL
-        WebURL url;
-
-        // FIXME: deprecate url and use uuid
-        WebURL blobURL;
         WebString blobUUID;
     };
 
@@ -92,11 +87,10 @@ public:
     BLINK_EXPORT void appendFile(const WebString&);
     // Passing -1 to fileLength means to the end of the file.
     BLINK_EXPORT void appendFileRange(const WebString&, long long fileStart, long long fileLength, double modificationTime);
-    BLINK_EXPORT void appendBlob(const WebURL&); // FIXME: deprecate this
+    BLINK_EXPORT void appendBlob(const WebString& uuid);
 
     // Append a resource which is identified by the FileSystem URL.
     BLINK_EXPORT void appendFileSystemURLRange(const WebURL&, long long start, long long length, double modificationTime);
-    BLINK_EXPORT void appendURLRange(const WebURL&, long long start, long long length, double modificationTime); // DEPRECATED
 
     // Identifies a particular form submission instance. A value of 0 is
     // used to indicate an unspecified identifier.

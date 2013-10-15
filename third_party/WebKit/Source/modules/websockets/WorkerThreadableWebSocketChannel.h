@@ -46,6 +46,7 @@
 
 namespace WebCore {
 
+class BlobDataHandle;
 class KURL;
 class ScriptExecutionContext;
 class ThreadableWebSocketChannelClientWrapper;
@@ -68,7 +69,7 @@ public:
     virtual String extensions() OVERRIDE;
     virtual WebSocketChannel::SendResult send(const String& message) OVERRIDE;
     virtual WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) OVERRIDE;
-    virtual WebSocketChannel::SendResult send(const Blob&) OVERRIDE;
+    virtual WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>) OVERRIDE;
     virtual unsigned long bufferedAmount() const OVERRIDE;
     virtual void close(int code, const String& reason) OVERRIDE;
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned) OVERRIDE;
@@ -92,7 +93,7 @@ public:
         void connect(const KURL&, const String& protocol);
         void send(const String& message);
         void send(const ArrayBuffer&);
-        void send(const Blob&);
+        void send(PassRefPtr<BlobDataHandle>);
         void bufferedAmount();
         void close(int code, const String& reason);
         void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
@@ -141,7 +142,7 @@ private:
         void connect(const KURL&, const String& protocol);
         WebSocketChannel::SendResult send(const String& message);
         WebSocketChannel::SendResult send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength);
-        WebSocketChannel::SendResult send(const Blob&);
+        WebSocketChannel::SendResult send(PassRefPtr<BlobDataHandle>);
         unsigned long bufferedAmount();
         void close(int code, const String& reason);
         void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
@@ -181,7 +182,7 @@ private:
     static void mainThreadConnect(ScriptExecutionContext*, Peer*, const KURL&, const String& protocol);
     static void mainThreadSend(ScriptExecutionContext*, Peer*, const String& message);
     static void mainThreadSendArrayBuffer(ScriptExecutionContext*, Peer*, PassOwnPtr<Vector<char> >);
-    static void mainThreadSendBlob(ScriptExecutionContext*, Peer*, const KURL&, const String& type, long long size);
+    static void mainThreadSendBlob(ScriptExecutionContext*, Peer*, PassRefPtr<BlobDataHandle>);
     static void mainThreadBufferedAmount(ScriptExecutionContext*, Peer*);
     static void mainThreadClose(ScriptExecutionContext*, Peer*, int code, const String& reason);
     static void mainThreadFail(ScriptExecutionContext*, Peer*, const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);

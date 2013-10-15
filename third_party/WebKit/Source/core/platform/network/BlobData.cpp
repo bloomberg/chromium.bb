@@ -32,7 +32,7 @@
 #include "core/platform/network/BlobData.h"
 
 #include "core/fileapi/BlobRegistry.h"
-#include "core/fileapi/BlobURL.h"
+#include "platform/UUID.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -55,7 +55,7 @@ void BlobDataItem::detachFromCurrentThread()
 {
     data->detachFromCurrentThread();
     path = path.isolatedCopy();
-    url = url.copy();
+    fileSystemURL = fileSystemURL.copy();
 }
 
 PassOwnPtr<BlobData> BlobData::create()
@@ -86,12 +86,12 @@ void BlobData::appendFile(const String& path, long long offset, long long length
     m_items.append(BlobDataItem(path, offset, length, expectedModificationTime));
 }
 
-void BlobData::appendBlob(const KURL& url, long long offset, long long length)
+void BlobData::appendBlob(PassRefPtr<BlobDataHandle> dataHandle, long long offset, long long length)
 {
-    m_items.append(BlobDataItem(url, offset, length));
+    m_items.append(BlobDataItem(dataHandle, offset, length));
 }
 
-void BlobData::appendURL(const KURL& url, long long offset, long long length, double expectedModificationTime)
+void BlobData::appendFileSystemURL(const KURL& url, long long offset, long long length, double expectedModificationTime)
 {
     m_items.append(BlobDataItem(url, offset, length, expectedModificationTime));
 }
@@ -101,17 +101,32 @@ void BlobData::swapItems(BlobDataItemList& items)
     m_items.swap(items);
 }
 
+BlobDataHandle::BlobDataHandle()
+    : m_uuid(createCanonicalUUIDString())
+    , m_size(0)
+{
+    BlobRegistry::registerBlobData(m_uuid, BlobData::create());
+}
 
 BlobDataHandle::BlobDataHandle(PassOwnPtr<BlobData> data, long long size)
+    : m_uuid(createCanonicalUUIDString())
+    , m_type(data->contentType().isolatedCopy())
+    , m_size(size)
 {
-    UNUSED_PARAM(size);
-    m_internalURL = BlobURL::createInternalURL();
-    BlobRegistry::registerBlobURL(m_internalURL, data);
+    BlobRegistry::registerBlobData(m_uuid, data);
+}
+
+BlobDataHandle::BlobDataHandle(const String& uuid, const String& type, long long size)
+    : m_uuid(uuid.isolatedCopy())
+    , m_type(type.isolatedCopy())
+    , m_size(size)
+{
+    BlobRegistry::addBlobDataRef(m_uuid);
 }
 
 BlobDataHandle::~BlobDataHandle()
 {
-    BlobRegistry::unregisterBlobURL(m_internalURL);
+    BlobRegistry::removeBlobDataRef(m_uuid);
 }
 
 } // namespace WebCore
