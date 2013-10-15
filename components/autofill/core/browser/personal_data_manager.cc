@@ -774,7 +774,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   for (std::vector<AutofillProfile>::iterator it = profiles->begin();
        it != profiles->end();) {
     if (it->IsEmpty(app_locale_))
-      profiles->erase(it);
+      it = profiles->erase(it);
     else
       it++;
   }
@@ -837,7 +837,7 @@ void PersonalDataManager::SetCreditCards(
   for (std::vector<CreditCard>::iterator it = credit_cards->begin();
        it != credit_cards->end();) {
     if (it->IsEmpty(app_locale_))
-      credit_cards->erase(it);
+      it = credit_cards->erase(it);
     else
       it++;
   }
