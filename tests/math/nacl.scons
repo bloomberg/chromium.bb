@@ -61,6 +61,8 @@ AddMathTest(noerrno_env, 'cxx_pow.cc', testname='cxx_pow_noerrno',
 # --- Test rounding mode settings / queries.
 
 asm_env = env.Clone()
+# biased_env is needed for the C file that has a MIPS if-def check.
+biased_env = env.Clone()
 if env.Bit('bitcode'):
   # Depends on assembly, so cannot build it as a pexe.
   if env.Bit('pnacl_generate_pexe'):
@@ -68,6 +70,8 @@ if env.Bit('bitcode'):
   else:
     asm_env.PNaClForceNative()
     asm_env.AddBiasForPNaCl()
+    biased_env.AddBiasForPNaCl()
+    biased_env.Append(LINKFLAGS=['--pnacl-allow-native'])
     env.Append(LINKFLAGS=['--pnacl-allow-native'])
 
 if env.Bit('target_x86'):
@@ -80,9 +84,9 @@ else:
   raise Exception('Unknown target')
 
 asm_obj = asm_env.ComponentObject(asm_helper)
-nexe = env.ComponentProgram('float_rounding_mode',
-                            ['float_rounding_mode.c', asm_obj],
-                            EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
+nexe = biased_env.ComponentProgram('float_rounding_mode',
+                                   ['float_rounding_mode.c', asm_obj],
+                                   EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'float_rounding_mode.out',
     nexe)
