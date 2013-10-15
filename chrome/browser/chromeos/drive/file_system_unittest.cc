@@ -217,12 +217,13 @@ class FileSystemTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK,
               resource_metadata->AddEntry(util::CreateMyDriveRootEntry(
                   root_resource_id), &local_id));
+    const std::string root_local_id = local_id;
 
     // drive/root/File1
     ResourceEntry file1;
     file1.set_title("File1");
     file1.set_resource_id("resource_id:File1");
-    file1.set_parent_local_id(root_resource_id);
+    file1.set_parent_local_id(root_local_id);
     file1.mutable_file_specific_info()->set_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
@@ -232,15 +233,16 @@ class FileSystemTest : public testing::Test {
     ResourceEntry dir1;
     dir1.set_title("Dir1");
     dir1.set_resource_id("resource_id:Dir1");
-    dir1.set_parent_local_id(root_resource_id);
+    dir1.set_parent_local_id(root_local_id);
     dir1.mutable_file_info()->set_is_directory(true);
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir1, &local_id));
+    const std::string dir1_local_id = local_id;
 
     // drive/root/Dir1/File2
     ResourceEntry file2;
     file2.set_title("File2");
     file2.set_resource_id("resource_id:File2");
-    file2.set_parent_local_id(dir1.resource_id());
+    file2.set_parent_local_id(dir1_local_id);
     file2.mutable_file_specific_info()->set_md5("md5");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
@@ -250,15 +252,16 @@ class FileSystemTest : public testing::Test {
     ResourceEntry dir2;
     dir2.set_title("SubDir2");
     dir2.set_resource_id("resource_id:SubDir2");
-    dir2.set_parent_local_id(dir1.resource_id());
+    dir2.set_parent_local_id(dir1_local_id);
     dir2.mutable_file_info()->set_is_directory(true);
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir2, &local_id));
+    const std::string dir2_local_id = local_id;
 
     // drive/root/Dir1/SubDir2/File3
     ResourceEntry file3;
     file3.set_title("File3");
     file3.set_resource_id("resource_id:File3");
-    file3.set_parent_local_id(dir2.resource_id());
+    file3.set_parent_local_id(dir2_local_id);
     file3.mutable_file_specific_info()->set_md5("md5");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);
@@ -604,7 +607,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(entry->resource_id(), &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(entry->local_id(), &cache_entry));
   EXPECT_TRUE(cache_entry.is_pinned());
   EXPECT_TRUE(cache_entry.is_present());
 
@@ -615,7 +618,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  EXPECT_TRUE(cache_->GetCacheEntry(entry->resource_id(), &cache_entry));
+  EXPECT_TRUE(cache_->GetCacheEntry(entry->local_id(), &cache_entry));
   EXPECT_FALSE(cache_entry.is_pinned());
 
   // Pinned file gets synced and it results in entry state changes.
@@ -650,7 +653,7 @@ TEST_F(FileSystemTest, PinAndUnpin_NotSynced) {
 
   // No cache file available because the sync was cancelled by Unpin().
   FileCacheEntry cache_entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(entry->resource_id(), &cache_entry));
+  EXPECT_FALSE(cache_->GetCacheEntry(entry->local_id(), &cache_entry));
 }
 
 TEST_F(FileSystemTest, GetAvailableSpace) {
@@ -674,7 +677,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
 
   // Write to cache.
   ASSERT_EQ(FILE_ERROR_OK, cache_->Store(
-      entry->resource_id(),
+      entry->local_id(),
       entry->file_specific_info().md5(),
       google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
       internal::FileCache::FILE_OPERATION_COPY));
@@ -689,7 +692,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Cannot remove a cache entry while it's being mounted.
-  EXPECT_EQ(FILE_ERROR_IN_USE, cache_->Remove(entry->resource_id()));
+  EXPECT_EQ(FILE_ERROR_IN_USE, cache_->Remove(entry->local_id()));
 
   // Test for unmounting.
   error = FILE_ERROR_FAILED;
@@ -700,7 +703,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Now able to remove the cache entry.
-  EXPECT_EQ(FILE_ERROR_OK, cache_->Remove(entry->resource_id()));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->Remove(entry->local_id()));
 }
 
 TEST_F(FileSystemTest, GetShareUrl) {
