@@ -31,6 +31,7 @@
 #ifndef CustomElementCallbackDispatcher_h
 #define CustomElementCallbackDispatcher_h
 
+#include "core/dom/custom/CustomElementBaseElementQueue.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -97,10 +98,16 @@ private:
     static bool inCallbackDeliveryScope() { return s_elementQueueStart; }
 
     typedef int ElementQueue;
+    static ElementQueue baseElementQueue() { return ElementQueue(0); }
     static ElementQueue currentElementQueue() { return ElementQueue(s_elementQueueStart); }
 
     static void processElementQueueAndPop();
     void processElementQueueAndPop(size_t start, size_t end);
+
+    // The base element queue, used when no CallbackDeliveryScope is
+    // active. Callbacks for elements created by the parser are
+    // enqueued here.
+    CustomElementBaseElementQueue m_baseElementQueue;
 
     // The processing stack, flattened. Element queues lower in the
     // stack appear toward the head of the vector. The first element

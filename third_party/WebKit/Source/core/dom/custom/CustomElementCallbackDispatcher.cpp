@@ -48,35 +48,14 @@ CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
     return instance;
 }
 
-// Dispatches callbacks at microtask checkpoint.
 bool CustomElementCallbackDispatcher::dispatch()
 {
     ASSERT(isMainThread());
     if (inCallbackDeliveryScope())
         return false;
 
-    size_t start = kNumSentinels; // skip null sentinel
-    size_t end = s_elementQueueEnd;
-    ElementQueue thisQueue = currentElementQueue();
-
-    for (size_t i = start; i < end; i++) {
-        {
-            // The created callback may schedule entered document
-            // callbacks.
-            CallbackDeliveryScope deliveryScope;
-            m_flattenedProcessingStack[i]->processInElementQueue(thisQueue);
-        }
-
-        ASSERT(!s_elementQueueStart);
-        ASSERT(s_elementQueueEnd == end);
-    }
-
-    s_elementQueueEnd = kNumSentinels;
-    m_flattenedProcessingStack.resize(s_elementQueueEnd);
-
+    bool didWork = m_baseElementQueue.dispatch(baseElementQueue());
     CustomElementCallbackScheduler::clearElementCallbackQueueMap();
-
-    bool didWork = start < end;
     return didWork;
 }
 
@@ -107,7 +86,7 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
     m_flattenedProcessingStack.resize(start);
     s_elementQueueEnd = start;
 
-    if (start == kNumSentinels)
+    if (start == kNumSentinels && m_baseElementQueue.isEmpty())
         CustomElementCallbackScheduler::clearElementCallbackQueueMap();
 }
 
@@ -117,8 +96,13 @@ void CustomElementCallbackDispatcher::enqueue(CustomElementCallbackQueue* callba
         return;
 
     callbackQueue->setOwner(currentElementQueue());
-    m_flattenedProcessingStack.append(callbackQueue);
-    ++s_elementQueueEnd;
+
+    if (inCallbackDeliveryScope()) {
+        m_flattenedProcessingStack.append(callbackQueue);
+        ++s_elementQueueEnd;
+    } else {
+        m_baseElementQueue.enqueue(callbackQueue);
+    }
 }
 
 } // namespace WebCore

@@ -1936,6 +1936,8 @@
             'dom/SelectorQuery.h',
             'dom/custom/CustomElement.cpp',
             'dom/custom/CustomElement.h',
+            'dom/custom/CustomElementBaseElementQueue.cpp',
+            'dom/custom/CustomElementBaseElementQueue.h',
             'dom/custom/CustomElementCallbackDispatcher.cpp',
             'dom/custom/CustomElementCallbackDispatcher.h',
             'dom/custom/CustomElementCallbackInvocation.cpp',
