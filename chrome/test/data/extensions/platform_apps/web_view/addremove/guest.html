@@ -10,11 +10,9 @@
 Add remove webview test guest.
 
 <script>
-var embedder = null;
-
 window.addEventListener('message', function(e) {
-  embedder = e.source;
-  embedder.postMessage('connected', '*');
+  window.console.log('post message received.');
+  e.source.postMessage('connected', '*');
 });
 </script>
 </body>
