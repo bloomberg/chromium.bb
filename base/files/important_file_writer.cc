@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined _MSC_VER && _MSC_VER == 1800
+// TODO(scottmg): Internal errors on VS2013 RC in LTCG. This should be removed
+// after RTM. http://crbug.com/288948
+#pragma optimize("", off)
+#endif
+
 #include "base/files/important_file_writer.h"
 
 #include <stdio.h>

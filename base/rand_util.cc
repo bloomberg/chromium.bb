@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include <algorithm>
 #include <limits>
 
 #include "base/basictypes.h"

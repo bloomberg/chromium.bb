@@ -19,4 +19,4 @@ List of changes made to original code:
     float_precision_crash.patch and crbug.com/123157
   - Fix for 'warning C4703: potentially uninitialized local pointer variable'
     in VS2012.
-
+  - Disable optimization on VS2013 pending fix of compiler optimization bug.
