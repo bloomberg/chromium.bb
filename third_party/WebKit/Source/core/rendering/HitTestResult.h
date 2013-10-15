@@ -58,9 +58,10 @@ public:
     ~HitTestResult();
     HitTestResult& operator=(const HitTestResult&);
 
-    Node* innerNode() const;
+    Node* innerNode() const { return m_innerNode.get(); }
+    Node* innerPossiblyPseudoNode() const { return m_innerPossiblyPseudoNode.get(); }
     Element* innerElement() const;
-    Node* innerNonSharedNode() const;
+    Node* innerNonSharedNode() const { return m_innerNonSharedNode.get(); }
     Element* URLElement() const { return m_innerURLElement.get(); }
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
     bool isOverWidget() const { return m_isOverWidget; }
@@ -81,7 +82,6 @@ public:
     const LayoutPoint& localPoint() const { return m_localPoint; }
     void setLocalPoint(const LayoutPoint& p) { m_localPoint = p; }
 
-    void allowPseudoElements() { m_allowPseudoElements = true; }
     RenderObject* renderer() const;
 
     void setToNodesInDocumentTreeScope();
@@ -133,6 +133,7 @@ private:
     HitTestLocation m_hitTestLocation;
 
     RefPtr<Node> m_innerNode;
+    RefPtr<Node> m_innerPossiblyPseudoNode;
     RefPtr<Node> m_innerNonSharedNode;
     LayoutPoint m_pointInInnerNodeFrame; // The hit-tested point in innerNode frame coordinates.
     LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNonSharedNode's renderer. Allows us to efficiently
@@ -140,7 +141,6 @@ private:
     RefPtr<Element> m_innerURLElement;
     RefPtr<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a RenderWidget for example).
-    bool m_allowPseudoElements;
     bool m_isFirstLetter;
 
     mutable OwnPtr<NodeSet> m_rectBasedTestResult;
