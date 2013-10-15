@@ -996,7 +996,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
         // "Last finger raised" could be an end to movement.  However,
         // give the mSimpleTouchDetector a chance to continue
         // scrolling with a fling.
-        if (event.getAction() == MotionEvent.ACTION_UP) {
+        if (event.getAction() == MotionEvent.ACTION_UP
+                || event.getAction() == MotionEvent.ACTION_CANCEL) {
             if (mTouchScrolling) {
                 possiblyEndMovement = true;
             }

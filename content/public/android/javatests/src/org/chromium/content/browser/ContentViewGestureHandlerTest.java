@@ -596,6 +596,75 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
+     * Verify that for a normal scroll the following events are sent:
+     * - GESTURE_SCROLL_START
+     * - GESTURE_SCROLL_BY
+     * - GESTURE_SCROLL_END
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testScrollEventActionUpSequence() throws Exception {
+        checkScrollEventSequenceForEndActionType(MotionEvent.ACTION_UP);
+    }
+
+    /**
+     * Verify that for a cancelled scroll the following events are sent:
+     * - GESTURE_SCROLL_START
+     * - GESTURE_SCROLL_BY
+     * - GESTURE_SCROLL_END
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testScrollEventActionCancelSequence() throws Exception {
+        checkScrollEventSequenceForEndActionType(MotionEvent.ACTION_CANCEL);
+    }
+
+    private void checkScrollEventSequenceForEndActionType(int endActionType) throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+        final int scrollToX = FAKE_COORD_X + 100;
+        final int scrollToY = FAKE_COORD_Y + 100;
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate, mMockZoomManager,
+                ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+
+        assertTrue(mGestureHandler.onTouchEvent(event));
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 1000, MotionEvent.ACTION_MOVE, scrollToX, scrollToY, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertTrue(mGestureHandler.isNativeScrolling());
+        assertTrue("A scrollStart event should have been sent",
+                mockDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_SCROLL_START));
+        assertEquals("We should have started scrolling",
+                ContentViewGestureHandler.GESTURE_SCROLL_BY,
+                mockDelegate.mMostRecentGestureEvent.mType);
+        assertEquals("Only scrollBegin and scrollBy should have been sent",
+                2, mockDelegate.mGestureTypeList.size());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 1000, endActionType, scrollToX, scrollToY, 0);
+        mGestureHandler.onTouchEvent(event);
+        assertFalse(mGestureHandler.isNativeScrolling());
+        assertTrue("A scrollEnd event should have been sent",
+                mockDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_SCROLL_END));
+        assertEquals("We should have stopped scrolling",
+                ContentViewGestureHandler.GESTURE_SCROLL_END,
+                mockDelegate.mMostRecentGestureEvent.mType);
+        assertEquals("Only scrollBegin and scrollBy and scrollEnd should have been sent",
+                3, mockDelegate.mGestureTypeList.size());
+    }
+
+    /**
      * Verify that for a normal fling (fling after scroll) the following events are sent:
      * - GESTURE_SCROLL_BEGIN
      * - GESTURE_FLING_START
