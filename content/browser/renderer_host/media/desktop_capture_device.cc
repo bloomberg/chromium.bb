@@ -15,6 +15,7 @@
 #include "content/public/common/desktop_media_id.h"
 #include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
@@ -340,45 +341,44 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
       blocking_pool->GetSequencedTaskRunner(
           blocking_pool->GetSequenceToken());
 
-  switch (source.type) {
-    case DesktopMediaID::TYPE_SCREEN: {
-      scoped_ptr<webrtc::DesktopCapturer> capturer;
+  webrtc::DesktopCaptureOptions options =
+      webrtc::DesktopCaptureOptions::CreateDefault();
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-      // ScreenCapturerX11 polls by default, due to poor driver support for
-      // DAMAGE. ChromeOS' drivers [can be patched to] support DAMAGE properly,
-      // so use it.
-      capturer.reset(webrtc::ScreenCapturer::CreateWithXDamage(true));
-#elif defined(OS_WIN)
-      // ScreenCapturerWin disables Aero by default. We don't want it disabled
-      // for WebRTC screen capture, though.
-      capturer.reset(
-          webrtc::ScreenCapturer::CreateWithDisableAero(false));
-#else
-      capturer.reset(webrtc::ScreenCapturer::Create());
+#if defined(OS_CHROMEOS)
+  // Xdamage is not enabled by default because it's often broken. ChromeOS'
+  // drivers [can be patched to] support DAMAGE properly, so use it.
+  options.set_use_update_notifications(true);
 #endif
 
-      return scoped_ptr<media::VideoCaptureDevice>(new DesktopCaptureDevice(
-          task_runner, capturer.Pass()));
+  // Leave desktop effects enabled during WebRTC captures.
+  options.set_disable_effects(false);
+
+  scoped_ptr<webrtc::DesktopCapturer> capturer;
+
+  switch (source.type) {
+    case DesktopMediaID::TYPE_SCREEN: {
+      capturer.reset(webrtc::ScreenCapturer::Create(options));
+      break;
     }
 
     case DesktopMediaID::TYPE_WINDOW: {
-      scoped_ptr<webrtc::WindowCapturer> capturer(
-          webrtc::WindowCapturer::Create());
-
-      if (!capturer || !capturer->SelectWindow(source.id)) {
-        return scoped_ptr<media::VideoCaptureDevice>();
-      }
-
-      return scoped_ptr<media::VideoCaptureDevice>(new DesktopCaptureDevice(
-          task_runner, capturer.PassAs<webrtc::DesktopCapturer>()));
+      scoped_ptr<webrtc::WindowCapturer> window_capturer(
+          webrtc::WindowCapturer::Create(options));
+      if (window_capturer && window_capturer->SelectWindow(source.id))
+        capturer.reset(window_capturer.release());
+      break;
     }
 
     default: {
       NOTREACHED();
-      return scoped_ptr<media::VideoCaptureDevice>();
     }
   }
+
+  scoped_ptr<media::VideoCaptureDevice> result;
+  if (capturer)
+    result.reset(new DesktopCaptureDevice(task_runner, capturer.Pass()));
+
+  return result.Pass();;
 }
 
 DesktopCaptureDevice::DesktopCaptureDevice(

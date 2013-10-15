@@ -15,6 +15,7 @@
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/screen_controls.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 #if defined(OS_POSIX)
@@ -40,13 +41,11 @@ scoped_ptr<ScreenControls> Me2MeDesktopEnvironment::CreateScreenControls() {
 scoped_ptr<webrtc::ScreenCapturer>
 Me2MeDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-#if defined(OS_LINUX)
+  webrtc::DesktopCaptureOptions options =
+      webrtc::DesktopCaptureOptions::CreateDefault();
+  options.set_use_update_notifications(true);
   return scoped_ptr<webrtc::ScreenCapturer>(
-      webrtc::ScreenCapturer::CreateWithXDamage(true));
-#else  // !defined(OS_LINUX)
-  return scoped_ptr<webrtc::ScreenCapturer>(webrtc::ScreenCapturer::Create());
-#endif  // !defined(OS_LINUX)
+      webrtc::ScreenCapturer::Create(options));
 }
 
 std::string Me2MeDesktopEnvironment::GetCapabilities() const {
