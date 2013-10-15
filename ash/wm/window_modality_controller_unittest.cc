@@ -287,23 +287,30 @@ TEST_F(WindowModalityControllerTest, ChangeCapture) {
 
 class TouchTrackerWindowDelegate : public aura::test::TestWindowDelegate {
  public:
-  TouchTrackerWindowDelegate() : received_touch_(false) {}
+  TouchTrackerWindowDelegate()
+      : received_touch_(false),
+        last_event_type_(ui::ET_UNKNOWN) {
+  }
   virtual ~TouchTrackerWindowDelegate() {}
 
   void reset() {
     received_touch_ = false;
+    last_event_type_ = ui::ET_UNKNOWN;
   }
 
   bool received_touch() const { return received_touch_; }
+  ui::EventType last_event_type() const { return last_event_type_; }
 
  private:
   // Overridden from aura::test::TestWindowDelegate.
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     received_touch_ = true;
+    last_event_type_ = event->type();
     aura::test::TestWindowDelegate::OnTouchEvent(event);
   }
 
   bool received_touch_;
+  ui::EventType last_event_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchTrackerWindowDelegate);
 };
@@ -316,6 +323,8 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
   TouchTrackerWindowDelegate d11;
   scoped_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(&d11,
       -11, gfx::Rect(20, 20, 50, 50)));
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       gfx::Point(10, 10));
 
   w1->AddTransientChild(w11.get());
   d1.reset();
@@ -323,25 +332,22 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
 
   {
     // Clicking a point within w1 should activate that window.
-    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                         gfx::Point(10, 10));
     generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
     EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
     EXPECT_TRUE(d1.received_touch());
     EXPECT_FALSE(d11.received_touch());
   }
 
-  w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  d1.reset();
-  d11.reset();
-
   {
-    // Clicking a point within w1 should activate w11.
-    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                         gfx::Point(10, 10));
-    generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
-    EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
-    EXPECT_FALSE(d1.received_touch());
+    // Adding a modal window while a touch is down should fire a touch cancel.
+    generator.PressTouch();
+    generator.MoveTouch(gfx::Point(10, 10));
+    d1.reset();
+    d11.reset();
+
+    w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+    EXPECT_TRUE(d1.received_touch());
+    EXPECT_EQ(ui::ET_TOUCH_CANCELLED, d1.last_event_type());
     EXPECT_FALSE(d11.received_touch());
   }
 }
