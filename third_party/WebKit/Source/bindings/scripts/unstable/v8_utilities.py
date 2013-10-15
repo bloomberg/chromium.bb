@@ -153,7 +153,8 @@ def runtime_enabled_function_name(definition_or_member):
     Given extended attribute RuntimeEnabled=FeatureName, return:
         RuntimeEnabledFeatures::{featureName}Enabled
     """
-    if 'RuntimeEnabled' not in definition_or_member.extended_attributes:
+    extended_attributes = definition_or_member.extended_attributes
+    if 'RuntimeEnabled' not in extended_attributes:
         return None
-    feature_name = definition_or_member.extended_attributes['RuntimeEnabled']
+    feature_name = extended_attributes['RuntimeEnabled']
     return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)

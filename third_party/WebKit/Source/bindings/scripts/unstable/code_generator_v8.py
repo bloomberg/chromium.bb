@@ -131,7 +131,7 @@ class CodeGeneratorV8:
             output_file.write(file_text)
 
 
-# Conditional
+# [Conditional]
 def conditional_if_endif(code, conditional_string):
     # Jinja2 filter to generate if/endif directive blocks
     if not conditional_string:

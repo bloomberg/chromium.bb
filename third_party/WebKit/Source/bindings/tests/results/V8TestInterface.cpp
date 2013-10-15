@@ -998,23 +998,19 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
-
 #if ENABLE(Condition22) || ENABLE(Condition23)
     if (RuntimeEnabledFeatures::condition23Enabled()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"Node23", TestInterfaceV8Internal::Node23AttributeGetterCallback, TestInterfaceV8Internal::Node23AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
-
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
-
 #if ENABLE(Condition11) || ENABLE(Condition12)
     if (RuntimeEnabledFeatures::condition13Enabled()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"Node13", TestInterfaceV8Internal::Node13AttributeGetterCallback, TestInterfaceV8Internal::Node13AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
-
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
     static const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
         {"IMPLEMENTSCONSTANT1", 1},

@@ -6,7 +6,8 @@
 {# FIXME: rename to install_attributes and put into configure_class_template #}
 {% if attributes %}
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attributes[] = {
-    {% for attribute in attributes if not attribute.is_static %}
+    {% for attribute in attributes
+       if not (attribute.runtime_enabled_function_name or attribute.is_static) %}
     {% filter conditional(attribute.conditional_string) %}
     {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {% endfilter %}
@@ -29,15 +30,24 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
         {{attribute_templates}}, {{number_of_attributes}},
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    {% for attribute in attributes if attribute.is_static %}
-    desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    {% endfor %}
-    {% if constants %}{# In general more checks than just constants #}
+    {% if constants or has_runtime_enabled_attributes %}
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
     {% endif %}
+    {% for attribute in attributes if attribute.runtime_enabled_function_name %}
+    {% filter conditional(attribute.conditional_string) %}
+    if ({{attribute.runtime_enabled_function_name}}()) {
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
+    }
+    {% endfilter %}
+    {% endfor %}
+    {% for attribute in attributes if attribute.is_static %}
+    desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    {% endfor %}
     {% if constants %}
     {{install_constants() | indent}}
     {% endif %}

@@ -108,4 +108,6 @@ interface TestObjectPython {
     [DoNotCheckSecurityOnGetter] readonly attribute long doNotCheckSecurityOnGetterReadonlyLongAttribute;
     [DoNotCheckSecurityOnSetter] readonly attribute long doNotCheckSecurityOnSetterReadonlyLongAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
+    [RuntimeEnabled=FeatureName] readonly attribute long enabledAtRuntimeReadonlyLongAttribute;
+    [Conditional=Condition, RuntimeEnabled=FeatureName] readonly attribute long conditionalEnabledAtRuntimeReadonlyLongAttribute;
 };

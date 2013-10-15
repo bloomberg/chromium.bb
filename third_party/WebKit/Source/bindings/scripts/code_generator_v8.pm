@@ -4338,7 +4338,7 @@ END
         next if grep { $_ eq $runtime_attr } @perContextEnabledAttributes;
         my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtime_attr);
         my $conditionalString = GenerateConditionalString($runtime_attr);
-        $code .= "\n#if ${conditionalString}\n" if $conditionalString;
+        $code .= "#if ${conditionalString}\n" if $conditionalString;
         $code .= "    if (${runtimeEnabledFunction}()) {\n";
         $code .= "        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\\\n";
         $code .= GenerateAttributeConfiguration($interface, $runtime_attr, ";", "    ");
@@ -4346,7 +4346,7 @@ END
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
 END
-        $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
+        $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     }
 
     my @constantsEnabledAtRuntime;

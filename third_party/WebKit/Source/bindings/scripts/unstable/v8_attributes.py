@@ -49,6 +49,7 @@ def generate_attributes(interface):
     includes = set()
     contents = generate_attributes_common(interface)
     contents['attributes'] = [generate_attribute(attribute) for attribute in interface.attributes]
+    contents['has_runtime_enabled_attributes'] = any(attribute['runtime_enabled_function_name'] for attribute in contents['attributes'])
     return contents, includes
 
 
@@ -71,6 +72,7 @@ def generate_attribute_and_includes(interface, attribute):
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
+        'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(attribute),  # EnabledAtRuntime
         'idl_type': idl_type,
         'is_keep_alive_for_gc': this_is_keep_alive_for_gc,
         'is_nullable': attribute.is_nullable,

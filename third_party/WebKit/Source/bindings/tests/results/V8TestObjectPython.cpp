@@ -927,6 +927,36 @@ static void readonlyDocumentFragmentAttributeAttributeGetterCallback(v8::Local<v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void enabledAtRuntimeReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->enabledAtRuntimeReadonlyLongAttribute());
+}
+
+static void enabledAtRuntimeReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::enabledAtRuntimeReadonlyLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+#if ENABLE(Condition)
+static void conditionalEnabledAtRuntimeReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->conditionalEnabledAtRuntimeReadonlyLongAttribute());
+}
+#endif // ENABLE(Condition)
+
+#if ENABLE(Condition)
+static void conditionalEnabledAtRuntimeReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::conditionalEnabledAtRuntimeReadonlyLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+#endif // ENABLE(Condition)
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -1009,6 +1039,22 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
         V8TestObjectPythonAttributes, WTF_ARRAY_LENGTH(V8TestObjectPythonAttributes),
         0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
+    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {"enabledAtRuntimeReadonlyLongAttribute", TestObjectPythonV8Internal::enabledAtRuntimeReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
+    }
+#if ENABLE(Condition)
+    if (RuntimeEnabledFeatures::featureNameEnabled()) {
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {"conditionalEnabledAtRuntimeReadonlyLongAttribute", TestObjectPythonV8Internal::conditionalEnabledAtRuntimeReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
+    }
+#endif // ENABLE(Condition)
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticReadonlyStringAttribute"), TestObjectPythonV8Internal::staticReadonlyStringAttributeAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticReadonlyLongAttribute"), TestObjectPythonV8Internal::staticReadonlyLongAttributeAttributeGetterCallback, 0, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
