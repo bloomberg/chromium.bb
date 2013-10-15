@@ -60,7 +60,7 @@ class Channel::ChannelImpl : public internal::ChannelReader {
                              int* bytes_read) OVERRIDE;
   virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
   virtual bool DidEmptyInputBuffers() OVERRIDE;
-  virtual void HandleHelloMessage(const Message& msg) OVERRIDE;
+  virtual void HandleInternalMessage(const Message& msg) OVERRIDE;
 
   Mode mode_;
   bool waiting_connect_;
