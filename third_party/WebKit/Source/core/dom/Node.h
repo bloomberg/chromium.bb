@@ -790,7 +790,7 @@ protected:
         InspectorCounters::incrementCounter(InspectorCounters::NodeCounter);
     }
 
-    virtual void didMoveToNewDocument(Document* oldDocument);
+    virtual void didMoveToNewDocument(Document& oldDocument);
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
 

@@ -238,7 +238,7 @@ void SVGImageElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
     addSubresourceURL(urls, document().completeURL(hrefCurrentValue()));
 }
 
-void SVGImageElement::didMoveToNewDocument(Document* oldDocument)
+void SVGImageElement::didMoveToNewDocument(Document& oldDocument)
 {
     m_imageLoader.elementDidMoveToNewDocument();
     SVGGraphicsElement::didMoveToNewDocument(oldDocument);

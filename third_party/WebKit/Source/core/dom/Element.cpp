@@ -2966,14 +2966,14 @@ void Element::didRemoveAttribute(const QualifiedName& name)
     dispatchSubtreeModifiedEvent();
 }
 
-void Element::didMoveToNewDocument(Document* oldDocument)
+void Element::didMoveToNewDocument(Document& oldDocument)
 {
     Node::didMoveToNewDocument(oldDocument);
 
     // If the documents differ by quirks mode then they differ by case sensitivity
     // for class and id names so we need to go through the attribute change logic
     // to pick up the new casing in the ElementData.
-    if (oldDocument->inQuirksMode() != document().inQuirksMode()) {
+    if (oldDocument.inQuirksMode() != document().inQuirksMode()) {
         if (hasID())
             setIdAttribute(getIdAttribute());
         if (hasClass())

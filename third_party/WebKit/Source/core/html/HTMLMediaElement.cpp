@@ -365,7 +365,7 @@ HTMLMediaElement::~HTMLMediaElement()
     document().decrementLoadEventDelayCount();
 }
 
-void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
+void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
 {
     LOG(Media, "HTMLMediaElement::didMoveToNewDocument");
 
@@ -374,15 +374,13 @@ void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
         // Note: Keeping the load event delay count increment on oldDocument that was added
         // when m_shouldDelayLoadEvent was set so that destruction of m_player can not
         // cause load event dispatching in oldDocument.
-    } else if (oldDocument) {
+    } else {
         // Incrementing the load event delay count so that destruction of m_player can not
         // cause load event dispatching in oldDocument.
-        oldDocument->incrementLoadEventDelayCount();
+        oldDocument.incrementLoadEventDelayCount();
     }
 
-    if (oldDocument)
-        removeElementFromDocumentMap(this, oldDocument);
-
+    removeElementFromDocumentMap(this, &oldDocument);
     addElementToDocumentMap(this, &document());
 
     // FIXME: This is a temporary fix to prevent this object from causing the
@@ -394,8 +392,7 @@ void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
 
     // Decrement the load event delay count on oldDocument now that m_player has been destroyed
     // and there is no risk of dispatching a load event from within the destructor.
-    if (oldDocument)
-        oldDocument->decrementLoadEventDelayCount();
+    oldDocument.decrementLoadEventDelayCount();
 
     HTMLElement::didMoveToNewDocument(oldDocument);
 }

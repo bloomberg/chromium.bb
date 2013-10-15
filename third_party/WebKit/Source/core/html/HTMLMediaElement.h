@@ -294,7 +294,7 @@ protected:
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
-    virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
+    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
     enum DisplayMode { Unknown, None, Poster, PosterWaitingForVideo, Video };
     DisplayMode displayMode() const { return m_displayMode; }

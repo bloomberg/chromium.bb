@@ -66,10 +66,10 @@ ValidityState* FormAssociatedElement::validity()
     return m_validityState.get();
 }
 
-void FormAssociatedElement::didMoveToNewDocument(Document* oldDocument)
+void FormAssociatedElement::didMoveToNewDocument(Document& oldDocument)
 {
     HTMLElement* element = toHTMLElement(this);
-    if (oldDocument && element->fastHasAttribute(formAttr))
+    if (element->fastHasAttribute(formAttr))
         m_formAttributeTargetObserver = nullptr;
 }
 

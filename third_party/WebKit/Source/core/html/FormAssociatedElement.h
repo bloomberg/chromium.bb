@@ -93,7 +93,7 @@ protected:
 
     void insertedInto(ContainerNode*);
     void removedFrom(ContainerNode*);
-    void didMoveToNewDocument(Document* oldDocument);
+    void didMoveToNewDocument(Document& oldDocument);
 
     void setForm(HTMLFormElement*);
     void formAttributeChanged();

@@ -45,9 +45,10 @@ void TreeScopeAdopter::moveTreeToNewScope(Node* root) const
     // of the document it was moved to. By increasing the DOMTreeVersion of the donating document here
     // we ensure that the collection cache will be invalidated as needed when the element is moved back.
     Document* oldDocument = m_oldScope->documentScope();
+    ASSERT(oldDocument);
     Document* newDocument = m_newScope->documentScope();
     bool willMoveToNewDocument = oldDocument != newDocument;
-    if (oldDocument && willMoveToNewDocument)
+    if (willMoveToNewDocument)
         oldDocument->incDOMTreeVersion();
 
     for (Node* node = root; node; node = NodeTraversal::next(node, root)) {
@@ -93,7 +94,7 @@ void TreeScopeAdopter::moveTreeToNewDocument(Node* root, Document* oldDocument, 
 static bool didMoveToNewDocumentWasCalled = false;
 static Document* oldDocumentDidMoveToNewDocumentWasCalledWith = 0;
 
-void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(Document* oldDocument)
+void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(Document& oldDocument)
 {
     ASSERT(!didMoveToNewDocumentWasCalled);
     ASSERT_UNUSED(oldDocument, oldDocument == oldDocumentDidMoveToNewDocumentWasCalledWith);
@@ -113,6 +114,7 @@ inline void TreeScopeAdopter::updateTreeScope(Node* node) const
 inline void TreeScopeAdopter::moveNodeToNewDocument(Node* node, Document* oldDocument, Document* newDocument) const
 {
     ASSERT(!node->inDocument() || oldDocument != newDocument);
+    ASSERT(oldDocument);
 
     if (node->hasRareData()) {
         NodeRareData* rareData = node->rareData();
@@ -120,8 +122,7 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(Node* node, Document* oldDoc
             rareData->nodeLists()->adoptDocument(oldDocument, newDocument);
     }
 
-    if (oldDocument)
-        oldDocument->moveNodeIteratorsToNewDocument(node, newDocument);
+    oldDocument->moveNodeIteratorsToNewDocument(node, newDocument);
 
     if (node->isShadowRoot())
         toShadowRoot(node)->setDocumentScope(newDocument);
@@ -131,7 +132,7 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(Node* node, Document* oldDoc
     oldDocumentDidMoveToNewDocumentWasCalledWith = oldDocument;
 #endif
 
-    node->didMoveToNewDocument(oldDocument);
+    node->didMoveToNewDocument(*oldDocument);
     ASSERT(didMoveToNewDocumentWasCalled);
 }
 

@@ -87,7 +87,7 @@ private:
 
     virtual bool hasAvailableVideoFrame() const;
     virtual void updateDisplayState();
-    virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
+    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
     virtual void setDisplayMode(DisplayMode);
 
     OwnPtr<HTMLImageLoader> m_imageLoader;

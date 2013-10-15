@@ -39,9 +39,9 @@ public:
     bool needsScopeChange() const { return m_oldScope != m_newScope; }
 
 #ifdef NDEBUG
-    static void ensureDidMoveToNewDocumentWasCalled(Document*) { }
+    static void ensureDidMoveToNewDocumentWasCalled(Document&) { }
 #else
-    static void ensureDidMoveToNewDocumentWasCalled(Document*);
+    static void ensureDidMoveToNewDocumentWasCalled(Document&);
 #endif
 
 private:

@@ -1441,17 +1441,15 @@ void HTMLInputElement::removedFrom(ContainerNode* insertionPoint)
     resetListAttributeTargetObserver();
 }
 
-void HTMLInputElement::didMoveToNewDocument(Document* oldDocument)
+void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
 {
     if (hasImageLoader())
         imageLoader()->elementDidMoveToNewDocument();
 
-    if (oldDocument) {
-        if (isRadioButton())
-            oldDocument->formController()->checkedRadioButtons().removeButton(this);
-        if (m_hasTouchEventHandler)
-            oldDocument->didRemoveEventTargetNode(this);
-    }
+    if (isRadioButton())
+        oldDocument.formController()->checkedRadioButtons().removeButton(this);
+    if (m_hasTouchEventHandler)
+        oldDocument.didRemoveEventTargetNode(this);
 
     if (m_hasTouchEventHandler)
         document().didAddTouchEventHandler(this);

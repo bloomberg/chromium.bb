@@ -250,7 +250,7 @@ bool HTMLVideoElement::webkitDisplayingFullscreen()
     return isFullscreen();
 }
 
-void HTMLVideoElement::didMoveToNewDocument(Document* oldDocument)
+void HTMLVideoElement::didMoveToNewDocument(Document& oldDocument)
 {
     if (m_imageLoader)
         m_imageLoader->elementDidMoveToNewDocument();

@@ -201,7 +201,7 @@ void HTMLPlugInImageElement::finishParsingChildren()
         setNeedsStyleRecalc();
 }
 
-void HTMLPlugInImageElement::didMoveToNewDocument(Document* oldDocument)
+void HTMLPlugInImageElement::didMoveToNewDocument(Document& oldDocument)
 {
     if (m_imageLoader)
         m_imageLoader->elementDidMoveToNewDocument();

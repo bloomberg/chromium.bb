@@ -1999,7 +1999,7 @@ ScriptExecutionContext* Node::scriptExecutionContext() const
     return document().contextDocument().get();
 }
 
-void Node::didMoveToNewDocument(Document* oldDocument)
+void Node::didMoveToNewDocument(Document& oldDocument)
 {
     TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(oldDocument);
 
@@ -2012,27 +2012,28 @@ void Node::didMoveToNewDocument(Document* oldDocument)
         }
     }
 
-    if (AXObjectCache::accessibilityEnabled() && oldDocument)
-        if (AXObjectCache* cache = oldDocument->existingAXObjectCache())
+    if (AXObjectCache::accessibilityEnabled()) {
+        if (AXObjectCache* cache = oldDocument.existingAXObjectCache())
             cache->remove(this);
+    }
 
     const EventListenerVector& mousewheelListeners = getEventListeners(EventTypeNames::mousewheel);
-    WheelController* oldController = WheelController::from(oldDocument);
+    WheelController* oldController = WheelController::from(&oldDocument);
     WheelController* newController = WheelController::from(&document());
     for (size_t i = 0; i < mousewheelListeners.size(); ++i) {
-        oldController->didRemoveWheelEventHandler(oldDocument);
+        oldController->didRemoveWheelEventHandler(&oldDocument);
         newController->didAddWheelEventHandler(&document());
     }
 
     const EventListenerVector& wheelListeners = getEventListeners(EventTypeNames::wheel);
     for (size_t i = 0; i < wheelListeners.size(); ++i) {
-        oldController->didRemoveWheelEventHandler(oldDocument);
+        oldController->didRemoveWheelEventHandler(&oldDocument);
         newController->didAddWheelEventHandler(&document());
     }
 
-    if (const TouchEventTargetSet* touchHandlers = oldDocument ? oldDocument->touchEventTargets() : 0) {
+    if (const TouchEventTargetSet* touchHandlers = oldDocument.touchEventTargets()) {
         while (touchHandlers->contains(this)) {
-            oldDocument->didRemoveTouchEventHandler(this);
+            oldDocument.didRemoveTouchEventHandler(this);
             document().didAddTouchEventHandler(this);
         }
     }

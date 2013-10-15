@@ -364,7 +364,7 @@ void HTMLImageElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) cons
     addSubresourceURL(urls, document().completeURL(getAttribute(usemapAttr)));
 }
 
-void HTMLImageElement::didMoveToNewDocument(Document* oldDocument)
+void HTMLImageElement::didMoveToNewDocument(Document& oldDocument)
 {
     m_imageLoader.elementDidMoveToNewDocument();
     HTMLElement::didMoveToNewDocument(oldDocument);
