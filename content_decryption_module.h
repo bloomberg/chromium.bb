@@ -293,7 +293,10 @@ enum OutputLinkTypes {
 //
 // WARNING: Deprecated.  Will be removed in the near future.  CDMs should
 // implement ContentDecryptionModule_2 instead.
-//
+
+// Deprecated. Remove after CDMs start to use ContentDecryptionModule*.kVersion.
+const int kCdmInterfaceVersion_1 = 1;
+
 // ContentDecryptionModule interface that all CDMs need to implement.
 // The interface is versioned for backward compatibility.
 // Note: ContentDecryptionModule implementations must use the allocator
@@ -302,6 +305,8 @@ enum OutputLinkTypes {
 // when a Buffer is created that will never be returned to the caller.
 class ContentDecryptionModule_1 {
  public:
+  static const int kVersion = kCdmInterfaceVersion_1;
+
   // Generates a |key_request| given |type| and |init_data|.
   //
   // Returns kSuccess if the key request was successfully generated, in which
@@ -420,6 +425,9 @@ class ContentDecryptionModule_1 {
   virtual ~ContentDecryptionModule_1() {}
 };
 
+// Deprecated. Remove after CDMs start to use ContentDecryptionModule*.kVersion.
+const int kCdmInterfaceVersion_2 = 2;
+
 // ContentDecryptionModule interface that all CDMs need to implement.
 // The interface is versioned for backward compatibility.
 // Note: ContentDecryptionModule implementations must use the allocator
@@ -428,6 +436,8 @@ class ContentDecryptionModule_1 {
 // when a Buffer is created that will never be returned to the caller.
 class ContentDecryptionModule_2 {
  public:
+  static const int kVersion = kCdmInterfaceVersion_2;
+
   // Generates a |key_request| given |type| and |init_data|.
   //
   // Returns kSuccess if the key request was successfully generated, in which
@@ -563,11 +573,8 @@ class ContentDecryptionModule_2 {
   virtual ~ContentDecryptionModule_2() {}
 };
 
-const int kCdmInterfaceVersion_1 = 1;
-const int kCdmInterfaceVersion_2 = 2;
-
 typedef ContentDecryptionModule_2 ContentDecryptionModule;
-const int kCdmInterfaceVersion = kCdmInterfaceVersion_2;
+const int kCdmInterfaceVersion = ContentDecryptionModule::kVersion;
 
 // Represents a buffer created by Allocator implementations.
 class Buffer {
