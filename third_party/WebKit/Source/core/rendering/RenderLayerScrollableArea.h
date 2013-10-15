@@ -139,14 +139,15 @@ public:
     {
         return resizerCornerRect(bounds, ResizerForTouch);
     }
+
+    int scrollWidth() const;
+    int scrollHeight() const;
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
     bool hasScrollableHorizontalOverflow() const;
     bool hasScrollableVerticalOverflow() const;
-
-    int scrollWidth() const;
-    int scrollHeight() const;
 
     void computeScrollDimensions();
 

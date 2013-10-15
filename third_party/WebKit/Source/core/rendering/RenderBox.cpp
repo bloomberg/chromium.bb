@@ -456,7 +456,7 @@ LayoutUnit RenderBox::fixedOffsetWidth() const
 int RenderBox::scrollWidth() const
 {
     if (hasOverflowClip())
-        return layer()->scrollWidth();
+        return layer()->scrollableArea()->scrollWidth();
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
     if (style()->isLeftToRightDirection())
@@ -467,7 +467,7 @@ int RenderBox::scrollWidth() const
 int RenderBox::scrollHeight() const
 {
     if (hasOverflowClip())
-        return layer()->scrollHeight();
+        return layer()->scrollableArea()->scrollHeight();
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
     return snapSizeToPixel(max(clientHeight(), layoutOverflowRect().maxY() - borderTop()), y() + clientTop());

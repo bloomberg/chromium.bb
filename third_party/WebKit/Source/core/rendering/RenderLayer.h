@@ -141,9 +141,6 @@ public:
 
     LayoutRect rect() const { return LayoutRect(location(), size()); }
 
-    int scrollWidth() const;
-    int scrollHeight() const;
-
     void panScrollFromPoint(const IntPoint&);
 
     // Scrolling methods for layers that can scroll their overflow.
@@ -777,9 +774,6 @@ private:
     LayoutRect paintingExtent(const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, PaintBehavior);
 
     RenderLayer* enclosingTransformedAncestor() const;
-
-    // Convert a point in absolute coords into layer coords, taking transforms into account
-    LayoutPoint absoluteToContents(const LayoutPoint&) const;
 
     void positionOverflowControls(const IntSize&);
 

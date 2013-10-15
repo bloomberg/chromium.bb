@@ -724,7 +724,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
 
         bool clientBoxOffsetChanged = oldScrollingLayerOffset != m_scrollingLayer->offsetFromRenderer();
 
-        IntSize scrollSize(m_owningLayer->scrollWidth(), m_owningLayer->scrollHeight());
+        IntSize scrollSize(renderBox->scrollWidth(), renderBox->scrollHeight());
         if (scrollSize != m_scrollingContentsLayer->size() || clientBoxOffsetChanged)
             m_scrollingContentsLayer->setNeedsDisplay();
 

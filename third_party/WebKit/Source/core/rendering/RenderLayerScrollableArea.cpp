@@ -415,12 +415,12 @@ IntRect RenderLayerScrollableArea::visibleContentRect(IncludeScrollbarsInRect sc
 
 int RenderLayerScrollableArea::visibleHeight() const
 {
-    return layer()->m_layerSize.height();
+    return layer()->size().height();
 }
 
 int RenderLayerScrollableArea::visibleWidth() const
 {
-    return layer()->m_layerSize.width();
+    return layer()->size().width();
 }
 
 IntSize RenderLayerScrollableArea::contentsSize() const
@@ -1192,7 +1192,7 @@ IntSize RenderLayerScrollableArea::offsetFromResizeCorner(const IntPoint& absolu
     if (m_box->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         elementSize.setWidth(0);
     IntPoint resizerPoint = IntPoint(elementSize);
-    IntPoint localPoint = roundedIntPoint(layer()->absoluteToContents(absolutePoint));
+    IntPoint localPoint = roundedIntPoint(m_box->absoluteToLocal(absolutePoint, UseTransforms));
     return localPoint - resizerPoint;
 }
 

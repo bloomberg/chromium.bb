@@ -1414,12 +1414,6 @@ RenderLayer* RenderLayer::clippingRootForPainting() const
     return 0;
 }
 
-LayoutPoint RenderLayer::absoluteToContents(const LayoutPoint& absolutePoint) const
-{
-    // We don't use convertToLayerCoords because it doesn't know about transforms
-    return roundedLayoutPoint(renderer()->absoluteToLocal(absolutePoint, UseTransforms));
-}
-
 bool RenderLayer::cannotBlitToWindow() const
 {
     if (isTransparent() || hasReflection() || hasTransform())
@@ -2360,18 +2354,6 @@ IntSize RenderLayer::offsetFromResizeCorner(const IntPoint& absolutePoint) const
 bool RenderLayer::hasOverflowControls() const
 {
     return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->hasScrollCorner() || renderer()->style()->resize() != RESIZE_NONE);
-}
-
-int RenderLayer::scrollWidth() const
-{
-    // FIXME: We should add an ASSERT where it makes sense to force callers
-    // to check if we have a scrollable area before calling its methods.
-    return m_scrollableArea ? m_scrollableArea->scrollWidth() : 0;
-}
-
-int RenderLayer::scrollHeight() const
-{
-    return m_scrollableArea ? m_scrollableArea->scrollHeight() : 0;
 }
 
 void RenderLayer::updateScrollInfoAfterLayout()
@@ -5313,6 +5295,8 @@ void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
 
 int RenderLayer::scrollXOffset() const
 {
+    // FIXME: We should add an ASSERT where it makes sense to force callers
+    // to check if we have a scrollable area before calling its methods.
     return m_scrollableArea ? m_scrollableArea->scrollXOffset() : 0;
 }
 
