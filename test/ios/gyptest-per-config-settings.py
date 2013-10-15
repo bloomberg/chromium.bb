@@ -22,6 +22,20 @@ def CheckFileType(file, expected):
     print 'File: Expected %s, got %s' % (expected, o)
     test.fail_test()
 
+def HasCerts():
+  # Because the bots do not have certs, don't check them if there are no
+  # certs available.
+  proc = subprocess.Popen(['security','find-identity','-p', 'codesigning',
+                           '-v'], stdout=subprocess.PIPE)
+  return "0 valid identities found" not in proc.communicate()[0].strip()
+
+def CheckSignature(file):
+  proc = subprocess.Popen(['codesign', '-v', file], stdout=subprocess.PIPE)
+  o = proc.communicate()[0].strip()
+  assert not proc.returncode
+  if "code object is not signed at all" in o:
+    print 'File %s not properly signed.' % (file)
+    test.fail_test()
 
 def CheckPlistvalue(plist, key, expected):
   if key not in plist:
@@ -50,7 +64,7 @@ if sys.platform == 'darwin':
 
   for configuration in test_configs:
     test.set_configuration(configuration)
-    test.build('test-device.gyp', test.ALL, chdir='app-bundle')
+    test.build('test-device.gyp', 'test_app', chdir='app-bundle')
     result_file = test.built_file_path('Test App Gyp.bundle/Test App Gyp',
                                        chdir='app-bundle')
     test.must_exist(result_file)
@@ -71,5 +85,16 @@ if sys.platform == 'darwin':
     else:
       CheckFileType(result_file, 'i386')
       CheckPlistvalue(plist, 'CFBundleSupportedPlatforms', ['iPhoneSimulator'])
+
+    if HasCerts() and configuration == 'Default-iphoneos':
+      test.build('test-device.gyp', 'sig_test', chdir='app-bundle')
+      result_file = test.built_file_path('sig_test.bundle/sig_test',
+                                       chdir='app-bundle')
+      CheckSignature(result_file)
+      info_plist = test.built_file_path('sig_test.bundle/Info.plist',
+                                        chdir='app-bundle')
+
+      plist = plistlib.readPlist(info_plist)
+      CheckPlistvalue(plist, 'UIDeviceFamily', [1])
 
   test.pass_test()

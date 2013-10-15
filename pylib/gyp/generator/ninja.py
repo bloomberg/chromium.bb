@@ -1203,17 +1203,16 @@ class NinjaWriter:
     if not self.xcode_settings or spec['type'] == 'none' or not output:
       return ''
     output = QuoteShellArgument(output, self.flavor)
-    target_postbuilds = []
+    postbuilds = gyp.xcode_emulation.GetSpecPostbuildCommands(spec, quiet=True)
     if output_binary is not None:
-      target_postbuilds = self.xcode_settings.GetTargetPostbuilds(
+      postbuilds = self.xcode_settings.AddImplicitPostbuilds(
           self.config_name,
           os.path.normpath(os.path.join(self.base_to_build, output)),
           QuoteShellArgument(
               os.path.normpath(os.path.join(self.base_to_build, output_binary)),
               self.flavor),
-          quiet=True)
-    postbuilds = gyp.xcode_emulation.GetSpecPostbuildCommands(spec, quiet=True)
-    postbuilds = target_postbuilds + postbuilds
+          postbuilds, quiet=True)
+
     if not postbuilds:
       return ''
     # Postbuilds expect to be run in the gyp file's directory, so insert an

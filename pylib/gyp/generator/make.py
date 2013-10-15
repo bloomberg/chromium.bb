@@ -1414,7 +1414,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
           # TARGET_POSTBUILDS_$(BUILDTYPE) is added to postbuilds later on.
           gyp_to_build = gyp.common.InvertRelativePath(self.path)
-          target_postbuild = self.xcode_settings.GetTargetPostbuilds(
+          target_postbuild = self.xcode_settings.AddImplicitPostbuilds(
               configname,
               QuoteSpaces(os.path.normpath(os.path.join(gyp_to_build,
                                                         self.output))),
