@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
@@ -22,11 +23,14 @@ class GURL;
 
 namespace net {
 class IOBuffer;
+class URLRequest;
 class URLRequestStatus;
 }  // namespace net
 
 namespace content {
 class ResourceController;
+class ResourceMessageFilter;
+class ResourceRequestInfoImpl;
 struct ResourceResponse;
 
 // The resource dispatcher host uses this interface to process network events
@@ -77,7 +81,7 @@ class CONTENT_EXPORT ResourceHandler
   // If the handler returns false, then the request is cancelled.  Otherwise,
   // once data is available, OnReadCompleted will be called.
   virtual bool OnWillRead(int request_id,
-                          net::IOBuffer** buf,
+                          scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) = 0;
 
@@ -102,11 +106,19 @@ class CONTENT_EXPORT ResourceHandler
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) = 0;
 
  protected:
-  ResourceHandler() : controller_(NULL) {}
-  ResourceController* controller() { return controller_; }
+  ResourceHandler(net::URLRequest* request);
+
+  ResourceController* controller() const { return controller_; }
+  net::URLRequest* request() const { return request_; }
+
+  // Convenience functions.
+  ResourceRequestInfoImpl* GetRequestInfo() const;
+  int GetRequestID() const;
+  ResourceMessageFilter* GetFilter() const;
 
  private:
   ResourceController* controller_;
+  net::URLRequest* request_;
 };
 
 }  // namespace content

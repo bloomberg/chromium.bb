@@ -56,7 +56,7 @@ class CertificateResourceHandler : public ResourceHandler {
 
   // Create a new buffer to store received data.
   virtual bool OnWillRead(int request_id,
-                          net::IOBuffer** buf,
+                          scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) OVERRIDE;
 
@@ -80,7 +80,6 @@ class CertificateResourceHandler : public ResourceHandler {
   void AssembleResource();
 
   GURL url_;
-  net::URLRequest* request_;
   size_t content_length_;
   ContentVector buffer_;
   scoped_refptr<net::IOBuffer> read_buffer_;

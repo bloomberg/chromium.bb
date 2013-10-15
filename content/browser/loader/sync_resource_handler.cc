@@ -22,22 +22,21 @@ SyncResourceHandler::SyncResourceHandler(
     net::URLRequest* request,
     IPC::Message* result_message,
     ResourceDispatcherHostImpl* resource_dispatcher_host)
-    : read_buffer_(new net::IOBuffer(kReadBufSize)),
-      request_(request),
+    : ResourceHandler(request),
+      read_buffer_(new net::IOBuffer(kReadBufSize)),
       result_message_(result_message),
       rdh_(resource_dispatcher_host) {
-  result_.final_url = request_->url();
+  result_.final_url = request->url();
 }
 
 SyncResourceHandler::~SyncResourceHandler() {
   if (result_message_) {
     result_message_->set_reply_error();
-    const ResourceRequestInfoImpl* info =
-        ResourceRequestInfoImpl::ForRequest(request_);
+    ResourceMessageFilter* filter = GetFilter();
     // If the filter doesn't exist at this point, the process has died and isn't
     // waiting for the result message anymore.
-    if (info->filter())
-      info->filter()->Send(result_message_);
+    if (filter)
+      filter->Send(result_message_);
   }
 }
 
@@ -53,13 +52,11 @@ bool SyncResourceHandler::OnRequestRedirected(
     ResourceResponse* response,
     bool* defer) {
   if (rdh_->delegate()) {
-    const ResourceRequestInfoImpl* info =
-        ResourceRequestInfoImpl::ForRequest(request_);
     rdh_->delegate()->OnRequestRedirected(
-        new_url, request_, info->GetContext(), response);
+        new_url, request(), GetRequestInfo()->GetContext(), response);
   }
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
+  DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
   // TODO(darin): It would be much better if this could live in WebCore, but
   // doing so requires API changes at all levels.  Similar code exists in
   // WebCore/platform/network/cf/ResourceHandleCFNet.cpp :-(
@@ -75,17 +72,16 @@ bool SyncResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response,
     bool* defer) {
-  const ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info->filter())
     return false;
 
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(
-        request_, info->GetContext(), response, info->filter());
+        request(), info->GetContext(), response, info->filter());
   }
 
-  DevToolsNetLogObserver::PopulateResponseInfo(request_, response);
+  DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
 
   // We don't care about copying the status here.
   result_.headers = response->head.headers;
@@ -105,8 +101,10 @@ bool SyncResourceHandler::OnWillStart(int request_id,
   return true;
 }
 
-bool SyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
-                                     int* buf_size, int min_size) {
+bool SyncResourceHandler::OnWillRead(int request_id,
+                                     scoped_refptr<net::IOBuffer>* buf,
+                                     int* buf_size,
+                                     int min_size) {
   DCHECK(min_size == -1);
   *buf = read_buffer_.get();
   *buf_size = kReadBufSize;
@@ -125,18 +123,17 @@ bool SyncResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
-  const ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
-  if (!info->filter())
+  ResourceMessageFilter* filter = GetFilter();
+  if (!filter)
     return false;
 
   result_.error_code = status.error();
 
   result_.encoded_data_length =
-      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);
+      DevToolsNetLogObserver::GetAndResetEncodedDataLength(request());
 
   ResourceHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
-  info->filter()->Send(result_message_);
+  filter->Send(result_message_);
   result_message_ = NULL;
   return true;
 }

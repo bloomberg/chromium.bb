@@ -53,7 +53,6 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
 
   void ResumeIfDeferred();
 
-  net::URLRequest* request_;
   bool has_started_response_;
   bool in_cross_site_transition_;
   bool completed_during_transition_;

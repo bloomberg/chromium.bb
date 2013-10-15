@@ -50,7 +50,7 @@ class AsyncResourceHandler : public ResourceHandler,
                            const GURL& url,
                            bool* defer) OVERRIDE;
   virtual bool OnWillRead(int request_id,
-                          net::IOBuffer** buf,
+                          scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) OVERRIDE;
   virtual bool OnReadCompleted(int request_id,
@@ -73,7 +73,6 @@ class AsyncResourceHandler : public ResourceHandler,
   void ResumeIfDeferred();
 
   scoped_refptr<ResourceBuffer> buffer_;
-  net::URLRequest* request_;
   ResourceDispatcherHostImpl* rdh_;
 
   // Number of messages we've sent to the renderer that we haven't gotten an

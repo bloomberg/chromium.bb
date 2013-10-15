@@ -19,7 +19,7 @@ StreamResourceHandler::StreamResourceHandler(
     net::URLRequest* request,
     StreamRegistry* registry,
     const GURL& origin)
-    : request_(request),
+    : ResourceHandler(request),
       read_buffer_(NULL) {
   // TODO(tyoshino): Find a way to share this with the blob URL creation in
   // WebKit.
@@ -58,7 +58,7 @@ bool StreamResourceHandler::OnWillStart(int request_id,
 }
 
 bool StreamResourceHandler::OnWillRead(int request_id,
-                                       net::IOBuffer** buf,
+                                       scoped_refptr<net::IOBuffer>* buf,
                                        int* buf_size,
                                        int min_size) {
   static const int kReadBufSize = 32768;

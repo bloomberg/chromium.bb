@@ -19,7 +19,8 @@ SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
                                                  int render_view_id,
                                                  const GURL& url,
                                                  SaveFileManager* manager)
-    : save_id_(-1),
+    : ResourceHandler(NULL),
+      save_id_(-1),
       render_process_id_(render_process_host_id),
       render_view_id_(render_view_id),
       url_(url),
@@ -73,8 +74,10 @@ bool SaveFileResourceHandler::OnWillStart(int request_id,
   return true;
 }
 
-bool SaveFileResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
-                                         int* buf_size, int min_size) {
+bool SaveFileResourceHandler::OnWillRead(int request_id,
+                                         scoped_refptr<net::IOBuffer>* buf,
+                                         int* buf_size,
+                                         int min_size) {
   DCHECK(buf && buf_size);
   if (!read_buffer_.get()) {
     *buf_size = min_size < 0 ? kReadBufSize : min_size;
