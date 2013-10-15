@@ -25,9 +25,6 @@
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
 
-/* Maximum character buffer size to use for generating messages. */
-static const size_t kMaxBufferSize = 1024;
-
 /*
  * When true, check both uses and sets of memory. When false, only
  * check sets.

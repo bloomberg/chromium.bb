@@ -16,8 +16,6 @@
 #include "native_client/src/trusted/validator/x86/halt_trim.h"
 #include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
 
-// Copied from halt_trim.c
-static const NaClMemorySize kMinHaltKeepLength = MAX_INST_LENGTH + 1;
 
 namespace {
 

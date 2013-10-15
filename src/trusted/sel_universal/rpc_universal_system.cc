@@ -29,8 +29,6 @@ using std::stringstream;
 
 namespace {
 
-const uintptr_t k64KBytes = 0x10000;
-
 // The main point of this class is to ensure automatic cleanup.
 // If the destructor is not invoked you need to manually cleanup
 // the shared memory descriptors via "ipcs -m" and "ipcrm -m <id>"

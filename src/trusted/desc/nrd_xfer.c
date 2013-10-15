@@ -46,12 +46,6 @@
  * 16-bytes-per-cycle memory copies for in-cache data.
  */
 
-static INLINE nacl_abi_size_t min_abi_size(nacl_abi_size_t  a,
-                                           nacl_abi_size_t  b) {
-  if (a < b) return a;
-  return b;
-}
-
 static INLINE size_t min_size(size_t  a,
                               size_t  b) {
   if (a < b) return a;

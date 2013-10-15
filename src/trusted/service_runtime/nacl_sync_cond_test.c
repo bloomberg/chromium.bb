@@ -69,13 +69,11 @@ static uint64_t gSchedulerMaxMin = 20000;  /* usec, so 20mS */
  * where the scheduler may do nasty things for us.
  */
 
-static int const kTenToThird = 1000;
-static int const kTenToSixth = 1000 * 1000;
-static int const kTenToNinth = 1000 * 1000 * 1000;
-static int const kMilliXinX  = 1000;
 static int const kMicroXinX  = 1000 * 1000;
 static int const kNanoXinX   = 1000 * 1000 * 1000;
+#if NACL_WINDOWS
 static int const kMicroXinMilliX = 1000;
+#endif
 static int const kNanoXinMicroX = 1000;
 
 

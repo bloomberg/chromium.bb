@@ -1,8 +1,7 @@
 /*
- * Copyright 2012 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2012, Google Inc.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/validator_mips/address_set.h"
@@ -12,7 +11,9 @@
 
 namespace nacl_mips_val {
 
+#if !defined(NDEBUG)
 static const int kInstrAlignment = 4;
+#endif
 static const int kInstrSize = 4;
 static const int kWordSize = 32;
 static const int kInstrPerWord = 4 * kWordSize;
@@ -111,4 +112,4 @@ void AddressSet::Iterator::Advance() {
   }
 }
 
-}  // namespace
+}  // namespace nacl_mips_val

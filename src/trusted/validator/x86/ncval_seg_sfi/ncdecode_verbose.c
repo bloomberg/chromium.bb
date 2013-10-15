@@ -39,16 +39,6 @@
  */
 #if NACL_TARGET_SUBARCH == 64
 
-/* Returns if the decoded instruction contains a REX prefix byte. */
-static INLINE uint8_t HasRexPrefix(const NCDecoderInst* dinst) {
-  /* Note: we could check the prefix mask of the recognized instruction to
-   * see if bit kPrefixREX is set. However, the field rexprefix is
-   * initialized to zero (during decoding) and only set if an actual
-   * REX prefix is found (which must be values between 0x40 and 0x4f)
-   */
-  return 0 != dinst->inst.rexprefix;
-}
-
 /* Returns true if REX.W is defined in the REX prefix byte. */
 static INLINE uint8_t GetRexPrefixW(const NCDecoderInst* dinst) {
   /* Note: the field rexprefix is non-zero only if a rexprefix was found. */
@@ -59,18 +49,6 @@ static INLINE uint8_t GetRexPrefixW(const NCDecoderInst* dinst) {
 static INLINE uint8_t GetRexPrefixR(const NCDecoderInst* dinst) {
   /* Note: the field rexprefix is non-zero only if a rexprefix was found. */
   return 0 != NaClRexR(dinst->inst.rexprefix);
-}
-
-/* Returns true if REX.X is defined in the REX prefix byte. */
-static INLINE uint8_t GetRexPrefixX(const NCDecoderInst* dinst) {
-  /* Note: the field rexprefix is non-zero only if a rexprefix was found. */
-  return 0 != NaClRexX(dinst->inst.rexprefix);
-}
-
-/* Returns true if REX.B is defined in the REX prefix byte. */
-static INLINE uint8_t GetRexPrefixB(const NCDecoderInst* dinst) {
-  /* Note: the field rexprefix is non-zero only if a rexprefix was found. */
-  return 0 != NaClRexB(dinst ->inst.rexprefix);
 }
 
 #endif

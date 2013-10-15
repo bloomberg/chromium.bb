@@ -34,9 +34,6 @@
 #include "native_client/src/trusted/validator/x86/decoder/ncop_exps_inl.c"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter_inl.c"
 
-/* Maximum character buffer size to use for generating messages. */
-static const size_t kMaxBufferSize = 1024;
-
 static void NaClReportIllegalChangeToRsp(NaClValidatorState* state,
                                          NaClInstState* inst) {
   NaClValidatorInstMessage(LOG_ERROR, state, inst,

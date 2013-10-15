@@ -102,8 +102,6 @@ static ssize_t ImcRecvmsg(NaClSrpcMessageDesc desc,
 
 #endif  /* __native_client__ */
 
-static const size_t kDescSize = sizeof(NaClSrpcMessageDesc);
-
 struct PortableDesc {
   NaClSrpcMessageDesc raw_desc;
 };

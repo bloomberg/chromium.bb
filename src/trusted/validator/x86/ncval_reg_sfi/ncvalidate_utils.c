@@ -121,9 +121,6 @@ static INLINE Bool NaClAssignsRegisterWithZeroExtends(NaClInstState* state,
       NaClOperandOneZeroExtends(state);
 }
 
-/* Maximum character buffer size to use for generating messages. */
-static const size_t kMaxBufferSize = 1024;
-
 Bool NaClAssignsRegisterWithZeroExtends32(
     struct NaClValidatorState* state,
     size_t distance,
