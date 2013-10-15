@@ -180,6 +180,14 @@ camera.views.Camera = function(context) {
   this.scroller_ = new camera.util.SmoothScroller(
       document.querySelector('#effects'));
 
+  /**
+   * True if the window has been shown during startup. Used to avoid showing
+   * it more than once, when retrying initialization.
+   * @type {boolean}
+   * @private
+   */
+  this.shownAtStartup_ = false;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -595,7 +603,8 @@ camera.views.Camera.prototype.start = function() {
     var targetHeight = Math.round(targetWidth / targetAspectRatio);
     if (windowWidth == 640 && windowHeight == 360)
       chrome.app.window.current().resizeTo(targetWidth, targetHeight);
-    chrome.app.window.current().show();
+    if (!this.shownAtStartup_)
+      chrome.app.window.current().show();
     // Show tools after some small delay to make it more visible.
     setTimeout(function() {
       this.ribbonInitialization_ = false;
@@ -621,7 +630,9 @@ camera.views.Camera.prototype.start = function() {
   }.bind(this);
 
   var onFailure = function() {
-    chrome.app.window.current().show();
+    if (!this.shownAtStartup_)
+      chrome.app.window.current().show();
+    this.shownAtStartup_ = true;
     scheduleRetry();
   }.bind(this);
 
