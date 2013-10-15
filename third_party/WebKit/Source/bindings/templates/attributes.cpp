@@ -29,6 +29,12 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
         return;
     }
     {% endif %}
+    {% if attribute.is_getter_raises_exception %}
+    ExceptionState es(info.GetIsolate());
+    {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
+    if (UNLIKELY(es.throwIfNeeded()))
+        return;
+    {% endif %}
     {% if attribute.is_nullable %}
     bool isNull = false;
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};

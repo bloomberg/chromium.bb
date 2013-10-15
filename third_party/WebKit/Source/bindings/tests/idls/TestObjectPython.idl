@@ -108,7 +108,9 @@ interface TestObjectPython {
     [DoNotCheckSecurityOnGetter] readonly attribute long doNotCheckSecurityOnGetterReadonlyLongAttribute;
     [DoNotCheckSecurityOnSetter] readonly attribute long doNotCheckSecurityOnSetterReadonlyLongAttribute;
     [EnforceRange] readonly attribute long enforceRangeReadonlyLongAttribute;  // FIXME: properly MUST NOT appear on read only attribute; will correct when implement setters
+    [GetterRaisesException] readonly attribute long getterRaisesExceptionReadonlyLongAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
+    [RaisesException] readonly attribute long raisesExceptionReadonlyLongAttribute;
     [RuntimeEnabled=FeatureName] readonly attribute long enabledAtRuntimeReadonlyLongAttribute;
     [Conditional=Condition, RuntimeEnabled=FeatureName] readonly attribute long conditionalEnabledAtRuntimeReadonlyLongAttribute;
 };

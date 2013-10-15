@@ -85,15 +85,18 @@ def generate_attribute_and_includes(interface, attribute):
         return contents, set()
 
     cpp_value = getter_expression(interface, attribute, contents)
+    # [GetterRaisesException], [RaisesException]
+    is_getter_raises_exception = has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException'))
     # Normally we can inline the function call into the return statement to
     # avoid the overhead of using a Ref<> temporary, but for some cases
-    # (nullable types, EventHandler, CachedAttribute, or if there are
+    # (nullable types, EventHandler, [CachedAttribute], or if there are
     # exceptions), we need to use a local variable.
     # FIXME: check if compilers are smart enough to inline this, and if so,
     # always use a local variable (for readability and CG simplicity).
     if (attribute.is_nullable or
         idl_type == 'EventHandler' or
-        'CachedAttribute' in extended_attributes):
+        'CachedAttribute' in extended_attributes or
+        is_getter_raises_exception):
         contents['cpp_value_original'] = cpp_value
         cpp_value = 'value'
     contents['cpp_value'] = cpp_value
@@ -114,18 +117,17 @@ def generate_attribute_and_includes(interface, attribute):
     # [CheckSecurityForNode]
     is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
     if is_check_security_for_node:
-        includes.update(set(['bindings/v8/BindingSecurity.h',
-        # FIXME: these should be added if [CheckSecurityForNode], [GetterRaisesException], or [RaisesException]
-                             'bindings/v8/ExceptionMessages.h',
-                             'bindings/v8/ExceptionState.h']))
-
         includes.add('bindings/v8/BindingSecurity.h')
     # [DeprecateAs]
     v8_utilities.generate_deprecate_as(attribute, contents, includes)
+    if is_check_security_for_node or is_getter_raises_exception:
+        includes.update(set(['bindings/v8/ExceptionMessages.h',
+                             'bindings/v8/ExceptionState.h']))
 
     contents.update({
         'is_activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # [ActivityLogging=Access|Getter]
         'is_check_security_for_node': is_check_security_for_node,
+        'is_getter_raises_exception': is_getter_raises_exception,
     })
 
     return contents, includes
@@ -136,6 +138,8 @@ def getter_expression(interface, attribute, contents):
     arguments = v8_utilities.call_with_arguments(attribute, contents)
     if attribute.is_nullable:
         arguments.append('isNull')
+    if has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')):
+        arguments.append('es')
     if attribute.data_type == 'EventHandler':
         arguments.append('isolatedWorldForIsolate(info.GetIsolate())')
     return '%s(%s)' % (this_getter_name, ', '.join(arguments))
