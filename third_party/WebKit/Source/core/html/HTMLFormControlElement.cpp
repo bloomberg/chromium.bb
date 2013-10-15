@@ -449,7 +449,7 @@ bool HTMLFormControlElement::checkValidity(Vector<RefPtr<FormAssociatedElement> 
         return false;
     // An event handler can deref this object.
     RefPtr<HTMLFormControlElement> protector(this);
-    RefPtr<Document> originalDocument(&document());
+    RefPtr<Document> originalDocument(document());
     bool needsDefaultAction = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
     if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);

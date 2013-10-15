@@ -97,7 +97,7 @@ bool AccessibilityMenuList::canSetFocusAttribute() const
 
 void AccessibilityMenuList::didUpdateActiveOption(int optionIndex)
 {
-    RefPtr<Document> document = &m_renderer->document();
+    RefPtr<Document> document(m_renderer->document());
     AXObjectCache* cache = document->axObjectCache();
 
     const AccessibilityChildrenVector& childObjects = children();

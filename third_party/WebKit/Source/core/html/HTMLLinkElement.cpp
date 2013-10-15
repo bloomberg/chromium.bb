@@ -119,7 +119,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
 bool HTMLLinkElement::shouldLoadLink()
 {
     bool continueLoad = true;
-    RefPtr<Document> originalDocument = &document();
+    RefPtr<Document> originalDocument(document());
     int recursionRank = ++m_beforeLoadRecurseCount;
     if (!dispatchBeforeLoadEvent(getNonEmptyURLAttribute(hrefAttr)))
         continueLoad = false;

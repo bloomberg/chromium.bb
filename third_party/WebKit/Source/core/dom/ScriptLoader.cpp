@@ -251,7 +251,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
 {
     ASSERT(m_element);
 
-    RefPtr<Document> elementDocument = &m_element->document();
+    RefPtr<Document> elementDocument(m_element->document());
     if (!m_element->dispatchBeforeLoadEvent(sourceUrl))
         return false;
     if (!m_element->inDocument() || m_element->document() != elementDocument)
@@ -301,7 +301,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     if (sourceCode.isEmpty())
         return;
 
-    RefPtr<Document> elementDocument = &m_element->document();
+    RefPtr<Document> elementDocument(m_element->document());
     RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
     if (!contextDocument)
         return;
@@ -366,7 +366,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
 
-    RefPtr<Document> elementDocument = &m_element->document();
+    RefPtr<Document> elementDocument(m_element->document());
     RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
     if (!contextDocument)
         return;

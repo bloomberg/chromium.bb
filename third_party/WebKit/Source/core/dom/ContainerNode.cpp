@@ -925,7 +925,7 @@ static void dispatchChildInsertionEvents(Node* child)
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
     RefPtr<Node> c = child;
-    RefPtr<Document> document = &child->document();
+    RefPtr<Document> document(child->document());
 
     if (c->parentNode() && document->hasListenerType(Document::DOMNODEINSERTED_LISTENER))
         c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeInserted, true, c->parentNode()));
@@ -949,7 +949,7 @@ static void dispatchChildRemovalEvents(Node* child)
     InspectorInstrumentation::willRemoveDOMNode(&child->document(), child);
 
     RefPtr<Node> c = child;
-    RefPtr<Document> document = &child->document();
+    RefPtr<Document> document(child->document());
 
     // dispatch pre-removal mutation events
     if (c->parentNode() && document->hasListenerType(Document::DOMNODEREMOVED_LISTENER)) {

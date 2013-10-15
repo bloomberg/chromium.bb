@@ -635,7 +635,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
         return true;
     }
 
-    RefPtr<Document> newDocument = &element->document();
+    RefPtr<Document> newDocument(element->document());
 
     if (newDocument && newDocument->focusedElement() == element)
         return true;

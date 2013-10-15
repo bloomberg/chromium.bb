@@ -215,7 +215,7 @@ inline void ChildNodeInsertionNotifier::notify(Node* node)
 
     InspectorInstrumentation::didInsertDOMNode(&node->document(), node);
 
-    RefPtr<Document> protectDocument(&node->document());
+    RefPtr<Document> protectDocument(node->document());
     RefPtr<Node> protectNode(node);
 
     if (m_insertionPoint->inDocument())

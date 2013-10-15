@@ -835,8 +835,7 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
     selection = selectionForCommand(triggeringEvent);
     if (selection.isContentEditable()) {
         if (Node* selectionStart = selection.start().deprecatedNode()) {
-            RefPtr<Document> document = &selectionStart->document();
-            ASSERT(document);
+            RefPtr<Document> document(selectionStart->document());
 
             // Insert the text
             TypingCommand::Options options = 0;
