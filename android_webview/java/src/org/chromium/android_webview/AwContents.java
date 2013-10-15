@@ -538,7 +538,7 @@ public class AwContents {
                     @Override
                     public void onGestureZoomSupportChanged(boolean supportsGestureZoom) {
                         mContentViewCore.updateMultiTouchZoomSupport(supportsGestureZoom);
-                        mContentViewCore.updateDoubleTapDragSupport(supportsGestureZoom);
+                        mContentViewCore.updateDoubleTapSupport(supportsGestureZoom);
                     }
 
                 };

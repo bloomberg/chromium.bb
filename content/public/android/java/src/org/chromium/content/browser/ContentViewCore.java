@@ -788,6 +788,7 @@ public class ContentViewCore
         };
 
         mRenderCoordinates.reset();
+        onRenderCoordinatesUpdated();
 
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter(mContext);
@@ -1436,9 +1437,9 @@ public class ContentViewCore
                 x, y, computeHorizontalScrollOffset(), computeVerticalScrollOffset());
     }
 
-    @Override
-    public boolean hasFixedPageScale() {
-        return mRenderCoordinates.hasFixedPageScale();
+    private void onRenderCoordinatesUpdated() {
+        if (mContentViewGestureHandler == null) return;
+        mContentViewGestureHandler.updateHasFixedPageScale(mRenderCoordinates.hasFixedPageScale());
     }
 
     private void hidePopupDialog() {
@@ -1940,8 +1941,8 @@ public class ContentViewCore
         mZoomManager.updateMultiTouchSupport(supportsMultiTouchZoom);
     }
 
-    public void updateDoubleTapDragSupport(boolean supportsDoubleTapDrag) {
-        mContentViewGestureHandler.updateDoubleTapDragSupport(supportsDoubleTapDrag);
+    public void updateDoubleTapSupport(boolean supportsDoubleTap) {
+        mContentViewGestureHandler.updateDoubleTapSupport(supportsDoubleTap);
     }
 
     public void selectPopupMenuItems(int[] indices) {
@@ -2370,6 +2371,7 @@ public class ContentViewCore
                 viewportWidth, viewportHeight,
                 pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
                 contentOffsetYPix);
+        onRenderCoordinatesUpdated();
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();
         if (needUpdateZoomControls) mZoomControlsDelegate.updateZoomControls();

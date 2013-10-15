@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
 import org.chromium.content.browser.third_party.GestureDetector;
+import org.chromium.content.browser.third_party.GestureDetector.OnDoubleTapListener;
 import org.chromium.content.browser.third_party.GestureDetector.OnGestureListener;
 import org.chromium.content.browser.LongPressDetector.LongPressDelegate;
 import org.chromium.content.browser.SnapScrollController;
@@ -63,6 +64,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private final ZoomManager mZoomManager;
     private LongPressDetector mLongPressDetector;
     private OnGestureListener mListener;
+    private OnDoubleTapListener mDoubleTapListener;
     private MotionEvent mCurrentDownEvent;
     private final MotionEventDelegate mMotionEventDelegate;
 
@@ -113,8 +115,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private int mSingleTapX;
     private int mSingleTapY;
 
-    // Indicate current double tap drag mode state.
-    private int mDoubleTapDragMode = DOUBLE_TAP_DRAG_MODE_NONE;
+    // Indicate current double tap mode state.
+    private int mDoubleTapMode = DOUBLE_TAP_MODE_NONE;
 
     // x, y coordinates for an Anchor on double tap drag zoom.
     private float mDoubleTapDragZoomAnchorX;
@@ -151,6 +153,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // processed. This allows multiple such gestures to be sent in a given frame.
     private boolean mSentGestureNeedsVSync;
     private long mLastVSyncGestureTimeMs;
+
+    // If the page scale is fixed, double tap gesture detection can be disabled.
+    private boolean mHasFixedPageScale;
 
     // Incremented and decremented when the methods onTouchEvent() and confirmTouchEvent() start
     // and finish execution, respectively. This provides accounting for synchronous calls to
@@ -191,10 +196,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
     private final float mPxToDp;
 
-    static final int DOUBLE_TAP_DRAG_MODE_NONE = 0;
-    static final int DOUBLE_TAP_DRAG_MODE_DETECTION_IN_PROGRESS = 1;
-    static final int DOUBLE_TAP_DRAG_MODE_ZOOM = 2;
-    static final int DOUBLE_TAP_DRAG_MODE_DISABLED = 3;
+    static final int DOUBLE_TAP_MODE_NONE = 0;
+    static final int DOUBLE_TAP_MODE_DRAG_DETECTION_IN_PROGRESS = 1;
+    static final int DOUBLE_TAP_MODE_DRAG_ZOOM = 2;
+    static final int DOUBLE_TAP_MODE_DISABLED = 3;
 
     private class TouchEventTimeoutHandler implements Runnable {
         private static final int TOUCH_EVENT_TIMEOUT = 200;
@@ -326,11 +331,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
          * Show the zoom picker UI.
          */
         public void invokeZoomPicker();
-
-        /**
-         * @return Whether changing the page scale is not possible on the current page.
-         */
-        public boolean hasFixedPageScale();
     }
 
     ContentViewGestureHandler(
@@ -497,20 +497,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                 }
                                 setClickXAndY((int) x, (int) y);
                                 return true;
-                            } else if (mMotionEventDelegate.hasFixedPageScale()) {
-                                // If page is not user scalable, we don't need to wait
-                                // for double tap timeout.
-                                float x = e.getX();
-                                float y = e.getY();
-                                mExtraParamBundleSingleTap.putBoolean(SHOW_PRESS,
-                                        mShowPressIsCalled);
-                                assert mExtraParamBundleSingleTap.size() == 1;
-
-                                if (sendMotionEventAsGesture(GESTURE_SINGLE_TAP_CONFIRMED, e,
-                                        mExtraParamBundleSingleTap)) {
-                                    mIgnoreSingleTap = true;
-                                }
-                                setClickXAndY((int) x, (int) y);
+                            } else if (isDoubleTapDisabled()) {
+                                // If double tap has been disabled, there is no need to wait
+                                // for the double tap timeout.
+                                return onSingleTapConfirmed(e);
                             } else {
                                 // Notify Blink about this tapUp event anyway,
                                 // when none of the above conditions applied.
@@ -532,9 +522,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         int x = (int) e.getX();
                         int y = (int) e.getY();
                         mExtraParamBundleSingleTap.putBoolean(SHOW_PRESS, mShowPressIsCalled);
-                        sendMotionEventAsGesture(GESTURE_SINGLE_TAP_CONFIRMED, e,
-                            mExtraParamBundleSingleTap);
                         assert mExtraParamBundleSingleTap.size() == 1;
+                        if (sendMotionEventAsGesture(GESTURE_SINGLE_TAP_CONFIRMED, e,
+                                mExtraParamBundleSingleTap)) {
+                            mIgnoreSingleTap = true;
+                        }
 
                         setClickXAndY(x, y);
                         return true;
@@ -542,17 +534,17 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
                     @Override
                     public boolean onDoubleTapEvent(MotionEvent e) {
-                        if (isDoubleTapDragDisabled()) return false;
+                        if (isDoubleTapDisabled()) return false;
                         switch (e.getActionMasked()) {
                             case MotionEvent.ACTION_DOWN:
                                 sendShowPressCancelIfNecessary(e);
                                 mDoubleTapDragZoomAnchorX = e.getX();
                                 mDoubleTapDragZoomAnchorY = e.getY();
-                                mDoubleTapDragMode = DOUBLE_TAP_DRAG_MODE_DETECTION_IN_PROGRESS;
+                                mDoubleTapMode = DOUBLE_TAP_MODE_DRAG_DETECTION_IN_PROGRESS;
                                 break;
                             case MotionEvent.ACTION_MOVE:
-                                if (mDoubleTapDragMode
-                                        == DOUBLE_TAP_DRAG_MODE_DETECTION_IN_PROGRESS) {
+                                if (mDoubleTapMode
+                                        == DOUBLE_TAP_MODE_DRAG_DETECTION_IN_PROGRESS) {
                                     float distanceX = mDoubleTapDragZoomAnchorX - e.getX();
                                     float distanceY = mDoubleTapDragZoomAnchorY - e.getY();
 
@@ -565,9 +557,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                         pinchBegin(e.getEventTime(),
                                                 Math.round(mDoubleTapDragZoomAnchorX),
                                                 Math.round(mDoubleTapDragZoomAnchorY));
-                                        mDoubleTapDragMode = DOUBLE_TAP_DRAG_MODE_ZOOM;
+                                        mDoubleTapMode = DOUBLE_TAP_MODE_DRAG_ZOOM;
                                     }
-                                } else if (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_ZOOM) {
+                                } else if (mDoubleTapMode == DOUBLE_TAP_MODE_DRAG_ZOOM) {
                                     assert mExtraParamBundleDoubleTapDragZoom.isEmpty();
                                     sendGesture(GESTURE_SCROLL_BY, e.getEventTime(),
                                             (int) e.getX(), (int) e.getY(),
@@ -584,14 +576,14 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                 }
                                 break;
                             case MotionEvent.ACTION_UP:
-                                if (mDoubleTapDragMode != DOUBLE_TAP_DRAG_MODE_ZOOM) {
+                                if (mDoubleTapMode != DOUBLE_TAP_MODE_DRAG_ZOOM) {
                                     // Normal double tap gesture.
                                     sendMotionEventAsGesture(GESTURE_DOUBLE_TAP, e, null);
                                 }
-                                endDoubleTapDragMode(e);
+                                endDoubleTapDragIfNecessary(e);
                                 break;
                             case MotionEvent.ACTION_CANCEL:
-                                endDoubleTapDragMode(e);
+                                endDoubleTapDragIfNecessary(e);
                                 break;
                             default:
                                 break;
@@ -603,8 +595,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public void onLongPress(MotionEvent e) {
                         if (!mZoomManager.isScaleGestureDetectionInProgress() &&
-                                (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_NONE ||
-                                 isDoubleTapDragDisabled())) {
+                                (mDoubleTapMode == DOUBLE_TAP_MODE_NONE ||
+                                 isDoubleTapDisabled())) {
                             mLastLongPressEvent = e;
                             sendMotionEventAsGesture(GESTURE_LONG_PRESS, e, null);
                         }
@@ -630,6 +622,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     }
                 };
                 mListener = listener;
+                mDoubleTapListener = listener;
                 mGestureDetector = new GestureDetector(context, listener);
                 mGestureDetector.setIsLongpressEnabled(false);
         } finally {
@@ -700,19 +693,19 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     /**
-     * End DOUBLE_TAP_DRAG_MODE_ZOOM by sending GESTURE_SCROLL_END and GESTURE_PINCH_END events.
+     * End DOUBLE_TAP_MODE_DRAG_ZOOM by sending GESTURE_SCROLL_END and GESTURE_PINCH_END events.
      * @param event A hint event that its x, y, and eventTime will be used for the ending events
      *              to send. This argument is an optional and can be null.
      */
-    void endDoubleTapDragMode(MotionEvent event) {
-        if (isDoubleTapDragDisabled()) return;
-        if (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_ZOOM) {
+    void endDoubleTapDragIfNecessary(MotionEvent event) {
+        if (mDoubleTapMode == DOUBLE_TAP_MODE_DISABLED) return;
+        if (mDoubleTapMode == DOUBLE_TAP_MODE_DRAG_ZOOM) {
             if (event == null) event = obtainActionCancelMotionEvent();
             pinchEnd(event.getEventTime());
             sendGesture(GESTURE_SCROLL_END, event.getEventTime(),
                     (int) event.getX(), (int) event.getY(), null);
         }
-        mDoubleTapDragMode = DOUBLE_TAP_DRAG_MODE_NONE;
+        mDoubleTapMode = DOUBLE_TAP_MODE_NONE;
     }
 
     /**
@@ -844,7 +837,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 mJavaScriptIsConsumingGesture = false;
                 endFlingIfNecessary(event.getEventTime());
             } else if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-                endDoubleTapDragMode(null);
+                endDoubleTapDragIfNecessary(null);
             }
 
             if (offerTouchEventToJavaScript(event)) {
@@ -1212,14 +1205,47 @@ class ContentViewGestureHandler implements LongPressDelegate {
         return mTouchEventTimeoutHandler.hasScheduledTimeoutEventForTesting();
     }
 
-    public void updateDoubleTapDragSupport(boolean supportDoubleTapDrag) {
-        assert (mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_DISABLED ||
-                mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_NONE);
-        mDoubleTapDragMode = supportDoubleTapDrag ?
-                DOUBLE_TAP_DRAG_MODE_NONE : DOUBLE_TAP_DRAG_MODE_DISABLED;
+    /**
+     * Update whether double-tap gestures are supported. This allows
+     * double-tap gesture suppression independent of whether or not the page
+     * scale is fixed.
+     * Note: This should never be called while a double-tap gesture is in progress.
+     * @param supportDoubleTap Whether double-tap gestures are supported.
+     */
+    public void updateDoubleTapSupport(boolean supportDoubleTap) {
+        assert (mDoubleTapMode == DOUBLE_TAP_MODE_DISABLED ||
+                mDoubleTapMode == DOUBLE_TAP_MODE_NONE);
+        int doubleTapMode = supportDoubleTap ?
+                DOUBLE_TAP_MODE_NONE : DOUBLE_TAP_MODE_DISABLED;
+        if (mDoubleTapMode == doubleTapMode) return;
+        mDoubleTapMode = doubleTapMode;
+        updateDoubleTapListener();
     }
 
-    private boolean isDoubleTapDragDisabled() {
-        return mDoubleTapDragMode == DOUBLE_TAP_DRAG_MODE_DISABLED;
+    /**
+     * Update whether the current page has a fixed page scale.
+     * A fixed page scale will suppress double-tap gesture detection, allowing
+     * for rapid and responsive single-tap gestures.
+     * @param hasFixedPageScale Whether the page scale is fixed.
+     */
+    public void updateHasFixedPageScale(boolean hasFixedPageScale) {
+        if (mHasFixedPageScale == hasFixedPageScale) return;
+        mHasFixedPageScale = hasFixedPageScale;
+        updateDoubleTapListener();
+    }
+
+    private boolean isDoubleTapDisabled() {
+        return mDoubleTapMode == DOUBLE_TAP_MODE_DISABLED ||
+               mHasFixedPageScale;
+    }
+
+    private void updateDoubleTapListener() {
+        if (isDoubleTapDisabled()) {
+            endDoubleTapDragIfNecessary(null);
+            mGestureDetector.setOnDoubleTapListener(null);
+        } else {
+            mGestureDetector.setOnDoubleTapListener(mDoubleTapListener);
+        }
+
     }
 }
