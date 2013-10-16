@@ -38,7 +38,7 @@
 #include "wtf/Threading.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+namespace WebCore {
 
 namespace {
 
@@ -67,6 +67,8 @@ struct Rasterizer {
     SkCanvas* canvas;
     SkPicture* picture;
 };
+
+} // namespace
 
 class DeferredImageDecoderTest : public ::testing::Test, public MockImageDecoderClient {
 public:
@@ -129,6 +131,10 @@ public:
     }
 
 protected:
+    void useMockImageDecoderFactory()
+    {
+        m_lazyDecoder->frameGenerator()->setImageDecoderFactory(MockImageDecoderFactory::create(this, m_decodedSize));
+    }
 
     // Don't own this but saves the pointer to query states.
     MockImageDecoder* m_actualDecoder;
@@ -303,7 +309,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
     EXPECT_FALSE(image->bitmap().isNull());
     EXPECT_TRUE(image->bitmap().isImmutable());
 
-    m_lazyDecoder->frameGenerator()->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this, m_decodedSize));
+    useMockImageDecoderFactory();
 
     // The following code should not fail any assert.
     SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
@@ -314,4 +320,4 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
     EXPECT_EQ(1, m_frameBufferRequestCount);
 }
 
-} // namespace
+} // namespace WebCore

@@ -29,7 +29,6 @@
 #include "SkBitmap.h"
 #include "SkSize.h"
 #include "SkTypes.h"
-#include "core/platform/graphics/chromium/DiscardablePixelRef.h"
 #include "core/platform/graphics/chromium/ThreadSafeDataTransport.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -72,13 +71,18 @@ public:
 
     bool isMultiFrame() const { return m_isMultiFrame; }
 
-    // |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
-    void setImageDecoderFactoryForTesting(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = factory; }
-
     // FIXME: Return alpha state for each frame.
     bool hasAlpha(size_t);
 
 private:
+    friend class ImageFrameGeneratorTest;
+    friend class DeferredImageDecoderTest;
+    // For testing. |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
+    void setImageDecoderFactory(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = factory; }
+    // For testing.
+    SkBitmap::Allocator* allocator() const { return m_allocator.get(); }
+    void setAllocator(PassOwnPtr<SkBitmap::Allocator> allocator) { m_allocator = allocator; }
+
     // These methods are called while m_decodeMutex is locked.
     const ScaledImageFragment* tryToLockCompleteCache(const SkISize& scaledSize, size_t index);
     const ScaledImageFragment* tryToScale(const ScaledImageFragment* fullSizeImage, const SkISize& scaledSize, size_t index);
@@ -98,7 +102,7 @@ private:
     bool m_decodeFailedAndEmpty;
     Vector<bool> m_hasAlpha;
     size_t m_decodeCount;
-    DiscardablePixelRefAllocator m_allocator;
+    OwnPtr<SkBitmap::Allocator> m_allocator;
 
     OwnPtr<ImageDecoderFactory> m_imageDecoderFactory;
 

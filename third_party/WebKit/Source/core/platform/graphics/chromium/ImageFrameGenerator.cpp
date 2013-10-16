@@ -52,6 +52,7 @@ ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<Sha
     , m_isMultiFrame(isMultiFrame)
     , m_decodeFailedAndEmpty(false)
     , m_decodeCount(ScaledImageFragment::FirstPartialImage)
+    , m_allocator(adoptPtr(new DiscardablePixelRefAllocator()))
 {
     setData(data.get(), allDataReceived);
 }
@@ -128,7 +129,7 @@ const ScaledImageFragment* ImageFrameGenerator::tryToScale(const ScaledImageFrag
     // afterwards. So the memory allocated to the scaledBitmap can be
     // discarded after this call. Need to lock the scaledBitmap and
     // check the pixels before using it next time.
-    SkBitmap scaledBitmap = skia::ImageOperations::Resize(fullSizeImage->bitmap(), resizeMethod(), scaledSize.width(), scaledSize.height(), &m_allocator);
+    SkBitmap scaledBitmap = skia::ImageOperations::Resize(fullSizeImage->bitmap(), resizeMethod(), scaledSize.width(), scaledSize.height(), m_allocator.get());
 
     OwnPtr<ScaledImageFragment> scaledImage;
     if (fullSizeImage->isComplete())
@@ -214,7 +215,7 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
     // TODO: this is very ugly. We need to refactor the way how we can pass a
     // memory allocator to image decoders.
     if (!m_isMultiFrame)
-        (*decoder)->setMemoryAllocator(&m_allocator);
+        (*decoder)->setMemoryAllocator(m_allocator.get());
     (*decoder)->setData(data, allDataReceived);
     // If this call returns a newly allocated DiscardablePixelRef, then
     // ImageFrame::m_bitmap and the contained DiscardablePixelRef are locked.
@@ -230,6 +231,9 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
 
     const bool isComplete = frame->status() == ImageFrame::FrameComplete;
     SkBitmap fullSizeBitmap = frame->getSkBitmap();
+    if (fullSizeBitmap.isNull())
+        return nullptr;
+
     {
         MutexLocker lock(m_alphaMutex);
         if (index >= m_hasAlpha.size()) {
@@ -248,8 +252,8 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
     // If the image is partial we need to return a copy. This is to avoid future
     // decode operations writing to the same bitmap.
     SkBitmap copyBitmap;
-    fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.config(), &m_allocator);
-    return ScaledImageFragment::createPartial(m_fullSize, index, nextGenerationId(), copyBitmap);
+    return fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.config(), m_allocator.get()) ?
+        ScaledImageFragment::createPartial(m_fullSize, index, nextGenerationId(), copyBitmap) : nullptr;
 }
 
 bool ImageFrameGenerator::hasAlpha(size_t index)
@@ -260,4 +264,4 @@ bool ImageFrameGenerator::hasAlpha(size_t index)
     return true;
 }
 
-} // namespace WebCore
+} // namespace
