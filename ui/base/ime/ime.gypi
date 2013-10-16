@@ -24,6 +24,7 @@
       'input_method_imm32.h',
       'input_method_initializer.h',
       'input_method_initializer.cc',
+      'input_method_observer.h',
       'input_method_tsf.cc',
       'input_method_tsf.h',
       'input_method_win.cc',
