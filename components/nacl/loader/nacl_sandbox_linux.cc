@@ -84,6 +84,8 @@ ErrorCode NaClBpfSandboxPolicy(
 #endif
     // NaCl runtime exposes clock_getres to untrusted code.
     case __NR_clock_getres:
+    // NaCl runtime uses flock to simulate POSIX behavior for pwrite.
+    case __NR_flock:
     case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sched_get_priority_max:
