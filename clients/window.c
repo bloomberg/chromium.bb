@@ -2189,10 +2189,17 @@ frame_resize_handler(struct widget *widget,
 	widget_set_allocation(widget, 0, 0, width, height);
 
 	if (child->opaque) {
-		frame_opaque_rect(frame->frame, &opaque.x, &opaque.y,
-				  &opaque.width, &opaque.height);
-		wl_region_add(widget->surface->opaque_region,
-			      opaque.x, opaque.y, opaque.width, opaque.height);
+		if (widget->window->type != TYPE_FULLSCREEN) {
+			frame_opaque_rect(frame->frame, &opaque.x, &opaque.y,
+					  &opaque.width, &opaque.height);
+
+			wl_region_add(widget->surface->opaque_region,
+				      opaque.x, opaque.y,
+				      opaque.width, opaque.height);
+		} else {
+			wl_region_add(widget->surface->opaque_region,
+				      0, 0, width, height);
+		}
 	}
 
 
