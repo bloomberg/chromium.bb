@@ -172,6 +172,9 @@ void MultiUserWindowManager::ActiveUserChanged(const std::string& user_id) {
     if (should_be_visible != is_visible)
       SetWindowVisibility(window, should_be_visible);
   }
+}
+
+void MultiUserWindowManager::UserAddedToSession(const std::string& user_id) {
   // Make sure that all newly created applications get properly added to this
   // user's account.
   AddUser(user_id);

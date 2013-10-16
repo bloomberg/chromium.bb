@@ -95,6 +95,7 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
 
   // SessionStateObserver overrides:
   virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE;
+  virtual void UserAddedToSession(const std::string& user_id) OVERRIDE;
 
   // WindowObserver overrides:
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
