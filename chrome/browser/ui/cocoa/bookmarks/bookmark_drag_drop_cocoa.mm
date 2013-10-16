@@ -137,6 +137,7 @@ void DragBookmarks(Profile* profile,
   base::MessageLoop::current()->SetNestableTasksAllowed(true);
 
   BookmarkNodeData drag_data(nodes);
+  drag_data.SetOriginatingProfile(profile);
   drag_data.WriteToClipboard(ui::CLIPBOARD_TYPE_DRAG);
 
   // Synthesize an event for dragging, since we can't be sure that
