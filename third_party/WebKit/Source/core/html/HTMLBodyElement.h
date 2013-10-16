@@ -81,11 +81,7 @@ private:
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 };
 
-inline HTMLBodyElement* toHTMLBodyElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::bodyTag));
-    return static_cast<HTMLBodyElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLBodyElement, hasTagName(HTMLNames::bodyTag));
 
 } //namespace
 

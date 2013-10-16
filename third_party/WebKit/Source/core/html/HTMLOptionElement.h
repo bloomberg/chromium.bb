@@ -94,19 +94,7 @@ private:
     RefPtr<RenderStyle> m_style;
 };
 
-void toHTMLOptionElement(const HTMLOptionElement*); // This overload will catch anyone doing an unnecessary cast.
-
-inline HTMLOptionElement* toHTMLOptionElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::optionTag));
-    return static_cast<HTMLOptionElement*>(node);
-}
-
-inline const HTMLOptionElement* toHTMLOptionElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::optionTag));
-    return static_cast<const HTMLOptionElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLOptionElement, hasTagName(HTMLNames::optionTag));
 
 } // namespace WebCore
 

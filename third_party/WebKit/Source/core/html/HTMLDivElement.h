@@ -40,11 +40,7 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 };
 
-inline HTMLDivElement* toHTMLDivElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::divTag));
-    return static_cast<HTMLDivElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLDivElement, hasTagName(HTMLNames::divTag));
 
 } // namespace WebCore
 

@@ -54,11 +54,7 @@ private:
     AtomicString m_name;
 };
 
-inline HTMLMapElement* toHTMLMapElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::mapTag));
-    return static_cast<HTMLMapElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLMapElement, hasTagName(HTMLNames::mapTag));
 
 } //namespace
 

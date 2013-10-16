@@ -45,11 +45,7 @@ private:
     virtual HTMLFormElement* virtualForm() const OVERRIDE;
 };
 
-inline HTMLLegendElement* toHTMLLegendElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::legendTag));
-    return static_cast<HTMLLegendElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLLegendElement, hasTagName(HTMLNames::legendTag));
 
 } //namespace
 

@@ -118,17 +118,7 @@ private:
     float m_imageDevicePixelRatio;
 };
 
-inline HTMLImageElement* toHTMLImageElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::imgTag));
-    return static_cast<HTMLImageElement*>(node);
-}
-
-inline const HTMLImageElement* toHTMLImageElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::imgTag));
-    return static_cast<const HTMLImageElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLImageElement, hasTagName(HTMLNames::imgTag));
 
 } //namespace
 

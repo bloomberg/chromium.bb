@@ -65,11 +65,7 @@ private:
     bool m_shouldRecalculateItemCount : 1;
 };
 
-inline HTMLOListElement* toHTMLOListElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::olTag));
-    return static_cast<HTMLOListElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLOListElement, hasTagName(HTMLNames::olTag));
 
 } //namespace
 

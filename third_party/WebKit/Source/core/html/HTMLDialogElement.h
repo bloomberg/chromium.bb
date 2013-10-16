@@ -61,11 +61,7 @@ private:
     String m_returnValue;
 };
 
-inline HTMLDialogElement* toHTMLDialogElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::dialogTag));
-    return static_cast<HTMLDialogElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLDialogElement, hasTagName(HTMLNames::dialogTag));
 
 } // namespace WebCore
 

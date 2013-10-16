@@ -113,11 +113,7 @@ private:
     bool m_useFallbackContent : 1;
 };
 
-inline HTMLObjectElement* toHTMLObjectElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::objectTag));
-    return static_cast<HTMLObjectElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLObjectElement, hasTagName(HTMLNames::objectTag));
 
 inline const HTMLObjectElement* toHTMLObjectElement(const FormAssociatedElement* element)
 {

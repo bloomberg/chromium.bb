@@ -67,17 +67,7 @@ private:
     void processViewportContentAttribute(const String& content, ViewportDescription::Type origin);
 };
 
-inline HTMLMetaElement* toHTMLMetaElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::metaTag));
-    return static_cast<HTMLMetaElement*>(node);
-}
-
-inline const HTMLMetaElement* toHTMLMetaElement(const Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::metaTag));
-    return static_cast<const HTMLMetaElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLMetaElement, hasTagName(HTMLNames::metaTag));
 
 } // namespace WebCore
 

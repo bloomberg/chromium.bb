@@ -63,11 +63,7 @@ private:
     mutable uint64_t m_documentVersion;
 };
 
-inline HTMLFieldSetElement* toHTMLFieldSetElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::fieldsetTag));
-    return static_cast<HTMLFieldSetElement*>(node);
-}
+DEFINE_NODE_TYPE_CASTS(HTMLFieldSetElement, hasTagName(HTMLNames::fieldsetTag));
 
 } // namespace
 
