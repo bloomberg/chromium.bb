@@ -50,6 +50,13 @@ public:
         return adoptRef(new ServiceWorker(worker));
     }
 
+    // For CallbackPromiseAdapter
+    typedef WebKit::WebServiceWorker WebType;
+    static PassRefPtr<ServiceWorker> from(WebType* worker)
+    {
+        return create(adoptPtr(worker));
+    }
+
     ~ServiceWorker() { }
 
 private:

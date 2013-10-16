@@ -32,12 +32,36 @@
 #define CallbackPromiseAdapter_h
 
 #include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "public/platform/WebCallbacks.h"
 
 namespace WebCore {
 
-// FIXME: this class can be generalized
-class CallbackPromiseAdapter : public WebKit::WebCallbacks<WebKit::WebServiceWorker, WebKit::WebServiceWorker> {
+// This class provides an easy way to convert from a Script-exposed
+// class (i.e. a class that has a toV8() overload) that uses Promises
+// to a WebKit API class that uses WebCallbacks. You can define
+// seperate Success and Error classes, but this example just uses one
+// object for both.
+//
+// To use:
+//
+// class MyClass ... {
+//    typedef WebKit::WebMyClass WebType;
+//    static PassRefPtr<MyClass> from(WebKit::WebMyClass* webInstance) {
+//        // convert/create as appropriate, but often it's just:
+//        return MyClass::create(adoptPtr(webInstance));
+//    }
+//
+// Now when calling into a WebKit API that requires a WebCallbacks<WebKit::WebMyClass, WebKit::WebMyClass>*:
+//
+//    // call signature: callSomeMethod(WebCallbacks<MyClass, MyClass>* callbacks)
+//    webObject->callSomeMethod(new CallbackPromiseAdapter<MyClass, MyClass>(resolver, scriptExecutionContext));
+//
+// Note that this class does not manage its own lifetime. In this
+// example that ownership of the WebCallbacks instance is being passed
+// in and it is up to the callee to free the WebCallbacks instace.
+template<typename S, typename T>
+class CallbackPromiseAdapter : public WebKit::WebCallbacks<typename S::WebType, typename T::WebType> {
 public:
     explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
         : m_resolver(resolver)
@@ -46,21 +70,20 @@ public:
     }
     virtual ~CallbackPromiseAdapter() { }
 
-    virtual void onSuccess(WebKit::WebServiceWorker* worker) OVERRIDE
+    virtual void onSuccess(typename S::WebType* result) OVERRIDE
     {
-        // FIXME: When the same worker is "registered" twice, we should return the same object.
         DOMRequestState::Scope scope(m_requestState);
-        m_resolver->resolve(ServiceWorker::create(adoptPtr(worker)));
+        m_resolver->resolve(S::from(result));
     }
-    void onError(WebKit::WebServiceWorker* worker) OVERRIDE
+    void onError(typename T::WebType* error) OVERRIDE
     {
-        // FIXME: need to propagate some kind of reason for failure.
         DOMRequestState::Scope scope(m_requestState);
-        m_resolver->reject(ServiceWorker::create(adoptPtr(worker)));
+        m_resolver->reject(T::from(error));
     }
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
     DOMRequestState m_requestState;
+    DISALLOW_COPY_AND_ASSIGN(CallbackPromiseAdapter);
 };
 
 } // namespace WebCore

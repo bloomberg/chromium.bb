@@ -513,7 +513,6 @@
       'quota/WebStorageQuotaCallbacksImpl.h',
       'quota/WorkerNavigatorStorageQuota.cpp',
       'quota/WorkerNavigatorStorageQuota.h',
-      'serviceworkers/CallbackPromiseAdapter.h',
       'serviceworkers/ServiceWorker.cpp',
       'serviceworkers/ServiceWorker.h',
       'serviceworkers/NavigatorServiceWorker.cpp',
