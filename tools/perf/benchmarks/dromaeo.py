@@ -62,7 +62,7 @@ class DromaeoDomCoreTraverse(DromaeoBenchmark):
 class DromaeoJslibAttrJquery(DromaeoBenchmark):
   """Dromaeo JSLib attr jquery JavaScript benchmark"""
   tag = 'jslibattrjquery'
-  query_param = 'jslib-attr-query'
+  query_param = 'jslib-attr-jquery'
 
 
 class DromaeoJslibAttrPrototype(DromaeoBenchmark):
