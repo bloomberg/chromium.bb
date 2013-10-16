@@ -886,7 +886,6 @@ TEST_F(JobSchedulerTest, JobInfo) {
   EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_DOWNLOAD_FILE));
 }
 
-
 TEST_F(JobSchedulerTest, JobInfoProgress) {
   JobListLogger logger;
   scheduler_->AddObserver(&logger);
@@ -940,6 +939,60 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
   EXPECT_TRUE(base::STLIsSorted(upload_progress));
   EXPECT_GE(upload_progress.front(), 0);
   EXPECT_LE(upload_progress.back(), 13);
+}
+
+TEST_F(JobSchedulerTest, CancelPendingJob) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath upload_path = temp_dir.path().AppendASCII("new_file.txt");
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(upload_path, "Hello"));
+
+  // To create a pending job for testing, set the mode to cellular connection
+  // and issue BACKGROUND jobs.
+  ConnectToCellular();
+  pref_service_->SetBoolean(prefs::kDisableDriveOverCellular, true);
+
+  // Start the first job and record its job ID.
+  google_apis::GDataErrorCode error1 = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
+  scheduler_->UploadNewFile(
+      fake_drive_service_->GetRootResourceId(),
+      base::FilePath::FromUTF8Unsafe("dummy/path"),
+      upload_path,
+      "dummy title 1",
+      "text/plain",
+      ClientContext(BACKGROUND),
+      google_apis::test_util::CreateCopyResultCallback(&error1, &entry));
+
+  const std::vector<JobInfo>& jobs = scheduler_->GetJobInfoList();
+  ASSERT_EQ(1u, jobs.size());
+  ASSERT_EQ(STATE_NONE, jobs[0].state);  // Not started yet.
+  JobID first_job_id = jobs[0].job_id;
+
+  // Start the second job.
+  google_apis::GDataErrorCode error2 = google_apis::GDATA_OTHER_ERROR;
+  scheduler_->UploadNewFile(
+      fake_drive_service_->GetRootResourceId(),
+      base::FilePath::FromUTF8Unsafe("dummy/path"),
+      upload_path,
+      "dummy title 2",
+      "text/plain",
+      ClientContext(BACKGROUND),
+      google_apis::test_util::CreateCopyResultCallback(&error2, &entry));
+
+  // Cancel the first one.
+  scheduler_->CancelJob(first_job_id);
+
+  // Only the first job should be cancelled.
+  ConnectToWifi();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(google_apis::GDATA_CANCELLED, error1);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, error2);
+}
+
+TEST_F(JobSchedulerTest, CancelRunningJob) {
+  // TODO(kinaba): test for canceling jobs running in the Drive service.
+  // We need to slightly extend FakeDriveService to support CancelCallback.
 }
 
 }  // namespace drive
