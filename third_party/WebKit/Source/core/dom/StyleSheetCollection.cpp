@@ -139,6 +139,9 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
     Vector<StyleSheetContents*> addedSheets;
     styleResolverUpdateType = compareStyleSheets(oldStyleSheets, newStyleSheets, addedSheets);
 
+    // FIXME: If styleResolverUpdateType is still Reconstruct, we could return early here
+    // as destroying the StyleResolver will recalc the whole document anyway?
+
     // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
     if (!document()->body() || document()->hasNodesWithPlaceholderStyle())
         return;

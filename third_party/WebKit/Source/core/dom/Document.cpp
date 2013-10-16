@@ -3139,7 +3139,7 @@ void Document::evaluateMediaQueryList()
         m_mediaQueryMatcher->styleResolverChanged();
 }
 
-void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleResolverUpdateMode updateMode)
+void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpdateMode updateMode)
 {
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
@@ -3164,7 +3164,7 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
     m_evaluateMediaQueriesOnStyleRecalc = true;
     setNeedsStyleRecalc();
 
-    if (updateType == RecalcStyleImmediately)
+    if (updateTime == RecalcStyleImmediately)
         updateStyleIfNeeded();
 }
 
