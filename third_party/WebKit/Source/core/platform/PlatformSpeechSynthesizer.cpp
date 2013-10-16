@@ -26,6 +26,15 @@
 #include "config.h"
 #include "core/platform/PlatformSpeechSynthesizer.h"
 
+#include "core/platform/PlatformSpeechSynthesisUtterance.h"
+#include "core/platform/PlatformSpeechSynthesisVoice.h"
+#include "core/platform/chromium/support/WebSpeechSynthesizerClientImpl.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebSpeechSynthesisUtterance.h"
+#include "public/platform/WebSpeechSynthesizer.h"
+#include "public/platform/WebSpeechSynthesizerClient.h"
+#include "wtf/RetainPtr.h"
+
 namespace WebCore {
 
 PassOwnPtr<PlatformSpeechSynthesizer> PlatformSpeechSynthesizer::create(PlatformSpeechSynthesizerClient* client)
@@ -35,10 +44,52 @@ PassOwnPtr<PlatformSpeechSynthesizer> PlatformSpeechSynthesizer::create(Platform
     return synthesizer.release();
 }
 
+PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient* client)
+    : m_speechSynthesizerClient(client)
+{
+    m_webSpeechSynthesizerClient = adoptPtr(new WebSpeechSynthesizerClientImpl(this, client));
+    m_webSpeechSynthesizer = adoptPtr(WebKit::Platform::current()->createSpeechSynthesizer(m_webSpeechSynthesizerClient.get()));
+}
+
+PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer()
+{
+}
+
+void PlatformSpeechSynthesizer::speak(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance)
+{
+    if (!m_webSpeechSynthesizer || !m_webSpeechSynthesizerClient)
+        return;
+
+    m_webSpeechSynthesizer->speak(WebKit::WebSpeechSynthesisUtterance(utterance));
+}
+
+void PlatformSpeechSynthesizer::pause()
+{
+    if (m_webSpeechSynthesizer.get())
+        m_webSpeechSynthesizer->pause();
+}
+
+void PlatformSpeechSynthesizer::resume()
+{
+    if (m_webSpeechSynthesizer.get())
+        m_webSpeechSynthesizer->resume();
+}
+
+void PlatformSpeechSynthesizer::cancel()
+{
+    if (m_webSpeechSynthesizer.get())
+        m_webSpeechSynthesizer->cancel();
+}
+
 void PlatformSpeechSynthesizer::setVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice> >& voices)
 {
     m_voiceList = voices;
 }
 
+void PlatformSpeechSynthesizer::initializeVoiceList()
+{
+    if (m_webSpeechSynthesizer.get())
+        m_webSpeechSynthesizer->updateVoiceList();
+}
 
 } // namespace WebCore

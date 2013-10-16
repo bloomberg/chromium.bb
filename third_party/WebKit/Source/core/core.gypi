@@ -2693,7 +2693,6 @@
             'platform/chromium/PlatformScreenChromium.cpp',
             'platform/chromium/PlatformThemeChromiumDefault.cpp',
             'platform/chromium/PlatformThemeChromiumDefault.h',
-            'platform/chromium/PlatformSpeechSynthesizerChromium.cpp',
             'platform/graphics/BitmapImage.cpp',
             'platform/graphics/ContentDecryptionModule.cpp',
             'platform/graphics/ContentDecryptionModule.h',
