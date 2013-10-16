@@ -1212,30 +1212,15 @@ const char* TraceLog::GetCategoryGroupName(
 }
 
 void TraceLog::UpdateCategoryGroupEnabledFlag(int category_index) {
-  bool is_enabled = enable_count_ && category_filter_.IsCategoryGroupEnabled(
-      g_category_groups[category_index]);
-  SetCategoryGroupEnabled(category_index, is_enabled);
+  g_category_group_enabled[category_index] =
+      enable_count_ &&
+      category_filter_.IsCategoryGroupEnabled(
+          g_category_groups[category_index]);
 }
 
 void TraceLog::UpdateCategoryGroupEnabledFlags() {
   for (int i = 0; i < g_category_index; i++)
     UpdateCategoryGroupEnabledFlag(i);
-}
-
-void TraceLog::SetCategoryGroupEnabled(int category_index, bool is_enabled) {
-  g_category_group_enabled[category_index] =
-      is_enabled ? CATEGORY_GROUP_ENABLED : 0;
-
-#if defined(OS_ANDROID)
-  ApplyATraceEnabledFlag(&g_category_group_enabled[category_index]);
-#endif
-}
-
-bool TraceLog::IsCategoryGroupEnabled(
-    const unsigned char* category_group_enabled) {
-  // On Android, ATrace and normal trace can be enabled independently.
-  // This function checks if the normal trace is enabled.
-  return *category_group_enabled & CATEGORY_GROUP_ENABLED;
 }
 
 const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
@@ -1700,6 +1685,9 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const unsigned long long* arg_values,
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned char flags) {
+  if (!*category_group_enabled)
+    return;
+
   DCHECK(name);
 
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
@@ -1710,9 +1698,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
                num_args, arg_names, arg_types, arg_values, convertable_values,
                flags);
 #endif
-
-  if (!IsCategoryGroupEnabled(category_group_enabled))
-    return;
 
   TimeTicks now = timestamp - time_offset_;
   TimeTicks thread_now = ThreadNow();

@@ -64,25 +64,38 @@ void WriteEvent(
 namespace base {
 namespace debug {
 
+// These functions support Android systrace.py when 'webview' category is
+// traced. With the new adb_profile_chrome, we may have two phases:
+// - before WebView is ready for combined tracing, we can use adb_profile_chrome
+//   to trace android categories other than 'webview' and chromium categories.
+//   In this way we can avoid the conflict between StartATrace/StopATrace and
+//   the intents.
+// - TODO(wangxianzhu): after WebView is ready for combined tracing, remove
+//   StartATrace, StopATrace and SendToATrace, and perhaps send Java traces
+//   directly to atrace in trace_event_binding.cc.
+
 void TraceLog::StartATrace() {
-  AutoLock lock(lock_);
+  if (g_atrace_fd != -1)
+    return;
+
+  g_atrace_fd = open(kATraceMarkerFile, O_WRONLY);
   if (g_atrace_fd == -1) {
-    g_atrace_fd = open(kATraceMarkerFile, O_WRONLY);
-    if (g_atrace_fd == -1) {
-      LOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
-    } else {
-      UpdateCategoryGroupEnabledFlags();
-    }
+    PLOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
+    return;
   }
+  SetEnabled(CategoryFilter(CategoryFilter::kDefaultCategoryFilterString),
+             RECORD_CONTINUOUSLY);
 }
 
 void TraceLog::StopATrace() {
-  AutoLock lock(lock_);
-  if (g_atrace_fd != -1) {
-    close(g_atrace_fd);
-    g_atrace_fd = -1;
-    UpdateCategoryGroupEnabledFlags();
-  }
+  if (g_atrace_fd == -1)
+    return;
+
+  close(g_atrace_fd);
+  g_atrace_fd = -1;
+  SetDisabled();
+  // Delete the buffered trace events as they have been sent to atrace.
+  Flush(OutputCallback());
 }
 
 void TraceLog::SendToATrace(
@@ -139,20 +152,6 @@ void TraceLog::SendToATrace(
       // Do nothing.
       break;
   }
-}
-
-// Must be called with lock_ locked.
-void TraceLog::ApplyATraceEnabledFlag(unsigned char* category_group_enabled) {
-  if (g_atrace_fd == -1)
-    return;
-
-  // Don't enable disabled-by-default categories for atrace.
-  const char* category_group = GetCategoryGroupName(category_group_enabled);
-  if (strncmp(category_group, TRACE_DISABLED_BY_DEFAULT(""),
-              strlen(TRACE_DISABLED_BY_DEFAULT(""))) == 0)
-    return;
-
-  *category_group_enabled |= ATRACE_ENABLED;
 }
 
 void TraceLog::AddClockSyncMetadataEvent() {

@@ -573,21 +573,6 @@ class BASE_EXPORT TraceLog {
   void UpdateCategoryGroupEnabledFlags();
   void UpdateCategoryGroupEnabledFlag(int category_index);
 
-  static void SetCategoryGroupEnabled(int category_index, bool enabled);
-  static bool IsCategoryGroupEnabled(
-      const unsigned char* category_group_enabled);
-
-  // The pointer returned from GetCategoryGroupEnabledInternal() points to a
-  // value with zero or more of the following bits. Used in this class only.
-  // The TRACE_EVENT macros should only use the value as a bool.
-  enum CategoryGroupEnabledFlags {
-    // Normal enabled flag for category groups enabled with Enable().
-    CATEGORY_GROUP_ENABLED = 1 << 0,
-    // On Android if ATrace is enabled, all categories will have this bit.
-    // Not used on other platforms.
-    ATRACE_ENABLED = 1 << 1
-  };
-
   // Helper class for managing notification_thread_count_ and running
   // notification callbacks. This is very similar to a reader-writer lock, but
   // shares the lock with TraceLog and manages the notification flags.
@@ -630,7 +615,6 @@ class BASE_EXPORT TraceLog {
       const unsigned long long* arg_values,
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
       unsigned char flags);
-  static void ApplyATraceEnabledFlag(unsigned char* category_group_enabled);
 #endif
 
   TraceBuffer* trace_buffer() const { return logged_events_.get(); }
