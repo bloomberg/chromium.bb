@@ -34,8 +34,8 @@
 namespace WebCore {
 
 GeolocationController::GeolocationController(Page* page, GeolocationClient* client)
-    : m_client(client)
-    , m_page(page)
+    : PageLifecycleObserver(page)
+    , m_client(client)
 {
 }
 
@@ -64,7 +64,7 @@ void GeolocationController::addObserver(Geolocation* observer, bool enableHighAc
     if (m_client) {
         if (enableHighAccuracy)
             m_client->setEnableHighAccuracy(true);
-        if (wasEmpty)
+        if (wasEmpty && page()->visibilityState() == PageVisibilityStateVisible)
             m_client->startUpdating();
     }
 }
@@ -99,7 +99,7 @@ void GeolocationController::cancelPermissionRequest(Geolocation* geolocation)
 
 void GeolocationController::positionChanged(GeolocationPosition* position)
 {
-    position = InspectorInstrumentation::overrideGeolocationPosition(m_page, position);
+    position = InspectorInstrumentation::overrideGeolocationPosition(page(), position);
     if (!position) {
         errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, "PositionUnavailable").get());
         return;
@@ -128,6 +128,17 @@ GeolocationPosition* GeolocationController::lastPosition()
         return 0;
 
     return m_client->lastPosition();
+}
+
+void GeolocationController::pageVisibilityChanged()
+{
+    if (m_observers.isEmpty() || !m_client)
+        return;
+
+    if (page()->visibilityState() == PageVisibilityStateVisible)
+        m_client->startUpdating();
+    else
+        m_client->stopUpdating();
 }
 
 const char* GeolocationController::supplementName()

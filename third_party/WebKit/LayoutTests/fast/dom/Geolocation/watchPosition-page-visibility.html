@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("Tests that watchPosition does not report position changes when the page is not visible.");
+window.jsTestIsAsync = true;
+
+var mockLatitude = 51.478;
+var mockLongitude = -0.166;
+var mockAccuracy = 100.0;
+
+debug("* Page is visible");
+
+function updatePosition() {
+    if (!window.testRunner)
+        return;
+    ++mockLatitude;
+    ++mockLongitude;
+    testRunner.setMockGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
+    debug('device moved to (' + mockLatitude + ', ' + mockLongitude + ')');
+}
+
+if (window.testRunner) {
+    testRunner.setGeolocationPermission(true);
+    updatePosition();
+} else
+    debug('This test can not be run without the testRunner');
+
+var state = 0;
+var position;
+var error;
+var isPageVisible = true;
+
+function checkPosition(p) {
+    position = p;
+    shouldBe('position.coords.latitude', '' + mockLatitude);
+    shouldBe('position.coords.longitude', '' + mockLongitude);
+    debug('');
+}
+
+function showPageAndUpdatePosition() {
+    shouldBeFalse('isPageVisible');
+    debug('');
+    state++;
+    if (window.testRunner) {
+        debug("*Showing page");
+        testRunner.setPageVisibility("visible");
+        isPageVisible = true;
+    }
+    updatePosition();
+}
+
+navigator.geolocation.watchPosition(function(p) {
+    debug("Page is notified of the position change");
+    shouldBeTrue('isPageVisible');
+    state++;
+    checkPosition(p);
+    switch(state) {
+        case 2: {
+            if (window.testRunner) {
+                debug("* Hiding page");
+	        testRunner.setPageVisibility("hidden");
+                isPageVisible = false;
+            }
+            setTimeout(showPageAndUpdatePosition, 100);
+            break;
+        }
+        case 4:
+            finishJSTest();
+            return;
+    }
+    updatePosition();
+}, function(e) {
+    testFailed('Error callback invoked unexpectedly');
+    finishJSTest();
+});
+
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

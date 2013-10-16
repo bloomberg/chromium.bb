@@ -27,6 +27,7 @@
 #define GeolocationController_h
 
 #include "core/page/Page.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "modules/geolocation/Geolocation.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -39,7 +40,7 @@ class GeolocationError;
 class GeolocationPosition;
 class Page;
 
-class GeolocationController : public Supplement<Page> {
+class GeolocationController : public Supplement<Page>, public PageLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(GeolocationController);
 public:
     ~GeolocationController();
@@ -59,6 +60,9 @@ public:
 
     GeolocationClient* client() { return m_client; }
 
+    // Inherited from PageLifecycleObserver.
+    virtual void pageVisibilityChanged() OVERRIDE;
+
     static const char* supplementName();
     static GeolocationController* from(Page* page) { return static_cast<GeolocationController*>(Supplement<Page>::from(page, supplementName())); }
 
@@ -66,7 +70,6 @@ private:
     GeolocationController(Page*, GeolocationClient*);
 
     GeolocationClient* m_client;
-    Page* m_page;
 
     RefPtr<GeolocationPosition> m_lastPosition;
     typedef HashSet<RefPtr<Geolocation> > ObserversSet;
