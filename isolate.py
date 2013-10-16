@@ -1808,8 +1808,11 @@ class CompleteState(object):
     if self.saved_state.relative_cwd == '.':
       root_dir = isolate_dir
     else:
-      assert isolate_dir.endswith(self.saved_state.relative_cwd), (
-          isolate_dir, self.saved_state.relative_cwd)
+      if not isolate_dir.endswith(self.saved_state.relative_cwd):
+        raise ExecutionError(
+            ('Make sure the .isolate file is in the directory that will be '
+             'used as the relative directory. It is currently in %s and should '
+             'be in %s') % (isolate_dir, self.saved_state.relative_cwd))
       # Walk back back to the root directory.
       root_dir = isolate_dir[:-(len(self.saved_state.relative_cwd) + 1)]
     return file_path.get_native_path_case(root_dir)
