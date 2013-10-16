@@ -1,0 +1,9 @@
+PASS: -webkit-mask-box-image-width from [0px] to [20px] was [0px] at -0.3
+PASS: -webkit-mask-box-image-width from [0px] to [20px] was [0px] at 0
+PASS: -webkit-mask-box-image-width from [0px] to [20px] was [6px] at 0.3
+PASS: -webkit-mask-box-image-width from [0px] to [20px] was [12px] at 0.6
+PASS: -webkit-mask-box-image-width from [0px] to [20px] was [20px] at 1
+PASS: -webkit-mask-box-image-width from [0px] to [20px] was [30px] at 1.5
+PASS: -webkit-mask-box-image-width from [0px] to [20px] was [100px] at 5
+PASS: -webkit-mask-box-image-width from [0px] to [20px] was [200px] at 10
+

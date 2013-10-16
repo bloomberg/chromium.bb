@@ -1,0 +1,7 @@
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at -0.3
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at 0
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [20px] at 0.4
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [30px] at 0.6
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [50px] at 1
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [75px] at 1.5
+

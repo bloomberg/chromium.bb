@@ -1,0 +1,9 @@
+FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at -0.3, expected [0px]
+FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 0, expected [0px]
+FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 0.3, expected [6px]
+FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 0.6, expected [12px]
+FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 1, expected [20px]
+FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 1.5, expected [30px]
+FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 5, expected [100px]
+FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 10, expected [200px]
+

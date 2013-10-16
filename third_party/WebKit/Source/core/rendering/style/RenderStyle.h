@@ -645,8 +645,13 @@ public:
     LengthSize maskSizeLength() const { return rareNonInheritedData->m_mask.sizeLength(); }
     FillLayer* accessMaskLayers() { return &(rareNonInheritedData.access()->m_mask); }
     const FillLayer* maskLayers() const { return &(rareNonInheritedData->m_mask); }
+
     const NinePieceImage& maskBoxImage() const { return rareNonInheritedData->m_maskBoxImage; }
     StyleImage* maskBoxImageSource() const { return rareNonInheritedData->m_maskBoxImage.image(); }
+    LengthBox maskBoxImageSlices() const { return rareNonInheritedData->m_maskBoxImage.imageSlices(); }
+    bool maskBoxImageSlicesFill() const { return rareNonInheritedData->m_maskBoxImage.fill(); }
+    LengthBox maskBoxImageWidth() const { return rareNonInheritedData->m_maskBoxImage.borderSlices(); }
+    LengthBox maskBoxImageOutset() const { return rareNonInheritedData->m_maskBoxImage.outset(); }
 
     EBorderCollapse borderCollapse() const { return static_cast<EBorderCollapse>(inherited_flags._border_collapse); }
     short horizontalBorderSpacing() const;
@@ -1108,6 +1113,22 @@ public:
 
     void setMaskBoxImage(const NinePieceImage& b) { SET_VAR(rareNonInheritedData, m_maskBoxImage, b); }
     void setMaskBoxImageSource(PassRefPtr<StyleImage> v) { rareNonInheritedData.access()->m_maskBoxImage.setImage(v); }
+    void setMaskBoxImageSlices(LengthBox slices)
+    {
+        rareNonInheritedData.access()->m_maskBoxImage.setImageSlices(slices);
+    }
+    void setMaskBoxImageSlicesFill(bool fill)
+    {
+        rareNonInheritedData.access()->m_maskBoxImage.setFill(fill);
+    }
+    void setMaskBoxImageWidth(LengthBox slices)
+    {
+        rareNonInheritedData.access()->m_maskBoxImage.setBorderSlices(slices);
+    }
+    void setMaskBoxImageOutset(LengthBox outset)
+    {
+        rareNonInheritedData.access()->m_maskBoxImage.setOutset(outset);
+    }
     void setMaskXPosition(Length length) { SET_VAR(rareNonInheritedData, m_mask.m_xPosition, length); }
     void setMaskYPosition(Length length) { SET_VAR(rareNonInheritedData, m_mask.m_yPosition, length); }
     void setMaskSize(LengthSize s) { SET_VAR(rareNonInheritedData, m_mask.m_sizeLength, s); }

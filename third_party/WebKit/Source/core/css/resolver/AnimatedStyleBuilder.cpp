@@ -37,6 +37,7 @@
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
+#include "core/animation/AnimatableLengthBoxAndBool.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
@@ -433,8 +434,18 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitColumnRuleWidth:
         style->setColumnRuleWidth(animatableValueRoundClampTo<unsigned short>(value));
         return;
+    case CSSPropertyWebkitMaskBoxImageOutset:
+        style->setMaskBoxImageOutset(animatableValueToLengthBox(value, state, NonNegativeValues));
+        return;
+    case CSSPropertyWebkitMaskBoxImageSlice:
+        style->setMaskBoxImageSlices(animatableValueToLengthBox(toAnimatableLengthBoxAndBool(value)->box(), state, NonNegativeValues));
+        style->setMaskBoxImageSlicesFill(toAnimatableLengthBoxAndBool(value)->flag());
+        return;
     case CSSPropertyWebkitMaskBoxImageSource:
         style->setMaskBoxImageSource(toAnimatableImage(value)->toStyleImage());
+        return;
+    case CSSPropertyWebkitMaskBoxImageWidth:
+        style->setMaskBoxImageWidth(animatableValueToLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyWebkitMaskImage:
         style->setMaskImage(toAnimatableImage(value)->toStyleImage());

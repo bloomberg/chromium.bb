@@ -537,6 +537,8 @@
             'animation/AnimatableLength.h',
             'animation/AnimatableLengthBox.cpp',
             'animation/AnimatableLengthBox.h',
+            'animation/AnimatableLengthBoxAndBool.cpp',
+            'animation/AnimatableLengthBoxAndBool.h',
             'animation/AnimatableLengthSize.cpp',
             'animation/AnimatableLengthSize.h',
             'animation/AnimatableNeutral.h',

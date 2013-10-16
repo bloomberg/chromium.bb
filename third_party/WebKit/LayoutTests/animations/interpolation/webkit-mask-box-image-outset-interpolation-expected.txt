@@ -1,0 +1,7 @@
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at -0.3
+PASS: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at 0
+FAIL: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at 0.4, expected [20px]
+FAIL: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at 0.6, expected [30px]
+FAIL: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at 1, expected [50px]
+FAIL: -webkit-mask-box-image-outset from [0px] to [50px] was [0px] at 1.5, expected [75px]
+

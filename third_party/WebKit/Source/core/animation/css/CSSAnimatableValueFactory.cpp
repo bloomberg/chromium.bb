@@ -38,6 +38,7 @@
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
+#include "core/animation/AnimatableLengthBoxAndBool.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
@@ -105,6 +106,13 @@ inline static PassRefPtr<AnimatableValue> createFromLengthBox(const LengthBox& l
         createFromLength(lengthBox.right(), style),
         createFromLength(lengthBox.top(), style),
         createFromLength(lengthBox.bottom(), style));
+}
+
+inline static PassRefPtr<AnimatableValue> createFromLengthBoxAndBool(const LengthBox lengthBox, const bool flag, const RenderStyle *style)
+{
+    return AnimatableLengthBoxAndBool::create(
+        createFromLengthBox(lengthBox, style),
+        flag);
 }
 
 inline static PassRefPtr<AnimatableValue> createFromLengthSize(const LengthSize& lengthSize, const RenderStyle* style)
@@ -340,8 +348,14 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromDouble(style->columnRuleWidth());
     case CSSPropertyWebkitColumnWidth:
         return createFromDouble(style->columnWidth());
+    case CSSPropertyWebkitMaskBoxImageOutset:
+        return createFromLengthBox(style->maskBoxImageOutset(), style);
+    case CSSPropertyWebkitMaskBoxImageSlice:
+        return createFromLengthBoxAndBool(style->maskBoxImageSlices(), style->maskBoxImageSlicesFill(), style);
     case CSSPropertyWebkitMaskBoxImageSource:
         return AnimatableImage::create(style->maskBoxImageSource());
+    case CSSPropertyWebkitMaskBoxImageWidth:
+        return createFromLengthBox(style->maskBoxImageWidth(), style);
     case CSSPropertyWebkitMaskImage:
         return AnimatableImage::create(style->maskImage());
     case CSSPropertyWebkitMaskPositionX:

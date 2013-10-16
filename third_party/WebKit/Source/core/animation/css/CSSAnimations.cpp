@@ -536,8 +536,14 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyWebkitColumnRuleWidth:
     case CSSPropertyWebkitColumnWidth:
     case CSSPropertyWebkitFilter:
+    // FIXME: Shorthands should not be present in this list, but
+    // CSSPropertyAnimation implements animation of -webkit-mask-box-image
+    // directly and makes use of this method.
     case CSSPropertyWebkitMaskBoxImage:
+    case CSSPropertyWebkitMaskBoxImageOutset:
+    case CSSPropertyWebkitMaskBoxImageSlice:
     case CSSPropertyWebkitMaskBoxImageSource:
+    case CSSPropertyWebkitMaskBoxImageWidth:
     case CSSPropertyWebkitMaskImage:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
