@@ -624,8 +624,6 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
-crbug.com/306523 fast/hidpi/image-srcset-change-dynamically-from-js-2x.html [ Skip ]
-crbug.com/306523 virtual/gpu/fast/hidpi/image-srcset-change-dynamically-from-js-2x.html [ Skip ]
 
 crbug.com/299556 fast/hidpi/image-set-as-background.html [ NeedsRebaseline ]
 crbug.com/299556 fast/hidpi/image-set-background-dynamic.html [ NeedsRebaseline ]
