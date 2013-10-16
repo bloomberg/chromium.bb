@@ -1,46 +1,46 @@
 
 FAIL No Element.onabort assert_false: expected false got true
 PASS Set HTMLElement.onabort 
-FAIL Enumerate HTMLElement.onabort assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onabort 
 PASS Reflect HTMLElement.onabort 
 PASS Set SVGElement.onabort 
-FAIL Enumerate SVGElement.onabort assert_true: expected true got undefined
+PASS Enumerate SVGElement.onabort 
 FAIL Reflect SVGElement.onabort assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onabort 
-FAIL Enumerate Document.onabort assert_true: expected true got undefined
+PASS Enumerate Document.onabort 
 PASS Set Window.onabort 
 PASS Enumerate Window.onabort 
 FAIL No Element.onblur assert_false: expected false got true
 PASS Set HTMLElement.onblur 
-FAIL Enumerate HTMLElement.onblur assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onblur 
 PASS Reflect HTMLElement.onblur 
 PASS Set SVGElement.onblur 
-FAIL Enumerate SVGElement.onblur assert_true: expected true got undefined
+PASS Enumerate SVGElement.onblur 
 FAIL Reflect SVGElement.onblur assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onblur 
-FAIL Enumerate Document.onblur assert_true: expected true got undefined
+PASS Enumerate Document.onblur 
 PASS Set Window.onblur 
 PASS Enumerate Window.onblur 
 FAIL No Element.onerror assert_false: expected false got true
 PASS Set HTMLElement.onerror 
-FAIL Enumerate HTMLElement.onerror assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onerror 
 PASS Reflect HTMLElement.onerror 
 PASS Set SVGElement.onerror 
-FAIL Enumerate SVGElement.onerror assert_true: expected true got undefined
+PASS Enumerate SVGElement.onerror 
 FAIL Reflect SVGElement.onerror assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onerror 
-FAIL Enumerate Document.onerror assert_true: expected true got undefined
+PASS Enumerate Document.onerror 
 PASS Set Window.onerror 
 PASS Enumerate Window.onerror 
 FAIL No Element.onfocus assert_false: expected false got true
 PASS Set HTMLElement.onfocus 
-FAIL Enumerate HTMLElement.onfocus assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onfocus 
 PASS Reflect HTMLElement.onfocus 
 PASS Set SVGElement.onfocus 
-FAIL Enumerate SVGElement.onfocus assert_true: expected true got undefined
+PASS Enumerate SVGElement.onfocus 
 FAIL Reflect SVGElement.onfocus assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onfocus 
-FAIL Enumerate Document.onfocus assert_true: expected true got undefined
+PASS Enumerate Document.onfocus 
 PASS Set Window.onfocus 
 PASS Enumerate Window.onfocus 
 PASS No Element.oncancel 
@@ -78,24 +78,24 @@ FAIL Set Window.oncanplaythrough assert_equals: Return null after setting string
 PASS Enumerate Window.oncanplaythrough 
 FAIL No Element.onchange assert_false: expected false got true
 PASS Set HTMLElement.onchange 
-FAIL Enumerate HTMLElement.onchange assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onchange 
 PASS Reflect HTMLElement.onchange 
 PASS Set SVGElement.onchange 
-FAIL Enumerate SVGElement.onchange assert_true: expected true got undefined
+PASS Enumerate SVGElement.onchange 
 FAIL Reflect SVGElement.onchange assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onchange 
-FAIL Enumerate Document.onchange assert_true: expected true got undefined
+PASS Enumerate Document.onchange 
 PASS Set Window.onchange 
 PASS Enumerate Window.onchange 
 FAIL No Element.onclick assert_false: expected false got true
 PASS Set HTMLElement.onclick 
-FAIL Enumerate HTMLElement.onclick assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onclick 
 PASS Reflect HTMLElement.onclick 
 PASS Set SVGElement.onclick 
-FAIL Enumerate SVGElement.onclick assert_true: expected true got undefined
+PASS Enumerate SVGElement.onclick 
 PASS Reflect SVGElement.onclick 
 PASS Set Document.onclick 
-FAIL Enumerate Document.onclick assert_true: expected true got undefined
+PASS Enumerate Document.onclick 
 PASS Set Window.onclick 
 PASS Enumerate Window.onclick 
 PASS No Element.onclose 
@@ -111,13 +111,13 @@ FAIL Set Window.onclose assert_equals: Initially null expected null but got unde
 FAIL Enumerate Window.onclose assert_true: expected true got undefined
 FAIL No Element.oncontextmenu assert_false: expected false got true
 PASS Set HTMLElement.oncontextmenu 
-FAIL Enumerate HTMLElement.oncontextmenu assert_true: expected true got undefined
+PASS Enumerate HTMLElement.oncontextmenu 
 PASS Reflect HTMLElement.oncontextmenu 
 PASS Set SVGElement.oncontextmenu 
-FAIL Enumerate SVGElement.oncontextmenu assert_true: expected true got undefined
+PASS Enumerate SVGElement.oncontextmenu 
 FAIL Reflect SVGElement.oncontextmenu assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.oncontextmenu 
-FAIL Enumerate Document.oncontextmenu assert_true: expected true got undefined
+PASS Enumerate Document.oncontextmenu 
 PASS Set Window.oncontextmenu 
 PASS Enumerate Window.oncontextmenu 
 PASS No Element.oncuechange 
@@ -133,46 +133,46 @@ FAIL Set Window.oncuechange assert_equals: Initially null expected null but got 
 FAIL Enumerate Window.oncuechange assert_true: expected true got undefined
 FAIL No Element.ondblclick assert_false: expected false got true
 PASS Set HTMLElement.ondblclick 
-FAIL Enumerate HTMLElement.ondblclick assert_true: expected true got undefined
+PASS Enumerate HTMLElement.ondblclick 
 PASS Reflect HTMLElement.ondblclick 
 PASS Set SVGElement.ondblclick 
-FAIL Enumerate SVGElement.ondblclick assert_true: expected true got undefined
+PASS Enumerate SVGElement.ondblclick 
 FAIL Reflect SVGElement.ondblclick assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondblclick 
-FAIL Enumerate Document.ondblclick assert_true: expected true got undefined
+PASS Enumerate Document.ondblclick 
 PASS Set Window.ondblclick 
 PASS Enumerate Window.ondblclick 
 FAIL No Element.ondrag assert_false: expected false got true
 PASS Set HTMLElement.ondrag 
-FAIL Enumerate HTMLElement.ondrag assert_true: expected true got undefined
+PASS Enumerate HTMLElement.ondrag 
 PASS Reflect HTMLElement.ondrag 
 PASS Set SVGElement.ondrag 
-FAIL Enumerate SVGElement.ondrag assert_true: expected true got undefined
+PASS Enumerate SVGElement.ondrag 
 FAIL Reflect SVGElement.ondrag assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondrag 
-FAIL Enumerate Document.ondrag assert_true: expected true got undefined
+PASS Enumerate Document.ondrag 
 PASS Set Window.ondrag 
 PASS Enumerate Window.ondrag 
 FAIL No Element.ondragend assert_false: expected false got true
 PASS Set HTMLElement.ondragend 
-FAIL Enumerate HTMLElement.ondragend assert_true: expected true got undefined
+PASS Enumerate HTMLElement.ondragend 
 PASS Reflect HTMLElement.ondragend 
 PASS Set SVGElement.ondragend 
-FAIL Enumerate SVGElement.ondragend assert_true: expected true got undefined
+PASS Enumerate SVGElement.ondragend 
 FAIL Reflect SVGElement.ondragend assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragend 
-FAIL Enumerate Document.ondragend assert_true: expected true got undefined
+PASS Enumerate Document.ondragend 
 PASS Set Window.ondragend 
 PASS Enumerate Window.ondragend 
 FAIL No Element.ondragenter assert_false: expected false got true
 PASS Set HTMLElement.ondragenter 
-FAIL Enumerate HTMLElement.ondragenter assert_true: expected true got undefined
+PASS Enumerate HTMLElement.ondragenter 
 PASS Reflect HTMLElement.ondragenter 
 PASS Set SVGElement.ondragenter 
-FAIL Enumerate SVGElement.ondragenter assert_true: expected true got undefined
+PASS Enumerate SVGElement.ondragenter 
 FAIL Reflect SVGElement.ondragenter assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragenter 
-FAIL Enumerate Document.ondragenter assert_true: expected true got undefined
+PASS Enumerate Document.ondragenter 
 PASS Set Window.ondragenter 
 PASS Enumerate Window.ondragenter 
 PASS No Element.ondragexit 
@@ -188,46 +188,46 @@ FAIL Set Window.ondragexit assert_equals: Initially null expected null but got u
 FAIL Enumerate Window.ondragexit assert_true: expected true got undefined
 FAIL No Element.ondragleave assert_false: expected false got true
 PASS Set HTMLElement.ondragleave 
-FAIL Enumerate HTMLElement.ondragleave assert_true: expected true got undefined
+PASS Enumerate HTMLElement.ondragleave 
 PASS Reflect HTMLElement.ondragleave 
 PASS Set SVGElement.ondragleave 
-FAIL Enumerate SVGElement.ondragleave assert_true: expected true got undefined
+PASS Enumerate SVGElement.ondragleave 
 FAIL Reflect SVGElement.ondragleave assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragleave 
-FAIL Enumerate Document.ondragleave assert_true: expected true got undefined
+PASS Enumerate Document.ondragleave 
 PASS Set Window.ondragleave 
 PASS Enumerate Window.ondragleave 
 FAIL No Element.ondragover assert_false: expected false got true
 PASS Set HTMLElement.ondragover 
-FAIL Enumerate HTMLElement.ondragover assert_true: expected true got undefined
+PASS Enumerate HTMLElement.ondragover 
 PASS Reflect HTMLElement.ondragover 
 PASS Set SVGElement.ondragover 
-FAIL Enumerate SVGElement.ondragover assert_true: expected true got undefined
+PASS Enumerate SVGElement.ondragover 
 FAIL Reflect SVGElement.ondragover assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragover 
-FAIL Enumerate Document.ondragover assert_true: expected true got undefined
+PASS Enumerate Document.ondragover 
 PASS Set Window.ondragover 
 PASS Enumerate Window.ondragover 
 FAIL No Element.ondragstart assert_false: expected false got true
 PASS Set HTMLElement.ondragstart 
-FAIL Enumerate HTMLElement.ondragstart assert_true: expected true got undefined
+PASS Enumerate HTMLElement.ondragstart 
 PASS Reflect HTMLElement.ondragstart 
 PASS Set SVGElement.ondragstart 
-FAIL Enumerate SVGElement.ondragstart assert_true: expected true got undefined
+PASS Enumerate SVGElement.ondragstart 
 FAIL Reflect SVGElement.ondragstart assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondragstart 
-FAIL Enumerate Document.ondragstart assert_true: expected true got undefined
+PASS Enumerate Document.ondragstart 
 PASS Set Window.ondragstart 
 PASS Enumerate Window.ondragstart 
 FAIL No Element.ondrop assert_false: expected false got true
 PASS Set HTMLElement.ondrop 
-FAIL Enumerate HTMLElement.ondrop assert_true: expected true got undefined
+PASS Enumerate HTMLElement.ondrop 
 PASS Reflect HTMLElement.ondrop 
 PASS Set SVGElement.ondrop 
-FAIL Enumerate SVGElement.ondrop assert_true: expected true got undefined
+PASS Enumerate SVGElement.ondrop 
 FAIL Reflect SVGElement.ondrop assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.ondrop 
-FAIL Enumerate Document.ondrop assert_true: expected true got undefined
+PASS Enumerate Document.ondrop 
 PASS Set Window.ondrop 
 PASS Enumerate Window.ondrop 
 PASS No Element.ondurationchange 
@@ -265,68 +265,68 @@ FAIL Set Window.onended assert_equals: Return null after setting string expected
 PASS Enumerate Window.onended 
 FAIL No Element.oninput assert_false: expected false got true
 PASS Set HTMLElement.oninput 
-FAIL Enumerate HTMLElement.oninput assert_true: expected true got undefined
+PASS Enumerate HTMLElement.oninput 
 PASS Reflect HTMLElement.oninput 
 PASS Set SVGElement.oninput 
-FAIL Enumerate SVGElement.oninput assert_true: expected true got undefined
+PASS Enumerate SVGElement.oninput 
 FAIL Reflect SVGElement.oninput assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.oninput 
-FAIL Enumerate Document.oninput assert_true: expected true got undefined
+PASS Enumerate Document.oninput 
 PASS Set Window.oninput 
 PASS Enumerate Window.oninput 
 FAIL No Element.oninvalid assert_false: expected false got true
 PASS Set HTMLElement.oninvalid 
-FAIL Enumerate HTMLElement.oninvalid assert_true: expected true got undefined
+PASS Enumerate HTMLElement.oninvalid 
 PASS Reflect HTMLElement.oninvalid 
 PASS Set SVGElement.oninvalid 
-FAIL Enumerate SVGElement.oninvalid assert_true: expected true got undefined
+PASS Enumerate SVGElement.oninvalid 
 FAIL Reflect SVGElement.oninvalid assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.oninvalid 
-FAIL Enumerate Document.oninvalid assert_true: expected true got undefined
+PASS Enumerate Document.oninvalid 
 PASS Set Window.oninvalid 
 PASS Enumerate Window.oninvalid 
 FAIL No Element.onkeydown assert_false: expected false got true
 PASS Set HTMLElement.onkeydown 
-FAIL Enumerate HTMLElement.onkeydown assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onkeydown 
 PASS Reflect HTMLElement.onkeydown 
 PASS Set SVGElement.onkeydown 
-FAIL Enumerate SVGElement.onkeydown assert_true: expected true got undefined
+PASS Enumerate SVGElement.onkeydown 
 FAIL Reflect SVGElement.onkeydown assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onkeydown 
-FAIL Enumerate Document.onkeydown assert_true: expected true got undefined
+PASS Enumerate Document.onkeydown 
 PASS Set Window.onkeydown 
 PASS Enumerate Window.onkeydown 
 FAIL No Element.onkeypress assert_false: expected false got true
 PASS Set HTMLElement.onkeypress 
-FAIL Enumerate HTMLElement.onkeypress assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onkeypress 
 PASS Reflect HTMLElement.onkeypress 
 PASS Set SVGElement.onkeypress 
-FAIL Enumerate SVGElement.onkeypress assert_true: expected true got undefined
+PASS Enumerate SVGElement.onkeypress 
 FAIL Reflect SVGElement.onkeypress assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onkeypress 
-FAIL Enumerate Document.onkeypress assert_true: expected true got undefined
+PASS Enumerate Document.onkeypress 
 PASS Set Window.onkeypress 
 PASS Enumerate Window.onkeypress 
 FAIL No Element.onkeyup assert_false: expected false got true
 PASS Set HTMLElement.onkeyup 
-FAIL Enumerate HTMLElement.onkeyup assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onkeyup 
 PASS Reflect HTMLElement.onkeyup 
 PASS Set SVGElement.onkeyup 
-FAIL Enumerate SVGElement.onkeyup assert_true: expected true got undefined
+PASS Enumerate SVGElement.onkeyup 
 FAIL Reflect SVGElement.onkeyup assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onkeyup 
-FAIL Enumerate Document.onkeyup assert_true: expected true got undefined
+PASS Enumerate Document.onkeyup 
 PASS Set Window.onkeyup 
 PASS Enumerate Window.onkeyup 
 FAIL No Element.onload assert_false: expected false got true
 PASS Set HTMLElement.onload 
-FAIL Enumerate HTMLElement.onload assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onload 
 PASS Reflect HTMLElement.onload 
 PASS Set SVGElement.onload 
-FAIL Enumerate SVGElement.onload assert_true: expected true got undefined
+PASS Enumerate SVGElement.onload 
 PASS Reflect SVGElement.onload 
 PASS Set Document.onload 
-FAIL Enumerate Document.onload assert_true: expected true got undefined
+PASS Enumerate Document.onload 
 PASS Set Window.onload 
 PASS Enumerate Window.onload 
 PASS No Element.onloadeddata 
@@ -364,90 +364,90 @@ FAIL Set Window.onloadstart assert_equals: Return null after setting string expe
 PASS Enumerate Window.onloadstart 
 FAIL No Element.onmousedown assert_false: expected false got true
 PASS Set HTMLElement.onmousedown 
-FAIL Enumerate HTMLElement.onmousedown assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onmousedown 
 PASS Reflect HTMLElement.onmousedown 
 PASS Set SVGElement.onmousedown 
-FAIL Enumerate SVGElement.onmousedown assert_true: expected true got undefined
+PASS Enumerate SVGElement.onmousedown 
 PASS Reflect SVGElement.onmousedown 
 PASS Set Document.onmousedown 
-FAIL Enumerate Document.onmousedown assert_true: expected true got undefined
+PASS Enumerate Document.onmousedown 
 PASS Set Window.onmousedown 
 PASS Enumerate Window.onmousedown 
 FAIL No Element.onmouseenter assert_false: expected false got true
 PASS Set HTMLElement.onmouseenter 
-FAIL Enumerate HTMLElement.onmouseenter assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onmouseenter 
 PASS Reflect HTMLElement.onmouseenter 
 PASS Set SVGElement.onmouseenter 
-FAIL Enumerate SVGElement.onmouseenter assert_true: expected true got undefined
+PASS Enumerate SVGElement.onmouseenter 
 PASS Reflect SVGElement.onmouseenter 
 PASS Set Document.onmouseenter 
-FAIL Enumerate Document.onmouseenter assert_true: expected true got undefined
+PASS Enumerate Document.onmouseenter 
 PASS Set Window.onmouseenter 
 PASS Enumerate Window.onmouseenter 
 FAIL No Element.onmouseleave assert_false: expected false got true
 PASS Set HTMLElement.onmouseleave 
-FAIL Enumerate HTMLElement.onmouseleave assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onmouseleave 
 PASS Reflect HTMLElement.onmouseleave 
 PASS Set SVGElement.onmouseleave 
-FAIL Enumerate SVGElement.onmouseleave assert_true: expected true got undefined
+PASS Enumerate SVGElement.onmouseleave 
 PASS Reflect SVGElement.onmouseleave 
 PASS Set Document.onmouseleave 
-FAIL Enumerate Document.onmouseleave assert_true: expected true got undefined
+PASS Enumerate Document.onmouseleave 
 PASS Set Window.onmouseleave 
 PASS Enumerate Window.onmouseleave 
 FAIL No Element.onmousemove assert_false: expected false got true
 PASS Set HTMLElement.onmousemove 
-FAIL Enumerate HTMLElement.onmousemove assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onmousemove 
 PASS Reflect HTMLElement.onmousemove 
 PASS Set SVGElement.onmousemove 
-FAIL Enumerate SVGElement.onmousemove assert_true: expected true got undefined
+PASS Enumerate SVGElement.onmousemove 
 PASS Reflect SVGElement.onmousemove 
 PASS Set Document.onmousemove 
-FAIL Enumerate Document.onmousemove assert_true: expected true got undefined
+PASS Enumerate Document.onmousemove 
 PASS Set Window.onmousemove 
 PASS Enumerate Window.onmousemove 
 FAIL No Element.onmouseout assert_false: expected false got true
 PASS Set HTMLElement.onmouseout 
-FAIL Enumerate HTMLElement.onmouseout assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onmouseout 
 PASS Reflect HTMLElement.onmouseout 
 PASS Set SVGElement.onmouseout 
-FAIL Enumerate SVGElement.onmouseout assert_true: expected true got undefined
+PASS Enumerate SVGElement.onmouseout 
 PASS Reflect SVGElement.onmouseout 
 PASS Set Document.onmouseout 
-FAIL Enumerate Document.onmouseout assert_true: expected true got undefined
+PASS Enumerate Document.onmouseout 
 PASS Set Window.onmouseout 
 PASS Enumerate Window.onmouseout 
 FAIL No Element.onmouseover assert_false: expected false got true
 PASS Set HTMLElement.onmouseover 
-FAIL Enumerate HTMLElement.onmouseover assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onmouseover 
 PASS Reflect HTMLElement.onmouseover 
 PASS Set SVGElement.onmouseover 
-FAIL Enumerate SVGElement.onmouseover assert_true: expected true got undefined
+PASS Enumerate SVGElement.onmouseover 
 PASS Reflect SVGElement.onmouseover 
 PASS Set Document.onmouseover 
-FAIL Enumerate Document.onmouseover assert_true: expected true got undefined
+PASS Enumerate Document.onmouseover 
 PASS Set Window.onmouseover 
 PASS Enumerate Window.onmouseover 
 FAIL No Element.onmouseup assert_false: expected false got true
 PASS Set HTMLElement.onmouseup 
-FAIL Enumerate HTMLElement.onmouseup assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onmouseup 
 PASS Reflect HTMLElement.onmouseup 
 PASS Set SVGElement.onmouseup 
-FAIL Enumerate SVGElement.onmouseup assert_true: expected true got undefined
+PASS Enumerate SVGElement.onmouseup 
 PASS Reflect SVGElement.onmouseup 
 PASS Set Document.onmouseup 
-FAIL Enumerate Document.onmouseup assert_true: expected true got undefined
+PASS Enumerate Document.onmouseup 
 PASS Set Window.onmouseup 
 PASS Enumerate Window.onmouseup 
 FAIL No Element.onmousewheel assert_false: expected false got true
 PASS Set HTMLElement.onmousewheel 
-FAIL Enumerate HTMLElement.onmousewheel assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onmousewheel 
 PASS Reflect HTMLElement.onmousewheel 
 PASS Set SVGElement.onmousewheel 
-FAIL Enumerate SVGElement.onmousewheel assert_true: expected true got undefined
+PASS Enumerate SVGElement.onmousewheel 
 FAIL Reflect SVGElement.onmousewheel assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onmousewheel 
-FAIL Enumerate Document.onmousewheel assert_true: expected true got undefined
+PASS Enumerate Document.onmousewheel 
 PASS Set Window.onmousewheel 
 PASS Enumerate Window.onmousewheel 
 PASS No Element.onpause 
@@ -507,24 +507,24 @@ FAIL Set Window.onratechange assert_equals: Return null after setting string exp
 PASS Enumerate Window.onratechange 
 FAIL No Element.onreset assert_false: expected false got true
 PASS Set HTMLElement.onreset 
-FAIL Enumerate HTMLElement.onreset assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onreset 
 PASS Reflect HTMLElement.onreset 
 PASS Set SVGElement.onreset 
-FAIL Enumerate SVGElement.onreset assert_true: expected true got undefined
+PASS Enumerate SVGElement.onreset 
 FAIL Reflect SVGElement.onreset assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onreset 
-FAIL Enumerate Document.onreset assert_true: expected true got undefined
+PASS Enumerate Document.onreset 
 PASS Set Window.onreset 
 PASS Enumerate Window.onreset 
 FAIL No Element.onscroll assert_false: expected false got true
 PASS Set HTMLElement.onscroll 
-FAIL Enumerate HTMLElement.onscroll assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onscroll 
 PASS Reflect HTMLElement.onscroll 
 PASS Set SVGElement.onscroll 
-FAIL Enumerate SVGElement.onscroll assert_true: expected true got undefined
+PASS Enumerate SVGElement.onscroll 
 FAIL Reflect SVGElement.onscroll assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onscroll 
-FAIL Enumerate Document.onscroll assert_true: expected true got undefined
+PASS Enumerate Document.onscroll 
 PASS Set Window.onscroll 
 PASS Enumerate Window.onscroll 
 PASS No Element.onseeked 
@@ -551,13 +551,13 @@ FAIL Set Window.onseeking assert_equals: Return null after setting string expect
 PASS Enumerate Window.onseeking 
 FAIL No Element.onselect assert_false: expected false got true
 PASS Set HTMLElement.onselect 
-FAIL Enumerate HTMLElement.onselect assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onselect 
 PASS Reflect HTMLElement.onselect 
 PASS Set SVGElement.onselect 
-FAIL Enumerate SVGElement.onselect assert_true: expected true got undefined
+PASS Enumerate SVGElement.onselect 
 FAIL Reflect SVGElement.onselect assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onselect 
-FAIL Enumerate Document.onselect assert_true: expected true got undefined
+PASS Enumerate Document.onselect 
 PASS Set Window.onselect 
 PASS Enumerate Window.onselect 
 PASS No Element.onshow 
@@ -595,13 +595,13 @@ FAIL Set Window.onstalled assert_equals: Return null after setting string expect
 PASS Enumerate Window.onstalled 
 FAIL No Element.onsubmit assert_false: expected false got true
 PASS Set HTMLElement.onsubmit 
-FAIL Enumerate HTMLElement.onsubmit assert_true: expected true got undefined
+PASS Enumerate HTMLElement.onsubmit 
 PASS Reflect HTMLElement.onsubmit 
 PASS Set SVGElement.onsubmit 
-FAIL Enumerate SVGElement.onsubmit assert_true: expected true got undefined
+PASS Enumerate SVGElement.onsubmit 
 FAIL Reflect SVGElement.onsubmit assert_equals: Convert to function expected "function" but got "object"
 PASS Set Document.onsubmit 
-FAIL Enumerate Document.onsubmit assert_true: expected true got undefined
+PASS Enumerate Document.onsubmit 
 PASS Set Window.onsubmit 
 PASS Enumerate Window.onsubmit 
 PASS No Element.onsuspend 
