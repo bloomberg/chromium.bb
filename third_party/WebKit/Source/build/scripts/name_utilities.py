@@ -44,13 +44,6 @@ def lower_first(name):
     return name[0].lower() + name[1:]
 
 
-def upper_first(name):
-    for acronym in ACRONYMS:
-        if name.startswith(acronym.lower()):
-            return name.replace(acronym.lower(), acronym)
-    return name[0].upper() + name[1:]
-
-
 def to_macro_style(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).upper()
