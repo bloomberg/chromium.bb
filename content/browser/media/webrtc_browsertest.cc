@@ -235,6 +235,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel.
+// TODO(mallinath) - Remove this test after rtp based data channel is disabled.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -242,6 +243,16 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
   NavigateToURL(shell(), url);
 
   EXPECT_TRUE(ExecuteJavascript("callWithDataOnly();"));
+  ExpectTitle("OK");
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithSctpDataOnly) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("callWithSctpDataOnly();"));
   ExpectTitle("OK");
 }
 
@@ -254,6 +265,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataOnly) {
 
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and audio and video tracks.
+// TODO(mallinath) - Remove this test after rtp based data channel is disabled.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -261,6 +273,25 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndMedia) {
   NavigateToURL(shell(), url);
 
   EXPECT_TRUE(ExecuteJavascript("callWithDataAndMedia();"));
+  ExpectTitle("OK");
+}
+
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_CallWithSctpDataAndMedia DISABLED_CallWithSctpDataAndMedia
+#else
+#define MAYBE_CallWithSctpDataAndMedia CallWithSctpDataAndMedia
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       MAYBE_CallWithSctpDataAndMedia) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("callWithSctpDataAndMedia();"));
   ExpectTitle("OK");
 }
 
