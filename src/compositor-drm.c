@@ -413,32 +413,31 @@ static uint32_t
 drm_output_check_scanout_format(struct drm_output *output,
 				struct weston_surface *es, struct gbm_bo *bo)
 {
+	struct drm_compositor *c =
+		(struct drm_compositor *) output->base.compositor;
 	uint32_t format;
 	pixman_region32_t r;
 
 	format = gbm_bo_get_format(bo);
 
-	switch (format) {
-	case GBM_FORMAT_XRGB8888:
-		return format;
-	case GBM_FORMAT_ARGB8888:
-		/* We can only scanout an ARGB buffer if the surface's
-		 * opaque region covers the whole output */
+	if (format == GBM_FORMAT_ARGB8888) {
+		/* We can scanout an ARGB buffer if the surface's
+		 * opaque region covers the whole output, but we have
+		 * to use XRGB as the KMS format code. */
 		pixman_region32_init(&r);
 		pixman_region32_subtract(&r, &output->base.region,
 					 &es->opaque);
 
 		if (!pixman_region32_not_empty(&r))
 			format = GBM_FORMAT_XRGB8888;
-		else
-			format = 0;
 
 		pixman_region32_fini(&r);
-
-		return format;
-	default:
-		return 0;
 	}
+
+	if (c->format == format)
+		return format;
+
+	return 0;
 }
 
 static struct weston_plane *
