@@ -530,7 +530,14 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   }
 }
 
-TEST_F(AcceleratorControllerTest, ControllerContext) {
+#if defined(OS_WIN) && defined(USE_AURA)
+// Bug 297650.
+#define MAYBE_ControllerContext DISABLED_ControllerContext
+#else
+#define MAYBE_ControllerContext ControllerContext
+#endif
+
+TEST_F(AcceleratorControllerTest, MAYBE_ControllerContext) {
   ui::Accelerator accelerator_a(ui::VKEY_A, ui::EF_NONE);
   ui::Accelerator accelerator_a2(ui::VKEY_A, ui::EF_NONE);
   ui::Accelerator accelerator_b(ui::VKEY_B, ui::EF_NONE);
