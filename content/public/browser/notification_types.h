@@ -134,6 +134,13 @@ enum NotificationType {
   // DEPRECATED: Use WebContentsObserver::TitleWasSet()
   NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
 
+  // Indicates a WebContents has been hidden or restored.  The source is
+  // a Source<WebContents>. The details is a bool set to true if the new
+  // state is visible.
+  // DEPRECATED: Use WebContentsObserver::WasShown() and/or
+  // WebContentsObserver::WasHidden()
+  NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+
   // This notification is sent when a WebContents is being destroyed. Any
   // object holding a reference to a WebContents can listen to that
   // notification to properly reset the reference. The source is a
