@@ -286,10 +286,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       transaction_ = NULL;
     }
 
-    static LevelDBTransaction* LevelDBTransactionFrom(
-        Transaction* transaction) {
-      return transaction->transaction_;
-    }
+    LevelDBTransaction* transaction() { return transaction_; }
 
    private:
     IndexedDBBackingStore* backing_store_;

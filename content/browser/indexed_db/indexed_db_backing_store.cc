@@ -728,7 +728,7 @@ bool IndexedDBBackingStore::UpdateIDBDatabaseIntVersion(
   if (int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
     int_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
   DCHECK_GE(int_version, 0) << "int_version was " << int_version;
-  PutVarInt(Transaction::LevelDBTransactionFrom(transaction),
+  PutVarInt(transaction->transaction(),
             DatabaseMetaDataKey::Encode(row_id,
                                         DatabaseMetaDataKey::USER_INT_VERSION),
             int_version);
@@ -740,7 +740,7 @@ bool IndexedDBBackingStore::UpdateIDBDatabaseMetaData(
     int64 row_id,
     const string16& version) {
   PutString(
-      Transaction::LevelDBTransactionFrom(transaction),
+      transaction->transaction(),
       DatabaseMetaDataKey::Encode(row_id, DatabaseMetaDataKey::USER_VERSION),
       version);
   return true;
@@ -999,8 +999,7 @@ bool IndexedDBBackingStore::CreateObjectStore(
   IDB_TRACE("IndexedDBBackingStore::CreateObjectStore");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
   if (!SetMaxObjectStoreId(leveldb_transaction, database_id, object_store_id))
     return false;
 
@@ -1046,8 +1045,7 @@ bool IndexedDBBackingStore::DeleteObjectStore(
   IDB_TRACE("IndexedDBBackingStore::DeleteObjectStore");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
 
   string16 object_store_name;
   bool found = false;
@@ -1093,8 +1091,7 @@ bool IndexedDBBackingStore::GetRecord(
   IDB_TRACE("IndexedDBBackingStore::GetRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
 
   const std::string leveldb_key =
       ObjectStoreDataKey::Encode(database_id, object_store_id, key);
@@ -1169,8 +1166,7 @@ bool IndexedDBBackingStore::PutRecord(
     return false;
   DCHECK(key.IsValid());
 
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
   int64 version = -1;
   bool ok = GetNewVersionNumber(
       leveldb_transaction, database_id, object_store_id, &version);
@@ -1205,14 +1201,12 @@ bool IndexedDBBackingStore::ClearObjectStore(
   IDB_TRACE("IndexedDBBackingStore::ClearObjectStore");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
   const std::string start_key =
       KeyPrefix(database_id, object_store_id).Encode();
   const std::string stop_key =
       KeyPrefix(database_id, object_store_id + 1).Encode();
 
-  DeleteRange(leveldb_transaction, start_key, stop_key);
+  DeleteRange(transaction->transaction(), start_key, stop_key);
   return true;
 }
 
@@ -1224,8 +1218,7 @@ bool IndexedDBBackingStore::DeleteRecord(
   IDB_TRACE("IndexedDBBackingStore::DeleteRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
 
   const std::string object_store_data_key = ObjectStoreDataKey::Encode(
       database_id, object_store_id, record_identifier.primary_key());
@@ -1244,8 +1237,7 @@ bool IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
     int64* key_generator_current_number) {
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
 
   const std::string key_generator_current_number_key =
       ObjectStoreMetaDataKey::Encode(
@@ -1314,8 +1306,6 @@ bool IndexedDBBackingStore::MaybeUpdateKeyGeneratorCurrentNumber(
     bool check_current) {
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
 
   if (check_current) {
     int64 current_number;
@@ -1332,7 +1322,8 @@ bool IndexedDBBackingStore::MaybeUpdateKeyGeneratorCurrentNumber(
           database_id,
           object_store_id,
           ObjectStoreMetaDataKey::KEY_GENERATOR_CURRENT_NUMBER);
-  PutInt(leveldb_transaction, key_generator_current_number_key, new_number);
+  PutInt(
+      transaction->transaction(), key_generator_current_number_key, new_number);
   return true;
 }
 
@@ -1347,13 +1338,11 @@ bool IndexedDBBackingStore::KeyExistsInObjectStore(
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return false;
   *found = false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
   const std::string leveldb_key =
       ObjectStoreDataKey::Encode(database_id, object_store_id, key);
   std::string data;
 
-  bool ok = leveldb_transaction->Get(leveldb_key, &data, found);
+  bool ok = transaction->transaction()->Get(leveldb_key, &data, found);
   if (!ok) {
     INTERNAL_READ_ERROR(KEY_EXISTS_IN_OBJECT_STORE);
     return false;
@@ -1515,8 +1504,7 @@ bool IndexedDBBackingStore::CreateIndex(
   IDB_TRACE("IndexedDBBackingStore::CreateIndex");
   if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
   if (!SetMaxIndexId(
            leveldb_transaction, database_id, object_store_id, index_id))
     return false;
@@ -1545,8 +1533,7 @@ bool IndexedDBBackingStore::DeleteIndex(
   IDB_TRACE("IndexedDBBackingStore::DeleteIndex");
   if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
     return false;
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
 
   const std::string index_meta_data_start =
       IndexMetaDataKey::Encode(database_id, object_store_id, index_id, 0);
@@ -1574,9 +1561,6 @@ bool IndexedDBBackingStore::PutIndexDataForRecord(
   if (!KeyPrefix::ValidIds(database_id, object_store_id, index_id))
     return false;
 
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
-
   std::string encoded_key;
   EncodeIDBKey(key, &encoded_key);
 
@@ -1592,7 +1576,7 @@ bool IndexedDBBackingStore::PutIndexDataForRecord(
   EncodeVarInt(record_identifier.version(), &data);
   data.append(record_identifier.primary_key());
 
-  leveldb_transaction->Put(index_data_key, &data);
+  transaction->transaction()->Put(index_data_key, &data);
   return true;
 }
 
@@ -1664,8 +1648,7 @@ bool IndexedDBBackingStore::FindKeyInIndex(
   DCHECK(found_encoded_primary_key->empty());
   *found = false;
 
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
   const std::string leveldb_key =
       IndexDataKey::Encode(database_id, object_store_id, index_id, key);
   scoped_ptr<LevelDBIterator> it = leveldb_transaction->CreateIterator();
@@ -2405,8 +2388,7 @@ IndexedDBBackingStore::OpenObjectStoreCursor(
     const IndexedDBKeyRange& range,
     indexed_db::CursorDirection direction) {
   IDB_TRACE("IndexedDBBackingStore::OpenObjectStoreCursor");
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
   IndexedDBBackingStore::Cursor::CursorOptions cursor_options;
   if (!ObjectStoreCursorOptions(leveldb_transaction,
                                 database_id,
@@ -2431,8 +2413,7 @@ IndexedDBBackingStore::OpenObjectStoreKeyCursor(
     const IndexedDBKeyRange& range,
     indexed_db::CursorDirection direction) {
   IDB_TRACE("IndexedDBBackingStore::OpenObjectStoreKeyCursor");
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
   IndexedDBBackingStore::Cursor::CursorOptions cursor_options;
   if (!ObjectStoreCursorOptions(leveldb_transaction,
                                 database_id,
@@ -2458,8 +2439,7 @@ IndexedDBBackingStore::OpenIndexKeyCursor(
     const IndexedDBKeyRange& range,
     indexed_db::CursorDirection direction) {
   IDB_TRACE("IndexedDBBackingStore::OpenIndexKeyCursor");
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
   IndexedDBBackingStore::Cursor::CursorOptions cursor_options;
   if (!IndexCursorOptions(leveldb_transaction,
                           database_id,
@@ -2486,8 +2466,7 @@ IndexedDBBackingStore::OpenIndexCursor(
     const IndexedDBKeyRange& range,
     indexed_db::CursorDirection direction) {
   IDB_TRACE("IndexedDBBackingStore::OpenIndexCursor");
-  LevelDBTransaction* leveldb_transaction =
-      IndexedDBBackingStore::Transaction::LevelDBTransactionFrom(transaction);
+  LevelDBTransaction* leveldb_transaction = transaction->transaction();
   IndexedDBBackingStore::Cursor::CursorOptions cursor_options;
   if (!IndexCursorOptions(leveldb_transaction,
                           database_id,
