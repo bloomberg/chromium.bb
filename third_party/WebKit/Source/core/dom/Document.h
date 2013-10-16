@@ -543,9 +543,17 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     void prepareForDestruction();
 
-    // FIXME: We should make renderer() private and all callers should use renderView().
-    RenderView* renderView() const { return m_renderView; }
-    void clearRenderView() { m_renderView = 0; }
+    // Implemented in RenderView.h to avoid a cyclic header dependency this just
+    // returns renderer so callers can avoid verbose casts.
+    RenderView* renderView() const;
+
+    // Shadow the implementations on Node to provide faster access for documents.
+    RenderObject* renderer() const { return m_renderer; }
+    void setRenderer(RenderObject* renderer)
+    {
+        m_renderer = renderer;
+        Node::setRenderer(renderer);
+    }
 
     AXObjectCache* existingAXObjectCache() const;
     AXObjectCache* axObjectCache() const;
@@ -1062,7 +1070,6 @@ public:
     PassRefPtr<FontFaceSet> fonts();
     DocumentLifecycleNotifier* lifecycleNotifier();
     bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
-    bool isStopping() const { return m_lifecyle.state() == DocumentLifecycle::Stopping; }
 
     enum HttpRefreshType {
         HttpRefreshFromHeader,
@@ -1314,7 +1321,7 @@ private:
     bool m_isSrcdocDocument;
     bool m_isMobileDocument;
 
-    RenderView* m_renderView;
+    RenderObject* m_renderer;
     RefPtr<DocumentEventQueue> m_eventQueue;
 
     WeakPtrFactory<Document> m_weakFactory;
