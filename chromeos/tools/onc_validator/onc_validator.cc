@@ -128,11 +128,11 @@ int main(int argc, const char* argv[]) {
       command_line.HasSwitch(kSwitchManagedOnc));
 
   if (command_line.HasSwitch(kSwitchUserPolicy))
-    validator.SetOncSource(chromeos::onc::ONC_SOURCE_USER_POLICY);
+    validator.SetOncSource(::onc::ONC_SOURCE_USER_POLICY);
   else if (command_line.HasSwitch(kSwitchDevicePolicy))
-    validator.SetOncSource(chromeos::onc::ONC_SOURCE_DEVICE_POLICY);
+    validator.SetOncSource(::onc::ONC_SOURCE_DEVICE_POLICY);
   else if (command_line.HasSwitch(kSwitchUserImport))
-    validator.SetOncSource(chromeos::onc::ONC_SOURCE_USER_IMPORT);
+    validator.SetOncSource(::onc::ONC_SOURCE_USER_IMPORT);
 
   std::string type_arg(args[0]);
   const chromeos::onc::OncValueSignature* signature = NULL;
