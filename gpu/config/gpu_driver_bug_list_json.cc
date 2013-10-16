@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.21",
+  "version": "2.22",
   "entries": [
     {
       "id": 1,
@@ -597,6 +597,17 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_extensions": {
         "op": "contains",
         "value": "GL_VIV_shader_binary"
+      },
+      "features": [
+        "disable_ext_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 44,
+      "cr_bugs": [301988],
+      "description": "Framebuffer discarding causes jumpy scrolling on Mali drivers",
+      "os": {
+        "type": "chromeos"
       },
       "features": [
         "disable_ext_discard_framebuffer"
