@@ -14,6 +14,7 @@ for dirname in binutils gcc gdb glibc linux-headers-for-nacl newlib ; do
   if [[ -d "$SCRIPT_DIR_ABS/SRC/$dirname" ]]; then (
     cd "$SCRIPT_DIR_ABS/SRC/$dirname"
     (git reset --hard &&
+     git clean -d -f -x &&
      ../../update_to_latest.sh) ||
     (cd .. &&
      rm -rf "$dirname" &&
