@@ -31,20 +31,19 @@
 #ifndef WebBlobData_h
 #define WebBlobData_h
 
+#include "WebPrivateOwnPtr.h"
 #include "WebString.h"
 #include "WebThreadSafeData.h"
 #include "WebURL.h"
 
 #define USE_BLOB_UUIDS
 
-#if BLINK_IMPLEMENTATION
 namespace WebCore { class BlobData; }
+#if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassOwnPtr; }
 #endif
 
 namespace WebKit {
-
-class WebBlobDataPrivate;
 
 class WebBlobData {
 public:
@@ -59,14 +58,10 @@ public:
         double expectedModificationTime; // 0.0 means that the time is not set.
     };
 
-    ~WebBlobData() { reset(); }
+    WebBlobData();
+    ~WebBlobData();
 
-    WebBlobData() : m_private(0) { }
-
-    BLINK_EXPORT void initialize();
-    BLINK_EXPORT void reset();
-
-    bool isNull() const { return !m_private; }
+    bool isNull() const { return !m_private.get(); }
 
     // Returns the number of items.
     BLINK_EXPORT size_t itemCount() const;
@@ -86,10 +81,7 @@ public:
 #endif
 
 private:
-#if BLINK_IMPLEMENTATION
-    void assign(const WTF::PassOwnPtr<WebCore::BlobData>&);
-#endif
-    WebBlobDataPrivate* m_private;
+    WebPrivateOwnPtr<WebCore::BlobData> m_private;
 };
 
 } // namespace WebKit

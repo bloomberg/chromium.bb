@@ -202,7 +202,7 @@ bool appendKeyframeWithStandardTimingFunction<FilterAnimationValue, WebFilterKey
     builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
     if (!builder.buildFilterOperations(*value->value(), operations.get()))
         return false;
-    curve->add(WebFilterKeyframe(keyTime, operations.leakPtr()), timingFunctionType);
+    curve->add(WebFilterKeyframe(keyTime, operations.release()), timingFunctionType);
     return true;
 }
 
@@ -217,7 +217,7 @@ bool appendKeyframeWithCustomBezierTimingFunction<FilterAnimationValue, WebFilte
     builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
     if (!builder.buildFilterOperations(*value->value(), operations.get()))
         return false;
-    curve->add(WebFilterKeyframe(keyTime, operations.leakPtr()), x1, y1, x2, y2);
+    curve->add(WebFilterKeyframe(keyTime, operations.release()), x1, y1, x2, y2);
     return true;
 }
 

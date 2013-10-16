@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -38,17 +39,13 @@ using namespace WebCore;
 
 namespace WebKit {
 
-class WebBlobDataPrivate : public BlobData {
-};
-
-void WebBlobData::initialize()
+WebBlobData::WebBlobData()
 {
-    assign(BlobData::create());
 }
 
-void WebBlobData::reset()
+WebBlobData::~WebBlobData()
 {
-    assign(nullptr);
+    m_private.reset(0);
 }
 
 size_t WebBlobData::itemCount() const
@@ -107,29 +104,19 @@ WebString WebBlobData::contentDisposition() const
 }
 
 WebBlobData::WebBlobData(const PassOwnPtr<BlobData>& data)
-    : m_private(0)
+    : m_private(data)
 {
-    assign(data);
 }
 
 WebBlobData& WebBlobData::operator=(const PassOwnPtr<BlobData>& data)
 {
-    assign(data);
+    m_private.reset(data);
     return *this;
 }
 
 WebBlobData::operator PassOwnPtr<BlobData>()
 {
-    WebBlobDataPrivate* temp = m_private;
-    m_private = 0;
-    return adoptPtr(temp);
-}
-
-void WebBlobData::assign(const PassOwnPtr<BlobData>& data)
-{
-    if (m_private)
-        delete m_private;
-    m_private = static_cast<WebBlobDataPrivate*>(data.leakPtr());
+    return m_private.release();
 }
 
 } // namespace WebKit

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -46,11 +47,14 @@ public:
     WebPrivateOwnPtr() : m_ptr(0) {}
     ~WebPrivateOwnPtr() { BLINK_ASSERT(!m_ptr); }
 
-#if INSIDE_BLINK
     explicit WebPrivateOwnPtr(T* ptr)
         : m_ptr(ptr)
     {
     }
+
+    T* get() const { return m_ptr; }
+
+#if INSIDE_BLINK
     template<typename U> WebPrivateOwnPtr(const PassOwnPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
 
     void reset(T* ptr)
@@ -59,7 +63,17 @@ public:
         m_ptr = ptr;
     }
 
-    T* get() const { return m_ptr; }
+    void reset(const PassOwnPtr<T>& o)
+    {
+        reset(o.leakPtr());
+    }
+
+    PassOwnPtr<T> release()
+    {
+        T* ptr = m_ptr;
+        m_ptr = 0;
+        return adoptPtr(ptr);
+    }
 
     T* operator->() const
     {

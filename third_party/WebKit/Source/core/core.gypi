@@ -3537,6 +3537,7 @@
             'platform/chromium/support/WebDeviceOrientationData.cpp',
             'platform/chromium/support/WebFileSystemCallbacks.cpp',
             'platform/chromium/support/WebFloatQuad.cpp',
+            'platform/chromium/support/WebFilterKeyframe.cpp',
             'platform/chromium/support/WebHTTPBody.cpp',
             'platform/chromium/support/WebHTTPLoadInfo.cpp',
             'platform/chromium/support/WebMediaConstraints.cpp',

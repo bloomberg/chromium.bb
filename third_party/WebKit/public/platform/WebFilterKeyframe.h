@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,27 +33,29 @@
 #define WebFilterKeyframe_h
 
 #include "WebFilterOperations.h"
+#include "WebPrivateOwnPtr.h"
+
+#if BLINK_IMPLEMENTATION
+namespace WTF { template <typename T> class PassOwnPtr; }
+#endif
 
 namespace WebKit {
 
 class WebFilterKeyframe {
 public:
-    // Takes ownership of the WebFilterOperations object.
-    WebFilterKeyframe(double time, WebFilterOperations* value)
-        : m_time(time)
-        , m_value(value)
-    {
-    }
+#if BLINK_IMPLEMENTATION
+    WebFilterKeyframe(double time, PassOwnPtr<WebFilterOperations>);
+#endif
 
-    ~WebFilterKeyframe() { delete m_value; }
+    ~WebFilterKeyframe();
 
     double time() const { return m_time; }
 
-    const WebFilterOperations& value() const { return *m_value; }
+    const WebFilterOperations& value() const { return *m_value.get(); }
 
 private:
     double m_time;
-    WebFilterOperations* m_value;
+    WebPrivateOwnPtr<WebFilterOperations> m_value;
 };
 
 } // namespace WebKit
