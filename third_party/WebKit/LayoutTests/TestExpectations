@@ -199,19 +199,9 @@ webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/text-text-05-t.svg [ ImageO
 webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ ImageOnlyFailure ]
 
 # Many WIN and Linux SVG tests containing text are flaky. It seems different fonts are used at different times.
-crbug.com/306190 [ Linux Win ] svg/zoom/page/zoom-hixie-mixed-009.xml [ ImageOnlyFailure Pass ]
-crbug.com/306190 [ Linux Win ] svg/zoom/text/zoom-hixie-mixed-009.xml [ ImageOnlyFailure Pass ]
-webkit.org/b/83303 [ Linux ] svg/hixie/mixed/009.xml [ ImageOnlyFailure Pass ]
-webkit.org/b/83303 [ Linux ] svg/text/scaling-font-with-geometric-precision.html [ ImageOnlyFailure Pass ]
 # fmalita: re-enable after https://codereview.chromium.org/26428003/
 # webkit.org/b/83303 [ Linux ] svg/transforms/text-with-mask-with-svg-transform.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/83303 [ Linux ] svg/transforms/text-with-pattern-with-svg-transform.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/83303 [ Win ] svg/as-background-image/svg-as-background-1.html [ ImageOnlyFailure Pass ]
-webkit.org/b/83303 [ Win ] svg/as-background-image/svg-as-background-3.html [ ImageOnlyFailure Pass ]
-webkit.org/b/83303 [ Debug ] svg/custom/mouse-move-on-svg-container-standalone.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/83303 [ Debug ] svg/custom/mouse-move-on-svg-root-standalone.svg [ ImageOnlyFailure Pass ]
-
-webkit.org/b/84719 [ Win ] svg/text/select-text-svgfont.html [ Failure Pass ]
 
 webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/84854 [ Linux ] svg/batik/text/verticalTextOnPath.svg [ ImageOnlyFailure Pass ]
