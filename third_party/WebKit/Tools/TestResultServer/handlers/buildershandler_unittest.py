@@ -33,7 +33,6 @@ import logging
 import pprint
 import unittest
 
-
 class BuildersHandlerTest(unittest.TestCase):
     def test_master_json_url(self):
         self.assertEqual(buildershandler.master_json_url('http://base'), 'http://base/json/builders')
@@ -112,7 +111,7 @@ class BuildersHandlerTest(unittest.TestCase):
                 {'name': 'ChromiumWebkit', 'url': 'http://build.chromium.org/p/chromium.webkit'},
             ]
 
-            buildbot_data = buildershandler.fetch_buildbot_data(masters)
+            buildbot_data = buildershandler.fetch_buildbot_data(masters, True)
 
             expected_fetched_urls = [
                 'http://build.chromium.org/p/chromium.webkit/json/builders',
@@ -124,7 +123,7 @@ class BuildersHandlerTest(unittest.TestCase):
                 'http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Win/builds/2',
                 'http://build.chromium.org/p/chromium.webkit/json/builders/WebKit%20Empty',
             ]
-            self.assertEqual(fetched_urls, expected_fetched_urls)
+            self.assertEqual(set(fetched_urls), set(expected_fetched_urls))
 
             expected_masters = {
                 'masters': [{
@@ -137,9 +136,74 @@ class BuildersHandlerTest(unittest.TestCase):
             expected_json = buildershandler.dump_json(expected_masters)
 
             self.assertEqual(buildbot_data, expected_json)
+        finally:
+            buildershandler.fetch_json = old_fetch_json
+
+    def test_fetch_buildbot_data_failure(self):
+        try:
+            fetched_urls = []
+
+            def fake_fetch_json(url):
+                fetched_urls.append(url)
+                if url == 'http://build.chromium.org/p/chromium.webkit/json/builders':
+                    return None
+
+                if url.endswith('chromium.gpu/json/builders'):
+                    return {'Win GPU': None, 'Win Empty': None}
+                if url.endswith('Win%20GPU'):
+                    return {'cachedBuilds': [1, 2], 'currentBuilds': []}
+                if url.endswith('Win%20Empty'):
+                    return {'cachedBuilds': [], 'currentBuilds': []}
+                if url.endswith('Win%20GPU/builds/2'):
+                    return {'steps': [{'name': 'gpu_unittests'}, {'name': 'archive_test_results'}, {'name': 'compile'}]}
+
+                if url.endswith('chromium.fyi/json/builders'):
+                    return {'Mac FYI': None}
+                if url.endswith('Mac%20FYI'):
+                    return {'cachedBuilds': [1, 2], 'currentBuilds': []}
+                if url.endswith('Mac%20FYI/builds/2'):
+                    return {'steps': [{'name': 'fyi_tests'}, {'name': 'archive_test_results'}, {'name': 'compile'}]}
+
+            old_fetch_json = buildershandler.fetch_json
+            buildershandler.fetch_json = fake_fetch_json
+
+            masters = [
+                {'name': 'ChromiumGPU', 'url': 'http://build.chromium.org/p/chromium.gpu'},
+                {'name': 'ChromiumWebkit', 'url': 'http://build.chromium.org/p/chromium.webkit'},
+                {'name': 'ChromiumFYI', 'url': 'http://build.chromium.org/p/chromium.fyi'},
+            ]
+
+            expected_fetched_urls = [
+                'http://build.chromium.org/p/chromium.gpu/json/builders',
+                'http://build.chromium.org/p/chromium.gpu/json/builders/Win%20Empty',
+                'http://build.chromium.org/p/chromium.gpu/json/builders/Win%20GPU',
+                'http://build.chromium.org/p/chromium.gpu/json/builders/Win%20GPU/builds/2',
+                'http://build.chromium.org/p/chromium.webkit/json/builders',
+                'http://build.chromium.org/p/chromium.fyi/json/builders',
+                'http://build.chromium.org/p/chromium.fyi/json/builders/Mac%20FYI',
+                'http://build.chromium.org/p/chromium.fyi/json/builders/Mac%20FYI/builds/2',
+            ]
+            # Should not throw any exception.
+            buildbot_data = buildershandler.fetch_buildbot_data(masters, True)
+            self.assertEqual(set(expected_fetched_urls), set(fetched_urls))
+
+            fetched_urls_all = fetched_urls[:]
+            fetched_urls = []
+            expected_fetched_urls = [
+                'http://build.chromium.org/p/chromium.gpu/json/builders',
+                'http://build.chromium.org/p/chromium.gpu/json/builders/Win%20Empty',
+                'http://build.chromium.org/p/chromium.gpu/json/builders/Win%20GPU',
+                'http://build.chromium.org/p/chromium.gpu/json/builders/Win%20GPU/builds/2',
+                'http://build.chromium.org/p/chromium.webkit/json/builders',
+            ]
+            with self.assertRaises(buildershandler.FetchBuildersException):
+                buildbot_data = buildershandler.fetch_buildbot_data(masters)
+            self.assertEqual(set(expected_fetched_urls), set(fetched_urls))
+            self.assertNotEqual(set(fetched_urls), set(fetched_urls_all))
 
         finally:
             buildershandler.fetch_json = old_fetch_json
+
 
 
 if __name__ == '__main__':

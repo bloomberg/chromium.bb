@@ -50,6 +50,9 @@ MASTERS = [
 ]
 
 
+class FetchBuildersException(Exception): pass
+
+
 def master_json_url(master_url):
     return master_url + '/json/builders'
 
@@ -106,7 +109,10 @@ def dump_json(data):
     return json.dumps(data, separators=(',', ':'), sort_keys=True)
 
 
-def fetch_buildbot_data(masters):
+def fetch_buildbot_data(masters, force_update=False):
+    if force_update:
+        logging.info('Starting a forced buildbot update. Failure to fetch a master\'s data will not abort the fetch.')
+
     start_time = datetime.datetime.now()
     master_data = masters[:]
     for master in master_data:
@@ -114,7 +120,17 @@ def fetch_buildbot_data(masters):
         tests_object = master.setdefault('tests', {})
         master['tests'] = tests_object
 
-        for builder in fetch_json(master_json_url(master_url)):
+        builders = fetch_json(master_json_url(master_url))
+        if not builders:
+            msg = 'Could not fetch builders from master "%s": %s.' % (master['name'], master_url)
+            logging.warning(msg)
+            if force_update:
+                continue
+            else:
+                logging.warning('Aborting fetch.')
+                raise FetchBuildersException(msg)
+
+        for builder in builders:
             build_data = fetch_json(builder_json_url(master_url, builder))
 
             latest_build = get_latest_build(build_data)
@@ -123,6 +139,8 @@ def fetch_buildbot_data(masters):
                 continue
 
             build = fetch_json(cached_build_json_url(master_url, builder, latest_build))
+            if not build:
+                logging.info('Skipping build %s on builder %s due to empty data', latest_build, builder)
             for step in build['steps']:
                 step_name = step['name']
                 is_test_step = 'test' in step_name and 'archive' not in step_name and 'Run tests' not in step_name
@@ -150,12 +168,21 @@ def fetch_buildbot_data(masters):
 class UpdateBuilders(webapp2.RequestHandler):
     """Fetch and update the cached buildbot data."""
     def get(self):
-        buildbot_data = fetch_buildbot_data(MASTERS)
-        memcache.set('buildbot_data', buildbot_data)
+        force_update = True if self.request.get('force') else False
+        try:
+            buildbot_data = fetch_buildbot_data(MASTERS, force_update)
+            memcache.set('buildbot_data', buildbot_data)
+            self.response.set_status(200)
+            self.response.out.write("ok")
+        except FetchBuildersException, ex:
+            logging.error('Not updating builders because fetch failed: %s', str(ex))
+            self.response.set_status(500)
+            self.response.out.write(ex.message)
+
 
 
 class GetBuilders(webapp2.RequestHandler):
-    """Fetch a list of masters mapped to their respective builders."""
+    """Return a list of masters mapped to their respective builders, possibly using cached data."""
     def get(self):
         callback = self.request.get('callback')
 
@@ -163,7 +190,9 @@ class GetBuilders(webapp2.RequestHandler):
 
         if not buildbot_data:
             logging.warning('No buildbot data in memcache. If this message repeats, something is probably wrong with memcache.')
-            buildbot_data = fetch_buildbot_data(MASTERS)
+
+            # Since we have no cached buildbot data, we would rather have missing masters than no data at all.
+            buildbot_data = fetch_buildbot_data(MASTERS, True)
             try:
                 memcache.set('buildbot_data', buildbot_data)
             except ValueError, err:
