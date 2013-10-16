@@ -313,45 +313,6 @@ static void Node14AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
-static void Node15AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
-    v8SetReturnValueFast(info, SupportTestPartialInterface::node15(imp), imp);
-}
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-static void Node15AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    SupportTestInterfaceV8Internal::Node15AttributeGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static void Node15AttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    SupportTestPartialInterface::setNode15(imp, WTF::getPtr(v));
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static void Node15AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    SupportTestInterfaceV8Internal::Node15AttributeSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
 
 static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
@@ -455,15 +416,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8SupportTestInterfaceAt
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"supplementalNode", SupportTestInterfaceV8Internal::supplementalNodeAttributeGetterCallback, SupportTestInterfaceV8Internal::supplementalNodeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    {"Node13", SupportTestInterfaceV8Internal::Node13AttributeGetterCallback, SupportTestInterfaceV8Internal::Node13AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    {"Node14", SupportTestInterfaceV8Internal::Node14AttributeGetterCallback, SupportTestInterfaceV8Internal::Node14AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    {"Node15", SupportTestInterfaceV8Internal::Node15AttributeGetterCallback, SupportTestInterfaceV8Internal::Node15AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8SupportTestInterfaceMethods[] = {
@@ -488,6 +440,13 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8SupportTestInterfaceTemplate(
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
+#if ENABLE(Condition11) || ENABLE(Condition12)
+    if (RuntimeEnabledFeatures::featureName13Enabled()) {
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {"Node13", SupportTestInterfaceV8Internal::Node13AttributeGetterCallback, SupportTestInterfaceV8Internal::Node13AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
+    }
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
     static const V8DOMConfiguration::ConstantConfiguration V8SupportTestInterfaceConstants[] = {
         {"SUPPLEMENTALCONSTANT1", 1},
         {"SUPPLEMENTALCONSTANT2", 2},
@@ -543,6 +502,19 @@ bool V8SupportTestInterface::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, 
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
+}
+
+void V8SupportTestInterface::installPerContextProperties(v8::Handle<v8::Object> instance, SupportTestInterface* impl, v8::Isolate* isolate)
+{
+    v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
+
+#if ENABLE(Condition11) || ENABLE(Condition12)
+    if (ContextFeatures::featureName14Enabled(impl->document())) {
+        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\
+        {"Node14", SupportTestInterfaceV8Internal::Node14AttributeGetterCallback, SupportTestInterfaceV8Internal::Node14AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
+    }
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
 }
 
 v8::Handle<v8::Object> V8SupportTestInterface::createWrapper(PassRefPtr<SupportTestInterface> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
