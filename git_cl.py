@@ -1862,9 +1862,12 @@ def CMDpatch(parser, args):
   """Patches in a code review."""
   parser.add_option('-b', dest='newbranch',
                     help='create a new branch off trunk for the patch')
-  parser.add_option('-f', action='store_true', dest='force',
+  parser.add_option('-f', '--force', action='store_true',
                     help='with -b, clobber any existing branch')
-  parser.add_option('--reject', action='store_true', dest='reject',
+  parser.add_option('-d', '--directory', action='store', metavar='DIR',
+                    help='Change to the directory DIR immediately, '
+                         'before doing anything else.')
+  parser.add_option('--reject', action='store_true',
                     help='failed patches spew .rej files rather than '
                         'attempting a 3-way merge')
   parser.add_option('-n', '--no-commit', action='store_true', dest='nocommit',
@@ -1885,10 +1888,11 @@ def CMDpatch(parser, args):
     RunGit(['checkout', '-b', options.newbranch,
             Changelist().GetUpstreamBranch()])
 
-  return PatchIssue(issue_arg, options.reject, options.nocommit)
+  return PatchIssue(issue_arg, options.reject, options.nocommit,
+                    options.directory)
 
 
-def PatchIssue(issue_arg, reject, nocommit):
+def PatchIssue(issue_arg, reject, nocommit, directory):
   if type(issue_arg) is int or issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
     issue = int(issue_arg)
@@ -1930,6 +1934,8 @@ def PatchIssue(issue_arg, reject, nocommit):
   # pick up file adds.
   # The --index flag means: also insert into the index (so we catch adds).
   cmd = ['git', 'apply', '--index', '-p0']
+  if directory:
+    cmd.extend(('--directory', directory))
   if reject:
     cmd.append('--reject')
   elif IsGitVersionAtLeast('1.7.12'):
@@ -2160,7 +2166,7 @@ def CMDdiff(parser, args):
   RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
   try:
     # Patch in the latest changes from rietveld.
-    rtn = PatchIssue(cl.GetIssue(), False, False)
+    rtn = PatchIssue(cl.GetIssue(), False, False, None)
     if rtn != 0:
       return rtn
 
