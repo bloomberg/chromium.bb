@@ -29,7 +29,6 @@
 #include "SkBitmap.h"
 #include "SkPixelRef.h"
 
-#include "platform/PlatformExport.h"
 #include "public/platform/WebDiscardableMemory.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -37,7 +36,7 @@
 namespace WebCore {
 
 // Class for allocating the DiscardablePixelRef object.
-class PLATFORM_EXPORT DiscardablePixelRefAllocator : public SkBitmap::Allocator {
+class DiscardablePixelRefAllocator : public SkBitmap::Allocator {
     // SkBitmap::Allocator implementation. The discardable memory allocated
     // after this call is locked and will not be purged until next
     // onUnlockPixels().
@@ -45,7 +44,7 @@ class PLATFORM_EXPORT DiscardablePixelRefAllocator : public SkBitmap::Allocator 
 };
 
 // PixelRef object whose memory can be discarded when pixels are unlocked.
-class PLATFORM_EXPORT DiscardablePixelRef : public SkPixelRef {
+class DiscardablePixelRef : public SkPixelRef {
 public:
     DiscardablePixelRef(PassOwnPtr<SkMutex>);
     ~DiscardablePixelRef();
