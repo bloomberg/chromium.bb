@@ -94,7 +94,7 @@ void HistogramSnapshotManager::PrepareDelta(const HistogramBase& histogram) {
     to_log = snapshot.get();
   }
 
-  if (to_log->redundant_count() > 0)
+  if (to_log->TotalCount() > 0)
     histogram_flattener_->RecordDelta(histogram, *to_log);
 }
 
