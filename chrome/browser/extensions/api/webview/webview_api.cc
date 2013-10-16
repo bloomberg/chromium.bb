@@ -15,6 +15,7 @@
 #include "extensions/common/error_utils.h"
 
 using extensions::api::tabs::InjectDetails;
+using extensions::api::webview::SetPermission::Params;
 namespace webview = extensions::api::webview;
 
 namespace extensions {
@@ -246,10 +247,32 @@ bool WebviewSetPermissionFunction::RunImplSafe(WebViewGuest* guest) {
       webview::SetPermission::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  EXTENSION_FUNCTION_VALIDATE(
-      guest->SetPermission(params->request_id,
-                           params->should_allow,
-                           params->user_input));
+  WebViewGuest::PermissionResponseAction action = WebViewGuest::DEFAULT;
+  switch (params->action) {
+    case Params::ACTION_ALLOW:
+      action = WebViewGuest::ALLOW;
+      break;
+    case Params::ACTION_DENY:
+      action = WebViewGuest::DENY;
+      break;
+    case Params::ACTION_DEFAULT:
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  std::string user_input;
+  if (params->user_input)
+    user_input = *params->user_input;
+
+  WebViewGuest::SetPermissionResult result =
+      guest->SetPermission(params->request_id, action, user_input);
+
+  EXTENSION_FUNCTION_VALIDATE(result != WebViewGuest::SET_PERMISSION_INVALID);
+
+  SetResult(base::Value::CreateBooleanValue(
+      result == WebViewGuest::SET_PERMISSION_ALLOWED));
+  SendResponse(true);
   return true;
 }
 

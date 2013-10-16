@@ -56,7 +56,7 @@ WebViewInternal.prototype.handleDialogEvent_ =
     var article = (VOWELS.indexOf(dialogType.charAt(0)) >= 0) ? 'An' : 'A';
     var output = WARNING_MSG_DIALOG_BLOCKED.replace('%1', article);
     output = output.replace('%2', dialogType);
-    console.warn(output);
+    window.console.warn(output);
   };
 
   var self = this;
@@ -80,11 +80,11 @@ WebViewInternal.prototype.handleDialogEvent_ =
     ok: function(user_input) {
       validateCall();
       user_input = user_input || '';
-      WebView.setPermission(self.instanceId_, requestId, true, user_input);
+      WebView.setPermission(self.instanceId_, requestId, 'allow', user_input);
     },
     cancel: function() {
       validateCall();
-      WebView.setPermission(self.instanceId_, requestId, false, '');
+      WebView.setPermission(self.instanceId_, requestId, 'deny');
     }
   };
   webViewEvent.dialog = dialog;
@@ -102,14 +102,24 @@ WebViewInternal.prototype.handleDialogEvent_ =
       if (actionTaken) {
         return;
       }
-      WebView.setPermission(self.instanceId_, requestId, false, '');
-      showWarningMessage(event.messageType);
+      WebView.setPermission(
+          self.instanceId_, requestId, 'default', '', function(allowed) {
+        if (allowed) {
+          return;
+        }
+        showWarningMessage(event.messageType);
+      });
     });
   } else {
     actionTaken = true;
     // The default action is equivalent to canceling the dialog.
-    WebView.setPermission(self.instanceId_, requestId, false, '');
-    showWarningMessage(event.messageType);
+    WebView.setPermission(
+        self.instanceId_, requestId, 'default', '', function(allowed) {
+      if (allowed) {
+        return;
+      }
+      showWarningMessage(event.messageType);
+    });
   }
 };
 

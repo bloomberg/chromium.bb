@@ -64,6 +64,9 @@ class BrowserPluginGuest::PermissionRequest :
     public base::RefCounted<BrowserPluginGuest::PermissionRequest> {
  public:
   virtual void Respond(bool should_allow, const std::string& user_input) = 0;
+  virtual bool AllowedByDefault() const {
+      return false;
+  }
  protected:
   PermissionRequest() {
     RecordAction(UserMetricsAction("BrowserPlugin.Guest.PermissionRequest"));
@@ -435,8 +438,9 @@ int BrowserPluginGuest::RequestPermission(
                   request_id);
   // If BrowserPluginGuestDelegate hasn't handled the permission then we simply
   // reject it immediately.
-  if (!delegate_->RequestPermission(permission_type, request_info, callback)) {
-    callback.Run(false, "");
+  if (!delegate_->RequestPermission(
+      permission_type, request_info, callback, request->AllowedByDefault())) {
+    callback.Run(request->AllowedByDefault(), "");
     return browser_plugin::kInvalidPermissionRequestID;
   }
 

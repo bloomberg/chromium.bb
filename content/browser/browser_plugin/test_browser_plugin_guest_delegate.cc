@@ -53,10 +53,12 @@ void TestBrowserPluginGuestDelegate::RendererUnresponsive() {
 bool TestBrowserPluginGuestDelegate::RequestPermission(
     BrowserPluginPermissionType permission_type,
     const base::DictionaryValue& request_info,
-    const PermissionResponseCallback& callback) {
+    const PermissionResponseCallback& callback,
+    bool allowed_by_default) {
   return BrowserPluginGuestDelegate::RequestPermission(permission_type,
                                                        request_info,
-                                                       callback);
+                                                       callback,
+                                                       allowed_by_default);
 }
 
 void TestBrowserPluginGuestDelegate::SizeChanged(const gfx::Size& old_size,

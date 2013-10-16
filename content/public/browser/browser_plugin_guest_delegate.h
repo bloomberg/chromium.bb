@@ -76,7 +76,8 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   virtual bool RequestPermission(
       BrowserPluginPermissionType permission_type,
       const base::DictionaryValue& request_info,
-      const PermissionResponseCallback& callback);
+      const PermissionResponseCallback& callback,
+      bool allowed_by_default);
 
   // Notifies that the content size of the guest has changed in autosize mode.
   virtual void SizeChanged(const gfx::Size& old_size,

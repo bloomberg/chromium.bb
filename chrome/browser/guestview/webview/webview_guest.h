@@ -60,7 +60,8 @@ class WebViewGuest : public GuestView,
   virtual bool RequestPermission(
       BrowserPluginPermissionType permission_type,
       const base::DictionaryValue& request_info,
-      const PermissionResponseCallback& callback) OVERRIDE;
+      const PermissionResponseCallback& callback,
+      bool allowed_by_default) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
       OVERRIDE;
 
@@ -76,12 +77,24 @@ class WebViewGuest : public GuestView,
   // Reload the guest.
   void Reload();
 
-  // Responds to the permission request |request_id| with |should_allow| and
+  enum PermissionResponseAction {
+    DENY,
+    ALLOW,
+    DEFAULT
+  };
+
+  enum SetPermissionResult {
+    SET_PERMISSION_INVALID,
+    SET_PERMISSION_ALLOWED,
+    SET_PERMISSION_DENIED
+  };
+
+  // Responds to the permission request |request_id| with |action| and
   // |user_input|. Returns whether there was a pending request for the provided
   // |request_id|.
-  bool SetPermission(int request_id,
-                     bool should_allow,
-                     const std::string& user_input);
+  SetPermissionResult SetPermission(int request_id,
+                                    PermissionResponseAction action,
+                                    const std::string& user_input);
 
   // Overrides the user agent for this guest.
   // This affects subsequent guest navigations.
@@ -158,7 +171,15 @@ class WebViewGuest : public GuestView,
   int next_permission_request_id_;
 
   // A map to store the callback for a request keyed by the request's id.
-  typedef std::map<int, PermissionResponseCallback> RequestMap;
+  struct PermissionResponseInfo {
+    PermissionResponseCallback callback;
+    bool allowed_by_default;
+    PermissionResponseInfo();
+    PermissionResponseInfo(const PermissionResponseCallback& callback,
+                           bool allowed_by_default);
+    ~PermissionResponseInfo();
+  };
+  typedef std::map<int, PermissionResponseInfo> RequestMap;
   RequestMap pending_permission_requests_;
 
   // True if the user agent is overridden.

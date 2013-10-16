@@ -12,6 +12,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 
+using content::BrowserPluginGuestDelegate;
 using content::RenderViewHost;
 using content::WebContents;
 
@@ -67,7 +68,8 @@ void PluginPermissionHelper::OnBlockedUnauthorizedPlugin(
       info,
       base::Bind(&PluginPermissionHelper::OnPermissionResponse,
                  weak_factory_.GetWeakPtr(),
-                 identifier));
+                 identifier),
+      true /* allowed_by_default */);
   content::RecordAction(
       content::UserMetricsAction("WebView.Guest.PluginLoadRequest"));
 }

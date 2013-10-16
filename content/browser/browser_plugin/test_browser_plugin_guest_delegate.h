@@ -37,7 +37,8 @@ class TestBrowserPluginGuestDelegate : public BrowserPluginGuestDelegate {
   virtual bool RequestPermission(
       BrowserPluginPermissionType permission_type,
       const base::DictionaryValue& request_info,
-      const PermissionResponseCallback& callback) OVERRIDE;
+      const PermissionResponseCallback& callback,
+      bool allowed_by_default) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size,
                            const gfx::Size& new_size) OVERRIDE;
 

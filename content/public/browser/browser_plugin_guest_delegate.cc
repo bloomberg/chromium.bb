@@ -22,7 +22,8 @@ bool BrowserPluginGuestDelegate::IsOverridingUserAgent() const {
 bool BrowserPluginGuestDelegate::RequestPermission(
     BrowserPluginPermissionType permission_type,
     const base::DictionaryValue& request_info,
-    const PermissionResponseCallback& callback) {
+    const PermissionResponseCallback& callback,
+    bool allowed_by_default) {
   return false;
 }
 

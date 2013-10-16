@@ -201,12 +201,25 @@
             "name": "requestId"
           },
           {
-            "type": "boolean",
-            "name": "shouldAllow"
+            "type": "string",
+            "name": "action",
+            "enum": ["allow", "deny", "default"]
           },
           {
             "type": "string",
-            "name": "userInput"
+            "name": "userInput",
+            "optional": true
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "allowed",
+                "type": "boolean"
+              }
+            ]
           }
         ]
       },

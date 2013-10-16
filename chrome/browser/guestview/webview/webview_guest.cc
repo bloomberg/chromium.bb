@@ -301,7 +301,8 @@ void WebViewGuest::RendererUnresponsive() {
 bool WebViewGuest::RequestPermission(
     BrowserPluginPermissionType permission_type,
     const base::DictionaryValue& request_info,
-    const PermissionResponseCallback& callback) {
+    const PermissionResponseCallback& callback,
+    bool allowed_by_default) {
   // If there are too many pending permission requests then reject this request.
   if (pending_permission_requests_.size() >=
       webview::kMaxOutstandingPermissionRequests) {
@@ -310,7 +311,8 @@ bool WebViewGuest::RequestPermission(
   }
 
   int request_id = next_permission_request_id_++;
-  pending_permission_requests_[request_id] = callback;
+  pending_permission_requests_[request_id] =
+      PermissionResponseInfo(callback, allowed_by_default);
   scoped_ptr<base::DictionaryValue> args(request_info.DeepCopy());
   args->SetInteger(webview::kRequestId, request_id);
   switch (permission_type) {
@@ -381,18 +383,24 @@ void WebViewGuest::Reload() {
   guest_web_contents()->GetController().Reload(false);
 }
 
-bool WebViewGuest::SetPermission(int request_id,
-                                 bool should_allow,
-                                 const std::string& user_input) {
+WebViewGuest::SetPermissionResult WebViewGuest::SetPermission(
+    int request_id,
+    PermissionResponseAction action,
+    const std::string& user_input) {
   RequestMap::iterator request_itr =
       pending_permission_requests_.find(request_id);
 
   if (request_itr == pending_permission_requests_.end())
-    return false;
+    return SET_PERMISSION_INVALID;
 
-  request_itr->second.Run(should_allow, user_input);
+  const PermissionResponseInfo& info = request_itr->second;
+  bool allow = (action == ALLOW) ||
+      ((action == DEFAULT) && info.allowed_by_default);
+
+  info.callback.Run(allow, user_input);
   pending_permission_requests_.erase(request_itr);
-  return true;
+
+  return allow ? SET_PERMISSION_ALLOWED : SET_PERMISSION_DENIED;
 }
 
 void WebViewGuest::SetUserAgentOverride(
@@ -548,4 +556,18 @@ void WebViewGuest::SizeChanged(const gfx::Size& old_size,
   args->SetInteger(webview::kNewHeight, new_size.height());
   args->SetInteger(webview::kNewWidth, new_size.width());
   DispatchEvent(new GuestView::Event(webview::kEventSizeChanged, args.Pass()));
+}
+
+WebViewGuest::PermissionResponseInfo::PermissionResponseInfo()
+    : allowed_by_default(false) {
+}
+
+WebViewGuest::PermissionResponseInfo::PermissionResponseInfo(
+    const PermissionResponseCallback& callback,
+    bool allowed_by_default)
+    : callback(callback),
+      allowed_by_default(allowed_by_default) {
+}
+
+WebViewGuest::PermissionResponseInfo::~PermissionResponseInfo() {
 }

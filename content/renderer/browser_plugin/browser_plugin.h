@@ -14,7 +14,6 @@
 #include "base/memory/shared_memory.h"
 #endif
 #include "base/values.h"
-#include "content/public/common/browser_plugin_permission_type.h"
 #include "content/renderer/browser_plugin/browser_plugin_backing_store.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
