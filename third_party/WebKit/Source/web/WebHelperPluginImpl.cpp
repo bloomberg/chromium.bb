@@ -33,6 +33,7 @@
 
 #include "PageWidgetDelegate.h"
 #include "WebDocument.h"
+#include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebPlugin.h"
 #include "WebPluginContainerImpl.h"
@@ -104,6 +105,31 @@ private:
     WebHelperPluginImpl* m_widget;
 };
 
+// HelperPluginFrameClient acts as a filter to only forward messages onto the
+// main render frame that WebHelperPlugin actually needs. This prevents
+// having the WebHelperPlugin's frame accidentally signaling events on the
+// client that are meant only for WebFrames which are part of the main DOM.
+class HelperPluginFrameClient : public WebFrameClient {
+public:
+    HelperPluginFrameClient(WebFrameClient* hostWebFrameClient)
+        : m_hostWebFrameClient(hostWebFrameClient)
+    {
+    }
+
+    virtual ~HelperPluginFrameClient()
+    {
+    }
+
+    virtual WebPlugin* createPlugin(WebKit::WebFrame* frame, const WebPluginParams& params)
+    {
+        return m_hostWebFrameClient->createPlugin(frame, params);
+    }
+
+private:
+    WebFrameClient* m_hostWebFrameClient;
+};
+
+
 // WebHelperPluginImpl ----------------------------------------------------------------
 
 WebHelperPluginImpl::WebHelperPluginImpl(WebWidgetClient* client)
@@ -150,7 +176,9 @@ void WebHelperPluginImpl::closeHelperPlugin()
 void WebHelperPluginImpl::initializeFrame(WebFrameClient* client)
 {
     ASSERT(m_page);
-    m_mainFrame = WebFrameImpl::create(client);
+    ASSERT(!m_frameClient);
+    m_frameClient = adoptPtr(new HelperPluginFrameClient(client));
+    m_mainFrame = WebFrameImpl::create(m_frameClient.get());
     m_mainFrame->initializeAsMainFrame(m_page.get());
 }
 
