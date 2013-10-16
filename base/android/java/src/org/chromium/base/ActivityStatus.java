@@ -99,10 +99,7 @@ public class ActivityStatus {
      * @param activity Current activity.
      * @param newState New state value.
      */
-    // TODO(tedchoc): Make this method private (and remove @Deprecated) once all downstream usages
-    //                move to the initialize method.
-    @Deprecated
-    public static void onStateChange(Activity activity, int newState) {
+    private static void onStateChange(Activity activity, int newState) {
         if (activity == null) throw new IllegalArgumentException("null activity is not supported");
 
         if (sActivity != activity) {

@@ -145,7 +145,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertFalse(listenerCallbackCalled.get());
 
         // Ensure we get a callback, which means we have registered for them.
-        ActivityStatus.onStateChange(new Activity(), ActivityStatus.RESUMED);
+        ActivityStatus.onStateChangeForTesting(new Activity(), ActivityStatus.RESUMED);
         assertTrue(listenerCallbackCalled.get());
     }
 
