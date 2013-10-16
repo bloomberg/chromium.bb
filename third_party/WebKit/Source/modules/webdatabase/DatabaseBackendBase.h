@@ -46,7 +46,7 @@
 namespace WebCore {
 
 class DatabaseAuthorizer;
-class DatabaseBackendContext;
+class DatabaseContext;
 class DatabaseBase;
 class SecurityOrigin;
 
@@ -86,7 +86,7 @@ public:
     virtual void markAsDeletedAndClose() = 0;
     virtual void closeImmediately() = 0;
 
-    DatabaseBackendContext* databaseContext() const { return m_databaseContext.get(); }
+    DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
     void setFrontend(DatabaseBase* frontend) { m_frontend = frontend; }
 
 protected:
@@ -96,7 +96,7 @@ protected:
     friend class SQLTransactionBackend;
     friend class SQLTransactionBackendSync;
 
-    DatabaseBackendBase(PassRefPtr<DatabaseBackendContext>, const String& name, const String& expectedVersion,
+    DatabaseBackendBase(PassRefPtr<DatabaseContext>, const String& name, const String& expectedVersion,
         const String& displayName, unsigned long estimatedSize, DatabaseType);
 
     void closeDatabase();
@@ -122,7 +122,7 @@ protected:
     static const char* databaseInfoTableName();
 
     RefPtr<SecurityOrigin> m_contextThreadSecurityOrigin;
-    RefPtr<DatabaseBackendContext> m_databaseContext; // Associated with m_executionContext.
+    RefPtr<DatabaseContext> m_databaseContext; // Associated with m_executionContext.
 
     String m_name;
     String m_expectedVersion;

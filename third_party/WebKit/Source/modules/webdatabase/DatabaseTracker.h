@@ -39,7 +39,7 @@
 namespace WebCore {
 
 class DatabaseBackendBase;
-class DatabaseBackendContext;
+class DatabaseContext;
 class OriginLock;
 class SecurityOrigin;
 
@@ -54,7 +54,7 @@ public:
     // m_databaseGuard and m_openDatabaseMapGuard currently don't overlap.
     // notificationMutex() is currently independent of the other locks.
 
-    bool canEstablishDatabase(DatabaseBackendContext*, const String& name, const String& displayName, unsigned long estimatedSize, DatabaseError&);
+    bool canEstablishDatabase(DatabaseContext*, const String& name, const String& displayName, unsigned long estimatedSize, DatabaseError&);
     String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
     void addOpenDatabase(DatabaseBackendBase*);
@@ -63,7 +63,7 @@ public:
 
     unsigned long long getMaxSizeForDatabase(const DatabaseBackendBase*);
 
-    void interruptAllDatabasesForContext(const DatabaseBackendContext*);
+    void interruptAllDatabasesForContext(const DatabaseContext*);
     void closeDatabasesImmediately(const String& originIdentifier, const String& name);
 
     void prepareToOpenDatabase(DatabaseBackendBase*);

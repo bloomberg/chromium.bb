@@ -35,7 +35,6 @@
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseBase.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
@@ -54,7 +53,7 @@
 // =======================================================
 // The DatabaseTracker maintains a list of databases that have been
 // "opened" so that the client can call interrupt or delete on every database
-// associated with a DatabaseBackendContext.
+// associated with a DatabaseContext.
 //
 // We will only call DatabaseTracker::addOpenDatabase() to add the database
 // to the tracker as opened when we've succeeded in opening the database,
@@ -200,7 +199,7 @@ const char* DatabaseBackendBase::databaseInfoTableName()
     return infoTableName;
 }
 
-DatabaseBackendBase::DatabaseBackendBase(PassRefPtr<DatabaseBackendContext> databaseContext, const String& name,
+DatabaseBackendBase::DatabaseBackendBase(PassRefPtr<DatabaseContext> databaseContext, const String& name,
     const String& expectedVersion, const String& displayName, unsigned long estimatedSize, DatabaseType databaseType)
     : m_databaseContext(databaseContext)
     , m_name(name.isolatedCopy())

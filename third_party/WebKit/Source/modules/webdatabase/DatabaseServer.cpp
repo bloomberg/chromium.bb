@@ -28,8 +28,8 @@
 
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBackend.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseBackendSync.h"
+#include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "wtf/UnusedParam.h"
@@ -46,12 +46,12 @@ void DatabaseServer::closeDatabasesImmediately(const String& originIdentifier, c
     DatabaseTracker::tracker().closeDatabasesImmediately(originIdentifier, name);
 }
 
-void DatabaseServer::interruptAllDatabasesForContext(const DatabaseBackendContext* context)
+void DatabaseServer::interruptAllDatabasesForContext(const DatabaseContext* context)
 {
     DatabaseTracker::tracker().interruptAllDatabasesForContext(context);
 }
 
-PassRefPtr<DatabaseBackendBase> DatabaseServer::openDatabase(RefPtr<DatabaseBackendContext>& backendContext,
+PassRefPtr<DatabaseBackendBase> DatabaseServer::openDatabase(RefPtr<DatabaseContext>& backendContext,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError &error, String& errorMessage)
 {
@@ -61,7 +61,7 @@ PassRefPtr<DatabaseBackendBase> DatabaseServer::openDatabase(RefPtr<DatabaseBack
     return database.release();
 }
 
-PassRefPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPtr<DatabaseBackendContext>& backendContext,
+PassRefPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPtr<DatabaseContext>& backendContext,
     DatabaseType type, const String& name, const String& expectedVersion, const String& displayName,
     unsigned long estimatedSize, bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {

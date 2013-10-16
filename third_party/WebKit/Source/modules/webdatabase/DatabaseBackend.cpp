@@ -29,7 +29,7 @@
 #include "platform/Logging.h"
 #include "modules/webdatabase/ChangeVersionData.h"
 #include "modules/webdatabase/ChangeVersionWrapper.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/DatabaseThread.h"
 #include "modules/webdatabase/DatabaseTracker.h"
@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-DatabaseBackend::DatabaseBackend(PassRefPtr<DatabaseBackendContext> databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
+DatabaseBackend::DatabaseBackend(PassRefPtr<DatabaseContext> databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : DatabaseBackendBase(databaseContext, name, expectedVersion, displayName, estimatedSize, DatabaseType::Async)
     , m_transactionInProgress(false)
     , m_isTransactionQueueEnabled(true)

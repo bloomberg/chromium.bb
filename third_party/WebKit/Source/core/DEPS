@@ -27,7 +27,6 @@ include_rules = [
     "!modules/speech/SpeechSynthesisVoice.h",
     "!modules/webaudio/DelayDSPKernel.h",
     "!modules/webaudio/MediaElementAudioSourceNode.h",
-    "!modules/webdatabase/DatabaseContext.h",
     "!modules/webdatabase/DatabaseDetails.h",
     "!modules/webdatabase/DatabaseManager.h",
     "!modules/webdatabase/DatabaseManager.h",

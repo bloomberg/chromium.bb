@@ -37,16 +37,16 @@ public:
 
     virtual String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist);
 
-    virtual PassRefPtr<DatabaseBackendBase> openDatabase(RefPtr<DatabaseBackendContext>&, DatabaseType,
+    virtual PassRefPtr<DatabaseBackendBase> openDatabase(RefPtr<DatabaseContext>&, DatabaseType,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 
     virtual void closeDatabasesImmediately(const String& originIdentifier, const String& name);
 
-    virtual void interruptAllDatabasesForContext(const DatabaseBackendContext*);
+    virtual void interruptAllDatabasesForContext(const DatabaseContext*);
 
 protected:
-    virtual PassRefPtr<DatabaseBackendBase> createDatabase(RefPtr<DatabaseBackendContext>&, DatabaseType,
+    virtual PassRefPtr<DatabaseBackendBase> createDatabase(RefPtr<DatabaseContext>&, DatabaseType,
         const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize,
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 };

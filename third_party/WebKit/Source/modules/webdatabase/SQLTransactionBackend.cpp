@@ -36,7 +36,7 @@
 #include "modules/webdatabase/Database.h" // FIXME: Should only be used in the frontend.
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseBackend.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseThread.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/SQLError.h"

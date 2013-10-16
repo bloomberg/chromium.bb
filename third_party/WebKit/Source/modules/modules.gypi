@@ -649,8 +649,6 @@
       'webdatabase/DatabaseBackend.h',
       'webdatabase/DatabaseBackendBase.cpp',
       'webdatabase/DatabaseBackendBase.h',
-      'webdatabase/DatabaseBackendContext.cpp',
-      'webdatabase/DatabaseBackendContext.h',
       'webdatabase/DatabaseBackendSync.cpp',
       'webdatabase/DatabaseBackendSync.h',
       'webdatabase/DatabaseBase.cpp',

@@ -37,7 +37,6 @@
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseBackendSync.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseContext.h"
@@ -119,7 +118,7 @@ PassRefPtr<DatabaseContext> DatabaseManager::databaseContextFor(ExecutionContext
 {
     RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
     if (!databaseContext)
-        databaseContext = adoptRef(new DatabaseBackendContext(context));
+        databaseContext = DatabaseContext::create(context);
     return databaseContext.release();
 }
 
@@ -190,7 +189,7 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionCo
     ASSERT(error == DatabaseError::None);
 
     RefPtr<DatabaseContext> databaseContext = databaseContextFor(context);
-    RefPtr<DatabaseBackendContext> backendContext = databaseContext->backend();
+    RefPtr<DatabaseContext> backendContext = databaseContext->backend();
 
     RefPtr<DatabaseBackendBase> backend = m_server->openDatabase(backendContext, type, name, expectedVersion,
         displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);

@@ -36,7 +36,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "platform/Logging.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseBackendSync.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseContext.h"
@@ -57,7 +56,7 @@ PassRefPtr<DatabaseSync> DatabaseSync::create(ExecutionContext*, PassRefPtr<Data
     return static_cast<DatabaseSync*>(backend.get());
 }
 
-DatabaseSync::DatabaseSync(PassRefPtr<DatabaseBackendContext> databaseContext,
+DatabaseSync::DatabaseSync(PassRefPtr<DatabaseContext> databaseContext,
     const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : DatabaseBase(databaseContext->executionContext())
     , DatabaseBackendSync(databaseContext, name, expectedVersion, displayName, estimatedSize)

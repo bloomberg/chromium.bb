@@ -75,7 +75,7 @@ public:
     void scheduleTransactionCallback(SQLTransaction*);
 
 private:
-    Database(PassRefPtr<DatabaseBackendContext>, const String& name,
+    Database(PassRefPtr<DatabaseContext>, const String& name,
         const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
     PassRefPtr<DatabaseBackend> backend();
     static PassRefPtr<Database> create(ExecutionContext*, PassRefPtr<DatabaseBackendBase>);

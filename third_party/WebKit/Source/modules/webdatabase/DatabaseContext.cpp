@@ -35,7 +35,6 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/DatabaseThread.h"
@@ -58,11 +57,8 @@ namespace WebCore {
 // We create a DatabaseContext only when there is a need i.e. the script tries to
 // open a Database via DatabaseManager::openDatabase().
 //
-// The DatabaseContext constructor will call setDatabaseContext() on the
-// the ExecutionContext. This sets the RefPtr in the ExecutionContext
-// for keeping the DatabaseContext alive. Since the DatabaseContext is only
-// created from the script thread, it is safe for the constructor to call
-// ExecutionContext::setDatabaseContext().
+// The DatabaseContext constructor will call ref(). This lets DatabaseContext keep itself alive.
+// Note that paired deref() is called from contextDestroyed().
 //
 // Once a DatabaseContext is associated with a ExecutionContext, it will
 // live until after the ExecutionContext destructs. This is true even if
@@ -94,6 +90,12 @@ namespace WebCore {
 // The RefPtrs in the Databases and ExecutionContext will ensure that the
 // DatabaseContext will outlive both regardless of which of the 2 destructs first.
 
+PassRefPtr<DatabaseContext> DatabaseContext::create(ExecutionContext* context)
+{
+    RefPtr<DatabaseContext> self = adoptRef(new DatabaseContext(context));
+    self->ref(); // Is deref()-ed on contextDestroyed().
+    return self.release();
+}
 
 DatabaseContext::DatabaseContext(ExecutionContext* context)
     : ActiveDOMObject(context)
@@ -103,8 +105,6 @@ DatabaseContext::DatabaseContext(ExecutionContext* context)
 {
     // ActiveDOMObject expects this to be called to set internal flags.
     suspendIfNeeded();
-
-    context->setDatabaseContext(this);
 
     // For debug accounting only. We must do this before we register the
     // instance. The assertions assume this.
@@ -132,6 +132,7 @@ void DatabaseContext::contextDestroyed()
 {
     stopDatabases();
     ActiveDOMObject::contextDestroyed();
+    deref(); // paired with the ref() call on create().
 }
 
 // stop() is from stopActiveDOMObjects() which indicates that the owner Frame
@@ -142,9 +143,9 @@ void DatabaseContext::stop()
     stopDatabases();
 }
 
-PassRefPtr<DatabaseBackendContext> DatabaseContext::backend()
+PassRefPtr<DatabaseContext> DatabaseContext::backend()
 {
-    DatabaseBackendContext* backend = static_cast<DatabaseBackendContext*>(this);
+    DatabaseContext* backend = static_cast<DatabaseContext*>(this);
     return backend;
 }
 
@@ -201,6 +202,16 @@ bool DatabaseContext::allowDatabaseAccess() const
     ASSERT(executionContext()->isWorkerGlobalScope());
     // allowDatabaseAccess is not yet implemented for workers.
     return true;
+}
+
+SecurityOrigin* DatabaseContext::securityOrigin() const
+{
+    return executionContext()->securityOrigin();
+}
+
+bool DatabaseContext::isContextThread() const
+{
+    return executionContext()->isContextThread();
 }
 
 } // namespace WebCore

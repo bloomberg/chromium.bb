@@ -35,7 +35,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseObserver.h"
 #include "modules/webdatabase/QuotaTracker.h"
 #include "weborigin/DatabaseIdentifier.h"
@@ -58,7 +58,7 @@ DatabaseTracker::DatabaseTracker()
     SQLiteFileSystem::registerSQLiteVFS();
 }
 
-bool DatabaseTracker::canEstablishDatabase(DatabaseBackendContext* databaseContext, const String& name, const String& displayName, unsigned long estimatedSize, DatabaseError& error)
+bool DatabaseTracker::canEstablishDatabase(DatabaseContext* databaseContext, const String& name, const String& displayName, unsigned long estimatedSize, DatabaseError& error)
 {
     ExecutionContext* executionContext = databaseContext->executionContext();
     bool success = DatabaseObserver::canEstablishDatabase(executionContext, name, displayName, estimatedSize);
@@ -181,7 +181,7 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const DatabaseBackendB
     return databaseSize + spaceAvailable;
 }
 
-void DatabaseTracker::interruptAllDatabasesForContext(const DatabaseBackendContext* context)
+void DatabaseTracker::interruptAllDatabasesForContext(const DatabaseContext* context)
 {
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
 

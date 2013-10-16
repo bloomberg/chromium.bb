@@ -26,12 +26,12 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseBackendSync.h"
 
-#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 
 namespace WebCore {
 
-DatabaseBackendSync::DatabaseBackendSync(PassRefPtr<DatabaseBackendContext> databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
+DatabaseBackendSync::DatabaseBackendSync(PassRefPtr<DatabaseContext> databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : DatabaseBackendBase(databaseContext, name, expectedVersion, displayName, estimatedSize, DatabaseType::Sync)
 {
 }

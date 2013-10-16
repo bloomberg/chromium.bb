@@ -38,7 +38,6 @@
 #include "platform/NotImplemented.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/ChangeVersionData.h"
-#include "modules/webdatabase/DatabaseBackendContext.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
@@ -68,11 +67,11 @@ PassRefPtr<Database> Database::create(ExecutionContext*, PassRefPtr<DatabaseBack
     return static_cast<Database*>(backend.get());
 }
 
-Database::Database(PassRefPtr<DatabaseBackendContext> databaseContext,
+Database::Database(PassRefPtr<DatabaseContext> databaseContext,
     const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : DatabaseBase(databaseContext->executionContext())
     , DatabaseBackend(databaseContext, name, expectedVersion, displayName, estimatedSize)
-    , m_databaseContext(DatabaseBackend::databaseContext()->frontend())
+    , m_databaseContext(DatabaseBackend::databaseContext())
     , m_deleted(false)
 {
     ScriptWrappable::init(this);

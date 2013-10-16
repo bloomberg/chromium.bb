@@ -74,7 +74,7 @@ public:
     }
 
 private:
-    DatabaseSync(PassRefPtr<DatabaseBackendContext>, const String& name,
+    DatabaseSync(PassRefPtr<DatabaseContext>, const String& name,
         const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
     PassRefPtr<DatabaseBackendSync> backend();
     static PassRefPtr<DatabaseSync> create(ExecutionContext*, PassRefPtr<DatabaseBackendBase>);

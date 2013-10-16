@@ -40,7 +40,6 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "modules/webdatabase/DatabaseContext.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -378,11 +377,6 @@ ContextLifecycleNotifier* ExecutionContext::lifecycleNotifier()
 bool ExecutionContext::isIteratingOverObservers() const
 {
     return m_lifecycleNotifier && m_lifecycleNotifier->isIteratingOverObservers();
-}
-
-void ExecutionContext::setDatabaseContext(DatabaseContext* databaseContext)
-{
-    m_databaseContext = databaseContext;
 }
 
 } // namespace WebCore
