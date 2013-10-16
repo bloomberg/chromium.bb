@@ -78,6 +78,7 @@ class UMALogger {
   virtual void RecordOSError(MethodID method, int saved_errno) const = 0;
   virtual void RecordOSError(MethodID method,
                              base::PlatformFileError error) const = 0;
+  virtual void RecordBackupResult(bool success) const = 0;
 };
 
 class RetrierProvider {
@@ -100,7 +101,8 @@ class ChromiumWritableFile : public leveldb::WritableFile {
   ChromiumWritableFile(const std::string& fname,
                        FILE* f,
                        const UMALogger* uma_logger,
-                       WriteTracker* tracker);
+                       WriteTracker* tracker,
+                       bool make_backup);
   virtual ~ChromiumWritableFile();
   virtual leveldb::Status Append(const leveldb::Slice& data);
   virtual leveldb::Status Close();
@@ -108,14 +110,20 @@ class ChromiumWritableFile : public leveldb::WritableFile {
   virtual leveldb::Status Sync();
 
  private:
+  enum Type {
+    kManifest,
+    kTable,
+    kOther
+  };
   leveldb::Status SyncParent();
 
   std::string filename_;
   FILE* file_;
   const UMALogger* uma_logger_;
   WriteTracker* tracker_;
-  bool is_manifest_;
+  Type file_type_;
   std::string parent_dir_;
+  bool make_backup_;
 };
 
 class ChromiumEnv : public leveldb::Env,
@@ -159,6 +167,7 @@ class ChromiumEnv : public leveldb::Env,
   virtual void DidSyncDir(const std::string& fname);
 
   std::string name_;
+  bool make_backup_;
 
  private:
   // File locks may not be exclusive within a process (e.g. on POSIX). Track
@@ -192,6 +201,10 @@ class ChromiumEnv : public leveldb::Env,
   virtual void RecordOSError(MethodID method, int saved_errno) const;
   virtual void RecordOSError(MethodID method,
                              base::PlatformFileError error) const;
+  virtual void RecordBackupResult(bool result) const;
+  void RestoreIfNecessary(const std::string& dir,
+                          std::vector<std::string>* children);
+  base::FilePath RestoreFromBackup(const base::FilePath& base_name);
   void RecordOpenFilesLimit(const std::string& type);
   void RecordLockFileAncestors(int num_missing_ancestors) const;
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;

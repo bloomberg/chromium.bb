@@ -5433,6 +5433,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="LevelDBEnv.All.SafeThreadAccess" units="accesses">
+  <obsolete>
+    Deprecated 2013-10. No thread-unsafety was found.
+  </obsolete>
   <summary>
     Linux and CrOS use unlocked_stdio(3). If it is used unsafely, record it
     here. If there is no record of unsafety after chrome 29 has been in the
@@ -5495,11 +5498,25 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="LevelDBEnv.IDB.MissingFiles" units="files">
+  <summary>
+    Number of backup files found without corresponding ldb files. As measured by
+    GetChildren when used in IndexedDB.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.IDB.RetryRecoveredFromErrorIn"
     enum="PlatformFileError">
   <summary>
     When IDB LevelDBEnv successfully retries an operation that had failed,
     record the error from the most recent failed attempt.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IDB.Table" enum="BooleanSuccess">
+  <summary>
+    Success indicates a successful backup or restore operation for .ldb table
+    files when used in IndexedDB.
   </summary>
 </histogram>
 
@@ -5567,10 +5584,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="LevelDBEnv.MissingFiles" units="files">
+  <summary>
+    Number of backup files found without corresponding ldb files. As measured by
+    GetChildren when used in LevelDB clients other than IndexedDB.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.RetryRecoveredFromErrorIn" enum="PlatformFileError">
   <summary>
     When Non-IDB LevelDBEnv successfully retries an operation that had failed,
     record the error from the most recent failed attempt.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.Table" enum="BooleanSuccess">
+  <summary>
+    Success indicates a successful backup or restore operation for .ldb table
+    files when used by LevelDB clients other than IndexedDB.
   </summary>
 </histogram>
 
@@ -28187,6 +28218,13 @@ other types of suffix sets.
   <affected-histogram name="Renderer4.BeginToFinishDoc_NormalLoad"/>
   <affected-histogram name="Renderer4.RequestToFinish"/>
   <affected-histogram name="Renderer4.StartToFinish"/>
+</fieldtrial>
+
+<fieldtrial name="LevelDBEnvBackupRestore" separator="">
+  <group name="Backup" label="Backing up an ldb file."/>
+  <group name="Restore" label="Restoring an ldb file."/>
+  <affected-histogram name="LevelDBEnv.IDB.Table"/>
+  <affected-histogram name="LevelDBEnv.Table"/>
 </fieldtrial>
 
 <fieldtrial name="LevelDBEnvMaxFDs" separator=".">
