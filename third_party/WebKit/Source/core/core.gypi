@@ -2673,7 +2673,6 @@
             'platform/ScrollbarThemeOverlay.h',
             'platform/ScrollbarThemeWin.cpp',
             'platform/ScrollbarThemeWin.h',
-            'platform/SerializedResource.h',
             'platform/Theme.cpp',
             'platform/animation/AnimationValue.h',
             'platform/animation/AnimationTranslationUtil.cpp',

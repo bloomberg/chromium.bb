@@ -48,7 +48,7 @@
 #include "core/loader/archive/MHTMLArchive.h"
 #include "core/frame/Frame.h"
 #include "core/page/PageSerializer.h"
-#include "core/platform/SerializedResource.h"
+#include "platform/SerializedResource.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"

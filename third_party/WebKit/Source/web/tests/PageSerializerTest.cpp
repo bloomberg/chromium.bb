@@ -39,7 +39,7 @@
 #include <gtest/gtest.h>
 #include "core/page/Page.h"
 #include "core/page/PageSerializer.h"
-#include "core/platform/SerializedResource.h"
+#include "platform/SerializedResource.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"

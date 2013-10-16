@@ -61,6 +61,7 @@
       'SSLKeyGenerator.h',
       'SecureTextInput.cpp',
       'SecureTextInput.h',
+      'SerializedResource.h',
       'SharedBuffer.cpp',
       'SharedBuffer.h',
       'SharedBufferChunkReader.cpp',
