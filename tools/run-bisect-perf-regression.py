@@ -79,7 +79,7 @@ def RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
     cmd.extend(['-t', config['truncate_percent']])
 
   if config['max_time_minutes']:
-    cmd.extend(['--repeat_test_max_time', config['max_time_minutes']])
+    cmd.extend(['--max_time_minutes', config['max_time_minutes']])
 
   cmd.extend(['--build_preference', 'ninja'])
 
