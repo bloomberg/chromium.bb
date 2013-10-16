@@ -3,6 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""
+Dumps a list of files with static initializers. Use with release builds.
+
+Usage:
+  tools/mac/dump-static-initializers.py out/Release/Chromium\ Framework.framework.dSYM/Contents/Resources/DWARF/Chromium\ Framework 
+
+Do NOT use mac_strip_release=0 or component=shared_library if you want to use
+this script.
+"""
 
 import optparse
 import re
