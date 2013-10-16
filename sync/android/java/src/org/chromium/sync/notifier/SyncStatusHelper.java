@@ -200,28 +200,10 @@ public class SyncStatusHelper {
     }
 
     /**
-     * This method is deprecated. Use
-     * {@link #registerSyncSettingsChangedObserver(SyncSettingsChangedObserver)}.
-     */
-    @Deprecated
-    public void registerContentResolverObserver(SyncSettingsChangedObserver observer) {
-        registerSyncSettingsChangedObserver(observer);
-    }
-
-    /**
      * Wrapper method for the ContentResolver.removeStatusChangeListener(...).
      */
     public void unregisterSyncSettingsChangedObserver(SyncSettingsChangedObserver observer) {
         mObservers.removeObserver(observer);
-    }
-
-    /**
-     * This method is deprecated. Use
-     * {@link #registerSyncSettingsChangedObserver(SyncSettingsChangedObserver)}.
-     */
-    @Deprecated
-    public void unregisterContentResolverObserver(SyncSettingsChangedObserver observer) {
-        unregisterSyncSettingsChangedObserver(observer);
     }
 
     /**
