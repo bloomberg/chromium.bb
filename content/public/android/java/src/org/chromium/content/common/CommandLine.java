@@ -76,6 +76,9 @@ public abstract class CommandLine {
     // Native switch - shell_switches::kDumpRenderTree
     public static final String DUMP_RENDER_TREE = "dump-render-tree";
 
+    // Native switch - chrome_switches::kDisablePopupBlocking
+    public static final String DISABLE_POPUP_BLOCKING = "disable-popup-blocking";
+
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**
