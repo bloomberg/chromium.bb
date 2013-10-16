@@ -620,8 +620,6 @@ crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFa
 #crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
 crbug.com/305466 fast/hidpi/image-set-without-specified-width.html [ Skip ]
 crbug.com/305466 virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Skip ]
-crbug.com/305468 fast/hidpi/image-srcset-invalid-descriptor.html [ Skip ]
-crbug.com/305468 virtual/gpu/fast/hidpi/image-srcset-invalid-descriptor.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 virtual/gpu/fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]

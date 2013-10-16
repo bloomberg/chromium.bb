@@ -7,13 +7,15 @@
 <script src="../js/resources/js-test-pre.js"></script>
 <script>
     addEventListener("load", function() {
-        shouldBeTrue('document.getElementById("foo").clientWidth==200');
+        shouldBeTrue('document.getElementById("foo").clientWidth==100');
     }, false);
 </script>
 </head>
 
 <body id="body">
-    <div>This test passes if the image below says 1x with a reddish background when the deviceScaleFactor is 1, and if says 2x with a greenish background when the deviceScaleFactor is 2.</div>
+    <div>This test passes if the image below is a 100px blue square when the deviceScaleFactor is 1.</div>
+    <div> It tests that even though the 1x resource contains many invalid descriptors, only the invalid descriptors are ignored (according
+        to the spec) </div>
     <img id="foo" src="" srcset="resources/blue-100-px-square.png 43q 1x dfs 3dd, resources/green-200-px-square.png 2x">
 </body>
 </html>
