@@ -127,60 +127,26 @@ class SignalFDWatcher : public MessageLoopForIO::Watcher {
 #endif  // defined(OS_POSIX)
 
 // Parses the environment variable var as an Int32.  If it is unset, returns
-// default_val.  If it is set, unsets it then converts it to Int32 before
-// returning it.  If unsetting or converting to an Int32 fails, print an
-// error and exit with failure.
-int32 Int32FromEnvOrDie(const char* const var, int32 default_val) {
+// true.  If it is set, unsets it then converts it to Int32 before
+// returning it in |result|.  Returns true on success.
+bool TakeInt32FromEnvironment(const char* const var, int32* result) {
   scoped_ptr<Environment> env(Environment::Create());
   std::string str_val;
-  int32 result;
+
   if (!env->GetVar(var, &str_val))
-    return default_val;
+    return true;
+
   if (!env->UnSetVar(var)) {
     LOG(ERROR) << "Invalid environment: we could not unset " << var << ".\n";
-    exit(EXIT_FAILURE);
+    return false;
   }
-  if (!StringToInt(str_val, &result)) {
+
+  if (!StringToInt(str_val, result)) {
     LOG(ERROR) << "Invalid environment: " << var << " is not an integer.\n";
-    exit(EXIT_FAILURE);
+    return false;
   }
-  return result;
-}
 
-// Checks whether sharding is enabled by examining the relevant
-// environment variable values.  If the variables are present,
-// but inconsistent (i.e., shard_index >= total_shards), prints
-// an error and exits.
-void InitSharding(int32* total_shards, int32* shard_index) {
-  *total_shards = Int32FromEnvOrDie(kTestTotalShards, 1);
-  *shard_index = Int32FromEnvOrDie(kTestShardIndex, 0);
-
-  if (*total_shards == -1 && *shard_index != -1) {
-    LOG(ERROR) << "Invalid environment variables: you have "
-               << kTestShardIndex << " = " << *shard_index
-               << ", but have left " << kTestTotalShards << " unset.\n";
-    exit(EXIT_FAILURE);
-  } else if (*total_shards != -1 && *shard_index == -1) {
-    LOG(ERROR) << "Invalid environment variables: you have "
-               << kTestTotalShards << " = " << *total_shards
-               << ", but have left " << kTestShardIndex << " unset.\n";
-    exit(EXIT_FAILURE);
-  } else if (*shard_index < 0 || *shard_index >= *total_shards) {
-    LOG(ERROR) << "Invalid environment variables: we require 0 <= "
-               << kTestShardIndex << " < " << kTestTotalShards
-               << ", but you have " << kTestShardIndex << "=" << *shard_index
-               << ", " << kTestTotalShards << "=" << *total_shards << ".\n";
-    exit(EXIT_FAILURE);
-  }
-}
-
-// Given the total number of shards, the shard index, and the test id, returns
-// true iff the test should be run on this shard.  The test id is some arbitrary
-// but unique non-negative integer assigned by this launcher to each test
-// method.  Assumes that 0 <= shard_index < total_shards, which is first
-// verified in ShouldShard().
-bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
-  return (test_id % total_shards) == shard_index;
+  return true;
 }
 
 // For a basic pattern matching for gtest_filter options.  (Copied from
@@ -224,127 +190,222 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
   }
 }
 
-void RunTests(TestLauncherDelegate* launcher_delegate,
-              int total_shards,
-              int shard_index,
-              TestResultsTracker* results_tracker) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-  DCHECK(!command_line->HasSwitch(kGTestListTestsFlag));
-
-  testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
-
-  std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
-
-  // Split --gtest_filter at '-', if there is one, to separate into
-  // positive filter and negative filter portions.
-  std::string positive_filter = filter;
-  std::string negative_filter;
-  size_t dash_pos = filter.find('-');
-  if (dash_pos != std::string::npos) {
-    positive_filter = filter.substr(0, dash_pos);  // Everything up to the dash.
-    negative_filter = filter.substr(dash_pos + 1); // Everything after the dash.
+// Launches tests using a TestLauncherDelegate.
+class TestLauncher {
+ public:
+  explicit TestLauncher(TestLauncherDelegate* launcher_delegate)
+      : launcher_delegate_(launcher_delegate),
+        total_shards_(1),
+        shard_index_(0),
+        cycles_(1) {
   }
 
-  int num_runnable_tests = 0;
+  // Runs the launcher. Must be called at most once.
+  bool Run(int argc, char** argv) WARN_UNUSED_RESULT {
+    if (!Init())
+      return false;
 
-  for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
-    const testing::TestCase* test_case = unit_test->GetTestCase(i);
-    for (int j = 0; j < test_case->total_test_count(); ++j) {
-      const testing::TestInfo* test_info = test_case->GetTestInfo(j);
-      std::string test_name = test_info->test_case_name();
-      test_name.append(".");
-      test_name.append(test_info->name());
+#if defined(OS_POSIX)
+    CHECK_EQ(0, pipe(g_shutdown_pipe));
 
-      // Skip disabled tests.
-      if (test_name.find("DISABLED") != std::string::npos &&
-          !command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
-        continue;
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    sigemptyset(&action.sa_mask);
+    action.sa_handler = &ShutdownPipeSignalHandler;
+
+    CHECK_EQ(0, sigaction(SIGINT, &action, NULL));
+    CHECK_EQ(0, sigaction(SIGQUIT, &action, NULL));
+    CHECK_EQ(0, sigaction(SIGTERM, &action, NULL));
+
+    MessageLoopForIO::FileDescriptorWatcher controller;
+    SignalFDWatcher watcher;
+
+    CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
+              g_shutdown_pipe[0],
+              true,
+              MessageLoopForIO::WATCH_READ,
+              &controller,
+              &watcher));
+#endif  // defined(OS_POSIX)
+
+    bool success = true;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        Bind(&TestLauncher::RunTestIteration,
+             Unretained(this),
+             &success,
+             true));
+
+    MessageLoop::current()->Run();
+
+    if (cycles_ != 1)
+      results_tracker_.PrintSummaryOfAllIterations();
+
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
+      FilePath summary_path(command_line->GetSwitchValuePath(
+                                switches::kTestLauncherSummaryOutput));
+      if (!results_tracker_.SaveSummaryAsJSON(summary_path)) {
+        LOG(ERROR) << "Failed to save test launcher output summary.";
       }
-
-      std::string filtering_test_name =
-          launcher_delegate->GetTestNameForFiltering(test_case, test_info);
-
-      // Skip the test that doesn't match the filter string (if given).
-      if ((!positive_filter.empty() &&
-           !MatchesFilter(filtering_test_name, positive_filter)) ||
-          MatchesFilter(filtering_test_name, negative_filter)) {
-        continue;
-      }
-
-      if (!launcher_delegate->ShouldRunTest(test_case, test_info))
-        continue;
-
-      bool should_run = ShouldRunTestOnShard(total_shards, shard_index,
-                                             num_runnable_tests);
-      num_runnable_tests++;
-      if (!should_run)
-        continue;
-
-      results_tracker->OnTestStarted(test_name);
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          Bind(&TestLauncherDelegate::RunTest,
-               Unretained(launcher_delegate),
-               test_case,
-               test_info,
-               Bind(&TestResultsTracker::AddTestResult,
-                    Unretained(results_tracker))));
     }
+
+    return success;
   }
 
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      Bind(&TestLauncherDelegate::RunRemainingTests,
-      Unretained(launcher_delegate)));
+ private:
+  bool Init() WARN_UNUSED_RESULT {
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      Bind(&TestResultsTracker::OnAllTestsStarted,
-           Unretained(results_tracker)));
-}
+    if (command_line->HasSwitch(kGTestListTestsFlag)) {
+      // Child gtest processes would list tests instead of running tests.
+      // TODO(phajdan.jr): Restore support for the flag.
+      LOG(ERROR) << kGTestListTestsFlag << " is not supported.";
+      return false;
+    }
 
-void RunTestIteration(TestLauncherDelegate* launcher_delegate,
-                      int32 total_shards,
-                      int32 shard_index,
-                      int cycles,
-                      TestResultsTracker* results_tracker,
-                      int* exit_code,
-                      bool run_tests_success) {
-  if (!run_tests_success) {
-    // Change the exit code to signal failure, but continue to run all requested
-    // test iterations. With the summary of all iterations at the end this is
-    // a good default.
-    *exit_code = 1;
+    if (!TakeInt32FromEnvironment(kTestTotalShards, &total_shards_))
+      return false;
+    if (!TakeInt32FromEnvironment(kTestShardIndex, &shard_index_))
+      return false;
+    if (shard_index_ < 0 ||
+        total_shards_ < 0 ||
+        shard_index_ >= total_shards_) {
+      LOG(ERROR) << "Invalid environment variables: we require 0 <= "
+                 << kTestShardIndex << " < " << kTestTotalShards
+                 << ", but you have " << kTestShardIndex << "=" << shard_index_
+                 << ", " << kTestTotalShards << "=" << total_shards_ << ".\n";
+      return false;
+    }
+
+    if (command_line->HasSwitch(kGTestRepeatFlag) &&
+        !StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag),
+                     &cycles_)) {
+      LOG(ERROR) << "Invalid value for " << kGTestRepeatFlag;
+      return false;
+    }
+
+    // Split --gtest_filter at '-', if there is one, to separate into
+    // positive filter and negative filter portions.
+    std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
+    positive_test_filter_ = filter;
+    size_t dash_pos = filter.find('-');
+    if (dash_pos != std::string::npos) {
+      // Everything up to the dash.
+      positive_test_filter_ = filter.substr(0, dash_pos);
+
+      // Everything after the dash.
+      negative_test_filter_ = filter.substr(dash_pos + 1);
+    }
+
+    if (!results_tracker_.Init(*command_line)) {
+      LOG(ERROR) << "Failed to initialize test results tracker.";
+      return 1;
+    }
+
+    return true;
   }
 
-  if (cycles == 0) {
-    MessageLoop::current()->Quit();
-    return;
+  // Runs all tests in current iteration. Uses callbacks to communicate success.
+  void RunTests() {
+    testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
+
+    int num_runnable_tests = 0;
+
+    for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
+      const testing::TestCase* test_case = unit_test->GetTestCase(i);
+      for (int j = 0; j < test_case->total_test_count(); ++j) {
+        const testing::TestInfo* test_info = test_case->GetTestInfo(j);
+        std::string test_name = test_info->test_case_name();
+        test_name.append(".");
+        test_name.append(test_info->name());
+
+        // Skip disabled tests.
+        const CommandLine* command_line = CommandLine::ForCurrentProcess();
+        if (test_name.find("DISABLED") != std::string::npos &&
+            !command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
+          continue;
+        }
+
+        std::string filtering_test_name =
+            launcher_delegate_->GetTestNameForFiltering(test_case, test_info);
+
+        // Skip the test that doesn't match the filter string (if given).
+        if ((!positive_test_filter_.empty() &&
+             !MatchesFilter(filtering_test_name, positive_test_filter_)) ||
+            MatchesFilter(filtering_test_name, negative_test_filter_)) {
+          continue;
+        }
+
+        if (!launcher_delegate_->ShouldRunTest(test_case, test_info))
+          continue;
+
+        if (num_runnable_tests++ % total_shards_ != shard_index_)
+          continue;
+
+        results_tracker_.OnTestStarted(test_name);
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            Bind(&TestLauncherDelegate::RunTest,
+                 Unretained(launcher_delegate_),
+                 test_case,
+                 test_info,
+                 Bind(&TestResultsTracker::AddTestResult,
+                      Unretained(&results_tracker_))));
+      }
+    }
+
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        Bind(&TestLauncherDelegate::RunRemainingTests,
+             Unretained(launcher_delegate_)));
+
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        Bind(&TestResultsTracker::OnAllTestsStarted,
+             Unretained(&results_tracker_)));
   }
 
-  // Special value "-1" means "repeat indefinitely".
-  int new_cycles = (cycles == -1) ? cycles : cycles - 1;
+  void RunTestIteration(bool* final_result, bool run_tests_success) {
+    if (!run_tests_success) {
+      // Signal failure, but continue to run all requested test iterations.
+      // With the summary of all iterations at the end this is a good default.
+      *final_result = false;
+    }
 
-  launcher_delegate->OnTestIterationStarting();
+    if (cycles_ == 0) {
+      MessageLoop::current()->Quit();
+      return;
+    }
 
-  results_tracker->OnTestIterationStarting(
-      Bind(&RunTestIteration,
-           launcher_delegate,
-           total_shards,
-           shard_index,
-           new_cycles,
-           results_tracker,
-           exit_code));
+    // Special value "-1" means "repeat indefinitely".
+    cycles_ = (cycles_ == -1) ? cycles_ : cycles_ - 1;
 
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   Bind(&RunTests,
-                                        launcher_delegate,
-                                        total_shards,
-                                        shard_index,
-                                        results_tracker));
-}
+    launcher_delegate_->OnTestIterationStarting();
 
+    results_tracker_.OnTestIterationStarting(
+        Bind(&TestLauncher::RunTestIteration, Unretained(this), final_result));
+
+    MessageLoop::current()->PostTask(
+        FROM_HERE, Bind(&TestLauncher::RunTests, Unretained(this)));
+  }
+
+  TestLauncherDelegate* launcher_delegate_;
+
+  // Support for outer sharding, just like gtest does.
+  int32 total_shards_;  // Total number of outer shards, at least one.
+  int32 shard_index_;   // Index of shard the launcher is to run.
+
+  int cycles_;  // Number of remaining test itreations, or -1 for infinite.
+
+  // Test filters (empty means no filter). Entries are separated by colons.
+  std::string positive_test_filter_;
+  std::string negative_test_filter_;
+
+  TestResultsTracker results_tracker_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLauncher);
+};
 
 }  // namespace
 
@@ -545,73 +606,9 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 int argc,
                 char** argv) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-
-  int32 total_shards;
-  int32 shard_index;
-  InitSharding(&total_shards, &shard_index);
-
-  int cycles = 1;
-  if (command_line->HasSwitch(kGTestRepeatFlag))
-    StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag), &cycles);
-
-  TestResultsTracker results_tracker;
-  if (!results_tracker.Init(*command_line)) {
-    LOG(ERROR) << "Failed to initialize test results tracker.";
-    return 1;
-  }
-
-  int exit_code = 0;
-
-#if defined(OS_POSIX)
-  CHECK_EQ(0, pipe(g_shutdown_pipe));
-
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  sigemptyset(&action.sa_mask);
-  action.sa_handler = &ShutdownPipeSignalHandler;
-
-  CHECK_EQ(0, sigaction(SIGINT, &action, NULL));
-  CHECK_EQ(0, sigaction(SIGQUIT, &action, NULL));
-  CHECK_EQ(0, sigaction(SIGTERM, &action, NULL));
-
-  MessageLoopForIO::FileDescriptorWatcher controller;
-  SignalFDWatcher watcher;
-
-  CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
-            g_shutdown_pipe[0],
-            true,
-            MessageLoopForIO::WATCH_READ,
-            &controller,
-            &watcher));
-#endif  // defined(OS_POSIX)
-
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      Bind(&RunTestIteration,
-           launcher_delegate,
-           total_shards,
-           shard_index,
-           cycles,
-           &results_tracker,
-           &exit_code,
-           true));
-
-  MessageLoop::current()->Run();
-
-  if (cycles != 1)
-    results_tracker.PrintSummaryOfAllIterations();
-
-  if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
-    FilePath summary_path(
-        command_line->GetSwitchValuePath(switches::kTestLauncherSummaryOutput));
-    if (!results_tracker.SaveSummaryAsJSON(summary_path)) {
-      LOG(ERROR) << "Failed to save test launcher output summary.";
-    }
-  }
-
-  return exit_code;
+  // TODO(phajdan.jr): Replace usage of LaunchTests with code below.
+  TestLauncher launcher(launcher_delegate);
+  return launcher.Run(argc, argv) ? 0 : 1;
 }
 
 }  // namespace base
