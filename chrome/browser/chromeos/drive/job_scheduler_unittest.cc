@@ -86,6 +86,40 @@ class JobListLogger : public JobListObserver {
   std::vector<EventLog> events;
 };
 
+// Fake drive service extended for testing cancellation.
+// When upload_new_file_cancelable is set, this Drive service starts
+// returning a closure to cancel from InitiateUploadNewFile(). The task will
+// finish only when the cancel closure is called.
+class CancelTestableFakeDriveService : public FakeDriveService {
+ public:
+  CancelTestableFakeDriveService()
+      : upload_new_file_cancelable_(false) {
+  }
+
+  void set_upload_new_file_cancelable(bool cancelable) {
+    upload_new_file_cancelable_ = cancelable;
+  }
+
+  virtual google_apis::CancelCallback InitiateUploadNewFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& parent_resource_id,
+      const std::string& title,
+      const google_apis::InitiateUploadCallback& callback) OVERRIDE {
+    if (upload_new_file_cancelable_)
+      return base::Bind(callback, google_apis::GDATA_CANCELLED, GURL());
+
+    return FakeDriveService::InitiateUploadNewFile(content_type,
+                                                   content_length,
+                                                   parent_resource_id,
+                                                   title,
+                                                   callback);
+  }
+
+ private:
+  bool upload_new_file_cancelable_;
+};
+
 }  // namespace
 
 class JobSchedulerTest : public testing::Test {
@@ -99,7 +133,7 @@ class JobSchedulerTest : public testing::Test {
     fake_network_change_notifier_.reset(
         new test_util::FakeNetworkChangeNotifier);
 
-    fake_drive_service_.reset(new FakeDriveService());
+    fake_drive_service_.reset(new CancelTestableFakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
@@ -148,7 +182,7 @@ class JobSchedulerTest : public testing::Test {
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<test_util::FakeNetworkChangeNotifier>
       fake_network_change_notifier_;
-  scoped_ptr<FakeDriveService> fake_drive_service_;
+  scoped_ptr<CancelTestableFakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
 };
 
@@ -988,11 +1022,55 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(google_apis::GDATA_CANCELLED, error1);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error2);
+  EXPECT_TRUE(scheduler_->GetJobInfoList().empty());
 }
 
 TEST_F(JobSchedulerTest, CancelRunningJob) {
-  // TODO(kinaba): test for canceling jobs running in the Drive service.
-  // We need to slightly extend FakeDriveService to support CancelCallback.
+  ConnectToWifi();
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath upload_path = temp_dir.path().AppendASCII("new_file.txt");
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(upload_path, "Hello"));
+
+  // Run as a cancelable task.
+  fake_drive_service_->set_upload_new_file_cancelable(true);
+  google_apis::GDataErrorCode error1 = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
+  scheduler_->UploadNewFile(
+      fake_drive_service_->GetRootResourceId(),
+      base::FilePath::FromUTF8Unsafe("dummy/path"),
+      upload_path,
+      "dummy title 1",
+      "text/plain",
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error1, &entry));
+
+  const std::vector<JobInfo>& jobs = scheduler_->GetJobInfoList();
+  ASSERT_EQ(1u, jobs.size());
+  ASSERT_EQ(STATE_RUNNING, jobs[0].state);  // It's running.
+  JobID first_job_id = jobs[0].job_id;
+
+  // Start the second job normally.
+  fake_drive_service_->set_upload_new_file_cancelable(false);
+  google_apis::GDataErrorCode error2 = google_apis::GDATA_OTHER_ERROR;
+  scheduler_->UploadNewFile(
+      fake_drive_service_->GetRootResourceId(),
+      base::FilePath::FromUTF8Unsafe("dummy/path"),
+      upload_path,
+      "dummy title 2",
+      "text/plain",
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error2, &entry));
+
+  // Cancel the first one.
+  scheduler_->CancelJob(first_job_id);
+
+  // Only the first job should be cancelled.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(google_apis::GDATA_CANCELLED, error1);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, error2);
+  EXPECT_TRUE(scheduler_->GetJobInfoList().empty());
 }
 
 }  // namespace drive
