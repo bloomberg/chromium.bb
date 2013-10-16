@@ -4,8 +4,12 @@
 
 #include "chrome/browser/download/download_started_animation.h"
 
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -35,7 +39,7 @@ namespace {
 // simply call "new DownloadStartAnimation"; the class cleans itself up when it
 // finishes animating.
 class DownloadStartedAnimationWin : public gfx::LinearAnimation,
-                                    public content::WebContentsObserver,
+                                    public content::NotificationObserver,
                                     public views::ImageView {
  public:
   explicit DownloadStartedAnimationWin(WebContents* web_contents);
@@ -50,12 +54,16 @@ class DownloadStartedAnimationWin : public gfx::LinearAnimation,
   // Animation
   virtual void AnimateToState(double state) OVERRIDE;
 
-  // content::WebContentsObserver
-  virtual void WasHidden() OVERRIDE;
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+  // content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // We use a HWND for the popup so that it may float above any HWNDs in our UI.
   views::Widget* popup_;
+
+  // The content area holding us.
+  WebContents* web_contents_;
 
   // The content area at the start of the animation. We store this so that the
   // download shelf's resizing of the content area doesn't cause the animation
@@ -64,14 +72,17 @@ class DownloadStartedAnimationWin : public gfx::LinearAnimation,
   // much heartbreak.
   gfx::Rect web_contents_bounds_;
 
+  // A scoped container for notification registries.
+  content::NotificationRegistrar registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadStartedAnimationWin);
 };
 
 DownloadStartedAnimationWin::DownloadStartedAnimationWin(
     WebContents* web_contents)
     : gfx::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
-      content::WebContentsObserver(web_contents),
-      popup_(NULL) {
+      popup_(NULL),
+      web_contents_(web_contents) {
   static gfx::ImageSkia* kDownloadImage = NULL;
   if (!kDownloadImage) {
     kDownloadImage = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -80,9 +91,18 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
 
   // If we're too small to show the download image, then don't bother -
   // the shelf will be enough.
-  web_contents->GetView()->GetContainerBounds(&web_contents_bounds_);
+  web_contents_->GetView()->GetContainerBounds(&web_contents_bounds_);
   if (web_contents_bounds_.height() < kDownloadImage->height())
     return;
+
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+      content::Source<WebContents>(web_contents_));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(web_contents_));
 
   SetImage(kDownloadImage);
 
@@ -91,7 +111,7 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
-  params.parent = web_contents->GetView()->GetNativeView();
+  params.parent = web_contents_->GetView()->GetNativeView();
   popup_->Init(params);
   popup_->SetOpacity(0x00);
   popup_->SetContentsView(this);
@@ -102,7 +122,7 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
 }
 
 void DownloadStartedAnimationWin::Reposition() {
-  if (!web_contents())
+  if (!web_contents_)
     return;
 
   // Align the image with the bottom left of the web contents (so that it
@@ -119,10 +139,18 @@ void DownloadStartedAnimationWin::Reposition() {
 }
 
 void DownloadStartedAnimationWin::Close() {
-  if (!web_contents())
+  if (!web_contents_)
     return;
 
-  Observe(NULL);
+  registrar_.Remove(
+      this,
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+      content::Source<WebContents>(web_contents_));
+  registrar_.Remove(
+      this,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(web_contents_));
+  web_contents_ = NULL;
   popup_->Close();
 }
 
@@ -140,12 +168,15 @@ void DownloadStartedAnimationWin::AnimateToState(double state) {
   }
 }
 
-void DownloadStartedAnimationWin::WasHidden() {
-  Close();
-}
-
-void DownloadStartedAnimationWin::WebContentsDestroyed(
-    WebContents* web_contents) {
+void DownloadStartedAnimationWin::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
+    bool visible = *content::Details<bool>(details).ptr();
+    if (visible)
+      return;
+  }
   Close();
 }
 
