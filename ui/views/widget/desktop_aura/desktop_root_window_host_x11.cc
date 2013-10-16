@@ -1062,12 +1062,16 @@ void DesktopRootWindowHostX11::ResetWindowRegion() {
     gfx::Path window_mask;
     views::Widget* widget = native_widget_delegate_->AsWidget();
     if (widget->non_client_view()) {
+      // Some frame views define a custom (non-rectangular) window mask. If
+      // so, use it to define the window shape. If not, fall through.
       widget->non_client_view()->GetWindowMask(bounds_.size(), &window_mask);
-      Region region = gfx::CreateRegionFromSkPath(window_mask);
-      XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding,
-                          0, 0, region, false);
-      XDestroyRegion(region);
-      return;
+      if (window_mask.countPoints() > 0) {
+        Region region = gfx::CreateRegionFromSkPath(window_mask);
+        XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding,
+                            0, 0, region, false);
+        XDestroyRegion(region);
+        return;
+      }
     }
   }
 
