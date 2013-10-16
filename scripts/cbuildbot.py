@@ -1491,7 +1491,7 @@ def main(argv):
     # be rolled back via the contextmanager cleanup handlers.  This
     # ensures that sudo bits cannot outlive cbuildbot, that anything
     # cgroups would kill gets killed, etc.
-    critical_section.ForkWatchdog()
+    stack.Add(critical_section.ForkWatchdog)
 
     if options.timeout > 0:
       stack.Add(cros_build_lib.Timeout, options.timeout)
