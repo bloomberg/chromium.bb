@@ -21,3 +21,6 @@ WorkerPoolTest.PostTask
 
 # Times out on Win7, slow on Vista: http://crbug.com/106531
 TraceEventTestFixture.DataCapturedManyThreads
+
+# Fails and times out occasionally. http://crbug.com/308273
+TraceEventTestFixture.TraceContinuousSampling
