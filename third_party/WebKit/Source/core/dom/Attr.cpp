@@ -29,8 +29,9 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/events/ScopedEventQueue.h"
 #include "core/dom/Text.h"
+#include "core/events/ScopedEventQueue.h"
+#include "core/page/UseCounter.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -92,6 +93,8 @@ void Attr::createTextChild()
 
 void Attr::setPrefix(const AtomicString& prefix, ExceptionState& es)
 {
+    UseCounter::count(document(), UseCounter::AttributeSetPrefix);
+
     checkSetPrefix(prefix, es);
     if (es.hadException())
         return;

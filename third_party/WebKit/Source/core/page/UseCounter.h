@@ -218,6 +218,10 @@ public:
         SVGFontInCSS,
         ScrollTopBodyNotQuirksMode,
         ScrollLeftBodyNotQuirksMode,
+        AttributeIsId, // Removed in DOM4.
+        AttributeOwnerElement, // Removed in DOM4.
+        AttributeSetPrefix, // Attribute prefix is readonly in DOM4.
+        AttributeSpecified, // Removed in DOM4.
         // Add new features immediately above this line. Don't change assigned
         // numbers of each items, and don't reuse unused slots.
         NumberOfFeatures, // This enum value must be last.
