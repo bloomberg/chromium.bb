@@ -63,7 +63,7 @@ using namespace XPath;
     String* str;
     Expression* expr;
     Vector<Predicate*>* predList;
-    Vector<Expression*>* argList;
+    Vector<OwnPtr<Expression> >* argList;
     Step* step;
     LocationPath* locationPath;
 }
@@ -292,14 +292,14 @@ PredicateList:
     Predicate
     {
         $$ = new Vector<Predicate*>;
-        $$->append(new Predicate($1));
+        $$->append(new Predicate(adoptPtr($1)));
         parser->unregisterParseNode($1);
         parser->registerPredicateVector($$);
     }
     |
     PredicateList Predicate
     {
-        $$->append(new Predicate($2));
+        $$->append(new Predicate(adoptPtr($2)));
         parser->unregisterParseNode($2);
     }
     ;
@@ -387,15 +387,15 @@ FunctionCall:
 ArgumentList:
     Argument
     {
-        $$ = new Vector<Expression*>;
-        $$->append($1);
+        $$ = new Vector<OwnPtr<Expression> >;
+        $$->append(adoptPtr($1));
         parser->unregisterParseNode($1);
         parser->registerExpressionVector($$);
     }
     |
     ArgumentList ',' Argument
     {
-        $$->append($3);
+        $$->append(adoptPtr($3));
         parser->unregisterParseNode($3);
     }
     ;
@@ -410,8 +410,8 @@ UnionExpr:
     UnionExpr '|' PathExpr
     {
         $$ = new Union;
-        $$->addSubExpression($1);
-        $$->addSubExpression($3);
+        $$->addSubExpression(adoptPtr($1));
+        $$->addSubExpression(adoptPtr($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -452,7 +452,7 @@ FilterExpr:
     |
     PrimaryExpr PredicateList
     {
-        $$ = new Filter($1, *$2);
+        $$ = new Filter(adoptPtr($1), *$2);
         parser->unregisterParseNode($1);
         parser->deletePredicateVector($2);
         parser->registerParseNode($$);
@@ -464,7 +464,7 @@ OrExpr:
     |
     OrExpr OR AndExpr
     {
-        $$ = new LogicalOp(LogicalOp::OP_Or, $1, $3);
+        $$ = new LogicalOp(LogicalOp::OP_Or, adoptPtr($1), adoptPtr($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -476,7 +476,7 @@ AndExpr:
     |
     AndExpr AND EqualityExpr
     {
-        $$ = new LogicalOp(LogicalOp::OP_And, $1, $3);
+        $$ = new LogicalOp(LogicalOp::OP_And, adoptPtr($1), adoptPtr($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -488,7 +488,7 @@ EqualityExpr:
     |
     EqualityExpr EQOP RelationalExpr
     {
-        $$ = new EqTestOp($2, $1, $3);
+        $$ = new EqTestOp($2, adoptPtr($1), adoptPtr($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -500,7 +500,7 @@ RelationalExpr:
     |
     RelationalExpr RELOP AdditiveExpr
     {
-        $$ = new EqTestOp($2, $1, $3);
+        $$ = new EqTestOp($2, adoptPtr($1), adoptPtr($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -512,7 +512,7 @@ AdditiveExpr:
     |
     AdditiveExpr PLUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::OP_Add, $1, $3);
+        $$ = new NumericOp(NumericOp::OP_Add, adoptPtr($1), adoptPtr($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -520,7 +520,7 @@ AdditiveExpr:
     |
     AdditiveExpr MINUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::OP_Sub, $1, $3);
+        $$ = new NumericOp(NumericOp::OP_Sub, adoptPtr($1), adoptPtr($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -532,7 +532,7 @@ MultiplicativeExpr:
     |
     MultiplicativeExpr MULOP UnaryExpr
     {
-        $$ = new NumericOp($2, $1, $3);
+        $$ = new NumericOp($2, adoptPtr($1), adoptPtr($3));
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -545,7 +545,7 @@ UnaryExpr:
     MINUS UnaryExpr
     {
         $$ = new Negative;
-        $$->addSubExpression($2);
+        $$->addSubExpression(adoptPtr($2));
         parser->unregisterParseNode($2);
         parser->registerParseNode($$);
     }

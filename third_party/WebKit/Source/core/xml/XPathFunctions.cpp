@@ -290,7 +290,7 @@ inline bool Interval::contains(int value) const
     return value >= m_min && value <= m_max;
 }
 
-void Function::setArguments(const Vector<Expression*>& args)
+void Function::setArguments(Vector<OwnPtr<Expression> >& args)
 {
     ASSERT(!subExprCount());
 
@@ -298,9 +298,9 @@ void Function::setArguments(const Vector<Expression*>& args)
     if (m_name != "lang" && !args.isEmpty())
         setIsContextNodeSensitive(false);
 
-    Vector<Expression*>::const_iterator end = args.end();
-    for (Vector<Expression*>::const_iterator it = args.begin(); it != end; it++)
-        addSubExpression(*it);
+    Vector<OwnPtr<Expression> >::iterator end = args.end();
+    for (Vector<OwnPtr<Expression> >::iterator it = args.begin(); it != end; it++)
+        addSubExpression(it->release());
 }
 
 Value FunLast::evaluate() const
@@ -712,7 +712,14 @@ static void createFunctionMap()
         functionMap->set(functions[i].name, functions[i].function);
 }
 
-Function* createFunction(const String& name, const Vector<Expression*>& args)
+
+Function* createFunction(const String& name)
+{
+    Vector<OwnPtr<Expression> > args;
+    return createFunction(name, args);
+}
+
+Function* createFunction(const String& name, Vector<OwnPtr<Expression> >& args)
 {
     if (!functionMap)
         createFunctionMap();

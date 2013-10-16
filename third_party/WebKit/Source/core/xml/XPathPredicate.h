@@ -65,7 +65,7 @@ namespace WebCore {
             enum Opcode {
                 OP_Add, OP_Sub, OP_Mul, OP_Div, OP_Mod
             };
-            NumericOp(Opcode, Expression* lhs, Expression* rhs);
+            NumericOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
         private:
             virtual Value evaluate() const;
             virtual Value::Type resultType() const { return Value::NumberValue; }
@@ -76,7 +76,7 @@ namespace WebCore {
         class EqTestOp : public Expression {
         public:
             enum Opcode { OP_EQ, OP_NE, OP_GT, OP_LT, OP_GE, OP_LE };
-            EqTestOp(Opcode, Expression* lhs, Expression* rhs);
+            EqTestOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
             virtual Value evaluate() const;
         private:
             virtual Value::Type resultType() const { return Value::BooleanValue; }
@@ -88,7 +88,7 @@ namespace WebCore {
         class LogicalOp : public Expression {
         public:
             enum Opcode { OP_And, OP_Or };
-            LogicalOp(Opcode, Expression* lhs, Expression* rhs);
+            LogicalOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
         private:
             virtual Value::Type resultType() const { return Value::BooleanValue; }
             bool shortCircuitOn() const;
@@ -106,7 +106,7 @@ namespace WebCore {
         class Predicate {
             WTF_MAKE_NONCOPYABLE(Predicate); WTF_MAKE_FAST_ALLOCATED;
         public:
-            explicit Predicate(Expression*);
+            explicit Predicate(PassOwnPtr<Expression>);
             ~Predicate();
             bool evaluate() const;
 
@@ -114,7 +114,7 @@ namespace WebCore {
             bool isContextSizeSensitive() const { return m_expr->isContextSizeSensitive(); }
 
         private:
-            Expression* m_expr;
+            OwnPtr<Expression> m_expr;
         };
 
     }

@@ -39,7 +39,7 @@ namespace WebCore {
 
         class Filter : public Expression {
         public:
-            Filter(Expression*, const Vector<Predicate*>& = Vector<Predicate*>());
+            Filter(PassOwnPtr<Expression>, const Vector<Predicate*>& = Vector<Predicate*>());
             virtual ~Filter();
 
             virtual Value evaluate() const;
@@ -47,8 +47,8 @@ namespace WebCore {
         private:
             virtual Value::Type resultType() const { return Value::NodeSetValue; }
 
-            Expression* m_expr;
-            Vector<Predicate*> m_predicates;
+            OwnPtr<Expression> m_expr;
+            Vector<OwnPtr<Predicate> > m_predicates;
         };
 
         class LocationPath : public Expression {

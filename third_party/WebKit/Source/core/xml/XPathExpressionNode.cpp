@@ -48,7 +48,6 @@ Expression::Expression()
 
 Expression::~Expression()
 {
-    deleteAllValues(m_subExpressions);
 }
 
 }

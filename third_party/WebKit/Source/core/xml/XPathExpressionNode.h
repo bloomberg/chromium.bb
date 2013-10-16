@@ -63,12 +63,12 @@ namespace WebCore {
 
             virtual Value evaluate() const = 0;
 
-            void addSubExpression(Expression* expr)
+            void addSubExpression(PassOwnPtr<Expression> expr)
             {
-                m_subExpressions.append(expr);
                 m_isContextNodeSensitive |= expr->m_isContextNodeSensitive;
                 m_isContextPositionSensitive |= expr->m_isContextPositionSensitive;
                 m_isContextSizeSensitive |= expr->m_isContextSizeSensitive;
+                m_subExpressions.append(expr);
             }
 
             bool isContextNodeSensitive() const { return m_isContextNodeSensitive; }
@@ -82,11 +82,11 @@ namespace WebCore {
 
         protected:
             unsigned subExprCount() const { return m_subExpressions.size(); }
-            Expression* subExpr(unsigned i) { return m_subExpressions[i]; }
-            const Expression* subExpr(unsigned i) const { return m_subExpressions[i]; }
+            Expression* subExpr(unsigned i) { return m_subExpressions[i].get(); }
+            const Expression* subExpr(unsigned i) const { return m_subExpressions[i].get(); }
 
         private:
-            Vector<Expression*> m_subExpressions;
+            Vector<OwnPtr<Expression> > m_subExpressions;
 
             // Evaluation details that can be used for optimization.
             bool m_isContextNodeSensitive;

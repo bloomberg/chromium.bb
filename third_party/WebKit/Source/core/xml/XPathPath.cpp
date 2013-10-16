@@ -36,9 +36,13 @@
 namespace WebCore {
 namespace XPath {
 
-Filter::Filter(Expression* expr, const Vector<Predicate*>& predicates)
-    : m_expr(expr), m_predicates(predicates)
+Filter::Filter(PassOwnPtr<Expression> expr, const Vector<Predicate*>& predicates)
+    : m_expr(expr)
 {
+    m_predicates.reserveInitialCapacity(predicates.size());
+    for (size_t i = 0; i < predicates.size(); i++)
+        m_predicates.append(adoptPtr(predicates[i]));
+
     setIsContextNodeSensitive(m_expr->isContextNodeSensitive());
     setIsContextPositionSensitive(m_expr->isContextPositionSensitive());
     setIsContextSizeSensitive(m_expr->isContextSizeSensitive());
@@ -46,8 +50,6 @@ Filter::Filter(Expression* expr, const Vector<Predicate*>& predicates)
 
 Filter::~Filter()
 {
-    delete m_expr;
-    deleteAllValues(m_predicates);
 }
 
 Value Filter::evaluate() const

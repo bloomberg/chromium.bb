@@ -63,7 +63,7 @@ Value Negative::evaluate() const
     return -p.toNumber();
 }
 
-NumericOp::NumericOp(Opcode opcode, Expression* lhs, Expression* rhs)
+NumericOp::NumericOp(Opcode opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -94,7 +94,7 @@ Value NumericOp::evaluate() const
     return 0.0;
 }
 
-EqTestOp::EqTestOp(Opcode opcode, Expression* lhs, Expression* rhs)
+EqTestOp::EqTestOp(Opcode opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -197,7 +197,7 @@ Value EqTestOp::evaluate() const
     return compare(lhs, rhs);
 }
 
-LogicalOp::LogicalOp(Opcode opcode, Expression* lhs, Expression* rhs)
+LogicalOp::LogicalOp(Opcode opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -249,25 +249,24 @@ Value Union::evaluate() const
     return lhsResult;
 }
 
-Predicate::Predicate(Expression* expr)
+Predicate::Predicate(PassOwnPtr<Expression> expr)
     : m_expr(expr)
 {
 }
 
 Predicate::~Predicate()
 {
-    delete m_expr;
 }
 
 bool Predicate::evaluate() const
 {
-    ASSERT(m_expr != 0);
+    ASSERT(m_expr);
 
     Value result(m_expr->evaluate());
 
     // foo[3] means foo[position()=3]
     if (result.isNumber())
-        return EqTestOp(EqTestOp::OP_EQ, createFunction("position"), new Number(result.toNumber())).evaluate().toBoolean();
+        return EqTestOp(EqTestOp::OP_EQ, adoptPtr(createFunction("position")), adoptPtr(new Number(result.toNumber()))).evaluate().toBoolean();
 
     return result.toBoolean();
 }
