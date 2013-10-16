@@ -68,28 +68,28 @@ interface InspectorInstrumentation {
     void didClearWindowObjectInWorld([Keep] Frame*, DOMWrapperWorld*);
 
     [DOMDebugger, Inline=FastReturn]
-    void willInsertDOMNode(Document*, Node* parent);
+    void willInsertDOMNode([Keep] Node* parent);
 
     [DOM, DOMDebugger, Inline=FastReturn]
-    void didInsertDOMNode(Document*, Node*);
+    void didInsertDOMNode([Keep] Node*);
 
     [DOMDebugger, DOM, Inline=FastReturn]
-    void willRemoveDOMNode(Document* document, Node*);
+    void willRemoveDOMNode([Keep] Node*);
 
     [DOMDebugger, DOM, Inline=FastReturn]
-    void willModifyDOMAttr(Document*, Element*, const AtomicString& oldValue, const AtomicString& newValue);
+    void willModifyDOMAttr([Keep] Element*, const AtomicString& oldValue, const AtomicString& newValue);
 
     [DOM, Inline=FastReturn]
-    void didModifyDOMAttr(Document*, Element*, const AtomicString& name, const AtomicString& value);
+    void didModifyDOMAttr([Keep] Element*, const AtomicString& name, const AtomicString& value);
 
     [DOM, Inline=FastReturn]
-    void didRemoveDOMAttr(Document*, Element*, const AtomicString& name);
+    void didRemoveDOMAttr([Keep] Element*, const AtomicString& name);
 
     [DOM, Inline=FastReturn]
-    void characterDataModified(Document*, CharacterData*);
+    void characterDataModified([Keep] CharacterData*);
 
     [DOM, DOMDebugger, Inline=FastReturn]
-    void didInvalidateStyleAttr(Document*, Node*);
+    void didInvalidateStyleAttr([Keep] Node*);
 
     [CSS, Inline=FastReturn]
     void activeStyleSheetsUpdated([Keep] Document*, const Vector<RefPtr<StyleSheet> >& newSheets);

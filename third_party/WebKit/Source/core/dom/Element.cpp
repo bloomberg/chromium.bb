@@ -2942,27 +2942,27 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     if (OwnPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(this, name))
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
 
-    InspectorInstrumentation::willModifyDOMAttr(&document(), this, oldValue, newValue);
+    InspectorInstrumentation::willModifyDOMAttr(this, oldValue, newValue);
 }
 
 void Element::didAddAttribute(const QualifiedName& name, const AtomicString& value)
 {
     attributeChanged(name, value);
-    InspectorInstrumentation::didModifyDOMAttr(&document(), this, name.localName(), value);
+    InspectorInstrumentation::didModifyDOMAttr(this, name.localName(), value);
     dispatchSubtreeModifiedEvent();
 }
 
 void Element::didModifyAttribute(const QualifiedName& name, const AtomicString& value)
 {
     attributeChanged(name, value);
-    InspectorInstrumentation::didModifyDOMAttr(&document(), this, name.localName(), value);
+    InspectorInstrumentation::didModifyDOMAttr(this, name.localName(), value);
     // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
 
 void Element::didRemoveAttribute(const QualifiedName& name)
 {
     attributeChanged(name, nullAtom);
-    InspectorInstrumentation::didRemoveDOMAttr(&document(), this, name.localName());
+    InspectorInstrumentation::didRemoveDOMAttr(this, name.localName());
     dispatchSubtreeModifiedEvent();
 }
 
@@ -3360,7 +3360,7 @@ void Element::styleAttributeChanged(const AtomicString& newStyleString, Attribut
     elementData()->m_styleAttributeIsDirty = false;
 
     setNeedsStyleRecalc(LocalStyleChange);
-    InspectorInstrumentation::didInvalidateStyleAttr(&document(), this);
+    InspectorInstrumentation::didInvalidateStyleAttr(this);
 }
 
 void Element::inlineStyleChanged()
@@ -3369,7 +3369,7 @@ void Element::inlineStyleChanged()
     setNeedsStyleRecalc(LocalStyleChange);
     ASSERT(elementData());
     elementData()->m_styleAttributeIsDirty = true;
-    InspectorInstrumentation::didInvalidateStyleAttr(&document(), this);
+    InspectorInstrumentation::didInvalidateStyleAttr(this);
 }
 
 bool Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValueID identifier, bool important)

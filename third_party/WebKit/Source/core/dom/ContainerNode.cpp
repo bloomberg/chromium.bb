@@ -233,7 +233,7 @@ void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, Exce
     if (!checkAcceptChildGuaranteedNodeTypes(this, newChild.get(), insertBeforeMethodName, es))
         return;
 
-    InspectorInstrumentation::willInsertDOMNode(&document(), this);
+    InspectorInstrumentation::willInsertDOMNode(this);
 
     ChildListMutationScope mutation(this);
     for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
@@ -361,7 +361,7 @@ void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, Exce
     if (!checkReplaceChild(this, newChild.get(), oldChild, replaceChildMethodName, es))
         return;
 
-    InspectorInstrumentation::willInsertDOMNode(&document(), this);
+    InspectorInstrumentation::willInsertDOMNode(this);
 
     // Add the new child(ren)
     for (NodeVector::const_iterator it = targets.begin(); it != targets.end(); ++it) {
@@ -600,7 +600,7 @@ void ContainerNode::appendChild(PassRefPtr<Node> newChild, ExceptionState& es)
     if (!checkAcceptChildGuaranteedNodeTypes(this, newChild.get(), appendChildMethodName, es))
         return;
 
-    InspectorInstrumentation::willInsertDOMNode(&document(), this);
+    InspectorInstrumentation::willInsertDOMNode(this);
 
     // Now actually add the child(ren)
     ChildListMutationScope mutation(this);
@@ -940,13 +940,13 @@ static void dispatchChildInsertionEvents(Node* child)
 static void dispatchChildRemovalEvents(Node* child)
 {
     if (child->isInShadowTree()) {
-        InspectorInstrumentation::willRemoveDOMNode(&child->document(), child);
+        InspectorInstrumentation::willRemoveDOMNode(child);
         return;
     }
 
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
-    InspectorInstrumentation::willRemoveDOMNode(&child->document(), child);
+    InspectorInstrumentation::willRemoveDOMNode(child);
 
     RefPtr<Node> c = child;
     RefPtr<Document> document(child->document());

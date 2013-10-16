@@ -199,7 +199,7 @@ void CharacterData::didModifyData(const String& oldData)
             dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMCharacterDataModified, true, 0, oldData, m_data));
         dispatchSubtreeModifiedEvent();
     }
-    InspectorInstrumentation::characterDataModified(&document(), this);
+    InspectorInstrumentation::characterDataModified(this);
 }
 
 int CharacterData::maxCharacterOffset() const

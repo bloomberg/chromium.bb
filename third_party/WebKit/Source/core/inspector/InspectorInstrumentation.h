@@ -34,6 +34,7 @@
 #include "bindings/v8/ScriptString.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/dom/CharacterData.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventContext.h"
@@ -107,9 +108,10 @@ InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCook
 InstrumentingAgents* instrumentingAgentsFor(Page*);
 InstrumentingAgents* instrumentingAgentsFor(Frame*);
 InstrumentingAgents* instrumentingAgentsFor(ExecutionContext*);
+InstrumentingAgents* instrumentingAgentsFor(Document&);
 InstrumentingAgents* instrumentingAgentsFor(Document*);
 InstrumentingAgents* instrumentingAgentsFor(RenderObject*);
-InstrumentingAgents* instrumentingAgentsFor(Element*);
+InstrumentingAgents* instrumentingAgentsFor(Node*);
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
 
 // Helper for the one above.
@@ -142,7 +144,7 @@ inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context)
 {
     if (!context)
         return 0;
-    return context->isDocument() ? instrumentingAgentsFor(toDocument(context)) : instrumentingAgentsForNonDocumentContext(context);
+    return context->isDocument() ? instrumentingAgentsFor(*toDocument(context)) : instrumentingAgentsForNonDocumentContext(context);
 }
 
 inline InstrumentingAgents* instrumentingAgentsFor(Frame* frame)
@@ -150,20 +152,22 @@ inline InstrumentingAgents* instrumentingAgentsFor(Frame* frame)
     return frame ? instrumentingAgentsFor(frame->page()) : 0;
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(Document* document)
+inline InstrumentingAgents* instrumentingAgentsFor(Document& document)
 {
-    if (document) {
-        Page* page = document->page();
-        if (!page && document->templateDocumentHost())
-            page = document->templateDocumentHost()->page();
-        return instrumentingAgentsFor(page);
-    }
-    return 0;
+    Page* page = document.page();
+    if (!page && document.templateDocumentHost())
+        page = document.templateDocumentHost()->page();
+    return instrumentingAgentsFor(page);
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(Element* element)
+inline InstrumentingAgents* instrumentingAgentsFor(Document* document)
 {
-    return element ? instrumentingAgentsFor(&element->document()) : 0;
+    return document ? instrumentingAgentsFor(*document) : 0;
+}
+
+inline InstrumentingAgents* instrumentingAgentsFor(Node* node)
+{
+    return node ? instrumentingAgentsFor(node->document()) : 0;
 }
 
 bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType);
