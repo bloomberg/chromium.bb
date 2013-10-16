@@ -740,8 +740,7 @@ webkit.org/b/109954 css3/line-break/line-break-normal-hyphens.html [ ImageOnlyFa
 webkit.org/b/109954 [ Mac ] css3/line-break/line-break-loose-postfixes.html [ ImageOnlyFailure ]
 webkit.org/b/109954 [ Mac ] css3/line-break/line-break-loose-centered.html [ ImageOnlyFailure ]
 
-# pending implementation completion and feature enabling
-webkit.org/b/109570 media/track/regions-webvtt [ Skip ]
+crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
 # The image output is wrong (some red dots can be seen).
 crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]

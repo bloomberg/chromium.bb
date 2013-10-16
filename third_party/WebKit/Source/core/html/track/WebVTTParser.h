@@ -32,6 +32,7 @@
 #define WebVTTParser_h
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/html/track/TextTrackCue.h"
 #include "core/html/track/TextTrackRegion.h"
@@ -50,9 +51,7 @@ public:
     virtual ~WebVTTParserClient() { }
 
     virtual void newCuesParsed() = 0;
-#if ENABLE(WEBVTT_REGIONS)
     virtual void newRegionsParsed() = 0;
-#endif
     virtual void fileFailedToParse() = 0;
 };
 
@@ -63,9 +62,6 @@ public:
     enum ParseState {
         Initial,
         Header,
-#if ENABLE(WEBVTT_REGIONS)
-        Metadata,
-#endif
         Id,
         TimingsAndSettings,
         CueText,
@@ -100,20 +96,16 @@ public:
     static String collectDigits(const String&, unsigned*);
     static String collectWord(const String&, unsigned*);
 
-#if ENABLE(WEBVTT_REGIONS)
     // Useful functions for parsing percentage settings.
     static float parseFloatPercentageValue(const String&, bool&);
     static FloatPoint parseFloatPercentageValuePair(const String&, char, bool&);
-#endif
 
     // Input data to the parser to parse.
     void parseBytes(const char* data, unsigned length);
 
     // Transfers ownership of last parsed cues to caller.
     void getNewCues(Vector<RefPtr<TextTrackCue> >&);
-#if ENABLE(WEBVTT_REGIONS)
     void getNewRegions(Vector<RefPtr<TextTrackRegion> >&);
-#endif
 
     PassRefPtr<DocumentFragment> createDocumentFragmentFromCueText(const String&);
     double collectTimeStamp(const String&, unsigned*);
@@ -134,10 +126,8 @@ private:
     void createNewCue();
     void resetCueValues();
 
-#if ENABLE(WEBVTT_REGIONS)
-    void collectHeader(const String&);
+    void collectMetadataHeader(const String&);
     void createNewRegion();
-#endif
 
     void skipWhiteSpace(const String&, unsigned*);
     static void skipLineTerminator(const char* data, unsigned length, unsigned*);
@@ -165,9 +155,7 @@ private:
     Vector<AtomicString> m_languageStack;
     Vector<RefPtr<TextTrackCue> > m_cuelist;
 
-#if ENABLE(WEBVTT_REGIONS)
     Vector<RefPtr<TextTrackRegion> > m_regionList;
-#endif
 };
 
 } // namespace WebCore

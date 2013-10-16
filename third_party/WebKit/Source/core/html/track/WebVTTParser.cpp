@@ -62,7 +62,6 @@ String WebVTTParser::collectWord(const String& input, unsigned* position)
     return string.toString();
 }
 
-#if ENABLE(WEBVTT_REGIONS)
 float WebVTTParser::parseFloatPercentageValue(const String& value, bool& isValidSetting)
 {
     // '%' must be present and at the end of the setting value.
@@ -110,7 +109,6 @@ FloatPoint WebVTTParser::parseFloatPercentageValuePair(const String& value, char
     isValidSetting = isFirstValueValid && isSecondValueValid;
     return FloatPoint(firstCoord, secondCoord);
 }
-#endif
 
 WebVTTParser::WebVTTParser(WebVTTParserClient* client, ExecutionContext* context)
     : m_executionContext(context)
@@ -128,13 +126,11 @@ void WebVTTParser::getNewCues(Vector<RefPtr<TextTrackCue> >& outputCues)
     m_cuelist.clear();
 }
 
-#if ENABLE(WEBVTT_REGIONS)
 void WebVTTParser::getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegions)
 {
     outputRegions = m_regionList;
     m_regionList.clear();
 }
-#endif
 
 void WebVTTParser::parseBytes(const char* data, unsigned length)
 {
@@ -164,8 +160,9 @@ void WebVTTParser::parseBytes(const char* data, unsigned length)
             break;
 
         case Header:
+            collectMetadataHeader(line);
+
             // 13-18 - Allow a header (comment area) under the WEBVTT line.
-#if ENABLE(WEBVTT_REGIONS)
             if (line.isEmpty()) {
                 if (m_client && m_regionList.size())
                     m_client->newRegionsParsed();
@@ -173,14 +170,7 @@ void WebVTTParser::parseBytes(const char* data, unsigned length)
                 m_state = Id;
                 break;
             }
-            collectHeader(line);
 
-            break;
-
-        case Metadata:
-#endif
-            if (line.isEmpty())
-                m_state = Id;
             break;
 
         case Id:
@@ -231,8 +221,7 @@ bool WebVTTParser::hasRequiredFileIdentifier()
     return true;
 }
 
-#if ENABLE(WEBVTT_REGIONS)
-void WebVTTParser::collectHeader(const String& line)
+void WebVTTParser::collectMetadataHeader(const String& line)
 {
     // 4.1 Extension of WebVTT header parsing (11 - 15)
     DEFINE_STATIC_LOCAL(const AtomicString, regionHeaderName, ("Region", AtomicString::ConstructFromLiteral));
@@ -240,7 +229,7 @@ void WebVTTParser::collectHeader(const String& line)
     // 15.4 If line contains the character ":" (A U+003A COLON), then set metadata's
     // name to the substring of line before the first ":" character and
     // metadata's value to the substring after this character.
-    if (!line.contains(":"))
+    if (!RuntimeEnabledFeatures::webVTTRegionsEnabled() || !line.contains(":"))
         return;
 
     unsigned colonPosition = line.find(":");
@@ -253,7 +242,6 @@ void WebVTTParser::collectHeader(const String& line)
         createNewRegion();
     }
 }
-#endif
 
 WebVTTParser::ParseState WebVTTParser::collectCueId(const String& line)
 {
@@ -374,7 +362,6 @@ void WebVTTParser::resetCueValues()
     m_currentContent.clear();
 }
 
-#if ENABLE(WEBVTT_REGIONS)
 void WebVTTParser::createNewRegion()
 {
     if (!m_currentHeaderValue.length())
@@ -393,7 +380,6 @@ void WebVTTParser::createNewRegion()
 
     m_regionList.append(region);
 }
-#endif
 
 double WebVTTParser::collectTimeStamp(const String& line, unsigned* position)
 {

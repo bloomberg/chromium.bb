@@ -26,8 +26,6 @@
 #ifndef TextTrackRegionList_h
 #define TextTrackRegionList_h
 
-#if ENABLE(WEBVTT_REGIONS)
-
 #include "core/html/track/TextTrackRegion.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -61,5 +59,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

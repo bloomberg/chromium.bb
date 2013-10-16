@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/RenderTextTrackCue.h"
 
 #include "core/html/track/TextTrackCue.h"
@@ -42,14 +41,12 @@ void RenderTextTrackCue::layout()
 {
     RenderBlockFlow::layout();
 
-#if ENABLE(WEBVTT_REGIONS)
     // If WebVTT Regions are used, the regular WebVTT layout algorithm is no
     // longer necessary, since cues having the region parameter set do not have
     // any positioning parameters. Also, in this case, the regions themselves
     // have positioning information.
     if (!m_cue->regionId().isEmpty())
         return;
-#endif
 
     LayoutStateMaintainer statePusher(view(), this, locationOffset(), hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode());
 

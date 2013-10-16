@@ -115,5 +115,6 @@ WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebMIDI status=test
 WebKitMediaSource status=stable
+WebVTTRegions status=experimental
 WOFF2 status=experimental
 XSLT status=stable

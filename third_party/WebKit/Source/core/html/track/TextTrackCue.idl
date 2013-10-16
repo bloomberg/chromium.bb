@@ -48,6 +48,6 @@
     attribute EventHandler onenter;
     attribute EventHandler onexit;
 
-    [Conditional=WEBVTT_REGIONS] attribute DOMString regionId;
+    [RuntimeEnabled=WebVTTRegions] attribute DOMString regionId;
 };
 

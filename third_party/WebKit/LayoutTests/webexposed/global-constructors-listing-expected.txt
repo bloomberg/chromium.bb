@@ -423,6 +423,7 @@ TextTrack
 TextTrackCue
 TextTrackCueList
 TextTrackList
+TextTrackRegion
 TimeRanges
 Touch
 TouchEvent

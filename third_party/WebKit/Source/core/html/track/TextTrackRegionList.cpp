@@ -24,9 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(WEBVTT_REGIONS)
-
 #include "core/html/track/TextTrackRegionList.h"
 
 namespace WebCore {
@@ -82,5 +79,3 @@ void TextTrackRegionList::clear()
 }
 
 } // namespace WebCore
-
-#endif

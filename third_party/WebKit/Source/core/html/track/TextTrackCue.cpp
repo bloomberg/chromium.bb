@@ -30,11 +30,11 @@
  */
 
 #include "config.h"
-
 #include "core/html/track/TextTrackCue.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/events/Event.h"
@@ -131,12 +131,10 @@ TextTrackCue* TextTrackCueBox::getCue() const
 void TextTrackCueBox::applyCSSProperties(const IntSize&)
 {
     // FIXME: Apply all the initial CSS positioning properties. http://wkb.ug/79916
-#if ENABLE(WEBVTT_REGIONS)
     if (!m_cue->regionId().isEmpty()) {
         setInlineStyleProperty(CSSPropertyPosition, CSSValueRelative);
         return;
     }
-#endif
 
     // 3.5.1 On the (root) List of WebVTT Node Objects:
 
@@ -226,6 +224,7 @@ TextTrackCue::TextTrackCue(ExecutionContext* context, double start, double end, 
     , m_cueBackgroundBox(HTMLDivElement::create(*toDocument(context)))
     , m_displayTreeShouldChange(true)
     , m_displayDirection(CSSValueLtr)
+    , m_notifyRegion(true)
 {
     ASSERT(m_executionContext->isDocument());
     ScriptWrappable::init(this);
@@ -557,7 +556,6 @@ bool TextTrackCue::dispatchEvent(PassRefPtr<Event> event)
     return EventTarget::dispatchEvent(event);
 }
 
-#if ENABLE(WEBVTT_REGIONS)
 void TextTrackCue::setRegionId(const String& regionId)
 {
     if (m_regionId == regionId)
@@ -567,7 +565,11 @@ void TextTrackCue::setRegionId(const String& regionId)
     m_regionId = regionId;
     cueDidChange();
 }
-#endif
+
+void TextTrackCue::notifyRegionWhenRemovingDisplayTree(bool notifyRegion)
+{
+    m_notifyRegion = notifyRegion;
+}
 
 bool TextTrackCue::isActive()
 {
@@ -877,12 +879,12 @@ PassRefPtr<TextTrackCueBox> TextTrackCue::getDisplayTree(const IntSize& videoSiz
 
 void TextTrackCue::removeDisplayTree()
 {
-#if ENABLE(WEBVTT_REGIONS)
-    // The region needs to be informed about the cue removal.
-    TextTrackRegion* region = m_track->regions()->getRegionById(m_regionId);
-    if (region)
-        region->willRemoveTextTrackCueBox(m_displayTree.get());
-#endif
+    if (m_notifyRegion && m_track->regions()) {
+        // The region needs to be informed about the cue removal.
+        TextTrackRegion* region = m_track->regions()->getRegionById(m_regionId);
+        if (region)
+            region->willRemoveTextTrackCueBox(m_displayTree.get());
+    }
 
     displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
 }
@@ -932,9 +934,7 @@ TextTrackCue::CueSetting TextTrackCue::settingName(const String& name)
     DEFINE_STATIC_LOCAL(const String, positionKeyword, ("position"));
     DEFINE_STATIC_LOCAL(const String, sizeKeyword, ("size"));
     DEFINE_STATIC_LOCAL(const String, alignKeyword, ("align"));
-#if ENABLE(WEBVTT_REGIONS)
     DEFINE_STATIC_LOCAL(const String, regionIdKeyword, ("region"));
-#endif
 
     if (name == verticalKeyword)
         return Vertical;
@@ -946,10 +946,8 @@ TextTrackCue::CueSetting TextTrackCue::settingName(const String& name)
         return Size;
     else if (name == alignKeyword)
         return Align;
-#if ENABLE(WEBVTT_REGIONS)
-    else if (name == regionIdKeyword)
+    else if (RuntimeEnabledFeatures::webVTTRegionsEnabled() && name == regionIdKeyword)
         return RegionId;
-#endif
 
     return None;
 }
@@ -1151,11 +1149,9 @@ void TextTrackCue::setCueSettings(const String& input)
                 m_cueAlignment = Right;
             }
             break;
-#if ENABLE(WEBVTT_REGIONS)
         case RegionId:
             m_regionId = WebVTTParser::collectWord(input, &position);
             break;
-#endif
         case None:
             break;
         }
@@ -1163,7 +1159,7 @@ void TextTrackCue::setCueSettings(const String& input)
 NextSetting:
         position = endOfSetting;
     }
-#if ENABLE(WEBVTT_REGIONS)
+
     // If cue's line position is not auto or cue's size is not 100 or cue's
     // writing direction is not horizontal, but cue's region identifier is not
     // the empty string, let cue's region identifier be the empty string.
@@ -1172,7 +1168,6 @@ NextSetting:
 
     if (m_linePosition != undefinedPosition || m_cueSize != 100 || m_writingDirection != Horizontal)
         m_regionId = emptyString();
-#endif
 }
 
 CSSValueID TextTrackCue::getCSSAlignment() const

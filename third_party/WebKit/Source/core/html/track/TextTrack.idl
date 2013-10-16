@@ -39,7 +39,7 @@
     void addCue(TextTrackCue cue);
     [RaisesException] void removeCue(TextTrackCue cue);
 
-    [Conditional=WEBVTT_REGIONS] readonly attribute TextTrackRegionList regions;
-    [Conditional=WEBVTT_REGIONS] void addRegion(TextTrackRegion region);
-    [RaisesException, Conditional=WEBVTT_REGIONS] void removeRegion(TextTrackRegion region);
+    [RuntimeEnabled=WebVTTRegions] readonly attribute TextTrackRegionList regions;
+    [RuntimeEnabled=WebVTTRegions] void addRegion(TextTrackRegion region);
+    [RaisesException, RuntimeEnabled=WebVTTRegions] void removeRegion(TextTrackRegion region);
 };

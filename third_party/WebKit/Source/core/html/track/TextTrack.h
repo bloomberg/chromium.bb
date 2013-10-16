@@ -38,10 +38,8 @@ class HTMLMediaElement;
 class TextTrack;
 class TextTrackCue;
 class TextTrackCueList;
-#if ENABLE(WEBVTT_REGIONS)
 class TextTrackRegion;
 class TextTrackRegionList;
-#endif
 
 class TextTrackClient {
 public:
@@ -102,11 +100,9 @@ public:
     void removeCue(TextTrackCue*, ExceptionState&);
     bool hasCue(TextTrackCue*);
 
-#if ENABLE(WEBVTT_REGIONS)
     TextTrackRegionList* regions();
     void addRegion(PassRefPtr<TextTrackRegion>);
     void removeRegion(TextTrackRegion*, ExceptionState&);
-#endif
 
     void cueWillChange(TextTrackCue*);
     void cueDidChange(TextTrackCue*);
@@ -138,18 +134,13 @@ public:
 
 protected:
     TextTrack(ExecutionContext*, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType);
-#if ENABLE(WEBVTT_REGIONS)
-    TextTrackRegionList* regionList();
-#endif
 
     RefPtr<TextTrackCueList> m_cues;
 
 private:
 
-#if ENABLE(WEBVTT_REGIONS)
     TextTrackRegionList* ensureTextTrackRegionList();
     RefPtr<TextTrackRegionList> m_regions;
-#endif
 
     TextTrackCueList* ensureTextTrackCueList();
 

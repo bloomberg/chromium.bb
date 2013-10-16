@@ -35,7 +35,7 @@ EXPECTED (regions.length == '1') OK
 EXPECTED (regions.length == '0') OK
 
 ** In case the region is not found, NotFoundError should be thrown **
-Error: NotFoundError: DOM Exception 8
+NotFoundError: An attempt was made to reference a Node in a context where it does not exist.
 
 END OF TEST
 

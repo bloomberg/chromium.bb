@@ -132,10 +132,9 @@ public:
     using EventTarget::dispatchEvent;
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
-#if ENABLE(WEBVTT_REGIONS)
     const String& regionId() const { return m_regionId; }
     void setRegionId(const String&);
-#endif
+    void notifyRegionWhenRemovingDisplayTree(bool);
 
     bool isActive();
     void setIsActive(bool);
@@ -229,9 +228,7 @@ private:
         Position,
         Size,
         Align,
-#if ENABLE(WEBVTT_REGIONS)
         RegionId
-#endif
     };
     CueSetting settingName(const String&);
 
@@ -269,9 +266,8 @@ private:
     int m_displaySize;
 
     std::pair<float, float> m_displayPosition;
-#if ENABLE(WEBVTT_REGIONS)
     String m_regionId;
-#endif
+    bool m_notifyRegion;
 };
 
 } // namespace WebCore

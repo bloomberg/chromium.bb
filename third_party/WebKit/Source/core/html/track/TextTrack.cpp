@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/html/track/TextTrack.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
@@ -95,9 +96,7 @@ const AtomicString& TextTrack::showingKeyword()
 TextTrack::TextTrack(ExecutionContext* context, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType type)
     : TrackBase(context, TrackBase::TextTrack)
     , m_cues(0)
-#if ENABLE(WEBVTT_REGIONS)
     , m_regions(0)
-#endif
     , m_mediaElement(0)
     , m_label(label)
     , m_language(language)
@@ -123,12 +122,10 @@ TextTrack::~TextTrack()
             m_cues->item(i)->setTrack(0);
     }
 
-#if ENABLE(WEBVTT_REGIONS)
     if (m_regions) {
         for (size_t i = 0; i < m_regions->length(); ++i)
             m_regions->item(i)->setTrack(0);
     }
-#endif
     clearClient();
 }
 
@@ -281,12 +278,6 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& es)
         m_client->textTrackRemoveCue(this, cue);
 }
 
-#if ENABLE(WEBVTT_REGIONS)
-TextTrackRegionList* TextTrack::regionList()
-{
-    return ensureTextTrackRegionList();
-}
-
 TextTrackRegionList* TextTrack::ensureTextTrackRegionList()
 {
     if (!m_regions)
@@ -303,9 +294,8 @@ TextTrackRegionList* TextTrack::regions()
     // the text track list of regions of the text track. Otherwise, it must
     // return null. When an object is returned, the same object must be returned
     // each time.
-    if (m_mode != disabledKeyword())
+    if (RuntimeEnabledFeatures::webVTTRegionsEnabled() && m_mode != disabledKeyword())
         return ensureTextTrackRegionList();
-
     return 0;
 }
 
@@ -358,7 +348,6 @@ void TextTrack::removeRegion(TextTrackRegion* region, ExceptionState &es)
 
     region->setTrack(0);
 }
-#endif
 
 void TextTrack::cueWillChange(TextTrackCue* cue)
 {

@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/html/shadow/MediaControlElements.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/FullscreenElementStack.h"
@@ -737,20 +738,17 @@ void MediaControlTextTrackContainerElement::updateDisplay()
             continue;
 
         RefPtr<TextTrackCueBox> displayBox = cue->getDisplayTree(m_videoDisplaySize.size());
+        TextTrackRegion* region = 0;
+        if (cue->track()->regions())
+            region = cue->track()->regions()->getRegionById(cue->regionId());
 
-#if ENABLE(WEBVTT_REGIONS)
-        String regionId = cue->regionId();
-        TextTrackRegion* region = cue->track()->regions()->getRegionById(regionId);
         if (!region) {
             // If cue has an empty text track cue region identifier or there is no
             // WebVTT region whose region identifier is identical to cue's text
             // track cue region identifier, run the following substeps:
-#endif
-            if (displayBox->hasChildNodes() && !contains(displayBox.get())) {
+            if (displayBox->hasChildNodes() && !contains(displayBox.get()))
                 // Note: the display tree of a cue is removed when the active flag of the cue is unset.
                 appendChild(displayBox);
-            }
-#if ENABLE(WEBVTT_REGIONS)
         } else {
             // Let region be the WebVTT region whose region identifier
             // matches the text track cue region identifier of cue.
@@ -762,7 +760,6 @@ void MediaControlTextTrackContainerElement::updateDisplay()
 
             region->appendTextTrackCueBox(displayBox);
         }
-#endif
     }
 
     // 11. Return output.

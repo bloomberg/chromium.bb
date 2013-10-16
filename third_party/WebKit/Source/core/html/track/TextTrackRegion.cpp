@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(WEBVTT_REGIONS)
-
 #include "core/html/track/TextTrackRegion.h"
 
 #include "bindings/v8/ExceptionState.h"
@@ -358,7 +355,7 @@ const AtomicString& TextTrackRegion::textTrackRegionShadowPseudoId()
 PassRefPtr<HTMLDivElement> TextTrackRegion::getDisplayTree()
 {
     if (!m_regionDisplayTree) {
-        m_regionDisplayTree = HTMLDivElement::create(ownerDocument());
+        m_regionDisplayTree = HTMLDivElement::create(*ownerDocument());
         prepareRegionDisplayTree();
     }
 
@@ -382,6 +379,8 @@ void TextTrackRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
 
 void TextTrackRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayBox)
 {
+    ASSERT(m_cueContainer);
+
     if (m_cueContainer->contains(displayBox.get()))
         return;
 
@@ -398,7 +397,7 @@ void TextTrackRegion::displayLastTextTrackCueBox()
     // property to move elements. We should just scroll the text track cues on the
     // compositor with an animation.
 
-    if (!m_scrollTimer.isActive())
+    if (m_scrollTimer.isActive())
         return;
 
     // If it's a scrolling region, add the scrolling class.
@@ -408,7 +407,7 @@ void TextTrackRegion::displayLastTextTrackCueBox()
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
     // Find first cue that is not entirely displayed and scroll it upwards.
-    for (int i = 0; i < m_cueContainer->childNodeCount() && !m_scrollTimer.isActive(); ++i) {
+    for (size_t i = 0; i < m_cueContainer->childNodeCount() && !m_scrollTimer.isActive(); ++i) {
         float childTop = toHTMLDivElement(m_cueContainer->childNode(i))->getBoundingClientRect()->top();
         float childBottom = toHTMLDivElement(m_cueContainer->childNode(i))->getBoundingClientRect()->bottom();
 
@@ -466,7 +465,7 @@ void TextTrackRegion::prepareRegionDisplayTree()
 
     // The cue container is used to wrap the cues and it is the object which is
     // gradually scrolled out as multiple cues are appended to the region.
-    m_cueContainer = HTMLDivElement::create(ownerDocument());
+    m_cueContainer = HTMLDivElement::create(*ownerDocument());
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop,
         0.0,
         CSSPrimitiveValue::CSS_PX);
@@ -506,5 +505,3 @@ void TextTrackRegion::scrollTimerFired(Timer<TextTrackRegion>*)
 }
 
 } // namespace WebCore
-
-#endif

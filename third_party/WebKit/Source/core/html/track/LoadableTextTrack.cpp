@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #include "core/html/track/LoadableTextTrack.h"
 
 #include "core/html/HTMLTrackElement.h"
@@ -128,7 +127,6 @@ void LoadableTextTrack::cueLoadingCompleted(TextTrackLoader* loader, bool loadin
     m_trackElement->didCompleteLoad(this, loadingFailed ? HTMLTrackElement::Failure : HTMLTrackElement::Success);
 }
 
-#if ENABLE(WEBVTT_REGIONS)
 void LoadableTextTrack::newRegionsAvailable(TextTrackLoader* loader)
 {
     ASSERT_UNUSED(loader, m_loader == loader);
@@ -138,10 +136,9 @@ void LoadableTextTrack::newRegionsAvailable(TextTrackLoader* loader)
 
     for (size_t i = 0; i < newRegions.size(); ++i) {
         newRegions[i]->setTrack(this);
-        regionList()->add(newRegions[i]);
+        regions()->add(newRegions[i]);
     }
 }
-#endif
 
 size_t LoadableTextTrack::trackElementIndex()
 {

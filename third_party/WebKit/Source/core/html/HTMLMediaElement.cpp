@@ -1316,14 +1316,20 @@ void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue> c
     CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue.get());
     m_cueTree.remove(interval);
 
+    // Since the cue will be removed from the media element and likely the
+    // TextTrack might also be destructed, notifying the region of the cue
+    // removal shouldn't be done.
+    cue->notifyRegionWhenRemovingDisplayTree(false);
+
     size_t index = m_currentlyActiveCues.find(interval);
     if (index != kNotFound) {
         m_currentlyActiveCues.remove(index);
         cue->setIsActive(false);
     }
-
     cue->removeDisplayTree();
     updateActiveTextTrackCues(currentTime());
+
+    cue->notifyRegionWhenRemovingDisplayTree(true);
 }
 
 
