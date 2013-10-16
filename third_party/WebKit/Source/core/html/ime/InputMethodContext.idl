@@ -29,12 +29,15 @@
  */
 
 // http://www.w3.org/TR/ime-api/
-[
-] interface InputMethodContext {
+interface InputMethodContext : EventTarget {
     readonly attribute Composition composition;
     readonly attribute DOMString locale;
     readonly attribute HTMLElement target;
     void confirmComposition();
     void setCaretRectangle(Node anchor, long x, long y, long w, long h);
     void setExclusionRectangle(Node anchor, long x, long y, long w, long h);
+
+    attribute EventHandler oncandidatewindowshow;
+    attribute EventHandler oncandidatewindowupdate;
+    attribute EventHandler oncandidatewindowhide;
 };

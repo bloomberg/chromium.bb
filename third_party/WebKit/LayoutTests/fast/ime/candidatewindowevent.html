@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<input id="input">
+<script>
+description('This tests if candidatewindow events work for InputMethodContext.');
+
+function logCandidateWindowShow(event) {
+    shouldBeEqualToString('event.type', 'candidatewindowshow');
+}
+
+function logCandidateWindowUpdate(event) {
+    shouldBeEqualToString('event.type', 'candidatewindowupdate');
+}
+
+function logCandidateWindowHide(event) {
+    shouldBeEqualToString('event.type', 'candidatewindowhide');
+}
+
+var input = document.getElementById('input');
+var context = input.inputMethodContext;
+context.addEventListener('candidatewindowshow', logCandidateWindowShow, false);
+context.addEventListener('candidatewindowupdate', logCandidateWindowUpdate, false);
+context.addEventListener('candidatewindowhide', logCandidateWindowHide, false);
+var e1 = new Event('candidatewindowshow', {});
+context.dispatchEvent(e1);
+var e2 = new Event('candidatewindowupdate', {});
+context.dispatchEvent(e2);
+var e3 = new Event('candidatewindowhide', {});
+context.dispatchEvent(e3);
+
+document.body.removeChild(input);
+context.dispatchEvent(e1);
+context.dispatchEvent(e2);
+context.dispatchEvent(e3);
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

@@ -32,6 +32,9 @@ blur
 boundary
 cached
 cancel
+candidatewindowhide
+candidatewindowshow
+candidatewindowupdate
 canplay
 canplaythrough
 change

@@ -164,4 +164,29 @@ InputMethodController& InputMethodContext::inputMethodController() const
     return m_element->document().frame()->inputMethodController();
 }
 
+const AtomicString& InputMethodContext::interfaceName() const
+{
+    return EventTargetNames::InputMethodContext;
+}
+
+ExecutionContext* InputMethodContext::executionContext() const
+{
+    return &m_element->document();
+}
+
+void InputMethodContext::dispatchCandidateWindowShowEvent()
+{
+    dispatchEvent(Event::create(EventTypeNames::candidatewindowshow));
+}
+
+void InputMethodContext::dispatchCandidateWindowUpdateEvent()
+{
+    dispatchEvent(Event::create(EventTypeNames::candidatewindowupdate));
+}
+
+void InputMethodContext::dispatchCandidateWindowHideEvent()
+{
+    dispatchEvent(Event::create(EventTypeNames::candidatewindowhide));
+}
+
 } // namespace WebCore

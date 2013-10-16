@@ -6,6 +6,7 @@ core/dom/Node
 core/dom/WebKitNamedFlow ImplementedAs=NamedFlow
 core/fileapi/FileReader
 core/html/MediaController
+core/html/ime/InputMethodContext
 core/html/track/TextTrack
 core/html/track/TextTrackCue
 core/html/track/TextTrackList

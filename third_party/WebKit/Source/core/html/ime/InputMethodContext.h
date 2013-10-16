@@ -33,18 +33,21 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/editing/CompositionUnderline.h"
+#include "core/events/EventTarget.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class Composition;
+class ExecutionContext;
 class InputMethodController;
 class Node;
 
-class InputMethodContext : public ScriptWrappable {
+class InputMethodContext : public ScriptWrappable, public EventTarget {
 public:
     static PassOwnPtr<InputMethodContext> create(HTMLElement*);
     ~InputMethodContext();
@@ -64,15 +67,33 @@ public:
     int selectionEnd() const;
     const Vector<unsigned>& segments();
 
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
+
+    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
+    virtual EventTargetData& ensureEventTargetData() OVERRIDE { return m_eventTargetData; }
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(candidatewindowshow);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(candidatewindowupdate);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(candidatewindowhide);
+
+    void dispatchCandidateWindowShowEvent();
+    void dispatchCandidateWindowUpdateEvent();
+    void dispatchCandidateWindowHideEvent();
+
 private:
     InputMethodContext(HTMLElement*);
     bool hasFocus() const;
     CompositionUnderline selectedSegment() const;
     InputMethodController& inputMethodController() const;
 
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
+
     HTMLElement* m_element;
     OwnPtr<Composition> m_composition;
     Vector<unsigned> m_segments;
+    EventTargetData m_eventTargetData;
 };
 
 } // namespace WebCore
