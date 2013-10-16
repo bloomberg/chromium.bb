@@ -715,7 +715,7 @@ const char kProcessType[]                   = "type";
 // Reduces the GPU process sandbox to be less strict.
 const char kReduceGpuSandbox[]              = "reduce-gpu-sandbox";
 
-// Register Pepper plugins (see pepper_plugin_registry.cc for its format).
+// Register Pepper plugins (see pepper_plugin_list.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 
 
