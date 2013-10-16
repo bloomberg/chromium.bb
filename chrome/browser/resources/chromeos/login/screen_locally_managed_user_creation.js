@@ -10,6 +10,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
                    'managed-user-creation', function() {
   var MAX_NAME_LENGTH = 50;
   var UserImagesGrid = options.UserImagesGrid;
+  var ButtonImages = UserImagesGrid.ButtonImages;
 
   var ManagerPod = cr.ui.define(function() {
     var node = $('managed-user-creation-manager-template').cloneNode(true);
@@ -284,13 +285,14 @@ login.createScreen('LocallyManagedUserCreationScreen',
       imageGrid.previewElement = previewElement;
       imageGrid.selectionType = 'default';
 
+      imageGrid.addEventListener('activate',
+                                 this.handleActivate_.bind(this));
       imageGrid.addEventListener('select',
                                  this.handleSelect_.bind(this));
       imageGrid.addEventListener('phototaken',
                                  this.handlePhotoTaken_.bind(this));
       imageGrid.addEventListener('photoupdated',
                                  this.handlePhotoUpdated_.bind(this));
-
       // Set the title for camera item in the grid.
       imageGrid.setCameraTitles(
           loadTimeData.getString('takePhoto'),
@@ -969,6 +971,16 @@ login.createScreen('LocallyManagedUserCreationScreen',
         item.website = data.website || '';
       }
       this.imagesData_ = imagesData;
+    },
+
+
+    handleActivate_: function() {
+      var imageGrid = this.getScreenElement('image-grid');
+      if (imageGrid.selectedItemUrl == ButtonImages.TAKE_PHOTO) {
+        this.handleTakePhoto_();
+        return;
+      }
+      this.nextButtonPressed_();
     },
 
     /**
