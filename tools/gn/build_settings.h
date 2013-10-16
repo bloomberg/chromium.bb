@@ -25,9 +25,9 @@ class OutputFile;
 class BuildSettings {
  public:
   typedef base::Callback<void(const Target*)> TargetResolvedCallback;
-  typedef std::multimap<Label, OutputFile> AdditionalLibsMap;
 
   BuildSettings();
+  BuildSettings(const BuildSettings& other);
   ~BuildSettings();
 
   // Absolute path of the source root on the local system. Everything is
@@ -106,18 +106,6 @@ class BuildSettings {
     target_resolved_callback_ = cb;
   }
 
-  // When using_external_generator is set, this will be populated with
-  // known linker dependencies for each target. The mapping is from .ninja
-  // files to library (.a, .so, .dll, etc.) files needed by that target.
-  //
-  // When generating a GN binary that depends on some GYP-generated targets,
-  // we need to know the GYP target's recursive set of libraries so we can in
-  // turn link them into the final binary.
-  AdditionalLibsMap& external_link_deps() { return external_link_deps_; }
-  const AdditionalLibsMap& external_link_deps() const {
-    return external_link_deps_;
-  }
-
  private:
   base::FilePath root_path_;
   std::string root_path_utf8_;
@@ -129,7 +117,6 @@ class BuildSettings {
   SourceDir build_dir_;
   std::string build_to_source_dir_string_;
   Args build_args_;
-  AdditionalLibsMap external_link_deps_;
 
   TargetResolvedCallback target_resolved_callback_;
 
@@ -138,7 +125,7 @@ class BuildSettings {
   mutable TargetManager target_manager_;
   mutable ToolchainManager toolchain_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(BuildSettings);
+  BuildSettings& operator=(const BuildSettings& other);  // Disallow.
 };
 
 #endif  // TOOLS_GN_BUILD_SETTINGS_H_

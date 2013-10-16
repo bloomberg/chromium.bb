@@ -1057,7 +1057,7 @@ component("net") {
   defines = [ "NET_IMPLEMENTATION" ]
 
   deps = [
-    ":net_resources",
+    #":net_resources",
     "//base",
     "//base:base_i18n",
     "//base/third_party/dynamic_annotations",
@@ -1197,10 +1197,10 @@ component("net") {
   }
 }
 
-grit("net_resources") {
-  external = true
-  source = "base/net_resources.grd"
-}
+#grit("net_resources") {
+#  external = true
+#  source = "base/net_resources.grd"
+#}
 
 static_library("http_server") {
   external = true

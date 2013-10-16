@@ -20,7 +20,9 @@ enum EscapingMode {
   ESCAPE_SHELL = 2,
 
   // For writing shell commands to ninja files.
-  ESCAPE_NINJA_SHELL = ESCAPE_NINJA | ESCAPE_SHELL
+  ESCAPE_NINJA_SHELL = ESCAPE_NINJA | ESCAPE_SHELL,
+
+  ESCAPE_JSON = 4,
 };
 
 struct EscapeOptions {

@@ -23,10 +23,12 @@ extern const char kBuildArgs_Help[];
 class Args {
  public:
   Args();
+  Args(const Args& other);
   ~Args();
 
   // Specifies overrides of the build arguments. These are normally specified
   // on the command line.
+  void AddArgOverride(const char* name, const Value& value);
   void AddArgOverrides(const Scope::KeyValueMap& overrides);
 
   // Sets up the root scope for a toolchain. This applies the default system
@@ -82,7 +84,7 @@ class Args {
   // the user set variables on the command line that are not used anywhere.
   mutable Scope::KeyValueMap declared_arguments_;
 
-  DISALLOW_COPY_AND_ASSIGN(Args);
+  Args& operator=(const Args& other);  // Disallow assignment.
 };
 
 #endif  // TOOLS_GN_ARGS_H_

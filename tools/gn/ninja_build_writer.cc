@@ -122,7 +122,7 @@ bool NinjaBuildWriter::RunAndWriteFile(
 void NinjaBuildWriter::WriteNinjaRules() {
   out_ << "rule gn\n";
   out_ << "  command = " << GetSelfInvocationCommand(build_settings_) << "\n";
-  out_ << "  description = GN the world\n\n";
+  out_ << "  description = Regenerating ninja files\n\n";
 
   out_ << "build build.ninja: gn\n"
        << "  depfile = build.ninja.d\n";

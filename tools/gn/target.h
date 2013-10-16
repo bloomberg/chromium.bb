@@ -140,6 +140,9 @@ class Target : public Item {
   const OrderedSet<SourceDir>& all_lib_dirs() const { return all_lib_dirs_; }
   const OrderedSet<std::string>& all_libs() const { return all_libs_; }
 
+  const SourceFile& gyp_file() const { return gyp_file_; }
+  void set_gyp_file(const SourceFile& gf) { gyp_file_ = gf; }
+
  private:
   // Pulls necessary information from dependents to this one when all
   // dependencies have been resolved.
@@ -189,7 +192,7 @@ class Target : public Item {
   ConfigValues config_values_;  // Used for all binary targets.
   ScriptValues script_values_;  // Used for script (CUSTOM) targets.
 
-  SourceDir destdir_;
+  SourceFile gyp_file_;
 
   bool generated_;
   const Token* generator_function_;  // Who generated this: for error messages.

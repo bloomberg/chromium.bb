@@ -333,17 +333,6 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
     path_output_.WriteFile(out_, helper_.GetTargetOutputFile(linkable_deps[i]));
   }
 
-  // External link deps from GYP. This is indexed by a label with no toolchain.
-  typedef BuildSettings::AdditionalLibsMap LibsMap;
-  const LibsMap& libs = settings_->build_settings()->external_link_deps();
-  Label libs_key(target_->label().dir(), target_->label().name());
-  LibsMap::const_iterator libs_end = libs.upper_bound(libs_key);
-  for (LibsMap::const_iterator i = libs.lower_bound(libs_key);
-       i != libs_end; ++i) {
-    out_ << " ";
-    path_output_.WriteFile(out_, i->second);
-  }
-
   // Append data dependencies as implicit dependencies.
   WriteImplicitDependencies(non_linkable_deps);
 

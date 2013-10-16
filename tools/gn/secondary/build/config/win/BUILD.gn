@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-win_sdk_dir = "C:\Program Files (x86)\Windows Kits\8.0"
+declare_args() {
+  windows_sdk_path = "C:\Program Files (x86)\Windows Kits\8.0"
+}
 
 # Compiler setup for the Windows SDK. Applied to all targets.
 config("sdk") {
@@ -24,9 +26,9 @@ config("sdk") {
   ]
 
   include_dirs = [
-    "$win_sdk_dir\Include\shared",
-    "$win_sdk_dir\Include\um",
-    "$win_sdk_dir\Include\winrt",
+    "$windows_sdk_path\Include\shared",
+    "$windows_sdk_path\Include\um",
+    "$windows_sdk_path\Include\winrt",
   ]
 }
 
@@ -37,13 +39,13 @@ config("sdk_link") {
 
   if (is_64bit) {
     ldflags = [ "/MACHINE:X64" ]
-    libs = [ "$win_sdk_dir\Lib\win8\um\x64" ]
+    libs = [ "$windows_sdk_path\Lib\win8\um\x64" ]
   } else {
     ldflags = [
       "/MACHINE:X86",
       "/SAFESEH",  # Not compatible with x64 so use only for x86.
     ]
-    lib_dirs = [ "$win_sdk_dir\Lib\win8\um\x86" ]
+    lib_dirs = [ "$windows_sdk_path\Lib\win8\um\x86" ]
 
     #if (!is_asan) {  TODO(brettw) Address Sanitizer
     #  ldflags += "/largeaddressaware"

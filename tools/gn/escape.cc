@@ -42,6 +42,9 @@ void EscapeStringToString(const base::StringPiece& str,
         }
       }
       dest->push_back(' ');
+    } else if (str[i] == '\'' && (options.mode & ESCAPE_JSON)) {
+      dest->push_back('\\');
+      dest->push_back('\'');
 #if defined(OS_WIN)
     } else if (str[i] == '/' && options.convert_slashes) {
       // Convert slashes on Windows if requested.
@@ -52,6 +55,9 @@ void EscapeStringToString(const base::StringPiece& str,
       dest->push_back('\\');
       dest->push_back('\\');
 #endif
+    } else if (str[i] == '\\' && (options.mode & ESCAPE_JSON)) {
+      dest->push_back('\\');
+      dest->push_back('\\');
     } else {
       dest->push_back(str[i]);
     }

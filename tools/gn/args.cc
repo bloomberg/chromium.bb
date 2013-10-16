@@ -52,14 +52,25 @@ const char kBuildArgs_Help[] =
 Args::Args() {
 }
 
+Args::Args(const Args& other)
+    : overrides_(other.overrides_),
+      all_overrides_(other.all_overrides_),
+      declared_arguments_(other.declared_arguments_) {
+}
+
 Args::~Args() {
+}
+
+void Args::AddArgOverride(const char* name, const Value& value) {
+  overrides_[base::StringPiece(name)] = value;
+  all_overrides_[base::StringPiece(name)] = value;
 }
 
 void Args::AddArgOverrides(const Scope::KeyValueMap& overrides) {
   for (Scope::KeyValueMap::const_iterator i = overrides.begin();
        i != overrides.end(); ++i) {
-    overrides_.insert(*i);
-    all_overrides_.insert(*i);
+    overrides_[i->first] = i->second;
+    all_overrides_[i->first] = i->second;
   }
 }
 

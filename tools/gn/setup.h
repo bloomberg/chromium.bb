@@ -23,26 +23,51 @@ class ParseNode;
 
 extern const char kDotfile_Help[];
 
-// Helper class to setup the build settings and environment for the various
-// commands to run.
-class Setup {
+// Base class for code shared between Setup and DependentSetup.
+class CommonSetup {
  public:
-  Setup();
-  ~Setup();
-
-  // Configures the build for the current command line. On success returns
-  // true. On failure, prints the error and returns false.
-  bool DoSetup();
+  virtual ~CommonSetup();
 
   // When true (the default), Run() will check for unresolved dependencies and
   // cycles upon completion. When false, such errors will be ignored.
   void set_check_for_bad_items(bool s) { check_for_bad_items_ = s; }
 
+  BuildSettings& build_settings() { return build_settings_; }
+
+ protected:
+  CommonSetup();
+  CommonSetup(const CommonSetup& other);
+
+  // Performs the two sets of operations to run the generation before and after
+  // the message loop is run.
+  void RunPreMessageLoop();
+  bool RunPostMessageLoop();
+
+ protected:
+  BuildSettings build_settings_;
+
+  bool check_for_bad_items_;
+
+ private:
+  CommonSetup& operator=(const CommonSetup& other);  // Disallow.
+};
+
+// Helper class to setup the build settings and environment for the various
+// commands to run.
+class Setup : public CommonSetup {
+ public:
+  Setup();
+  virtual ~Setup();
+
+  // Configures the build for the current command line. On success returns
+  // true. On failure, prints the error and returns false.
+  bool DoSetup();
+
   // Runs the load, returning true on success. On failure, prints the error
-  // and returns false.
+  // and returns false. This includes both RunPreMessageLoop() and
+  // RunPostMessageLoop().
   bool Run();
 
-  BuildSettings& build_settings() { return build_settings_; }
   Scheduler& scheduler() { return scheduler_; }
 
  private:
@@ -61,10 +86,7 @@ class Setup {
 
   bool FillOtherConfig(const CommandLine& cmdline);
 
-  BuildSettings build_settings_;
   Scheduler scheduler_;
-
-  bool check_for_bad_items_;
 
   // These empty settings and toolchain are used to interpret the command line
   // and dot file.
@@ -87,6 +109,29 @@ class Setup {
   scoped_ptr<ParseNode> args_root_;
 
   DISALLOW_COPY_AND_ASSIGN(Setup);
+};
+
+// A dependent setup allows one to do more than one build at a time. You would
+// make a dependent setup which clones the state of the main one, make any
+// necessary changes, and then run it.
+//
+// The way to run both at the same time is:
+//   dependent_setup.RunPreMessageLoop();
+//   main_setup.Run();
+//   dependent_setup.RunPostMessageLoop();
+// so that the main setup executes the message loop, but both are run.
+class DependentSetup : public CommonSetup {
+ public:
+  DependentSetup(const Setup& main_setup);
+  virtual ~DependentSetup();
+
+  // These are the two parts of Run() in the regular setup, not including the
+  // call to actually run the message loop.
+  void RunPreMessageLoop();
+  bool RunPostMessageLoop();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DependentSetup);
 };
 
 #endif  // TOOLS_GN_SETUP_H_

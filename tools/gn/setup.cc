@@ -153,8 +153,55 @@ base::FilePath ExtractDepotToolsFromPath() {
 
 }  // namespace
 
+// CommonSetup -----------------------------------------------------------------
+
+CommonSetup::CommonSetup()
+    : check_for_bad_items_(true) {
+}
+
+CommonSetup::CommonSetup(const CommonSetup& other)
+    : build_settings_(other.build_settings_),
+      check_for_bad_items_(other.check_for_bad_items_) {
+}
+
+CommonSetup::~CommonSetup() {
+}
+
+void CommonSetup::RunPreMessageLoop() {
+  // Load the root build file.
+  build_settings_.toolchain_manager().StartLoadingUnlocked(
+      SourceFile("//BUILD.gn"));
+}
+
+bool CommonSetup::RunPostMessageLoop() {
+  Err err;
+  if (check_for_bad_items_) {
+    err = build_settings_.item_tree().CheckForBadItems();
+    if (err.has_error()) {
+      err.PrintToStdout();
+      return false;
+    }
+  }
+
+  if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
+    err.PrintToStdout();
+    return false;
+  }
+
+  // Write out tracing and timing if requested.
+  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(kTimeSwitch))
+    PrintLongHelp(SummarizeTraces());
+  if (cmdline->HasSwitch(kTracelogSwitch))
+    SaveTraces(cmdline->GetSwitchValuePath(kTracelogSwitch));
+
+  return true;
+}
+
+// Setup -----------------------------------------------------------------------
+
 Setup::Setup()
-    : check_for_bad_items_(true),
+    : CommonSetup(),
       empty_toolchain_(Label()),
       empty_settings_(&empty_build_settings_, &empty_toolchain_, std::string()),
       dotfile_scope_(&empty_settings_) {
@@ -198,34 +245,10 @@ bool Setup::DoSetup() {
 }
 
 bool Setup::Run() {
-  // Load the root build file and start runnung.
-  build_settings_.toolchain_manager().StartLoadingUnlocked(
-      SourceFile("//BUILD.gn"));
+  RunPreMessageLoop();
   if (!scheduler_.Run())
     return false;
-
-  Err err;
-  if (check_for_bad_items_) {
-    err = build_settings_.item_tree().CheckForBadItems();
-    if (err.has_error()) {
-      err.PrintToStdout();
-      return false;
-    }
-  }
-
-  if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
-    err.PrintToStdout();
-    return false;
-  }
-
-  // Write out tracing and timing if requested.
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(kTimeSwitch))
-    PrintLongHelp(SummarizeTraces());
-  if (cmdline->HasSwitch(kTracelogSwitch))
-    SaveTraces(cmdline->GetSwitchValuePath(kTracelogSwitch));
-
-  return true;
+  return RunPostMessageLoop();
 }
 
 bool Setup::FillArguments(const CommandLine& cmdline) {
@@ -395,3 +418,21 @@ bool Setup::FillOtherConfig(const CommandLine& cmdline) {
 
   return true;
 }
+
+// DependentSetup --------------------------------------------------------------
+
+DependentSetup::DependentSetup(const Setup& main_setup)
+    : CommonSetup(main_setup) {
+}
+
+DependentSetup::~DependentSetup() {
+}
+
+void DependentSetup::RunPreMessageLoop() {
+  CommonSetup::RunPreMessageLoop();
+}
+
+bool DependentSetup::RunPostMessageLoop() {
+  return CommonSetup::RunPostMessageLoop();
+}
+

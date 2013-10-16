@@ -130,10 +130,10 @@ source_set("debugger") {
   ]
 
   deps = [
-    ":chrome_extra_resources",
-    ":chrome_resources",
-    ":chrome_strings",
-    ":theme_resources",
+#    ":chrome_extra_resources",
+#    ":chrome_resources",
+#    ":chrome_strings",
+#    ":theme_resources",
     "//base",
     "//net",
     "//net:http_server",
@@ -204,105 +204,105 @@ custom("about_credits") {
 
 # Resources --------------------------------------------------------------------
 
-group("chrome_resources") {
-  deps = [
-    ":browser_resources",
-    ":common_resources",
-    ":renderer_resources",
-  ]
-}
-grit("browser_resources") {
-  source = "browser/browser_resources.grd"
-  grit_flags = [ "-E", "about_credits_file=$build_relative_about_credits_file" ]
-  deps = [ ":about_credits" ]
-}
-grit("common_resources") {
-  source = "common/common_resources.grd"
-}
-grit("renderer_resources") {
-  source = "renderer/resources/renderer_resources.grd"
-}
-
-group("chrome_strings") {
-  deps = [
-    ":locale_settings",
-    ":chromium_strings",
-    ":generated_resources",
-    ":google_chrome_strings",
-  ]
-}
-grit("locale_settings") {
-  source = "app/resources/locale_settings.grd"
-}
-grit("chromium_strings") {
-  source = "app/chromium_strings.grd"
-}
-grit("generated_resources") {
-  source = "app/generated_resources.grd"
-}
-grit("google_chrome_strings") {
-  source = "app/google_chrome_strings.grd"
-}
-
-group("chrome_extra_resources") {
-  deps = [
-    ":memory_internals_resources",
-    ":net_internals_resources",
-    ":signin_internals_resources",
-    ":sync_internals_resources",
-    ":translate_internals_resources",
-  ]
-
-  if (!is_ios) {
-    deps += [
-      ":component_extension_resources",
-      ":devtools_discovery_page_resources",
-      ":options_resources",
-      ":quota_internals_resources",
-      ":sync_file_system_internals_resources",
-    ]
-  }
-}
-grit("component_extension_resources") {
-  source = "browser/resources/component_extension_resources.grd"
-}
-grit("devtools_discovery_page_resources") {
-  source = "browser/devtools/frontend/devtools_discovery_page_resources.grd"
-}
-grit("memory_internals_resources") {
-  source = "browser/resources/memory_internals_resources.grd"
-}
-grit("quota_internals_resources") {
-  source = "browser/resources/quota_internals_resources.grd"
-}
-grit("net_internals_resources") {
-  source = "browser/resources/net_internals_resources.grd"
-}
-grit("options_resources") {
-  source = "browser/resources/options_resources.grd"
-}
-grit("signin_internals_resources") {
-  source = "browser/resources/signin_internals_resources.grd"
-}
-grit("sync_file_system_internals_resources") {
-  source = "browser/resources/sync_file_system_internals_resources.grd"
-}
-grit("sync_internals_resources") {
-  source = "browser/resources/sync_internals_resources.grd"
-}
-grit("translate_internals_resources") {
-  source = "browser/resources/translate_internals_resources.grd"
-}
-
-group("theme_resources") {
-  deps = [
-    ":theme_resources_gen",
-    #"//ui:ui_resources",
-  ]
-}
-
-# TODO(brettw) rename "app_theme_resources" or something when we don't support
-# GYP any more. This name is required to match the GYP build.
-grit("theme_resources_gen") {
-  source = "app/theme/theme_resources.grd"
-}
+#group("chrome_resources") {
+#  deps = [
+#    ":browser_resources",
+#    ":common_resources",
+#    ":renderer_resources",
+#  ]
+#}
+#grit("browser_resources") {
+#  source = "browser/browser_resources.grd"
+#  grit_flags = [ "-E", "about_credits_file=$build_relative_about_credits_file" ]
+#  deps = [ ":about_credits" ]
+#}
+#grit("common_resources") {
+#  source = "common/common_resources.grd"
+#}
+#grit("renderer_resources") {
+#  source = "renderer/resources/renderer_resources.grd"
+#}
+#
+#group("chrome_strings") {
+#  deps = [
+#    ":locale_settings",
+#    ":chromium_strings",
+#    ":generated_resources",
+#    ":google_chrome_strings",
+#  ]
+#}
+#grit("locale_settings") {
+#  source = "app/resources/locale_settings.grd"
+#}
+#grit("chromium_strings") {
+#  source = "app/chromium_strings.grd"
+#}
+#grit("generated_resources") {
+#  source = "app/generated_resources.grd"
+#}
+#grit("google_chrome_strings") {
+#  source = "app/google_chrome_strings.grd"
+#}
+#
+#group("chrome_extra_resources") {
+#  deps = [
+#    ":memory_internals_resources",
+#    ":net_internals_resources",
+#    ":signin_internals_resources",
+#    ":sync_internals_resources",
+#    ":translate_internals_resources",
+#  ]
+#
+#  if (!is_ios) {
+#    deps += [
+#      ":component_extension_resources",
+#      ":devtools_discovery_page_resources",
+#      ":options_resources",
+#      ":quota_internals_resources",
+#      ":sync_file_system_internals_resources",
+#    ]
+#  }
+#}
+#grit("component_extension_resources") {
+#  source = "browser/resources/component_extension_resources.grd"
+#}
+#grit("devtools_discovery_page_resources") {
+#  source = "browser/devtools/frontend/devtools_discovery_page_resources.grd"
+#}
+#grit("memory_internals_resources") {
+#  source = "browser/resources/memory_internals_resources.grd"
+#}
+#grit("quota_internals_resources") {
+#  source = "browser/resources/quota_internals_resources.grd"
+#}
+#grit("net_internals_resources") {
+#  source = "browser/resources/net_internals_resources.grd"
+#}
+#grit("options_resources") {
+#  source = "browser/resources/options_resources.grd"
+#}
+#grit("signin_internals_resources") {
+#  source = "browser/resources/signin_internals_resources.grd"
+#}
+#grit("sync_file_system_internals_resources") {
+#  source = "browser/resources/sync_file_system_internals_resources.grd"
+#}
+#grit("sync_internals_resources") {
+#  source = "browser/resources/sync_internals_resources.grd"
+#}
+#grit("translate_internals_resources") {
+#  source = "browser/resources/translate_internals_resources.grd"
+#}
+#
+#group("theme_resources") {
+#  deps = [
+#    ":theme_resources_gen",
+#    #"//ui:ui_resources",
+#  ]
+#}
+#
+## TODO(brettw) rename "app_theme_resources" or something when we don't support
+## GYP any more. This name is required to match the GYP build.
+#grit("theme_resources_gen") {
+#  source = "app/theme/theme_resources.grd"
+#}

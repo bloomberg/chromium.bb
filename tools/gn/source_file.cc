@@ -46,22 +46,18 @@ base::FilePath SourceFile::Resolve(const base::FilePath& source_root) const {
     return base::FilePath();
 
   std::string converted;
-#if defined(OS_WIN)
   if (is_system_absolute()) {
-    converted.assign(&value_[1], value_.size() - 1);
-    DCHECK(converted.size() > 2 && converted[1] == ':')
-        << "Expecting Windows absolute file path with a drive letter: "
-        << value_;
+    if (value_.size() > 2 && value_[2] == ':') {
+      // Windows path, strip the leading slash.
+      converted.assign(&value_[1], value_.size() - 1);
+    } else {
+      converted.assign(value_);
+    }
+    ConvertPathToSystem(&converted);
     return base::FilePath(UTF8ToFilePath(converted));
   }
 
   converted.assign(&value_[2], value_.size() - 2);
   ConvertPathToSystem(&converted);
   return source_root.Append(UTF8ToFilePath(converted));
-#else
-  if (is_system_absolute())
-    return base::FilePath(value_);
-  converted.assign(&value_[2], value_.size() - 2);
-  return source_root.Append(converted);
-#endif
 }

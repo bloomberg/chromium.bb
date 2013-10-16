@@ -455,6 +455,12 @@ const char kForwardDependentConfigsFrom_Help[] =
     "      forward_dependent_configs_from = deps\n"
     "    }\n";
 
+const char kGypFile[] = "gyp_file";
+const char kGypFile_HelpShort[] =
+    "gyp_file: [file name] Name of GYP file to write to in GYP mode.";
+const char kGypFile_Help[] =
+    "gyp_file: Name of GYP file to write to in GYP mode.\n";
+
 const char kHardDep[] = "hard_dep";
 const char kHardDep_HelpShort[] =
     "hard_dep: [boolean] Indicates a target should be built before dependees.";
@@ -726,6 +732,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(DirectDependentConfigs)
     INSERT_VARIABLE(External)
     INSERT_VARIABLE(ForwardDependentConfigsFrom)
+    INSERT_VARIABLE(GypFile)
     INSERT_VARIABLE(HardDep)
     INSERT_VARIABLE(IncludeDirs)
     INSERT_VARIABLE(Ldflags)

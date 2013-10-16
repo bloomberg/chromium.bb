@@ -162,7 +162,7 @@ set_sources_assignment_filter(sources_assignment_filter)
 if (is_component_build) {
   component_mode = "shared_library"
 } else {
-  component_mode = "source_set"
+  component_mode = "static_library"
 }
 
 toolkit_uses_gtk = is_linux

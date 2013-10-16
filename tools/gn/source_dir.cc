@@ -116,7 +116,12 @@ base::FilePath SourceDir::Resolve(const base::FilePath& source_root) const {
 
   std::string converted;
   if (is_system_absolute()) {
-    converted = value_;
+    if (value_.size() > 2 && value_[2] == ':') {
+      // Windows path, strip the leading slash.
+      converted.assign(&value_[1], value_.size() - 1);
+    } else {
+      converted.assign(value_);
+    }
     ConvertPathToSystem(&converted);
     return base::FilePath(UTF8ToFilePath(converted));
   }

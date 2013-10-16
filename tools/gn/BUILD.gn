@@ -1,3 +1,9 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+gyp_file = "gn.gyp"
+
 static_library("gn_lib") {
   sources = [
     "args.cc",
@@ -46,6 +52,12 @@ static_library("gn_lib") {
     "function_write_file.cc",
     "group_target_generator.cc",
     "group_target_generator.h",
+    "gyp_binary_target_writer.cc",
+    "gyp_binary_target_writer.h",
+    "gyp_helper.cc",
+    "gyp_helper.h",
+    "gyp_target_writer.cc",
+    "gyp_target_writer.h",
     "import_manager.cc",
     "import_manager.h",
     "input_conversion.cc",

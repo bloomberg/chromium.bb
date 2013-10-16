@@ -127,6 +127,10 @@ extern const char kForwardDependentConfigsFrom[];
 extern const char kForwardDependentConfigsFrom_HelpShort[];
 extern const char kForwardDependentConfigsFrom_Help[];
 
+extern const char kGypFile[];
+extern const char kGypFile_HelpShort[];
+extern const char kGypFile_Help[];
+
 extern const char kHardDep[];
 extern const char kHardDep_HelpShort[];
 extern const char kHardDep_Help[];
