@@ -26,20 +26,28 @@
   </style>
   <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
-    const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["anim", 2.25, "box", "webkitMaskImage", 0.25, 0.05],
-      ["anim", 2.25, ["box", "static:boxStatic"], "webkitMaskImage", 0.25, 0.05]
-    ];
+  // This test was flaky because it would start before the images were loaded.
+  var imagesLoaded = 0;
+  function imageLoaded() {
+    ++imagesLoaded;
+    if (imagesLoaded == 2) {
+      const expectedValues = [
+        // [animation-name, time, element-id, property, expected-value, tolerance]
+        ["anim", 2.25, "box", "webkitMaskImage", 0.25, 0.05],
+        ["anim", 2.25, ["box", "static:boxStatic"], "webkitMaskImage", 0.25, 0.05]
+      ];
 
-    var doPixelTest = true;
-    var disablePauseAPI = false;
-    runAnimationTest(expectedValues, null, undefined, disablePauseAPI, doPixelTest);
+      var doPixelTest = true;
+      var disablePauseAPI = false;
+      var startTestImmediately = true;
+      runAnimationTest(expectedValues, null, undefined, disablePauseAPI, doPixelTest, startTestImmediately);
+    }
+  }
   </script>
 </head>
 <body>
-<img id="box" src="resources/green-100.png"/>
-<img id="boxStatic" src="resources/green-100.png"/>
+<img id="box" src="resources/green-100.png" onLoad="imageLoaded()";/>
+<img id="boxStatic" src="resources/stripes-100.png" onLoad="imageLoaded();"/>
 <div id="result"></div>
 </body>
 </html>

@@ -40,17 +40,25 @@
   </style>
   <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
-    const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      // FIXME: We can't test reading the borderImage shorthand because of bug #13658.
-      ["anim", 2.5, "box", "borderImageSource", 0.5, 0.05],
-      ["anim", 2.5, ["box", "static:boxStatic"], "borderImageSource", 0.5, 0.05],
-      ["animShorthand", 2.5, ["boxShorthand", "static:boxStatic"], "borderImageSource", 0.5, 0.05],
-    ];
+  // This test was flaky because it would start before the images were loaded.
+  var imagesLoaded = 0;
+  function imageLoaded() {
+    ++imagesLoaded;
+    if (imagesLoaded == 2) {
+      const expectedValues = [
+        // [animation-name, time, element-id, property, expected-value, tolerance]
+        // FIXME: We can't test reading the borderImage shorthand because of bug #13658.
+        ["anim", 2.5, "box", "borderImageSource", 0.5, 0.05],
+        ["anim", 2.5, ["box", "static:boxStatic"], "borderImageSource", 0.5, 0.05],
+        ["animShorthand", 2.5, ["boxShorthand", "static:boxStatic"], "borderImageSource", 0.5, 0.05],
+      ];
 
-    var doPixelTest = true;
-    var disablePauseAPI = false;
-    runAnimationTest(expectedValues, null, undefined, disablePauseAPI, doPixelTest);
+      var doPixelTest = true;
+      var disablePauseAPI = false;
+      var startTestImmediately = true;
+      runAnimationTest(expectedValues, null, undefined, disablePauseAPI, undefined, startTestImmediately);
+    }
+  }
   </script>
 </head>
 <body>
@@ -58,5 +66,7 @@
 <div id="boxShorthand"></div>
 <div id="boxStatic"></div>
 <div id="result"></div>
+<img src="../animations/resources/stripes-100.png" onLoad="imageLoaded();"/>
+<img src="../animations/resources/green-100.png" onLoad="imageLoaded();"/>
 </body>
 </html>

@@ -288,16 +288,6 @@ function compareRGB(rgb, expected, tolerance)
             isCloseEnough(parseInt(rgb[2]), expected[2], tolerance));
 }
 
-function parseCrossFade(s)
-{
-    var matches = s.match("-webkit-cross-fade\\((.*)\\s*,\\s*(.*)\\s*,\\s*(.*)\\)");
-
-    if (!matches)
-        return null;
-
-    return {"from": matches[1], "to": matches[2], "percent": parseFloat(matches[3])}
-}
-
 function checkExpectedTransitionValue(expected, index)
 {
     expected[index].shift();
@@ -622,7 +612,7 @@ function waitForAnimationsToStart(callback)
 }
 
 // FIXME: disablePauseAnimationAPI and doPixelTest
-function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI, doPixelTest)
+function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI, doPixelTest, startTestImmediately)
 {
     log('runAnimationTest');
     if (!expected)
@@ -665,9 +655,8 @@ function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI
     }
 
     var started = false;
-    var target = isTransitionsTest ? window : document;
-    var event = isTransitionsTest ? 'load' : 'webkitAnimationStart';
-    target.addEventListener(event, function() {
+
+    function begin() {
         if (!started) {
             log('First ' + event + ' event fired');
             started = true;
@@ -681,7 +670,16 @@ function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI
                 startTest(checks);
             });
         }
-    }, false);
+    }
+
+    var startTestImmediately = Boolean(startTestImmediately);
+    if (startTestImmediately) {
+        begin();
+    } else {
+        var target = isTransitionsTest ? window : document;
+        var event = isTransitionsTest ? 'load' : 'webkitAnimationStart';
+        target.addEventListener(event, begin, false);
+    }
 }
 
 /* This is the helper function to run transition tests:
