@@ -30,6 +30,7 @@
 #include "core/css/CSSValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/platform/LengthSize.h"
+#include "core/rendering/RenderView.h"
 #include "core/svg/SVGLength.h"
 
 namespace WebCore {
