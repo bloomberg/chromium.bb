@@ -1800,8 +1800,6 @@
         'browser/remove_rows_table_model.h',
         'browser/renderer_host/chrome_render_message_filter.cc',
         'browser/renderer_host/chrome_render_message_filter.h',
-        'browser/renderer_host/chrome_render_view_host_observer.cc',
-        'browser/renderer_host/chrome_render_view_host_observer.h',
         'browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h',
         'browser/renderer_host/chrome_render_widget_host_view_mac_delegate.mm',
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.cc',

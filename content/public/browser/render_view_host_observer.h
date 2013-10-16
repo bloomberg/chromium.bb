@@ -38,9 +38,6 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Listener,
   // return NULL once this method enters.
   virtual void RenderViewHostDestroyed(RenderViewHost* render_view_host);
 
-  // Notifies that a navigation is starting.
-  virtual void Navigate(const GURL& url);
-
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

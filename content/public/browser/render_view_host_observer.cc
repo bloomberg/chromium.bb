@@ -26,9 +26,6 @@ void RenderViewHostObserver::RenderViewHostDestroyed(RenderViewHost* rvh) {
   delete this;
 }
 
-void RenderViewHostObserver::Navigate(const GURL& url) {
-}
-
 bool RenderViewHostObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }

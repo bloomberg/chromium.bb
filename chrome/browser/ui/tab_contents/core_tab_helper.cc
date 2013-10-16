@@ -6,17 +6,31 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/render_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/load_states.h"
 #include "grit/generated_resources.h"
+#include "net/base/load_states.h"
+#include "net/http/http_request_headers.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
 
 using content::WebContents;
 
@@ -174,4 +188,81 @@ void CoreTabHelper::BeforeUnloadFired(const base::TimeTicks& proceed_time) {
 
 void CoreTabHelper::BeforeUnloadDialogCancelled() {
   OnCloseCanceled();
+}
+
+bool CoreTabHelper::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(CoreTabHelper, message)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusedNodeTouched,
+                        OnFocusedNodeTouched)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
+                        OnRequestThumbnailForContextNodeACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void CoreTabHelper::OnFocusedNodeTouched(bool editable) {
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (editable) {
+    base::win::DisplayVirtualKeyboard();
+  } else {
+    base::win::DismissVirtualKeyboard();
+  }
+#endif  // OS_WIN && USE_AURA
+}
+
+// Handles the image thumbnail for the context node, composes a image search
+// request based on the received thumbnail and opens the request in a new tab.
+void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
+    const SkBitmap& bitmap,
+    const gfx::Size& original_size) {
+  if (bitmap.isNull())
+    return;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+
+  const TemplateURL* const default_provider =
+      TemplateURLServiceFactory::GetForProfile(profile)->
+          GetDefaultSearchProvider();
+  if (!!default_provider)
+    return;
+
+  const int kDefaultQualityForImageSearch = 90;
+  std::vector<unsigned char> data;
+  if (!gfx::JPEGCodec::Encode(
+      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+      gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
+      static_cast<int>(bitmap.rowBytes()), kDefaultQualityForImageSearch,
+      &data))
+    return;
+
+  TemplateURLRef::SearchTermsArgs search_args =
+      TemplateURLRef::SearchTermsArgs(base::string16());
+  search_args.image_thumbnail_content = std::string(data.begin(), data.end());
+  // TODO(jnd): Add a method in WebContentsViewDelegate to get the image URL
+  // from the ContextMenuParams which creates current context menu.
+  search_args.image_url = GURL();
+  search_args.image_original_size = original_size;
+  TemplateURLRef::PostContent post_content;
+  GURL result(default_provider->image_url_ref().ReplaceSearchTerms(
+      search_args, &post_content));
+  if (!result.is_valid())
+    return;
+
+  content::OpenURLParams open_url_params(
+      result, content::Referrer(), NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK, false);
+  const std::string& content_type = post_content.first;
+  std::string* post_data = &post_content.second;
+  if (!post_data->empty()) {
+    DCHECK(!content_type.empty());
+    open_url_params.uses_post = true;
+    open_url_params.browser_initiated_post_data =
+        base::RefCountedString::TakeString(post_data);
+    open_url_params.extra_headers += base::StringPrintf(
+        "%s: %s\r\n", net::HttpRequestHeaders::kContentType,
+        content_type.c_str());
+  }
+  web_contents()->OpenURL(open_url_params);
 }

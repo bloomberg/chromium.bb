@@ -204,7 +204,7 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   FOR_EACH_OBSERVER(
       RenderViewHostObserver, observers_, RenderViewHostDestruction());
 
-    GetDelegate()->RenderViewDeleted(this);
+  GetDelegate()->RenderViewDeleted(this);
 
   // Be sure to clean up any leftover state from cross-site requests.
   CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
@@ -346,8 +346,6 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
   // don't want to either.
   if (!params.url.SchemeIs(kJavaScriptScheme))
     delegate_->DidStartLoading(this);
-
-  FOR_EACH_OBSERVER(RenderViewHostObserver, observers_, Navigate(params.url));
 }
 
 void RenderViewHostImpl::NavigateToURL(const GURL& url) {

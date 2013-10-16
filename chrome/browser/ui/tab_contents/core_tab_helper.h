@@ -63,6 +63,11 @@ class CoreTabHelper : public content::WebContentsObserver,
       content::WebContents* web_contents) OVERRIDE;
   virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) OVERRIDE;
   virtual void BeforeUnloadDialogCancelled() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  void OnFocusedNodeTouched(bool editable);
+  void OnRequestThumbnailForContextNodeACK(const SkBitmap& bitmap,
+                                           const gfx::Size& original_size);
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   CoreTabHelperDelegate* delegate_;

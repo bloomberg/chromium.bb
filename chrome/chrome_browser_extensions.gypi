@@ -738,6 +738,8 @@
         'browser/extensions/extension_warning_service.h',
         'browser/extensions/extension_warning_set.cc',
         'browser/extensions/extension_warning_set.h',
+        'browser/extensions/extension_web_contents_observer.cc',
+        'browser/extensions/extension_web_contents_observer.h',
         'browser/extensions/extension_web_ui.cc',
         'browser/extensions/extension_web_ui.h',
         'browser/extensions/extension_web_ui_override_registrar.cc',
