@@ -67,7 +67,7 @@ const char* kTrackedPrefs[] = {
   prefs::kExtensionKnownDisabled,
 };
 
-static const size_t kSHA256DigestSize = 32;
+const size_t kSHA256DigestSize = 32;
 
 }  // namespace
 
