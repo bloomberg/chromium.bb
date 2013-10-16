@@ -69,6 +69,8 @@ public:
     // WebFrameClient implementation.
     virtual void didStartProvisionalLoad(WebKit::WebFrame* frame)
     {
+        if (m_version > 2)
+            m_baseProxy->didStartProvisionalLoad(frame);
         Base::didStartProvisionalLoad(frame);
     }
     virtual void didReceiveServerRedirectForProvisionalLoad(WebKit::WebFrame* frame)
@@ -134,14 +136,12 @@ public:
     }
     virtual void willSendRequest(WebKit::WebFrame* frame, unsigned identifier, WebKit::WebURLRequest& request, const WebKit::WebURLResponse& redirectResponse)
     {
-        if (m_version > 1)
-            m_baseProxy->willSendRequest(frame, identifier, request, redirectResponse);
+        m_baseProxy->willSendRequest(frame, identifier, request, redirectResponse);
         Base::willSendRequest(frame, identifier, request, redirectResponse);
     }
     virtual void didReceiveResponse(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLResponse& response)
     {
-        if (m_version > 1)
-            m_baseProxy->didReceiveResponse(frame, identifier, response);
+        m_baseProxy->didReceiveResponse(frame, identifier, response);
         Base::didReceiveResponse(frame, identifier, response);
     }
     virtual void didChangeResourcePriority(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLRequest::Priority& priority)
