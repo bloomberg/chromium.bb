@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Muu ...</translation>
 <translation id="2426432199384958866">video voogesituse lülitamine tagasi reaalajale</translation>
 <translation id="248395913932153421">päev</translation>
+<translation id="1729654308190250600">Sisestage mittetühi e-posti aadress.</translation>
 <translation id="6015796118275082299">Aasta</translation>
 <translation id="9186171386827445984">Dokumendi laadimine: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> lehte ...</translation>
 <translation id="1235745349614807883">Kustuta viimased otsingud</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">loendilooja</translation>
 <translation id="4202807286478387388">liigu</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Sisestage märgile „<ph name="ATSIGN"/>” eelnev osa. Aadress „<ph name="INVALIDADDRESS"/>” pole täielik.</translation>
+<translation id="2746543609216772311">Väärtus peab olema <ph name="MINIMUM_DATE_OR_TIME"/> või hilisem.</translation>
 <translation id="2572483411312390101">esitus</translation>
 <translation id="8785498733064193001">taasesituse alustamine</translation>
 <translation id="7057186640035488495">video aeg</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">kiiresti tagasikerimine</translation>
 <translation id="7789962463072032349">peata</translation>
 <translation id="6853785296079745596">subtiitrite peitmine</translation>
+<translation id="4360991593054037559">Sisestage kehtiv väärtus. Kaks lähimat kehtivat väärtust on <ph name="VALID_VALUE_LOW"/> ja <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Muu ...</translation>
 <translation id="8141602879876242471">See on otsitav indeks. Sisestage otsingu jaoks märksõnad:</translation>
 <translation id="1930711995431081526">olek</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">kiiresti edasikerimine</translation>
 <translation id="4812940957355064477">Sisestage arv.</translation>
 <translation id="2548326553472216322">Pole viimaseid otsingud</translation>
+<translation id="1938124657309484470">Väärtus peab olema <ph name="MAXIMUM_DATE_OR_TIME"/> või varasem.</translation>
 <translation id="7263440858009898357">Valige loendist element.</translation>
 <translation id="901493112792887934">praegune aeg sekundites</translation>
 <translation id="5164977714490026579">Väärtus peab olema suurem või võrdne <ph name="MINIMUM"/>-ga.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">See nädal</translation>
 <translation id="5966707198760109579">Nädal</translation>
 <translation id="2901282870647571346">video praegune olek</translation>
+<translation id="2060505056492490888">Tähist „<ph name="DOT"/>” on aadressis „<ph name="INVALIDDOMAIN"/>” valesti kasutatud.</translation>
 <translation id="2674318244760992338">jalus</translation>
 <translation id="8987927404178983737">kuu</translation>
 <translation id="8115662671911883373">subtiitrite kuvamise alustamine</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">mrgista</translation>
 <translation id="2846343701378493991">1024 (keskmine)</translation>
 <translation id="1637811476055996098">Vali failid</translation>
+<translation id="49969490063480558">Sisestage märgile „<ph name="ATSIGN"/>” järgnev osa. Aadress „<ph name="INVALIDADDRESS"/>” pole täielik.</translation>
 <translation id="5476505524087279545">eemalda mrgistus</translation>
 <translation id="2148716181193084225">Täna</translation>
 <translation id="2507943997699731163">Täitke see väli.</translation>
 <translation id="3785482301506746191">video ajakursor</translation>
 <translation id="739024184232394898">Muu ...</translation>
+<translation id="383465348367842624">Märgile „<ph name="ATSIGN"/>” eelnev osa ei tohi sisaldada sümbolit „<ph name="INVALIDCHARACTER"/>”.</translation>
 <translation id="5468998798572797635">täisekraanilt väljumine</translation>
 <translation id="5919473608089529604">Pistikprogrammi ei saanud laadida.</translation>
 <translation id="5546461542133609677">vaigistuse tühistamine</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Sisestage meiliaadresside loend komadega eraldatult.</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
 <translation id="1921819250265091946">pp</translation>
+<translation id="2613802280814924224">Sisestage kehtiv väärtus. Lähim kehtiv väärtus on <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Kehtetu väärtus.</translation>
 <translation id="1842960171412779397">vali</translation>
 <translation id="7673697353781729403">Tunnid</translation>
+<translation id="4664250907885839816">Märgile „<ph name="ATSIGN"/>” järgnev osa ei tohi sisaldada sümbolit „<ph name="INVALIDCHARACTER"/>”.</translation>
 <translation id="3450233048674729344">Väärtus peab olema väiksem või võrdne <ph name="MAXIMUM"/>-ga.</translation>
 <translation id="3471999216963526757">tagasi 30 sekundit</translation>
 <translation id="668171684555832681">Muu...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">aktiveeri</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> faili</translation>
 <translation id="6643016212128521049">Tühjenda</translation>
+<translation id="7888071071722539607">Lisage e-posti aadressile märk „<ph name="ATSIGN"/>”. Aadressist „<ph name="INVALIDADDRESS"/>” puudub märk „<ph name="ATSIGN"/>”.</translation>
 <translation id="4851297395436456855">edasikerimine</translation>
 <translation id="1088086359088493902">Sekundid</translation>
 <translation id="3934680773876859118">PDF-dokumendi laadimine nurjus</translation>

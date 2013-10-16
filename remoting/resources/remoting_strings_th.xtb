@@ -46,6 +46,7 @@ Host</translation>
 <translation id="6001953797859482435">Chrome Remote Desktop Host Preferences</translation>
 <translation id="9188433529406846933">ให้สิทธิ์</translation>
 <translation id="228809120910082333">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่อให้สามารถเข้าถึงโดย Chromoting</translation>
+<translation id="7605995381616883502">การเชื่อมต่อใหม่</translation>
 <translation id="5826423541626112308">Chrome Remote Desktop Host</translation>
 <translation id="2851674870054673688">เมื่อพวกเขาป้อนรหัสแล้ว เซสชันการแบ่งปันของคุณจะเริ่มขึ้น</translation>
 <translation id="5593560073513909978">ไม่สามารถให้บริการนี้ได้ชั่วคราว โปรดลองอีกครั้งในภายหลัง</translation>
@@ -68,6 +69,7 @@ Host</translation>
 <translation id="7081428606750359611">Chromoting Host</translation>
 <translation id="8228265668171617545">พบ Chromoting ในเวอร์ชันที่ไม่สามารถทำงานร่วมกัน โปรดตรวจสอบให้แน่ใจว่าคุณมี Chrome และ Chromoting เวอร์ชันล่าสุดในคอมพิวเตอร์ทั้งสองเครื่องและลองอีกครั้ง</translation>
 <translation id="6985691951107243942">คุณแน่ใจหรือไม่ว่าต้องการปิดใช้งานการเชื่อมต่อระยะไกลกับ <ph name="HOSTNAME"/> หากคุณเปลี่ยนใจภายหลัง คุณจะต้องไปที่คอมพิวเตอร์เครื่องนั้นเพื่อเปิดใช้งานการเชื่อมต่ออีกครั้ง</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (ออนไลน์ล่าสุด <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">หากต้องการเริ่มการแบ่งปันเดสก์ท็อปของคุณ โปรดให้รหัสการเข้าถึงที่ด้านล่างนี้แก่บุคคลที่จะให้ความช่วยเหลือคุณ</translation>
 <translation id="409800995205263688">หมายเหตุ: การตั้งค่านโยบายอนุญาตเฉพาะการเชื่อมต่อระหว่างคอมพิวเตอร์ภายในเครือข่ายของคุณเท่านั้น</translation>
 <translation id="2353140552984634198">คุณสามารถเข้าถึงคอมพิวเตอร์เครื่องนี้ได้อย่างปลอดภัยโดยใช้ Chromoting</translation>
@@ -134,7 +136,9 @@ Host</translation>
 <translation id="6527303717912515753">แบ่งปัน</translation>
 <translation id="2926340305933667314">ไม่สามารถปิดใช้งานการเข้าถึงคอมพิวเตอร์เครื่องนี้จากระยะไกล โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="6865175692670882333">ดู/แก้ไข</translation>
+<translation id="5859141382851488196">หน้าต่างใหม่…</translation>
 <translation id="2089514346391228378">การเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้ถูกเปิดใช้งานแล้ว</translation>
+<translation id="7693372326588366043">รีเฟรชรายการโฮสต์</translation>
 <translation id="8246880134154544773">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chromoting อีกครั้ง</translation>
 <translation id="1654128982815600832">กำลังเปิดใช้งานการเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้…</translation>
 <translation id="8187079423890319756">ลิขสิทธิ์ 2013 The Chromium Authors สงวนลิขสิทธิ์</translation>

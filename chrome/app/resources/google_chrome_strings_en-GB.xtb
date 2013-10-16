@@ -29,6 +29,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2896252579017640304">Launch Chrome apps</translation>
 <translation id="2370289711218562573">Google Chrome is now importing Favourites/Bookmarks.</translation>
 <translation id="8762286861469007470">Chrome Captive Portal detector</translation>
+<translation id="2721687379934343312">On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> may change your Chrome settings.</translation>
 <translation id="1761870329818521071">Cannot install the same Google Chrome Frame version that is currently running. Please close Google Chrome Frame and try again.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -66,6 +67,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Your billing details have been saved in Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome is using your microphone.</translation>
+<translation id="3590194807845837023">Unlock Profile and Relaunch</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
 <translation id="6423071462708908582">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiration. This means Google Chrome cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct the error and refresh this page.</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
@@ -140,6 +142,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="1104959162601287462">About the &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
+<translation id="7787950393032327779">The profile appears to be in use by another Google Chrome process (<ph name="PROCESS_ID"/>) on another computer (<ph name="HOST_NAME"/>). Chrome has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chrome.</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
@@ -159,9 +162,9 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="6326175484149238433">Remove from Chrome</translation>
 <translation id="2871893339301912279">You're signed in to Chrome!</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
-<translation id="1686446242839005801">You're signing in to Chrome using your <ph name="USER_EMAIL_ADDRESS"/> account. You will be able to access your bookmarks, history and other settings on all of your signed in devices.</translation>
 <translation id="4147555960264124640">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">This site is using the Chrome Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.</translation>
+<translation id="1348153800635493797">You must upgrade Chrome to use Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Go to
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           and deselect any proxies that have been selected.</translation>
@@ -192,6 +195,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> may change how your searches work in Chrome.</translation>
+<translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS"/>. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="6855094794438142393">Go to
           the Chrome menu &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -210,6 +214,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="5334545119300433702">This module is known to conflict with Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome is up to date.</translation>
+<translation id="4120075327926916474">Do you want Chrome to save this credit card information for completing web forms?</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame is already installed and available to all users of this computer. If you want to install Google Chrome Frame at the user level, you must first uninstall the system-level version installed by an administrator.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

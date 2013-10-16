@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Chrome uygulamalarını başlat</translation>
 <translation id="2370289711218562573">Google Chrome şu anda Sık Kullanılanları/Yer İmlerini içe aktarıyor.</translation>
 <translation id="8762286861469007470">Chrome Captive Portal algılayıcısı</translation>
+<translation id="2721687379934343312">Mac bilgisayarlarda şifreler Keychain uygulamanızda saklanır ve bu OS X hesabını paylaşan diğer Chrome kullanıcıları bu şifrelere erişilebilir veya şifreleri senkronize edilebilir.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> dosyası, Chrome ayarlarınızı değiştirebilir.</translation>
 <translation id="1761870329818521071">Şu anda çalışmakta olan Google Chrome Frame ile aynı sürüm yüklenemez. Lütfen Google Chrome Frame'i kapatın ve tekrar deneyin.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Fatura ayrıntılarınız Chrome'a kaydedildi.</translation>
 <translation id="7098166902387133879">Google Chrome mikrofonunuzu kullanıyor.</translation>
+<translation id="3590194807845837023">Profilin Kilidini Aç ve Tekrar Başlat</translation>
 <translation id="4053720452172726777">Google Chrome'u özelleştirin ve kontrol edin</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmaya çalıştınız, ancak sunucu süresi bitmiş bir sertifika sundu. Sertifikanın süresi bittiğinden beri güvenliğinin olup olmadığı konusunda hiçbir bilgi yok. Yani Google Chrome bir saldırganla değil, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ile iletişim kurduğunuzu garanti edemiyor. Bilgisayarınızın saati <ph name="CURRENT_TIME"/> olarak ayarlandı. Bu doğru mu? Değilse, hatayı düzeltip bu sayfayı yenileyin.</translation>
 <translation id="3197823471738295152">Cihazınız güncel.</translation>
@@ -133,6 +135,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="1104959162601287462">&amp;Chrome OS hakkında</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
+<translation id="7787950393032327779">Profilin başka bir bilgisayarda (<ph name="HOST_NAME"/>) başka bir Google Chrome işlemi (<ph name="PROCESS_ID"/>) tarafından kullanıldığı anlaşılıyor. Chrome, profili bozulmaması için kilitledi. Bu profili kullanan başka bir işlem olmadığından eminseniz profilin kilidini açabilir ve Chrome'u tekrar başlatabilirsiniz.</translation>
 <translation id="1469002951682717133">Chrome Uygulama Başlatıcı</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
@@ -151,9 +154,9 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="6326175484149238433">Chrome'dan kaldır</translation>
 <translation id="2871893339301912279">Chrome'da oturum açtınız!</translation>
 <translation id="7161904924553537242">Google Chrome'a Hoş Geldiniz</translation>
-<translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> hesabınızı kullanarak Chrome'da oturum açıyorsunuz. Oturum açtığınız tüm cihazlardan yer işaretlerinize, geçmişinize ve diğer ayarlara erişebileceksiniz.</translation>
 <translation id="4147555960264124640">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz.<ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Bu site, kısa bir süre sonra artık destek verilmeyecek olan Google Frame eklentisini kullanıyor. Lütfen bu eklentinin yüklemesini kaldırın ve modern bir tarayıcı sürümüne geçin.</translation>
+<translation id="1348153800635493797">Google Cüzdan'ı kullanmak için Chrome'u yükseltmelisiniz [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Uygulamalar &gt; Sistem Tercihleri &gt; Ağ &gt; Gelişmiş &gt; Proxy'ler
           öğesine gidin ve seçilmiş olabilecek proxy'lerin seçimini kaldırın.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
@@ -183,6 +186,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>
 <translation id="2769762047821873045">Google Chrome varsayılan tarayıcınız değil.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> dosyası, aramalarınızın Chrome'daki işleyiş şeklini değiştirebilir.</translation>
+<translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS"/> olarak oturum açtınız. Şimdi oturum açtığınız tüm cihazlarda yer işaretlerinize, geçmişinize ve diğer ayarlarınıza erişebilirsiniz.</translation>
 <translation id="6855094794438142393">Chrome menüsü &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
@@ -200,6 +204,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="5334545119300433702">Bu modülün Google Chrome'la çakıştığı biliniyor.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome güncel durumda.</translation>
+<translation id="4120075327926916474">Chrome'un, web formlarını doldurmak için bu kredi kartı bilgilerini kaydetmesini ister misiniz?</translation>
 <translation id="2084710999043359739">Chrome'a ekle</translation>
 <translation id="4084877369264707540">Google Chrome Frame zaten yüklü ve bu bilgisayarın tüm kullanıcıları tarafından kullanılabilir. Google Chrome Frame'i kullanıcı düzeyinde yüklemek istiyorsanız, öncelikle bir yönetici tarafından yüklenen sistem düzeyindeki sürümü kaldırmanız gerekir.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

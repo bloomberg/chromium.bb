@@ -13,6 +13,7 @@
 <translation id="1190609913194133056">ศูนย์การแจ้งเตือน</translation>
 <translation id="7470933019269157899">เหลือ <ph name="NUMBER_DEFAULT"/> นาที</translation>
 <translation id="5613020302032141669">ลูกศรซ้าย</translation>
+<translation id="4971687151119236543">แทร็กก่อนหน้าของสื่อ</translation>
 <translation id="8602707065186045623">ไฟล์ <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> วินาที</translation>
@@ -104,6 +105,7 @@
 <translation id="7052633198403197513">F1</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> ชั่วโมง</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/วินาที</translation>
+<translation id="8394908167088220973">เล่น/หยุดสื่อชั่วคราว</translation>
 <translation id="2148716181193084225">วันนี้</translation>
 <translation id="7960078400008666149">ห้ามรบกวนเป็นเวลาหนึ่งชั่วโมง</translation>
 <translation id="4373894838514502496"><ph name="NUMBER_FEW"/> นาทีที่ผ่านมา</translation>
@@ -114,14 +116,15 @@
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">เลื่อนทางขวา</translation>
 <translation id="7414887922320653780">เหลือ <ph name="NUMBER_ONE"/> ชั่วโมง</translation>
+<translation id="1413622004203049571">ปิดการแจ้งเตือนจาก <ph name="NOTIFIER_NAME"/></translation>
 <translation id="2666092431469916601">ด้านบน</translation>
 <translation id="8331626408530291785">เลื่อนขึ้น</translation>
-<translation id="4773379706300191099">ปิดการแจ้งเตือนจาก <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">เปิดไฟล์</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> ชั่วโมงที่ผ่านมา</translation>
 <translation id="815598010540052116">เลื่อนลง</translation>
+<translation id="6808150112686056157">หยุดสื่อ</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="3157931365184549694">คืนค่า</translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
@@ -159,6 +162,7 @@
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> นาทีที่ผ่านมา</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/วินาที</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
+<translation id="6699343763173986273">แทร็กถัดไปของสื่อ</translation>
 <translation id="8226233771743600312">ห้ามรบกวนเป็นเวลาหนึ่งวัน</translation>
 <translation id="7457942297256758195">ล้างทั้งหมด</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> วันที่ผ่านมา</translation>
@@ -178,7 +182,6 @@
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5941711191222866238">ย่อ</translation>
 <translation id="6394627529324717982">จุลภาค</translation>
-<translation id="4469842253116033348">ปิดการใช้งานการแจ้งเตือนจาก <ph name="SITE"/></translation>
 <translation id="3036649622769666520">เปิดไฟล์</translation>
 <translation id="8328145009876646418">ขอบซ้าย</translation>
 <translation id="7372005818821648611"><ph name="NUMBER_TWO"/> seconds</translation>

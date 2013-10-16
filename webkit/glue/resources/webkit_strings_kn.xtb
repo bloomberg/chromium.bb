@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">ಇತರೆ...</translation>
 <translation id="2426432199384958866">ಸ್ಟ್ರೀಮಿಂಗ್ ಚಲನಚಿತ್ರವನ್ನು ನೈಜ ಸಮಯಕ್ಕೆ ಹಿಂತಿರುಗಿಸಿ</translation>
 <translation id="248395913932153421">ದಿನ</translation>
+<translation id="1729654308190250600">ಖಾಲಿ-ಅಲ್ಲದ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="6015796118275082299">ವರ್ಷ</translation>
 <translation id="9186171386827445984">ಲೋಡಿಂಗ್ ಡಾಕ್ಯುಮೆಂಟ್: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> ಪುಟಗಳು...</translation>
 <translation id="1235745349614807883">ಇತ್ತೀಚಿನ ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">ಪಟ್ಟಿ ಗುರುತು</translation>
 <translation id="4202807286478387388">ಹಾರು</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">'<ph name="ATSIGN"/>' ನಂತರದ ಭಾಗವನ್ನು ನಮೂದಿಸಿ. '<ph name="INVALIDADDRESS"/>' ಅಪೂರ್ಣವಾಗಿದೆ.</translation>
+<translation id="2746543609216772311">ಮೌಲ್ಯವು <ph name="MINIMUM_DATE_OR_TIME"/> ಅಥವಾ ನಂತರದ್ದಾಗಿರಬೇಕು.</translation>
 <translation id="2572483411312390101">ಪ್ಲೇ ಮಾಡಿ</translation>
 <translation id="8785498733064193001">ಪ್ಲೇಬ್ಯಾಕ್ ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="7057186640035488495">ಚಲನಚಿತ್ರ ಸಮಯ</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">ತ್ವರಿತವಾಗಿ ಹಿಂದಕ್ಕೆ ಪಡೆಯಿರಿ</translation>
 <translation id="7789962463072032349">ವಿರಾಮ</translation>
 <translation id="6853785296079745596">ಮುಚ್ಚಿರುವ ಶೀರ್ಷಿಕೆಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
+<translation id="4360991593054037559">ಮಾನ್ಯವಾದ ಮೌಲ್ಯವನ್ನು ನಮೂದಿಸಿ. <ph name="VALID_VALUE_LOW"/> ಮತ್ತು <ph name="VALID_VALUE_HIGHER"/> ಎರಡು ಹತ್ತಿರದ ಮಾನ್ಯ ಮೌಲ್ಯಗಳಾಗಿವೆ.</translation>
 <translation id="1758486001363313524">ಇತರೆ...</translation>
 <translation id="8141602879876242471">ಇದು ಹುಡುಕಾಡಬಹುದಾದ ಸೂಚಿಕೆ ಹುಡುಕಾಟ ಕೀವರ್ಡ್‌ಗಳನ್ನು ನಮೂದಿಸಿ:</translation>
 <translation id="1930711995431081526">ಸ್ಥಿತಿ</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">ತ್ವರಿತವಾಗಿ ಮುಂದೆ ಪಡೆಯಿರಿ</translation>
 <translation id="4812940957355064477">ದಯವಿಟ್ಟು ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="2548326553472216322">ಇತ್ತೀಚಿನ ಹುಡುಕಾಟಗಳು ಇಲ್ಲ</translation>
+<translation id="1938124657309484470">ಮೌಲ್ಯವು <ph name="MAXIMUM_DATE_OR_TIME"/> ಅಥವಾ ಹಿಂದಿನದ್ದಾಗಿರಬೇಕು.</translation>
 <translation id="7263440858009898357">ಪಟ್ಟಿಯಲ್ಲಿನ ಐಟಂ ಅನ್ನು ದಯವಿಟ್ಟು ಆಯ್ಕೆ ಮಾಡಿ.</translation>
 <translation id="901493112792887934">ಸೆಕೆಂಡ್‌ಗಳಲ್ಲಿ ಪ್ರಸ್ತುತ ಸಮಯ</translation>
 <translation id="5164977714490026579">ಮೌಲ್ಯವು <ph name="MINIMUM"/> ಕ್ಕಿಂತಲೂ ಹೆಚ್ಚಾಗಿರಬೇಕು ಅಥವಾ ಸಮನಾಗಿರಬೇಕು.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">ಈ ವಾರ</translation>
 <translation id="5966707198760109579">ವಾರ</translation>
 <translation id="2901282870647571346">ಪ್ರಸ್ತುತ ಚಲನಚಿತ್ರದ ಸ್ಥಿತಿ</translation>
+<translation id="2060505056492490888">'<ph name="DOT"/>' ಅನ್ನು '<ph name="INVALIDDOMAIN"/>' ನಲ್ಲಿ ತಪ್ಪಾದ ಸ್ಥಾನದಲ್ಲಿ ಬಳಸಲಾಗಿದೆ.</translation>
 <translation id="2674318244760992338">ಅಡಿಟಿಪ್ಪಣಿ</translation>
 <translation id="8987927404178983737">ತಿಂಗಳು</translation>
 <translation id="8115662671911883373">ಮುಚ್ಚಲಾಗಿರುವ ಶೀರ್ಷಿಕೆಗಳ ಪ್ರದರ್ಶಿಸುವಿಕೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">ಪರಿಶೀಲಿಸು</translation>
 <translation id="2846343701378493991">1024 (ಮದ್ಯಮ ಶ್ರೇಣಿ)</translation>
 <translation id="1637811476055996098">ಫೈಲ್‌ಗಳನ್ನು ಆರಿಸಿ</translation>
+<translation id="49969490063480558">'<ph name="ATSIGN"/>' ನಂತರದ ಒಂದು ಭಾಗವನ್ನು ನಮೂದಿಸಿ. '<ph name="INVALIDADDRESS"/>' ಅಪೂರ್ಣವಾಗಿದೆ.</translation>
 <translation id="5476505524087279545">ಪರೀಕ್ಷಿಸಬೇಡಿ</translation>
 <translation id="2148716181193084225">ಇಂದು</translation>
 <translation id="2507943997699731163">ದಯವಿಟ್ಟು ಈ ಕ್ಷೇತ್ರವನ್ನು ಭರ್ತಿ ಮಾಡಿ.</translation>
 <translation id="3785482301506746191">ಚಲನಚಿತ್ರ ಸಮಯ ಸ್ಕ್ರಬ್ಬರ್</translation>
 <translation id="739024184232394898">ಇತರೆ...</translation>
+<translation id="383465348367842624">'<ph name="ATSIGN"/>' ನಂತರದ ಭಾಗವು '<ph name="INVALIDCHARACTER"/>' ಚಿಹ್ನೆಯನ್ನು ಒಳಗೊಂಡಿರಬಾರದು.</translation>
 <translation id="5468998798572797635">ಪೂರ್ಣಪರದೆಯಿಂದ ನಿರ್ಗಮಿಸು</translation>
 <translation id="5919473608089529604">ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="5546461542133609677">ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡು</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">ದಯವಿಟ್ಟು ಅಲ್ಪ ವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಿದ ಇಮೇಲ್ ವಿಳಾಸಗಳ ಪಟ್ಟಿಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
 <translation id="1921819250265091946">ದಿದಿ</translation>
+<translation id="2613802280814924224">ಮಾನ್ಯ ಮೌಲ್ಯವನ್ನು ನಮೂದಿಸಿ. ಹತ್ತಿರದ ಮಾನ್ಯ ಮೌಲ್ಯವು <ph name="VALID_VALUE"/> ಆಗಿದೆ.</translation>
 <translation id="835897206747267392">ಅಮಾನ್ಯ ಮೌಲ್ಯ.</translation>
 <translation id="1842960171412779397">ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="7673697353781729403">ಗಂಟೆಗಳು</translation>
+<translation id="4664250907885839816">'<ph name="ATSIGN"/>' ನಂತರದ ಭಾಗವು '<ph name="INVALIDCHARACTER"/>' ಚಿಹ್ನೆಯನ್ನು ಒಳಗೊಂಡಿರಬಾರದು.</translation>
 <translation id="3450233048674729344">ಮೌಲ್ಯವು <ph name="MAXIMUM"/> ಕ್ಕೆ ಸಮನಾಗಿರಬಹುದು ಅಥವಾ ಅದಕ್ಕಿಂತಲೂ ಕಡಿಮೆ ಆಗಿರಬಹುದು.</translation>
 <translation id="3471999216963526757">30 ಸೆಕೆಂಡ್‌ಗಳಲ್ಲಿ ಮರಳಿ</translation>
 <translation id="668171684555832681">ಇತರೆ...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">ಸಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ಫೈಲ್‌ಗಳು</translation>
 <translation id="6643016212128521049">ತೆರವುಗೊಳಿಸಿ</translation>
+<translation id="7888071071722539607">ಇಮೇಲ್ ವಿಳಾಸದಲ್ಲಿ ಒಂದು '<ph name="ATSIGN"/>' ಅನ್ನು ಸೇರಿಸಿ. '<ph name="ATSIGN"/>' ನಲ್ಲಿ '<ph name="INVALIDADDRESS"/>' ಕಾಣೆಯಾಗಿದೆ.</translation>
 <translation id="4851297395436456855">ವೇಗವಾಗಿ ಮುಂದಕ್ಕೆ</translation>
 <translation id="1088086359088493902">ಸೆಕೆಂಡುಗಳು</translation>
 <translation id="3934680773876859118">PDF ಡಾಕ್ಯುಮೆಂಟ್ ಅನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</translation>

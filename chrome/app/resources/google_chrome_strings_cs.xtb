@@ -29,6 +29,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2896252579017640304">Spustit aplikace Chrome</translation>
 <translation id="2370289711218562573">Google Chrome právě importuje Oblíbené položky nebo záložky:</translation>
 <translation id="8762286861469007470">Detektor Chrome stránek Captive Portal</translation>
+<translation id="2721687379934343312">V počítačích Mac se hesla ukládají do vašeho úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chrome, kteří sdílejí tento účet systému OS X.</translation>
 <translation id="3993188379797269327">Soubor <ph name="FILE_NAME"/> může změnit nastavení Chromu.</translation>
 <translation id="1761870329818521071">Nelze nainstalovat stejnou verzi pluginu Google Chrome Frame, jaká je právě spuštěná. Ukončete plugin Google Chrome Frame a zkuste to prosím znovu.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -66,6 +67,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Fakturační údaje byly uloženy do prohlížeče Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome používá váš mikrofon.</translation>
+<translation id="3590194807845837023">Odemknout profil a spustit znovu</translation>
 <translation id="4053720452172726777">Přizpůsobit a ovládat Google Chrome</translation>
 <translation id="6423071462708908582">Pokusili jste se přejít na web &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, avšak server předložil certifikát, jehož platnost vypršela. Nejsou k dispozici žádné informace, které by umožňovaly zjistit, zda nebyl certifikát od vypršení platnosti prolomen. To znamená, že Google Chrome nemůže zaručit, že komunikujete se serverem &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nikoli s útočníkem. Čas ve vašem počítači je aktuálně nastaven na <ph name="CURRENT_TIME"/>. Je to v pořádku? Pokud ne, měli byste chybu opravit a stránku načíst znovu.</translation>
 <translation id="3197823471738295152">Zařízení bylo aktualizováno.</translation>
@@ -140,6 +142,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="1104959162601287462">O operačním systému &amp;Chrome</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Nastavit Google Chrome jako výchozí prohlížeč</translation>
+<translation id="7787950393032327779">Profil je zřejmě využíván jiným procesem prohlížeče Google Chrome (<ph name="PROCESS_ID"/>) nebo v jiném počítač (<ph name="HOST_NAME"/>). Chrome profil uzamkl, aby nedošlo k jeho poškození. Pokud jste si jisti, že žádný jiný proces tento profil nevyužívá, můžete jej odemknout a Chrome znovu spustit.</translation>
 <translation id="1469002951682717133">Spouštěč aplikací Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
@@ -159,9 +162,9 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="6326175484149238433">Odstranit z Chromu</translation>
 <translation id="2871893339301912279">Nyní jste přihlášeni do Chromu.</translation>
 <translation id="7161904924553537242">Vítá vás Google Chrome</translation>
-<translation id="1686446242839005801">Přihlašujete se do Chromu pomocí účtu <ph name="USER_EMAIL_ADDRESS"/>. Budete moci přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
-<translation id="4147555960264124640">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí služby Dashboard, ale nebudete je moci přidružit k jinému účtu. <ph name="LEARN_MORE"/></translation>
+<translation id="4147555960264124640">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí Hlavního panelu Google, ale nebudete je moci přidružit k jinému účtu. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Tento web používá plugin Google Frame, jehož podpora bude brzy ukončena. Odinstalujte jej prosím a upgradujte na moderní prohlížeč.</translation>
+<translation id="1348153800635493797">Pokud chcete používat Peněženku Google, je třeba Chrome upgradovat [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Přejděte do nabídky
           Aplikace &gt; Nastavení systému &gt; Síť &gt; Rozšířená nastavení &gt; Servery proxy
           a zrušte výběr všech vybraných serverů proxy.</translation>
@@ -192,6 +195,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>
 <translation id="2769762047821873045">Google Chrome není vaším výchozím prohlížečem.</translation>
 <translation id="1020869477857717497">Soubor <ph name="FILE_NAME"/> může v Chromu změnit fungování vyhledávání.</translation>
+<translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS"/>. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="6855094794438142393">Přejděte do
           nabídky Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -210,6 +214,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="5334545119300433702">U tohoto modulu se vyskytuje známý konflikt s aplikací Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome je aktuální.</translation>
+<translation id="4120075327926916474">Chcete v aplikaci Chrome uložit informace o této kreditní kartě k vyplňování formulářů?</translation>
 <translation id="2084710999043359739">Přidat do prohlížeče Chrome</translation>
 <translation id="4084877369264707540">Plugin Google Chrome Frame je již nainstalován a dostupný pro všechny uživatele tohoto počítače. Pokud chcete Google Chrome Frame nainstalovat na úrovni uživatele, musíte nejdříve odinstalovat verzi na úrovni systému nainstalovanou administrátorem.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -218,12 +223,12 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="1001534784610492198">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Google Chrome ještě jednou.</translation>
 <translation id="2246246234298806438">Pokud chybí integrovaný program k zobrazení souborů PDF, nemůže Google Chrome zobrazit náhled tisku.</translation>
 <translation id="6626317981028933585">Vaše nastavení prohlížeče Mozilla Firefox je bohužel nedostupné, je-li tento prohlížeč spuštěný. Chcete-li toto nastavení importovat do Google Chrome, uložte si práci a zavřete všechna okna prohlížeče Firefox. Poté klikněte na tlačítko Pokračovat.</translation>
-<translation id="7242029209006116544">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí stránky Dashboard služby Účty Google, ale nebudete je moci přidružit k jinému účtu. Pokud chcete uchovat existující údaje Chrome odděleně, můžete vytvořit nový profil. <ph name="LEARN_MORE"/></translation>
+<translation id="7242029209006116544">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci přidružit k jinému účtu. Pokud chcete uchovat existující údaje Chrome odděleně, můžete vytvořit nový profil. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">Webový prohlížeč Google Chrome spouští stránky a aplikace rychlostí blesku. Je rychlý, stabilní a snadno použitelný. S ochranou proti malwaru a phishingu integrovanou do prohlížeče Google Chrome můžete procházet web bezpečněji.</translation>
 <translation id="3419750618886995598">Aktualizace pluginu Chrome Frame</translation>
 <translation id="3336524238463733095">Aplikaci Google Chrome nebo plugin Google Chrome Frame nelze aktualizovat kvůli nekonzistentnímu nastavení zásad skupiny programu Google Update. Použijte editor zásad skupiny, přepište zásadu aktualizace pro aplikaci Google Chrome Binaries a zkuste to znovu. Další podrobnosti naleznete na stránce http://goo.gl/uJ9gV.</translation>
-<translation id="853189717709780425">Přihlašujete se pomocí spravovaného účtu, jehož administrátorovi tak dáváte kontrolu nad vaším profilem Google Chrome. Vaše data prohlížeče Chrome (například aplikace, záložky, historie, hesla a další nastavení) budou trvale propojena s účtem <ph name="USER_NAME"/>. Tato data budete moci smazat pomocí služby Google Accounts Dashboard, ale nebudete je moci propojit s jiným účtem.</translation>
+<translation id="853189717709780425">Přihlašujete se pomocí spravovaného účtu, jehož administrátorovi tak dáváte kontrolu nad vaším profilem Google Chrome. Vaše data prohlížeče Chrome (například aplikace, záložky, historie, hesla a další nastavení) budou trvale propojena s účtem <ph name="USER_NAME"/>. Tato data budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci propojit s jiným účtem.</translation>
 <translation id="6049075767726609708">Správce již na tomto počítači na systémové úrovni nainstaloval Google Chrome, který je přístupný všem uživatelům. Instalaci prohlížeče Google Chrome na úrovni uživatele nahradí instalace na systémové úrovni.</translation>
 <translation id="4338032231047635328">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale certifikát, který tento server předložil, obsahuje chyby. Google Chrome nemůže používat certifikát obsahující chyby a nemůže ověřit totožnost stránek, k nimž se pokoušíte připojit.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Chrome alkalmazások indítása</translation>
 <translation id="2370289711218562573">A kedvencek és könyvjelzők importálása folyamatban van.</translation>
 <translation id="8762286861469007470">Chrome előzetes hitelesítést igénylő oldal érzékelője</translation>
+<translation id="2721687379934343312">Mac számítógépen a rendszer a Keychain alkalmazásba menti a jelszavakat, amelyek hozzáférhetők vagy szinkronizálhatók lesznek azon Chrome-felhasználók számára, akik ugyanezzel az OS X-fiókkal rendelkeznek.</translation>
 <translation id="3993188379797269327">A(z) <ph name="FILE_NAME"/> módosíthatja a Chrome beállításait.</translation>
 <translation id="1761870329818521071">Nem lehet ugyanazt a Google Chrome Frame verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome Frame-et, és próbálja újra.</translation>
 <translation id="2040709530900803995">Google Chrome renderelő</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Számlázási adatait a Chrome mentette.</translation>
 <translation id="7098166902387133879">A Google Chrome használja a mikrofont.</translation>
+<translation id="3590194807845837023">Profil feloldása és újraindítás</translation>
 <translation id="4053720452172726777">A Google Chrome személyre szabása és beállításai</translation>
 <translation id="6423071462708908582">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver tanúsítványa lejárt. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítványt esetleg meghamisították-e a lejárat óta. Ez azt jelenti, hogy Google Chrome nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/>. Ez megfelelőnek tűnik? Ha nem, javítsa ki a hibát, és töltse újra az oldalt.</translation>
 <translation id="3197823471738295152">Eszköze naprakész.</translation>
@@ -132,6 +134,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="1104959162601287462">A &amp;Chrome OS névjegye</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">A Google Chrome beállítása alapértelmezett böngészőként</translation>
+<translation id="7787950393032327779">Úgy tűnik, a profilt egy másik Google Chrome-folyamat (<ph name="PROCESS_ID"/>) használja egy másik számítógépen (<ph name="HOST_NAME"/>). A Chrome zárolta a profilt, hogy az ne sérülhessen. Ha biztos benne, hogy nem használja másik folyamat a profilt, feloldhatja azt, és újraindíthatja a Chrome-ot.</translation>
 <translation id="1469002951682717133">Chrome Alkalmazásindító</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">A Google Chrome egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-pal!</translation>
@@ -151,9 +154,9 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="6326175484149238433">Eltávolítás a Chrome-ból</translation>
 <translation id="2871893339301912279">Bejelentkezett a Chrome-ba.</translation>
 <translation id="7161904924553537242">Üdvözli Önt a Google Chrome!</translation>
-<translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> fiók használatával jelentkezik be a Chrome-ba. Könyvjelzőit, előzményeit és más beállításait minden olyan eszközön elérheti majd, amelyen bejelentkezett.</translation>
 <translation id="4147555960264124640">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google-fiókok Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Ez a webhely a Chrome Frame plug-int használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd frissítsen egy modern böngészőre.</translation>
+<translation id="1348153800635493797">A Google Wallet használatához frissítenie kell a Chrome-ot [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Az Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Alkalmazások &gt; Rendszerbeállítások &gt; Hálózat &gt; Speciális &gt; Proxyk) menüpont alatt törölje a jelet minden kijelölt proxy mellől.</translation>
 <translation id="8669527147644353129">Google Chrome segéd</translation>
 <translation id="870251953148363156">A &amp;Google Chrome frissítése</translation>
@@ -182,6 +185,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="2769762047821873045">Nem a Google Chrome az alapértelmezett böngésző.</translation>
 <translation id="1020869477857717497">A(z) <ph name="FILE_NAME"/> módosíthatja a keresések módját Chrome-ban.</translation>
+<translation id="4567424176335768812">A(z) <ph name="USER_EMAIL_ADDRESS"/> címmel van bejelentkezve. Elérheti könyvjelzőit, előzményeit és más beállításait minden olyan eszközön, amelyen bejelentkezett.</translation>
 <translation id="6855094794438142393">Lépjen ide:
           Chrome menü &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -200,6 +204,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="5334545119300433702">Ismereteink szerint ez a modul ütközik a Google Chrome-mal.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">A Google Chrome naprakész.</translation>
+<translation id="4120075327926916474">Szeretné, hogy a Chrome elmentse ezt a bankkártya-információt a internetes űrlapok kitöltéséhez?</translation>
 <translation id="2084710999043359739">Hozzáadás a Chrome-hoz</translation>
 <translation id="4084877369264707540">A Google Chrome Frame már telepítve van, és a számítógép minden felhasználója számára elérhető. Ha felhasználói szinten kívánja telepíteni a Google Chrome Frame bővítményt, először el kell távolítania a rendszergazda által telepített rendszerszintű verziót.</translation>
 <translation id="3360895254066713204">Chrome segéd</translation>
@@ -213,7 +218,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="1698376642261615901">A Google Chrome olyan böngésző, amely villámgyorsan futtatja a weboldalakat és az alkalmazásokat. Gyors, stabil és könnyen használható. A beépített, adathalászat és a kártékony programok elleni védelemmel biztonságosabban böngészhet az interneten.</translation>
 <translation id="3419750618886995598">Chrome Frame frissítés.</translation>
 <translation id="3336524238463733095">A Google Update csoportházirendjének beállításaiban található ellentmondások miatt a Google Chrome vagy a Google Chrome Frame nem frissíthető. A Csoportházirend-szerkesztő használatával állítsa be a frissítések házirendjének felülírását a Google Chrome Binaries alkalmazásban, majd próbálkozzon újra; A részletekkel kapcsolatban lásd: http://goo.gl/uJ9gV.</translation>
-<translation id="853189717709780425">Felügyelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google Fiók Irányítópultján törölheti, ám más fiókhoz nem társíthatja őket.</translation>
+<translation id="853189717709780425">Felügyelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, ám más fiókhoz nem társíthatja őket.</translation>
 <translation id="6049075767726609708">A rendszergazda már telepítette a Google Chrome böngészőt a rendszeren, így az elérhető minden felhasználó számára. A felhasználói szintű telepítését le fogjuk cserélni a Google Chrome rendszerszintű változatára.</translation>
 <translation id="4338032231047635328">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítvány hibákat tartalmaz. A Google Chrome nem használhat hibás tanúsítványt, és nem tudja igazolni annak a webhelynek az azonosságát, amelyet Ön el akart érni.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

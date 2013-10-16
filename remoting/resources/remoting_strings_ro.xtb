@@ -46,6 +46,7 @@ Chromoting</translation>
 <translation id="6001953797859482435">Preferințe privind gazda pentru Desktop la distanță Chrome</translation>
 <translation id="9188433529406846933">Autorizați</translation>
 <translation id="228809120910082333">Confirmați mai jos contul și codul PIN pentru a permite accesarea prin intermediul Chromoting.</translation>
+<translation id="7605995381616883502">Conexiune nouă</translation>
 <translation id="5826423541626112308">Gazdă pentru Desktop la distanță Chrome</translation>
 <translation id="2851674870054673688">După ce persoana respectivă introduce codul, sesiunea de permitere a accesului va începe.</translation>
 <translation id="5593560073513909978">Serviciul este temporar indisponibil. Încercați din nou mai târziu.</translation>
@@ -68,6 +69,7 @@ Chromoting</translation>
 <translation id="7081428606750359611">Gazdă Chromoting</translation>
 <translation id="8228265668171617545">A fost detectată o versiune incompatibilă a aplicației Chromoting. Asigurați-vă că aveți cea mai recentă versiune Chrome și Chromoting pe ambele computere și încercați din nou.</translation>
 <translation id="6985691951107243942">Sigur doriți să dezactivați conexiunile la distanță la <ph name="HOSTNAME"/>? Dacă vă răzgândiți, va trebui să accesați computerul respectiv pentru a reactiva conexiunile.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (disponibil online ultima dată pe <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Pentru a începe să permiteți accesul la desktopul dvs., trimiteți codul de acces de mai jos persoanei care vă va oferi asistență.</translation>
 <translation id="409800995205263688">NOTĂ: setările politicii permit conexiuni numai între computerele din rețeaua dvs.</translation>
 <translation id="2353140552984634198">Puteți accesa acest computer în siguranță utilizând Chromoting.</translation>
@@ -134,7 +136,9 @@ Chromoting</translation>
 <translation id="6527303717912515753">Distribuiți</translation>
 <translation id="2926340305933667314">Dezactivarea accesului la distanță la acest computer nu a reușit. Încercați din nou mai târziu.</translation>
 <translation id="6865175692670882333">Afișați/Editați</translation>
+<translation id="5859141382851488196">Fereastră nouă...</translation>
 <translation id="2089514346391228378">Conexiunile la distanță pentru acest computer au fost activate.</translation>
+<translation id="7693372326588366043">Actualizați lista gazdelor</translation>
 <translation id="8246880134154544773">Autentificarea nu a reușit. Conectați-vă din nou la Chromoting.</translation>
 <translation id="1654128982815600832">Se activează conexiunile la distanță pentru acest computer…</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Toate drepturile rezervate.</translation>

@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Други...</translation>
 <translation id="2426432199384958866">връщане на поточно предавания филм към реално време</translation>
 <translation id="248395913932153421">Ден</translation>
+<translation id="1729654308190250600">Моля, въведете имейл адрес.</translation>
 <translation id="6015796118275082299">Година</translation>
 <translation id="9186171386827445984">Документът се зарежда: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> страници...</translation>
 <translation id="1235745349614807883">Изчистване на скорошните търсения</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">списъчен показалец</translation>
 <translation id="4202807286478387388">преминаване</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Моля, въведете текст преди „<ph name="ATSIGN"/>“. „<ph name="INVALIDADDRESS"/>“ е непълно.</translation>
+<translation id="2746543609216772311">Стойността трябва да е <ph name="MINIMUM_DATE_OR_TIME"/> или по-късно.</translation>
 <translation id="2572483411312390101">пускане</translation>
 <translation id="8785498733064193001">начало на възпроизвеждането</translation>
 <translation id="7057186640035488495">време от филма</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">бързо придвижване назад</translation>
 <translation id="7789962463072032349">поставяне на пауза</translation>
 <translation id="6853785296079745596">скриване на надписите</translation>
+<translation id="4360991593054037559">Моля, въведете валидна стойност. Двете най-близки такива са <ph name="VALID_VALUE_LOW"/> и <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Други...</translation>
 <translation id="8141602879876242471">В този индекс може да се търси. Въведете ключови думи за търсене:</translation>
 <translation id="1930711995431081526">състояние</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">бързо придвижване напред</translation>
 <translation id="4812940957355064477">Моля, въведете номер.</translation>
 <translation id="2548326553472216322">Няма скорошни търсения</translation>
+<translation id="1938124657309484470">Стойността трябва да е <ph name="MAXIMUM_DATE_OR_TIME"/> или по-рано.</translation>
 <translation id="7263440858009898357">Моля, изберете елемент в списъка.</translation>
 <translation id="901493112792887934">текущо време в секунди</translation>
 <translation id="5164977714490026579">Стойността трябва да е по-голяма или равна на <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Тази седмица</translation>
 <translation id="5966707198760109579">Седмица</translation>
 <translation id="2901282870647571346">текущо състояние на филма</translation>
+<translation id="2060505056492490888">„<ph name="DOT"/>“ се използва на неправилна позиция в/ъв „<ph name="INVALIDDOMAIN"/>“.</translation>
 <translation id="2674318244760992338">долен колонтитул</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="8115662671911883373">започване на показването на надписите</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">отмятане</translation>
 <translation id="2846343701378493991">1024 (средна степен на сложност)</translation>
 <translation id="1637811476055996098">Избор на файлове</translation>
+<translation id="49969490063480558">Моля, въведете текст след „<ph name="ATSIGN"/>“. „<ph name="INVALIDADDRESS"/>“ е непълно.</translation>
 <translation id="5476505524087279545">премахване на отметката</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2507943997699731163">Моля, попълнете това поле.</translation>
 <translation id="3785482301506746191">времеви плъзгач за филма</translation>
 <translation id="739024184232394898">Други...</translation>
+<translation id="383465348367842624">Текстът преди „<ph name="ATSIGN"/>“ не бива да съдържа символа „<ph name="INVALIDCHARACTER"/>“.</translation>
 <translation id="5468998798572797635">изход от цял екран</translation>
 <translation id="5919473608089529604">Приставката не можа да се зареди.</translation>
 <translation id="5546461542133609677">пускане на звука</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Моля, въведете списък с имейл адреси, разделени със запетаи.</translation>
 <translation id="5939518447894949180">Повторно задаване</translation>
 <translation id="1921819250265091946">дд</translation>
+<translation id="2613802280814924224">Моля, въведете валидна стойност. Най-близката такава е <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Невалидна стойност.</translation>
 <translation id="1842960171412779397">Избиране</translation>
 <translation id="7673697353781729403">Часове</translation>
+<translation id="4664250907885839816">Текстът след „<ph name="ATSIGN"/>“ не бива да съдържа символа „<ph name="INVALIDCHARACTER"/>“.</translation>
 <translation id="3450233048674729344">Стойността трябва да е по-малка или равна на <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">назад с 30 секунди</translation>
 <translation id="668171684555832681">Друг...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">активиране</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> файла</translation>
 <translation id="6643016212128521049">Изчистване</translation>
+<translation id="7888071071722539607">Моля, включете „<ph name="ATSIGN"/>“ в имейл адреса. В/ъв „<ph name="INVALIDADDRESS"/>“ липсва „<ph name="ATSIGN"/>“.</translation>
 <translation id="4851297395436456855">превъртане напред</translation>
 <translation id="1088086359088493902">Секунди</translation>
 <translation id="3934680773876859118">PDF документът не успя да се зареди</translation>

@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Друго...</translation>
 <translation id="2426432199384958866">вратите филм који се стримује у реално време</translation>
 <translation id="248395913932153421">Дан</translation>
+<translation id="1729654308190250600">Унесите адресу е-поште која није празна.</translation>
 <translation id="6015796118275082299">Година</translation>
 <translation id="9186171386827445984">Учитавање документа: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> странице(а)...</translation>
 <translation id="1235745349614807883">Обриши недавне претраге</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">означивач листе</translation>
 <translation id="4202807286478387388">прескочи</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Унесите неки део пре „<ph name="ATSIGN"/>“. Адреса „<ph name="INVALIDADDRESS"/>“ је непотпуна.</translation>
+<translation id="2746543609216772311">Вредност мора да буде <ph name="MINIMUM_DATE_OR_TIME"/> или новија.</translation>
 <translation id="2572483411312390101">пустите</translation>
 <translation id="8785498733064193001">започните репродукцију</translation>
 <translation id="7057186640035488495">трајање филма</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">брзо премотајте уназад</translation>
 <translation id="7789962463072032349">паузирај</translation>
 <translation id="6853785296079745596">сакријте затворене натписе</translation>
+<translation id="4360991593054037559">Унесите важећу вредност. Две најближе важеће вредности су <ph name="VALID_VALUE_LOW"/> и <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Друго...</translation>
 <translation id="8141602879876242471">Ово је индекс који може да се претражује. Унесите кључне речи за претрагу:</translation>
 <translation id="1930711995431081526">статус</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">брзо премотајте унапред</translation>
 <translation id="4812940957355064477">Унесите број.</translation>
 <translation id="2548326553472216322">Нема недавних претрага</translation>
+<translation id="1938124657309484470">Вредност мора да буде <ph name="MAXIMUM_DATE_OR_TIME"/> или старија.</translation>
 <translation id="7263440858009898357">Изаберите ставку са листе.</translation>
 <translation id="901493112792887934">актуелно време у секундама</translation>
 <translation id="5164977714490026579">Вредност сме да буде најмање <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Ова недеља</translation>
 <translation id="5966707198760109579">Недеља</translation>
 <translation id="2901282870647571346">актуелни статус филма</translation>
+<translation id="2060505056492490888">„<ph name="DOT"/>“ је стављено на погрешно место у „<ph name="INVALIDDOMAIN"/>“.</translation>
 <translation id="2674318244760992338">подножје</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="8115662671911883373">започните приказивање затворених натписа</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">изабери</translation>
 <translation id="2846343701378493991">1024 (средњи степен)</translation>
 <translation id="1637811476055996098">Избор датотека</translation>
+<translation id="49969490063480558">Унесите неки део после „<ph name="ATSIGN"/>“. Адреса „<ph name="INVALIDADDRESS"/>“ је непотпуна.</translation>
 <translation id="5476505524087279545">опозови избор</translation>
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2507943997699731163">Попуните ово поље.</translation>
 <translation id="3785482301506746191">клизач за трајање филма</translation>
 <translation id="739024184232394898">Друго...</translation>
+<translation id="383465348367842624">Део пре „<ph name="ATSIGN"/>“ не треба да садржи симбол „<ph name="INVALIDCHARACTER"/>“.</translation>
 <translation id="5468998798572797635">изађите из режима целог екрана</translation>
 <translation id="5919473608089529604">Није могуће учитати додатну компоненту.</translation>
 <translation id="5546461542133609677">укључите звук</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Унесите листу адреса е-поште раздвојених зарезима.</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="1921819250265091946">дд</translation>
+<translation id="2613802280814924224">Унесите важећу вредност. Најближа важећа вредност је <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Неважећа вредност.</translation>
 <translation id="1842960171412779397">изабери</translation>
 <translation id="7673697353781729403">Сати</translation>
+<translation id="4664250907885839816">Део после „<ph name="ATSIGN"/>“ не треба да садржи симбол „<ph name="INVALIDCHARACTER"/>“.</translation>
 <translation id="3450233048674729344">Вредност сме да буде највише <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">уназад 30 секунди</translation>
 <translation id="668171684555832681">Друго...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">активирај</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> датотеке(а)</translation>
 <translation id="6643016212128521049">Обриши</translation>
+<translation id="7888071071722539607">Уврстите „<ph name="ATSIGN"/>“ у адресу е-поште. У адреси е-поште „<ph name="INVALIDADDRESS"/>“ недостаје „<ph name="ATSIGN"/>“.</translation>
 <translation id="4851297395436456855">премотајте унапред</translation>
 <translation id="1088086359088493902">Секунде</translation>
 <translation id="3934680773876859118">Учитавање PDF документа није успело</translation>

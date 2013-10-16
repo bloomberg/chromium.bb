@@ -29,6 +29,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2896252579017640304">Ilunsad ang apps ng Chrome</translation>
 <translation id="2370289711218562573">Ini-import ngayon ng Google Chrome ang Mga Paborito/Bookmark.</translation>
 <translation id="8762286861469007470">Detector ng Chrome Captive Portal</translation>
+<translation id="2721687379934343312">Sa Mac, ang mga password ay sine-save sa iyong Keychain at maaaring ma-access o ma-sync ng ibang mga user ng Chrome na nakikihati sa OS X account na ito.</translation>
 <translation id="3993188379797269327">Maaaring baguhin ng <ph name="FILE_NAME"/> ang iyong mga setting ng Chrome.</translation>
 <translation id="1761870329818521071">Hindi ma-install ang parehong bersyon ng Google Chrome Frame na kasalukuyang tumatakbo. Pakisara ang Google Chrome Frame at subukang muli.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -66,6 +67,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Na-save na sa Chrome ang iyong mga detalye ng pagsingil.</translation>
 <translation id="7098166902387133879">Ginagamit ng Google Chrome ang iyong mikropono.</translation>
+<translation id="3590194807845837023">I-unlock ang Profile at Ilunsad Muli</translation>
 <translation id="4053720452172726777">I-customize at kontrolin ang Google Chrome</translation>
 <translation id="6423071462708908582">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ang server ng nag-expire nang certificate. Walang available na impormasyon na magsasaad kung nakompromiso ang certificate simula noong pag-expire nito. Nangangahulugan ito na hindi magagarantiya ng Google Chrome na nakikipag-ugnayan ka sa &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; at hindi sa isang attacker. Kasalukuyang nakatakda sa <ph name="CURRENT_TIME"/> ang orasan ng iyong computer. Tama ba ito? Kung hindi, dapat mong iwasto ang anumang error at pagkatapos ay i-refresh ang pahinang ito.</translation>
 <translation id="3197823471738295152">Napapanahon ang iyong device.</translation>
@@ -140,6 +142,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="1104959162601287462">Tungkol sa &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Mga Google Chrome Binary</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
+<translation id="7787950393032327779">Mukhang ginagamit ang profile ng iba pang proseso ng Google Chrome (<ph name="PROCESS_ID"/>) sa iba pang computer (<ph name="HOST_NAME"/>).  Ni-lock ng Chrome ang profile upang hindi ito ma-corrupt.  Kung nakakatiyak ka na walang ibang mga proseso ang gumagamit sa profile na ito, maaari mong i-unlock ang profile at ilunsad muli ang Chrome.</translation>
 <translation id="1469002951682717133">App Launcher ng Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
@@ -159,9 +162,9 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="6326175484149238433">Alisin sa Chrome</translation>
 <translation id="2871893339301912279">Naka-sign in ka sa Chrome!</translation>
 <translation id="7161904924553537242">Maligayang pagdating sa Google Chrome</translation>
-<translation id="1686446242839005801">Nagsa-sign in ka sa Chrome gamit ang iyong <ph name="USER_EMAIL_ADDRESS"/> account. Maa-access mo ang iyong mga bookmark, kasaysayan, at iba pang mga setting sa lahat ng iyong naka-sign in na device.</translation>
 <translation id="4147555960264124640">Nagsa-sign in ka gamit ang isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Google Chrome. Permanenteng mauugnay ang iyong data sa Chrome, gaya ng iyong apps, mga bookmark, kasaysayan, password, at iba pang setting sa <ph name="USER_NAME"/>. Matatanggal mo ang data na ito sa Google Accounts Dashboard, ngunit hindi mo maiuugnay ang data na ito sa isa pang account. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Ginagamit ng site na ito ang plug-in na Chrome Frame na malapit nang hindi suportahan. Paki-uninstall ito at mag-upgrade sa isang modernong browser.</translation>
+<translation id="1348153800635493797">Dapat mong i-upgrade ang Chrome upang magamit ang Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Pumunta sa
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           at alisin sa pagkakapili ang anumang mga napiling proxy.</translation>
@@ -192,6 +195,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>
 <translation id="2769762047821873045">Hindi Google Chrome ang iyong default na browser.</translation>
 <translation id="1020869477857717497">Maaaring baguhin ng <ph name="FILE_NAME"/> kung paano gumagana ang iyong mga paghahanap sa Chrome.</translation>
+<translation id="4567424176335768812">Naka-sign in ka bilang <ph name="USER_EMAIL_ADDRESS"/>. Maaari mo na ngayong i-access ang iyong mga bookmark, kasaysayan, at iba pang setting sa lahat ng iyong device na naka-sign in.</translation>
 <translation id="6855094794438142393">Pumunta sa
           menu ng Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -210,6 +214,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW"/> ang impor
 <translation id="5334545119300433702">Ang module na ito ay kilala bilang salungat sa Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Napapanahon ang Google Chrome.</translation>
+<translation id="4120075327926916474">Gusto mo bang i-save ng Chrome ang impormasyon ng credit card na ito para sa pagkumpleto ng mga form ng web?</translation>
 <translation id="2084710999043359739">Idagdag sa Chrome</translation>
 <translation id="4084877369264707540">Naka-install na at available sa lahat ng user ng computer na ito ang Google Chrome Frame. Kung gusto mong i-install ang Google Chrome Frame sa antas ng user, dapat mo munang i-unistall ang bersyon sa antas ng system na na-install ng iyong administrator.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

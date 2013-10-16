@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">آخر...</translation>
 <translation id="2426432199384958866">إرجاع الفيلم الذي يتم بثه إلى الوقت الفعلي</translation>
 <translation id="248395913932153421">يوم</translation>
+<translation id="1729654308190250600">يُرجى إدخال عنوان البريد الإلكتروني وعدم ترك الحق فارغًا.</translation>
 <translation id="6015796118275082299">عام</translation>
 <translation id="9186171386827445984">جارٍ تحميل المستند: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> من الصفحات...</translation>
 <translation id="1235745349614807883">محو آخر عمليات البحث</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">محدّد القائمة</translation>
 <translation id="4202807286478387388">الدخول</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">يُرجى إدخال جزء متبوع بعلامة &quot;<ph name="ATSIGN"/>&quot;، حيث إن &quot;<ph name="INVALIDADDRESS"/>&quot; غير مكتمل.</translation>
+<translation id="2746543609216772311">يجب أن تكون القيمة <ph name="MINIMUM_DATE_OR_TIME"/> أو بعد ذلك.</translation>
 <translation id="2572483411312390101">تشغيل</translation>
 <translation id="8785498733064193001">بدء التشغيل</translation>
 <translation id="7057186640035488495">وقت الفيلم</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">محاولة الرجوع للوراء بسرعة</translation>
 <translation id="7789962463072032349">إيقاف مؤقت</translation>
 <translation id="6853785296079745596">إخفاء التسميات التوضيحية المغلقة</translation>
+<translation id="4360991593054037559">يُرجى إدخال قيمة صالحة. علمًا بأن القيم الصالحة تتراوح بين <ph name="VALID_VALUE_LOW"/> و<ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">آخر...</translation>
 <translation id="8141602879876242471">يمكن البحث في هذا الفهرس بإدخال كلمات مفتاحية:</translation>
 <translation id="1930711995431081526">الحالة</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">محاولة الانتقال للأمام بسرعة</translation>
 <translation id="4812940957355064477">الرجاء إدخال عدد.</translation>
 <translation id="2548326553472216322">لا عمليات بحث حديثة</translation>
+<translation id="1938124657309484470">يجب أن تكون القيمة <ph name="MAXIMUM_DATE_OR_TIME"/> أو قبل ذلك.</translation>
 <translation id="7263440858009898357">الرجاء تحديد عنصر من القائمة.</translation>
 <translation id="901493112792887934">المدة الحالية بالثواني</translation>
 <translation id="5164977714490026579">يجب أن تكون القيمة أكبر من أو تساوي <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">هذا الأسبوع</translation>
 <translation id="5966707198760109579">الأسبوع</translation>
 <translation id="2901282870647571346">حالة الفيلم الحالية</translation>
+<translation id="2060505056492490888">تم استخدام &quot;<ph name="DOT"/>&quot; في موضع خاطئ في &quot;<ph name="INVALIDDOMAIN"/>&quot;.</translation>
 <translation id="2674318244760992338">تذييل</translation>
 <translation id="8987927404178983737">شهر</translation>
 <translation id="8115662671911883373">بدء عرض التسميات التوضيحية المغلقة</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">الاختيار</translation>
 <translation id="2846343701378493991">1024 (درجة متوسطة)</translation>
 <translation id="1637811476055996098">اختيار الملفات</translation>
+<translation id="49969490063480558">يُرجى إدخال الجزء الذي يلي العلامة &quot;<ph name="ATSIGN"/>&quot;، حيث إن &quot;<ph name="INVALIDADDRESS"/>&quot; غير مكتمل.</translation>
 <translation id="5476505524087279545">إزالة علامة الاختيار</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2507943997699731163">الرجاء ملء هذا الحقل.</translation>
 <translation id="3785482301506746191">شريط تمرير وقت الفيلم</translation>
 <translation id="739024184232394898">آخر...</translation>
+<translation id="383465348367842624">الجزء المتبوع بالعلامة &quot;<ph name="ATSIGN"/>&quot; يجب ألا يشتمل على الرمز &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">إنهاء وضع ملء الشاشة</translation>
 <translation id="5919473608089529604">تعذر تحميل المكوّن الإضافي.</translation>
 <translation id="5546461542133609677">إعادة الصوت</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">الرجاء إدخال قائمة مفصولة بفواصل لعناوين البريد الإلكتروني.</translation>
 <translation id="5939518447894949180">إعادة</translation>
 <translation id="1921819250265091946">يوم</translation>
+<translation id="2613802280814924224">يُرجى إدخال قيمة صالحة. علمًا بأن أقرب قيمة صالحة هي <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">قيمة غير صحيحة</translation>
 <translation id="1842960171412779397">الاختيار</translation>
 <translation id="7673697353781729403">ساعات</translation>
+<translation id="4664250907885839816">يجب ألا يشتمل الجزء الذي يلي العلامة &quot;<ph name="ATSIGN"/>&quot; على الرمز &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="3450233048674729344">يجب أن تكون القيمة أقل من أو تساوي <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">الرجوع للوراء بمقدار 30 ثانية</translation>
 <translation id="668171684555832681">ملف تعريف آخر...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">تنشيط</translation>
 <translation id="8444882422881193423">عدد الملفات: <ph name="NUMBER_OF_FILES"/></translation>
 <translation id="6643016212128521049">محو</translation>
+<translation id="7888071071722539607">يُرجى تضمين العلامة &quot;<ph name="ATSIGN"/>&quot; في عنوان البريد الإلكتروني، حيث يفتقر &quot;<ph name="INVALIDADDRESS"/>&quot; إلى العلامة &quot;<ph name="ATSIGN"/>&quot;.</translation>
 <translation id="4851297395436456855">تقديم سريع</translation>
 <translation id="1088086359088493902">ثوانٍ‬‬</translation>
 <translation id="3934680773876859118">‏إخفاق تحميل مستند PDF</translation>

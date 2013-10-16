@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">อื่นๆ...</translation>
 <translation id="2426432199384958866">เปลี่ยนภาพยนตร์แบบสตรีมมิงกลับไปเป็นแบบเรียลไทม์</translation>
 <translation id="248395913932153421">วัน</translation>
+<translation id="1729654308190250600">โปรดป้อนที่อยู่อีเมลที่ไม่ว่างเปล่า</translation>
 <translation id="6015796118275082299">ปี</translation>
 <translation id="9186171386827445984">กำลังโหลดเอกสาร: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> หน้า...</translation>
 <translation id="1235745349614807883">ลบการค้นหาล่าสุด</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">ผู้สร้างรายการ</translation>
 <translation id="4202807286478387388">ข้าม</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">โปรดป้อนส่วนหนึ่งโดยตามด้วย &quot;<ph name="ATSIGN"/>&quot; &quot;<ph name="INVALIDADDRESS"/>&quot; นั้นไม่สมบูรณ์</translation>
+<translation id="2746543609216772311">ค่าต้องเป็น <ph name="MINIMUM_DATE_OR_TIME"/> หรือหลังจากนั้น</translation>
 <translation id="2572483411312390101">เล่น</translation>
 <translation id="8785498733064193001">เริ่มเล่น</translation>
 <translation id="7057186640035488495">เวลาของภาพยนตร์</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">ย้อนกลับอย่างรวดเร็ว</translation>
 <translation id="7789962463072032349">หยุดชั่วคราว</translation>
 <translation id="6853785296079745596">ซ่อนคำอธิบายภาพ</translation>
+<translation id="4360991593054037559">โปรดป้อนค่าที่ถูกต้อง ค่าใกล้เคียงที่สุดที่ถูกต้องสองรายการคือ <ph name="VALID_VALUE_LOW"/> และ <ph name="VALID_VALUE_HIGHER"/></translation>
 <translation id="1758486001363313524">อื่นๆ...</translation>
 <translation id="8141602879876242471">นี่คือดัชนีที่สามารถค้นหาได้ ป้อนคำหลักในการค้นหา:</translation>
 <translation id="1930711995431081526">สถานะ</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">ไปข้างหน้าอย่างรวดเร็ว</translation>
 <translation id="4812940957355064477">โปรดป้อนตัวเลข</translation>
 <translation id="2548326553472216322">ไม่พบการค้นหาล่าสุด</translation>
+<translation id="1938124657309484470">ค่าต้องเป็น <ph name="MAXIMUM_DATE_OR_TIME"/> หรือก่อนหน้านั้น</translation>
 <translation id="7263440858009898357">โปรดเลือกรายการจากหน้ารายการ</translation>
 <translation id="901493112792887934">เวลาปัจจุบันเป็นวินาที</translation>
 <translation id="5164977714490026579">ค่าต้องมากกว่าหรือเท่ากับ <ph name="MINIMUM"/></translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">สัปดาห์นี้</translation>
 <translation id="5966707198760109579">สัปดาห์</translation>
 <translation id="2901282870647571346">สถานะปัจจุบันของภาพยนตร์</translation>
+<translation id="2060505056492490888">&quot;<ph name="DOT"/>&quot; ถูกใช้งานในตำแหน่งที่ไม่ถูกต้องใน &quot;<ph name="INVALIDDOMAIN"/>&quot;</translation>
 <translation id="2674318244760992338">ส่วนท้าย</translation>
 <translation id="8987927404178983737">เดือน</translation>
 <translation id="8115662671911883373">เริ่มแสดงคำอธิบายภาพ</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">ทำเครื่องหมาย</translation>
 <translation id="2846343701378493991">1024 (เกรดปานกลาง)</translation>
 <translation id="1637811476055996098">เลือกไฟล์</translation>
+<translation id="49969490063480558">โปรดป้อนส่วนที่ต่อท้าย &quot;<ph name="ATSIGN"/>&quot; &quot;<ph name="INVALIDADDRESS"/>&quot; นั้นไม่สมบูรณ์</translation>
 <translation id="5476505524087279545">ยกเลิกการทำเครื่องหมาย</translation>
 <translation id="2148716181193084225">วันนี้</translation>
 <translation id="2507943997699731163">โปรดกรอกฟิลด์นี้</translation>
 <translation id="3785482301506746191">ตัวควบคุมเวลาของภาพยนตร์</translation>
 <translation id="739024184232394898">อื่นๆ...</translation>
+<translation id="383465348367842624">ส่วนที่ตามด้วย &quot;<ph name="ATSIGN"/>&quot; ต้องไม่มีสัญลักษณ์ &quot;<ph name="INVALIDCHARACTER"/>&quot;</translation>
 <translation id="5468998798572797635">ออกจากการแสดงแบบเต็มหน้าจอ</translation>
 <translation id="5919473608089529604">ไม่สามารถโหลดปลั๊กอิน</translation>
 <translation id="5546461542133609677">เปิดเสียง</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">โปรดป้อนรายการที่อยู่อีเมลโดยคั่นด้วยเครื่องหมายจุลภาค</translation>
 <translation id="5939518447894949180">ตั้งค่าใหม่</translation>
 <translation id="1921819250265091946">วว</translation>
+<translation id="2613802280814924224">โปรดป้อนค่าที่ถูกต้อง ค่าใกล้เคียงที่สุดที่ถูกต้องคือ <ph name="VALID_VALUE"/></translation>
 <translation id="835897206747267392">ค่าไม่ถูกต้อง</translation>
 <translation id="1842960171412779397">เลือก</translation>
 <translation id="7673697353781729403">ชั่วโมง</translation>
+<translation id="4664250907885839816">ส่วนที่ต่อท้าย &quot;<ph name="ATSIGN"/>&quot; ต้องไม่มีสัญลักษณ์ &quot;<ph name="INVALIDCHARACTER"/>&quot;</translation>
 <translation id="3450233048674729344">ค่าต้องน้อยกว่าหรือเท่ากับ <ph name="MAXIMUM"/></translation>
 <translation id="3471999216963526757">ย้อนกลับ 30 วินาที</translation>
 <translation id="668171684555832681">อื่นๆ...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">เปิดใช้งาน</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ไฟล์</translation>
 <translation id="6643016212128521049">ล้าง</translation>
+<translation id="7888071071722539607">โปรดใส่ &quot;<ph name="ATSIGN"/>&quot; ในที่อยู่อีเมล &quot;<ph name="INVALIDADDRESS"/>&quot; ขาด &quot;<ph name="ATSIGN"/>&quot;</translation>
 <translation id="4851297395436456855">ไปข้างหน้าอย่างรวดเร็ว</translation>
 <translation id="1088086359088493902">วินาที</translation>
 <translation id="3934680773876859118">โหลดเอกสาร PDF ล้มเหลว</translation>

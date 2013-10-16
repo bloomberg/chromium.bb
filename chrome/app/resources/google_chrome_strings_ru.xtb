@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Запуск приложений Chrome</translation>
 <translation id="2370289711218562573">Google Chrome выполняет импорт элементов &quot;Избранное/Закладки&quot;.</translation>
 <translation id="8762286861469007470">Детектор стартовых страниц доступа Chrome</translation>
+<translation id="2721687379934343312">В Mac OS X все пароли сохраняются с помощью технологии Keychain. Использовать или синхронизировать их могут другие пользователи Chrome, имеющие доступ к этому аккаунту.</translation>
 <translation id="3993188379797269327">Файл &quot;<ph name="FILE_NAME"/>&quot; может внести изменения в настройки Chrome.</translation>
 <translation id="1761870329818521071">Невозможно установить ту же самую версию Google Chrome Frame, которая сейчас выполняется. Закройте Google Chrome Frame и повторите попытку.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Платежные данные сохранены в Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome использует микрофон.</translation>
+<translation id="3590194807845837023">Разблокировать профиль и перезапустить</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
 <translation id="6423071462708908582">Вы пытаетесь войти в &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако сервер представил просроченный сертификат безопасности. Неизвестно, был ли этот сертификат признан небезопасным с момента истечения срока действия. Это значит, что Chromium не может гарантировать, что вы обмениваетесь данными с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с сайтом злоумышленников. Часы вашего компьютера показывают <ph name="CURRENT_TIME"/>. Проверьте точность времени. Если оно неверно, исправьте его и обновите страницу.</translation>
 <translation id="3197823471738295152">Операционная система обновлена.</translation>
@@ -132,6 +134,7 @@
 <translation id="1104959162601287462">О &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
+<translation id="7787950393032327779">Скорее всего, профиль используется другим процессом Google Chrome (<ph name="PROCESS_ID"/>) на другом компьютере (<ph name="HOST_NAME"/>). Во избежание сбоев профиль был заблокирован. Если вы уверены, что профиль не используется другими процессами, разблокируйте его и перезапустите Chrome.</translation>
 <translation id="1469002951682717133">Панель запуска приложений Chrome</translation>
 <translation id="4990567037958725628">Google Chrome – Канарейка</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
@@ -151,9 +154,9 @@
 <translation id="6326175484149238433">Удалить</translation>
 <translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
-<translation id="1686446242839005801">Для входа в Chrome используется аккаунт <ph name="USER_EMAIL_ADDRESS"/>. Ваши закладки, история и другие настройки будут доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="4147555960264124640">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME"/>. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Этот сайт использует плагин Chrome Frame, поддержка которого скоро будет прекращена. Установите новую версию браузера.</translation>
+<translation id="1348153800635493797">Чтобы воспользоваться Google Кошельком, обновите Chrome [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Выберите
           Программы &gt; Системные настройки &gt; Сеть &gt; Дополнительно &gt; Прокси
           и снимите флажки напротив всех прокси-серверов.</translation>
@@ -183,6 +186,7 @@
 <translation id="7196020411877309443">Что это?</translation>
 <translation id="2769762047821873045">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="1020869477857717497">Файл &quot;<ph name="FILE_NAME"/>&quot; может внести изменения в настройки поиска в Chrome.</translation>
+<translation id="4567424176335768812">Вы вошли с помощью аккаунта <ph name="USER_EMAIL_ADDRESS"/>. Ваши закладки, история и другие настройки теперь доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="6855094794438142393">Выберите
           меню Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -201,6 +205,7 @@
 <translation id="5334545119300433702">Этот модуль конфликтует с Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Последняя версия Google Chrome уже установлена.</translation>
+<translation id="4120075327926916474">Хотите сохранить в Chrome информацию об этой кредитной карте для заполнения веб-форм?</translation>
 <translation id="2084710999043359739">Установить</translation>
 <translation id="4084877369264707540">Платформа Google Chrome Frame уже установлена и доступна всем пользователям этого компьютера. Чтобы установить версии Google Chrome Frame на уровне пользователя, сначала удалите системную версию, установленную администратором.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

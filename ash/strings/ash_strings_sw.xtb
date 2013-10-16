@@ -14,6 +14,7 @@
 <translation id="3775358506042162758">Unaweza tu kuwa na hadi akaunti tatu zilizoingiwa kwa wakati mmoja</translation>
 <translation id="370649949373421643">Wezesha Wi-Fi</translation>
 <translation id="3626281679859535460">Ung'aavu</translation>
+<translation id="3621202678540785336">Ingizo</translation>
 <translation id="595202126637698455">Ufuatiliaji wa utendaji umewashwa</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="7982789257301363584">Mtandao</translation>
@@ -26,6 +27,7 @@
 <translation id="2297568595583585744">Treya ya hali</translation>
 <translation id="1661867754829461514">PIN inakosekana</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: Inaunganisha...</translation>
+<translation id="40400351611212369">Hitilafu ya Kuanza Kutumia Mtandao</translation>
 <translation id="4237016987259239829">Hitilafu ya Muunganisho wa Mtandao</translation>
 <translation id="2946640296642327832">Wezesha Bluetooth</translation>
 <translation id="6459472438155181876">Inapanua skrini kwenye <ph name="DISPLAY_NAME"/></translation>
@@ -44,6 +46,7 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="4628814525959230255">Inashiriki udhibiti wa skrini yako na <ph name="HELPER_NAME"/> kupitia Hangouts.</translation>
 <translation id="7864539943188674973">Lemaza Bluetooth</translation>
 <translation id="939252827960237676">Imeshindwa kuhifadhi picha ya skrini</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Anzisha upya ili kusasisha</translation>
 <translation id="2268813581635650749">Ondoa wote</translation>
 <translation id="735745346212279324">VPN imekatwa muunganisho</translation>
@@ -53,7 +56,6 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="8190698733819146287">Geuza lugha na uingizaji kukufaa...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Nafasi ya rafu</translation>
-<translation id="2903907270192926896">INGIZO</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>
 <translation id="7170041865419449892">Nje ya eneo</translation>
 <translation id="4804818685124855865">Tenganisha</translation>
@@ -77,18 +79,23 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="2562916301614567480">Mtandao Binafsi</translation>
 <translation id="6549021752953852991">Hakuna mtandao wa simu za mkononi unaopatikana</translation>
+<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4379753398862151997">Mpendwa Kionyeshi, hali sio nzuri kati yetu. (Kionyeshi hiki hakiwezi kutumiwa)</translation>
 <translation id="6426039856985689743">Lemaza data ya simu</translation>
 <translation id="3087734570205094154">Chini</translation>
 <translation id="3742055079367172538">Picha ya skrini imepigwa</translation>
 <translation id="8878886163241303700">Kuongeza skrini</translation>
 <translation id="5271016907025319479">VPN haijasanidiwa.</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
+<translation id="3967919079500697218">Uwezo wa kupiga picha za skrini umezimwa na msimamizi wako.</translation>
 <translation id="372094107052732682">Bofya Ctrl + Shift + Q mara mbili ili kuacha.</translation>
 <translation id="6803622936009808957">Haikuweza kuakisi maonyesho kwa kuwa hakuna misongo inayoweza kutumiwa iliyopatikana. Badala yake imeingia eneo-kazi lililopanuliwa.</translation>
 <translation id="1480041086352807611">Modi ya kuonyesha</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% inayobaki</translation>
 <translation id="9089416786594320554">Mbinu Ingizo</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2670531586141364277">Kuanza kutumia '<ph name="NAME"/>' kunahitaji muunganisho kwa mtandao.</translation>
+<translation id="3963445509666917109">Spika (Ya ndani)</translation>
 <translation id="2825619548187458965">Rafu</translation>
 <translation id="2614835198358683673">Chromebook yako huenda isichaji ikiwa imewashwa. Fikiria kutumia chaja rasmi.</translation>
 <translation id="1895658205118569222">Funga</translation>
@@ -98,13 +105,13 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="7874779702599364982">Inatafuta mitandao ya simu za mkononi...</translation>
 <translation id="583281660410589416">Siojulikana</translation>
 <translation id="1383876407941801731">Tafuta</translation>
-<translation id="7468789844759750875">Tembelea tovuti kuu ya kuwezesha ya <ph name="NAME"/> ili ununue data zaidi.</translation>
 <translation id="3901991538546252627">Inaunganisha kwenye <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Maelezo ya Mtandao</translation>
 <translation id="1621499497873603021">Muda unaosalia mpaka betri inapoisha, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Maliza Ugeni</translation>
 <translation id="8308637677604853869">Menyu ya awali</translation>
 <translation id="4666297444214622512">Huwezi kuingia katika akaunti nyingine.</translation>
+<translation id="3625258641415618104">Picha za skrini zimezimwa</translation>
 <translation id="1346748346194534595">Kulia</translation>
 <translation id="1773212559869067373">Cheti cha uthibitishaji kimekataliwa kindani</translation>
 <translation id="8528322925433439945">Simu ya mkononi ...</translation>
@@ -133,6 +140,7 @@ Bonyeza Ctrl+Alt+Z ili ufunge.</translation>
 <translation id="1512064327686280138">Kushindwa kwa uamilishaji</translation>
 <translation id="5097002363526479830">Imeshindwa kuunganisha kwenye mtandao '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi imezimwa.</translation>
+<translation id="2966449113954629791">Huenda ulitumia kiwango chako chote cha data. Tembelea <ph name="NAME"/> kituo cha uwezeshaji ili ununue data zaidi.</translation>
 <translation id="8132793192354020517">Imeunganishwa kwenye <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Weka Mandhari...</translation>
 <translation id="8678698760965522072">Hali ya mtandaoni</translation>
@@ -149,22 +157,26 @@ Bonyeza Ctrl+Alt+Z ili ufunge.</translation>
 <translation id="3157931365184549694">Rejesha</translation>
 <translation id="4274292172790327596">Hitilafu Isiyotambulika</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
+<translation id="5977415296283489383">Vipokea sauti</translation>
 <translation id="225680501294068881">Inatambazaa vifaa...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="737451040872859086">Maikrofoni (Ya Ndani)</translation>
 <translation id="4448844063988177157">Inatafuta mitandao ya Wi-Fi…</translation>
 <translation id="8401662262483418323">Ilishindwa kuunganisha kwenye ' <ph name="NAME"/> ': <ph name="DETAILS"/> 
 Ujumbe wa seza: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Hitilafu imetokea</translation>
 <translation id="7229570126336867161">Inahitaji EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> ni kipindi cha kila mtu kinachodhibitiwa na <ph name="DOMAIN"/></translation>
+<translation id="9044646465488564462">Imeshindwa kuunganisha kwenye mtandao: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Toka kwenye kipindi</translation>
 <translation id="8454013096329229812">Wi-Fi imewashwa.</translation>
 <translation id="4872237917498892622">Alt + Utafutaji au Hama</translation>
 <translation id="9201131092683066720">Betri imejaa <ph name="PERCENTAGE"/>%.</translation>
 <translation id="2983818520079887040">Mipangilio...</translation>
+<translation id="3871838685472846647">Simu ya Mkononi Imewashwa</translation>
 <translation id="1195412055398077112">angalia kwa ujumla:</translation>
-<translation id="1717216362413677834">Hali ya kufungwa</translation>
 <translation id="112308213915226829">Ficha rafu kiotomatiki</translation>
+<translation id="7573962313813535744">Hali ya kituo</translation>
 <translation id="8927026611342028580">Muunganisho Umeombwa</translation>
 <translation id="8300849813060516376">OTASP imeshindikana</translation>
 <translation id="2792498699870441125">Alt + Utafutaji</translation>
@@ -176,17 +188,16 @@ Ujumbe wa seza: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Betri imejaa <ph name="PERCENTAGE"/>% na inachaji.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Inaanza kutumia...</translation>
 <translation id="4895488851634969361">Betri imejaa.</translation>
-<translation id="1391854757121130358">Inawezekana umemaliza mgawo wako wa data ya simu ya mkononi.</translation>
 <translation id="5947494881799873997">Rejesha</translation>
 <translation id="7593891976182323525">Utafutaji au Hama</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
+<translation id="747833637904845037">Chromebook yako itaendelea kukaa huku imeunganishwa kwenye onyesho la nje, hata kama kifuniko kimefungwa.</translation>
 <translation id="3050422059534974565">CAPS LOCK imeamilishwa. 
 Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
 <translation id="158849752021629804">Inahitaji mtandao wa nyumbani</translation>
 <translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Mwonekano wa DHCP umeshindikana</translation>
-<translation id="5812035014844949013">TOWE</translation>
 <translation id="6692173217867674490">Kaulisiri mbovu</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="9046895021617826162">Muunganisho umeshindikana</translation>
@@ -202,12 +213,14 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="8940956008527784070">Betri inaisha (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="4918086044614829423">Kubali</translation>
 <translation id="5102001756192215136">Imesalia <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="3009178788565917040">Towe</translation>
 <translation id="520760366042891468">Kushiriki udhibiti wa skrini yako kupitia Hangouts.</translation>
 <translation id="8000066093800657092">Hakuna mtandao</translation>
 <translation id="4015692727874266537">Ingia katika akaunti nyingine...</translation>
 <translation id="5941711191222866238">Punguza</translation>
 <translation id="6911468394164995108">Jiunge na mwingine...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
+<translation id="2563856802393254086">Hongera! Huduma yako ya data ya '<ph name="NAME"/>' imeanza kutumika na iko tayari kwa matumizi.</translation>
 <translation id="412065659894267608">Saa<ph name="HOUR"/> dakika<ph name="MINUTE"/> ili ijae</translation>
 <translation id="6359806961507272919">SMS kutoka <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Mtoa huduma</translation>

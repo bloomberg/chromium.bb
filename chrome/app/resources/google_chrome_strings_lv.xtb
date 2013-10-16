@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Palaist Chrome lietotnes</translation>
 <translation id="2370289711218562573">Google Chrome pašlaik importē Izlasi/Grāmatzīmes.</translation>
 <translation id="8762286861469007470">Chrome gūstītājvārtu noteicējs</translation>
+<translation id="2721687379934343312">Operētājsistēmā Mac paroles tiek saglabātas sistēmā Keychain un citi Chrome lietotāji, kuri kopīgo šo OS X kontu, var piekļūt tām un sinhronizēt tās.</translation>
 <translation id="3993188379797269327">Izmantojot failu <ph name="FILE_NAME"/>, var tikt mainīti Chrome iestatījumi.</translation>
 <translation id="1761870329818521071">Nevar instalēt to pašu Google Chrome Frame versiju, kas jau darbojas. Aizveriet Google Chrome Frame un mēģiniet vēlreiz.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -62,6 +63,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Jūsu norēķinu dati ir saglabāti pārlūkā Chrome.</translation>
 <translation id="7098166902387133879">Pārlūkā Google Chrome tiek izmantots mikrofons.</translation>
+<translation id="3590194807845837023">Atbloķēt profilu un restartēt</translation>
 <translation id="4053720452172726777">Pielāgot un kontrolēt Google Chrome</translation>
 <translation id="6423071462708908582">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris uzrādīja sertifikātu, kuram beidzies derīguma termiņš. Nav pieejama informācija, kas apliecinātu, ka sertifikāts ir apdraudēts, kopš tam ir beidzies derīguma termiņš. Tas nozīmē, ka pārlūks Google Chrome nevar garantēt, ka jūs sazināties ar &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nevis uzbrucēju. Jūsu datora pulkstenis šobrīd ir iestatīts uz <ph name="CURRENT_TIME"/>. Vai tas ir pareizs? Ja tā nav, novērsiet kļūdu un atsvaidziniet šo lapu.</translation>
 <translation id="3197823471738295152">Ierīce ir atjaunināta.</translation>
@@ -136,6 +138,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="1104959162601287462">Par &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome binārie faili</translation>
 <translation id="5941830788786076944">Izveidot Google Chrome par noklusējuma pārlūku</translation>
+<translation id="7787950393032327779">Šķiet, ka profils tiek izmantots citā Google Chrome procesā (<ph name="PROCESS_ID"/>) citā datorā (<ph name="HOST_NAME"/>). Lai profils netiktu bojāts, pārlūkā Chrome tas ir bloķēts. Ja esat pārliecināts, ka šis profils netiek izmantots citos procesos, varat to atbloķēt un restartēt pārlūku Chrome.</translation>
 <translation id="1469002951682717133">Chrome lietotņu palaišanas programma</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ļauj jums noklikšķināt uz tālruņa numura un zvanīt ar to pakalpojumā Skype!</translation>
@@ -155,9 +158,9 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="6326175484149238433">Noņemt no pārlūka Chrome</translation>
 <translation id="2871893339301912279">Esat pierakstījies pārlūkā Chrome!</translation>
 <translation id="7161904924553537242">Laipni lūdzam Google Chrome</translation>
-<translation id="1686446242839005801">Jūs pierakstāties pārlūkā Chrome, izmantojot šo kontu: <ph name="USER_EMAIL_ADDRESS"/>. Varēsiet piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="4147555960264124640">Jūs pierakstāties ar pārvaldītu kontu un nodrošināt, ka tā administrators var pārvaldīt jūsu Google Chrome profilu. Jūsu Chrome dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME"/>. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet saistīt šos datus ar citu kontu. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Šajā vietnē tiek izmantots spraudnis Chrome Frame, kurš drīzumā vairs netiks atbalstīts. Lūdzu, atinstalējiet to un jauniniet uz modernu pārlūku.</translation>
+<translation id="1348153800635493797">Lai izmantotu Google maku, jums ir nepieciešams jaunināt pārlūku Chrome [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Atveriet izvēlni
           Applications (Lietojumprogrammas) &gt; System Preferences (Sistēmas preferences) &gt; Network (Tīkls) &gt; Advanced (Papildu) &gt; (Proxies) Starpniekserveri
           un noņemiet atzīmes no visiem atzīmētajiem starpniekserveriem.</translation>
@@ -188,6 +191,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="7196020411877309443">Kāpēc es redzu šo dialoglodziņu?</translation>
 <translation id="2769762047821873045">Google Chrome nav jūsu noklusējuma pārlūks.</translation>
 <translation id="1020869477857717497">Izmantojot failu <ph name="FILE_NAME"/>, pārlūkā Chrome var tikt mainīti meklētājprogrammas iestatījumi.</translation>
+<translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS"/>. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="6855094794438142393">Atveriet
           Chrome izvēlni &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -206,6 +210,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="5334545119300433702">Ir zināms, ka šis modulis konfliktē ar Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Pārlūks Google Chrome ir atjaunināts.</translation>
+<translation id="4120075327926916474">Vai vēlaties, lai Chrome saglabātu šo kredītkartes informāciju tīmekļa veidlapu aizpildīšanai?</translation>
 <translation id="2084710999043359739">Pievienot pārlūkam Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame jau ir instalēts un ir pieejams visiem datora lietotājiem. Lai Google Chrome Frame varētu instalēt lietotāja līmenī, vispirms ir jāatinstalē sistēmas līmeņa versija, ko ir instalējis administrators.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

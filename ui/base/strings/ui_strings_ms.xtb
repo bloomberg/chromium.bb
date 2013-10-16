@@ -13,6 +13,7 @@
 <translation id="1190609913194133056">Pusat Pemberitahuan</translation>
 <translation id="7470933019269157899">Tinggal <ph name="NUMBER_DEFAULT"/> minit</translation>
 <translation id="5613020302032141669">Anak Panah Kiri</translation>
+<translation id="4971687151119236543">Lagu Media Sebelumnya</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> Fail (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> minit yang lalu</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> saat</translation>
@@ -104,6 +105,7 @@
 <translation id="7052633198403197513">F1</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> jam</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
+<translation id="8394908167088220973">Main/Jeda Media</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="7960078400008666149">Jangan ganggu selama sejam</translation>
 <translation id="4373894838514502496"><ph name="NUMBER_FEW"/> minit yang lalu</translation>
@@ -114,14 +116,15 @@
 <translation id="8447116497070723931">AtsHlmn</translation>
 <translation id="4588090240171750605">Tatal ke Kanan</translation>
 <translation id="7414887922320653780"><ph name="NUMBER_ONE"/> jam lagi</translation>
+<translation id="1413622004203049571">Lumpuhkan pemberitahuan daripada <ph name="NOTIFIER_NAME"/></translation>
 <translation id="2666092431469916601">Atas</translation>
 <translation id="8331626408530291785">Tatal Ke Atas</translation>
-<translation id="4773379706300191099">Lumpuhkan pemberitahuan daripada <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Buka Fail</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> hari lagi</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> jam lalu</translation>
 <translation id="815598010540052116">Tatal Ke Bawah</translation>
+<translation id="6808150112686056157">Media Berhenti</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> minit lagi</translation>
 <translation id="3157931365184549694">Pulihkan</translation>
 <translation id="1243314992276662751">Muat naik</translation>
@@ -159,6 +162,7 @@
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> minit yang lalu</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Bantuan</translation>
+<translation id="6699343763173986273">Lagu Media Seterusnya</translation>
 <translation id="8226233771743600312">Jangan ganggu selama sehari</translation>
 <translation id="7457942297256758195">Kosongkan Semua</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> hari yang lalu</translation>
@@ -178,7 +182,6 @@
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> hari yang lalu</translation>
 <translation id="5941711191222866238">Minimumkan</translation>
 <translation id="6394627529324717982">Koma</translation>
-<translation id="4469842253116033348">Lumpuhkan pemberitahuan daripada <ph name="SITE"/></translation>
 <translation id="3036649622769666520">Buka Fail</translation>
 <translation id="8328145009876646418">Tepi Kiri</translation>
 <translation id="7372005818821648611"><ph name="NUMBER_TWO"/> saat</translation>

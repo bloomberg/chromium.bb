@@ -46,6 +46,7 @@ Chromoting</translation>
 <translation id="6001953797859482435">Preferencias del host de Escritorio remoto de Chrome</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="228809120910082333">Confirma la cuenta y el PIN a continuación para permitir el acceso de Chromoting.</translation>
+<translation id="7605995381616883502">Nueva conexión</translation>
 <translation id="5826423541626112308">Host de Escritorio remoto de Chrome</translation>
 <translation id="2851674870054673688">Cuando el usuario introduzca el código de acceso, empezará la sesión compartida.</translation>
 <translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más tarde.</translation>
@@ -68,6 +69,7 @@ Chromoting</translation>
 <translation id="7081428606750359611">Host de Chromoting</translation>
 <translation id="8228265668171617545">Hemos detectado que tu versión de Chromoting no es compatible. Asegúrate de haber instalado en ambos ordenadores la última versión de Chrome y de Chromoting.</translation>
 <translation id="6985691951107243942">¿Seguro que quieres inhabilitar las conexiones remotas con <ph name="HOSTNAME"/>? Si cambias de opinión, tendrás que volver a habilitar las conexiones desde ese ordenador.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (fecha del último acceso online: <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Para empezar a compartir tu escritorio, proporciona el código de acceso que se muestra a continuación a la persona que te vaya a ayudar.</translation>
 <translation id="409800995205263688">NOTA: la configuración de la política solo permite establecer conexiones entre ordenadores de tu misma red.</translation>
 <translation id="2353140552984634198">Puedes acceder de forma segura a este ordenador con Chromoting.</translation>
@@ -134,7 +136,9 @@ Chromoting</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="2926340305933667314">No se ha podido inhabilitar el acceso remoto a este ordenador. Vuelve a intentarlo más tarde.</translation>
 <translation id="6865175692670882333">Ver/editar</translation>
+<translation id="5859141382851488196">Nueva ventana…</translation>
 <translation id="2089514346391228378">Se han habilitado las conexiones remotas con este ordenador.</translation>
+<translation id="7693372326588366043">Actualiza la lista de hosts</translation>
 <translation id="8246880134154544773">Se ha producido un error de autenticación. Vuelve a iniciar sesión en Chromoting.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas con este ordenador...</translation>
 <translation id="8187079423890319756">Copyright 2013 Los creadores de Chromium. Todos los derechos reservados.</translation>

@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Start Chrome-apper</translation>
 <translation id="2370289711218562573">Google Chrome importerer nå favoritter/bokmerker.</translation>
 <translation id="8762286861469007470">Chrome Captive Portal-detektor</translation>
+<translation id="2721687379934343312">På Mac blir passord lagret i nøkkelringen. Andre Chrome-brukere som deler denne OS X-kontoen, har adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> kan endre Chrome-innstillingene dine.</translation>
 <translation id="1761870329818521071">Versjonen av Google Chrome Frame du prøver å installere, kjører allerede. Lukk Google Chrome Frame, og forsøk å installere på nytt.</translation>
 <translation id="2040709530900803995">Google Chrome-gjengiver</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Faktureringsdetaljene dine er lagret i Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome bruker mikrofonen din.</translation>
+<translation id="3590194807845837023">Lås opp profilen og start på nytt</translation>
 <translation id="4053720452172726777">Tilpass og kontrollér Google Chrome</translation>
 <translation id="6423071462708908582">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et utløpt sertifikat. Vi finner ikke tilgjengelig informasjon som kan bekrefte om sertifikatet har blitt kompromittert siden det utløp. Følgelig kan ikke Google Chrome garantere at du kommuniserer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, og ikke en angriper. Klokken på datamaskinen din er satt til <ph name="CURRENT_TIME"/>. Er det korrekt? Hvis ikke, må du rette opp feilen og laste inn denne siden på nytt.</translation>
 <translation id="3197823471738295152">Enheten er oppdatert.</translation>
@@ -132,6 +134,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Gjør Google Chrome til standardleser</translation>
+<translation id="7787950393032327779">Profilen ser ut til å være i bruk av en annen Google Chrome-prosess (<ph name="PROCESS_ID"/>) på en annen datamaskin (<ph name="HOST_NAME"/>). Chrome har låst profilen slik at den ikke blir infisert. Hvis du er sikker på at ingen andre prosesser bruker profilen, kan du låse opp profilen og starte Chrome på nytt.</translation>
 <translation id="1469002951682717133">Chrome Appvelger</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på Internett og ringe ved bruk av Skype!</translation>
@@ -151,9 +154,9 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="6326175484149238433">Fjern fra Chrome</translation>
 <translation id="2871893339301912279">Du er nå logget på Chrome.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>
-<translation id="1686446242839005801">Du logger deg på Chrome ved bruk av <ph name="USER_EMAIL_ADDRESS"/>-kontoen din. Du får tilgang til bokmerkene dine, logger og andre innstillinger på alle de påloggede enhetene dine.</translation>
 <translation id="4147555960264124640">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME"/>. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Dette nettstedet bruker Chrome Frame-programtillegget, som snart ikke lenger støttes. Avinstaller det og oppgrader til en nyere nettleser.</translation>
+<translation id="1348153800635493797">Du må oppgradere Chrome for å bruke Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Gå til Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Avansert &gt; Mellomtjenere og fjern avmerkingen for alle valgte mellomtjenere.</translation>
 <translation id="8669527147644353129">Google Chrome-hjelper</translation>
 <translation id="870251953148363156">Oppdater &amp;Google Chrome</translation>
@@ -181,6 +184,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="2769762047821873045">Google Chrome er ikke din standardnettleser.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> kan endre hvordan søkene dine fungerer i Chrome.</translation>
+<translation id="4567424176335768812">Du er logget på som <ph name="USER_EMAIL_ADDRESS"/>. Nå kan du bruke bokmerkene, loggen og andre innstillinger på alle enhetene du er logget på.</translation>
 <translation id="6855094794438142393">Gå til
           Chrome-menyen &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -199,6 +203,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="5334545119300433702">Denne modulen har en kjent konflikt med Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chromes operativsystem</translation>
 <translation id="6634887557811630702">Google Chrome er oppdatert.</translation>
+<translation id="4120075327926916474">Vil du at Google Chrome skal lagre denne kredittkortinformasjonen for utfylling av nettskjemaer?</translation>
 <translation id="2084710999043359739">Legg til i Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame er allerede installert og tilgjengelig for alle brukere av denne datamaskinen. Hvis du vil installere Google Chrome Frame på brukernivå, må du først avinstallere systemnivåversjonen som er installert av en administrator.</translation>
 <translation id="3360895254066713204">Chrome-hjelper</translation>

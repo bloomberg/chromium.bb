@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Altele...</translation>
 <translation id="2426432199384958866">reveniți la redarea în timp real a filmului transmis în flux</translation>
 <translation id="248395913932153421">Zi</translation>
+<translation id="1729654308190250600">Introduceți o adresă de e-mail concretă.</translation>
 <translation id="6015796118275082299">An</translation>
 <translation id="9186171386827445984">Se încarcă documentul: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> (de) pagini...</translation>
 <translation id="1235745349614807883">Ștergeți căutările recente</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">marcator listă</translation>
 <translation id="4202807286478387388">Salt</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Introduceți o valoare urmată de semnul „<ph name="ATSIGN"/>”. Adresa „<ph name="INVALIDADDRESS"/>” nu este completă.</translation>
+<translation id="2746543609216772311">Valoarea pentru dată/oră trebuie să fie <ph name="MINIMUM_DATE_OR_TIME"/> sau una ulterioară.</translation>
 <translation id="2572483411312390101">redați</translation>
 <translation id="8785498733064193001">începeți redarea</translation>
 <translation id="7057186640035488495">durată film</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">derulați rapid înapoi</translation>
 <translation id="7789962463072032349">pauză</translation>
 <translation id="6853785296079745596">ascundeți subtitrările</translation>
+<translation id="4360991593054037559">Introduceți o valoare validă. Cele mai apropiate valori valide sunt <ph name="VALID_VALUE_LOW"/> și <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Altele...</translation>
 <translation id="8141602879876242471">Acesta este un index în care se poate căuta. Introduceți cuvintele cheie pentru căutare:</translation>
 <translation id="1930711995431081526">stare</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">derulați rapid înainte</translation>
 <translation id="4812940957355064477">Introduceți un număr.</translation>
 <translation id="2548326553472216322">Nicio căutare recentă</translation>
+<translation id="1938124657309484470">Valoarea pentru dată/oră trebuie să fie <ph name="MAXIMUM_DATE_OR_TIME"/> sau una anterioară.</translation>
 <translation id="7263440858009898357">Selectați un articol din listă.</translation>
 <translation id="901493112792887934">timp actual în secunde</translation>
 <translation id="5164977714490026579">Valoarea trebuie să fie mai mare sau egală cu <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Săptămâna aceasta</translation>
 <translation id="5966707198760109579">Săptămână</translation>
 <translation id="2901282870647571346">starea actuală a filmului</translation>
+<translation id="2060505056492490888">Semnul „<ph name="DOT"/>” apare poziționat greșit în „<ph name="INVALIDDOMAIN"/>”.</translation>
 <translation id="2674318244760992338">notă de subsol</translation>
 <translation id="8987927404178983737">Lună</translation>
 <translation id="8115662671911883373">începeți să afișați subtitrările</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">Bifați</translation>
 <translation id="2846343701378493991">1024 (Grad mediu)</translation>
 <translation id="1637811476055996098">Alegeți fișierele</translation>
+<translation id="49969490063480558">Introduceți o valoare după semnul „<ph name="ATSIGN"/>”. Adresa „<ph name="INVALIDADDRESS"/>” nu este completă.</translation>
 <translation id="5476505524087279545">Debifați</translation>
 <translation id="2148716181193084225">Astăzi</translation>
 <translation id="2507943997699731163">Completați acest câmp.</translation>
 <translation id="3785482301506746191">glisor redare film</translation>
 <translation id="739024184232394898">Altele...</translation>
+<translation id="383465348367842624">Valoarea urmată de semnul „<ph name="ATSIGN"/>” nu trebuie să conțină simbolul „<ph name="INVALIDCHARACTER"/>”.</translation>
 <translation id="5468998798572797635">ieșiți din ecranul complet</translation>
 <translation id="5919473608089529604">Nu s-a putut încărca pluginul.</translation>
 <translation id="5546461542133609677">activați sunetul</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Introduceți o listă de adrese de e-mail separate prin virgulă.</translation>
 <translation id="5939518447894949180">Resetați</translation>
 <translation id="1921819250265091946">zz</translation>
+<translation id="2613802280814924224">Introduceți o valoare validă. Cea mai apropiată valoare validă este <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Valoare nevalidă.</translation>
 <translation id="1842960171412779397">Selectați</translation>
 <translation id="7673697353781729403">Ore</translation>
+<translation id="4664250907885839816">Valoarea care urmează după semnul „<ph name="ATSIGN"/>” nu trebuie să conțină simbolul „<ph name="INVALIDCHARACTER"/>”.</translation>
 <translation id="3450233048674729344">Valoarea trebuie să fie mai mică sau egală cu <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">înapoi cu 30 de secunde</translation>
 <translation id="668171684555832681">Altul...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">Activați</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> fișiere</translation>
 <translation id="6643016212128521049">Ștergeți</translation>
+<translation id="7888071071722539607">Includeți semnul „<ph name="ATSIGN"/>” în adresa de e-mail. Din adresa „<ph name="INVALIDADDRESS"/>” lipsește semnul „<ph name="ATSIGN"/>”.</translation>
 <translation id="4851297395436456855">rapid înainte</translation>
 <translation id="1088086359088493902">Secunde</translation>
 <translation id="3934680773876859118">Încărcarea documentului PDF nu a reușit</translation>

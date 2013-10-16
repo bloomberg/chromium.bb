@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Avvia app Chrome</translation>
 <translation id="2370289711218562573">Google Chrome sta importando i Preferiti/Segnalibri.</translation>
 <translation id="8762286861469007470">Rilevatore Chrome Captive Portal</translation>
+<translation id="2721687379934343312">Su Mac, le password vengono salvate su Keychain e sono accessibili o sincronizzate da parte degli utenti Chrome che condividono questo account OS X.</translation>
 <translation id="3993188379797269327">Il file <ph name="FILE_NAME"/> potrebbe modificare le impostazioni di Chrome.</translation>
 <translation id="1761870329818521071">Impossibile installare la stessa versione di Google Chrome Frame attualmente in esecuzione. Chiudi Google Chrome Frame e riprova.</translation>
 <translation id="2040709530900803995">Programma di rendering di Google Chrome</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">I tuoi dettagli di fatturazione sono stati salvati in Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome sta utilizzando il microfono.</translation>
+<translation id="3590194807845837023">Sblocca il profilo e riavvia</translation>
 <translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
 <translation id="6423071462708908582">Hai tentato di visitare &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il server ha presentato un certificato scaduto. Non sono disponibili informazioni che consentano di stabilire se il certificato sia stato compromesso dopo la sua scadenza. Ciò significa che Google Chrome non può garantire che tu stia comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e non con un malintenzionato. Al momento l'orologio del tuo computer è impostato su <ph name="CURRENT_TIME"/>. È giusto? In caso contrario, dovresti correggere l'errore e aggiornare la pagina.</translation>
 <translation id="3197823471738295152">Il dispositivo è aggiornato.</translation>
@@ -132,6 +134,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="1104959162601287462">Informazioni su &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Imposta Google Chrome come browser predefinito</translation>
+<translation id="7787950393032327779">Sembra che il profilo sia in uso in un altro processo Google Chrome (<ph name="PROCESS_ID"/>) su un altro computer (<ph name="HOST_NAME"/>). Chrome ha bloccato il profilo affinché non venga danneggiato. Se sei sicuro che nessun altro processo stia utilizzando questo profilo, puoi sbloccare il profilo e riavviare Chrome.</translation>
 <translation id="1469002951682717133">Avvio applicazioni di Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ti permette di scegliere un numero di telefono sul Web e di chiamarlo con Skype.</translation>
@@ -151,9 +154,9 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="6326175484149238433">Rimuovi da Chrome</translation>
 <translation id="2871893339301912279">Hai eseguito l'accesso a Chrome.</translation>
 <translation id="7161904924553537242">Benvenuto in Google Chrome</translation>
-<translation id="1686446242839005801">Stai per accedere a Chrome con il tuo account <ph name="USER_EMAIL_ADDRESS"/>. Potrai accedere ai tuoi Preferiti, alla cronologia e ad altre impostazioni su tutti i dispositivi su cui esegui l'accesso.</translation>
 <translation id="4147555960264124640">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Google Chrome. I tuoi dati di Chrome, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME"/>. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Questo sito utilizza il plug-in Chrome Frame che a breve non sarà più supportato. Disinstallalo ed esegui l'upgrade a un browser moderno.</translation>
+<translation id="1348153800635493797">Per utilizzare Google Wallet, devi eseguire l'upgrade di Chrome [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Seleziona
           Applicazioni &gt; Preferenze di Sistema &gt; Network &gt; Avanzate &gt; Proxy
           e deseleziona i proxy selezionati.</translation>
@@ -184,6 +187,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="7196020411877309443">Perché visualizzo questo avviso?</translation>
 <translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="1020869477857717497">Il file <ph name="FILE_NAME"/> potrebbe modificare il funzionamento delle ricerche in Chrome.</translation>
+<translation id="4567424176335768812">Hai eseguito l'accesso come <ph name="USER_EMAIL_ADDRESS"/>. Ora puoi accedere ai tuoi Preferiti, alla tua cronologia e ad altre impostazioni su tutti i tuoi dispositivi su cui esegui l'accesso.</translation>
 <translation id="6855094794438142393">Seleziona
           il menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -202,6 +206,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="5334545119300433702">Questo modulo è in conflitto con Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome è aggiornato.</translation>
+<translation id="4120075327926916474">Desideri che Google Chrome salvi le informazioni della carta di credito per completare i moduli sul Web?</translation>
 <translation id="2084710999043359739">Aggiungi a Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame è già installato e disponibile per tutti gli utenti del computer. Se desideri installare Google Chrome Frame a livello di utente, devi prima disinstallare la versione a livello di sistema installata da un amministratore.</translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>

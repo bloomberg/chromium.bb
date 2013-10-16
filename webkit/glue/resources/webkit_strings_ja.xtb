@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">その他...</translation>
 <translation id="2426432199384958866">ストリーミング映画をリアル タイムに戻す</translation>
 <translation id="248395913932153421">日</translation>
+<translation id="1729654308190250600">メール アドレスを入力してください。</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="9186171386827445984">ドキュメントの読み込み中: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> ページ...</translation>
 <translation id="1235745349614807883">最近の検索履歴を消去</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">リスト マーカー</translation>
 <translation id="4202807286478387388">ジャンプ</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">「<ph name="ATSIGN"/>」の前の文字列を入力してください。「<ph name="INVALIDADDRESS"/>」は完全なメール アドレスではありません。</translation>
+<translation id="2746543609216772311"><ph name="MINIMUM_DATE_OR_TIME"/> 以降の値を指定する必要があります。</translation>
 <translation id="2572483411312390101">再生</translation>
 <translation id="8785498733064193001">再生を開始</translation>
 <translation id="7057186640035488495">上映時間</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">シークで巻き戻し</translation>
 <translation id="7789962463072032349">一時停止</translation>
 <translation id="6853785296079745596">クローズド キャプションを非表示</translation>
+<translation id="4360991593054037559">有効な値を入力してください。有効な値として最も近いのは <ph name="VALID_VALUE_LOW"/> と <ph name="VALID_VALUE_HIGHER"/> です。</translation>
 <translation id="1758486001363313524">その他...</translation>
 <translation id="8141602879876242471">このインデックスは検索できます。キーワードを入力してください:</translation>
 <translation id="1930711995431081526">ステータス</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">シークで早送り</translation>
 <translation id="4812940957355064477">数字を入力してください。</translation>
 <translation id="2548326553472216322">最近の検索はありません</translation>
+<translation id="1938124657309484470"><ph name="MAXIMUM_DATE_OR_TIME"/> 以前の値を指定する必要があります。</translation>
 <translation id="7263440858009898357">リスト内の項目を選択してください。</translation>
 <translation id="901493112792887934">現在の時間（秒単位）</translation>
 <translation id="5164977714490026579">値は <ph name="MINIMUM"/> 以上にする必要があります。</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">今週</translation>
 <translation id="5966707198760109579">週</translation>
 <translation id="2901282870647571346">現在の映画のステータス</translation>
+<translation id="2060505056492490888">「<ph name="INVALIDDOMAIN"/>」内の「<ph name="DOT"/>」の位置が間違っています。</translation>
 <translation id="2674318244760992338">フッター</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8115662671911883373">クローズド キャプションの表示を開始</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">チェックを付ける</translation>
 <translation id="2846343701378493991">1024 (中)</translation>
 <translation id="1637811476055996098">ファイル選択</translation>
+<translation id="49969490063480558">「<ph name="ATSIGN"/>」に続く文字列を入力してください。「<ph name="INVALIDADDRESS"/>」は完全なメール アドレスではありません。</translation>
 <translation id="5476505524087279545">チェックを外す</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2507943997699731163">このフィールドを入力してください。</translation>
 <translation id="3785482301506746191">シークバー</translation>
 <translation id="739024184232394898">その他...</translation>
+<translation id="383465348367842624">「<ph name="ATSIGN"/>」の前の文字列に記号「<ph name="INVALIDCHARACTER"/>」を使用しないでください。</translation>
 <translation id="5468998798572797635">全画面表示を終了</translation>
 <translation id="5919473608089529604">プラグインを読み込むことができませんでした。</translation>
 <translation id="5546461542133609677">ミュートを解除</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">メール アドレスのカンマ区切りリストを入力してください。</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="1921819250265091946">日</translation>
+<translation id="2613802280814924224">有効な値を入力してください。有効な値として最も近いのは <ph name="VALID_VALUE"/> です。</translation>
 <translation id="835897206747267392">値が無効です。</translation>
 <translation id="1842960171412779397">選択</translation>
 <translation id="7673697353781729403">時間</translation>
+<translation id="4664250907885839816">「<ph name="ATSIGN"/>」に続く文字列に記号「<ph name="INVALIDCHARACTER"/>」を使用しないでください。</translation>
 <translation id="3450233048674729344">値は <ph name="MAXIMUM"/> 以下にする必要があります。</translation>
 <translation id="3471999216963526757">30 秒戻る</translation>
 <translation id="668171684555832681">その他...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">アクティブにする</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ファイル</translation>
 <translation id="6643016212128521049">クリア</translation>
+<translation id="7888071071722539607">メール アドレスに「<ph name="ATSIGN"/>」を挿入してください。「<ph name="INVALIDADDRESS"/>」内に「<ph name="ATSIGN"/>」がありません。</translation>
 <translation id="4851297395436456855">早送り</translation>
 <translation id="1088086359088493902">秒</translation>
 <translation id="3934680773876859118">PDF ドキュメントを読み込むことができませんでした</translation>

@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">অন্যান্য...</translation>
 <translation id="2426432199384958866">স্ট্রীমিং চলচ্চিত্রটিকে রিয়েল টাইমে ফেরান</translation>
 <translation id="248395913932153421">দিন</translation>
+<translation id="1729654308190250600">দয়া করে একটি খালি না থাকা ইমেল ঠিকানা লিখুন৷</translation>
 <translation id="6015796118275082299">বছর</translation>
 <translation id="9186171386827445984">নথি লোড হচ্ছে: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> পৃষ্ঠা...</translation>
 <translation id="1235745349614807883">সাম্প্রতিক অনুসন্ধানগুলি সাফ করুন</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">তালিকা নির্দেশক</translation>
 <translation id="4202807286478387388">লাফ দিন</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">'<ph name="ATSIGN"/>' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS"/>' অসম্পূর্ণ৷</translation>
+<translation id="2746543609216772311">মানকে অবশ্যই <ph name="MINIMUM_DATE_OR_TIME"/> বা পরবর্তী হতে হবে৷</translation>
 <translation id="2572483411312390101">চালনা করুন</translation>
 <translation id="8785498733064193001">প্লেব্যাক শুরু করুন</translation>
 <translation id="7057186640035488495">চলচ্চিত্রের সময়</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">দ্রুত পেছনে যাওয়া পছন্দ করুন</translation>
 <translation id="7789962463072032349">বিরাম</translation>
 <translation id="6853785296079745596">বন্ধ করা পরিচয়লিপিগুলি লুকান</translation>
+<translation id="4360991593054037559">দয়া করে একটি বৈধ মান লিখুন৷ দুটি কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE_LOW"/> এবং <ph name="VALID_VALUE_HIGHER"/>৷</translation>
 <translation id="1758486001363313524">অন্যান্য...</translation>
 <translation id="8141602879876242471">এটি অনুসন্ধানযোগ্য সূচি৷ অনুসন্ধানের মূলশব্দ প্রবেশ করান:</translation>
 <translation id="1930711995431081526">স্থিতি</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">দ্রুত এগিয়ে যাওয়া পচ্ছন্দ করুন</translation>
 <translation id="4812940957355064477">দয়া করে একটি সংখ্যা লিখুন৷</translation>
 <translation id="2548326553472216322">কোন সাম্প্রতিক অনুসন্ধান নেই</translation>
+<translation id="1938124657309484470">মানকে অবশ্যই <ph name="MAXIMUM_DATE_OR_TIME"/> বা আগের হতে হবে৷</translation>
 <translation id="7263440858009898357">তালিকা থেকে একটি আইটেম নির্বাচন করুন৷ </translation>
 <translation id="901493112792887934">সেকেন্ডে বর্তমান সময়</translation>
 <translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM"/>এর চেয়ে বেশি বা সমান হবে৷</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">এই সপ্তাহ</translation>
 <translation id="5966707198760109579">সপ্তাহ</translation>
 <translation id="2901282870647571346">চলচ্চিত্রের বর্তমান অবস্থা</translation>
+<translation id="2060505056492490888">'<ph name="INVALIDDOMAIN"/>' এ একটি ভুল অবস্থানে '<ph name="DOT"/>' ব্যবহৃত হয়েছে৷</translation>
 <translation id="2674318244760992338">পাদলেখ</translation>
 <translation id="8987927404178983737">মাস</translation>
 <translation id="8115662671911883373">বন্ধ পরিচয়লিপিগুলির প্রদর্শন শুরু করুন</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">চেক করুন</translation>
 <translation id="2846343701378493991">1024 (মধ্যম গ্রেড)</translation>
 <translation id="1637811476055996098">ফাইল চয়ন করুন</translation>
+<translation id="49969490063480558">দয়া করে '<ph name="ATSIGN"/>' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS"/>' অসম্পূর্ণ৷</translation>
 <translation id="5476505524087279545">আনচেক</translation>
 <translation id="2148716181193084225">আজ</translation>
 <translation id="2507943997699731163">দয়া করে এই ক্ষেত্রটি পূরণ করুন৷</translation>
 <translation id="3785482301506746191">চলচ্চিত্র সময় স্ক্রাবার</translation>
 <translation id="739024184232394898">অন্যান্য...</translation>
+<translation id="383465348367842624">'<ph name="ATSIGN"/>' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER"/>' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="5468998798572797635">পূর্ণ স্ক্রীন বন্ধ করুন</translation>
 <translation id="5919473608089529604">প্লাগ-ইন লোড করা যায়নি৷</translation>
 <translation id="5546461542133609677">সশব্দ</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">দয়া করে ইমেল ঠিকানাগুলির একটি কমা দিয়ে আলাদা করা মান প্রবেশ করান৷</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">দয়া করে একটি বৈধ মান লিখুন৷ কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE"/>৷</translation>
 <translation id="835897206747267392">অকার্যকর মান৷</translation>
 <translation id="1842960171412779397">নির্বাচন করুন</translation>
 <translation id="7673697353781729403">ঘন্টা</translation>
+<translation id="4664250907885839816">'<ph name="ATSIGN"/>' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER"/>' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="3450233048674729344">মানটি অবশ্যই <ph name="MAXIMUM"/>এর চেয়ে কম বা সমান হবে৷</translation>
 <translation id="3471999216963526757">৩০ সেকেন্ড পেছনে যান</translation>
 <translation id="668171684555832681">অন্যান্য...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">সক্রিয় করুন</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> টি ফাইল</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
+<translation id="7888071071722539607">ইমেল ঠিনাকাটিতে দয়া করে একটি '<ph name="ATSIGN"/>' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS"/>' এ একটি '<ph name="ATSIGN"/>' অনুপস্থিত৷</translation>
 <translation id="4851297395436456855">দ্রুত এগিয়ে যান</translation>
 <translation id="1088086359088493902">সেকেন্ড</translation>
 <translation id="3934680773876859118">PDF  দস্তাবেজ লোড হতে ব্যর্থ</translation>

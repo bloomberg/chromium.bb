@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Muu...</translation>
 <translation id="2426432199384958866">palauta suoratoistettava elokuva reaaliaikaiseksi</translation>
 <translation id="248395913932153421">Päivä</translation>
+<translation id="1729654308190250600">Kirjoita ei-tyhjä sähköpostiosoite.</translation>
 <translation id="6015796118275082299">Vuosi</translation>
 <translation id="9186171386827445984">Ladataan asiakirjaa: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sivua...</translation>
 <translation id="1235745349614807883">Poista viimeisimmät haut</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">luettelon merkitsijä</translation>
 <translation id="4202807286478387388">siirry</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Lisää <ph name="ATSIGN"/>-osaa ennen tuleva osa. <ph name="INVALIDADDRESS"/> on puutteellinen.</translation>
+<translation id="2746543609216772311">Arvon on oltava <ph name="MINIMUM_DATE_OR_TIME"/> tai myöhempi.</translation>
 <translation id="2572483411312390101">toista</translation>
 <translation id="8785498733064193001">aloita toisto</translation>
 <translation id="7057186640035488495">elokuvan aikajana</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">kuvakelaus taaksepäin</translation>
 <translation id="7789962463072032349">tauko</translation>
 <translation id="6853785296079745596">piilota tekstitykset</translation>
+<translation id="4360991593054037559">Syötä kelvollinen arvo. Kaksi lähintä kelvollista arvoa ovat <ph name="VALID_VALUE_LOW"/> ja <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Muu...</translation>
 <translation id="8141602879876242471">Tämä on haettavissa oleva hakemisto. Anna hakusanat:</translation>
 <translation id="1930711995431081526">tila</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">kuvakelaus eteenpäin</translation>
 <translation id="4812940957355064477">Anna numero.</translation>
 <translation id="2548326553472216322">Ei viimeisimpiä hakuja</translation>
+<translation id="1938124657309484470">Arvon on oltava <ph name="MAXIMUM_DATE_OR_TIME"/> tai aiempi.</translation>
 <translation id="7263440858009898357">Valitse kohde luettelosta.</translation>
 <translation id="901493112792887934">nykyinen toistoaika sekunteina</translation>
 <translation id="5164977714490026579">Arvon tulee olla suurempi tai yhtä suuri kuin <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Tällä viikolla</translation>
 <translation id="5966707198760109579">Viikko</translation>
 <translation id="2901282870647571346">elokuvan nykyinen tila</translation>
+<translation id="2060505056492490888"><ph name="DOT"/>-merkkiä on käytetty väärässä kohdassa osoitteessa <ph name="INVALIDDOMAIN"/>.</translation>
 <translation id="2674318244760992338">alaviite</translation>
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="8115662671911883373">näytä tekstitykset</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">valitse</translation>
 <translation id="2846343701378493991">1024 (keskitaso)</translation>
 <translation id="1637811476055996098">Valitse tiedostot</translation>
+<translation id="49969490063480558">Lisää <ph name="ATSIGN"/>-osaa seuraava osa. <ph name="INVALIDADDRESS"/> on puutteellinen.</translation>
 <translation id="5476505524087279545">poista valinta</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2507943997699731163">Täytä tämä kenttä.</translation>
 <translation id="3785482301506746191">elokuvan ajan säädin</translation>
 <translation id="739024184232394898">Muu...</translation>
+<translation id="383465348367842624"><ph name="ATSIGN"/>-osaa ennen tulevassa osassa ei pitäisi olla merkkiä <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="5468998798572797635">poistu koko näytön tilasta</translation>
 <translation id="5919473608089529604">Laajennuksen lataaminen epäonnistui.</translation>
 <translation id="5546461542133609677">peruuta mykistys</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Anna pilkuilla erotettu sähköpostiosoitteiden luettelo.</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="1921819250265091946">pp</translation>
+<translation id="2613802280814924224">Syötä kelvollinen arvo. Lähin kelvollinen arvo on <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Virheellinen arvo.</translation>
 <translation id="1842960171412779397">Valitse</translation>
 <translation id="7673697353781729403">Tuntia</translation>
+<translation id="4664250907885839816"><ph name="ATSIGN"/>-osan jälkeen tulevassa osassa ei pitäisi olla merkkiä <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="3450233048674729344">Arvon tulee olla pienempi tai yhtä suuri kuin <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">30 sekuntia taaksepäin</translation>
 <translation id="668171684555832681">Joku muu profiili...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">aktivoi</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> tiedostoa</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
+<translation id="7888071071722539607">Sähköpostiosoitteeseen kuuluu <ph name="ATSIGN"/>-osa. Osoitteesta <ph name="INVALIDADDRESS"/> puuttuu <ph name="ATSIGN"/>.</translation>
 <translation id="4851297395436456855">kelaus eteenpäin</translation>
 <translation id="1088086359088493902">Sekuntia</translation>
 <translation id="3934680773876859118">PDF-asiakirjan lataaminen epäonnistui</translation>

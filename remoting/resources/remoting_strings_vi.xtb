@@ -46,6 +46,7 @@ trên Chrome</translation>
 <translation id="6001953797859482435">Tùy chọn máy chủ Chrome Remote Desktop</translation>
 <translation id="9188433529406846933">Cho phép</translation>
 <translation id="228809120910082333">Vui lòng xác nhận tài khoản và mã PIN của bạn bên dưới để cho phép truy cập theo kết nối từ xa trên Chrome.</translation>
+<translation id="7605995381616883502">Kết nối mới</translation>
 <translation id="5826423541626112308">Máy chủ Chrome Remote Desktop</translation>
 <translation id="2851674870054673688">Sau khi họ nhập mã, phiên chia sẻ của bạn sẽ bắt đầu.</translation>
 <translation id="5593560073513909978">Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau.</translation>
@@ -68,6 +69,7 @@ trên Chrome</translation>
 <translation id="7081428606750359611">Máy chủ kết nối từ xa trên Chrome</translation>
 <translation id="8228265668171617545">Đã phát hiện một phiên bản Kết nối từ xa trên Chrome không tương thích. Vui lòng đảm bảo rằng bạn có phiên bản Chrome và Kết nối từ xa trên Chrome mới nhất trên cả hai máy tính và thử lại.</translation>
 <translation id="6985691951107243942">Bạn có chắc chắn muốn tắt kết nối từ xa với <ph name="HOSTNAME"/> không? Nếu bạn thay đổi ý định, bạn cần truy cập vào máy tính đó để bật lại kết nối.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (trực tuyến lần cuối vào <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Để bắt đầu chia sẻ máy tính của bạn, hãy cung cấp mã truy cập bên dưới cho người sẽ trợ giúp bạn.</translation>
 <translation id="409800995205263688">LƯU Ý: Cài đặt chính sách chỉ cho phép kết nối giữa các máy tính trong mạng của bạn.</translation>
 <translation id="2353140552984634198">Bạn có thể truy cập an toàn vào máy tính này bằng Kết nối từ xa trên Chrome.</translation>
@@ -134,7 +136,9 @@ trên Chrome</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
 <translation id="2926340305933667314">Không thể tắt kết nối từ xa với máy tính này. Vui lòng thử lại sau.</translation>
 <translation id="6865175692670882333">Xem/chỉnh sửa</translation>
+<translation id="5859141382851488196">Cửa sổ mới...</translation>
 <translation id="2089514346391228378">Kết nối từ xa cho máy tính này đã được bật.</translation>
+<translation id="7693372326588366043">Làm mới danh sách máy chủ</translation>
 <translation id="8246880134154544773">Xác thực không thành công. Vui lòng đăng nhập lại Kết nối từ xa trên Chrome.</translation>
 <translation id="1654128982815600832">Đang bật kết nối từ xa cho máy tính này…</translation>
 <translation id="8187079423890319756">Bản quyền 2012 Tác giả Chromium. Mọi quyền được bảo lưu.</translation>

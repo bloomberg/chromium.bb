@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Diğer...</translation>
 <translation id="2426432199384958866">akışı yapılan filmi gerçek zamanlı hale döndür</translation>
 <translation id="248395913932153421">Gün</translation>
+<translation id="1729654308190250600">Lütfen e-posta adresini boş bırakmayın.</translation>
 <translation id="6015796118275082299">Yıl</translation>
 <translation id="9186171386827445984">Belge yükleniyor: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sayfa...</translation>
 <translation id="1235745349614807883">Son Aramaları Temizle</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">liste işaretçisi</translation>
 <translation id="4202807286478387388">git</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Lütfen başına &quot;<ph name="ATSIGN"/>&quot; ekleyin. &quot;<ph name="INVALIDADDRESS"/>&quot; adresi eksik.</translation>
+<translation id="2746543609216772311">Değer <ph name="MINIMUM_DATE_OR_TIME"/> veya daha ileri olmalıdır.</translation>
 <translation id="2572483411312390101">oynat</translation>
 <translation id="8785498733064193001">oynatmayı başlat</translation>
 <translation id="7057186640035488495">filmin süresi</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">hızlı şekilde geriye doğru git</translation>
 <translation id="7789962463072032349">duraklat</translation>
 <translation id="6853785296079745596">alt yazıları gizle</translation>
+<translation id="4360991593054037559">Lütfen geçerli bir değer girin. En yakın iki geçerli değer şunlardır: <ph name="VALID_VALUE_LOW"/> ve <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Diğer...</translation>
 <translation id="8141602879876242471">Bu dizinde arama yapılabilir. Arama anahtar kelimeleri girin:</translation>
 <translation id="1930711995431081526">durum</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">hızlı şekilde ileriye doğru git</translation>
 <translation id="4812940957355064477">Lütfen bir sayı girin.</translation>
 <translation id="2548326553472216322">Yeni arama yok</translation>
+<translation id="1938124657309484470">Değer <ph name="MAXIMUM_DATE_OR_TIME"/> veya daha geri olmalıdır.</translation>
 <translation id="7263440858009898357">Lütfen listeden bir öğe seçin.</translation>
 <translation id="901493112792887934">saniye olarak geçerli süre</translation>
 <translation id="5164977714490026579">Değer <ph name="MINIMUM"/> veya daha büyük olmalıdır.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Bu hafta</translation>
 <translation id="5966707198760109579">Hafta</translation>
 <translation id="2901282870647571346">filmin geçerli durumu</translation>
+<translation id="2060505056492490888">&quot;<ph name="DOT"/>&quot;, &quot;<ph name="INVALIDDOMAIN"/>&quot; adı içinde yanlış bir konumda kullanılmış.</translation>
 <translation id="2674318244760992338">altbilgi</translation>
 <translation id="8987927404178983737">Ay</translation>
 <translation id="8115662671911883373">altyazıları görüntülemeye başla</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">işaretle</translation>
 <translation id="2846343701378493991">1024 (Orta Düzey)</translation>
 <translation id="1637811476055996098">Dosyaları Seç</translation>
+<translation id="49969490063480558">Lütfen başına &quot;<ph name="ATSIGN"/>&quot; ekleyin. &quot;<ph name="INVALIDADDRESS"/>&quot; eksik.</translation>
 <translation id="5476505524087279545">işareti kaldır</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2507943997699731163">Lütfen bu alanı doldurun.</translation>
 <translation id="3785482301506746191">film süresi göstergesi</translation>
 <translation id="739024184232394898">Diğer...</translation>
+<translation id="383465348367842624">Başında &quot;<ph name="ATSIGN"/>&quot; bulunan kısımda &quot;<ph name="INVALIDCHARACTER"/>&quot; simgesi bulunmamalıdır.</translation>
 <translation id="5468998798572797635">tam ekrandan çık</translation>
 <translation id="5919473608089529604">Eklenti yüklenemedi.</translation>
 <translation id="5546461542133609677">sesi aç</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Lütfen e-posta adreslerinin virgülle ayrılmış listesini girin.</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="1921819250265091946">gg</translation>
+<translation id="2613802280814924224">Lütfen geçerli bir değer girin. En yakın geçerli değer şudur: <ph name="VALID_VALUE"/></translation>
 <translation id="835897206747267392">Geçersiz değer.</translation>
 <translation id="1842960171412779397">seç</translation>
 <translation id="7673697353781729403">Saat</translation>
+<translation id="4664250907885839816">Başında &quot;<ph name="ATSIGN"/>&quot; bulunan kısımda &quot;<ph name="INVALIDCHARACTER"/>&quot; simgesi bulunmamalıdır.</translation>
 <translation id="3450233048674729344">Değer <ph name="MAXIMUM"/> veya daha küçük olmalıdır.</translation>
 <translation id="3471999216963526757">30 saniye geri git</translation>
 <translation id="668171684555832681">Diğer...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">etkinleştir</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> dosya</translation>
 <translation id="6643016212128521049">Temizle</translation>
+<translation id="7888071071722539607">Lütfen e-posta adresine bir &quot;<ph name="ATSIGN"/>&quot; işareti ekleyin. &quot;<ph name="INVALIDADDRESS"/>&quot; adresinde &quot;<ph name="ATSIGN"/>&quot; eksik.</translation>
 <translation id="4851297395436456855">ileri sar</translation>
 <translation id="1088086359088493902">Saniye</translation>
 <translation id="3934680773876859118">PDF dokümanı yüklenemedi</translation>

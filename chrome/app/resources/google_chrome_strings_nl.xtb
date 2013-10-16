@@ -27,6 +27,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2896252579017640304">Chrome-apps starten</translation>
 <translation id="2370289711218562573">Google Chrome importeert momenteel favorieten/bladwijzers.</translation>
 <translation id="8762286861469007470">Chrome-detector van captive portals</translation>
+<translation id="2721687379934343312">Wachtwoorden worden op de Mac opgeslagen in je sleutelhanger en kunnen worden geopend of gesynchroniseerd door andere Chrome-gebruikers die dit OS X-account delen.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> kan je Chrome-instellingen wijzigen.</translation>
 <translation id="1761870329818521071">Kan dezelfde Google Chrome Frame-versie die momenteel actief is, niet installeren. Sluit Google Chrome Frame en probeer het opnieuw.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -64,6 +65,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Je factureringsgegevens zijn opgeslagen in Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome gebruikt je microfoon.</translation>
+<translation id="3590194807845837023">Profiel ontgrendelen en opnieuw starten</translation>
 <translation id="4053720452172726777">Google Chrome aanpassen en beheren</translation>
 <translation id="6423071462708908582">Je probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een verlopen certificaat gepresenteerd. Er is geen informatie beschikbaar om te bepalen of er inbreuk is gemaakt op dit certificaat sinds het is verlopen. Dit betekent dat Google Chrome niet kan garanderen dat je communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van je computer staat momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet je de fout herstellen en deze pagina vernieuwen.</translation>
 <translation id="3197823471738295152">Het apparaat is bijgewerkt.</translation>
@@ -87,7 +89,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="7459554271817304652">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te krijgen tot deze functies via Google Chrome, vanaf elke computer.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Bijwerken</translation>
-<translation id="1195935957447623558">Google Chrome is niet correct afgesloten. Klik op Herstellen om de pagina's te openen die actief waren.</translation>
+<translation id="1195935957447623558">Google Chrome is niet correct afgesloten. Klik op 'Herstellen' om de pagina's te openen die actief waren.</translation>
 <translation id="2576431527583832481">Chrome is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
 <translation id="2580411288591421699">Kan dezelfde Google Chrome-versie die momenteel actief is, niet installeren. Sluit Google Chrome en probeer het opnieuw.</translation>
 <translation id="8460191995881063249">Meldingscentrum van Chrome</translation>
@@ -138,6 +140,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="1104959162601287462">Over &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
+<translation id="7787950393032327779">Het profiel lijkt te worden gebruikt door een ander proces in Google Chrome (<ph name="PROCESS_ID"/>) op een andere computer (<ph name="HOST_NAME"/>). Het profiel is vergrendeld zodat het niet wordt beschadigd. Als je zeker weet dat dit profiel niet door andere processen wordt gebruikt, kun je het profiel ontgrendelen en Chrome opnieuw starten.</translation>
 <translation id="1469002951682717133">App-opstartprogramma van Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Met Google Chrome kun je klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
@@ -157,9 +160,9 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="6326175484149238433">Verwijderen uit Chrome</translation>
 <translation id="2871893339301912279">U bent ingelogd bij Chrome.</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
-<translation id="1686446242839005801">Je logt in bij Chrome met je account <ph name="USER_EMAIL_ADDRESS"/>. Je kunt toegang krijgen tot je bladwijzers, geschiedenis en andere instellingen op al je ingelogde apparaten.</translation>
 <translation id="4147555960264124640">Je logt in op een beheerd account en geeft de beheerderscontrole over aan je Google Chrome-profiel. Je Chrome-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME"/>. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Deze site maakt gebruik van de plug-in Chrome Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en voer een upgrade naar een modernere browser uit.</translation>
+<translation id="1348153800635493797">Je moet Chrome upgraden om Google Wallet te gebruiken [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Ga naar 'Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's' en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">&amp;Google Chrome bijwerken</translation>
@@ -187,6 +190,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="2769762047821873045">Google Chrome is niet je standaardbrowser.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> kan wijzigen hoe je zoekopdrachten werken in Chrome.</translation>
+<translation id="4567424176335768812">Je bent ingelogd als <ph name="USER_EMAIL_ADDRESS"/>. Je hebt nu toegang tot je bladwijzers, geschiedenis en andere instellingen op al je apparaten waarop je bent ingelogd.</translation>
 <translation id="6855094794438142393">Ga naar
           het menu 'Chrome' &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -205,6 +209,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="5334545119300433702">Van deze module is bekend dat deze conflicteert met Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome is bijgewerkt.</translation>
+<translation id="4120075327926916474">Wil je dat Chrome deze creditcardgegevens opslaat voor het invullen van webformulieren?</translation>
 <translation id="2084710999043359739">Toevoegen aan Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame is al geïnstalleerd en beschikbaar voor alle gebruikers van deze computer. Als je Google Chrome Frame op gebruikersniveau wilt installeren, moet je eerst de versie op systeemniveau verwijderen die door een beheerder is geïnstalleerd.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

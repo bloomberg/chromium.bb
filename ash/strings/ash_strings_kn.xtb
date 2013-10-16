@@ -14,6 +14,7 @@
 <translation id="3775358506042162758">ಬಹು ಸೈನ್-ಇನ್‌ನಲ್ಲಿ ನೀವು ಮೂರರಷ್ಟು ಖಾತೆಗಳನ್ನು ಮಾತ್ರ ಹೊಂದಬಹುದು.</translation>
 <translation id="370649949373421643">Wi-Fi ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
+<translation id="3621202678540785336">ಇನ್‌ಪುಟ್</translation>
 <translation id="595202126637698455">ಕಾರ್ಯಕ್ಷಮತೆ ಟ್ರೇಸಿಂಗ್ ಸಕ್ರಿಯಗೊಂಡಿದೆ</translation>
 <translation id="8054466585765276473">ಬ್ಯಾಟರಿ ಸಮಯವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
@@ -26,6 +27,7 @@
 <translation id="2297568595583585744">ಸ್ಥಿತಿ ಟ್ರೆ</translation>
 <translation id="1661867754829461514">PIN ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="40400351611212369">ನೆಟ್‌ವರ್ಕ್ ಸಕ್ರಿಯತೆ ದೋಷ</translation>
 <translation id="4237016987259239829">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕದ ದೋಷ</translation>
 <translation id="2946640296642327832">bluetooth ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> ಗೆ ಪರದೆಯನ್ನು ವಿಸ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -44,6 +46,7 @@
 <translation id="4628814525959230255">Hangouts ಮೂಲಕ <ph name="HELPER_NAME"/> ಅವರೊಂದಿಗೆ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="7864539943188674973">bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="939252827960237676">ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಉಳಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">ನವೀಕರಿಸಲು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="2268813581635650749">ಎಲ್ಲವನ್ನೂ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="735745346212279324">VPN ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -53,7 +56,6 @@
 <translation id="8190698733819146287">ಭಾಷೆಗಳು ಮತ್ತು ಇನ್‌ಪುಟ್ ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">ಶೆಲ್ಫ್ ಸ್ಥಾನ</translation>
-<translation id="2903907270192926896">ಇನ್‌ಪುಟ್</translation>
 <translation id="8676770494376880701">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್ ಸಂಪರ್ಕಪಡಿಸಲಾಗಿದೆ</translation>
 <translation id="7170041865419449892">ವ್ಯಾಪ್ತಿಯ ಹೊರಗೆ</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
@@ -77,18 +79,23 @@
         ಬದಲಿಸಲು Shift + Alt ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="2562916301614567480">ಖಾಸಗಿ ನೆಟ್‌ವರ್ಕ್‌</translation>
 <translation id="6549021752953852991">ಯಾವುದೇ ಸೆಲ್ಯುಲಾರ್ ನೆಟ್‌ವರ್ಕ್ ಲಭ್ಯವಿಲ್ಲ</translation>
+<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4379753398862151997">ಆತ್ಮೀಯ ಮಾನಿಟರ್, ನಮ್ಮ ನಡುವೆ ಸರಿಹೊಂದುತ್ತಿಲ್ಲ. (ಆ ಮಾನಿಟರ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ)</translation>
 <translation id="6426039856985689743">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3087734570205094154">ಕೆಳಗೆ</translation>
 <translation id="3742055079367172538">ಸ್ಕ್ರಿನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ</translation>
 <translation id="8878886163241303700">ಪರದೆಯನ್ನು ವಿಸ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5271016907025319479">VPN ಕಾನ್ಫಿಗರ್ ಮಾಡಲಾಗಿಲ್ಲ.</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
+<translation id="3967919079500697218">ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳುವ ಸಾಮರ್ಥ್ಯವನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="372094107052732682">ತೊರೆಯಲು Ctrl+Shift+Q ಅನ್ನು ಎರಡು ಬಾರಿ ಒತ್ತಿರಿ.</translation>
 <translation id="6803622936009808957">ಯಾವುದೇ ಬೆಂಬಲಿತ ಪರಿಹಾರಗಳು ಕಂಡುಬರದ ಕಾರಣ ಪ್ರದರ್ಶನಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗಲಿಲ್ಲ. ಬದಲಿಗೆ ವಿಸ್ತರಿತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="1480041086352807611">ಡೆಮೋ ಮೋಡ್</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% ಉಳಿದಿದೆ</translation>
 <translation id="9089416786594320554">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳು</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2670531586141364277">'<ph name="NAME"/>' ನ ಸಕ್ರಿಯತೆಗೆ ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕ ಅಗತ್ಯವಿದೆ.</translation>
+<translation id="3963445509666917109">ಸ್ಪೀಕರ್ (ಆಂತರಿಕ)</translation>
 <translation id="2825619548187458965">ಶೆಲ್ಫ್</translation>
 <translation id="2614835198358683673">ನಿಮ್ಮ Chromebook ಆನ್ ಆಗಿರುವಾಗ ಅದು ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಿ.</translation>
 <translation id="1895658205118569222">ಶಟ್‌ಡೌನ್</translation>
@@ -98,13 +105,13 @@
 <translation id="7874779702599364982">ಸೆಲ್ಯುಲರ್ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕುತ್ತಿದೆ...</translation>
 <translation id="583281660410589416">ಅಜ್ಞಾತ</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
-<translation id="7468789844759750875">ಹೆಚ್ಚಿನ ಡೇಟಾವನ್ನು ಖರೀದಿಸಲು <ph name="NAME"/> ಸಕ್ರಿಯ ಪೋರ್ಟಲ್ ಅನ್ನು ಭೇಟಿ ಮಾಡಿ.</translation>
 <translation id="3901991538546252627"><ph name="NAME"/> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2204305834655267233">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿ</translation>
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">ಅತಿಥಿ ಸೆಶೆನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
 <translation id="4666297444214622512">ಮತ್ತೊಂದು ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="3625258641415618104">ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1346748346194534595">ಬಲಕ್ಕೆ</translation>
 <translation id="1773212559869067373">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸ್ಥಳೀಯವಾಗಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
 <translation id="8528322925433439945">ಮೊಬೈಲ್...</translation>
@@ -133,6 +140,7 @@
 <translation id="1512064327686280138">ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5097002363526479830">'<ph name="NAME"/>' ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ವಿಫಲವಾಗಿದೆ: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
+<translation id="2966449113954629791">ನಿಮ್ಮ ಮೊಬೈಲ್ ಡೇಟಾ ಭತ್ಯೆಯನ್ನು ನೀವು ಬಳಸಿರಬಹುದು. ಹೆಚ್ಚಿನ ಡೇಟಾವನ್ನು ಖರೀದಿಸಲು <ph name="NAME"/> ಸಕ್ರಿಯೀಕರಣ ಪೋರ್ಟಲ್‌ಗೆ ಭೇಟಿ ನೀಡಿ.</translation>
 <translation id="8132793192354020517"><ph name="NAME"/> ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="7052914147756339792">ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ಹೊಂದಿಸಿ...</translation>
 <translation id="8678698760965522072">ಆನ್‌ಲೈನ್ ಸ್ಥಿತಿ</translation>
@@ -149,22 +157,26 @@
 <translation id="3157931365184549694">ಪುನಃಸ್ಥಾಪನೆ</translation>
 <translation id="4274292172790327596">ಗುರುತಿಸದೆ ಇರುವ ದೋಷ</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
+<translation id="5977415296283489383">ಹೆಡ್‌ಫೋನ್</translation>
 <translation id="225680501294068881">ಸಾಧನಗಳಿಗಾಗಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="737451040872859086">ಮೈಕ್ರೊಫೋನ್ (ಆಂತರಿಕ)</translation>
 <translation id="4448844063988177157">Wi-Fi ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8401662262483418323">'<ph name="NAME"/>' ಗೆ ಸಂಪರ್ಕಪಡಿಸಲು ವಿಫಲವಾಗಿದೆ: <ph name="DETAILS"/>
 ಸರ್ವರ್ ಸಂದೇಶ: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">ದೋಷವೊಂದು ಕಾಣಿಸಿಕೊಂಡಿದೆ</translation>
 <translation id="7229570126336867161">EVDO ಅಗತ್ಯವಿದೆ</translation>
 <translation id="2999742336789313416"><ph name="DOMAIN"/> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಸಾರ್ವಜನಿಕ ಸೆಶನ್ <ph name="DISPLAY_NAME"/> ಆಗಿದೆ</translation>
+<translation id="9044646465488564462">ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ವಿಫಲವಾಗಿದೆ: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
 <translation id="8454013096329229812">Wi-Fi ಆನ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="9201131092683066720">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE"/>% ಪೂರ್ಣವಾಗಿದೆ.</translation>
 <translation id="2983818520079887040">ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
+<translation id="3871838685472846647">ಸೆಲ್ಯುಲಾರ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1195412055398077112">ಓವರ್‌ಸ್ಕ್ಯಾನ್</translation>
-<translation id="1717216362413677834">ಡಾಕ್ ಮೋಡ್</translation>
 <translation id="112308213915226829">ಶೆಲ್ಫ್ ಅನ್ನು ಸ್ವಯಂಮರೆಮಾಡು</translation>
+<translation id="7573962313813535744">ಪರಸ್ಪರ ಸಂಧಿಸುವ ಮೋಡ್</translation>
 <translation id="8927026611342028580">ಸಂಪರ್ಕವನ್ನು ವಿನಂತಿಸಲಾಗಿದೆ</translation>
 <translation id="8300849813060516376">OTASP ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="2792498699870441125">Alt+ಹುಡುಕಾಟ</translation>
@@ -176,17 +188,16 @@
 <translation id="6785414152754474415">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE"/>% ಪೂರ್ಣಗೊಂಡಿದೆ ಮತ್ತು ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4895488851634969361">ಬ್ಯಾಟರಿ ತುಂಬಿದೆ.</translation>
-<translation id="1391854757121130358">ನಿಮ್ಮ ಮೊಬೈಲ್ ಡೇಟಾ ಭತ್ಯೆಯನ್ನು ನೀವು ಬಳಸಿರಬಹುದು.</translation>
 <translation id="5947494881799873997">ಹಿಂತಿರುಗಿಸು</translation>
 <translation id="7593891976182323525">ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
+<translation id="747833637904845037">ಒಂದು ಆಂತರಿಕ ಪ್ರದರ್ಶನಕ್ಕೆ ನಿಮ್ಮ Chromebook ಸಂಪರ್ಕಗೊಂಡಿರುವ ಸಂದರ್ಭದಲ್ಲಿ, ಲಿಡ್ ಮುಚ್ಚಲಾಗಿದ್ದರೂ ಕೂಡ ಅನ್ ಆಗಿಯೇ ಉಳಿದಿರುತ್ತದೆ.</translation>
 <translation id="3050422059534974565">CAPS LOCK ಆನ್ ಆಗಿದೆ.
 ರದ್ದುಗೊಳಿಸಲು ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="158849752021629804">ಹೋಮ್ ನೆಟ್‌ವರ್ಕ್ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP ಲುಕಪ್ ವಿಫಲವಾಗಿದೆ</translation>
-<translation id="5812035014844949013">ಔಟ್‌ಪುಟ್</translation>
 <translation id="6692173217867674490">ಕೆಟ್ಟ ಪಾಸ್‌ಫ್ರೇಸ್</translation>
 <translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="9046895021617826162">ಸಂಪರ್ಕವು ವಿಫಲವಾಗಿದೆ</translation>
@@ -202,12 +213,14 @@
 <translation id="8940956008527784070">ಬ್ಯಾಟರಿ ಕಡಿಮೆ (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="4918086044614829423">ಸಮ್ಮತಿಸು</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ಉಳಿದಿದೆ</translation>
+<translation id="3009178788565917040">ಔಟ್‌ಪುಟ್</translation>
 <translation id="520760366042891468">Hangouts ಮೂಲಕ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="8000066093800657092">ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲ</translation>
 <translation id="4015692727874266537">ಮತ್ತೊಂದು ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ...</translation>
 <translation id="5941711191222866238">ಕುಗ್ಗಿಸು</translation>
 <translation id="6911468394164995108">ಇತರರನ್ನು ಸೇರಿ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
+<translation id="2563856802393254086">ಅಭಿನಂದನೆಗಳು! ನಿಮ್ಮ '<ph name="NAME"/>' ಡೇಟಾ ಸೇವೆಯನ್ನು ಕ್ರಿಯಾತ್ಮಕಗೊಳಿಸಲಾಗಿದೆ ಮತ್ತು ಮುಂದುವರೆಯಲು ಸಿದ್ಧವಾಗಿದೆ.</translation>
 <translation id="412065659894267608">ಪೂರ್ಣವಾಗುವವರಗೆ <ph name="HOUR"/>ಗಂ <ph name="MINUTE"/>ನಿ</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> ನಿಂದ SMS</translation>
 <translation id="1244147615850840081">ವಾಹಕ</translation>

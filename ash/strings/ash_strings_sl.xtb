@@ -14,6 +14,7 @@
 <translation id="3775358506042162758">S prijavo z več računi lahko uporabljate samo tri račune.</translation>
 <translation id="370649949373421643">Omogoči Wi-Fi</translation>
 <translation id="3626281679859535460">Svetlost</translation>
+<translation id="3621202678540785336">Vhod</translation>
 <translation id="595202126637698455">Sledenje učinkovitosti delovanja je omogočeno</translation>
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
 <translation id="7982789257301363584">Omrežje</translation>
@@ -26,6 +27,7 @@
 <translation id="2297568595583585744">Pladenj stanja</translation>
 <translation id="1661867754829461514">Manjka PIN</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: vzpostavljanje povezave ...</translation>
+<translation id="40400351611212369">Napaka pri aktiviranju omrežja</translation>
 <translation id="4237016987259239829">Napaka omrežne povezave</translation>
 <translation id="2946640296642327832">Omogoči Bluetooth</translation>
 <translation id="6459472438155181876">Razširitev zaslon na <ph name="DISPLAY_NAME"/></translation>
@@ -44,6 +46,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="4628814525959230255">Skupni nadzor zaslona z osebo <ph name="HELPER_NAME"/> prek klepetalnic Hangouts.</translation>
 <translation id="7864539943188674973">Onemogoči Bluetooth</translation>
 <translation id="939252827960237676">Posnetka zaslona ni bilo mogoče shraniti</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">Znova zaženite za posodobitev</translation>
 <translation id="2268813581635650749">Odjava vseh</translation>
 <translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
@@ -53,7 +56,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Položaj police</translation>
-<translation id="2903907270192926896">VHOD</translation>
 <translation id="8676770494376880701">Priključen je nizkoenergijski polnilnik</translation>
 <translation id="7170041865419449892">Zunaj dosega</translation>
 <translation id="4804818685124855865">Prekini povezavo</translation>
@@ -77,18 +79,23 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="2562916301614567480">Zasebno omrežje</translation>
 <translation id="6549021752953852991">Mobilno omrežje ni na voljo</translation>
+<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4379753398862151997">Dragi monitor, med nama se ne bo obneslo. (Ta monitor ni podprt)</translation>
 <translation id="6426039856985689743">Onemogoči mobilno podatkovno povezavo</translation>
 <translation id="3087734570205094154">Na dno</translation>
 <translation id="3742055079367172538">Posnetek zaslona je narejen</translation>
 <translation id="8878886163241303700">Razširjanje zaslona</translation>
 <translation id="5271016907025319479">VPN ni konfiguriran.</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
+<translation id="3967919079500697218">Skrbnik je onemogočil možnost izdelave posnetkov zaslona.</translation>
 <translation id="372094107052732682">Dvakrat pritisnite Ctrl + Shift + Q, če želite končati.</translation>
 <translation id="6803622936009808957">Zaslonov ni bilo mogoče zrcaliti, ker ni bilo najdene nobene podprte ločljivosti. Uporabljeno je razširjeno namizje.</translation>
 <translation id="1480041086352807611">Predstavitveni način</translation>
 <translation id="3626637461649818317">Preostane še <ph name="PERCENTAGE"/> %</translation>
 <translation id="9089416786594320554">Načini vnosa</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="2670531586141364277">Če želite aktivirati omrežje »<ph name="NAME"/>«, mora biti vzpostavljena omrežna povezava.</translation>
+<translation id="3963445509666917109">Zvočnik (vgrajeni)</translation>
 <translation id="2825619548187458965">Polica</translation>
 <translation id="2614835198358683673">Vaš Chromebook se ne more polniti, ko je vklopljen. Priporočamo uporabo uradnega polnilnika.</translation>
 <translation id="1895658205118569222">Zaprt</translation>
@@ -98,13 +105,13 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="7874779702599364982">Iskanje mobilnih omrežij ...</translation>
 <translation id="583281660410589416">Neznano</translation>
 <translation id="1383876407941801731">Iskanje</translation>
-<translation id="7468789844759750875">Če želite kupiti dodatne podatke, obiščite aktivacijski portal <ph name="NAME"/>.</translation>
 <translation id="3901991538546252627">Vzpostavljanje povezave z omrežjem <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Podatki o omrežju</translation>
 <translation id="1621499497873603021">Preostali čas do izpraznitve akumulatorja, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Zapusti sejo gosta</translation>
 <translation id="8308637677604853869">Prejšnji meni</translation>
 <translation id="4666297444214622512">V drug račun se ni mogoče prijaviti.</translation>
+<translation id="3625258641415618104">Posnetki zaslona so onemogočeni</translation>
 <translation id="1346748346194534595">V desno</translation>
 <translation id="1773212559869067373">Potrdilo za preverjanje pristnosti je bilo zavrnjeno lokalno</translation>
 <translation id="8528322925433439945">Mobilna ...</translation>
@@ -133,6 +140,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="1512064327686280138">Napaka pri aktiviranju</translation>
 <translation id="5097002363526479830">Povezava z omrežjem »<ph name="NAME"/>« ni uspela: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi je izklopljen.</translation>
+<translation id="2966449113954629791">Morda ste porabili dovoljeno količino prenosa podatkov v mobilnem omrežju. Večjo količino podatkov lahko kupite na portalu za aktiviranje <ph name="NAME"/>.</translation>
 <translation id="8132793192354020517">Povezava z <ph name="NAME"/> je vzpostavljena </translation>
 <translation id="7052914147756339792">Nastavi sliko za ozadje ...</translation>
 <translation id="8678698760965522072">Stanje s povezavo</translation>
@@ -149,22 +157,26 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="3157931365184549694">Obnovi</translation>
 <translation id="4274292172790327596">Neprepoznana napaka</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
+<translation id="5977415296283489383">Slušalke</translation>
 <translation id="225680501294068881">Iskanje naprav ...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="737451040872859086">Mikrofon (vgrajeni)</translation>
 <translation id="4448844063988177157">Iskanje omrežij Wi-Fi</translation>
 <translation id="8401662262483418323">Povezava s/z »<ph name="NAME"/>« ni bila mogoča: <ph name="DETAILS"/>
 Sporočilo strežnika: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Prišlo je do napake</translation>
 <translation id="7229570126336867161">Potreben je EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> je javna seja, ki jo upravlja <ph name="DOMAIN"/></translation>
+<translation id="9044646465488564462">Z omrežjem se ni bilo mogoče povezati: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Zapusti sejo</translation>
 <translation id="8454013096329229812">Wi-Fi je vklopljen.</translation>
 <translation id="4872237917498892622">Alt + iskanje ali Shift</translation>
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE"/> %.</translation>
 <translation id="2983818520079887040">Nastavitve ...</translation>
+<translation id="3871838685472846647">Mobilna aktivirana</translation>
 <translation id="1195412055398077112">upodabljanje čez rob zaslona</translation>
-<translation id="1717216362413677834">Zasidrani način</translation>
 <translation id="112308213915226829">Samodejno skrivanje police</translation>
+<translation id="7573962313813535744">Zasidran način</translation>
 <translation id="8927026611342028580">Povezava zahtevana</translation>
 <translation id="8300849813060516376">Storitev OTASP ni uspela</translation>
 <translation id="2792498699870441125">Alt + iskanje</translation>
@@ -176,17 +188,16 @@ Sporočilo strežnika: <ph name="SERVER_MSG"/></translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE"/> % – polnjenje še poteka.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Aktiviranje ...</translation>
 <translation id="4895488851634969361">Akumulator je poln.</translation>
-<translation id="1391854757121130358">Morda ste porabili dovoljeno količino mobilnih podatkov.</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
 <translation id="7649070708921625228">Pomoč</translation>
+<translation id="747833637904845037">Ko je Chromebook priključen na zunanji zaslon, bo ostal vklopljen, tudi ko je pokrov zaprt.</translation>
 <translation id="3050422059534974565">Tipka CAPS LOCK je vklopljena.
 Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="158849752021629804">Potrebno je domače omrežje</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Iskanje DHCP-ja ni uspelo</translation>
-<translation id="5812035014844949013">IZHOD</translation>
 <translation id="6692173217867674490">Napačno geslo</translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="9046895021617826162">Vzpostavljanje povezave ni uspelo</translation>
@@ -202,12 +213,14 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="8940956008527784070">Akumulator je skoraj prazen (<ph name="PERCENTAGE"/> %)</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="5102001756192215136">Še <ph name="HOUR"/>.<ph name="MINUTE"/></translation>
+<translation id="3009178788565917040">Izhod</translation>
 <translation id="520760366042891468">Skupni nadzor zaslona prek klepetalnic Hangouts.</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="4015692727874266537">Prijava z drugim računom ...</translation>
 <translation id="5941711191222866238">Pomanjšaj</translation>
 <translation id="6911468394164995108">Pridružite se drugemu ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
+<translation id="2563856802393254086">Čestitamo. Podatkovna storitev omrežja »<ph name="NAME"/>« je aktivirana in lahko jo začnete uporabljati.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do napolnjenosti</translation>
 <translation id="6359806961507272919">SMS od <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operater</translation>

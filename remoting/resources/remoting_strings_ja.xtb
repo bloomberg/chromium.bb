@@ -46,6 +46,7 @@
 <translation id="6001953797859482435">Chrome リモート デスクトップ ホストの設定</translation>
 <translation id="9188433529406846933">承認</translation>
 <translation id="228809120910082333">Chromoting によるアクセスを許可するには、下記でアカウントと PIN の確認を行ってください。</translation>
+<translation id="7605995381616883502">新しい接続</translation>
 <translation id="5826423541626112308">Chrome リモート デスクトップ ホスト</translation>
 <translation id="2851674870054673688">共有するユーザーがこのコードを入力すると、共有セッションが開始されます。</translation>
 <translation id="5593560073513909978">このサービスは一時的に利用できなくなっています。しばらくしてからもう一度お試しください。</translation>
@@ -68,6 +69,7 @@
 <translation id="7081428606750359611">Chromoting ホスト</translation>
 <translation id="8228265668171617545">互換性のないバージョンの Chromoting が検出されました。最新バージョンの Chrome と Chromoting が両方のパソコンにインストールされていることを確認して、もう一度お試しください。</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME"/> へのリモート接続を無効にしてもよろしいですか？元に戻す場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/>（最新アクセス日: <ph name="DATE"/>）</translation>
 <translation id="9149992051684092333">デスクトップの共有を開始するには、共有するユーザーに以下のアクセス コードをお知らせください。</translation>
 <translation id="409800995205263688">注: ポリシー設定に基づき、接続が許可されるのはこのネットワーク内のパソコン間のみとなります。</translation>
 <translation id="2353140552984634198">Chromoting を使用して、このパソコンに安全にアクセスできます。</translation>
@@ -134,7 +136,9 @@
 <translation id="6527303717912515753">共有</translation>
 <translation id="2926340305933667314">このパソコンへのリモート アクセスを無効にできませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="6865175692670882333">表示/編集</translation>
+<translation id="5859141382851488196">新しいウィンドウ...</translation>
 <translation id="2089514346391228378">このパソコンのリモート接続が有効になりました。</translation>
+<translation id="7693372326588366043">ホストのリストを更新します</translation>
 <translation id="8246880134154544773">認証に失敗しました。Chromoting にもう一度ログインしてください。</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>

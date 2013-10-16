@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Anders...</translation>
 <translation id="2426432199384958866">terug naar streamen van film in realtime</translation>
 <translation id="248395913932153421">Dag</translation>
+<translation id="1729654308190250600">Geef een e-mailadres op.</translation>
 <translation id="6015796118275082299">Jaar</translation>
 <translation id="9186171386827445984">Document wordt geladen: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> pagina's...</translation>
 <translation id="1235745349614807883">Recente zoekopdrachten wissen</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">lijstmarkering</translation>
 <translation id="4202807286478387388">Gaan naar</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Geef een naamgedeelte op, gevolgd door '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' is onvolledig.</translation>
+<translation id="2746543609216772311">Waarde moet <ph name="MINIMUM_DATE_OR_TIME"/> of later zijn.</translation>
 <translation id="2572483411312390101">afspelen</translation>
 <translation id="8785498733064193001">afspelen starten</translation>
 <translation id="7057186640035488495">tijd van de film</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">snel achteruit zoeken</translation>
 <translation id="7789962463072032349">onderbreken</translation>
 <translation id="6853785296079745596">ondertiteling verbergen</translation>
+<translation id="4360991593054037559">Geef een geldige waarde op. De twee dichtstbijzijnde geldige waarden zijn <ph name="VALID_VALUE_LOW"/> en <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Anders...</translation>
 <translation id="8141602879876242471">Dit is een doorzoekbare index. Geef zoekwoorden op:</translation>
 <translation id="1930711995431081526">status</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">snel vooruit zoeken</translation>
 <translation id="4812940957355064477">Voer een getal in.</translation>
 <translation id="2548326553472216322">Geen recente zoekopdrachten</translation>
+<translation id="1938124657309484470">Waarde moet <ph name="MAXIMUM_DATE_OR_TIME"/> of eerder zijn.</translation>
 <translation id="7263440858009898357">Selecteer een item in de lijst.</translation>
 <translation id="901493112792887934">huidige tijd in seconden</translation>
 <translation id="5164977714490026579">Waarde moet groter dan of gelijk zijn aan <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Deze week</translation>
 <translation id="5966707198760109579">Week</translation>
 <translation id="2901282870647571346">huidige filmstatus</translation>
+<translation id="2060505056492490888">'<ph name="DOT"/>' wordt op een verkeerde positie gebruikt in '<ph name="INVALIDDOMAIN"/>'.</translation>
 <translation id="2674318244760992338">voettekst</translation>
 <translation id="8987927404178983737">Maand</translation>
 <translation id="8115662671911883373">het weergeven van ondertiteling starten</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">Selecteren</translation>
 <translation id="2846343701378493991">1024 (gemiddeld niveau)</translation>
 <translation id="1637811476055996098">Bestanden kiezen</translation>
+<translation id="49969490063480558">Geef een adresgedeelte op na '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' is onvolledig.</translation>
 <translation id="5476505524087279545">Deselecteren</translation>
 <translation id="2148716181193084225">Vandaag</translation>
 <translation id="2507943997699731163">Vul dit veld in.</translation>
 <translation id="3785482301506746191">schuifbalk met tijd van de film</translation>
 <translation id="739024184232394898">Anders...</translation>
+<translation id="383465348367842624">Het naamgedeelte vóór '<ph name="ATSIGN"/>' mag niet het teken '<ph name="INVALIDCHARACTER"/>' bevatten.</translation>
 <translation id="5468998798572797635">volledig scherm sluiten</translation>
 <translation id="5919473608089529604">Kan plug-in niet laden.</translation>
 <translation id="5546461542133609677">dempen opheffen</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Voer een door komma's gescheiden lijst met e-mailadressen in.</translation>
 <translation id="5939518447894949180">Herstellen</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">Geef een geldige waarde op. De dichtstbijzijnde geldige waarde is <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Ongeldige waarde.</translation>
 <translation id="1842960171412779397">Selecteren</translation>
 <translation id="7673697353781729403">Uur</translation>
+<translation id="4664250907885839816">Het adresgedeelte na '<ph name="ATSIGN"/>' mag niet het teken '<ph name="INVALIDCHARACTER"/>' bevatten.</translation>
 <translation id="3450233048674729344">Waarde moet kleiner dan of gelijk zijn aan <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">30 seconden terug</translation>
 <translation id="668171684555832681">Anders...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">Activeren</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> bestanden</translation>
 <translation id="6643016212128521049">Wissen</translation>
+<translation id="7888071071722539607">Gebruik een '<ph name="ATSIGN"/>' in thet e-mailadres. In '<ph name="INVALIDADDRESS"/>' ontbreekt een '<ph name="ATSIGN"/>'.</translation>
 <translation id="4851297395436456855">snel vooruitspoelen</translation>
 <translation id="1088086359088493902">Seconden</translation>
 <translation id="3934680773876859118">PDF-document kan niet worden geladen</translation>

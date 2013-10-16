@@ -29,6 +29,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="2896252579017640304">የChrome መተግበሪያዎችን አስጀምር</translation>
 <translation id="2370289711218562573">Google Chrome አሁን ተወዳጆችን/ዕልባቶችን ከውጪ በማምጣት ላይ ነው።</translation>
 <translation id="8762286861469007470">Chrome የተያዥ መተላለፊያ አዋቂ</translation>
+<translation id="2721687379934343312">Mac ላይ የይለፍ ቃላት በእርስዎ Keychain ላይ የሚቀመጡ ናቸው፣ እና ይህን የOS X መለያ በሚጋሩ ሌሎች የChrome ተጠቃሚዎች ሊደረስባቸው ወይም ሊመሳሰሉ ይችላሉ።</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> የChrome ቅንብሮችዎን ሊቀይረው ይችላል።</translation>
 <translation id="1761870329818521071">አሁን እያሄደ ያለውን ተመሳሳዩን የGoogle Chrome ክፍለ ገጸ ድር ስሪት መጫን አይቻልም። እባክዎ Google Chrome ክፍለ ገጸ ድርን ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -66,6 +67,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="1697213158865901863">Google Chrome ፍሬም</translation>
 <translation id="4513711165509885787">የክፍያ መጠየቂያ ዝርዝሮችዎ በChrome ውስጥ ተቀምጠዋል።</translation>
 <translation id="7098166902387133879">Google Chrome የእርስዎን ማይክሮፎን እየተጠቀመ ነው።</translation>
+<translation id="3590194807845837023">መገለጫ አስፈክትና ዳግም አስጀምር</translation>
 <translation id="4053720452172726777">Google Chromeን ያብጁ እና ይቆጣጠሩ</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ን ለመድረስ አስበዋል፣ ግን አገልጋዩ ጊዜው ያለፈበት የእውቅና ማረጋገጫ ነው ያቀረበው። ያ የእውቅና ማረጋገጫ ጊዜው ካለፈበት ጊዜ ጀምሮ ተጠቅቶ ከሆነ የሚያመላክት ምንም መረጃ የለም። ይሄ ማለት Google Chrome ከአጥቂ ጋር ሳይሆን ከ&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ጋር እየተገናኙ መሆንዎን ሊያረጋግጥ አይችልም። የኮምፒውተርዎ ሰዐት በአሁኑ ጊዜ <ph name="CURRENT_TIME"/> ይላል። ትክክል ይመስላል? ካልሆነ ስህተቱን አርመው ይህን ገጽ ማደስ አለብዎት።</translation>
 <translation id="3197823471738295152">መሣሪያዎ የተዘመነ ነው።</translation>
@@ -140,6 +142,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="1104959162601287462">ስለ &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Google Chromeን መነሻ ማሰሻ አድርግ</translation>
+<translation id="7787950393032327779">መገለጫው በሌላ ኮምፒውተር (<ph name="HOST_NAME"/>) ላይ በሌላ የGoogle Chrome ሂደት (<ph name="PROCESS_ID"/>) የተያዘ ይመስላል። Chrome መገለጫው እንዳይበላሽ ቆልፎታል።  ሌሎች ሂደቶች ይህን መገለጫ እየተጠቀሙበት እንዳልሆኑ እርግጠኛ ከሆኑ መገለጫውን አስከፍተው Chromeን ዳግም ማስጀመር ይችላሉ።</translation>
 <translation id="1469002951682717133">Chrome የመተግበሪያ አስጀማሪ</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ድር ላይ ያለ ስልክ ቁጥር ጠቅ እንዲያደርጉት እና በSkype እንዲደውሉለት ያስችልዎታል!</translation>
@@ -158,9 +161,9 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6326175484149238433">ከChrome አስወግድ</translation>
 <translation id="2871893339301912279">ወደ Chrome ገብተዋል!</translation>
 <translation id="7161904924553537242">ወደ Google Chrome እንኳን ደህና መጡ</translation>
-<translation id="1686446242839005801">የ<ph name="USER_EMAIL_ADDRESS"/> መለያዎን ተጠቅመው ወደ Chrome እየገቡ ነው። ሁሉንም ዕልባቶችዎ፣ ታሪክዎ እና ሌሎች ቅንብሮችዎን በሁሉም የተገባባቸው መሣሪያዎችዎ ላይ ሊደርሱባቸው ይችላሉ።</translation>
 <translation id="4147555960264124640">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በእርስዎ Google Chrome መገለጫ ላይ ቁጥጥር እየሰጡት ነው። እንደ የእርስዎ መተግበሪያዎች፣ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ያሉ የእርስዎ Chrome ውሂብ እስከ መጨረሻው ከ<ph name="USER_NAME"/> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች Dashboard አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም። <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">ይህ ጣቢያ በቅርቡ የማይደገፍ የሚሆን የChrome ክፈፍ ተሰኪውን እየተጠቀመ ነው። እባክዎ ያራግፉትና ወደ ዘመናዊ አሳሽ ያሻሽሉ።</translation>
+<translation id="1348153800635493797">Google Wallet ለመጠቀም Chromeን ማሻሻል አለብዎ [<ph name="ERROR_CODE"/>]።</translation>
 <translation id="8187289872471304532">ወደ
           መተግበሪያዎች &gt; የስርዓት ምርጫዎች &gt; አውታረ መረብ &gt; የላቁ &gt; ተኪዎች
           ይሂዱና የተመረጡ ማናቸውም ተኪዎችን አይምረጡ።</translation>
@@ -191,6 +194,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7196020411877309443">ለምን ይህን አያለሁ?</translation>
 <translation id="2769762047821873045">Google Chrome መነሻ ማሰሻዎ አይደለም።</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> ፍለጋዎችዎ እንዴት በChrome ላይ እንደሚሰሩ ሊቀይረው ይችላል።</translation>
+<translation id="4567424176335768812">እንደ <ph name="USER_EMAIL_ADDRESS"/> ሆነው ገብተዋል። አሁን የእርስዎን ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች በመለያ በገቡ ሁሉም መሣሪያዎችዎ ላይ መድረስ ይችላሉ።</translation>
 <translation id="6855094794438142393">Go to
           የChrome ምናሌ &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -209,6 +213,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="5334545119300433702">ይህ ሞዱል ከGoogle Chrome ጋር የሚጋጭ መሆኑን ይታወቃል።</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome የተዘመነ ነው።</translation>
+<translation id="4120075327926916474">Chrome የድር ቅጾችን ለማጠናቅቅ ይህን የክሬዲት ካርድ መረጃ እንዲያስቀምጥ ይፈልጋሉ?</translation>
 <translation id="2084710999043359739">ወደ Chrome አክል</translation>
 <translation id="4084877369264707540">Google Chrome ክፍለ ገጸ ድር አስቀድሞ የተጫነና ለሁሉም የዚህ ኮምፒውተር ተጠቃሚዎች የሚገኝ ነው። Google Chrome ክፍለ ገጸ ድርን በተጠቃሚ ደረጃ ላይ መጫን ከፈለጉ መጀመሪያ በአስተዳዳሪው የተጫነው የስርዓት ደረጃ ስሪቱን ማራገፍ አለብዎት።</translation>
 <translation id="3360895254066713204">Chrome አጋዥ</translation>

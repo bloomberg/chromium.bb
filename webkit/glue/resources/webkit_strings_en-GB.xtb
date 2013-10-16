@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Other...</translation>
 <translation id="2426432199384958866">return streaming film to real time</translation>
 <translation id="248395913932153421">Day</translation>
+<translation id="1729654308190250600">Please enter a non-empty email address.</translation>
 <translation id="6015796118275082299">Year</translation>
 <translation id="9186171386827445984">Loading document: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> pages...</translation>
 <translation id="1235745349614807883">Clear Recent Searches</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">list marker</translation>
 <translation id="4202807286478387388">jump</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Please enter a part followed by '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' is incomplete.</translation>
+<translation id="2746543609216772311">Value must be <ph name="MINIMUM_DATE_OR_TIME"/> or later.</translation>
 <translation id="2572483411312390101">play</translation>
 <translation id="8785498733064193001">begin playback</translation>
 <translation id="7057186640035488495">film time</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">seek quickly back</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="6853785296079745596">hide closed captions</translation>
+<translation id="4360991593054037559">Please enter a valid value. The two nearest valid values are <ph name="VALID_VALUE_LOW"/> and <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Other...</translation>
 <translation id="8141602879876242471">This is a searchable index. Enter search keywords:</translation>
 <translation id="1930711995431081526">status</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">seek quickly forward</translation>
 <translation id="4812940957355064477">Please enter a number.</translation>
 <translation id="2548326553472216322">No recent searches</translation>
+<translation id="1938124657309484470">Value must be <ph name="MAXIMUM_DATE_OR_TIME"/> or earlier.</translation>
 <translation id="7263440858009898357">Please select an item in the list.</translation>
 <translation id="901493112792887934">current time in seconds</translation>
 <translation id="5164977714490026579">Value must be greater than or equal to <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">This week</translation>
 <translation id="5966707198760109579">Week</translation>
 <translation id="2901282870647571346">current film status</translation>
+<translation id="2060505056492490888">'<ph name="DOT"/>' is used at a wrong position in '<ph name="INVALIDDOMAIN"/>'.</translation>
 <translation id="2674318244760992338">footer</translation>
 <translation id="8987927404178983737">Month</translation>
 <translation id="8115662671911883373">start displaying closed captions</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">tick</translation>
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>
 <translation id="1637811476055996098">Choose Files</translation>
+<translation id="49969490063480558">Please enter a part following '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' is incomplete.</translation>
 <translation id="5476505524087279545">untick</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2507943997699731163">Please fill in this field.</translation>
 <translation id="3785482301506746191">film time scrubber</translation>
 <translation id="739024184232394898">Other...</translation>
+<translation id="383465348367842624">A part followed by '<ph name="ATSIGN"/>' should not contain the symbol '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="5468998798572797635">exit full screen</translation>
 <translation id="5919473608089529604">Couldn't load plug-in.</translation>
 <translation id="5546461542133609677">un-mute</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Please enter a comma-separated list of email addresses.</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">Please enter a valid value. The nearest valid value is <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Invalid value.</translation>
 <translation id="1842960171412779397">select</translation>
 <translation id="7673697353781729403">Hours</translation>
+<translation id="4664250907885839816">A part following '<ph name="ATSIGN"/>' should not contain the symbol '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="3450233048674729344">Value must be less than or equal to <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">back 30 seconds</translation>
 <translation id="668171684555832681">Other...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">activate</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> files</translation>
 <translation id="6643016212128521049">Clear</translation>
+<translation id="7888071071722539607">Please include an '<ph name="ATSIGN"/>' in the email address. '<ph name="INVALIDADDRESS"/>' is missing an '<ph name="ATSIGN"/>'.</translation>
 <translation id="4851297395436456855">fast forward</translation>
 <translation id="1088086359088493902">Seconds</translation>
 <translation id="3934680773876859118">Failed to load PDF document</translation>

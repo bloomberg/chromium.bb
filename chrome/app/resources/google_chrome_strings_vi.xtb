@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Khởi chạy ứng dụng Chrome</translation>
 <translation id="2370289711218562573">Google Chrome hiện đang nhập Mục ưa thích/Dấu trang.</translation>
 <translation id="8762286861469007470">Trình phát hiện Chrome Captive Portal</translation>
+<translation id="2721687379934343312">Trên máy Mac, mật khẩu được lưu vào Keychain và có thể được truy cập hoặc đồng bộ hóa bởi những người dùng Chrome khác dùng chung tài khoản OS X này.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> có thể thay đổi cài đặt Chrome của bạn.</translation>
 <translation id="1761870329818521071">Không thể cài đặt phiên bản Google Chrome Frame giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome Frame và thử lại.</translation>
 <translation id="2040709530900803995">Trình kết xuất của Google Chrome</translation>
@@ -62,6 +63,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Chi tiết thanh toán của bạn đã được lưu trong Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome đang sử dụng micrô của bạn.</translation>
+<translation id="3590194807845837023">Mở khóa cấu hình và khởi chạy lại</translation>
 <translation id="4053720452172726777">Tùy chỉnh và điều khiển Google Chrome</translation>
 <translation id="6423071462708908582">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ hết hạn. Không có thông tin nào có sẵn cho biết liệu chứng chỉ đó đã bị xâm phạm hay chưa kể từ khi hết hạn. Điều này có nghĩa là Google Chrome không thể đảm bảo rằng bạn đang kết nối với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; chứ không phải là kẻ tấn công. Đồng hồ trên máy tính của bạn hiện được đặt thành <ph name="CURRENT_TIME"/>. Như vậy có ổn không? Nếu không, bạn phải sửa lỗi và làm mới trang này.</translation>
 <translation id="3197823471738295152">Thiết bị của bạn đã được cập nhật.</translation>
@@ -137,6 +139,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="1104959162601287462">Giới thiệu về &amp;hệ điều hành Chrome</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Chọn Google Chrome làm trình duyệt mặc định</translation>
+<translation id="7787950393032327779">Dường như cấu hình này đang được quy trình Google Chrome khác (<ph name="PROCESS_ID"/>) trên máy tính khác (<ph name="HOST_NAME"/>) sử dụng. Chrome đã khóa cấu hình này để cấu hình không bị lỗi. Nếu bạn chắc chắn không có quy trình nào khác đang sử dụng cấu hình này, bạn có thể mở khóa cấu hình và khởi chạy lại Chrome.</translation>
 <translation id="1469002951682717133">Trình khởi chạy ứng dụng Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
@@ -156,9 +159,9 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6326175484149238433">Xóa khỏi Chrome</translation>
 <translation id="2871893339301912279">Bạn đã đăng nhập vào Chrome!</translation>
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
-<translation id="1686446242839005801">Bạn đang đăng nhập vào Chrome bằng tài khoản <ph name="USER_EMAIL_ADDRESS"/>. Bạn sẽ có thể truy cập vào dấu trang, lịch sử và các cài đặt khác trên tất cả các thiết bị mà bạn đã đăng nhập.</translation>
 <translation id="4147555960264124640">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME"/>. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Trang web này đang sử dụng plugin Chrome Frame sắp không còn được hỗ trợ. Hãy gỡ cài đặt plugin này và nâng cấp lên một trình duyệt hiện đại.</translation>
+<translation id="1348153800635493797">Bạn phải nâng cấp Chrome để sử dụng Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Đi tới
           Ứng dụng&gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
           và bỏ chọn bất kỳ proxy nào đã được chọn.</translation>
@@ -189,6 +192,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> có thể thay đổi cách tìm kiếm của bạn hoạt động trong Chrome.</translation>
+<translation id="4567424176335768812">Bạn đã đăng nhập với tên <ph name="USER_EMAIL_ADDRESS"/>. Bây giờ, bạn có thể truy cập dấu trang, lịch sử và các cài đặt khác trên tất cả những thiết bị đã đăng nhập của bạn.</translation>
 <translation id="6855094794438142393">Đi tới
           trình đơn Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -207,6 +211,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5334545119300433702">Mô-đun này được xác định là xung đột với Google Chrome.</translation>
 <translation id="4407807842708586359">Hệ điều hành Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome đã được cập nhật.</translation>
+<translation id="4120075327926916474">Bạn có muốn Chrome lưu thông tin thẻ tín dụng này để hoàn thành các biểu mẫu web không?</translation>
 <translation id="2084710999043359739">Thêm vào Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame đã được cài đặt và khả dụng cho tất cả những người dùng máy tính này. Nếu bạn muốn cài đặt Google Chrome Frame ở cấp độ người dùng, trước tiên bạn phải gỡ cài đặt phiên bản cấp hệ thống đã được quản trị viên cài đặt.</translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>

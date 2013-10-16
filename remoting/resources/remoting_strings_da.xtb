@@ -46,6 +46,7 @@ host</translation>
 <translation id="6001953797859482435">Præferencer for host for Chrome Fjernskrivebord</translation>
 <translation id="9188433529406846933">Autoriser</translation>
 <translation id="228809120910082333">Bekræft din konto og pinkode nedenfor for at give adgang via Chromoting.</translation>
+<translation id="7605995381616883502">Ny forbindelse</translation>
 <translation id="5826423541626112308">Host for Chrome Fjernskrivebord</translation>
 <translation id="2851674870054673688">Når personen indtaster koden, startes delingssessionen.</translation>
 <translation id="5593560073513909978">Tjenesten er midlertidigt utilgængelig. Prøv igen senere.</translation>
@@ -68,6 +69,7 @@ host</translation>
 <translation id="7081428606750359611">Chromoting-host</translation>
 <translation id="8228265668171617545">Der er registreret en inkompatibel version af Chromoting. Kontrollér, at du har den nyeste version af Chrome og Chromoting på begge computere, og prøv igen.</translation>
 <translation id="6985691951107243942">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME"/>? Hvis du ombestemmer dig, skal du genaktivere forbindelserne på den computer.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (sidst online d. <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Hvis du vil begynde at dele dit skrivebord, skal du give adgangskoden nedenfor til den person, som skal hjælpe dig.</translation>
 <translation id="409800995205263688">BEMÆRK! Politikindstillingerne tillader kun forbindelser mellem computere inden for dit netværk.</translation>
 <translation id="2353140552984634198">Du kan få sikker adgang til denne computer via Chromoting.</translation>
@@ -134,7 +136,9 @@ host</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="2926340305933667314">Fjernadgangen til denne computer kunne ikke deaktiveres. Prøv igen senere.</translation>
 <translation id="6865175692670882333">Vis/rediger</translation>
+<translation id="5859141382851488196">Nyt vindue...</translation>
 <translation id="2089514346391228378">Fjernforbindelserne til denne computer er blevet aktiveret.</translation>
+<translation id="7693372326588366043">Opdater listen over værter</translation>
 <translation id="8246880134154544773">Godkendelse mislykkedes. Log ind på Chromoting igen.</translation>
 <translation id="1654128982815600832">Aktiverer fjernforbindelserne for denne computer…</translation>
 <translation id="8187079423890319756">Copyright 2013 Udviklerne af Chromium. Alle rettigheder forbeholdes.</translation>

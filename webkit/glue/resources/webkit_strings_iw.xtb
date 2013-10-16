@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">אחר...</translation>
 <translation id="2426432199384958866">החזר סרט בהזרמה לזמן אמת</translation>
 <translation id="248395913932153421">יום</translation>
+<translation id="1729654308190250600">הזן ערך נדרש בשדה של כתובת הדוא&quot;ל.</translation>
 <translation id="6015796118275082299">שנה</translation>
 <translation id="9186171386827445984">טוען מסמך: דפים <ph name="NUMBER_OF_PAGES"/>/<ph name="PAGE_NUMBER"/>...</translation>
 <translation id="1235745349614807883">הסר חיפושים אחרונים</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">סמן רשימה</translation>
 <translation id="4202807286478387388">קפוץ</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">הזן חלק ולאחריו '<ph name="ATSIGN"/>'‏. השדה '<ph name="INVALIDADDRESS"/>' אינו מלא.</translation>
+<translation id="2746543609216772311">על הערך להיות <ph name="MINIMUM_DATE_OR_TIME"/> ומעלה.</translation>
 <translation id="2572483411312390101">הפעל</translation>
 <translation id="8785498733064193001">התחל בהפעלה</translation>
 <translation id="7057186640035488495">משך הסרט</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">הרץ במהירות אחורה</translation>
 <translation id="7789962463072032349">השהה</translation>
 <translation id="6853785296079745596">הסתר כתוביות סגורות</translation>
+<translation id="4360991593054037559">הזן ערך חוקי. שני הערכים החוקיים הקרובים ביותר הם <ph name="VALID_VALUE_LOW"/> ו-<ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">אחר...</translation>
 <translation id="8141602879876242471">זהו אינדקס שניתן לבצע בו חיפוש. הזן מילות מפתח לחיפוש:</translation>
 <translation id="1930711995431081526">מצב</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">הרץ קדימה במהירות</translation>
 <translation id="4812940957355064477">הזן מספר.</translation>
 <translation id="2548326553472216322">אין חיפושים אחרונים</translation>
+<translation id="1938124657309484470">על הערך להיות <ph name="MAXIMUM_DATE_OR_TIME"/> או מוקדם יותר.</translation>
 <translation id="7263440858009898357">בחר פריט מהרשימה.</translation>
 <translation id="901493112792887934">זמן נוכחי בשניות</translation>
 <translation id="5164977714490026579">הערך חייב להיות גדול מ-<ph name="MINIMUM"/> או שווה לו.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">השבוע</translation>
 <translation id="5966707198760109579">שבוע</translation>
 <translation id="2901282870647571346">מצב סרט נוכחי</translation>
+<translation id="2060505056492490888">נעשה שימוש ב-'<ph name="DOT"/>' במיקום שגוי ב-'<ph name="INVALIDDOMAIN"/>'.</translation>
 <translation id="2674318244760992338">כותרת תחתונה</translation>
 <translation id="8987927404178983737">חודש</translation>
 <translation id="8115662671911883373">התחל להציג כתוביות סגורות</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">סמן</translation>
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>
 <translation id="1637811476055996098">בחר קבצים</translation>
+<translation id="49969490063480558">הזן חלק ולאחריו '<ph name="ATSIGN"/>'‏. השדה '<ph name="INVALIDADDRESS"/>' אינו מלא.</translation>
 <translation id="5476505524087279545">בטל סימון</translation>
 <translation id="2148716181193084225">היום</translation>
 <translation id="2507943997699731163">מלא שדה זה.</translation>
 <translation id="3785482301506746191">מסתיר משך סרט</translation>
 <translation id="739024184232394898">אחר...</translation>
+<translation id="383465348367842624">חלק ולאחריו '<ph name="ATSIGN"/>' לא אמור לכלול את הסמל '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="5468998798572797635">צא ממסך מלא</translation>
 <translation id="5919473608089529604">לא היתה אפשרות לטעון את הפלאגין.</translation>
 <translation id="5546461542133609677">בטל השתקה</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">הזן רשימה של כתובות דוא&quot;ל המופרדות באמצעות פסיקים.</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">הזן ערך חוקי. הערך החוקי הקרוב ביותר הוא <ph name="VALID_VALUE"/></translation>
 <translation id="835897206747267392">ערך לא חוקי.</translation>
 <translation id="1842960171412779397">בחר</translation>
 <translation id="7673697353781729403">שעות</translation>
+<translation id="4664250907885839816">חלק ולאחריו '<ph name="ATSIGN"/>' לא אמור לכלול את הסמל '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="3450233048674729344">הערך חייב להיות קטן מ-<ph name="MAXIMUM"/> או שווה לו.</translation>
 <translation id="3471999216963526757">חזור אחורה 30 שניות</translation>
 <translation id="668171684555832681">אחר...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">הפעל</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> קבצים</translation>
 <translation id="6643016212128521049">נקה</translation>
+<translation id="7888071071722539607">כלול '<ph name="ATSIGN"/>' בכתובת הדוא&quot;ל. ב-'<ph name="INVALIDADDRESS"/>' חסר '<ph name="ATSIGN"/>'.</translation>
 <translation id="4851297395436456855">הרץ קדימה</translation>
 <translation id="1088086359088493902">שניות</translation>
 <translation id="3934680773876859118">‏הטעינה של מסמך PDF נכשלה</translation>

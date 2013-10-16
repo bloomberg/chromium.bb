@@ -46,6 +46,7 @@ Host</translation>
 <translation id="6001953797859482435">Einstellungen für Chrome Remote Desktop Host</translation>
 <translation id="9188433529406846933">Autorisieren</translation>
 <translation id="228809120910082333">Bestätigen Sie unten Ihr Konto und Ihre PIN, um den Zugriff durch Chromoting zu gestatten.</translation>
+<translation id="7605995381616883502">Neue Verbindung</translation>
 <translation id="5826423541626112308">Chrome Remote Desktop Host</translation>
 <translation id="2851674870054673688">Sobald der Nutzer den Code eingibt, beginnt die Freigabesitzung.</translation>
 <translation id="5593560073513909978">Der Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
@@ -68,6 +69,7 @@ Host</translation>
 <translation id="7081428606750359611">Chromoting Host</translation>
 <translation id="8228265668171617545">Eine inkompatible Version von Chromoting wurde erkannt. Überprüfen Sie, ob die neueste Version von Chrome und Chromoting auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="6985691951107243942">Möchten Sie die Remote-Verbindung zu <ph name="HOSTNAME"/> wirklich deaktivieren? Wenn Sie die Verbindung später erneut aktivieren möchten, müssen Sie dies von dem betreffenden Computer aus tun.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (zuletzt online gewesen am <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Teilen Sie zur Freigabe Ihres Desktops zunächst der Person, die Sie unterstützen wird, den unten stehenden Zugriffscode mit.</translation>
 <translation id="409800995205263688">Hinweis: Die Richtlinieneinstellungen erlauben nur Verbindungen zwischen Computern in Ihrem Netzwerk.</translation>
 <translation id="2353140552984634198">Mit Chromoting erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
@@ -134,7 +136,9 @@ Host</translation>
 <translation id="6527303717912515753">Teilen</translation>
 <translation id="2926340305933667314">Fehler beim Deaktivieren des Remote-Zugriffs auf diesen Computer. Bitte versuchen Sie es später erneut.</translation>
 <translation id="6865175692670882333">Ansehen/bearbeiten</translation>
+<translation id="5859141382851488196">Neues Fenster...</translation>
 <translation id="2089514346391228378">Die Remote-Verbindungen für diesen Computer wurden aktiviert.</translation>
+<translation id="7693372326588366043">Liste der Hosts aktualisieren</translation>
 <translation id="8246880134154544773">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chromoting an.</translation>
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
 <translation id="8187079423890319756">Copyright 2013 Die Chromium-Autoren. Alle Rechte vorbehalten</translation>

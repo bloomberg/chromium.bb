@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1503959756075098984">Extension IDs and update URLs to be silently installed</translation>
+<translation id="793134539373873765">Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.</translation>
 <translation id="2463365186486772703">Application locale</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
 <translation id="3347897589415241400">The default behaviour for sites not in any content pack.
@@ -144,6 +145,13 @@
       The policy value should be specified in milliseconds. Values are clamped to a range of 30 seconds to 24 hours.</translation>
 <translation id="9200828125069750521">Parameters for image URL which uses POST</translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
+<translation id="8294750666104911727">Normally pages with X-UA-Compatible set to chrome=1 will be rendered in <ph name="PRODUCT_FRAME_NAME"/> regardless of the 'ChromeFrameRendererSettings' policy.
+
+          If you enable this setting, pages will not be scanned for meta tags.
+
+          If you disable this setting, pages will be scanned for meta tags.
+
+          If this policy is not set, pages will be scanned for meta tags.</translation>
 <translation id="3478024346823118645">Wipe user data on sign-out</translation>
 <translation id="8668394701842594241">Specifies a list of plug-ins that are enabled in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
@@ -230,6 +238,7 @@
       If you enable or disable this setting, users cannot change or override the &quot;Enable phishing and malware protection&quot; setting in <ph name="PRODUCT_NAME"/>.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
+<translation id="268577405881275241">Enable the data compression proxy feature</translation>
 <translation id="8369602308428138533">Screen off delay when running on AC power</translation>
 <translation id="6513756852541213407">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME"/> and prevents users from changing proxy settings.
 
@@ -341,6 +350,7 @@
 
       If you disable this setting, bookmarks cannot be added, removed or modified. Existing bookmarks are still available.</translation>
 <translation id="3496296378755072552">Password manager</translation>
+<translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="2565967352111237512">Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME"/> to Google and prevents users from changing this setting.
 
       If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.
@@ -415,6 +425,7 @@
 
           If the action is suspend, <ph name="PRODUCT_OS_NAME"/> can separately be configured to either lock or not lock the screen before suspending.</translation>
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
+<translation id="2144674628322086778">Allow enterprise user to be both primary and secondary  (Default behaviour)</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
 <translation id="5499375345075963939">This policy is active in retail mode only.
 
@@ -437,7 +448,6 @@
       If this setting is disabled, web pages cannot use JavaScript and the user cannot change that setting.
 
       If this setting is enabled or not set, web pages can use JavaScript but the user can change that setting.</translation>
-<translation id="4047207703890139433">Specifies that the clock format be used for the device. Users can override clock format for the current session. However, on logout it is set back to the specified value. If an empty string is provided, device owner preference is used.</translation>
 <translation id="1942957375738056236">You can specify the URL of the proxy server here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -618,8 +628,10 @@
       This policy is meant to allow for strict plugin blacklisting where the 'DisabledPlugins' list contains wildcarded entries like disable all plugins '*' or disable all Java plugins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
 
       If this policy is left not set any plugin that matches the patterns in the 'DisabledPlugins' will be locked disabled and the user won't be able to enable them.</translation>
+<translation id="4557134566541205630">Default search provider new tab page URL</translation>
 <translation id="546726650689747237">Screen dim delay when running on AC power</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
+<translation id="7260277299188117560">Auto update p2p enabled</translation>
 <translation id="5316405756476735914">Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'AllowCookies' will be used and the user will be able to change it.</translation>
@@ -864,9 +876,11 @@
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.
 
           If this policy is left unset the setting will be enabled.</translation>
+<translation id="4057110413331612451">Allow enterprise user to be primary multiprofile user only</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
+<translation id="4617338332148204752">Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Enables the use of a default search provider.
 
           If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
@@ -1051,6 +1065,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If enabled screenshots cannot be taken using keyboard shortcuts or extension APIs.
 
       If disabled or not specified, taking screenshots is allowed.</translation>
+<translation id="8649763579836720255">Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts that the device is eligible to play protected content. This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
+
+          If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.
+
+          If this setting is true, or if it is not set, remote attestation may be used for content protection.</translation>
 <translation id="4632343302005518762">Allow <ph name="PRODUCT_FRAME_NAME"/> to handle the listed content types</translation>
 <translation id="13356285923490863">Policy Name</translation>
 <translation id="557658534286111200">Enables or disables bookmark editing</translation>
@@ -1128,6 +1147,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If this setting is enabled, browsing history is not saved.
 
       If this setting is disabled or not set, browsing history is saved.</translation>
+<translation id="2759224876420453487">Control the user behaviour in a multiprofile session</translation>
 <translation id="3844092002200215574">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless of whether the user has specified the '--disk-cache-dir' flag or not.
@@ -1178,6 +1198,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       Leaving this policy not set will make <ph name="PRODUCT_NAME"/> use the default value of 5,000 milliseconds.</translation>
 <translation id="8099880303030573137">Idle delay when running on battery power</translation>
 <translation id="2761483219396643566">Idle warning delay when running on battery power</translation>
+<translation id="5058056679422616660">Auto-update payloads on <ph name="PRODUCT_OS_NAME"/> can be downloaded via HTTP instead of HTTPS. This allows transparent HTTP caching of HTTP downloads.
+
+      If this policy is set to true, <ph name="PRODUCT_OS_NAME"/> will attempt to download auto-update payloads via HTTP. If the policy is set to false or not set, HTTPS will be used for downloading auto-update payloads.</translation>
 <translation id="1468307069016535757">Set the default state of the high contrast mode accessibility feature on the login screen.
 
           If this policy is set to true, high contrast mode will be enabled when the login screen is shown.
@@ -1192,12 +1215,20 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
+<translation id="6659688282368245087">Specifies the clock format to be used for the device.
+
+      This policy configures the clock format to use on the login screen and as a default for user sessions. Users can still override the clock format for their account.
+
+      If the policy is not set to true, the device will use a 24 hour clock format. If the policy is set to false, the device will use 12 hour clock format.
+
+      If this policy is not set, the device will default to a 24 hour clock format.</translation>
 <translation id="6559057113164934677">Do not allow any site to access the camera and microphone</translation>
 <translation id="7273823081800296768">If this setting is enabled or not configured, then users can opt to pair clients and hosts at connection time, eliminating the need to enter a PIN every time.
 
           If this setting is disabled, then this feature will not be available.</translation>
 <translation id="1675002386741412210">Supported on:</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
+<translation id="5921713479449475707">Allow autoupdate downloads via HTTP</translation>
 <translation id="4482640907922304445">Shows the Home button on <ph name="PRODUCT_NAME"/>'s toolbar.
 
       If you enable this setting, the Home button is always shown.
@@ -1304,6 +1335,11 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1800000 (30 minutes) to 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.
 
       Leaving this policy not set will make <ph name="PRODUCT_NAME"/> use the default value of 3 hours.</translation>
+<translation id="2571066091915960923">Enable or disable the data compression proxy and prevent users from changing this setting.
+
+      If you enable or disable this setting, users cannot change or override this setting.
+
+      If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
 <translation id="6233173491898450179">Set download directory</translation>
 <translation id="78524144210416006">Configure power management on the login screen in <ph name="PRODUCT_OS_NAME"/>.
@@ -1395,6 +1431,15 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If this policy is left not set, 'PromptOnAccess' will be used and the user will be able to change it.</translation>
 <translation id="2299220924812062390">Specify a list of enabled plug-ins</translation>
+<translation id="328908658998820373">Allow fullscreen mode.
+
+      This policy controls the availability of fullscreen mode in which all <ph name="PRODUCT_NAME"/> UI is hidden and only web content is visible.
+
+      If this policy is set to true or not configured, the user, apps and extensions with appropriate permissions can enter fullscreen mode.
+
+      If this policy is set to false, neither the user nor any apps or extensions can enter fullscreen mode.
+
+      On all platforms except <ph name="PRODUCT_OS_NAME"/>, kiosk mode is unavailable when fullscreen mode is disabled.</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="1465619815762735808">Click to play</translation>
@@ -1412,10 +1457,24 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the idle delay.</translation>
 <translation id="1897365952389968758">Allow all sites to run JavaScript (recommended)</translation>
 <translation id="5244714491205147861">Power mangement on the login screen</translation>
+<translation id="3619270953033888719">Enable the use of remote attestation for content protection for the device.</translation>
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="7323896582714668701">Additional command line parameters for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Disable synchronisation of data with Google</translation>
 <translation id="7006788746334555276">Content Settings</translation>
+<translation id="63659515616919367">Control the user behaviour in a multiprofile session on <ph name="PRODUCT_OS_NAME"/> devices.
+
+      If this policy is set to 'MultiProfileUserBehaviorUnrestricted', the user can be either primary or secondary user in a multiprofile session.
+
+      If this policy is set to 'MultiProfileUserBehaviorMustBePrimary', the user can only be the primary user in a multiprofile session.
+
+      If this policy is set to 'MultiProfileUserBehaviorNotAllowed', the user cannot be part of a multiprofile session.
+
+      If you set this setting, users cannot change or override it.
+
+      If the setting is changed while the user is signed into a multiprofile session, all users in the session will be checked against their corresponding settings. The session will be closed if any one of the users is no longer allowed to be in the session.
+
+      If the policy is left not set, the default value 'MultiProfileUserBehaviorUnrestricted' will be used.</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Configure extension installation whitelist</translation>
 <translation id="187819629719252111">Allows access to local files on the machine by allowing <ph name="PRODUCT_NAME"/> to display file selection dialogues.
@@ -1445,6 +1504,11 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If this policy is left unset, the screen magnifier is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="3428247105888806363">Enable network prediction.</translation>
+<translation id="3460784402832014830">Specifies the URL that a search engine uses to provide a new tab page.
+
+          This policy is optional. If not set, no new tab page will be provided.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1750,4 +1814,5 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME"/>, but they can can still choose the New Tab Page as their home page.
 
           Leaving this policy not set will allow the user to choose his home page on his own if HomepageIsNewTabPage is not set too.</translation>
+<translation id="4858735034935305895">Allow fullscreen mode</translation>
 </translationbundle>

@@ -46,6 +46,7 @@
 <translation id="6001953797859482435">Chrome 원격 데스크톱 호스트 환경설정</translation>
 <translation id="9188433529406846933">승인</translation>
 <translation id="228809120910082333">Chromoting을 통해 액세스할 수 있도록 계정 및 PIN을 확인하세요.</translation>
+<translation id="7605995381616883502">새로운 연결</translation>
 <translation id="5826423541626112308">Chrome 원격 데스크톱 호스트</translation>
 <translation id="2851674870054673688">액세스 코드를 입력하면 공유 세션이 시작됩니다.</translation>
 <translation id="5593560073513909978">서비스를 일시적으로 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.</translation>
@@ -68,6 +69,7 @@
 <translation id="7081428606750359611">Chromoting 호스트</translation>
 <translation id="8228265668171617545">호환되지 않는 Chromoting이 감지되었습니다. 양쪽 컴퓨터의 Chrome 및 Chromoting이 모두 최신 버전인지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME"/>와(과)의 원격 연결을 사용중지하시겠습니까? 생각이 바뀌면 해당 컴퓨터에서 연결을 다시 사용하도록 설정해야 합니다.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/>(최근 연결일: <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">데스크톱 공유를 시작하려면 내 데스크톱에 액세스하려는 사용자에게 아래 액세스 코드를 알려주세요.</translation>
 <translation id="409800995205263688">참고: 정책 설정에 따라 네트워크 내에 있는 컴퓨터 간의 연결만 허용됩니다.</translation>
 <translation id="2353140552984634198">Chromoting을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
@@ -134,7 +136,9 @@
 <translation id="6527303717912515753">공유</translation>
 <translation id="2926340305933667314">컴퓨터에 대한 원격 액세스를 사용중지하지 못했습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="6865175692670882333">보기/수정</translation>
+<translation id="5859141382851488196">새 창…</translation>
 <translation id="2089514346391228378">컴퓨터의 원격 연결을 사용하도록 설정했습니다.</translation>
+<translation id="7693372326588366043">호스트 목록 새로고침</translation>
 <translation id="8246880134154544773">인증에 실패했습니다. Chromoting에 다시 로그인하세요.</translation>
 <translation id="1654128982815600832">컴퓨터의 원격 연결을 사용하도록 설정 중...</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>

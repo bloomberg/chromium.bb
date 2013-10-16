@@ -46,6 +46,7 @@ Chromoting</translation>
 <translation id="6001953797859482435">Preferências do Anfitrião do Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="228809120910082333">Confirme a sua conta e PIN abaixo para permitir o acesso do Chromoting.</translation>
+<translation id="7605995381616883502">Nova ligação</translation>
 <translation id="5826423541626112308">Anfitrião do Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="2851674870054673688">A sessão de partilha começa assim que introduzirem o código.</translation>
 <translation id="5593560073513909978">O serviço está temporariamente indisponível. Tente novamente mais tarde.</translation>
@@ -68,6 +69,7 @@ Chromoting</translation>
 <translation id="7081428606750359611">Anfitrião do Chromoting</translation>
 <translation id="8228265668171617545">Foi detetada uma versão incompatível do Chromoting. Certifique-se de que tem a versão mais recente do Chrome e do Chromoting em ambos os computadores e tente novamente.</translation>
 <translation id="6985691951107243942">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME"/>? Se mudar de ideias, será necessário aceder a esse computador e voltar a ativar as ligações.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (última vez online em <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Para começar a partilhar o seu ambiente de trabalho, forneça o código de acesso abaixo à pessoa que o irá ajudar.</translation>
 <translation id="409800995205263688">NOTA: as definições da política permitem ligações apenas entre computadores da sua rede.</translation>
 <translation id="2353140552984634198">Pode aceder com segurança a este computador utilizando o Chromoting.</translation>
@@ -134,7 +136,9 @@ Chromoting</translation>
 <translation id="6527303717912515753">Partilhar</translation>
 <translation id="2926340305933667314">Falha ao desativar o acesso remoto a este computador. Tente novamente mais tarde.</translation>
 <translation id="6865175692670882333">Ver/editar</translation>
+<translation id="5859141382851488196">Nova janela…</translation>
 <translation id="2089514346391228378">Foram ativadas as ligações remotas neste computador.</translation>
+<translation id="7693372326588366043">Atualizar a lista de anfitriões</translation>
 <translation id="8246880134154544773">Falha na autenticação. Inicie sessão novamente no Chromoting.</translation>
 <translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
 <translation id="8187079423890319756">Copyright 2013 Os Autores do Chromium. Todos os Direitos Reservados.</translation>

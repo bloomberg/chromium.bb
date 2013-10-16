@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Annat ...</translation>
 <translation id="2426432199384958866">återställ direktuppspelad film till realtid</translation>
 <translation id="248395913932153421">Dag</translation>
+<translation id="1729654308190250600">Ange en e-postadress som inte är tom.</translation>
 <translation id="6015796118275082299">År</translation>
 <translation id="9186171386827445984">Läser in dokument: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sidor...</translation>
 <translation id="1235745349614807883">Rensa senaste sökningar</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">listmarkör</translation>
 <translation id="4202807286478387388">fortsätta</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Ange en del följt av <ph name="ATSIGN"/>. <ph name="INVALIDADDRESS"/> är ofullständig.</translation>
+<translation id="2746543609216772311">Värdet måste vara <ph name="MINIMUM_DATE_OR_TIME"/> eller senare.</translation>
 <translation id="2572483411312390101">spela upp</translation>
 <translation id="8785498733064193001">starta uppspelning</translation>
 <translation id="7057186640035488495">filmtid</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">söka snabbt bakåt</translation>
 <translation id="7789962463072032349">paus</translation>
 <translation id="6853785296079745596">dölj textning</translation>
+<translation id="4360991593054037559">Ange ett giltigt värde. De två närmaste giltiga värdena är <ph name="VALID_VALUE_LOW"/> och <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Annat ...</translation>
 <translation id="8141602879876242471">Det här är ett sökbart index. Skriv sökord:</translation>
 <translation id="1930711995431081526">status</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">söka snabbt framåt</translation>
 <translation id="4812940957355064477">Ange ett nummer.</translation>
 <translation id="2548326553472216322">Inga nya sökningar</translation>
+<translation id="1938124657309484470">Värdet måste vara <ph name="MAXIMUM_DATE_OR_TIME"/> eller tidigare.</translation>
 <translation id="7263440858009898357">Välj ett alternativ i listan.</translation>
 <translation id="901493112792887934">aktuell tid i sekunder</translation>
 <translation id="5164977714490026579">Värdet måste vara större än eller lika med <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Den här veckan</translation>
 <translation id="5966707198760109579">Vecka</translation>
 <translation id="2901282870647571346">aktuell filmstatus</translation>
+<translation id="2060505056492490888"><ph name="DOT"/> används på fel plats i <ph name="INVALIDDOMAIN"/>.</translation>
 <translation id="2674318244760992338">sidfot</translation>
 <translation id="8987927404178983737">Månad</translation>
 <translation id="8115662671911883373">börja visa textning</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">kryssa för</translation>
 <translation id="2846343701378493991">1024 (medel)</translation>
 <translation id="1637811476055996098">Välj filer</translation>
+<translation id="49969490063480558">Ange en del följt av <ph name="ATSIGN"/>. <ph name="INVALIDADDRESS"/> är ofullständig.</translation>
 <translation id="5476505524087279545">kryssa av</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2507943997699731163">Fyll i det här fältet.</translation>
 <translation id="3785482301506746191">filmtidsreglage</translation>
 <translation id="739024184232394898">Annat ...</translation>
+<translation id="383465348367842624">En del följt av <ph name="ATSIGN"/> får inte innehålla symbolen <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="5468998798572797635">avsluta helskärmsläge</translation>
 <translation id="5919473608089529604">Det gick inte att läsa in plugin-programmet.</translation>
 <translation id="5546461542133609677">visa</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Ange en kommaavgränsad lista med e-postadresser.</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">Ange ett giltigt värde. Det närmast giltiga värdet är <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Ogiltigt värde.</translation>
 <translation id="1842960171412779397">välj</translation>
 <translation id="7673697353781729403">Timmar</translation>
+<translation id="4664250907885839816">En del efter <ph name="ATSIGN"/> får inte innehålla symbolen <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="3450233048674729344">Värdet måste vara mindre än eller lika med <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">30 sekunder bakåt</translation>
 <translation id="668171684555832681">Annan...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">aktivera</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> filer</translation>
 <translation id="6643016212128521049">Rensa</translation>
+<translation id="7888071071722539607">Inkludera ett <ph name="ATSIGN"/> i e-postadressen. <ph name="INVALIDADDRESS"/> saknar ett <ph name="ATSIGN"/>.</translation>
 <translation id="4851297395436456855">snabbspola framåt</translation>
 <translation id="1088086359088493902">Sekunder</translation>
 <translation id="3934680773876859118">Det gick inte att läsa in PDF-dokumentet</translation>

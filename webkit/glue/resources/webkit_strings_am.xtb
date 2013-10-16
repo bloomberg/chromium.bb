@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">ሌላ...</translation>
 <translation id="2426432199384958866">በዥረት የሚለቀቀውን ፊልም ወደ ትክክለኛው ጊዜ መልስ</translation>
 <translation id="248395913932153421">ቀን</translation>
+<translation id="1729654308190250600">እባክዎ ባዶ ያልሆነ የኢሜይል አድራሻ ያስገቡ።</translation>
 <translation id="6015796118275082299">ዓመት</translation>
 <translation id="9186171386827445984">ሰነዱን በመጫን ላይ፦ <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> ገጾች...</translation>
 <translation id="1235745349614807883">የቅርብ ጊዜ ፍለጋዎችን አስወግድ</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">ዝርዝር አመልካች</translation>
 <translation id="4202807286478387388">ዝለል</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">እባክዎ አንድ ክፍል ያስገቡና «<ph name="ATSIGN"/>»ን ያስከትሉ። «<ph name="INVALIDADDRESS"/>» ያልተሟላ ነው።</translation>
+<translation id="2746543609216772311">ዋጋ <ph name="MINIMUM_DATE_OR_TIME"/> ወይም ከዚያ በኋላ መሆን አለበት።</translation>
 <translation id="2572483411312390101">አጫውት</translation>
 <translation id="8785498733064193001">መልሶ ማጫወት ይጀምሩ</translation>
 <translation id="7057186640035488495">የፊልም ሰዓት</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">በፍጥነት ወደ ኋላ ተመልሰው ይፈልጉ</translation>
 <translation id="7789962463072032349">ላፍታ አቁም</translation>
 <translation id="6853785296079745596">የተዘጉ የስዕል መግለጫዎችን ይደብቁ</translation>
+<translation id="4360991593054037559">እባክዎ የሚሰራ ዋጋ ያስገቡ። ሁለቱ የሚቀርቡ ዋጋዎች <ph name="VALID_VALUE_LOW"/> እና <ph name="VALID_VALUE_HIGHER"/> ናቸው።</translation>
 <translation id="1758486001363313524">ሌላ...</translation>
 <translation id="8141602879876242471">ይህ ሊፈለግ የሚችል መረጃ ጠቋሚ ነው። የፍለጋ ቁልፍ ቃላት አስገባ፦</translation>
 <translation id="1930711995431081526">ሁኔታ</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">በፍጥነት ወደፊት ሄደህ ፈልግ</translation>
 <translation id="4812940957355064477">እባክዎ ቁጥር ያስገቡ።</translation>
 <translation id="2548326553472216322">የቅርብ ጊዜ ፍለጋዎች የሉም</translation>
+<translation id="1938124657309484470">ዋጋ <ph name="MAXIMUM_DATE_OR_TIME"/> ወይም ከዚያ በፊት መሆን አለበት።</translation>
 <translation id="7263440858009898357">እባክዎ በዝርዝሩ ውስጥ አንድ ንጥል ይምረጡ።</translation>
 <translation id="901493112792887934">የአሁኑ ጊዜ በሰከንዶች</translation>
 <translation id="5164977714490026579">ዋጋ ከ<ph name="MINIMUM"/> የሚበልጥ ወይም ከእሱ እኩል መሆን አለበት።</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">በዚህ ሣምንት</translation>
 <translation id="5966707198760109579">ሳምንት</translation>
 <translation id="2901282870647571346">የአሁኑ የፊልም ሁኔታ</translation>
+<translation id="2060505056492490888">«<ph name="DOT"/>» በ«<ph name="INVALIDDOMAIN"/>» ውስጥ በተሳሳተ ቦታ ላይ ነው የገባው።</translation>
 <translation id="2674318244760992338">ግርጌ</translation>
 <translation id="8987927404178983737">ወር</translation>
 <translation id="8115662671911883373">የተዘጉ የስዕል መግለጫዎችን ማሳየት ጀምር</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">አመልክት</translation>
 <translation id="2846343701378493991">1024(መካከለኛ ደረጃ)</translation>
 <translation id="1637811476055996098">ፋይሎችን ይምረጡ</translation>
+<translation id="49969490063480558">እባክዎ ከ«<ph name="ATSIGN"/>» በኋላ አንድ ክፍል ያስገቡ። «<ph name="INVALIDADDRESS"/>» ያልተሟላ ነው።</translation>
 <translation id="5476505524087279545">አታመልክት</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2507943997699731163">እባክዎ ይህን መስክ ይሙሉት።</translation>
 <translation id="3785482301506746191">የፊልም ሰዓት አንፏቃቂ</translation>
 <translation id="739024184232394898">ሌላ...</translation>
+<translation id="383465348367842624">ከ«<ph name="ATSIGN"/>» በፊት የሚመጣ ክፍል የ«<ph name="INVALIDCHARACTER"/>» ምልክት መያዝ የለበትም።</translation>
 <translation id="5468998798572797635">ከሙሉ ማያ ገጽ ውጣ</translation>
 <translation id="5919473608089529604">ተሰኪ መጫን አልተቻለም።</translation>
 <translation id="5546461542133609677">ድምፅ-ከልን አንሳ</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">እባክዎ በኮማ የተለዩ የኢሜይል አድራሻዎች ዝርዝር ያስገቡ።</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
 <translation id="1921819250265091946">ቀቀ</translation>
+<translation id="2613802280814924224">እባክዎ የሚሰራ ዋጋ ያስገቡ። የሚቀርበው ዋጋ <ph name="VALID_VALUE"/> ነው።</translation>
 <translation id="835897206747267392">ልክ ያልሆነ እሴት።</translation>
 <translation id="1842960171412779397">ምረጥ</translation>
 <translation id="7673697353781729403">ሰዓቶች</translation>
+<translation id="4664250907885839816">ከ«<ph name="ATSIGN"/>» በኋላ የሚመጣ ክፍል የ«<ph name="INVALIDCHARACTER"/>» ምልክት መያዝ የለበትም።</translation>
 <translation id="3450233048674729344">ዋጋ ከ<ph name="MAXIMUM"/> የሚያንስ ወይም ከእሱ እኩል መሆን አለበት።</translation>
 <translation id="3471999216963526757">30 ሰከንዶች ወደ ኋላ </translation>
 <translation id="668171684555832681">ሌላ…</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">አንቃ</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ፋይሎች</translation>
 <translation id="6643016212128521049">አጽዳ</translation>
+<translation id="7888071071722539607">እባክዎ በኢሜይል አድራሻው ውስጥ «<ph name="ATSIGN"/>» ያካትቱ። «<ph name="INVALIDADDRESS"/>» ውስጥ «<ph name="ATSIGN"/>» ይጎድላል።</translation>
 <translation id="4851297395436456855">በፍጥነት ወደፊት</translation>
 <translation id="1088086359088493902">ሰኮንዶች</translation>
 <translation id="3934680773876859118">የፒ ዲ ኤፍ ሰነድ መጫን አልተሳካም</translation>

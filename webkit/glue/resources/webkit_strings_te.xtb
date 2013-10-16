@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">ఇతర...</translation>
 <translation id="2426432199384958866">చలనచిత్రాన్ని నిజ సమయంలో ప్రసారం చేయడానికి తిరిగి వెళ్లు</translation>
 <translation id="248395913932153421">రోజు</translation>
+<translation id="1729654308190250600">దయచేసి ఖాళీ-కాని ఇమెయిల్ చిరునామాని నమోదు చేయండి.</translation>
 <translation id="6015796118275082299">సంవత్సరం</translation>
 <translation id="9186171386827445984">పత్రాన్ని లోడ్ చేస్తోంది: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> పేజీలు...</translation>
 <translation id="1235745349614807883">ఇటీవల శోధనలను క్లియర్ చెయ్యి</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">జాబితా మార్కర్</translation>
 <translation id="4202807286478387388">వెళ్ళు</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">దయచేసి '<ph name="ATSIGN"/>'కి ముందు ఉన్న భాగాన్ని నమోదు చేయండి. '<ph name="INVALIDADDRESS"/>' అసంపూర్ణంగా ఉంది.</translation>
+<translation id="2746543609216772311">విలువ తప్పనిసరిగా <ph name="MINIMUM_DATE_OR_TIME"/> లేదా అంతకంటే తదుపరిది అయి ఉండాలి.</translation>
 <translation id="2572483411312390101">ప్లే చేయి</translation>
 <translation id="8785498733064193001">ప్లేబ్యాక్‌ను ప్రారంభించు</translation>
 <translation id="7057186640035488495">చలనచిత్ర నిడివి</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">త్వరగా వెనుకకు వెళ్లు</translation>
 <translation id="7789962463072032349">నిలిపివేయి</translation>
 <translation id="6853785296079745596">సంవృత శీర్షికలను దాచు</translation>
+<translation id="4360991593054037559">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. <ph name="VALID_VALUE_LOW"/> మరియు <ph name="VALID_VALUE_HIGHER"/> అనేవి రెండు సమీప చెల్లుబాటు విలువలు.</translation>
 <translation id="1758486001363313524">ఇతర...</translation>
 <translation id="8141602879876242471">ఇది ఒక శోధించగల సూచిక. శోధన కీవర్డ్‌లను ఎంటర్ చెయ్యండి:</translation>
 <translation id="1930711995431081526">స్థితి</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">త్వరగా ముందుకు వెళ్లు</translation>
 <translation id="4812940957355064477">దయచేసి సంఖ్యను నమోదు చేయండి.</translation>
 <translation id="2548326553472216322">ఇటీవల శోధనలు లేవు</translation>
+<translation id="1938124657309484470">విలువ తప్పనిసరిగా <ph name="MAXIMUM_DATE_OR_TIME"/> లేదా అంతకంటే మునుపటిది అయి ఉండాలి.</translation>
 <translation id="7263440858009898357">దయచేసి జాబితాలోని ఒక అంశాన్ని ఎంచుకోండి.</translation>
 <translation id="901493112792887934">సెకన్లలో ప్రస్తుత సమయం</translation>
 <translation id="5164977714490026579">విలువ ఖచ్చితంగా <ph name="MINIMUM"/> కంటే ఎక్కువగా లేదా సమానంగా ఉండాలి.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">ఈ వారం</translation>
 <translation id="5966707198760109579">వారం</translation>
 <translation id="2901282870647571346">ప్రస్తుతం చలనచిత్ర స్థితి</translation>
+<translation id="2060505056492490888">'<ph name="INVALIDDOMAIN"/>'లో '<ph name="DOT"/>' తప్పు స్థానంలో ఉపయోగించబడింది.</translation>
 <translation id="2674318244760992338">ఫుటర్</translation>
 <translation id="8987927404178983737">నెల</translation>
 <translation id="8115662671911883373">సంవృత శీర్షికలను ప్రదర్శించడం ప్రారంభించు</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">తనిఖీ చెయ్యి</translation>
 <translation id="2846343701378493991">1024 (మధ్యస్థ గ్రేడ్)</translation>
 <translation id="1637811476055996098">ఫైల్‌లను ఎంచుకోండి</translation>
+<translation id="49969490063480558">దయచేసి '<ph name="ATSIGN"/>'కి తర్వాత ఉన్న భాగాన్ని నమోదు చేయండి. '<ph name="INVALIDADDRESS"/>' అసంపూర్ణంగా ఉంది.</translation>
 <translation id="5476505524087279545">ఎంపిక  చెయ్యబడలేదు</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2507943997699731163">దయచేసి ఈ ఫీల్డ్‌ని పూర్తి చెయ్యండి.</translation>
 <translation id="3785482301506746191">చలనచిత్ర సమయ స్క్రబ్బర్</translation>
 <translation id="739024184232394898">ఇతర...</translation>
+<translation id="383465348367842624">'<ph name="ATSIGN"/>'కి ముందు ఉన్న భాగంలో '<ph name="INVALIDCHARACTER"/>' చిహ్నం ఉండకూడదు.</translation>
 <translation id="5468998798572797635">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="5919473608089529604">ప్లగిన్‌ని లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="5546461542133609677">అన్‌మ్యూట్ చేయి</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">దయచేసి కామాతో వేరు చేసిన ఇమెయిల్ చిరునామాల జాబితాను ఎంటర్ చెయ్యండి.</translation>
 <translation id="5939518447894949180">తిరిగి అమర్చండి</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. <ph name="VALID_VALUE"/> అనేది సమీప చెల్లుబాటు విలువ.</translation>
 <translation id="835897206747267392">చెల్లని విలువ.</translation>
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
 <translation id="7673697353781729403">గంటలు</translation>
+<translation id="4664250907885839816">'<ph name="ATSIGN"/>'కి తర్వాత ఉన్న భాగంలో '<ph name="INVALIDCHARACTER"/>' చిహ్నం ఉండకూడదు.</translation>
 <translation id="3450233048674729344">విలువ ఖచ్చితంగా <ph name="MAXIMUM"/> కంటే తగ్గువగా లేదా సమానంగా ఉండాలి.</translation>
 <translation id="3471999216963526757">30 సెకన్లు వెనుకకు</translation>
 <translation id="668171684555832681">ఇతర...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">ఆక్టివేట్ చెయ్యి</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ఫైళ్ళు</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
+<translation id="7888071071722539607">దయచేసి ఇమెయిల్ చిరునామాలో '<ph name="ATSIGN"/>'ని చేర్చండి. '<ph name="INVALIDADDRESS"/>'లో '<ph name="ATSIGN"/>' లేదు.</translation>
 <translation id="4851297395436456855">వేగంగా ముందుకు వెళ్లు</translation>
 <translation id="1088086359088493902">సెకన్లు</translation>
 <translation id="3934680773876859118">PDF పత్రాన్ని లోడ్ చెయ్యడానికి విఫలమైంది</translation>

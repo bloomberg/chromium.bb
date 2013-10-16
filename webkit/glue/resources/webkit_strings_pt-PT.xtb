@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Outra...</translation>
 <translation id="2426432199384958866">fazer regressar a transmissão do filme para tempo real</translation>
 <translation id="248395913932153421">Dia</translation>
+<translation id="1729654308190250600">Introduza um endereço de email que não esteja vazio.</translation>
 <translation id="6015796118275082299">Ano</translation>
 <translation id="9186171386827445984">A carregar o documento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> páginas...</translation>
 <translation id="1235745349614807883">Limpar pesquisas recentes</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">marcador de lista</translation>
 <translation id="4202807286478387388">ir para</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Introduza uma parte seguida de &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; está incompleto.</translation>
+<translation id="2746543609216772311">O valor tem de ser <ph name="MINIMUM_DATE_OR_TIME"/> ou posterior.</translation>
 <translation id="2572483411312390101">reproduzir</translation>
 <translation id="8785498733064193001">iniciar reprodução</translation>
 <translation id="7057186640035488495">tempo do filme</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">recuar rapidamente</translation>
 <translation id="7789962463072032349">pausa</translation>
 <translation id="6853785296079745596">esconder legendas ocultas</translation>
+<translation id="4360991593054037559">Introduza um valor válido. Os dois valores válidos mais próximos são <ph name="VALID_VALUE_LOW"/> e <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Outra...</translation>
 <translation id="8141602879876242471">Este índice é pesquisável. Introduza palavras-chave de pesquisa:</translation>
 <translation id="1930711995431081526">estado</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">avançar rapidamente</translation>
 <translation id="4812940957355064477">Introduza um número.</translation>
 <translation id="2548326553472216322">Nenhuma pesquisa recente</translation>
+<translation id="1938124657309484470">O valor tem de ser <ph name="MAXIMUM_DATE_OR_TIME"/> ou anterior.</translation>
 <translation id="7263440858009898357">Seleccione um item na lista.</translation>
 <translation id="901493112792887934">tempo atual em segundos</translation>
 <translation id="5164977714490026579">O valor tem de ser superior ou igual a <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="5966707198760109579">Semana</translation>
 <translation id="2901282870647571346">estado atual do filme</translation>
+<translation id="2060505056492490888">&quot;<ph name="DOT"/>&quot; está a ser utilizado numa posição errada em &quot;<ph name="INVALIDDOMAIN"/>&quot;.</translation>
 <translation id="2674318244760992338">rodapé</translation>
 <translation id="8987927404178983737">Mês</translation>
 <translation id="8115662671911883373">apresentar legendas ocultas</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">verificar</translation>
 <translation id="2846343701378493991">1024 (Tamanho médio)</translation>
 <translation id="1637811476055996098">Escolher Ficheiros</translation>
+<translation id="49969490063480558">Introduza uma parte a seguir a &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; está incompleto.</translation>
 <translation id="5476505524087279545">desmarcar</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2507943997699731163">Preencha este campo.</translation>
 <translation id="3785482301506746191">scrubber do tempo do filme</translation>
 <translation id="739024184232394898">Outra...</translation>
+<translation id="383465348367842624">Uma parte seguida de &quot;<ph name="ATSIGN"/>&quot; não deve conter o símbolo &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">sair do modo de ecrã inteiro</translation>
 <translation id="5919473608089529604">Não foi possível carregar o plug-in.</translation>
 <translation id="5546461542133609677">reativar som</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Introduza uma lista de endereços de e-mail separados por vírgula.</translation>
 <translation id="5939518447894949180">Repor</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">Introduza um valor válido. O valor válido mais próximo é <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Valor inválido.</translation>
 <translation id="1842960171412779397">seleccionar</translation>
 <translation id="7673697353781729403">Horas</translation>
+<translation id="4664250907885839816">Uma parte a seguir a &quot;<ph name="ATSIGN"/>&quot; não deve conter o símbolo &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="3450233048674729344">O valor tem de ser inferior ou igual a <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">recuar 30 segundos</translation>
 <translation id="668171684555832681">Outros...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">activar</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ficheiros</translation>
 <translation id="6643016212128521049">Limpar</translation>
+<translation id="7888071071722539607">Inclua um &quot;<ph name="ATSIGN"/>&quot; no endereço de email. Falta um &quot;<ph name="ATSIGN"/>&quot; em &quot;<ph name="INVALIDADDRESS"/>&quot;.</translation>
 <translation id="4851297395436456855">avanço rápido</translation>
 <translation id="1088086359088493902">Segundos</translation>
 <translation id="3934680773876859118">Falha ao carregar o documento em PDF</translation>

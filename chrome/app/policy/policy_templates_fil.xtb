@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1503959756075098984">Ang Mga Extension ID at mga URL sa pag-update na tahimik na ii-install</translation>
+<translation id="793134539373873765">Tinutukoy kung gagamitin ang p2p para sa mga payload sa pag-update ng OS. Kung nakatakda sa True, ang mga device ay magbabahagi at susubukang gamitin ang mga payload sa pag-update sa LAN, na malamang na babawasan ang paggamit at pagsikip sa Internet bandwidth. Kung hindi available sa LAN ang payload sa pag-update, babalik ang device sa pag-download mula sa server sa pag-update. Kung nakatakda sa False o hindi naka-configure, hindi gagamitin ang p2p.</translation>
 <translation id="2463365186486772703">Lokal ng application</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
 <translation id="3347897589415241400">Ang default na pagkilos para sa mga site na wala sa anumang pack ng nilalaman.
@@ -140,6 +141,13 @@
       Ang halaga ng patakaran ay dapat tukuyin gamit ang milliseconds. Limitado ang mga halaga sa sakop na 30 segundo hanggang 24 na oras.</translation>
 <translation id="9200828125069750521">Mga parameter para sa URL ng larawan na gumagamit ng POST</translation>
 <translation id="2769952903507981510">I-configure ang kinakailangang domain name para sa mga host ng malayuang pag-access</translation>
+<translation id="8294750666104911727">Karaniwang ire-render ang mga pahina na may X-UA-Compatible na nakatakda sa chrome=1 sa <ph name="PRODUCT_FRAME_NAME"/> hindi alintana ang patakaran sa 'ChromeFrameRendererSettings.'
+
+          Kung i-e-enable mo ang setting na ito, hindi iii-scan ang mga pahina para sa mga meta tag.
+
+          Kung idi-disable mo ang setting na ito, iii-scan ang mga pahina para sa mga meta tag.
+
+          Kung hindi nakatakda ang patakarang ito, iii-scan ang mga pahina para sa mga meta tag.</translation>
 <translation id="3478024346823118645">I-wipe ang data ng user sa pag-sign-out</translation>
 <translation id="8668394701842594241">Tumutukoy ng isang listahan ng mga plugin na pinagana sa <ph name="PRODUCT_NAME"/> at pumipigil sa mga user na baguhin ang setting na ito.
 
@@ -226,6 +234,7 @@
       Kung iyong i-enable o i-disable ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na &quot;I-enable ang proteksyon sa phishing at malware&quot; sa <ph name="PRODUCT_NAME"/>.
 
       Kung iiwanang hindi nakatakda ang patakarang ito, ma-e-enable ito, ngunit mababago ito ng user.</translation>
+<translation id="268577405881275241">Ine-enable ang feature na proxy ng compression ng data</translation>
 <translation id="8369602308428138533">Delay ng pag-off ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="6513756852541213407">Binibigyang-daan kang tukuyin ang proxy server na ginagamit ng <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
 
@@ -336,6 +345,7 @@
 
       Kung hindi mo pinagana ang setting na ito, hindi maaaring idagdag, alisin o baguhin ang mga bookmark. Available pa rin ang mga umiiral na bookmark.</translation>
 <translation id="3496296378755072552">Tagapamahala ng password</translation>
+<translation id="4372704773119750918">Hindi pinapayagan ang enterprise user na maging bahagi ng multiprofile (pangunahin o pangalawa)</translation>
 <translation id="2565967352111237512">Pinapagana ang hindi kilalang pag-uulat ng data ng paggamit at data na may kaugnayan sa pag-crash tungkol sa <ph name="PRODUCT_NAME"/> sa Google at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kung pinagana mo ang setting na ito, ipinapadala sa Google ang hindi kilalang pag-uulat ng data ng paggamit at data na may kaugnayan sa pag-crash.
@@ -410,6 +420,7 @@
 
           Kung ang pagkilos ay pagsususpinde, maaaring hiwalay na i-configure ang <ph name="PRODUCT_OS_NAME"/> upang i-lock o huwag i-lock ang screen bago ang pagsususpinde.</translation>
 <translation id="3915395663995367577">URL sa proxy na .pac file</translation>
+<translation id="2144674628322086778">Pinapayagan ang enterprise user na maging pangunahin at pangalawa  (Default na pag-uugali)</translation>
 <translation id="1022361784792428773">Ang mga ID ng Extension na dapat na iwasan ng user mula sa pag-install (o * para sa lahat)</translation>
 <translation id="5499375345075963939">Sa retail mode lang aktibo ang patakarang ito.
 
@@ -433,7 +444,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi pinagana ang setting na ito, hindi makakagamit ng JavaScript ang mga web page at hindi mababago ng user ang setting na iyon.
 
       Kung pinagana o hindi nakatakda ang setting na ito, makakagamit ng JavaScript ang mga web page ngunit mababago ng user ang setting na iyon.</translation>
-<translation id="4047207703890139433">Tinutukoy ang format ng orasan na gagamitin para sa device. Ma-o-override ng mga user ang format ng orasan para sa kasalukuyang session. Gayunpaman, sa pag-logout, itinatakda itong muli sa tinukoy na value. Kung magbibigay ng walang lamang string, gagamitin ang kagustuhan ng may-ari ng device.</translation>
 <translation id="1942957375738056236">Matutukoy mo ang URL ng proxy server dito.
 
           Magkakaroon lamang ng bisa ang patakaran kung pinili mo ang mga setting ng manu-manong proxy sa 'Piliin kung paano tukuyin ang mga setting ng proxy server .'
@@ -616,8 +626,10 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Ang patakarang ito ay nilalayong payagan ang mahigpit na pagba-blacklist ng plugin kung saan ang 'DisabledPlugins' na listahan ay naglalaman ng mga entry na may wildcard tulad ng huwag paganahin ang lahat ng plugin '*' o huwag panagahin ang lahat ng Java plugin '*Java*' ngunit hinihiling ng administrator na paganahin ang ilang partikular na bersyon tulad ng 'IcedTea Java 2.3'. Maaaring tukuyin sa patakarang ito ang mga partikular na bersyong ito.
 
       Kung hinayaang hindi nakatakda ang patakarang ito, mapipirming hindi pinapagana ang anumang plugin na tumutugma sa mga pattern sa 'DisabledPlugins' at hindi magagawa ng user na paganahin ang mga ito.</translation>
+<translation id="4557134566541205630">URL ng pahina ng bagong tab ng default na search provider</translation>
 <translation id="546726650689747237">Delay ng pag-dim ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
+<translation id="7260277299188117560">Naka-enable ang auto update p2p</translation>
 <translation id="5316405756476735914">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na magtakda ng lokal na data. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagatatakda ng lokal na data.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowCookies' at magagawa ng user na baguhin ito.</translation>
@@ -858,9 +870,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung hindi pinagana ang setting na ito at pini-filter ng firewall ang mga papalabas na koneksyon ng UDP, papayagan lamang ng machine na ito ang mga koneksyon sa loob ng lokal na network.
 
           Kung hinayaang hindi nakatakda ang patakarang ito papaganahin ang setting.</translation>
+<translation id="4057110413331612451">Pinapayagan ang enterprise user na maging pangunahing user lang sa multiprofile</translation>
 <translation id="5365946944967967336">Ipakita ang button na Home sa toolbar</translation>
 <translation id="3709266154059827597">I-configure ang blacklist ng pag-install ng extension</translation>
 <translation id="8451988835943702790">Gamitin ang Pahina ng Bagong Tab bilang homepage</translation>
+<translation id="4617338332148204752">Lalaktawan ang pagsuri sa meta tag sa <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Binibigyang-daan ang paggamit ng isang default na provider ng paghahanap.
 
           Kung pinagana mo ang setting na ito, isinasagawa ang isang default na paghahanap kapag nag-type ng teksto sa omnibox na hindi isang URL ang user.
@@ -1041,6 +1055,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinapagana, hindi makakakuha ng mga screenshot gamit ang mga keyboard shortcut o mga extension API.
 
       Kung hindi pinapagana o hindi tinukoy, papayagan ang pagkuha ng mga screenshot.</translation>
+<translation id="8649763579836720255">Ang mga Chrome OS device ay maaaring gumamit ng malayuang attestation (Verified Access) upang kumuha ng certificate na ibinibigay ng Chrome OS CA na ihinahayag na karapat-dapat ang device na mag-play ng pinoprotektahang nilalaman.  Kabilang sa prosesong ito ang pagpapadala ng impormasyon sa pag-endorso sa hardware sa Chrome OS CA na natatanging tumutukoy sa device.
+
+          Kung false ang setting na ito, hindi gagamit ng malayuang attestation ang device para sa pagprotekta sa nilalaman at maaaring hindi makapag-play ang device ng pinoprotektahang nilalaman.
+
+          Kung true ang setting na ito, o kung hindi nakatakda, maaaring gamitin ang malayuang attestation para sa pagprotekta sa nilalaman.</translation>
 <translation id="4632343302005518762">Payagan ang <ph name="PRODUCT_FRAME_NAME"/> na pangasiwaan ang mga uri ng nakalistang nilalaman</translation>
 <translation id="13356285923490863">Pangalan ng Patakaran</translation>
 <translation id="557658534286111200">Pinapagana o hindi pinapagana ang pag-edit ng bookmark</translation>
@@ -1112,6 +1131,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana ang setting na ito, hindi sine-save ang kasaysayan ng pagba-browse.
 
       Kung hindi pinagana o hindi nakatakda ang setting na ito, sine-save ang kasaysayan ng pagba-browse.</translation>
+<translation id="2759224876420453487">Kokontrolin ang pag-uugali ng user sa isang session na multiprofile</translation>
 <translation id="3844092002200215574">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME"/> para sa pag-iimbak ng mga naka-cache na file sa disk.
 
       Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME"/> ang ibinigay na direktoryo, tinukoy man ng user ang flag na '--disk-cache-dir' o hindi.
@@ -1160,6 +1180,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Ang pag-iiwan sa patakarang ito na hindi nakatakda ay magdudulot na gagamitin ng <ph name="PRODUCT_NAME"/> ang default na value na 5000 millisecond.</translation>
 <translation id="8099880303030573137">Idle delay kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2761483219396643566">Delay ng babala bago mag-idle kapag gumagamit ng baterya</translation>
+<translation id="5058056679422616660">Ang mga payload sa auto-update sa <ph name="PRODUCT_OS_NAME"/> ay maaaring i-download sa pamamagitan ng HTTP sa halip na HTTPS. Nagbibigay-daan ito sa transparent na HTTP na pag-cache ng mga pag-download sa HTTP.
+
+      Kung nakatakda sa true ang patakarang ito, susubukan ng <ph name="PRODUCT_OS_NAME"/> na i-download ang mga payload sa auto-update sa pamamagitan ng HTTP. Kung nakatakda sa false o hindi nakatakda ang patakaran, gagamitin ang HTTPS para sa pag-download ng mga payload sa auto-update.</translation>
 <translation id="1468307069016535757">Itakda ang default na katayuan ng tampok na pagiging naa-access ng high contrast mode sa screen sa pag-login.
 
           Kung nakatakda sa true ang patakarang ito, i-e-enable ang high contrast mode kapag ipinakita ang screen sa pag-login.
@@ -1174,12 +1197,20 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
 <translation id="3030000825273123558">Paganahin ang pag-uulat ng mga sukatan</translation>
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
+<translation id="6659688282368245087">Itinatakda ang fomat ng orasang gagamitin para sa device.
+
+      Isinasaayos ng patakarang ito ang format ng orasan na gagamitin sa screen sa pag-login at bilang default para sa mga session ng user. Maaari pa ring palitan ng mga user ang format ng orasan para sa kanilang account.
+
+      Kung hindi nakatakda sa true ang patakaran, gagamit ang device ng format ng orasan na 24 na oras. Kung nakatakda ang patakaran sa false, gagamit ang device ng format ng orasan na 12 oras.
+
+      Kung hindi nakatakda ang patakarang ito, magde-default ang device sa format ng orasan na 24 na oras.</translation>
 <translation id="6559057113164934677">Huwag payagan ang anumang site na i-access ang camera at mikropono</translation>
 <translation id="7273823081800296768">Kung naka-enable o hindi na-configure ang setting na ito, maaaring mag-opt ang mga user na ipares ang mga client at host sa oras ng koneksyon, na inaalis ang pangangailangang maglagay ng PIN sa bawat pagkakataon.
 
           Kung naka-disable ang setting na ito, hindi magiging available ang tampok na ito.</translation>
 <translation id="1675002386741412210">Suportado sa:</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
+<translation id="5921713479449475707">Pinapayagan ang mga pag-download ng autoupdate sa pamamagitan ng HTTP</translation>
 <translation id="4482640907922304445">Ipinapakita ang button na Home sa toolbar ng  <ph name="PRODUCT_NAME"/>.
 
       Kung pinagana mo ang setting na ito, palaging ipinapakita ang button na Home.
@@ -1287,6 +1318,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kapag hindi nakatakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME"/> ang default na halaga na 3 oras.
 </translation>
+<translation id="2571066091915960923">Ine-enable o dini-disable ang proxy ng compression ng data at pinipigilan ang mga user na palitan ang setting na ito.
+
+      Kung i-e-enable o idi-disable mo ang setting na ito, hindi maaaring palitan o i-override ng mga user ang setting na ito.
+
+      Kung iiwanang hindi nakatakda ang patakarang ito, magiging available ang feature  na proxy ng compression ng data upang makapili ang user kung gagamitin ba ito o hindi.</translation>
 <translation id="7424751532654212117">Listahan ng mga pagbubukod sa listahan ng hindi pinaganang mga plugin</translation>
 <translation id="6233173491898450179">Itakda ang direktoryo sa pag-download</translation>
 <translation id="78524144210416006">I-configure ang pamamahala sa power sa screen ng pag-login sa <ph name="PRODUCT_OS_NAME"/>.
@@ -1378,6 +1414,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hindi nakatakda ang patakarang ito, gagamitin ang 'PromptOnAccess' at mababago ito ng user.</translation>
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
+<translation id="328908658998820373">Pinapayagan ang mode na fullscreen.
+
+      Kinontrol ng patakarang ito ang availability ng mode na fullscreen kung saan nakatago ang lahat ng UI ng <ph name="PRODUCT_NAME"/> at ang nilalaman ng web lang ang nakikita.
+
+      Kung nakatakda sa true o hindi naka-configure ang patakarang ito, maaaring pumasok sa mode na fullscreen ang mga user, apps at extension na may naaangkop na pahintulot.
+
+      Kung nakatakda sa false ang patakarang ito, hindi maaaring pumasok sa mode na fullscreen ang user at maging ang anumang apps o extension.
+
+      Sa lahat ng platform maliban sa <ph name="PRODUCT_OS_NAME"/>, hindi available ang kiosk mode kapag naka-disable ang mode na fullscreen.</translation>
 <translation id="4325690621216251241">Magdagdag ng button sa pag-logout sa tray ng system</translation>
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>
 <translation id="1465619815762735808">I-click upang i-play</translation>
@@ -1395,10 +1440,24 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa o katumbas ng idle delay ang mga halaga.</translation>
 <translation id="1897365952389968758">Pinapayagang magpatakbo ng JavaScript ang lahat ng mga site</translation>
 <translation id="5244714491205147861">Pamamahala sa power sa screen ng pag-login</translation>
+<translation id="3619270953033888719">Ine-enable ang paggamit ng malayuang attestation para sa pagprotekta sa nilalaman para sa device.</translation>
 <translation id="922540222991413931">Mag-configure ng mga pinagmulan ng pag-install ng extension, app, at script ng user</translation>
 <translation id="7323896582714668701">Mga karagdagang command line na parameter para sa <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Huwag paganahin pag-synchronize ng data sa Google</translation>
 <translation id="7006788746334555276">Mga Setting ng Nilalaman</translation>
+<translation id="63659515616919367">Kinokontrol ang pag-uugali ng user sa isang multiprofile na session sa mga <ph name="PRODUCT_OS_NAME"/> device.
+
+      Kung nakatakda ang patakarang ito sa 'MultiProfileUserBehaviorUnrestricted', ang user ay maaaring maging pangunahin o pangalawang user sa isang multiprofile na session.
+
+      Kung nakatakda ang patakarang ito sa 'MultiProfileUserBehaviorMustBePrimary', ang user ay maaari lang maging pangunahing user sa isang multiprofile na session.
+
+      Kung nakatakda ang patakarang ito sa 'MultiProfileUserBehaviorNotAllowed', hindi maaaring maging bahagi ng isang multiprofile na session ang user.
+
+      Kung itatakda mo ang setting na ito, hindi ito maaaring baguhin o i-override ng mga user.
+
+      Kung binago ang setting na ito habang naka-sign in ang user sa isang multiprofile na session, susuriin ang lahat ng user sa session kumpara sa kanilang mga naaayon na setting. Isasara ang session kung hindi na pinapahitulutan na maging bahagi ng session ang kahit isa sa mga user.
+
+      Kung iiwanang hindi nakatakda ang patakaran, gagamitin ang default na value na 'MultiProfileUserBehaviorUnrestricted.'</translation>
 <translation id="5142301680741828703">Palaging i-render ang mga sumusunod na pattern ng URL sa <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">I-configure ang whitelist sa pag-install ng extension</translation>
 <translation id="187819629719252111">Binibigyang-daan ang access sa mga lokal na file sa machine sa pamamagitan ng pagpayag sa <ph name="PRODUCT_NAME"/> na magpakita ng mga dialog ng pagpili ng file.
@@ -1428,6 +1487,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang magnifier ng screen sa umpisa ngunit maaaring i-enable ng user anumang oras.</translation>
 <translation id="3428247105888806363">Paganahin ang paghula sa network</translation>
+<translation id="3460784402832014830">Tinutukoy ang URL na ginagamit ng isang search engine upang magbigay ng pahina ng bagong tab.
+
+          Opsyonal ang patakarang ito. Kung hindi nakatakda, walang ibibigay na pahina ng bagong tab.
+
+          Gagamitin lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="6145799962557135888">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -1724,4 +1788,5 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pinagana mo ang setting na ito, hindi mababago ng mga user ang kanilang URL ng home page sa <ph name="PRODUCT_NAME"/>, ngunit mapipili pa rin nila ang Pahina ng Bagong Tab bilang kanilang home page.
 
           Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang user na pumili ng kanyang home page nang mag-isa kung hindi rin nakatakda ang HomepageIsNewTabPage.</translation>
+<translation id="4858735034935305895">Pinapayagan ang mode na fullscreen</translation>
 </translationbundle>

@@ -46,6 +46,7 @@ Host</translation>
 <translation id="6001953797859482435">Preferències de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="9188433529406846933">Autoritza</translation>
 <translation id="228809120910082333">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per Chromoting.</translation>
+<translation id="7605995381616883502">Connexió nova</translation>
 <translation id="5826423541626112308">Amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="2851674870054673688">Quan hagin introduït el codi, la sessió d'ús compartit començarà.</translation>
 <translation id="5593560073513909978">El servei està temporalment no disponible. Torneu-ho a provar més tard.</translation>
@@ -68,6 +69,7 @@ Host</translation>
 <translation id="7081428606750359611">Chromoting Host</translation>
 <translation id="8228265668171617545">S'ha detectat una versió incompatible de Chromoting. Assegureu-vos que teniu la versió més recent de Google Chrome i de Chromoting als dos ordinadors i torneu-ho a provar.</translation>
 <translation id="6985691951107243942">Esteu segur que voleu desactivar les connexions remotes a <ph name="HOSTNAME"/>? Si canvieu de parer, haureu de visitar aquest ordinador per tornar-les a activar.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (darrera vegada en línia: <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Per començar a compartir l'escriptori, proporcioneu el codi d'accés següent a la persona que us oferirà assistència.</translation>
 <translation id="409800995205263688">NOTA: La configuració de la política només permet connexions entre ordinadors de la vostra xarxa.</translation>
 <translation id="2353140552984634198">Podeu accedir de manera segura a aquest ordinador mitjançant Chromoting.</translation>
@@ -134,7 +136,9 @@ Host</translation>
 <translation id="6527303717912515753">Comparteix</translation>
 <translation id="2926340305933667314">No s'ha pogut desactivar l'accés remot a aquest ordinador. Torneu-ho a provar més tard.</translation>
 <translation id="6865175692670882333">Mostra/edita</translation>
+<translation id="5859141382851488196">Finestra nova...</translation>
 <translation id="2089514346391228378">S'han activat les connexions remotes en aquest ordinador.</translation>
+<translation id="7693372326588366043">Actualitza la llista d'amfitrions</translation>
 <translation id="8246880134154544773">Ha fallat l'autenticació. Torneu a iniciar la sessió a Chromoting.</translation>
 <translation id="1654128982815600832">S'estan activant les connexions remotes en aquest ordinador...</translation>
 <translation id="8187079423890319756">Copyright 2013 Els autors de Chromium. Tots els drets reservats.</translation>

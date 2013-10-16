@@ -29,6 +29,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="2896252579017640304">Chrome 앱 실행</translation>
 <translation id="2370289711218562573">Chrome에서 즐겨찾기/북마크를 가져오고 있습니다.</translation>
 <translation id="8762286861469007470">Chrome 웹포털 인증 감지기</translation>
+<translation id="2721687379934343312">Mac에서는 비밀번호가 키체인에 저장되며 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/>이(가) Chrome 설정을 변경할 수 있습니다.</translation>
 <translation id="1761870329818521071">현재 실행 중인 Chrome 프레임과 동일한 버전은 설치할 수 없습니다. Chrome 프레임을 닫고 다시 시도하세요.</translation>
 <translation id="2040709530900803995">Chrome 렌더러</translation>
@@ -66,6 +67,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="1697213158865901863">Chrome 프레임</translation>
 <translation id="4513711165509885787">결제 세부정보가 Chrome에 저장되었습니다.</translation>
 <translation id="7098166902387133879">Chrome에서 마이크를 사용 중입니다.</translation>
+<translation id="3590194807845837023">프로필 잠금 해제 및 다시 시작</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접근하려 했지만 서버에서 만료된 인증서를 제출했습니다. 증서가 만료된 이후 손상되었는지 여부를 나타내는 정보가 없습니다. 다시 말해 Chrome은 사용자가 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;와(과) 통신하고 있으며 침입자가 아니라는 것을 확인할 수 없습니다. 컴퓨터 시계가 현재 <ph name="CURRENT_TIME"/>(으)로 설정되어 있습니다. 시간이 정확하지 않으면 오류를 수정한 뒤 이 페이지를 새로고침하세요.</translation>
 <translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
@@ -139,6 +141,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="1104959162601287462">Chrome OS 정보(&amp;C)</translation>
 <translation id="5328989068199000832">Chrome 바이너리</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
+<translation id="7787950393032327779">다른 컴퓨터(<ph name="HOST_NAME"/>)의 다른 Chrome 프로세스(<ph name="PROCESS_ID"/>)에서 프로필을 사용 중인 것 같습니다. 프로필이 손상되지 않도록 Chrome에서 잠금 설정했습니다. 다른 프로세스에서 프로필을 사용 중이지 않은 것이 확실한 경우 프로필을 잠금 해제하고 Chrome을 다시 시작하세요.</translation>
 <translation id="1469002951682717133">Chrome 앱 실행기</translation>
 <translation id="4990567037958725628">Chrome 카나리아</translation>
 <translation id="4561051373932531560">Chrome을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
@@ -157,9 +160,9 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6326175484149238433">Chrome에서 삭제</translation>
 <translation id="2871893339301912279">Chrome에 로그인되어 있습니다.</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>
-<translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> 계정으로 Chrome에 로그인 중입니다. 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="4147555960264124640">관리 계정으로 로그인하여 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME"/> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">이 사이트는 곧 지원이 중단되는 Chrome 프레임 플러그인을 사용 중입니다. 이 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
+<translation id="1348153800635493797">Google 지갑을 사용하려면 Chrome을 업그레이드해야 합니다. [<ph name="ERROR_CODE"/>]</translation>
 <translation id="8187289872471304532">애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 고급 &gt; 프록시로 이동한 다음
           선택된 프록시를 선택 취소합니다.</translation>
 <translation id="8669527147644353129">Chrome 도우미</translation>
@@ -189,6 +192,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="2769762047821873045">Chrome이 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/>이(가) Chrome의 검색 작동 방법을 변경할 수 있습니다.</translation>
+<translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS"/>(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="6855094794438142393">Chrome 메뉴 &gt;
           <ph name="SETTINGS_TITLE"/>
           &gt;
@@ -206,6 +210,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5334545119300433702">이 모듈은 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="4407807842708586359">Chrome OS</translation>
 <translation id="6634887557811630702">Chrome이 최신 버전입니다.</translation>
+<translation id="4120075327926916474">웹 양식을 작성하기 위해 Chrome에서 신용카드 정보를 사용해도 되겠습니까?</translation>
 <translation id="2084710999043359739">Chrome에 추가</translation>
 <translation id="4084877369264707540">Chrome 프레임이 이미 설치되어 있으며 이 컴퓨터의 모든 사용자가 사용할 수 있습니다. Chrome 프레임을 사용자 수준에서 설치하려면 먼저 관리자가 설치한 시스템 수준 버전을 제거해야 합니다.</translation>
 <translation id="3360895254066713204">Chrome 도우미</translation>

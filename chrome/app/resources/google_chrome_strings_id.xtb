@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Luncurkan aplikasi Chrome</translation>
 <translation id="2370289711218562573">Kini Google Chrome mengimpor Favorites/Bookmark.</translation>
 <translation id="8762286861469007470">Detektor Chrome Captive Portal</translation>
+<translation id="2721687379934343312">Di Mac, sandi disimpan pada Keychain Anda dan dapat diakses atau disinkronkan oleh pengguna Chrome lain yang berbagi akun OS X ini.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> mungkin mengubah setelan Chrome Anda.</translation>
 <translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame yang sama dengan yang sedang dijalankan. Tutup Google Chrome Frame dan coba lagi.</translation>
 <translation id="2040709530900803995">Pengaju Google Chrome</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Detail penagihan Anda telah disimpan di Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
+<translation id="3590194807845837023">Buka Kunci Profil dan Luncurkan Lagi</translation>
 <translation id="4053720452172726777">Menyesuaikan dan mengontrol Google Chrome</translation>
 <translation id="6423071462708908582">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang kedaluwarsa. Tidak tersedia informasi yang menunjukkan bahwa sertifikat tersebut telah disusupi sejak masa kedaluwarsa. Hal ini mengindikasikan bahwa Google Chrome tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_TIME"/>. Apakah sudah benar? Jika tidak, Anda perlu mengoreksi kesalahan ini dan menyegarkan laman.</translation>
 <translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
@@ -132,6 +134,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="1104959162601287462">Tentang OS &amp;Chrome</translation>
 <translation id="5328989068199000832">Biner Google Chrome</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
+<translation id="7787950393032327779">Profil tersebut mungkin digunakan untuk proses Google Chrome lainnya (<ph name="PROCESS_ID"/>) di komputer lain (<ph name="HOST_NAME"/>). Chrome telah mengunci profil tersebut agar tidak rusak. Jika yakin tidak ada proses lain yang menggunakan profil ini, Anda dapat membuka profil dan meluncurkan Chrome kembali.</translation>
 <translation id="1469002951682717133">Peluncur Aplikasi Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
@@ -151,9 +154,9 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="6326175484149238433">Hapus dari Chrome</translation>
 <translation id="2871893339301912279">Anda sudah masuk ke Chrome!</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>
-<translation id="1686446242839005801">Anda masuk ke Chrome menggunakan akun <ph name="USER_EMAIL_ADDRESS"/> Anda. Anda akan dapat mengakses bookmark, riwayat, dan setelan lain di semua perangkat Anda yang sudah masuk.</translation>
 <translation id="4147555960264124640">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Google Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME"/>. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Situs ini menggunakan konten digital Chrome Frame yang akan segera tidak didukung. Copot pemasangannya dan tingkatkan versi ke browser modern.</translation>
+<translation id="1348153800635493797">Anda harus meningkatkan versi Chrome untuk menggunakan Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Buka
           Aplikasi &gt; Preferensi Sistem &gt; Jaringan &gt; Lanjutan &gt; Proxy
           dan hapus centang proxy apa pun yang telah dipilih.</translation>
@@ -184,6 +187,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>
 <translation id="2769762047821873045">Google Chrome bukan browser default.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> mungkin mengubah cara penelusuran Anda berjalan di Chrome.</translation>
+<translation id="4567424176335768812">Anda masuk sebagai <ph name="USER_EMAIL_ADDRESS"/>. Kini Anda dapat mengakses bookmark, riwayat, dan setelan lainnya pada seluruh perangkat yang Anda masuki.</translation>
 <translation id="6855094794438142393">Buka
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -202,6 +206,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="5334545119300433702">Modul ini biasanya konflik dengan Google Chrome.</translation>
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome sudah diperbarui.</translation>
+<translation id="4120075327926916474">Ingin Chrome menyimpan informasi kartu kredit ini untuk melengkapi formulir web?</translation>
 <translation id="2084710999043359739">Tambah ke Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame sudah terpasang dan tersedia bagi semua pengguna komputer ini. Jika Anda ingin memasang Google Chrome Frame di tingkat pengguna, Anda harus mencopot pemasangan versi tingkat sistem yang dipasang oleh administrator lebih dulu.</translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>

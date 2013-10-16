@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Nyingine...</translation>
 <translation id="2426432199384958866">rejesha utiririshaji wa filamu inavyofanyika</translation>
 <translation id="248395913932153421">Siku</translation>
+<translation id="1729654308190250600">Tafadhali ingiza anwani ya barua pepe ambayo sio tupu.</translation>
 <translation id="6015796118275082299">Mwaka</translation>
 <translation id="9186171386827445984">Inapakia hati: Kurasa <ph name="PAGE_NUMBER"/> / <ph name="NUMBER_OF_PAGES"/>...</translation>
 <translation id="1235745349614807883">Futa Utafutaji wa Hivi Karibuni</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">kialamishi orodha</translation>
 <translation id="4202807286478387388">ruka</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Tafadhali ingiza sehemu ikifuatiwa na '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' haijakamilika.</translation>
+<translation id="2746543609216772311">Thamani lazima iwe <ph name="MINIMUM_DATE_OR_TIME"/> au baadaye.</translation>
 <translation id="2572483411312390101">cheza</translation>
 <translation id="8785498733064193001">anza kucheza</translation>
 <translation id="7057186640035488495">muda wa filamu</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">omba kurejea haraka</translation>
 <translation id="7789962463072032349">pumzisha</translation>
 <translation id="6853785296079745596">ficha manukuu yanayoweza kuonyeshwa</translation>
+<translation id="4360991593054037559">Tafadhali ingiza thamani halali. Thamani mbili halali za karibu ni <ph name="VALID_VALUE_LOW"/> na <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Nyingine...</translation>
 <translation id="8141602879876242471">Hii ni fahirisi inayoweza kutafutwa. Weka maneno muhimu ya utafutaji.</translation>
 <translation id="1930711995431081526">hali</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">omba upelekaji mbele wa haraka</translation>
 <translation id="4812940957355064477">Tafadhali ingiza nambari.</translation>
 <translation id="2548326553472216322">Hakuna utafutaji wa hivi karibuni</translation>
+<translation id="1938124657309484470">Thamani lazima iwe <ph name="MAXIMUM_DATE_OR_TIME"/> au mapema.</translation>
 <translation id="7263440858009898357">Tafadhali chagua kipengee katika orodha.</translation>
 <translation id="901493112792887934">muda wa sasa kwa sekunde</translation>
 <translation id="5164977714490026579">Lazima thamani iwe kubwa kuliko au sawa na <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Wiki hii</translation>
 <translation id="5966707198760109579">Juma</translation>
 <translation id="2901282870647571346">hali ya sasa ya filamu</translation>
+<translation id="2060505056492490888">' <ph name="DOT"/> 'imetumika kwenye nafasi isiyostahili katika '<ph name="INVALIDDOMAIN"/>'.</translation>
 <translation id="2674318244760992338">kijachini</translation>
 <translation id="8987927404178983737">Mwezi</translation>
 <translation id="8115662671911883373">anza kuonyesha manukuu yaliyofungwa</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">chunguza</translation>
 <translation id="2846343701378493991">1024 (Gredi Wastani)</translation>
 <translation id="1637811476055996098">Chagua Faili</translation>
+<translation id="49969490063480558">Tafadhali ingiza sehemu inayofuatia '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' haijakamilika.</translation>
 <translation id="5476505524087279545">toa tiki</translation>
 <translation id="2148716181193084225">Leo</translation>
-<translation id="2507943997699731163">Tafadhali jaza uga huu.</translation>
+<translation id="2507943997699731163">Tafadhali jaza sehemu hii.</translation>
 <translation id="3785482301506746191">kitelezi cha muda cha filamu</translation>
 <translation id="739024184232394898">Nyingine...</translation>
+<translation id="383465348367842624">Sehemu inayofuatwa na '<ph name="ATSIGN"/>' haipaswi kuwa na alama ya '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="5468998798572797635">Ondoka kwenye Skrini nzima</translation>
 <translation id="5919473608089529604">Isingeweza kupakia programu jalizi.</translation>
 <translation id="5546461542133609677">rejesha sauti</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Tafadhali ingiza orodha iliyotenganishwa kwa koma ya anwani za barua pepe.</translation>
 <translation id="5939518447894949180">Weka upya</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">Tafadhali ingiza thamani halali.Thamani halali ya karibu ni <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Thamani batili.</translation>
 <translation id="1842960171412779397">chagua</translation>
 <translation id="7673697353781729403">Saa</translation>
+<translation id="4664250907885839816">Sehemu inayofuata '<ph name="ATSIGN"/>' haipaswi kuwa na alama ya '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="3450233048674729344">Lazima thamani iwe chache kuliko au sawa na <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">rejea baada ya sekunde 30</translation>
 <translation id="668171684555832681">Mengine...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">wezesha</translation>
 <translation id="8444882422881193423">faili <ph name="NUMBER_OF_FILES"/></translation>
 <translation id="6643016212128521049">Futa</translation>
+<translation id="7888071071722539607">Tafadhali jumuisha '<ph name="ATSIGN"/>' katika anwani ya barua pepe. '<ph name="INVALIDADDRESS"/>' inakosa '<ph name="ATSIGN"/>'.</translation>
 <translation id="4851297395436456855">peleka mbele haraka</translation>
 <translation id="1088086359088493902">Sekunde</translation>
 <translation id="3934680773876859118">Imeshindwa kupakia hati ya PDF</translation>

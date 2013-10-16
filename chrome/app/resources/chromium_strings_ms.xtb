@@ -3,6 +3,7 @@
 <translationbundle lang="ms">
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6373523479360886564">Adakah anda pasti mahu menyahpasang Chromium?</translation>
+<translation id="5065199687811594072">Adakah anda mahu Chromium menyimpan maklumat kad kredit ini untuk melengkapkan borang web?</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
 <translation id="6893813176749746474">Chromium telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
 <translation id="1550579416447684632">Lancarkan apl Chromium</translation>
@@ -20,6 +21,7 @@
 <translation id="7128196614940529818">Chromium Frame telah dipasang dan tersedia untuk semua pengguna komputer ini. Jika anda ingin memasang Chromium Frame pada tahap pengguna, mula-mula anda mesti menyahpasang versi tahap sistem yang dipasang oleh pihak pentadbir.</translation>
 <translation id="731644333568559921">Kemas kini &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baharu. Beberapa ciri mungkin tidak berfungsi.</translation>
+<translation id="7023267510504981715">Anda mesti menaik taraf Chromium untuk menggunakan Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="7419987137528340081">Jika anda memilih untuk menyimpan data Chromium yang sedia ada secara berasingan, anda boleh membuat pengguna Chromium baharu untuk <ph name="USER_NAME"/>.</translation>
 <translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="3549345495227188780">Bermula dengan OS Chromium</translation>
@@ -56,7 +58,8 @@
 <translation id="3849925841547750267">Malangnya, tetapan Mozilla Firefox anda tidak tersedia semasa penyemak imbas tersebut dijalankan. Untuk mengimport tetapan tersebut ke Chromium, simpan kerja anda dan tutup semua tetingkap Firefox. Kemudian klik Teruskan.</translation>
 <translation id="7771626876550251690">Dalam keadaan ini, alamat yang disenarai dalam sijil tidak sepadan dengan alamat tapak web yang cuba dicapai oleh penyemak imbas anda. Satu sebab mungkin berlakunya keadaan ini ialah komunikasi anda sedang dipintas oleh penyerang yang menyampaikan sijil untuk tapak web yang berlainan, yang akan mengakibatkan tiada padanan. Sebab lain yang mungkin ialah pelayan disediakan untuk mengembalikan sijil yang sama untuk berbilang tapak web, termasuk tapak yang anda cuba lawati, walaupun sijil tersebut tidak sah untuk semua tapak web itu. Chromium boleh menyatakan dengan yakin bahawa anda telah mancapai &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, tetapi tidak dapat mengesahkan bahawa tapak itu tapak yang sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang anda ingin capai. Jika anda teruskan, Chromium tidak akan menyemak untuk mengesan sebarang nama tidak sepadan yang selanjutnya.</translation>
 <translation id="4330585738697551178">Modul ini diketahui bercanggah dengan Chromium.</translation>
-<translation id="3190315855212034486">Alamak! Chromium telah ranap. Lancarkan semula sekarang?</translation>
+<translation id="3190315855212034486">Alamak! Chromium mengalami ranap sistem. Lancarkan semula sekarang?</translation>
+<translation id="3590194807845837023">Buka Profil dan Lancarkan Semula</translation>
 <translation id="6714487516757221107">Tiada pemasangan Chromium atau Chromium Frame dijumpai untuk dikemas kini.</translation>
 <translation id="3197823471738295152">Peranti anda telah dikemas kini.</translation>
 <translation id="8551886023433311834">Hampir terkini! Mulakan semula peranti anda untuk melengkapkan pengemaskinian.</translation>
@@ -79,6 +82,7 @@
 <translation id="4077262827416206768">Sila tutup semua tetingkap Chromium dan lancarkan semula Chromium agar perubahan ini boleh dilaksanakan.</translation>
 <translation id="5472687196979159893"><ph name="FILE_NAME"/> boleh mengubah cara carian anda berfungsi dalam Chromium.</translation>
 <translation id="6944967875980567883">Modul yang dimuatkan dalam Chromium</translation>
+<translation id="6899795326977034905">Pada Mac, kata laluan disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chromium lain yang berkongsi akaun OS X ini.</translation>
 <translation id="118298050220780080">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang dikeluarkan oleh entiti yang tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin bermakna pelayan tersebut telah menghasilkan bukti kelayakannya sendiri yang tidak dipercayai oleh Chromium untuk mendapatkan maklumat identiti atau penyerang mungkin cuba memintas komunikasi anda.</translation>
 <translation id="3296368748942286671">Terus menjalankan apl latar belakang apabila Chromium ditutup</translation>
 <translation id="473775607612524610">Kemas kini</translation>
@@ -87,6 +91,7 @@
 <translation id="7338384957110970244">Chromium tidak dapat membuat pintasan aplikasi.</translation>
 <translation id="6055895534982063517">Terdapat versi baharu Chromium yang lebih pantas daripada biasa tersedia.</translation>
 <translation id="2407806170074302369">Mengenai Chromium Frame...</translation>
+<translation id="4677944499843243528">Nampaknya profil digunakan oleh proses Chromium lain (<ph name="PROCESS_ID"/>) pada komputer lain (<ph name="HOST_NAME"/>). Chromium telah mengunci profil supaya profil tidak rosak. Jika anda pasti tiada proses lain yang menggunakan profil ini, anda boleh membuka profil dan melancarkan semula Chromium.</translation>
 <translation id="5405650547142096840">Alih keluar daripada Chromium</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
 <translation id="3258596308407688501">Chromium tidak dapat membaca atau menulis pada direktori datanya:
@@ -158,7 +163,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="130631256467250065">Perubahan anda akan dilaksanakan apabila anda memulakan semula peranti anda pada masa akan datang.</translation>
 <translation id="3244477511402911926">Pusat Pemberitahuan Chromium</translation>
 <translation id="1105130903706696483">Chromium tidak ditutup dengan betul. Untuk membuka semula halaman yang anda telah buka, klik Pulihkan.</translation>
-<translation id="1531452407274881270">Anda log masuk ke Chromium menggunakan akaun <ph name="USER_EMAIL_ADDRESS"/> anda. Anda akan dapat mengakses penanda halaman, sejarah dan tetapan lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="1929939181775079593">Chromium tidak responsif. Lancarkan semula sekarang?</translation>
 <translation id="1414495520565016063">Anda log masuk ke Chromium!</translation>
 <translation id="3155163173539279776">Lancarkan Semula Chromium</translation>
@@ -181,6 +185,7 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="3249425904492147663">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang telah tamat tempoh. Tiada maklumat tersedia yang menunjukkan sama ada sijil tersebut telah terjejas sejak tamat tempoh itu. Ini bermakna Chromium tidak dapat menjamin bahawa anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer anda pada masa ini ditetapkan pada <ph name="CURRENT_TIME"/>. Adakah itu betul? Jika tidak, anda harus membetulkan kesilapan tersebut dan memuatkan semula halaman ini.</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="457845228957001925">Maklumat penting mengenai data Chromium anda</translation>
+<translation id="4567424176335768812">Anda telah log masuk sebagai <ph name="USER_EMAIL_ADDRESS"/>. Sekarang anda boleh mengakses penanda halaman, sejarah dan tetapan anda yang lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="7483335560992089831">Tidak boleh memasang versi Chromium yang sama dengan yang sedang dijalankan. Sila tutup Chromium dan cuba lagi.</translation>
 <translation id="7641113255207688324">Chromium bukan penyemak imbas lalai anda.</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>

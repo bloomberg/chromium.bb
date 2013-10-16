@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">‏راه‌اندازی برنامه‌های Chrome</translation>
 <translation id="2370289711218562573">‏اکنون Google Chrome در حال واردکردن نشانک‌ها/موارد دلخواه است.</translation>
 <translation id="8762286861469007470">‏ردیاب پورتال محدود Chrome</translation>
+<translation id="2721687379934343312">‏در Mac، گذرواژه‌ها در Keychain شما ذخیره می‌شوند و توسط سایر کاربران Chrome که این حساب OS X را به اشتراک می‌گذارند، قابل دسترسی و همگام‌سازی است.</translation>
 <translation id="3993188379797269327">‏<ph name="FILE_NAME"/> ممکن است تنظیمات Chrome شما را تغییر دهد.</translation>
 <translation id="1761870329818521071">‏نمی‌توان همان نسخه Google Chrome Frame را که اکنون در حال اجراست نصب کرد. لطفاً Google Chrome Frame را ببندید و دوباره امتحان کنید.</translation>
 <translation id="2040709530900803995">‏رندرساز Google Chrome</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">‏جزئیات صورت‌حساب شما در Chrome ذخیره شده است.</translation>
 <translation id="7098166902387133879">‏Google Chrome درحال استفاده از میکروفون شما است.</translation>
+<translation id="3590194807845837023">باز کردن قفل نمایه و راه‌اندازی مجدد</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
 <translation id="6423071462708908582">‏شما تلاش کردید به &lt;strong&gt;<ph name="DOMAIN"/>&lt;strong&gt; دسترسی پیدا کنید اما سرور یک گواهی منقضی شده را ارائه کرد. هیچ اطلاعاتی در دست نیست که نشان دهد آیا این گواهی از زمان انقضای خود در معرض خطر قرار گرفته است یا خیر. یعنی Google Chrome نمی‌تواند ضمانت کند که آیا شما با &lt;strong&gt;<ph name="DOMAIN2"/>&lt;strong&gt; یا با یک مهاجم ارتباط برقرار می‌کنید. ساعت رایانهٔ شما در حال حاضر روی <ph name="CURRENT_TIME"/> تنظیم شده است. آیا این درست است؟ اگر نه، باید خطا را اصلاح کنید و این صفحه را بازخوانی کنید.</translation>
 <translation id="3197823471738295152">دستگاه شما به‌روزرسانی شده است.</translation>
@@ -133,6 +135,7 @@
 <translation id="1104959162601287462">‏درباره سیستم عامل &amp;Chrome</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">‏Google Chrome مرورگر پیش‌فرض شود</translation>
+<translation id="7787950393032327779">‏ظاهراً نمایه توسط فرآیند Google Chrome دیگری (<ph name="PROCESS_ID"/>) در رایانه‌ای دیگر (<ph name="HOST_NAME"/>) در حال استفاده است. Chrome نمایه را قفل کرده است تا خراب نشود. اگر مطمئنید فرآیندهای دیگری از این نمایه استفاده نمی‌کنند، می‌توانید قفل نمایه را باز کنید و Chrome را مجدداً راه‌اندازی نمایید.</translation>
 <translation id="1469002951682717133">‏را‌ه‌انداز برنامه Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">‏Google Chrome به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
@@ -151,9 +154,9 @@
 <translation id="6326175484149238433">‏حذف از Chrome</translation>
 <translation id="2871893339301912279">‏شما در حال حاضر وارد سیستم Chrome شده‌اید!</translation>
 <translation id="7161904924553537242">‏به Google Chrome خوش آمدید</translation>
-<translation id="1686446242839005801">‏در حال ورود به سیستم Chrome با استفاده از حساب <ph name="USER_EMAIL_ADDRESS"/> خود هستید. در تمامی دستگاه‌هایی که در آنها به سیستم وارد شده‌اید قادر خواهید بود به نشانک‌ها، سابقه و سایر تنظیمات خود دسترسی پیدا کنید.</translation>
 <translation id="4147555960264124640">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME"/> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">‏این سایت از افزونه Chrome Frame استفاده می‌کند که به زودی پشتیبانی از آن متوقف می‌شود. لطفاً آن را حذف نصب کرده، به مرورگر جدیدی ارتقا دهید.</translation>
+<translation id="1348153800635493797">‏برای استفاده از Google Wallet [<ph name="ERROR_CODE"/>] باید Chrome را ارتقا دهید.</translation>
 <translation id="8187289872471304532">به
           برنامه‌ها &gt; 
 موارد برگزیده سیستم &gt; شبکه &gt; پیشرفته &gt; پراکسی‌ها
@@ -184,6 +187,7 @@
 <translation id="7196020411877309443">چرا من این را می‌بینم؟</translation>
 <translation id="2769762047821873045">‏Google Chrome مرورگر پیش‌فرض شما نیست.</translation>
 <translation id="1020869477857717497">‏<ph name="FILE_NAME"/> ممکن است نحوه عملکرد جستجوهای‌تان را در Chrome تغییر دهد.</translation>
+<translation id="4567424176335768812">به عنوان <ph name="USER_EMAIL_ADDRESS"/> وارد سیستم شده‌اید. اکنون می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید، دسترسی یابید.</translation>
 <translation id="6855094794438142393">‏به
           منوی Chrome  &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -202,6 +206,7 @@
 <translation id="5334545119300433702">‏این مدول با Google Chrome تداخل دارد.</translation>
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
 <translation id="6634887557811630702">‏Google Chrome به‌روز است</translation>
+<translation id="4120075327926916474">‏آیا می‌خواهید Chrome این اطلاعات کارت اعتباری را برای تکمیل فرم‌های وب ذخیره کند؟</translation>
 <translation id="2084710999043359739">‏افزودن به Chrome</translation>
 <translation id="4084877369264707540">‏Google Chrome Frame در حال حاضر نصب است و برای تمام کاربران این رایانه قابل دسترس است. اگر می‌خواهید Google Chrome Frame را در سطح کاربر نصب کنید، باید ابتدا نسخه سطح سیستمی آن را که توسط سرپرست نصب شده، حذف‌نصب کنید.</translation>
 <translation id="3360895254066713204">‏راهنمای Chrome</translation>

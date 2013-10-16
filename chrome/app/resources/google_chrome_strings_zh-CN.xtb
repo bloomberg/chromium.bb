@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">启动 Chrome 应用</translation>
 <translation id="2370289711218562573">Google Chrome 浏览器正在导入收藏夹/书签。</translation>
 <translation id="8762286861469007470">Chrome 强制门户检测器</translation>
+<translation id="2721687379934343312">在苹果机上，密码会保存到您的钥匙串中，可供共用此 OS X 帐户的其他 Chrome 浏览器用户使用或同步。</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> 可能会更改您的 Chrome 设置。</translation>
 <translation id="1761870329818521071">无法安装与当前运行版本相同的 Google Chrome 浏览器内嵌框架。请关闭 Google Chrome 浏览器内嵌框架，然后重试。</translation>
 <translation id="2040709530900803995">Google Chrome 浏览器呈现器</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome 浏览器内嵌框架</translation>
 <translation id="4513711165509885787">您的帐单明细已保存在 Chrome 中。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
+<translation id="3590194807845837023">解锁个人资料并重新启动</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
 <translation id="6423071462708908582">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书已过期。由于该证书已过期，因此没有任何信息可表明它是否已被盗用。这意味着 Google Chrome 浏览器无法保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 还是攻击者。您计算机时钟的当前设置为 <ph name="CURRENT_TIME"/>。该设置是否正确？如果不正确，您应更正错误并刷新此页面。</translation>
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
@@ -126,6 +128,7 @@
 <translation id="1104959162601287462">关于 Chrome 操作系统(&amp;C)</translation>
 <translation id="5328989068199000832">Google Chrome 二进制文件</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
+<translation id="7787950393032327779">其他计算机 (<ph name="HOST_NAME"/>) 的另一个 Google Chrome 进程 (<ph name="PROCESS_ID"/>) 好像正在使用此个人资料。Chrome 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chrome。</translation>
 <translation id="1469002951682717133">Chrome 应用启动器</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
@@ -138,9 +141,9 @@
 <translation id="6326175484149238433">从 Chrome 中删除</translation>
 <translation id="2871893339301912279">您已登录 Chrome！</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome</translation>
-<translation id="1686446242839005801">您正在使用 <ph name="USER_EMAIL_ADDRESS"/> 帐户登录 Chrome。您将能够访问自己在所有登录过的设备上保存的书签、历史记录和其他设置。</translation>
 <translation id="4147555960264124640">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME"/> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。<ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">此网站使用的 Chrome 内嵌框架插件很快将不受支持。请卸载该插件，然后升级到新型浏览器。</translation>
+<translation id="1348153800635493797">您必须升级 Chrome 才能使用 Google 电子钱包 [<ph name="ERROR_CODE"/>]。</translation>
 <translation id="8187289872471304532">依次转到“应用”&gt;“系统偏好设置”&gt;“网络”&gt;“高级”&gt;“代理”，然后取消选中所有已选的代理。</translation>
 <translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
@@ -168,6 +171,7 @@
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> 可能会更改 Chrome 中的搜索方式。</translation>
+<translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS"/> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="6855094794438142393">依次转到 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”&gt;“<ph name="PROXIES_TITLE"/>”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”。</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="5553980212343253394">此网站使用的 Chrome 内嵌框架插件很快将不受支持。请卸载该插件，然后下载兼容的浏览器。</translation>
@@ -177,6 +181,7 @@
 <translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
 <translation id="6634887557811630702">Google Chrome 已是最新版本。</translation>
+<translation id="4120075327926916474">您希望 Chrome 浏览器保存此信用卡信息以便填写网络表单吗？</translation>
 <translation id="2084710999043359739">添加到 Chrome 浏览器</translation>
 <translation id="4084877369264707540">Google Chrome 浏览器内嵌框架已安装，可供此计算机上的所有用户使用。如果您要在用户级安装 Google Chrome 浏览器内嵌框架，必须首先卸载由管理员安装的系统级版本。</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用</translation>

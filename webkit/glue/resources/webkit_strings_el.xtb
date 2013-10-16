@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Άλλες…</translation>
 <translation id="2426432199384958866">επιστροφή ροής ταινίας σε πραγματικό χρόνο</translation>
 <translation id="248395913932153421">Ημέρα</translation>
+<translation id="1729654308190250600">Καταχωρίστε μια διεύθυνση ηλεκτρονικού ταχυδρομείου.</translation>
 <translation id="6015796118275082299">Έτος</translation>
 <translation id="9186171386827445984">Φόρτωση εγγράφου: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> σελίδες...</translation>
 <translation id="1235745349614807883">Εκκαθάριση πρόσφατων αναζητήσεων</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">δείκτης λίστας</translation>
 <translation id="4202807286478387388">μεταπήδηση</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Καταχωρίστε το τμήμα της διεύθυνσης πριν το σύμβολο &quot;<ph name="ATSIGN"/>&quot;. Η διεύθυνση &quot;<ph name="INVALIDADDRESS"/>&quot; δεν είναι πλήρης.</translation>
+<translation id="2746543609216772311">Η τιμή πρέπει να είναι <ph name="MINIMUM_DATE_OR_TIME"/> ή μεταγενέστερη.</translation>
 <translation id="2572483411312390101">αναπαραγωγή</translation>
 <translation id="8785498733064193001">έναρξη αναπαραγωγής</translation>
 <translation id="7057186640035488495">χρόνος ταινίας</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">γρήγορη αναζήτηση προς τα πίσω</translation>
 <translation id="7789962463072032349">παύση</translation>
 <translation id="6853785296079745596">απόκρυψη υπότιτλων</translation>
+<translation id="4360991593054037559">Καταχωρίστε μια έγκυρη τιμή. Οι δύο πιο κοντινές έγκυρες τιμές είναι <ph name="VALID_VALUE_LOW"/> και <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Άλλες…</translation>
 <translation id="8141602879876242471">Πρόκειται για ευρετήριο με δυνατότητα αναζήτησης. Πληκτρολογήστε λέξεις-κλειδιά αναζήτησης:</translation>
 <translation id="1930711995431081526">κατάσταση</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">γρήγορη αναζήτηση προς τα εμπρός</translation>
 <translation id="4812940957355064477">Εισαγάγετε έναν αριθμό.</translation>
 <translation id="2548326553472216322">Δεν υπάρχουν πρόσφατες αναζητήσεις</translation>
+<translation id="1938124657309484470">Η τιμή πρέπει να είναι <ph name="MAXIMUM_DATE_OR_TIME"/> ή προγενέστερη.</translation>
 <translation id="7263440858009898357">Επιλέξτε ένα στοιχείο από τη λίστα.</translation>
 <translation id="901493112792887934">τρέχων χρόνος σε δευτερόλεπτα</translation>
 <translation id="5164977714490026579">Η τιμή πρέπει να είναι μεγαλύτερη ή ίση του <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Αυτήν την εβδομάδα</translation>
 <translation id="5966707198760109579">Εβδομάδα</translation>
 <translation id="2901282870647571346">τρέχουσα κατάσταση ταινίας</translation>
+<translation id="2060505056492490888">Το σύμβολο &quot;<ph name="DOT"/>&quot; χρησιμοποιείται σε λάθος θέση στη διεύθυνση &quot;<ph name="INVALIDDOMAIN"/>&quot;.</translation>
 <translation id="2674318244760992338">υποσέλιδο</translation>
 <translation id="8987927404178983737">Μήνας</translation>
 <translation id="8115662671911883373">έναρξη προβολής υπότιτλων</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">ενεργοποίηση</translation>
 <translation id="2846343701378493991">1024 (Μέτριος βαθμός)</translation>
 <translation id="1637811476055996098">Επιλογή αρχείων</translation>
+<translation id="49969490063480558">Καταχωρίστε το τμήμα της διεύθυνσης μετά το σύμβολο &quot;<ph name="ATSIGN"/>&quot;. Η διεύθυνση &quot;<ph name="INVALIDADDRESS"/>&quot; δεν είναι πλήρης.</translation>
 <translation id="5476505524087279545">απενεργοποίηση</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2507943997699731163">Συμπληρώστε αυτό το πεδίο.</translation>
 <translation id="3785482301506746191">δείκτης χρόνου ταινίας</translation>
 <translation id="739024184232394898">Άλλες…</translation>
+<translation id="383465348367842624">Το τμήμα της διεύθυνσης πριν το σύμβολο &quot;<ph name="ATSIGN"/>&quot; δεν πρέπει να περιέχει το σύμβολο &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">έξοδος από πλήρη οθόνη</translation>
 <translation id="5919473608089529604">Αδυναμία φόρτωσης προσθήκης.</translation>
 <translation id="5546461542133609677">κατάργηση σίγασης</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Εισαγάγετε μια λίστα διευθύνσεων ηλεκτρονικού ταχυδρομείου διαχωρισμένη με κόμματα.</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="1921819250265091946">ηη</translation>
+<translation id="2613802280814924224">Καταχωρίστε μια έγκυρη τιμή. Η κοντινότερη έγκυρη τιμή είναι <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Μη έγκυρη τιμή.</translation>
 <translation id="1842960171412779397">επιλογή</translation>
 <translation id="7673697353781729403">Ώρες</translation>
+<translation id="4664250907885839816">Το τμήμα της διεύθυνσης μετά το σύμβολο &quot;<ph name="ATSIGN"/>&quot; δεν πρέπει να περιέχει το σύμβολο &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="3450233048674729344">Η τιμή πρέπει να είναι μικρότερη ή ίση του <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">πίσω για 30 δευτερόλεπτα</translation>
 <translation id="668171684555832681">Άλλο...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">ενεργοποίηση</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> αρχεία</translation>
 <translation id="6643016212128521049">Εκκαθάριση</translation>
+<translation id="7888071071722539607">Συμπεριλάβετε το σύμβολο &quot;<ph name="ATSIGN"/>&quot; στη διεύθυνση ηλεκτρονικού ταχυδρομείου. Από τη διεύθυνση &quot;<ph name="INVALIDADDRESS"/>&quot; λείπει το σύμβολο &quot;<ph name="ATSIGN"/>&quot;.</translation>
 <translation id="4851297395436456855">γρήγορη προώθηση</translation>
 <translation id="1088086359088493902">Δευτερόλεπτα</translation>
 <translation id="3934680773876859118">Δεν ήταν δυνατή η φόρτωση του εγγράφου PDF</translation>

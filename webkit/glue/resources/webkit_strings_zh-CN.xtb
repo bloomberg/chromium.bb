@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">其他...</translation>
 <translation id="2426432199384958866">将流式传输电影恢复为实时</translation>
 <translation id="248395913932153421">日</translation>
+<translation id="1729654308190250600">请输入有效的电子邮件地址。</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="9186171386827445984">正在加载文档：已加载 <ph name="PAGE_NUMBER"/> 页，共 <ph name="NUMBER_OF_PAGES"/> 页...</translation>
 <translation id="1235745349614807883">清除最近的搜索</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">列表标记</translation>
 <translation id="4202807286478387388">略过</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">请在“<ph name="ATSIGN"/>”前面输入内容。“<ph name="INVALIDADDRESS"/>”不完整。</translation>
+<translation id="2746543609216772311">指定的值不得早于<ph name="MINIMUM_DATE_OR_TIME"/>。</translation>
 <translation id="2572483411312390101">播放</translation>
 <translation id="8785498733064193001">开始播放</translation>
 <translation id="7057186640035488495">电影时间</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">快速回退</translation>
 <translation id="7789962463072032349">暂停</translation>
 <translation id="6853785296079745596">隐藏可选字幕</translation>
+<translation id="4360991593054037559">请输入有效值。两个最接近的有效值分别为<ph name="VALID_VALUE_LOW"/>和<ph name="VALID_VALUE_HIGHER"/>。</translation>
 <translation id="1758486001363313524">其他...</translation>
 <translation id="8141602879876242471">这是一个可搜索的索引。请输入搜索关键字：</translation>
 <translation id="1930711995431081526">状态</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">快速前进</translation>
 <translation id="4812940957355064477">请输入一个数字。</translation>
 <translation id="2548326553472216322">最近未执行搜索</translation>
+<translation id="1938124657309484470">指定的值不得晚于<ph name="MAXIMUM_DATE_OR_TIME"/>。</translation>
 <translation id="7263440858009898357">请在列表中选择一项。</translation>
 <translation id="901493112792887934">目前时间（以秒为单位）</translation>
 <translation id="5164977714490026579">值必须大于或等于 <ph name="MINIMUM"/>。</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">本周</translation>
 <translation id="5966707198760109579">周</translation>
 <translation id="2901282870647571346">当前电影状态</translation>
+<translation id="2060505056492490888">“<ph name="INVALIDDOMAIN"/>”中“<ph name="DOT"/>”的位置不正确。</translation>
 <translation id="2674318244760992338">页脚</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="8115662671911883373">开始显示可选字幕</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">选中</translation>
 <translation id="2846343701378493991">1024（中等强度）</translation>
 <translation id="1637811476055996098">选择文件</translation>
+<translation id="49969490063480558">请在“<ph name="ATSIGN"/>”后面输入内容。“<ph name="INVALIDADDRESS"/>”不完整。</translation>
 <translation id="5476505524087279545">取消选中</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2507943997699731163">请填写此字段。</translation>
 <translation id="3785482301506746191">电影时间进度条</translation>
 <translation id="739024184232394898">其他...</translation>
+<translation id="383465348367842624">“<ph name="ATSIGN"/>”前面的内容不应包含符号“<ph name="INVALIDCHARACTER"/>”。</translation>
 <translation id="5468998798572797635">退出全屏模式</translation>
 <translation id="5919473608089529604">无法加载插件。</translation>
 <translation id="5546461542133609677">取消静音</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">请输入用逗号分隔的电子邮件地址的列表。</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="1921819250265091946">日</translation>
+<translation id="2613802280814924224">请输入有效值。最接近的有效值为<ph name="VALID_VALUE"/>。</translation>
 <translation id="835897206747267392">值无效。</translation>
 <translation id="1842960171412779397">选中</translation>
 <translation id="7673697353781729403">小时</translation>
+<translation id="4664250907885839816">“<ph name="ATSIGN"/>”后面的内容不应包含符号“<ph name="INVALIDCHARACTER"/>”。</translation>
 <translation id="3450233048674729344">值必须小于或等于 <ph name="MAXIMUM"/>。</translation>
 <translation id="3471999216963526757">后退 30 秒</translation>
 <translation id="668171684555832681">其他...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">激活</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> 个文件</translation>
 <translation id="6643016212128521049">清除</translation>
+<translation id="7888071071722539607">请在电子邮件地址中包括“<ph name="ATSIGN"/>”。“<ph name="INVALIDADDRESS"/>”中缺少“<ph name="ATSIGN"/>”。</translation>
 <translation id="4851297395436456855">快进</translation>
 <translation id="1088086359088493902">秒</translation>
 <translation id="3934680773876859118">无法加载 PDF 文档</translation>

@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Стартиране на приложения за Chrome</translation>
 <translation id="2370289711218562573">В момента Google Chrome импортира „Любими/Отметки“.</translation>
 <translation id="8762286861469007470">Инструмент на Chrome за откриване на портали за удостоверяване</translation>
+<translation id="2721687379934343312">На Mac паролите се запазват във вашата Keychain и могат да бъдат използвани или синхронизирани от други потребители на Chrome, споделящи този профил в OS X.</translation>
 <translation id="3993188379797269327">„<ph name="FILE_NAME"/>“ може да промени настройките ви за Chrome.</translation>
 <translation id="1761870329818521071">Не може да се инсталира същата версия на Google Chrome Frame, която се използва понастоящем. Моля, затворете приставката и опитайте отново.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -62,6 +63,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Данните ви за фактуриране са запазени в Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome използва микрофона ви.</translation>
+<translation id="3590194807845837023">Отключване на потребителския профил и повторно стартиране</translation>
 <translation id="4053720452172726777">Персонализиране и контролиране на Google Chrome</translation>
 <translation id="6423071462708908582">Направихте опит да се свържете с/ъс &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сървърът предостави сертификат с изтекла валидност. Няма налична информация, указваща дали този сертификат е бил компрометиран след изтичането си. Това означава, че Google Chrome не може да гарантира, че комуникирате с/ъс &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с извършител на атака. Понастоящем за часовника на компютъра ви е зададено <ph name="CURRENT_TIME"/>. Правилно ли изглежда това? В противен случай трябва да поправите всички грешки, след което да презаредите тази страница.</translation>
 <translation id="3197823471738295152">Устройството ви е актуално.</translation>
@@ -134,6 +136,7 @@
 <translation id="1104959162601287462">Всичко за &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
+<translation id="7787950393032327779">Изглежда, че потребителският профил се използва от друг процес на Google Chrome (<ph name="PROCESS_ID"/>) на друг компютър (<ph name="HOST_NAME"/>). Chrome заключи потребителския профил, за да не се повреди. Ако сте сигурни, че нито един друг процес не го използва, можете да отключите потребителския профил и да стартирате Chrome повторно.</translation>
 <translation id="1469002951682717133">Стартов панел с приложения за Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
@@ -152,9 +155,9 @@
 <translation id="6326175484149238433">Премахване от Chrome</translation>
 <translation id="2871893339301912279">Влязохте в Chrome!</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
-<translation id="1686446242839005801">Влизате в Chrome посредством профила си <ph name="USER_EMAIL_ADDRESS"/>. Ще имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли чрез него.</translation>
 <translation id="4147555960264124640">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME"/>. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но не и да ги свържете с друг профил. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Този сайт използва приставката Chrome Frame, чиято поддръжка скоро ще бъде прекратена. Моля, деинсталирайте го и надстройте до съвременен браузър.</translation>
+<translation id="1348153800635493797">Трябва да надстроите Chrome, за да използвате Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Отворете
 „Applications“ &gt; „System Preferences“ &gt; „Network“ &gt; „Advanced“ &gt; „Proxies“
 и премахнете отметките от избраните прокси сървъри.</translation>
@@ -186,6 +189,7 @@
 <translation id="7196020411877309443">Защо се показва това?</translation>
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="1020869477857717497">„<ph name="FILE_NAME"/>“ може да промени начина на работа на търсенията ви в Chrome.</translation>
+<translation id="4567424176335768812">Влезли сте като <ph name="USER_EMAIL_ADDRESS"/>. Сега имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли.</translation>
 <translation id="6855094794438142393">Отворете
 менюто на Chrome &gt;
 <ph name="SETTINGS_TITLE"/>
@@ -204,6 +208,7 @@
 <translation id="5334545119300433702">За този модул е известно, че влиза в конфликт с Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome е актуален.</translation>
+<translation id="4120075327926916474">Искате ли Chrome да запази тази информация за кредитната карта за попълване на уеб формуляри?</translation>
 <translation id="2084710999043359739">Добавяне</translation>
 <translation id="4084877369264707540">Приставката Google Chrome Frame вече е инсталирана и налице за всички потребители на този компютър. Ако искате да я инсталирате на ниво потребител, трябва първо да деинсталирате версията на системно ниво, инсталирана от администратора.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

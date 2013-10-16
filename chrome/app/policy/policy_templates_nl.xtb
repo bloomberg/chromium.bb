@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1503959756075098984">Extensie-id's en update-URL's worden op de achtergrond geïnstalleerd</translation>
+<translation id="793134539373873765">Specificeert of p2p wordt gebruikt voor netto-updateladingen voor het besturingssysteem. Als dit is ingesteld op 'Waar', proberen apparaten netto-updateladingen (payloads) op te halen via het LAN, waardoor bandbreedtegebruik en vertraging kunnen worden verminderd. Als de netto-updatelading niet beschikbaar is via het LAN, gaat het apparaat over tot downloaden via een updateserver. Als deze instelling is ingesteld op 'Niet waar' of niet is geconfigureerd, wordt 2p2 niet gebruikt.</translation>
 <translation id="2463365186486772703">Landinstelling voor applicatie</translation>
 <translation id="1397855852561539316">Voorgestelde URL voor standaardzoekprovider</translation>
 <translation id="3347897589415241400">Het standaardgedrag voor sites die zich niet in een inhoudspakket bevinden.
@@ -136,6 +137,13 @@
       De beleidswaarde moet worden opgegeven in milliseconden. Waarden worden afgerond tot een bereik van 30 seconden tot 24 uur.</translation>
 <translation id="9200828125069750521">Parameters voor afbeeldings-URL die POST gebruikt</translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
+<translation id="8294750666104911727">Normaal worden pagina's waarvoor X-UA-Compatible is ingesteld op chrome=1, weergegeven in <ph name="PRODUCT_FRAME_NAME"/> ongeacht het beleid 'ChromeFrameRendererSettings'.
+
+          Als je deze instelling inschakelt, worden pagina's niet gescand op metatags.
+
+          Als je deze instelling uitschakelt, worden pagina's gescand op metatags.
+
+          Als dit beleid niet is geconfigureerd, worden pagina's gescand op metatags.</translation>
 <translation id="3478024346823118645">Gebruikersgegevens wissen bij uitloggen</translation>
 <translation id="8668394701842594241">Hiermee wordt een lijst met plug-ins gespecificeerd die zijn ingeschakeld in <ph name="PRODUCT_NAME"/> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -222,6 +230,7 @@
       Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling 'Bescherming tegen phishing en malware inschakelen' in <ph name="PRODUCT_NAME"/> niet wijzigen of negeren.
 
       Als je deze instelling niet instelt, wordt deze uitgeschakeld maar kan de gebruiker deze wijzigen.</translation>
+<translation id="268577405881275241">De proxyfunctie voor het comprimeren van gegevens inschakelen</translation>
 <translation id="8369602308428138533">Vertraging van scherm uitschakelen wanneer op netstroom wordt gewerkt</translation>
 <translation id="6513756852541213407">Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME"/> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
 
@@ -333,6 +342,7 @@
 
       Als je deze instelling uitschakelt, kunnen er geen bladwijzers worden toegevoegd, verwijderd of aangepast. Bestaande bladwijzers zijn wel beschikbaar.</translation>
 <translation id="3496296378755072552">Wachtwoordbeheer</translation>
+<translation id="4372704773119750918">Zakelijke gebruikers niet toestaan deel uit te maken van multiprofielen (primair of secundair)</translation>
 <translation id="2565967352111237512">Hiermee wordt anonieme rapportage van gebruiks- en crashgegevens voor <ph name="PRODUCT_NAME"/> aan Google ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       Als je deze instelling inschakelt, worden anonieme gebruiks- en crashgegevens naar Google verzonden.
@@ -407,6 +417,7 @@
 
           Als de actie 'onderbreken' is, kan <ph name="PRODUCT_OS_NAME"/> afzonderlijk worden geconfigureerd om het scherm wel of niet te vergrendelen vóór de onderbreking.</translation>
 <translation id="3915395663995367577">URL naar een PAC-bestand voor de proxy</translation>
+<translation id="2144674628322086778">Zakelijke gebruikers toestaan zowel primair als secundair te zijn (standaardgedrag)</translation>
 <translation id="1022361784792428773">Id's van extensies die de gebruiker niet mag installeren (of '*' voor alle extensies)</translation>
 <translation id="5499375345075963939">Dit beleid is alleen actief in de commerciële modus.
 
@@ -429,7 +440,6 @@
       Als deze instelling is uitgeschakeld, kunnen webpagina's JavaScript niet gebruiken en kan de gebruiker die instelling niet wijzigen.
 
       Als deze instelling is ingeschakeld of niet wordt ingesteld, kunnen webpagina's JavaScript gebruiken, maar kan de gebruiker die instelling wijzigen.</translation>
-<translation id="4047207703890139433">De kloknotatie specificeren die wordt gebruikt voor het apparaat. Gebruikers kunnen de kloknotatie negeren voor de huidige sessie. Wanneer ze echter uitloggen, wordt de gespecificeerde waarde hersteld. Als een lege tekenreeks wordt geleverd, wordt de voorkeur van de apparaateigenaar gebruikt.</translation>
 <translation id="1942957375738056236">Je kunt de URL van de proxyserver hier opgeven.
 
           Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen heeft geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt opgeven'.
@@ -611,8 +621,10 @@ Als deze instelling op 'True' wordt ingesteld, melden de aangemelde apparaten re
       Dit beleid is bedoeld voor gevallen met strenge zwarte lijsten voor plug-ins, waarin de lijst 'DisabledPlugins' vermeldingen met jokertekens bevat, zoals 'alle plug-ins '*' uitschakelen' of 'alle Java-plug-ins '*Java*' uitschakelen', maar de beheerder een specifieke versie zoals 'IcedTea Java 2.3' wil inschakelen. Deze specifieke versies kunnen worden opgegeven in dit beleid.
 
       Als dit beleid niet is ingesteld, wordt elke plug-in die overeenkomt met de patronen in 'DisabledPlugins', vergrendeld op 'uitgeschakeld' en kan de gebruiker deze niet inschakelen.</translation>
+<translation id="4557134566541205630">URL van standaard zoekprovider voor nieuwe tabbladpagina</translation>
 <translation id="546726650689747237">Vertraging van dimmen van scherm wanneer op netstroom wordt gewerkt</translation>
 <translation id="4988291787868618635">Actie die wordt ondernomen wanneer de inactieve vertraging wordt bereikt</translation>
+<translation id="7260277299188117560">Automatisch bijwerken van p2p ingeschakeld</translation>
 <translation id="5316405756476735914">Hiermee kun je instellen of websites lokaal gegevens mogen instellen. Het instellen van lokale gegevens kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
 
           Als dit beleid niet wordt ingesteld, wordt 'AllowCookies' gebruikt en kan de gebruiker dit wijzigen.</translation>
@@ -858,9 +870,11 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, staat dit apparaat alleen verbindingen toe met clientapparaten binnen het lokale netwerk.
 
           Als dit beleid niet wordt ingesteld, wordt de instelling ingeschakeld.</translation>
+<translation id="4057110413331612451">Zakelijke gebruikers alleen toestaan een primaire multiprofielgebruiker te zijn</translation>
 <translation id="5365946944967967336">Knop 'Startpagina' in de werkbalk weergeven</translation>
 <translation id="3709266154059827597">Zwarte lijst voor het installeren van extensies configureren</translation>
 <translation id="8451988835943702790">De pagina 'Nieuw tabblad' als startpagina gebruiken</translation>
+<translation id="4617338332148204752">De metatagcontrole in <ph name="PRODUCT_FRAME_NAME"/> overslaan</translation>
 <translation id="8469342921412620373">Hiermee wordt het gebruik van een standaardzoekprovider ingeschakeld.
 
           Als je deze instelling inschakelt, wordt er een zoekopdracht uitgevoerd via een standaardzoekprovider wanneer een gebruiker tekst in de omnibox opgeeft die geen URL is.
@@ -1044,6 +1058,11 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
       Als deze instelling is ingeschakeld, kunnen screenshots niet worden gemaakt met sneltoetsen op het toetsenbord of extensie-API's.
 
       Als deze instelling is uitgeschakeld of niet is opgegeven, mogen er screenshots worden gemaakt.</translation>
+<translation id="8649763579836720255">Chrome OS-apparaten kunnen externe verificatie (geverifieerde toegang) gebruiken om een certificaat te ontvangen dat is uitgegeven door de certificaatautoriteit voor Chrome OS en waarin het apparaat uniek wordt geïdentificeerd.
+
+          Als deze instelling is ingesteld op 'niet waar', gebruikt het apparaat geen externe verificatie om inhoud te beveiligen en kan het apparaat beveiligde inhoud mogelijk niet afspelen.
+
+          Als deze instelling is ingesteld op 'waar' of als deze niet is geconfigureerd, kan externe verificatie worden gebruikt voor het beveiligen van inhoud.</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME"/> toestaan de vermelde soorten inhoud te verwerken.</translation>
 <translation id="13356285923490863">Naam van beleid</translation>
 <translation id="557658534286111200">Het bewerken van bladwijzers in- of uitschakelen</translation>
@@ -1121,6 +1140,7 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
       Als deze instelling is ingeschakeld, wordt de browsergeschiedenis niet opgeslagen.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, wordt de browsergeschiedenis opgeslagen.</translation>
+<translation id="2759224876420453487">Het gebruikersgedrag beheren in een multiprofielsessie</translation>
 <translation id="3844092002200215574">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME"/> gebruikt om gecachte bestanden op schijf op te slaan.
 
       Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME"/> deze directory, ongeacht of de gebruiker de markering voor '--disk-cache-dir' heeft ingesteld.
@@ -1170,6 +1190,9 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME"/> de standaardwaarde van 5000 milliseconden.</translation>
 <translation id="8099880303030573137">Inactieve vertraging wanneer op de accu wordt gewerkt</translation>
 <translation id="2761483219396643566">Inactieve waarschuwingsvertraging wanneer op de accu wordt gewerkt</translation>
+<translation id="5058056679422616660">Nettoladingen (payloads) voor automatische updates voor <ph name="PRODUCT_OS_NAME"/> kunnen worden gedownload via HTTP in plaats van HTTPS. Hierdoor kunnen HTTP-downloads transparant in het HTTP-cachegeheugen worden opgeslagen.
+
+      Als dit beleid is ingesteld op 'waar', probeert <ph name="PRODUCT_OS_NAME"/> nettoladingen voor automatische updates te downloaden via HTTP. Als het beleid is ingesteld op 'niet waar' of niet is geconfigureerd, wordt HTTPS gebruikt voor het downloaden van nettoladingen voor automatische updates.</translation>
 <translation id="1468307069016535757">De standaardstatus van de toegankelijkheidsfunctie 'Modus voor hoog contrast' instellen op het inlogscherm
 
           Als dit beleid op 'waar' is ingesteld, wordt de modus voor hoog contrast ingeschakeld wanneer het inlogscherm wordt weergegeven.
@@ -1184,12 +1207,20 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
 <translation id="8465065632133292531">Parameters voor instant-URL die POST gebruikt</translation>
+<translation id="6659688282368245087">Specificeert de klokinstelling die moet worden gebruikt voor het apparaat.
+
+      Dit beleid configureert de klokinstelling die wordt gebruikt op het inlogscherm en als standaard voor gebruikerssessies. Gebruikers kunnen de klokinstelling overschrijven voor hun accounts.
+
+      Als het beleid is ingesteld op 'waar', gebruikt het apparaat een 24-uursnotatie. Als het beleid is ingesteld op 'niet waar', gebruikt het apparaat een 12-uursnotatie.
+
+      Als dit beleid niet is geconfigureerd, maakt het apparaat standaard gebruik van een 24-uursnotatie.</translation>
 <translation id="6559057113164934677">Niet toestaan dat sites toegang krijgen tot de camera en microfoon</translation>
 <translation id="7273823081800296768">Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers clients en hosts aanmelden op het moment dat verbinding wordt gemaakt, zodat er niet elke keer een pincode hoeft te worden opgegeven.
 
           Als deze instelling is uitgeschakeld, is deze functie niet beschikbaar.</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
+<translation id="5921713479449475707">Downloads voor automatische updates via HTTP toestaan</translation>
 <translation id="4482640907922304445">Hiermee wordt de knop 'Startpagina' weergegeven in de werkbalk van <ph name="PRODUCT_NAME"/>.
 
       Als je deze instelling inschakelt, wordt de knop 'Startpagina' altijd weergegeven.
@@ -1296,6 +1327,11 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
       Als je dit beleid instelt, wordt de standaardwaarde van 3 uur overschreven. Geldige waarden voor dit beleid liggen tussen 1800000 (30 minuten) en 86400000 (1 dag). Alle waarden die niet binnen dit bereik vallen, worden afgerond tot de boven- of ondergrens.
 
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME"/> de standaardwaarde van 3 uur.</translation>
+<translation id="2571066091915960923">Schakelt de proxy voor het comprimeren van gegevens in of uit en voorkomt dat gebruikers deze instelling kunnen wijzigen.
+
+      Als je deze instelling in- of uitschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven.
+
+      Als dit beleid niet wordt ingesteld, is de proxyfunctie voor het comprimeren van gegevens beschikbaar en kunnen gebruikers kiezen of ze deze willen gebruiken.</translation>
 <translation id="7424751532654212117">Lijst van uitzonderingen op de lijst met uitgeschakelde plug-ins</translation>
 <translation id="6233173491898450179">Downloaddirectory instellen</translation>
 <translation id="78524144210416006">Energiebeheer op het inlogscherm in <ph name="PRODUCT_OS_NAME"/> configureren.
@@ -1387,6 +1423,15 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 
           Als dit beleid niet is ingesteld, wordt 'PromptOnAccess' gebruikt en kan de gebruiker dit wijzigen.</translation>
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
+<translation id="328908658998820373">Modus voor volledig scherm toestaan.
+
+      Dit beleid bepaalt de beschikbaarheid van de modus voor volledig scherm waarin de volledige gebruikersinterface van <ph name="PRODUCT_NAME"/> is verborgen en alleen webinhoud zichtbaar is.
+
+      Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, hebben de gebruiker en apps en extensies met de juiste rechten toegang tot de modus voor volledig scherm.
+
+      Als dit beleid is ingesteld op 'niet waar', hebben zowel gebruikers als apps en extensies geen toegang tot de modus voor volledig scherm.
+
+      Op alle platforms behalve <ph name="PRODUCT_OS_NAME"/> is de kioskmodus niet beschikbaar wanneer de modus voor volledig scherm is uitgeschakeld.</translation>
 <translation id="4325690621216251241">Een afmeldknop toevoegen aan de systeembalk</translation>
 <translation id="924557436754151212">Opgeslagen wachtwoorden importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="1465619815762735808">Klikken om te spelen</translation>
@@ -1404,10 +1449,24 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moet lager zijn dan of gelijk zijn aan de inactieve vertraging.</translation>
 <translation id="1897365952389968758">Alle sites toestaan JavaScript uit te voeren</translation>
 <translation id="5244714491205147861">Energiebeheer op het inlogscherm</translation>
+<translation id="3619270953033888719">Het gebruik van externe verificatie inschakelen voor het beveiligen van inhoud voor het apparaat.</translation>
 <translation id="922540222991413931">Installatiebronnen voor het configureren van extensies, apps en gebruikersscripts</translation>
 <translation id="7323896582714668701">Extra opdrachtregelparameters voor <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Synchronisatie van gegevens met Google uitschakelen</translation>
 <translation id="7006788746334555276">Instellingen voor inhoud</translation>
+<translation id="63659515616919367">Beheer het gedrag van gebruikers in een multiprofielsessie op <ph name="PRODUCT_OS_NAME"/>-apparaten.
+
+      Als dit beleid is ingesteld op 'MultiProfileUserBehaviorUnrestricted', kan de gebruiker een primaire of secundaire gebruiker zijn in een multiprofielsessie.
+
+      Als dit beleid is ingesteld op 'MultiProfileUserBehaviorMustBePrimary', kan de gebruiker alleen een primaire gebruiker zijn in een multiprofielsessie.
+
+      Als dit beleid is ingesteld op 'MultiProfileUserBehaviorNotAllowed', kan de gebruiker niet deelnemen aan een multiprofielsessie.
+
+      Als je deze instelling configureert, kunnen gebruikers deze niet wijzigen of overschrijven.
+
+      Als de instelling wordt gewijzigd terwijl de gebruiker is ingelogd bij een multiprofielsessie, worden voor alle gebruikers in de sessie de instellingen gecontroleerd. De sessie wordt gesloten als een van de gebruikers geen toestemming meer heeft om deel te nemen aan de sessie.
+
+      Als het beleid niet wordt geconfigureerd, wordt de standaardwaarde 'MultiProfileUserBehaviorUnrestricted' gebruikt.</translation>
 <translation id="5142301680741828703">De volgende URL-patronen altijd verwerken in <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Witte lijst voor het installeren van extensies configureren</translation>
 <translation id="187819629719252111">Hiermee wordt toegang tot lokale bestanden op de computer toegestaan doordat <ph name="PRODUCT_NAME"/> dialoogvensters voor het selecteren van bestanden kan weergeven.
@@ -1437,6 +1496,11 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
 
           Als je dit beleid niet instelt, wordt het vergrootglas initieel uitgeschakeld maar kan de gebruiker het op elk moment inschakelen.</translation>
 <translation id="3428247105888806363">Netwerkvoorspelling inschakelen</translation>
+<translation id="3460784402832014830">Specificeert de URL die een zoekmachine gebruikt om een nieuwe tabbladpagina weer te geven.
+
+          Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen nieuwe tabbladpagina weergegeven.
+
+          Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="6145799962557135888">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd die JavaScript mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultJavaScriptSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -1742,4 +1806,5 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
           Als je deze instelling inschakelt, kunnen gebruikers de URL voor hun startpagina in <ph name="PRODUCT_NAME"/>, niet wijzigen, maar kunnen ze er nog steeds voor kiezen de pagina 'Nieuw tabblad' te gebruiken als startpagina.
 
           Als je dit beleid niet instelt, kan de gebruiker de gewenste startpagina zelf kiezen als HomepageIsNewTabPage ook niet is ingesteld.</translation>
+<translation id="4858735034935305895">Modus voor volledig scherm toestaan</translation>
 </translationbundle>

@@ -13,6 +13,7 @@
 <translation id="1190609913194133056">Κέντρο ειδοποιήσεων</translation>
 <translation id="7470933019269157899">Υπολείπονται <ph name="NUMBER_DEFAULT"/> λεπτά</translation>
 <translation id="5613020302032141669">Αριστερό βέλος</translation>
+<translation id="4971687151119236543">Προηγούμενο κομμάτι πολυμέσων</translation>
 <translation id="8602707065186045623">Αρχείο <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> δευτερόλεπτα</translation>
@@ -104,6 +105,7 @@
 <translation id="7052633198403197513">Πλήκτρο F1</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> ώρες</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
+<translation id="8394908167088220973">Αναπαραγωγή/παύση πολυμέσων</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="7960078400008666149">Μην ενοχλείτε για μία ώρα</translation>
 <translation id="4373894838514502496">Πριν από <ph name="NUMBER_FEW"/> λεπτά</translation>
@@ -114,14 +116,15 @@
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">Κύλιση δεξιά</translation>
 <translation id="7414887922320653780">Υπολείπεται <ph name="NUMBER_ONE"/> ώρα</translation>
+<translation id="1413622004203049571">Απενεργοποίηση ειδοποιήσεων από <ph name="NOTIFIER_NAME"/></translation>
 <translation id="2666092431469916601">Κορυφή</translation>
 <translation id="8331626408530291785">Κύλιση επάνω</translation>
-<translation id="4773379706300191099">Απενεργοποίηση ειδοποιήσεων από <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Άνοιγμα Αρχείου</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">Πριν από <ph name="NUMBER_DEFAULT"/> ώρες</translation>
 <translation id="815598010540052116">Κύλιση κάτω</translation>
+<translation id="6808150112686056157">Διακοπή πολυμέσων</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="3157931365184549694">Επαναφορά</translation>
 <translation id="1243314992276662751">Μεταφόρτωση</translation>
@@ -159,6 +162,7 @@
 <translation id="1101671447232096497">Πριν από <ph name="NUMBER_MANY"/> λεπτά</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
+<translation id="6699343763173986273">Επόμενο κομμάτι πολυμέσων</translation>
 <translation id="8226233771743600312">Μην ενοχλείτε για μία ημέρα</translation>
 <translation id="7457942297256758195">Εκκαθάριση όλων</translation>
 <translation id="822618367988303761">Πριν από <ph name="NUMBER_TWO"/> ημέρες</translation>
@@ -178,7 +182,6 @@
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5941711191222866238">Ελαχιστοποίηση</translation>
 <translation id="6394627529324717982">Κόμμα</translation>
-<translation id="4469842253116033348">Απενεργοποίηση ειδοποιήσεων από τον ιστότοπο <ph name="SITE"/></translation>
 <translation id="3036649622769666520">Άνοιγμα Αρχείων</translation>
 <translation id="8328145009876646418">Αριστερή άκρη</translation>
 <translation id="7372005818821648611"><ph name="NUMBER_TWO"/> δευτερόλεπτα</translation>

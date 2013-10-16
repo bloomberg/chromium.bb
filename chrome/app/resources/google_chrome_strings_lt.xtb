@@ -29,6 +29,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2896252579017640304">Paleisti „Chrome“ programas</translation>
 <translation id="2370289711218562573">„Google Chrome“ dabar importuoja mėgstamiausius / žymas.</translation>
 <translation id="8762286861469007470">„Chrome Captive Portal“ detektorius</translation>
+<translation id="2721687379934343312">„Mac“ kompiuteriuose slaptažodžiai saugomi programoje „Keychain“ ir gali būti pasiekiami arba sinchronizuojami kitų „Chrome“ naudotojų, bendrai naudojančių šią „OS X“ paskyrą.</translation>
 <translation id="3993188379797269327">„<ph name="FILE_NAME"/>“ gali pakeisti „Chrome“ nustatymus.</translation>
 <translation id="1761870329818521071">Negalima įdiegti tos pačios „Google Chrome“ rėmelio versijos, kuri dabar paleista. Uždarykite „Google Chrome“ rėmelį ir bandykite dar kartą.</translation>
 <translation id="2040709530900803995">„Google Chrome“ atvaizdavimo priemonė</translation>
@@ -66,6 +67,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1697213158865901863">„Google Chrome Frame“</translation>
 <translation id="4513711165509885787">Išsami atsiskaitymo informacija išsaugota „Chrome“.</translation>
 <translation id="7098166902387133879">„Google Chrome“ naudoja jūsų mikrofoną.</translation>
+<translation id="3590194807845837023">Atrakinti profilį ir paleisti iš naujo</translation>
 <translation id="4053720452172726777">Tinkinkite ir valdykite „Google Chrome“</translation>
 <translation id="6423071462708908582">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris pateikė nebegaliojantį sertifikatą. Nėra pasiekiamos informacijos, kur būtų nurodyta, ar tas sertifikatas buvo pažeistas pasibaigus jo galiojimo laikui. Tai reiškia, kad „Google Chrome“ negali garantuoti, jog susisiekiate su &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, o ne užgrobėju. Kompiuterio laikrodis šiuo metu nustatytas į <ph name="CURRENT_TIME"/>. Ar teisingai? Jei ne, turėtumėte ištaisyti klaidą ir atnaujinti šį puslapį.</translation>
 <translation id="3197823471738295152">Įrenginyje naudojate naujausią programinės įrangos versiją.</translation>
@@ -141,6 +143,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="1104959162601287462">Apie „&amp;Chrome“ OS</translation>
 <translation id="5328989068199000832">„Google Chrome“ dvejetainės programos</translation>
 <translation id="5941830788786076944">Padarykite „Google Chrome“ numatytąja naršykle</translation>
+<translation id="7787950393032327779">Atrodo, kad profilį naudoja kitas „Google Chrome“ procesas (<ph name="PROCESS_ID"/>) kitame kompiuteryje (<ph name="HOST_NAME"/>). „Chrome“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chrome“.</translation>
 <translation id="1469002951682717133">„Chrome“ programų paleidimo priemonė</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
@@ -161,9 +164,9 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="6326175484149238433">Pašalinti iš „Chrome“</translation>
 <translation id="2871893339301912279">Esate prisijungę prie „Chrome“.</translation>
 <translation id="7161904924553537242">Sveiki atvykę į „Google Chrome“</translation>
-<translation id="1686446242839005801">Prisijungiate prie „Chrome“ naudodami <ph name="USER_EMAIL_ADDRESS"/> paskyrą. Galėsite pasiekti žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="4147555960264124640">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME"/>. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Šioje svetainėje naudojamas „Chrome“ rėmelio papildinys, kuris greitai bus nepalaikomas. Pašalinkite jį ir naujovinkite į modernią naršyklę.</translation>
+<translation id="1348153800635493797">Turite naujovinti „Chrome“, kad galėtumėte naudoti „Google“ piniginę [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Eikite į
           „Programos“ &gt; „Sistemos nuostatos“ &gt; „Tinklas“ &gt; „Išplėstinis“ &gt; „Tarpiniai serveriai“
           ir panaikinkite visų tarpinių serverių pasirinkimą.</translation>
@@ -194,6 +197,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="7196020411877309443">Kodėl tai matau?</translation>
 <translation id="2769762047821873045">„Google Chrome“ nėra numatytoji naršyklė.</translation>
 <translation id="1020869477857717497">„<ph name="FILE_NAME"/>“ gali pakeisti paieškos veikimo būdą „Chrome“.</translation>
+<translation id="4567424176335768812">Esate prisijungę kaip <ph name="USER_EMAIL_ADDRESS"/>. Dabar galite pasiekti savo žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="6855094794438142393">Eikite į
           „Chrome“ meniu &gt;
           „<ph name="SETTINGS_TITLE"/>“
@@ -212,6 +216,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="5334545119300433702">Šis modulis žinomas kaip prieštaraujantis „Google Chrome“.</translation>
 <translation id="4407807842708586359">„Google Chrome OS“</translation>
 <translation id="6634887557811630702">„Google Chrome“ naujausios versijos.</translation>
+<translation id="4120075327926916474">Ar norite, kad „Chrome“ išsaugotų šią kredito kortelės informaciją ir naudotų ją žiniatinklio formoms užpildyti?</translation>
 <translation id="2084710999043359739">Pridėti į „Chrome“</translation>
 <translation id="4084877369264707540">„Google Chrome“ rėmelis jau įdiegtas ir pasiekiamas visiems šio kompiuterio naudotojams. Jei norite įdiegti „Google Chrome“ rėmelį savo naudotojo lygiu, pirmiausia turite pašalinti administratoriaus įdiegtą sistemos lygio versiją.</translation>
 <translation id="3360895254066713204">„Chrome“ pagalbos priemonė</translation>

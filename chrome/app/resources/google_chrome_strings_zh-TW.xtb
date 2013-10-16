@@ -27,6 +27,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2896252579017640304">啟動 Chrome 應用程式</translation>
 <translation id="2370289711218562573">Google Chrome 現正匯入 [我的收藏/書籤]。</translation>
 <translation id="8762286861469007470">Chrome 強制性登入畫面偵測工具</translation>
+<translation id="2721687379934343312">在 Mac 上，密碼會儲存到您的「鑰匙圈」資料庫中，因此其他共用這個 OS X 帳戶的 Chrome 使用者都能存取或同步處理這些密碼。</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> 會變更您的 Chrome 設定。</translation>
 <translation id="1761870329818521071">無法安裝這個版本的「Google Chrome 內嵌框架」，因為相同的版本目前正在執行中。請關閉「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="2040709530900803995">Google Chrome 成像器</translation>
@@ -62,6 +63,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="1697213158865901863">Google Chrome 內嵌框架</translation>
 <translation id="4513711165509885787">Chrome 已儲存您的帳單詳細資訊。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麥克風。</translation>
+<translation id="3590194807845837023">解除鎖定設定檔並重新啟動</translation>
 <translation id="4053720452172726777">自訂及控制 Google Chrome</translation>
 <translation id="6423071462708908582">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供了逾期的憑證。在憑證逾期的情況下，我們沒有足夠資訊判斷憑證是否可靠，因此 Google Chrome 無法保證您的連線對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者。目前您的電腦時鐘設為 <ph name="CURRENT_TIME"/>，時間正確嗎？如果不正確，請修正錯誤並重新整理網頁。</translation>
 <translation id="3197823471738295152">您的裝置已更新。</translation>
@@ -134,6 +136,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="1104959162601287462">關於 Chrome 作業系統(&amp;C)</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">使用 Google Chrome 做為我的預設瀏覽器</translation>
+<translation id="7787950393032327779">另一台電腦 (<ph name="HOST_NAME"/>) 的 Google Chrome 處理程序 (<ph name="PROCESS_ID"/>) 正在使用這個設定檔。Chrome 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chrome。</translation>
 <translation id="1469002951682717133">Chrome 應用程式啟動器</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
@@ -153,9 +156,9 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6326175484149238433">從 Chrome 中移除</translation>
 <translation id="2871893339301912279">您已登入 Chrome！</translation>
 <translation id="7161904924553537242">歡迎使用 Google Chrome</translation>
-<translation id="1686446242839005801">您已使用 <ph name="USER_EMAIL_ADDRESS"/> 帳戶登入 Chrome，這表示您可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="4147555960264124640">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">這個網站使用 Chrome 內嵌框架，但系統即將停止支援該外掛程式。請移除 Chrome 內嵌框架，並升級至新型瀏覽器。</translation>
+<translation id="1348153800635493797">您必須升級 Chrome 才能使用 Google 電子錢包 [<ph name="ERROR_CODE"/>]。</translation>
 <translation id="8187289872471304532">前往
           [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]
           然後取消勾選所有已選取的 Proxy。</translation>
@@ -186,6 +189,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="2769762047821873045">Google Chrome 並非您的預設瀏覽器。</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> 會變更 Chrome 的搜尋功能運作方式。</translation>
+<translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS"/> 的身分登入，可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="6855094794438142393">前往
           Chrome 選單 &gt;
           [<ph name="SETTINGS_TITLE"/>]
@@ -204,6 +208,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5334545119300433702">已知這個模組與 Google Chrome 衝突。</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
 <translation id="6634887557811630702">Google Chrome 目前是最新版本。</translation>
+<translation id="4120075327926916474">您希望 Google Chrome 儲存此信用卡資訊，方便您填妥網路表單嗎？</translation>
 <translation id="2084710999043359739">加到 Chrome</translation>
 <translation id="4084877369264707540">「Google Chrome 內嵌框架」已安裝，且支援這台電腦的所有使用者。如果您要安裝使用者等級的「Google Chrome 內嵌框架」，首先必須解除安裝管理員安裝的系統等級版本。</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>

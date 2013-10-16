@@ -46,6 +46,7 @@ Host</translation>
 <translation id="6001953797859482435">Chrome Remote Desktop Host Preferences</translation>
 <translation id="9188433529406846933">Authorise</translation>
 <translation id="228809120910082333">Please confirm your account and PIN below to allow access by Chromoting.</translation>
+<translation id="7605995381616883502">New connection</translation>
 <translation id="5826423541626112308">Chrome Remote Desktop Host</translation>
 <translation id="2851674870054673688">Once they have entered the code your sharing session will begin.</translation>
 <translation id="5593560073513909978">The service is temporarily unavailable. Please try again later.</translation>
@@ -68,6 +69,7 @@ Host</translation>
 <translation id="7081428606750359611">Chromoting Host</translation>
 <translation id="8228265668171617545">An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chrome and Chromoting on both computers and try again.</translation>
 <translation id="6985691951107243942">Are you sure you want to disable remote connections to <ph name="HOSTNAME"/>? If you change your mind, you'll need to visit that computer to re-enable connections.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (last online <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">To begin sharing your desktop, give the access code below to the person who will be assisting you.</translation>
 <translation id="409800995205263688">NOTE: Policy settings permit connections only between computers within your network.</translation>
 <translation id="2353140552984634198">You may securely access this computer using Chromoting.</translation>
@@ -134,7 +136,9 @@ Host</translation>
 <translation id="6527303717912515753">Share</translation>
 <translation id="2926340305933667314">Failed to disable remote access to this computer. Please try again later.</translation>
 <translation id="6865175692670882333">View/edit</translation>
+<translation id="5859141382851488196">New window…</translation>
 <translation id="2089514346391228378">Remote connections for this computer have been enabled.</translation>
+<translation id="7693372326588366043">Refresh the list of hosts</translation>
 <translation id="8246880134154544773">Authentication failed. Please sign in to Chromoting again.</translation>
 <translation id="1654128982815600832">Enabling remote connections for this computer…</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All Rights Reserved.</translation>

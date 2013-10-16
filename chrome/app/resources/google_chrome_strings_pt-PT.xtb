@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Iniciar aplicações do Chrome</translation>
 <translation id="2370289711218562573">O Google Chrome está neste momento a importar Favoritos/Marcadores.</translation>
 <translation id="8762286861469007470">Detetor do Captive Portal para Chrome</translation>
+<translation id="2721687379934343312">No Mac, as palavras-passe são guardadas no Keychain e podem ser sincronizadas ou acedidas por outros utilizadores do Chrome que partilhem esta conta OS X.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> pode alterar as suas definições do Chrome.</translation>
 <translation id="1761870329818521071">Não é possível instalar a mesma versão do Google Chrome actualmente em execução. Feche o Google Chrome Frame e tente novamente.</translation>
 <translation id="2040709530900803995">Processador do Google Chrome</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Os seus detalhes de faturação foram guardados no Chrome.</translation>
 <translation id="7098166902387133879">O Google Chrome está a utilizar o microfone.</translation>
+<translation id="3590194807845837023">Desbloquear perfil e reiniciar</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
 <translation id="6423071462708908582">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado expirado.Não existem informações disponíveis que indiquem que o certificado foi comprometido desde a sua expiração. Isto significa que o Google Chrome não pode garantir que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. O relógio do computador está atualmente definido para <ph name="CURRENT_TIME"/>. Parece-lhe que está correto? Se não estiver, deve corrigir o erro e atualizar esta página.</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
@@ -132,6 +134,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="1104959162601287462">Acerca do SO &amp;Chrome</translation>
 <translation id="5328989068199000832">Binários do Google Chrome</translation>
 <translation id="5941830788786076944">Tornar o Google Chrome no browser padrão.</translation>
+<translation id="7787950393032327779">O perfil parece estar a ser utilizado por outro processo do Google Chrome (<ph name="PROCESS_ID"/>) noutro computador (<ph name="HOST_NAME"/>). O Chrome bloqueou o perfil para que não seja danificado. Se tiver a certeza de que não existem outros processos a utilizar este perfil, pode desbloqueá-lo e reiniciar o Chrome.</translation>
 <translation id="1469002951682717133">Iniciador de Aplicações do Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">O Google Chrome permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
@@ -151,9 +154,9 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="6326175484149238433">Remover do Chrome</translation>
 <translation id="2871893339301912279">Tem sessão iniciada no Chrome!</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
-<translation id="1686446242839005801">Está a iniciar sessão no Chrome utilizando a conta <ph name="USER_EMAIL_ADDRESS"/>. Poderá aceder aos seus marcadores, histórico e outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="4147555960264124640">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Este site está a utilizar o plug-in Google Chrome Frame, que em breve deixará de ser suportado. Desinstale-o e atualize para um navegador moderno.</translation>
+<translation id="1348153800635493797">Tem de atualizar o Chrome para poder utilizar o Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Aceda a Aplicações &gt; Preferências do Sistema &gt; Rede &gt; Avançadas &gt; Proxies e desmarque todos os proxies selecionados.</translation>
 <translation id="8669527147644353129">Ajudante do Google Chrome</translation>
 <translation id="870251953148363156">Atualizar o &amp;Google Chrome</translation>
@@ -181,6 +184,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu browser predefinido.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> pode alterar a forma como as suas pesquisas funcionam no Chrome.</translation>
+<translation id="4567424176335768812">Tem sessão iniciada como <ph name="USER_EMAIL_ADDRESS"/>. Agora, pode aceder aos seus marcadores, ao histórico e a outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="6855094794438142393">Aceda ao
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -199,6 +203,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="5334545119300433702">Este módulo é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="4407807842708586359">SO do Google Chrome</translation>
 <translation id="6634887557811630702">O Google Chrome está atualizado.</translation>
+<translation id="4120075327926916474">Quer que o Chrome guarde estas informações de cartão de crédito para preenchimento de formulários Web?</translation>
 <translation id="2084710999043359739">Adicionar ao Chrome</translation>
 <translation id="4084877369264707540">O Google Chrome Frame já está instalado e disponível para todos os utilizadores deste computador. Caso pretenda instalar o Google Chrome Frame ao nível do utilizador, será necessário desinstalar primeiro a versão ao nível do sistema instalada por um administrador.</translation>
 <translation id="3360895254066713204">Ajudante do Chrome</translation>

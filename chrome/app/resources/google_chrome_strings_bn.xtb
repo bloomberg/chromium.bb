@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Chrome অ্যাপ্লিকেশনগুলি লঞ্চ করুন</translation>
 <translation id="2370289711218562573">Google Chrome এখন প্রিয়/বুকমার্কগুলি আমদানি করছে৷</translation>
 <translation id="8762286861469007470">Chrome ক্যাপটিভ পোর্টাল ডিটেকটর</translation>
+<translation id="2721687379934343312">Mac  এ, পাসওয়ার্ডগুলি আপনার Keychain এ সঞ্চিত হয় এবং অন্য Chrome ব্যবহারকারীরা এটি অ্যাকসেস বা সিঙ্ক করতে পারবে এই  OS X অ্যাকাউন্টটি ভাগ করে।</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> আপনার Chrome সেটিংস পরিবর্তন করতে পারে৷</translation>
 <translation id="1761870329818521071">বর্তমানে Google Chrome এর যে সংস্করণটি চলছে সেটি ইনস্টল করতে পারে না৷ দয়া করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -62,6 +63,7 @@
 <translation id="1697213158865901863">Google Chrome ফ্রেম</translation>
 <translation id="4513711165509885787">আপনার বিলের বিশদ বিবরণ Chrome এ সংরক্ষিত হয়েছে৷</translation>
 <translation id="7098166902387133879">Google Chrome আপনার মাইক্রোফোন ব্যবহার করছে৷</translation>
+<translation id="3590194807845837023">প্রোফাইল আনলক করুন এবং পুনরায় লঞ্চ করুন</translation>
 <translation id="4053720452172726777">Google Chrome কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
 <translation id="6423071462708908582">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;এতে পৌঁছাতে চেষ্টা করেছেন, কিন্তু সার্ভারটি একটি মেয়াদ শেষ হওয়া শংসাপত্র পেশ করেছে৷ সেইরকম কোন তথ্য পাওয়া যায়নি যাতে নির্দেশ করবে যে শংসাশাপত্র মেয়াদ শেষ হবার পর্যন্ত মীমাংসা হয়েছে৷ এর অর্থ হল Google Chrome অঙ্গীকারবদ্ধ হতে পারেনা যে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;এর সঙ্গে যোগাযোগ করছেন এবং কোন আক্রমণকারী হিসাবে নয়৷ আপনার কম্পিউটারের ঘড়ি বর্তমানে <ph name="CURRENT_TIME"/>-এ সেট আছে৷ এটি কি ঠিক দেখাচ্ছে? যদি না দেখায় তাহলে, আপনার ত্রুটিটি ঠিক করা ও এই পৃষ্ঠাটি রিফ্রেশ করা উচিত৷</translation>
 <translation id="3197823471738295152">আপনার ডিভাইসটি আপ-টু-ডেট আছে৷</translation>
@@ -136,6 +138,7 @@
 <translation id="1104959162601287462">&amp;Chrome OS সম্বন্ধে</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
+<translation id="7787950393032327779">অন্য একটি কম্পিউটারে (<ph name="HOST_NAME"/>) প্রোফাইলটি অন্য Google Chrome প্রক্রিয়া (<ph name="PROCESS_ID"/>) দ্বারা ব্যবহৃত হচ্ছে বলে মনে হচ্ছে৷ Chrome প্রোফাইলটিকে লক করেছে যাতে এটি বিকৃত না হয়ে যায়৷ যদি আপনি নিশ্চিত হন যে আর কোনো প্রক্রিয়া এই প্রোফাইলটিকে ব্যবহার করছে না, তবে আপনি প্রোফাইলটিকে আনলক করতে পারেন এবং Chrome কে পুনরায় লঞ্চ করতে পারেন৷</translation>
 <translation id="1469002951682717133">Chrome অ্যাপ্লিকেশান লঞ্চার</translation>
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
 <translation id="4561051373932531560">Google Chrome আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
@@ -154,9 +157,9 @@
 <translation id="6326175484149238433">Chrome থেকে সরান</translation>
 <translation id="2871893339301912279">আপনি Chrome এ সাইন ইন করেছেন৷</translation>
 <translation id="7161904924553537242">Google Chrome-এ আপনাকে স্বাগতম</translation>
-<translation id="1686446242839005801">আপনি আপনার <ph name="USER_EMAIL_ADDRESS"/> অ্যাকাউন্ট ব্যবহার করে Chrome এ সাইন ইন করছেন৷ আপনি আপনার সমস্ত সাইন ইন করা ডিভাইসগুলিতে বুকমার্কগুলি, ইতিহাস, এবং অন্যান্য সেটিংস অ্যাক্সেস করতে সক্ষম হবেন৷</translation>
 <translation id="4147555960264124640">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে সাইন ইন করছেন এবং এর প্রশাসককে আপনার Google Chrome প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chrome ডেটা, যেমন অ্যাপ্লিকেশানগুলি, বুকমার্কগুলি, ইতিহাস, পাসওয়ার্ডগুলি এবং অন্যান্য সেটিংস <ph name="USER_NAME"/> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু আপনি অন্য একটি অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">এই সাইটটি Chrome Frame প্লাগ-ইন ব্যবহার করছে যা খুব শীঘ্রই অসমর্থিত হয়ে যাবে৷ দয়া এটি আনইনস্টল করুন এবং একটি আধুনিক ব্রাউজারে আপগ্রেড করুন৷</translation>
+<translation id="1348153800635493797">Google Wallet [<ph name="ERROR_CODE"/>] ব্যবহার করতে আপনাকে অবশ্যই আপনার Chrome আপগ্রেড করতে হবে৷</translation>
 <translation id="8187289872471304532">Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies এ যান
           এবং নির্বাচিত থাকা যে কোনো প্রক্সি অনির্বাচন করুন৷</translation>
 <translation id="8669527147644353129">Google Chrome সহায়তাকারী</translation>
@@ -186,6 +189,7 @@
 <translation id="7196020411877309443">আমি এটা কেন দেখছি?</translation>
 <translation id="2769762047821873045">Google Chrome আপনার ডিফল্ট ব্রাউসার নয় ৷</translation>
 <translation id="1020869477857717497">Chrome এ আপনার অনুসন্ধানগুলি যেভাবে কাজ করে <ph name="FILE_NAME"/> তা পরিবর্তন করতে পারে৷</translation>
+<translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS"/> হিসাবে সাইন ইন করেছেন৷ এখন আপনি আপনার সমস্ত সাইন ইন করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
 <translation id="6855094794438142393">Chrome মেনুতে
           যান &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -206,6 +210,7 @@
 <translation id="5334545119300433702">এই মডিউলটি Google Chrome-এর সাথে বিবাদের জন্য পরিচিত৷</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome আপ টু ডেট আছে:</translation>
+<translation id="4120075327926916474">আপনি কি চান যে ওয়েব ফর্ম পূরণ করার জন্য Chrome এই ক্রেডিট কার্ড তথ্য পূরণ করুক?</translation>
 <translation id="2084710999043359739">Chrome এ জুড়ুন</translation>
 <translation id="4084877369264707540">Google Chrome Frame ইতিমধ্যেই এই কম্পিউটারে ইনস্টল এবং এর সকল ব্যবহারকারীর জন্য উপলব্ধ আছে৷ আপনি যদি ব্যবহারকারী স্তরে Google Chrome Frame ইনস্টল করতে চান, তাহলে প্রথমে আপনাকে একজন প্রশাসক দ্বারা ইনস্টল থাকা সিস্টেম-স্তর সংস্করণ আনইনস্টল করতে হবে৷</translation>
 <translation id="3360895254066713204">Chrome সহায়তাকারী</translation>

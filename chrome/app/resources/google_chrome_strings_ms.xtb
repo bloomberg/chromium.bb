@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Lancarkan apl Chrome</translation>
 <translation id="2370289711218562573">Google Chrome kini mengimport Kegemaran/Penanda Halaman.</translation>
 <translation id="8762286861469007470">Pengesan Portal Tawanan Chrome</translation>
+<translation id="2721687379934343312">Pada Mac, kata laluan disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chrome lain yang berkongsi akaun OS X ini.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> boleh mengubah tetapan Chrome anda.</translation>
 <translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame sama yang sedang dijalankan. Sila tutup Google Chrome Frame dan cuba semula.</translation>
 <translation id="2040709530900803995">Pemapar Google Chrome</translation>
@@ -52,7 +53,7 @@
 <translation id="1682634494516646069">Google Chrome tidak dapat membaca atau menulis pada direktori datanya: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Direktori pemasangan Google Chrome kelihatan sedang digunakan. Sila but semula komputer anda dan cuba semula.</translation>
 <translation id="8227755444512189073">Google Chrome perlu melancarkan aplikasi luaran untuk mengendalikan <ph name="SCHEME"/> pautan. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
-<translation id="8290100596633877290">Whoa! Google Chrome telah mengalami nahas. Lancarkan semula sekarang?</translation>
+<translation id="8290100596633877290">Alamak! Google Chrome mengalami ranap sistem. Lancarkan semula sekarang?</translation>
 <translation id="1480489203462860648">Cubalah, ia sudah dipasang</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Syarat Perkhidmatan<ph name="END_TERMS_OF_SERVICE_LINK"/> Google Chrome </translation>
 <translation id="1393853151966637042">Dapatkan bantuan untuk menggunakan Chrome</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Butiran pengebilan anda telah disimpan dalam Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon anda.</translation>
+<translation id="3590194807845837023">Buka Profil dan Lancarkan Semula</translation>
 <translation id="4053720452172726777">Sesuaikan dan kawal Google Chrome</translation>
 <translation id="6423071462708908582">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang telah tamat tempoh. Tiada maklumat tersedia yang menunjukkan sama ada sijil tersebut telah terjejas sejak tamat tempoh tersebut. Ini bermakna Google Chrome tidak dapat menjamin bahawa anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer anda pada masa ini ditetapkan pada <ph name="CURRENT_TIME"/>. Adakah itu betul? Jika tidak, anda harus membetulkan kesilapan tersebut dan memuatkan semula halaman ini.</translation>
 <translation id="3197823471738295152">Peranti anda telah dikemas kini.</translation>
@@ -132,6 +134,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="1104959162601287462">Mengenai &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Perduaan Google Chrome</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome penyemak imbas lalai</translation>
+<translation id="7787950393032327779">Nampaknya profil digunakan oleh proses Google Chrome lain (<ph name="PROCESS_ID"/>) pada komputer lain (<ph name="HOST_NAME"/>). Chrome telah mengunci profil supaya profil tidak rosak. Jika anda pasti tiada proses lain yang menggunakan profil ini, anda boleh membuka profil dan melancarkan semula Chrome.</translation>
 <translation id="1469002951682717133">Pelancar Apl Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
@@ -150,9 +153,9 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="6326175484149238433">Alih keluar dari Chrome</translation>
 <translation id="2871893339301912279">Anda kini telah log masuk ke Chrome!</translation>
 <translation id="7161904924553537242">Selamat Datang ke Google Chrome</translation>
-<translation id="1686446242839005801">Anda log masuk ke Chrome menggunakan akaun <ph name="USER_EMAIL_ADDRESS"/> anda. Anda akan dapat mengakses penanda halaman, sejarah dan tetapan lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="4147555960264124640">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Tapak ini menggunakan pemalam Chrome Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan naik taraf kepada penyemak imbas moden.</translation>
+<translation id="1348153800635493797">Anda mesti menaik taraf Chrome untuk menggunakan Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Pergi ke
           Apikasi &gt; Pilihan Sistem &gt; Rangkaian &gt; Terperinci &gt; Proksi
           dan nyahpilih mana-mana proksi yang telah dipilih.</translation>
@@ -183,6 +186,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="2769762047821873045">Google Chrome adalah bukan penyemak imbas lalai anda.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> boleh mengubah cara carian anda berfungsi dalam Chrome.</translation>
+<translation id="4567424176335768812">Anda telah log masuk sebagai <ph name="USER_EMAIL_ADDRESS"/>. Sekarang anda boleh mengakses penanda halaman, sejarah dan tetapan anda yang lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="6855094794438142393">Pergi ke
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -201,6 +205,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="5334545119300433702">Modul ini diketahui bercanggah dengan Google Chrome.</translation>
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome telah dikemas kini.</translation>
+<translation id="4120075327926916474">Adakah anda mahu Chrome menyimpan maklumat kad kredit ini dengan melengkapkan borang web?</translation>
 <translation id="2084710999043359739">Tambahkan pada Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame telah dipasang dan boleh didapati oleh semua pengguna komputer ini. Jika anda mahu memasang Google Chrome Frame di peringkat pengguna, anda mesti terlebih dahulu menyahpasang versi peringkat sistem yang dipasang oleh pentadbir.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

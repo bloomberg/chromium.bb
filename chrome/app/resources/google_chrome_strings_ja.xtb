@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Chrome アプリを起動</translation>
 <translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="8762286861469007470">Chrome キャプティブ ポータル検出機能</translation>
+<translation id="2721687379934343312">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chrome ユーザーがアクセスしたり同期したりできます。</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> によって Chrome の設定が変更される場合があります。</translation>
 <translation id="1761870329818521071">実行中の Google Chrome Frame と同じバージョンをインストールすることはできません。Google Chrome Frame を閉じてからもう一度お試しください。</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome フレーム</translation>
 <translation id="4513711165509885787">お支払い情報を Chrome に保存しました。</translation>
 <translation id="7098166902387133879">Google Chrome がマイクを使用しています。</translation>
+<translation id="3590194807845837023">プロフィールのロックを解除して再起動</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書は有効期限が切れています。この証明書の有効期限が切れた後に証明書がセキュリティ侵害を受けたのかどうかについて確認できる情報はありません。つまり Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在 <ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、エラーを修正してからこのページを更新してください。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
@@ -132,6 +134,7 @@
 <translation id="1104959162601287462">Chrome OS について(&amp;C)</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
+<translation id="7787950393032327779">プロフィールは、別のコンピュータ（<ph name="HOST_NAME"/>）の別の Google Chrome プロセス（<ph name="PROCESS_ID"/>）で使用されているようです。Chrome はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chrome を再起動できます。</translation>
 <translation id="1469002951682717133">Chrome アプリ ランチャー</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
@@ -151,9 +154,9 @@
 <translation id="6326175484149238433">Chrome から削除</translation>
 <translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
-<translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> アカウントを使用して Chrome にログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="4147555960264124640">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">このサイトで使用されている Chrome Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、新しいブラウザにアップグレードしてください。</translation>
+<translation id="1348153800635493797">Google ウォレットを使用するには Chrome をアップグレードする必要があります [<ph name="ERROR_CODE"/>]。</translation>
 <translation id="8187289872471304532">このオプションを無効にするには:
           [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、
           選択されているプロキシの選択を解除します。</translation>
@@ -184,6 +187,7 @@
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> によって Chrome での検索時の動作が変更される場合があります。</translation>
+<translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS"/> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="6855094794438142393">このオプションを無効にするには:
           Chrome メニュー &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -202,6 +206,7 @@
 <translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome は最新版です。</translation>
+<translation id="4120075327926916474">このクレジットカード情報を Chrome に保存してウェブ フォームの自動入力に使用しますか？</translation>
 <translation id="2084710999043359739">Chrome に追加</translation>
 <translation id="4084877369264707540">このコンピュータには既に Google Chrome Frame がインストールされており、コンピュータのすべてのユーザーが使用できます。ユーザー レベルで Google Chrome Frame をインストールする場合は、まず管理者がインストールしたシステム レベルの Google Chrome Frame をアンインストールする必要があります。</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

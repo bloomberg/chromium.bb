@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1503959756075098984">자동으로 설치되는 확장 프로그램 ID와 업데이트 URL</translation>
+<translation id="793134539373873765">OS 업데이트 페이로드에 p2p를 사용할지 여부를 지정합니다. True로 설정되면 기기는 LAN에서 업데이트 페이로드를 공유하고 소비하려고 시도하여 인터넷 대역폭 사용량 및 혼잡을 줄일 수 있습니다. LAN에서 업데이트 페이로드를 사용할 수 없는 경우 기기는 다시 업데이트 서버로부터 다운로드합니다. False로 설정되었거나 아무런 설정이 없는 경우 p2p가 사용되지 않습니다.</translation>
 <translation id="2463365186486772703">애플리케이션 언어</translation>
 <translation id="1397855852561539316">기본 검색 공급자 추천 URL</translation>
 <translation id="3347897589415241400">사이트에 대한 기본 동작이 콘텐츠 팩에 없습니다.
@@ -140,6 +141,13 @@
       이 정책 값은 밀리초로 지정되어야 하며 30초에서 24시간 범위 내로 잘립니다.</translation>
 <translation id="9200828125069750521">POST를 사용하는 이미지 URL용 매개변수</translation>
 <translation id="2769952903507981510">원격 액세스 호스트에 대한 필수 도메인 이름 구성</translation>
+<translation id="8294750666104911727">일반적으로 X-UA-호환성이 chrome=1로 설정된 페이지는 'ChromeFrameRendererSettings' 정책에 관계없이 <ph name="PRODUCT_FRAME_NAME"/>에서 렌더링됩니다.
+
+          이 설정을 사용하도록 설정하면 메타 태그에 대해 페이지가 스캔되지 않습니다.
+
+          이 설정을 사용 중지하면 메타 태그에 대해 페이지가 스캔됩니다.
+
+          이 정책이 설정되지 않은 경우 메타 태그에 대해 페이지가 스캔됩니다.</translation>
 <translation id="3478024346823118645">로그아웃 시 사용자 데이터 삭제</translation>
 <translation id="8668394701842594241"><ph name="PRODUCT_NAME"/>에서 사용하도록 설정된 플러그인 목록을 지정하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
@@ -226,6 +234,7 @@
       이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME"/>에서 '피싱 및 악성코드 차단 사용' 설정을 변경하거나 무시할 수 없습니다.
 
       이 정책이 설정되어 있지 않으면 사용하도록 설정되며 사용자가 설정을 변경할 수 있습니다.</translation>
+<translation id="268577405881275241">데이터 압축 프록시 기능 사용</translation>
 <translation id="8369602308428138533">AC 전원으로 실행할 때 화면 꺼짐 지연</translation>
 <translation id="6513756852541213407"><ph name="PRODUCT_NAME"/>이(가) 사용하는 프록시 서버를 지정하도록 하며 사용자가 프록시 설정을 변경하지 못하게 합니다.
 
@@ -335,6 +344,7 @@
 
       이 설정을 사용 중지하면 북마크를 추가, 삭제 또는 수정할 수 없습니다. 기존 북마크는 계속 사용할 수 있습니다.</translation>
 <translation id="3496296378755072552">비밀번호 관리자</translation>
+<translation id="4372704773119750918">기업 사용자가 멀티 프로필에 포함되도록 허용하지 않음(기본 또는 보조)</translation>
 <translation id="2565967352111237512"><ph name="PRODUCT_NAME"/> 사용 및 충돌 관련 데이터에 대해 Google에 익명으로 신고하며 사용자가 이 설정을 변경하지 못하게 합니다.
 
       이 설정을 사용하면 사용 및 충돌 관련 데이터에 대해 Google에 익명으로 신고할 수 있습니다.
@@ -409,6 +419,7 @@
 
           작업이 일시중지되면 일시중지되기 전에 <ph name="PRODUCT_OS_NAME"/>에서 화면을 잠그거나 잠그지 않도록 별도로 설정할 수 있습니다.</translation>
 <translation id="3915395663995367577">proxy .pac 파일에 대한 URL</translation>
+<translation id="2144674628322086778">기업 사용자가 기본 및 보조에 모두 해당하도록 허용(기본 동작)</translation>
 <translation id="1022361784792428773">사용자가 설치할 수 없는 확장 프로그램 ID(또는 전체 확장 프로그램의 경우 *)</translation>
 <translation id="5499375345075963939">이 정책은 소매 모드일 때만 사용할 수 있습니다.
 
@@ -431,7 +442,6 @@
       이 설정을 사용 중지하면 웹 페이지에서 자바스크립트를 사용할 수 없으며, 사용자는 해당 설정을 변경할 수 없습니다.
 
       이 설정을 사용하도록 설정하거나 설정을 지정하지 않는 경우 웹 페이지에서 자바스크립트를 사용할 수 있지만, 사용자는 해당 설정을 변경할 수 있습니다.</translation>
-<translation id="4047207703890139433">기기에 사용할 시계 형식을 지정합니다. 사용자는 현재 세션의 시계 형식을 덮어쓸 수 있습니다. 하지만 로그아웃하면 다시 지정된 값으로 설정됩니다. 이 정책이 설정되지 않은 경우 기기 소유자의 설정을 따릅니다.</translation>
 <translation id="1942957375738056236">여기에서 프록시 서버의 URL을 지정할 수 있습니다.
 
           이 정책은 '프록시 서버 설정을 지정하는 방법 선택'에서 수동 프록시 설정을 선택한 경우에만 적용됩니다.
@@ -616,8 +626,10 @@
       이 정책은 'DisabledPlugins' 목록에 모든 플러그인을 사용 중지하는 '*' 또는 모든 자바 플러그인을 사용 중지하는 '*Java*'와 같은 와일드카드 항목을 포함하지만 관리자가 'IcedTea Java 2.3'과 같은 특정 버전을 사용하도록 설정할 수 있도록 하는 엄격한 플러그인 차단을 위한 것입니다. 
 
      이 정책을 설정하지 않으면 'DisabledPlugins'의 패턴과 일치하는 모든 플러그인이 잠겨 사용 중지되며 사용자가 다시 사용할 수 없습니다.</translation>
+<translation id="4557134566541205630">기본 검색 공급자 새 탭 페이지 URL</translation>
 <translation id="546726650689747237">AC 전원으로 실행할 때 화면 어둡게 하기 지연</translation>
 <translation id="4988291787868618635">유휴 지연 시간에 도달하면 수행할 작업</translation>
+<translation id="7260277299188117560">p2p 자동 업데이트 사용</translation>
 <translation id="5316405756476735914">웹사이트에서 로컬 데이터를 설정하도록 허용할지 여부를 설정할 수 있습니다. 로컬 데이터 설정은 모든 사이트에서 허용 또는 거부하도록 할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'AllowCookies'가 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
@@ -862,9 +874,11 @@
           이 설정을 사용 중지하고 발신 UDP 연결이 방화벽에 의해 필터링되면 컴퓨터는 로컬 네트워크 내에 있는 클라이언트 컴퓨터의 접속만 허용합니다.
 
           이 정책을 설정하지 않은 경우 사용하도록 설정됩니다.</translation>
+<translation id="4057110413331612451">기업 사용자가 기본 멀티 프로필 사용자에만 해당되도록 허용</translation>
 <translation id="5365946944967967336">툴바에 홈 버튼 표시</translation>
 <translation id="3709266154059827597">확장 프로그램 설치 차단목록 설정</translation>
 <translation id="8451988835943702790">새 탭 페이지를 홈페이지로 사용</translation>
+<translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME"/>에서 메타 태그 검사 건너뛰기</translation>
 <translation id="8469342921412620373">기본 검색 공급자를 사용하도록 설정합니다.
 
           이 설정을 사용하면 사용자가 URL이 아닌 텍스트를 검색주소창에 입력할 때 기본 검색이 수행됩니다.
@@ -1047,6 +1061,11 @@
       이 설정을 사용하면 키보드 단축키나 확장 프로그램 API를 사용하여 화면을 캡쳐할 수 없습니다.
 
       이 설정을 사용 중지하거나 지정하지 않으면 화면을 캡쳐할 수 있습니다.</translation>
+<translation id="8649763579836720255">Chrome OS 기기는 기기에서 보호된 콘텐츠를 재생할 수 있음을 인증하는 Chrome OS CA에서 발행한 인증서를 받기 위해 원격 인증(인증된 액세스)을 사용할 수 있습니다.  이 프로세스는 기기를 고유하게 식별하는 Chrome OS CA로 하드웨어 보증 정보를 전송하는 과정을 포함합니다.
+
+          false로 설정하면 기기는 콘텐츠 보호에 원격 인증을 사용하지 않고 기기에서 보호된 콘텐츠를 재생할 수 없게 됩니다.
+
+          true로 설정하거나 아무런 설정이 되지 않은 경우 콘텐츠 보호에 원격 인증을 사용할 수 있습니다.</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME"/>이(가) 목록에 있는 콘텐츠 유형을 처리하도록 허용</translation>
 <translation id="13356285923490863">정책 이름</translation>
 <translation id="557658534286111200">북마크 수정 사용 또는 사용 중지</translation>
@@ -1118,6 +1137,7 @@
       이 설정을 사용하면 브라우저 기록이 저장되지 않습니다.
 
       이 설정을 사용 중지하거나 설정하지 않으면 브라우저 기록이 저장됩니다.</translation>
+<translation id="2759224876420453487">멀티 프로필 세션에서 사용자 활동 제어</translation>
 <translation id="3844092002200215574"><ph name="PRODUCT_NAME"/>이(가) 디스크에 캐시된 파일을 저장하는 데 사용할 디렉토리를 구성합니다.
 
       이 정책을 설정하면 <ph name="PRODUCT_NAME"/>은(는) 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 관계없이 제공된 디렉토리를 사용합니다.
@@ -1168,6 +1188,9 @@
       이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME"/>에서 기본값인 5000밀리초를 사용합니다.</translation>
 <translation id="8099880303030573137">배터리 전원으로 실행할 때 유휴 지연</translation>
 <translation id="2761483219396643566">배터리 전원으로 실행할 때 유휴 경고 지연</translation>
+<translation id="5058056679422616660"><ph name="PRODUCT_OS_NAME"/>의 페이로드 자동 업데이트는 HTTPS 대신 HTTP에서 다운로드할 수 있습니다. 이렇게 하면 HTTP 다운로드의 HTTP 캐싱을 명확하게 해줍니다.
+
+      이 정책을 true로 설정하면 <ph name="PRODUCT_OS_NAME"/>에서 HTTP를 통해 자동 업데이트 페이로드를 다운로드하기 위해 시도합니다. 이 정책이 false로 설정되어 있거나 아무런 설정이 되지 않은 경우 자동 업데이트 페이로드 다운로드 시 HTTPS를 사용합니다.</translation>
 <translation id="1468307069016535757">로그인 화면에서 고대비 모드 접근성 기능의 기본 상태를 설정합니다.
 
           이 정책을 true로 설정하면 로그인 화면이 표시될 때 고대비 모드를 사용하도록 설정합니다.
@@ -1182,12 +1205,20 @@
 <translation id="602728333950205286">기본 검색 공급자 순간 검색 URL</translation>
 <translation id="3030000825273123558">통계 보고 사용</translation>
 <translation id="8465065632133292531">POST를 사용하는 인스턴트 URL용 매개변수</translation>
+<translation id="6659688282368245087">기기에 사용할 시계 형식을 지정합니다.
+
+      이 정책은 로그인 화면에서와 사용자 세션 기본값으로 사용할 시계 형식을 지정합니다. 사용자는 계정에 사용할 시계 형식을 재정의할 수 있습니다.
+
+      정책을 true로 설정하지 않으면 기기는 24시간 시계 형식을 사용합니다. 정책을 false로 설정하는 경우 기기는 12시간 시계 형식을 사용합니다.
+
+      이 정책이 설정되어 있지 않으면 기기는 기본적으로 24시간 시계 형식을 사용합니다.</translation>
 <translation id="6559057113164934677">카메라 및 마이크에 대한 모든 사이트의 액세스 허용 안함</translation>
 <translation id="7273823081800296768">이 설정을 사용하도록 설정했거나 설정하지 않은 경우 사용자는 매번 PIN을 입력하지 않아도 되도록 연결 시간에 클라이언트와 호스트를 페어링하도록 선택할 수 있습니다.
 
           이 설정이 사용 중지되면 이 기능을 사용할 수 없습니다.</translation>
 <translation id="1675002386741412210">지원:</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
+<translation id="5921713479449475707">HTTP를 통한 자동 업데이트 다운로드 허용</translation>
 <translation id="4482640907922304445"><ph name="PRODUCT_NAME"/>의 툴바에 홈 버튼을 표시합니다.
 
       이 설정을 사용하면 홈 버튼이 항상 표시됩니다.
@@ -1294,6 +1325,11 @@
       이 정책을 설정하면 기본값인 3시간이 무시됩니다. 이 정책에 대한 유효한 값은 30분(1800000)에서 1일(86400000) 사이이며, 이 범위에 포함되지 않는 모든 값은 각 경계값으로 고정됩니다.
 
       이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME"/>에서 기본값인 3시간을 사용합니다.</translation>
+<translation id="2571066091915960923">데이터 압축 프록시를 사용 또는 사용 중지하고 사용자가 이 설정을 변경하지 못하도록 방지합니다.
+
+      이 설정을 사용 또는 사용 중지하면 사용자가 설정을 변경하거나 재정의할 수 없습니다.
+
+      이 정책을 설정하지 않으면 사용자가 데이터 압축 프록시 기능 사용 여부를 선택할 수 있습니다.</translation>
 <translation id="7424751532654212117">사용 중지된 플러그인 목록에 대한 예외 목록</translation>
 <translation id="6233173491898450179">다운로드 디렉토리 설정</translation>
 <translation id="78524144210416006"><ph name="PRODUCT_OS_NAME"/> 로그인 화면의 전원 관리를 설정합니다.
@@ -1385,6 +1421,15 @@
 
           이 정책을 설정하지 않으면 'PromptOnAccess'가 사용되며 사용자가 변경할 수 있습니다.</translation>
 <translation id="2299220924812062390">사용 설정한 플러그인 목록 지정</translation>
+<translation id="328908658998820373">전체 화면 모드를 허용합니다.
+
+      이 정책은 모든 <ph name="PRODUCT_NAME"/> UI가 숨겨지고 웹 콘텐츠만 표시되었을 때 전체 화면 모드를 사용할 수 있는지 여부를 제어합니다.
+
+      이 정책을 true로 설정하거나 아무런 설정을 하지 않으면 적절한 권한을 가진 사용자, 앱 및 확장 프로그램에서 전체 화면 모드에 진입할 수 있습니다.
+
+      이 정책을 false로 설정하면 사용자, 앱 및 확장 프로그램에서 전체 화면 모드에 진입할 수 없습니다.
+
+      전체 화면 모드를 사용 중지하면 모든 플랫폼(<ph name="PRODUCT_OS_NAME"/> 제외)에서 키오스크 모드를 사용할 수 없습니다.</translation>
 <translation id="4325690621216251241">작업 표시줄에 로그아웃 버튼 추가</translation>
 <translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>
 <translation id="1465619815762735808">클릭하여 재생</translation>
@@ -1402,10 +1447,24 @@
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 작거나 같도록 값이 잘립니다.</translation>
 <translation id="1897365952389968758">모든 사이트에서 자바스크립트 실행 허용</translation>
 <translation id="5244714491205147861">로그인 화면의 전원 관리</translation>
+<translation id="3619270953033888719">기기의 콘텐츠 보호에 원격 인증을 사용하도록 설정합니다.</translation>
 <translation id="922540222991413931">확장 프로그램, 앱, 사용자 스크립트 설치 소스 등 설정</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME"/>의 추가 명령줄 매개변수</translation>
 <translation id="6931242315485576290">Google과 데이터 동기화 사용 중지</translation>
 <translation id="7006788746334555276">콘텐츠 설정</translation>
+<translation id="63659515616919367"><ph name="PRODUCT_OS_NAME"/> 기기의 멀티 프로필 세션에서 사용자 활동을 제어합니다.
+
+      이 정책을 'MultiProfileUserBehaviorUnrestricted'로 설정하면 사용자는 멀티 프로필 세션의 기본 또는 보조 사용자가 될 수 있습니다.
+
+      이 정책을 'MultiProfileUserBehaviorMustBePrimary'로 설정하면 사용자는 멀티 프로필 세션의 기본 사용자만 될 수 있습니다.
+
+      이 정책을 'MultiProfileUserBehaviorNotAllowed'로 설정하면 사용자는 멀티 프로필 세션에 포함될 수 없습니다.
+
+      이 설정을 지정하면 사용자가 변경하거나 재정의할 수 없습니다.
+
+      사용자가 멀티 프로필 세션에 로그인한 동안 이 설정을 변경하면 해당 세션에 있는 모든 사용자에 대해 설정이 검토됩니다. 사용자 중 한 명이라도 더 이상 세션에 허용되지 않는 경우 해당 세션은 종료됩니다.
+
+      이 정책을 설정하지 않으면 기본값인 'MultiProfileUserBehaviorUnrestricted'가 사용됩니다.</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME"/>에서 다음 URL 패턴을 항상 렌더링</translation>
 <translation id="4625915093043961294">확장 프로그램 설치 허용목록 설정</translation>
 <translation id="187819629719252111"><ph name="PRODUCT_NAME"/>이(가) 파일 선택 대화 상자를 표시하도록 하여 컴퓨터의 로컬 파일에 액세스할 수 있게 합니다.
@@ -1435,6 +1494,11 @@
 
           이 정책이 설정되지 않은 경우 처음에 화면 돋보기가 사용 중지되어 있으나 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
 <translation id="3428247105888806363">네트워크 예측 사용</translation>
+<translation id="3460784402832014830">검색엔진에서 새 탭 페이지를 제공하기 위해 사용하는 URL을 지정합니다.
+
+          이 정책은 선택사항입니다. 설정하지 않으면 새 탭 페이지가 제공되지 않습니다.
+
+          이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="6145799962557135888">자바스크립트 실행이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultJavaScriptSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -1736,4 +1800,5 @@
           이 설정을 사용하는 경우 사용자는 <ph name="PRODUCT_NAME"/>에서 홈페이지 URL을 변경할 수 없지만 여전히 새 탭 페이지를 홈페이지로 선택할 수 있습니다.
 
           이 정책을 설정하지 않으면 HomepageIsNewTabPage가 설정되지 않은 경우 사용자가 직접 홈페이지를 선택할 수 있습니다.</translation>
+<translation id="4858735034935305895">전체 화면 모드 허용</translation>
 </translationbundle>

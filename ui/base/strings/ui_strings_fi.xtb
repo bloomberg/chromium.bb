@@ -13,6 +13,7 @@
 <translation id="1190609913194133056">Ilmoituskeskus</translation>
 <translation id="7470933019269157899"><ph name="NUMBER_DEFAULT"/> minuuttia jäljellä</translation>
 <translation id="5613020302032141669">Nuoli vas.</translation>
+<translation id="4971687151119236543">Media: edellinen kappale</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/>-tiedosto (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> sekuntia</translation>
@@ -104,6 +105,7 @@
 <translation id="7052633198403197513">F1</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> tuntia</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> kt/s</translation>
+<translation id="8394908167088220973">Media: toista/keskeytä</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="7960078400008666149">Älä häiritse tuntiin</translation>
 <translation id="4373894838514502496"><ph name="NUMBER_FEW"/> mins ago</translation>
@@ -114,14 +116,15 @@
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">Vieritä oikealle</translation>
 <translation id="7414887922320653780"><ph name="NUMBER_ONE"/> tuntia jäljellä</translation>
+<translation id="1413622004203049571">Poista ilmoitukset käytöstä sovellukselta <ph name="NOTIFIER_NAME"/></translation>
 <translation id="2666092431469916601">Yleisin</translation>
 <translation id="8331626408530291785">Vieritä ylös</translation>
-<translation id="4773379706300191099">Poista ilmoitukset käytöstä laajennukselta <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Avaa tiedosto</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> tuntia sitten</translation>
 <translation id="815598010540052116">Vieritä alas</translation>
+<translation id="6808150112686056157">Media: pysäytä</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="3157931365184549694">Palauta</translation>
 <translation id="1243314992276662751">Lähetä</translation>
@@ -159,6 +162,7 @@
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> t/s</translation>
 <translation id="7649070708921625228">Ohje</translation>
+<translation id="6699343763173986273">Media: seuraava kappale</translation>
 <translation id="8226233771743600312">Älä häiritse päivään</translation>
 <translation id="7457942297256758195">Tyhjennä kaikki</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>
@@ -178,7 +182,6 @@
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="5941711191222866238">Pienennä</translation>
 <translation id="6394627529324717982">Pilkku</translation>
-<translation id="4469842253116033348">Poista sivuston <ph name="SITE"/> ilmoitukset käytöstä</translation>
 <translation id="3036649622769666520">Avaa tiedostot</translation>
 <translation id="8328145009876646418">Vasen reuna</translation>
 <translation id="7372005818821648611"><ph name="NUMBER_TWO"/> seconds</translation>

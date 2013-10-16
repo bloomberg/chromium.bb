@@ -11,8 +11,9 @@
 <translation id="1209866192426315618">zimesalia dakika <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="1801827354178857021">Kikomo</translation>
 <translation id="1190609913194133056">Kituo cha Arifa</translation>
-<translation id="7470933019269157899">Dakika <ph name="NUMBER_DEFAULT"/> zinasalia</translation>
+<translation id="7470933019269157899">Zimesalia dakika <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="5613020302032141669">Mshale Kushoto</translation>
+<translation id="4971687151119236543">Wimbo wa Awali wa Media</translation>
 <translation id="8602707065186045623">Faili ya <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="542155483965056918">dakika <ph name="NUMBER_ZERO"/> zilizopita</translation>
 <translation id="7121570032414343252">zimesalia sekunde <ph name="NUMBER_TWO"/></translation>
@@ -32,7 +33,7 @@
 <translation id="8666066831007952346">zimesalia siku <ph name="NUMBER_TWO"/></translation>
 <translation id="6390842777729054533">zimesalia sekunde <ph name="NUMBER_ZERO"/></translation>
 <translation id="3909791450649380159">&amp;Kata</translation>
-<translation id="2560788951337264832">Dakika <ph name="NUMBER_ZERO"/> zinasalia</translation>
+<translation id="2560788951337264832">Zimesalia dakika <ph name="NUMBER_ZERO"/></translation>
 <translation id="688711909580084195">Ukurasa wa Wavuti usio na Kichwa</translation>
 <translation id="3353284378027041011">siku <ph name="NUMBER_FEW"/> zilizopita</translation>
 <translation id="5076340679995252485">&amp;Bandika</translation>
@@ -70,7 +71,7 @@
 <translation id="4988273303304146523">siku <ph name="NUMBER_DEFAULT"/> zilizopita</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="2497284189126895209">Faili zote</translation>
-<translation id="7487278341251176613">Dakika <ph name="NUMBER_TWO"/> zinasalia</translation>
+<translation id="7487278341251176613">Zimesalia dakika <ph name="NUMBER_TWO"/></translation>
 <translation id="5110450810124758964">siku <ph name="NUMBER_ONE"/> iliyopita</translation>
 <translation id="2820806154655529776">sekunde <ph name="NUMBER_ONE"/></translation>
 <translation id="7814458197256864873">&amp;Nakili</translation>
@@ -104,6 +105,7 @@
 <translation id="7052633198403197513">F1</translation>
 <translation id="2052389551707911401">saa <ph name="NUMBER_MANY"/></translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
+<translation id="8394908167088220973">Cheza Media/Sitisha</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="7960078400008666149">Usinisumbue kwa saa moja</translation>
 <translation id="4373894838514502496">dakika <ph name="NUMBER_FEW"/> zilizopita</translation>
@@ -114,14 +116,15 @@
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">Sogeza Kulia</translation>
 <translation id="7414887922320653780">limesalia saa <ph name="NUMBER_ONE"/></translation>
+<translation id="1413622004203049571">Zima arifa kutoka <ph name="NOTIFIER_NAME"/></translation>
 <translation id="2666092431469916601">Ya Juu</translation>
 <translation id="8331626408530291785">Sogeza Juu</translation>
-<translation id="4773379706300191099">Zima arifa kutoka <ph name="EXTENSION_NAME"/></translation>
 <translation id="7907591526440419938">Fungua Faili</translation>
 <translation id="2864069933652346933">zimesalia siku <ph name="NUMBER_ZERO"/></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="2797524280730715045">Saa <ph name="NUMBER_DEFAULT"/> zilizopita</translation>
 <translation id="815598010540052116">Sogeza Chini</translation>
+<translation id="6808150112686056157">Simamisha Media</translation>
 <translation id="1308727876662951186">zimesalia dakika <ph name="NUMBER_ZERO"/></translation>
 <translation id="3157931365184549694">Rejesha</translation>
 <translation id="1243314992276662751">Pakia</translation>
@@ -132,7 +135,7 @@
 <translation id="1285266685456062655">Saa <ph name="NUMBER_FEW"/> zilizopita</translation>
 <translation id="6918245111648057970">Ruhusu arifa kutoka kwa wafuatao kwa kila mtumiaji:</translation>
 <translation id="5489830104927132166">Sekunde <ph name="NUMBER_ONE"/></translation>
-<translation id="3994835489895548312">Dakika <ph name="NUMBER_MANY"/> zinasalia</translation>
+<translation id="3994835489895548312">Zimesalia dakika <ph name="NUMBER_MANY"/></translation>
 <translation id="6358975074282722691">sekunde <ph name="NUMBER_TWO"/> zilizopita</translation>
 <translation id="520299402983819650">PB <ph name="QUANTITY"/></translation>
 <translation id="2983818520079887040">Mipangilio...</translation>
@@ -154,11 +157,12 @@
 <translation id="4860787810836767172">sekunde <ph name="NUMBER_FEW"/> zilizopita</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6956540737482608074">Dakika <ph name="NUMBER_ZERO"/></translation>
-<translation id="1858722859751911017">Dakika <ph name="NUMBER_FEW"/> zinasalia</translation>
+<translation id="1858722859751911017">Zimesalia dakika <ph name="NUMBER_FEW"/></translation>
 <translation id="6040143037577758943">Funga</translation>
 <translation id="1101671447232096497">dakika <ph name="NUMBER_MANY"/> zilizopita</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
+<translation id="6699343763173986273">Wimbo Unaofuata kwenye Media</translation>
 <translation id="8226233771743600312">Usinisumbue kwa siku moja</translation>
 <translation id="7457942297256758195">Futa Zote</translation>
 <translation id="822618367988303761">siku <ph name="NUMBER_TWO"/> zilizopita</translation>
@@ -178,7 +182,6 @@
 <translation id="6978839998405419496">siku <ph name="NUMBER_ZERO"/> zilizopita</translation>
 <translation id="5941711191222866238">Punguza</translation>
 <translation id="6394627529324717982">Koma</translation>
-<translation id="4469842253116033348">Lemaza arifa kutoka <ph name="SITE"/></translation>
 <translation id="3036649622769666520">Fungua Mafaili</translation>
 <translation id="8328145009876646418">Ncha ya Kushoto</translation>
 <translation id="7372005818821648611">Sekunde <ph name="NUMBER_TWO"/></translation>

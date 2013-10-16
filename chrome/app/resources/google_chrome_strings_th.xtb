@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">เปิดแอปพลิเคชัน Chrome</translation>
 <translation id="2370289711218562573">Google Chrome กำลังนำเข้ารายการโปรด/บุ๊คมาร์ค</translation>
 <translation id="8762286861469007470">ตัวตรวจจับ Chrome Captive Portal</translation>
+<translation id="2721687379934343312">สำหรับ Mac รหัสผ่านจะถูกบันทึกไว้ใน Keychain และผู้ใช้ Chrome คนอื่นๆ ที่แบ่งปันบัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> อาจเปลี่ยนแปลงการตั้งค่า Chrome ของคุณ</translation>
 <translation id="1761870329818521071">ไม่สามารถติดตั้ง Google Chrome Frame รุ่นเดียวกันกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome Frame แล้วลองใหม่อีกครั้ง</translation>
 <translation id="2040709530900803995">โปรแกรมแสดงภาพของ Google Chrome</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">รายละเอียดการเรียกเก็บเงินของคุณได้ถูกบันทึกไว้ใน Chrome</translation>
 <translation id="7098166902387133879">Google Chrome ใช้ไมโครโฟนอยู่</translation>
+<translation id="3590194807845837023">ปลดล็อกโปรไฟล์และเปิดใหม่</translation>
 <translation id="4053720452172726777">กำหนดค่าและควบคุม Google Chrome</translation>
 <translation id="6423071462708908582">คุณพยายามที่จะเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่เซิร์ฟเวอร์แสดงใบรับรองที่หมดอายุแล้ว ไม่มีข้อมูลที่ระบุได้ว่าใบรับรองนั้นถูกโจมตีหรือไม่นับจากวันที่หมดอายุ ซึ่งหมายความว่า Google Chrome ไม่สามารถรับประกันได้ว่าคุณกำลังสื่อสารกับ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ไม่ใช่กับผู้บุกรุก เวลาปัจจุบันในเครื่องคอมพิวเตอร์ของคุณถูกตั้งค่าเป็น <ph name="CURRENT_TIME"/> เวลานี้ถูกต้องหรือไม่ ถ้าไม่ คุณควรจะแก้ไขให้ถูกต้องและรีเฟรชหน้าเว็บนี้</translation>
 <translation id="3197823471738295152">อุปกรณ์ของคุณทันสมัยแล้ว</translation>
@@ -133,6 +135,7 @@
 <translation id="1104959162601287462">เกี่ยวกับ &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">ทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>
+<translation id="7787950393032327779">ดูเหมือนว่าโปรไฟล์กำลังถูกใช้งานโดยกระบวนการอื่นของ Google Chrome (<ph name="PROCESS_ID"/>) บนคอมพิวเตอร์อีกเครื่อง (<ph name="HOST_NAME"/>)  Chrome ล็อกโปรไฟล์ไว้เพื่อไม่ให้โปรไฟล์เกิดความเสียหาย  หากคุณมั่นใจว่าไม่มีกระบวนการอื่นใดกำลังใช้โปรไฟล์นี้อยู่ คุณสามารถปลดล็อกโปรไฟล์และเปิด Chrome ใหม่</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ทำให้คุณสามารถคลิกที่หมายเลขโทรศัพท์บนเว็บแล้วโทรหาด้วย Skype!</translation>
@@ -152,9 +155,9 @@
 <translation id="6326175484149238433">นำออกจาก Chrome</translation>
 <translation id="2871893339301912279">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว!</translation>
 <translation id="7161904924553537242">ยินดีต้อนรับสู่ Google Chrome</translation>
-<translation id="1686446242839005801">คุณกำลังลงชื่อเข้าใช้ Chrome โดยใช้บัญชี <ph name="USER_EMAIL_ADDRESS"/> ของคุณ คุณจะสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="4147555960264124640">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการ และให้การควบคุมระดับผู้ดูแลระบบของบัญชีดังกล่าวเหนือโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะเชื่อมโยงอย่างถาวรกับ <ph name="USER_NAME"/> คุณจะสามารถลบข้อมูลนี้ผ่านทางแผงควบคุมบัญชี Google แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่น <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">ไซต์นี้ใช้ปลั๊กอิน Chrome Frame ซึ่งจะถูกยกเลิกการสนับสนุนในเร็วๆ นี้ โปรดถอนการติดตั้งและอัปเกรดเป็นเบราว์เซอร์ที่ทันสมัย</translation>
+<translation id="1348153800635493797">คุณต้องอัปเกรด Chrome เพื่อใช้ Google Wallet [<ph name="ERROR_CODE"/>]</translation>
 <translation id="8187289872471304532">ไปที่
           แอปพลิเคชัน &gt; ค่ากำหนดของระบบ &gt; เครือข่าย &gt; ขั้นสูง &gt; พร็อกซี
           แล้วยกเลิกการเลือกพร็อกซีที่ได้เลือกไว้</translation>
@@ -185,6 +188,7 @@
 <translation id="7196020411877309443">เพราะเหตุใดฉันจึงเห็นป๊อปอัปนี้</translation>
 <translation id="2769762047821873045">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้นโดยอัตโนมัติของคุณ</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> อาจเปลี่ยนแปลงวิธีการทำงานของการค้นหาใน Chrome</translation>
+<translation id="4567424176335768812">คุณกำลังลงชื่อเข้าใช้เป็น <ph name="USER_EMAIL_ADDRESS"/> ตอนนี้คุณสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="6855094794438142393">ไปที่
           เมนู Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -203,6 +207,7 @@
 <translation id="5334545119300433702">เป็นที่ทราบว่าโมดูลนี้ขัดแย้งกับ Google Chrome</translation>
 <translation id="4407807842708586359">ระบบปฏิบัติการ Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome อัปเดตแล้ว</translation>
+<translation id="4120075327926916474">คุณต้องการให้ Chrome บันทึกข้อมูลบัตรเครดิตนี้เพื่อใช้กรอกแบบฟอร์มบนเว็บหรือไม่</translation>
 <translation id="2084710999043359739">เพิ่มลงใน Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame ได้รับการติดตั้งไว้แล้วและพร้อมใช้งานสำหรับผู้ใช้ทั้งหมดของคอมพิวเตอร์เครื่องนี้ หากคุณต้องการที่จะติดตั้ง Google Chrome Frame ในระดับผู้ใช้ ก่อนอื่นคุณต้องถอนการติดตั้งรุ่นระดับระบบที่ติดตั้งโดยผู้ดูแลระบบ</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>

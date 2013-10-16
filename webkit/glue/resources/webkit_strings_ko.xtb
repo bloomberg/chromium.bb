@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">다른 시간...</translation>
 <translation id="2426432199384958866">스트리밍 영화를 실시간 방송으로 되돌리기</translation>
 <translation id="248395913932153421">일</translation>
+<translation id="1729654308190250600">비어 있지 않은 이메일 주소를 입력해 주세요.</translation>
 <translation id="6015796118275082299">연도</translation>
 <translation id="9186171386827445984">문서 로드 중: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/>페이지</translation>
 <translation id="1235745349614807883">최근 검색 삭제</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">목록 표시기</translation>
 <translation id="4202807286478387388">건너뛰기</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">'<ph name="ATSIGN"/>' 앞 부분을 입력해 주세요. '<ph name="INVALIDADDRESS"/>'(이)가 완전하지 않습니다.</translation>
+<translation id="2746543609216772311">값은 <ph name="MINIMUM_DATE_OR_TIME"/> 이후여야 합니다.</translation>
 <translation id="2572483411312390101">재생</translation>
 <translation id="8785498733064193001">재생 시작</translation>
 <translation id="7057186640035488495">영화 시간</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">뒤로 빠르게 탐색</translation>
 <translation id="7789962463072032349">일시중지</translation>
 <translation id="6853785296079745596">캡션 숨기기</translation>
+<translation id="4360991593054037559">유효한 값을 입력해 주세요. 가장 근접한 유효 값 2개는 <ph name="VALID_VALUE_LOW"/> 및 <ph name="VALID_VALUE_HIGHER"/>입니다.</translation>
 <translation id="1758486001363313524">다른 일자...</translation>
 <translation id="8141602879876242471">이것은 검색 색인합니다. 검색 키워드 입력:</translation>
 <translation id="1930711995431081526">상태</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">앞으로 빠르게 탐색</translation>
 <translation id="4812940957355064477">숫자를 입력하세요.</translation>
 <translation id="2548326553472216322">최근 수행된 검색 없음</translation>
+<translation id="1938124657309484470">값은 <ph name="MAXIMUM_DATE_OR_TIME"/> 이전이어야 합니다.</translation>
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
 <translation id="901493112792887934">현재 시간(초)</translation>
 <translation id="5164977714490026579">값은 <ph name="MINIMUM"/> 이상이어야 합니다.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">이번 주</translation>
 <translation id="5966707198760109579">주</translation>
 <translation id="2901282870647571346">현재 영화 상태</translation>
+<translation id="2060505056492490888">'<ph name="INVALIDDOMAIN"/>'에서 '<ph name="DOT"/>'의 위치가 잘못되었습니다.</translation>
 <translation id="2674318244760992338">바닥글</translation>
 <translation id="8987927404178983737">월</translation>
 <translation id="8115662671911883373">캡션 표시 시작</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">선택</translation>
 <translation id="2846343701378493991">1024(중간 등급)</translation>
 <translation id="1637811476055996098">파일 선택</translation>
+<translation id="49969490063480558">'<ph name="ATSIGN"/>' 뒷 부분을 입력해 주세요. '<ph name="INVALIDADDRESS"/>'(이)가 완전하지 않습니다.</translation>
 <translation id="5476505524087279545">선택취소</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2507943997699731163">이 입력란을 작성하세요.</translation>
 <translation id="3785482301506746191">영화 시간 스크러버</translation>
 <translation id="739024184232394898">다른 주...</translation>
+<translation id="383465348367842624">'<ph name="ATSIGN"/>' 앞 부분에 '<ph name="INVALIDCHARACTER"/>' 기호가 포함되면 안됩니다.</translation>
 <translation id="5468998798572797635">전체화면 닫기</translation>
 <translation id="5919473608089529604">플러그인을 로드할 수 없습니다.</translation>
 <translation id="5546461542133609677">음소거 해제</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">이메일 주소를 쉼표로 구분하여 입력하세요.</translation>
 <translation id="5939518447894949180">재설정</translation>
 <translation id="1921819250265091946">일</translation>
+<translation id="2613802280814924224">유효한 값을 입력해 주세요. 가장 근접한 유효 값은 <ph name="VALID_VALUE"/>입니다.</translation>
 <translation id="835897206747267392">값이 잘못되었습니다.</translation>
 <translation id="1842960171412779397">선택</translation>
 <translation id="7673697353781729403">시간</translation>
+<translation id="4664250907885839816">'<ph name="ATSIGN"/>' 다음 부분에 '<ph name="INVALIDCHARACTER"/>' 기호가 포함되면 안됩니다.</translation>
 <translation id="3450233048674729344">값은 <ph name="MAXIMUM"/> 이하여야 합니다.</translation>
 <translation id="3471999216963526757">30초 뒤로</translation>
 <translation id="668171684555832681">기타...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">활성화</translation>
 <translation id="8444882422881193423">파일 <ph name="NUMBER_OF_FILES"/>개</translation>
 <translation id="6643016212128521049">삭제</translation>
+<translation id="7888071071722539607">이메일 주소에 '<ph name="ATSIGN"/>'를 포함해 주세요. '<ph name="INVALIDADDRESS"/>'에 '<ph name="ATSIGN"/>'가 없습니다.</translation>
 <translation id="4851297395436456855">빨리 감기</translation>
 <translation id="1088086359088493902">초</translation>
 <translation id="3934680773876859118">PDF 문서를 로드하지 못했습니다.</translation>

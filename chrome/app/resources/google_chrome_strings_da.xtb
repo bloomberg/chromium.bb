@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Åbn Chrome-apps</translation>
 <translation id="2370289711218562573">Google Chrome importerer nu Foretrukne/Bogmærker.</translation>
 <translation id="8762286861469007470">Registrering af Chrome-gæsteportaler</translation>
+<translation id="2721687379934343312">På Mac gemmes adgangskoder i din Keychain, og andre Chrome-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> kan ændre dine Chrome-indstillinger.</translation>
 <translation id="1761870329818521071">Det er ikke muligt at installere samme version af Google Chrome Frame som den, der allerede kører. Luk Google Chrome Frame, og prøv igen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Dine faktureringsoplysninger er nu gemt i Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome bruger din mikrofon.</translation>
+<translation id="3590194807845837023">Lås profilen op, og genstart</translation>
 <translation id="4053720452172726777">Tilpas og kontrollér Google Chrome</translation>
 <translation id="6423071462708908582">Du forsøgte at gå til &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren viste et udløbet certifikat. Der er ingen tilgængelige oplysninger til at indikere, om certifikatet er kompromitteret, efter at det er udløbet. Dette betyder, at Google Chrome ikke kan garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke en ondsindet person. Computerens ur er i øjeblikket angivet til <ph name="CURRENT_TIME"/>. Ser det rigtigt ud? Hvis ikke, skal du korrigere fejlen og opdatere siden.</translation>
 <translation id="3197823471738295152">Din enhed er opdateret.</translation>
@@ -132,6 +134,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Gør Google Chrome til din standardbrowser</translation>
+<translation id="7787950393032327779">Profilen ser ud til at være i brug i en anden Google Chrome-proces (<ph name="PROCESS_ID"/>) på en anden computer (<ph name="HOST_NAME"/>). Chrome har låst profilen, så den ikke bliver beskadiget. Hvis du er sikker på, at ingen andre processer anvender denne profil, kan du låse profilen op og genstarte Chrome.</translation>
 <translation id="1469002951682717133">Chrome-applisten</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
@@ -151,9 +154,9 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="6326175484149238433">Fjern fra Chrome</translation>
 <translation id="2871893339301912279">Du er logget ind på Chrome.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>
-<translation id="1686446242839005801">Du logger ind på Chrome med kontoen <ph name="USER_EMAIL_ADDRESS"/>. Du har adgang til dine bogmærker, din historik og andre indstillinger på alle de enheder, hvor du er logget ind.</translation>
 <translation id="4147555960264124640">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Google Chrome. Dine Chrome-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME"/>. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Dette website anvender Chrome Frame-pluginnet, som snart ikke længere understøttes. Afinstaller det, og opgrader til en moderne browser.</translation>
+<translation id="1348153800635493797">Du skal opgradere Chrome for at bruge Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Gå til 
           Applikationer &gt; Systemindstillinger &gt; Netværk &gt; Avanceret &gt; Proxyer,
           og fjern markeringen af alle valgte proxyer.</translation>
@@ -184,6 +187,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="7196020411877309443">Hvorfor får jeg vist dette?</translation>
 <translation id="2769762047821873045">Google Chrome er ikke din standardbrowser.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> kan ændre dine søgeindstillinger i Chrome.</translation>
+<translation id="4567424176335768812">Du er logget ind som <ph name="USER_EMAIL_ADDRESS"/>. Nu kan du få adgang til dine bogmærker, din historik og andre indstillinger på alle de enheder, hvor du er logget ind.</translation>
 <translation id="6855094794438142393">Gå til
           Chrome-menuen &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -202,6 +206,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="5334545119300433702">Dette modul er kendt for at konflikte med Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome er opdateret.</translation>
+<translation id="4120075327926916474">Er du sikker på, at Chrome skal gemme disse kreditkortoplysninger til udfyldning af webformularer?</translation>
 <translation id="2084710999043359739">Føj til Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame er allerede installeret og tilgængelig for alle brugerne af denne computer. Hvis du vil installere Google Chrome Frame på brugerniveau, skal du først afinstallere versionen på systemniveau, der er installeret af en administrator.</translation>
 <translation id="3360895254066713204">Hjælp til Chrome</translation>

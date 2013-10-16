@@ -46,6 +46,7 @@ Chromoting</translation>
 <translation id="6001953797859482435">Preferenze host Chrome Remote Desktop</translation>
 <translation id="9188433529406846933">Autorizza</translation>
 <translation id="228809120910082333">Conferma il tuo account e il PIN per consentire l'accesso tramite Chromoting.</translation>
+<translation id="7605995381616883502">Nuova connessione</translation>
 <translation id="5826423541626112308">Host Chrome Remote Desktop</translation>
 <translation id="2851674870054673688">Una volta inserito il codice, la sessione di condivisione avrà inizio.</translation>
 <translation id="5593560073513909978">Il servizio non è al momento disponibile. Riprova più tardi.</translation>
@@ -68,6 +69,7 @@ Chromoting</translation>
 <translation id="7081428606750359611">Host Chromoting</translation>
 <translation id="8228265668171617545">È stata rilevata una versione incompatibile di Chromoting. Verifica che la versione più recente di Chrome e di Chromoting sia installata su entrambi i computer e riprova.</translation>
 <translation id="6985691951107243942">Vuoi disattivare le connessioni remote a <ph name="HOSTNAME"/>? Se cambi idea, dovrai utilizzare il computer in questione per riattivare le connessioni.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (ultima volta online: <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Per iniziare a condividere il desktop, fornisci il seguente codice di accesso alla persona che ti aiuterà.</translation>
 <translation id="409800995205263688">NOTA. Le impostazioni dei criteri consentono connessioni solo tra computer all'interno della tua rete.</translation>
 <translation id="2353140552984634198">Puoi accedere a questo computer in sicurezza utilizzando Chromoting.</translation>
@@ -134,7 +136,9 @@ Chromoting</translation>
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="2926340305933667314">Impossibile disattivare l'accesso remoto a questo computer. Riprova più tardi.</translation>
 <translation id="6865175692670882333">Visualizza/modifica</translation>
+<translation id="5859141382851488196">Nuova finestra…</translation>
 <translation id="2089514346391228378">Le connessioni remote per questo computer sono state attivate.</translation>
+<translation id="7693372326588366043">Aggiorna l'elenco degli host</translation>
 <translation id="8246880134154544773">Autenticazione non riuscita. Accedi nuovamente a Chromoting.</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Tutti i diritti riservati.</translation>

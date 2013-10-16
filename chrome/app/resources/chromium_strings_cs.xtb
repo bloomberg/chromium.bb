@@ -3,6 +3,7 @@
 <translationbundle lang="cs">
 <translation id="6676384891291319759">Přístup k internetu</translation>
 <translation id="6373523479360886564">Jste si jisti, že chcete Chromium odinstalovat?</translation>
+<translation id="5065199687811594072">Chcete v aplikaci Chromium uložit informace o této platební kartě k vyplňování formulářů?</translation>
 <translation id="6510925080656968729">Odinstalovat Chromium</translation>
 <translation id="6893813176749746474">Prohlížeč Chromium byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="1550579416447684632">Spustit aplikace Chromium</translation>
@@ -22,6 +23,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="7128196614940529818">Plugin Chromium Frame je již nainstalován a je přístupný pro všechny uživatele tohoto počítače. Chcete-li nainstalovat Chromium Frame na úrovni uživatele, musíte nejprve odinstalovat správcem nainstalovanou verzi na úrovni systému.</translation>
 <translation id="731644333568559921">Aktualizovat &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
+<translation id="7023267510504981715">Pokud chcete používat Peněženku Google, je třeba aplikaci Chromium upgradovat [<ph name="ERROR_CODE"/>].</translation>
 <translation id="7419987137528340081">Pokud chcete svá stávající data prohlížeče Chromium uchovávat odděleně, můžete pro účet <ph name="USER_NAME"/> vytvořit nového uživatele prohlížeče Chromium.</translation>
 <translation id="8030318113982266900">Aktualizace zařízení na verzi <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="3549345495227188780">Začínáme se systémem Chromium OS</translation>
@@ -59,6 +61,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="7771626876550251690">V tomto případě adresa uvedená v certifikátu neodpovídá adrese webu, na který se snaží prohlížeč přejít. Jedním z důvodů může být to, že vaši komunikaci zachytává útočník, který předkládá certifikát pro jiné webové stránky, a způsobuje tak neshodu. Dalším možným důvodem je, že je server nastaven tak, aby vracel stejný certifikát pro více různých webových stránek včetně té, kterou se snažíte navštívit, a to i přesto, že daný certifikát není platný pro všechny tyto webové stránky. Chromium může s jistotou potvrdit, že jste se dostali do domény &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale nemůže ověřit, zda se jedná o stejné stránky jako &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, na které jste chtěli přejít. Pokud budete pokračovat, nebude Chromium kontrolovat žádné další neshody názvů.</translation>
 <translation id="4330585738697551178">O tomto modulu je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="3190315855212034486">Ouha! Prohlížeč Chromium spadl. Chcete jej znovu spustit?</translation>
+<translation id="3590194807845837023">Odemknout profil a spustit znovu</translation>
 <translation id="6714487516757221107">Nebyla nalezena žádná instalace prohlížeče Chromium ani pluginu Chrome Frame k aktualizaci.</translation>
 <translation id="3197823471738295152">Zařízení bylo aktualizováno.</translation>
 <translation id="8551886023433311834">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
@@ -82,6 +85,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4077262827416206768">Aby se změny projevily, zavřete prosím všechna okna prohlížeče Chromium a spusťte jej znovu.</translation>
 <translation id="5472687196979159893">Soubor <ph name="FILE_NAME"/> může v prohlížeči Chromium změnit fungování vyhledávání.</translation>
 <translation id="6944967875980567883">Moduly načtené do prohlížeče Chromium</translation>
+<translation id="6899795326977034905">V počítačích Mac se hesla ukládají do vašeho úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chromium, kteří sdílejí tento účet systému OS X.</translation>
 <translation id="118298050220780080">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server předložil certifikát vydaný subjektem, kterému operační systém vašeho počítače nedůvěřuje. To může znamenat, že server generoval vlastní bezpečnostní záruky, u nichž aplikace Chromium nemůže spoléhat na informace o identitě, nebo že se vaši komunikaci pokouší zachytit útočník.</translation>
 <translation id="3296368748942286671">Po ukončení prohlížeče Chromium nechat aplikace na pozadí spuštěné</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
@@ -90,6 +94,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="7338384957110970244">Prohlížeči Chromium se nepodařilo vytvořit zástupce aplikace.</translation>
 <translation id="6055895534982063517">K dispozici je nová verze prohlížeče Chromium, ještě rychlejší než ty předchozí.</translation>
 <translation id="2407806170074302369">O pluginu Chromium Frame...</translation>
+<translation id="4677944499843243528">Profil je zřejmě využíván jiným procesem aplikace Chromium (<ph name="PROCESS_ID"/>) nebo v jiném počítači (<ph name="HOST_NAME"/>). Aplikace Chromium profil uzamkla, aby nedošlo k jeho poškození. Pokud jste si jisti, že žádný jiný proces tento profil nevyužívá, můžete jej odemknout a aplikaci Chromium znovu spustit.</translation>
 <translation id="5405650547142096840">Odstranit z prohlížeče Chromium</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>
 <translation id="3258596308407688501">Chromium nemůže číst ani zapisovat do svého datového adresáře:
@@ -100,7 +105,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="6970811910055250180">Aktualizace zařízení...</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
 <translation id="85843667276690461">Pomoc s používáním prohlížeče Chromium</translation>
-<translation id="5358375970380395591">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem prohlížeče Chromium. Vaše údaje prohlížeče Chromium, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí stránky Dashboard služby Účty Google, ale nebudete je moci přidružit k jinému účtu. <ph name="LEARN_MORE"/></translation>
+<translation id="5358375970380395591">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem prohlížeče Chromium. Vaše údaje prohlížeče Chromium, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci přidružit k jinému účtu. <ph name="LEARN_MORE"/></translation>
 <translation id="263863604136125912">Spustit Chromium</translation>
 <translation id="9036189287518468038">Spouštěč aplikací Chromium</translation>
 <translation id="4886158514168859177">V tomto počítači je již nainstalována novější verze pluginu Chromium Frame. Jestliže tento software nefunguje, odinstalujte Chromium Frame a zkuste to znovu.</translation>
@@ -161,7 +166,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="130631256467250065">Změny se projeví po příštím restartu zařízení.</translation>
 <translation id="3244477511402911926">Centrum oznámení Chromium</translation>
 <translation id="1105130903706696483">Prohlížeč Chromium nebyl řádně ukončen. Chcete-li znovu otevřít stránky, které byly otevřené, klikněte na možnost Obnovit.</translation>
-<translation id="1531452407274881270">Přihlašujete se do prohlížeče Chromium pomocí účtu <ph name="USER_EMAIL_ADDRESS"/>. Budete moci přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="1929939181775079593">Prohlížeč Chromium neodpovídá. Chcete jej znovu načíst?</translation>
 <translation id="1414495520565016063">Jste přihlášeni do prohlížeče Chromium.</translation>
 <translation id="3155163173539279776">Restartovat Chromium</translation>
@@ -184,6 +188,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="3249425904492147663">Pokusili jste se přejít na web &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, avšak server předložil certifikát, jehož platnost vypršela. Nejsou k dispozici žádné informace, které by naznačovaly, zda byl certifikát od vypršení platnosti zkompromitován. To znamená, že Chromium nemůže zaručit, že komunikujete se serverem &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nikoli s útočníkem. Čas ve vašem počítači je aktuálně nastaven na <ph name="CURRENT_TIME"/>. Je to v pořádku? Pokud ne, měli byste chybu opravit a stránku načíst znovu.</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>
 <translation id="457845228957001925">Důležité informace o datech prohlížeče Chromium</translation>
+<translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS"/>. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="7483335560992089831">Nelze nainstalovat verzi prohlížeče Chromium, která je právě spuštěná. Ukončete prohlížeč Chromium a zkuste to znovu.</translation>
 <translation id="7641113255207688324">Chromium není vaším výchozím prohlížečem.</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
@@ -218,7 +223,7 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="442817494342774222">Prohlížeč Chromium je nastaven na automatické spuštění po zapnutí počítače.</translation>
 <translation id="8974095189086268230">Chrome OS by nemohl existovat bez dalšího <ph name="BEGIN_LINK_CROS_OSS"/>softwaru s otevřeným zdrojovým kódem<ph name="END_LINK_CROS_OSS"/>.</translation>
-<translation id="313551035350905294">Přihlašujete se pomocí spravovaného účtu, jehož administrátorovi tak dáváte kontrolu nad vaším profilem Chromium. Vaše data prohlížeče Chromium (například aplikace, záložky, historie, hesla a další nastavení) budou trvale propojena s účtem <ph name="USER_NAME"/>. Tato data budete moci smazat pomocí služby Google Accounts Dashboard, ale nebudete je moci propojit s jiným účtem.</translation>
+<translation id="313551035350905294">Přihlašujete se pomocí spravovaného účtu, jehož administrátorovi tak dáváte kontrolu nad vaším profilem Chromium. Vaše data prohlížeče Chromium (například aplikace, záložky, historie, hesla a další nastavení) budou trvale propojena s účtem <ph name="USER_NAME"/>. Tato data budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci propojit s jiným účtem.</translation>
 <translation id="8823523095753232532">Propojit má data prohlížeče Chromium s tímto účtem</translation>
 <translation id="1221340462641866827">Chromium OS nepodporuje spouštění externích aplikací pro práci s odkazy typu <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
 <translation id="328888136576916638">Chybí klíče rozhraní Google API. Některé funkce Chromium nebudou k dispozici.</translation>

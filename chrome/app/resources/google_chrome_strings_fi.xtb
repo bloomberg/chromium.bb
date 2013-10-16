@@ -25,6 +25,7 @@
 <translation id="2896252579017640304">Käynnistä Chrome-sovelluksia</translation>
 <translation id="2370289711218562573">Google Chrome tuo suosikkeja/kirjanmerkkejä.</translation>
 <translation id="8762286861469007470">Chromen Captive Portal -havaitsin</translation>
+<translation id="2721687379934343312">Salasanat tallennetaan Macilla Avainnippuusi, ja muut Chrome-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
 <translation id="3993188379797269327"><ph name="FILE_NAME"/> voi muuttaa Chromen asetuksia.</translation>
 <translation id="1761870329818521071">Ei voi asentaa samaa Google Chrome -kehyksen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
@@ -60,6 +61,7 @@
 <translation id="1697213158865901863">Google Chrome -kehys</translation>
 <translation id="4513711165509885787">Laskutustietosi on tallennettu Chromeen.</translation>
 <translation id="7098166902387133879">Google Chrome käyttää mikrofoniasi.</translation>
+<translation id="3590194807845837023">Poista profiilin lukitus ja käynnistä uudelleen</translation>
 <translation id="4053720452172726777">Google Chromen muokkaaminen ja hallinta</translation>
 <translation id="6423071462708908582">Yritit siirtyä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin palautti vanhentuneen varmenteen. Emme voi selvittää, onko varmenne vaarantunut voimassaolon päättymisen jälkeen. Google Chrome ei siis voi taata, että olet yhteydessä sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etkä hyökkäyssivustoon. Tietokoneesi kellon asetus on <ph name="CURRENT_TIME"/>. Jos aika on väärä, korjaa se ja päivitä tämä sivu.</translation>
 <translation id="3197823471738295152">Laite on ajan tasalla.</translation>
@@ -133,6 +135,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="1104959162601287462">Tietoja &amp;Chrome-käyttöjärjestelmästä</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
+<translation id="7787950393032327779">Profiili näyttäisi olevan toisen Google Chrome -prosessin (<ph name="PROCESS_ID"/>) käytössä toisella tietokoneella (<ph name="HOST_NAME"/>). Chrome on lukinnut profiilin, jotta se ei vioitu. Jos olet varma, että mikään toinen prosessi ei käytä tätä profiilia, voit poistaa profiilin lukituksen ja käynnistää Chromen uudelleen.</translation>
 <translation id="1469002951682717133">Chromen sovellusten käynnistysohjelma</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chromen avulla voit klikata puhelinnumeroa verkossa ja soittaa siihen Skypellä!</translation>
@@ -152,9 +155,9 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="6326175484149238433">Poista Chromesta</translation>
 <translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
-<translation id="1686446242839005801">Kirjaudut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS"/>. Voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="4147555960264124640">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE"/></translation>
 <translation id="7931439880631187247">Tämä sivusto käyttää Chrome-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
+<translation id="1348153800635493797">Chrome on päivitettävä ennen kuin voit käyttää Google Walletia [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Avaa
           Sovellukset &gt; Järjestelmäasetukset &gt; Verkko &gt; Lisäasetukset &gt; Välityspalvelimet
           ja poista valinta kaikkien valittujen välityspalvelimien kohdalta.</translation>
@@ -184,6 +187,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
 <translation id="2769762047821873045">Google Chrome ei ole oletusselain.</translation>
 <translation id="1020869477857717497"><ph name="FILE_NAME"/> voi muuttaa hakujen toimintatapaa Chromessa.</translation>
+<translation id="4567424176335768812">Olet kirjautunut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS"/>. Nyt voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="6855094794438142393">Avaa
           Chrome-valikko &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -202,6 +206,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="5334545119300433702">Tämän moduulin tiedetään aiheuttavan ristiriitoja Google Chromen kanssa.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome on ajan tasalla.</translation>
+<translation id="4120075327926916474">Haluatko Chromen tallentavan nämä luottokortin tiedot verkkolomakkeiden täydentämistä varten?</translation>
 <translation id="2084710999043359739">Lisää Chromeen</translation>
 <translation id="4084877369264707540">Google Chrome -kehys on jo asennettu ja käytettävissä kaikille tämän tietokoneen käyttäjille. Jos haluat asentaa Google Chrome -kehyksen käyttäjän tasolla, sinun tulee ensin poistaa järjestelmänvalvojan asentama järjestelmän tason versio.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>

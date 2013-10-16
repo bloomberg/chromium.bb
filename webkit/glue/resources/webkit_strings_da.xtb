@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Andet...</translation>
 <translation id="2426432199384958866">sæt filmstreaming tilbage til realtid</translation>
 <translation id="248395913932153421">Dag</translation>
+<translation id="1729654308190250600">Angiv en e-mailadresse, der ikke er tom.</translation>
 <translation id="6015796118275082299">År</translation>
 <translation id="9186171386827445984">Indlæser dokument: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sider...</translation>
 <translation id="1235745349614807883">Slet nylige søgninger</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">listemarkering</translation>
 <translation id="4202807286478387388">hop</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Angiv den del, der kommer før &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; er ufuldstændig.</translation>
+<translation id="2746543609216772311">Værdien må ikke være tidligere end <ph name="MINIMUM_DATE_OR_TIME"/>.</translation>
 <translation id="2572483411312390101">afspil</translation>
 <translation id="8785498733064193001">start afspilning</translation>
 <translation id="7057186640035488495">filmtid</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">spol hurtigt tilbage</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="6853785296079745596">skjul undertekster</translation>
+<translation id="4360991593054037559">Angiv en gyldig værdi. De to nærmeste gyldige værdier er <ph name="VALID_VALUE_LOW"/> og <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Andet...</translation>
 <translation id="8141602879876242471">Der kan søges i dette indeks. Indtast søge-nøgleord:</translation>
 <translation id="1930711995431081526">status</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">spol hurtigt frem</translation>
 <translation id="4812940957355064477">Angiv et nummer.</translation>
 <translation id="2548326553472216322">Ingen nylige søgninger</translation>
+<translation id="1938124657309484470">Værdien må ikke være senere end <ph name="MAXIMUM_DATE_OR_TIME"/>.</translation>
 <translation id="7263440858009898357">Vælg et punkt på listen.</translation>
 <translation id="901493112792887934">aktuel tid i sekunder</translation>
 <translation id="5164977714490026579">Værdien skal være større end eller lig med <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Denne uge</translation>
 <translation id="5966707198760109579">Uge</translation>
 <translation id="2901282870647571346">aktuel filmstatus</translation>
+<translation id="2060505056492490888">&quot;<ph name="DOT"/>&quot; er placeret forkert i &quot;<ph name="INVALIDDOMAIN"/>&quot;.</translation>
 <translation id="2674318244760992338">sidefod</translation>
 <translation id="8987927404178983737">Måned</translation>
 <translation id="8115662671911883373">start visning af undertekster</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">markér</translation>
 <translation id="2846343701378493991">1024 (Mellemklasse)</translation>
 <translation id="1637811476055996098">Vælg filer</translation>
+<translation id="49969490063480558">Angiv den del, der kommer efter &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; er ufuldstændig.</translation>
 <translation id="5476505524087279545">fjern markering</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2507943997699731163">Udfyld dette felt.</translation>
 <translation id="3785482301506746191">filmtidsskyder</translation>
 <translation id="739024184232394898">Andet...</translation>
+<translation id="383465348367842624">Den del, der kommer før &quot;<ph name="ATSIGN"/>&quot;, må ikke indeholde &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">afslut fuld skærm</translation>
 <translation id="5919473608089529604">Pluginnet kunne ikke indlæses.</translation>
 <translation id="5546461542133609677">slå lyd til</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Angiv en kommasepareret liste over e-mailadresser.</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">Angiv en gyldig værdi. Den nærmeste gyldige værdi er <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Ugyldig værdi.</translation>
 <translation id="1842960171412779397">vælg</translation>
 <translation id="7673697353781729403">Timer</translation>
+<translation id="4664250907885839816">Den del, der kommer efter &quot;<ph name="ATSIGN"/>&quot;, må ikke indeholde symbolet &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="3450233048674729344">Værdien skal være mindre end eller lig med <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">gå 30 sekunder tilbage</translation>
 <translation id="668171684555832681">Andre ...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">aktiver</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> filer</translation>
 <translation id="6643016212128521049">Ryd</translation>
+<translation id="7888071071722539607">E-mailadressen skal indeholde et &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; mangler et &quot;<ph name="ATSIGN"/>&quot;.</translation>
 <translation id="4851297395436456855">spol frem</translation>
 <translation id="1088086359088493902">Sekunder</translation>
 <translation id="3934680773876859118">PDF-dokumentet kunne ikke indlæses</translation>

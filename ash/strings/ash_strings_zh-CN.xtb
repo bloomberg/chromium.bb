@@ -14,6 +14,7 @@
 <translation id="3775358506042162758">使用多帐户登录时，最多只能有 3 个帐户。</translation>
 <translation id="370649949373421643">启用 Wi-Fi</translation>
 <translation id="3626281679859535460">亮度</translation>
+<translation id="3621202678540785336">输入</translation>
 <translation id="595202126637698455">已启用性能跟踪</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
 <translation id="7982789257301363584">网络</translation>
@@ -26,6 +27,7 @@
 <translation id="2297568595583585744">状态栏</translation>
 <translation id="1661867754829461514">缺少 PIN</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>：正在连接...</translation>
+<translation id="40400351611212369">网络激活错误</translation>
 <translation id="4237016987259239829">网络连接错误</translation>
 <translation id="2946640296642327832">启用蓝牙</translation>
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME"/></translation>
@@ -44,6 +46,7 @@
 <translation id="4628814525959230255">通过环聊与<ph name="HELPER_NAME"/>共享您屏幕的控制权。</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
 <translation id="939252827960237676">无法保存屏幕截图</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="3126069444801937830">重新启动以进行更新</translation>
 <translation id="2268813581635650749">全部退出</translation>
 <translation id="735745346212279324">VPN 连接已断开</translation>
@@ -52,8 +55,7 @@
 <translation id="3294437725009624529">访客</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/>（<ph name="ANNOTATION"/>）</translation>
-<translation id="2942516765047364088">底栏的放置</translation>
-<translation id="2903907270192926896">输入</translation>
+<translation id="2942516765047364088">任务栏位置</translation>
 <translation id="8676770494376880701">已连接低功率充电器</translation>
 <translation id="7170041865419449892">超出范围</translation>
 <translation id="4804818685124855865">断开连接</translation>
@@ -77,19 +79,24 @@
 按 Shift + Alt 键可进行切换。</translation>
 <translation id="2562916301614567480">专用网</translation>
 <translation id="6549021752953852991">没有可用的蜂窝网络</translation>
+<translation id="2982222131142145681"><ph name="DEVICE_NAME"/> (HDMI)</translation>
 <translation id="4379753398862151997">嗨！显示器，咱们合不来。（系统不支持该显示器）</translation>
 <translation id="6426039856985689743">停用移动数据</translation>
 <translation id="3087734570205094154">底部</translation>
 <translation id="3742055079367172538">已完成屏幕截图</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="5271016907025319479">未配置 VPN。</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME"/>（蓝牙）</translation>
+<translation id="3967919079500697218">您的管理员已停用屏幕截图功能。</translation>
 <translation id="372094107052732682">连按两次 Ctrl+Shift+Q 即可退出。</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
 <translation id="1480041086352807611">演示模式</translation>
 <translation id="3626637461649818317">剩余电量：<ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">输入法</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
-<translation id="2825619548187458965">底栏</translation>
+<translation id="2670531586141364277">激活“<ph name="NAME"/>”需要连接网络。</translation>
+<translation id="3963445509666917109">扬声器（内部）</translation>
+<translation id="2825619548187458965">任务栏</translation>
 <translation id="2614835198358683673">您的 Chromebook 在开启期间可能无法充电。建议您使用产品原装的充电器。</translation>
 <translation id="1895658205118569222">关闭</translation>
 <translation id="4430019312045809116">音量</translation>
@@ -98,13 +105,13 @@
 <translation id="7874779702599364982">正在搜索蜂窝网络...</translation>
 <translation id="583281660410589416">未知</translation>
 <translation id="1383876407941801731">搜索</translation>
-<translation id="7468789844759750875">访问“<ph name="NAME"/>”激活门户网站，购买更多数据。</translation>
 <translation id="3901991538546252627">正在连接：<ph name="NAME"/></translation>
 <translation id="2204305834655267233">网络信息</translation>
 <translation id="1621499497873603021">电池电量将在 <ph name="TIME_LEFT"/>后耗尽</translation>
 <translation id="5980301590375426705">退出访客模式</translation>
 <translation id="8308637677604853869">上一菜单</translation>
 <translation id="4666297444214622512">无法登录到其他帐户。</translation>
+<translation id="3625258641415618104">已停用屏幕截图</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="1773212559869067373">身份验证证书遭到本地拒绝</translation>
 <translation id="8528322925433439945">移动...</translation>
@@ -133,6 +140,7 @@
 <translation id="1512064327686280138">激活失败</translation>
 <translation id="5097002363526479830">无法连接到网络“<ph name="NAME"/>”：<ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
+<translation id="2966449113954629791">您的移动数据量可能已用完。请访问“<ph name="NAME"/>”激活门户网站，购买更多数据。</translation>
 <translation id="8132793192354020517">已连接到 <ph name="NAME"/></translation>
 <translation id="7052914147756339792">设置壁纸...</translation>
 <translation id="8678698760965522072">“在线”状态</translation>
@@ -149,22 +157,26 @@
 <translation id="3157931365184549694">恢复</translation>
 <translation id="4274292172790327596">未识别的错误</translation>
 <translation id="4032485810211612751"><ph name="HOURS"/>:<ph name="MINUTES"/>:<ph name="SECONDS"/></translation>
+<translation id="5977415296283489383">耳机</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
+<translation id="737451040872859086">麦克风（内部）</translation>
 <translation id="4448844063988177157">正在搜索 Wi-Fi 网络...</translation>
 <translation id="8401662262483418323">无法连接到“<ph name="NAME"/>”：<ph name="DETAILS"/>
 服务器消息：<ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">出现错误</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>
 <translation id="2999742336789313416">“<ph name="DISPLAY_NAME"/>”是由 <ph name="DOMAIN"/> 管理的公开会话</translation>
+<translation id="9044646465488564462">无法连接到网络：<ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">退出会话</translation>
 <translation id="8454013096329229812">Wi-Fi 已打开。</translation>
 <translation id="4872237917498892622">Alt + 搜索键或 Shift</translation>
 <translation id="9201131092683066720">电池电量为<ph name="PERCENTAGE"/>%。</translation>
 <translation id="2983818520079887040">设置...</translation>
+<translation id="3871838685472846647">蜂窝网络已激活</translation>
 <translation id="1195412055398077112">过扫描</translation>
-<translation id="1717216362413677834">基座模式</translation>
-<translation id="112308213915226829">自动隐藏底栏</translation>
+<translation id="112308213915226829">自动隐藏任务栏</translation>
+<translation id="7573962313813535744">停靠模式</translation>
 <translation id="8927026611342028580">连接请求已发送</translation>
 <translation id="8300849813060516376">OTASP 失败</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
@@ -176,17 +188,16 @@
 <translation id="6785414152754474415">电池电量为<ph name="PERCENTAGE"/>%（正在充电）。</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>：正在激活…</translation>
 <translation id="4895488851634969361">电池电量已满。</translation>
-<translation id="1391854757121130358">您可能已用尽移动数据配额。</translation>
 <translation id="5947494881799873997">还原</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7649070708921625228">帮助</translation>
+<translation id="747833637904845037">连接到外部显示器后，即使合上盖子，您的 Chromebook 仍会保持开启状态。</translation>
 <translation id="3050422059534974565">CAPS LOCK 已开启。
 按搜索键或 Shift 可取消。</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="158849752021629804">需要家庭网络</translation>
 <translation id="6857811139397017780">激活 <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP 查找失败</translation>
-<translation id="5812035014844949013">输出</translation>
 <translation id="6692173217867674490">密码错误</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="9046895021617826162">连接失败</translation>
@@ -202,12 +213,14 @@
 <translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="5102001756192215136">可用时长：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="3009178788565917040">输出</translation>
 <translation id="520760366042891468">通过环聊共享您屏幕的控制权。</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
 <translation id="4015692727874266537">登录其他帐户…</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="6911468394164995108">连接其他...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
+<translation id="2563856802393254086">恭喜！“<ph name="NAME"/>”数据服务已激活，您可以开始使用了。</translation>
 <translation id="412065659894267608">还需要 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟才能充满电</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> 发来的短信</translation>
 <translation id="1244147615850840081">运营商</translation>

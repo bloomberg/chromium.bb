@@ -3,6 +3,7 @@
 <translationbundle lang="fil">
 <translation id="6676384891291319759">I-access ang Internet</translation>
 <translation id="6373523479360886564">Sigurado ka bang nais mong i-uninstall ang Chromium?</translation>
+<translation id="5065199687811594072">Gusto mo bang i-save ng Chromium ang impormasyon ng credit card na ito para sa pagkumpleto ng mga form sa web?</translation>
 <translation id="6510925080656968729">I-uninstall ang Chromium</translation>
 <translation id="6893813176749746474">Na-update na ang Chromium, ngunit hindi mo pa ito nagagamit sa loob ng hindi bababa sa 30 araw.</translation>
 <translation id="1550579416447684632">Ilunsad ang apps ng Chromium</translation>
@@ -22,6 +23,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="7128196614940529818">Naka-install at available na ang Chromium Frame sa lahat ng user ng computer na ito. Kung nais mong i-install ang Chromium Frame sa antas ng user, dapat mo munang i-uninstall ang bersyon sa antas ng system na na-install ng administrator.</translation>
 <translation id="731644333568559921">I-update ang &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Nangangailangan ang Chromium ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
+<translation id="7023267510504981715">Dapat mong i-upgrade ang Chromium upang magamit ang Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="7419987137528340081">Kung gusto mong ihiwalay ang iyong umiiral nang data sa Chromium, maaari kang lumikha ng bagong user ng Chromium para kay <ph name="USER_NAME"/>.</translation>
 <translation id="8030318113982266900">Ina-update ang iyong device sa <ph name="CHANNEL_NAME"/> na channel...</translation>
 <translation id="3549345495227188780">Magsimula sa Chromium OS</translation>
@@ -59,6 +61,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="7771626876550251690">Sa sitwasyong ito, hindi tumutugma ang address na nakalista sa certificate sa address ng website na sinubukang puntahan ng iyong browser. Ang isang posibleng dahilan nito ay ang iyong mga pakikipag-ugnayan ay hinahadlangan ng isang umaatake na nagpapakita ng certificate para sa ibang website, bagay na magdudulot ng hindi pagkakatugma. Isa pang posibleng dahilan ay naka-set up ang server upang ibalik ang certificate na iyon para sa maramihang website, kabilang ang website na tinatangka mong bisitahin, kahit na hindi wasto ang certificate na iyon para sa lahat ng website na iyon. Matitiyak ng Chromium na narating mo ang &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ngunit hindi nito mabe-verify na kapareho ng site na ito ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; na nilalayon mong marating. Kung magpapatuloy ka, hindi maghahanap ang Chromium ng anumang karagdagang hindi pagkakatugma-tugma sa pangalan.</translation>
 <translation id="4330585738697551178">Natuklasang sumasalungat sa Chromium ang module na ito.</translation>
 <translation id="3190315855212034486">Whoa! Nag-crash ang Chromium. Muling ilunsad ngayon?</translation>
+<translation id="3590194807845837023">I-unlock ang Profile at Ilunsad Muli</translation>
 <translation id="6714487516757221107">Walang natagpuang pag-install ng Chromium o Chromium Frame na i-a-update.</translation>
 <translation id="3197823471738295152">Napapanahon ang iyong device.</translation>
 <translation id="8551886023433311834">Halos napapanahon na! I-restart ang iyong device upang tapusin ang pag-update.</translation>
@@ -82,6 +85,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4077262827416206768">Pakisara ang lahat ng window sa Chromium at muling ilunsad ang Chromium upang magkabisa ang pagbabagong ito.</translation>
 <translation id="5472687196979159893">Maaaring baguhin ng <ph name="FILE_NAME"/> kung paano gumagana ang iyong mga paghahanap sa Chromium.</translation>
 <translation id="6944967875980567883">Mga module na nai-load sa Chromium</translation>
+<translation id="6899795326977034905">Sa Mac, ang mga password ay sine-save sa iyong Keychain at maaaring ma-access o ma-sync ng ibang mga user ng Chromium na nakikihati sa OS X account na ito.</translation>
 <translation id="118298050220780080">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ang server ng certificate na mula sa entity na hindi pinagkakatiwalaan ng operating system ng iyong computer. Maaari itong mangahulugan na bumuo ang server ng sarili nitong mga panseguridad na kredensyal, na hindi maaasahan ng Chromium para sa impormasyon ng pagkakakilanlan, o maaaring may isang umaatake na sinusubukang humadlang sa iyong mga pakikipag-ugnayan.</translation>
 <translation id="3296368748942286671">Patuloy na magpatakbo ng background na apps kapag nakasara ang Chromium</translation>
 <translation id="473775607612524610">Mag-update</translation>
@@ -90,6 +94,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="7338384957110970244">Hindi makagawa ng shortcut ng application ang Chromium.</translation>
 <translation id="6055895534982063517">May available na bagong bersyon ng Chromium, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="2407806170074302369">Tungkol sa Chromium Frame...</translation>
+<translation id="4677944499843243528">Mukhang ginagamit ang profile ng iba pang proseso ng Chromium (<ph name="PROCESS_ID"/>) sa iba pang computer (<ph name="HOST_NAME"/>).  Ni-lock ng Chromium ang profile upang hindi ito ma-corrupt.  Kung nakakatiyak ka na walang ibang mga proseso ang gumagamit sa profile na ito, maaari mong i-unlock ang profile at ilunsad muli ang Chromium.</translation>
 <translation id="5405650547142096840">Alisin mula sa Chromium</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
 <translation id="3258596308407688501">Hindi makakapag-read at makakapag-write ang Chromium sa direktoryo ng data nito:
@@ -161,7 +166,6 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="130631256467250065">Magkakabisa ang iyong mga pagbabago sa susunod na i-restart ang iyong device.</translation>
 <translation id="3244477511402911926">Chromium Notification Center</translation>
 <translation id="1105130903706696483">Hindi nag-shut down nang tama ang Chromium. Upang muling buksan ang mga pahinang nabuksan mo, i-click ang Ipanumbalik.</translation>
-<translation id="1531452407274881270">Nagsa-sign in ka sa Chromium gamit ang iyong <ph name="USER_EMAIL_ADDRESS"/> account. Maa-access mo ang iyong mga bookmark, kasaysayan, at iba pang mga setting sa lahat ng iyong naka-sign in na device.</translation>
 <translation id="1929939181775079593">Hindi gumagana ang Chromium. Muling ilunsad ngayon?</translation>
 <translation id="1414495520565016063">Naka-sign in ka sa Chromium!</translation>
 <translation id="3155163173539279776">Muling ilunsad ang Chromium</translation>
@@ -184,6 +188,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="3249425904492147663">Tinangka mong marating ang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit nagpakita ng na-expire nang certificate ang server. Walang available na impormasyon upang isaad kung nakompromiso ang certificate simula noong pag-expire nito. Hindi magagarantiya ng Chromium na nakikipag-ugnayan ka sa &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; at hindi sa isang umaatake. Kasalukuyang nakatakda sa <ph name="CURRENT_TIME"/> ang orasan ng iyong computer. Mukha ba itong tama? Kung hindi, dapat mong iwasto ang error at i-refresh ang pahinang ito.</translation>
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>
 <translation id="457845228957001925">Mahalagang impormasyon patungkol sa iyong data sa Chromium</translation>
+<translation id="4567424176335768812">Naka-sign in ka bilang <ph name="USER_EMAIL_ADDRESS"/>. Maaari mo na ngayong i-access ang iyong mga bookmark, kasaysayan, at iba pang setting sa lahat ng iyong device na naka-sign in.</translation>
 <translation id="7483335560992089831">Hindi ma-install ang parehong Bersyon ng Chromium na kasalukuyang tumatakbo. Pakisara ang Chromium at subukang muli.</translation>
 <translation id="7641113255207688324">Hindi Chromium ang iyong default na browser.</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>

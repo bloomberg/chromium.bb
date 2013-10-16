@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Iné...</translation>
 <translation id="2426432199384958866">vrátiť sa k prehrávaniu v reálnom čase</translation>
 <translation id="248395913932153421">Deň</translation>
+<translation id="1729654308190250600">Zadajte e-mailovú adresu, ktorá nie je prázdna hodnota.</translation>
 <translation id="6015796118275082299">Rok</translation>
 <translation id="9186171386827445984">Prebieha načítavanie dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stránok...</translation>
 <translation id="1235745349614807883">Vyčistiť posledné vyhľadávania</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">ukazovateľ v zozname</translation>
 <translation id="4202807286478387388">skok</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/> <ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Zadajte časť pred znakom <ph name="ATSIGN"/>. Adresa <ph name="INVALIDADDRESS"/> je neúplná.</translation>
+<translation id="2746543609216772311">Hodnota musí byť <ph name="MINIMUM_DATE_OR_TIME"/> alebo neskôr.</translation>
 <translation id="2572483411312390101">prehrať</translation>
 <translation id="8785498733064193001">začať prehrávanie</translation>
 <translation id="7057186640035488495">čas filmu</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">rýchlo pretáčať dozadu</translation>
 <translation id="7789962463072032349">pozastaviť</translation>
 <translation id="6853785296079745596">skryť skryté titulky</translation>
+<translation id="4360991593054037559">Zadajte platnú hodnotu. Najbližšie platné hodnoty sú <ph name="VALID_VALUE_LOW"/> a <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Iné...</translation>
 <translation id="8141602879876242471">Tento index sa dá prehľadávať. Zadajte kľúčové slová na vyhľadanie:</translation>
 <translation id="1930711995431081526">stav</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">rýchlo pretáčať dopredu</translation>
 <translation id="4812940957355064477">Zadajte číslo.</translation>
 <translation id="2548326553472216322">Žiadne posledné vyhľadávania</translation>
+<translation id="1938124657309484470">Hodnota musí byť <ph name="MAXIMUM_DATE_OR_TIME"/> alebo skôr.</translation>
 <translation id="7263440858009898357">Vyberte položku zo zoznamu.</translation>
 <translation id="901493112792887934">aktuálny čas v sekundách</translation>
 <translation id="5164977714490026579">Hodnota musí byť väčšia alebo rovná hodnote <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Tento týždeň</translation>
 <translation id="5966707198760109579">Týždeň</translation>
 <translation id="2901282870647571346">aktuálny stav filmu</translation>
+<translation id="2060505056492490888">Znak <ph name="DOT"/> je v doméne <ph name="INVALIDDOMAIN"/> použitý na nesprávnej pozícii.</translation>
 <translation id="2674318244760992338">päta</translation>
 <translation id="8987927404178983737">Mesiac</translation>
 <translation id="8115662671911883373">zobrazovať skryté titulky</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">označiť</translation>
 <translation id="2846343701378493991">1024 (stredný stupeň)</translation>
 <translation id="1637811476055996098">Vybrať súbory</translation>
+<translation id="49969490063480558">Zadajte časť za znakom <ph name="ATSIGN"/>. Adresa <ph name="INVALIDADDRESS"/> je neúplná.</translation>
 <translation id="5476505524087279545">zrušiť označenie</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2507943997699731163">Vyplňte toto pole.</translation>
 <translation id="3785482301506746191">posúvač času filmu</translation>
 <translation id="739024184232394898">Iné...</translation>
+<translation id="383465348367842624">Časť pred znakom <ph name="ATSIGN"/> by nemala obsahovať symbol <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="5468998798572797635">ukončiť režim celej obrazovky</translation>
 <translation id="5919473608089529604">Doplnok sa nepodarilo načítať.</translation>
 <translation id="5546461542133609677">obnoviť zvuk</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Zadajte zoznam e-mailových adries oddelených čiarkou.</translation>
 <translation id="5939518447894949180">Vynulovať</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">Zadajte platnú hodnotu. Najbližšia platná hodnota je <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Neplatná hodnota.</translation>
 <translation id="1842960171412779397">vybrať</translation>
 <translation id="7673697353781729403">Hodiny</translation>
+<translation id="4664250907885839816">Časť za znakom <ph name="ATSIGN"/> by nemala obsahovať symbol <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="3450233048674729344">Hodnota musí byť menšia alebo rovná hodnote <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">pretočiť dozadu o 30 sekúnd</translation>
 <translation id="668171684555832681">Iný...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">aktivovať</translation>
 <translation id="8444882422881193423">Počet súborov: <ph name="NUMBER_OF_FILES"/></translation>
 <translation id="6643016212128521049">Vymazať</translation>
+<translation id="7888071071722539607">Uveďte v e-mailovej adrese znak <ph name="ATSIGN"/>. V adrese <ph name="INVALIDADDRESS"/> znak <ph name="ATSIGN"/> chýba.</translation>
 <translation id="4851297395436456855">pretočiť dopredu</translation>
 <translation id="1088086359088493902">Sekundy</translation>
 <translation id="3934680773876859118">Načítanie dokumentu PDF zlyhalo</translation>

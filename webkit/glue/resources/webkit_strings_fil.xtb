@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Iba pa...</translation>
 <translation id="2426432199384958866">ibalik sa real time ang streaming ng pelikula</translation>
 <translation id="248395913932153421">Araw</translation>
+<translation id="1729654308190250600">Mangyaring maglagay ng isang non-empty na email address.</translation>
 <translation id="6015796118275082299">Taon</translation>
 <translation id="9186171386827445984">Nilo-load ang dokumento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> (na) pahina...</translation>
 <translation id="1235745349614807883">Lisiman ang Kasalukuyang Mga Paghahanap</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">Ilista ang marker</translation>
 <translation id="4202807286478387388">tumalon</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Mangyaring maglagay ng isang bahagi na sinusundan ng '<ph name="ATSIGN"/>.' Hindi kumpleto ang '<ph name="INVALIDADDRESS"/>.'</translation>
+<translation id="2746543609216772311">Dapat <ph name="MINIMUM_DATE_OR_TIME"/> o mas bago ang value.</translation>
 <translation id="2572483411312390101">i-play</translation>
 <translation id="8785498733064193001">simulan ang pag-playback</translation>
 <translation id="7057186640035488495">oras ng pelikula</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">mabilisang maghanap nang pabalik</translation>
 <translation id="7789962463072032349">i-pause</translation>
 <translation id="6853785296079745596">itago ang mga nakasarang caption</translation>
+<translation id="4360991593054037559">Mangyaring maglagay ng isang wastong value. Ang dalawang pinakamalapit na wastong value ay <ph name="VALID_VALUE_LOW"/> at <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Iba pa...</translation>
 <translation id="8141602879876242471">Isa itong paghahanap ng index. Ipasok ang paghahanap sa mga keyword:</translation>
 <translation id="1930711995431081526">katayuan</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">mabilisang maghanap nang pasulong</translation>
 <translation id="4812940957355064477">Mangyaring maglagay ng numero.</translation>
 <translation id="2548326553472216322">Walang kamakailang mga paghahanap</translation>
+<translation id="1938124657309484470">Dapat <ph name="MAXIMUM_DATE_OR_TIME"/> o mas nauna ang value.</translation>
 <translation id="7263440858009898357">Mangyaring pumili ng item sa listahan.</translation>
 <translation id="901493112792887934">kasalukuyang oras ayon sa segundo</translation>
 <translation id="5164977714490026579">Dapat mas mataas kaysa sa o katumbas ng <ph name="MINIMUM"/> ang halaga.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Linggong ito</translation>
 <translation id="5966707198760109579">Linggo</translation>
 <translation id="2901282870647571346">kasalukuyang katayuan ng pelikula</translation>
+<translation id="2060505056492490888">Ginamit ang '<ph name="DOT"/>' sa maling posisyon sa '<ph name="INVALIDDOMAIN"/>.'</translation>
 <translation id="2674318244760992338">footer</translation>
 <translation id="8987927404178983737">Buwan</translation>
 <translation id="8115662671911883373">simulan ang pagpapakita ng mga nakasarang caption</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">I-tsek</translation>
 <translation id="2846343701378493991">1024 (Katamtamang Grado)</translation>
 <translation id="1637811476055996098">Pumili ng Mga File</translation>
+<translation id="49969490063480558">Mangyaring maglagay ng isang bahagi pagkatapos ng '<ph name="ATSIGN"/>.' Hindi kumpleto ang '<ph name="INVALIDADDRESS"/>.'</translation>
 <translation id="5476505524087279545">i-uncheck</translation>
 <translation id="2148716181193084225">Ngayon</translation>
 <translation id="2507943997699731163">Pakipunan ang field na ito.</translation>
 <translation id="3785482301506746191">scrubber ng oras ng pelikula</translation>
 <translation id="739024184232394898">Iba pa...</translation>
+<translation id="383465348367842624">Hindi dapat naglalaman ng simbolong '<ph name="INVALIDCHARACTER"/>' ang bahagi bago ang '<ph name="ATSIGN"/>.'</translation>
 <translation id="5468998798572797635">lumabas sa full screen</translation>
 <translation id="5919473608089529604">Hindi ma-load ang plug-in.</translation>
 <translation id="5546461542133609677">i-unmute</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Mangyaring magpasok ng listahan ng email address na pinaghihiwalay ng kuwit.</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="1921819250265091946">dd</translation>
+<translation id="2613802280814924224">Mangyaring maglagay ng isang wastong value. Ang pinakamalapit na wastong value ay <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Di-wastong halaga.</translation>
 <translation id="1842960171412779397">piliin</translation>
 <translation id="7673697353781729403">Oras</translation>
+<translation id="4664250907885839816">Hindi dapat naglalaman ng simbolong '<ph name="INVALIDCHARACTER"/>' ang bahagi pagkatapos ng '<ph name="ATSIGN"/>.'</translation>
 <translation id="3450233048674729344">Dapat mas mababa kaysa sa o katumbas ng <ph name="MAXIMUM"/> ang halaga.</translation>
 <translation id="3471999216963526757">bumalik nang 30 segundo</translation>
 <translation id="668171684555832681">Iba pa...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">isaaktibo</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> mga file</translation>
 <translation id="6643016212128521049">I-clear</translation>
+<translation id="7888071071722539607">Mangyaring magsama ng '<ph name="ATSIGN"/>' sa email address. Kulang ng '<ph name="ATSIGN"/>' ang '<ph name="INVALIDADDRESS"/>.'</translation>
 <translation id="4851297395436456855">i-fast forward</translation>
 <translation id="1088086359088493902">Segundo</translation>
 <translation id="3934680773876859118">Nabigong i-load ang dokumentong PDF</translation>

@@ -46,6 +46,7 @@ isäntä</translation>
 <translation id="6001953797859482435">Chrome-etäkäytön isäntäasetukset</translation>
 <translation id="9188433529406846933">Valtuuta</translation>
 <translation id="228809120910082333">Salli käyttö Chromotingin kautta vahvistamalla tilisi ja PIN-koodisi alla.</translation>
+<translation id="7605995381616883502">Uusi yhteys</translation>
 <translation id="5826423541626112308">Chrome-etäkäytön isäntä</translation>
 <translation id="2851674870054673688">Tietokoneen jakaminen aloitetaan käyttäjän annettua käyttökoodin.</translation>
 <translation id="5593560073513909978">Palvelu ei ole tällä hetkellä käytettävissä. Yritä myöhemmin uudelleen.</translation>
@@ -68,6 +69,7 @@ isäntä</translation>
 <translation id="7081428606750359611">Chromoting-isäntä</translation>
 <translation id="8228265668171617545">Havaittiin yhteensopimaton Chromoting-versio. Varmista, että molemmissa tietokoneissa on uusimmat Chrome- ja Chromoting-versiot, ja yritä uudelleen.</translation>
 <translation id="6985691951107243942">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME"/>? Jos muutat mieltäsi, yhteydet täytyy palauttaa käyttöön kyseisellä tietokoneella.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (viimeksi online-tilassa <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Aloita työpöydän jakaminen antamalla käyttökoodi sinua avustavalle henkilölle.</translation>
 <translation id="409800995205263688">HUOMAA: käytäntöasetusten vuoksi vain verkossasi olevien tietokoneiden väliset yhteydet sallitaan.</translation>
 <translation id="2353140552984634198">Tähän tietokoneeseen voi muodostaa suojatun yhteyden Chromotingin avulla.</translation>
@@ -134,7 +136,9 @@ isäntä</translation>
 <translation id="6527303717912515753">Jaa</translation>
 <translation id="2926340305933667314">Etäyhteyksien poistaminen käytöstä epäonnistui. Yritä myöhemmin uudelleen.</translation>
 <translation id="6865175692670882333">Tarkastele/muokkaa</translation>
+<translation id="5859141382851488196">Uusi ikkuna…</translation>
 <translation id="2089514346391228378">Tietokoneen etäyhteydet on otettu käyttöön.</translation>
+<translation id="7693372326588366043">Päivitä isäntäluettelo</translation>
 <translation id="8246880134154544773">Todennus epäonnistui. Kirjaudu uudelleen sisään Chromotingiin.</translation>
 <translation id="1654128982815600832">Otetaan tietokoneen etäyhteyksiä käyttöön…</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Kaikki oikeudet pidätetään.</translation>

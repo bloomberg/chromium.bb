@@ -46,6 +46,7 @@ Chromoting</translation>
 <translation id="6001953797859482435">Postavke hosta Udaljene radne površine Chrome</translation>
 <translation id="9188433529406846933">Autoriziraj</translation>
 <translation id="228809120910082333">Potvrdite svoj račun i PIN u nastavku da biste usluzi Chromoting dozvolili pristup.</translation>
+<translation id="7605995381616883502">Nova veza</translation>
 <translation id="5826423541626112308">Host Udaljene radne površine Chrome</translation>
 <translation id="2851674870054673688">Nakon što se unese kôd, počet će sesija dijeljenja.</translation>
 <translation id="5593560073513909978">Usluga je privremeno nedostupna. Pokušajte ponovo kasnije.</translation>
@@ -68,6 +69,7 @@ Chromoting</translation>
 <translation id="7081428606750359611">Host usluge Chromoting</translation>
 <translation id="8228265668171617545">Otkrivena je nekompatibilna verzija aplikacije Chromoting. Provjerite da na oba računala imate najnoviju verziju sustava Chrome i Chromoting pa pokušajte ponovo.</translation>
 <translation id="6985691951107243942">Jeste li sigurni da želite onemogućiti daljinske veze s hostom <ph name="HOSTNAME"/>? Ako se predomislite, morat ćete se spojiti na to računalo da biste ponovo omogućili veze.</translation>
+<translation id="1436054138039008644"><ph name="HOSTNAME"/> (zadnji put na mreži <ph name="DATE"/>)</translation>
 <translation id="9149992051684092333">Da biste započeli dijeliti radnu površinu, pošaljite pristupni kôd u nastavku osobi koja će vam pomagati.</translation>
 <translation id="409800995205263688">NAPOMENA: postavke pravila dopuštaju jedino veze između računala u vašoj mreži.</translation>
 <translation id="2353140552984634198">Ovom računalu možete sigurno pristupiti pomoću aplikacije Chromoting.</translation>
@@ -134,7 +136,9 @@ Chromoting</translation>
 <translation id="6527303717912515753">Podijeli</translation>
 <translation id="2926340305933667314">Onemogućavanje daljinskog pristupa ovom računalu nije uspjelo. Pokušajte ponovo kasnije.</translation>
 <translation id="6865175692670882333">Prikaz/uređivanje</translation>
+<translation id="5859141382851488196">Novi prozor…</translation>
 <translation id="2089514346391228378">Na ovom su računalu omogućene daljinske veze.</translation>
+<translation id="7693372326588366043">Osvježi popis hostova</translation>
 <translation id="8246880134154544773">Autentifikacija nije uspjela. Prijavite se ponovo na Chromoting.</translation>
 <translation id="1654128982815600832">Omogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="8187079423890319756">Autorska prava 2013. Autori Chromiuma. Sva prava pridržana.</translation>

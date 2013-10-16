@@ -5,6 +5,7 @@
 <translation id="5843503607508392247">Lainnya...</translation>
 <translation id="2426432199384958866">kembalikan streaming film ke waktu nyata</translation>
 <translation id="248395913932153421">Hari</translation>
+<translation id="1729654308190250600">Jangan mengosongkan bidang alamat email.</translation>
 <translation id="6015796118275082299">Tahun</translation>
 <translation id="9186171386827445984">Memuat dokumen: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> halaman...</translation>
 <translation id="1235745349614807883">Hapus Penelusuran Barusan</translation>
@@ -14,6 +15,8 @@
 <translation id="5048533449481078685">penanda daftar</translation>
 <translation id="4202807286478387388">lompati</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/> - <ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="5307600278924710095">Masukkan bagian yang diikuti dengan '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' tidak lengkap.</translation>
+<translation id="2746543609216772311">Tanggal harus <ph name="MINIMUM_DATE_OR_TIME"/> atau setelahnya.</translation>
 <translation id="2572483411312390101">mainkan</translation>
 <translation id="8785498733064193001">mulai pemutaran</translation>
 <translation id="7057186640035488495">waktu film</translation>
@@ -22,6 +25,7 @@
 <translation id="1320012872283894746">mencari mundur dengan cepat</translation>
 <translation id="7789962463072032349">jeda</translation>
 <translation id="6853785296079745596">sembunyikan teks tertutup</translation>
+<translation id="4360991593054037559">Masukkan nilai yang valid. Dua nilai valid terdekat adalah <ph name="VALID_VALUE_LOW"/> dan <ph name="VALID_VALUE_HIGHER"/>.</translation>
 <translation id="1758486001363313524">Lainnya...</translation>
 <translation id="8141602879876242471">Terdapat indeks yang dapat dicari. Masukkan kata kunci penelusuran:</translation>
 <translation id="1930711995431081526">status</translation>
@@ -35,6 +39,7 @@
 <translation id="9039488204461337220">mencari maju dengan cepat</translation>
 <translation id="4812940957355064477">Masukkan nomor.</translation>
 <translation id="2548326553472216322">Tidak ada penelusuran terkini</translation>
+<translation id="1938124657309484470">Tanggal harus <ph name="MAXIMUM_DATE_OR_TIME"/> atau lebih awal.</translation>
 <translation id="7263440858009898357">Pilih item pada daftar.</translation>
 <translation id="901493112792887934">waktu saat ini dalam detik</translation>
 <translation id="5164977714490026579">Nilai harus lebih besar daripada atau sama dengan <ph name="MINIMUM"/>.</translation>
@@ -51,6 +56,7 @@
 <translation id="8117451130807776954">Minggu ini</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="2901282870647571346">status film saat ini</translation>
+<translation id="2060505056492490888">'<ph name="DOT"/>' digunakan pada posisi yang salah di '<ph name="INVALIDDOMAIN"/>'.</translation>
 <translation id="2674318244760992338">footer</translation>
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="8115662671911883373">mulai menampilkan teks tertutup</translation>
@@ -63,11 +69,13 @@
 <translation id="838869780401515933">centangi</translation>
 <translation id="2846343701378493991">1024 (Tingkat Menengah)</translation>
 <translation id="1637811476055996098">Pilih File</translation>
+<translation id="49969490063480558">Masukkan bagian setelah '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' tidak lengkap.</translation>
 <translation id="5476505524087279545">batalkan centang</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2507943997699731163">Harap isi bidang ini.</translation>
 <translation id="3785482301506746191">scrubber waktu film</translation>
 <translation id="739024184232394898">Lainnya...</translation>
+<translation id="383465348367842624">Bagian sebelum '<ph name="ATSIGN"/>' tidak boleh berisi simbol '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="5468998798572797635">keluar dari tampilan layar penuh</translation>
 <translation id="5919473608089529604">Tidak dapat memuat plugin.</translation>
 <translation id="5546461542133609677">suarakan</translation>
@@ -87,9 +95,11 @@
 <translation id="2908441821576996758">Masukkan daftar alamat email yang dipisahkan dengan koma.</translation>
 <translation id="5939518447894949180">Atur ulang</translation>
 <translation id="1921819250265091946">hh</translation>
+<translation id="2613802280814924224">Masukkan nilai yang valid. Nilai valid terdekatnya adalah <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Nilai tidak valid.</translation>
 <translation id="1842960171412779397">pilih</translation>
 <translation id="7673697353781729403">Jam</translation>
+<translation id="4664250907885839816">Bagian setelah '<ph name="ATSIGN"/>' tidak boleh berisi simbol '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="3450233048674729344">Nilai harus lebih kecil atau sama dengan <ph name="MAXIMUM"/>.</translation>
 <translation id="3471999216963526757">mundur 30 detik</translation>
 <translation id="668171684555832681">Lainnya...</translation>
@@ -99,6 +109,7 @@
 <translation id="6119846243427417423">aktifkan</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> file</translation>
 <translation id="6643016212128521049">Hapus</translation>
+<translation id="7888071071722539607">Sertakan '<ph name="ATSIGN"/>' pada alamat email. '<ph name="INVALIDADDRESS"/>' tidak memiliki '<ph name="ATSIGN"/>'.</translation>
 <translation id="4851297395436456855">maju cepat</translation>
 <translation id="1088086359088493902">Detik</translation>
 <translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
