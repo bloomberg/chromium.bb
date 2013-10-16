@@ -218,9 +218,10 @@ int AccessibilityListBoxOption::listBoxOptionIndex() const
 
     const Vector<HTMLElement*>& listItems = selectElement->listItems();
     unsigned length = listItems.size();
-    for (unsigned i = 0; i < length; i++)
+    for (unsigned i = 0; i < length; i++) {
         if (listItems[i] == m_optionElement)
             return i;
+    }
 
     return -1;
 }

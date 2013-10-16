@@ -41,6 +41,7 @@
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/frame/Frame.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLLabelElement.h"
@@ -49,7 +50,6 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/loader/ProgressTracker.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderFileUploadControl.h"
@@ -140,8 +140,9 @@ static inline RenderObject* endOfContinuations(RenderObject* renderer)
         if (cur->isRenderInline()) {
             cur = toRenderInline(cur)->inlineElementContinuation();
             ASSERT(cur || !toRenderInline(prev)->continuation());
-        } else
+        } else {
             cur = toRenderBlock(cur)->inlineElementContinuation();
+        }
     }
 
     return prev;
@@ -977,9 +978,11 @@ AccessibilityObject* AccessibilityRenderObject::activeDescendant() const
         return 0;
 
     AccessibilityObject* obj = axObjectCache()->getOrCreate(target);
+
+    // An activedescendant is only useful if it has a renderer, because that's what's needed to post the notification.
     if (obj && obj->isAccessibilityRenderObject())
-    // an activedescendant is only useful if it has a renderer, because that's what's needed to post the notification
         return obj;
+
     return 0;
 }
 
@@ -1165,8 +1168,8 @@ String AccessibilityRenderObject::textUnderElement() const
         RenderText* renderTextObject = toRenderText(m_renderer);
         if (renderTextObject->isTextFragment())
             return String(toRenderTextFragment(m_renderer)->contentString());
-        else
-            return String(renderTextObject->text());
+
+        return String(renderTextObject->text());
     }
 
     return AccessibilityNodeObject::textUnderElement();
@@ -1413,40 +1416,35 @@ AccessibilityObject* AccessibilityRenderObject::nextSibling() const
 
     RenderObject* nextSibling = 0;
 
-    // Case 1: node is a block and has an inline continuation. Next sibling is the inline continuation's
-    // first child.
     RenderInline* inlineContinuation;
-    if (m_renderer->isRenderBlock() && (inlineContinuation = toRenderBlock(m_renderer)->inlineElementContinuation()))
+    if (m_renderer->isRenderBlock() && (inlineContinuation = toRenderBlock(m_renderer)->inlineElementContinuation())) {
+        // Case 1: node is a block and has an inline continuation. Next sibling is the inline continuation's first child.
         nextSibling = firstChildConsideringContinuation(inlineContinuation);
-
-    // Case 2: Anonymous block parent of the start of a continuation - skip all the way to
-    // after the parent of the end, since everything in between will be linked up via the continuation.
-    else if (m_renderer->isAnonymousBlock() && lastChildHasContinuation(m_renderer)) {
+    } else if (m_renderer->isAnonymousBlock() && lastChildHasContinuation(m_renderer)) {
+        // Case 2: Anonymous block parent of the start of a continuation - skip all the way to
+        // after the parent of the end, since everything in between will be linked up via the continuation.
         RenderObject* lastParent = endOfContinuations(m_renderer->lastChild())->parent();
         while (lastChildHasContinuation(lastParent))
             lastParent = endOfContinuations(lastParent->lastChild())->parent();
         nextSibling = lastParent->nextSibling();
-    }
-
-    // Case 3: node has an actual next sibling
-    else if (RenderObject* ns = m_renderer->nextSibling())
+    } else if (RenderObject* ns = m_renderer->nextSibling()) {
+        // Case 3: node has an actual next sibling
         nextSibling = ns;
-
-    // Case 4: node is an inline with a continuation. Next sibling is the next sibling of the end
-    // of the continuation chain.
-    else if (isInlineWithContinuation(m_renderer))
+    } else if (isInlineWithContinuation(m_renderer)) {
+        // Case 4: node is an inline with a continuation. Next sibling is the next sibling of the end
+        // of the continuation chain.
         nextSibling = endOfContinuations(m_renderer)->nextSibling();
-
-    // Case 5: node has no next sibling, and its parent is an inline with a continuation.
-    else if (isInlineWithContinuation(m_renderer->parent())) {
+    } else if (isInlineWithContinuation(m_renderer->parent())) {
+        // Case 5: node has no next sibling, and its parent is an inline with a continuation.
         RenderObject* continuation = toRenderInline(m_renderer->parent())->continuation();
 
-        // Case 5a: continuation is a block - in this case the block itself is the next sibling.
-        if (continuation->isRenderBlock())
+        if (continuation->isRenderBlock()) {
+            // Case 5a: continuation is a block - in this case the block itself is the next sibling.
             nextSibling = continuation;
-        // Case 5b: continuation is an inline - in this case the inline's first child is the next sibling
-        else
+        } else {
+            // Case 5b: continuation is an inline - in this case the inline's first child is the next sibling.
             nextSibling = firstChildConsideringContinuation(continuation);
+        }
     }
 
     if (!nextSibling)
@@ -1560,7 +1558,7 @@ Element* AccessibilityRenderObject::anchorElement() const
     AXObjectCache* cache = axObjectCache();
     RenderObject* currRenderer;
 
-    // Search up the render tree for a RenderObject with a DOM node.  Defer to an earlier continuation, though.
+    // Search up the render tree for a RenderObject with a DOM node. Defer to an earlier continuation, though.
     for (currRenderer = m_renderer; currRenderer && !currRenderer->node(); currRenderer = currRenderer->parent()) {
         if (currRenderer->isAnonymousBlock()) {
             RenderObject* continuation = toRenderBlock(currRenderer)->continuation();
@@ -1668,10 +1666,10 @@ void AccessibilityRenderObject::setValue(const String& string)
 
     // FIXME: Do we want to do anything here for ARIA textboxes?
     if (renderer->isTextField()) {
-        // FIXME: This is not safe!  Other elements could have a TextField renderer.
+        // FIXME: This is not safe! Other elements could have a TextField renderer.
         toHTMLInputElement(m_renderer->node())->setValue(string);
     } else if (renderer->isTextArea()) {
-        // FIXME: This is not safe!  Other elements could have a TextArea renderer.
+        // FIXME: This is not safe! Other elements could have a TextArea renderer.
         toHTMLTextAreaElement(m_renderer->node())->setValue(string);
     }
 }
@@ -2025,21 +2023,19 @@ RenderObject* AccessibilityRenderObject::renderParentObject() const
 
     RenderObject* parent = m_renderer->parent();
 
-    // Case 1: node is a block and is an inline's continuation. Parent
-    // is the start of the continuation chain.
     RenderObject* startOfConts = 0;
     RenderObject* firstChild = 0;
-    if (m_renderer->isRenderBlock() && (startOfConts = startOfContinuations(m_renderer)))
+    if (m_renderer->isRenderBlock() && (startOfConts = startOfContinuations(m_renderer))) {
+        // Case 1: node is a block and is an inline's continuation. Parent
+        // is the start of the continuation chain.
         parent = startOfConts;
-
-    // Case 2: node's parent is an inline which is some node's continuation; parent is
-    // the earliest node in the continuation chain.
-    else if (parent && parent->isRenderInline() && (startOfConts = startOfContinuations(parent)))
+    } else if (parent && parent->isRenderInline() && (startOfConts = startOfContinuations(parent))) {
+        // Case 2: node's parent is an inline which is some node's continuation; parent is
+        // the earliest node in the continuation chain.
         parent = startOfConts;
-
-    // Case 3: The first sibling is the beginning of a continuation chain. Find the origin of that continuation.
-    else if (parent && (firstChild = parent->firstChild()) && firstChild->node()) {
-        // Get the node's renderer and follow that continuation chain until the first child is found
+    } else if (parent && (firstChild = parent->firstChild()) && firstChild->node()) {
+        // Case 3: The first sibling is the beginning of a continuation chain. Find the origin of that continuation.
+        // Get the node's renderer and follow that continuation chain until the first child is found.
         RenderObject* nodeRenderFirstChild = firstChild->node()->renderer();
         while (nodeRenderFirstChild != firstChild) {
             for (RenderObject* contsTest = nodeRenderFirstChild; contsTest; contsTest = nextContinuation(contsTest)) {
@@ -2275,8 +2271,9 @@ void AccessibilityRenderObject::addRemoteSVGChildren()
         unsigned length = children.size();
         for (unsigned i = 0; i < length; ++i)
             m_children.append(children[i]);
-    } else
+    } else {
         m_children.append(root);
+    }
 }
 
 void AccessibilityRenderObject::ariaSelectedRows(AccessibilityChildrenVector& result)

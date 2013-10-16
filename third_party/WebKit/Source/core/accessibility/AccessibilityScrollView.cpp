@@ -28,9 +28,9 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityScrollbar.h"
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 
 namespace WebCore {
 
@@ -99,16 +99,16 @@ void AccessibilityScrollView::updateScrollbars()
     if (!m_scrollView)
         return;
 
-    if (m_scrollView->horizontalScrollbar() && !m_horizontalScrollbar)
+    if (m_scrollView->horizontalScrollbar() && !m_horizontalScrollbar) {
         m_horizontalScrollbar = addChildScrollbar(m_scrollView->horizontalScrollbar());
-    else if (!m_scrollView->horizontalScrollbar() && m_horizontalScrollbar) {
+    } else if (!m_scrollView->horizontalScrollbar() && m_horizontalScrollbar) {
         removeChildScrollbar(m_horizontalScrollbar.get());
         m_horizontalScrollbar = 0;
     }
 
-    if (m_scrollView->verticalScrollbar() && !m_verticalScrollbar)
+    if (m_scrollView->verticalScrollbar() && !m_verticalScrollbar) {
         m_verticalScrollbar = addChildScrollbar(m_scrollView->verticalScrollbar());
-    else if (!m_scrollView->verticalScrollbar() && m_verticalScrollbar) {
+    } else if (!m_scrollView->verticalScrollbar() && m_verticalScrollbar) {
         removeChildScrollbar(m_verticalScrollbar.get());
         m_verticalScrollbar = 0;
     }

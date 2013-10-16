@@ -57,6 +57,7 @@
 #include "core/accessibility/AccessibilityTableHeaderContainer.h"
 #include "core/accessibility/AccessibilityTableRow.h"
 #include "core/dom/Document.h"
+#include "core/frame/Frame.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -64,7 +65,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/ScrollView.h"
 #include "core/rendering/RenderListBox.h"
@@ -90,9 +90,9 @@ AccessibilityObjectInclusion AXComputedObjectAttributeCache::getIgnored(AXID id)
 void AXComputedObjectAttributeCache::setIgnored(AXID id, AccessibilityObjectInclusion inclusion)
 {
     HashMap<AXID, CachedAXObjectAttributes>::iterator it = m_idMapping.find(id);
-    if (it != m_idMapping.end())
+    if (it != m_idMapping.end()) {
         it->value.ignored = inclusion;
-    else {
+    } else {
         CachedAXObjectAttributes attributes;
         attributes.ignored = inclusion;
         m_idMapping.set(id, attributes);
@@ -257,7 +257,7 @@ static PassRefPtr<AccessibilityObject> createFromRenderer(RenderObject* renderer
     // If the node is aria role="list" or the aria role is empty and its a
     // ul/ol/dl type (it shouldn't be a list if aria says otherwise).
     if (node && ((nodeHasRole(node, "list") || nodeHasRole(node, "directory"))
-                      || (nodeHasRole(node, nullAtom) && (node->hasTagName(ulTag) || node->hasTagName(olTag) || node->hasTagName(dlTag)))))
+        || (nodeHasRole(node, nullAtom) && (node->hasTagName(ulTag) || node->hasTagName(olTag) || node->hasTagName(dlTag)))))
         return AccessibilityList::create(renderer);
 
     // aria tables
@@ -711,8 +711,9 @@ void AXObjectCache::postNotification(AccessibilityObject* object, Document* docu
         m_notificationsToPost.append(std::make_pair(object, notification));
         if (!m_notificationPostTimer.isActive())
             m_notificationPostTimer.startOneShot(0);
-    } else
+    } else {
         postPlatformNotification(object, notification);
+    }
 }
 
 void AXObjectCache::checkedStateChanged(Node* node)

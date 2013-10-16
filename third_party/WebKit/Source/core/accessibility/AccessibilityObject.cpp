@@ -686,10 +686,8 @@ void AccessibilityObject::scrollToMakeVisible() const
 // Note that the return value represents the ideal new scroll offset.
 // This may be out of range - the calling function should clip this
 // to the available range.
-static int computeBestScrollOffset(int currentScrollOffset,
-                                   int subfocusMin, int subfocusMax,
-                                   int objectMin, int objectMax,
-                                   int viewportMin, int viewportMax) {
+static int computeBestScrollOffset(int currentScrollOffset, int subfocusMin, int subfocusMax, int objectMin, int objectMax, int viewportMin, int viewportMax)
+{
     int viewportSize = viewportMax - viewportMin;
 
     // If the focus size is larger than the viewport size, shrink it in the
@@ -703,9 +701,9 @@ static int computeBestScrollOffset(int currentScrollOffset,
         if (subfocusMax - subfocusMin > viewportSize)
             subfocusMax = subfocusMin + viewportSize;
 
-        if (subfocusMin + viewportSize > objectMax)
+        if (subfocusMin + viewportSize > objectMax) {
             objectMin = objectMax - viewportSize;
-        else {
+        } else {
             objectMin = subfocusMin;
             objectMax = subfocusMin + viewportSize;
         }
@@ -736,8 +734,8 @@ void AccessibilityObject::scrollToMakeVisibleWithSubFocus(const IntRect& subfocu
     AccessibilityObject* scrollParent = parentObject();
     ScrollableArea* scrollableArea;
     for (scrollableArea = 0;
-         scrollParent && !(scrollableArea = scrollParent->getScrollableAreaIfScrollable());
-         scrollParent = scrollParent->parentObject()) { }
+        scrollParent && !(scrollableArea = scrollParent->getScrollableAreaIfScrollable());
+        scrollParent = scrollParent->parentObject()) { }
     if (!scrollableArea)
         return;
 
@@ -814,8 +812,7 @@ void AccessibilityObject::scrollToGlobalPoint(const IntPoint& globalPoint) const
             scrollPosition = scrollableArea->scrollPosition();
             offsetX -= (scrollPosition.x() + point.x());
             offsetY -= (scrollPosition.y() + point.y());
-            point.move(scrollPosition.x() - innerRect.x(),
-                       scrollPosition.y() - innerRect.y());
+            point.move(scrollPosition.x() - innerRect.x(), scrollPosition.y() - innerRect.y());
         } else if (inner->isAccessibilityScrollView()) {
             // Otherwise, if the inner object is a scroll view, reset the coordinate transformation.
             offsetX = 0;

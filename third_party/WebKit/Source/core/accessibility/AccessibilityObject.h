@@ -247,7 +247,7 @@ struct VisiblePositionRange {
     VisiblePosition start;
     VisiblePosition end;
 
-    VisiblePositionRange() {}
+    VisiblePositionRange() { }
 
     VisiblePositionRange(const VisiblePosition& s, const VisiblePosition& e)
         : start(s)

@@ -304,8 +304,8 @@ bool AccessibilityNodeObject::isGenericFocusableElement() const
     if (!canSetFocusAttribute())
         return false;
 
-     // If it's a control, it's not generic.
-     if (isControl())
+    // If it's a control, it's not generic.
+    if (isControl())
         return false;
 
     // If it has an aria role, it's not generic.
@@ -1400,8 +1400,9 @@ Element* AccessibilityNodeObject::actionElement() const
         HTMLInputElement* input = toHTMLInputElement(node);
         if (!input->isDisabledFormControl() && (isCheckboxOrRadio() || input->isTextButton()))
             return input;
-    } else if (node->hasTagName(buttonTag))
+    } else if (node->hasTagName(buttonTag)) {
         return toElement(node);
+    }
 
     if (isFileUploadButton())
         return toElement(node);

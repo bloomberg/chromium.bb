@@ -100,9 +100,9 @@ LayoutRect AccessibilitySpinButtonPart::elementRect() const
     // relationship that exists that can be queried.
 
     LayoutRect parentRect = parentObject()->elementRect();
-    if (m_isIncrementor)
+    if (m_isIncrementor) {
         parentRect.setHeight(parentRect.height() / 2);
-    else {
+    } else {
         parentRect.setY(parentRect.y() + parentRect.height() / 2);
         parentRect.setHeight(parentRect.height() / 2);
     }
