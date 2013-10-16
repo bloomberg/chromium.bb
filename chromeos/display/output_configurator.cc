@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "chromeos/display/output_util.h"
@@ -56,6 +57,29 @@ std::string OutputStateToString(OutputState state) {
   }
   NOTREACHED() << "Unknown state " << state;
   return "INVALID";
+}
+
+// Returns a string representation of OutputSnapshot.
+std::string OutputSnapshotToString(
+    const OutputConfigurator::OutputSnapshot* output) {
+  return base::StringPrintf(
+      "[type=%d, output=%ld, crtc=%ld, mode=%ld, dim=%dx%d]",
+      output->type,
+      output->output,
+      output->crtc,
+      output->current_mode,
+      static_cast<int>(output->width_mm),
+      static_cast<int>(output->height_mm));
+}
+
+// Returns a string representation of ModeInfo.
+std::string ModeInfoToString(const OutputConfigurator::ModeInfo* mode) {
+  return base::StringPrintf("[%dx%d %srate=%f]",
+                            mode->width,
+                            mode->height,
+                            mode->interlaced ? "interlaced " : "",
+                            mode->refresh_rate);
+
 }
 
 // Returns the number of outputs in |outputs| that should be turned on, per
@@ -401,7 +425,9 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
     return false;
 
   VLOG(1) << "SetDisplayPower: power_state="
-          << DisplayPowerStateToString(power_state) << " flags=" << flags;
+          << DisplayPowerStateToString(power_state) << " flags=" << flags
+          << ", configure timer="
+          << (configure_timer_->IsRunning() ? "Running" : "Stopped");
   if (power_state == power_state_ && !(flags & kSetDisplayPowerForceProbe))
     return true;
 
@@ -518,6 +544,7 @@ base::EventStatus OutputConfigurator::WillProcessEvent(
   // these events. So process them directly from here.
   if (configure_display_ && event->type == GenericEvent &&
       event->xgeneric.evtype == XI_HierarchyChanged) {
+    VLOG(1) << "Received XI_HierarchyChanged event";
     // Defer configuring outputs to not stall event processing.
     // This also takes care of same event being received twice.
     ScheduleConfigureOutputs();
@@ -783,6 +810,15 @@ bool OutputConfigurator::EnterState(
               GetModeInfo(*output, output->selected_mode);
           if (!mode_info)
             return false;
+          if (mode_info->width == 1024 && mode_info->height == 768) {
+            VLOG(1) << "Potentially misdetecting display(1024x768):"
+                    << " outputs size=" << updated_outputs.size()
+                    << ", num_on_outputs=" << num_on_outputs
+                    << ", current size:" << width << "x" << height
+                    << ", i=" << i
+                    << ", output=" << OutputSnapshotToString(output)
+                    << ", mode_info=" << ModeInfoToString(mode_info);
+          }
           width = mode_info->width;
           height = mode_info->height;
         }
