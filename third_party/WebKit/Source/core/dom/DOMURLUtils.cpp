@@ -153,12 +153,7 @@ void DOMURLUtils::setPathname(DOMURLUtils* impl, const String& value)
     KURL url = impl->url();
     if (!url.canSetPathname())
         return;
-
-    if (value[0] == '/')
-        url.setPath(value);
-    else
-        url.setPath("/" + value);
-
+    url.setPath(value);
     impl->setURL(url);
 }
 

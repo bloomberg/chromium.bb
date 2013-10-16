@@ -17,8 +17,17 @@ test(function() {
     url.pathname = 'a/b';
     assert_equals(url.pathname, '/a/b');
 
+    url.pathname = '/a/b';
+    assert_equals(url.pathname, '/a/b');
+
     url.pathname = 'a/b/';
     assert_equals(url.pathname, '/a/b/');
+
+    url.pathname = '';
+    assert_equals(url.pathname, '/');
+
+    url.pathname = '/';
+    assert_equals(url.pathname, '/');
 
     url = new URL('file:///home/abarth');
     assert_equals(url.pathname, '/home/abarth');
