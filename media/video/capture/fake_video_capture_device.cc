@@ -34,6 +34,17 @@ void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
   }
 }
 
+void FakeVideoCaptureDevice::GetDeviceSupportedFormats(
+    const Name& device,
+    VideoCaptureCapabilities* formats) {
+  VideoCaptureCapability capture_format;
+  capture_format.color = media::PIXEL_FORMAT_I420;
+  capture_format.width = 640;
+  capture_format.height = 480;
+  capture_format.frame_rate = 1000 / kFakeCaptureTimeoutMs;
+  formats->push_back(capture_format);
+}
+
 VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
   if (fail_next_create_) {
     fail_next_create_ = false;

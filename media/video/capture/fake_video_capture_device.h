@@ -25,6 +25,8 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   static void SetFailNextCreate();
 
   static void GetDeviceNames(Names* device_names);
+  static void GetDeviceSupportedFormats(const Name& device,
+                                        VideoCaptureCapabilities* formats);
 
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(

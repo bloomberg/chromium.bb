@@ -45,7 +45,7 @@ static const int32 kV4l2RawFmts[] = {
   V4L2_PIX_FMT_YUYV
 };
 
-// USB VID and PID are both 4 bytes long
+// USB VID and PID are both 4 bytes long.
 static const size_t kVidPidSize = 4;
 
 // /sys/class/video4linux/video{N}/device is a symlink to the corresponding
@@ -55,6 +55,8 @@ static const char kVidPathTemplate[] =
 static const char kPidPathTemplate[] =
     "/sys/class/video4linux/%s/device/../idProduct";
 
+// This function translates Video4Linux pixel formats to Chromium pixel formats,
+// should only support those listed in GetListOfUsableFourCCs.
 static VideoPixelFormat V4l2ColorToVideoCaptureColorFormat(
     int32 v4l2_fourcc) {
   VideoPixelFormat result = PIXEL_FORMAT_UNKNOWN;
@@ -69,8 +71,9 @@ static VideoPixelFormat V4l2ColorToVideoCaptureColorFormat(
     case V4L2_PIX_FMT_JPEG:
       result = PIXEL_FORMAT_MJPEG;
       break;
+    default:
+      DVLOG(1) << "Unsupported pixel format " << std::hex << v4l2_fourcc;
   }
-  DCHECK_NE(result, PIXEL_FORMAT_UNKNOWN);
   return result;
 }
 
@@ -139,6 +142,78 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
     }
     close(fd);
   }
+}
+
+void VideoCaptureDevice::GetDeviceSupportedFormats(
+    const Name& device,
+    VideoCaptureCapabilities* formats) {
+
+  if (device.id().empty())
+    return;
+  int fd;
+  VideoCaptureCapabilities capture_formats;
+  if ((fd = open(device.id().c_str(), O_RDONLY)) < 0) {
+    // Failed to open this device.
+    return;
+  }
+
+  formats->clear();
+
+  VideoCaptureCapability capture_format;
+  // Retrieve the caps one by one, first get colorspace, then sizes, then
+  // framerates. See http://linuxtv.org/downloads/v4l-dvb-apis for reference.
+  v4l2_fmtdesc pixel_format = {};
+  pixel_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  while (ioctl(fd, VIDIOC_ENUM_FMT, &pixel_format) == 0) {
+    capture_format.color =
+        V4l2ColorToVideoCaptureColorFormat((int32)pixel_format.pixelformat);
+    if (capture_format.color == PIXEL_FORMAT_UNKNOWN) continue;
+
+    v4l2_frmsizeenum frame_size = {};
+    frame_size.pixel_format = pixel_format.pixelformat;
+    while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0) {
+      if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
+        capture_format.width = frame_size.discrete.width;
+        capture_format.height = frame_size.discrete.height;
+      } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE) {
+        // TODO(mcasas): see http://crbug.com/249953, support these devices.
+        NOTIMPLEMENTED();
+      } else if (frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
+        // TODO(mcasas): see http://crbug.com/249953, support these devices.
+        NOTIMPLEMENTED();
+      }
+      v4l2_frmivalenum frame_interval = {};
+      frame_interval.pixel_format = pixel_format.pixelformat;
+      frame_interval.width = frame_size.discrete.width;
+      frame_interval.height = frame_size.discrete.height;
+      while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval) == 0) {
+        if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
+          if (frame_interval.discrete.numerator != 0) {
+            capture_format.frame_rate =
+                static_cast<float>(frame_interval.discrete.denominator) /
+                static_cast<float>(frame_interval.discrete.numerator);
+          } else {
+            capture_format.frame_rate = 0;
+          }
+        } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS) {
+          // TODO(mcasas): see http://crbug.com/249953, support these devices.
+          NOTIMPLEMENTED();
+          break;
+        } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_STEPWISE) {
+          // TODO(mcasas): see http://crbug.com/249953, support these devices.
+          NOTIMPLEMENTED();
+          break;
+        }
+        formats->push_back(capture_format);
+        ++frame_interval.index;
+      }
+      ++frame_size.index;
+    }
+    ++pixel_format.index;
+  }
+
+  close(fd);
+  return;
 }
 
 static bool ReadIdFile(const std::string path, std::string* id) {

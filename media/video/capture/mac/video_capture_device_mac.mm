@@ -71,6 +71,12 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   }
 }
 
+// static
+void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
+    VideoCaptureCapabilities* formats) {
+  NOTIMPLEMENTED();
+}
+
 const std::string VideoCaptureDevice::Name::GetModel() const {
   // Both PID and VID are 4 characters.
   if (unique_id_.size() < 2 * kVidPidSize) {

@@ -55,7 +55,7 @@ class MEDIA_EXPORT VideoCaptureFormat {
 class MEDIA_EXPORT VideoCaptureParams : public VideoCaptureFormat {
  public:
   VideoCaptureParams();
-
+  // TODO(mcasas): http://crbug.com/297597, investigate if session_id is in use.
   VideoCaptureSessionId session_id;
 };
 
@@ -72,10 +72,14 @@ class MEDIA_EXPORT VideoCaptureCapability : public VideoCaptureFormat {
                          VideoCaptureResolutionType frame_size_type);
 
   VideoPixelFormat color;      // Desired video type.
+  // TODO(mcasas): http://crbug.com/297597, investigate if the following three
+  // attributes are in use at all.
   int expected_capture_delay;  // Expected delay in millisecond.
   bool interlaced;             // Need interlace format.
   VideoCaptureSessionId session_id;
 };
+
+typedef std::vector<VideoCaptureCapability> VideoCaptureCapabilities;
 
 }  // namespace media
 

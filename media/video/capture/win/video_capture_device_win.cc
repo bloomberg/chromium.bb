@@ -165,6 +165,12 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
 }
 
 // static
+void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
+    VideoCaptureCapabilities* formats) {
+  NOTIMPLEMENTED();
+}
+
+// static
 VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
   VideoCaptureDevice* ret = NULL;
   if (device_name.capture_api_type() == Name::MEDIA_FOUNDATION) {

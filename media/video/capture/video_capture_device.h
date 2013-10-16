@@ -190,6 +190,13 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // Gets the names of all video capture devices connected to this computer.
   static void GetDeviceNames(Names* device_names);
 
+  // Gets the capabilities of a particular device attached to the system. This
+  // method should be called before allocating or starting a device. In case
+  // format enumeration is not supported, or there was a problem, the formats
+  // array will be empty.
+  static void GetDeviceSupportedFormats(const Name& device,
+                                        VideoCaptureCapabilities* formats);
+
   // Prepare the camera for use. After this function has been called no other
   // applications can use the camera. On completion Client::OnFrameInfo()
   // is called informing of the resulting resolution and frame rate.

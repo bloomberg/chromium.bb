@@ -409,6 +409,22 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   device->StopAndDeAllocate();
 }
 
+TEST_F(VideoCaptureDeviceTest, GetDeviceSupportedFormats) {
+  VideoCaptureDevice::GetDeviceNames(&names_);
+  if (!names_.size()) {
+    DVLOG(1) << "No camera available. Exiting test.";
+    return;
+  }
+  VideoCaptureCapabilities capture_formats;
+  VideoCaptureDevice::Names::iterator names_iterator;
+  for (names_iterator = names_.begin(); names_iterator != names_.end();
+       ++names_iterator) {
+    VideoCaptureDevice::GetDeviceSupportedFormats(*names_iterator,
+                                                  &capture_formats);
+    // Nothing to test here since we cannot forecast the hardware capabilities.
+  }
+}
+
 TEST_F(VideoCaptureDeviceTest, FakeCaptureVariableResolution) {
   VideoCaptureDevice::Names names;
 
@@ -445,6 +461,25 @@ TEST_F(VideoCaptureDeviceTest, FakeCaptureVariableResolution) {
     WaitForCapturedFrame();
   }
   device->StopAndDeAllocate();
+}
+
+TEST_F(VideoCaptureDeviceTest, FakeGetDeviceSupportedFormats) {
+  VideoCaptureDevice::Names names;
+  FakeVideoCaptureDevice::GetDeviceNames(&names);
+
+  VideoCaptureCapabilities capture_formats;
+  VideoCaptureDevice::Names::iterator names_iterator;
+
+  for (names_iterator = names.begin(); names_iterator != names.end();
+       ++names_iterator) {
+    FakeVideoCaptureDevice::GetDeviceSupportedFormats(*names_iterator,
+                                                      &capture_formats);
+    EXPECT_GE(capture_formats.size(), 1u);
+    EXPECT_EQ(capture_formats[0].width, 640);
+    EXPECT_EQ(capture_formats[0].height, 480);
+    EXPECT_EQ(capture_formats[0].color, media::PIXEL_FORMAT_I420);
+    EXPECT_GE(capture_formats[0].frame_rate, 20);
+  }
 }
 
 };  // namespace media

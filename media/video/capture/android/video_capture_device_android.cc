@@ -53,6 +53,12 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   }
 }
 
+// static
+void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
+    VideoCaptureCapabilities* formats) {
+  NOTIMPLEMENTED();
+}
+
 const std::string VideoCaptureDevice::Name::GetModel() const {
   // Android cameras are not typically USB devices, and this method is currently
   // only used for USB model identifiers, so this implementation just indicates
