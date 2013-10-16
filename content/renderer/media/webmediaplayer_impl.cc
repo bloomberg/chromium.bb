@@ -153,6 +153,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       supports_save_(true),
       starting_(false),
       chunk_demuxer_(NULL),
+      current_frame_painted_(false),
+      frames_dropped_before_paint_(0),
       pending_repaint_(false),
       pending_size_change_(false),
       video_frame_provider_client_(NULL),
@@ -515,6 +517,7 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
   scoped_refptr<media::VideoFrame> video_frame;
   {
     base::AutoLock auto_lock(lock_);
+    current_frame_painted_ = true;
     video_frame = current_frame_;
   }
   gfx::Rect gfx_rect(rect);
@@ -548,7 +551,12 @@ unsigned WebMediaPlayerImpl::droppedFrameCount() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
-  return stats.video_frames_dropped;
+
+  base::AutoLock auto_lock(lock_);
+  unsigned frames_dropped =
+      stats.video_frames_dropped + frames_dropped_before_paint_;
+  DCHECK_LE(frames_dropped, stats.video_frames_decoded);
+  return frames_dropped;
 }
 
 unsigned WebMediaPlayerImpl::audioDecodedByteCount() const {
@@ -576,6 +584,7 @@ void WebMediaPlayerImpl::SetVideoFrameProviderClient(
 
 scoped_refptr<media::VideoFrame> WebMediaPlayerImpl::GetCurrentFrame() {
   base::AutoLock auto_lock(lock_);
+  current_frame_painted_ = true;
   return current_frame_;
 }
 
@@ -1233,7 +1242,17 @@ void WebMediaPlayerImpl::FrameReady(
     pending_size_change_ = true;
   }
 
+  // If |current_frame_| is set, hasn't been painted, and we haven't even
+  // gotten the chance to request a repaint for it yet, then mark it as dropped.
+  if (current_frame_ && !current_frame_painted_ && pending_repaint_) {
+    DVLOG(1) << "Frame dropped before being painted: "
+             << current_frame_->GetTimestamp().InSecondsF();
+    if (frames_dropped_before_paint_ < kuint32max)
+      frames_dropped_before_paint_++;
+  }
+
   current_frame_ = frame;
+  current_frame_painted_ = false;
 
   if (pending_repaint_)
     return;
