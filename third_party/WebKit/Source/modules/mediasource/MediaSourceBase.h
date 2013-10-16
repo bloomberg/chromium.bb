@@ -46,6 +46,7 @@ class ExceptionState;
 class GenericEventQueue;
 
 class MediaSourceBase : public RefCounted<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(MediaSourceBase);
 public:
     static const AtomicString& openKeyword();
     static const AtomicString& closedKeyword();
@@ -80,14 +81,9 @@ public:
 
     // EventTarget interface
     virtual ExecutionContext* executionContext() const OVERRIDE;
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     // URLRegistrable interface
     virtual URLRegistry& registry() const OVERRIDE;
-
-    using RefCounted<MediaSourceBase>::ref;
-    using RefCounted<MediaSourceBase>::deref;
 
 protected:
     explicit MediaSourceBase(ExecutionContext*);

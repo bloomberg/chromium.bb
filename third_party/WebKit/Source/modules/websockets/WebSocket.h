@@ -51,6 +51,7 @@ class Blob;
 class ExceptionState;
 
 class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
+    REFCOUNTED_EVENT_TARGET(WebSocket);
 public:
     static const char* subProtocolSeperator();
     static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, ExceptionState&);
@@ -108,9 +109,6 @@ public:
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    using RefCounted<WebSocket>::ref;
-    using RefCounted<WebSocket>::deref;
-
     // WebSocketChannelClient functions.
     virtual void didConnect() OVERRIDE;
     virtual void didReceiveMessage(const String& message) OVERRIDE;
@@ -131,9 +129,6 @@ private:
     // Calls unsetPendingActivity(). Used for m_timerForDeferredDropProtection
     // to drop the reference for protection asynchronously.
     void dropProtection(Timer<WebSocket>*);
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     size_t getFramingOverhead(size_t payloadSize);
 

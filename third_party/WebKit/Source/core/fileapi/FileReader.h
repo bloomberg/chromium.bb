@@ -48,6 +48,7 @@ class ExceptionState;
 class ExecutionContext;
 
 class FileReader : public RefCounted<FileReader>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public FileReaderLoaderClient {
+    REFCOUNTED_EVENT_TARGET(FileReader);
 public:
     static PassRefPtr<FileReader> create(ExecutionContext*);
 
@@ -87,9 +88,6 @@ public:
     virtual void didFinishLoading();
     virtual void didFail(FileError::ErrorCode);
 
-    using RefCounted<FileReader>::ref;
-    using RefCounted<FileReader>::deref;
-
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(load);
@@ -99,10 +97,6 @@ public:
 
 private:
     FileReader(ExecutionContext*);
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void terminate();
     void readInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);

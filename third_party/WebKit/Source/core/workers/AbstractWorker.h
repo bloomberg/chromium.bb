@@ -48,14 +48,12 @@ class KURL;
 class ExecutionContext;
 
 class AbstractWorker : public RefCounted<AbstractWorker>, public EventTargetWithInlineData, public ActiveDOMObject {
+    REFCOUNTED_EVENT_TARGET(AbstractWorker);
 public:
     // EventTarget APIs
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-
-    using RefCounted<AbstractWorker>::ref;
-    using RefCounted<AbstractWorker>::deref;
 
     virtual void contextDestroyed() OVERRIDE;
     AbstractWorker(ExecutionContext*);
@@ -65,10 +63,6 @@ protected:
     // Helper function that converts a URL to an absolute URL and checks the result for validity.
     KURL resolveURL(const String& url, ExceptionState&);
     intptr_t asID() const { return reinterpret_cast<intptr_t>(this); }
-
-private:
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 };
 
 } // namespace WebCore

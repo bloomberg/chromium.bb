@@ -53,6 +53,7 @@ class MediaKeys;
 class MediaKeySession
     : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTargetWithInlineData, public ContextLifecycleObserver
     , private ContentDecryptionModuleSessionClient {
+    REFCOUNTED_EVENT_TARGET(MediaKeySession);
 public:
     static PassRefPtr<MediaKeySession> create(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
     ~MediaKeySession();
@@ -66,9 +67,6 @@ public:
     void generateKeyRequest(const String& mimeType, Uint8Array* initData);
     void update(Uint8Array* key, ExceptionState&);
     void close();
-
-    using RefCounted<MediaKeySession>::ref;
-    using RefCounted<MediaKeySession>::deref;
 
     void enqueueEvent(PassRefPtr<Event>);
 
@@ -106,10 +104,6 @@ private:
 
     Deque<RefPtr<Uint8Array> > m_pendingKeys;
     Timer<MediaKeySession> m_addKeyTimer;
-
-private:
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 };
 
 }

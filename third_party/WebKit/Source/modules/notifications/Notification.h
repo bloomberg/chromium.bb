@@ -61,6 +61,7 @@ class ThreadableLoader;
 
 class Notification : public RefCounted<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
     WTF_MAKE_FAST_ALLOCATED;
+    REFCOUNTED_EVENT_TARGET(Notification);
 public:
     Notification();
 #if ENABLE(LEGACY_NOTIFICATIONS)
@@ -111,9 +112,6 @@ public:
     void dispatchErrorEvent();
     void dispatchShowEvent();
 
-    using RefCounted<Notification>::ref;
-    using RefCounted<Notification>::deref;
-
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
@@ -140,10 +138,6 @@ private:
     Notification(ExecutionContext*, const String& title);
 
     void setBody(const String& body) { m_body = body; }
-
-    // EventTarget interface
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void startLoadingIcon();
     void finishLoadingIcon();

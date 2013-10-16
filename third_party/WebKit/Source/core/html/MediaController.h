@@ -44,6 +44,7 @@ class HTMLMediaElement;
 class ExecutionContext;
 
 class MediaController : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(MediaController);
 public:
     static PassRefPtr<MediaController> create(ExecutionContext*);
     virtual ~MediaController();
@@ -105,10 +106,6 @@ public:
 
     void clearExecutionContext() { m_executionContext = 0; }
 
-    // EventTarget
-    using RefCounted<MediaController>::ref;
-    using RefCounted<MediaController>::deref;
-
 private:
     MediaController(ExecutionContext*);
     void reportControllerState();
@@ -125,8 +122,6 @@ private:
     void startTimeupdateTimer();
 
     // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE { return m_executionContext; }
 

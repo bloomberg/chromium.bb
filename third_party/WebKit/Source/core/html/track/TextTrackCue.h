@@ -70,6 +70,7 @@ protected:
 // ----------------------------
 
 class TextTrackCue : public RefCounted<TextTrackCue>, public ScriptWrappable, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(TextTrackCue);
 public:
     static PassRefPtr<TextTrackCue> create(ExecutionContext* context, double start, double end, const String& content)
     {
@@ -194,9 +195,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
-    using RefCounted<TextTrackCue>::ref;
-    using RefCounted<TextTrackCue>::deref;
-
 protected:
     TextTrackCue(ExecutionContext*, double start, double end, const String& content);
 
@@ -217,9 +215,6 @@ private:
 
     void cueWillChange();
     void cueDidChange();
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     enum CueSetting {
         None,

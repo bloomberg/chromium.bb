@@ -45,6 +45,7 @@ class SpeechRecognitionResult;
 class SpeechRecognitionResultList;
 
 class SpeechRecognition : public RefCounted<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(SpeechRecognition);
 public:
     static PassRefPtr<SpeechRecognition> create(ExecutionContext*);
     ~SpeechRecognition();
@@ -86,9 +87,6 @@ public:
     // ActiveDOMObject.
     virtual void stop() OVERRIDE;
 
-    using RefCounted<SpeechRecognition>::ref;
-    using RefCounted<SpeechRecognition>::deref;
-
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(speechstart);
@@ -105,11 +103,6 @@ private:
     friend class RefCounted<SpeechRecognition>;
 
     explicit SpeechRecognition(ExecutionContext*);
-
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     RefPtr<SpeechGrammarList> m_grammars;
     String m_lang;

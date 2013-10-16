@@ -130,10 +130,12 @@ namespace WebCore {
     protected:
         virtual ~EventTarget();
 
+        // Subclasses should likely not override these themselves; instead, they should subclass EventTargetWithInlineData.
         virtual EventTargetData* eventTargetData() = 0;
         virtual EventTargetData& ensureEventTargetData() = 0;
 
     private:
+        // Subclasses should likely not override these themselves; instead, they should use the REFCOUNTED_EVENT_TARGET() macro.
         virtual void refEventTarget() = 0;
         virtual void derefEventTarget() = 0;
 
@@ -217,5 +219,19 @@ namespace WebCore {
     }
 
 } // namespace WebCore
+
+#define DEFINE_EVENT_TARGET_REFCOUNTING(baseClass) \
+public: \
+    using baseClass::ref; \
+    using baseClass::deref; \
+private: \
+    virtual void refEventTarget() OVERRIDE FINAL { ref(); } \
+    virtual void derefEventTarget() OVERRIDE FINAL { deref(); } \
+    typedef int thisIsHereToForceASemiColonAfterThisEventTargetMacro
+
+// Use this macro if your EventTarget subclass is also a subclass of WTF::RefCounted.
+// A ref-counted class that uses a different method of refcounting should use DEFINE_EVENT_TARGET_REFCOUNTING directly.
+// Both of these macros are meant to be placed just before the "public:" section of the class declaration.
+#define REFCOUNTED_EVENT_TARGET(className) DEFINE_EVENT_TARGET_REFCOUNTING(RefCounted<className>)
 
 #endif // EventTarget_h

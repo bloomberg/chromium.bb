@@ -54,6 +54,7 @@ class ResourceTimingInfo;
 class UserTiming;
 
 class Performance : public ScriptWrappable, public RefCounted<Performance>, public DOMWindowProperty, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(Performance);
 public:
     static PassRefPtr<Performance> create(Frame* frame) { return adoptRef(new Performance(frame)); }
     ~Performance();
@@ -77,9 +78,6 @@ public:
 
     void addResourceTiming(const ResourceTimingInfo&, Document*);
 
-    using RefCounted<Performance>::ref;
-    using RefCounted<Performance>::deref;
-
     void mark(const String& markName, ExceptionState&);
     void clearMarks(const String& markName);
 
@@ -88,9 +86,6 @@ public:
 
 private:
     explicit Performance(Frame*);
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     bool isResourceTimingBufferFull();
     void addResourceTimingBuffer(PassRefPtr<PerformanceEntry>);

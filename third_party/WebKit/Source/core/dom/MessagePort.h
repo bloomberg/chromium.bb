@@ -50,6 +50,7 @@ class ExecutionContext;
 typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 
 class MessagePort : public RefCounted<MessagePort>, public ScriptWrappable, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(MessagePort);
 public:
     static PassRefPtr<MessagePort> create(ExecutionContext& executionContext) { return adoptRef(new MessagePort(executionContext)); }
     virtual ~MessagePort();
@@ -79,9 +80,6 @@ public:
 
     void dispatchMessages();
 
-    using RefCounted<MessagePort>::ref;
-    using RefCounted<MessagePort>::deref;
-
     bool hasPendingActivity();
 
     void setOnmessage(PassRefPtr<EventListener> listener, DOMWrapperWorld* world)
@@ -99,9 +97,6 @@ public:
 
 private:
     explicit MessagePort(ExecutionContext&);
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     RefPtr<MessagePortChannel> m_entangledChannel;
 

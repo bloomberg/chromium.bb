@@ -50,6 +50,7 @@ class IDBOpenDBRequest;
 struct IDBObjectStoreMetadata;
 
 class IDBTransaction : public ScriptWrappable, public RefCounted<IDBTransaction>, public EventTargetWithInlineData, public ActiveDOMObject {
+    REFCOUNTED_EVENT_TARGET(IDBTransaction);
 public:
     static PassRefPtr<IDBTransaction> create(ExecutionContext*, int64_t, const Vector<String>& objectStoreNames, IndexedDB::TransactionMode, IDBDatabase*);
     static PassRefPtr<IDBTransaction> create(ExecutionContext*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
@@ -104,17 +105,10 @@ public:
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    using RefCounted<IDBTransaction>::ref;
-    using RefCounted<IDBTransaction>::deref;
-
 private:
     IDBTransaction(ExecutionContext*, int64_t, const Vector<String>&, IndexedDB::TransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);
 
     void enqueueEvent(PassRefPtr<Event>);
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     enum State {
         Inactive, // Created or started, but not in an event callback

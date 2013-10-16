@@ -82,6 +82,7 @@ namespace WebCore {
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
     class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext {
+        REFCOUNTED_EVENT_TARGET(DOMWindow);
     public:
         static PassRefPtr<DOMWindow> create(Frame* frame) { return adoptRef(new DOMWindow(frame)); }
         virtual ~DOMWindow();
@@ -341,9 +342,6 @@ namespace WebCore {
 
         void finishedLoading();
 
-        using RefCounted<DOMWindow>::ref;
-        using RefCounted<DOMWindow>::deref;
-
         DEFINE_ATTRIBUTE_EVENT_LISTENER(devicemotion);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(deviceorientation);
 
@@ -395,9 +393,6 @@ namespace WebCore {
 
         virtual void frameDestroyed() OVERRIDE;
         virtual void willDetachPage() OVERRIDE;
-
-        virtual void refEventTarget() OVERRIDE { ref(); }
-        virtual void derefEventTarget() OVERRIDE { deref(); }
 
         void resetDOMWindowProperties();
         void willDestroyDocumentInFrame();

@@ -46,6 +46,7 @@ class RenderNamedFlowThread;
 class ExecutionContext;
 
 class NamedFlow : public RefCounted<NamedFlow>, public ScriptWrappable, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(NamedFlow);
 public:
     static PassRefPtr<NamedFlow> create(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName);
 
@@ -57,9 +58,6 @@ public:
     PassRefPtr<NodeList> getRegionsByContent(Node*);
     PassRefPtr<NodeList> getRegions();
     PassRefPtr<NodeList> getContent();
-
-    using RefCounted<NamedFlow>::ref;
-    using RefCounted<NamedFlow>::deref;
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
@@ -82,10 +80,6 @@ public:
 
 private:
     NamedFlow(PassRefPtr<NamedFlowCollection>, const AtomicString&);
-
-    // EventTarget implementation.
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     // The name of the flow thread as specified in CSS.
     AtomicString m_flowThreadName;

@@ -48,6 +48,7 @@ class ExceptionState;
 class ExecutionContext;
 
 class IDBDatabase : public RefCounted<IDBDatabase>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
+    REFCOUNTED_EVENT_TARGET(IDBDatabase);
 public:
     static PassRefPtr<IDBDatabase> create(ExecutionContext*, PassRefPtr<IDBDatabaseBackendInterface>, PassRefPtr<IDBDatabaseCallbacks>);
     ~IDBDatabase();
@@ -121,15 +122,8 @@ public:
     static const char transactionFinishedErrorMessage[];
     static const char transactionInactiveErrorMessage[];
 
-    using RefCounted<IDBDatabase>::ref;
-    using RefCounted<IDBDatabase>::deref;
-
 private:
     IDBDatabase(ExecutionContext*, PassRefPtr<IDBDatabaseBackendInterface>, PassRefPtr<IDBDatabaseCallbacks>);
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void closeConnection();
 

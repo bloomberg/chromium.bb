@@ -43,6 +43,7 @@ class RTCDataChannelHandler;
 class RTCPeerConnectionHandler;
 
 class RTCDataChannel : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDataChannelHandlerClient {
+    REFCOUNTED_EVENT_TARGET(RTCDataChannel);
 public:
     static PassRefPtr<RTCDataChannel> create(ExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
     static PassRefPtr<RTCDataChannel> create(ExecutionContext*, RTCPeerConnectionHandler*, const String& label, const WebKit::WebRTCDataChannelInit&, ExceptionState&);
@@ -83,18 +84,12 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    using RefCounted<RTCDataChannel>::ref;
-    using RefCounted<RTCDataChannel>::deref;
-
 private:
     RTCDataChannel(ExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
 
     void scheduleDispatchEvent(PassRefPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
     ExecutionContext* m_executionContext;
 
     // RTCDataChannelHandlerClient

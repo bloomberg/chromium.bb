@@ -44,6 +44,7 @@ class MediaStreamComponent;
 class MediaStreamTrackSourcesCallback;
 
 class MediaStreamTrack : public RefCounted<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MediaStreamSource::Observer {
+    REFCOUNTED_EVENT_TARGET(MediaStreamTrack);
 public:
     static PassRefPtr<MediaStreamTrack> create(ExecutionContext*, MediaStreamComponent*);
     virtual ~MediaStreamTrack();
@@ -76,15 +77,8 @@ public:
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
 
-    using RefCounted<MediaStreamTrack>::ref;
-    using RefCounted<MediaStreamTrack>::deref;
-
 private:
     MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     // MediaStreamSourceObserver
     virtual void sourceChangedState() OVERRIDE;

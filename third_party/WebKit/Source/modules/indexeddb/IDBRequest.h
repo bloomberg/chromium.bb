@@ -49,6 +49,7 @@ class IDBTransaction;
 class SharedBuffer;
 
 class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTargetWithInlineData, public ActiveDOMObject {
+    DEFINE_EVENT_TARGET_REFCOUNTING(IDBCallbacks);
 public:
     static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
@@ -102,9 +103,6 @@ public:
 
     void transactionDidFinishAndDispatch();
 
-    using IDBCallbacks::ref;
-    using IDBCallbacks::deref;
-
     virtual void deref() OVERRIDE
     {
         if (derefBase())
@@ -133,10 +131,6 @@ protected:
     bool m_requestAborted; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
 private:
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
-
     void setResultCursor(PassRefPtr<IDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value);
     void checkForReferenceCycle();
 

@@ -57,6 +57,7 @@ class RTCStatsCallback;
 class VoidCallback;
 
 class RTCPeerConnection : public RefCounted<RTCPeerConnection>, public ScriptWrappable, public RTCPeerConnectionHandlerClient, public EventTargetWithInlineData, public ActiveDOMObject {
+    REFCOUNTED_EVENT_TARGET(RTCPeerConnection);
 public:
     static PassRefPtr<RTCPeerConnection> create(ExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
     ~RTCPeerConnection();
@@ -128,9 +129,6 @@ public:
     virtual void stop() OVERRIDE;
     virtual bool hasPendingActivity() const OVERRIDE { return !m_stopped; }
 
-    using RefCounted<RTCPeerConnection>::ref;
-    using RefCounted<RTCPeerConnection>::deref;
-
 private:
     RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>, ExceptionState&);
 
@@ -138,10 +136,6 @@ private:
     void scheduleDispatchEvent(PassRefPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCPeerConnection>*);
     bool hasLocalStreamWithTrackId(const String& trackId);
-
-    // EventTarget implementation.
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void changeSignalingState(SignalingState);
     void changeIceGatheringState(IceGatheringState);

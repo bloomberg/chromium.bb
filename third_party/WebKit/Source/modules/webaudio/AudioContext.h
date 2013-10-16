@@ -75,6 +75,7 @@ class WaveShaperNode;
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
 class AudioContext : public ActiveDOMObject, public ScriptWrappable, public ThreadSafeRefCounted<AudioContext>, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(ThreadSafeRefCounted<AudioContext>);
 public:
     // Create an AudioContext for rendering to the audio hardware.
     static PassRefPtr<AudioContext> create(Document&, ExceptionState&);
@@ -238,10 +239,6 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
 
-    // Reconcile ref/deref which are defined both in ThreadSafeRefCounted and EventTarget.
-    using ThreadSafeRefCounted<AudioContext>::ref;
-    using ThreadSafeRefCounted<AudioContext>::deref;
-
     void startRendering();
     void fireCompletionEvent();
 
@@ -329,10 +326,6 @@ private:
 
     // HRTF Database loader
     RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     RefPtr<AudioBuffer> m_renderTarget;
 

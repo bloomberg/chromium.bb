@@ -56,6 +56,7 @@ class LoadFontPromiseResolver;
 class ExecutionContext;
 
 class FontFaceSet : public RefCounted<FontFaceSet>, public ActiveDOMObject, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(FontFaceSet);
 public:
     static PassRefPtr<FontFaceSet> create(Document* document)
     {
@@ -76,9 +77,6 @@ public:
 
     virtual ExecutionContext* executionContext() const OVERRIDE;
     virtual const AtomicString& interfaceName() const OVERRIDE;
-
-    using RefCounted<FontFaceSet>::ref;
-    using RefCounted<FontFaceSet>::deref;
 
     Document* document() const;
 
@@ -101,9 +99,6 @@ private:
     };
 
     FontFaceSet(Document*);
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void scheduleEvent(PassRefPtr<Event>);
     void queueDoneEvent(FontFace*);

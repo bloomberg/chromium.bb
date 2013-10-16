@@ -39,6 +39,7 @@ class SVGUseElement;
 
 // SVGElementInstance mimics Node, but without providing all its functionality
 class SVGElementInstance : public EventTarget, public ScriptWrappable, public TreeShared<SVGElementInstance> {
+    DEFINE_EVENT_TARGET_REFCOUNTING(TreeShared<SVGElementInstance>);
 public:
     static PassRefPtr<SVGElementInstance> create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtr<SVGElement> originalElement);
 
@@ -94,9 +95,6 @@ public:
     };
 
     static void invalidateAllInstancesOfElement(SVGElement*);
-
-    using TreeShared<SVGElementInstance>::ref;
-    using TreeShared<SVGElementInstance>::deref;
 
     // EventTarget API
     DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(correspondingElement(), abort);
@@ -174,8 +172,6 @@ private:
     void setNextSibling(SVGElementInstance* sibling) { m_nextSibling = sibling; }
     void setPreviousSibling(SVGElementInstance* sibling) { m_previousSibling = sibling; }
 
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
     virtual EventTargetData* eventTargetData() OVERRIDE;
     virtual EventTargetData& ensureEventTargetData() OVERRIDE;
 

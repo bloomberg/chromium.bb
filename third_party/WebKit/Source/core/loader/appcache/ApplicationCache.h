@@ -42,6 +42,7 @@ class Frame;
 class KURL;
 
 class ApplicationCache : public ScriptWrappable, public RefCounted<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
+    REFCOUNTED_EVENT_TARGET(ApplicationCache);
 public:
     static PassRefPtr<ApplicationCache> create(Frame* frame) { return adoptRef(new ApplicationCache(frame)); }
     ~ApplicationCache() { ASSERT(!m_frame); }
@@ -52,11 +53,6 @@ public:
     void update(ExceptionState&);
     void swapCache(ExceptionState&);
     void abort();
-
-    // EventTarget impl
-
-    using RefCounted<ApplicationCache>::ref;
-    using RefCounted<ApplicationCache>::deref;
 
     // Explicitly named attribute event listener helpers
 
@@ -76,9 +72,6 @@ public:
 
 private:
     explicit ApplicationCache(Frame*);
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     ApplicationCacheHost* applicationCacheHost() const;
 };

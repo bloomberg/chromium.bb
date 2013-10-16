@@ -34,6 +34,7 @@ namespace WebCore {
 class ExecutionContext;
 
 class TrackBase : public RefCounted<TrackBase>, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(TrackBase);
 public:
     virtual ~TrackBase();
 
@@ -43,17 +44,11 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    using RefCounted<TrackBase>::ref;
-    using RefCounted<TrackBase>::deref;
-
 protected:
     TrackBase(ExecutionContext*, Type);
 
 private:
     Type m_type;
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     ExecutionContext* m_executionContext;
 };

@@ -54,6 +54,7 @@ typedef int ExceptionCode;
 
 class XMLHttpRequest : public ScriptWrappable, public RefCounted<XMLHttpRequest>, public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
+    REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
 public:
     static PassRefPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = 0);
     ~XMLHttpRequest();
@@ -141,14 +142,8 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
 
-    using RefCounted<XMLHttpRequest>::ref;
-    using RefCounted<XMLHttpRequest>::deref;
-
 private:
     XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     Document* document() const;
     SecurityOrigin* securityOrigin() const;

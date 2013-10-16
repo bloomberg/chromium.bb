@@ -41,6 +41,7 @@
 namespace WebCore {
 
 class MIDIPort : public RefCounted<MIDIPort>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(MIDIPort);
 public:
     enum MIDIPortTypeCode {
         MIDIPortTypeInput,
@@ -56,9 +57,6 @@ public:
     String type() const;
     String version() const { return m_version; }
 
-    using RefCounted<MIDIPort>::ref;
-    using RefCounted<MIDIPort>::deref;
-
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
     // EventTarget
@@ -69,10 +67,6 @@ protected:
     MIDIPort(ExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);
 
 private:
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
-
     String m_id;
     String m_manufacturer;
     String m_name;

@@ -119,6 +119,7 @@ class Node : public EventTarget, public ScriptWrappable, public TreeShared<Node>
     friend class TreeScope;
     friend class TreeScopeAdopter;
 
+    DEFINE_EVENT_TARGET_REFCOUNTING(TreeShared<Node>);
 public:
     enum NodeType {
         ELEMENT_NODE = 1,
@@ -673,9 +674,6 @@ public:
     virtual void defaultEventHandler(Event*);
     virtual void willCallDefaultEventHandler(const Event&);
 
-    using TreeShared<Node>::ref;
-    using TreeShared<Node>::deref;
-
     virtual EventTargetData* eventTargetData() OVERRIDE;
     virtual EventTargetData& ensureEventTargetData() OVERRIDE;
 
@@ -832,9 +830,6 @@ private:
 
     // Used to share code between lazyAttach and setNeedsStyleRecalc.
     void markAncestorsWithChildNeedsStyleRecalc();
-
-    virtual void refEventTarget() OVERRIDE;
-    virtual void derefEventTarget() OVERRIDE;
 
     virtual RenderStyle* nonRendererStyle() const { return 0; }
 

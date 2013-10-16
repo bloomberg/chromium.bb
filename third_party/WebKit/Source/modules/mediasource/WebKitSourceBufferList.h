@@ -42,6 +42,7 @@ class WebKitSourceBuffer;
 class GenericEventQueue;
 
 class WebKitSourceBufferList : public RefCounted<WebKitSourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(WebKitSourceBufferList);
 public:
     static PassRefPtr<WebKitSourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
@@ -60,16 +61,10 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    using RefCounted<WebKitSourceBufferList>::ref;
-    using RefCounted<WebKitSourceBufferList>::deref;
-
 private:
     WebKitSourceBufferList(ExecutionContext*, GenericEventQueue*);
 
     void createAndFireEvent(const AtomicString&);
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     ExecutionContext* m_executionContext;
     GenericEventQueue* m_asyncEventQueue;

@@ -48,6 +48,7 @@ class ExceptionState;
 class ExecutionContext;
 
 class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebKit::WebFileWriterClient {
+    DEFINE_EVENT_TARGET_REFCOUNTING(FileWriterBase);
 public:
     static PassRefPtr<FileWriter> create(ExecutionContext*);
 
@@ -76,9 +77,6 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
 
-    using RefCounted<FileWriterBase>::ref;
-    using RefCounted<FileWriterBase>::deref;
-
     DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(write);
@@ -97,10 +95,6 @@ private:
     FileWriter(ExecutionContext*);
 
     virtual ~FileWriter();
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     void completeAbort();
 

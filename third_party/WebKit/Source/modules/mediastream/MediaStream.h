@@ -41,6 +41,7 @@ namespace WebCore {
 class ExceptionState;
 
 class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver {
+    REFCOUNTED_EVENT_TARGET(MediaStream);
 public:
     static PassRefPtr<MediaStream> create(ExecutionContext*);
     static PassRefPtr<MediaStream> create(ExecutionContext*, PassRefPtr<MediaStream>);
@@ -77,9 +78,6 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    using RefCounted<MediaStream>::ref;
-    using RefCounted<MediaStream>::deref;
-
     // URLRegistrable
     virtual URLRegistry& registry() const OVERRIDE;
 
@@ -90,10 +88,6 @@ protected:
     virtual void contextDestroyed();
 
 private:
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
-
     // MediaStreamDescriptorClient
     virtual void addRemoteTrack(MediaStreamComponent*) OVERRIDE;
     virtual void removeRemoteTrack(MediaStreamComponent*) OVERRIDE;

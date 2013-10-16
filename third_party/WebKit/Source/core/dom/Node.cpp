@@ -717,16 +717,6 @@ inline void Node::markAncestorsWithChildNeedsStyleRecalc()
         document().scheduleStyleRecalc();
 }
 
-void Node::refEventTarget()
-{
-    ref();
-}
-
-void Node::derefEventTarget()
-{
-    deref();
-}
-
 void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource source)
 {
     ASSERT(changeType != NoStyleChange);

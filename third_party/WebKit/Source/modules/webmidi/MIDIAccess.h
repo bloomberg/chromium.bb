@@ -48,15 +48,13 @@ class ExecutionContext;
 class MIDIAccessPromise;
 
 class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
+    REFCOUNTED_EVENT_TARGET(MIDIAccess);
 public:
     virtual ~MIDIAccess();
     static PassRefPtr<MIDIAccess> create(ExecutionContext*, MIDIAccessPromise*);
 
     MIDIInputVector inputs() const { return m_inputs; }
     MIDIOutputVector outputs() const { return m_outputs; }
-
-    using RefCounted<MIDIAccess>::ref;
-    using RefCounted<MIDIAccess>::deref;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
@@ -85,10 +83,6 @@ private:
 
     void startRequest();
     virtual void permissionDenied();
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     MIDIInputVector m_inputs;
     MIDIOutputVector m_outputs;

@@ -55,6 +55,7 @@ class Stream;
 class TimeRanges;
 
 class SourceBuffer : public RefCounted<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public ScriptWrappable, public FileReaderLoaderClient {
+    REFCOUNTED_EVENT_TARGET(SourceBuffer);
 public:
     static PassRefPtr<SourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, MediaSource*, GenericEventQueue*);
 
@@ -86,14 +87,6 @@ public:
     // EventTarget interface
     virtual ExecutionContext* executionContext() const OVERRIDE;
     virtual const AtomicString& interfaceName() const OVERRIDE;
-
-    using RefCounted<SourceBuffer>::ref;
-    using RefCounted<SourceBuffer>::deref;
-
-protected:
-    // EventTarget interface
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
 private:
     SourceBuffer(PassOwnPtr<SourceBufferPrivate>, MediaSource*, GenericEventQueue*);

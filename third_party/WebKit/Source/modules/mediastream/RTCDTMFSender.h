@@ -41,6 +41,7 @@ class RTCDTMFSenderHandler;
 class RTCPeerConnectionHandler;
 
 class RTCDTMFSender : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
+    REFCOUNTED_EVENT_TARGET(RTCDTMFSender);
 public:
     static PassRefPtr<RTCDTMFSender> create(ExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
     ~RTCDTMFSender();
@@ -64,18 +65,11 @@ public:
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
 
-    using RefCounted<RTCDTMFSender>::ref;
-    using RefCounted<RTCDTMFSender>::deref;
-
 private:
     RTCDTMFSender(ExecutionContext*, PassRefPtr<MediaStreamTrack>, PassOwnPtr<RTCDTMFSenderHandler>);
 
     void scheduleDispatchEvent(PassRefPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
-
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     // RTCDTMFSenderHandlerClient
     virtual void didPlayTone(const String&) OVERRIDE;
