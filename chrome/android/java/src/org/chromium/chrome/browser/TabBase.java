@@ -127,6 +127,15 @@ public abstract class TabBase implements NavigationClient {
                 pushNativePageStateToNavigationEntry();
             }
         }
+
+        @Override
+        public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+                String description, String failingUrl) {
+            for (TabObserver observer : mObservers) {
+                observer.onDidFailLoad(TabBase.this, isProvisionalLoad, isMainFrame, errorCode,
+                        description, failingUrl);
+            }
+        }
     }
 
     /**

@@ -10,12 +10,6 @@ package org.chromium.chrome.browser;
 public class EmptyTabObserver implements TabObserver {
 
     @Override
-    public void onLoadProgressChanged(TabBase tab, int progress) { }
-
-    @Override
-    public void onUpdateUrl(TabBase tab, String url) { }
-
-    @Override
     public void onDestroyed(TabBase tab) { }
 
     @Override
@@ -25,5 +19,15 @@ public class EmptyTabObserver implements TabObserver {
     public void onFaviconUpdated(TabBase tab) { }
 
     @Override
+    public void onLoadProgressChanged(TabBase tab, int progress) { }
+
+    @Override
+    public void onUpdateUrl(TabBase tab, String url) { }
+
+    @Override
     public void onToggleFullscreenMode(TabBase tab, boolean enable) { }
+
+    @Override
+    public void onDidFailLoad(TabBase tab, boolean isProvisionalLoad, boolean isMainFrame,
+            int errorCode, String description, String failingUrl) { }
 }
