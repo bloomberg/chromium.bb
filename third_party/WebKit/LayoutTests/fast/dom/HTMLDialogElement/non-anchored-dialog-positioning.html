@@ -54,6 +54,10 @@ dialog = document.getElementById('mydialog');
 debug('Dialog should be centered in the viewport.');
 showAndTestDialog(dialog, function() { checkCentered(dialog) });
 
+debug('<br>The computed top and bottom of a centered dialog should still have position auto');
+shouldBeEqualToString('window.getComputedStyle(dialog).top', 'auto');
+shouldBeEqualToString('window.getComputedStyle(dialog).bottom', 'auto');
+
 debug('<br>Dialog should be recentered if show() is called after close().');
 window.scroll(0, 500);
 dialog.show();
@@ -126,13 +130,23 @@ dialog.close();
 debug("<br>Dialog's position should survive after close() and show().");
 dialog.show();
 dialog.style.top = '0px';
+expectedTop = dialog.getBoundingClientRect().top;
 dialog.close();
 dialog.show();
-var expectedTop = '0px';
-shouldBe('dialog.style.top', 'expectedTop');
+shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
 dialog.style.top = 'auto';
 
+debug("<br>Dialog's position should survive after close() and manually reopen.");
+dialog.show();
+expectedTop = dialog.getBoundingClientRect().top;
+dialog.close();
+document.body.offsetHeight;
+dialog.open = true;
+shouldBe('dialog.getBoundingClientRect().top', 'expectedTop');
+dialog.close();
+
 debug("<br>Dialog is recentered if show() is called after removing 'open'");
+dialog.show();
 dialog.removeAttribute('open');
 window.scroll(0, 1000);
 dialog.show();

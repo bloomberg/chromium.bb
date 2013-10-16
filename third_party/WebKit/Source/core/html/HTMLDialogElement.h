@@ -43,21 +43,30 @@ public:
     void show();
     void showModal(ExceptionState&);
 
+    enum CenteringMode { Uninitialized, Centered, NotCentered };
+    CenteringMode centeringMode() const { return m_centeringMode; }
+    LayoutUnit centeredPosition() const
+    {
+        ASSERT(m_centeringMode == Centered);
+        return m_centeredPosition;
+    }
+    void setCentered(LayoutUnit centeredPosition);
+    void setNotCentered();
+
     String returnValue() const { return m_returnValue; }
     void setReturnValue(const String& returnValue) { m_returnValue = returnValue; }
 
 private:
     HTMLDialogElement(const QualifiedName&, Document&);
 
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const OVERRIDE;
 
-    void reposition();
+    void forceLayoutForCentering();
 
-    bool m_topIsValid;
-    LayoutUnit m_top;
+    CenteringMode m_centeringMode;
+    LayoutUnit m_centeredPosition;
     String m_returnValue;
 };
 

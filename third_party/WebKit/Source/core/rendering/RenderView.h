@@ -266,6 +266,9 @@ private:
     void checkLayoutState(const LayoutState&);
 #endif
 
+    void positionDialog(RenderBox*);
+    void positionDialogs();
+
     size_t getRetainedWidgets(Vector<RenderWidget*>&);
     void releaseWidgets(Vector<RenderWidget*>&);
 

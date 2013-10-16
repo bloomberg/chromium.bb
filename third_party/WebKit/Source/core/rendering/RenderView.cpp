@@ -23,6 +23,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/frame/Frame.h"
@@ -117,12 +118,57 @@ bool RenderView::isChildAllowed(RenderObject* child, RenderStyle*) const
     return child->isBox();
 }
 
+static bool dialogNeedsCentering(const RenderStyle* style)
+{
+    return style->position() == AbsolutePosition && style->hasAutoTopAndBottom();
+}
+
+void RenderView::positionDialog(RenderBox* box)
+{
+    HTMLDialogElement* dialog = toHTMLDialogElement(box->node());
+    if (dialog->centeringMode() == HTMLDialogElement::NotCentered)
+        return;
+    if (dialog->centeringMode() == HTMLDialogElement::Centered) {
+        if (dialogNeedsCentering(box->style()))
+            box->setY(dialog->centeredPosition());
+        return;
+    }
+
+    if (!dialogNeedsCentering(box->style())) {
+        dialog->setNotCentered();
+        return;
+    }
+    FrameView* frameView = document().view();
+    int scrollTop = frameView->scrollOffset().height();
+    int visibleHeight = frameView->visibleContentRect(ScrollableArea::IncludeScrollbars).height();
+    LayoutUnit top = scrollTop;
+    if (box->height() < visibleHeight)
+        top += (visibleHeight - box->height()) / 2;
+    box->setY(top);
+    dialog->setCentered(top);
+}
+
+void RenderView::positionDialogs()
+{
+    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
+    if (!positionedDescendants)
+        return;
+    TrackedRendererListHashSet::iterator end = positionedDescendants->end();
+    for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
+        RenderBox* box = *it;
+        if (box->node() && box->node()->hasTagName(HTMLNames::dialogTag))
+            positionDialog(box);
+    }
+}
+
 void RenderView::layoutContent(const LayoutState& state)
 {
     UNUSED_PARAM(state);
     ASSERT(needsLayout());
 
     RenderBlock::layout();
+
+    positionDialogs();
 
     if (m_frameView->partialLayout().isStopping())
         return;

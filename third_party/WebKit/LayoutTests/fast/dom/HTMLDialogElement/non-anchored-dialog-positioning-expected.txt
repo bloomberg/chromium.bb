@@ -7,6 +7,10 @@ Dialog should be centered in the viewport.
 PASS dialog.getBoundingClientRect().top is expectedTop
 PASS dialog.getBoundingClientRect().top is expectedTop
 
+The computed top and bottom of a centered dialog should still have position auto
+PASS window.getComputedStyle(dialog).top is "auto"
+PASS window.getComputedStyle(dialog).bottom is "auto"
+
 Dialog should be recentered if show() is called after close().
 PASS dialog.getBoundingClientRect().top is expectedTop
 
@@ -33,7 +37,10 @@ Dialog's position should survive after being re-added to document without anothe
 PASS dialog.getBoundingClientRect().top is expectedTop
 
 Dialog's position should survive after close() and show().
-PASS dialog.style.top is expectedTop
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Dialog's position should survive after close() and manually reopen.
+PASS dialog.getBoundingClientRect().top is expectedTop
 
 Dialog is recentered if show() is called after removing 'open'
 PASS dialog.getBoundingClientRect().top is expectedTop
