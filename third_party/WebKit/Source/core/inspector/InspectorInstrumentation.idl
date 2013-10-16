@@ -312,7 +312,7 @@ interface InspectorInstrumentation {
     [Timeline, Inspector, DOM, Page]
     void domContentLoadedEventFired([Keep] Frame*);
 
-    [DOM, Timeline, Page]
+    [Timeline, Page]
     void loadEventFired([Keep] Frame*);
 
     [Page]

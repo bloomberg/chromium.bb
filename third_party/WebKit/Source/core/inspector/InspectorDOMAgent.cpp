@@ -1698,7 +1698,7 @@ void InspectorDOMAgent::domContentLoadedEventFired(Frame* frame)
         m_frontend->documentUpdated();
 }
 
-void InspectorDOMAgent::loadEventFired(Frame* frame)
+void InspectorDOMAgent::invalidateFrameOwnerElement(Frame* frame)
 {
     Element* frameOwner = frame->document()->ownerElement();
     if (!frameOwner)
@@ -1722,8 +1722,10 @@ void InspectorDOMAgent::loadEventFired(Frame* frame)
 void InspectorDOMAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
 {
     Frame* mainFrame = frame->page()->mainFrame();
-    if (loader->frame() != mainFrame)
+    if (loader->frame() != mainFrame) {
+        invalidateFrameOwnerElement(loader->frame());
         return;
+    }
 
     setDocument(mainFrame->document());
 }
@@ -1891,7 +1893,7 @@ void InspectorDOMAgent::frameDocumentUpdated(Frame* frame)
         return;
 
     // Only update the main frame document, nested frame document updates are not required
-    // (will be handled by loadEventFired()).
+    // (will be handled by invalidateFrameOwnerElement()).
     setDocument(document);
 }
 

@@ -159,7 +159,6 @@ public:
     void releaseDanglingNodes();
 
     void domContentLoadedEventFired(Frame*);
-    void loadEventFired(Frame*);
     void didCommitLoad(Frame*, DocumentLoader*);
 
     void didInsertDOMNode(Node*);
@@ -228,6 +227,8 @@ private:
 
     int pushNodePathToFrontend(Node*);
     void pushChildNodesToFrontend(int nodeId, int depth = 1);
+
+    void invalidateFrameOwnerElement(Frame*);
 
     bool hasBreakpoint(Node*, int type);
     void updateSubtreeBreakpoints(Node* root, uint32_t rootMask, bool value);
