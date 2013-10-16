@@ -78,7 +78,7 @@ void ReadCustomDataForType(const void* data,
     if (!pickle.ReadString16(&iter, &deserialized_type))
       return;
     if (deserialized_type == type) {
-      pickle.ReadString16(&iter, result);
+      ignore_result(pickle.ReadString16(&iter, result));
       return;
     }
     if (!pickle.SkipString16(&iter))

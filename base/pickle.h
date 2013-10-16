@@ -138,57 +138,73 @@ class BASE_EXPORT Pickle {
   // For compatibility, these older style read methods pass through to the
   // PickleIterator methods.
   // TODO(jbates) Remove these methods.
-  bool ReadBool(PickleIterator* iter, bool* result) const {
+  bool ReadBool(PickleIterator* iter,
+                bool* result) const WARN_UNUSED_RESULT {
     return iter->ReadBool(result);
   }
-  bool ReadInt(PickleIterator* iter, int* result) const {
+  bool ReadInt(PickleIterator* iter,
+               int* result) const WARN_UNUSED_RESULT {
     return iter->ReadInt(result);
   }
-  bool ReadLong(PickleIterator* iter, long* result) const {
+  bool ReadLong(PickleIterator* iter,
+                long* result) const WARN_UNUSED_RESULT {
     return iter->ReadLong(result);
   }
-  bool ReadUInt16(PickleIterator* iter, uint16* result) const {
+  bool ReadUInt16(PickleIterator* iter,
+                  uint16* result) const WARN_UNUSED_RESULT {
     return iter->ReadUInt16(result);
   }
-  bool ReadUInt32(PickleIterator* iter, uint32* result) const {
+  bool ReadUInt32(PickleIterator* iter,
+                  uint32* result) const WARN_UNUSED_RESULT {
     return iter->ReadUInt32(result);
   }
-  bool ReadInt64(PickleIterator* iter, int64* result) const {
+  bool ReadInt64(PickleIterator* iter,
+                 int64* result) const WARN_UNUSED_RESULT {
     return iter->ReadInt64(result);
   }
-  bool ReadUInt64(PickleIterator* iter, uint64* result) const {
+  bool ReadUInt64(PickleIterator* iter,
+                  uint64* result) const WARN_UNUSED_RESULT {
     return iter->ReadUInt64(result);
   }
-  bool ReadFloat(PickleIterator* iter, float* result) const {
+  bool ReadFloat(PickleIterator* iter,
+                 float* result) const WARN_UNUSED_RESULT {
     return iter->ReadFloat(result);
   }
-  bool ReadString(PickleIterator* iter, std::string* result) const {
+  bool ReadString(PickleIterator* iter,
+                  std::string* result) const WARN_UNUSED_RESULT {
     return iter->ReadString(result);
   }
-  bool ReadWString(PickleIterator* iter, std::wstring* result) const {
+  bool ReadWString(PickleIterator* iter,
+                   std::wstring* result) const WARN_UNUSED_RESULT {
     return iter->ReadWString(result);
   }
-  bool ReadString16(PickleIterator* iter, string16* result) const {
+  bool ReadString16(PickleIterator* iter,
+                    string16* result) const WARN_UNUSED_RESULT {
     return iter->ReadString16(result);
   }
   // A pointer to the data will be placed in *data, and the length will be
   // placed in *length. This buffer will be into the message's buffer so will
   // be scoped to the lifetime of the message (or until the message data is
   // mutated).
-  bool ReadData(PickleIterator* iter, const char** data, int* length) const {
+  bool ReadData(PickleIterator* iter,
+                const char** data,
+                int* length) const WARN_UNUSED_RESULT {
     return iter->ReadData(data, length);
   }
   // A pointer to the data will be placed in *data. The caller specifies the
   // number of bytes to read, and ReadBytes will validate this length. The
   // returned buffer will be into the message's buffer so will be scoped to the
   // lifetime of the message (or until the message data is mutated).
-  bool ReadBytes(PickleIterator* iter, const char** data, int length) const {
+  bool ReadBytes(PickleIterator* iter,
+                 const char** data,
+                 int length) const WARN_UNUSED_RESULT {
     return iter->ReadBytes(data, length);
   }
 
   // Safer version of ReadInt() checks for the result not being negative.
   // Use it for reading the object sizes.
-  bool ReadLength(PickleIterator* iter, int* result) const {
+  bool ReadLength(PickleIterator* iter,
+                  int* result) const  WARN_UNUSED_RESULT {
     return iter->ReadLength(result);
   }
 

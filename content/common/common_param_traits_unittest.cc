@@ -109,7 +109,7 @@ TEST(IPCMessageTest, Bitmap) {
   const char* fixed_data;
   int fixed_data_size;
   iter = PickleIterator(msg);
-  msg.ReadData(&iter, &fixed_data, &fixed_data_size);
+  EXPECT_TRUE(msg.ReadData(&iter, &fixed_data, &fixed_data_size));
   bad_msg.WriteData(fixed_data, fixed_data_size);
   // Add some bogus pixel data.
   const size_t bogus_pixels_size = bitmap.getSize() * 2;
