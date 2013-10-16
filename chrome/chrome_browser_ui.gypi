@@ -161,8 +161,6 @@
         'browser/ui/app_list/search/app_search_provider.cc',
         'browser/ui/app_list/search/app_search_provider.h',
         'browser/ui/app_list/search/chrome_search_result.h',
-        'browser/ui/app_list/search/common/dictionary_data_store.cc',
-        'browser/ui/app_list/search/common/dictionary_data_store.h',
         'browser/ui/app_list/search/common/json_response_fetcher.cc',
         'browser/ui/app_list/search/common/json_response_fetcher.h',
         'browser/ui/app_list/search/common/url_icon_source.cc',

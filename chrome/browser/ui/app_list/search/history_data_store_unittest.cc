@@ -59,7 +59,7 @@ class HistoryDataStoreTest : public testing::Test {
   }
 
   void Flush() {
-    store_->Flush(DictionaryDataStore::OnFlushedCallback());
+    store_->Flush(HistoryDataStore::OnFlushedCallback());
   }
 
   void Load() {
