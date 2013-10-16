@@ -163,6 +163,7 @@ struct desktop_shell {
 
 	uint32_t binding_modifier;
 	enum animation_type win_animation_type;
+	enum animation_type startup_animation_type;
 };
 
 enum shell_surface_type {
@@ -414,9 +415,6 @@ get_modifier(char *modifier)
 static enum animation_type
 get_animation_type(char *animation)
 {
-	if (!animation)
-		return ANIMATION_NONE;
-
 	if (!strcmp("zoom", animation))
 		return ANIMATION_ZOOM;
 	else if (!strcmp("fade", animation))
@@ -447,6 +445,10 @@ shell_configuration(struct desktop_shell *shell)
 	free(s);
 	weston_config_section_get_string(section, "animation", &s, "none");
 	shell->win_animation_type = get_animation_type(s);
+	free(s);
+	weston_config_section_get_string(section,
+					 "startup-animation", &s, "fade");
+	shell->startup_animation_type = get_animation_type(s);
 	free(s);
 	weston_config_section_get_uint(section, "num-workspaces",
 				       &shell->workspaces.num,
@@ -3317,7 +3319,12 @@ do_shell_fade_startup(void *data)
 {
 	struct desktop_shell *shell = data;
 
-	shell_fade(shell, FADE_IN);
+	if (shell->startup_animation_type == ANIMATION_FADE)
+		shell_fade(shell, FADE_IN);
+	else if (shell->startup_animation_type == ANIMATION_NONE) {
+		weston_surface_destroy(shell->fade.surface);
+		shell->fade.surface = NULL;
+	}
 }
 
 static void
