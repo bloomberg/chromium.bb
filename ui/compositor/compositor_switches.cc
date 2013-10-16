@@ -30,6 +30,9 @@ bool IsUIDeadlineSchedulingEnabled() {
   // Default to disabled.
   bool enabled = false;
 
+  // Default to enabled for Aura.
+  enabled = true;
+
   // Flags override.
   enabled |= command_line.HasSwitch(switches::kUIEnableDeadlineScheduling);
   enabled &= !command_line.HasSwitch(switches::kUIDisableDeadlineScheduling);

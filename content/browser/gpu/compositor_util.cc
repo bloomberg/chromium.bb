@@ -136,8 +136,8 @@ bool IsDelegatedRendererEnabled() {
 bool IsDeadlineSchedulingEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  // Default to disabled.
-  bool enabled = false;
+  // Default to enabled.
+  bool enabled = true;
 
   // Flags override.
   enabled |= command_line.HasSwitch(switches::kEnableDeadlineScheduling);
