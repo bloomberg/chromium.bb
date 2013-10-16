@@ -36,8 +36,6 @@ namespace WebKit {
 enum WebContentSecurityPolicyType {
     WebContentSecurityPolicyTypeReport,
     WebContentSecurityPolicyTypeEnforce,
-    WebContentSecurityPolicyTypePrefixedReport,
-    WebContentSecurityPolicyTypePrefixedEnforce,
 };
 
 } // namespace WebKit

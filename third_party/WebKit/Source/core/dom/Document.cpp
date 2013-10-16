@@ -2840,10 +2840,11 @@ void Document::processHttpEquivContentSecurityPolicy(const String& equiv, const 
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce);
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Report);
+    // FIXME: Remove deprecation messages after the next release branch.
     else if (equalIgnoringCase(equiv, "x-webkit-csp"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::PrefixedEnforce);
+        UseCounter::countDeprecation(this, UseCounter::PrefixedContentSecurityPolicy);
     else if (equalIgnoringCase(equiv, "x-webkit-csp-report-only"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::PrefixedReport);
+        UseCounter::countDeprecation(this, UseCounter::PrefixedContentSecurityPolicyReportOnly);
     else
         ASSERT_NOT_REACHED();
 }

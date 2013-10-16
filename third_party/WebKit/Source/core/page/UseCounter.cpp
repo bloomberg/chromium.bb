@@ -619,7 +619,7 @@ String UseCounter::deprecationMessage(Feature feature)
     // Content Security Policy
     case PrefixedContentSecurityPolicy:
     case PrefixedContentSecurityPolicyReportOnly:
-        return "The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead.";
+        return "The 'X-WebKit-CSP' headers are no longer supported. Please consider using the canonical 'Content-Security-Policy' header instead.";
 
     // HTMLMediaElement
     case PrefixedMediaGenerateKeyRequest:

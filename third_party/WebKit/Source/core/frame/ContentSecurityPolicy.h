@@ -66,8 +66,6 @@ public:
     enum HeaderType {
         Report,
         Enforce,
-        PrefixedReport,
-        PrefixedEnforce
     };
 
     enum ReportingStatus {
