@@ -2597,6 +2597,13 @@ case "$toolchain" in
         ar_default="lib"
         target_os_default="win32"
     ;;
+    msvc2013)
+        cc_default="cl"
+        ld_default="link"
+        nm_default="dumpbin -symbols"
+        ar_default="lib"
+        target_os_default="win32"
+    ;;
     icl)
         cc_default="c99wrap -noconv icl"
         ld_default="c99wrap xilink"
@@ -2948,11 +2955,11 @@ probe_cc(){
         # Nonstandard output options, to avoid msys path conversion issues.
         # Relies on wrapper to remap it.
         if $_cc 2>&1 | grep -q Linker; then
-            _ld_o='-out $@'
+            _ld_o='-out:$@'
         else
             _ld_o='-Fe$@'
         fi
-        _cc_o='-Fo $@'
+        _cc_o='-Fo$@'
         _cc_e='-P -Fi $@'
         _flags_filter=msvc_flags
         _ld_lib='lib%.a'
@@ -4496,7 +4503,7 @@ elif enabled tms470; then
     add_cflags -pds=824 -pds=837
 elif enabled pathscale; then
     add_cflags -fstrict-overflow -OPT:wrap_around_unsafe_opt=OFF
-elif enabled_any msvc icl; then
+elif enabled_any msvc msvc2013 icl; then
     enabled x86_32 && disable aligned_stack
     enabled_all x86_32 debug && add_cflags -Oy-
     enabled debug && add_ldflags -debug

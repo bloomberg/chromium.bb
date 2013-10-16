@@ -46,10 +46,16 @@
         'asm_sources': [
         ],
       }],
-      ['OS == "mac" or OS == "win" or OS == "openbsd"', {
-        'os_config%': '<(OS)',
-      }, {  # all other Unix OS's use the linux config
-        'os_config%': 'linux',
+      ['MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"', {
+        'os_config%': 'win-vs2013',
+      }, {
+        'conditions': [
+          ['OS == "mac" or OS == "win" or OS == "openbsd"', {
+            'os_config%': '<(OS)',
+          }, {  # all other Unix OS's use the linux config
+            'os_config%': 'linux',
+          }],
+        ],
       }],
       ['chromeos == 1', {
         'ffmpeg_branding%': '<(branding)OS',
@@ -94,6 +100,7 @@
           'variables': {
             # Path to platform configuration files.
             'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+
             'conditions': [
               ['target_arch == "ia32"', {
                 'more_yasm_flags': [
@@ -128,10 +135,11 @@
         },
       ] # targets
     }], # arch != arm
-    ['OS == "win" and clang == 0', {
+    ['OS == "win" and clang == 0 and MSVS_VERSION != "2013" and MSVS_VERSION == "2013e"', {
       # Convert the source code from c99 to c89 if we're on Windows and not
       # using clang, which can compile c99 directly.  Clang support is
-      # experimental and unsupported.
+      # experimental and unsupported. VS2013 also supports enough of C99 to
+      # be able to avoid this conversion.
       'variables': {
         'converter_script': 'chromium/scripts/c99conv.py',
         'converter_executable': 'chromium/binaries/c99conv.exe',
@@ -211,7 +219,7 @@
             '-fomit-frame-pointer',
           ],
           'conditions': [
-            ['OS != "win" or clang == 1', {
+            ['OS != "win" or clang == 1 or MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"', {
               # If we're not doing C99 conversion, add the normal source code.
               'sources': ['<@(c_sources)'],
             }, {
@@ -222,6 +230,12 @@
             ['target_arch != "arm" and target_arch != "mipsel"', {
               'dependencies': [
                 'ffmpeg_yasm',
+              ],
+            }],
+            ['OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
+              'defines': [
+                # Per http://www.ffmpeg.org/platform.html.
+                'inline=__inline',
               ],
             }],
             ['clang == 1', {
@@ -427,10 +441,10 @@
               # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
               'msvs_disabled_warnings': [
                 4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
-                4116, 4307, 4273
+                4116, 4307, 4273, 4005, 4056, 4756,
               ],
               'conditions': [
-                ['clang == 1', {
+                ['clang == 1 or MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"', {
                   'defines': [
                     'inline=__inline',
                     'strtoll=_strtoi64',
