@@ -1423,7 +1423,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
             service->GetExtensionById(kAdBlockCrxId, true));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistWildcard) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_ExtensionInstallBlacklistWildcard) {
   // Verify that a wildcard blacklist takes effect.
   EXPECT_TRUE(InstallExtension(kAdBlockCrxName));
   ExtensionService* service = extension_service();
