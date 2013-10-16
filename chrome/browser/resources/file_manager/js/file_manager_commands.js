@@ -69,10 +69,11 @@ CommandUtil.getCommandEntry = function(element) {
     // DirectoryItem.fullPath is set on initialization, but entry is lazily.
     // We may use fullPath just in case that the entry has not been set yet.
     return element.entry;
-  } else if (cr.ui.List) {
+  } else if (element instanceof cr.ui.List) {
     // element is a normal List (eg. the file list on the right panel).
     var entry = element.selectedItem;
-    return entry;
+    // Check if it is Entry or not by referring the fullPath member variable.
+    return entry && entry.fullPath ? entry : null;
   } else {
     console.warn('Unsupported element');
     return null;
@@ -758,8 +759,8 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = {
    */
   canExecute: function(event, fileManager) {
     var target = event.target;
-    if (!target instanceof NavigationListItem &&
-        !target instanceof DirectoryItem) {
+    if (!(target instanceof NavigationListItem) &&
+        !(target instanceof DirectoryItem)) {
       event.command.setHidden(true);
       return;
     }
