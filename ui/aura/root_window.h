@@ -46,28 +46,11 @@ class ViewProp;
 }
 
 namespace aura {
-class MouseMovedTracker;
 class RootWindow;
 class RootWindowHost;
 class RootWindowObserver;
 class RootWindowTransformer;
 class TestScreen;
-
-// TODO(sky): nuke; used for debugging 275760.
-// Used for debugging.
-enum MouseMovedHandlerSetReason {
-  // |mouse_moved_handler_| set during capture.
-  MOUSE_MOVED_HANDLER_SET_REASON_CAPTURE = 1,
-
-  // |mouse_moved_handler_| set from a mouse event.
-  MOUSE_MOVED_HANDLER_SET_REASON_MOUSE_MOVED = 2,
-
-  // |mouse_moved_handler_| set from a synthesized mouse event.
-  MOUSE_MOVED_HANDLER_SET_REASON_MOUSE_MOVED_SYNTHESIZED = 3,
-
-  // |mouse_moved_handler_| set to NULL.
-  MOUSE_MOVED_HANDLER_SET_REASON_NULL = 4,
-};
 
 // RootWindow is responsible for hosting a set of windows.
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
@@ -318,10 +301,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                        // across root windows.
   };
 
-  // TODO(sky): nuke; used for debugging 275760.
-  void SetMouseMovedHandler(aura::Window* window,
-                            MouseMovedHandlerSetReason reason);
-
   // Updates the event with the appropriate transform for the device scale
   // factor. The RootWindowHostDelegate dispatches events in the physical pixel
   // coordinate. But the event processing from RootWindow onwards happen in
@@ -444,10 +423,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool draw_on_compositing_end_;
 
   bool defer_draw_scheduling_;
-
-  // TODO(sky): nuke; used for debugging 275760.
-  MouseMovedHandlerSetReason mouse_moved_handler_set_reason_;
-  scoped_ptr<MouseMovedTracker> mouse_moved_handler_tracker_;
 
   // How many move holds are outstanding. We try to defer dispatching
   // touch/mouse moves while the count is > 0.

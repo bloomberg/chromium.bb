@@ -47,9 +47,6 @@ class VIEWS_EXPORT CaptureController : public aura::client::CaptureClient {
   // Set of RootWindows notified when capture changes.
   RootWindows root_windows_;
 
-  // TODO(sky): nuke, for debugging.
-  bool updating_capture_;
-
   DISALLOW_COPY_AND_ASSIGN(CaptureController);
 };
 
