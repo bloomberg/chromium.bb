@@ -222,6 +222,8 @@
       'geometry/RoundedRect.h',
       'graphics/angle/ANGLEPlatformBridge.cpp',
       'graphics/angle/ANGLEPlatformBridge.h',
+      'graphics/DiscardablePixelRef.cpp',
+      'graphics/DiscardablePixelRef.h',
       'graphics/ImageOrientation.cpp',
       'graphics/ImageOrientation.h',
       'graphics/PathTraversalState.cpp',

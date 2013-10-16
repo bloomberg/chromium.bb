@@ -27,11 +27,11 @@
 
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 
-#include "core/platform/graphics/chromium/DiscardablePixelRef.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
+#include "platform/graphics/DiscardablePixelRef.h"
 #include "platform/graphics/ScaledImageFragment.h"
 
 #include "skia/ext/image_operations.h"

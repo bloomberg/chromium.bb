@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/chromium/DiscardablePixelRef.h"
+#include "platform/graphics/DiscardablePixelRef.h"
 
 #include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"
