@@ -60,26 +60,6 @@ using content::WorkerServiceObserver;
 
 namespace {
 
-// Used to block until a dev tools client window's browser is closed.
-class BrowserClosedObserver : public content::NotificationObserver {
- public:
-  explicit BrowserClosedObserver(Browser* browser) {
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                   content::Source<Browser>(browser));
-    content::RunMessageLoop();
-  }
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    base::MessageLoopForUI::current()->Quit();
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  DISALLOW_COPY_AND_ASSIGN(BrowserClosedObserver);
-};
-
 const char kDebuggerTestPage[] = "files/devtools/debugger_test_page.html";
 const char kPauseWhenLoadingDevTools[] =
     "files/devtools/pause_when_loading_devtools.html";
@@ -152,20 +132,58 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetWebContentsAt(0);
   }
 
+  void ToggleDevToolsWindow() {
+    content::WindowedNotificationObserver close_observer(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::Source<content::WebContents>(window_->web_contents()));
+    DevToolsWindow::ToggleDevToolsWindow(inspected_rvh_, false,
+        DEVTOOLS_TOGGLE_ACTION_TOGGLE);
+    close_observer.Wait();
+  }
+
   void CloseDevToolsWindow() {
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-    // CloseAllClientHosts may destroy window_ so store the browser first.
-    Browser* browser = window_->browser();
+    content::WindowedNotificationObserver close_observer(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::Source<content::WebContents>(window_->web_contents()));
     devtools_manager->CloseAllClientHosts();
-    // Wait only when DevToolsWindow has a browser. For docked DevTools, this
-    // is NULL and we skip the wait.
-    if (browser)
-      BrowserClosedObserver close_observer(browser);
+    close_observer.Wait();
   }
 
   DevToolsWindow* window_;
   RenderViewHost* inspected_rvh_;
 };
+
+// Used to block until a dev tools window gets beforeunload event.
+class DevToolsWindowBeforeUnloadObserver
+    : public content::WebContentsObserver {
+ public:
+  explicit DevToolsWindowBeforeUnloadObserver(
+      content::WebContents* web_contents);
+  bool Fired();
+ private:
+  // Invoked when the beforeunload handler fires.
+  virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) OVERRIDE;
+
+  bool m_fired;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsWindowBeforeUnloadObserver);
+};
+
+DevToolsWindowBeforeUnloadObserver::DevToolsWindowBeforeUnloadObserver(
+    content::WebContents* web_contents)
+    : WebContentsObserver(web_contents),
+      m_fired(false) {
+}
+
+bool DevToolsWindowBeforeUnloadObserver::Fired() {
+  return m_fired;
+}
+
+void DevToolsWindowBeforeUnloadObserver::BeforeUnloadFired(
+    const base::TimeTicks& proceed_time) {
+  m_fired = true;
+}
 
 void TimeoutCallback(const std::string& timeout_message) {
   FAIL() << timeout_message;
@@ -405,13 +423,25 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   void CloseDevToolsWindow() {
     Browser* browser = window_->browser();
+    content::WindowedNotificationObserver close_observer(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::Source<content::WebContents>(window_->web_contents()));
     browser->tab_strip_model()->CloseAllTabs();
-    BrowserClosedObserver close_observer(browser);
+    close_observer.Wait();
   }
 
   DevToolsWindow* window_;
 };
 
+// Test beforeunload event delivery.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestBeforeUnloadEvents) {
+  OpenDevToolsWindow(kDebuggerTestPage);
+  scoped_ptr<DevToolsWindowBeforeUnloadObserver> contents_observer;
+  contents_observer.reset(
+      new DevToolsWindowBeforeUnloadObserver(window_->web_contents()));
+  ToggleDevToolsWindow();
+  ASSERT_TRUE(contents_observer->Fired());
+}
 
 // Tests scripts panel showing.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
@@ -544,6 +574,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
   ASSERT_TRUE(window_->web_contents()->GetURL().
                   SchemeIs(chrome::kChromeDevToolsScheme));
   ASSERT_EQ(GetInspectedTab()->GetURL(), url);
+  CloseDevToolsWindow();
 }
 
 #if defined(OS_WIN)

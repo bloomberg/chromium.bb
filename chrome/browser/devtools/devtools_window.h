@@ -166,6 +166,9 @@ class DevToolsWindow : private content::NotificationObserver,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
+  virtual void BeforeUnloadFired(content::WebContents* tab,
+                                 bool proceed,
+                                 bool* proceed_to_fire_unload) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,
@@ -188,6 +191,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   // DevToolsEmbedderMessageDispatcher::Delegate overrides:
   virtual void ActivateWindow() OVERRIDE;
+  virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void SetWindowBounds(int x, int y, int width, int height) OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
@@ -232,7 +236,6 @@ class DevToolsWindow : private content::NotificationObserver,
   BrowserWindow* GetInspectedBrowserWindow();
   bool IsInspectedBrowserPopup();
   void UpdateFrontendDockSide();
-  void Hide();
   void ScheduleAction(DevToolsToggleAction action);
   void DoAction();
   void UpdateTheme();
