@@ -356,6 +356,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->perspectiveOriginY(), style);
     case CSSPropertyWebkitShapeInside:
         return AnimatableShapeValue::create(style->shapeInside());
+    case CSSPropertyWebkitShapeOutside:
+        return AnimatableShapeValue::create(style->shapeOutside());
     case CSSPropertyWebkitTextEmphasisColor:
         return createFromColor(property, style);
     case CSSPropertyWebkitTextStrokeColor:

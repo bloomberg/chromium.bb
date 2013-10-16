@@ -457,6 +457,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitShapeInside:
         style->setShapeInside(toAnimatableShapeValue(value)->shapeValue());
         return;
+    case CSSPropertyWebkitShapeOutside:
+        style->setShapeOutside(toAnimatableShapeValue(value)->shapeValue());
+        return;
     case CSSPropertyWebkitTextEmphasisColor:
         style->setTextEmphasisColor(toAnimatableColor(value)->color());
         style->setVisitedLinkTextEmphasisColor(toAnimatableColor(value)->visitedLinkColor());
