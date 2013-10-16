@@ -241,7 +241,7 @@ function checkIfDeviceDropdownsArePopulated() {
 /**
  * Disconnect before the tab is closed.
  */
-window.onunload = function() {
+window.onbeforeunload = function() {
   if (!isDisconnected())
     disconnect();
 };
