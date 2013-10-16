@@ -101,9 +101,14 @@ else  # TOOLCHAIN is valid...
 #
 # The SDK provides two sets of libraries, Debug and Release.  Debug libraries
 # are compiled without optimizations to make debugging easier.  By default
-# this will build a Release configuration.
+# this will build a Release configuration. When debugging via "make debug",
+# build the debug configuration by default instead.
 #
+ifneq (,$(findstring debug,$(MAKECMDGOALS)))
+CONFIG ?= Debug
+else
 CONFIG ?= Release
+endif
 
 
 #
