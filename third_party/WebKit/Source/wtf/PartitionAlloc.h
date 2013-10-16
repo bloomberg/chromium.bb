@@ -138,10 +138,10 @@ struct PartitionFreelistEntry {
 };
 
 struct PartitionPageHeader {
+    PartitionFreelistEntry* freelistHead;
     int numAllocatedSlots; // Deliberately signed.
     unsigned numUnprovisionedSlots;
     PartitionBucket* bucket;
-    PartitionFreelistEntry* freelistHead;
     PartitionPageHeader* next;
     PartitionPageHeader* prev;
 };
@@ -223,34 +223,6 @@ ALWAYS_INLINE size_t partitionBucketSize(const PartitionBucket* bucket)
     return size;
 }
 
-ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
-{
-    PartitionPageHeader* page = bucket->currPage;
-    PartitionFreelistEntry* ret = page->freelistHead;
-    if (LIKELY(ret != 0)) {
-        page->freelistHead = partitionFreelistMask(ret->next);
-        page->numAllocatedSlots++;
-        return ret;
-    }
-    return partitionAllocSlowPath(bucket);
-}
-
-ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
-{
-#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-    void* result = malloc(size);
-    RELEASE_ASSERT(result);
-    return result;
-#else
-    ASSERT(root->initialized);
-    size_t index = size >> kBucketShift;
-    ASSERT(index < root->numBuckets);
-    ASSERT(size == index << kBucketShift);
-    PartitionBucket* bucket = &root->buckets()[index];
-    return partitionBucketAlloc(bucket);
-#endif
-}
-
 ALWAYS_INLINE PartitionPageHeader* partitionPointerToPage(void* ptr)
 {
     uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);
@@ -261,16 +233,6 @@ ALWAYS_INLINE PartitionPageHeader* partitionPointerToPage(void* ptr)
     // Checks that the pointer is a multiple of bucket size.
     ASSERT(!(((pointerAsUint & kPartitionPageOffsetMask) - sizeof(PartitionPageHeader)) % partitionBucketSize(page->bucket)));
     return page;
-}
-
-ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPageHeader* page)
-{
-    PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
-    entry->next = partitionFreelistMask(page->freelistHead);
-    page->freelistHead = entry;
-    --page->numAllocatedSlots;
-    if (UNLIKELY(page->numAllocatedSlots <= 0))
-        partitionFreeSlowPath(page);
 }
 
 ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
@@ -299,6 +261,52 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
     return false;
 }
 
+ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
+{
+    PartitionPageHeader* page = bucket->currPage;
+    PartitionFreelistEntry* ret = page->freelistHead;
+    if (LIKELY(ret != 0)) {
+        // If these asserts fire, you probably corrupted memory.
+        ASSERT(partitionPointerIsValid(bucket->root, ret));
+        ASSERT(partitionPointerToPage(ret));
+        ASSERT(ret != ret->next); // Catches some double frees.
+        page->freelistHead = partitionFreelistMask(ret->next);
+        page->numAllocatedSlots++;
+        return ret;
+    }
+    return partitionAllocSlowPath(bucket);
+}
+
+ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
+{
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+    void* result = malloc(size);
+    RELEASE_ASSERT(result);
+    return result;
+#else
+    ASSERT(root->initialized);
+    size_t index = size >> kBucketShift;
+    ASSERT(index < root->numBuckets);
+    ASSERT(size == index << kBucketShift);
+    PartitionBucket* bucket = &root->buckets()[index];
+    return partitionBucketAlloc(bucket);
+#endif
+}
+
+ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPageHeader* page)
+{
+    // If these asserts fire, you probably corrupted memory.
+    ASSERT(!page->freelistHead || partitionPointerIsValid(page->bucket->root, page->freelistHead));
+    ASSERT(!page->freelistHead || partitionPointerToPage(page->freelistHead));
+    ASSERT(ptr != page->freelistHead); // Catches an immediate double free.
+    PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
+    entry->next = partitionFreelistMask(page->freelistHead);
+    page->freelistHead = entry;
+    --page->numAllocatedSlots;
+    if (UNLIKELY(page->numAllocatedSlots <= 0))
+        partitionFreeSlowPath(page);
+}
+
 ALWAYS_INLINE void partitionFree(void* ptr)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
@@ -308,11 +316,6 @@ ALWAYS_INLINE void partitionFree(void* ptr)
     ASSERT(partitionPointerIsValid(page->bucket->root, ptr));
     partitionFreeWithPage(ptr, page);
 #endif
-}
-
-ALWAYS_INLINE size_t partitionAllocRoundup(size_t size)
-{
-    return (size + kAllocationGranularityMask) & ~kAllocationGranularityMask;
 }
 
 ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
@@ -339,6 +342,7 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRoot* root, void* ptr)
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     free(ptr);
 #else
+    ASSERT(root->initialized);
     if (LIKELY(partitionPointerIsValid(root, ptr))) {
         PartitionPageHeader* page = partitionPointerToPage(ptr);
         spinLockLock(&root->lock);
