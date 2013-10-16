@@ -38,6 +38,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 class SpeechSynthesisVoice;
 
@@ -49,7 +50,7 @@ public:
     bool speaking() const;
     bool paused() const;
 
-    void speak(SpeechSynthesisUtterance*);
+    void speak(SpeechSynthesisUtterance*, ExceptionState&);
     void cancel();
     void pause();
     void resume();

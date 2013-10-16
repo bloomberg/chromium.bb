@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/speech/SpeechSynthesis.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include "core/platform/PlatformSpeechSynthesizer.h"
 #include "modules/speech/SpeechSynthesisEvent.h"
@@ -99,8 +100,13 @@ void SpeechSynthesis::startSpeakingImmediately(SpeechSynthesisUtterance* utteran
     m_platformSpeechSynthesizer->speak(utterance->platformUtterance());
 }
 
-void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance)
+void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance, ExceptionState& es)
 {
+    if (!utterance) {
+        es.throwTypeError("Invalid utterance argument");
+        return;
+    }
+
     m_utteranceQueue.append(utterance);
 
     // If the queue was empty, speak this immediately and add it to the queue.
