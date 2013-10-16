@@ -85,7 +85,8 @@ def generate_attribute_and_includes(interface, attribute):
         contents['is_custom_getter'] = True
         return contents, set()
 
-    cpp_value = getter_expression(interface, attribute, contents)
+    includes = set()
+    cpp_value = getter_expression(interface, attribute, contents, includes)
     # [GetterRaisesException], [RaisesException]
     is_getter_raises_exception = has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException'))
     # Normally we can inline the function call into the return statement to
@@ -104,10 +105,11 @@ def generate_attribute_and_includes(interface, attribute):
 
     if this_is_keep_alive_for_gc:
         return_v8_value_statement = 'v8SetReturnValue(info, wrapper);'
-        includes = v8_types.includes_for_type(idl_type)
+        type_includes = v8_types.includes_for_type(idl_type)
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
-        return_v8_value_statement, includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
+        return_v8_value_statement, type_includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
+    includes.update(type_includes)
     contents['return_v8_value_statement'] = return_v8_value_statement
 
     if (idl_type == 'EventHandler' and
@@ -136,23 +138,51 @@ def generate_attribute_and_includes(interface, attribute):
     return contents, includes
 
 
-def getter_expression(interface, attribute, contents):
-    this_getter_name = getter_name(interface, attribute)
-    arguments = v8_utilities.call_with_arguments(attribute, contents)
+def getter_expression(interface, attribute, contents, includes):
+    arguments = []
+    if 'Reflect' in attribute.extended_attributes:
+        getter_base_name = content_attribute_getter_base_name(attribute, includes, arguments)
+    else:
+        getter_base_name = uncapitalize(cpp_name(attribute))
+
+    if attribute.is_static:
+        getter_name = '%s::%s' % (interface.name, getter_base_name)
+    else:
+        getter_name = 'imp->%s' % getter_base_name
+
+    arguments.extend(v8_utilities.call_with_arguments(attribute, contents))
     if attribute.is_nullable:
         arguments.append('isNull')
     if has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')):
         arguments.append('es')
     if attribute.data_type == 'EventHandler':
         arguments.append('isolatedWorldForIsolate(info.GetIsolate())')
-    return '%s(%s)' % (this_getter_name, ', '.join(arguments))
+    return '%s(%s)' % (getter_name, ', '.join(arguments))
 
 
-def getter_name(interface, attribute):
-    getter_method_name = uncapitalize(cpp_name(attribute))
-    if attribute.is_static:
-        return '%s::%s' % (interface.name, getter_method_name)
-    return 'imp->%s' % getter_method_name
+CONTENT_ATTRIBUTE_GETTER_NAMES = {
+    'boolean': 'fastHasAttribute',
+    'long': 'getIntegralAttribute',
+    'unsigned long': 'getUnsignedIntegralAttribute',
+}
+
+
+def content_attribute_getter_base_name(attribute, includes, arguments):
+    content_attribute_name = attribute.extended_attributes['Reflect'] or attribute.name.lower()
+    namespace = 'HTMLNames'  # FIXME: can be SVG too
+    includes.add('%s.h' % namespace)
+
+    if content_attribute_name in ['class', 'id', 'name']:
+        # Special-case for performance optimization.
+        return 'get%sAttribute' % content_attribute_name.capitalize()
+
+    scoped_name = '%s::%sAttr' % (namespace, content_attribute_name)
+    arguments.append(scoped_name)
+
+    idl_type = attribute.data_type
+    if idl_type in CONTENT_ATTRIBUTE_GETTER_NAMES:
+        return CONTENT_ATTRIBUTE_GETTER_NAMES[idl_type]
+    return 'fastGetAttribute'
 
 
 def is_keep_alive_for_gc(attribute):

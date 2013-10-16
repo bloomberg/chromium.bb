@@ -553,7 +553,7 @@ static void createAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<
 static void reflectedStringAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->fastGetAttribute(WebCore::HTMLNames::reflectedstringattrAttr), info.GetIsolate());
+    v8SetReturnValueString(info, imp->fastGetAttribute(HTMLNames::reflectedstringattrAttr), info.GetIsolate());
 }
 
 static void reflectedStringAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -568,7 +568,7 @@ static void reflectedStringAttrAttributeSetter(v8::Local<v8::String> name, v8::L
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, v, value);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setAttribute(WebCore::HTMLNames::reflectedstringattrAttr, v);
+    imp->setAttribute(HTMLNames::reflectedstringattrAttr, v);
 }
 
 static void reflectedStringAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -582,7 +582,7 @@ static void reflectedStringAttrAttributeSetterCallback(v8::Local<v8::String> nam
 static void reflectedIntegralAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->getIntegralAttribute(WebCore::HTMLNames::reflectedintegralattrAttr));
+    v8SetReturnValueInt(info, imp->getIntegralAttribute(HTMLNames::reflectedintegralattrAttr));
 }
 
 static void reflectedIntegralAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -597,7 +597,7 @@ static void reflectedIntegralAttrAttributeSetter(v8::Local<v8::String> name, v8:
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setIntegralAttribute(WebCore::HTMLNames::reflectedintegralattrAttr, v);
+    imp->setIntegralAttribute(HTMLNames::reflectedintegralattrAttr, v);
 }
 
 static void reflectedIntegralAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -611,7 +611,7 @@ static void reflectedIntegralAttrAttributeSetterCallback(v8::Local<v8::String> n
 static void reflectedUnsignedIntegralAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueUnsigned(info, std::max(0, imp->getIntegralAttribute(WebCore::HTMLNames::reflectedunsignedintegralattrAttr)));
+    v8SetReturnValueUnsigned(info, std::max(0, imp->getIntegralAttribute(HTMLNames::reflectedunsignedintegralattrAttr)));
 }
 
 static void reflectedUnsignedIntegralAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -626,7 +626,7 @@ static void reflectedUnsignedIntegralAttrAttributeSetter(v8::Local<v8::String> n
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(unsigned, v, toUInt32(value));
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setUnsignedIntegralAttribute(WebCore::HTMLNames::reflectedunsignedintegralattrAttr, v);
+    imp->setUnsignedIntegralAttribute(HTMLNames::reflectedunsignedintegralattrAttr, v);
 }
 
 static void reflectedUnsignedIntegralAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -640,7 +640,7 @@ static void reflectedUnsignedIntegralAttrAttributeSetterCallback(v8::Local<v8::S
 static void reflectedBooleanAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueBool(info, imp->fastHasAttribute(WebCore::HTMLNames::reflectedbooleanattrAttr));
+    v8SetReturnValueBool(info, imp->fastHasAttribute(HTMLNames::reflectedbooleanattrAttr));
 }
 
 static void reflectedBooleanAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -655,7 +655,7 @@ static void reflectedBooleanAttrAttributeSetter(v8::Local<v8::String> name, v8::
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(bool, v, value->BooleanValue());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setBooleanAttribute(WebCore::HTMLNames::reflectedbooleanattrAttr, v);
+    imp->setBooleanAttribute(HTMLNames::reflectedbooleanattrAttr, v);
 }
 
 static void reflectedBooleanAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -669,7 +669,7 @@ static void reflectedBooleanAttrAttributeSetterCallback(v8::Local<v8::String> na
 static void reflectedURLAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->getURLAttribute(WebCore::HTMLNames::reflectedurlattrAttr), info.GetIsolate());
+    v8SetReturnValueString(info, imp->getURLAttribute(HTMLNames::reflectedurlattrAttr), info.GetIsolate());
 }
 
 static void reflectedURLAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -684,7 +684,7 @@ static void reflectedURLAttrAttributeSetter(v8::Local<v8::String> name, v8::Loca
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, v, value);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setAttribute(WebCore::HTMLNames::reflectedurlattrAttr, v);
+    imp->setAttribute(HTMLNames::reflectedurlattrAttr, v);
 }
 
 static void reflectedURLAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -698,7 +698,7 @@ static void reflectedURLAttrAttributeSetterCallback(v8::Local<v8::String> name, 
 static void reflectedStringAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->fastGetAttribute(WebCore::HTMLNames::customContentStringAttrAttr), info.GetIsolate());
+    v8SetReturnValueString(info, imp->fastGetAttribute(HTMLNames::customContentStringAttrAttr), info.GetIsolate());
 }
 
 static void reflectedStringAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -713,7 +713,7 @@ static void reflectedStringAttrAttributeSetter(v8::Local<v8::String> name, v8::L
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, v, value);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setAttribute(WebCore::HTMLNames::customContentStringAttrAttr, v);
+    imp->setAttribute(HTMLNames::customContentStringAttrAttr, v);
 }
 
 static void reflectedStringAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -727,7 +727,7 @@ static void reflectedStringAttrAttributeSetterCallback(v8::Local<v8::String> nam
 static void reflectedCustomIntegralAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->getIntegralAttribute(WebCore::HTMLNames::customContentIntegralAttrAttr));
+    v8SetReturnValueInt(info, imp->getIntegralAttribute(HTMLNames::customContentIntegralAttrAttr));
 }
 
 static void reflectedCustomIntegralAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -742,7 +742,7 @@ static void reflectedCustomIntegralAttrAttributeSetter(v8::Local<v8::String> nam
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setIntegralAttribute(WebCore::HTMLNames::customContentIntegralAttrAttr, v);
+    imp->setIntegralAttribute(HTMLNames::customContentIntegralAttrAttr, v);
 }
 
 static void reflectedCustomIntegralAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -756,7 +756,7 @@ static void reflectedCustomIntegralAttrAttributeSetterCallback(v8::Local<v8::Str
 static void reflectedCustomBooleanAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueBool(info, imp->fastHasAttribute(WebCore::HTMLNames::customContentBooleanAttrAttr));
+    v8SetReturnValueBool(info, imp->fastHasAttribute(HTMLNames::customContentBooleanAttrAttr));
 }
 
 static void reflectedCustomBooleanAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -771,7 +771,7 @@ static void reflectedCustomBooleanAttrAttributeSetter(v8::Local<v8::String> name
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(bool, v, value->BooleanValue());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setBooleanAttribute(WebCore::HTMLNames::customContentBooleanAttrAttr, v);
+    imp->setBooleanAttribute(HTMLNames::customContentBooleanAttrAttr, v);
 }
 
 static void reflectedCustomBooleanAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -785,7 +785,7 @@ static void reflectedCustomBooleanAttrAttributeSetterCallback(v8::Local<v8::Stri
 static void reflectedCustomURLAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->getURLAttribute(WebCore::HTMLNames::customContentURLAttrAttr), info.GetIsolate());
+    v8SetReturnValueString(info, imp->getURLAttribute(HTMLNames::customContentURLAttrAttr), info.GetIsolate());
 }
 
 static void reflectedCustomURLAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -800,7 +800,7 @@ static void reflectedCustomURLAttrAttributeSetter(v8::Local<v8::String> name, v8
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, v, value);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setAttribute(WebCore::HTMLNames::customContentURLAttrAttr, v);
+    imp->setAttribute(HTMLNames::customContentURLAttrAttr, v);
 }
 
 static void reflectedCustomURLAttrAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)

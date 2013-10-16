@@ -6053,7 +6053,7 @@ sub ContentAttributeName
 
     AddToImplIncludes("${namespace}.h");
     # Attr (not Attribute) used in core content attributes
-    return "WebCore::${namespace}::${contentAttributeName}Attr";
+    return "${namespace}::${contentAttributeName}Attr";
 }
 
 sub GetterExpression
@@ -6076,13 +6076,13 @@ sub GetterExpression
     } elsif ($attribute->type eq "unsigned long") {
         $functionName = "getUnsignedIntegralAttribute";
     } else {
-        if ($contentAttributeName eq "WebCore::HTMLNames::idAttr") {
+        if ($contentAttributeName eq "HTMLNames::idAttr") {
             $functionName = "getIdAttribute";
             $contentAttributeName = "";
-        } elsif ($contentAttributeName eq "WebCore::HTMLNames::nameAttr") {
+        } elsif ($contentAttributeName eq "HTMLNames::nameAttr") {
             $functionName = "getNameAttribute";
             $contentAttributeName = "";
-        } elsif ($contentAttributeName eq "WebCore::HTMLNames::classAttr") {
+        } elsif ($contentAttributeName eq "HTMLNames::classAttr") {
             $functionName = "getClassAttribute";
             $contentAttributeName = "";
         } else {
