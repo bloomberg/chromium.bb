@@ -39,7 +39,7 @@ using namespace HTMLNames;
 
 static String emptyValueAXText()
 {
-    return Locale::defaultLocale()->queryString(WebKit::WebLocalizedString::AXDateTimeFieldEmptyValueText);
+    return Locale::defaultLocale().queryString(WebKit::WebLocalizedString::AXDateTimeFieldEmptyValueText);
 }
 
 DateTimeFieldElement::FieldOwner::~FieldOwner()

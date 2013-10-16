@@ -38,8 +38,7 @@ class PLATFORM_EXPORT Locale {
     WTF_MAKE_NONCOPYABLE(Locale);
 public:
     static PassOwnPtr<Locale> create(const AtomicString& localeIdentifier);
-    // Never returns 0.
-    static Locale* defaultLocale();
+    static Locale& defaultLocale();
 
     String queryString(WebKit::WebLocalizedString::Name);
     String queryString(WebKit::WebLocalizedString::Name, const String& parameter);

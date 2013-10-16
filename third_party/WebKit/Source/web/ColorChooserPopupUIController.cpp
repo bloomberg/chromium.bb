@@ -106,7 +106,7 @@ void ColorChooserPopupUIController::writeDocument(DocumentWriter& writer)
 
 Locale& ColorChooserPopupUIController::locale()
 {
-    return *m_locale;
+    return m_locale;
 }
 
 void ColorChooserPopupUIController::setValueAndClosePopup(int numValue, const String& stringValue)

@@ -86,7 +86,7 @@ bool RenderEmbeddedObject::allowsAcceleratedCompositing() const
 
 static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
 {
-    Locale& locale = node ? toElement(node)->locale() : *Locale::defaultLocale();
+    Locale& locale = node ? toElement(node)->locale() : Locale::defaultLocale();
     switch (pluginUnavailabilityReason) {
     case RenderEmbeddedObject::PluginMissing:
         return locale.queryString(WebKit::WebLocalizedString::MissingPluginText);

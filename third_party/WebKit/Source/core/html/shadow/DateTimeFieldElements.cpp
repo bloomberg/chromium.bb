@@ -39,7 +39,7 @@ using WebKit::WebLocalizedString;
 
 static String queryString(WebLocalizedString::Name name)
 {
-    return Locale::defaultLocale()->queryString(name);
+    return Locale::defaultLocale().queryString(name);
 }
 
 DateTimeAMPMFieldElement::DateTimeAMPMFieldElement(Document& document, FieldOwner& fieldOwner, const Vector<String>& ampmLabels)

@@ -179,11 +179,11 @@ String DateTimeStringBuilder::toString()
     return m_builder.toString();
 }
 
-Locale* Locale::defaultLocale()
+Locale& Locale::defaultLocale()
 {
     static Locale* locale = Locale::create(defaultLanguage()).leakPtr();
     ASSERT(isMainThread());
-    return locale;
+    return *locale;
 }
 
 Locale::~Locale()

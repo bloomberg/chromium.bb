@@ -501,7 +501,7 @@ void HTMLTreeBuilder::processIsindexStartTagForInBody(AtomicHTMLToken* token)
     if (promptAttribute)
         processFakeCharacters(promptAttribute->value());
     else
-        processFakeCharacters(Locale::defaultLocale()->queryString(WebKit::WebLocalizedString::SearchableIndexIntroduction));
+        processFakeCharacters(Locale::defaultLocale().queryString(WebKit::WebLocalizedString::SearchableIndexIntroduction));
     processFakeStartTag(inputTag, attributesForIsindexInput(token));
     notImplemented(); // This second set of characters may be needed by non-english locales.
     processFakeEndTag(labelTag);
