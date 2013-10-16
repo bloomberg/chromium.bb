@@ -13,6 +13,8 @@ from telemetry.core.backends.chrome.trace_result import TraceResult
 from telemetry.page import page
 from telemetry.page.page_measurement_results import PageMeasurementResults
 
+SYNTHETIC_GESTURE_MARKER = 'SyntheticGestureController::running'
+
 
 class MockTimer(object):
   """A mock timer class which can generate random durations.
@@ -97,13 +99,14 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
     trace_events = []
     total_time_seconds = 0.0
     num_frames_sent = 0.0
+    first_frame = True
     previous_frame_time = None
     # This list represents time differences between frames in milliseconds.
     expected_frame_times = []
 
     # Append start trace events for the timeline marker and gesture marker,
     # with some amount of time in between them.
-    trace_events.append({'name': smoothness.TIMELINE_MARKER,
+    trace_events.append({'name': smoothness.RENDER_PROCESS_MARKER,
                          'tts': mock_timer.microseconds,
                          'args': {},
                          'pid': 20978,
@@ -113,7 +116,7 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
                          'ph': 'S',  # Phase: start.
                          'id': '0x12345'})
     mock_timer.Advance()
-    trace_events.append({'name': smoothness.SYNTHETIC_GESTURE_MARKER,
+    trace_events.append({'name': SYNTHETIC_GESTURE_MARKER,
                          'tts': mock_timer.microseconds,
                          'args': {},
                          'pid': 20978,
@@ -128,9 +131,13 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
       mock_frame = MockFrame(mock_timer)
       mock_frame.AppendTraceEventForMainThreadStats(trace_events)
       mock_frame.AppendTraceEventForImplThreadStats(trace_events)
-      total_time_seconds += mock_frame.duration / 1e6
-      num_frames_sent += mock_frame.main_stats['frame_count']
-      num_frames_sent += mock_frame.impl_stats['frame_count']
+      # Exclude the first frame, because it may have started before the
+      # benchmark run.
+      if not first_frame:
+        total_time_seconds += mock_frame.duration / 1e6
+        num_frames_sent += mock_frame.main_stats['frame_count']
+        num_frames_sent += mock_frame.impl_stats['frame_count']
+      first_frame = False
       current_frame_time = mock_timer.microseconds / 1000.0
       if previous_frame_time:
         difference = current_frame_time - previous_frame_time
@@ -140,7 +147,7 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
 
     # Append finish trace events for the timeline and gesture markers, in the
     # reverse order from how they were added, with some time in between.
-    trace_events.append({'name': smoothness.SYNTHETIC_GESTURE_MARKER,
+    trace_events.append({'name': SYNTHETIC_GESTURE_MARKER,
                          'tts': mock_timer.microseconds,
                          'args': {},
                          'pid': 20978,
@@ -150,7 +157,7 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
                          'ph': 'F',  # Phase: finish.
                          'id': '0xabcde'})
     mock_timer.Advance()
-    trace_events.append({'name': smoothness.TIMELINE_MARKER,
+    trace_events.append({'name': smoothness.RENDER_PROCESS_MARKER,
                          'tts': mock_timer.microseconds,
                          'args': {},
                          'pid': 20978,
@@ -167,12 +174,12 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
 
     # Find the timeline marker and gesture marker in the timeline,
     # and create a RenderingStats object.
-    smoothness_marker = smoothness.FindTimelineMarker(
-        timeline, smoothness.TIMELINE_MARKER)
-    gesture_marker = smoothness.FindTimelineMarker(
-        timeline, smoothness.SYNTHETIC_GESTURE_MARKER)
+    render_process_marker = smoothness.FindTimelineMarkers(
+        timeline, smoothness.RENDER_PROCESS_MARKER)
+    timeline_markers = smoothness.FindTimelineMarkers(
+        timeline, SYNTHETIC_GESTURE_MARKER)
     stats = RenderingStats(
-        smoothness_marker, gesture_marker, {}, True)
+        render_process_marker, timeline_markers, {}, True)
 
     # Make a results object and add results to it from the smoothness metric.
     res = PageMeasurementResults()

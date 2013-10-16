@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 
 import os
+from operator import attrgetter
 
 from metrics import statistics
 from telemetry.core import util
 from telemetry.page import page_measurement
 
-TIMELINE_MARKER = 'smoothness_scroll'
-SYNTHETIC_GESTURE_MARKER = 'SyntheticGestureController::running'
+RENDER_PROCESS_MARKER = 'RenderProcessMarker'
 
 
 class SmoothnessMetrics(object):
@@ -46,9 +46,9 @@ class SmoothnessMetrics(object):
     action.BindMeasurementJavaScript(
         self._tab,
         'window.__renderingStats.start(); ' +
-        'console.time("' + TIMELINE_MARKER + '")',
+        'console.time("' + RENDER_PROCESS_MARKER + '")',
         'window.__renderingStats.stop(); ' +
-        'console.timeEnd("' + TIMELINE_MARKER + '")')
+        'console.timeEnd("' + RENDER_PROCESS_MARKER + '")')
 
   @property
   def is_using_gpu_benchmarking(self):
@@ -94,18 +94,13 @@ def CalcFirstPaintTimeResults(results, tab):
 def CalcResults(benchmark_stats, results):
   s = benchmark_stats
 
-  frame_times = []
-  for i in xrange(1, len(s.frame_timestamps)):
-    frame_times.append(
-        round(s.frame_timestamps[i] - s.frame_timestamps[i-1], 2))
-
   # List of raw frame times.
-  results.Add('frame_times', 'ms', frame_times)
+  results.Add('frame_times', 'ms', s.frame_times)
 
   # Arithmetic mean of frame times.
-  mean_frame_time_ms = 1000 * statistics.ArithmeticMean(
-      s.total_time, len(s.frame_timestamps))
-  results.Add('mean_frame_time', 'ms', round(mean_frame_time_ms, 3))
+  mean_frame_time = statistics.ArithmeticMean(s.frame_times,
+                                              len(s.frame_times))
+  results.Add('mean_frame_time', 'ms', round(mean_frame_time, 3))
 
   # Absolute discrepancy of frame time stamps.
   jank = statistics.FrameDiscrepancy(s.frame_timestamps)
@@ -114,7 +109,7 @@ def CalcResults(benchmark_stats, results):
   # Are we hitting 60 fps for 95 percent of all frames? (Boolean value)
   # We use 17ms as a slightly looser threshold, instead of 1000.0/60.0.
   results.Add('mostly_smooth', '',
-      statistics.Percentile(frame_times, 95.0) < 17.0)
+      statistics.Percentile(s.frame_times, 95.0) < 17.0)
 
 
 class MissingTimelineMarker(page_measurement.MeasurementFailure):
@@ -123,13 +118,35 @@ class MissingTimelineMarker(page_measurement.MeasurementFailure):
         'Timeline marker not found: ' + name)
 
 
-def FindTimelineMarker(timeline, name):
-  """Find the timeline event with the given name.
+class OverlappingTimelineMarkers(page_measurement.MeasurementFailure):
+  def __init__(self):
+    super(OverlappingTimelineMarkers, self).__init__(
+        'Overlapping timeline markers found')
 
-  If there is not exactly one such timeline event, raise an error.
+
+def FindTimelineMarkers(timeline, timeline_marker_labels):
+  """Find the timeline events with the given names.
+
+  If the number and order of events found does not match the labels,
+  raise an error.
   """
-  events = [s for s in timeline.GetAllEventsOfName(name)
-            if s.parent_slice == None]
-  if len(events) != 1:
-    raise MissingTimelineMarker(name)
-  return events[0]
+  events = []
+  if not type(timeline_marker_labels) is list:
+    timeline_marker_labels = [timeline_marker_labels]
+  for label in timeline_marker_labels:
+    if not label:
+      continue
+    events = [s for s in timeline.GetAllEventsOfName(label)
+              if s.parent_slice == None]
+  events.sort(key=attrgetter('start'))
+
+  for (i, event) in enumerate(events):
+    if timeline_marker_labels[i] and event.name != timeline_marker_labels[i]:
+      raise MissingTimelineMarker(timeline_marker_labels[i])
+
+  for i in xrange(0, len(events)):
+    for j in xrange(i+1, len(events)):
+      if (events[j].start < events[i].start + events[i].duration):
+        raise OverlappingTimelineMarkers()
+
+  return events

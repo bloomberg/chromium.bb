@@ -87,17 +87,17 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     self._metrics.Stop()
     rendering_stats_deltas = self._metrics.deltas
     timeline = tab.browser.StopTracing().AsTimelineModel()
-    timeline_marker = smoothness.FindTimelineMarker(timeline,
-                                                    'measureNextFrame')
-    benchmark_stats = RenderingStats(timeline_marker,
-                                     timeline_marker,
+    timeline_markers = smoothness.FindTimelineMarkers(timeline,
+                                                     'measureNextFrame')
+    benchmark_stats = RenderingStats(timeline_markers,
+                                     timeline_markers,
                                      rendering_stats_deltas,
                                      self._metrics.is_using_gpu_benchmarking)
 
     results.Add('rasterize_time', 'ms',
-                max(benchmark_stats.rasterize_time) * 1000.0)
+                max(benchmark_stats.rasterize_time))
     results.Add('record_time', 'ms',
-                max(benchmark_stats.record_time) * 1000.0)
+                max(benchmark_stats.record_time))
     results.Add('rasterized_pixels', 'pixels',
                 max(benchmark_stats.rasterized_pixel_count))
     results.Add('recorded_pixels', 'pixels',
