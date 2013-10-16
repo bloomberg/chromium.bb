@@ -221,7 +221,6 @@ void PpapiDispatcher::OnMsgCreateNaClChannel(
   if (error)
     ::exit(error);
 
-
   PluginDispatcher* dispatcher =
       new PluginDispatcher(::PPP_GetInterface, args.permissions,
                            args.off_the_record);
