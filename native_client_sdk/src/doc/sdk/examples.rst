@@ -208,7 +208,7 @@ Run the SDK examples as packaged apps
 
 Each example can also be launched as a packaged app. For more information about
 using Native Client for packaged apps, see :ref:`Packaged appliction
-<packaged>`.  For general information about packaged apps, see the
+<distributing_packaged>`.  For general information about packaged apps, see the
 `Chrome apps documentation
 <http://developer.chrome.com/apps/about_apps.html>`_.
 

@@ -1,93 +1,58 @@
-====================================
-Distributing Your Application (NaCl)
-====================================
+.. _distributing:
 
-.. {% setvar pepperversion %}pepper28{% endsetvar %}
-.. {% include "native-client/_local_variables.html" %}
+#############################
+Distributing Your Application
+#############################
 
-.. contents:: Table Of Contents
+.. contents::
   :local:
   :backlinks: none
-  :depth: 3
+  :depth: 2
 
 This document describes how to distribute Portable Native Client applications
 on the web, and Native Client applications through the
 `Chrome Web Store </chrome/web-store/docs/>`_ (CWS).
 
-
-Introduction
-============
-
 Portable Native Client
-----------------------
+======================
 
+Portable Native Client is enabled by default for web pages, so no separate
+distribution step is requred. Making PNaCl a part of your web application is as
+simple as embedding a manifest file that points to a **pexe**. See the
+:doc:`technical overview <../overview>` for more details.
 
-Portable Native Client is enabled by default for web pages. The only constraint
-is that the .html file, .nmf file (Portable Native Client manifest file), and
-.pexe file (Portable Native Client module) must be served from the same domain.
-Portable Native Client applications may also be distributed through the Chrome
-Web Store.
+.. image:: /images/nacl-in-a-web-app.png
 
-Chrome Web Store
-----------------
+The only constraint for distributing PNaCl modules with a web application is
+abiding by the `Same-origin policy
+<http://en.wikipedia.org/wiki/Same_origin_policy>`_. The PNaCl manifest and
+**pexe** must either be served from the same domain with the HTML, or the `CORS
+mechanism <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_ should
+be used to safely host them on a different domain.
 
-Native Client is only enabled by default for applications distributed through
-the Chrome Web Store (CWS). That means that Native Client applications must be
-distributed through the Chrome Web Store. The CWS requirement is in place to
-prevent the proliferation of Native Client executables (.nexe files) compiled
-for specific architecures (e.g., x86-32, x86-64, or ARM).
+Non-portable Native Client
+==========================
 
-The Chrome Web Store provides a number of
-`benefits
-<http://www.google.com/intl/en/landing/chrome/webstore/create/why-build-apps.html>`_,
-such as reaching a large number of potential customers, making it easy for
-users to discover your applications, and providing a way to earn revenue from
-your applications. You can upload your applications to the CWS for free, and
-distribute them for free or for payment.
+NaCl modules are only allowed for applications distributed through the `Chrome
+Web Store (CWS) <https://chrome.google.com/webstore/category/apps>`_
+The CWS requirement is in place to prevent the proliferation of Native Client
+executables (**nexe**\s) compiled for specific architecures (e.g., x86-32,
+x86-64, or ARM).
 
-CWS application types
----------------------
+In general, the considerations and guidelines for distributing applications
+through the Chrome Web Store apply to applications that contain NaCl modules as
+well. Here are a few pointers to relevant documentation:
 
-Before you upload an application to the Chrome Web Store, you must choose how
-you want to distribute the application.  The CWS can be used to distribute
-three types of applications: hosted applications, packaged applications, and extensions.
+* `CWS Overview <https://developers.google.com/chrome/web-store/docs/>`_
+* `Choosing an App Type <https://developers.google.com/chrome/web-store/docs/choosing>`_
+* `Getting started with packaged apps <http://developer.chrome.com/apps/about_apps.html>`_
+* `Hosted apps <https://developers.google.com/chrome/apps/docs/developers_guide>`_
+* `Chrome extensions <http://developer.chrome.com/extensions/index.html>`_
 
-* A **packaged application** is an application that is bundled into one
-  file, hosted in the Chrome Web Store, and downloaded to the user's machine.
-* An **extension** is similar to a packaged application---the
-  application is bundled into one file, hosted in the Chrome Web Store,
-  and downloaded to the user's machine---but the application is
-  specifically designed to extend the functionality of the Chrome browser.
-* A **hosted application** is an application that is hosted somewhere
-  other than the Chrome Web Store (such as your own web server or
-  Google App Engine). The CWS only contains metadata that points to the
-  hosted application.
+In this document, we'll focus only on distribution issues specific to
+applications that contain NaCl modules.
 
-The main factors to consider in choosing between these application types are:
-
-   hosting
-      You must make your own arrangements to host a hosted application (and
-      pay for hosting services). Packaged applications
-      and extensions are hosted in the Chrome Web Store.
-
-   size
-      Hosted applications do not have a size limit; packaged applications and
-      extensions are limited to 2 GB in size.
-
-   behavior
-      Hosted applications and packaged applications are like normal web
-      applications (they present their main functionality using
-      an HTML page); extensions can add functionality to the Chrome browser.
-
-For help choosing how to distribute your application, refer to
-`Choosing an App Type </chrome/web-store/docs/choosing>`_.
-
-The next section of this document provides details about how to distribute each type of application.
-
-Distribution details
-====================
-
-.. _packaged:
+.. _distributing_packaged:
 
 Packaged application
 --------------------
@@ -99,14 +64,6 @@ Client application files. Refer to
 `Packaged Apps <https://developer.chrome.com/apps/about_apps.html>`_
 for more information about creating a packaged application.
 
-Once you have a CWS manifest file and an icon for your application, you can zip up all the files for your packaged application into
-one zip file for upload to the Chrome Web Store. Refer to
-`Step 5 </chrome/web-store/docs/get_started_simple#step5>`_
-of the CWS Getting Started Tutorial to learn how to zip up your packaged
-application and upload it to the Chrome Web Store.
-
-.. _multi-platform-zip:
-
 Reducing the size of the user download package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -117,17 +74,16 @@ Reducing the size of the user download package
    Packaging an app in a multi-platform zip file can significantly reduce the
    download and storage requirements for the app.
 
-As described above, to upload a packaged app to the Chrome Web Store (CWS) you
-have to create a zip file with all the resources that your app needs, including
-.nexe files for multiple architectures (x86-64, x86-32, and ARM). Prior to
-Chrome 28, when users installed your app they had to download a .crx file from
-the CWS with all the included .nexe files.
+As described above, to upload a packaged app to the CWS you have to create a zip
+file with all the resources that your app needs, including .nexe files for
+multiple architectures (x86-64, x86-32, and ARM). Prior to Chrome 28, when users
+installed your app they had to download a .crx file from the CWS with all the
+included .nexe files.
 
 Starting with Chrome 28, the Chrome Web Store includes a feature called
-**multi-platform zip files.**
-This feature lets you structure your application directory and zip file in a
-way that reduces the size of the user download package.  Here's how this
-feature works:
+**multi-platform zip files.** This feature lets you structure your application
+directory and zip file in a way that reduces the size of the user download
+package.  Here's how this feature works:
 
 * You still include all the .nexe files in the zip file that you upload to
   the CWS, but you designate specific .nexe files (and other files if
@@ -137,11 +93,11 @@ feature works:
 
 Here is how to use this feature:
 
-1. Create a directory called ``_platform_specific``.
+#. Create a directory called ``_platform_specific``.
    Put this directory at the same level where your CWS manifest file,
    ``manifest.json``, is located.
 
-2. Create a subdirectory for each specific architecture that you support,
+#. Create a subdirectory for each specific architecture that you support,
    and add the files for each architecture in the relevant subdirectory.
 
    Here is a sample app directory structure:
@@ -156,7 +112,7 @@ Here is how to use this feature:
      |       +-- css/
      |       +-- images/
      |       +-- scripts/
-     |       |-- **_platform_specific/**
+     |       |-- _platform_specific/
      |       |       |-- x86-64/
      |       |       |       |-- my_module_x86_64.nexe
      |       |       |-- x86-32/
@@ -192,7 +148,7 @@ Here is how to use this feature:
      and the ``css/``, ``images/``, and ``scripts/`` directories.)
 
 
-3. Modify the CWS manifest file, ``manifest.json``, so that it specifies which
+#. Modify the CWS manifest file, ``manifest.json``, so that it specifies which
    subdirectory under ``_platform_specific`` corresponds to which architecture.
 
    The CWS manifest file must include a new name/value pair, where the name
@@ -236,7 +192,7 @@ Here is how to use this feature:
          "16": "images/icon-16x16.png",
          "128": "images/icon-128x128.png"
        },
-       **"platforms": [
+       "platforms": [
          {
            "nacl_arch": "x86-64",
            "sub_package_path": "_platform_specific/x86-64/"
@@ -252,7 +208,7 @@ Here is how to use this feature:
          {
            "sub_package_path": "_platform_specific/all/"
          }
-       ]**
+       ]
      }
 
    Note the last entry in the CWS manifest file above, which specifies a
@@ -262,7 +218,7 @@ Here is how to use this feature:
    architectures, or if the user is using an older version of Chrome that
    does not support multi-platform zip files.
 
-4. Modify your application as necessary so that it uses the files for the
+#. Modify your application as necessary so that it uses the files for the
    correct user architecture.
 
    To reference architecture-specific files, use the JavaScript API
@@ -279,7 +235,9 @@ Here is how to use this feature:
           '/' + name;
       }
 
-5. Test your app, create a zip file, and upload the app to the CWS as before.
+#. Test your app, create a zip file, and upload the app to the CWS as before.
+
+.. _additional_considerations_packaged:
 
 Additional considerations for a packaged application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -308,112 +266,24 @@ Additional considerations for a packaged application
 * For packaged applications, you can only use in-app purchases.
 * You can place your application in the Google Web Store with access only to
   certain people for testing. See
-  `Publishing to test accounts </chrome/web-store/docs/publish#testaccounts>`_
+  `Publishing to test accounts <https://developers.google.com/chrome/web-store/docs/publish>`_
   for more information.
 
 Extension
 ---------
 
-An extension consists of a special zip file (with a .crx extension) hosted in
-the Chrome Web Store containing all of the application parts: A Chrome Web
-Store manifest file (manifest.json), an icon, and all of the regular Native
-Client application files. Refer to the
-`Google Chrome Extensions Overview <http://code.google.com/chrome/extensions/overview.html>`_
-to learn how to create an extension.
-
-Once you have a CWS manifest file and an icon for your application, you can zip
-up all the files for your packaged application into one zip file for upload to
-the Chrome Web Store. Refer to
-`Step 5 </chrome/web-store/docs/get_started_simple#step5>`_
-of the CWS Getting Started Tutorial to learn how to zip up your extension and
-upload it to the Chrome Web Store.
-
-.. Note::
-   :class: note
-
-   **Tip:** Use a :ref:`multi-platform zip file <multi-platform-zip>` to reduce
-   the download and storage requirements for your extension.
+The NaCl-specific notes for a :ref:`package application <distributing_packaged>`
+apply to extensions as well.
 
 Hosted application
 ------------------
 
-A hosted application is a normal web application with some extra metadata for
-the Chrome Web Store. Specifically, a hosted application consists of three
-parts:
+The .html file, .nmf file (Native Client manifest file), and .nexe files must
+be served from the same domain, and the Chrome Web Store manifest file must
+specify the correct, verified domain. Other files can be served from the same
+or another domain.
 
-1. A Chrome Web Store manifest file (manifest.json) and an icon uploaded to the
-   Chrome Web Store. The manifest file points to the Native Client application,
-   essentially a web site, hosted on your web server. You must put the CWS
-   manifest file and the icon into a zip file for upload to the Chrome Web
-   store, and then convert that file to a special zip file with a .crx
-   extension. Refer to the Chrome Web Store
-   `Tutorial: Getting Started </chrome/web-store/docs/get_started_simple>`_
-   or to the
-   `Hosted Apps </chrome/apps/docs/developers_guide>`_
-   documentation for information about how to create and upload this metadata
-   to the CWS.
-
-2. All the regular Native Client application files. These files are hosted on
-   your web server or Google App Engine at a location pointed to by the CWS
-   manifest file.
-
-3. Binary assets. These files are hosted on your web server, Google App Engine,
-   or Data Storage for Developers.
-
-Hosting options
-^^^^^^^^^^^^^^^
-
-Google offers a couple of hosting options you might consider instead of your
-own:
-
-* Google App Engine allows developers to release their applications on the same
-  platform that Google uses for applications such Gmail.  Refer to
-  `Google App Engine - Pricing and Features <http://www.google.com/enterprise/cloud/appengine/pricing.html>`_
-  for pricing information.
-
-* Google Storage for Developers allows developers to store application data
-  using Google's cloud services and is available on a fee-per-usage basis.
-  Refer to `Pricing and Support </storage/docs/pricingandterms>`_
-  for pricing information.
-
-Additional considerations for a hosted application
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* The .html file, .nmf file (Native Client manifest file), and .nexe files
-  (compiled Native Client modules) must be served from the same domain, and the
-  Chrome Web Store manifest file must specify the correct, verified domain.
-  Other files can be served from the same or another domain.
-
-* In the description of your application in the CWS, make sure to mention that
-  your application is a Native Client application that only works with the
-  Chrome browser. Also make sure to identify the version of Chrome that your
-  application requires.
-
-* Hosted and packaged applications have a "launch" parameter in the CWS
-  manifest. This parameter is present only in apps (not extensions), and it
-  tells Google Chrome what to show when a user starts an installed app. For
-  example:
-
-  .. naclcode::
-    :prettyprint: 0
-
-    "launch": {
-      "web_url": "http://mail.google.com/mail/"
-    }
-
-* If you want to write local data using the Pepper
-  `FileIO </native-client/peppercpp/classpp_1_1_file_i_o>`_
-  API, you must set the 'unlimitedStorage' permission in your Chrome Web
-  Store manifest file, just as you would for a JavaScript application that uses
-  the HTML5 File API.
-
-* You can place your application in the Google Web Store with access only to
-  certain people for testing.  See
-  `Publishing to test accounts </chrome/web-store/docs/publish#testaccounts>`_
-  for more information.
-
-Additional considerations
-=========================
+In addition, see :ref:`Additional considerations for a packaged application <additional_considerations_packaged>`.
 
 Registering Native Client modules to handle MIME types
 ------------------------------------------------------
@@ -433,16 +303,15 @@ MIME type:
      "name": "My Native Client Spreadsheet Viewer",
      "version": "0.1",
      "description": "Open spreadsheets right in your browser.",
-     **"nacl_modules": [{
+     "nacl_modules": [{
         "path": "SpreadsheetViewer.nmf",
         "mime_type": "application/vnd.oasis.opendocument.spreadsheet"
-     }]**
+     }]
   }
 
 The value of "path" is the location of a Native Client manifest file (.nmf)
 within the application directory. For more information on Native Client
-manifest files, see
-`Files in a Native Client application </native-client/overview#application-files>`_.
+manifest files, see :ref:`Manifest Files <manifest_file>`.
 
 The value of "mime_type" is a specific MIME type that you want the Native
 Client module to handle. Each MIME type can be associated with only one .nmf
@@ -474,27 +343,3 @@ The ``nacl_modules`` attribute is optional---specify this attribute only if
 you want Chrome to use a Native Client module to display a particular type of
 content.
 
-Using CWS inline install
-------------------------
-
-Once you've published an application, you may be wondering how users will find
-and install the application. For users who browse the Chrome Web Store and find
-your application, installing the application is a simple one-click process.
-However, if a user is already on your site, it can be cumbersome for them to
-complete the installation---they would need to navigate away from your site
-to the CWS, complete the installation process, and then return to your site. To
-address this issue, you can initiate installation of applications "inline" from
-your site---the applications are still hosted in the Chrome Web Store, but
-users no longer have to leave your site to install them. See
-`Using Inline Installation </chrome/web-store/docs/inline_installation>`_
-for information on how to use this feature.
-
-Monetizing applications and extensions
---------------------------------------
-
-Google provides three primary monetization options for Native Client
-applications: in-app payments, one-time charges, and subscriptions.  Refer to
-`Monetizing Your App </chrome/web-store/docs/money>`_
-to learn about these options. The
-`Chrome Web Store Overview </chrome/web-store/docs/>`_
-also has information on different approaches to charging for your application.
