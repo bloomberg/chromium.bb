@@ -795,6 +795,12 @@ crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout
 
 crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Skip ]
 
+# These need to be rebaselined after http://crrev.com/24090003 lands.
+Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-alpha.html [ Pass ImageOnlyFailure ]
+Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-alpha-large.html [ Pass ImageOnlyFailure ]
+Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-blur.html [ Pass ImageOnlyFailure ]
+Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-blur-large.html [ Pass ImageOnlyFailure ]
+
 # Appcache is generally flaky on Windows.
 crbug.com/241576 [ XP ] http/tests/appcache [ Pass Timeout ]
 crbug.com/241576 [ Win7 Debug ] http/tests/appcache/update-cache.html [ Pass Timeout ]
