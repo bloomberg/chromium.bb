@@ -172,11 +172,14 @@
     attribute EventHandler onabort;
     attribute EventHandler onbeforeunload;
     attribute EventHandler onblur;
+    attribute EventHandler oncancel;
     attribute EventHandler oncanplay;
     attribute EventHandler oncanplaythrough;
     attribute EventHandler onchange;
     [ActivityLogging=Setter] attribute EventHandler onclick;
+    attribute EventHandler onclose;
     attribute EventHandler oncontextmenu;
+    attribute EventHandler oncuechange;
     [ActivityLogging=Setter] attribute EventHandler ondblclick;
     [ActivityLogging=Setter] attribute EventHandler ondrag;
     [ActivityLogging=Setter] attribute EventHandler ondragend;
@@ -220,11 +223,13 @@
     attribute EventHandler onpopstate;
     attribute EventHandler onprogress;
     attribute EventHandler onratechange;
+    attribute EventHandler onreset;
     attribute EventHandler onresize;
     attribute EventHandler onscroll;
     attribute EventHandler onseeked;
     attribute EventHandler onseeking;
     attribute EventHandler onselect;
+    attribute EventHandler onshow;
     attribute EventHandler onstalled;
     attribute EventHandler onstorage;
     attribute EventHandler onsubmit;
@@ -239,11 +244,9 @@
     // attribute EventHandler onbeforeprint;
     // attribute EventHandler onreadystatechange;
     // attribute EventHandler onredo;
-    // attribute EventHandler onshow;
     // attribute EventHandler onundo;
 
     // Webkit extensions
-    attribute EventHandler onreset;
     attribute EventHandler onsearch;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationend;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationiteration;

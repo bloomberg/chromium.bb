@@ -180,12 +180,15 @@ onbeforeload
 onbeforepaste
 onbeforeunload
 onblur
+oncancel
 oncanplay
 oncanplaythrough
 onchange
 onclick
+onclose
 oncontextmenu
 oncopy
+oncuechange
 oncut
 ondblclick
 ondrag
@@ -242,6 +245,7 @@ onselect
 onselectstart
 onselectionchange
 onwebkitspeechchange
+onshow
 onstalled
 onstorage
 onsuspend

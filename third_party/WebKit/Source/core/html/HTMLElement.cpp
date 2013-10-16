@@ -207,7 +207,9 @@ AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrNam
         attributeNameToEventNameMap.set(onanimationstartAttr.localName(), EventTypeNames::animationstart);
         attributeNameToEventNameMap.set(onanimationiterationAttr.localName(), EventTypeNames::animationiteration);
         attributeNameToEventNameMap.set(onanimationendAttr.localName(), EventTypeNames::animationend);
+        attributeNameToEventNameMap.set(oncancelAttr.localName(), EventTypeNames::cancel);
         attributeNameToEventNameMap.set(onclickAttr.localName(), EventTypeNames::click);
+        attributeNameToEventNameMap.set(oncloseAttr.localName(), EventTypeNames::close);
         attributeNameToEventNameMap.set(oncontextmenuAttr.localName(), EventTypeNames::contextmenu);
         attributeNameToEventNameMap.set(ondblclickAttr.localName(), EventTypeNames::dblclick);
         attributeNameToEventNameMap.set(onmousedownAttr.localName(), EventTypeNames::mousedown);
@@ -260,6 +262,7 @@ AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrNam
         attributeNameToEventNameMap.set(oncanplayAttr.localName(), EventTypeNames::canplay);
         attributeNameToEventNameMap.set(oncanplaythroughAttr.localName(), EventTypeNames::canplaythrough);
         attributeNameToEventNameMap.set(onchangeAttr.localName(), EventTypeNames::change);
+        attributeNameToEventNameMap.set(oncuechangeAttr.localName(), EventTypeNames::cuechange);
         attributeNameToEventNameMap.set(ondurationchangeAttr.localName(), EventTypeNames::durationchange);
         attributeNameToEventNameMap.set(onemptiedAttr.localName(), EventTypeNames::emptied);
         attributeNameToEventNameMap.set(onendedAttr.localName(), EventTypeNames::ended);
@@ -275,6 +278,7 @@ AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrNam
         attributeNameToEventNameMap.set(onseekedAttr.localName(), EventTypeNames::seeked);
         attributeNameToEventNameMap.set(onseekingAttr.localName(), EventTypeNames::seeking);
         attributeNameToEventNameMap.set(onselectAttr.localName(), EventTypeNames::select);
+        attributeNameToEventNameMap.set(onshowAttr.localName(), EventTypeNames::show);
         attributeNameToEventNameMap.set(onstalledAttr.localName(), EventTypeNames::stalled);
         attributeNameToEventNameMap.set(onsuspendAttr.localName(), EventTypeNames::suspend);
         attributeNameToEventNameMap.set(ontimeupdateAttr.localName(), EventTypeNames::timeupdate);
