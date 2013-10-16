@@ -10,7 +10,7 @@
 // This is a list of global descriptor keys to be used with the
 // base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
-  kCrashDumpSignal = kPrimaryIPCChannel + 1,
+  kCrashDumpSignal = kIPCDescriptorMax,
   kSandboxIPCChannel,  // http://code.google.com/p/chromium/LinuxSandboxIPC
 
 #if defined(OS_ANDROID)

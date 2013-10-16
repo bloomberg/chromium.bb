@@ -26,11 +26,5 @@ enum NaClZygoteIPCCommand {
 
 // For communications between NaCl loader and zygote.
 #define kNaClZygoteDescriptor 3
-// For communications between the NaCl loader process and
-// the SUID sandbox.
-#define kNaClSandboxDescriptor 5
-// NOTE: kNaClSandboxDescriptor must match
-// content/browser/zygote_main_linux.cc
-// kMagicSandboxIPCDescriptor.
 
 #endif  // COMPONENTS_NACL_COMMON_NACL_HELPER_LINUX_H_

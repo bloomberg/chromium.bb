@@ -15,7 +15,9 @@
 #include "base/threading/thread_local_storage.h"
 
 #if defined(OS_POSIX)
+#include "base/posix/global_descriptors.h"
 #include "errno.h"
+#include "ipc/ipc_descriptors.h"
 #endif
 
 namespace base {
@@ -88,10 +90,10 @@ inline int AlignedSize(int size) {
 
 }  // namespace
 
-// The StatsTable::Private maintains convenience pointers into the
+// The StatsTable::Internal maintains convenience pointers into the
 // shared memory segment.  Use this class to keep the data structure
 // clean and accessible.
-class StatsTable::Private {
+class StatsTable::Internal {
  public:
   // Various header information contained in the memory mapped segment.
   struct TableHeader {
@@ -101,12 +103,14 @@ class StatsTable::Private {
     int max_threads;
   };
 
-  // Construct a new Private based on expected size parameters, or
+  // Construct a new Internal based on expected size parameters, or
   // return NULL on failure.
-  static Private* New(const std::string& name, int size,
-                                int max_threads, int max_counters);
+  static Internal* New(const std::string& name,
+                       int size,
+                       int max_threads,
+                       int max_counters);
 
-  SharedMemory* shared_memory() { return &shared_memory_; }
+  SharedMemory* shared_memory() { return shared_memory_.get(); }
 
   // Accessors for our header pointers
   TableHeader* table_header() const { return table_header_; }
@@ -136,14 +140,19 @@ class StatsTable::Private {
 
  private:
   // Constructor is private because you should use New() instead.
-  Private()
-      : table_header_(NULL),
+  explicit Internal(SharedMemory* shared_memory)
+      : shared_memory_(shared_memory),
+        table_header_(NULL),
         thread_names_table_(NULL),
         thread_tid_table_(NULL),
         thread_pid_table_(NULL),
         counter_names_table_(NULL),
         data_table_(NULL) {
   }
+
+  // Create or open the SharedMemory used by the stats table.
+  static SharedMemory* CreateSharedMemory(const std::string& name,
+                                          int size);
 
   // Initializes the table on first access.  Sets header values
   // appropriately and zeroes all counters.
@@ -153,41 +162,68 @@ class StatsTable::Private {
   // Initializes our in-memory pointers into a pre-created StatsTable.
   void ComputeMappedPointers(void* memory);
 
-  SharedMemory shared_memory_;
+  scoped_ptr<SharedMemory> shared_memory_;
   TableHeader* table_header_;
   char* thread_names_table_;
   PlatformThreadId* thread_tid_table_;
   int* thread_pid_table_;
   char* counter_names_table_;
   int* data_table_;
+
+  DISALLOW_COPY_AND_ASSIGN(Internal);
 };
 
 // static
-StatsTable::Private* StatsTable::Private::New(const std::string& name,
-                                              int size,
-                                              int max_threads,
-                                              int max_counters) {
-  scoped_ptr<Private> priv(new Private());
-  if (!priv->shared_memory_.CreateNamed(name, true, size))
+StatsTable::Internal* StatsTable::Internal::New(const std::string& name,
+                                                int size,
+                                                int max_threads,
+                                                int max_counters) {
+  scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(name, size));
+  if (!shared_memory.get())
     return NULL;
-  if (!priv->shared_memory_.Map(size))
+  if (!shared_memory->Map(size))
     return NULL;
-  void* memory = priv->shared_memory_.memory();
+  void* memory = shared_memory->memory();
 
+  scoped_ptr<Internal> internal(new Internal(shared_memory.release()));
   TableHeader* header = static_cast<TableHeader*>(memory);
 
   // If the version does not match, then assume the table needs
   // to be initialized.
   if (header->version != kTableVersion)
-    priv->InitializeTable(memory, size, max_counters, max_threads);
+    internal->InitializeTable(memory, size, max_counters, max_threads);
 
   // We have a valid table, so compute our pointers.
-  priv->ComputeMappedPointers(memory);
+  internal->ComputeMappedPointers(memory);
 
-  return priv.release();
+  return internal.release();
 }
 
-void StatsTable::Private::InitializeTable(void* memory, int size,
+// static
+SharedMemory* StatsTable::Internal::CreateSharedMemory(const std::string& name,
+                                                       int size) {
+#if defined(OS_POSIX)
+  GlobalDescriptors* global_descriptors = GlobalDescriptors::GetInstance();
+  if (global_descriptors->MaybeGet(kStatsTableSharedMemFd) != -1) {
+    // Open the shared memory file descriptor passed by the browser process.
+    FileDescriptor file_descriptor(
+        global_descriptors->Get(kStatsTableSharedMemFd), false);
+    return new SharedMemory(file_descriptor, false);
+  }
+  // Otherwise we need to create it.
+  scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
+  if (!shared_memory->CreateAnonymous(size))
+    return NULL;
+  return shared_memory.release();
+#elif defined(OS_WIN)
+  scoped_ptr<SharedMemory> shared_memory(new SharedMemory());
+  if (!shared_memory->CreateNamed(name, true, size))
+    return NULL;
+  return shared_memory.release();
+#endif
+}
+
+void StatsTable::Internal::InitializeTable(void* memory, int size,
                                           int max_counters,
                                           int max_threads) {
   // Zero everything.
@@ -201,7 +237,7 @@ void StatsTable::Private::InitializeTable(void* memory, int size,
   header->max_threads = max_threads;
 }
 
-void StatsTable::Private::ComputeMappedPointers(void* memory) {
+void StatsTable::Internal::ComputeMappedPointers(void* memory) {
   char* data = static_cast<char*>(memory);
   int offset = 0;
 
@@ -252,19 +288,19 @@ StatsTable* global_table = NULL;
 
 StatsTable::StatsTable(const std::string& name, int max_threads,
                        int max_counters)
-    : impl_(NULL),
+    : internal_(NULL),
       tls_index_(SlotReturnFunction) {
   int table_size =
-    AlignedSize(sizeof(Private::TableHeader)) +
+    AlignedSize(sizeof(Internal::TableHeader)) +
     AlignedSize((max_counters * sizeof(char) * kMaxCounterNameLength)) +
     AlignedSize((max_threads * sizeof(char) * kMaxThreadNameLength)) +
     AlignedSize(max_threads * sizeof(int)) +
     AlignedSize(max_threads * sizeof(int)) +
     AlignedSize((sizeof(int) * (max_counters * max_threads)));
 
-  impl_ = Private::New(name, table_size, max_threads, max_counters);
+  internal_ = Internal::New(name, table_size, max_threads, max_counters);
 
-  if (!impl_)
+  if (!internal_)
     DPLOG(ERROR) << "StatsTable did not initialize";
 }
 
@@ -278,7 +314,7 @@ StatsTable::~StatsTable() {
   tls_index_.Free();
 
   // Cleanup our shared memory.
-  delete impl_;
+  delete internal_;
 
   // If we are the global table, unregister ourselves.
   if (global_table == this)
@@ -302,14 +338,14 @@ int StatsTable::GetSlot() const {
 
 int StatsTable::RegisterThread(const std::string& name) {
   int slot = 0;
-  if (!impl_)
+  if (!internal_)
     return 0;
 
   // Registering a thread requires that we lock the shared memory
   // so that two threads don't grab the same slot.  Fortunately,
   // thread creation shouldn't happen in inner loops.
   {
-    SharedMemoryAutoLock lock(impl_->shared_memory());
+    SharedMemoryAutoLock lock(internal_->shared_memory());
     slot = FindEmptyThread();
     if (!slot) {
       return 0;
@@ -319,10 +355,10 @@ int StatsTable::RegisterThread(const std::string& name) {
     std::string thread_name = name;
     if (name.empty())
       thread_name = kUnknownName;
-    strlcpy(impl_->thread_name(slot), thread_name.c_str(),
+    strlcpy(internal_->thread_name(slot), thread_name.c_str(),
             kMaxThreadNameLength);
-    *(impl_->thread_tid(slot)) = PlatformThread::CurrentId();
-    *(impl_->thread_pid(slot)) = GetCurrentProcId();
+    *(internal_->thread_tid(slot)) = PlatformThread::CurrentId();
+    *(internal_->thread_pid(slot)) = GetCurrentProcId();
   }
 
   // Set our thread local storage.
@@ -334,14 +370,14 @@ int StatsTable::RegisterThread(const std::string& name) {
 }
 
 int StatsTable::CountThreadsRegistered() const {
-  if (!impl_)
+  if (!internal_)
     return 0;
 
   // Loop through the shared memory and count the threads that are active.
   // We intentionally do not lock the table during the operation.
   int count = 0;
-  for (int index = 1; index <= impl_->max_threads(); index++) {
-    char* name = impl_->thread_name(index);
+  for (int index = 1; index <= internal_->max_threads(); index++) {
+    char* name = internal_->thread_name(index);
     if (*name != '\0')
       count++;
   }
@@ -352,7 +388,7 @@ int StatsTable::FindCounter(const std::string& name) {
   // Note: the API returns counters numbered from 1..N, although
   // internally, the array is 0..N-1.  This is so that we can return
   // zero as "not found".
-  if (!impl_)
+  if (!internal_)
     return 0;
 
   // Create a scope for our auto-lock.
@@ -371,20 +407,20 @@ int StatsTable::FindCounter(const std::string& name) {
 }
 
 int* StatsTable::GetLocation(int counter_id, int slot_id) const {
-  if (!impl_)
+  if (!internal_)
     return NULL;
-  if (slot_id > impl_->max_threads())
+  if (slot_id > internal_->max_threads())
     return NULL;
 
-  int* row = impl_->row(counter_id);
+  int* row = internal_->row(counter_id);
   return &(row[slot_id-1]);
 }
 
 const char* StatsTable::GetRowName(int index) const {
-  if (!impl_)
+  if (!internal_)
     return NULL;
 
-  return impl_->counter_name(index);
+  return internal_->counter_name(index);
 }
 
 int StatsTable::GetRowValue(int index) const {
@@ -392,13 +428,13 @@ int StatsTable::GetRowValue(int index) const {
 }
 
 int StatsTable::GetRowValue(int index, int pid) const {
-  if (!impl_)
+  if (!internal_)
     return 0;
 
   int rv = 0;
-  int* row = impl_->row(index);
-  for (int slot_id = 1; slot_id <= impl_->max_threads(); slot_id++) {
-    if (pid == 0 || *impl_->thread_pid(slot_id) == pid)
+  int* row = internal_->row(index);
+  for (int slot_id = 1; slot_id <= internal_->max_threads(); slot_id++) {
+    if (pid == 0 || *internal_->thread_pid(slot_id) == pid)
       rv += row[slot_id-1];
   }
   return rv;
@@ -409,7 +445,7 @@ int StatsTable::GetCounterValue(const std::string& name) {
 }
 
 int StatsTable::GetCounterValue(const std::string& name, int pid) {
-  if (!impl_)
+  if (!internal_)
     return 0;
 
   int row = FindCounter(name);
@@ -419,15 +455,15 @@ int StatsTable::GetCounterValue(const std::string& name, int pid) {
 }
 
 int StatsTable::GetMaxCounters() const {
-  if (!impl_)
+  if (!internal_)
     return 0;
-  return impl_->max_counters();
+  return internal_->max_counters();
 }
 
 int StatsTable::GetMaxThreads() const {
-  if (!impl_)
+  if (!internal_)
     return 0;
-  return impl_->max_threads();
+  return internal_->max_threads();
 }
 
 int* StatsTable::FindLocation(const char* name) {
@@ -457,10 +493,10 @@ void StatsTable::UnregisterThread() {
 void StatsTable::UnregisterThread(TLSData* data) {
   if (!data)
     return;
-  DCHECK(impl_);
+  DCHECK(internal_);
 
   // Mark the slot free by zeroing out the thread name.
-  char* name = impl_->thread_name(data->slot);
+  char* name = internal_->thread_name(data->slot);
   *name = '\0';
 
   // Remove the calling thread's TLS so that it cannot use the slot.
@@ -488,16 +524,16 @@ int StatsTable::FindEmptyThread() const {
   // in TLS, which is always initialized to zero, not -1.  If 0 were
   // returned as a valid slot number, it would be confused with the
   // uninitialized state.
-  if (!impl_)
+  if (!internal_)
     return 0;
 
   int index = 1;
-  for (; index <= impl_->max_threads(); index++) {
-    char* name = impl_->thread_name(index);
+  for (; index <= internal_->max_threads(); index++) {
+    char* name = internal_->thread_name(index);
     if (!*name)
       break;
   }
-  if (index > impl_->max_threads())
+  if (index > internal_->max_threads())
     return 0;  // The table is full.
   return index;
 }
@@ -510,12 +546,12 @@ int StatsTable::FindCounterOrEmptyRow(const std::string& name) const {
   // There isn't much reason for this other than to be consistent
   // with the way we track columns for thread slots.  (See comments
   // in FindEmptyThread for why it is done this way).
-  if (!impl_)
+  if (!internal_)
     return 0;
 
   int free_slot = 0;
-  for (int index = 1; index <= impl_->max_counters(); index++) {
-    char* row_name = impl_->counter_name(index);
+  for (int index = 1; index <= internal_->max_counters(); index++) {
+    char* row_name = internal_->counter_name(index);
     if (!*row_name && !free_slot)
       free_slot = index;  // save that we found a free slot
     else if (!strncmp(row_name, name.c_str(), kMaxCounterNameLength))
@@ -525,14 +561,14 @@ int StatsTable::FindCounterOrEmptyRow(const std::string& name) const {
 }
 
 int StatsTable::AddCounter(const std::string& name) {
-  if (!impl_)
+  if (!internal_)
     return 0;
 
   int counter_id = 0;
   {
     // To add a counter to the shared memory, we need the
     // shared memory lock.
-    SharedMemoryAutoLock lock(impl_->shared_memory());
+    SharedMemoryAutoLock lock(internal_->shared_memory());
 
     // We have space, so create a new counter.
     counter_id = FindCounterOrEmptyRow(name);
@@ -542,7 +578,7 @@ int StatsTable::AddCounter(const std::string& name) {
     std::string counter_name = name;
     if (name.empty())
       counter_name = kUnknownName;
-    strlcpy(impl_->counter_name(counter_id), counter_name.c_str(),
+    strlcpy(internal_->counter_name(counter_id), counter_name.c_str(),
             kMaxCounterNameLength);
   }
 
@@ -564,5 +600,13 @@ StatsTable::TLSData* StatsTable::GetTLSData() const {
   DCHECK_EQ(data->table, this);
   return data;
 }
+
+#if defined(OS_POSIX)
+SharedMemoryHandle StatsTable::GetSharedMemoryHandle() const {
+  if (!internal_)
+    return SharedMemory::NULLHandle();
+  return internal_->shared_memory()->handle();
+}
+#endif
 
 }  // namespace base

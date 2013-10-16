@@ -25,6 +25,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local_storage.h"
 
@@ -116,6 +117,11 @@ class BASE_EXPORT StatsTable {
   // The maxinum number of threads/columns in the table.
   int GetMaxThreads() const;
 
+#if defined(OS_POSIX)
+  // Get the underlying shared memory handle for the table.
+  base::SharedMemoryHandle GetSharedMemoryHandle() const;
+#endif
+
   // The maximum length (in characters) of a Thread's name including
   // null terminator, as stored in the shared memory.
   static const int kMaxThreadNameLength = 32;
@@ -130,7 +136,7 @@ class BASE_EXPORT StatsTable {
   static int* FindLocation(const char *name);
 
  private:
-  class Private;
+  class Internal;
   struct TLSData;
   typedef hash_map<std::string, int> CountersMap;
 
@@ -172,7 +178,7 @@ class BASE_EXPORT StatsTable {
   // initialized.
   TLSData* GetTLSData() const;
 
-  Private* impl_;
+  Internal* internal_;
 
   // The counters_lock_ protects the counters_ hash table.
   base::Lock counters_lock_;

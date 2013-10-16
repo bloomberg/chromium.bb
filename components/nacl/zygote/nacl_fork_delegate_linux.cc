@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -26,6 +27,7 @@
 #include "components/nacl/common/nacl_helper_linux.h"
 #include "components/nacl/common/nacl_paths.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 
 namespace {
@@ -110,14 +112,17 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
   VLOG(1) << "NaClForkDelegate::Init()";
   int fds[2];
 
+  // For communications between the NaCl loader process and
+  // the SUID sandbox.
+  int nacl_sandbox_descriptor =
+      base::GlobalDescriptors::kBaseDescriptor + kSandboxIPCChannel;
   // Confirm a hard-wired assumption.
-  // The NaCl constant is from chrome/nacl/nacl_linux_helper.h
-  DCHECK(kNaClSandboxDescriptor == sandboxdesc);
+  DCHECK_EQ(sandboxdesc, nacl_sandbox_descriptor);
 
   CHECK(socketpair(PF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
   base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
-  fds_to_map.push_back(std::make_pair(sandboxdesc, kNaClSandboxDescriptor));
+  fds_to_map.push_back(std::make_pair(sandboxdesc, nacl_sandbox_descriptor));
 
   // Using nacl_helper_bootstrap is not necessary on x86-64 because
   // NaCl's x86-64 sandbox is not zero-address-based.  Starting
