@@ -46,7 +46,6 @@ import shlex
 import shutil
 import subprocess
 import sys
-import threading
 import time
 
 import bisect_utils
@@ -326,6 +325,32 @@ def CheckRunGit(command):
   return output
 
 
+def SetBuildSystemDefault(build_system):
+  """Sets up any environment variables needed to build with the specified build
+  system.
+
+  Args:
+    build_system: A string specifying build system. Currently only 'ninja' or
+        'make' are supported."""
+  if build_system == 'ninja':
+    gyp_var = os.getenv('GYP_GENERATORS')
+
+    if not gyp_var or not 'ninja' in gyp_var:
+      if gyp_var:
+        os.environ['GYP_GENERATORS'] = gyp_var + ',ninja'
+      else:
+        os.environ['GYP_GENERATORS'] = 'ninja'
+
+      if IsWindows():
+        os.environ['GYP_DEFINES'] = 'component=shared_library '\
+            'incremental_chrome_dll=1 disable_nacl=1 fastbuild=1 '\
+            'chromium_win_pch=0'
+  elif build_system == 'make':
+    os.environ['GYP_GENERATORS'] = 'make'
+  else:
+    raise RuntimeError('%s build not supported.' % build_system)
+
+
 def BuildWithMake(threads, targets):
   cmd = ['make', 'BUILDTYPE=Release']
 
@@ -369,14 +394,58 @@ def BuildWithVisualStudio(targets):
 class Builder(object):
   """Builder is used by the bisect script to build relevant targets and deploy.
   """
+  def __init__(self, opts):
+    """Performs setup for building with target build system.
+
+    Args:
+        opts: Options parsed from command line.
+    """
+    if IsWindows():
+      if not opts.build_preference:
+        opts.build_preference = 'msvs'
+
+      if opts.build_preference == 'msvs':
+        if not os.getenv('VS100COMNTOOLS'):
+          raise RuntimeError(
+              'Path to visual studio could not be determined.')
+      else:
+        SetBuildSystemDefault(opts.build_preference)
+    else:
+      if not opts.build_preference:
+        if 'ninja' in os.getenv('GYP_GENERATORS'):
+          opts.build_preference = 'ninja'
+        else:
+          opts.build_preference = 'make'
+
+      SetBuildSystemDefault(opts.build_preference)
+
+    if not bisect_utils.SetupPlatformBuildEnvironment(opts):
+      raise RuntimeError('Failed to set platform environment.')
+
+    bisect_utils.RunGClient(['runhooks'])
+
+  @staticmethod
+  def FromOpts(opts):
+    builder = None
+    if opts.target_platform == 'cros':
+      builder = CrosBuilder(opts)
+    elif opts.target_platform == 'android':
+      builder = AndroidBuilder(opts)
+    else:
+      builder = DesktopBuilder(opts)
+    return builder
+
   def Build(self, depot, opts):
     raise NotImplementedError()
 
 
 class DesktopBuilder(Builder):
   """DesktopBuilder is used to build Chromium on linux/mac/windows."""
+  def __init__(self, opts):
+    super(DesktopBuilder, self).__init__(opts)
+
   def Build(self, depot, opts):
-    """Builds chrome and performance_ui_tests using options passed into
+    """Builds chromium_builder_perf target using options passed into
     the script.
 
     Args:
@@ -407,6 +476,9 @@ class DesktopBuilder(Builder):
 
 class AndroidBuilder(Builder):
   """AndroidBuilder is used to build on android."""
+  def __init__(self, opts):
+    super(AndroidBuilder, self).__init__(opts)
+
   def InstallAPK(self, opts):
     """Installs apk to device.
 
@@ -455,6 +527,9 @@ class AndroidBuilder(Builder):
 class CrosBuilder(Builder):
   """CrosBuilder is used to build and image ChromeOS/Chromium when cros is the
   target platform."""
+  def __init__(self, opts):
+    super(CrosBuilder, self).__init__(opts)
+
   def ImageToTarget(self, opts):
     """Installs latest image to target specified by opts.cros_remote_ip.
 
@@ -814,14 +889,7 @@ class BisectPerformanceMetrics(object):
     self.depot_cwd = {}
     self.cleanup_commands = []
     self.warnings = []
-    self.builder = None
-
-    if opts.target_platform == 'cros':
-      self.builder = CrosBuilder()
-    elif opts.target_platform == 'android':
-      self.builder = AndroidBuilder()
-    else:
-      self.builder = DesktopBuilder()
+    self.builder = Builder.FromOpts(opts)
 
     # This always starts true since the script grabs latest first.
     self.was_blink = True
@@ -1389,11 +1457,9 @@ class BisectPerformanceMetrics(object):
       True if successful.
     """
     if self.opts.target_platform == 'android':
-      cwd = os.getcwd()
-      os.chdir(os.path.join(self.src_cwd, '..'))
-      if not bisect_utils.SetupAndroidBuildEnvironment(self.opts):
+      if not bisect_utils.SetupAndroidBuildEnvironment(self.opts,
+          path_to_src=self.src_cwd):
         return False
-      os.chdir(cwd)
 
     if depot == 'cros':
       return self.CreateCrosChroot()
@@ -2401,29 +2467,6 @@ def DetermineAndCreateSourceControl(opts):
   return None
 
 
-def SetNinjaBuildSystemDefault():
-  """Makes ninja the default build system to be used by
-  the bisection script."""
-  gyp_var = os.getenv('GYP_GENERATORS')
-
-  if not gyp_var or not 'ninja' in gyp_var:
-    if gyp_var:
-      os.environ['GYP_GENERATORS'] = gyp_var + ',ninja'
-    else:
-      os.environ['GYP_GENERATORS'] = 'ninja'
-
-    if IsWindows():
-      os.environ['GYP_DEFINES'] = 'component=shared_library '\
-          'incremental_chrome_dll=1 disable_nacl=1 fastbuild=1 '\
-          'chromium_win_pch=0'
-
-
-def SetMakeBuildSystemDefault():
-  """Makes make the default build system to be used by
-  the bisection script."""
-  os.environ['GYP_GENERATORS'] = 'make'
-
-
 def CheckPlatformSupported(opts):
   """Checks that this platform and build system are supported.
 
@@ -2439,35 +2482,6 @@ def CheckPlatformSupported(opts):
     print "Sorry, this platform isn't supported yet."
     print
     return False
-
-  if IsWindows():
-    if not opts.build_preference:
-      opts.build_preference = 'msvs'
-
-    if opts.build_preference == 'msvs':
-      if not os.getenv('VS100COMNTOOLS'):
-        print 'Error: Path to visual studio could not be determined.'
-        print
-        return False
-    elif opts.build_preference == 'ninja':
-      SetNinjaBuildSystemDefault()
-    else:
-      assert False, 'Error: %s build not supported' % opts.build_preference
-  else:
-    if not opts.build_preference:
-      if 'ninja' in os.getenv('GYP_GENERATORS'):
-        opts.build_preference = 'ninja'
-      else:
-        opts.build_preference = 'make'
-
-    if opts.build_preference == 'ninja':
-      SetNinjaBuildSystemDefault()
-    elif opts.build_preference == 'make':
-      SetMakeBuildSystemDefault()
-    elif opts.build_preference != 'make':
-      assert False, 'Error: %s build not supported' % opts.build_preference
-
-  bisect_utils.RunGClient(['runhooks'])
 
   return True
 
@@ -2763,12 +2777,6 @@ def main():
                                                        custom_deps):
       return 1
 
-
-    if not bisect_utils.SetupPlatformBuildEnvironment(opts):
-      print 'Error: Failed to set platform environment.'
-      print
-      return 1
-
     os.chdir(os.path.join(os.getcwd(), 'src'))
 
     if not RemoveBuildFiles():
@@ -2794,20 +2802,23 @@ def main():
     print
     return 1
 
-  bisect_test = BisectPerformanceMetrics(source_control, opts)
   try:
-    bisect_results = bisect_test.Run(opts.command,
-                                     opts.bad_revision,
-                                     opts.good_revision,
-                                     opts.metric)
-    bisect_test.FormatAndPrintResults(bisect_results)
-  finally:
-    bisect_test.PerformCleanup()
+    bisect_test = BisectPerformanceMetrics(source_control, opts)
+    try:
+      bisect_results = bisect_test.Run(opts.command,
+                                       opts.bad_revision,
+                                       opts.good_revision,
+                                       opts.metric)
+      bisect_test.FormatAndPrintResults(bisect_results)
 
-  if not bisect_results['error']:
-    return 0
-  else:
-    return 1
+      if not bisect_results['error']:
+        return 0
+    finally:
+      bisect_test.PerformCleanup()
+  except RuntimeError, e:
+    print 'Error: %s' % e.message
+    print
+  return 1
 
 if __name__ == '__main__':
   sys.exit(main())

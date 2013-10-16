@@ -375,12 +375,12 @@ def CopyAndSaveOriginalEnvironmentVars():
   ORIGINAL_ENV = os.environ.copy()
 
 
-def SetupAndroidBuildEnvironment(opts):
+def SetupAndroidBuildEnvironment(opts, path_to_src=None):
   """Sets up the android build environment.
 
   Args:
     opts: The options parsed from the command line through parse_args().
-    path_to_file: Path to the bisect script's directory.
+    path_to_src: Path to the src checkout.
 
   Returns:
     True if successful.
@@ -398,7 +398,7 @@ def SetupAndroidBuildEnvironment(opts):
   proc = subprocess.Popen(['bash', '-c', 'source %s && env' % path_to_file],
                            stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE,
-                           cwd='src')
+                           cwd=path_to_src)
   (out, _) = proc.communicate()
 
   for line in out.splitlines():
@@ -412,7 +412,6 @@ def SetupPlatformBuildEnvironment(opts):
 
   Args:
     opts: The options parsed from the command line through parse_args().
-    path_to_file: Path to the bisect script's directory.
 
   Returns:
     True if successful.
