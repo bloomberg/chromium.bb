@@ -10,8 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/common/content_settings_types.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -21,10 +19,6 @@
 class ContentSettingBubbleModel;
 class ContentSettingMediaMenuModel;
 class Profile;
-
-namespace content {
-class WebContents;
-}
 
 namespace ui {
 class SimpleMenuModel;
@@ -46,15 +40,13 @@ class RadioButton;
 // the blocking settings for the current site, a close button, and a link to
 // get to a more comprehensive settings management dialog.  A few types have
 // more or fewer controls than this.
-class ContentSettingBubbleContents : public content::NotificationObserver,
-                                     public views::BubbleDelegateView,
+class ContentSettingBubbleContents : public views::BubbleDelegateView,
                                      public views::ButtonListener,
                                      public views::LinkListener,
                                      public views::MenuButtonListener {
  public:
   ContentSettingBubbleContents(
       ContentSettingBubbleModel* content_setting_bubble_model,
-      content::WebContents* web_contents,
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow);
   virtual ~ContentSettingBubbleContents();
@@ -87,23 +79,12 @@ class ContentSettingBubbleContents : public content::NotificationObserver,
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Helper to get the preferred width of the media menu.
   int GetPreferredMediaMenuWidth(views::MenuButton* button,
                                  ui::SimpleMenuModel* menu_model);
 
   // Provides data for this bubble.
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
-
-  // The active web contents.
-  content::WebContents* web_contents_;
-
-  // A registrar for listening for WEB_CONTENTS_DESTROYED notifications.
-  content::NotificationRegistrar registrar_;
 
   // Some of our controls, so we can tell what's been clicked when we get a
   // message.

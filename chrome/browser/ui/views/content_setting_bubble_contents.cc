@@ -19,8 +19,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/password_menu_model.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -140,12 +138,10 @@ ContentSettingBubbleContents::MediaMenuParts::~MediaMenuParts() {}
 
 ContentSettingBubbleContents::ContentSettingBubbleContents(
     ContentSettingBubbleModel* content_setting_bubble_model,
-    WebContents* web_contents,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow)
     : BubbleDelegateView(anchor_view, arrow),
       content_setting_bubble_model_(content_setting_bubble_model),
-      web_contents_(web_contents),
       cancel_button_(NULL),
       save_button_(NULL),
       custom_link_(NULL),
@@ -153,9 +149,6 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       close_button_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
-
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::Source<WebContents>(web_contents));
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
@@ -545,15 +538,6 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
         ui::MENU_SOURCE_NONE,
         views::MenuRunner::HAS_MNEMONICS));
   }
-}
-
-void ContentSettingBubbleContents::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
-  DCHECK(source == content::Source<WebContents>(web_contents_));
-  web_contents_ = NULL;
 }
 
 int ContentSettingBubbleContents::GetPreferredMediaMenuWidth(
