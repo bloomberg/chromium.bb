@@ -87,11 +87,17 @@ class PPAPI_SHARED_EXPORT VarTracker {
 
   // Creates a new resource var that points to a given resource ID. Returns a
   // PP_Var that references it and has an initial reference count of 1.
+  // If |pp_resource| is 0, returns a valid, empty resource var. On the plugin
+  // side (where it is possible to tell which resources exist), if |pp_resource|
+  // does not exist, returns a null var.
   PP_Var MakeResourcePPVar(PP_Resource pp_resource);
 
   // Creates a new resource var that points to a given resource ID. This is
   // implemented by the host and plugin tracker separately, because the plugin
   // keeps a reference to the resource, and the host does not.
+  // If |pp_resource| is 0, returns a valid, empty resource var. On the plugin
+  // side (where it is possible to tell which resources exist), if |pp_resource|
+  // does not exist, returns NULL.
   virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) = 0;
 
   // Return a vector containing all PP_Vars that are in the tracker. This is

@@ -155,8 +155,13 @@ void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
 }
 
 ResourceVar* PluginVarTracker::MakeResourceVar(PP_Resource pp_resource) {
+  // The resource 0 returns a null resource var.
+  if (!pp_resource)
+    return new PluginResourceVar();
+
   ResourceTracker* resource_tracker = PpapiGlobals::Get()->GetResourceTracker();
   ppapi::Resource* resource = resource_tracker->GetResource(pp_resource);
+  // A non-existant resource other than 0 returns NULL.
   if (!resource)
     return NULL;
   return new PluginResourceVar(resource);

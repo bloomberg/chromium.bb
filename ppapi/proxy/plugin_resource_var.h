@@ -31,6 +31,7 @@ class PPAPI_PROXY_EXPORT PluginResourceVar : public ppapi::ResourceVar {
   virtual ~PluginResourceVar();
 
  private:
+  // If NULL, this represents the PP_Resource 0.
   scoped_refptr<ppapi::Resource> resource_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResourceVar);
