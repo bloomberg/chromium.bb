@@ -4,7 +4,6 @@
 
 #include "ash/display/root_window_transformers.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/launcher/launcher.h"
@@ -134,8 +133,6 @@ typedef test::AshTestBase RootWindowTransformersTest;
 #endif
 
 TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
   MagnificationController* magnifier =
       Shell::GetInstance()->magnification_controller();
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
@@ -185,7 +182,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   magnifier->SetEnabled(false);
 
   DisplayLayout display_layout(DisplayLayout::BOTTOM, 50);
-  display_controller->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(display_layout);
   EXPECT_EQ("50,120 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
 

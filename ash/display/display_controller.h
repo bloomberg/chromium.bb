@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/display/display_layout.h"
 #include "ash/display/display_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -129,10 +128,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   gfx::Insets GetOverscanInsets(int64 display_id) const;
   void SetOverscanInsets(int64 display_id, const gfx::Insets& insets_in_dip);
 
-  // Sets the layout for the current display pair. The |layout| specifies
-  // the locaion of the secondary display relative to the primary.
-  void SetLayoutForCurrentDisplays(const DisplayLayout& layout);
-
   // Checks if the mouse pointer is on one of displays, and moves to
   // the center of the nearest display if it's outside of all displays.
   void EnsurePointerInDisplays();
@@ -178,11 +173,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.
   aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display);
-
-  void UpdateDisplayBoundsForLayout();
-
-  void SetLayoutForDisplayIdPair(const DisplayIdPair& display_pair,
-                                 const DisplayLayout& layout);
 
   void OnFadeOutForSwapDisplayFinished();
 

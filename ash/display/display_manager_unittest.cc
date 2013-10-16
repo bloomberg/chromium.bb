@@ -1048,5 +1048,77 @@ TEST_F(DisplayManagerTest, MirroredLayout) {
   EXPECT_EQ(2U, display_manager->num_connected_displays());
 }
 
+TEST_F(DisplayManagerTest, InvertLayout) {
+  EXPECT_EQ("left, 0",
+            DisplayLayout(DisplayLayout::RIGHT, 0).Invert().ToString());
+  EXPECT_EQ("left, -100",
+            DisplayLayout(DisplayLayout::RIGHT, 100).Invert().ToString());
+  EXPECT_EQ("left, 50",
+            DisplayLayout(DisplayLayout::RIGHT, -50).Invert().ToString());
+
+  EXPECT_EQ("right, 0",
+            DisplayLayout(DisplayLayout::LEFT, 0).Invert().ToString());
+  EXPECT_EQ("right, -90",
+            DisplayLayout(DisplayLayout::LEFT, 90).Invert().ToString());
+  EXPECT_EQ("right, 60",
+            DisplayLayout(DisplayLayout::LEFT, -60).Invert().ToString());
+
+  EXPECT_EQ("bottom, 0",
+            DisplayLayout(DisplayLayout::TOP, 0).Invert().ToString());
+  EXPECT_EQ("bottom, -80",
+            DisplayLayout(DisplayLayout::TOP, 80).Invert().ToString());
+  EXPECT_EQ("bottom, 70",
+            DisplayLayout(DisplayLayout::TOP, -70).Invert().ToString());
+
+  EXPECT_EQ("top, 0",
+            DisplayLayout(DisplayLayout::BOTTOM, 0).Invert().ToString());
+  EXPECT_EQ("top, -70",
+            DisplayLayout(DisplayLayout::BOTTOM, 70).Invert().ToString());
+  EXPECT_EQ("top, 80",
+            DisplayLayout(DisplayLayout::BOTTOM, -80).Invert().ToString());
+}
+
+#if defined(OS_WIN)
+// TODO(scottmg): RootWindow doesn't get resized on Windows
+// Ash. http://crbug.com/247916.
+#define MAYBE_UpdateDisplayWithHostOrigin DISABLED_UpdateDisplayWithHostOrigin
+#else
+#define MAYBE_UpdateDisplayWithHostOrigin UpdateDisplayWithHostOrigin
+#endif
+
+TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
+  UpdateDisplay("100x200,300x400");
+  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
+  Shell::RootWindowList root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  ASSERT_EQ(2U, root_windows.size());
+  EXPECT_EQ("1,1", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
+  // UpdateDisplay set the origin if it's not set.
+  EXPECT_NE("1,1", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
+
+  UpdateDisplay("100x200,200+300-300x400");
+  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
+  EXPECT_EQ("0,0", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("200,300", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
+
+  UpdateDisplay("400+500-200x300,300x400");
+  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
+  EXPECT_EQ("400,500", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x300", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("0,0", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
+
+  UpdateDisplay("100+200-100x200,300+500-200x300");
+  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
+  EXPECT_EQ("100,200", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("300,500", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x300", root_windows[1]->GetHostSize().ToString());
+}
+
 }  // namespace internal
 }  // namespace ash

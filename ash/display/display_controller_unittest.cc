@@ -165,7 +165,7 @@ void SetSecondaryDisplayLayoutAndOffset(DisplayLayout::Position position,
                                         int offset) {
   DisplayLayout layout(position, offset);
   ASSERT_GT(Shell::GetScreen()->GetNumDisplays(), 1);
-  Shell::GetInstance()->display_controller()->
+  Shell::GetInstance()->display_manager()->
       SetLayoutForCurrentDisplays(layout);
 }
 
@@ -530,36 +530,6 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
 }
 
-TEST_F(DisplayControllerTest, InvertLayout) {
-  EXPECT_EQ("left, 0",
-            DisplayLayout(DisplayLayout::RIGHT, 0).Invert().ToString());
-  EXPECT_EQ("left, -100",
-            DisplayLayout(DisplayLayout::RIGHT, 100).Invert().ToString());
-  EXPECT_EQ("left, 50",
-            DisplayLayout(DisplayLayout::RIGHT, -50).Invert().ToString());
-
-  EXPECT_EQ("right, 0",
-            DisplayLayout(DisplayLayout::LEFT, 0).Invert().ToString());
-  EXPECT_EQ("right, -90",
-            DisplayLayout(DisplayLayout::LEFT, 90).Invert().ToString());
-  EXPECT_EQ("right, 60",
-            DisplayLayout(DisplayLayout::LEFT, -60).Invert().ToString());
-
-  EXPECT_EQ("bottom, 0",
-            DisplayLayout(DisplayLayout::TOP, 0).Invert().ToString());
-  EXPECT_EQ("bottom, -80",
-            DisplayLayout(DisplayLayout::TOP, 80).Invert().ToString());
-  EXPECT_EQ("bottom, 70",
-            DisplayLayout(DisplayLayout::TOP, -70).Invert().ToString());
-
-  EXPECT_EQ("top, 0",
-            DisplayLayout(DisplayLayout::BOTTOM, 0).Invert().ToString());
-  EXPECT_EQ("top, -70",
-            DisplayLayout(DisplayLayout::BOTTOM, 70).Invert().ToString());
-  EXPECT_EQ("top, 80",
-            DisplayLayout(DisplayLayout::BOTTOM, -80).Invert().ToString());
-}
-
 TEST_F(DisplayControllerTest, SwapPrimary) {
   if (!SupportsMultipleDisplays())
     return;
@@ -574,7 +544,7 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
   DisplayLayout display_layout(DisplayLayout::RIGHT, 50);
-  display_controller->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(display_layout);
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::RootWindow* primary_root =
@@ -668,7 +638,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
   DisplayLayout display_layout(DisplayLayout::RIGHT, 50);
-  display_controller->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(display_layout);
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::RootWindow* primary_root =
@@ -759,7 +729,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
 
   DisplayLayout display_layout(DisplayLayout::RIGHT, 50);
-  display_controller->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(display_layout);
 
   EXPECT_NE(primary_display.id(), secondary_display.id());
   aura::RootWindow* primary_root =
@@ -924,48 +894,6 @@ TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
   EXPECT_EQ(1.0f, test_api.GetDisplay().device_scale_factor());
 }
 
-#if defined(OS_WIN)
-// TODO(scottmg): RootWindow doesn't get resized on Windows
-// Ash. http://crbug.com/247916.
-#define MAYBE_UpdateDisplayWithHostOrigin DISABLED_UpdateDisplayWithHostOrigin
-#else
-#define MAYBE_UpdateDisplayWithHostOrigin UpdateDisplayWithHostOrigin
-#endif
-
-TEST_F(DisplayControllerTest, MAYBE_UpdateDisplayWithHostOrigin) {
-  UpdateDisplay("100x200,300x400");
-  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  Shell::RootWindowList root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
-  ASSERT_EQ(2U, root_windows.size());
-  EXPECT_EQ("1,1", root_windows[0]->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
-  // UpdateDisplay set the origin if it's not set.
-  EXPECT_NE("1,1", root_windows[1]->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
-
-  UpdateDisplay("100x200,200+300-300x400");
-  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("0,0", root_windows[0]->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
-  EXPECT_EQ("200,300", root_windows[1]->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
-
-  UpdateDisplay("400+500-200x300,300x400");
-  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("400,500", root_windows[0]->GetHostOrigin().ToString());
-  EXPECT_EQ("200x300", root_windows[0]->GetHostSize().ToString());
-  EXPECT_EQ("0,0", root_windows[1]->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
-
-  UpdateDisplay("100+200-100x200,300+500-200x300");
-  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("100,200", root_windows[0]->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
-  EXPECT_EQ("300,500", root_windows[1]->GetHostOrigin().ToString());
-  EXPECT_EQ("200x300", root_windows[1]->GetHostSize().ToString());
-}
-
 TEST_F(DisplayControllerTest, OverscanInsets) {
   if (!SupportsMultipleDisplays())
     return;
@@ -1018,8 +946,6 @@ TEST_F(DisplayControllerTest, Rotate) {
   if (!SupportsMultipleDisplays())
     return;
 
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
   internal::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
   TestEventHandler event_handler;
@@ -1052,7 +978,7 @@ TEST_F(DisplayControllerTest, Rotate) {
   EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
 
   DisplayLayout display_layout(DisplayLayout::BOTTOM, 50);
-  display_controller->SetLayoutForCurrentDisplays(display_layout);
+  display_manager->SetLayoutForCurrentDisplays(display_layout);
   EXPECT_EQ("50,120 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
 

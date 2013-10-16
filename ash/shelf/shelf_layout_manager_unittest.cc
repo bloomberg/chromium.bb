@@ -7,7 +7,6 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher.h"
@@ -869,7 +868,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
 
   UpdateDisplay("800x600,800x600");
   DisplayLayout display_layout(DisplayLayout::RIGHT, 0);
-  Shell::GetInstance()->display_controller()->SetLayoutForCurrentDisplays(
+  Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display_layout);
   // Put the primary monitor's shelf on the display boundary.
   ShelfLayoutManager* shelf = GetShelfLayoutManager();

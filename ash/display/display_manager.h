@@ -113,6 +113,11 @@ class ASH_EXPORT DisplayManager
   // Returns the current display pair.
   DisplayIdPair GetCurrentDisplayIdPair() const;
 
+  // Sets the layout for the current display pair. The |layout| specifies
+  // the locaion of the secondary display relative to the primary.
+  void SetLayoutForCurrentDisplays(
+      const DisplayLayout& layout_relative_to_primary);
+
   // Returns display for given |id|;
   const gfx::Display& GetDisplayForId(int64 id) const;
 

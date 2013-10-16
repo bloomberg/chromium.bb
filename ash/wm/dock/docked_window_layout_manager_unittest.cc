@@ -5,7 +5,6 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
@@ -528,7 +527,7 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   // Layout the secondary display to the bottom of the primary.
   DisplayLayout layout(DisplayLayout::BOTTOM, 0);
   ASSERT_GT(Shell::GetScreen()->GetNumDisplays(), 1);
-  Shell::GetInstance()->display_controller()->
+  Shell::GetInstance()->display_manager()->
       SetLayoutForCurrentDisplays(layout);
 
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 600, 201, 201)));

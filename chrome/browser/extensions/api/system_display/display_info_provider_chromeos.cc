@@ -167,9 +167,8 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
                          int target_display_id) {
   ash::DisplayLayout layout = GetLayoutForRectangles(primary_display_bounds,
                                                      target_display_bounds);
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
-  display_controller->SetLayoutForCurrentDisplays(layout);
+  ash::Shell::GetInstance()->display_manager()->
+      SetLayoutForCurrentDisplays(layout);
 }
 
 // Validates that parameters passed to the SetInfo function are valid for the

@@ -282,6 +282,43 @@ DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
   }
 }
 
+void DisplayManager::SetLayoutForCurrentDisplays(
+    const DisplayLayout& layout_relative_to_primary) {
+  DCHECK_EQ(2U, GetNumDisplays());
+  if (GetNumDisplays() < 2)
+    return;
+  const gfx::Display& primary = Shell::GetScreen()->GetPrimaryDisplay();
+  const DisplayIdPair pair = GetCurrentDisplayIdPair();
+  // Invert if the primary was swapped.
+  DisplayLayout to_set = pair.first == primary.id() ?
+      layout_relative_to_primary : layout_relative_to_primary.Invert();
+
+  DisplayLayout current_layout =
+      layout_store_->GetRegisteredDisplayLayout(pair);
+  if (to_set.position != current_layout.position ||
+      to_set.offset != current_layout.offset) {
+    to_set.primary_id = primary.id();
+    layout_store_->RegisterLayoutForDisplayIdPair(
+        pair.first, pair.second, to_set);
+    if (delegate_)
+      delegate_->PreDisplayConfigurationChange(false);
+    // PreDisplayConfigurationChange(false);
+    // TODO(oshima): Call UpdateDisplays instead.
+    const DisplayLayout layout = GetCurrentDisplayLayout();
+    UpdateDisplayBoundsForLayoutById(
+        layout, primary,
+        ScreenAsh::GetSecondaryDisplay().id());
+
+    //UpdateCurrentDisplayBoundsForLayout();
+    // Primary's bounds stay the same. Just notify bounds change
+    // on the secondary.
+    Shell::GetInstance()->screen()->NotifyBoundsChanged(
+        ScreenAsh::GetSecondaryDisplay());
+    if (delegate_)
+      delegate_->PostDisplayConfigurationChange();
+  }
+}
+
 const gfx::Display& DisplayManager::GetDisplayForId(int64 id) const {
   gfx::Display* display =
       const_cast<DisplayManager*>(this)->FindDisplayForId(id);
@@ -902,7 +939,6 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
   }
   return false;
 }
-
 
 // static
 void DisplayManager::UpdateDisplayBoundsForLayout(

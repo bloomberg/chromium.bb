@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
@@ -277,8 +276,7 @@ void StoreDisplayPrefs() {
 }
 
 void SetCurrentDisplayLayout(const ash::DisplayLayout& layout) {
-  ash::DisplayController* display_controller = GetDisplayController();
-  display_controller->SetLayoutForCurrentDisplays(layout);
+  GetDisplayManager()->SetLayoutForCurrentDisplays(layout);
 }
 
 void LoadDisplayPreferences(bool first_run_after_boot) {

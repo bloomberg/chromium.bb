@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -357,7 +357,7 @@ TEST_F(ImmersiveModeControllerAshTest, MouseEventsVerticalDisplayLayout) {
   // Set up initial state.
   UpdateDisplay("800x600,800x600");
   ash::DisplayLayout display_layout(ash::DisplayLayout::TOP, 0);
-  ash::Shell::GetInstance()->display_controller()->SetLayoutForCurrentDisplays(
+  ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       display_layout);
 
   controller()->SetEnabled(true);

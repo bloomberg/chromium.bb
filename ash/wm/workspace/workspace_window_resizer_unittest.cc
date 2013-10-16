@@ -6,7 +6,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -723,7 +723,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 10, 0));
 
   // Positions the secondary display at the bottom the primary display.
-  Shell::GetInstance()->display_controller()->SetLayoutForCurrentDisplays(
+  Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       ash::DisplayLayout(ash::DisplayLayout::BOTTOM, 0));
 
   {

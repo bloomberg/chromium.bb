@@ -4,7 +4,7 @@
 
 #include "ash/display/screen_position_controller.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -37,7 +37,7 @@ void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
   DisplayLayout layout =
       Shell::GetInstance()->display_manager()->GetCurrentDisplayLayout();
   layout.position = position;
-  Shell::GetInstance()->display_controller()->
+  Shell::GetInstance()->display_manager()->
       SetLayoutForCurrentDisplays(layout);
 }
 
