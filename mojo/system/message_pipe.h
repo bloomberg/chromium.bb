@@ -5,28 +5,31 @@
 #ifndef MOJO_SYSTEM_MESSAGE_PIPE_H_
 #define MOJO_SYSTEM_MESSAGE_PIPE_H_
 
-#include <deque>
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/system_export.h"
-#include "mojo/system/waiter_list.h"
 
 namespace mojo {
 namespace system {
 
-class MessageInTransit;
+class MessagePipeEndpoint;
 class Waiter;
 
 // |MessagePipe| is the secondary object implementing a message pipe (see the
-// explanatory comment in core_impl.cc), and is jointly owned by the two
-// dispatchers passed in to the constructor. This class is thread-safe.
+// explanatory comment in core_impl.cc). It is typically owned by the
+// dispatcher(s) corresponding to the local endpoints. This class is
+// thread-safe.
 class MOJO_SYSTEM_EXPORT MessagePipe :
     public base::RefCountedThreadSafe<MessagePipe> {
  public:
+  MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint_0,
+              scoped_ptr<MessagePipeEndpoint> endpoint_1);
+
+  // Convenience constructor that constructs a |MessagePipe| with two new
+  // |LocalMessagePipeEndpoint|s.
   MessagePipe();
 
   // These are called by the dispatcher to implement its methods of
@@ -55,17 +58,8 @@ class MOJO_SYSTEM_EXPORT MessagePipe :
   friend class base::RefCountedThreadSafe<MessagePipe>;
   virtual ~MessagePipe();
 
-  MojoWaitFlags SatisfiedFlagsNoLock(unsigned port);
-  MojoWaitFlags SatisfiableFlagsNoLock(unsigned port);
-
   base::Lock lock_;  // Protects the following members.
-  bool is_open_[2];
-  // These are *incoming* queues for their corresponding ports. It owns its
-  // contents.
-  // TODO(vtl): When possible (with C++11), convert the plain pointers to
-  // scoped_ptr/unique_ptr.
-  std::deque<MessageInTransit*> message_queues_[2];
-  WaiterList waiter_lists_[2];
+  scoped_ptr<MessagePipeEndpoint> endpoints_[2];
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipe);
 };
