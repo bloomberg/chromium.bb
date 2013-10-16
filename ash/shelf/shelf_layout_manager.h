@@ -332,7 +332,9 @@ class ASH_EXPORT ShelfLayoutManager :
       const gfx::Rect& keyboard_bounds) OVERRIDE;
 
   // Overridden from dock::DockObserver:
-  virtual void OnDockBoundsChanging(const gfx::Rect& dock_bounds) OVERRIDE;
+  virtual void OnDockBoundsChanging(
+      const gfx::Rect& dock_bounds,
+      DockedWindowLayoutManagerObserver::Reason reason) OVERRIDE;
 
   // Generates insets for inward edge based on the current shelf alignment.
   gfx::Insets GetInsetsForAlignment(int distance) const;

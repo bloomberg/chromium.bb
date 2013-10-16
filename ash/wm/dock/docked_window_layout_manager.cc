@@ -69,6 +69,7 @@ class DockedBackgroundWidget : public views::Widget {
     params.accept_events = false;
     set_focus_on_creation(false);
     Init(params);
+    GetNativeWindow()->SetProperty(internal::kStayInSameRootWindowKey, true);
     DCHECK_EQ(GetNativeView()->GetRootWindow(), parent->GetRootWindow());
     views::View* content_view = new views::View;
     content_view->set_background(
@@ -236,7 +237,7 @@ void DockedWindowLayoutManager::UndockDraggedWindow() {
   DCHECK(!IsPopupOrTransient(dragged_window_));
   OnWindowUndocked();
   Relayout();
-  UpdateDockBounds();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
   is_dragged_from_dock_ = false;
 }
 
@@ -263,7 +264,7 @@ void DockedWindowLayoutManager::FinishDragging() {
   dragged_window_ = NULL;
   dragged_bounds_ = gfx::Rect();
   Relayout();
-  UpdateDockBounds();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 void DockedWindowLayoutManager::SetLauncher(ash::Launcher* launcher) {
@@ -350,7 +351,7 @@ void DockedWindowLayoutManager::OnWindowResized() {
   Relayout();
   // When screen resizes update the insets even when dock width or alignment
   // does not change.
-  UpdateDockBounds();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::DISPLAY_RESIZED);
 }
 
 void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
@@ -369,7 +370,7 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   child->AddObserver(this);
   wm::GetWindowState(child)->AddObserver(this);
   Relayout();
-  UpdateDockBounds();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
@@ -400,7 +401,7 @@ void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
   if (visible)
     wm::GetWindowState(child)->Restore();
   Relayout();
-  UpdateDockBounds();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 void DockedWindowLayoutManager::SetChildBounds(
@@ -412,6 +413,11 @@ void DockedWindowLayoutManager::SetChildBounds(
 
 ////////////////////////////////////////////////////////////////////////////////
 // DockLayoutManager, ash::ShellObserver implementation:
+
+void DockedWindowLayoutManager::OnDisplayWorkAreaInsetsChanged() {
+  Relayout();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::DISPLAY_INSETS_CHANGED);
+}
 
 void DockedWindowLayoutManager::OnFullscreenStateChanged(
     bool is_fullscreen, aura::RootWindow* root_window) {
@@ -440,7 +446,7 @@ void DockedWindowLayoutManager::OnFullscreenStateChanged(
     }
   }
   Relayout();
-  UpdateDockBounds();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 void DockedWindowLayoutManager::OnShelfAlignmentChanged(
@@ -465,7 +471,7 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
     alignment_ = DOCKED_ALIGNMENT_LEFT;
   }
   Relayout();
-  UpdateDockBounds();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::SHELF_ALIGNMENT_CHANGED);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -498,7 +504,6 @@ void DockedWindowLayoutManager::OnWindowShowTypeChanged(
       SetChildBoundsDirect(window, previous_bounds);
       window->Show();
     }
-    UpdateDockBounds();
   } else {
     RestoreDockedWindow(window_state);
   }
@@ -801,28 +806,26 @@ void DockedWindowLayoutManager::Relayout() {
   UpdateStacking(active_window);
 }
 
-void DockedWindowLayoutManager::UpdateDockBounds() {
+void DockedWindowLayoutManager::UpdateDockBounds(
+    DockedWindowLayoutManagerObserver::Reason reason) {
   int dock_inset = docked_width_ + (docked_width_ > 0 ? kMinDockGap : 0);
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
   gfx::Rect bounds = gfx::Rect(
       alignment_ == DOCKED_ALIGNMENT_RIGHT && dock_inset > 0 ?
           dock_container_->bounds().right() - dock_inset:
           dock_container_->bounds().x(),
       dock_container_->bounds().y(),
       dock_inset,
-      dock_container_->bounds().height());
+      work_area.height());
   docked_bounds_ = bounds +
       dock_container_->GetBoundsInScreen().OffsetFromOrigin();
   FOR_EACH_OBSERVER(
       DockedWindowLayoutManagerObserver,
       observer_list_,
-      OnDockBoundsChanging(bounds));
-
+      OnDockBoundsChanging(bounds, reason));
   // Show or hide background for docked area.
-  gfx::Rect background_bounds(docked_bounds_);
-  const gfx::Rect work_area =
-      Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
-  background_bounds.set_height(work_area.height());
-  background_widget_->SetBounds(background_bounds);
+  background_widget_->SetBounds(docked_bounds_);
   if (docked_width_ > 0) {
     background_widget_->Show();
     background_widget_->GetNativeWindow()->layer()->SetOpacity(
@@ -895,7 +898,7 @@ void DockedWindowLayoutManager::OnKeyboardBoundsChanging(
   // This bounds change will have caused a change to the Shelf which does not
   // propagate automatically to this class, so manually recalculate bounds.
   Relayout();
-  UpdateDockBounds();
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::KEYBOARD_BOUNDS_CHANGING);
 }
 
 }  // namespace internal

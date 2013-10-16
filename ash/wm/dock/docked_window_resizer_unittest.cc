@@ -492,6 +492,47 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
             w2->parent()->id());
 }
 
+// Create two windows, dock one and change shelf to auto-hide.
+TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
+
+  // w1 should be attached and snapped to the right edge.
+  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
+            w1->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
+
+  scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegateAndType(
+      NULL, aura::client::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
+  wm::GetWindowState(w2.get())->Maximize();
+  EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->IsMaximized());
+
+  gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(w1.get()).work_area();
+  DockedWindowLayoutManager* manager =
+      static_cast<DockedWindowLayoutManager*>(w1->parent()->layout_manager());
+
+  // Docked window should be centered vertically in the work area.
+  EXPECT_EQ(work_area.CenterPoint().y(), w1->bounds().CenterPoint().y());
+  // Docked background should extend to the bottom of work area.
+  EXPECT_EQ(work_area.bottom(), manager->docked_bounds().bottom());
+
+  // set launcher shelf to be aligned on the right
+  ash::Shell* shell = ash::Shell::GetInstance();
+  shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+                                  shell->GetPrimaryRootWindow());
+  work_area =
+        Shell::GetScreen()->GetDisplayNearestWindow(w1.get()).work_area();
+  // Docked window should be centered vertically in the work area.
+  EXPECT_EQ(work_area.CenterPoint().y(), w1->bounds().CenterPoint().y());
+  // Docked background should extend to the bottom of work area.
+  EXPECT_EQ(work_area.bottom(), manager->docked_bounds().bottom());
+}
+
 // Dock one window, try to dock another window on the opposite side (should not
 // dock).
 TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {

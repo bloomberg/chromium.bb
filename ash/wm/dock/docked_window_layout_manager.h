@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/dock/dock_types.h"
+#include "ash/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/basictypes.h"
@@ -126,6 +127,7 @@ class ASH_EXPORT DockedWindowLayoutManager
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
   // ash::ShellObserver:
+  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
                                         aura::RootWindow* root_window) OVERRIDE;
   virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
@@ -202,8 +204,9 @@ class ASH_EXPORT DockedWindowLayoutManager
   void Relayout();
 
   // Updates |docked_bounds_| and workspace insets when bounds of docked windows
-  // area change.
-  void UpdateDockBounds();
+  // area change. Passing |reason| to observers allows selectively skipping
+  // notifications.
+  void UpdateDockBounds(DockedWindowLayoutManagerObserver::Reason reason);
 
   // Called whenever the window stacking order needs to be updated (e.g. focus
   // changes or a window is moved).

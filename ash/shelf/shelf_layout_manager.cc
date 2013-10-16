@@ -1127,7 +1127,11 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(
 }
 
 void ShelfLayoutManager::OnDockBoundsChanging(
-    const gfx::Rect& dock_bounds) {
+    const gfx::Rect& dock_bounds,
+    DockedWindowLayoutManagerObserver::Reason reason) {
+  // Skip shelf layout in case docked notification originates from this class.
+  if (reason == DISPLAY_INSETS_CHANGED)
+    return;
   if (dock_bounds_ != dock_bounds) {
     dock_bounds_ = dock_bounds;
     OnWindowResized();
