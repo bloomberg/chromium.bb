@@ -183,7 +183,7 @@ def _CompressFile(host_file, output):
 
 
 def _ArchiveFiles(host_files, output):
-  with zipfile.ZipFile(output, 'w') as z:
+  with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as z:
     for host_file in host_files:
       z.write(host_file)
       os.unlink(host_file)
