@@ -1284,6 +1284,10 @@ cr.define('cr.ui', function() {
    */
   function handleMouseDown(e) {
     this.handlePointerDownUp_(e);
+
+    if (e.defaultPrevented)
+      return;
+
     // If non-focusable area in a list item is clicked and the item still
     // contains the focused element, the item did a special focus handling
     // [1] and we should not focus on the list.
