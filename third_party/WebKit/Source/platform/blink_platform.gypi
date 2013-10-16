@@ -308,6 +308,7 @@
     'platform_test_files': [
       'ClockTest.cpp',
       'DecimalTest.cpp',
+      'KeyCodeConversionTestGtk.cpp',
       'LayoutUnitTest.cpp',
       'PODArenaTest.cpp',
       'PODFreeListArenaTest.cpp',

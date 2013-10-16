@@ -32,9 +32,9 @@
 
 #include "platform/KeyCodeConversion.h"
 
+#include "platform/KeyboardCodes.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtest/gtest.h>
-#include "platform/KeyboardCodes.h"
 
 using namespace WebCore;
 
