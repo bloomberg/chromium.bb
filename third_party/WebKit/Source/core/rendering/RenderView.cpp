@@ -75,6 +75,7 @@ RenderView::RenderView(Document* document)
 
 RenderView::~RenderView()
 {
+    document().clearRenderView();
 }
 
 bool RenderView::hitTest(const HitTestRequest& request, HitTestResult& result)

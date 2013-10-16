@@ -434,7 +434,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_sawElementsInKnownNamespaces(false)
     , m_isSrcdocDocument(false)
     , m_isMobileDocument(false)
-    , m_renderer(0)
+    , m_renderView(0)
     , m_eventQueue(DocumentEventQueue::create(this))
     , m_weakFactory(this)
     , m_contextDocument(initializer.contextDocument())
@@ -1545,7 +1545,7 @@ void Document::scheduleStyleRecalc()
 
 void Document::unscheduleStyleRecalc()
 {
-    ASSERT(!confusingAndOftenMisusedAttached() || (!needsStyleRecalc() && !childNeedsStyleRecalc()));
+    ASSERT(!isActive() || (!needsStyleRecalc() && !childNeedsStyleRecalc()));
     m_styleRecalcTimer.stop();
 }
 
@@ -1960,12 +1960,11 @@ void Document::clearStyleResolver()
 
 void Document::attach(const AttachContext& context)
 {
-    ASSERT(!confusingAndOftenMisusedAttached());
     ASSERT(!m_axObjectCache || this != topDocument());
 
-    // Create the rendering tree
-    setRenderer(new RenderView(this));
-    renderView()->setIsInWindow(true);
+    m_renderView = new RenderView(this);
+    m_renderView->setIsInWindow(true);
+    setRenderer(m_renderView);
 
     m_renderView->setStyle(StyleResolver::styleForDocument(*this));
     view()->updateCompositingLayersAfterStyleChange();
@@ -1980,8 +1979,6 @@ void Document::attach(const AttachContext& context)
 void Document::detach(const AttachContext& context)
 {
     m_lifecyle.advanceTo(DocumentLifecycle::Stopping);
-
-    ASSERT(confusingAndOftenMisusedAttached());
 
     if (page())
         page()->documentDetached(this);
@@ -2000,8 +1997,6 @@ void Document::detach(const AttachContext& context)
     if (svgExtensions())
         accessSVGExtensions()->pauseAnimations();
 
-    RenderObject* render = renderer();
-
     documentWillBecomeInactive();
 
     SharedWorkerRepository::documentDetached(this);
@@ -2011,9 +2006,6 @@ void Document::detach(const AttachContext& context)
         if (view)
             view->detachCustomScrollbars();
     }
-
-    // indicate destruction mode, i.e. confusingAndOftenMisusedAttached() but renderer == 0
-    setRenderer(0);
 
     m_hoverNode = 0;
     m_focusedElement = 0;
@@ -2026,9 +2018,6 @@ void Document::detach(const AttachContext& context)
     unscheduleStyleRecalc();
 
     clearStyleResolver();
-
-    if (render)
-        render->destroy();
 
     if (m_touchEventTargets && m_touchEventTargets->size() && parentDocument())
         parentDocument()->didRemoveEventTargetNode(this);
@@ -2053,7 +2042,7 @@ void Document::prepareForDestruction()
 
     // The process of disconnecting descendant frames could have already
     // detached us.
-    if (!confusingAndOftenMisusedAttached())
+    if (!isActive())
         return;
 
     if (DOMWindow* window = this->domWindow())
@@ -3154,7 +3143,7 @@ void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpd
 {
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
-    if (!confusingAndOftenMisusedAttached() || (!m_didCalculateStyleResolver && !haveStylesheetsLoaded())) {
+    if (!isActive() || (!m_didCalculateStyleResolver && !haveStylesheetsLoaded())) {
         m_styleResolver.clear();
         return;
     }
