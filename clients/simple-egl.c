@@ -92,7 +92,7 @@ struct window {
 	struct wl_shell_surface *shell_surface;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
-	int fullscreen, configured, opaque;
+	int fullscreen, configured, opaque, buffer_size;
 };
 
 static const char *vert_shader_text =
@@ -115,7 +115,7 @@ static const char *frag_shader_text =
 static int running = 1;
 
 static void
-init_egl(struct display *display, int opaque)
+init_egl(struct display *display, struct window *window)
 {
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -128,15 +128,15 @@ init_egl(struct display *display, int opaque)
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 1,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
 	};
 
-	EGLint major, minor, n;
+	EGLint major, minor, n, count, i, size;
+	EGLConfig *configs;
 	EGLBoolean ret;
 
-	if (opaque)
+	if (window->opaque || window->buffer_size == 16)
 		config_attribs[9] = 0;
 
 	display->egl.dpy = eglGetDisplay(display->display);
@@ -147,9 +147,30 @@ init_egl(struct display *display, int opaque)
 	ret = eglBindAPI(EGL_OPENGL_ES_API);
 	assert(ret == EGL_TRUE);
 
+	if (!eglGetConfigs(display->egl.dpy, NULL, 0, &count) || count < 1)
+		assert(0);
+
+	configs = calloc(count, sizeof *configs);
+	assert(configs);
+
 	ret = eglChooseConfig(display->egl.dpy, config_attribs,
-			      &display->egl.conf, 1, &n);
-	assert(ret && n == 1);
+			      configs, count, &n);
+	assert(ret && n >= 1);
+
+	for (i = 0; i < n; i++) {
+		eglGetConfigAttrib(display->egl.dpy,
+				   configs[i], EGL_BUFFER_SIZE, &size);
+		if (window->buffer_size == size) {
+			display->egl.conf = configs[i];
+			break;
+		}
+	}
+	free(configs);
+	if (display->egl.conf == NULL) {
+		fprintf(stderr, "did not find config with buffer size %d\n",
+			window->buffer_size);
+		exit(EXIT_FAILURE);
+	}
 
 	display->egl.ctx = eglCreateContext(display->egl.dpy,
 					    display->egl.conf,
@@ -705,6 +726,7 @@ usage(int error_code)
 	fprintf(stderr, "Usage: simple-egl [OPTIONS]\n\n"
 		"  -f\tRun in fullscreen mode\n"
 		"  -o\tCreate an opaque surface\n"
+		"  -s\tUse a 16 bpp EGL config\n"
 		"  -h\tThis help text\n\n");
 
 	exit(error_code);
@@ -722,12 +744,15 @@ main(int argc, char **argv)
 	display.window = &window;
 	window.window_size.width  = 250;
 	window.window_size.height = 250;
+	window.buffer_size = 32;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp("-f", argv[i]) == 0)
 			window.fullscreen = 1;
 		else if (strcmp("-o", argv[i]) == 0)
 			window.opaque = 1;
+		else if (strcmp("-s", argv[i]) == 0)
+			window.buffer_size = 16;
 		else if (strcmp("-h", argv[i]) == 0)
 			usage(EXIT_SUCCESS);
 		else
@@ -743,7 +768,7 @@ main(int argc, char **argv)
 
 	wl_display_dispatch(display.display);
 
-	init_egl(&display, window.opaque);
+	init_egl(&display, &window);
 	create_surface(&window);
 	init_gl(&window);
 
