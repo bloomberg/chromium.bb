@@ -17,6 +17,10 @@ class WebInputEventTraits {
   static size_t GetSize(WebKit::WebInputEvent::Type type);
   static ScopedWebInputEvent Clone(const WebKit::WebInputEvent& event);
   static void Delete(WebKit::WebInputEvent* event);
+  static bool CanCoalesce(const WebKit::WebInputEvent& event_to_coalesce,
+                          const WebKit::WebInputEvent& event);
+  static void Coalesce(const WebKit::WebInputEvent& event_to_coalesce,
+                       WebKit::WebInputEvent* event);
 };
 
 }  // namespace content

@@ -373,14 +373,8 @@ void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
     return;
   }
   GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
-  if (gesture_event.event.type == WebInputEvent::GestureScrollUpdate &&
-      last_event->event.type == WebInputEvent::GestureScrollUpdate &&
-      last_event->event.modifiers == gesture_event.event.modifiers) {
-    last_event->event.data.scrollUpdate.deltaX +=
-        gesture_event.event.data.scrollUpdate.deltaX;
-    last_event->event.data.scrollUpdate.deltaY +=
-        gesture_event.event.data.scrollUpdate.deltaY;
-    last_event->latency.MergeWith(gesture_event.latency);
+  if (last_event->CanCoalesceWith(gesture_event)) {
+    last_event->CoalesceWith(gesture_event);
     return;
   }
   if (coalesced_gesture_events_.size() == 2 ||

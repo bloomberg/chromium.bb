@@ -7,6 +7,8 @@
 
 #include "ui/events/latency_info.h"
 
+#include "content/common/input/web_input_event_traits.h"
+
 namespace WebKit {
 class WebGestureEvent;
 class WebMouseEvent;
@@ -26,6 +28,16 @@ class EventWithLatencyInfo {
       : event(e), latency(l) {}
 
   EventWithLatencyInfo() {}
+
+  bool CanCoalesceWith(const EventWithLatencyInfo& other)
+      const WARN_UNUSED_RESULT {
+    return WebInputEventTraits::CanCoalesce(other.event, event);
+  }
+
+  void CoalesceWith(const EventWithLatencyInfo& other) {
+    WebInputEventTraits::Coalesce(other.event, &event);
+    latency.MergeWith(other.latency);
+  }
 };
 
 typedef EventWithLatencyInfo<WebKit::WebGestureEvent>

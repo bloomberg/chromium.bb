@@ -36,35 +36,17 @@ class CoalescedWebTouchEvent {
   // the event was coalesced.
   bool CoalesceEventIfPossible(
       const TouchEventWithLatencyInfo& event_with_latency) {
-    if (coalesced_event_.event.type == WebKit::WebInputEvent::TouchMove &&
-        event_with_latency.event.type == WebKit::WebInputEvent::TouchMove &&
-        coalesced_event_.event.modifiers ==
-        event_with_latency.event.modifiers &&
-        coalesced_event_.event.touchesLength ==
-        event_with_latency.event.touchesLength &&
-        !ignore_ack_) {
-      TRACE_EVENT_INSTANT0(
-          "input", "TouchEventQueue::MoveCoalesced", TRACE_EVENT_SCOPE_THREAD);
-      events_.push_back(event_with_latency);
-      // The WebTouchPoints include absolute position information. So it is
-      // sufficient to simply replace the previous event with the new event.
-      // However, it is necessary to make sure that all the points have the
-      // correct state, i.e. the touch-points that moved in the last event, but
-      // didn't change in the current event, will have Stationary state. It is
-      // necessary to change them back to Moved state.
-      const WebKit::WebTouchEvent last_event = coalesced_event_.event;
-      const ui::LatencyInfo last_latency = coalesced_event_.latency;
-      coalesced_event_ = event_with_latency;
-      coalesced_event_.latency.MergeWith(last_latency);
-      for (unsigned i = 0; i < last_event.touchesLength; ++i) {
-        if (last_event.touches[i].state == WebKit::WebTouchPoint::StateMoved)
-          coalesced_event_.event.touches[i].state =
-              WebKit::WebTouchPoint::StateMoved;
-      }
-      return true;
-    }
+    if (ignore_ack_)
+      return false;
 
-    return false;
+    if (!coalesced_event_.CanCoalesceWith(event_with_latency))
+      return false;
+
+    TRACE_EVENT_INSTANT0(
+        "input", "TouchEventQueue::MoveCoalesced", TRACE_EVENT_SCOPE_THREAD);
+    coalesced_event_.CoalesceWith(event_with_latency);
+    events_.push_back(event_with_latency);
+    return true;
   }
 
   const TouchEventWithLatencyInfo& coalesced_event() const {

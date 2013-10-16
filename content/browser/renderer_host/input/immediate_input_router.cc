@@ -38,27 +38,6 @@ using WebKit::WebMouseWheelEvent;
 namespace content {
 namespace {
 
-// Returns |true| if the two wheel events should be coalesced.
-bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
-                                    const WebMouseWheelEvent& new_event) {
-  return last_event.modifiers == new_event.modifiers &&
-         last_event.scrollByPage == new_event.scrollByPage &&
-         last_event.hasPreciseScrollingDeltas
-             == new_event.hasPreciseScrollingDeltas &&
-         last_event.phase == new_event.phase &&
-         last_event.momentumPhase == new_event.momentumPhase;
-}
-
-float GetUnacceleratedDelta(float accelerated_delta, float acceleration_ratio) {
-  return accelerated_delta * acceleration_ratio;
-}
-
-float GetAccelerationRatio(float accelerated_delta, float unaccelerated_delta) {
-  if (unaccelerated_delta == 0.f || accelerated_delta == 0.f)
-    return 1.f;
-  return unaccelerated_delta / accelerated_delta;
-}
-
 GestureEventWithLatencyInfo MakeGestureEvent(WebInputEvent::Type type,
                                              double timestamp_seconds,
                                              int x,
@@ -166,35 +145,10 @@ void ImmediateInputRouter::SendWheelEvent(
   // which many, very small wheel events are sent).
   if (mouse_wheel_pending_) {
     if (coalesced_mouse_wheel_events_.empty() ||
-        !ShouldCoalesceMouseWheelEvents(
-            coalesced_mouse_wheel_events_.back().event, wheel_event.event)) {
+        !coalesced_mouse_wheel_events_.back().CanCoalesceWith(wheel_event)) {
       coalesced_mouse_wheel_events_.push_back(wheel_event);
     } else {
-      MouseWheelEventWithLatencyInfo* last_wheel_event =
-          &coalesced_mouse_wheel_events_.back();
-      float unaccelerated_x =
-          GetUnacceleratedDelta(last_wheel_event->event.deltaX,
-                                last_wheel_event->event.accelerationRatioX) +
-          GetUnacceleratedDelta(wheel_event.event.deltaX,
-                                wheel_event.event.accelerationRatioX);
-      float unaccelerated_y =
-          GetUnacceleratedDelta(last_wheel_event->event.deltaY,
-                                last_wheel_event->event.accelerationRatioY) +
-          GetUnacceleratedDelta(wheel_event.event.deltaY,
-                                wheel_event.event.accelerationRatioY);
-      last_wheel_event->event.deltaX += wheel_event.event.deltaX;
-      last_wheel_event->event.deltaY += wheel_event.event.deltaY;
-      last_wheel_event->event.wheelTicksX += wheel_event.event.wheelTicksX;
-      last_wheel_event->event.wheelTicksY += wheel_event.event.wheelTicksY;
-      last_wheel_event->event.accelerationRatioX =
-          GetAccelerationRatio(last_wheel_event->event.deltaX, unaccelerated_x);
-      last_wheel_event->event.accelerationRatioY =
-          GetAccelerationRatio(last_wheel_event->event.deltaY, unaccelerated_y);
-      DCHECK_GE(wheel_event.event.timeStampSeconds,
-                last_wheel_event->event.timeStampSeconds);
-      last_wheel_event->event.timeStampSeconds =
-          wheel_event.event.timeStampSeconds;
-      last_wheel_event->latency.MergeWith(wheel_event.latency);
+      coalesced_mouse_wheel_events_.back().CoalesceWith(wheel_event);
     }
     return;
   }
@@ -253,17 +207,10 @@ void ImmediateInputRouter::SendMouseEventImmediately(
   // more WM_MOUSEMOVE events than we wish to send to the renderer.
   if (mouse_event.event.type == WebInputEvent::MouseMove) {
     if (mouse_move_pending_) {
-      if (!next_mouse_move_) {
+      if (!next_mouse_move_)
         next_mouse_move_.reset(new MouseEventWithLatencyInfo(mouse_event));
-      } else {
-        // Accumulate movement deltas.
-        int x = next_mouse_move_->event.movementX;
-        int y = next_mouse_move_->event.movementY;
-        next_mouse_move_->event = mouse_event.event;
-        next_mouse_move_->event.movementX += x;
-        next_mouse_move_->event.movementY += y;
-        next_mouse_move_->latency.MergeWith(mouse_event.latency);
-      }
+      else
+        next_mouse_move_->CoalesceWith(mouse_event);
       return;
     }
     mouse_move_pending_ = true;
