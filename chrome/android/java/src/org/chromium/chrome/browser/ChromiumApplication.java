@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser;
 
-import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CalledByNative;
+import org.chromium.content.app.ContentApplication;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
  * chrome layer.
  */
-public abstract class ChromiumApplication extends BaseChromiumApplication {
+public abstract class ChromiumApplication extends ContentApplication {
     /**
      * Opens a protected content settings page, if available.
      */

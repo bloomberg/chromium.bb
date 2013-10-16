@@ -21,7 +21,6 @@ import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
-import org.chromium.content.browser.TracingControllerAndroid;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.Shell;
@@ -41,7 +40,6 @@ public class ContentShellActivity extends Activity {
 
     private ShellManager mShellManager;
     private WindowAndroid mWindowAndroid;
-    private TracingControllerAndroid mTracingController;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -140,25 +138,6 @@ public class ContentShellActivity extends Activity {
             android.os.Debug.waitForDebugger();
             Log.e(TAG, "Java debugger connected. Resuming execution.");
         }
-    }
-
-    private TracingControllerAndroid getTracingController() {
-        if (mTracingController == null) {
-            mTracingController = new TracingControllerAndroid(this);
-        }
-        return mTracingController;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        getTracingController().registerReceiver(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        getTracingController().unregisterReceiver(this);
     }
 
     @Override

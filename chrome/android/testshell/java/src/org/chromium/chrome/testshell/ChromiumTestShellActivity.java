@@ -39,7 +39,6 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
     private TabManager mTabManager;
     private DevToolsServer mDevToolsServer;
     private SyncController mSyncController;
-    private TracingControllerAndroid mTracingController;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -231,25 +230,6 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
             android.os.Debug.waitForDebugger();
             Log.e(TAG, "Java debugger connected. Resuming execution.");
         }
-    }
-
-    private TracingControllerAndroid getTracingController() {
-        if (mTracingController == null) {
-            mTracingController = new TracingControllerAndroid(this);
-        }
-        return mTracingController;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        getTracingController().registerReceiver(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        getTracingController().unregisterReceiver(this);
     }
 
     private static String getUrlFromIntent(Intent intent) {

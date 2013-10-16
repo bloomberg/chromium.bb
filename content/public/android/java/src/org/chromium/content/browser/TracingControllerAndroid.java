@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.content.R;
 
