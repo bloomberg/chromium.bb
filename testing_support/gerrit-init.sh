@@ -147,7 +147,7 @@ fi
 mkdir -p "${rundir}/etc"
 cat <<EOF > "${rundir}/etc/gerrit.config"
 [auth]
-	type = http
+	type = DEVELOPMENT_BECOME_ANY_ACCOUNT
 	gitBasicAuth = true
 [gerrit]
 	canonicalWebUrl = http://$(hostname):${http_port}/
