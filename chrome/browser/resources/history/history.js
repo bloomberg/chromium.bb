@@ -1569,6 +1569,22 @@ function load() {
     });
     searchField.focus();
   }
+
+<if expr="is_ios">
+  function checkKeyboardVisibility() {
+    // Figure out the real height based on the orientation, becauase
+    // screen.width and screen.height don't update after rotation.
+    var screenHeight = window.orientation % 180 ? screen.width : screen.height;
+
+    // Assume that the keyboard is visible if more than 30% of the screen is
+    // taken up by window chrome.
+    var isKeyboardVisible = (window.innerHeight / screenHeight) < 0.7;
+
+    document.body.classList.toggle('ios-keyboard-visible', isKeyboardVisible);
+  }
+  window.addEventListener('orientationchange', checkKeyboardVisibility);
+  window.addEventListener('resize', checkKeyboardVisibility);
+</if> /* is_ios */
 }
 
 /**

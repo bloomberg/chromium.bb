@@ -307,25 +307,11 @@ input {
 } /* @media only screen and (max-width:720px) */
 
 <if expr="is_ios">
-/* Ensure that the Clear Browsing Data button is hidden when the keyboard is
-   visible. The cutoff values are chosen to be compatible with all known device
-   aspect ratios. */
-
-@media only screen and (min-aspect-ratio: 6/5) and (max-aspect-ratio: 3/2) {
-  #clear-browsing-data {
-    display: none;
-  }
-  #scrolling-container {
-    bottom: 0;
-  }
+.ios-keyboard-visible #clear-browsing-data {
+  display: none;
 }
 
-@media only screen and (min-aspect-ratio: 3/1) {
-  #clear-browsing-data {
-    display: none;
-  }
-  #scrolling-container {
-    bottom: 0;
-  }
+.ios-keyboard-visible #scrolling-container {
+  bottom: 0;
 }
 </if> /* is_ios */
