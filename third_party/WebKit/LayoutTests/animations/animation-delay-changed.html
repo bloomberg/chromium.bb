@@ -47,9 +47,9 @@
       document.querySelector('#box1').classList.add('move1');
 
       const expectedValues = [
-        // [animation-name, time, element-id, property, expected-value, tolerance]
-        [null, 0.5, "box1", "left",  100, 10],
-        [null, 1.5, "box2", "left",  100, 10],
+        // [time, element-id, property, expected-value, tolerance]
+        [0.5, "box1", "left",  100, 10],
+        [1.5, "box2", "left",  100, 10],
       ];
 
       const callbacks = {

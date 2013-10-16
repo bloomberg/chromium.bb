@@ -33,16 +33,16 @@
   <script type="text/javascript" charset="utf-8">
 
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["anim", 2, "box1", "left", 170, 5],
-      ["anim", 2, "box2", "left", 170, 5],
-      ["anim", 2, ["box1", "box2"], "left", "", 0],
-      ["anim", 5, "box1", "left", 410, 5],
-      ["anim", 5, "box2", "left", 410, 5],
-      ["anim", 5, ["box1", "box2"], "left", "", 0],
-      ["anim", 8, "box1", "left", 650, 5],
-      ["anim", 8, "box2", "left", 650, 5],
-      ["anim", 8, ["box1", "box2"], "left", "", 0],
+      // [time, element-id, property, expected-value, tolerance]
+      [2, "box1", "left", 170, 5],
+      [2, "box2", "left", 170, 5],
+      [2, ["box1", "box2"], "left", "", 0],
+      [5, "box1", "left", 410, 5],
+      [5, "box2", "left", 410, 5],
+      [5, ["box1", "box2"], "left", "", 0],
+      [8, "box1", "left", 650, 5],
+      [8, "box2", "left", 650, 5],
+      [8, ["box1", "box2"], "left", "", 0],
     ];
     
     runAnimationTest(expectedValues);

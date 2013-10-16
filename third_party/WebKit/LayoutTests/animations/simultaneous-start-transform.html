@@ -33,16 +33,16 @@
   <script type="text/javascript" charset="utf-8">
 
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["anim", 2, "box1", "webkitTransform", [ 0.309017, 0.951057 ], 0.05],
-      ["anim", 2, "box2", "webkitTransform", [ 0.309017, 0.951057 ], 0.05],
-      ["anim", 2, ["box1", "box2"], "webkitTransform", "", 0],
-      ["anim", 5, "box1", "webkitTransform", [ -1, 0 ], 0.05],
-      ["anim", 5, "box2", "webkitTransform", [ -1, 0 ], 0.05],
-      ["anim", 5, ["box1", "box2"], "webkitTransform", "", 0],
-      ["anim", 8, "box1", "webkitTransform", [ 0.309017, -0.951057 ], 0.05],
-      ["anim", 8, "box2", "webkitTransform", [ 0.309017, -0.951057 ], 0.05],
-      ["anim", 8, ["box1", "box2"], "webkitTransform", "", 0],
+      // [time, element-id, property, expected-value, tolerance]
+      [2, "box1", "webkitTransform", [ 0.309017, 0.951057 ], 0.05],
+      [2, "box2", "webkitTransform", [ 0.309017, 0.951057 ], 0.05],
+      [2, ["box1", "box2"], "webkitTransform", "", 0],
+      [5, "box1", "webkitTransform", [ -1, 0 ], 0.05],
+      [5, "box2", "webkitTransform", [ -1, 0 ], 0.05],
+      [5, ["box1", "box2"], "webkitTransform", "", 0],
+      [8, "box1", "webkitTransform", [ 0.309017, -0.951057 ], 0.05],
+      [8, "box2", "webkitTransform", [ 0.309017, -0.951057 ], 0.05],
+      [8, ["box1", "box2"], "webkitTransform", "", 0],
     ];
     
     runAnimationTest(expectedValues);

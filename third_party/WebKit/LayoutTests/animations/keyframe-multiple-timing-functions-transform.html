@@ -26,13 +26,13 @@
     <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
         const expectedValues = [
-          // [animation-name, time, element-id, property, expected-value, tolerance]
-          ["horizontal", 0.5, "box", "webkitTransform", [1,0,0,1, 50,0], 20],
-          ["horizontal", 1.0, "box", "webkitTransform", [1,0,0,1,100,0], 20],
-          ["horizontal", 1.5, "box", "webkitTransform", [1,0,0,1,150,0], 20],
-          ["fade", 0.5, "box", "opacity", 1.0, 0.15],
-          ["fade", 0.9, "box", "opacity", 1.0, 0.15],
-          ["fade", 1.5, "box", "opacity", 1.0, 0.15],
+          // [time, element-id, property, expected-value, tolerance]
+          [0.5, "box", "webkitTransform", [1,0,0,1, 50,0], 20],
+          [1.0, "box", "webkitTransform", [1,0,0,1,100,0], 20],
+          [1.5, "box", "webkitTransform", [1,0,0,1,150,0], 20],
+          [0.5, "box", "opacity", 1.0, 0.15],
+          [0.9, "box", "opacity", 1.0, 0.15],
+          [1.5, "box", "opacity", 1.0, 0.15],
         ];
 
         // pixel test image has to have 1.0 opacity.

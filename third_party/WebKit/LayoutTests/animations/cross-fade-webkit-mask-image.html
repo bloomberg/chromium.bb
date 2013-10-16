@@ -32,9 +32,9 @@
     ++imagesLoaded;
     if (imagesLoaded == 2) {
       const expectedValues = [
-        // [animation-name, time, element-id, property, expected-value, tolerance]
-        ["anim", 2.25, "box", "webkitMaskImage", 0.25, 0.05],
-        ["anim", 2.25, ["box", "static:boxStatic"], "webkitMaskImage", 0.25, 0.05]
+        // [time, element-id, property, expected-value, tolerance]
+        [2.25, "box", "webkitMaskImage", 0.25, 0.05],
+        [2.25, ["box", "static:boxStatic"], "webkitMaskImage", 0.25, 0.05]
       ];
 
       var doPixelTest = true;

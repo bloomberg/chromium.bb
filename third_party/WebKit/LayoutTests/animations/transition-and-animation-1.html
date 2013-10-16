@@ -28,8 +28,8 @@
     <script type="text/javascript" charset="utf-8">
     
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      [null, 0.55, "box", "webkitTransform", "none", null],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.55, "box", "webkitTransform", "none", null],
     ];
     
     runAnimationTest(expectedValues, undefined, undefined, 'do-not-use-pause-api');

@@ -29,11 +29,11 @@ if (window.testRunner)
     testRunner.dumpAsText();
 
 const expectedValues = [
-  // [animation-name, time, element-id, property, expected-value, tolerance]
-  ['anim', 0.5, 'target', 'border-top-width', 0, 0],
-  ['anim', 0.5, 'target', 'outline-width', 0, 0],
-  ['anim', 0.5, 'target', '-webkit-column-count', 1, 0],
-  ['anim', 0.5, 'target', '-webkit-column-rule-width', 0, 0],
+  // [time, element-id, property, expected-value, tolerance]
+  [0.5, 'target', 'border-top-width', 0, 0],
+  [0.5, 'target', 'outline-width', 0, 0],
+  [0.5, 'target', '-webkit-column-count', 1, 0],
+  [0.5, 'target', '-webkit-column-rule-width', 0, 0],
 ];
 
 runAnimationTest(expectedValues);

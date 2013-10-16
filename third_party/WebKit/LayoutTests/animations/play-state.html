@@ -37,13 +37,13 @@
   <script type="text/javascript" charset="utf-8">
     
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["move1", 0.5, "box1", "webkitTransform", [1,0,0,1,25,0], 15],
-      ["move1", 1.5, "box1", "webkitTransform", [1,0,0,1,50,0], 15],
-      ["move1", 2.5, "box1", "webkitTransform", [1,0,0,1,75,0], 15],
-      ["move2", 0.5, "box2", "left", 25, 15],
-      ["move3", 1.5, "box2", "left", 50, 15],
-      ["move4", 2.5, "box2", "left", 75, 15],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.5, "box1", "webkitTransform", [1,0,0,1,25,0], 15],
+      [1.5, "box1", "webkitTransform", [1,0,0,1,50,0], 15],
+      [2.5, "box1", "webkitTransform", [1,0,0,1,75,0], 15],
+      [0.5, "box2", "left", 25, 15],
+      [1.5, "box2", "left", 50, 15],
+      [2.5, "box2", "left", 75, 15],
     ];
     
     function stop()

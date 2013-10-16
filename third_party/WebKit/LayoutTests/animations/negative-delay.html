@@ -60,15 +60,15 @@
   <script>
     // The delay of square1 is negative so square1 should be in ahead of square2.
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["square-move", 0, "square1", "left", 300, 15],
-      ["square-move", 0, "square2", "left", 0, 15],
-      ["square-move", 0.5, "square1", "left", 450, 15],
-      ["square-move", 0.5, "square2", "left", 150, 15],
-      ["square-translate", 0, "square3", "webkitTransform.4", 300, 20],
-      ["square-translate", 0, "square4", "webkitTransform.4", 0, 20],
-      ["square-translate", 0.5, "square3", "webkitTransform.4", 450, 20],
-      ["square-translate", 0.5, "square4", "webkitTransform.4", 150, 20],
+      // [time, element-id, property, expected-value, tolerance]
+      [0, "square1", "left", 300, 15],
+      [0, "square2", "left", 0, 15],
+      [0.5, "square1", "left", 450, 15],
+      [0.5, "square2", "left", 150, 15],
+      [0, "square3", "webkitTransform.4", 300, 20],
+      [0, "square4", "webkitTransform.4", 0, 20],
+      [0.5, "square3", "webkitTransform.4", 450, 20],
+      [0.5, "square4", "webkitTransform.4", 150, 20],
     ];
 
     runAnimationTest(expectedValues);

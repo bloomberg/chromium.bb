@@ -12,8 +12,6 @@ Function parameters:
     trigger [optional]: a function to trigger transitions at the start of the test
 
     Each sub-array must contain these items in this order:
-    FIXME: Remove the name element as it is no longer required.
-    - deprecated: the name of the CSS animation (may be null)
     - the time in seconds at which to snapshot the CSS property
     - the id of the element on which to get the CSS property value [1]
     - the name of the CSS property to get [2]
@@ -215,12 +213,11 @@ function filterParametersMatch(paramList1, paramList2, tolerance)
 function checkExpectedValue(expected, index)
 {
     log('Checking expectation: ' + JSON.stringify(expected[index]));
-    var animationName = expected[index][0];
-    var time = expected[index][1];
-    var elementId = expected[index][2];
-    var property = expected[index][3];
-    var expectedValue = expected[index][4];
-    var tolerance = expected[index][5];
+    var time = expected[index][0];
+    var elementId = expected[index][1];
+    var property = expected[index][2];
+    var expectedValue = expected[index][3];
+    var tolerance = expected[index][4];
 
     // Check for a pair of element Ids
     var compareElements = false;
@@ -290,7 +287,6 @@ function compareRGB(rgb, expected, tolerance)
 
 function checkExpectedTransitionValue(expected, index)
 {
-    expected[index].shift();
     log('Checking expectation: ' + JSON.stringify(expected[index]));
     var time = expected[index][0];
     var elementId = expected[index][1];
@@ -633,7 +629,7 @@ function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI
 
     for (var i = 0; i < expected.length; i++) {
         var expectation = expected[i];
-        var timeMs = Math.round(expectation[1] * 1000);
+        var timeMs = Math.round(expectation[0] * 1000);
         if (!checks[timeMs])
             checks[timeMs] = [];
         if (isTransitionsTest)
@@ -707,7 +703,6 @@ Function parameters:
 
 */
 function runTransitionTest(expected, trigger, callbacks, doPixelTest) {
-    expected = expected.map(function(expectation) { expectation.unshift(null); return expectation; });
     isTransitionsTest = true;
     runAnimationTest(expected, callbacks, trigger, false, doPixelTest);
 }

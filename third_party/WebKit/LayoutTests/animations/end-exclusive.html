@@ -29,9 +29,9 @@
 <script src="resources/animation-test-helpers.js"></script>
 <script>
 const expectedValues = [
-    // [animation-name, time, element-id, property, expected-value, tolerance]
-    [null, 1, "anim", "left", 0, 0],
-    [null, 1, "fillanim", "left", 300, 0],
+    // [time, element-id, property, expected-value, tolerance]
+    [1, "anim", "left", 0, 0],
+    [1, "fillanim", "left", 300, 0],
 ];
 runAnimationTest(expectedValues);
 </script>

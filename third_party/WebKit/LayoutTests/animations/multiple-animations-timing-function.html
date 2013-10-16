@@ -25,11 +25,11 @@
     <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
         const expectedValues = [
-          // [animation-name, time, element-id, property, expected-value, tolerance]
-          ["horizontal", 0.5, "box", "left", 18, 10],
-          ["horizontal", 1.5, "box", "left", 124, 10],
-          ["vertical", 0.5, "box", "top", 75, 10],
-          ["vertical", 1.5, "box", "top", 181, 10],
+          // [time, element-id, property, expected-value, tolerance]
+          [0.5, "box", "left", 18, 10],
+          [1.5, "box", "left", 124, 10],
+          [0.5, "box", "top", 75, 10],
+          [1.5, "box", "top", 181, 10],
         ];
 
         runAnimationTest(expectedValues);

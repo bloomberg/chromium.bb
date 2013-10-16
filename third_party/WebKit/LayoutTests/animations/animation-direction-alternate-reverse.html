@@ -38,12 +38,12 @@
   <script type="text/javascript" charset="utf-8">
 
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["move", 1.0, "box", "left", 200, 20],
-      ["move", 2.0, "box", "left", 0, 20],
+      // [time, element-id, property, expected-value, tolerance]
+      [1.0, "box", "left", 200, 20],
+      [2.0, "box", "left", 0, 20],
 
-      ["move", 3.0, "box", "left", 200, 20],
-      ["move", 4.0, "box", "left", 400, 20],
+      [3.0, "box", "left", 200, 20],
+      [4.0, "box", "left", 400, 20],
     ];
     
     runAnimationTest(expectedValues);

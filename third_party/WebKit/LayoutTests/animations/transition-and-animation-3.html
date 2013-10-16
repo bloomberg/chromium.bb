@@ -42,8 +42,8 @@
         testRunner.waitUntilDone();
 
       const expectedValues = [
-        // [animation-name, time, element-id, property, expected-value, tolerance]
-        [null, 0.2, "test", "left", 100, 10],
+        // [time, element-id, property, expected-value, tolerance]
+        [0.2, "test", "left", 100, 10],
       ];
 
       function animationStarted()

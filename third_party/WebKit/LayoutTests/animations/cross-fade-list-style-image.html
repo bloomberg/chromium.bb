@@ -39,10 +39,10 @@
       document.querySelector('#boxShorthand').style.webkitAnimation = "animShorthand 1s linear infinite";
 
       const expectedValues = [
-        // [animation-name, time, element-id, property, expected-value, tolerance]
-        ["anim", 2.5, "box", "listStyleImage", 0.5, 0.05],
-        ["anim", 2.5, ["box", "static:boxStatic"], "listStyleImage", 0.5, 0.05],
-        ["animShorthand", 2.5, ["boxShorthand", "static:boxStatic"], "listStyleImage", 0.5, 0.05],
+        // [time, element-id, property, expected-value, tolerance]
+        [2.5, "box", "listStyleImage", 0.5, 0.05],
+        [2.5, ["box", "static:boxStatic"], "listStyleImage", 0.5, 0.05],
+        [2.5, ["boxShorthand", "static:boxStatic"], "listStyleImage", 0.5, 0.05],
       ];
 
       var doPixelTest = true;

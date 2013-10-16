@@ -61,23 +61,23 @@
   <script src="resources/animation-test-helpers.js"></script>
   <script>
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["move1", 0.2, "box1", "webkitTransform", [1,0,0,1, 20,0], 20],
-      ["move1", 0.2, "box2", "webkitTransform", [1,0,0,1, 20,0], 20],
-      ["move1", 0.2, "box3", "webkitTransform", [1,0,0,1, 180,0], 20],
-      ["move1", 0.2, "box4", "webkitTransform", [1,0,0,1, 180,0], 20],
-      ["move1", 2.2, "box1", "webkitTransform", [1,0,0,1, 20,0], 20],
-      ["move1", 2.2, "box2", "webkitTransform", [1,0,0,1, 180,0], 20],
-      ["move1", 2.2, "box3", "webkitTransform", [1,0,0,1, 180,0], 20],
-      ["move1", 2.2, "box4", "webkitTransform", [1,0,0,1, 20,0], 20],
-      ["move2", 0.2, "box5", "webkitTransform", [1,0,0,1, 40,0], 20],
-      ["move2", 0.2, "box6", "webkitTransform", [1,0,0,1, 40,0], 20],
-      ["move2", 0.2, "box7", "webkitTransform", [1,0,0,1, 180,0], 20],
-      ["move2", 0.2, "box8", "webkitTransform", [1,0,0,1, 180,0], 20],
-      ["move2", 2.2, "box5", "webkitTransform", [1,0,0,1, 40,0], 20],
-      ["move2", 2.2, "box6", "webkitTransform", [1,0,0,1, 180,0], 20],
-      ["move2", 2.2, "box7", "webkitTransform", [1,0,0,1, 180,0], 20],
-      ["move2", 2.2, "box8", "webkitTransform", [1,0,0,1, 40,0], 20],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.2, "box1", "webkitTransform", [1,0,0,1, 20,0], 20],
+      [0.2, "box2", "webkitTransform", [1,0,0,1, 20,0], 20],
+      [0.2, "box3", "webkitTransform", [1,0,0,1, 180,0], 20],
+      [0.2, "box4", "webkitTransform", [1,0,0,1, 180,0], 20],
+      [2.2, "box1", "webkitTransform", [1,0,0,1, 20,0], 20],
+      [2.2, "box2", "webkitTransform", [1,0,0,1, 180,0], 20],
+      [2.2, "box3", "webkitTransform", [1,0,0,1, 180,0], 20],
+      [2.2, "box4", "webkitTransform", [1,0,0,1, 20,0], 20],
+      [0.2, "box5", "webkitTransform", [1,0,0,1, 40,0], 20],
+      [0.2, "box6", "webkitTransform", [1,0,0,1, 40,0], 20],
+      [0.2, "box7", "webkitTransform", [1,0,0,1, 180,0], 20],
+      [0.2, "box8", "webkitTransform", [1,0,0,1, 180,0], 20],
+      [2.2, "box5", "webkitTransform", [1,0,0,1, 40,0], 20],
+      [2.2, "box6", "webkitTransform", [1,0,0,1, 180,0], 20],
+      [2.2, "box7", "webkitTransform", [1,0,0,1, 180,0], 20],
+      [2.2, "box8", "webkitTransform", [1,0,0,1, 40,0], 20],
     ];
 
     runAnimationTest(expectedValues);

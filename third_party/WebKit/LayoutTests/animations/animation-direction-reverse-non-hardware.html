@@ -61,23 +61,23 @@
   <script src="resources/animation-test-helpers.js"></script>
   <script>
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["move1", 0.2, "box1", "left",  20, 20],
-      ["move1", 0.2, "box2", "left",  20, 20],
-      ["move1", 0.2, "box3", "left",  180, 20],
-      ["move1", 0.2, "box4", "left",  180, 20],
-      ["move1", 2.2, "box1", "left",  20, 20],
-      ["move1", 2.2, "box2", "left",  180, 20],
-      ["move1", 2.2, "box3", "left",  180, 20],
-      ["move1", 2.2, "box4", "left",  20, 20],
-      ["move2", 0.2, "box5", "left",  40, 20],
-      ["move2", 0.2, "box6", "left",  40, 20],
-      ["move2", 0.2, "box7", "left",  180, 20],
-      ["move2", 0.2, "box8", "left",  180, 20],
-      ["move2", 2.2, "box5", "left",  40, 20],
-      ["move2", 2.2, "box6", "left",  180, 20],
-      ["move2", 2.2, "box7", "left",  180, 20],
-      ["move2", 2.2, "box8", "left",  40, 20],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.2, "box1", "left",  20, 20],
+      [0.2, "box2", "left",  20, 20],
+      [0.2, "box3", "left",  180, 20],
+      [0.2, "box4", "left",  180, 20],
+      [2.2, "box1", "left",  20, 20],
+      [2.2, "box2", "left",  180, 20],
+      [2.2, "box3", "left",  180, 20],
+      [2.2, "box4", "left",  20, 20],
+      [0.2, "box5", "left",  40, 20],
+      [0.2, "box6", "left",  40, 20],
+      [0.2, "box7", "left",  180, 20],
+      [0.2, "box8", "left",  180, 20],
+      [2.2, "box5", "left",  40, 20],
+      [2.2, "box6", "left",  180, 20],
+      [2.2, "box7", "left",  180, 20],
+      [2.2, "box8", "left",  40, 20],
     ];
 
     runAnimationTest(expectedValues);

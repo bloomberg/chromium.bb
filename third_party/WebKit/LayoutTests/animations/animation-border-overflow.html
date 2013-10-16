@@ -23,8 +23,8 @@
         testRunner.dumpAsText();
 
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["anim", 0.1, "box", "border-top-width", 200, 20],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.1, "box", "border-top-width", 200, 20],
     ];
 
     runAnimationTest(expectedValues);

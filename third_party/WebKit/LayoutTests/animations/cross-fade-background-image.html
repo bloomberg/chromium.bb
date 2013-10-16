@@ -40,10 +40,10 @@
   <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["anim", 2.5, "box", "backgroundImage", 0.5, 0.05],
-      ["anim", 2.5, ["box", "static:boxStatic"], "backgroundImage", 0.5, 0.05],
-      ["animShorthand", 2.5, ["boxShorthand", "static:boxStatic"], "backgroundImage", 0.5, 0.05],
+      // [time, element-id, property, expected-value, tolerance]
+      [2.5, "box", "backgroundImage", 0.5, 0.05],
+      [2.5, ["box", "static:boxStatic"], "backgroundImage", 0.5, 0.05],
+      [2.5, ["boxShorthand", "static:boxStatic"], "backgroundImage", 0.5, 0.05],
     ];
 
     var doPixelTest = true;

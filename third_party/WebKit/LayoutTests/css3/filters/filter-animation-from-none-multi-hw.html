@@ -116,16 +116,16 @@
   <script src="../../animations/resources/animation-test-helpers.js"></script>
   <script type="text/javascript">
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["grayscale-anim",  0.5, "grayscale-box", "webkitFilter", 'grayscale(0.25)', 0.05],
-      ["sepia-anim",  0.5, "sepia-box", "webkitFilter", 'sepia(0.25)', 0.05],
-      ["saturate-anim",  0.5, "saturate-box", "webkitFilter", 'saturate(0.75)', 0.05],
-      ["huerotate-anim",  0.5, "huerotate-box", "webkitFilter", 'huerotate(45deg)', 3],
-      ["invert-anim",  0.5, "invert-box", "webkitFilter", 'invert(0.25)', 0.05],
-      ["opacity-anim",  0.5, "opacity-box", "webkitFilter", 'opacity(0.75)', 0.05],
-      ["brightness-anim",  0.5, "brightness-box", "webkitFilter", 'brightness(0.75)', 0.05],
-      ["contrast-anim",  0.5, "contrast-box", "webkitFilter", 'contrast(0.75)', 0.05],
-      ["blur-anim",  0.5, "blur-box", "webkitFilter", 'blur(5px)', 1],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.5, "grayscale-box", "webkitFilter", 'grayscale(0.25)', 0.05],
+      [0.5, "sepia-box", "webkitFilter", 'sepia(0.25)', 0.05],
+      [0.5, "saturate-box", "webkitFilter", 'saturate(0.75)', 0.05],
+      [0.5, "huerotate-box", "webkitFilter", 'huerotate(45deg)', 3],
+      [0.5, "invert-box", "webkitFilter", 'invert(0.25)', 0.05],
+      [0.5, "opacity-box", "webkitFilter", 'opacity(0.75)', 0.05],
+      [0.5, "brightness-box", "webkitFilter", 'brightness(0.75)', 0.05],
+      [0.5, "contrast-box", "webkitFilter", 'contrast(0.75)', 0.05],
+      [0.5, "blur-box", "webkitFilter", 'blur(5px)', 1],
       // FIXME when we implement computed filter style for drop-shadow.
       // ["dropshadow-anim",  1, "dropshadow-box", "webkitFilter", 'drop-shadow(rgba(0, 0, 0, 0.25) 5px 8px 3px )', 2],
     ];

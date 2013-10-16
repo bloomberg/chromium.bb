@@ -48,14 +48,14 @@
   <script type="text/javascript" charset="utf-8">
     
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["move", 1, "box1", "left", 200, 15],
-      ["move2", 1, "box2", "webkitTransform.4", 200, 15],
-      ["move", 0.5, "box1", "opacity", 0.5, 0.1],
-      ["move", 1, "box1", "opacity", 0, 0.1],
-      ["move", 1.5, "box1", "left", 300, 15],
-      ["move2", 1.5, "box2", "webkitTransform.4", 300, 15],
-      ["move", 1.5, "box1", "opacity", 0.5, 0.1],
+      // [time, element-id, property, expected-value, tolerance]
+      [1, "box1", "left", 200, 15],
+      [1, "box2", "webkitTransform.4", 200, 15],
+      [0.5, "box1", "opacity", 0.5, 0.1],
+      [1, "box1", "opacity", 0, 0.1],
+      [1.5, "box1", "left", 300, 15],
+      [1.5, "box2", "webkitTransform.4", 300, 15],
+      [1.5, "box1", "opacity", 0.5, 0.1],
     ];
     
     runAnimationTest(expectedValues);

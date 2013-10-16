@@ -76,8 +76,9 @@
   <script type="text/javascript">
     
     const expectedValues = [
-      ["move-left", 1.5, "box1", "left", 100, 15],
-      ["move-transform", 1.5, "box2", "webkitTransform.4", 100, 15],
+      // [time, element-id, property, expected-value, tolerance]
+      [1.5, "box1", "left", 100, 15],
+      [1.5, "box2", "webkitTransform.4", 100, 15],
     ];
     
     var doPixelTest = true;

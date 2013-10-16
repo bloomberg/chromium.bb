@@ -49,15 +49,15 @@
   <script src="resources/animation-test-helpers.js"></script>
   <script>
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["move1", 0.2, "box1", "left",  18, 10],
-      ["move1", 0.2, "box2", "left",  18, 10],
-      ["move1", 0.2, "box3", "left",  198, 10],
-      ["move1", 0.2, "box4", "left",  198, 10],
-      ["move1", 2.2, "box1", "left",  18, 10],
-      ["move1", 2.2, "box2", "left",  198, 10],
-      ["move1", 2.2, "box3", "left",  198, 10],
-      ["move1", 2.2, "box4", "left",  18, 10],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.2, "box1", "left",  18, 10],
+      [0.2, "box2", "left",  18, 10],
+      [0.2, "box3", "left",  198, 10],
+      [0.2, "box4", "left",  198, 10],
+      [2.2, "box1", "left",  18, 10],
+      [2.2, "box2", "left",  198, 10],
+      [2.2, "box3", "left",  198, 10],
+      [2.2, "box4", "left",  18, 10],
     ];
 
     runAnimationTest(expectedValues);

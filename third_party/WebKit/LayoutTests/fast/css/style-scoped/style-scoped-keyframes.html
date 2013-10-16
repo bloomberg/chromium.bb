@@ -50,8 +50,8 @@ box.id = "box";
 d1.appendChild(box);
 
 const expectedValues = [
-    // [animation-name, time, element-id, property, expected-value, tolerance]
-    ["anim", 0.5, "box", "left", 300, 0],
+    // [time, element-id, property, expected-value, tolerance]
+    [0.5, "box", "left", 300, 0],
 ];
 
 runAnimationTest(expectedValues);

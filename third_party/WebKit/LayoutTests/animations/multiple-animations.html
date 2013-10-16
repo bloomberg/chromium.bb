@@ -44,13 +44,13 @@
   <script type="text/javascript" charset="utf-8">
 
     const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["anim1", 0.4, "box1", "left", 20, 2],
-      ["anim2", 0.5, "box2", "left", 20, 2],
-      ["anim2", 1.0, "box2", "left", 30, 2],
-      ["anim1", 1.2, "box1", "left", 10, 2],
-      ["anim2", 1.5, "box2", "left", 25, 2],
-      ["anim1", 1.6, "box1", "left", 15, 2],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.4, "box1", "left", 20, 2],
+      [0.5, "box2", "left", 20, 2],
+      [1.0, "box2", "left", 30, 2],
+      [1.2, "box1", "left", 10, 2],
+      [1.5, "box2", "left", 25, 2],
+      [1.6, "box1", "left", 15, 2],
     ];
 
     runAnimationTest(expectedValues);
