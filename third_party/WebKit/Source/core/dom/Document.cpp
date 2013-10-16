@@ -3606,12 +3606,17 @@ void Document::enqueueDocumentEvent(PassRefPtr<Event> event)
     m_eventQueue->enqueueEvent(event);
 }
 
+void Document::scheduleAnimationFrameEvent(PassRefPtr<Event> event)
+{
+    ensureScriptedAnimationController().scheduleEvent(event);
+}
+
 void Document::enqueueScrollEventForNode(Node* target)
 {
     // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
     RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventTypeNames::scroll) : Event::create(EventTypeNames::scroll);
     scrollEvent->setTarget(target);
-    ensureScriptedAnimationController().scheduleEvent(scrollEvent.release());
+    scheduleAnimationFrameEvent(scrollEvent.release());
 }
 
 PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState& es)

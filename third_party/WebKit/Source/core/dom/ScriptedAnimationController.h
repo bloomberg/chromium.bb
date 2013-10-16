@@ -62,6 +62,11 @@ public:
 private:
     explicit ScriptedAnimationController(Document*);
 
+    void scheduleAnimationIfNeeded();
+
+    void dispatchEvents();
+    void executeCallbacks(double monotonicTimeNow);
+
     typedef Vector<RefPtr<RequestAnimationFrameCallback> > CallbackList;
     CallbackList m_callbacks;
 
@@ -70,8 +75,6 @@ private:
     int m_suspendCount;
     Vector<RefPtr<Event> > m_eventQueue;
     ListHashSet<std::pair<const EventTarget*, const StringImpl*> > m_scheduledEventTargets;
-
-    void scheduleAnimationIfNeeded();
 };
 
 }

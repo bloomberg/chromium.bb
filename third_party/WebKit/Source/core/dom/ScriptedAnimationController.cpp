@@ -29,9 +29,10 @@
 #include "core/dom/Document.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/events/Event.h"
+#include "core/frame/DOMWindow.h"
+#include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/frame/FrameView.h"
 
 namespace WebCore {
 
@@ -90,24 +91,30 @@ void ScriptedAnimationController::cancelCallback(CallbackId id)
     }
 }
 
-void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTimeNow)
+void ScriptedAnimationController::dispatchEvents()
 {
-    if ((!m_callbacks.size() && !m_eventQueue.size()) || m_suspendCount)
-        return;
-
-    // Invoking callbacks may detach elements from our document, which clears the document's
-    // reference to us, so take a defensive reference.
-    RefPtr<ScriptedAnimationController> protector(this);
-
-    double highResNowMs = 1000.0 * m_document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(monotonicTimeNow);
-    double legacyHighResNowMs = 1000.0 * m_document->loader()->timing()->monotonicTimeToPseudoWallTime(monotonicTimeNow);
-
     Vector<RefPtr<Event> > events;
     events.swap(m_eventQueue);
     m_scheduledEventTargets.clear();
 
-    for (size_t i = 0; i < events.size(); ++i)
-        events[i]->target()->dispatchEvent(events[i]);
+    for (size_t i = 0; i < events.size(); ++i) {
+        EventTarget* eventTarget = events[i]->target();
+        // FIXME: we should figure out how to make dispatchEvent properly virtual to avoid this.
+        if (DOMWindow* window = eventTarget->toDOMWindow())
+            window->dispatchEvent(events[i], 0);
+        else
+            eventTarget->dispatchEvent(events[i]);
+    }
+}
+
+void ScriptedAnimationController::executeCallbacks(double monotonicTimeNow)
+{
+    // dispatchEvents() runs script which can cause the document to be destroyed.
+    if (!m_document)
+        return;
+
+    double highResNowMs = 1000.0 * m_document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(monotonicTimeNow);
+    double legacyHighResNowMs = 1000.0 * m_document->loader()->timing()->monotonicTimeToPseudoWallTime(monotonicTimeNow);
 
     // First, generate a list of callbacks to consider.  Callbacks registered from this point
     // on are considered only for the "next" frame, not this one.
@@ -133,6 +140,20 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
         else
             ++i;
     }
+}
+
+void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTimeNow)
+{
+    if (!m_callbacks.size() && !m_eventQueue.size())
+        return;
+
+    if (m_suspendCount)
+        return;
+
+    RefPtr<ScriptedAnimationController> protect(this);
+
+    dispatchEvents();
+    executeCallbacks(monotonicTimeNow);
 
     scheduleAnimationIfNeeded();
 }

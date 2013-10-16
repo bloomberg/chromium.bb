@@ -935,6 +935,7 @@ public:
     void enqueueHashchangeEvent(const String& oldURL, const String& newURL);
     void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject);
     void enqueueScrollEventForNode(Node*);
+    void scheduleAnimationFrameEvent(PassRefPtr<Event>);
 
     const QualifiedName& idAttributeName() const { return m_idAttributeName; }
 
