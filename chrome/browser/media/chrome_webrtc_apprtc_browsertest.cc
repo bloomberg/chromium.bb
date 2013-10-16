@@ -77,6 +77,7 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
     command_line.AppendArgPath(apprtc_dir);
     command_line.AppendArg("--port=9999");
     command_line.AppendArg("--admin_port=9998");
+    command_line.AppendArg("--skip_sdk_update_check");
 
     LOG(INFO) << "Running " << command_line.GetCommandLineString();
     return base::LaunchProcess(command_line, base::LaunchOptions(),
