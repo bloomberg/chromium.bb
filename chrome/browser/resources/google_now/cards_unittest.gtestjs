@@ -155,6 +155,41 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateCardHideTime', function() {
     JSON.stringify(notificationData));
 });
 
+TEST_F('GoogleNowCardsUnitTest', 'CreateCardHideTimeExpired', function() {
+  // Creates a new card with trigger specifying hide time which is in the past.
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedHideAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedShowAlarmId);
+  this.mockApis.expects(once()).
+      chrome_alarms_create(expectedHideAlarmId, eqJSON({when: 299999}));
+
+  // Call tested method.
+  var notificationData = test.cardSet.update(testCardId, {
+    notification: testNotification,
+    actionUrls: testActionUrls,
+    dismissals: testDismissals,
+    groupRank: testGroupRank,
+    version: 0,
+    trigger: {hideTime: 299999}});
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        actionUrls: testActionUrls,
+        cardCreateInfo: {
+          notification: testNotification,
+          hideTime: 299999,
+          version: 0
+        },
+        dismissals: testDismissals
+      }),
+    JSON.stringify(notificationData));
+});
+
 TEST_F('GoogleNowCardsUnitTest', 'UpdateCardSameVersion', function() {
   // Updates a card with another card with same version.
 
@@ -322,6 +357,14 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmUnrecognized', function() {
 TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowNoData', function() {
   // Tests onAlarm for the 'show' alarm when there is no data for the card.
   var test = setUpCardManagerTest(this);
+
+  var tasksAddSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      tasks_add(
+          tasksAddSavedArgs.match(eq(SHOW_CARD_TASK_NAME)),
+          tasksAddSavedArgs.match(ANYTHING)).
+      will(invokeCallback(tasksAddSavedArgs,1));
+
   var storageGetSavedArgs = new SaveMockArguments();
   this.mockApis.expects(once()).
       instrumented_storage_local_get(
@@ -337,6 +380,14 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataCreate', function() {
   // Tests onAlarm for the 'show' alarm when there is data for the card. The
   // notification will be created because there is no previous version.
   var test = setUpCardManagerTest(this);
+
+  var tasksAddSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      tasks_add(
+          tasksAddSavedArgs.match(eq(SHOW_CARD_TASK_NAME)),
+          tasksAddSavedArgs.match(ANYTHING)).
+      will(invokeCallback(tasksAddSavedArgs,1));
+
   var storageGetSavedArgs = new SaveMockArguments();
   this.mockApis.expects(once()).
       instrumented_storage_local_get(
@@ -371,6 +422,14 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataUpdate', function() {
   // Tests onAlarm for the 'show' alarm when there is data for the card. The
   // notification will be updated because previous version is same as current.
   var test = setUpCardManagerTest(this);
+
+  var tasksAddSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      tasks_add(
+          tasksAddSavedArgs.match(eq(SHOW_CARD_TASK_NAME)),
+          tasksAddSavedArgs.match(ANYTHING)).
+      will(invokeCallback(tasksAddSavedArgs,1));
+
   var storageGetSavedArgs = new SaveMockArguments();
   this.mockApis.expects(once()).
       instrumented_storage_local_get(

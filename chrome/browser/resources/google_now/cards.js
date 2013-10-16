@@ -54,6 +54,7 @@ var CardCreateInfo;
 /**
  * Names for tasks that can be created by the this file.
  */
+var SHOW_CARD_TASK_NAME = 'show-card';
 var CLEAR_CARD_TASK_NAME = 'clear-card';
 
 /**
@@ -89,6 +90,13 @@ function buildCardSet() {
     console.log('cardManager.showNotification ' + cardId + ' ' +
                 JSON.stringify(cardCreateInfo));
 
+    if (cardCreateInfo.hideTime <= Date.now()) {
+      console.log('cardManager.showNotification ' + cardId + ': expired');
+      // Card has expired. Schedule hiding to delete asociated information.
+      scheduleHiding(cardId, cardCreateInfo.hideTime);
+      return;
+    }
+
     if (cardCreateInfo.previousVersion !== cardCreateInfo.version) {
       // Delete a notification with the specified id if it already exists, and
       // then create a notification.
@@ -98,7 +106,7 @@ function buildCardSet() {
           function(newNotificationId) {
             if (!newNotificationId || chrome.runtime.lastError) {
               var errorMessage = chrome.runtime.lastError &&
-                                  chrome.runtime.lastError.message;
+                                 chrome.runtime.lastError.message;
               console.error('notifications.create: ID=' + newNotificationId +
                             ', ERROR=' + errorMessage);
               return;
@@ -114,7 +122,7 @@ function buildCardSet() {
           function(wasUpdated) {
             if (!wasUpdated || chrome.runtime.lastError) {
               var errorMessage = chrome.runtime.lastError &&
-                                  chrome.runtime.lastError.message;
+                                 chrome.runtime.lastError.message;
               console.error('notifications.update: UPDATED=' + wasUpdated +
                             ', ERROR=' + errorMessage);
               return;
@@ -211,16 +219,18 @@ function buildCardSet() {
 
     if (alarm.name.indexOf(cardShowPrefix) == 0) {
       // Alarm to show the card.
-      var cardId = alarm.name.substring(cardShowPrefix.length);
-      instrumented.storage.local.get('notificationsData', function(items) {
-        console.log('cardManager.onAlarm.get ' + JSON.stringify(items));
-        if (!items || !items.notificationsData)
-          return;
-        var notificationData = items.notificationsData[cardId];
-        if (!notificationData)
-          return;
+      tasks.add(SHOW_CARD_TASK_NAME, function() {
+        var cardId = alarm.name.substring(cardShowPrefix.length);
+        instrumented.storage.local.get('notificationsData', function(items) {
+          console.log('cardManager.onAlarm.get ' + JSON.stringify(items));
+          if (!items || !items.notificationsData)
+            return;
+          var notificationData = items.notificationsData[cardId];
+          if (!notificationData)
+            return;
 
-        showNotification(cardId, notificationData.cardCreateInfo);
+          showNotification(cardId, notificationData.cardCreateInfo);
+        });
       });
     } else if (alarm.name.indexOf(cardHidePrefix) == 0) {
       // Alarm to hide the card.

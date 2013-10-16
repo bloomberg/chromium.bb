@@ -407,13 +407,6 @@ function expectStateMachineCalls(
  * expects() calls cannot be chained with the same argument matchers.
  */
 function expectInitialization(mockApisObj) {
-  mockApisObj.expects(once()).
-      chrome_location_clearWatch(ANYTHING);
-  mockApisObj.expects(once()).
-      updateCardsAttempts_stop();
-  mockApisObj.expects(once()).
-      chrome_storage_local_remove(
-          eqJSON(['notificationsData', 'notificationGroups']));
   var tasksAddSavedArgs = new SaveMockArguments();
   mockApisObj.expects(once()).
       tasks_add(
@@ -462,12 +455,10 @@ TEST_F(
           testExperimentVariationParams);
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(exactly(2)).
+      this.mockApis.expects(exactly(1)).
           instrumented_notifications_getAll(
               chromeNotificationGetAllSavedArgs.match(ANYTHING)).
-          will(
-              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
-              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
+          will(invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
 
       // TODO(robliao,vadimt): Determine the granularity of testing to perform.
 
@@ -508,12 +499,10 @@ TEST_F(
           testExperimentVariationParams);
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(exactly(2)).
+      this.mockApis.expects(exactly(1)).
           instrumented_notifications_getAll(
               chromeNotificationGetAllSavedArgs.match(ANYTHING)).
-          will(
-              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
-              invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
+          will(invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
 
       // Invoking the tested function.
       initialize();
@@ -588,12 +577,10 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
       testExperimentVariationParams);
 
   var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
-  this.mockApis.expects(exactly(2)).
+  this.mockApis.expects(exactly(1)).
       instrumented_notifications_getAll(
           chromeNotificationGetAllSavedArgs.match(ANYTHING)).
-      will(
-          invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
-          invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
+      will(invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
 
   this.mockGlobals.expects(once()).startPollingCards();
 

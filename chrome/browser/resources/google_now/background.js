@@ -20,7 +20,6 @@
 // TODO(vadimt): Decide what to do in incognito mode.
 // TODO(vadimt): Figure out the final values of the constants.
 // TODO(vadimt): Remove 'console' calls.
-// TODO(vadimt): Consider sending JS stacks for malformed server responses.
 
 /**
  * Standard response code for successful HTTP requests. This is the only success
@@ -81,6 +80,7 @@ var UPDATE_CARDS_TASK_NAME = 'update-cards';
 var DISMISS_CARD_TASK_NAME = 'dismiss-card';
 var RETRY_DISMISS_TASK_NAME = 'retry-dismiss';
 var STATE_CHANGED_TASK_NAME = 'state-changed';
+var SHOW_ON_START_TASK_NAME = 'show-cards-on-start';
 
 var LOCATION_WATCH_NAME = 'location-watch';
 
@@ -317,8 +317,6 @@ function showNotificationCards(cards) {
                 previousVersion);
           }
 
-          recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
-
           chrome.storage.local.set({
             notificationsData: newNotificationsData,
             recentDismissals: updatedRecentDismissals
@@ -447,6 +445,20 @@ function scheduleNextPoll(groups) {
 }
 
 /**
+ * Merges notification groups into a set of Chrome notifications and shows them.
+ * @param {Object.<string, StorageGroup>} notificationGroups Map from group name
+ *     to group information.
+ */
+function mergeAndShowNotificationCards(notificationGroups) {
+  var mergedCards = {};
+
+  for (var groupName in notificationGroups)
+    mergeGroup(mergedCards, notificationGroups[groupName]);
+
+  showNotificationCards(mergedCards);
+}
+
+/**
  * Parses JSON response from the notification server, shows notifications and
  * schedules next update.
  * @param {string} response Server response.
@@ -455,13 +467,13 @@ function parseAndShowNotificationCards(response) {
   console.log('parseAndShowNotificationCards ' + response);
   var parsedResponse = JSON.parse(response);
 
-  var groups = parsedResponse.groups;
+  var receivedGroups = parsedResponse.groups;
 
   // Populate groups with corresponding cards.
   if (parsedResponse.notifications) {
     for (var i = 0; i != parsedResponse.notifications.length; ++i) {
       var card = parsedResponse.notifications[i];
-      var group = groups[card.groupName];
+      var group = receivedGroups[card.groupName];
       group.cards = group.cards || [];
       group.cards.push(card);
     }
@@ -474,12 +486,11 @@ function parseAndShowNotificationCards(response) {
 
     var now = Date.now();
 
-    // Build updated set of groups and merge cards from all groups into one set.
+    // Build updated set of groups.
     var updatedGroups = {};
-    var mergedCards = {};
 
-    for (var groupName in groups) {
-      var receivedGroup = groups[groupName];
+    for (var groupName in receivedGroups) {
+      var receivedGroup = receivedGroups[groupName];
       var storageGroup = items.notificationGroups[groupName] || {
         cards: [],
         cardsTimestamp: undefined,
@@ -502,15 +513,12 @@ function parseAndShowNotificationCards(response) {
       }
 
       updatedGroups[groupName] = storageGroup;
-
-      mergeGroup(mergedCards, storageGroup);
     }
 
     scheduleNextPoll(updatedGroups);
-
     chrome.storage.local.set({notificationGroups: updatedGroups});
-
-    showNotificationCards(mergedCards);
+    mergeAndShowNotificationCards(updatedGroups);
+    recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
   });
 }
 
@@ -876,12 +884,6 @@ function stopPollingCards() {
  */
 function initialize() {
   recordEvent(GoogleNowEvent.EXTENSION_START);
-
-  // Alarms persist across chrome restarts. This is undesirable since it
-  // prevents us from starting up everything (alarms are a heuristic to
-  // determine if we are already running). To mitigate this, we will
-  // shut everything down on initialize before starting everything up.
-  stopPollingCards();
   onStateChange();
 }
 
@@ -1085,6 +1087,20 @@ instrumented.runtime.onInstalled.addListener(function(details) {
 
 instrumented.runtime.onStartup.addListener(function() {
   console.log('onStartup');
+
+  // Show notifications received by earlier polls. Doing this as early as
+  // possible to reduce latency of showing first notifications. This mimics how
+  // persistent notifications will work.
+  tasks.add(SHOW_ON_START_TASK_NAME, function() {
+    instrumented.storage.local.get('notificationGroups', function(items) {
+      console.log('onStartup-get ' + JSON.stringify(items));
+      items = items || {};
+      items.notificationGroups = items.notificationGroups || {};
+
+      mergeAndShowNotificationCards(items.notificationGroups);
+    });
+  });
+
   initialize();
 });
 
