@@ -931,31 +931,6 @@ inline bool operator!=(const Node& a, const Node& b) { return !(a == b); }
 inline bool operator!=(const Node& a, const Node* b) { return !(a == b); }
 inline bool operator!=(const Node* a, const Node& b) { return !(a == b); }
 
-// FIXME: Move to more generic place.
-#define DEFINE_TYPE_CASTS(thisType, argumentType, argumentName, pointerPredicate, referencePredicate) \
-inline thisType* to##thisType(argumentType* argumentName) \
-{ \
-    ASSERT_WITH_SECURITY_IMPLICATION(!argumentName || (pointerPredicate)); \
-    return static_cast<thisType*>(argumentName); \
-} \
-inline const thisType* to##thisType(const argumentType* argumentName) \
-{ \
-    ASSERT_WITH_SECURITY_IMPLICATION(!argumentName || (pointerPredicate)); \
-    return static_cast<const thisType*>(argumentName); \
-} \
-inline thisType& to##thisType(argumentType& argumentName) \
-{ \
-    ASSERT_WITH_SECURITY_IMPLICATION(referencePredicate); \
-    return static_cast<thisType&>(argumentName); \
-} \
-inline const thisType& to##thisType(const argumentType& argumentName) \
-{ \
-    ASSERT_WITH_SECURITY_IMPLICATION(referencePredicate); \
-    return static_cast<const thisType&>(argumentName); \
-} \
-void to##thisType(const thisType*); \
-void to##thisType(const thisType&)
-
 #define DEFINE_NODE_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, Node, node, node->predicate, node.predicate)
 

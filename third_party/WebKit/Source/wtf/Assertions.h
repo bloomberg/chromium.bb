@@ -376,4 +376,30 @@ static inline void UNREACHABLE_FOR_PLATFORM()
 #define RELEASE_ASSERT_NOT_REACHED() ASSERT_NOT_REACHED()
 #endif
 
+/* DEFINE_TYPE_CASTS */
+
+#define DEFINE_TYPE_CASTS(thisType, argumentType, argumentName, pointerPredicate, referencePredicate) \
+inline thisType* to##thisType(argumentType* argumentName) \
+{ \
+    ASSERT_WITH_SECURITY_IMPLICATION(!argumentName || (pointerPredicate)); \
+    return static_cast<thisType*>(argumentName); \
+} \
+inline const thisType* to##thisType(const argumentType* argumentName) \
+{ \
+    ASSERT_WITH_SECURITY_IMPLICATION(!argumentName || (pointerPredicate)); \
+    return static_cast<const thisType*>(argumentName); \
+} \
+inline thisType& to##thisType(argumentType& argumentName) \
+{ \
+    ASSERT_WITH_SECURITY_IMPLICATION(referencePredicate); \
+    return static_cast<thisType&>(argumentName); \
+} \
+inline const thisType& to##thisType(const argumentType& argumentName) \
+{ \
+    ASSERT_WITH_SECURITY_IMPLICATION(referencePredicate); \
+    return static_cast<const thisType&>(argumentName); \
+} \
+void to##thisType(const thisType*); \
+void to##thisType(const thisType&)
+
 #endif /* WTF_Assertions_h */
