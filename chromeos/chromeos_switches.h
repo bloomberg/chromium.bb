@@ -46,7 +46,6 @@ CHROMEOS_EXPORT extern const char kEnableChromeCaptivePortalDetector[];
 CHROMEOS_EXPORT extern const char kEnableIMEModeIndicator[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];
 CHROMEOS_EXPORT extern const char kEnableRequestTabletSite[];
-CHROMEOS_EXPORT extern const char kEnableScreensaverExtensions[];
 CHROMEOS_EXPORT extern const char kEnableStubInteractive[];
 CHROMEOS_EXPORT extern const char kEnableStubPortalledWifi[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];

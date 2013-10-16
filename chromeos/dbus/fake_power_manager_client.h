@@ -40,7 +40,6 @@ class FakePowerManagerClient : public PowerManagerClient {
   virtual void RequestStatusUpdate() OVERRIDE;
   virtual void RequestRestart() OVERRIDE;
   virtual void RequestShutdown() OVERRIDE;
-  virtual void RequestIdleNotification(int64 threshold_secs) OVERRIDE;
   virtual void NotifyUserActivity(
       power_manager::UserActivityType type) OVERRIDE;
   virtual void NotifyVideoActivity(bool is_fullscreen) OVERRIDE;

@@ -36,9 +36,6 @@ void FakePowerManagerClient::SetPolicy(
 void FakePowerManagerClient::RequestShutdown() {
 }
 
-void FakePowerManagerClient::RequestIdleNotification(int64 threshold_secs) {
-}
-
 void FakePowerManagerClient::DecreaseScreenBrightness(bool allow_off) {
 }
 

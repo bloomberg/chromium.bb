@@ -28,7 +28,6 @@ class MagnificationManager;
 class PeripheralBatteryObserver;
 class PowerButtonObserver;
 class PowerPrefs;
-class ScreensaverController;
 class SessionManagerObserver;
 class SwapMetrics;
 
@@ -68,7 +67,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<DisplayConfigurationObserver> display_configuration_observer_;
   scoped_ptr<default_app_order::ExternalLoader> app_order_loader_;
   scoped_ptr<ExtensionSystemEventObserver> extension_system_event_observer_;
-  scoped_ptr<ScreensaverController> screensaver_controller_;
   scoped_ptr<PeripheralBatteryObserver> peripheral_battery_observer_;
   scoped_ptr<PowerPrefs> power_prefs_;
   scoped_ptr<PowerButtonObserver> power_button_observer_;

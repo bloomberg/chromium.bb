@@ -57,7 +57,6 @@
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/screensaver/screensaver_controller.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
@@ -586,10 +585,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // These observers must be initialized after the profile because
   // they use the profile to dispatch extension events.
   extension_system_event_observer_.reset(new ExtensionSystemEventObserver());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableScreensaverExtensions)) {
-    screensaver_controller_.reset(new ScreensaverController());
-  }
   if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
     retail_mode_power_save_blocker_ = content::PowerSaveBlocker::Create(
         content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
@@ -723,7 +718,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();
-  screensaver_controller_.reset();
   idle_action_warning_observer_.reset();
 
   // Delete ContactManager while |g_browser_process| is still alive.

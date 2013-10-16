@@ -749,8 +749,6 @@
         'browser/chromeos/proxy_config_service_impl.h',
         'browser/chromeos/proxy_cros_settings_parser.cc',
         'browser/chromeos/proxy_cros_settings_parser.h',
-        'browser/chromeos/screensaver/screensaver_controller.cc',
-        'browser/chromeos/screensaver/screensaver_controller.h',
         'browser/chromeos/session_length_limiter.cc',
         'browser/chromeos/session_length_limiter.h',
         'browser/chromeos/settings/cros_settings.cc',

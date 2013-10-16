@@ -92,9 +92,6 @@ const char kEnableChromeCaptivePortalDetector[] =
 // on Chrome OS.
 const char kEnableIMEModeIndicator[] = "enable-ime-mode-indicator";
 
-// Enables screensaver extensions.
-const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";
-
 // Enable "interactive" mode for stub implemenations (e.g. NetworkStateHandler)
 const char kEnableStubInteractive[] = "enable-stub-interactive";
 

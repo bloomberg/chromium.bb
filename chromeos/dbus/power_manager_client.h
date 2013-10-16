@@ -22,8 +22,6 @@ class PowerSupplyProperties;
 
 namespace chromeos {
 
-typedef base::Callback<void(void)> IdleNotificationCallback;
-
 // Callback used for getting the current screen brightness.  The param is in the
 // range [0.0, 100.0].
 typedef base::Callback<void(double)> GetScreenBrightnessPercentCallback;
@@ -58,9 +56,6 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
     // RequestStatusUpdate() can be used to trigger an immediate update.
     virtual void PowerChanged(
         const power_manager::PowerSupplyProperties& proto) {}
-
-    // Called when we go idle for threshold time.
-    virtual void IdleNotify(int64 threshold_secs) {}
 
     // Called when the system is about to suspend. Suspend is deferred until
     // all observers' implementations of this method have finished running.
@@ -126,15 +121,6 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
 
   // Requests shutdown of the system.
   virtual void RequestShutdown() = 0;
-
-  // Idle management functions:
-
-  // Requests notification for Idle at a certain threshold.
-  // NOTE: This notification is one shot, once the machine has been idle for
-  // threshold time, a notification will be sent and then that request will be
-  // removed from the notification queue. If you wish notifications the next
-  // time the machine goes idle for that much time, request again.
-  virtual void RequestIdleNotification(int64 threshold_secs) = 0;
 
   // Notifies the power manager that the user is active (i.e. generating input
   // events).

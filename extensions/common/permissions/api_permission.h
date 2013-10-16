@@ -121,7 +121,6 @@ class APIPermission {
     kPushMessaging,
     kImageWriterPrivate,
     kRtcPrivate,
-    kScreensaver,
     kSerial,
     kSessions,
     kSignedInDevices,
