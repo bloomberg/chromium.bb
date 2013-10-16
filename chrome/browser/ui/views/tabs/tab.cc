@@ -242,12 +242,6 @@ const double kImmersiveTabMinThrobOpacity = 0.66;
 // Number of steps in the immersive mode loading animation.
 const int kImmersiveLoadingStepCount = 32;
 
-// Scale to resize the current favicon by when projecting.
-const double kProjectingFaviconResizeScale = 0.75;
-
-// Scale to resize the projection sheet glow by.
-const double kProjectingGlowResizeScale = 2.0;
-
 void DrawIconAtLocation(gfx::Canvas* canvas,
                         const gfx::ImageSkia& image,
                         int image_offset,
@@ -458,11 +452,12 @@ Tab::Tab(TabController* controller)
       loading_animation_frame_(0),
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
+      animating_media_state_(TAB_MEDIA_STATE_NONE),
       theme_provider_(NULL),
       tab_activated_with_last_gesture_begin_(false),
       hover_controller_(this),
       showing_icon_(false),
-      showing_audio_indicator_(false),
+      showing_media_indicator_(false),
       showing_close_button_(false),
       close_button_color_(0) {
   InitTabResources();
@@ -517,11 +512,7 @@ void Tab::SetData(const TabRendererData& data) {
 
   if (data_.IsCrashed()) {
     if (!should_display_crashed_favicon_ && !IsPerformingCrashAnimation()) {
-      // Crash animation overrides the other icon animations.
-      old.audio_state = TabRendererData::AUDIO_STATE_NONE;
-      data_.audio_state = TabRendererData::AUDIO_STATE_NONE;
-      data_.capture_state = TabRendererData::CAPTURE_STATE_NONE;
-      old.capture_state = TabRendererData::CAPTURE_STATE_NONE;
+      data_.media_state = TAB_MEDIA_STATE_NONE;
 #if defined(OS_CHROMEOS)
       // On Chrome OS, we reload killed tabs automatically when the user
       // switches to them.  Don't display animations for these unless they're
@@ -534,14 +525,16 @@ void Tab::SetData(const TabRendererData& data) {
       StartCrashAnimation();
 #endif
     }
-  } else if (!data_.CaptureActive() && old.CaptureActive()) {
-    StopIconAnimation();
-  } else if (data_.CaptureActive() && !old.CaptureActive()) {
-    StartRecordingAnimation();
   } else {
     if (IsPerformingCrashAnimation())
-      StopIconAnimation();
+      StopCrashAnimation();
     ResetCrashedFavicon();
+  }
+
+  if (data_.media_state != old.media_state) {
+    if (data_.media_state != TAB_MEDIA_STATE_NONE)
+      animating_media_state_ = data_.media_state;
+    StartMediaIndicatorAnimation();
   }
 
   if (old.mini != data_.mini) {
@@ -683,10 +676,14 @@ void Tab::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void Tab::AnimationCanceled(const gfx::Animation* animation) {
+  if (media_indicator_animation_ == animation)
+    animating_media_state_ = data_.media_state;
   SchedulePaint();
 }
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
+  if (media_indicator_animation_ == animation)
+    animating_media_state_ = data_.media_state;
   SchedulePaint();
 }
 
@@ -801,21 +798,22 @@ void Tab::Layout() {
     close_button_->SetVisible(false);
   }
 
-  showing_audio_indicator_ = ShouldShowAudioIndicator();
-  if (showing_audio_indicator_) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia audio_indicator_image(
-        *rb.GetImageSkiaNamed(IDR_TAB_AUDIO_INDICATOR));
-    const int top =
-        top_padding() + (content_height - audio_indicator_image.height()) / 2;
+  showing_media_indicator_ = ShouldShowMediaIndicator();
+  if (showing_media_indicator_) {
+    const gfx::Image& media_indicator_image =
+        chrome::GetTabMediaIndicatorImage(animating_media_state_);
+    media_indicator_bounds_.set_width(media_indicator_image.Width());
+    media_indicator_bounds_.set_height(media_indicator_image.Height());
+    media_indicator_bounds_.set_y(
+        top_padding() +
+            (content_height - media_indicator_bounds_.height()) / 2);
     const int right = showing_close_button_ ?
         close_button_->x() + close_button_->GetInsets().left() : lb.right();
-    const int left = std::max(lb.x(), right - audio_indicator_image.width());
-    audio_indicator_bounds_.SetRect(left, top,
-                                    tab_icon_size(), tab_icon_size());
-    MaybeAdjustLeftForMiniTab(&audio_indicator_bounds_);
+    media_indicator_bounds_.set_x(
+        std::max(lb.x(), right - media_indicator_bounds_.width()));
+    MaybeAdjustLeftForMiniTab(&media_indicator_bounds_);
   } else {
-    audio_indicator_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
+    media_indicator_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
   }
 
   const int title_text_offset = is_host_desktop_type_ash ?
@@ -834,8 +832,8 @@ void Tab::Layout() {
       title_top -= (text_height - minimum_size.height()) / 2;
 
     int title_width;
-    if (showing_audio_indicator_) {
-      title_width = audio_indicator_bounds_.x() - kTitleCloseButtonSpacing -
+    if (showing_media_indicator_) {
+      title_width = media_indicator_bounds_.x() - kTitleCloseButtonSpacing -
           title_left;
     } else if (close_button_->visible()) {
       // The close button has an empty border with some padding (see details
@@ -1091,10 +1089,10 @@ void Tab::DataChanged(const TabRendererData& old) {
 void Tab::PaintTab(gfx::Canvas* canvas) {
   // See if the model changes whether the icons should be painted.
   const bool show_icon = ShouldShowIcon();
-  const bool show_audio_indicator = ShouldShowAudioIndicator();
+  const bool show_media_indicator = ShouldShowMediaIndicator();
   const bool show_close_button = ShouldShowCloseBox();
   if (show_icon != showing_icon_ ||
-      show_audio_indicator != showing_audio_indicator_ ||
+      show_media_indicator != showing_media_indicator_ ||
       show_close_button != showing_close_button_) {
     Layout();
   }
@@ -1112,8 +1110,8 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
   if (show_icon)
     PaintIcon(canvas);
 
-  if (show_audio_indicator)
-    PaintAudioIndicator(canvas);
+  if (show_media_indicator)
+    PaintMediaIndicator(canvas);
 
   // If the close button color has changed, generate a new one.
   if (!close_button_color_ || title_color != close_button_color_) {
@@ -1410,8 +1408,8 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 
   bounds.set_x(GetMirroredXForRect(bounds));
 
-  // Paint network activity (aka throbber) animation frame.
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
+    // Paint network activity (aka throbber) animation frame.
     ui::ThemeProvider* tp = GetThemeProvider();
     gfx::ImageSkia frames(*tp->GetImageSkiaNamed(
         (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
@@ -1422,13 +1420,8 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     DrawIconCenter(canvas, frames, image_offset,
                    icon_size, icon_size,
                    bounds, false, SkPaint());
-    return;
-  }
-
-  // Paint regular icon and potentially overlays.
-  canvas->Save();
-  canvas->ClipRect(GetLocalBounds());
-  if (should_display_crashed_favicon_) {
+  } else if (should_display_crashed_favicon_) {
+    // Paint crash favicon.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia crashed_favicon(*rb.GetImageSkiaNamed(IDR_SAD_FAVICON));
     bounds.set_y(bounds.y() + favicon_hiding_offset_);
@@ -1436,158 +1429,35 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
                     crashed_favicon.width(),
                     crashed_favicon.height(),
                     bounds, true, SkPaint());
-  } else {
-    if (!data().favicon.isNull()) {
-      if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
-        // If projecting, shrink favicon and add projection screen instead.
-        gfx::ImageSkia resized_icon =
-            gfx::ImageSkiaOperations::CreateResizedImage(
-                data().favicon,
-                skia::ImageOperations::RESIZE_BEST,
-                gfx::Size(data().favicon.width() *
-                          kProjectingFaviconResizeScale,
-                          data().favicon.height() *
-                          kProjectingFaviconResizeScale));
-
-        gfx::Rect resized_bounds(bounds);
-        // Need to shift it up a bit vertically because the projection screen
-        // is thinner on the top and bottom.
-        resized_bounds.set_y(resized_bounds.y() - 1);
-
-        DrawIconCenter(canvas, resized_icon, 0,
-                       resized_icon.width(),
-                       resized_icon.height(),
-                       resized_bounds, true, SkPaint());
-
-        ui::ThemeProvider* tp = GetThemeProvider();
-        gfx::ImageSkia projection_screen(
-            *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE));
-        DrawIconCenter(canvas, projection_screen, 0,
-                       data().favicon.width(),
-                       data().favicon.height(),
-                       bounds, true, SkPaint());
-      } else {
-        DrawIconCenter(canvas, data().favicon, 0,
-                       data().favicon.width(),
-                       data().favicon.height(),
-                       bounds, true, SkPaint());
-      }
-    }
-  }
-  canvas->Restore();
-
-  // Paint recording or projecting animation overlay.
-  if (data().capture_state != TabRendererData::CAPTURE_STATE_NONE)
-    PaintCaptureState(canvas, bounds);
-}
-
-void Tab::PaintCaptureState(gfx::Canvas* canvas, gfx::Rect bounds) {
-  SkPaint paint;
-  paint.setAntiAlias(true);
-  DCHECK(capture_icon_animation_.get());
-  paint.setAlpha(capture_icon_animation_->GetCurrentValue() * SK_AlphaOPAQUE);
-  ui::ThemeProvider* tp = GetThemeProvider();
-
-  if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
-    // If projecting, add projection glow animation.
-    gfx::Rect glow_bounds(bounds);
-    glow_bounds.set_x(glow_bounds.x() - (32 - 24));
-    glow_bounds.set_y(0);
-    glow_bounds.set_width(glow_bounds.width() * kProjectingGlowResizeScale);
-    glow_bounds.set_height(glow_bounds.height() * kProjectingGlowResizeScale);
-
-    gfx::ImageSkia projection_glow(
-        *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE_GLOW));
-    DrawIconCenter(canvas, projection_glow, 0, projection_glow.width(),
-                   projection_glow.height(), glow_bounds, false, paint);
-  } else if (data().capture_state == TabRendererData::CAPTURE_STATE_RECORDING) {
-    // If recording, fade the recording icon on top of the favicon with a mask
-    // around/behind it.
-    gfx::ImageSkia recording_dot(*tp->GetImageSkiaNamed(IDR_TAB_RECORDING));
-    gfx::ImageSkia recording_dot_mask(
-        *tp->GetImageSkiaNamed(IDR_TAB_RECORDING_MASK));
-    gfx::ImageSkia tab_background;
-    if (IsActive()) {
-      tab_background = *tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-    } else {
-      int tab_id;
-      int frame_id_dummy;
-      views::Widget* widget = GetWidget();
-      GetTabIdAndFrameId(widget, &tab_id, &frame_id_dummy);
-      tab_background = *tp->GetImageSkiaNamed(tab_id);
-    }
-
-    // This is the offset from the favicon bottom right corner for the mask,
-    // given that the recording dot is drawn in the bottom right corner.
-    int mask_offset_from_right = recording_dot.width() +
-        (recording_dot_mask.width() - recording_dot.width()) / 2;
-    int mask_offset_from_bottom = recording_dot.height() +
-        (recording_dot_mask.height() - recording_dot.height()) / 2;
-
-    int mask_dst_x = bounds.x() + bounds.width() - mask_offset_from_right;
-    int mask_dst_y = bounds.y() + bounds.height() - mask_offset_from_bottom;
-
-    // Crop the background image at the correct position and create a mask
-    // from the background.
-    int offset_x = GetMirroredX() + background_offset_.x() + mask_dst_x;
-    int offset_y = mask_dst_y;
-    gfx::ImageSkia tab_background_cropped =
-        gfx::ImageSkiaOperations::CreateTiledImage(
-            tab_background, offset_x, offset_y,
-            recording_dot_mask.width(), recording_dot_mask.height());
-    gfx::ImageSkia recording_dot_mask_with_bg =
-        gfx::ImageSkiaOperations::CreateMaskedImage(tab_background_cropped,
-                                                    recording_dot_mask);
-
-    // Draw the mask.
-    DrawIconAtLocation(canvas, recording_dot_mask_with_bg, 0,
-                       mask_dst_x, mask_dst_y,
-                       recording_dot_mask.width(),
-                       recording_dot_mask.height(),
-                       false, SkPaint());
-
-    // Potentially draw an alpha of the active bg image.
-    double throb_value = GetThrobValue();
-    if (!IsActive() && throb_value > 0) {
-      tab_background = *tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-      tab_background_cropped = gfx::ImageSkiaOperations::CreateTiledImage(
-          tab_background, offset_x, offset_y,
-          recording_dot_mask.width(), recording_dot_mask.height());
-      recording_dot_mask_with_bg = gfx::ImageSkiaOperations::CreateMaskedImage(
-          tab_background_cropped, recording_dot_mask);
-
-      canvas->SaveLayerAlpha(static_cast<int>(throb_value * 0xff),
-                             GetLocalBounds());
-      DrawIconAtLocation(canvas, recording_dot_mask_with_bg, 0,
-                         mask_dst_x, mask_dst_y,
-                         recording_dot_mask.width(),
-                         recording_dot_mask.height(),
-                         false, SkPaint());
-      canvas->Restore();
-    }
-
-    // Draw the recording icon.
-    DrawIconBottomRight(canvas, recording_dot, 0,
-                        recording_dot.width(), recording_dot.height(),
-                        bounds, false, paint);
-  } else {
-    NOTREACHED();
+  } else if (!data().favicon.isNull()) {
+    // Paint the normal favicon.
+    DrawIconCenter(canvas, data().favicon, 0,
+                   data().favicon.width(),
+                   data().favicon.height(),
+                   bounds, true, SkPaint());
   }
 }
 
-void Tab::PaintAudioIndicator(gfx::Canvas* canvas) {
-  if (audio_indicator_bounds_.IsEmpty())
+void Tab::PaintMediaIndicator(gfx::Canvas* canvas) {
+  if (media_indicator_bounds_.IsEmpty() || !media_indicator_animation_)
     return;
 
-  gfx::Rect bounds = audio_indicator_bounds_;
+  gfx::Rect bounds = media_indicator_bounds_;
   bounds.set_x(GetMirroredXForRect(bounds));
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia audio_indicator_image(
-      *rb.GetImageSkiaNamed(IDR_TAB_AUDIO_INDICATOR));
-  DrawIconAtLocation(canvas, audio_indicator_image, 0,
-                     bounds.x(), bounds.y(), audio_indicator_image.width(),
-                     audio_indicator_image.height(), true, SkPaint());
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  double opaqueness = media_indicator_animation_->GetCurrentValue();
+  if (data_.media_state == TAB_MEDIA_STATE_NONE)
+    opaqueness = 1.0 - opaqueness;  // Fading out, not in.
+  paint.setAlpha(opaqueness * SK_AlphaOPAQUE);
+
+  const gfx::ImageSkia& media_indicator_image =
+      *(chrome::GetTabMediaIndicatorImage(animating_media_state_).
+            ToImageSkia());
+  DrawIconAtLocation(canvas, media_indicator_image, 0,
+                     bounds.x(), bounds.y(), media_indicator_image.width(),
+                     media_indicator_image.height(), true, paint);
 }
 
 void Tab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
@@ -1669,50 +1539,32 @@ void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
 int Tab::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
+  const int available_width =
+      std::max(0, width() - left_padding() - right_padding());
+  const int width_per_icon = tab_icon_size();
   const int kPaddingBetweenIcons = 2;
-  return (width() - left_padding() - right_padding()) /
-      (tab_icon_size() + kPaddingBetweenIcons);
+  if (available_width >= width_per_icon &&
+      available_width < (width_per_icon + kPaddingBetweenIcons)) {
+    return 1;
+  }
+  return available_width / (width_per_icon + kPaddingBetweenIcons);
 }
 
 bool Tab::ShouldShowIcon() const {
-  if (!data().show_icon)
-    return false;
-  const bool should_show_audio_indicator = ShouldShowAudioIndicator();
-  if (data().mini && height() >= GetMinimumUnselectedSize().height()) {
-    // Audio indicator always takes precendence over the favicon for mini tabs.
-    return !should_show_audio_indicator;
-  }
-  int required_capacity = should_show_audio_indicator ? 2 : 1;
-  if (IsActive()) {
-    // Active tabs give priority to the close button, then the audio indicator,
-    // then the favicon.
-    ++required_capacity;
-  } else {
-    // Non-active tabs give priority to the audio indicator, then the favicon,
-    // and finally the close button.
-  }
-  return IconCapacity() >= required_capacity;
+  return chrome::ShouldTabShowFavicon(
+      IconCapacity(), data().mini, IsActive(), data().show_icon,
+      animating_media_state_);
 }
 
-bool Tab::ShouldShowAudioIndicator() const {
-  // Note: If the capture indicator is active, then do not show the audio
-  // indicator.  This allows the favicon "throbber" animation to be shown in
-  // small-width situations.
-  if (!data().AudioActive() || data().CaptureActive())
-    return false;
-  if (data().mini && height() >= GetMinimumUnselectedSize().height())
-    return true;
-  if (IsActive()) {
-    // The active tab clips the audio indicator before the close button.
-    return IconCapacity() >= 2;
-  }
-  // Non-active tabs clip close button before the audio indicator.
-  return IconCapacity() >= 1;
+bool Tab::ShouldShowMediaIndicator() const {
+  return chrome::ShouldTabShowMediaIndicator(
+      IconCapacity(), data().mini, IsActive(), data().show_icon,
+      animating_media_state_);
 }
 
 bool Tab::ShouldShowCloseBox() const {
-  // The active tab never clips close button.
-  return !data().mini && (IsActive() || IconCapacity() >= 3);
+  return chrome::ShouldTabShowCloseButton(
+      IconCapacity(), data().mini, IsActive());
 }
 
 double Tab::GetThrobValue() {
@@ -1746,26 +1598,24 @@ void Tab::ResetCrashedFavicon() {
   should_display_crashed_favicon_ = false;
 }
 
-void Tab::StopIconAnimation() {
+void Tab::StopCrashAnimation() {
   crash_icon_animation_.reset();
-  capture_icon_animation_.reset();
 }
 
 void Tab::StartCrashAnimation() {
-  capture_icon_animation_.reset();
   crash_icon_animation_.reset(new FaviconCrashAnimation(this));
   crash_icon_animation_->Start();
 }
 
-void Tab::StartRecordingAnimation() {
-  crash_icon_animation_.reset();
-  capture_icon_animation_ = chrome::CreateTabRecordingIndicatorAnimation();
-  capture_icon_animation_->set_delegate(this);
-  capture_icon_animation_->Start();
-}
-
 bool Tab::IsPerformingCrashAnimation() const {
   return crash_icon_animation_.get() && data_.IsCrashed();
+}
+
+void Tab::StartMediaIndicatorAnimation() {
+  media_indicator_animation_ =
+      chrome::CreateTabMediaIndicatorFadeAnimation(data_.media_state);
+  media_indicator_animation_->set_delegate(this);
+  media_indicator_animation_->Start();
 }
 
 void Tab::ScheduleIconPaint() {

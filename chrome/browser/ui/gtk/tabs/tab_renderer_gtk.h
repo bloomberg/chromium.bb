@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -176,6 +177,10 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   // Returns whether the Tab should display a favicon.
   bool ShouldShowIcon() const;
 
+  // Invoked from Layout() to adjust the position of the favicon or media
+  // indicator for mini tabs.
+  void MaybeAdjustLeftForMiniTab(gfx::Rect* bounds) const;
+
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
   // Returns the minimum possible size of a selected Tab. Selected tabs must
@@ -236,12 +241,6 @@ class TabRendererGtk : public gfx::AnimationDelegate,
  private:
   class FaviconCrashAnimation;
 
-  enum CaptureState {
-    NONE,
-    RECORDING,
-    PROJECTING
-  };
-
   // Model data. We store this here so that we don't need to ask the underlying
   // model, which is tricky since instances of this object can outlive the
   // corresponding objects in the underlying model.
@@ -251,7 +250,6 @@ class TabRendererGtk : public gfx::AnimationDelegate,
 
     SkBitmap favicon;
     gfx::CairoCachedSurface cairo_favicon;
-    gfx::CairoCachedSurface cairo_overlay;
     bool is_default_favicon;
     string16 title;
     bool loading;
@@ -262,7 +260,8 @@ class TabRendererGtk : public gfx::AnimationDelegate,
     bool blocked;
     bool animating_mini_change;
     bool app;
-    CaptureState capture_state;
+    TabMediaState media_state;
+    TabMediaState previous_media_state;
   };
 
   // Overridden from gfx::AnimationDelegate:
@@ -277,15 +276,15 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   // Return true if the crash animation is currently running.
   bool IsPerformingCrashAnimation() const;
 
+  // Starts the media indicator fade-in/out animation. There's no stop method
+  // because this is not a continuous animation.
+  void StartMediaIndicatorAnimation();
+
   // Set the temporary offset for the favicon. This is used during animation.
   void SetFaviconHidingOffset(int offset);
 
   void DisplayCrashedFavicon();
   void ResetCrashedFavicon();
-
-  // Sets up an overlay for the favicon and starts a throbbing animation
-  // if this tab is currently capturing media.
-  void UpdateFaviconOverlay(content::WebContents* contents);
 
   // Generates the bounds for the interior items of the tab.
   void Layout();
@@ -305,6 +304,7 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   // Paint various portions of the Tab
   void PaintTitle(GtkWidget* widget, cairo_t* cr);
   void PaintIcon(GtkWidget* widget, cairo_t* cr);
+  void PaintMediaIndicator(GtkWidget* widget, cairo_t* cr);
   void PaintTabBackground(GtkWidget* widget, cairo_t* cr);
   void PaintInactiveTabBackground(GtkWidget* widget, cairo_t* cr);
   void PaintActiveTabBackground(GtkWidget* widget, cairo_t* cr);
@@ -328,6 +328,9 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.
   int IconCapacity() const;
+
+  // Returns whether the Tab should display the media indicator.
+  bool ShouldShowMediaIndicator() const;
 
   // Returns whether the Tab should display a close button.
   bool ShouldShowCloseBox() const;
@@ -360,6 +363,7 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   // The bounds of various sections of the display.
   gfx::Rect favicon_bounds_;
   gfx::Rect title_bounds_;
+  gfx::Rect media_indicator_bounds_;
   gfx::Rect close_button_bounds_;
 
   TabData data_;
@@ -383,6 +387,10 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.
   bool showing_icon_;
+
+  // Whether we're showing the media indicator. It is cached so that we can
+  // detect when it changes and layout appropriately.
+  bool showing_media_indicator_;
 
   // Whether we are showing the close button. It is cached so that we can
   // detect when it changes and layout appropriately.
@@ -410,8 +418,10 @@ class TabRendererGtk : public gfx::AnimationDelegate,
   // Animation used when the title of an inactive mini-tab changes.
   scoped_ptr<gfx::ThrobAnimation> mini_title_animation_;
 
-  // Animation used when the favicon has an overlay (e.g. for recording).
-  scoped_ptr<gfx::Animation> favicon_overlay_animation_;
+  // Media indicator fade-in/out animation (i.e., only on show/hide, not a
+  // continuous animation).
+  scoped_ptr<gfx::Animation> media_indicator_animation_;
+  TabMediaState animating_media_state_;
 
   // Contains the loading animation state.
   LoadingAnimation loading_animation_;

@@ -27,9 +27,6 @@ class TabStripModel;
 namespace content {
 class WebContents;
 }
-namespace gfx {
-class AnimationContainer;
-}
 
 // The interface for the tab strip controller's delegate.
 // Delegating TabStripModelObserverBridge's events (in lieu of directly
@@ -142,8 +139,6 @@ class AnimationContainer;
 
   // Helper for performing tab selection as a result of dragging over a tab.
   scoped_ptr<HoverTabSelector> hoverTabSelector_;
-
-  scoped_refptr<gfx::AnimationContainer> animationContainer_;
 }
 
 @property(nonatomic) CGFloat leftIndentForControls;

@@ -73,18 +73,24 @@ class TabTest : public views::ViewsTestBase {
   TabTest() {}
   virtual ~TabTest() {}
 
-  static bool IconAnimationInvariant(const Tab& tab) {
-    return tab.data().CaptureActive() == !!tab.capture_icon_animation_.get();
+  static void DisableMediaIndicatorAnimation(Tab* tab) {
+    tab->media_indicator_animation_.reset();
+    tab->animating_media_state_ = tab->data_.media_state;
   }
 
   static void CheckForExpectedLayoutAndVisibilityOfElements(const Tab& tab) {
     // Check whether elements are visible when they are supposed to be, given
     // Tab size and TabRendererData state.
     if (tab.data_.mini) {
-      if (tab.data_.CaptureActive())
+      EXPECT_EQ(1, tab.IconCapacity());
+      if (tab.data_.media_state == TAB_MEDIA_STATE_CAPTURING ||
+          tab.data_.media_state == TAB_MEDIA_STATE_RECORDING) {
+        EXPECT_FALSE(tab.ShouldShowIcon());
+        EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+      } else {
         EXPECT_TRUE(tab.ShouldShowIcon());
-      else
-        EXPECT_TRUE(tab.ShouldShowIcon() != tab.ShouldShowAudioIndicator());
+        EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+      }
       EXPECT_FALSE(tab.ShouldShowCloseBox());
     } else if (tab.IsActive()) {
       EXPECT_TRUE(tab.ShouldShowCloseBox());
@@ -92,23 +98,25 @@ class TabTest : public views::ViewsTestBase {
         case 0:
         case 1:
           EXPECT_FALSE(tab.ShouldShowIcon());
-          EXPECT_FALSE(tab.ShouldShowAudioIndicator());
+          EXPECT_FALSE(tab.ShouldShowMediaIndicator());
           break;
         case 2:
-          if (tab.data_.CaptureActive())
+          if (tab.data_.media_state == TAB_MEDIA_STATE_CAPTURING ||
+              tab.data_.media_state == TAB_MEDIA_STATE_RECORDING) {
+            EXPECT_FALSE(tab.ShouldShowIcon());
+            EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+          } else {
             EXPECT_TRUE(tab.ShouldShowIcon());
-          else
-            EXPECT_TRUE(tab.ShouldShowIcon() != tab.ShouldShowAudioIndicator());
+            EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+          }
           break;
         default:
           EXPECT_LE(3, tab.IconCapacity());
           EXPECT_TRUE(tab.ShouldShowIcon());
-          if (tab.data_.CaptureActive()) {
-            EXPECT_FALSE(tab.ShouldShowAudioIndicator());
-          } else {
-            EXPECT_TRUE(tab.data_.AudioActive() ==
-                            tab.ShouldShowAudioIndicator());
-          }
+          if (tab.data_.media_state != TAB_MEDIA_STATE_NONE)
+            EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+          else
+            EXPECT_FALSE(tab.ShouldShowMediaIndicator());
           break;
       }
     } else {  // Tab not active and not mini tab.
@@ -116,24 +124,26 @@ class TabTest : public views::ViewsTestBase {
         case 0:
           EXPECT_FALSE(tab.ShouldShowCloseBox());
           EXPECT_FALSE(tab.ShouldShowIcon());
-          EXPECT_FALSE(tab.ShouldShowAudioIndicator());
+          EXPECT_FALSE(tab.ShouldShowMediaIndicator());
           break;
         case 1:
           EXPECT_FALSE(tab.ShouldShowCloseBox());
-          if (tab.data_.CaptureActive())
+          if (tab.data_.media_state == TAB_MEDIA_STATE_CAPTURING ||
+              tab.data_.media_state == TAB_MEDIA_STATE_RECORDING) {
+            EXPECT_FALSE(tab.ShouldShowIcon());
+            EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+          } else {
             EXPECT_TRUE(tab.ShouldShowIcon());
-          else
-            EXPECT_TRUE(tab.ShouldShowIcon() != tab.ShouldShowAudioIndicator());
+            EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+          }
           break;
         default:
           EXPECT_LE(2, tab.IconCapacity());
           EXPECT_TRUE(tab.ShouldShowIcon());
-          if (tab.data_.CaptureActive()) {
-            EXPECT_FALSE(tab.ShouldShowAudioIndicator());
-          } else {
-            EXPECT_TRUE(tab.data_.AudioActive() ==
-                            tab.ShouldShowAudioIndicator());
-          }
+          if (tab.data_.media_state != TAB_MEDIA_STATE_NONE)
+            EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+          else
+            EXPECT_FALSE(tab.ShouldShowMediaIndicator());
           break;
       }
     }
@@ -148,19 +158,19 @@ class TabTest : public views::ViewsTestBase {
       EXPECT_LE(contents_bounds.y(), tab.favicon_bounds_.y());
       EXPECT_LE(tab.favicon_bounds_.bottom(), contents_bounds.bottom());
     }
-    if (tab.ShouldShowIcon() && tab.ShouldShowAudioIndicator())
-      EXPECT_LE(tab.favicon_bounds_.right(), tab.audio_indicator_bounds_.x());
-    if (tab.ShouldShowAudioIndicator()) {
+    if (tab.ShouldShowIcon() && tab.ShouldShowMediaIndicator())
+      EXPECT_LE(tab.favicon_bounds_.right(), tab.media_indicator_bounds_.x());
+    if (tab.ShouldShowMediaIndicator()) {
       if (tab.title_bounds_.width() > 0)
-        EXPECT_LE(tab.title_bounds_.right(), tab.audio_indicator_bounds_.x());
-      EXPECT_LE(tab.audio_indicator_bounds_.right(), contents_bounds.right());
-      EXPECT_LE(contents_bounds.y(), tab.audio_indicator_bounds_.y());
-      EXPECT_LE(tab.audio_indicator_bounds_.bottom(), contents_bounds.bottom());
+        EXPECT_LE(tab.title_bounds_.right(), tab.media_indicator_bounds_.x());
+      EXPECT_LE(tab.media_indicator_bounds_.right(), contents_bounds.right());
+      EXPECT_LE(contents_bounds.y(), tab.media_indicator_bounds_.y());
+      EXPECT_LE(tab.media_indicator_bounds_.bottom(), contents_bounds.bottom());
     }
-    if (tab.ShouldShowAudioIndicator() && tab.ShouldShowCloseBox()) {
-      // Note: The audio indicator can overlap the left-insets of the close box,
+    if (tab.ShouldShowMediaIndicator() && tab.ShouldShowCloseBox()) {
+      // Note: The media indicator can overlap the left-insets of the close box,
       // but should otherwise be to the left of the close button.
-      EXPECT_LE(tab.audio_indicator_bounds_.right(),
+      EXPECT_LE(tab.media_indicator_bounds_.right(),
                 tab.close_button_->bounds().x() +
                     tab.close_button_->GetInsets().left());
     }
@@ -210,6 +220,11 @@ TEST_F(TabTest, HitTestTopPixel) {
 }
 
 TEST_F(TabTest, LayoutAndVisibilityOfElements) {
+  static const TabMediaState kMediaStatesToTest[] = {
+    TAB_MEDIA_STATE_NONE, TAB_MEDIA_STATE_CAPTURING,
+    TAB_MEDIA_STATE_AUDIO_PLAYING
+  };
+
   FakeTabController controller;
   Tab tab(&controller);
 
@@ -223,41 +238,41 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
   // results.
   for (int is_mini_tab = 0; is_mini_tab < 2; ++is_mini_tab) {
     for (int is_active_tab = 0; is_active_tab < 2; ++is_active_tab) {
-      for (int audio_state = TabRendererData::AUDIO_STATE_NONE;
-           audio_state <= TabRendererData::AUDIO_STATE_PLAYING; ++audio_state) {
-        for (int capture_state = TabRendererData::CAPTURE_STATE_NONE;
-             capture_state <= TabRendererData::CAPTURE_STATE_PROJECTING;
-             ++capture_state) {
-          SCOPED_TRACE(::testing::Message()
-                       << (is_active_tab ? "Active" : "Inactive") << ' '
-                       << (is_mini_tab ? "Mini " : "")
-                       << "Tab with audio_state=" << audio_state
-                       << " and capture_state=" << capture_state);
-          data.mini = !!is_mini_tab;
-          controller.set_active_tab(!!is_active_tab);
-          data.audio_state =
-              static_cast<TabRendererData::AudioState>(audio_state);
-          data.capture_state =
-              static_cast<TabRendererData::CaptureState>(capture_state);
-          tab.SetData(data);
+      for (size_t media_state_index = 0;
+           media_state_index < arraysize(kMediaStatesToTest);
+           ++media_state_index) {
+        const TabMediaState media_state = kMediaStatesToTest[media_state_index];
+        SCOPED_TRACE(::testing::Message()
+                     << (is_active_tab ? "Active" : "Inactive") << ' '
+                     << (is_mini_tab ? "Mini " : "")
+                     << "Tab with media indicator state " << media_state);
 
-          // Test layout for every width from standard to minimum.
-          gfx::Rect bounds(gfx::Point(0, 0), Tab::GetStandardSize());
-          int min_width;
-          if (is_mini_tab) {
-            bounds.set_width(Tab::GetMiniWidth());
-            min_width = Tab::GetMiniWidth();
-          } else {
-            min_width = is_active_tab ? Tab::GetMinimumSelectedSize().width() :
-                Tab::GetMinimumUnselectedSize().width();
-          }
-          while (bounds.width() >= min_width) {
-            SCOPED_TRACE(::testing::Message()
-                         << "bounds=" << bounds.ToString());
-            tab.SetBoundsRect(bounds);  // Invokes Tab::Layout().
-            CheckForExpectedLayoutAndVisibilityOfElements(tab);
-            bounds.set_width(bounds.width() - 1);
-          }
+        data.mini = !!is_mini_tab;
+        controller.set_active_tab(!!is_active_tab);
+        data.media_state = media_state;
+        tab.SetData(data);
+
+        // Disable the media indicator animation so that the layout/visibility
+        // logic can be tested effectively.  If the animation was left enabled,
+        // the ShouldShowMediaIndicator() method would return true during
+        // fade-out transitions.
+        DisableMediaIndicatorAnimation(&tab);
+
+        // Test layout for every width from standard to minimum.
+        gfx::Rect bounds(gfx::Point(0, 0), Tab::GetStandardSize());
+        int min_width;
+        if (is_mini_tab) {
+          bounds.set_width(Tab::GetMiniWidth());
+          min_width = Tab::GetMiniWidth();
+        } else {
+          min_width = is_active_tab ? Tab::GetMinimumSelectedSize().width() :
+              Tab::GetMinimumUnselectedSize().width();
+        }
+        while (bounds.width() >= min_width) {
+          SCOPED_TRACE(::testing::Message() << "bounds=" << bounds.ToString());
+          tab.SetBoundsRect(bounds);  // Invokes Tab::Layout().
+          CheckForExpectedLayoutAndVisibilityOfElements(tab);
+          bounds.set_width(bounds.width() - 1);
         }
       }
     }
@@ -281,60 +296,4 @@ TEST_F(TabTest, CloseButtonLayout) {
 
   // Also make sure the close button is sized as large as the tab.
   EXPECT_EQ(50, tab.close_button_->bounds().height());
-}
-
-TEST_F(TabTest, RecordingAndProjectingActivityIndicators) {
-  FakeTabController controller;
-  Tab tab(&controller);
-  tab.SetBoundsRect(gfx::Rect(gfx::Point(0, 0), Tab::GetStandardSize()));
-
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
-  bitmap.allocPixels();
-
-  TabRendererData data;
-  data.favicon = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-  tab.SetData(data);
-
-  // Recording starts and stops.
-  data.capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
-  tab.SetData(data);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-  EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
-  data.capture_state = TabRendererData::CAPTURE_STATE_NONE;
-  tab.SetData(data);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-  EXPECT_EQ(TabRendererData::CAPTURE_STATE_NONE, tab.data().capture_state);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-
-  // Recording starts then tab capture starts, then back to just recording, then
-  // recording stops.
-  data.capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
-  tab.SetData(data);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-  EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
-
-  data.title = ASCIIToUTF16("test X");
-  tab.SetData(data);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-
-  data.capture_state = TabRendererData::CAPTURE_STATE_PROJECTING;
-  tab.SetData(data);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-  EXPECT_EQ(TabRendererData::CAPTURE_STATE_PROJECTING,
-            tab.data().capture_state);
-
-  data.title = ASCIIToUTF16("test Y");
-  tab.SetData(data);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-
-  data.capture_state = TabRendererData::CAPTURE_STATE_RECORDING;
-  tab.SetData(data);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-  EXPECT_EQ(TabRendererData::CAPTURE_STATE_RECORDING, tab.data().capture_state);
-
-  data.capture_state = TabRendererData::CAPTURE_STATE_NONE;
-  tab.SetData(data);
-  EXPECT_TRUE(IconAnimationInvariant(tab));
-  EXPECT_EQ(TabRendererData::CAPTURE_STATE_NONE, tab.data().capture_state);
 }

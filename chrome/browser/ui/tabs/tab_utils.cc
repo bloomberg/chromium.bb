@@ -7,14 +7,24 @@
 #include "chrome/browser/media/audio_stream_indicator.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/multi_animation.h"
 
 namespace chrome {
 
 namespace {
+
+// Interval between frame updates of the tab indicator animations.  This is not
+// the usual 60 FPS because a trade-off must be made between tab UI animation
+// smoothness and media recording/playback performance on low-end hardware.
+const int kIndicatorFrameIntervalMs = 50;  // 20 FPS
+
+// Fade-in/out duration for the tab indicator animations.  Fade-in is quick to
+// immediately notify the user.  Fade-out is more gradual, so that the user has
+// a chance of finding a tab that has quickly "blipped" on and off.
+const int kIndicatorFadeInDurationMs = 200;
+const int kIndicatorFadeOutDurationMs = 1000;
 
 // Animation that throbs in (towards 1.0) and out (towards 0.0), and ends in the
 // "in" state.
@@ -32,17 +42,9 @@ class TabRecordingIndicatorAnimation : public gfx::MultiAnimation {
                                  const base::TimeDelta interval)
       : MultiAnimation(parts, interval) {}
 
-  // Throbbing fade in/out duration on "this web page is watching and/or
-  // listening to you" favicon overlay.
-  static const int kCaptureIndicatorCycleDurationMs = 1000;
-
   // Number of times to "toggle throb" the recording and tab capture indicators
   // when they first appear.
   static const int kCaptureIndicatorThrobCycles = 5;
-
-  // Interval between frame updates of the recording and tab capture indicator
-  // throb animations.
-  static const int kCaptureIndicatorFrameIntervalMs = 50;  // 20 FPS
 };
 
 double TabRecordingIndicatorAnimation::GetCurrentValue() const {
@@ -58,10 +60,11 @@ TabRecordingIndicatorAnimation::Create() {
                  must_be_odd_so_animation_finishes_in_showing_state);
   for (int i = 0; i < kCaptureIndicatorThrobCycles; ++i) {
     parts.push_back(MultiAnimation::Part(
-        kCaptureIndicatorCycleDurationMs, gfx::Tween::EASE_IN));
+        i % 2 ? kIndicatorFadeOutDurationMs : kIndicatorFadeInDurationMs,
+        gfx::Tween::EASE_IN));
   }
   const base::TimeDelta interval =
-      base::TimeDelta::FromMilliseconds(kCaptureIndicatorFrameIntervalMs);
+      base::TimeDelta::FromMilliseconds(kIndicatorFrameIntervalMs);
   scoped_ptr<TabRecordingIndicatorAnimation> animation(
       new TabRecordingIndicatorAnimation(parts, interval));
   animation->set_continuous(false);
@@ -70,47 +73,114 @@ TabRecordingIndicatorAnimation::Create() {
 
 }  // namespace
 
-bool ShouldShowProjectingIndicator(content::WebContents* contents) {
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()->
-          GetMediaStreamCaptureIndicator();
-  return indicator->IsBeingMirrored(contents);
+bool ShouldTabShowFavicon(int capacity,
+                          bool is_pinned_tab,
+                          bool is_active_tab,
+                          bool has_favicon,
+                          TabMediaState media_state) {
+  if (!has_favicon)
+    return false;
+  int required_capacity = 1;
+  if (ShouldTabShowCloseButton(capacity, is_pinned_tab, is_active_tab))
+    ++required_capacity;
+  if (ShouldTabShowMediaIndicator(
+          capacity, is_pinned_tab, is_active_tab, has_favicon, media_state)) {
+    ++required_capacity;
+  }
+  return capacity >= required_capacity;
 }
 
-bool ShouldShowRecordingIndicator(content::WebContents* contents) {
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()->
-          GetMediaStreamCaptureIndicator();
-  // The projecting indicator takes precedence over the recording indicator, but
-  // if we are projecting and we don't handle the projecting case we want to
-  // still show the recording indicator.
-  return indicator->IsCapturingUserMedia(contents) ||
-         indicator->IsBeingMirrored(contents);
+bool ShouldTabShowMediaIndicator(int capacity,
+                                 bool is_pinned_tab,
+                                 bool is_active_tab,
+                                 bool has_favicon,
+                                 TabMediaState media_state) {
+  if (media_state == TAB_MEDIA_STATE_NONE)
+    return false;
+  const bool audio_playback_active =
+      (media_state == TAB_MEDIA_STATE_AUDIO_PLAYING);
+  int required_capacity = (has_favicon && audio_playback_active) ?
+      2 :  // Must have capacity to also show the favicon.
+      1;  // Only need capacity to show the capturing/recording indicator.
+  if (ShouldTabShowCloseButton(capacity, is_pinned_tab, is_active_tab))
+    ++required_capacity;
+  return capacity >= required_capacity;
+}
+
+bool ShouldTabShowCloseButton(int capacity,
+                              bool is_pinned_tab,
+                              bool is_active_tab) {
+  if (is_pinned_tab)
+    return false;
+  else if (is_active_tab)
+    return true;
+  else
+    return capacity >= 3;
 }
 
 bool IsPlayingAudio(content::WebContents* contents) {
   AudioStreamIndicator* audio_indicator =
       MediaCaptureDevicesDispatcher::GetInstance()->GetAudioStreamIndicator()
           .get();
-  return audio_indicator->IsPlayingAudio(contents);
+  return audio_indicator && audio_indicator->IsPlayingAudio(contents);
 }
 
-bool IsCapturingVideo(content::WebContents* contents) {
+TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
+  if (!contents)
+    return TAB_MEDIA_STATE_NONE;
+
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()->
           GetMediaStreamCaptureIndicator();
-  return indicator->IsCapturingVideo(contents);
+  if (indicator) {
+    if (indicator->IsBeingMirrored(contents))
+      return TAB_MEDIA_STATE_CAPTURING;
+    if (indicator->IsCapturingUserMedia(contents))
+      return TAB_MEDIA_STATE_RECORDING;
+  }
+
+  if (IsPlayingAudio(contents))
+    return TAB_MEDIA_STATE_AUDIO_PLAYING;
+
+  return TAB_MEDIA_STATE_NONE;
 }
 
-bool IsCapturingAudio(content::WebContents* contents) {
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()->
-          GetMediaStreamCaptureIndicator();
-  return indicator->IsCapturingAudio(contents);
+const gfx::Image& GetTabMediaIndicatorImage(TabMediaState media_state) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  switch (media_state) {
+    case TAB_MEDIA_STATE_AUDIO_PLAYING:
+      return rb.GetNativeImageNamed(IDR_TAB_AUDIO_INDICATOR);
+    case TAB_MEDIA_STATE_RECORDING:
+      return rb.GetNativeImageNamed(IDR_TAB_RECORDING_INDICATOR);
+    case TAB_MEDIA_STATE_CAPTURING:
+      return rb.GetNativeImageNamed(IDR_TAB_CAPTURE_INDICATOR);
+    case TAB_MEDIA_STATE_NONE:
+      break;
+  }
+  NOTREACHED();
+  return rb.GetNativeImageNamed(IDR_SAD_FAVICON);
 }
 
-scoped_ptr<gfx::Animation> CreateTabRecordingIndicatorAnimation() {
-  return TabRecordingIndicatorAnimation::Create().PassAs<gfx::Animation>();
+scoped_ptr<gfx::Animation> CreateTabMediaIndicatorFadeAnimation(
+    TabMediaState media_state) {
+  if (media_state == TAB_MEDIA_STATE_RECORDING ||
+      media_state == TAB_MEDIA_STATE_CAPTURING) {
+    return TabRecordingIndicatorAnimation::Create().PassAs<gfx::Animation>();
+  }
+
+  // Note: While it seems silly to use a one-part MultiAnimation, it's the only
+  // gfx::Animation implementation that lets us control the frame interval.
+  gfx::MultiAnimation::Parts parts;
+  const bool is_for_fade_in = (media_state != TAB_MEDIA_STATE_NONE);
+  parts.push_back(gfx::MultiAnimation::Part(
+      is_for_fade_in ? kIndicatorFadeInDurationMs : kIndicatorFadeOutDurationMs,
+      gfx::Tween::EASE_IN));
+  const base::TimeDelta interval =
+      base::TimeDelta::FromMilliseconds(kIndicatorFrameIntervalMs);
+  scoped_ptr<gfx::MultiAnimation> animation(
+      new gfx::MultiAnimation(parts, interval));
+  animation->set_continuous(false);
+  return animation.PassAs<gfx::Animation>();
 }
 
 }  // namespace chrome

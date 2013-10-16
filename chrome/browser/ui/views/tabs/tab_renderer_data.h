@@ -7,6 +7,7 @@
 
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -22,21 +23,6 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
     NETWORK_STATE_LOADING,  // connected, transferring data.
   };
 
-  // Capture state of this tab. If a WebRTC media stream is active, then it is
-  // recording. If tab capturing is active then it is projecting.
-  enum CaptureState {
-    CAPTURE_STATE_NONE,
-    CAPTURE_STATE_RECORDING,
-    CAPTURE_STATE_PROJECTING
-  };
-
-  // Audio playing state of this tab. If muting is added this is where it
-  // should go.
-  enum AudioState {
-    AUDIO_STATE_NONE,
-    AUDIO_STATE_PLAYING
-  };
-
   TabRendererData();
   ~TabRendererData();
 
@@ -47,14 +33,6 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
     return (crashed_status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ||
             crashed_status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
             crashed_status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION);
-  }
-
-  bool AudioActive() const {
-    return audio_state != AUDIO_STATE_NONE;
-  }
-
-  bool CaptureActive() const {
-    return capture_state != CAPTURE_STATE_NONE;
   }
 
   // Returns true if the TabRendererData is same as given |data|.
@@ -71,8 +49,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   bool mini;
   bool blocked;
   bool app;
-  CaptureState capture_state;
-  AudioState audio_state;
+  TabMediaState media_state;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_

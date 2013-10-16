@@ -193,7 +193,7 @@ class Tab : public gfx::AnimationDelegate,
   const gfx::Rect& GetTitleBounds() const;
   const gfx::Rect& GetIconBounds() const;
 
-  // Invoked from Layout to adjust the position of the favicon or audio
+  // Invoked from Layout to adjust the position of the favicon or media
   // indicator for mini tabs.
   void MaybeAdjustLeftForMiniTab(gfx::Rect* bounds) const;
 
@@ -216,10 +216,9 @@ class Tab : public gfx::AnimationDelegate,
                                                  int tab_id);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
 
-  // Paints the icon, audio indicator icon, etc., mirrored for RTL if needed.
+  // Paints the favicon, media indicator icon, etc., mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
-  void PaintCaptureState(gfx::Canvas* canvas, gfx::Rect bounds);
-  void PaintAudioIndicator(gfx::Canvas* canvas);
+  void PaintMediaIndicator(gfx::Canvas* canvas);
   void PaintTitle(gfx::Canvas* canvas, SkColor title_color);
 
   // Invoked if data_.network_state changes, or the network_state is not none.
@@ -233,8 +232,8 @@ class Tab : public gfx::AnimationDelegate,
   // Returns whether the Tab should display a favicon.
   bool ShouldShowIcon() const;
 
-  // Returns whether the Tab should display the audio indicator.
-  bool ShouldShowAudioIndicator() const;
+  // Returns whether the Tab should display the media indicator.
+  bool ShouldShowMediaIndicator() const;
 
   // Returns whether the Tab should display a close button.
   bool ShouldShowCloseBox() const;
@@ -251,12 +250,15 @@ class Tab : public gfx::AnimationDelegate,
   void DisplayCrashedFavicon();
   void ResetCrashedFavicon();
 
-  void StopIconAnimation();
+  void StopCrashAnimation();
   void StartCrashAnimation();
-  void StartRecordingAnimation();
 
   // Returns true if the crash animation is currently running.
   bool IsPerformingCrashAnimation() const;
+
+  // Starts the media indicator fade-in/out animation. There's no stop method
+  // because this is not a continuous animation.
+  void StartMediaIndicatorAnimation();
 
   // Schedules repaint task for icon.
   void ScheduleIconPaint();
@@ -315,13 +317,17 @@ class Tab : public gfx::AnimationDelegate,
 
   bool should_display_crashed_favicon_;
 
-  // The tab and the icon can both be animating. The tab 'throbs' by changing
-  // color. The icon can have one of several of animations like crashing,
-  // recording, projecting, etc. Note that the icon animation related to network
-  // state does not have an animation associated with it.
+  // Whole-tab throbbing "pulse" animation.
   scoped_ptr<gfx::Animation> tab_animation_;
+
+  // Crash icon animation (in place of favicon).
   scoped_ptr<gfx::LinearAnimation> crash_icon_animation_;
-  scoped_ptr<gfx::Animation> capture_icon_animation_;
+
+  // Media indicator fade-in/out animation (i.e., only on show/hide, not a
+  // continuous animation).
+  scoped_ptr<gfx::Animation> media_indicator_animation_;
+  TabMediaState animating_media_state_;
+
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
   views::ImageButton* close_button_;
@@ -335,7 +341,7 @@ class Tab : public gfx::AnimationDelegate,
   // The bounds of various sections of the display.
   gfx::Rect favicon_bounds_;
   gfx::Rect title_bounds_;
-  gfx::Rect audio_indicator_bounds_;
+  gfx::Rect media_indicator_bounds_;
 
   // The offset used to paint the inactive background image.
   gfx::Point background_offset_;
@@ -355,9 +361,9 @@ class Tab : public gfx::AnimationDelegate,
   // changes and layout appropriately.
   bool showing_icon_;
 
-  // Whether we're showing the audio indicator. It is cached so that we can
+  // Whether we're showing the media indicator. It is cached so that we can
   // detect when it changes and layout appropriately.
-  bool showing_audio_indicator_;
+  bool showing_media_indicator_;
 
   // Whether we are showing the close button. It is cached so that we can
   // detect when it changes and layout appropriately.

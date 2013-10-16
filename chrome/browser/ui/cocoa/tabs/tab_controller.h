@@ -20,6 +20,7 @@ enum TabLoadingState {
   kTabCrashed,
 };
 
+@class MediaIndicatorView;
 @class MenuController;
 namespace TabControllerInternal {
 class MenuDelegate;
@@ -42,7 +43,7 @@ class MenuDelegate;
  @private
   base::scoped_nsobject<NSView> iconView_;
   base::scoped_nsobject<NSTextField> titleView_;
-  base::scoped_nsobject<NSView> audioIndicatorView_;
+  base::scoped_nsobject<MediaIndicatorView> mediaIndicatorView_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
@@ -51,12 +52,10 @@ class MenuDelegate;
   BOOL app_;
   BOOL mini_;
   BOOL pinned_;
-  BOOL projecting_;
   BOOL active_;
   BOOL selected_;
   GURL url_;
   TabLoadingState loadingState_;
-  CGFloat iconTitleXOffset_;  // between left edges of icon and title
   id<TabControllerTarget> target_;  // weak, where actions are sent
   SEL action_;  // selector sent when tab is selected by clicking
   scoped_ptr<ui::SimpleMenuModel> contextMenuModel_;
@@ -70,10 +69,6 @@ class MenuDelegate;
 @property(assign, nonatomic) BOOL app;
 @property(assign, nonatomic) BOOL mini;
 @property(assign, nonatomic) BOOL pinned;
-// A tab is called "projecting" when a video/audio stream of its contents is
-// being captured and perhaps streamed remotely. We add a favicon glow animation
-// in this state to notify the user.
-@property(assign, nonatomic) BOOL projecting;
 // Note that |-selected| will return YES if the controller is |-active|, too.
 // |-setSelected:| affects the selection, while |-setActive:| affects the key
 // status/focus of the content.
@@ -83,7 +78,7 @@ class MenuDelegate;
 @property(assign, nonatomic) GURL url;
 @property(assign, nonatomic) NSView* iconView;
 @property(readonly, nonatomic) NSTextField* titleView;
-@property(assign, nonatomic) NSView* audioIndicatorView;
+@property(assign, nonatomic) MediaIndicatorView* mediaIndicatorView;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
@@ -123,7 +118,7 @@ class MenuDelegate;
 - (NSString*)toolTip;
 - (int)iconCapacity;
 - (BOOL)shouldShowIcon;
-- (BOOL)shouldShowAudioIndicator;
+- (BOOL)shouldShowMediaIndicator;
 - (BOOL)shouldShowCloseButton;
 @end  // TabController(TestingAPI)
 

@@ -7,6 +7,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/tabs/media_indicator_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
@@ -117,12 +118,18 @@ class TabControllerTest : public CocoaTest {
       const TabController* controller) {
     // Check whether subviews should be visible when they are supposed to be,
     // given Tab size and TabRendererData state.
+    const TabMediaState indicatorState =
+        [[controller mediaIndicatorView] mediaState];
     if ([controller mini]) {
-      if ([controller projecting])
+      EXPECT_EQ(1, [controller iconCapacity]);
+      if (indicatorState == TAB_MEDIA_STATE_CAPTURING ||
+          indicatorState == TAB_MEDIA_STATE_RECORDING) {
+        EXPECT_FALSE([controller shouldShowIcon]);
+        EXPECT_TRUE([controller shouldShowMediaIndicator]);
+      } else {
         EXPECT_TRUE([controller shouldShowIcon]);
-      else
-        EXPECT_TRUE([controller shouldShowIcon] !=
-                        [controller shouldShowAudioIndicator]);
+        EXPECT_FALSE([controller shouldShowMediaIndicator]);
+      }
       EXPECT_FALSE([controller shouldShowCloseButton]);
     } else if ([controller selected]) {
       EXPECT_TRUE([controller shouldShowCloseButton]);
@@ -130,23 +137,25 @@ class TabControllerTest : public CocoaTest {
         case 0:
         case 1:
           EXPECT_FALSE([controller shouldShowIcon]);
-          EXPECT_FALSE([controller shouldShowAudioIndicator]);
+          EXPECT_FALSE([controller shouldShowMediaIndicator]);
           break;
         case 2:
-          if ([controller projecting])
+          if (indicatorState == TAB_MEDIA_STATE_CAPTURING ||
+              indicatorState == TAB_MEDIA_STATE_RECORDING) {
+            EXPECT_FALSE([controller shouldShowIcon]);
+            EXPECT_TRUE([controller shouldShowMediaIndicator]);
+          } else {
             EXPECT_TRUE([controller shouldShowIcon]);
-          else
-            EXPECT_TRUE([controller shouldShowIcon] !=
-                            [controller shouldShowAudioIndicator]);
+            EXPECT_FALSE([controller shouldShowMediaIndicator]);
+          }
           break;
         default:
           EXPECT_LE(3, [controller iconCapacity]);
           EXPECT_TRUE([controller shouldShowIcon]);
-          if ([controller projecting])
-            EXPECT_FALSE([controller shouldShowAudioIndicator]);
+          if (indicatorState != TAB_MEDIA_STATE_NONE)
+            EXPECT_TRUE([controller shouldShowMediaIndicator]);
           else
-            EXPECT_TRUE(!![controller audioIndicatorView] ==
-                            [controller shouldShowAudioIndicator]);
+            EXPECT_FALSE([controller shouldShowMediaIndicator]);
           break;
       }
     } else {  // Tab not selected/active and not mini tab.
@@ -154,24 +163,26 @@ class TabControllerTest : public CocoaTest {
         case 0:
           EXPECT_FALSE([controller shouldShowCloseButton]);
           EXPECT_FALSE([controller shouldShowIcon]);
-          EXPECT_FALSE([controller shouldShowAudioIndicator]);
+          EXPECT_FALSE([controller shouldShowMediaIndicator]);
           break;
         case 1:
           EXPECT_FALSE([controller shouldShowCloseButton]);
-          if ([controller projecting])
+          if (indicatorState == TAB_MEDIA_STATE_CAPTURING ||
+              indicatorState == TAB_MEDIA_STATE_RECORDING) {
+            EXPECT_FALSE([controller shouldShowIcon]);
+            EXPECT_TRUE([controller shouldShowMediaIndicator]);
+          } else {
             EXPECT_TRUE([controller shouldShowIcon]);
-          else
-            EXPECT_TRUE([controller shouldShowIcon] !=
-                            [controller shouldShowAudioIndicator]);
+            EXPECT_FALSE([controller shouldShowMediaIndicator]);
+          }
           break;
         default:
           EXPECT_LE(2, [controller iconCapacity]);
           EXPECT_TRUE([controller shouldShowIcon]);
-          if ([controller projecting])
-            EXPECT_FALSE([controller shouldShowAudioIndicator]);
+          if (indicatorState != TAB_MEDIA_STATE_NONE)
+            EXPECT_TRUE([controller shouldShowMediaIndicator]);
           else
-            EXPECT_TRUE(!![controller audioIndicatorView] ==
-                            [controller shouldShowAudioIndicator]);
+            EXPECT_FALSE([controller shouldShowMediaIndicator]);
           break;
       }
     }
@@ -180,9 +191,8 @@ class TabControllerTest : public CocoaTest {
     EXPECT_TRUE([controller shouldShowIcon] ==
                 (!![controller iconView] && ![[controller iconView] isHidden]));
     EXPECT_TRUE([controller mini] == [[controller titleView] isHidden]);
-    EXPECT_TRUE([controller shouldShowAudioIndicator] ==
-                (!![controller audioIndicatorView] &&
-                     ![[controller audioIndicatorView] isHidden]));
+    EXPECT_TRUE([controller shouldShowMediaIndicator] ==
+                    ![[controller mediaIndicatorView] isHidden]);
     EXPECT_TRUE([controller shouldShowCloseButton] !=
                     [[controller closeButton] isHidden]);
 
@@ -198,22 +208,22 @@ class TabControllerTest : public CocoaTest {
       EXPECT_LE(NSMinY(tabFrame), NSMinY(iconFrame));
       EXPECT_LE(NSMaxY(iconFrame), NSMaxY(tabFrame));
     }
-    if ([controller shouldShowIcon] && [controller shouldShowAudioIndicator]) {
+    if ([controller shouldShowIcon] && [controller shouldShowMediaIndicator]) {
       EXPECT_LE(NSMaxX([[controller iconView] frame]),
-                NSMinX([[controller audioIndicatorView] frame]));
+                NSMinX([[controller mediaIndicatorView] frame]));
     }
-    if ([controller shouldShowAudioIndicator]) {
-      const NSRect audioIndicatorFrame =
-          [[controller audioIndicatorView] frame];
+    if ([controller shouldShowMediaIndicator]) {
+      const NSRect mediaIndicatorFrame =
+          [[controller mediaIndicatorView] frame];
       if (NSWidth(titleFrame) > 0)
-        EXPECT_LE(NSMaxX(titleFrame), NSMinX(audioIndicatorFrame));
-      EXPECT_LE(NSMaxX(audioIndicatorFrame), NSMaxX(tabFrame));
-      EXPECT_LE(NSMinY(tabFrame), NSMinY(audioIndicatorFrame));
-      EXPECT_LE(NSMaxY(audioIndicatorFrame), NSMaxY(tabFrame));
+        EXPECT_LE(NSMaxX(titleFrame), NSMinX(mediaIndicatorFrame));
+      EXPECT_LE(NSMaxX(mediaIndicatorFrame), NSMaxX(tabFrame));
+      EXPECT_LE(NSMinY(tabFrame), NSMinY(mediaIndicatorFrame));
+      EXPECT_LE(NSMaxY(mediaIndicatorFrame), NSMaxY(tabFrame));
     }
-    if ([controller shouldShowAudioIndicator] &&
+    if ([controller shouldShowMediaIndicator] &&
         [controller shouldShowCloseButton]) {
-      EXPECT_LE(NSMaxX([[controller audioIndicatorView] frame]),
+      EXPECT_LE(NSMaxX([[controller mediaIndicatorView] frame]),
                 NSMinX([[controller closeButton] frame]));
     }
     if ([controller shouldShowCloseButton]) {
@@ -489,64 +499,64 @@ TEST_F(TabControllerTest, TitleViewLayout) {
 // relevant combinations of tab state.  This test overlaps with parts of the
 // other tests above.
 TEST_F(TabControllerTest, LayoutAndVisibilityOfSubviews) {
+  static const TabMediaState kMediaStatesToTest[] = {
+    TAB_MEDIA_STATE_NONE, TAB_MEDIA_STATE_CAPTURING,
+    TAB_MEDIA_STATE_AUDIO_PLAYING
+  };
+
   NSWindow* const window = test_window();
 
   // Create TabController instance and place its view into the test window.
   base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
-  // Create favicon and audio indicator icon views.
+  // Create favicon and media indicator views.  Disable animation in the media
+  // indicator view so that TabController's "what should be shown" logic can be
+  // tested effectively.  If animations were left enabled, the
+  // shouldShowMediaIndicator method would return true during fade-out
+  // transitions.
   base::scoped_nsobject<NSImageView> faviconView(
       CreateImageViewFromResourceBundle(IDR_DEFAULT_FAVICON));
-  base::scoped_nsobject<NSImageView> audioIndicatorView(
-      CreateImageViewFromResourceBundle(IDR_TAB_AUDIO_INDICATOR));
-
-  [controller setIconView:faviconView];
+  base::scoped_nsobject<MediaIndicatorView> mediaIndicatorView(
+      [[MediaIndicatorView alloc] init]);
+  [mediaIndicatorView disableAnimations];
+  [controller setMediaIndicatorView:mediaIndicatorView];
 
   // Perform layout over all possible combinations, checking for correct
   // results.
-  for (int is_mini_tab = 0; is_mini_tab < 2; ++is_mini_tab) {
-    for (int is_active_tab = 0; is_active_tab < 2; ++is_active_tab) {
-      for (int is_audio_playing = 0; is_audio_playing < 2; ++is_audio_playing) {
-        for (int is_capturing = 0; is_capturing < 2; ++is_capturing) {
-          SCOPED_TRACE(::testing::Message()
-                       << (is_active_tab ? "Active" : "Inactive") << ' '
-                       << (is_mini_tab ? "Mini " : "")
-                       << "Tab with is_audio_playing=" << !!is_audio_playing
-                       << " and is_capturing=" << !!is_capturing);
+  for (int isMiniTab = 0; isMiniTab < 2; ++isMiniTab) {
+    for (int isActiveTab = 0; isActiveTab < 2; ++isActiveTab) {
+      for (size_t mediaStateIndex = 0;
+           mediaStateIndex < arraysize(kMediaStatesToTest);
+           ++mediaStateIndex) {
+        const TabMediaState mediaState = kMediaStatesToTest[mediaStateIndex];
+        SCOPED_TRACE(::testing::Message()
+                     << (isActiveTab ? "Active" : "Inactive") << ' '
+                     << (isMiniTab ? "Mini " : "")
+                     << "Tab with media indicator state " << mediaState);
 
-          // Simulate what tab_strip_controller would do to set up the
-          // TabController state.
-          [controller setMini:(is_mini_tab ? YES : NO)];
-          [controller setActive:(is_active_tab ? YES : NO)];
-          if (is_capturing) {
-            [controller setProjecting:YES];
-            [controller setAudioIndicatorView:nil];
-          } else {
-            [controller setProjecting:NO];
-            if (is_audio_playing)
-              [controller setAudioIndicatorView:audioIndicatorView];
-            else
-              [controller setAudioIndicatorView:nil];
-          }
+        // Simulate what tab_strip_controller would do to set up the
+        // TabController state.
+        [controller setMini:(isMiniTab ? YES : NO)];
+        [controller setActive:(isActiveTab ? YES : NO)];
+        [[controller mediaIndicatorView] updateIndicator:mediaState];
+        [controller setIconView:faviconView];
 
-          // Test layout for every width from maximum to minimum.
-          NSRect tabFrame = [[controller view] frame];
-          int min_width;
-          if (is_mini_tab) {
-            tabFrame.size.width = min_width = [TabController miniTabWidth];
-          } else {
-            tabFrame.size.width = [TabController maxTabWidth];
-            min_width = is_active_tab ? [TabController minSelectedTabWidth] :
-                [TabController minTabWidth];
-          }
-          while (NSWidth(tabFrame) >= min_width) {
-            SCOPED_TRACE(::testing::Message()
-                         << "width=" << tabFrame.size.width);
-            [[controller view] setFrame:tabFrame];
-            CheckForExpectedLayoutAndVisibilityOfSubviews(controller);
-            --tabFrame.size.width;
-          }
+        // Test layout for every width from maximum to minimum.
+        NSRect tabFrame = [[controller view] frame];
+        int minWidth;
+        if (isMiniTab) {
+          tabFrame.size.width = minWidth = [TabController miniTabWidth];
+        } else {
+          tabFrame.size.width = [TabController maxTabWidth];
+          minWidth = isActiveTab ? [TabController minSelectedTabWidth] :
+              [TabController minTabWidth];
+        }
+        while (NSWidth(tabFrame) >= minWidth) {
+          SCOPED_TRACE(::testing::Message() << "width=" << tabFrame.size.width);
+          [[controller view] setFrame:tabFrame];
+          CheckForExpectedLayoutAndVisibilityOfSubviews(controller);
+          --tabFrame.size.width;
         }
       }
     }

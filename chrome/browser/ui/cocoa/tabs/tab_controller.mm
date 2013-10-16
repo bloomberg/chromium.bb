@@ -4,12 +4,14 @@
 
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/tabs/media_indicator_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -26,7 +28,6 @@
 @synthesize loadingState = loadingState_;
 @synthesize mini = mini_;
 @synthesize pinned = pinned_;
-@synthesize projecting = projecting_;
 @synthesize target = target_;
 @synthesize url = url_;
 
@@ -97,7 +98,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     // explicilty save the offset between the title and the close button since
     // we can just get that value for the close button's frame.
     NSRect titleFrame = NSMakeRect(35, 6, 92, 14);
-    iconTitleXOffset_ = NSMinX(titleFrame) - NSMinX(originalIconFrame_);
 
     // Label.
     titleView_.reset([[NSTextField alloc] initWithFrame:titleFrame]);
@@ -230,24 +230,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)setIconView:(NSView*)iconView {
   [iconView_ removeFromSuperview];
   iconView_.reset([iconView retain]);
-  if ([self projecting] && [self loadingState] == kTabDone) {
-    // When projecting we have bigger iconView to accommodate the glow
-    // animation, so this frame should be double the size of a favicon.
-    NSRect iconFrame = [iconView frame];
 
-    // Center the iconView given it's double regular size.
-    if ([self app] || [self mini]) {
-      const CGFloat tabWidth = [self app] ? [TabController appTabWidth]
-                                          : [TabController miniTabWidth];
-      iconFrame.origin.x = std::floor((tabWidth - NSWidth(iconFrame)) / 2.0);
-    } else {
-      iconFrame.origin.x = std::floor(originalIconFrame_.origin.x / 2.0);
-    }
-
-    iconFrame.origin.y = -std::ceil(originalIconFrame_.origin.y / 2.0);
-
-    [iconView_ setFrame:iconFrame];
-  } else if ([self app] || [self mini]) {
+  if ([self app] || [self mini]) {
     NSRect appIconFrame = [iconView frame];
     appIconFrame.origin = originalIconFrame_.origin;
 
@@ -273,18 +257,16 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   return titleView_;
 }
 
-- (NSView*)audioIndicatorView {
-  return audioIndicatorView_;
+- (MediaIndicatorView*)mediaIndicatorView {
+  return mediaIndicatorView_;
 }
 
-- (void)setAudioIndicatorView:(NSView*)audioIndicatorView {
-  if (audioIndicatorView == audioIndicatorView_)
-    return;
-  [audioIndicatorView_ removeFromSuperview];
-  audioIndicatorView_.reset([audioIndicatorView retain]);
+- (void)setMediaIndicatorView:(MediaIndicatorView*)mediaIndicatorView {
+  [mediaIndicatorView_ removeFromSuperview];
+  mediaIndicatorView_.reset([mediaIndicatorView retain]);
   [self updateVisibility];
-  if (audioIndicatorView_)
-    [[self view] addSubview:audioIndicatorView_];
+  if (mediaIndicatorView_)
+    [[self view] addSubview:mediaIndicatorView_];
 }
 
 - (HoverCloseButton*)closeButton {
@@ -299,58 +281,35 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // tab. We never actually do this, but it's a helpful guide for determining
 // how much space we have available.
 - (int)iconCapacity {
-  CGFloat width = NSMaxX([closeButton_ frame]) - NSMinX(originalIconFrame_);
+  const CGFloat availableWidth = std::max<CGFloat>(
+      0, NSMaxX([closeButton_ frame]) - NSMinX(originalIconFrame_));
+  const CGFloat widthPerIcon = NSWidth(originalIconFrame_);
   const int kPaddingBetweenIcons = 2;
-  CGFloat iconWidth = NSWidth(originalIconFrame_) + kPaddingBetweenIcons;
-
-  return width / iconWidth;
+  if (availableWidth >= widthPerIcon &&
+      availableWidth < (widthPerIcon + kPaddingBetweenIcons)) {
+    return 1;
+  }
+  return availableWidth / (widthPerIcon + kPaddingBetweenIcons);
 }
 
-// Returns YES if we should show the icon. When tabs get too small, we clip
-// the favicon before the close button for selected tabs, and prefer the
-// favicon for unselected tabs. Exception: We clip the favicon before the audio
-// indicator in all cases. The icon can also be suppressed more directly
-// by clearing iconView_.
 - (BOOL)shouldShowIcon {
-  if (!iconView_)
-    return NO;
-  const BOOL shouldShowAudioIndicator = [self shouldShowAudioIndicator];
-  if ([self mini])
-    return !shouldShowAudioIndicator;
-  int required_capacity = shouldShowAudioIndicator ? 2 : 1;
-  if ([self selected]) {
-    // Active tabs give priority to the close button, then the audio indicator,
-    // then the favicon.
-    ++required_capacity;
-  } else {
-    // Non-selected tabs give priority to the audio indicator, then the favicon,
-    // and finally the close button.
-  }
-  return [self iconCapacity] >= required_capacity;
+  return chrome::ShouldTabShowFavicon(
+      [self iconCapacity], [self mini], [self selected], iconView_ != nil,
+      !mediaIndicatorView_ ? TAB_MEDIA_STATE_NONE :
+          [mediaIndicatorView_ animatingMediaState]);
 }
 
-// Returns YES if we should show the audio indicator. When tabs get too small,
-// we clip the audio indicator before the close button for selected tabs, and
-// prefer the audio indicator for unselected tabs.
-- (BOOL)shouldShowAudioIndicator {
-  if (!audioIndicatorView_)
+- (BOOL)shouldShowMediaIndicator {
+  if (!mediaIndicatorView_)
     return NO;
-  if ([self mini])
-    return YES;
-  if ([self selected]) {
-    // The active tab clips the audio indicator before the close button.
-    return [self iconCapacity] >= 2;
-  }
-  // Non-selected tabs clip close button before the audio indicator.
-  return [self iconCapacity] >= 1;
+  return chrome::ShouldTabShowMediaIndicator(
+      [self iconCapacity], [self mini], [self selected], iconView_ != nil,
+      [mediaIndicatorView_ animatingMediaState]);
 }
 
-// Returns YES if we should be showing the close button. The selected tab
-// always shows the close button.
 - (BOOL)shouldShowCloseButton {
-  if ([self mini])
-    return NO;
-  return ([self selected] || [self iconCapacity] >= 3);
+  return chrome::ShouldTabShowCloseButton(
+      [self iconCapacity], [self mini], [self selected]);
 }
 
 - (void)updateVisibility {
@@ -369,32 +328,32 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
   [closeButton_ setHidden:!newShowCloseButton];
 
-  BOOL newShowAudioIndicator = [self shouldShowAudioIndicator];
+  BOOL newShowMediaIndicator = [self shouldShowMediaIndicator];
 
-  if (audioIndicatorView_) {
-    [audioIndicatorView_ setHidden:!newShowAudioIndicator];
+  [mediaIndicatorView_ setHidden:!newShowMediaIndicator];
 
-    NSRect newFrame = [audioIndicatorView_ frame];
+  if (newShowMediaIndicator) {
+    NSRect newFrame = [mediaIndicatorView_ frame];
     if ([self app] || [self mini]) {
-      // Tab is pinned: Position the audio indicator in the center.
+      // Tab is pinned: Position the media indicator in the center.
       const CGFloat tabWidth = [self app] ?
           [TabController appTabWidth] : [TabController miniTabWidth];
       newFrame.origin.x = std::floor((tabWidth - NSWidth(newFrame)) / 2);
       newFrame.origin.y = NSMinY(originalIconFrame_) -
           std::floor((NSHeight(newFrame) - NSHeight(originalIconFrame_)) / 2);
     } else {
-      // The Frame for the audioIndicatorView_ depends on whether iconView_
+      // The Frame for the mediaIndicatorView_ depends on whether iconView_
       // and/or closeButton_ are visible, and where they have been positioned.
       const NSRect closeButtonFrame = [closeButton_ frame];
       newFrame.origin.x = NSMinX(closeButtonFrame);
       // Position to the left of the close button when it is showing.
       if (newShowCloseButton)
         newFrame.origin.x -= NSWidth(newFrame);
-      // Audio indicator is centered vertically, with respect to closeButton_.
+      // Media indicator is centered vertically, with respect to closeButton_.
       newFrame.origin.y = NSMinY(closeButtonFrame) -
           std::floor((NSHeight(newFrame) - NSHeight(closeButtonFrame)) / 2);
     }
-    [audioIndicatorView_ setFrame:newFrame];
+    [mediaIndicatorView_ setFrame:newFrame];
   }
 
   // Adjust the title view based on changes to the icon's and close button's
@@ -405,13 +364,13 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   newTitleFrame.origin.y = oldTitleFrame.origin.y;
 
   if (newShowIcon) {
-    newTitleFrame.origin.x = originalIconFrame_.origin.x + iconTitleXOffset_;
+    newTitleFrame.origin.x = NSMaxX([iconView_ frame]);
   } else {
     newTitleFrame.origin.x = originalIconFrame_.origin.x;
   }
 
-  if (newShowAudioIndicator) {
-    newTitleFrame.size.width = NSMinX([audioIndicatorView_ frame]) -
+  if (newShowMediaIndicator) {
+    newTitleFrame.size.width = NSMinX([mediaIndicatorView_ frame]) -
                                newTitleFrame.origin.x;
   } else if (newShowCloseButton) {
     newTitleFrame.size.width = NSMinX([closeButton_ frame]) -

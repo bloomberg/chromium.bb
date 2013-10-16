@@ -36,14 +36,13 @@
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/media_indicator_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_projecting_image_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
-#import "chrome/browser/ui/cocoa/tabs/throbbing_image_view.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -70,7 +69,6 @@
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/image/image.h"
 
 using content::OpenURLParams;
@@ -102,9 +100,6 @@ const CGFloat kNewTabButtonOffset = 8.0;
 
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
-
-// The width and height of the icon + glow for projecting mode.
-const CGFloat kProjectingIconWidthAndHeight = 32.0;
 
 // Helper class for doing NSAnimationContext calls that takes a bool to disable
 // all the work.  Useful for code that wants to conditionally animate.
@@ -215,39 +210,6 @@ NSImage* ApplyMask(NSImage* image, NSImage* mask) {
   }) autorelease];
 }
 
-// Creates a modified favicon used for the recording case. The mask is used for
-// making part of the favicon transparent. (The part where the recording dot
-// later is drawn.)
-NSImage* CreateMaskedFaviconForRecording(NSImage* image,
-                                         NSImage* mask,
-                                         NSImage* recImage) {
-  return [CreateImageWithSize([image size], ^(NSSize size) {
-      CGFloat width = size.width;
-      CGFloat height = size.height;
-
-      [image drawAtPoint:NSZeroPoint
-                fromRect:NSMakeRect(0, 0, width, height)
-               operation:NSCompositeCopy
-                fraction:1.0];
-
-      NSSize maskSize = [mask size];
-      NSSize recImageSize = [recImage size];
-      CGFloat offsetFromRight = recImageSize.width +
-          (maskSize.width - recImageSize.width) / 2;
-      CGFloat offsetFromBottom = (maskSize.height - recImageSize.height) / 2;
-
-      NSRect maskBounds;
-      maskBounds.origin.x = width - offsetFromRight;
-      maskBounds.origin.y = -offsetFromBottom;
-      maskBounds.size = maskSize;
-
-      [mask drawInRect:maskBounds
-              fromRect:NSZeroRect
-             operation:NSCompositeDestinationOut
-              fraction:1.0];
-  }) autorelease];
-}
-
 // Paints |overlay| on top of |ground|.
 NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   DCHECK_EQ([ground size].width, [overlay size].width);
@@ -274,8 +236,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
 - (NSImageView*)iconImageViewForContents:(content::WebContents*)contents;
-- (void)updateFaviconForContents:(content::WebContents*)contents
-                         atIndex:(NSInteger)modelIndex;
+- (void)updateIconsForContents:(content::WebContents*)contents
+                       atIndex:(NSInteger)modelIndex;
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate;
 - (void)animationDidStopForController:(TabController*)controller
@@ -494,7 +456,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
         [[TabStripDragController alloc] initWithTabStripController:self]);
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
-    animationContainer_ = new gfx::AnimationContainer;
     NSWindow* browserWindow = [view window];
 
     // Important note: any non-tab subviews not added to |permanentSubviews_|
@@ -1312,7 +1273,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                                  0, -[[self class] defaultTabHeight])];
 
   [self setTabTitle:newController withContents:contents];
-  [newController setProjecting:chrome::ShouldShowProjectingIndicator(contents)];
 
   // If a tab is being inserted, we can again use the entire tab strip width
   // for layout.
@@ -1330,7 +1290,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   // dragging a tab out into a new window, we have to put the tab's favicon
   // into the right state up front as we won't be told to do it from anywhere
   // else.
-  [self updateFaviconForContents:contents atIndex:modelIndex];
+  [self updateIconsForContents:contents atIndex:modelIndex];
 }
 
 // Called before |contents| is deactivated.
@@ -1563,8 +1523,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
 // Updates the current loading state, replacing the icon view with a favicon,
 // a throbber, the default icon, or nothing at all.
-- (void)updateFaviconForContents:(content::WebContents*)contents
-                         atIndex:(NSInteger)modelIndex {
+- (void)updateIconsForContents:(content::WebContents*)contents
+                       atIndex:(NSInteger)modelIndex {
   if (!contents)
     return;
 
@@ -1612,63 +1572,19 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   if (newState == kTabDone || oldState != newState ||
       oldHasIcon != newHasIcon) {
     NSView* iconView = nil;
-    NSImageView* audioIndicatorView = nil;
     if (newHasIcon) {
       if (newState == kTabDone) {
-        NSImageView* imageView = [self iconImageViewForContents:contents];
-
-        ui::ThemeProvider* theme = [[tabStripView_ window] themeProvider];
-        if (theme && [tabController projecting]) {
-          NSImage* projectorGlow =
-              theme->GetNSImageNamed(IDR_TAB_CAPTURE_GLOW);
-          NSImage* projector = theme->GetNSImageNamed(IDR_TAB_CAPTURE);
-
-          NSRect frame = NSMakeRect(0,
-                                    0,
-                                    kProjectingIconWidthAndHeight,
-                                    kProjectingIconWidthAndHeight);
-          TabProjectingImageView* projectingView =
-              [[[TabProjectingImageView alloc]
-                  initWithFrame:frame
-                backgroundImage:[imageView image]
-                 projectorImage:projector
-                     throbImage:projectorGlow
-             animationContainer:animationContainer_.get()] autorelease];
-
-          iconView = projectingView;
-        } else if (theme && chrome::ShouldShowRecordingIndicator(contents)) {
-          // Create a masked favicon.
-          NSImage* mask = theme->GetNSImageNamed(IDR_TAB_RECORDING_MASK);
-          NSImage* recording = theme->GetNSImageNamed(IDR_TAB_RECORDING);
-          NSImage* favIconMasked = CreateMaskedFaviconForRecording(
-                                       [imageView image], mask, recording);
-
-          NSRect frame =
-              NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
-          ThrobbingImageView* recordingView =
-              [[[ThrobbingImageView alloc]
-                  initWithFrame:frame
-                backgroundImage:favIconMasked
-                     throbImage:recording
-                  throbPosition:kThrobPositionBottomRight
-             animationContainer:animationContainer_.get()] autorelease];
-
-          iconView = recordingView;
-        } else {
-          iconView = imageView;
-
-          if (theme && chrome::IsPlayingAudio(contents)) {
-            NSImage* const image =
-                theme->GetNSImageNamed(IDR_TAB_AUDIO_INDICATOR);
-            if (image) {
-              NSRect frame;
-              frame.size = [image size];
-              audioIndicatorView =
-                  [[[NSImageView alloc] initWithFrame:frame] autorelease];
-              [audioIndicatorView setImage:image];
-            }
-          }
+        iconView = [self iconImageViewForContents:contents];
+        const TabMediaState mediaState =
+            chrome::GetTabMediaStateForContents(contents);
+        // Create MediaIndicatorView upon first use.
+        if (mediaState != TAB_MEDIA_STATE_NONE &&
+            ![tabController mediaIndicatorView]) {
+          MediaIndicatorView* const mediaIndicatorView =
+              [[[MediaIndicatorView alloc] init] autorelease];
+          [tabController setMediaIndicatorView:mediaIndicatorView];
         }
+        [[tabController mediaIndicatorView] updateIndicator:mediaState];
       } else if (newState == kTabCrashed) {
         NSImage* oldImage = [[self iconImageViewForContents:contents] image];
         NSRect frame =
@@ -1676,6 +1592,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
         iconView = [ThrobberView toastThrobberViewWithFrame:frame
                                                 beforeImage:oldImage
                                                  afterImage:sadFaviconImage];
+        [[tabController mediaIndicatorView]
+          updateIndicator:TAB_MEDIA_STATE_NONE];
       } else {
         NSRect frame =
             NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
@@ -1685,7 +1603,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     }
 
     [tabController setIconView:iconView];
-    if (iconView && ![tabController projecting]) {
+    if (iconView) {
       // See the comment above kTabOverlap for why these DCHECKs exist.
       DCHECK_GE(NSMinX([iconView frame]), kTabOverlap);
       // TODO(thakis): Ideally, this would be true too, but it's not true in
@@ -1693,7 +1611,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
       //DCHECK_LE(NSMaxX([iconView frame]),
       //          NSWidth([[tabController view] frame]) - kTabOverlap);
     }
-    [tabController setAudioIndicatorView:audioIndicatorView];
   }
 }
 
@@ -1719,9 +1636,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:tabController withContents:contents];
-  [tabController setProjecting:chrome::ShouldShowProjectingIndicator(contents)];
 
-  [self updateFaviconForContents:contents atIndex:modelIndex];
+  [self updateIconsForContents:contents atIndex:modelIndex];
 
   TabContentsController* updatedController =
       [tabContentsArray_ objectAtIndex:index];
@@ -1776,7 +1692,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [tabController setApp:tabStripModel_->IsAppTab(modelIndex)];
   [tabController setUrl:contents->GetURL()];
-  [self updateFaviconForContents:contents atIndex:modelIndex];
+  [self updateIconsForContents:contents atIndex:modelIndex];
   // If the tab is being restored and it's pinned, the mini state is set after
   // the tab has already been rendered, so re-layout the tabstrip. In all other
   // cases, the state is set before the tab is rendered so this isn't needed.
