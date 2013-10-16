@@ -34,7 +34,8 @@ cr.define('extensions', function() {
       $('kiosk-options-overlay-confirm').onclick =
           this.handleDismiss_.bind(this);
       $('kiosk-app-id-edit').addEventListener('keypress',
-          this.handleAppIdInputKeyPressed_);
+          this.handleAppIdInputKeyPressed_.bind(this));
+      $('kiosk-app-add').onclick = this.handleAddButtonClick_.bind(this);
     },
 
     /*
@@ -70,10 +71,21 @@ cr.define('extensions', function() {
      * @private
      */
     handleAppIdInputKeyPressed_: function(e) {
-      if (e.keyIdentifier == 'Enter' && e.target.value) {
-        chrome.send('addKioskApp', [e.target.value]);
-        e.target.value = '';
-      }
+      if (e.keyIdentifier == 'Enter' && e.target.value)
+        this.handleAddButtonClick_();
+    },
+
+    /**
+     * Handles click event on the add button.
+     * @private
+     */
+    handleAddButtonClick_: function() {
+      var appId = $('kiosk-app-id-edit').value;
+      if (!appId)
+        return;
+
+      chrome.send('addKioskApp', [appId]);
+      $('kiosk-app-id-edit').value = '';
     },
 
     /**
@@ -81,6 +93,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleDismiss_: function() {
+      this.handleAddButtonClick_();
       extensions.ExtensionSettings.showOverlay(null);
     }
   };

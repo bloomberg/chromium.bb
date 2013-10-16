@@ -59,8 +59,20 @@ list .row-delete-button:active {
           2x);
 }
 
-#kiosk-app-id-edit {
+#kiosk-app-id-edit-row {
+  -webkit-justify-content: space-between;
+  display: -webkit-flex;
   width: 510px;
+}
+
+#kiosk-app-id-edit,
+#kiosk-app-add {
+  display: block;
+}
+
+#kiosk-app-id-edit {
+  -webkit-flex-grow: 1;
+  -webkit-margin-end: 10px;
 }
 
 #kiosk-apps-error-banner {
@@ -71,7 +83,7 @@ list .row-delete-button:active {
   padding: 5px;
   visibility: hidden;
   white-space: nowrap;
-  width: 510px;
+  width: 100%;
 }
 
 #kiosk-apps-error-banner.visible {

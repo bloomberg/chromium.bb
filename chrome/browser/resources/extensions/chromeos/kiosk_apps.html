@@ -8,11 +8,14 @@
         <span class="kiosk-app-name"></span>
         <span class="kiosk-app-status" i18n-content="invalidApp"></span>
       </div>
-      <label>
-        <span i18n-content="addKioskApp"></span><br>
+      <label for="kiosk-app-id-edit">
+        <span i18n-content="addKioskApp"></span>
+      </label>
+      <div id="kiosk-app-id-edit-row">
         <input id="kiosk-app-id-edit" type="text"
             i18n-values="placeholder:kioskAppIdEditHint">
-      </label>
+        <button id="kiosk-app-add" i18n-content="add"></button>
+      </div>
       <div class="checkbox">
         <span class="controlled-setting-with-label">
           <input id="kiosk-disable-bailout-shortcut" type="checkbox">

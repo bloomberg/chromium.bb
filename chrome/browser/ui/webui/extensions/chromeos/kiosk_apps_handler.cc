@@ -172,6 +172,7 @@ void KioskAppsHandler::GetLocalizedValues(content::WebUIDataSource* source) {
       "kioskDisableBailoutShortcutCancel",
       l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
   source->AddString("done", l10n_util::GetStringUTF16(IDS_DONE));
+  source->AddString("add", l10n_util::GetStringUTF16(IDS_ADD));
 }
 
 void KioskAppsHandler::OnKioskAppDataChanged(const std::string& app_id) {

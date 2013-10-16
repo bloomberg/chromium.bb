@@ -94,6 +94,24 @@ TEST_F('KioskAppSettingsWebUITest', 'testAddKioskApp', function() {
   appIdInput.dispatchEvent(keypress);
 });
 
+// Verify that the 'kiosk-app-add' button adds an app.
+TEST_F('KioskAppSettingsWebUITest', 'testAddKioskAppByAddButton', function() {
+  var testAppId = 'app_3';
+  $('kiosk-app-id-edit').value = testAppId;
+
+  this.mockHandler.expects(once()).addKioskApp([testAppId]);
+  cr.dispatchSimpleEvent($('kiosk-app-add'), 'click');
+});
+
+// Verify that the 'done' button adds an app.
+TEST_F('KioskAppSettingsWebUITest', 'testAddKioskAppByDoneButton', function() {
+  var testAppId = 'app_3';
+  $('kiosk-app-id-edit').value = testAppId;
+
+  this.mockHandler.expects(once()).addKioskApp([testAppId]);
+  cr.dispatchSimpleEvent($('kiosk-options-overlay-confirm'), 'click');
+});
+
 // Test the row delete button.
 TEST_F('KioskAppSettingsWebUITest', 'testRemoveKioskApp', function() {
   var appItem = $('kiosk-app-list').items[0];
