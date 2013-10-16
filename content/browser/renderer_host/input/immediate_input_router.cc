@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -322,7 +323,8 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     bool is_keyboard_shortcut) {
-  TRACE_EVENT0("input", "ImmediateInputRouter::FilterAndSendWebInputEvent");
+  TRACE_EVENT1("input", "ImmediateInputRouter::FilterAndSendWebInputEvent",
+               "type", WebInputEventTraits::GetName(input_event.type));
 
   // Yield events to the OverscrollController before forwarding.
   OverscrollController* controller = client_->GetOverscrollController();
@@ -427,7 +429,8 @@ void ImmediateInputRouter::ProcessInputEventAck(
     InputEventAckState ack_result,
     const ui::LatencyInfo& latency_info,
     AckSource ack_source) {
-  TRACE_EVENT1("input", "ImmediateInputRouter::ProcessInputEventAck",
+  TRACE_EVENT2("input", "ImmediateInputRouter::ProcessInputEventAck",
+               "type", WebInputEventTraits::GetName(event_type),
                "ack", GetEventAckName(ack_result));
 
   // Note: The keyboard ack must be treated carefully, as it may result in

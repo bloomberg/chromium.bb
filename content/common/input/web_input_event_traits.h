@@ -14,6 +14,7 @@ namespace content {
 // Utility class for performing operations on and with WebInputEvents.
 class WebInputEventTraits {
  public:
+  static const char* GetName(WebKit::WebInputEvent::Type type);
   static size_t GetSize(WebKit::WebInputEvent::Type type);
   static ScopedWebInputEvent Clone(const WebKit::WebInputEvent& event);
   static void Delete(WebKit::WebInputEvent* event);

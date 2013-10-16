@@ -22,6 +22,7 @@
 #include "content/child/npapi/webplugin.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -99,50 +100,6 @@ using WebKit::WebVector;
 using WebKit::WebWidget;
 
 namespace {
-const char* GetEventName(WebInputEvent::Type type) {
-#define CASE_TYPE(t) case WebInputEvent::t:  return #t
-  switch(type) {
-    CASE_TYPE(Undefined);
-    CASE_TYPE(MouseDown);
-    CASE_TYPE(MouseUp);
-    CASE_TYPE(MouseMove);
-    CASE_TYPE(MouseEnter);
-    CASE_TYPE(MouseLeave);
-    CASE_TYPE(ContextMenu);
-    CASE_TYPE(MouseWheel);
-    CASE_TYPE(RawKeyDown);
-    CASE_TYPE(KeyDown);
-    CASE_TYPE(KeyUp);
-    CASE_TYPE(Char);
-    CASE_TYPE(GestureScrollBegin);
-    CASE_TYPE(GestureScrollEnd);
-    CASE_TYPE(GestureScrollUpdate);
-    CASE_TYPE(GestureFlingStart);
-    CASE_TYPE(GestureFlingCancel);
-    CASE_TYPE(GestureTap);
-    CASE_TYPE(GestureTapUnconfirmed);
-    CASE_TYPE(GestureTapDown);
-    CASE_TYPE(GestureTapCancel);
-    CASE_TYPE(GestureDoubleTap);
-    CASE_TYPE(GestureTwoFingerTap);
-    CASE_TYPE(GestureLongPress);
-    CASE_TYPE(GestureLongTap);
-    CASE_TYPE(GesturePinchBegin);
-    CASE_TYPE(GesturePinchEnd);
-    CASE_TYPE(GesturePinchUpdate);
-    CASE_TYPE(TouchStart);
-    CASE_TYPE(TouchMove);
-    CASE_TYPE(TouchEnd);
-    CASE_TYPE(TouchCancel);
-    default:
-      // Must include default to let WebKit::WebInputEvent add new event types
-      // before they're added here.
-      DLOG(WARNING) << "Unhandled WebInputEvent type in GetEventName.\n";
-      break;
-  }
-#undef CASE_TYPE
-  return "";
-}
 
 typedef std::map<std::string, ui::TextInputMode> TextInputModeMap;
 
@@ -1072,7 +1029,8 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
     return;
   }
 
-  const char* const event_name = GetEventName(input_event->type);
+  const char* const event_name =
+      WebInputEventTraits::GetName(input_event->type);
   TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
                "event", event_name);
 
