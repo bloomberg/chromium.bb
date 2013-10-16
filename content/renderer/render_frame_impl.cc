@@ -752,6 +752,8 @@ void RenderFrameImpl::didRunInsecureContent(
 
 void RenderFrameImpl::didAbortLoading(WebKit::WebFrame* frame) {
 #if defined(ENABLE_PLUGINS)
+  if (frame != render_view_->webview()->mainFrame())
+    return;
   PluginChannelHost::Broadcast(
       new PluginHostMsg_DidAbortLoading(render_view_->GetRoutingID()));
 #endif
