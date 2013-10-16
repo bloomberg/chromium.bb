@@ -195,6 +195,13 @@ struct drm_sprite {
 	uint32_t formats[];
 };
 
+struct drm_parameters {
+	int connector;
+	int tty;
+	int use_pixman;
+	const char *seat_id;
+};
+
 static struct gl_renderer_interface *gl_renderer;
 
 static const char default_seat[] = "seat0";
@@ -2569,7 +2576,7 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
-		      int connector, const char *seat_id, int tty, int pixman,
+		      struct drm_parameters *param,
 		      int *argc, char *argv[],
 		      struct weston_config *config)
 {
@@ -2589,7 +2596,7 @@ drm_compositor_create(struct wl_display *display,
 	 * functionality for now. */
 	ec->sprites_are_broken = 1;
 	ec->format = GBM_FORMAT_XRGB8888;
-	ec->use_pixman = pixman;
+	ec->use_pixman = param->use_pixman;
 
 	if (weston_compositor_init(&ec->base, display, argc, argv,
 				   config) < 0) {
@@ -2598,7 +2605,7 @@ drm_compositor_create(struct wl_display *display,
 	}
 
 	/* Check if we run drm-backend using weston-launch */
-	ec->base.launcher = weston_launcher_connect(&ec->base, tty);
+	ec->base.launcher = weston_launcher_connect(&ec->base, param->tty);
 	if (ec->base.launcher == NULL) {
 		weston_log("fatal: drm backend should be run "
 			   "using weston-launch binary or as root\n");
@@ -2615,7 +2622,7 @@ drm_compositor_create(struct wl_display *display,
 	ec->session_listener.notify = session_notify;
 	wl_signal_add(&ec->base.session_signal, &ec->session_listener);
 
-	drm_device = find_primary_gpu(ec, seat_id);
+	drm_device = find_primary_gpu(ec, param->seat_id);
 	if (drm_device == NULL) {
 		weston_log("no drm device found\n");
 		goto err_udev;
@@ -2654,14 +2661,15 @@ drm_compositor_create(struct wl_display *display,
 	wl_list_init(&ec->sprite_list);
 	create_sprites(ec);
 
-	if (create_outputs(ec, connector, drm_device) < 0) {
+	if (create_outputs(ec, param->connector, drm_device) < 0) {
 		weston_log("failed to create output for %s\n", path);
 		goto err_sprite;
 	}
 
 	path = NULL;
 
-	if (udev_input_init(&ec->input, &ec->base, ec->udev, seat_id) < 0) {
+	if (udev_input_init(&ec->input,
+			    &ec->base, ec->udev, param->seat_id) < 0) {
 		weston_log("failed to create input devices\n");
 		goto err_sprite;
 	}
@@ -2728,19 +2736,19 @@ WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
 	     struct weston_config *config)
 {
-	int connector = 0, tty = 0, use_pixman = 0;
-	const char *seat_id = default_seat;
+	struct drm_parameters param = { 0, };
 
 	const struct weston_option drm_options[] = {
-		{ WESTON_OPTION_INTEGER, "connector", 0, &connector },
-		{ WESTON_OPTION_STRING, "seat", 0, &seat_id },
-		{ WESTON_OPTION_INTEGER, "tty", 0, &tty },
+		{ WESTON_OPTION_INTEGER, "connector", 0, &param.connector },
+		{ WESTON_OPTION_STRING, "seat", 0, &param.seat_id },
+		{ WESTON_OPTION_INTEGER, "tty", 0, &param.tty },
 		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &option_current_mode },
-		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &param.use_pixman },
 	};
+
+	param.seat_id = default_seat;
 
 	parse_options(drm_options, ARRAY_LENGTH(drm_options), argc, argv);
 
-	return drm_compositor_create(display, connector, seat_id, tty, use_pixman,
-				     argc, argv, config);
+	return drm_compositor_create(display, &param, argc, argv, config);
 }
