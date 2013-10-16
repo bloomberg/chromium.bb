@@ -139,4 +139,6 @@ interface TestObjectPython {
     [TreatNullAs=NullString] readonly attribute DOMString treatNullAsNullStringReadonlyStringAttribute;  // FIXME: only applicable to writable attributes, implement with setters
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString treatReturnedNullStringAsNullReadonlyStringAttribute;
     [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString treatReturnedNullStringAsUndefinedReadonlyStringAttribute;
+    [Reflect, URL] readonly attribute DOMString urlReadonlyStringAttribute;
+    [Reflect=ReflectUrlAttribute, URL] readonly attribute DOMString urlReadonlyStringAttribute;
 };

@@ -181,6 +181,8 @@ def content_attribute_getter_base_name(attribute, includes, arguments):
     idl_type = attribute.data_type
     if idl_type in CONTENT_ATTRIBUTE_GETTER_NAMES:
         return CONTENT_ATTRIBUTE_GETTER_NAMES[idl_type]
+    if 'URL' in attribute.extended_attributes:
+        return 'getURLAttribute'
     return 'fastGetAttribute'
 
 
