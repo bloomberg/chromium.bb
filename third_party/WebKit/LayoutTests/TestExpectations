@@ -1063,10 +1063,10 @@ crbug.com/286081 inspector/debugger/long-resume-vs-reload.html [ Failure Pass Ti
 crbug.com/286287 [ Linux Mac Android ] http/tests/inspector/network/network-initiator.html [ Failure Pass ]
 crbug.com/306228 [ Win ] http/tests/inspector/network/network-initiator.html [ Pass Failure Timeout ]
 
-# Pixel captures are currently totally broken on Android at the moment.
+# Pixel captures are currently totally broken on Android Nexus4's at the moment.
 crbug.com/293932 [ Android ] css1/classification/list_style_image.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] css1/classification/list_style_position.html [ ImageOnlyFailure ]
-crbug.com/293932 [ Android ] css1/font_properties/font_style.html [ ImageOnlyFailure ]
+crbug.com/293932 [ Android ] css1/font_properties/font_style.html [ ImageOnlyFailure Timeout ]
 crbug.com/293932 [ Android ] css1/font_properties/font_variant.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] css1/formatting_model/canvas.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] css1/formatting_model/horizontal_formatting.html [ Failure ]
@@ -1078,8 +1078,8 @@ crbug.com/293932 [ Android ] fast/compact/002.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] svg/batik/text/textAnchor3.svg [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] svg/canvas/canvas-pattern-svg.html [ ImageOnlyFailure ]
-crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure ]
-crbug.com/293932 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ ImageOnlyFailure ]
+crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure Timeout Pass ]
+crbug.com/293932 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ ImageOnlyFailure Pass ]
 
 # Needs triaging.
 crbug.com/307781 [ Android ] compositing/layer-creation/fixed-position-out-of-view.html [ Failure ]
