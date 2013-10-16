@@ -23,32 +23,15 @@ const char kQuickTimeType[] = "video/quicktime";
 
 // Arrays containing file extensions connected with specific plugins.
 // Note: THE ARRAYS MUST BE SORTED BECAUSE BINARY SEARCH IS USED ON THEM!
-const char* kWindowsMediaPlayerExtensions[] = {
-    ".asx"
-};
+const char* kWindowsMediaPlayerExtensions[] = {".asx"};
 
-const char* kRealPlayerExtensions[] = {
-    ".ra",
-    ".ram",
-    ".rm",
-    ".rmm",
-    ".rmp",
-    ".rpm"
-};
+const char* kRealPlayerExtensions[] = {".ra",  ".ram", ".rm",
+                                       ".rmm", ".rmp", ".rpm"};
 
-const char* kQuickTimeExtensions[] = {
-    ".moov",
-    ".mov",
-    ".qif",
-    ".qt",
-    ".qti",
-    ".qtif"
-};
+const char* kQuickTimeExtensions[] = {".moov", ".mov", ".qif",
+                                      ".qt",   ".qti", ".qtif"};
 
-const char* kShockwaveFlashExtensions[] = {
-    ".spl",
-    ".swf"
-};
+const char* kShockwaveFlashExtensions[] = {".spl", ".swf"};
 
 }  // namespace.
 
@@ -83,23 +66,22 @@ PluginUMAReporter* PluginUMAReporter::GetInstance() {
   return Singleton<PluginUMAReporter>::get();
 }
 
-void PluginUMAReporter::ReportPluginMissing(
-    const std::string& plugin_mime_type, const GURL& plugin_src) {
+void PluginUMAReporter::ReportPluginMissing(const std::string& plugin_mime_type,
+                                            const GURL& plugin_src) {
   report_sender_->SendPluginUMA(MISSING_PLUGIN,
                                 GetPluginType(plugin_mime_type, plugin_src));
 }
 
 void PluginUMAReporter::ReportPluginDisabled(
-    const std::string& plugin_mime_type, const GURL& plugin_src) {
+    const std::string& plugin_mime_type,
+    const GURL& plugin_src) {
   report_sender_->SendPluginUMA(DISABLED_PLUGIN,
                                 GetPluginType(plugin_mime_type, plugin_src));
 }
 
-PluginUMAReporter::PluginUMAReporter() : report_sender_(new UMASenderImpl()) {
-}
+PluginUMAReporter::PluginUMAReporter() : report_sender_(new UMASenderImpl()) {}
 
-PluginUMAReporter::~PluginUMAReporter() {
-}
+PluginUMAReporter::~PluginUMAReporter() {}
 
 // static.
 bool PluginUMAReporter::CompareCStrings(const char* first, const char* second) {
@@ -129,7 +111,8 @@ void PluginUMAReporter::ExtractFileExtension(const GURL& src,
 }
 
 PluginUMAReporter::PluginType PluginUMAReporter::GetPluginType(
-    const std::string& plugin_mime_type, const GURL& plugin_src) {
+    const std::string& plugin_mime_type,
+    const GURL& plugin_src) {
   // If we know plugin's mime type, we use it to determine plugin's type. Else,
   // we try to determine plugin type using plugin source's extension.
   if (!plugin_mime_type.empty())

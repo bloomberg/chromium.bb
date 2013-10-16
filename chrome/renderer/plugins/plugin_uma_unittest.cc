@@ -43,9 +43,8 @@ TEST_F(PluginUMATest, Silverlight) {
 }
 
 TEST_F(PluginUMATest, RealPlayer) {
-  ExpectPluginType(PluginUMAReporter::REALPLAYER,
-                   "audio/x-pn-realaudio",
-                   GURL("some url"));
+  ExpectPluginType(
+      PluginUMAReporter::REALPLAYER, "audio/x-pn-realaudio", GURL("some url"));
   ExpectPluginType(PluginUMAReporter::REALPLAYER,
                    "audio/x-pn-realaudio-some-sufix",
                    GURL("some url"));
@@ -55,9 +54,8 @@ TEST_F(PluginUMATest, RealPlayer) {
 }
 
 TEST_F(PluginUMATest, Java) {
-  ExpectPluginType(PluginUMAReporter::JAVA,
-                   "application/x-java-applet",
-                   GURL("some url"));
+  ExpectPluginType(
+      PluginUMAReporter::JAVA, "application/x-java-applet", GURL("some url"));
   ExpectPluginType(PluginUMAReporter::JAVA,
                    "application/x-java-applet-some-sufix",
                    GURL("some url"));
@@ -67,9 +65,8 @@ TEST_F(PluginUMATest, Java) {
 }
 
 TEST_F(PluginUMATest, QuickTime) {
-  ExpectPluginType(PluginUMAReporter::QUICKTIME,
-                   "video/quicktime",
-                   GURL("some url"));
+  ExpectPluginType(
+      PluginUMAReporter::QUICKTIME, "video/quicktime", GURL("some url"));
   ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
                    "video/quicktime-sufix",
                    GURL("some url"));
@@ -158,9 +155,8 @@ TEST_F(PluginUMATest, BySrcExtension) {
 }
 
 TEST_F(PluginUMATest, CaseSensitivity) {
-  ExpectPluginType(PluginUMAReporter::QUICKTIME,
-                   "video/QUICKTIME",
-                   GURL("http://file.aaa"));
+  ExpectPluginType(
+      PluginUMAReporter::QUICKTIME, "video/QUICKTIME", GURL("http://file.aaa"));
   ExpectPluginType(
       PluginUMAReporter::QUICKTIME, std::string(), GURL("http://file.MoV"));
 }
