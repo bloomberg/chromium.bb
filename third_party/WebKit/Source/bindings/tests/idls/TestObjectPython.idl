@@ -130,6 +130,8 @@ interface TestObjectPython {
     [Reflect=id] readonly attribute DOMString reflectedId;
     [Reflect=name] readonly attribute DOMString reflectedName;
     [Reflect=class] readonly attribute DOMString reflectedClass;
-    [RuntimeEnabled=FeatureName] readonly attribute long enabledAtRuntimeReadonlyLongAttribute;
+    [RuntimeEnabled=FeatureName] readonly attribute long runtimeEnabledReadonlyLongAttribute;
     [Conditional=Condition, RuntimeEnabled=FeatureName] readonly attribute long conditionalEnabledAtRuntimeReadonlyLongAttribute;
+    [SetterCallWith=ActiveWindow&FirstWindow] readonly attribute DOMString setterCallWithActiveWindowAndFirstWindowReadonlyStringAttribute;  // FIXME: stub test case b/c readonly, becomes real test case when implement setters
+    [SetterRaisesException] readonly attribute long setterRaisesExceptionReadonlyLongAttribute;  // FIXME: stub test case b/c readonly, becomes real test case when implement setters
 };
