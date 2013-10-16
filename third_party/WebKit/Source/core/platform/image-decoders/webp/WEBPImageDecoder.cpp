@@ -29,19 +29,20 @@
 #include "config.h"
 #include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/PlatformInstrumentation.h"
 
 #if USE(QCMSLIB)
 #include "qcms.h"
 #endif
 
-#include "RuntimeEnabledFeatures.h"
-
 #if CPU(BIG_ENDIAN) || CPU(MIDDLE_ENDIAN)
+#error Blink assumes a little-endian target.
+#endif
+
+#if SK_B32_SHIFT // Output little-endian RGBA pixels (Android).
 inline WEBP_CSP_MODE outputMode(bool hasAlpha) { return hasAlpha ? MODE_rgbA : MODE_RGBA; }
-#elif SK_B32_SHIFT
-inline WEBP_CSP_MODE outputMode(bool hasAlpha) { return hasAlpha ? MODE_rgbA : MODE_RGBA; }
-#else // LITTLE_ENDIAN, output BGRA pixels.
+#else // Output little-endian BGRA pixels.
 inline WEBP_CSP_MODE outputMode(bool hasAlpha) { return hasAlpha ? MODE_bgrA : MODE_BGRA; }
 #endif
 
