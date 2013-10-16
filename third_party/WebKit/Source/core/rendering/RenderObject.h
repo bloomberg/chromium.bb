@@ -919,9 +919,9 @@ public:
      */
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0);
 
-    // FIXME: This should probably be named documetBeingDetached() or something else
-    // since the Document isn't neccesarily destroyed, it's view is just being torn down.
-    bool documentBeingDestroyed() const { return document().isStopping(); }
+    // When performing a global document tear-down, the renderer of the document is cleared. We use this
+    // as a hook to detect the case of document destruction and don't waste time doing unnecessary work.
+    bool documentBeingDestroyed() const;
 
     void destroyAndCleanupAnonymousWrappers();
     virtual void destroy();
@@ -1201,6 +1201,11 @@ private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
 };
+
+inline bool RenderObject::documentBeingDestroyed() const
+{
+    return !document().renderer();
+}
 
 inline bool RenderObject::isBeforeContent() const
 {
