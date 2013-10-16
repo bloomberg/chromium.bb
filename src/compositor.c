@@ -1443,7 +1443,10 @@ weston_output_finish_frame(struct weston_output *output, uint32_t msecs)
 	int fd;
 
 	output->frame_time = msecs;
-	if (output->repaint_needed) {
+
+	if (output->repaint_needed &&
+	    compositor->state != WESTON_COMPOSITOR_SLEEPING &&
+	    compositor->state != WESTON_COMPOSITOR_OFFSCREEN) {
 		weston_output_repaint(output, msecs);
 		return;
 	}
