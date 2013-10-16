@@ -17,7 +17,7 @@ import toolchain_main
 GIT_REVISIONS = {
     'binutils': '64380341b91b364918b9968c91e70a85cf24b8f6',
     'gcc': '76b02221318ecc97f50bad9c608159d7b5021ae6',
-    'newlib': '4c3e3730d0fdadc8f8a2f5b2abc0f9f7f308adbb',
+    'newlib': '29add55b3da12509058c203d2016e8496131641c',
     }
 
 TARGET_LIST = ['arm']
@@ -507,6 +507,8 @@ def TargetLibs(target):
               ConfigureTargetArgs(target) + [
                   '--disable-libgloss',
                   '--enable-newlib-iconv',
+                  '--enable-newlib-iconv-from-encodings=UTF-8,UTF-16,UCS-4',
+                  '--enable-newlib-iconv-to-encodings=UTF-8,UTF-16,UCS-4',
                   '--enable-newlib-io-long-long',
                   '--enable-newlib-io-long-double',
                   '--enable-newlib-io-c99-formats',
