@@ -588,6 +588,10 @@ crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Image
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/preserves3d-opacity.html [ ImageOnlyFailure ]
 
+crbug.com/307324 [ Mac ] fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/307324 [ Mac ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/307324 [ Mac ] fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+
 # Failing due to sub-pixel layout.
 webkit.org/b/95136 fast/css/sticky/sticky-left-percentage.html [ ImageOnlyFailure ]
 webkit.org/b/95136 [ Linux Win ] fast/css/sticky/sticky-writing-mode-vertical-lr.html [ ImageOnlyFailure ]

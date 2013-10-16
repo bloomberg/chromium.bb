@@ -30,6 +30,10 @@
 #include "config.h"
 #include "core/platform/graphics/FontDescription.h"
 
+#include "RuntimeEnabledFeatures.h"
+#include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/StringHash.h"
+
 namespace WebCore {
 
 struct SameSizeAsFontDescription {
@@ -100,6 +104,29 @@ FontDescription FontDescription::makeNormalFeatureSettings() const
     FontDescription normalDescription(*this);
     normalDescription.setFeatureSettings(0);
     return normalDescription;
+}
+
+float FontDescription::effectiveFontSize() const
+{
+    return (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+        ? computedSize()
+        : computedPixelSize();
+}
+
+FontCacheKey FontDescription::cacheKey(const AtomicString& familyName, FontTraitsMask desiredTraits) const
+{
+    FontTraitsMask traits = desiredTraits
+        ? desiredTraits
+        : traitsMask();
+
+    unsigned options =
+        // synthetic bold, italics - bits 7-8
+        static_cast<unsigned>(m_fontSmoothing) << 4 | // bits 5-6
+        static_cast<unsigned>(m_textRendering) << 2 | // bits 3-4
+        static_cast<unsigned>(m_orientation) << 1 | // bit 2
+        static_cast<unsigned>(m_usePrinterFont); // bit 1
+
+    return FontCacheKey(familyName, effectiveFontSize(), options | traits << 8);
 }
 
 } // namespace WebCore

@@ -26,6 +26,7 @@
 #define FontDescription_h
 
 #include "FontFamilyNames.h"
+#include "core/platform/graphics/FontCacheKey.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/FontTraitsMask.h"
@@ -133,6 +134,9 @@ public:
     FontWidthVariant widthVariant() const { return static_cast<FontWidthVariant>(m_widthVariant); }
     FontFeatureSettings* featureSettings() const { return m_featureSettings.get(); }
     FontDescription makeNormalFeatureSettings() const;
+
+    float effectiveFontSize() const; // Returns either the computedSize or the computedPixelSize
+    FontCacheKey cacheKey(const AtomicString& familyName, FontTraitsMask desiredTraits = static_cast<FontTraitsMask>(0)) const;
 
     void setFamily(const FontFamily& family) { m_familyList = family; }
     void setComputedSize(float s) { m_computedSize = clampToFloat(s); }

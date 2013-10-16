@@ -33,6 +33,8 @@
 #include "FontFamilyNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCacheKey.h"
+#include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/FontSelector.h"
@@ -40,7 +42,6 @@
 #include "core/platform/graphics/TextRenderingMode.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashTableDeletedValueType.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -63,103 +64,7 @@ FontCache::FontCache()
 }
 #endif // !OS(WIN) || ENABLE(GDI_FONTS_ON_WINDOWS)
 
-struct FontPlatformDataCacheKey {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    FontPlatformDataCacheKey()
-        : m_family(AtomicString())
-        , m_size(0)
-        , m_weight(0)
-        , m_italic(false)
-        , m_printerFont(false)
-        , m_orientation(Horizontal)
-        , m_widthVariant(RegularWidth)
-        , m_textRenderingMode(AutoTextRendering)
-        , m_fontSmoothingMode(AutoSmoothing)
-    {
-    }
-
-    FontPlatformDataCacheKey(const AtomicString& family, float size, const FontDescription& fontDescription)
-        : m_family(family)
-        , m_size(size * FontCache::s_fontSizePrecisionMultiplier)
-        , m_weight(fontDescription.weight())
-        , m_italic(fontDescription.italic())
-        , m_printerFont(fontDescription.usePrinterFont())
-        , m_orientation(fontDescription.orientation())
-        , m_widthVariant(fontDescription.widthVariant())
-        , m_textRenderingMode(fontDescription.textRenderingMode())
-// -webkit-font-smoothing actually controls AppleFontSmoothing for CoreGraphics.
-#if OS(MACOSX)
-        , m_fontSmoothingMode(fontDescription.fontSmoothing())
-#else
-        , m_fontSmoothingMode(AutoSmoothing)
-#endif
-    {
-    }
-
-    FontPlatformDataCacheKey(HashTableDeletedValueType) : m_size(hashTableDeletedSize()) { }
-    bool isHashTableDeletedValue() const { return m_size == hashTableDeletedSize(); }
-
-    bool operator==(const FontPlatformDataCacheKey& other) const
-    {
-        return equalIgnoringCase(m_family, other.m_family)
-            && m_size == other.m_size
-            && m_weight == other.m_weight
-            && m_italic == other.m_italic
-            && m_printerFont == other.m_printerFont
-            && m_orientation == other.m_orientation
-            && m_widthVariant == other.m_widthVariant
-            && m_textRenderingMode == other.m_textRenderingMode
-            && m_fontSmoothingMode == other.m_fontSmoothingMode;
-    }
-
-    AtomicString m_family;
-    unsigned m_size;
-    unsigned m_weight;
-    bool m_italic;
-    bool m_printerFont;
-    FontOrientation m_orientation;
-    FontWidthVariant m_widthVariant;
-    TextRenderingMode m_textRenderingMode;
-    FontSmoothingMode m_fontSmoothingMode;
-
-private:
-    static unsigned hashTableDeletedSize() { return 0xFFFFFFFFU; }
-};
-
-inline unsigned computeHash(const FontPlatformDataCacheKey& fontKey)
-{
-    unsigned hashCodes[5] = {
-        CaseFoldingHash::hash(fontKey.m_family),
-        fontKey.m_size,
-        fontKey.m_weight,
-        fontKey.m_widthVariant,
-        static_cast<unsigned>(fontKey.m_fontSmoothingMode) << 5 | // bits 5-6
-        static_cast<unsigned>(fontKey.m_textRenderingMode) << 3 | // bits 3-4
-        static_cast<unsigned>(fontKey.m_orientation) << 2 | // bit 2
-        static_cast<unsigned>(fontKey.m_italic) << 1 | // bit 1
-        static_cast<unsigned>(fontKey.m_printerFont) // bit 0
-    };
-    return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
-}
-
-struct FontPlatformDataCacheKeyHash {
-    static unsigned hash(const FontPlatformDataCacheKey& font)
-    {
-        return computeHash(font);
-    }
-
-    static bool equal(const FontPlatformDataCacheKey& a, const FontPlatformDataCacheKey& b)
-    {
-        return a == b;
-    }
-
-    static const bool safeToCompareToEmptyOrDeleted = true;
-};
-
-struct FontPlatformDataCacheKeyTraits : WTF::SimpleClassHashTraits<FontPlatformDataCacheKey> { };
-
-typedef HashMap<FontPlatformDataCacheKey, OwnPtr<FontPlatformData>, FontPlatformDataCacheKeyHash, FontPlatformDataCacheKeyTraits> FontPlatformDataCache;
+typedef HashMap<FontCacheKey, OwnPtr<FontPlatformData>, FontCacheKeyHash, FontCacheKeyTraits> FontPlatformDataCache;
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
@@ -249,17 +154,12 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
         platformInit();
     }
 
-    float fontSize;
-    if (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
-        fontSize = fontDescription.computedSize();
-    else
-        fontSize = fontDescription.computedPixelSize();
-    FontPlatformDataCacheKey key(familyName, fontSize, fontDescription);
+    FontCacheKey key = fontDescription.cacheKey(familyName);
     FontPlatformData* result = 0;
     bool foundResult;
     FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
     if (it == gFontPlatformDataCache->end()) {
-        result = createFontPlatformData(fontDescription, familyName, fontSize);
+        result = createFontPlatformData(fontDescription, familyName, fontDescription.effectiveFontSize());
         gFontPlatformDataCache->set(key, adoptPtr(result));
         foundResult = result;
     } else {
@@ -468,7 +368,7 @@ void FontCache::purgeInactiveFontData(int count)
     fontDataToDelete.clear();
 
     if (gFontPlatformDataCache) {
-        Vector<FontPlatformDataCacheKey> keysToRemove;
+        Vector<FontCacheKey> keysToRemove;
         keysToRemove.reserveInitialCapacity(gFontPlatformDataCache->size());
         FontPlatformDataCache::iterator platformDataEnd = gFontPlatformDataCache->end();
         for (FontPlatformDataCache::iterator platformData = gFontPlatformDataCache->begin(); platformData != platformDataEnd; ++platformData) {
