@@ -151,24 +151,24 @@ cr.define('gpu', function() {
         if (gpuInfo.featureStatus) {
           // feature status list
           featureStatusList.textContent = '';
-          for (i = 0; i < gpuInfo.featureStatus.featureStatus.length;
-               i++) {
-            var feature = gpuInfo.featureStatus.featureStatus[i];
+          for (var featureName in gpuInfo.featureStatus.featureStatus) {
+            var featureStatus =
+                gpuInfo.featureStatus.featureStatus[featureName];
             var featureEl = document.createElement('li');
 
             var nameEl = document.createElement('span');
-            if (!featureLabelMap[feature.name])
-              console.log('Missing featureLabel for', feature.name);
-            nameEl.textContent = featureLabelMap[feature.name] + ': ';
+            if (!featureLabelMap[featureName])
+              console.log('Missing featureLabel for', featureName);
+            nameEl.textContent = featureLabelMap[featureName] + ': ';
             featureEl.appendChild(nameEl);
 
             var statusEl = document.createElement('span');
-            if (!statusLabelMap[feature.status])
-              console.log('Missing statusLabel for', feature.status);
-            if (!statusClassMap[feature.status])
-              console.log('Missing statusClass for', feature.status);
-            statusEl.textContent = statusLabelMap[feature.status];
-            statusEl.className = statusClassMap[feature.status];
+            if (!statusLabelMap[featureStatus])
+              console.log('Missing statusLabel for', featureStatus);
+            if (!statusClassMap[featureStatus])
+              console.log('Missing statusClass for', featureStatus);
+            statusEl.textContent = statusLabelMap[featureStatus];
+            statusEl.className = statusClassMap[featureStatus];
             featureEl.appendChild(statusEl);
 
             featureStatusList.appendChild(featureEl);

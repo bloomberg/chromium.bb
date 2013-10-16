@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GPU_COMPOSITOR_UTIL_H_
 #define CONTENT_BROWSER_GPU_COMPOSITOR_UTIL_H_
 
+#include "base/values.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -20,6 +21,10 @@ CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 
 // Returns true if deadline scheduling is on (via flags, or platform default).
 CONTENT_EXPORT bool IsDeadlineSchedulingEnabled();
+
+CONTENT_EXPORT base::Value* GetFeatureStatus();
+CONTENT_EXPORT base::Value* GetProblems();
+CONTENT_EXPORT base::Value* GetDriverBugWorkarounds();
 
 }  // namespace content
 

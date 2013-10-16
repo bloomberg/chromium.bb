@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "gpu/config/gpu_info.h"
 
@@ -19,6 +20,7 @@ const char kAuxAttributes[] = "auxAttributes";
 const char kDeviceId[] = "deviceId";
 const char kDeviceString[] = "deviceString";
 const char kDevices[] = "devices";
+const char kFeatureStatus[] = "featureStatus";
 const char kGPU[] = "gpu";
 const char kModelName[] = "modelName";
 const char kVendorId[] = "vendorId";
@@ -113,6 +115,8 @@ DevToolsSystemInfoHandler::OnGetInfo(
   AuxGPUInfoEnumerator enumerator(aux_attributes);
   gpu_info.EnumerateFields(&enumerator);
   gpu_dict->Set(kAuxAttributes, aux_attributes);
+
+  gpu_dict->Set(kFeatureStatus,  GetFeatureStatus());
 
   base::DictionaryValue* system_dict = new base::DictionaryValue;
   system_dict->SetString(kModelName, gpu_info.machine_model);
