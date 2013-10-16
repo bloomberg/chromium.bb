@@ -352,39 +352,6 @@ void NativeAppWindowGtk::RenderViewHostChanged(
   web_contents()->GetView()->Focus();
 }
 
-gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
-  if (frameless_)
-    return gfx::Insets();
-  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
-  if (!gdk_window)
-    return gfx::Insets();
-
-  gint current_width = 0;
-  gint current_height = 0;
-  gtk_window_get_size(window_, &current_width, &current_height);
-  gint current_x = 0;
-  gint current_y = 0;
-  gdk_window_get_position(gdk_window, &current_x, &current_y);
-  GdkRectangle rect_with_decorations = {0};
-  gdk_window_get_frame_extents(gdk_window,
-                               &rect_with_decorations);
-
-  int left_inset = current_x - rect_with_decorations.x;
-  int top_inset = current_y - rect_with_decorations.y;
-  return gfx::Insets(
-      top_inset,
-      left_inset,
-      rect_with_decorations.height - current_height - top_inset,
-      rect_with_decorations.width - current_width - left_inset);
-}
-
-bool NativeAppWindowGtk::IsVisible() const {
-  return gtk_widget_get_visible(GTK_WIDGET(window_));
-}
-
-void NativeAppWindowGtk::HideWithApp() {}
-void NativeAppWindowGtk::ShowWithApp() {}
-
 void NativeAppWindowGtk::SetAlwaysOnTop(bool always_on_top) {
   if (always_on_top_ != always_on_top) {
     // gdk_window_get_state() does not give us the correct value for the
@@ -650,15 +617,6 @@ void NativeAppWindowGtk::UpdateWindowTitle() {
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
 }
 
-void NativeAppWindowGtk::HandleKeyboardEvent(
-    const content::NativeWebKeyboardEvent& event) {
-  // No-op.
-}
-
-void NativeAppWindowGtk::UpdateInputRegion(scoped_ptr<SkRegion> region) {
-  NOTIMPLEMENTED();
-}
-
 void NativeAppWindowGtk::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.
@@ -672,6 +630,48 @@ SkRegion* NativeAppWindowGtk::GetDraggableRegion() {
   return draggable_region_.get();
 }
 
+void NativeAppWindowGtk::UpdateInputRegion(scoped_ptr<SkRegion> region) {
+  NOTIMPLEMENTED();
+}
+
+void NativeAppWindowGtk::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  // No-op.
+}
+
 bool NativeAppWindowGtk::IsFrameless() const {
   return frameless_;
 }
+
+gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
+  if (frameless_)
+    return gfx::Insets();
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
+  if (!gdk_window)
+    return gfx::Insets();
+
+  gint current_width = 0;
+  gint current_height = 0;
+  gtk_window_get_size(window_, &current_width, &current_height);
+  gint current_x = 0;
+  gint current_y = 0;
+  gdk_window_get_position(gdk_window, &current_x, &current_y);
+  GdkRectangle rect_with_decorations = {0};
+  gdk_window_get_frame_extents(gdk_window,
+                               &rect_with_decorations);
+
+  int left_inset = current_x - rect_with_decorations.x;
+  int top_inset = current_y - rect_with_decorations.y;
+  return gfx::Insets(
+      top_inset,
+      left_inset,
+      rect_with_decorations.height - current_height - top_inset,
+      rect_with_decorations.width - current_width - left_inset);
+}
+
+bool NativeAppWindowGtk::IsVisible() const {
+  return gtk_widget_get_visible(GTK_WIDGET(window_));
+}
+
+void NativeAppWindowGtk::HideWithApp() {}
+void NativeAppWindowGtk::ShowWithApp() {}

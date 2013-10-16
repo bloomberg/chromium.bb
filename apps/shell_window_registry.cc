@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "apps/apps_client.h"
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "apps/ui/native_app_window.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"

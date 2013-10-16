@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_NATIVE_APP_WINDOW_H_
-#define APPS_NATIVE_APP_WINDOW_H_
+#ifndef APPS_UI_NATIVE_APP_WINDOW_H_
+#define APPS_UI_NATIVE_APP_WINDOW_H_
 
 #include "apps/shell_window.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -18,17 +18,7 @@ namespace apps {
 class NativeAppWindow : public ui::BaseWindow,
                         public web_modal::WebContentsModalDialogHost {
  public:
-  // Called when the draggable regions are changed.
-  virtual void UpdateDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions) = 0;
-
-  // Returns the region used by frameless windows for dragging. May return NULL.
-  virtual SkRegion* GetDraggableRegion() = 0;
-
-  // Called when the region that accepts input events is changed.
-  // If |region| is NULL, then the entire window will accept input events.
-  virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) = 0;
-
+  // Fullscreen changes may be asynchronous on some platforms.
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreenOrPending() const = 0;
 
@@ -40,6 +30,17 @@ class NativeAppWindow : public ui::BaseWindow,
 
   // Called when the title of the window changes.
   virtual void UpdateWindowTitle() = 0;
+
+  // Called when the draggable regions are changed.
+  virtual void UpdateDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) = 0;
+
+  // Returns the region used by frameless windows for dragging. May return NULL.
+  virtual SkRegion* GetDraggableRegion() = 0;
+
+  // Called when the region that accepts input events is changed.
+  // If |region| is NULL, then the entire window will accept input events.
+  virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) = 0;
 
   // Allows the window to handle unhandled keyboard messages coming back from
   // the renderer.
@@ -68,4 +69,4 @@ class NativeAppWindow : public ui::BaseWindow,
 
 }  // namespace apps
 
-#endif  // APPS_NATIVE_APP_WINDOW_H_
+#endif  // APPS_UI_NATIVE_APP_WINDOW_H_

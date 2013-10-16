@@ -4,9 +4,9 @@
 
 #include "apps/shell_window.h"
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window_geometry_cache.h"
 #include "apps/shell_window_registry.h"
+#include "apps/ui/native_app_window.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

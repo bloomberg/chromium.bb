@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "apps/ui/native_app_window.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"

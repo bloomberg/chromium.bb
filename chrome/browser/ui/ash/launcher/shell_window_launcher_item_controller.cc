@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/ui/native_app_window.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"

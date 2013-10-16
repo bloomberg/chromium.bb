@@ -7,8 +7,8 @@
 
 #include <gtk/gtk.h>
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/ui/native_app_window.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
@@ -39,7 +39,6 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
-  virtual bool IsDetached() const OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual ui::WindowShowState GetRestoredState() const OVERRIDE;
@@ -56,6 +55,7 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
+  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
 
   // ActiveWindowWatcherXObserver implementation.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
@@ -69,20 +69,20 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   // NativeAppWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
+  virtual bool IsDetached() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
-  virtual void HandleKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) OVERRIDE;
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual SkRegion* GetDraggableRegion() OVERRIDE;
+  virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsFrameless() const OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
-  virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

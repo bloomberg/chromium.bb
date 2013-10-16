@@ -455,33 +455,6 @@ bool NativeAppWindowViews::IsAlwaysOnTop() const {
   }
 }
 
-bool NativeAppWindowViews::IsFrameless() const {
-  return frameless_;
-}
-
-gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
-  if (frameless_)
-    return gfx::Insets();
-
-  // The pretend client_bounds passed in need to be large enough to ensure that
-  // GetWindowBoundsForClientBounds() doesn't decide that it needs more than
-  // the specified amount of space to fit the window controls in, and return a
-  // number larger than the real frame insets. Most window controls are smaller
-  // than 1000x1000px, so this should be big enough.
-  gfx::Rect client_bounds = gfx::Rect(1000, 1000);
-  gfx::Rect window_bounds =
-      window_->non_client_view()->GetWindowBoundsForClientBounds(
-          client_bounds);
-  return window_bounds.InsetsFrom(client_bounds);
-}
-
-bool NativeAppWindowViews::IsVisible() const {
-  return window_->IsVisible();
-}
-
-void NativeAppWindowViews::HideWithApp() {}
-void NativeAppWindowViews::ShowWithApp() {}
-
 void NativeAppWindowViews::SetAlwaysOnTop(bool always_on_top) {
   window_->SetAlwaysOnTop(always_on_top);
   shell_window_->OnNativeWindowChanged();
@@ -642,6 +615,10 @@ const views::Widget* NativeAppWindowViews::GetWidget() const {
   return window_;
 }
 
+views::View* NativeAppWindowViews::GetContentsView() {
+  return this;
+}
+
 views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
 #if defined(USE_ASH)
@@ -715,6 +692,12 @@ void NativeAppWindowViews::RenderViewCreated(
     DCHECK(view);
     view->SetBackground(background);
   }
+}
+
+void NativeAppWindowViews::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
+  OnViewWasResized();
 }
 
 // views::View implementation.
@@ -797,20 +780,12 @@ bool NativeAppWindowViews::IsDetached() const {
 #endif
 }
 
-views::View* NativeAppWindowViews::GetContentsView() {
-  return this;
-}
-
 void NativeAppWindowViews::UpdateWindowIcon() {
   window_->UpdateWindowIcon();
 }
 
 void NativeAppWindowViews::UpdateWindowTitle() {
   window_->UpdateWindowTitle();
-}
-
-void NativeAppWindowViews::UpdateInputRegion(scoped_ptr<SkRegion> region) {
-  input_region_ = region.Pass();
 }
 
 void NativeAppWindowViews::UpdateDraggableRegions(
@@ -827,14 +802,39 @@ SkRegion* NativeAppWindowViews::GetDraggableRegion() {
   return draggable_region_.get();
 }
 
+void NativeAppWindowViews::UpdateInputRegion(scoped_ptr<SkRegion> region) {
+  input_region_ = region.Pass();
+}
+
 void NativeAppWindowViews::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
 }
 
-void NativeAppWindowViews::RenderViewHostChanged(
-    content::RenderViewHost* old_host,
-    content::RenderViewHost* new_host) {
-  OnViewWasResized();
+bool NativeAppWindowViews::IsFrameless() const {
+  return frameless_;
 }
+
+gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
+  if (frameless_)
+    return gfx::Insets();
+
+  // The pretend client_bounds passed in need to be large enough to ensure that
+  // GetWindowBoundsForClientBounds() doesn't decide that it needs more than
+  // the specified amount of space to fit the window controls in, and return a
+  // number larger than the real frame insets. Most window controls are smaller
+  // than 1000x1000px, so this should be big enough.
+  gfx::Rect client_bounds = gfx::Rect(1000, 1000);
+  gfx::Rect window_bounds =
+      window_->non_client_view()->GetWindowBoundsForClientBounds(
+          client_bounds);
+  return window_bounds.InsetsFrom(client_bounds);
+}
+
+bool NativeAppWindowViews::IsVisible() const {
+  return window_->IsVisible();
+}
+
+void NativeAppWindowViews::HideWithApp() {}
+void NativeAppWindowViews::ShowWithApp() {}

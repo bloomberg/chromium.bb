@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/api/app_window/app_window_api.h"
 
 #include "apps/app_window_contents.h"
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "base/values.h"

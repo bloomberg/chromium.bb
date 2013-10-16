@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/tabs/ash_panel_contents.h"
 
-#include "apps/native_app_window.h"
+#include "apps/ui/native_app_window.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"

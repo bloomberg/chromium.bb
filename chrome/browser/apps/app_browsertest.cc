@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "apps/launcher.h"
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "apps/ui/native_app_window.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"

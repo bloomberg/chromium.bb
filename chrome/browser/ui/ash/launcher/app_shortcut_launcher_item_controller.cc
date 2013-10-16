@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 
-#include "apps/native_app_window.h"
+#include "apps/ui/native_app_window.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"

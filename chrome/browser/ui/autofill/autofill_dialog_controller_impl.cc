@@ -8,9 +8,9 @@
 #include <map>
 #include <string>
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "apps/ui/native_app_window.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/i18n/case_conversion.h"

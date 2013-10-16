@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "apps/ui/native_app_window.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/session_state_delegate.h"

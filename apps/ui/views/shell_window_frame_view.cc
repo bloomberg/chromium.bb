@@ -4,7 +4,7 @@
 
 #include "apps/ui/views/shell_window_frame_view.h"
 
-#include "apps/native_app_window.h"
+#include "apps/ui/native_app_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/draggable_region.h"
 #include "grit/theme_resources.h"

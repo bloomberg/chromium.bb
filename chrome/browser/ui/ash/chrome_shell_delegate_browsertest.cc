@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
-#include "apps/native_app_window.h"
 #include "apps/shell_window.h"
+#include "apps/ui/native_app_window.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
