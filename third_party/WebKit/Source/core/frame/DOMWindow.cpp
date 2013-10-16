@@ -117,10 +117,10 @@ public:
     {
     }
 
-    PassRefPtr<MessageEvent> event(ExecutionContext* context)
+    PassRefPtr<MessageEvent> event()
     {
-        OwnPtr<MessagePortArray> messagePorts = MessagePort::entanglePorts(*context, m_channels.release());
-        return MessageEvent::create(messagePorts.release(), m_message, m_origin, String(), m_source);
+        return MessageEvent::create(m_channels.release(), m_message, m_origin, String(), m_source);
+
     }
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
     ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
@@ -783,7 +783,7 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
     if (!document() || !isCurrentlyDisplayedInFrame())
         return;
 
-    RefPtr<MessageEvent> event = timer->event(document());
+    RefPtr<MessageEvent> event = timer->event();
 
     // Give the embedder a chance to intercept this postMessage because this
     // DOMWindow might be a proxy for another in browsers that support
@@ -791,6 +791,7 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
     if (m_frame->loader()->client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get()))
         return;
 
+    event->entangleMessagePorts(document());
     dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->stackTrace());
 }
 

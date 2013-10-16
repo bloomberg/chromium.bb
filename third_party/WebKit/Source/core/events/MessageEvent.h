@@ -61,6 +61,10 @@ public:
     {
         return adoptRef(new MessageEvent(data, origin, lastEventId, source, ports));
     }
+    static PassRefPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtr<EventTarget> source = 0)
+    {
+        return adoptRef(new MessageEvent(data, origin, lastEventId, source, channels));
+    }
     static PassRefPtr<MessageEvent> create(const String& data, const String& origin = String())
     {
         return adoptRef(new MessageEvent(data, origin));
@@ -86,6 +90,7 @@ public:
     const String& lastEventId() const { return m_lastEventId; }
     EventTarget* source() const { return m_source.get(); }
     MessagePortArray ports() const { return m_ports ? *m_ports : MessagePortArray(); }
+    MessagePortChannelArray channels() const { return m_channels ? *m_channels : MessagePortChannelArray(); }
 
     virtual const AtomicString& interfaceName() const;
 
@@ -108,11 +113,14 @@ public:
         m_dataAsSerializedScriptValue = data;
     }
 
+    void entangleMessagePorts(ExecutionContext*);
+
 private:
     MessageEvent();
     MessageEvent(const AtomicString&, const MessageEventInit&);
     MessageEvent(const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortArray>);
     MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortArray>);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>);
 
     explicit MessageEvent(const String& data, const String& origin);
     explicit MessageEvent(PassRefPtr<Blob> data, const String& origin);
@@ -126,7 +134,11 @@ private:
     String m_origin;
     String m_lastEventId;
     RefPtr<EventTarget> m_source;
+    // m_ports are the MessagePorts in an engtangled state, and m_channels are
+    // the MessageChannels in a disentangled state. Only one of them can be
+    // non-empty at a time. entangleMessagePorts() moves between the states.
     OwnPtr<MessagePortArray> m_ports;
+    OwnPtr<MessagePortChannelArray> m_channels;
 };
 
 } // namespace WebCore

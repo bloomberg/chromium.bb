@@ -87,6 +87,21 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
     ASSERT(isValidSource(m_source.get()));
 }
 
+MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray> channels)
+    : Event(EventTypeNames::message, false, false)
+    , m_dataType(DataTypeSerializedScriptValue)
+    , m_dataAsSerializedScriptValue(data)
+    , m_origin(origin)
+    , m_lastEventId(lastEventId)
+    , m_source(source)
+    , m_channels(channels)
+{
+    ScriptWrappable::init(this);
+    if (m_dataAsSerializedScriptValue)
+        m_dataAsSerializedScriptValue->registerMemoryAllocatedWithCurrentScriptContext();
+    ASSERT(isValidSource(m_source.get()));
+}
+
 MessageEvent::MessageEvent(const String& data, const String& origin)
     : Event(EventTypeNames::message, false, false)
     , m_dataType(DataTypeString)
@@ -153,6 +168,11 @@ void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bo
 const AtomicString& MessageEvent::interfaceName() const
 {
     return EventNames::MessageEvent;
+}
+
+void MessageEvent::entangleMessagePorts(ExecutionContext* context)
+{
+    m_ports = MessagePort::entanglePorts(*context, m_channels.release());
 }
 
 } // namespace WebCore

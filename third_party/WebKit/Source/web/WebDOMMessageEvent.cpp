@@ -45,7 +45,7 @@ using namespace WebCore;
 
 namespace WebKit {
 
-void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebString& lastEventId)
+void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebString& lastEventId, const WebMessagePortChannelArray& webChannels)
 {
     ASSERT(m_private.get());
     ASSERT(isMessageEvent());
@@ -53,6 +53,12 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
     if (sourceFrame)
         window = toWebFrameImpl(sourceFrame)->frame()->domWindow();
     OwnPtr<MessagePortArray> ports;
+    if (!webChannels.isEmpty() && sourceFrame) {
+        OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
+        for (size_t i = 0; i < webChannels.size(); ++i)
+            (*channels)[i] = MessagePortChannel::create(webChannels[i]);
+        ports = MessagePort::entanglePorts(*window->document(), channels.release());
+    }
     unwrap<MessageEvent>()->initMessageEvent(type, canBubble, cancelable, messageData, origin, lastEventId, window, ports.release());
 }
 
@@ -64,6 +70,15 @@ WebSerializedScriptValue WebDOMMessageEvent::data() const
 WebString WebDOMMessageEvent::origin() const
 {
     return WebString(constUnwrap<MessageEvent>()->origin());
+}
+
+WebMessagePortChannelArray WebDOMMessageEvent::releaseChannels()
+{
+    MessagePortChannelArray channels = constUnwrap<MessageEvent>()->channels();
+    WebMessagePortChannelArray webChannels(channels.size());
+    for (size_t i = 0; i < channels.size(); ++i)
+        webChannels[i] = channels[i]->webChannelRelease();
+    return webChannels;
 }
 
 } // namespace WebKit
