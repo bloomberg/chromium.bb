@@ -829,6 +829,7 @@ class TraceSamplingThread : public PlatformThread::Delegate {
   static void ExtractCategoryAndName(const char* combined,
                                      const char** category,
                                      const char** name);
+  Lock lock_;
   std::vector<TraceBucketData> sample_buckets_;
   bool thread_running_;
   scoped_ptr<CancellationFlag> cancellation_flag_;
@@ -838,6 +839,7 @@ class TraceSamplingThread : public PlatformThread::Delegate {
 
 TraceSamplingThread::TraceSamplingThread()
     : thread_running_(false) {
+  AutoLock lock(lock_);
   cancellation_flag_.reset(new CancellationFlag);
 }
 
@@ -848,10 +850,14 @@ void TraceSamplingThread::ThreadMain() {
   PlatformThread::SetName("Sampling Thread");
   thread_running_ = true;
   const int kSamplingFrequencyMicroseconds = 1000;
-  while (!cancellation_flag_->IsSet()) {
+  while (true) {
     PlatformThread::Sleep(
         TimeDelta::FromMicroseconds(kSamplingFrequencyMicroseconds));
     GetSamples();
+
+    AutoLock lock(lock_);
+    if (cancellation_flag_->IsSet())
+      break;
     if (waitable_event_for_testing_.get())
       waitable_event_for_testing_->Signal();
   }
@@ -875,6 +881,7 @@ void TraceSamplingThread::DefaultSamplingCallback(
 }
 
 void TraceSamplingThread::GetSamples() {
+  AutoLock lock(lock_);
   for (size_t i = 0; i < sample_buckets_.size(); ++i) {
     TraceBucketData* bucket_data = &sample_buckets_[i];
     bucket_data->callback.Run(bucket_data);
@@ -885,6 +892,7 @@ void TraceSamplingThread::RegisterSampleBucket(
     TRACE_EVENT_API_ATOMIC_WORD* bucket,
     const char* const name,
     TraceSampleCallback callback) {
+  AutoLock lock(lock_);
   DCHECK(!thread_running_);
   sample_buckets_.push_back(TraceBucketData(bucket, name, callback));
 }
@@ -898,11 +906,13 @@ void TraceSamplingThread::ExtractCategoryAndName(const char* combined,
 }
 
 void TraceSamplingThread::Stop() {
+  AutoLock lock(lock_);
   cancellation_flag_->Set();
 }
 
 void TraceSamplingThread::InstallWaitableEventForSamplingTesting(
     WaitableEvent* waitable_event) {
+  AutoLock lock(lock_);
   waitable_event_for_testing_.reset(waitable_event);
 }
 
