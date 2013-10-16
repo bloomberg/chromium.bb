@@ -90,22 +90,27 @@ Length AnimatableLength::toLength(const RenderStyle* style, const RenderStyle* r
 PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLength* length = toAnimatableLength(value);
-    if (hasSameUnitType(*length))
-        return AnimatableLength::create(blend(m_number, length->m_number, fraction), m_unitType);
+    NumberUnitType type = commonUnitType(length);
+    if (type != UnitTypeInvalid)
+        return AnimatableLength::create(blend(m_number, length->m_number, fraction), type);
+
     return AnimatableLength::create(scale(1 - fraction).get(), length->scale(fraction).get());
 }
 
 PassRefPtr<AnimatableValue> AnimatableLength::addWith(const AnimatableValue* value) const
 {
     // Optimization for adding with 0.
-    if (!m_isCalc && !m_number)
+    if (isUnitlessZero())
         return takeConstRef(value);
+
     const AnimatableLength* length = toAnimatableLength(value);
-    if (!length->m_isCalc && !length->m_number)
+    if (length->isUnitlessZero())
         return takeConstRef(this);
 
-    if (hasSameUnitType(*length))
-        return AnimatableLength::create(m_number + length->m_number, m_unitType);
+    NumberUnitType type = commonUnitType(length);
+    if (type != UnitTypeInvalid)
+        return AnimatableLength::create(m_number + length->m_number, type);
+
     return AnimatableLength::create(this, length);
 }
 

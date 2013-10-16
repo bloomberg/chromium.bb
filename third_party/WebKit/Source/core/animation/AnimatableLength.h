@@ -115,9 +115,29 @@ private:
     }
     static NumberUnitType primitiveUnitToNumberType(unsigned short primitiveUnit);
     static unsigned short numberTypeToPrimitiveUnit(NumberUnitType numberType);
-    bool hasSameUnitType(const AnimatableLength& length) const
+
+    // Zero is effectively unitless, except in the case of percentage.
+    // http://www.w3.org/TR/css3-values/#calc-computed-value
+    // e.g. calc(100% - 100% + 1em) resolves to calc(0% + 1em), not to calc(1em)
+    bool isUnitlessZero() const
     {
-        return !m_isCalc && !length.m_isCalc && m_unitType == length.m_unitType;
+        return !m_isCalc && !m_number && m_unitType != UnitTypePercentage;
+    }
+
+    NumberUnitType commonUnitType(const AnimatableLength* length) const
+    {
+        if (m_isCalc || length->m_isCalc)
+            return UnitTypeInvalid;
+
+        if (m_unitType == length->m_unitType)
+            return m_unitType;
+
+        if (isUnitlessZero())
+            return length->m_unitType;
+        if (length->isUnitlessZero())
+            return m_unitType;
+
+        return UnitTypeInvalid;
     }
 
     bool m_isCalc;
@@ -128,6 +148,8 @@ private:
     RefPtr<CSSCalcExpressionNode> m_calcExpression;
 
     mutable RefPtr<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
+
+    friend class AnimatableLengthTest;
 };
 
 inline const AnimatableLength* toAnimatableLength(const AnimatableValue* value)
