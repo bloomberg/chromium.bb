@@ -188,7 +188,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     case WebInputEvent::GestureTapDown:
     case WebInputEvent::GestureShowPress:
         m_type = PlatformEvent::GestureShowPress;
-        m_area = expandedIntSize(FloatSize(e.data.tapDown.width / scale, e.data.tapDown.height / scale));
+        m_area = expandedIntSize(FloatSize(e.data.showPress.width / scale, e.data.showPress.height / scale));
         break;
     case WebInputEvent::GestureTapCancel:
         m_type = PlatformEvent::GestureTapDownCancel;

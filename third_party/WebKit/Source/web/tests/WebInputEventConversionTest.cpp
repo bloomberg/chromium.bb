@@ -188,8 +188,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureShowPress;
-        webGestureEvent.data.tapDown.width = 10;
-        webGestureEvent.data.tapDown.height = 10;
+        webGestureEvent.data.showPress.width = 10;
+        webGestureEvent.data.showPress.height = 10;
 
         PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
         EXPECT_EQ(5, platformGestureBuilder.area().width());

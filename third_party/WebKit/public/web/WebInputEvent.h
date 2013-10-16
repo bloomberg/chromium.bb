@@ -425,6 +425,11 @@ public:
         struct {
             float width;
             float height;
+        } showPress;
+
+        struct {
+            float width;
+            float height;
         } longPress;
 
         struct {
