@@ -207,6 +207,7 @@
         'base/rand_callback.h',
         'base/registry_controlled_domains/registry_controlled_domain.cc',
         'base/registry_controlled_domains/registry_controlled_domain.h',
+        'base/request_priority.cc',
         'base/request_priority.h',
         'base/sdch_filter.cc',
         'base/sdch_filter.h',

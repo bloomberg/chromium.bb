@@ -625,8 +625,9 @@ base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
     group_dict->SetInteger("pending_request_count",
                            group->pending_request_count());
     if (group->has_pending_requests()) {
-      group_dict->SetInteger("top_pending_priority",
-                             group->TopPendingPriority());
+      group_dict->SetString(
+          "top_pending_priority",
+          RequestPriorityToString(group->TopPendingPriority()));
     }
 
     group_dict->SetInteger("active_socket_count", group->active_socket_count());

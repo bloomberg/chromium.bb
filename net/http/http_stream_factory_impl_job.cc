@@ -52,7 +52,7 @@ base::Value* NetLogHttpStreamJobCallback(const GURL* original_url,
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("original_url", original_url->GetOrigin().spec());
   dict->SetString("url", url->GetOrigin().spec());
-  dict->SetInteger("priority", priority);
+  dict->SetString("priority", RequestPriorityToString(priority));
   return dict;
 }
 

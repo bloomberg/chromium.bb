@@ -20,7 +20,7 @@ base::Value* NetLogURLRequestStartCallback(const GURL* url,
   dict->SetString("url", url->possibly_invalid_spec());
   dict->SetString("method", *method);
   dict->SetInteger("load_flags", load_flags);
-  dict->SetInteger("priority", static_cast<int>(priority));
+  dict->SetString("priority", RequestPriorityToString(priority));
   if (upload_id > -1)
     dict->SetString("upload_id", base::Int64ToString(upload_id));
   return dict;

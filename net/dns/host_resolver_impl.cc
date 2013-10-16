@@ -358,7 +358,7 @@ base::Value* NetLogJobAttachCallback(const NetLog::Source& source,
                                      NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   source.AddToEventParameters(dict);
-  dict->SetInteger("priority", priority);
+  dict->SetString("priority", RequestPriorityToString(priority));
   return dict;
 }
 
