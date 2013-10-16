@@ -326,7 +326,6 @@ function mockInitializeDependencies(fixture) {
   fixture.makeAndRegisterMockGlobals([
     'recordEvent',
     'setBackgroundEnable',
-    'showWelcomeToast',
     'startPollingCards'
   ]);
   fixture.makeAndRegisterMockApis([
@@ -352,8 +351,6 @@ function mockInitializeDependencies(fixture) {
  * @param {object} fixture Test fixture.
  * @param {string} testIdentityToken getAuthToken callback token.
  * @param {boolean} testGeolocationPref Geolocation Preference callback value.
- * @param {boolean} testUserRespondedToToast User Response to toast
- *     callback value.
  * @param {object} testExperimentVariationParams Response of
  *     metricsPrivate.getVariationParams
  */
@@ -361,7 +358,6 @@ function expectStateMachineCalls(
     fixture,
     testIdentityToken,
     testGeolocationPref,
-    testUserRespondedToToast,
     testExperimentVariationParams) {
   var authenticationManagerIsSignedInSavedArgs = new SaveMockArguments();
   fixture.mockApis.expects(once()).
@@ -387,13 +383,6 @@ function expectStateMachineCalls(
           googleGeolocationPrefGetSavedArgs.match(ANYTHING)).
       will(invokeCallback(
           googleGeolocationPrefGetSavedArgs, 1, {value: testGeolocationPref}));
-
-  var storageGetSavedArgs = new SaveMockArguments();
-  fixture.mockApis.expects(once()).
-      instrumented_storage_local_get(
-          storageGetSavedArgs.match(eq('userRespondedToToast')),
-          storageGetSavedArgs.match(ANYTHING)).
-      will(invokeCallback(storageGetSavedArgs, 1, testUserRespondedToToast));
 
   fixture.mockGlobals.expects(once()).
       setBackgroundEnable(ANYTHING);
@@ -434,7 +423,6 @@ TEST_F(
       NOTIFICATION_CARDS_URL = undefined;
       var testIdentityToken = undefined;
       var testGeolocationPref = false;
-      var testUserRespondedToToast = {};
       var testExperimentVariationParams = {};
 
       mockInitializeDependencies(this);
@@ -451,14 +439,7 @@ TEST_F(
           this,
           testIdentityToken,
           testGeolocationPref,
-          testUserRespondedToToast,
           testExperimentVariationParams);
-
-      var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(exactly(1)).
-          instrumented_notifications_getAll(
-              chromeNotificationGetAllSavedArgs.match(ANYTHING)).
-          will(invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
 
       // TODO(robliao,vadimt): Determine the granularity of testing to perform.
 
@@ -478,7 +459,6 @@ TEST_F(
       NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
       var testIdentityToken = undefined;
       var testGeolocationPref = false;
-      var testUserRespondedToToast = {};
       var testExperimentVariationParams = {};
 
       mockInitializeDependencies(this);
@@ -495,14 +475,7 @@ TEST_F(
           this,
           testIdentityToken,
           testGeolocationPref,
-          testUserRespondedToToast,
           testExperimentVariationParams);
-
-      var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(exactly(1)).
-          instrumented_notifications_getAll(
-              chromeNotificationGetAllSavedArgs.match(ANYTHING)).
-          will(invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
 
       // Invoking the tested function.
       initialize();
@@ -520,7 +493,6 @@ TEST_F(
       NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
       var testIdentityToken = 'some identity token';
       var testGeolocationPref = false;
-      var testUserRespondedToToast = {};
       var testExperimentVariationParams = {};
 
       mockInitializeDependencies(this);
@@ -534,18 +506,15 @@ TEST_F(
           this,
           testIdentityToken,
           testGeolocationPref,
-          testUserRespondedToToast,
           testExperimentVariationParams);
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(exactly(2)).
+      this.mockApis.expects(exactly(1)).
           instrumented_notifications_getAll(
               chromeNotificationGetAllSavedArgs.match(ANYTHING)).
           will(
               invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
               invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
-
-      this.mockGlobals.expects(once()).showWelcomeToast();
 
       // Invoking the tested function.
       initialize();
@@ -559,7 +528,6 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
   NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
   var testIdentityToken = 'some identity token';
   var testGeolocationPref = true;
-  var testUserRespondedToToast = {userRespondedToToast: true};
   var testExperimentVariationParams = {};
 
   mockInitializeDependencies(this);
@@ -573,14 +541,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
       this,
       testIdentityToken,
       testGeolocationPref,
-      testUserRespondedToToast,
       testExperimentVariationParams);
-
-  var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
-  this.mockApis.expects(exactly(1)).
-      instrumented_notifications_getAll(
-          chromeNotificationGetAllSavedArgs.match(ANYTHING)).
-      will(invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}));
 
   this.mockGlobals.expects(once()).startPollingCards();
 
@@ -599,7 +560,6 @@ TEST_F(
   NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
   var testIdentityToken = 'some identity token';
   var testGeolocationPref = false;
-  var testUserRespondedToToast = {userRespondedToToast: true};
   var testExperimentVariationParams = {};
 
   mockInitializeDependencies(this);
@@ -616,7 +576,6 @@ TEST_F(
       this,
       testIdentityToken,
       testGeolocationPref,
-      testUserRespondedToToast,
       testExperimentVariationParams);
 
   var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
@@ -734,7 +693,7 @@ TEST_F(
               chromeTabsCreateSavedArgs.match(ANYTHING)).
           will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
       this.mockApis.expects(once()).chrome_windows_update(
-          testCreatedTab.windowId, 
+          testCreatedTab.windowId,
           eqJSON({focused: true}));
 
       // Invoking the tested function.

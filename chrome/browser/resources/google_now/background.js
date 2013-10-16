@@ -84,14 +84,6 @@ var SHOW_ON_START_TASK_NAME = 'show-cards-on-start';
 
 var LOCATION_WATCH_NAME = 'location-watch';
 
-var WELCOME_TOAST_NOTIFICATION_ID = 'enable-now-toast';
-
-/**
- * The indices of the buttons that are displayed on the welcome toast.
- * @enum {number}
- */
-var ToastButtonIndex = {YES: 0, NO: 1};
-
 /**
  * Notification as it's sent by the server.
  *
@@ -200,9 +192,9 @@ var GoogleNowEvent = {
   LOCATION_REQUEST: 5,
   LOCATION_UPDATE: 6,
   EXTENSION_START: 7,
-  SHOW_WELCOME_TOAST: 8,
+  DELETED_SHOW_WELCOME_TOAST: 8,
   STOPPED: 9,
-  USER_SUPPRESSED: 10,
+  DELETED_USER_SUPPRESSED: 10,
   EVENTS_TOTAL: 11  // EVENTS_TOTAL is not an event; all new events need to be
                     // added before it.
 };
@@ -785,24 +777,6 @@ function onNotificationClicked(chromeNotificationId, selector) {
 }
 
 /**
- * Responds to a click of one of the buttons on the welcome toast.
- * @param {number} buttonIndex The index of the button which was clicked.
- */
-function onToastNotificationClicked(buttonIndex) {
-  chrome.storage.local.set({userRespondedToToast: true});
-
-  if (buttonIndex == ToastButtonIndex.YES) {
-    chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastClickedYes');
-    chrome.preferencesPrivate.googleGeolocationAccessEnabled.set({value: true});
-    // The googlegeolocationaccessenabled preference change callback
-    // will take care of starting the poll for cards.
-  } else {
-    chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastClickedNo');
-    onStateChange();
-  }
-}
-
-/**
  * Callback for chrome.notifications.onClosed event.
  * @param {string} chromeNotificationId chrome.notifications ID of the card.
  * @param {boolean} byUser Whether the notification was closed by the user.
@@ -810,14 +784,6 @@ function onToastNotificationClicked(buttonIndex) {
 function onNotificationClosed(chromeNotificationId, byUser) {
   if (!byUser)
     return;
-
-  if (chromeNotificationId == WELCOME_TOAST_NOTIFICATION_ID) {
-    // Even though they only closed the notification without clicking no, treat
-    // it as though they clicked No anwyay, and don't show the toast again.
-    chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastDismissed');
-    chrome.storage.local.set({userRespondedToToast: true});
-    return;
-  }
 
   // At this point we are guaranteed that the notification is a now card.
   chrome.metricsPrivate.recordUserAction('GoogleNow.Dismissed');
@@ -908,29 +874,6 @@ function setShouldPollCards(shouldPollCardsRequest) {
 }
 
 /**
- * Shows or hides the toast.
- * @param {boolean} visibleRequest true to show the toast and
- *     false to hide the toast.
- */
-function setToastVisible(visibleRequest) {
-  instrumented.notifications.getAll(function(notifications) {
-    // TODO(vadimt): Figure out what to do when notifications are disabled for
-    // our extension.
-    notifications = notifications || {};
-
-    if (visibleRequest != !!notifications[WELCOME_TOAST_NOTIFICATION_ID]) {
-      console.log('Action Taken setToastVisible=' + visibleRequest);
-      if (visibleRequest)
-        showWelcomeToast();
-      else
-        hideWelcomeToast();
-    } else {
-      console.log('Action Ignored setToastVisible=' + visibleRequest);
-    }
-  });
-}
-
-/**
  * Enables or disables the Google Now background permission.
  * @param {boolean} backgroundEnable true to run in the background.
  *     false to not run in the background.
@@ -956,47 +899,29 @@ function setBackgroundEnable(backgroundEnable) {
  * @param {boolean} signedIn true if the user is signed in.
  * @param {boolean} geolocationEnabled true if
  *     the geolocation option is enabled.
- * @param {boolean} userRespondedToToast true if
- *     the user has responded to the toast.
  * @param {boolean} enableBackground true if
  *     the background permission should be requested.
  */
 function updateRunningState(
     signedIn,
     geolocationEnabled,
-    userRespondedToToast,
     enableBackground) {
   console.log(
       'State Update signedIn=' + signedIn + ' ' +
-      'geolocationEnabled=' + geolocationEnabled + ' ' +
-      'userRespondedToToast=' + userRespondedToToast);
+      'geolocationEnabled=' + geolocationEnabled);
 
   // TODO(vadimt): Remove this line once state machine design is finalized.
-  geolocationEnabled = userRespondedToToast = true;
+  geolocationEnabled = true;
 
-  var shouldSetToastVisible = false;
   var shouldPollCards = false;
   var shouldSetBackground = false;
 
   if (signedIn) {
     if (geolocationEnabled) {
-      if (!userRespondedToToast) {
-        // If the user enabled geolocation independently of Google Now,
-        // the user has implicitly responded to the toast.
-        // We do not want to show it again.
-        chrome.storage.local.set({userRespondedToToast: true});
-      }
-
       if (enableBackground)
         shouldSetBackground = true;
 
       shouldPollCards = true;
-    } else {
-      if (userRespondedToToast) {
-        recordEvent(GoogleNowEvent.USER_SUPPRESSED);
-      } else {
-        shouldSetToastVisible = true;
-      }
     }
   } else {
     recordEvent(GoogleNowEvent.STOPPED);
@@ -1004,11 +929,9 @@ function updateRunningState(
 
   console.log(
       'Requested Actions shouldSetBackground=' + shouldSetBackground + ' ' +
-      'setToastVisible=' + shouldSetToastVisible + ' ' +
       'setShouldPollCards=' + shouldPollCards);
 
   setBackgroundEnable(shouldSetBackground);
-  setToastVisible(shouldSetToastVisible);
   setShouldPollCards(shouldPollCards);
 }
 
@@ -1030,52 +953,14 @@ function onStateChange() {
                 googleGeolocationAccessEnabled.
                 get({}, function(prefValue) {
                   var geolocationEnabled = !!prefValue.value;
-                  instrumented.storage.local.get(
-                      'userRespondedToToast',
-                      function(items) {
-                        var userRespondedToToast =
-                            !items || !!items.userRespondedToToast;
-                        updateRunningState(
-                            signedIn,
-                            geolocationEnabled,
-                            userRespondedToToast,
-                            enableBackground);
-                      });
+                  updateRunningState(
+                      signedIn,
+                      geolocationEnabled,
+                      enableBackground);
                 });
           });
     });
   });
-}
-
-/**
- * Displays a toast to the user asking if they want to opt in to receiving
- * Google Now cards.
- */
-function showWelcomeToast() {
-  recordEvent(GoogleNowEvent.SHOW_WELCOME_TOAST);
-  // TODO(zturner): Localize this once the component extension localization
-  // api is complete.
-  // TODO(zturner): Add icons.
-  var buttons = [{title: 'Yes'}, {title: 'No'}];
-  var options = {
-    type: 'basic',
-    title: 'Enable Google Now Cards',
-    message: 'Would you like to be shown Google Now cards?',
-    iconUrl: 'http://www.gstatic.com/googlenow/chrome/default.png',
-    priority: 2,
-    buttons: buttons
-  };
-  instrumented.notifications.create(WELCOME_TOAST_NOTIFICATION_ID, options,
-      function(chromeNotificationId) {});
-}
-
-/**
- * Hides the welcome toast.
- */
-function hideWelcomeToast() {
-  instrumented.notifications.clear(
-      WELCOME_TOAST_NOTIFICATION_ID,
-      function() {});
 }
 
 instrumented.runtime.onInstalled.addListener(function(details) {
@@ -1129,17 +1014,13 @@ instrumented.notifications.onClicked.addListener(
 
 instrumented.notifications.onButtonClicked.addListener(
     function(chromeNotificationId, buttonIndex) {
-      if (chromeNotificationId == WELCOME_TOAST_NOTIFICATION_ID) {
-        onToastNotificationClicked(buttonIndex);
-      } else {
-        chrome.metricsPrivate.recordUserAction(
-            'GoogleNow.ButtonClicked' + buttonIndex);
-        onNotificationClicked(chromeNotificationId, function(actionUrls) {
-          var url = actionUrls.buttonUrls[buttonIndex];
-          verify(url, 'onButtonClicked: no url for a button');
-          return url;
-        });
-      }
+      chrome.metricsPrivate.recordUserAction(
+          'GoogleNow.ButtonClicked' + buttonIndex);
+      onNotificationClicked(chromeNotificationId, function(actionUrls) {
+        var url = actionUrls.buttonUrls[buttonIndex];
+        verify(url, 'onButtonClicked: no url for a button');
+        return url;
+      });
     });
 
 instrumented.notifications.onClosed.addListener(onNotificationClosed);
