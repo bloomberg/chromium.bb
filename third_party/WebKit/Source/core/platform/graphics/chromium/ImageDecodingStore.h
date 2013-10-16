@@ -29,9 +29,9 @@
 #include "SkSize.h"
 #include "SkTypes.h"
 #include "core/platform/graphics/chromium/DiscardablePixelRef.h"
-#include "core/platform/graphics/chromium/ScaledImageFragment.h"
 #include "core/platform/graphics/chromium/SkSizeHash.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include "platform/graphics/ScaledImageFragment.h"
 
 #include "wtf/DoublyLinkedList.h"
 #include "wtf/HashSet.h"

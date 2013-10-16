@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 
-#include "core/platform/graphics/chromium/ScaledImageFragment.h"
 #include "platform/TraceEvent.h"
+#include "platform/graphics/ScaledImageFragment.h"
 
 namespace WebCore {
 

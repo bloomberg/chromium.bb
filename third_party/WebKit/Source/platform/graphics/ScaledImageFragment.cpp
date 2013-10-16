@@ -23,52 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScaledImageFragment_h
-#define ScaledImageFragment_h
+#include "config.h"
 
-#include "SkBitmap.h"
-#include "SkRect.h"
-#include "SkSize.h"
-
-#include "wtf/PassOwnPtr.h"
+#include "platform/graphics/ScaledImageFragment.h"
 
 namespace WebCore {
 
-// ScaledImageFragment is a scaled version of an image.
-class ScaledImageFragment {
-public:
-    enum ImageGeneration {
-        CompleteImage = 0,
-        FirstPartialImage = 1,
-    };
+ScaledImageFragment::~ScaledImageFragment()
+{
+}
 
-    static PassOwnPtr<ScaledImageFragment> createComplete(const SkISize& scaledSize, size_t index, const SkBitmap& bitmap)
-    {
-        return adoptPtr(new ScaledImageFragment(scaledSize, index, CompleteImage, bitmap));
-    }
-
-    static PassOwnPtr<ScaledImageFragment> createPartial(const SkISize& scaledSize, size_t index, size_t generation, const SkBitmap& bitmap)
-    {
-        return adoptPtr(new ScaledImageFragment(scaledSize, index, generation, bitmap));
-    }
-
-    ScaledImageFragment(const SkISize&, size_t index, size_t generation, const SkBitmap&);
-    ~ScaledImageFragment();
-
-    const SkISize& scaledSize() const { return m_scaledSize; }
-    size_t index() const { return m_index; }
-    size_t generation() const { return m_generation; }
-    bool isComplete() const { return m_generation == CompleteImage; }
-    const SkBitmap& bitmap() const { return m_bitmap; }
-    SkBitmap& bitmap() { return m_bitmap; }
-
-private:
-    SkISize m_scaledSize;
-    size_t m_index;
-    size_t m_generation;
-    SkBitmap m_bitmap;
-};
+ScaledImageFragment::ScaledImageFragment(const SkISize& scaledSize, size_t index, size_t generation, const SkBitmap& bitmap)
+    : m_scaledSize(scaledSize)
+    , m_index(index)
+    , m_generation(generation)
+    , m_bitmap(bitmap)
+{
+}
 
 } // namespace WebCore
-
-#endif

@@ -2782,8 +2782,6 @@
             'platform/graphics/chromium/LazyDecodingPixelRef.h',
             'platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.cpp',
             'platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.h',
-            'platform/graphics/chromium/ScaledImageFragment.cpp',
-            'platform/graphics/chromium/ScaledImageFragment.h',
             'platform/graphics/chromium/SimpleFontDataChromiumWin.cpp',
             'platform/graphics/chromium/ThreadSafeDataTransport.cpp',
             'platform/graphics/chromium/ThreadSafeDataTransport.h',
