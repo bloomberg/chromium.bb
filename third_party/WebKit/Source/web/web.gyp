@@ -175,11 +175,6 @@
                     'include_dirs': [
                         '../../public/web/gtk',
                     ],
-                    'sources/': [
-                        ['exclude', 'WebInputEventFactory.mm$'],
-                        ['exclude', 'WebInputEventFactoryAndroid.cpp$'],
-                        ['exclude', 'WebInputEventFactoryWin.cpp$'],
-                    ],
                 }, { # else: toolkit_uses_gtk != 1
                     'sources/': [
                         ['exclude', 'gtk/'],
@@ -190,11 +185,6 @@
                         '../../public/web/android',
                         '../../public/web/linux', # We need linux/WebFontRendering.h on Android.
                     ],
-                    'sources/': [
-                        ['exclude', 'WebInputEventFactory.mm$'],
-                        ['exclude', 'WebInputEventFactoryGtk.cpp$'],
-                        ['exclude', 'WebInputEventFactoryWin.cpp$'],
-                    ],
                 }, { # else: OS!="android"
                     'sources/': [
                         ['exclude', 'android/'],
@@ -203,11 +193,6 @@
                 ['OS=="mac"', {
                     'include_dirs': [
                         '../../public/web/mac',
-                    ],
-                    'sources/': [
-                        ['exclude', 'WebInputEventFactoryAndroid.cpp$'],
-                        ['exclude', 'WebInputEventFactoryGtk.cpp$'],
-                        ['exclude', 'WebInputEventFactoryWin.cpp$'],
                     ],
                     'link_settings': {
                         'libraries': [
@@ -224,14 +209,9 @@
                     'include_dirs': [
                         '../../public/web/win',
                     ],
-                    'sources/': [
-                        ['exclude', 'WebInputEventFactory.mm$'],
-                        ['exclude', 'WebInputEventFactoryAndroid.cpp$'],
-                        ['exclude', 'WebInputEventFactoryGtk.cpp$'],
-                    ],
                 }, { # else: OS!="win"
                     'sources/': [
-                        ['exclude', 'win/'],
+                        ['exclude', 'win/']
                     ],
                     'variables': {
                         # FIXME: Turn on warnings on Windows.
