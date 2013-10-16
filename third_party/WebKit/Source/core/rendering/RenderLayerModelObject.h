@@ -59,7 +59,7 @@ public:
     CompositedLayerMapping* compositedLayerMapping() const;
 
 protected:
-    void ensureLayer();
+    void createLayer();
 
     virtual void willBeDestroyed() OVERRIDE;
 
