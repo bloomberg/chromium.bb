@@ -29,6 +29,8 @@
 #       [Attr=DeleteFunction], [Attr=X|Y].
 #     - "Attr=|*" means that Attr takes an optional value, which can be
 #       arbitrary, e.g. [Attr], [Attr=X].
+#     - "Attr=X|*" means that Attr takes an required value, which can be
+#       arbitrary, but that "X" is standard, e.g. [Attr=X], [Attr=Foo].
 #
 
 ActiveDOMObject
@@ -92,9 +94,9 @@ SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWi
 SetterRaisesException
 SpecialWrapFor=*
 StrictTypeChecking
-TreatNullAs=*
+TreatNullAs=NullString|*
 TreatReturnedNullStringAs=Null|Undefined
-TreatUndefinedAs=*
+TreatUndefinedAs=NullString|*
 URL
 Unforgeable
 Unserializable

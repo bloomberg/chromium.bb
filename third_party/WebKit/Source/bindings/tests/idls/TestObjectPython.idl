@@ -134,4 +134,7 @@ interface TestObjectPython {
     [Conditional=Condition, RuntimeEnabled=FeatureName] readonly attribute long conditionalEnabledAtRuntimeReadonlyLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] readonly attribute DOMString setterCallWithActiveWindowAndFirstWindowReadonlyStringAttribute;  // FIXME: stub test case b/c readonly, becomes real test case when implement setters
     [SetterRaisesException] readonly attribute long setterRaisesExceptionReadonlyLongAttribute;  // FIXME: stub test case b/c readonly, becomes real test case when implement setters
+    [StrictTypeChecking] readonly attribute float strictTypeCheckingReadonlyFloatAttribute;  // FIXME: only applicable to writable attributes, implement with setters
+    [StrictTypeChecking] readonly attribute TestInterface strictTypeCheckingReadonlyTestInterfaceAttribute;  // FIXME: only applicable to writable attributes, implement with setters
+    [TreatNullAs=NullString] readonly attribute DOMString treatNullAsNullStringReadonlyStringAttribute;  // FIXME: only applicable to writable attributes, implement with setters
 };
