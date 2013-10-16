@@ -9,7 +9,11 @@
         <script src=../media-file.js></script>
         <script src=../video-test.js></script>
         <script>
-            // The test runs twice, once using on* and then using addEventListener().
+            // First, try explicitly creating those events with specific IDL.
+            var messageEvent = document.createEvent("MediaKeyMessageEvent");
+            var neededEvent = document.createEvent("MediaKeyNeededEvent");
+
+            // Next, The test runs twice, once using on* and then using addEventListener().
             var isFirstRun = true;
 
             var initData = new Uint8Array([0x41, 0x42, 0x43]);

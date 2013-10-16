@@ -40,12 +40,14 @@ MediaKeyNeededEventInit::MediaKeyNeededEventInit()
 
 MediaKeyNeededEvent::MediaKeyNeededEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 MediaKeyNeededEvent::MediaKeyNeededEvent(const AtomicString& type, const MediaKeyNeededEventInit& initializer)
     : Event(type, initializer)
     , m_initData(initializer.initData)
 {
+    ScriptWrappable::init(this);
 }
 
 MediaKeyNeededEvent::~MediaKeyNeededEvent()
