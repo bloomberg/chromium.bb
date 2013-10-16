@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/PlatformScreen.h"
+#include "platform/PlatformScreen.h"
 
 #include "platform/HostWindow.h"
 #include "platform/Widget.h"

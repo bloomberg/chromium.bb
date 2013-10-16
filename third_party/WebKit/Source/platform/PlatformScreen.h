@@ -36,16 +36,17 @@ typedef WTF::Vector<char> ColorProfile;
 
 namespace WebCore {
 
-    class FloatRect;
-    class Widget;
+class FloatRect;
+class Widget;
 
-    int screenDepth(Widget*);
-    int screenDepthPerComponent(Widget*);
-    bool screenIsMonochrome(Widget*);
+PLATFORM_EXPORT int screenDepth(Widget*);
+PLATFORM_EXPORT int screenDepthPerComponent(Widget*);
+PLATFORM_EXPORT bool screenIsMonochrome(Widget*);
 
-    FloatRect screenRect(Widget*);
-    FloatRect screenAvailableRect(Widget*);
-    void screenColorProfile(ColorProfile&);
+PLATFORM_EXPORT FloatRect screenRect(Widget*);
+PLATFORM_EXPORT FloatRect screenAvailableRect(Widget*);
+PLATFORM_EXPORT void screenColorProfile(ColorProfile&);
+
 } // namespace WebCore
 
 #endif // PlatformScreen_h

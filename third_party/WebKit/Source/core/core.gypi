@@ -2692,7 +2692,6 @@
             'platform/chromium/HistogramSupportChromium.cpp',
             'platform/chromium/MemoryUsageSupportChromium.cpp',
             'platform/chromium/MIMETypeRegistryChromium.cpp',
-            'platform/chromium/PlatformScreenChromium.cpp',
             'platform/chromium/PlatformThemeChromiumDefault.cpp',
             'platform/chromium/PlatformThemeChromiumDefault.h',
             'platform/graphics/BitmapImage.cpp',

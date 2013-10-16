@@ -44,10 +44,10 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/PlatformScreen.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/PlatformScreen.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/HashMap.h"
 

@@ -48,6 +48,8 @@
       'PlatformKeyboardEvent.cpp',
       'PlatformKeyboardEvent.h',
       'PlatformMouseEvent.h',
+      'PlatformScreen.cpp',
+      'PlatformScreen.h',
       'PlatformThreadData.cpp',
       'PlatformThreadData.h',
       'PlatformTouchEvent.h',
