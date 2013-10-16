@@ -47,9 +47,9 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // Don't install default apps.
   command_line->AppendSwitch(switches::kDisableDefaultApps);
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_LINUX)
   // Don't collect GPU info, load GPU blacklist, or schedule a GPU blacklist
-  // auto-update on Mac and Linux bots for now (http://crbug.com/304833).
+  // auto-update on Linux bots for now (http://crbug.com/304833).
   command_line->AppendSwitch(switches::kSkipGpuDataLoading);
 #endif
 
