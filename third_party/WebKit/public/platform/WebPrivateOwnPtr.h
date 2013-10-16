@@ -30,7 +30,6 @@
 
 #if INSIDE_BLINK
 #include "wtf/PassOwnPtr.h"
-#include "wtf/UnusedParam.h"
 #endif
 
 namespace WebKit {
@@ -52,7 +51,7 @@ public:
         : m_ptr(ptr)
     {
     }
-    template<typename U> WebPrivateOwnPtr(const PassOwnPtr<U>&);
+    template<typename U> WebPrivateOwnPtr(const PassOwnPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
 
     void reset(T* ptr)
     {
@@ -77,11 +76,10 @@ private:
 };
 
 #if INSIDE_BLINK
-template<typename T> template<typename U> inline WebPrivateOwnPtr<T>::WebPrivateOwnPtr(const PassOwnPtr<U>& o)
+template<typename T> template<typename U> inline WebPrivateOwnPtr<T>::WebPrivateOwnPtr(const PassOwnPtr<U>& o, EnsurePtrConvertibleArgDefn(U, T))
     : m_ptr(o.leakPtr())
 {
-    EnsurePtrConvertibleArgDefn(U, T) typeChecker = true;
-    UNUSED_PARAM(typeChecker);
+    COMPILE_ASSERT(!WTF::IsArray<T>::value, Pointers_to_array_must_never_be_converted);
 }
 #endif
 
