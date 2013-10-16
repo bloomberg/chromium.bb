@@ -324,7 +324,6 @@ public:
     virtual bool isBR() const { return false; }
     virtual bool isBoxModelObject() const { return false; }
     virtual bool isCounter() const { return false; }
-    virtual bool isDialog() const { return false; }
     virtual bool isQuote() const { return false; }
 
     virtual bool isDetailsMarker() const { return false; }
