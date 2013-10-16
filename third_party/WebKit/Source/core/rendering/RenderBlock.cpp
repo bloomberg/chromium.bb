@@ -1375,6 +1375,22 @@ void RenderBlock::relayoutShapeDescendantIfMoved(RenderBlock* child, LayoutSize 
     child->layoutIfNeeded();
 }
 
+ShapeInsideInfo* RenderBlock::layoutShapeInsideInfo() const
+{
+    ShapeInsideInfo* shapeInsideInfo = view()->layoutState()->shapeInsideInfo();
+
+    if (!shapeInsideInfo && flowThreadContainingBlock() && allowsShapeInsideInfoSharing()) {
+        LayoutUnit lineHeight = this->lineHeight(false, isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
+        // regionAtBlockOffset returns regions like an array first={0,N-1}, second={N,M-1}, ...
+        LayoutUnit offset = logicalHeight() + lineHeight - LayoutUnit(1);
+        RenderRegion* region = regionAtBlockOffset(offset);
+        if (region)
+            shapeInsideInfo = region->shapeInsideInfo();
+    }
+
+    return shapeInsideInfo;
+}
+
 LayoutSize RenderBlock::logicalOffsetFromShapeAncestorContainer(const RenderBlock* container) const
 {
     const RenderBlock* currentBlock = this;
