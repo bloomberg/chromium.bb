@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -148,8 +149,7 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
 // been called, before checking its state.
 class ChannelDestructionWatcher {
  public:
-  ChannelDestructionWatcher() : channel_destroyed_(false),
-                                waiting_for_channel_destruction_(false) {
+  ChannelDestructionWatcher() : channel_destroyed_(false) {
   }
 
   ~ChannelDestructionWatcher() {
@@ -160,14 +160,7 @@ class ChannelDestructionWatcher {
   }
 
   void WaitForChannelClose() {
-    ASSERT_FALSE(waiting_for_channel_destruction_);
-
-    if (channel_destroyed_)
-      return;
-    waiting_for_channel_destruction_ = true;
-    content::RunMessageLoop();
-
-    EXPECT_FALSE(waiting_for_channel_destruction_);
+    run_loop_.Run();
     EXPECT_TRUE(channel_destroyed_);
   }
 
@@ -203,14 +196,11 @@ class ChannelDestructionWatcher {
 
     EXPECT_FALSE(channel_destroyed_);
     channel_destroyed_ = true;
-    if (waiting_for_channel_destruction_) {
-      waiting_for_channel_destruction_ = false;
-      base::MessageLoop::current()->Quit();
-    }
+    run_loop_.Quit();
   }
 
   bool channel_destroyed_;
-  bool waiting_for_channel_destruction_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelDestructionWatcher);
 };
