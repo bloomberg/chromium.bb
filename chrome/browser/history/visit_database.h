@@ -59,13 +59,14 @@ class VisitDatabase {
   bool GetVisitsForURL(URLID url_id, VisitVector* visits);
 
   // Fills in the given vector with the visits for the given page ID which
-  // match the set of options passed, sorted in ascending order of date.
+  // should be user-visible, which excludes things like redirects and subframes,
+  // and match the set of options passed, sorted in ascending order of date.
   //
   // Returns true if there are more results available, i.e. if the number of
   // results was restricted by |options.max_count|.
-  bool GetVisitsForURLWithOptions(URLID url_id,
-                                  const QueryOptions& options,
-                                  VisitVector* visits);
+  bool GetVisibleVisitsForURL(URLID url_id,
+                              const QueryOptions& options,
+                              VisitVector* visits);
 
   // Fills the vector with all visits with times in the given list.
   //

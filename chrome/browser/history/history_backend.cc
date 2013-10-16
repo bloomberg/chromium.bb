@@ -1380,7 +1380,7 @@ void HistoryBackend::QueryHistoryText(URLDatabase* url_db,
   for (size_t i = 0; i < text_matches.size(); i++) {
     const URLRow& text_match = text_matches[i];
     // Get all visits for given URL match.
-    visit_db->GetVisitsForURLWithOptions(text_match.id(), options, &visits);
+    visit_db->GetVisibleVisitsForURL(text_match.id(), options, &visits);
     for (size_t j = 0; j < visits.size(); j++) {
       URLResult url_result(text_match);
       url_result.set_visit_time(visits[j].visit_time);

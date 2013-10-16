@@ -255,9 +255,9 @@ bool VisitDatabase::GetVisitsForURL(URLID url_id, VisitVector* visits) {
   return FillVisitVector(statement, visits);
 }
 
-bool VisitDatabase::GetVisitsForURLWithOptions(URLID url_id,
-                                               const QueryOptions& options,
-                                               VisitVector* visits) {
+bool VisitDatabase::GetVisibleVisitsForURL(URLID url_id,
+                                           const QueryOptions& options,
+                                           VisitVector* visits) {
   visits->clear();
 
   if (options.REMOVE_ALL_DUPLICATES) {
@@ -272,10 +272,18 @@ bool VisitDatabase::GetVisitsForURLWithOptions(URLID url_id,
         "SELECT" HISTORY_VISIT_ROW_FIELDS
         "FROM visits "
         "WHERE url=? AND visit_time >= ? AND visit_time < ? "
+        "AND (transition & ?) != 0 "  // CHAIN_END
+        "AND (transition & ?) NOT IN (?, ?, ?) "  // NO SUBFRAME or
+                                                  // KEYWORD_GENERATED
         "ORDER BY visit_time DESC"));
     statement.BindInt64(0, url_id);
     statement.BindInt64(1, options.EffectiveBeginTime());
     statement.BindInt64(2, options.EffectiveEndTime());
+    statement.BindInt(3, content::PAGE_TRANSITION_CHAIN_END);
+    statement.BindInt(4, content::PAGE_TRANSITION_CORE_MASK);
+    statement.BindInt(5, content::PAGE_TRANSITION_AUTO_SUBFRAME);
+    statement.BindInt(6, content::PAGE_TRANSITION_MANUAL_SUBFRAME);
+    statement.BindInt(7, content::PAGE_TRANSITION_KEYWORD_GENERATED);
 
     return FillVisitVectorWithOptions(statement, options, visits);
   }
