@@ -94,7 +94,7 @@ TEST_F(PODFreeListArenaTest, FreesAllAllocatedRegions)
 }
 
 // Make sure the arena runs constructors of the objects allocated within.
-TEST_F(PODFreeListArenaTest, RunsConstructors)
+TEST_F(PODFreeListArenaTest, RunsConstructorsOnNewObjects)
 {
     RefPtr<PODFreeListArena<TestClass1> > arena = PODFreeListArena<TestClass1>::create();
     for (int i = 0; i < 10000; i++) {
@@ -103,6 +103,35 @@ TEST_F(PODFreeListArenaTest, RunsConstructors)
         EXPECT_EQ(0, tc1->y);
         EXPECT_EQ(0, tc1->z);
         EXPECT_EQ(1, tc1->w);
+    }
+}
+
+// Make sure the arena runs constructors of the objects allocated within.
+TEST_F(PODFreeListArenaTest, RunsConstructorsOnReusedObjects)
+{
+    std::set<TestClass1*> objects;
+    RefPtr<PODFreeListArena<TestClass1> > arena = PODFreeListArena<TestClass1>::create();
+    for (int i = 0; i < 100; i++) {
+        TestClass1* tc1 = arena->allocateObject();
+        tc1->x = 100;
+        tc1->y = 101;
+        tc1->z = 102;
+        tc1->w = 103;
+
+        objects.insert(tc1);
+    }
+    for (std::set<TestClass1*>::iterator it = objects.begin(); it != objects.end(); ++it) {
+        arena->freeObject(*it);
+    }
+    for (int i = 0; i < 100; i++) {
+        TestClass1* cur = arena->allocateObject();
+        EXPECT_TRUE(objects.find(cur) != objects.end());
+        EXPECT_EQ(0, cur->x);
+        EXPECT_EQ(0, cur->y);
+        EXPECT_EQ(0, cur->z);
+        EXPECT_EQ(1, cur->w);
+
+        objects.erase(cur);
     }
 }
 

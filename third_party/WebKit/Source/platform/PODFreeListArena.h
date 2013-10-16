@@ -30,19 +30,16 @@
 
 namespace WebCore {
 
-// FIXME: Disassociate PODFreeListArena from PODArena, crbug.com/266535
 template <class T>
-class PODFreeListArena : public PODArena {
+class PODFreeListArena : public RefCounted<PODFreeListArena<T> > {
 public:
-    typedef Vector<OwnPtr<Chunk> > ChunkVector;
-
     static PassRefPtr<PODFreeListArena> create()
     {
         return adoptRef(new PODFreeListArena);
     }
 
-    // Creates a new PODArena configured with the given Allocator.
-    static PassRefPtr<PODFreeListArena> create(PassRefPtr<Allocator> allocator)
+    // Creates a new PODFreeListArena configured with the given Allocator.
+    static PassRefPtr<PODFreeListArena> create(PassRefPtr<PODArena::Allocator> allocator)
     {
         return adoptRef(new PODFreeListArena(allocator));
     }
@@ -50,24 +47,30 @@ public:
     // Allocates an object from the arena.
     T* allocateObject()
     {
-        size_t roundedSize = roundUp(sizeof(T), minAlignment<T>());
-        void* ptr = allocate(roundedSize);
+        void* ptr = allocateFromFreeList();
+
         if (ptr) {
             // Use placement operator new to allocate a T at this location.
             new(ptr) T();
+            return static_cast<T*>(ptr);
         }
-        return static_cast<T*>(ptr);
+
+        // PODArena::allocateObject calls T's constructor.
+        return static_cast<T*>(m_arena->allocateObject<T>());
     }
 
     template<class Argument1Type> T* allocateObject(const Argument1Type& argument1)
     {
-        size_t roundedSize = roundUp(sizeof(T), minAlignment<T>());
-        void* ptr = allocate(roundedSize);
+        void* ptr = allocateFromFreeList();
+
         if (ptr) {
             // Use placement operator new to allocate a T at this location.
             new(ptr) T(argument1);
+            return static_cast<T*>(ptr);
         }
-        return static_cast<T*>(ptr);
+
+        // PODArena::allocateObject calls T's constructor.
+        return static_cast<T*>(m_arena->allocateObject<T>(argument1));
     }
 
     void freeObject(T* ptr)
@@ -80,31 +83,21 @@ public:
 
 private:
     PODFreeListArena()
-        : PODArena(), m_freeList(0) { }
+        : m_arena(PODArena::create()), m_freeList(0) { }
 
-    explicit PODFreeListArena(PassRefPtr<Allocator> allocator)
-        : PODArena(allocator), m_freeList(0) { }
+    explicit PODFreeListArena(PassRefPtr<PODArena::Allocator> allocator)
+        : m_arena(PODArena::create(allocator)), m_freeList(0) { }
 
-    void* allocate(size_t size)
+    ~PODFreeListArena() { }
+
+    void* allocateFromFreeList()
     {
-        ASSERT(size == roundUp(sizeof(T), minAlignment<T>()));
-
         if (m_freeList) {
             void* memory = m_freeList;
             m_freeList = m_freeList->next;
             return memory;
         }
-
-        void* memory = 0;
-        if (m_current)
-            memory = m_current->allocate(size);
-
-        if (!memory) {
-            m_chunks.append(adoptPtr(new Chunk(m_allocator.get(), m_currentChunkSize)));
-            m_current = m_chunks.last().get();
-            memory = m_current->allocate(size);
-        }
-        return memory;
+        return 0;
     }
 
     int getFreeListSizeForTesting() const
@@ -116,6 +109,8 @@ private:
         return total;
     }
 
+    RefPtr<PODArena> m_arena;
+
     // This free list contains pointers within every chunk that's been allocated so
     // far. None of the individual chunks can be freed until the arena is
     // destroyed.
@@ -124,6 +119,9 @@ private:
     };
     FixedSizeMemoryChunk* m_freeList;
 
+    COMPILE_ASSERT(sizeof(T) >= sizeof(FixedSizeMemoryChunk), PODFreeListArena_type_should_be_larger);
+
+    friend class WTF::RefCounted<PODFreeListArena>;
     friend class PODFreeListArenaTest;
 };
 
