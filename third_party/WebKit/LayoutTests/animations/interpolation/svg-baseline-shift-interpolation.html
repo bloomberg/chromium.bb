@@ -12,14 +12,17 @@
 .replica {
   stroke: green;
 }
+svg:nth-child(2n) {
+  margin-right: 10px;
+}
 </style>
 <body>
 <template id="target-template">
-  <!--
-  We have to specify the target class on the text element because numerical
-  values of baseline-shift are not inherited properly. See crbug.com/304006.
-  -->
-  <svg width="50" height="50">
+  <svg width="30" height="50">
+    <!--
+    We have to specify the target class on the text element because numerical
+    values of baseline-shift are not inherited properly. See crbug.com/304006.
+    -->
     <text x="0" y="25" font-size="20" class="target">
       <tspan>T</tspan>T
     </text>
