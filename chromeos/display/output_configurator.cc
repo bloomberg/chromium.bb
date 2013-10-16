@@ -427,7 +427,8 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
   VLOG(1) << "SetDisplayPower: power_state="
           << DisplayPowerStateToString(power_state) << " flags=" << flags
           << ", configure timer="
-          << (configure_timer_->IsRunning() ? "Running" : "Stopped");
+          << ((configure_timer_.get() && configure_timer_->IsRunning()) ?
+              "Running" : "Stopped");
   if (power_state == power_state_ && !(flags & kSetDisplayPowerForceProbe))
     return true;
 
