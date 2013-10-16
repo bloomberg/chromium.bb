@@ -17,7 +17,6 @@
 // TODO(bbudge) Move the API so it's usable here.
 // http://crbug.com/276485
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -38,6 +37,13 @@ namespace {
 
 const int kSessionStartupPrefValueMax = SessionStartupPref::kPrefValueMax;
 
+// An unregistered preference to fill in indices in kTrackedPrefs below for
+// preferences that aren't defined on every platform. This is fine as the code
+// below (e.g. CheckTrackedPreferences()) skips unregistered preferences and
+// should thus never report any data about that index on the platforms where
+// that preference is unimplemented.
+const char kUnregisteredPreference[] = "_";
+
 // These preferences must be kept in sync with the TrackedPreference enum in
 // tools/metrics/histograms/histograms.xml. To add a new preference, append it
 // to the array and add a corresponding value to the histogram enum.
@@ -55,7 +61,10 @@ const char* kTrackedPrefs[] = {
   prefs::kDefaultSearchProviderName,
 #if !defined(OS_ANDROID)
   prefs::kPinnedTabs,
+#else
+  kUnregisteredPreference,
 #endif
+  prefs::kExtensionKnownDisabled,
 };
 
 static const size_t kSHA256DigestSize = 32;

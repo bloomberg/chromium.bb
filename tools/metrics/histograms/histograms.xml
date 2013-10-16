@@ -27231,6 +27231,7 @@ other types of suffix sets.
   <int value="9" label="prefs::kDefaultSearchProviderKeyword"/>
   <int value="10" label="prefs::kDefaultSearchProviderName"/>
   <int value="11" label="prefs::kPinnedTabs"/>
+  <int value="12" label="prefs::kExtensionKnownDisabled"/>
 </enum>
 
 <enum name="TranslateError" type="int">
