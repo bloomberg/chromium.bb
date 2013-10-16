@@ -2,25 +2,61 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/error_utils.h"
 
 using content::BrowserThread;
 
 namespace extensions {
 
 namespace SetMetaData = api::webrtc_logging_private::SetMetaData;
+namespace Start = api::webrtc_logging_private::Start;
 namespace SetUploadOnRenderClose =
     api::webrtc_logging_private::SetUploadOnRenderClose;
+namespace Stop = api::webrtc_logging_private::Stop;
+namespace Upload = api::webrtc_logging_private::Upload;
+namespace Discard = api::webrtc_logging_private::Discard;
 
 using api::webrtc_logging_private::MetaDataEntry;
+
+content::RenderProcessHost*
+WebrtcLoggingPrivateTabIdFunction::RphFromTabIdAndSecurityOrigin(
+    int tab_id, const std::string& security_origin) {
+  content::WebContents* contents = NULL;
+  if (!ExtensionTabUtil::GetTabById(tab_id, profile(), true,
+                                    NULL, NULL, &contents, NULL)) {
+    error_ = extensions::ErrorUtils::FormatErrorMessage(
+        extensions::tabs_constants::kTabNotFoundError,
+        base::IntToString(tab_id));
+    return NULL;
+  }
+  if (!contents) {
+    error_ = extensions::ErrorUtils::FormatErrorMessage(
+        "Web contents for tab not found",
+        base::IntToString(tab_id));
+    return NULL;
+  }
+  if (contents->GetURL().GetOrigin().spec() != security_origin) {
+    error_ = extensions::ErrorUtils::FormatErrorMessage(
+        "Invalid security origin",
+        base::IntToString(tab_id));
+    return NULL;
+  }
+  return contents->GetRenderProcessHost();
+}
 
 WebrtcLoggingPrivateSetMetaDataFunction::
 WebrtcLoggingPrivateSetMetaDataFunction() {}
@@ -32,7 +68,11 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunImpl() {
   scoped_ptr<SetMetaData::Params> params(SetMetaData::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  content::RenderProcessHost* host = render_view_host()->GetProcess();
+  content::RenderProcessHost* host =
+      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+  if (!host)
+    return false;
+
   scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
       base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
 
@@ -65,7 +105,14 @@ WebrtcLoggingPrivateStartFunction::WebrtcLoggingPrivateStartFunction() {}
 WebrtcLoggingPrivateStartFunction::~WebrtcLoggingPrivateStartFunction() {}
 
 bool WebrtcLoggingPrivateStartFunction::RunImpl() {
-  content::RenderProcessHost* host = render_view_host()->GetProcess();
+  scoped_ptr<Start::Params> params(Start::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::RenderProcessHost* host =
+      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+  if (!host)
+    return false;
+
   scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
       base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
 
@@ -98,7 +145,11 @@ bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunImpl() {
       SetUploadOnRenderClose::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  content::RenderProcessHost* host = render_view_host()->GetProcess();
+  content::RenderProcessHost* host =
+      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+  if (!host)
+    return false;
+
   scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
       base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
 
@@ -113,7 +164,14 @@ WebrtcLoggingPrivateStopFunction::WebrtcLoggingPrivateStopFunction() {}
 WebrtcLoggingPrivateStopFunction::~WebrtcLoggingPrivateStopFunction() {}
 
 bool WebrtcLoggingPrivateStopFunction::RunImpl() {
-  content::RenderProcessHost* host = render_view_host()->GetProcess();
+  scoped_ptr<Stop::Params> params(Stop::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::RenderProcessHost* host =
+      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+  if (!host)
+    return false;
+
   scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
       base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
 
@@ -140,7 +198,14 @@ WebrtcLoggingPrivateUploadFunction::WebrtcLoggingPrivateUploadFunction() {}
 WebrtcLoggingPrivateUploadFunction::~WebrtcLoggingPrivateUploadFunction() {}
 
 bool WebrtcLoggingPrivateUploadFunction::RunImpl() {
-  content::RenderProcessHost* host = render_view_host()->GetProcess();
+  scoped_ptr<Upload::Params> params(Upload::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::RenderProcessHost* host =
+      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+  if (!host)
+    return false;
+
   scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
       base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
 
@@ -173,7 +238,14 @@ WebrtcLoggingPrivateDiscardFunction::WebrtcLoggingPrivateDiscardFunction() {}
 WebrtcLoggingPrivateDiscardFunction::~WebrtcLoggingPrivateDiscardFunction() {}
 
 bool WebrtcLoggingPrivateDiscardFunction::RunImpl() {
-  content::RenderProcessHost* host = render_view_host()->GetProcess();
+  scoped_ptr<Discard::Params> params(Discard::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::RenderProcessHost* host =
+      RphFromTabIdAndSecurityOrigin(params->tab_id, params->security_origin);
+  if (!host)
+    return false;
+
   scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
       base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
 

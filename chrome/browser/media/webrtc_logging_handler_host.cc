@@ -187,6 +187,7 @@ void WebRtcLoggingHandlerHost::OnChannelClosing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (logging_state_ == STARTED || logging_state_ == STOPPED) {
     if (upload_log_on_render_close_) {
+      logging_state_ = STOPPED;
       TriggerUploadLog();
     } else {
       g_browser_process->webrtc_log_uploader()->LoggingStoppedDontUpload();
