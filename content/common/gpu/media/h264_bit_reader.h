@@ -43,6 +43,9 @@ class CONTENT_EXPORT H264BitReader {
   // See the definition of more_rbsp_data() in spec.
   bool HasMoreRBSPData();
 
+  // Return the number of emulation prevention bytes already read.
+  size_t NumEmulationPreventionBytesRead();
+
  private:
   // Advance to the next byte, loading it into curr_byte_.
   // Return false on end of stream.
@@ -64,6 +67,9 @@ class CONTENT_EXPORT H264BitReader {
   // Used in emulation prevention three byte detection (see spec).
   // Initially set to 0xffff to accept all initial two-byte sequences.
   int prev_two_bytes_;
+
+  // Number of emulation preventation bytes (0x000003) we met.
+  size_t emulation_prevention_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(H264BitReader);
 };

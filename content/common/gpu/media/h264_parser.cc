@@ -1085,7 +1085,8 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
     return kUnsupportedStream;
   }
 
-  shdr->header_bit_size = shdr->nalu_size * 8 - br_.NumBitsLeft();
+  size_t epb = br_.NumEmulationPreventionBytesRead();
+  shdr->header_bit_size = (shdr->nalu_size - epb) * 8 - br_.NumBitsLeft();
 
   return kOk;
 }

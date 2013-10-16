@@ -9,7 +9,8 @@ namespace content {
 
 H264BitReader::H264BitReader()
     : data_(NULL), bytes_left_(0), curr_byte_(0),
-      num_remaining_bits_in_curr_byte_(0), prev_two_bytes_(0) {
+      num_remaining_bits_in_curr_byte_(0), prev_two_bytes_(0),
+      emulation_prevention_bytes_(0) {
 }
 
 H264BitReader::~H264BitReader() {}
@@ -25,6 +26,7 @@ bool H264BitReader::Initialize(const uint8* data, off_t size) {
   num_remaining_bits_in_curr_byte_ = 0;
   // Initially set to 0xffff to accept all initial two-byte sequences.
   prev_two_bytes_ = 0xffff;
+  emulation_prevention_bytes_ = 0;
 
   return true;
 }
@@ -39,6 +41,7 @@ bool H264BitReader::UpdateCurrByte() {
     // Detected 0x000003, skip last byte.
     ++data_;
     --bytes_left_;
+    ++emulation_prevention_bytes_;
     // Need another full three bytes before we can detect the sequence again.
     prev_two_bytes_ = 0xffff;
 
@@ -99,6 +102,11 @@ bool H264BitReader::HasMoreRBSPData() {
   // first available bit.
   return (curr_byte_ &
           ((1 << (num_remaining_bits_in_curr_byte_ - 1)) - 1)) != 0;
+}
+
+size_t H264BitReader::NumEmulationPreventionBytesRead()
+{
+  return emulation_prevention_bytes_;
 }
 
 }  // namespace content
