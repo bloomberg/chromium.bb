@@ -206,7 +206,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& namespaceUR
         doc = Document::create(init);
     }
 
-    doc->setSecurityOrigin(m_document->securityOrigin());
+    doc->setSecurityOrigin(m_document->securityOrigin()->isolatedCopy());
     doc->setContextFeatures(m_document->contextFeatures());
 
     RefPtr<Node> documentElement;
@@ -314,7 +314,7 @@ PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& tit
     d->write("<!doctype html><html><body></body></html>");
     if (!title.isNull())
         d->setTitle(title);
-    d->setSecurityOrigin(m_document->securityOrigin());
+    d->setSecurityOrigin(m_document->securityOrigin()->isolatedCopy());
     d->setContextFeatures(m_document->contextFeatures());
     return d.release();
 }
