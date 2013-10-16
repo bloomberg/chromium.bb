@@ -22,6 +22,8 @@ function load() {
     
     // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
     GCController.collect();
+    // FIXME(crbug.com/307614): one call to GCController.collect() should be enough.
+    GCController.collect();
     var originalLiveElements = window.internals.numberOfLiveNodes();
 
     rect.parentNode.removeChild(rect);
