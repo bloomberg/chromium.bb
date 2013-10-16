@@ -185,8 +185,13 @@ void PasswordManagerHandler::SetPasswordList() {
     entry->Append(new StringValue(net::FormatUrl(password_list_[i]->origin,
                                                  languages_)));
     entry->Append(new StringValue(password_list_[i]->username_value));
-    entry->Append(new StringValue(
-        show_passwords ? password_list_[i]->password_value : placeholder));
+    if (show_passwords) {
+      entry->Append(new StringValue(password_list_[i]->password_value));
+    } else {
+      // Use a placeholder value with the same length as the password.
+      entry->Append(new StringValue(
+          string16(password_list_[i]->password_value.length(), ' ')));
+    }
     entries.Append(entry);
   }
 
