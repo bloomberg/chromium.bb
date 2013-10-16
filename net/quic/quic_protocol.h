@@ -200,7 +200,7 @@ enum QuicVersion {
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
 static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_11, QUIC_VERSION_10, QUIC_VERSION_9};
+    {QUIC_VERSION_10, QUIC_VERSION_9};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
