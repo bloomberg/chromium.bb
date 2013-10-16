@@ -37,8 +37,9 @@
 
 namespace WebCore {
 
-Stream::Stream(const String& mediaType)
-    : m_mediaType(mediaType)
+Stream::Stream(ExecutionContext* context, const String& mediaType)
+    : ActiveDOMObject(context)
+    , m_mediaType(mediaType)
     , m_isNeutered(false)
 {
     ScriptWrappable::init(this);
@@ -70,6 +71,20 @@ void Stream::abort()
 Stream::~Stream()
 {
     BlobRegistry::unregisterStreamURL(m_internalURL);
+}
+
+void Stream::suspend()
+{
+}
+
+void Stream::resume()
+{
+}
+
+void Stream::stop()
+{
+    neuter();
+    abort();
 }
 
 } // namespace WebCore

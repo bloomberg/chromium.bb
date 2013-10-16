@@ -1297,7 +1297,7 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
         m_binaryResponseBuilder->append(data, len);
     } else if (m_responseTypeCode == ResponseTypeStream) {
         if (!m_responseStream)
-            m_responseStream = Stream::create(responseMIMEType());
+            m_responseStream = Stream::create(executionContext(), responseMIMEType());
         m_responseStream->addData(data, len);
     }
 
