@@ -211,6 +211,8 @@ function initialize() {
   // Add listener to receive the feedback info object.
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.sentFromEventPage) {
+      // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
+      console.log('FEEDBACK_DEBUG: Received feedbackInfo.');
       feedbackInfo = request.data;
       $('description-text').textContent = feedbackInfo.description;
       if (feedbackInfo.pageUrl)
@@ -219,6 +221,8 @@ function initialize() {
       takeScreenshot(function(screenshotDataUrl) {
         $('screenshot-image').src = screenshotDataUrl;
         feedbackInfo.screenshot = dataUrlToBlob(screenshotDataUrl);
+        // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
+        console.log('FEEDBACK_DEBUG: Taken screenshot. Showing window.');
         chrome.app.window.current().show();
       });
 
