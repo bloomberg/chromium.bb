@@ -152,19 +152,12 @@ void WindowModalityController::OnWindowPropertyChanged(aura::Window* window,
       window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE &&
       window->IsVisible()) {
     ActivateWindow(window);
-    window->GetRootWindow()->gesture_recognizer()->TransferEventsTo(
-        window->transient_parent(), NULL);
   }
 }
 
 void WindowModalityController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
-  if (visible && window->GetProperty(aura::client::kModalKey) !=
-      ui::MODAL_TYPE_NONE) {
-    window->GetRootWindow()->gesture_recognizer()->TransferEventsTo(
-        window->transient_parent(), NULL);
-  }
   if (visible && window->GetProperty(aura::client::kModalKey) ==
       ui::MODAL_TYPE_WINDOW) {
     // Make sure no other window has capture, otherwise |window| won't get mouse
@@ -187,8 +180,6 @@ bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
                                 event->type() == ui::ET_TOUCH_PRESSED)) {
     AnimateWindow(modal_transient_child, WINDOW_ANIMATION_TYPE_BOUNCE);
   }
-  if (event->type() == ui::ET_TOUCH_CANCELLED)
-    return false;
   return !!modal_transient_child;
 }
 
