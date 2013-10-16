@@ -128,7 +128,7 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
             Log.w("deskview", "Canvas being redrawn on UI thread");
         }
 
-        Bitmap image = JniInterface.retrieveVideoFrame();
+        Bitmap image = JniInterface.getVideoFrame();
         Canvas canvas = getHolder().lockCanvas();
         synchronized (mTransform) {
             canvas.setMatrix(mTransform);

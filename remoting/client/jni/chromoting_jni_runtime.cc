@@ -13,6 +13,7 @@
 #include "media/base/yuv_convert.h"
 #include "net/android/net_jni_registrar.h"
 #include "remoting/base/url_request_context.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace {
 
@@ -169,24 +170,33 @@ void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
   // GCd as soon as the managed method returned, so we mustn't release it here.
 }
 
-void ChromotingJniRuntime::UpdateImageBuffer(int width,
-                                             int height,
-                                             jobject buffer) {
+base::android::ScopedJavaLocalRef<jobject> ChromotingJniRuntime::NewBitmap(
+    webrtc::DesktopSize size) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  jobject bitmap = env->CallStaticObjectMethod(
+      class_,
+      env->GetStaticMethodID(
+          class_,
+          "newBitmap",
+          "(II)Landroid/graphics/Bitmap;"),
+      size.width(),
+      size.height());
+  return base::android::ScopedJavaLocalRef<jobject>(env, bitmap);
+}
+
+void ChromotingJniRuntime::UpdateFrameBitmap(jobject bitmap) {
   DCHECK(display_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  env->SetStaticIntField(
+
+  env->CallStaticVoidMethod(
       class_,
-      env->GetStaticFieldID(class_, "sWidth", "I"),
-      width);
-  env->SetStaticIntField(
-      class_,
-      env->GetStaticFieldID(class_, "sHeight", "I"),
-      height);
-  env->SetStaticObjectField(
-      class_,
-      env->GetStaticFieldID(class_, "sBuffer", "Ljava/nio/ByteBuffer;"),
-      buffer);
+      env->GetStaticMethodID(
+          class_,
+          "setVideoFrame",
+          "(Landroid/graphics/Bitmap;)V"),
+      bitmap);
 }
 
 void ChromotingJniRuntime::UpdateCursorShape(

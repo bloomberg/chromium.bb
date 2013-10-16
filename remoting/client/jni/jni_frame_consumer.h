@@ -5,10 +5,17 @@
 #ifndef REMOTING_CLIENT_JNI_JNI_FRAME_CONSUMER_H_
 #define REMOTING_CLIENT_JNI_JNI_FRAME_CONSUMER_H_
 
-#include "remoting/client/frame_consumer.h"
+#include <list>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "remoting/client/frame_consumer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+
+namespace gfx {
+class JavaBitmap;
+}  // namespace gfx
 
 namespace webrtc {
 class DesktopFrame;
@@ -40,22 +47,34 @@ class JniFrameConsumer : public FrameConsumer {
   virtual PixelFormat GetPixelFormat() OVERRIDE;
 
  private:
+  // Allocates a new buffer of |view_size_|, informs Java about it, and tells
+  // the producer to draw onto it.
+  void AllocateBuffer();
+
+  // Frees a frame buffer previously allocated by AllocateBuffer.
+  void FreeBuffer(webrtc::DesktopFrame* buffer);
+
   // Variables are to be used from the display thread.
 
   // Used to obtain task runner references and make calls to Java methods.
   ChromotingJniRuntime* jni_runtime_;
 
-  // Whether we're currently in the constructor, and should deallocate the
-  // buffer instead of passing it back to the producer.
-  bool in_dtor_;
-
   FrameProducer* frame_producer_;
   webrtc::DesktopSize view_size_;
   webrtc::DesktopRect clip_area_;
 
-  // If |provide_buffer_|, allocates a new buffer of |view_size_|, informs
-  // Java about it, and tells the producer to draw onto it. Otherwise, no-op.
-  void AllocateBuffer();
+  // List of allocated image buffers.
+  std::list<webrtc::DesktopFrame*> buffers_;
+
+  // This global reference is required, instead of a local reference, so it
+  // remains valid for the lifetime of |bitmap_| - gfx::JavaBitmap does not
+  // create its own global reference internally. And this global ref must be
+  // destroyed (released) after |bitmap_| is destroyed.
+  base::android::ScopedJavaGlobalRef<jobject> bitmap_global_ref_;
+
+  // Reference to the frame bitmap that is passed to Java when the frame is
+  // allocated. This provides easy access to the underlying pixels.
+  scoped_ptr<gfx::JavaBitmap> bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(JniFrameConsumer);
 };
