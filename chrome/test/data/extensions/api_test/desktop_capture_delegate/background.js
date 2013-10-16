@@ -4,10 +4,9 @@
 
 chrome.runtime.onMessageExternal.addListener(function(message, sender, reply) {
   if (message[0] == "getStream") {
-    origin = message[1];
     chrome.desktopCapture.chooseDesktopMedia(
         ["screen", "window"],
-        origin,
+        sender.tab,
         function(id) {
           reply({"id": id});
         });

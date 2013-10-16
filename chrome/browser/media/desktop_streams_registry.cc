@@ -33,12 +33,16 @@ DesktopStreamsRegistry::DesktopStreamsRegistry() {}
 DesktopStreamsRegistry::~DesktopStreamsRegistry() {}
 
 std::string DesktopStreamsRegistry::RegisterStream(
+    int render_process_id,
+    int render_view_id,
     const GURL& origin,
     const content::DesktopMediaID& source) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::string id = GenerateRandomStreamId();
   ApprovedDesktopMediaStream& stream = approved_streams_[id];
+  stream.render_process_id = render_process_id;
+  stream.render_view_id = render_view_id;
   stream.origin = origin;
   stream.source = source;
 
@@ -53,12 +57,22 @@ std::string DesktopStreamsRegistry::RegisterStream(
 
 content::DesktopMediaID DesktopStreamsRegistry::RequestMediaForStreamId(
     const std::string& id,
+    int render_process_id,
+    int render_view_id,
     const GURL& origin) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   StreamsMap::iterator it = approved_streams_.find(id);
-  if (it == approved_streams_.end() || origin != it->second.origin)
+
+  // Verify that if there is a request with the specified ID it was created for
+  // the same origin and the same renderer.
+  if (it == approved_streams_.end() ||
+      render_process_id != it->second.render_process_id ||
+      render_view_id != it->second.render_view_id ||
+      origin != it->second.origin) {
     return content::DesktopMediaID();
+  }
+
   content::DesktopMediaID result = it->second.source;
   approved_streams_.erase(it);
   return result;

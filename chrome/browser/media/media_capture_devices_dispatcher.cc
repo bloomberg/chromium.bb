@@ -236,7 +236,8 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
   // chrome.desktopCapture.chooseDesktopMedia()) was used to generate device Id.
   content::DesktopMediaID media_id =
       GetDesktopStreamsRegistry()->RequestMediaForStreamId(
-          request.requested_video_device_id, request.security_origin);
+          request.requested_video_device_id, request.render_process_id,
+          request.render_view_id, request.security_origin);
 
   // If the id wasn't generated using Desktop Capture API then process it as a
   // screen capture request.

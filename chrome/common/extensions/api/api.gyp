@@ -42,7 +42,7 @@
               'context_menus.json',
               'cookies.json',
               'debugger.json',
-              'desktop_capture.idl',
+              'desktop_capture.json',
               'developer_private.idl',
               'dial.idl',
               'dns.idl',

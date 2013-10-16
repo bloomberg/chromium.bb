@@ -52,8 +52,9 @@ class DesktopCaptureChooseDesktopMediaFunction : public AsyncExtensionFunction {
 
   int request_id_;
 
-  // Origin parameter specified when chooseDesktopMedia() was called. Indicates
-  // origin of the target page to use the media source chosen by the user.
+  // Parameters of the tab the stream is requested for.
+  int render_process_id_;
+  int render_view_id_;
   GURL origin_;
 
   scoped_ptr<DesktopMediaPicker> picker_;

@@ -22,16 +22,16 @@ binding.registerCustomHook(function(bindingsAPI) {
   }
 
   apiFunctions.setHandleRequest('chooseDesktopMedia',
-                                function(sources, origin, callback) {
-    // |origin| is an optional parameter.
+                                function(sources, target_tab, callback) {
+    // |target_tab| is an optional parameter.
     if (callback === undefined) {
-      callback = origin;
-      origin = undefined;
+      callback = target_tab;
+      target_tab = undefined;
     }
     var id = idGenerator.GetNextId();
     pendingRequests[id] = callback;
     sendRequest(this.name,
-                [id, sources, origin, onRequestResult.bind(null, id)],
+                [id, sources, target_tab, onRequestResult.bind(null, id)],
                 this.definition.parameters, {});
     return id;
   });

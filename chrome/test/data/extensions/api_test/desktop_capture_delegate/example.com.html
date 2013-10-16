@@ -23,7 +23,7 @@ function requestStreamId(callback) {
   };
 
   chrome.runtime.sendMessage(
-      extensionId, ["getStream", document.location.origin + "/"], onResponse);
+      extensionId, ["getStream"], onResponse);
 }
 
 function getStream() {
