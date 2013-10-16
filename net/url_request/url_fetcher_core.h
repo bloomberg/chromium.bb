@@ -100,6 +100,8 @@ class URLFetcherCore
       scoped_refptr<base::TaskRunner> file_task_runner);
   void SaveResponseToTemporaryFile(
       scoped_refptr<base::TaskRunner> file_task_runner);
+  void SaveResponseWithWriter(
+      scoped_ptr<URLFetcherResponseWriter> response_writer);
   HttpResponseHeaders* GetResponseHeaders() const;
   HostPortPair GetSocketAddress() const;
   bool WasFetchedViaProxy() const;

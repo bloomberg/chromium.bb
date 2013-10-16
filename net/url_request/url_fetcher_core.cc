@@ -265,14 +265,21 @@ void URLFetcherCore::SaveResponseToFileAtPath(
     const base::FilePath& file_path,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-  response_writer_.reset(new URLFetcherFileWriter(file_task_runner, file_path));
+  SaveResponseWithWriter(scoped_ptr<URLFetcherResponseWriter>(
+      new URLFetcherFileWriter(file_task_runner, file_path)));
 }
 
 void URLFetcherCore::SaveResponseToTemporaryFile(
     scoped_refptr<base::TaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-  response_writer_.reset(
-      new URLFetcherFileWriter(file_task_runner, base::FilePath()));
+  SaveResponseWithWriter(scoped_ptr<URLFetcherResponseWriter>(
+      new URLFetcherFileWriter(file_task_runner, base::FilePath())));
+}
+
+void URLFetcherCore::SaveResponseWithWriter(
+    scoped_ptr<URLFetcherResponseWriter> response_writer) {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+  response_writer_ = response_writer.Pass();
 }
 
 HttpResponseHeaders* URLFetcherCore::GetResponseHeaders() const {

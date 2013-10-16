@@ -14,6 +14,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_fetcher_impl.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 #include "net/url_request/url_request_status.h"
 
 namespace net {
@@ -145,6 +146,10 @@ void TestURLFetcher::SaveResponseToFileAtPath(
 
 void TestURLFetcher::SaveResponseToTemporaryFile(
     scoped_refptr<base::TaskRunner> file_task_runner) {
+}
+
+void TestURLFetcher::SaveResponseWithWriter(
+    scoped_ptr<URLFetcherResponseWriter> response_writer) {
 }
 
 HttpResponseHeaders* TestURLFetcher::GetResponseHeaders() const {

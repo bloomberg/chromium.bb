@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/url_request/url_fetcher_core.h"
 #include "net/url_request/url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 
 namespace net {
 
@@ -127,6 +128,11 @@ void URLFetcherImpl::SaveResponseToFileAtPath(
 void URLFetcherImpl::SaveResponseToTemporaryFile(
     scoped_refptr<base::TaskRunner> file_task_runner) {
   core_->SaveResponseToTemporaryFile(file_task_runner);
+}
+
+void URLFetcherImpl::SaveResponseWithWriter(
+    scoped_ptr<URLFetcherResponseWriter> response_writer) {
+  core_->SaveResponseWithWriter(response_writer.Pass());
 }
 
 HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {

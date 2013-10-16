@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
+#include "net/base/net_export.h"
 
 namespace base {
 class TaskRunner;
@@ -26,7 +27,7 @@ class URLFetcherStringWriter;
 
 // This class encapsulates all state involved in writing URLFetcher response
 // bytes to the destination.
-class URLFetcherResponseWriter {
+class NET_EXPORT URLFetcherResponseWriter {
  public:
   virtual ~URLFetcherResponseWriter() {}
 
@@ -54,7 +55,7 @@ class URLFetcherResponseWriter {
 };
 
 // URLFetcherResponseWriter implementation for std::string.
-class URLFetcherStringWriter : public URLFetcherResponseWriter {
+class NET_EXPORT URLFetcherStringWriter : public URLFetcherResponseWriter {
  public:
   URLFetcherStringWriter();
   virtual ~URLFetcherStringWriter();
@@ -76,7 +77,7 @@ class URLFetcherStringWriter : public URLFetcherResponseWriter {
 };
 
 // URLFetcherResponseWriter implementation for files.
-class URLFetcherFileWriter : public URLFetcherResponseWriter {
+class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
  public:
   // |file_path| is used as the destination path. If |file_path| is empty,
   // Initialize() will create a temporary file.

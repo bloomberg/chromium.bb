@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
 #include "net/base/net_export.h"
@@ -27,6 +28,7 @@ class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class URLFetcherDelegate;
+class URLFetcherResponseWriter;
 class URLRequestContextGetter;
 class URLRequestStatus;
 typedef std::vector<std::string> ResponseCookies;
@@ -238,6 +240,11 @@ class NET_EXPORT URLFetcher {
   // take ownership by calling GetResponseAsFilePath().
   virtual void SaveResponseToTemporaryFile(
       scoped_refptr<base::TaskRunner> file_task_runner) = 0;
+
+  // By default, the response is saved in a string. Call this method to use the
+  // specified writer to save the response. Must be called before Start().
+  virtual void SaveResponseWithWriter(
+      scoped_ptr<URLFetcherResponseWriter> response_writer) = 0;
 
   // Retrieve the response headers from the request.  Must only be called after
   // the OnURLFetchComplete callback has run.
