@@ -23,7 +23,8 @@
 #define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
 #endif
 
-#define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
+// Fails flakily: http://crbug.com/308041
+#define MAYBE_UpdateWindowSizeExitsFullscreen DISABLED_UpdateWindowSizeExitsFullscreen
 #endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
