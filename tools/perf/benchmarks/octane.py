@@ -51,6 +51,6 @@ class Octane(test.Test):
                               'data', 'perf', 'third_party', 'octane')
     return page_set.PageSet.FromDict({
         'pages': [
-          { 'url': 'file:///index.html?auto=1' }
+          { 'url': 'file://index.html?auto=1' }
           ]
         }, octane_dir)

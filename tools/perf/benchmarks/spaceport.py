@@ -62,5 +62,5 @@ class Spaceport(test.Test):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
         'data', 'third_party', 'spaceport')
     return page_set.PageSet.FromDict(
-        {'pages': [{'url': 'file:///index.html'}]},
+        {'pages': [{'url': 'file://index.html'}]},
         spaceport_dir)

@@ -46,7 +46,7 @@ class Sunspider(test.Test):
                                  'chrome', 'test', 'data', 'sunspider')
     return page_set.PageSet.FromDict(
         {
-          'serving_dirs': [''],
-          'pages': [{ 'url': 'file:///sunspider-1.0/driver.html' }],
+          'serving_dirs': ['.'],
+          'pages': [{ 'url': 'file://sunspider-1.0/driver.html' }],
         },
         sunspider_dir)

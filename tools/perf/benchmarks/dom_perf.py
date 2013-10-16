@@ -74,7 +74,7 @@ class DomPerf(test.Test):
 
   def CreatePageSet(self, options):
     dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')
-    base_page = 'file:///run.html?reportInJS=1&run='
+    base_page = 'file://run.html?reportInJS=1&run='
     return page_set.PageSet.FromDict({
         'pages': [
           { 'url': base_page + 'Accessors' },
