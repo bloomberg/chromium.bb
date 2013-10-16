@@ -84,7 +84,8 @@ class ExtensionHelper
       int target_port_id,
       const std::string& channel_name,
       const base::DictionaryValue& source_tab,
-      const ExtensionMsg_ExternalConnectionInfo& info);
+      const ExtensionMsg_ExternalConnectionInfo& info,
+      const std::string& tls_channel_id);
   void OnExtensionDeliverMessage(int target_port_id,
                                  const std::string& message);
   void OnExtensionDispatchOnDisconnect(int port_id,

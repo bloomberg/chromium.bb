@@ -49,7 +49,7 @@ TEST_F(MessagingUtilsUnittest, ZeroArguments) {
   module_system_->Require("test");
 }
 
-TEST_F(MessagingUtilsUnittest, TooManyArguments) {
+TEST_F(MessagingUtilsUnittest, TooManyArgumentsNoOptions) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments(\n"
@@ -58,11 +58,29 @@ TEST_F(MessagingUtilsUnittest, TooManyArguments) {
   module_system_->Require("test");
 }
 
-TEST_F(MessagingUtilsUnittest, FinalArgumentIsNotAFunction) {
+TEST_F(MessagingUtilsUnittest, TooManyArgumentsWithOptions) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterTestModule(
+      "var args = messagingUtils.alignSendMessageArguments(\n"
+      "    ['a', 'b', 'c', 'd', 'e'], true);\n"
+      "AssertTrue(args === null);");
+  module_system_->Require("test");
+}
+
+TEST_F(MessagingUtilsUnittest, FinalArgumentIsNotAFunctionNoOptions) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   RegisterTestModule(
       "var args = messagingUtils.alignSendMessageArguments(\n"
       "    ['a', 'b', 'c']);\n"
+      "AssertTrue(args === null);");
+  module_system_->Require("test");
+}
+
+TEST_F(MessagingUtilsUnittest, FinalArgumentIsNotAFunctionWithOptions) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterTestModule(
+      "var args = messagingUtils.alignSendMessageArguments(\n"
+      "    ['a', 'b', 'c', 'd'], true);\n"
       "AssertTrue(args === null);");
   module_system_->Require("test");
 }
@@ -116,6 +134,47 @@ TEST_F(MessagingUtilsUnittest, OneStringAndOneFunctionArgument) {
       "AssertTrue(args[0] === null);\n"
       "AssertTrue(args[1] == 'a');\n"
       "AssertTrue(args[2] == cb);");
+  module_system_->Require("test");
+}
+
+TEST_F(MessagingUtilsUnittest, OneStringAndOneObjectArgument) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  // This tests an ambiguous set of arguments when options are present:
+  // chrome.runtime.sendMessage('target', {'msg': 'this is a message'});
+  // vs.
+  // chrome.runtime.sendMessage('request', {'includeTlsChannelId': true});
+  //
+  // The question is whether the string should map to the target and the
+  // dictionary to the message, or whether the string should map to the message
+  // and the dictionary to the options. Because the target and message arguments
+  // predate the options argument, we bind the string in this case to the
+  // targetId.
+  RegisterTestModule(
+      "var obj = {'b': true};\n"
+      "var args = messagingUtils.alignSendMessageArguments(['a', obj], true);\n"
+      "AssertTrue(args.length == 4);\n"
+      "AssertTrue(args[0] == 'a');\n"
+      "AssertTrue(args[1] == obj);\n"
+      "AssertTrue(args[2] === null);\n"
+      "AssertTrue(args[3] === null);");
+  module_system_->Require("test");
+}
+
+TEST_F(MessagingUtilsUnittest, TwoObjectArguments) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  // When two non-string arguments are provided and options are present, the
+  // two arguments must match request and options, respectively, because
+  // targetId must be a string.
+  RegisterTestModule(
+      "var obj1 = {'a': 'foo'};\n"
+      "var obj2 = {'b': 'bar'};\n"
+      "var args = messagingUtils.alignSendMessageArguments(\n"
+      "    [obj1, obj2], true);\n"
+      "AssertTrue(args.length == 4);\n"
+      "AssertTrue(args[0] === null);\n"
+      "AssertTrue(args[1] == obj1);\n"
+      "AssertTrue(args[2] == obj2);\n"
+      "AssertTrue(args[3] === null);");
   module_system_->Require("test");
 }
 

@@ -33,7 +33,8 @@
         "properties": {
           "tab": {"$ref": "tabs.Tab", "optional": true, "description": "The $ref:tabs.Tab which opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab (including content scripts), and <strong>only</strong> if the receiver is an extension, not an app."},
           "id": {"type": "string", "optional": true, "description": "The ID of the extension or app that opened the connection, if any."},
-          "url": {"type": "string", "optional": true, "description": "The URL of the page or frame that opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab or content script."}
+          "url": {"type": "string", "optional": true, "description": "The URL of the page or frame that opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab or content script."},
+          "tlsChannelId": {"type": "string", "optional": true, "description": "The TLS channel ID of the web page that opened the connection, if requested by the extension or app, and if available."}
         }
       }
     ],
@@ -178,7 +179,8 @@
             "type": "object",
             "name": "connectInfo",
             "properties": {
-              "name": { "type": "string", "optional": true, "description": "Will be passed into onConnect for processes that are listening for the connection event." }
+              "name": { "type": "string", "optional": true, "description": "Will be passed into onConnect for processes that are listening for the connection event." },
+              "includeTlsChannelId": { "type": "boolean", "optional": true, "description": "Whether the TLS channel ID will be passed into onConnectExternal for processes that are listening for the connection event." }
             },
             "optional": true
           }
@@ -214,6 +216,14 @@
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           { "type": "any", "name": "message" },
+          {
+            "type": "object",
+            "name": "options",
+            "properties": {
+              "includeTlsChannelId": { "type": "boolean", "optional": true, "description": "Whether the TLS channel ID will be passed into onMessageExternal for processes that are listening for the connection event." }
+            },
+            "optional": true
+          },
           {
             "type": "function",
             "name": "responseCallback",

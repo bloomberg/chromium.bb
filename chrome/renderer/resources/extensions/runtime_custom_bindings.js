@@ -11,6 +11,7 @@ var messaging = require('messaging');
 var runtimeNatives = requireNative('runtime');
 var unloadEvent = require('unload_event');
 var process = requireNative('process');
+var forEach = require('utils').forEach;
 
 var backgroundPage = window;
 var backgroundRequire = require;
@@ -98,14 +99,19 @@ binding.registerCustomHook(function(binding, id, contextType) {
 
   var sendMessageUpdateArguments = messaging.sendMessageUpdateArguments;
   apiFunctions.setUpdateArgumentsPreValidate('sendMessage',
-      $Function.bind(sendMessageUpdateArguments, null, 'sendMessage'));
+      $Function.bind(sendMessageUpdateArguments, null, 'sendMessage',
+                     true /* hasOptionsArgument */));
   apiFunctions.setUpdateArgumentsPreValidate('sendNativeMessage',
-      $Function.bind(sendMessageUpdateArguments, null, 'sendNativeMessage'));
+      $Function.bind(sendMessageUpdateArguments, null, 'sendNativeMessage',
+                     false /* hasOptionsArgument */));
 
   apiFunctions.setHandleRequest('sendMessage',
-                                function(targetId, message, responseCallback) {
-    var port = runtime.connect(targetId || runtime.id,
-        {name: messaging.kMessageChannel});
+      function(targetId, message, options, responseCallback) {
+    var connectOptions = {name: messaging.kMessageChannel};
+    forEach(options, function(k, v) {
+      connectOptions[k] = v;
+    });
+    var port = runtime.connect(targetId || runtime.id, connectOptions);
     messaging.sendMessageImpl(port, message, responseCallback);
   });
 
@@ -158,7 +164,11 @@ binding.registerCustomHook(function(binding, id, contextType) {
     if (connectInfo && connectInfo.name)
       name = connectInfo.name;
 
-    var portId = runtimeNatives.OpenChannelToExtension(targetId, name);
+    var includeTlsChannelId =
+      !!(connectInfo && connectInfo.includeTlsChannelId);
+
+    var portId = runtimeNatives.OpenChannelToExtension(targetId, name,
+                                                       includeTlsChannelId);
     if (portId >= 0)
       return messaging.createPort(portId, name);
   });

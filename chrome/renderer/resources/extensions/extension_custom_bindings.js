@@ -88,7 +88,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
 
   apiFunctions.setUpdateArgumentsPreValidate('sendRequest',
       $Function.bind(messaging.sendMessageUpdateArguments,
-                     null, 'sendRequest'));
+                     null, 'sendRequest', false /* hasOptionsArgument */));
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(targetId, request, responseCallback) {

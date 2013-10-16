@@ -29,13 +29,15 @@ void ExtensionMessagePort::DispatchOnConnect(
     const base::DictionaryValue& source_tab,
     const std::string& source_extension_id,
     const std::string& target_extension_id,
-    const GURL& source_url) {
+    const GURL& source_url,
+    const std::string& tls_channel_id) {
   ExtensionMsg_ExternalConnectionInfo info;
   info.target_id = target_extension_id;
   info.source_id = source_extension_id;
   info.source_url = source_url;
   process_->Send(new ExtensionMsg_DispatchOnConnect(
-      routing_id_, dest_port_id, channel_name, source_tab, info));
+      routing_id_, dest_port_id, channel_name, source_tab, info,
+      tls_channel_id));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(

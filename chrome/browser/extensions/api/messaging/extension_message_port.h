@@ -27,7 +27,8 @@ class ExtensionMessagePort : public MessageService::MessagePort {
       const base::DictionaryValue& source_tab,
       const std::string& source_extension_id,
       const std::string& target_extension_id,
-      const GURL& source_url) OVERRIDE;
+      const GURL& source_url,
+      const std::string& tls_channel_id) OVERRIDE;
   virtual void DispatchOnDisconnect(int source_port_id,
                                     const std::string& error_message) OVERRIDE;
   virtual void DispatchOnMessage(const std::string& message,

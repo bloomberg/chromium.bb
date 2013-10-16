@@ -50,17 +50,20 @@ void RuntimeCustomBindings::OpenChannelToExtension(
     return;
 
   // The Javascript code should validate/fill the arguments.
-  CHECK_EQ(2, args.Length());
-  CHECK(args[0]->IsString() && args[1]->IsString());
+  CHECK_EQ(args.Length(), 3);
+  CHECK(args[0]->IsString() && args[1]->IsString() && args[2]->IsBoolean());
 
   ExtensionMsg_ExternalConnectionInfo info;
   info.source_id = context()->GetExtensionID();
   info.target_id = *v8::String::Utf8Value(args[0]->ToString());
   info.source_url = context()->GetURL();
   std::string channel_name = *v8::String::Utf8Value(args[1]->ToString());
+  bool include_tls_channel_id =
+      args.Length() > 2 ? args[2]->BooleanValue() : false;
   int port_id = -1;
   renderview->Send(new ExtensionHostMsg_OpenChannelToExtension(
-      renderview->GetRoutingID(), info, channel_name, &port_id));
+      renderview->GetRoutingID(), info, channel_name, include_tls_channel_id,
+      &port_id));
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 

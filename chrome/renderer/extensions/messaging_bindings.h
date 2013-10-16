@@ -47,6 +47,7 @@ class MessagingBindings {
       const std::string& source_extension_id,
       const std::string& target_extension_id,
       const GURL& source_url,
+      const std::string& tls_channel_id,
       content::RenderView* restrict_to_render_view);
 
   // Delivers a message sent using content script messaging to some of the

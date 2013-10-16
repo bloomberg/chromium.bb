@@ -57,6 +57,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   void OnOpenChannelToExtension(int routing_id,
                                 const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& channel_name,
+                                bool include_tls_channel_id,
                                 int* port_id);
 
 #if defined(ENABLE_PRINTING)
