@@ -241,7 +241,8 @@ TEST_F(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   CheckResponse(consumer, "HTTP/1.1 200 OK", response);
 }
 
-TEST_F(QuicEndToEndTest, LargePostWithNoPacketLoss) {
+// http://crbug.com/307284
+TEST_F(QuicEndToEndTest, DISABLED_LargePostWithNoPacketLoss) {
   InitializePostRequest(10 * 1024 * 1024);
 
   AddToCache("POST", request_.url.spec(),
@@ -258,8 +259,7 @@ TEST_F(QuicEndToEndTest, LargePostWithNoPacketLoss) {
   CheckResponse(consumer, "HTTP/1.1 200 OK", kResponseBody);
 }
 
-// http://crbug.com/307284
-TEST_F(QuicEndToEndTest, DISABLED_LargePostWithPacketLoss) {
+TEST_F(QuicEndToEndTest, LargePostWithPacketLoss) {
   // FLAGS_fake_packet_loss_percentage = 30;
   InitializePostRequest(1024 * 1024);
 
