@@ -3110,7 +3110,7 @@ sub GenerateAttributeConfigurationParameters
         $getterForMainWorld = "${getter}ForMainWorld";
         $setterForMainWorld = "${setter}ForMainWorld";
 
-        if (!HasCustomSetter($attribute) && $attrExt->{"Replaceable"}) {
+        if (!HasCustomSetter($attribute) && !$attrExt->{"PutForwards"} && $attrExt->{"Replaceable"}) {
             $setter = "${implClassName}V8Internal::${implClassName}ReplaceableAttributeSetterCallback";
             $setterForMainWorld = "0";
         }
@@ -4088,7 +4088,7 @@ END
             GenerateNormalAttributeGetter($attribute, $interface, "ForMainWorld");
             GenerateNormalAttributeGetterCallback($attribute, $interface, "ForMainWorld");
         }
-        if (!HasCustomSetter($attribute) && $attrExt->{"Replaceable"}) {
+        if (!HasCustomSetter($attribute) && !$attrExt->{"PutForwards"} && $attrExt->{"Replaceable"}) {
             $hasReplaceable = 1;
         } elsif (!IsReadonly($attribute)) {
             GenerateNormalAttributeSetter($attribute, $interface, "");

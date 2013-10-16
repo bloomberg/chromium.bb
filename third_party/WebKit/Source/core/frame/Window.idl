@@ -41,7 +41,7 @@
     [Replaceable] readonly attribute BarProp toolbar;
     [Replaceable, PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
-    [DoNotCheckSecurity, CustomSetter, Unforgeable, Replaceable, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] readonly attribute Location location;
+    [DoNotCheckSecurity, Unforgeable, Replaceable, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, PutForwards=href] readonly attribute Location location;
     [Custom, MeasureAs=WindowEvent, NotEnumerable, Replaceable] readonly attribute Event event;
 
     Selection getSelection();

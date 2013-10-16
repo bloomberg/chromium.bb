@@ -59,7 +59,6 @@
 #include "core/frame/DOMWindowTimers.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
-#include "core/frame/Location.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
@@ -199,16 +198,6 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<
 
     v8::Handle<v8::String> eventSymbol = V8HiddenPropertyName::event(info.GetIsolate());
     context->Global()->SetHiddenValue(eventSymbol, value);
-}
-
-void V8Window::locationAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    DOMWindow* imp = V8Window::toNative(info.Holder());
-
-    if (Location* location = imp->location()) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, href, value);
-        location->setHref(activeDOMWindow(), firstDOMWindow(), href);
-    }
 }
 
 void V8Window::openerAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
