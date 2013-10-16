@@ -55,6 +55,10 @@ void RenderListItem::styleDidChange(StyleDifference diff, const RenderStyle* old
     if (style()->listStyleType() != NoneListStyle
         || (style()->listStyleImage() && !style()->listStyleImage()->errorOccurred())) {
         RefPtr<RenderStyle> newStyle = RenderStyle::create();
+        // Markers update their own margin style. By copying the existing style we can
+        // avoid an unnecessary layout in setStyle below.
+        if (m_marker)
+            newStyle->copyNonInheritedFrom(m_marker->style());
         // The marker always inherits from the list item, regardless of where it might end
         // up (e.g., in some deeply nested line box). See CSS3 spec.
         newStyle->inheritFrom(style());
