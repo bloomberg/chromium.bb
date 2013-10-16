@@ -86,7 +86,7 @@ callback CustomElementConstructor = Element ();
 
     // DOM Level 2 Abstract Views (DocumentView interface)
 
-    readonly attribute Window defaultView;
+    [ImplementedAs=domWindow] readonly attribute Window defaultView;
 
     // DOM Level 2 Style (DocumentStyle interface)
 

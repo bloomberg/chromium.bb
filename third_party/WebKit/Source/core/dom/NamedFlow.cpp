@@ -212,7 +212,7 @@ void NamedFlow::dispatchRegionLayoutUpdateEvent()
     if (flowState() == FlowStateNull)
         return;
 
-    RefPtr<Event> event = UIEvent::create(EventTypeNames::webkitregionlayoutupdate, false, false, m_flowManager->document()->defaultView(), 0);
+    RefPtr<Event> event = UIEvent::create(EventTypeNames::webkitregionlayoutupdate, false, false, m_flowManager->document()->domWindow(), 0);
 
     dispatchEvent(event);
 }
@@ -225,7 +225,7 @@ void NamedFlow::dispatchRegionOversetChangeEvent()
     if (flowState() == FlowStateNull)
         return;
 
-    RefPtr<Event> event = UIEvent::create(EventTypeNames::webkitregionoversetchange, false, false, m_flowManager->document()->defaultView(), 0);
+    RefPtr<Event> event = UIEvent::create(EventTypeNames::webkitregionoversetchange, false, false, m_flowManager->document()->domWindow(), 0);
 
     dispatchEvent(event);
 }

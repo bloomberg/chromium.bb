@@ -50,7 +50,7 @@ private:
 
 void CreatedInvocation::dispatch(Element* element)
 {
-    if (element->inDocument() && element->document().defaultView())
+    if (element->inDocument() && element->document().domWindow())
         CustomElementCallbackScheduler::scheduleEnteredViewCallback(callbacks(), element);
     callbacks()->created(element);
 }

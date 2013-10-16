@@ -109,7 +109,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     FrameView* view = webViewImpl->page()->mainFrame()->view();
     RefPtr<Document> document = webViewImpl->page()->mainFrame()->document();
-    DOMWindow* domWindow = webViewImpl->page()->mainFrame()->document()->defaultView();
+    DOMWindow* domWindow = webViewImpl->page()->mainFrame()->document()->domWindow();
     RenderObject* docRenderer = webViewImpl->page()->mainFrame()->document()->renderer();
 
     {

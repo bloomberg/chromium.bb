@@ -693,8 +693,6 @@ public:
 
     void setDOMWindow(DOMWindow* domWindow) { m_domWindow = domWindow; }
     DOMWindow* domWindow() const { return m_domWindow; }
-    // In DOM Level 2, the Document's DOMWindow is called the defaultView.
-    DOMWindow* defaultView() const { return domWindow(); }
 
     // Helper functions for forwarding DOMWindow event related tasks to the DOMWindow if it exists.
     void setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, DOMWrapperWorld* isolatedWorld = 0);
