@@ -320,7 +320,7 @@ void ContentSettingImageViewGtk::OnClick(
           web_contents,
           profile,
           content_setting_image_model_->get_content_settings_type()),
-      profile, web_contents);
+      profile);
   return;
 }
 
@@ -339,7 +339,7 @@ void ContentSettingImageViewGtk::CreateBubble(
           web_contents,
           parent_->browser()->profile(),
           content_setting_image_model_->get_content_settings_type()),
-      parent_->browser()->profile(), web_contents);
+      parent_->browser()->profile());
   return;
 }
 
