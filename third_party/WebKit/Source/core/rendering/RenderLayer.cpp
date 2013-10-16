@@ -4790,7 +4790,7 @@ void RenderLayer::updateIsNormalFlowOnly()
 bool RenderLayer::shouldBeSelfPaintingLayer() const
 {
     return !isNormalFlowOnly()
-        || hasOverlayScrollbars()
+        || (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars())
         || needsCompositedScrolling()
         || renderer()->hasReflection()
         || renderer()->hasMask()
@@ -5308,27 +5308,6 @@ int RenderLayer::scrollYOffset() const
 IntSize RenderLayer::scrolledContentOffset() const
 {
     return m_scrollableArea ? m_scrollableArea->scrollOffset() : IntSize();
-}
-
-bool RenderLayer::hasOverlayScrollbars() const
-{
-    return m_scrollableArea && m_scrollableArea->hasOverlayScrollbars();
-}
-
-int RenderLayer::verticalScrollbarWidth(OverlayScrollbarSizeRelevancy relevancy) const
-{
-    if (!m_scrollableArea)
-        return 0;
-
-    return m_scrollableArea->verticalScrollbarWidth(relevancy);
-}
-
-int RenderLayer::horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy relevancy) const
-{
-    if (!m_scrollableArea)
-        return 0;
-
-    return m_scrollableArea->horizontalScrollbarHeight(relevancy);
 }
 
 IntRect RenderLayer::scrollCornerAndResizerRect() const

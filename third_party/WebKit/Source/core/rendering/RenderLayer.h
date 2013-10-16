@@ -721,10 +721,6 @@ private:
 public:
     bool usesCompositedScrolling() const;
 
-    bool hasOverlayScrollbars() const;
-    int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
-    int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
-
     int scrollXOffset() const;
     int scrollYOffset() const;
     friend IntSize RenderBox::scrolledContentOffset() const;

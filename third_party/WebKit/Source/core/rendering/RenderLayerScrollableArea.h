@@ -143,6 +143,9 @@ public:
     int scrollWidth() const;
     int scrollHeight() const;
 
+    int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
+    int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -167,9 +170,6 @@ private:
 
     void setHasHorizontalScrollbar(bool hasScrollbar);
     void setHasVerticalScrollbar(bool hasScrollbar);
-
-    int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
-    int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 
     void positionOverflowControls(const IntSize& offsetFromRoot);
     void updateScrollCornerStyle();

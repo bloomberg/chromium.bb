@@ -663,26 +663,20 @@ LayoutRect RenderBox::reflectedRect(const LayoutRect& r) const
     return result;
 }
 
-bool RenderBox::includeVerticalScrollbarSize() const
-{
-    return hasOverflowClip() && !layer()->hasOverlayScrollbars()
-        && (style()->overflowY() == OSCROLL || style()->overflowY() == OAUTO);
-}
-
-bool RenderBox::includeHorizontalScrollbarSize() const
-{
-    return hasOverflowClip() && !layer()->hasOverlayScrollbars()
-        && (style()->overflowX() == OSCROLL || style()->overflowX() == OAUTO);
-}
-
 int RenderBox::verticalScrollbarWidth() const
 {
-    return includeVerticalScrollbarSize() ? layer()->verticalScrollbarWidth() : 0;
+    if (!hasOverflowClip() || style()->overflowY() == OOVERLAY)
+        return 0;
+
+    return layer()->scrollableArea()->verticalScrollbarWidth();
 }
 
 int RenderBox::horizontalScrollbarHeight() const
 {
-    return includeHorizontalScrollbarSize() ? layer()->horizontalScrollbarHeight() : 0;
+    if (!hasOverflowClip() || style()->overflowX() == OOVERLAY)
+        return 0;
+
+    return layer()->scrollableArea()->horizontalScrollbarHeight();
 }
 
 int RenderBox::instrinsicScrollbarLogicalWidth() const
@@ -1610,12 +1604,13 @@ LayoutRect RenderBox::overflowClipRect(const LayoutPoint& location, RenderRegion
     clipRect.setLocation(location + clipRect.location() + LayoutSize(borderLeft(), borderTop()));
     clipRect.setSize(clipRect.size() - LayoutSize(borderLeft() + borderRight(), borderTop() + borderBottom()));
 
+    if (!hasOverflowClip())
+        return clipRect;
+
     // Subtract out scrollbars if we have them.
-     if (layer()) {
-        if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-            clipRect.move(layer()->verticalScrollbarWidth(relevancy), 0);
-        clipRect.contract(layer()->verticalScrollbarWidth(relevancy), layer()->horizontalScrollbarHeight(relevancy));
-     }
+    if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+        clipRect.move(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), 0);
+    clipRect.contract(layer()->scrollableArea()->verticalScrollbarWidth(relevancy), layer()->scrollableArea()->horizontalScrollbarHeight(relevancy));
 
     return clipRect;
 }
