@@ -46,7 +46,7 @@ valueSettingTest('justify');
 valueSettingTest('auto');
 
 defaultValue = 'auto'
-e.style.webkitTextAlignLast = defaultValue;
+e.style.textAlignLast = defaultValue;
 invalidValueSettingTest('-webkit-left', defaultValue);
 invalidValueSettingTest('-webkit-right', defaultValue);
 invalidValueSettingTest('-webkit-center', defaultValue);
