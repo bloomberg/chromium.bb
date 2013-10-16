@@ -35,11 +35,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static inline bool shouldIgnoreAttributeCase(const Element* e)
-{
-    return e && e->document().isHTMLDocument() && e->isHTMLElement();
-}
-
 void NamedNodeMap::ref()
 {
     m_element->ref();
@@ -62,7 +57,7 @@ PassRefPtr<Node> NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, 
 
 PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& es)
 {
-    size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, shouldIgnoreAttributeCase(m_element)) : kNotFound;
+    size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, m_element->shouldIgnoreAttributeCase()) : kNotFound;
     if (index == kNotFound) {
         es.throwUninformativeAndGenericDOMException(NotFoundError);
         return 0;

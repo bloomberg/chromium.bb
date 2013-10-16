@@ -309,6 +309,8 @@ public:
     const AtomicString& getNameAttribute() const;
     const AtomicString& getClassAttribute() const;
 
+    bool shouldIgnoreAttributeCase() const;
+
     // Call this to get the value of the id attribute for style resolution purposes.
     // The value will already be lowercased if the document is in compatibility mode,
     // so this function is not suitable for non-style uses.
@@ -902,6 +904,11 @@ inline const AtomicString& Element::getClassAttribute() const
     if (isSVGElement())
         return getAttribute(HTMLNames::classAttr);
     return fastGetAttribute(HTMLNames::classAttr);
+}
+
+inline bool Element::shouldIgnoreAttributeCase() const
+{
+    return isHTMLElement() && document().isHTMLDocument();
 }
 
 inline void Element::setIdAttribute(const AtomicString& value)

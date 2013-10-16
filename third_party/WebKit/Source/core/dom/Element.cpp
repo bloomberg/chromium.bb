@@ -105,11 +105,6 @@ namespace WebCore {
 using namespace HTMLNames;
 using namespace XMLNames;
 
-static inline bool shouldIgnoreAttributeCase(const Element* e)
-{
-    return e && e->document().isHTMLDocument() && e->isHTMLElement();
-}
-
 class StyleResolverParentPusher {
 public:
     StyleResolverParentPusher(Element* parent)
@@ -459,7 +454,7 @@ inline void Element::synchronizeAttribute(const AtomicString& localName) const
     // e.g when called from DOM API.
     if (!elementData())
         return;
-    if (elementData()->m_styleAttributeIsDirty && equalPossiblyIgnoringCase(localName, styleAttr.localName(), shouldIgnoreAttributeCase(this))) {
+    if (elementData()->m_styleAttributeIsDirty && equalPossiblyIgnoringCase(localName, styleAttr.localName(), shouldIgnoreAttributeCase())) {
         ASSERT(isStyledElement());
         synchronizeStyleAttributeInternal();
         return;
@@ -884,7 +879,7 @@ const AtomicString& Element::getAttribute(const AtomicString& localName) const
     if (!elementData())
         return nullAtom;
     synchronizeAttribute(localName);
-    if (const Attribute* attribute = elementData()->getAttributeItem(localName, shouldIgnoreAttributeCase(this)))
+    if (const Attribute* attribute = elementData()->getAttributeItem(localName, shouldIgnoreAttributeCase()))
         return attribute->value();
     return nullAtom;
 }
@@ -902,7 +897,7 @@ void Element::setAttribute(const AtomicString& localName, const AtomicString& va
     }
 
     synchronizeAttribute(localName);
-    const AtomicString& caseAdjustedLocalName = shouldIgnoreAttributeCase(this) ? localName.lower() : localName;
+    const AtomicString& caseAdjustedLocalName = shouldIgnoreAttributeCase() ? localName.lower() : localName;
 
     size_t index = elementData() ? elementData()->getAttributeItemIndex(caseAdjustedLocalName, false) : kNotFound;
     const QualifiedName& qName = index != kNotFound ? attributeItem(index)->name() : QualifiedName(nullAtom, caseAdjustedLocalName, nullAtom);
@@ -1927,7 +1922,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
     synchronizeAllAttributes();
     UniqueElementData* elementData = ensureUniqueElementData();
 
-    size_t index = elementData->getAttributeItemIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase(this));
+    size_t index = elementData->getAttributeItemIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
     if (index != kNotFound) {
         if (oldAttrNode)
             detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData->attributeItem(index)->value());
@@ -2038,7 +2033,7 @@ void Element::removeAttribute(const AtomicString& name)
     if (!elementData())
         return;
 
-    AtomicString localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
+    AtomicString localName = shouldIgnoreAttributeCase() ? name.lower() : name;
     size_t index = elementData()->getAttributeItemIndex(localName, false);
     if (index == kNotFound) {
         if (UNLIKELY(localName == styleAttr) && elementData()->m_styleAttributeIsDirty && isStyledElement())
@@ -2059,7 +2054,7 @@ PassRefPtr<Attr> Element::getAttributeNode(const AtomicString& localName)
     if (!elementData())
         return 0;
     synchronizeAttribute(localName);
-    const Attribute* attribute = elementData()->getAttributeItem(localName, shouldIgnoreAttributeCase(this));
+    const Attribute* attribute = elementData()->getAttributeItem(localName, shouldIgnoreAttributeCase());
     if (!attribute)
         return 0;
     return ensureAttr(attribute->name());
@@ -2082,7 +2077,7 @@ bool Element::hasAttribute(const AtomicString& localName) const
     if (!elementData())
         return false;
     synchronizeAttribute(localName);
-    return elementData()->getAttributeItem(shouldIgnoreAttributeCase(this) ? localName.lower() : localName, false);
+    return elementData()->getAttributeItem(shouldIgnoreAttributeCase() ? localName.lower() : localName, false);
 }
 
 bool Element::hasAttributeNS(const AtomicString& namespaceURI, const AtomicString& localName) const
