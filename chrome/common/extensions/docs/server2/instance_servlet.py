@@ -57,8 +57,8 @@ class InstanceServlet(object):
     def CreateBranchUtility(self, object_store_creator):
       return BranchUtility.Create(object_store_creator)
 
-    def CreateHostFileSystemProvider(self, object_store_creator, offline=None):
-      return HostFileSystemProvider(object_store_creator, offline=offline)
+    def CreateHostFileSystemProvider(self, object_store_creator, **optargs):
+      return HostFileSystemProvider(object_store_creator, **optargs)
 
     def CreateAppSamplesFileSystem(self, object_store_creator):
       # TODO(kalman): OfflineServerInstance wrapper for GithubFileSystem, but
