@@ -2581,9 +2581,11 @@ drm_compositor_create(struct wl_display *display,
 		      struct weston_config *config)
 {
 	struct drm_compositor *ec;
+	struct weston_config_section *section;
 	struct udev_device *drm_device;
 	struct wl_event_loop *loop;
 	const char *path;
+	char *s;
 	uint32_t key;
 
 	weston_log("initializing drm backend\n");
@@ -2595,7 +2597,23 @@ drm_compositor_create(struct wl_display *display,
 	/* KMS support for sprites is not complete yet, so disable the
 	 * functionality for now. */
 	ec->sprites_are_broken = 1;
-	ec->format = GBM_FORMAT_XRGB8888;
+
+	section = weston_config_get_section(config, "core", NULL, NULL);
+	weston_config_section_get_string(section,
+					 "gbm-format", &s, "xrgb8888");
+	if (strcmp(s, "xrgb8888") == 0)
+		ec->format = GBM_FORMAT_XRGB8888;
+	else if (strcmp(s, "rgb565") == 0)
+		ec->format = GBM_FORMAT_RGB565;
+	else if (strcmp(s, "xrgb2101010") == 0)
+		ec->format = GBM_FORMAT_XRGB2101010;
+	else {
+		weston_log("fatal: unrecognized pixel format: %s\n", s);
+		free(s);
+		goto err_base;
+	}
+	free(s);
+
 	ec->use_pixman = param->use_pixman;
 
 	if (weston_compositor_init(&ec->base, display, argc, argv,

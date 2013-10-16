@@ -104,6 +104,13 @@ directory are:
 .BR xwayland.so
 .fi
 .RE
+.TP 7
+.BI "gbm-format="format
+sets the GBM format used for the framebuffer for the GBM backend. Can be
+.B xrgb8888,
+.B xrgb2101010,
+.B rgb565.
+By default, xrgb8888 is used.
 .RS
 .PP
 
