@@ -166,7 +166,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         state->hadException = true;
         state->errorMessage = toWebCoreString(message->Get());
         state->lineNumber = message->GetLineNumber();
-        state->columnNumber = message->GetStartColumn();
+        state->columnNumber = message->GetStartColumn() + 1;
         state->sourceURL = toWebCoreString(message->GetScriptResourceName());
         state->exception = ScriptValue(block.Exception(), m_isolate);
         block.Reset();

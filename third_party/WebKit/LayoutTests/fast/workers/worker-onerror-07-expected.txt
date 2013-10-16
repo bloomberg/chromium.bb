@@ -8,7 +8,7 @@ Worker-level onerror handler triggered:
 PASS errorEvent.message is "Uncaught ReferenceError: foo is not defined"
 PASS stripURL(errorEvent.filename) is "[blob: URL]"
 PASS errorEvent.lineno is 14
-PASS errorEvent.colno is 8
+PASS errorEvent.colno is 9
 PASS errorEvent.error is null
 PASS successfullyParsed is true
 

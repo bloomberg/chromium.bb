@@ -11,7 +11,7 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 
-window.onerror: "Uncaught Error: Error in main world inline script." at window-onerror-isolatedworld-01.html (Line: 52, Column: 18)
+window.onerror: "Uncaught Error: Error in main world inline script." at window-onerror-isolatedworld-01.html (Line: 52, Column: 19)
 Stack Trace:
 Error: Error in main world inline script.
     at exceptions window-onerror-isolatedworld-01.html:52:19
@@ -41,7 +41,7 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 
-window.onerror: "Uncaught Error: Error in main world load handler." at window-onerror-isolatedworld-01.html (Line: 49, Column: 22)
+window.onerror: "Uncaught Error: Error in main world load handler." at window-onerror-isolatedworld-01.html (Line: 49, Column: 23)
 Stack Trace:
 Error: Error in main world load handler.
     at window-onerror-isolatedworld-01.html:49:23
@@ -71,7 +71,7 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 FAIL Only main-world exceptions should be caught by ErrorEvent listeners.
-window.onerror: "Uncaught Error: Error in main world setTimeout callback." at window-onerror-isolatedworld-01.html (Line: 47, Column: 26)
+window.onerror: "Uncaught Error: Error in main world setTimeout callback." at window-onerror-isolatedworld-01.html (Line: 47, Column: 27)
 Stack Trace:
 Error: Error in main world setTimeout callback.
     at window-onerror-isolatedworld-01.html:47:27

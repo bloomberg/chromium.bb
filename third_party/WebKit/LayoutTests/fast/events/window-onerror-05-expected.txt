@@ -1,4 +1,4 @@
-window.onerror: "Uncaught SyntaxError: Unexpected token )" at window-onerror-05.html (Line: 15, Column: 9)
+window.onerror: "Uncaught SyntaxError: Unexpected token )" at window-onerror-05.html (Line: 15, Column: 10)
 Stack Trace:
 SyntaxError: Unexpected token )
 

@@ -8,7 +8,7 @@ Page-level worker.onerror handler triggered:
 PASS errorEvent.message is "Uncaught Error: Exception in setTimeout callback"
 PASS stripURL(errorEvent.filename) is "[blob: URL]"
 PASS errorEvent.lineno is 3
-PASS errorEvent.colno is 18
+PASS errorEvent.colno is 19
 PASS errorEvent.error is null
 PASS successfullyParsed is true
 

@@ -16,7 +16,7 @@
             shouldBeTrue("/SomeError/.test(msg)");
             shouldBeEqualToString("url", "http://localhost:8000/security/resources/cors-script.php?fail=true&cors=true");
             shouldBe("line", "1");
-            shouldBe("column", "0");
+            shouldBe("column", "1");
             shouldNotBe("window.errorObject", "null");
             finishJSTest();
         }

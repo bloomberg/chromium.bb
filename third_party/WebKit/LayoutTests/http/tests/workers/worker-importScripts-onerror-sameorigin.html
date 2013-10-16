@@ -20,7 +20,7 @@
             shouldBeEqualToString("workerOnerror.message", "Uncaught This is a custom error message.");
             shouldBeEqualToString("workerOnerror.filename", "http://127.0.0.1:8000/workers/resources/worker-importScripts-throw.js");
             shouldEvaluateTo("workerOnerror.lineno", 1);
-            shouldEvaluateTo("workerOnerror.colno", 0);
+            shouldEvaluateTo("workerOnerror.colno", 1);
             shouldNotBe("workerOnerror.error", "null");
             shouldBeEqualToString("workerOnerror.error", "This is a custom error message.");
         };
@@ -31,7 +31,7 @@
             shouldBeEqualToString("pageOnerror.message", "Uncaught This is a custom error message.");
             shouldBeEqualToString("pageOnerror.filename", "http://127.0.0.1:8000/workers/resources/worker-importScripts-throw.js");
             shouldEvaluateTo("pageOnerror.lineno", 1);
-            shouldEvaluateTo("pageOnerror.colno", 0);
+            shouldEvaluateTo("pageOnerror.colno", 1);
             shouldBeNull("pageOnerror.error");
 
             e.preventDefault();
