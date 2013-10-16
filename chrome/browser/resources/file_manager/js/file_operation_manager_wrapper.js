@@ -7,42 +7,23 @@
 /**
  * While FileOperationManager is run in the background page, this class is
  * used to communicate with it.
+ * @param {DOMWindow} backgroundPage Window object of the background page.
  * @constructor
  */
-function FileOperationManagerWrapper() {
-  this.fileOperationManager_ = null;
-
-  /**
-   * In the constructor, it tries to start loading the background page, and
-   * its FileOperationManager instance, asynchronously. Even during the
-   * initialization, there may be some method invocation. In such a case,
-   * FileOperationManagerWrapper keeps it as a pending task in pendingTasks_,
-   * and once FileOperationManager is obtained, run the pending tasks in the
-   * order.
-   *
-   * @private {Array.<function(FileOperationManager)>}
-   */
-  this.pendingTasks_ = [];
-
-  chrome.runtime.getBackgroundPage(function(backgroundPage) {
-    this.fileOperationManager_ =
-        backgroundPage.FileOperationManager.getInstance();
-
-    // Run pending tasks.
-    for (var i = 0; i < this.pendingTasks_.length; i++) {
-      this.pendingTasks_[i](this.fileOperationManager_);
-    }
-    this.pendingTasks_ = [];
-  }.bind(this));
+function FileOperationManagerWrapper(backgroundPage) {
+  this.fileOperationManager_ =
+      backgroundPage.FileOperationManager.getInstance();
 }
 
 /**
  * Create a new instance or get existing instance of FCMW.
+ * @param {DOMWindow} backgroundPage Window object of the background page.
  * @return {FileOperationManagerWrapper}  FileOperationManagerWrapper instance.
  */
-FileOperationManagerWrapper.getInstance = function() {
+FileOperationManagerWrapper.getInstance = function(backgroundPage) {
   if (!FileOperationManagerWrapper.instance_)
-    FileOperationManagerWrapper.instance_ = new FileOperationManagerWrapper();
+    FileOperationManagerWrapper.instance_ =
+        new FileOperationManagerWrapper(backgroundPage);
 
   return FileOperationManagerWrapper.instance_;
 };
@@ -51,14 +32,7 @@ FileOperationManagerWrapper.getInstance = function() {
  * @return {boolean} True if there is a running task.
  */
 FileOperationManagerWrapper.prototype.isRunning = function() {
-  // Note: until the background page is loaded, this method returns false
-  // even if there is a running task in FileOperationManager. (Though the
-  // period should be very short).
-  // TODO(hidehiko): Fix the race condition. It is necessary to change the
-  // FileOperationManager implementation as well as the clients (FileManager/
-  // ButterBar) implementation.
-  return this.fileOperationManager_ &&
-         this.fileOperationManager_.hasQueuedTasks();
+  return this.fileOperationManager_.hasQueuedTasks();
 };
 
 /**
@@ -68,15 +42,9 @@ FileOperationManagerWrapper.prototype.isRunning = function() {
  */
 FileOperationManagerWrapper.decorateAsyncMethod = function(method) {
   FileOperationManagerWrapper.prototype[method] = function() {
-    var args = Array.prototype.slice.call(arguments);
-    var operation = function(fileOperationManager) {
-      fileOperationManager.willRunNewMethod();
-      fileOperationManager[method].apply(fileOperationManager, args);
-    };
-    if (this.fileOperationManager_)
-      operation(this.fileOperationManager_);
-    else
-      this.pendingTasks_.push(operation);
+    this.fileOperationManager_.willRunNewMethod();
+    this.fileOperationManager_[method].apply(
+        this.fileOperationManager_, arguments);
   };
 };
 

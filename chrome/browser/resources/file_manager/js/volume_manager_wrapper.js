@@ -10,10 +10,14 @@
  * @param {VolumeManagerWrapper.DriveEnabledStatus} driveEnabled DRIVE_ENABLED
  *     if drive should be available. DRIVE_DISABLED if drive related
  *     data/events should be hidden.
+ * @param {DOMWindow} opt_backgroundPage Window object of the background
+ *     page. If this is specified, the class skips to get background page.
+ *     TOOD(hirono): Let all clients of the class pass the background page and
+ *     make the argument not optional.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function VolumeManagerWrapper(driveEnabled) {
+function VolumeManagerWrapper(driveEnabled, opt_backgroundPage) {
   cr.EventTarget.call(this);
 
   this.driveEnabled_ = driveEnabled;
@@ -28,9 +32,23 @@ function VolumeManagerWrapper(driveEnabled) {
   this.disposed_ = false;
 
   // Start initialize the VolumeManager.
-  chrome.runtime.getBackgroundPage(function(backgroundPage) {
-    backgroundPage.VolumeManager.getInstance(function(volumeManager) {
+  var queue = new AsyncUtil.Queue();
+
+  if (opt_backgroundPage) {
+    this.backgroundPage_ = opt_backgroundPage;
+  } else {
+    queue.run(function(callNextStep) {
+      chrome.runtime.getBackgroundPage(function(backgroundPage) {
+        this.backgroundPage_ = backgroundPage;
+        callNextStep();
+      }.bind(this));
+    }.bind(this));
+  }
+
+  queue.run(function(callNextStep) {
+    this.backgroundPage_.VolumeManager.getInstance(function(volumeManager) {
       this.onReady_(volumeManager);
+      callNextStep();
     }.bind(this));
   }.bind(this));
 }

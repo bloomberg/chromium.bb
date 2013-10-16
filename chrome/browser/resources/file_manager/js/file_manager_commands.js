@@ -441,12 +441,8 @@ CommandHandler.COMMANDS_['new-folder'] = {
  */
 CommandHandler.COMMANDS_['new-window'] = {
   execute: function(event, fileManager) {
-    var directoryModel = fileManager.directoryModel;
-    chrome.runtime.getBackgroundPage(function(background) {
-      var appState = {
-        defaultPath: fileManager.getCurrentDirectory()
-      };
-      background.launchFileManager(appState);
+    fileManager.backgroundPage.launchFileManager({
+      defaultPath: fileManager.getCurrentDirectory()
     });
   },
   canExecute: function(event, fileManager) {

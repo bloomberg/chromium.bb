@@ -41,6 +41,9 @@ FileManager.prototype = {
   },
   get fileTransferController() {
     return this.fileTransferController_;
+  },
+  get backgroundPage() {
+    return this.backgroundPage_;
   }
 };
 
@@ -353,7 +356,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initDataTransferOperations_ = function() {
-    this.fileOperationManager_ = new FileOperationManagerWrapper.getInstance();
+    this.fileOperationManager_ = FileOperationManagerWrapper.getInstance(
+        this.backgroundPage_);
 
     this.butterBar_ = new ButterBar(
         this.dialogDom_, this.fileOperationManager_);
@@ -529,10 +533,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initializeCore = function() {
     this.initializeQueue_.add(this.initGeneral_.bind(this), [], 'initGeneral');
     this.initializeQueue_.add(this.initStrings_.bind(this), [], 'initStrings');
+    this.initializeQueue_.add(this.initBackgroundPage_.bind(this),
+                              [], 'initBackgroundPage');
     this.initializeQueue_.add(this.initPreferences_.bind(this),
                               ['initGeneral'], 'initPreferences');
     this.initializeQueue_.add(this.initVolumeManager_.bind(this),
-                              ['initGeneral'], 'initVolumeManager');
+                              ['initGeneral', 'initBackgroundPage'],
+                              'initVolumeManager');
 
     this.initializeQueue_.run();
   };
@@ -545,7 +552,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         ['initGeneral', 'initStrings'],
         'initEssentialUI');
     this.initializeQueue_.add(this.initAdditionalUI_.bind(this),
-        ['initEssentialUI'], 'initAdditionalUI');
+        ['initEssentialUI', 'initBackgroundPage'], 'initAdditionalUI');
     this.initializeQueue_.add(
         this.initFileSystemUI_.bind(this),
         ['initAdditionalUI', 'initPreferences'], 'initFileSystemUI');
@@ -573,12 +580,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                      {};
       this.defaultPath = this.params_.defaultPath;
     }
-
-    // Initialize the background page.
-    chrome.runtime.getBackgroundPage(function(backgroundPage) {
-      this.backgroundPage_ = backgroundPage;
-      callback();
-    }.bind(this));
+    callback();
   };
 
   /**
@@ -604,6 +606,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
+   * Initialize the background page.
+   * @param {function()} callback Completion callback.
+   * @private
+   */
+  FileManager.prototype.initBackgroundPage_ = function(callback) {
+    chrome.runtime.getBackgroundPage(function(backgroundPage) {
+      this.backgroundPage_ = backgroundPage;
+      callback();
+    }.bind(this));
+  };
+
+  /**
    * Initializes the VolumeManager instance.
    * @param {function()} callback Completion callback.
    * @private
@@ -624,7 +638,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // DriveIntegrationService, so here we don't need to take care about it.
     var driveEnabled =
         !noLocalPathResolution || !this.params_.shouldReturnLocalPath;
-    this.volumeManager_ = new VolumeManagerWrapper(driveEnabled);
+    this.volumeManager_ = new VolumeManagerWrapper(
+        driveEnabled, this.backgroundPage_);
     callback();
   };
 

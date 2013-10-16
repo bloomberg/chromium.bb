@@ -430,17 +430,13 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
       urls = fm.getAllUrlsInCurrentDirectory().filter(FileType.isAudio);
       position = urls.indexOf(selectedUrl);
     }
-    chrome.runtime.getBackgroundPage(function(background) {
-      background.launchAudioPlayer({ items: urls, position: position });
-    });
+    fm.backgroundPage.launchAudioPlayer({ items: urls, position: position });
     return;
   }
 
   if (id == 'watch') {
     console.assert(urls.length == 1, 'Cannot open multiple videos');
-    chrome.runtime.getBackgroundPage(function(background) {
-      background.launchVideoPlayer(urls[0]);
-    });
+    fm.backgroundPage.launchVideoPlayer(urls[0]);
     return;
   }
 
