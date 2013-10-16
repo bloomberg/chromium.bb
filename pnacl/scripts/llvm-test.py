@@ -67,6 +67,9 @@ The default set is {O3f,O2b}, other options are {O0f,O0b}.
   parser.add_option('--llvm-regression', dest='run_llvm_regression',
                     action='store_true', default=False,
                     help='Run the LLVM regression tests')
+  parser.add_option('--libcxx-tests', dest='run_libcxx_tests',
+                    action='store_true', default=False,
+                    help='Run the libc++ tests')
   parser.add_option('--testsuite-clean', dest='testsuite_clean',
                     action='store_true', default=False,
                     help='Clean the testsuite build directory')
@@ -204,6 +207,9 @@ def SetupEnvironment():
     '{NACL_ROOT}/pnacl/git/llvm'.format(**env))
   env['TC_BUILD_LLVM'] = (
     '{NACL_ROOT}/pnacl/build/llvm_{HOST_ARCH}'.format(**env))
+  env['TC_BUILD_LIBCXX'] = (
+    ('{NACL_ROOT}/pnacl/build/' +
+     'c++-stdlib-newlib-portable-libc++/pnacl-target').format(**env))
   env['PNACL_CONCURRENCY'] = os.environ.get('PNACL_CONCURRENCY', '8')
 
   # The toolchain used may not be the one downloaded, but one that is freshly
@@ -224,10 +230,12 @@ def SetupEnvironment():
   return env
 
 
-def LlvmRegression(env, options):
-  """Run the LLVM regression tests.
+def RunLitTest(testdir, testarg, env, options):
+  """Run LLVM lit tests, and check failures against known failures.
 
   Args:
+    testdir: Directory with the make/ninja file to test.
+    testarg: argument to pass to make/ninja.
     env: The result of SetupEnvironment().
     options: The result of OptionParser().parse_args().
 
@@ -235,9 +243,9 @@ def LlvmRegression(env, options):
     0 always
   """
   with remember_cwd():
-    os.chdir(env['TC_BUILD_LLVM'])
+    os.chdir(testdir)
     maker = 'ninja' if os.path.isfile('./build.ninja') else 'make'
-    cmd = [maker, 'check-all', '-v' if maker == 'ninja' else 'VERBOSE=1']
+    cmd = [maker, testarg, '-v' if maker == 'ninja' else 'VERBOSE=1']
     make_pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     lines = []
     # When run by a buildbot, we need to incrementally tee the 'make'
@@ -252,12 +260,11 @@ def LlvmRegression(env, options):
     # pipe in Python 2, which may be complicit in the problem.
     for line in iter(make_pipe.stdout.readline, ''):
       if env['PNACL_BUILDBOT'] != 'false':
-        # The buildbots need to be fully verbose and print all output
-        # from "make check-all".
+        # The buildbots need to be fully verbose and print all output.
         print str(datetime.datetime.now()) + ' ' + line,
       lines.append(line)
     print (str(datetime.datetime.now()) + ' ' +
-           "Waiting for '%s check-all' to complete." % maker)
+           "Waiting for '%s' to complete." % cmd)
     make_pipe.wait()
     make_stdout = ''.join(lines)
 
@@ -266,7 +273,7 @@ def LlvmRegression(env, options):
     parse_options['excludes'].append(env['LIT_KNOWN_FAILURES'])
     parse_options['attributes'].append(env['BUILD_PLATFORM'])
     print (str(datetime.datetime.now()) + ' ' +
-           'Parsing LLVM test report output.')
+           'Parsing LIT test report output.')
     parse_llvm_test_report.Report(parse_options, filecontents=make_stdout)
   return 0
 
@@ -431,7 +438,11 @@ def main(argv):
   result = 0
   # Run each specified test in sequence, and return on the first failure.
   if options.run_llvm_regression:
-    result = result or LlvmRegression(env, options)
+    result = result or RunLitTest(env['TC_BUILD_LLVM'], 'check-all',
+                                  env, options)
+  if options.run_libcxx_tests:
+    result = result or RunLitTest(env['TC_BUILD_LIBCXX'], 'check-libcxx',
+                                  env, options)
   if options.testsuite_all or options.testsuite_prereq:
     result = result or TestsuitePrereq(env, options)
   if options.testsuite_all or options.testsuite_clean:

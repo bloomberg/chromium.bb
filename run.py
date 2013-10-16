@@ -158,64 +158,74 @@ def main(argv):
 
   # Translate .pexe files
   is_pnacl = nexe.endswith('.pexe')
-  if is_pnacl:
-    nexe = Translate(env.arch, nexe)
 
-  # Read the ELF file info
-  if is_pnacl and env.dry_run:
-    # In a dry run, we don't actually run pnacl-translate, so there is
-    # no nexe for readelf. Fill in the information manually.
-    arch = env.arch
-    is_dynamic = False
-    is_glibc_static = False
-  else:
-    arch, is_dynamic, is_glibc_static = ReadELFInfo(nexe)
+  try:
+    if is_pnacl:
+      nexe = Translate(env.arch, nexe)
 
-  # Add default sel_ldr options
-  if not env.paranoid:
-    sel_ldr_options += ['-S', '-a']
-    # X86-64 glibc static has validation problems without stub out (-s)
-    if arch == 'x86-64' and is_glibc_static:
-      sel_ldr_options += ['-s']
-  if env.quiet:
-    # Don't print sel_ldr logs
-    sel_ldr_options += ['-l', '/dev/null']
-  if env.debug:
-    # Disabling validation (-c) is used by the debug stub test.
-    # TODO(dschuff): remove if/when it's no longer necessary
-    sel_ldr_options += ['-c', '-c', '-g']
+    # Read the ELF file info
+    if is_pnacl and env.dry_run:
+      # In a dry run, we don't actually run pnacl-translate, so there is
+      # no nexe for readelf. Fill in the information manually.
+      arch = env.arch
+      is_dynamic = False
+      is_glibc_static = False
+    else:
+      arch, is_dynamic, is_glibc_static = ReadELFInfo(nexe)
 
-  # Tell the user
-  if is_dynamic:
-    extra = 'DYNAMIC'
-  else:
-    extra = 'STATIC'
-  PrintBanner('%s is %s %s' % (os.path.basename(nexe),
-                               arch.upper(), extra))
+    # Add default sel_ldr options
+    if not env.paranoid:
+      sel_ldr_options += ['-S', '-a']
+      # X86-64 glibc static has validation problems without stub out (-s)
+      if arch == 'x86-64' and is_glibc_static:
+        sel_ldr_options += ['-s']
+    if env.quiet:
+      # Don't print sel_ldr logs
+      sel_ldr_options += ['-l', '/dev/null']
+    if env.debug:
+      # Disabling validation (-c) is used by the debug stub test.
+      # TODO(dschuff): remove if/when it's no longer necessary
+      sel_ldr_options += ['-c', '-c', '-g']
 
-  # Setup architecture-specific environment variables
-  SetupArch(arch)
+    # Tell the user
+    if is_dynamic:
+      extra = 'DYNAMIC'
+    else:
+      extra = 'STATIC'
+    PrintBanner('%s is %s %s' % (os.path.basename(nexe),
+                                 arch.upper(), extra))
 
-  # Setup LibC-specific environment variables
-  SetupLibC(arch, is_pnacl, is_dynamic)
+    # Setup architecture-specific environment variables
+    SetupArch(arch)
 
-  sel_ldr_args = []
+    # Setup LibC-specific environment variables
+    SetupLibC(arch, is_pnacl, is_dynamic)
 
-  # Add irt to sel_ldr arguments
-  if env.irt:
-    sel_ldr_args += ['-B', env.irt]
+    sel_ldr_args = []
 
-  # Setup sel_ldr arguments
-  sel_ldr_args += sel_ldr_options + ['--']
+    # Add irt to sel_ldr arguments
+    if env.irt:
+      sel_ldr_args += ['-B', env.irt]
 
-  if is_dynamic:
-    sel_ldr_args += [env.runnable_ld,
-                     '--library-path', ':'.join(env.library_path)]
+    # Setup sel_ldr arguments
+    sel_ldr_args += sel_ldr_options + ['--']
 
-  sel_ldr_args += [os.path.abspath(nexe)] + nexe_params
+    if is_dynamic:
+      sel_ldr_args += [env.runnable_ld,
+                       '--library-path', ':'.join(env.library_path)]
 
-  # Run sel_ldr!
-  RunSelLdr(sel_ldr_args)
+    sel_ldr_args += [os.path.abspath(nexe)] + nexe_params
+
+    # Run sel_ldr!
+    RunSelLdr(sel_ldr_args)
+  finally:
+    if is_pnacl:
+      # Clean up the .nexe that was created.
+      try:
+        os.remove(nexe)
+      except:
+        pass
+
   return 0
 
 

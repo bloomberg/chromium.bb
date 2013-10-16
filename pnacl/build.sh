@@ -1329,6 +1329,15 @@ lib-cpp-configure() {
   if [ ${lib} == ${LIB_CXX_NAME} ]; then
     local srcdir="${TC_SRC_LIBCXX}"
     local cflags="-g -O2 -mllvm -inline-threshold=5"
+    # LLVM's lit is used to test libc++. run.py serves as a shell that
+    # translates pexe->nexe and executes in sel_ldr. The libc++ test
+    # suite needs to be told to use pnacl-clang++'s "system library",
+    # which happens to be libc++ when the -stdlib parameter is used.
+    local litargs="--verbose"
+    litargs+=" --param shell_prefix='${NACL_ROOT}/run.py -arch ${HOST_ARCH}'"
+    litargs+=" --param exe_suffix='.pexe'"
+    litargs+=" --param use_system_lib=true"
+    litargs+=" --param link_flags='-std=gnu++11 -stdlib=libc++ -lpthread'"
     # TODO(jfb) CMAKE_???_COMPILER_WORKS can be removed once the PNaCl
     #           driver scripts stop confusing cmake for libc++. See:
     #           https://code.google.com/p/nativeclient/issues/detail?id=3661
@@ -1349,6 +1358,8 @@ lib-cpp-configure() {
       -DCMAKE_OBJDUMP="${ILLEGAL_TOOL}" \
       -DCMAKE_C_FLAGS="-std=gnu11 ${cflags}" \
       -DCMAKE_CXX_FLAGS="-std=gnu++11 ${cflags}" \
+      -DLIT_EXECUTABLE="${TC_SRC_LLVM}/utils/lit/lit.py" \
+      -DLLVM_LIT_ARGS="${litargs}" \
       -DLIBCXX_ENABLE_CXX0X=0 \
       -DLIBCXX_ENABLE_SHARED=0 \
       -DLIBCXX_CXX_ABI=libcxxabi \
