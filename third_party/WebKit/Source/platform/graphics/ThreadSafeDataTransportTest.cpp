@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/chromium/ThreadSafeDataTransport.h"
+#include "platform/graphics/ThreadSafeDataTransport.h"
 
 #include "platform/SharedBuffer.h"
 #include <gtest/gtest.h>

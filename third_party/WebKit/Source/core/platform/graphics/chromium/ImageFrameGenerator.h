@@ -29,7 +29,7 @@
 #include "SkBitmap.h"
 #include "SkSize.h"
 #include "SkTypes.h"
-#include "core/platform/graphics/chromium/ThreadSafeDataTransport.h"
+#include "platform/graphics/ThreadSafeDataTransport.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

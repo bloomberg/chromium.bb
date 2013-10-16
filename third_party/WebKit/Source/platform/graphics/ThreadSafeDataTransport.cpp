@@ -23,50 +23,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ThreadSafeDataTransport_h
-#define ThreadSafeDataTransport_h
+#include "config.h"
 
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
+#include "platform/graphics/ThreadSafeDataTransport.h"
+
+#include "platform/SharedBuffer.h"
 
 namespace WebCore {
 
-class SharedBuffer;
+ThreadSafeDataTransport::ThreadSafeDataTransport()
+    : m_readBuffer(SharedBuffer::create())
+    , m_readPosition(0)
+{
+}
 
-// The purpose of this class is to allow the transfer of data stored in
-// SharedBuffer in a thread-safe manner, and to minimize memory copies
-// and thread contention.
-//
-// This class is designed such that there is only one producer and
-// one consumer.
-class ThreadSafeDataTransport {
-public:
-    ThreadSafeDataTransport();
-    ~ThreadSafeDataTransport();
+ThreadSafeDataTransport::~ThreadSafeDataTransport()
+{
+}
 
-    // This method is being called subsequently with an expanding
-    // SharedBuffer.
-    void setData(SharedBuffer*, bool allDataReceived);
+void ThreadSafeDataTransport::setData(SharedBuffer* buffer, bool allDataReceived)
+{
+    ASSERT(buffer->size() >= m_readPosition);
+    Vector<RefPtr<SharedBuffer> > newBufferQueue;
 
-    // Get the data submitted to this class so far.
-    void data(SharedBuffer**, bool* allDataReceived);
+    const char* segment = 0;
+    while (size_t length = buffer->getSomeData(segment, m_readPosition)) {
+        m_readPosition += length;
+        newBufferQueue.append(SharedBuffer::create(segment, length));
+    }
 
-    // Return true of there is new data submitted to this class
-    // since last time data() was called.
-    bool hasNewData();
+    MutexLocker locker(m_mutex);
+    m_newBufferQueue.append(newBufferQueue);
+    m_allDataReceived = allDataReceived;
+}
 
-private:
-    Mutex m_mutex;
+void ThreadSafeDataTransport::data(SharedBuffer** buffer, bool* allDataReceived)
+{
+    Vector<RefPtr<SharedBuffer> > newBufferQueue;
+    {
+        MutexLocker lock(m_mutex);
+        m_newBufferQueue.swap(newBufferQueue);
+    }
+    for (size_t i = 0; i < newBufferQueue.size(); ++i)
+        m_readBuffer->append(newBufferQueue[i].get());
+    ASSERT(buffer);
+    ASSERT(allDataReceived);
+    *buffer = m_readBuffer.get();
+    *allDataReceived = m_allDataReceived;
+}
 
-    Vector<RefPtr<SharedBuffer> > m_newBufferQueue;
-    RefPtr<SharedBuffer> m_readBuffer;
-    bool m_allDataReceived;
-    size_t m_readPosition;
-};
+bool ThreadSafeDataTransport::hasNewData()
+{
+    MutexLocker lock(m_mutex);
+    return !m_newBufferQueue.isEmpty();
+}
 
 } // namespace WebCore
-
-#endif
