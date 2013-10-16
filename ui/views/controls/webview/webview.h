@@ -10,7 +10,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
-#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/view.h"
 
@@ -19,6 +18,8 @@ class SiteInstance;
 }
 
 namespace views {
+
+class NativeViewHost;
 
 class WEBVIEW_EXPORT WebView : public View,
                                public content::WebContentsDelegate,
@@ -66,11 +67,6 @@ class WEBVIEW_EXPORT WebView : public View,
   //         a continuous size operation completes. This allows for smoother
   //         resizing performance during interactive resizes and animations.
   void SetFastResize(bool fast_resize);
-
-  // Controls how the clip is positioned relative to the contents when using
-  // fast resize. Details of the meaning of the parameter can be found in
-  // native_view_host.h
-  void SetFastResizeGravity(NativeViewHost::Gravity gravity);
 
   // Called when the WebContents is focused.
   // TODO(beng): This view should become a WebContentsViewObserver when a

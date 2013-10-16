@@ -19,7 +19,7 @@ class NativeViewHostWin : public NativeViewHostWrapper {
   virtual ~NativeViewHostWin();
 
   // Overridden from NativeViewHostWrapper:
-  virtual void AttachNativeView();
+  virtual void NativeViewWillAttach();
   virtual void NativeViewDetaching(bool destroyed);
   virtual void AddedToWidget();
   virtual void RemovedFromWidget();

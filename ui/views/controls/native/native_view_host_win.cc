@@ -32,14 +32,10 @@ NativeViewHostWin::~NativeViewHostWin() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostWin, NativeViewHostWrapper implementation:
-void NativeViewHostWin::AttachNativeView() {
+void NativeViewHostWin::NativeViewWillAttach() {
   // First hide the new window. We don't want anything to draw (like sub-hwnd
-  // borders), when the parent changes.
+  // borders), when NativeViewHost changes the parent.
   ShowWindow(host_->native_view(), SW_HIDE);
-
-  Widget::ReparentNativeView(host_->native_view(),
-                             host_->GetWidget()->GetNativeView());
-
 }
 
 void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
