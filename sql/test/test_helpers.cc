@@ -82,6 +82,12 @@ bool CreateDatabaseFromSQL(const base::FilePath& db_path,
   if (!db.Open(db_path))
     return false;
 
+  // TODO(shess): Android defaults to auto_vacuum mode.
+  // Unfortunately, this makes certain kinds of tests which manipulate
+  // the raw database hard/impossible to write.
+  // http://crbug.com/307303 is for exploring this test issue.
+  ignore_result(db.Execute("PRAGMA auto_vacuum = 0"));
+
   return db.Execute(sql.c_str());
 }
 
