@@ -237,6 +237,7 @@ private:
     bool originalStyleSheetText(String* result) const;
     bool resourceStyleSheetText(String* result) const;
     bool inlineStyleSheetText(String* result) const;
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > selectorsFromSource(const CSSRuleSourceData*, const String&) const;
     PassRefPtr<TypeBuilder::CSS::SelectorList> buildObjectForSelectorList(CSSStyleRule*);
     String url() const;
     bool hasSourceURL() const;

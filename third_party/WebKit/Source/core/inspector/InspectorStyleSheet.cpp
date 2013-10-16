@@ -216,6 +216,8 @@ inline void StyleSheetHandler::setRuleHeaderEnd(const CharacterType* dataStart, 
     }
 
     m_currentRuleDataStack.last()->ruleHeaderRange.end = listEndOffset;
+    if (!m_currentRuleDataStack.last()->selectorRanges.isEmpty())
+        m_currentRuleDataStack.last()->selectorRanges.last().end = listEndOffset;
 }
 
 void StyleSheetHandler::endRuleHeader(unsigned offset)
@@ -1228,10 +1230,10 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
     return result.release();
 }
 
-static PassRefPtr<TypeBuilder::Array<String> > selectorsFromSource(const CSSRuleSourceData* sourceData, const String& sheetText)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > InspectorStyleSheet::selectorsFromSource(const CSSRuleSourceData* sourceData, const String& sheetText) const
 {
     RegularExpression comment("/\\*[^]*?\\*/", TextCaseSensitive, MultilineEnabled);
-    RefPtr<TypeBuilder::Array<String> > result = TypeBuilder::Array<String>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > result = TypeBuilder::Array<TypeBuilder::CSS::Selector>::create();
     const SelectorRangeList& ranges = sourceData->selectorRanges;
     for (size_t i = 0, size = ranges.size(); i < size; ++i) {
         const SourceRange& range = ranges.at(i);
@@ -1243,7 +1245,10 @@ static PassRefPtr<TypeBuilder::Array<String> > selectorsFromSource(const CSSRule
         while ((offset = comment.match(selector, offset, &matchLength)) >= 0)
             selector.replace(offset, matchLength, "");
 
-        result->addItem(selector.stripWhiteSpace());
+        RefPtr<TypeBuilder::CSS::Selector> simpleSelector = TypeBuilder::CSS::Selector::create()
+            .setValue(selector.stripWhiteSpace());
+        simpleSelector->setRange(buildSourceRangeObject(range, lineEndings().get()));
+        result->addItem(simpleSelector.release());
     }
     return result.release();
 }
@@ -1253,7 +1258,7 @@ PassRefPtr<TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSe
     RefPtr<CSSRuleSourceData> sourceData;
     if (ensureParsedDataReady())
         sourceData = ruleSourceDataFor(rule->style());
-    RefPtr<TypeBuilder::Array<String> > selectors;
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > selectors;
 
     // This intentionally does not rely on the source data to avoid catching the trailing comments (before the declaration starting '{').
     String selectorText = rule->selectorText();
@@ -1261,17 +1266,15 @@ PassRefPtr<TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSe
     if (sourceData)
         selectors = selectorsFromSource(sourceData.get(), m_parsedStyleSheet->text());
     else {
-        selectors = TypeBuilder::Array<String>::create();
+        selectors = TypeBuilder::Array<TypeBuilder::CSS::Selector>::create();
         const CSSSelectorList& selectorList = rule->styleRule()->selectorList();
         for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector))
-            selectors->addItem(selector->selectorText());
+            selectors->addItem(TypeBuilder::CSS::Selector::create().setValue(selector->selectorText()).release());
     }
     RefPtr<TypeBuilder::CSS::SelectorList> result = TypeBuilder::CSS::SelectorList::create()
         .setSelectors(selectors)
         .setText(selectorText)
         .release();
-    if (sourceData)
-        result->setRange(buildSourceRangeObject(sourceData->ruleHeaderRange, lineEndings().get()));
     return result.release();
 }
 

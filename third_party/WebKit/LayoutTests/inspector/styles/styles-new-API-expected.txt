@@ -357,7 +357,7 @@ body: [regular, 0:79-0:83] {
 === After selector set ===
 
 StyleSheet: 'html *, body[foo="bar"] {    text-decoration: strikethrough;    badproperty: 2badvalue2;}body {    text-align: justify;}'
-html *, body[foo="bar"]: [regular, 0:0-0:23] {
+html *, body[foo="bar"]: [regular, 0:0-0:6; 0:8-0:23] {
     ['text-decoration':'strikethrough' non-parsed] @[0:29-0:60] active
     ['badproperty':'2badvalue2' non-parsed] @[0:64-0:88] active
 }
@@ -370,7 +370,7 @@ body: [regular, 0:89-0:93] {
 StyleSheet: 'html *, body[foo="bar"] {
     color: white; background: black;
 }body {    text-align: justify;}'
-html *, body[foo="bar"]: [regular, 0:0-0:23] {
+html *, body[foo="bar"]: [regular, 0:0-0:6; 0:8-0:23] {
     ['color':'white'] @[1:4-1:17] active
     ['background':'black'] @[1:18-1:36] active
     ['background-image':'initial'] @[undefined-undefined] style
@@ -413,7 +413,7 @@ body: [regular, 9:0-9:4] {
     ['color':'yellow'] @[17:4-17:18] active
     ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] active
 }
-html *, body[foo="bar"]: [regular, 0:0-0:23] {
+html *, body[foo="bar"]: [regular, 0:0-0:6; 0:8-0:23] {
     ['color':'white'] @[1:4-1:17] active
     ['background':'black'] @[1:18-1:36] active
     ['background-image':'initial'] @[undefined-undefined] style

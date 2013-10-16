@@ -562,10 +562,15 @@ InspectorTest.dumpRule = function(rule, currentIndent)
 {
     function selectorRange()
     {
-        if (!rule.selectorList || !rule.selectorList.range)
+        var selectors = rule.selectorList.selectors;
+        if (!selectors || !selectors[0].range)
             return "";
-        var range = rule.selectorList.range;
-        return ", " + range.startLine + ":" + range.startColumn + "-" + range.endLine + ":" + range.endColumn;
+        var ranges = [];
+        for (var i = 0; i < selectors.length; ++i) {
+            var range = selectors[i].range;
+            ranges.push(range.startLine + ":" + range.startColumn + "-" + range.endLine + ":" + range.endColumn);
+        }
+        return ", " + ranges.join("; ");
     }
 
     currentIndent = currentIndent || "";

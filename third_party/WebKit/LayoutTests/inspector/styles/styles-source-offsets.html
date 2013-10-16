@@ -18,7 +18,12 @@ function test()
             if (ruleOrStyle.origin !== "regular")
                 return;
             style = ruleOrStyle.style;
-            header = ruleOrStyle.selectorList.text + ": " + (ruleOrStyle.selectorList.range ? InspectorTest.rangeText(ruleOrStyle.selectorList.range) : "");
+            var selectorRanges = [];
+            var selectors = ruleOrStyle.selectorList.selectors;
+            var firstRange = selectors[0].range;
+            var lastRange = selectors[selectors.length - 1].range;
+            var range = { startLine: firstRange.startLine, startColumn: firstRange.startColumn, endLine: lastRange.endLine, endColumn: lastRange.endColumn };
+            header = ruleOrStyle.selectorList.text + ": " + (range ? InspectorTest.rangeText(range) : "");
         } else {
             style = ruleOrStyle;
             header = "element.style:";
