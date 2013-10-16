@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_STACKED_TAB_STRIP_LAYOUT_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_STACKED_TAB_STRIP_LAYOUT_H_
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "ui/gfx/size.h"
 #include "ui/views/view_model.h"
