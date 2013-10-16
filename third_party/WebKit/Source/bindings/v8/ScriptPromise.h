@@ -95,9 +95,7 @@ public:
         m_promise.clear();
     }
 
-    // Creates a pending promise.
     static ScriptPromise createPending();
-    // Creates a pending promise.
     static ScriptPromise createPending(ExecutionContext*);
 
 private:
