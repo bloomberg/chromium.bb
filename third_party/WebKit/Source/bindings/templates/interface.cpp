@@ -2,14 +2,21 @@
 
 
 {##############################################################################}
+{% macro attribute_configuration(attribute) %}
+{"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>({{attribute.property_attributes | join(' | ')}}), 0 /* on instance */}{% endmacro %}
+
+
+{##############################################################################}
 {% block class_attributes %}
 {# FIXME: rename to install_attributes and put into configure_class_template #}
 {% if attributes %}
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attributes[] = {
     {% for attribute in attributes
-       if not (attribute.runtime_enabled_function_name or attribute.is_static) %}
+       if not (attribute.runtime_enabled_function_name or
+               attribute.per_context_enabled_function_name or
+               attribute.is_static) %}
     {% filter conditional(attribute.conditional_string) %}
-    {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>({{attribute.property_attributes | join(' | ')}}), 0 /* on instance */},
+    {{attribute_configuration(attribute)}},
     {% endfilter %}
     {% endfor %}
 };
@@ -40,7 +47,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function_name}}()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-        {"{{attribute.name}}", {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        {{attribute_configuration(attribute)}};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
     {% endfilter %}
@@ -125,6 +132,25 @@ bool {{v8_class_name}}::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::I
 
 
 {##############################################################################}
+{% block install_per_context_attributes %}
+{% if has_per_context_enabled_attributes %}
+void {{v8_class_name}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, {{cpp_class_name}}* impl, v8::Isolate* isolate)
+{
+    v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
+    {% for attribute in attributes if attribute.per_context_enabled_function_name %}
+    if ({{attribute.per_context_enabled_function_name}}(impl->document())) {
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {{attribute_configuration(attribute)}};
+        V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
+    }
+    {% endfor %}
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block create_wrapper_and_deref_object %}
 v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_name}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -141,7 +167,7 @@ v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_n
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get(), isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<{{v8_class_name}}>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }

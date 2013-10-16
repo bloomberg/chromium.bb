@@ -43,7 +43,7 @@
 
 namespace WebCore {
 
-WrapperTypeInfo V8HTMLImageElementConstructor::info = { V8HTMLImageElementConstructor::GetTemplate, V8HTMLImageElement::derefObject, 0, V8HTMLImageElement::toEventTarget, 0, V8HTMLImageElement::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8HTMLImageElementConstructor::info = { V8HTMLImageElementConstructor::GetTemplate, V8HTMLImageElement::derefObject, 0, V8HTMLImageElement::toEventTarget, 0, V8HTMLImageElement::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 static void v8HTMLImageElementConstructorMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {

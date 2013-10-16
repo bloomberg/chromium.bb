@@ -41,9 +41,7 @@ public:
     static void derefObject(void*);
     static WrapperTypeInfo info;
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
-#if ENABLE(Condition22) || ENABLE(Condition23)
     static void implementsMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     static void supplementalMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -59,8 +57,8 @@ public:
     {
         return static_cast<TestInterface*>(object);
     }
-    static void installPerContextProperties(v8::Handle<v8::Object>, TestInterface*, v8::Isolate*);
-    static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterface*, v8::Isolate*);
+    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap(TestInterface*, v8::Handle<v8::Object> creationContext, v8::Isolate*);

@@ -50,8 +50,8 @@ public:
     {
         return static_cast<TestSerializedScriptValueInterface*>(object);
     }
-    static void installPerContextProperties(v8::Handle<v8::Object>, TestSerializedScriptValueInterface*, v8::Isolate*) { }
-    static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestSerializedScriptValueInterface*, v8::Isolate*) { }
+    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap(TestSerializedScriptValueInterface*, v8::Handle<v8::Object> creationContext, v8::Isolate*);

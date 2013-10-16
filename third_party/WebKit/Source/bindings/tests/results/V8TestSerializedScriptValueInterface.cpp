@@ -56,7 +56,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestSerializedScriptV
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestSerializedScriptValueInterface::info = { V8TestSerializedScriptValueInterface::GetTemplate, V8TestSerializedScriptValueInterface::derefObject, 0, 0, 0, V8TestSerializedScriptValueInterface::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestSerializedScriptValueInterface::info = { V8TestSerializedScriptValueInterface::GetTemplate, V8TestSerializedScriptValueInterface::derefObject, 0, 0, 0, V8TestSerializedScriptValueInterface::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestSerializedScriptValueInterfaceV8Internal {
 
@@ -295,7 +295,7 @@ v8::Handle<v8::Object> V8TestSerializedScriptValueInterface::createWrapper(PassR
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get(), isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestSerializedScriptValueInterface>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }

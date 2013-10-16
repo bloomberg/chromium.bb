@@ -115,6 +115,7 @@ interface TestObjectPython {
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
     [MeasureAs=TestFeature] readonly attribute long measureAsReadonlyLongAttribute;
     [NotEnumerable] readonly attribute long notEnumerableReadonlyLongAttribute;
+    [PerContextEnabled=FeatureName] readonly attribute long perContextEnabledReadonlyLongAttribute;
     [RaisesException] readonly attribute long raisesExceptionReadonlyLongAttribute;
     [Reflect] readonly attribute TestInterface reflectReadonlyTestInterfaceAttribute;
     [Reflect=reflectedNameAttribute] readonly attribute TestInterface reflectReflectedNameAttributeReadonlyTestAttribute;

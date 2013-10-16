@@ -60,7 +60,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::SupportTestInterface*
 }
 
 namespace WebCore {
-WrapperTypeInfo V8SupportTestInterface::info = { V8SupportTestInterface::GetTemplate, V8SupportTestInterface::derefObject, 0, 0, 0, V8SupportTestInterface::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8SupportTestInterface::info = { V8SupportTestInterface::GetTemplate, V8SupportTestInterface::derefObject, 0, 0, 0, V8SupportTestInterface::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace SupportTestInterfaceV8Internal {
 
@@ -504,17 +504,14 @@ bool V8SupportTestInterface::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, 
         || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
 }
 
-void V8SupportTestInterface::installPerContextProperties(v8::Handle<v8::Object> instance, SupportTestInterface* impl, v8::Isolate* isolate)
+void V8SupportTestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, SupportTestInterface* impl, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
     if (ContextFeatures::featureName14Enabled(impl->document())) {
-        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {"Node14", SupportTestInterfaceV8Internal::Node14AttributeGetterCallback, SupportTestInterfaceV8Internal::Node14AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
     }
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
 }
 
 v8::Handle<v8::Object> V8SupportTestInterface::createWrapper(PassRefPtr<SupportTestInterface> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -532,7 +529,7 @@ v8::Handle<v8::Object> V8SupportTestInterface::createWrapper(PassRefPtr<SupportT
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get(), isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8SupportTestInterface>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }

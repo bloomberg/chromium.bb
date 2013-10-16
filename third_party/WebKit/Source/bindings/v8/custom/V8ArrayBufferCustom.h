@@ -57,8 +57,8 @@ public:
     static void derefObject(void*);
     static WrapperTypeInfo info;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
-    static void installPerContextProperties(v8::Handle<v8::Object>, ArrayBuffer*, v8::Isolate*) { }
-    static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, ArrayBuffer*, v8::Isolate*) { }
+    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 
     static inline void* toInternalPointer(ArrayBuffer* impl)
     {

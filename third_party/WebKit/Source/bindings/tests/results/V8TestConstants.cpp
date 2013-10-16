@@ -53,7 +53,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestConstants* object
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestConstants::info = { V8TestConstants::GetTemplate, V8TestConstants::derefObject, 0, 0, 0, V8TestConstants::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestConstants::info = { V8TestConstants::GetTemplate, V8TestConstants::derefObject, 0, 0, 0, V8TestConstants::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestConstantsV8Internal {
 
@@ -164,7 +164,7 @@ v8::Handle<v8::Object> V8TestConstants::createWrapper(PassRefPtr<TestConstants> 
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get(), isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestConstants>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }

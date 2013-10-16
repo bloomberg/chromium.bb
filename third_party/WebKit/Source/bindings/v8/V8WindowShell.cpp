@@ -308,7 +308,7 @@ bool V8WindowShell::installDOMWindow()
     if (windowWrapper.IsEmpty())
         return false;
 
-    V8Window::installPerContextProperties(windowWrapper, window, m_isolate);
+    V8Window::installPerContextEnabledProperties(windowWrapper, window, m_isolate);
 
     V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::info, window);
 

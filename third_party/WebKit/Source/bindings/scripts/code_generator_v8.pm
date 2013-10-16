@@ -774,21 +774,21 @@ END
 
     if (@perContextEnabledAttributes) {
         $header{classPublic}->add(<<END);
-    static void installPerContextProperties(v8::Handle<v8::Object>, ${nativeType}*, v8::Isolate*);
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, ${nativeType}*, v8::Isolate*);
 END
     } else {
         $header{classPublic}->add(<<END);
-    static void installPerContextProperties(v8::Handle<v8::Object>, ${nativeType}*, v8::Isolate*) { }
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, ${nativeType}*, v8::Isolate*) { }
 END
     }
 
     if (@perContextEnabledFunctions) {
         $header{classPublic}->add(<<END);
-    static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*);
+    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*);
 END
     } else {
         $header{classPublic}->add(<<END);
-    static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 END
     }
 
@@ -2898,7 +2898,7 @@ sub GenerateNamedConstructor
     }
 
     $implementation{nameSpaceWebCore}->add(<<END);
-WrapperTypeInfo ${v8ClassName}Constructor::info = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo ${v8ClassName}Constructor::info = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 END
 
@@ -4052,7 +4052,7 @@ END
     }
 
     my $code = "WrapperTypeInfo ${v8ClassName}::info = { ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
-    $code .= "$rootForGC, ${v8ClassName}::installPerContextPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n";
+    $code .= "$rootForGC, ${v8ClassName}::installPerContextEnabledPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
     $implementation{nameSpaceInternal}->add("template <typename T> void V8_USE(T) { }\n\n");
@@ -4196,13 +4196,10 @@ END
             push(@staticAttributes, $attribute);
         } elsif ($interfaceName eq "Window" && $attribute->extendedAttributes->{"Unforgeable"}) {
             push(@disallowsShadowing, $attribute);
-        } elsif ($attribute->extendedAttributes->{"RuntimeEnabled"} || $attribute->extendedAttributes->{"PerContextEnabled"}) {
-            if ($attribute->extendedAttributes->{"PerContextEnabled"}) {
-                push(@perContextEnabledAttributes, $attribute);
-            }
-            if ($attribute->extendedAttributes->{"RuntimeEnabled"}) {
-                push(@runtimeEnabledAttributes, $attribute);
-            }
+        } elsif ($attribute->extendedAttributes->{"PerContextEnabled"}) {
+            push(@perContextEnabledAttributes, $attribute);
+        } elsif ($attribute->extendedAttributes->{"RuntimeEnabled"}) {
+            push(@runtimeEnabledAttributes, $attribute);
         } else {
             push(@normalAttributes, $attribute);
         }
@@ -4366,7 +4363,6 @@ END
 
     # Setup the enable-at-runtime attributes if we have them
     foreach my $runtime_attr (@runtimeEnabledAttributes) {
-        next if grep { $_ eq $runtime_attr } @perContextEnabledAttributes;
         my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtime_attr);
         my $conditionalString = GenerateConditionalString($runtime_attr);
         $code .= "#if ${conditionalString}\n" if $conditionalString;
@@ -4510,30 +4506,22 @@ END
     if (@perContextEnabledAttributes) {
         my $code = "";
         $code .= <<END;
-void ${v8ClassName}::installPerContextProperties(v8::Handle<v8::Object> instance, ${nativeType}* impl, v8::Isolate* isolate)
+void ${v8ClassName}::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, ${nativeType}* impl, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
 END
 
         # Setup the enable-by-settings attributes if we have them
-        foreach my $runtimeAttribute (@perContextEnabledAttributes) {
-            my $contextEnabledFunction = GetContextEnabledFunctionName($runtimeAttribute);
-            my $conditionalString = GenerateConditionalString($runtimeAttribute);
-            $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-            if (grep { $_ eq $runtimeAttribute } @runtimeEnabledAttributes) {
-                my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtimeAttribute);
-                $code .= "    if (${contextEnabledFunction}(impl->document()) && ${runtimeEnabledFunction}()) {\n";
-            } else {
-                $code .= "    if (${contextEnabledFunction}(impl->document())) {\n";
-            }
+        foreach my $perContextEnabledAttribute (@perContextEnabledAttributes) {
+            my $contextEnabledFunction = GetContextEnabledFunctionName($perContextEnabledAttribute);
+            $code .= "    if (${contextEnabledFunction}(impl->document())) {\n";
 
-            $code .= "        static const V8DOMConfiguration::AttributeConfiguration    attributeConfiguration =\\\n";
-            $code .= GenerateAttributeConfiguration($interface, $runtimeAttribute, ";", "    ");
+            $code .= "        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\\\n";
+            $code .= GenerateAttributeConfiguration($interface, $perContextEnabledAttribute, ";", "    ");
             $code .= <<END;
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
 END
             $code .= "    }\n";
-            $code .= "#endif // ${conditionalString}\n" if $conditionalString;
         }
         $code .= <<END;
 }
@@ -4545,7 +4533,7 @@ END
     if (@perContextEnabledFunctions) {
         my $code = "";
         $code .= <<END;
-void ${v8ClassName}::installPerContextPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+void ${v8ClassName}::installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
 {
     UNUSED_PARAM(proto);
 END
@@ -4982,7 +4970,7 @@ END
 
 
     $code .= <<END;
-    installPerContextProperties(wrapper, impl.get(), isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<$v8ClassName>(impl, &info, wrapper, isolate, $wrapperConfiguration);
     return wrapper;
 }

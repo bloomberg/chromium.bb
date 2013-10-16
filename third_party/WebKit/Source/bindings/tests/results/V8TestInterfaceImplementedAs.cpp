@@ -57,7 +57,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::RealClass* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestInterfaceImplementedAs::info = { V8TestInterfaceImplementedAs::GetTemplate, V8TestInterfaceImplementedAs::derefObject, 0, 0, 0, V8TestInterfaceImplementedAs::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestInterfaceImplementedAs::info = { V8TestInterfaceImplementedAs::GetTemplate, V8TestInterfaceImplementedAs::derefObject, 0, 0, 0, V8TestInterfaceImplementedAs::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace RealClassV8Internal {
 
@@ -233,7 +233,7 @@ v8::Handle<v8::Object> V8TestInterfaceImplementedAs::createWrapper(PassRefPtr<Re
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get(), isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceImplementedAs>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }

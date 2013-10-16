@@ -56,8 +56,8 @@ public:
     {
         return static_cast<TestNamedConstructor*>(object);
     }
-    static void installPerContextProperties(v8::Handle<v8::Object>, TestNamedConstructor*, v8::Isolate*) { }
-    static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestNamedConstructor*, v8::Isolate*) { }
+    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap(TestNamedConstructor*, v8::Handle<v8::Object> creationContext, v8::Isolate*);

@@ -28,14 +28,12 @@
 
 // This IDL file is for testing the bindings code generator and for tracking
 // changes in its ouput.
-[
-    Conditional=Condition22|Condition23
-] interface TestImplements {
+interface TestImplements {
     static readonly attribute long implementsStaticReadOnlyAttr;
     static attribute DOMString implementsStaticAttr;
     readonly attribute DOMString implementsStr1;
     attribute DOMString implementsStr2;
-    [CustomGetter, CustomSetter] attribute DOMString implementsStr3;
+    [Custom] attribute DOMString implementsStr3;
     attribute Node implementsNode;
 
     void implementsMethod1();
@@ -46,8 +44,6 @@
     const unsigned short IMPLEMENTSCONSTANT1 = 1;
     [Reflect=CONST_IMPL] const unsigned short IMPLEMENTSCONSTANT2 = 2;
 
-    [RuntimeEnabled=Condition23] attribute Node Node23;
-    [PerContextEnabled=Condition24] attribute Node Node24;
-    [RuntimeEnabled=Condition25, PerContextEnabled=Condition26] attribute Node Node25;
+    [RuntimeEnabled=FeatureName23] attribute Node Node23;
+    [PerContextEnabled=FeatureName24] attribute Node Node24;
 };
-

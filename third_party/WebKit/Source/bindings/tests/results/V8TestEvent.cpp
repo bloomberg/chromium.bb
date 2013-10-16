@@ -54,7 +54,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestEvent* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestEvent::info = { V8TestEvent::GetTemplate, V8TestEvent::derefObject, 0, 0, 0, V8TestEvent::installPerContextPrototypeProperties, &V8Event::info, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestEvent::info = { V8TestEvent::GetTemplate, V8TestEvent::derefObject, 0, 0, 0, V8TestEvent::installPerContextEnabledPrototypeProperties, &V8Event::info, WrapperTypeObjectPrototype };
 
 namespace TestEventV8Internal {
 
@@ -119,7 +119,7 @@ v8::Handle<v8::Object> V8TestEvent::createWrapper(PassRefPtr<TestEvent> impl, v8
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    installPerContextProperties(wrapper, impl.get(), isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestEvent>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }

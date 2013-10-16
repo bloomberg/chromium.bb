@@ -40,4 +40,3 @@
 };
 
 TestInterface implements TestImplements;
-

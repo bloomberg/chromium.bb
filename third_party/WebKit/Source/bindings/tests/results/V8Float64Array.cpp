@@ -64,7 +64,7 @@ void webCoreInitializeScriptWrappableForInterface(Float64Array* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8Float64Array::info = { V8Float64Array::GetTemplate, V8Float64Array::derefObject, 0, 0, 0, V8Float64Array::installPerContextPrototypeProperties, &V8ArrayBufferView::info, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8Float64Array::info = { V8Float64Array::GetTemplate, V8Float64Array::derefObject, 0, 0, 0, V8Float64Array::installPerContextEnabledPrototypeProperties, &V8ArrayBufferView::info, WrapperTypeObjectPrototype };
 
 namespace Float64ArrayV8Internal {
 
@@ -217,7 +217,7 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
         return wrapper;
 
     impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-    installPerContextProperties(wrapper, impl.get(), isolate);
+    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8Float64Array>(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
 }

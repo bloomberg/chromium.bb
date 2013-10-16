@@ -32,5 +32,5 @@
     RuntimeEnabled=PagePopup,
     ImplementedAs=DOMWindowPagePopup
 ] partial interface Window {
-    [PerContextEnabled=pagePopup] readonly attribute PagePopupController pagePopupController;
+    [PerContextEnabled=PagePopup] readonly attribute PagePopupController pagePopupController;
 };
