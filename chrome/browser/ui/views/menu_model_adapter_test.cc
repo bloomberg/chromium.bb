@@ -317,9 +317,4 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   scoped_ptr<views::MenuRunner> menu_runner_;
 };
 
-#if defined(OS_WIN)
-#define MAYBE_RebuildMenu DISABLED_RebuildMenu
-#else
-#define MAYBE_RebuildMenu RebuildMenu
-#endif
-VIEW_TEST(MenuModelAdapterTest, MAYBE_RebuildMenu)
+VIEW_TEST(MenuModelAdapterTest, RebuildMenu)

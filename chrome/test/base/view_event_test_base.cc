@@ -97,8 +97,10 @@ void ViewEventTestBase::Done() {
 }
 
 void ViewEventTestBase::SetUp() {
+  views::ViewsDelegate::views_delegate = &views_delegate_;
   ui::InitializeInputMethodForTesting();
   gfx::NativeView context = NULL;
+
 #if defined(USE_ASH)
 #if defined(OS_WIN)
   // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
@@ -126,10 +128,7 @@ void ViewEventTestBase::SetUp() {
       ->SetActiveUserSessionStarted(true);
   context = ash::Shell::GetPrimaryRootWindow();
 #endif  // !OS_WIN
-#if defined(USE_AURA)
   aura::Env::CreateInstance();
-#endif
-
 #elif defined(USE_AURA)
   // Instead of using the ash shell, use an AuraTestHelper to create and manage
   // the test screen.
@@ -137,7 +136,8 @@ void ViewEventTestBase::SetUp() {
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
   aura_test_helper_->SetUp();
   context = aura_test_helper_->root_window();
-#endif  // USE_AURA
+#endif  // !USE_ASH && USE_AURA
+
   window_ = views::Widget::CreateWindowWithContext(this, context);
 }
 
@@ -151,9 +151,9 @@ void ViewEventTestBase::TearDown() {
 #endif
     window_ = NULL;
   }
+
 #if defined(USE_ASH)
-#if defined(OS_WIN)
-#else
+#if !defined(OS_WIN)
   ash::Shell::DeleteInstance();
 #if defined(OS_CHROMEOS)
   chromeos::NetworkHandler::Shutdown();
@@ -162,15 +162,14 @@ void ViewEventTestBase::TearDown() {
   // Ash Shell can't just live on its own without a browser process, we need to
   // also shut down the message center.
   message_center::MessageCenter::Shutdown();
-#endif
-#if defined(USE_AURA)
+#endif  // !OS_WIN
   aura::Env::DeleteInstance();
-#endif
-
 #elif defined(USE_AURA)
   aura_test_helper_->TearDown();
-#endif
+#endif  // !USE_ASH && USE_AURA
+
   ui::ShutdownInputMethodForTesting();
+  views::ViewsDelegate::views_delegate = NULL;
 }
 
 bool ViewEventTestBase::CanResize() const {

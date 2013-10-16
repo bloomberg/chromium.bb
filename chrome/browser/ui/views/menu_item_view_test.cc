@@ -164,18 +164,9 @@ class MenuItemViewTestBasic : public MenuItemViewTestBase {
 typedef MenuItemViewTestBasic<0> MenuItemViewTestBasic0;
 typedef MenuItemViewTestBasic<1> MenuItemViewTestBasic1;
 typedef MenuItemViewTestBasic<2> MenuItemViewTestBasic2;
-#if defined(OS_WIN)
-#define MAYBE_SelectItem0 DISABLED_SelectItem0
-#define MAYBE_SelectItem1 DISABLED_SelectItem1
-#define MAYBE_SelectItem2 DISABLED_SelectItem2
-#else
-#define MAYBE_SelectItem0 SelectItem0
-#define MAYBE_SelectItem1 SelectItem1
-#define MAYBE_SelectItem2 SelectItem2
-#endif
-VIEW_TEST(MenuItemViewTestBasic0, MAYBE_SelectItem0)
-VIEW_TEST(MenuItemViewTestBasic1, MAYBE_SelectItem1)
-VIEW_TEST(MenuItemViewTestBasic2, MAYBE_SelectItem2)
+VIEW_TEST(MenuItemViewTestBasic0, SelectItem0)
+VIEW_TEST(MenuItemViewTestBasic1, SelectItem1)
+VIEW_TEST(MenuItemViewTestBasic2, SelectItem2)
 
 // Test class for inserting a menu item while the menu is open.
 template<int INSERT_INDEX, int SELECT_INDEX>
@@ -265,27 +256,12 @@ typedef MenuItemViewTestInsert<1,0> MenuItemViewTestInsert10;
 typedef MenuItemViewTestInsert<1,2> MenuItemViewTestInsert12;
 typedef MenuItemViewTestInsert<2,0> MenuItemViewTestInsert20;
 typedef MenuItemViewTestInsert<2,2> MenuItemViewTestInsert22;
-#if defined(OS_WIN)
-#define MAYBE_InsertItem00 DISABLED_InsertItem00
-#define MAYBE_InsertItem02 DISABLED_InsertItem02
-#define MAYBE_InsertItem10 DISABLED_InsertItem10
-#define MAYBE_InsertItem12 DISABLED_InsertItem12
-#define MAYBE_InsertItem20 DISABLED_InsertItem20
-#define MAYBE_InsertItem22 DISABLED_InsertItem22
-#else
-#define MAYBE_InsertItem00 InsertItem00
-#define MAYBE_InsertItem02 InsertItem02
-#define MAYBE_InsertItem10 InsertItem10
-#define MAYBE_InsertItem12 InsertItem12
-#define MAYBE_InsertItem20 InsertItem20
-#define MAYBE_InsertItem22 InsertItem22
-#endif
-VIEW_TEST(MenuItemViewTestInsert00, MAYBE_InsertItem00)
-VIEW_TEST(MenuItemViewTestInsert02, MAYBE_InsertItem02)
-VIEW_TEST(MenuItemViewTestInsert10, MAYBE_InsertItem10)
-VIEW_TEST(MenuItemViewTestInsert12, MAYBE_InsertItem12)
-VIEW_TEST(MenuItemViewTestInsert20, MAYBE_InsertItem20)
-VIEW_TEST(MenuItemViewTestInsert22, MAYBE_InsertItem22)
+VIEW_TEST(MenuItemViewTestInsert00, InsertItem00)
+VIEW_TEST(MenuItemViewTestInsert02, InsertItem02)
+VIEW_TEST(MenuItemViewTestInsert10, InsertItem10)
+VIEW_TEST(MenuItemViewTestInsert12, InsertItem12)
+VIEW_TEST(MenuItemViewTestInsert20, InsertItem20)
+VIEW_TEST(MenuItemViewTestInsert22, InsertItem22)
 
 // Test class for inserting a menu item while a submenu is open.
 template<int INSERT_INDEX>
@@ -356,15 +332,8 @@ class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
 // then inserts an item in the top-level menu at X.
 typedef MenuItemViewTestInsertWithSubmenu<0> MenuItemViewTestInsertWithSubmenu0;
 typedef MenuItemViewTestInsertWithSubmenu<1> MenuItemViewTestInsertWithSubmenu1;
-#if defined(OS_WIN)
-#define MAYBE_InsertItemWithSubmenu0 DISABLED_InsertItemWithSubmenu0
-#define MAYBE_InsertItemWithSubmenu1 DISABLED_InsertItemWithSubmenu1
-#else
-#define MAYBE_InsertItemWithSubmenu0 InsertItemWithSubmenu0
-#define MAYBE_InsertItemWithSubmenu1 InsertItemWithSubmenu1
-#endif
-VIEW_TEST(MenuItemViewTestInsertWithSubmenu0, MAYBE_InsertItemWithSubmenu0)
-VIEW_TEST(MenuItemViewTestInsertWithSubmenu1, MAYBE_InsertItemWithSubmenu1)
+VIEW_TEST(MenuItemViewTestInsertWithSubmenu0, InsertItemWithSubmenu0)
+VIEW_TEST(MenuItemViewTestInsertWithSubmenu1, InsertItemWithSubmenu1)
 
 // Test class for removing a menu item while the menu is open.
 template<int REMOVE_INDEX, int SELECT_INDEX>
@@ -440,27 +409,12 @@ typedef MenuItemViewTestRemove<1,0> MenuItemViewTestRemove10;
 typedef MenuItemViewTestRemove<1,1> MenuItemViewTestRemove11;
 typedef MenuItemViewTestRemove<2,0> MenuItemViewTestRemove20;
 typedef MenuItemViewTestRemove<2,1> MenuItemViewTestRemove21;
-#if defined(OS_WIN)
-#define MAYBE_RemoveItem00 DISABLED_RemoveItem00
-#define MAYBE_RemoveItem01 DISABLED_RemoveItem01
-#define MAYBE_RemoveItem10 DISABLED_RemoveItem10
-#define MAYBE_RemoveItem11 DISABLED_RemoveItem11
-#define MAYBE_RemoveItem20 DISABLED_RemoveItem20
-#define MAYBE_RemoveItem21 DISABLED_RemoveItem21
-#else
-#define MAYBE_RemoveItem00 RemoveItem00
-#define MAYBE_RemoveItem01 RemoveItem01
-#define MAYBE_RemoveItem10 RemoveItem10
-#define MAYBE_RemoveItem11 RemoveItem11
-#define MAYBE_RemoveItem20 RemoveItem20
-#define MAYBE_RemoveItem21 RemoveItem21
-#endif
-VIEW_TEST(MenuItemViewTestRemove00, MAYBE_RemoveItem00)
-VIEW_TEST(MenuItemViewTestRemove01, MAYBE_RemoveItem01)
-VIEW_TEST(MenuItemViewTestRemove10, MAYBE_RemoveItem10)
-VIEW_TEST(MenuItemViewTestRemove11, MAYBE_RemoveItem11)
-VIEW_TEST(MenuItemViewTestRemove20, MAYBE_RemoveItem20)
-VIEW_TEST(MenuItemViewTestRemove21, MAYBE_RemoveItem21)
+VIEW_TEST(MenuItemViewTestRemove00, RemoveItem00)
+VIEW_TEST(MenuItemViewTestRemove01, RemoveItem01)
+VIEW_TEST(MenuItemViewTestRemove10, RemoveItem10)
+VIEW_TEST(MenuItemViewTestRemove11, RemoveItem11)
+VIEW_TEST(MenuItemViewTestRemove20, RemoveItem20)
+VIEW_TEST(MenuItemViewTestRemove21, RemoveItem21)
 
 // Test class for removing a menu item while a submenu is open.
 template<int REMOVE_INDEX>
@@ -541,12 +495,5 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
 
 typedef MenuItemViewTestRemoveWithSubmenu<0> MenuItemViewTestRemoveWithSubmenu0;
 typedef MenuItemViewTestRemoveWithSubmenu<1> MenuItemViewTestRemoveWithSubmenu1;
-#if defined(OS_WIN)
-#define MAYBE_RemoveItemWithSubmenu0 DISABLED_RemoveItemWithSubmenu0
-#define MAYBE_RemoveItemWithSubmenu1 DISABLED_RemoveItemWithSubmenu1
-#else
-#define MAYBE_RemoveItemWithSubmenu0 RemoveItemWithSubmenu0
-#define MAYBE_RemoveItemWithSubmenu1 RemoveItemWithSubmenu1
-#endif
-VIEW_TEST(MenuItemViewTestRemoveWithSubmenu0, MAYBE_RemoveItemWithSubmenu0)
-VIEW_TEST(MenuItemViewTestRemoveWithSubmenu1, MAYBE_RemoveItemWithSubmenu1)
+VIEW_TEST(MenuItemViewTestRemoveWithSubmenu0, RemoveItemWithSubmenu0)
+VIEW_TEST(MenuItemViewTestRemoveWithSubmenu1, RemoveItemWithSubmenu1)

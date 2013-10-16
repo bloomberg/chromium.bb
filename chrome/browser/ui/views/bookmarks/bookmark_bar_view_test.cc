@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
-#include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -166,7 +165,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     tmp_parent.RemoveChildView(bb_view_.get());
 
-    views::ViewsDelegate::views_delegate = &views_delegate_;
     ViewEventTestBase::SetUp();
   }
 
@@ -185,7 +183,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     ViewEventTestBase::TearDown();
     BookmarkBarView::DisableAnimationsForTesting(false);
-    views::ViewsDelegate::views_delegate = NULL;
   }
 
  protected:
@@ -243,7 +240,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<ScopedTestingLocalState> local_state_;
-  ChromeViewsDelegate views_delegate_;
 };
 
 // Clicks on first menu, makes sure button is depressed. Moves mouse to first
@@ -1604,10 +1600,6 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
 
 VIEW_TEST(BookmarkBarViewTest19, BookmarkBarViewTest19_SiblingMenu)
 
-#if !defined(OS_WIN)
-// Not ready for Win Aura. (NOTREACHED in chrome_views_delegate.cc
-// and desktop_root_window_host_win.cc.)
-
 // Verify that when clicking a mouse button outside a context menu,
 // the context menu is dismissed *and* the underlying view receives
 // the the mouse event (due to event reposting).
@@ -1706,9 +1698,13 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
   TestViewForMenuExit* test_view_;
 };
 
-VIEW_TEST(BookmarkBarViewTest20, ContextMenuExitTest)
+#if defined(OS_WIN) && !defined(USE_AURA)
+#define MAYBE_ContextMenuExitTest DISABLED_ContextMenuExitTest
+#else
+#define MAYBE_ContextMenuExitTest ContextMenuExitTest
+#endif
 
-#endif // !defined(OS_WIN)
+VIEW_TEST(BookmarkBarViewTest20, MAYBE_ContextMenuExitTest)
 
 // Tests context menu by way of opening a context menu for a empty folder menu.
 // The opened context menu should behave as it is from the folder button.

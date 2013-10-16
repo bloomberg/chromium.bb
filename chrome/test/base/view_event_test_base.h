@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -150,6 +151,8 @@ class ViewEventTestBase : public views::WidgetDelegate,
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
+
+  ChromeViewsDelegate views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestBase);
 };
