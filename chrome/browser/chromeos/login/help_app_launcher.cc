@@ -8,12 +8,16 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 using content::BrowserThread;
 
@@ -66,6 +70,11 @@ void HelpAppLauncher::ShowHelpTopicDialog(const GURL& topic_url) {
       l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
       topic_url,
       LoginWebDialog::STYLE_BUBBLE);
+  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+  dialog->SetDialogSize(l10n_util::GetLocalizedContentsWidthInPixels(
+                            IDS_HELP_APP_DIALOG_WIDTH_PIXELS),
+                        l10n_util::GetLocalizedContentsWidthInPixels(
+                            IDS_HELP_APP_DIALOG_HEIGHT_PIXELS));
   dialog->Show();
   // The dialog object will be deleted on dialog close.
 }
