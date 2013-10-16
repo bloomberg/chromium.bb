@@ -27,8 +27,6 @@
 #include "config.h"
 #include "CString.h"
 
-#include "wtf/PartitionAlloc.h"
-#include "wtf/WTF.h"
 #include <string.h>
 
 using namespace std;
@@ -41,13 +39,8 @@ PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length)
 
     // The +1 is for the terminating NUL character.
     size_t size = sizeof(CStringBuffer) + length + 1;
-    CStringBuffer* stringBuffer = static_cast<CStringBuffer*>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
-    return adoptRef(new (stringBuffer) CStringBuffer(length));
-}
-
-void CStringBuffer::operator delete(void* ptr)
-{
-    partitionFreeGeneric(Partitions::getBufferPartition(), ptr);
+    CStringBuffer* stringBuffer = static_cast<CStringBuffer*>(fastMalloc(size));
+    return adoptRef(new (NotNull, stringBuffer) CStringBuffer(length));
 }
 
 CString::CString(const char* str)

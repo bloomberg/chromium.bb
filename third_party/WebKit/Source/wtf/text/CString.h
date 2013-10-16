@@ -34,17 +34,13 @@ namespace WTF {
 
 // CStringBuffer is the ref-counted storage class for the characters in a CString.
 // The data is implicitly allocated 1 character longer than length(), as it is zero-terminated.
-class WTF_EXPORT CStringBuffer : public RefCounted<CStringBuffer> {
+class CStringBuffer : public RefCounted<CStringBuffer> {
 public:
     const char* data() { return mutableData(); }
     size_t length() const { return m_length; }
 
 private:
     friend class CString;
-    friend class RefCounted<CStringBuffer>;
-    // CStringBuffers are allocated out of the WTF buffer partition.
-    void* operator new(size_t, void* ptr) { return ptr; };
-    void operator delete(void*);
 
     static PassRefPtr<CStringBuffer> createUninitialized(size_t length);
 

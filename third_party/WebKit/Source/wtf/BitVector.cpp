@@ -26,9 +26,8 @@
 #include "config.h"
 #include "BitVector.h"
 
-#include "wtf/PartitionAlloc.h"
+#include "wtf/FastMalloc.h"
 #include "wtf/PrintStream.h"
-#include "wtf/WTF.h"
 #include <algorithm>
 #include <string.h>
 
@@ -76,14 +75,13 @@ BitVector::OutOfLineBits* BitVector::OutOfLineBits::create(size_t numBits)
 {
     numBits = (numBits + bitsInPointer() - 1) & ~(bitsInPointer() - 1);
     size_t size = sizeof(OutOfLineBits) + sizeof(uintptr_t) * (numBits / bitsInPointer());
-    void* allocation = partitionAllocGeneric(Partitions::getBufferPartition(), size);
-    OutOfLineBits* result = new (NotNull, allocation) OutOfLineBits(numBits);
+    OutOfLineBits* result = new (NotNull, fastMalloc(size)) OutOfLineBits(numBits);
     return result;
 }
 
 void BitVector::OutOfLineBits::destroy(OutOfLineBits* outOfLineBits)
 {
-    partitionFreeGeneric(Partitions::getBufferPartition(), outOfLineBits);
+    fastFree(outOfLineBits);
 }
 
 void BitVector::resizeOutOfLine(size_t numBits)
