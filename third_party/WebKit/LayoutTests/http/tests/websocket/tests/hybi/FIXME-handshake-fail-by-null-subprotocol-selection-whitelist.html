@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="/js-test-resources/js-test-pre.js"></script>
+</head>
+<body>
+<div id="description"></div>
+<div id="console"></div>
+<script>
+description("Test for verifying that the whitelist prevents handshake fail when the client requests a subprotocol but the server doesn't include a Sec-WebSocket-Protocol header in the response.");
+
+window.jsTestIsAsync = true;
+
+var url = "ws://localhost:8880/websocket/tests/hybi/handshake-fail-by-null-subprotocol-selection";
+var ws = new WebSocket(url, 'ica.citrix.com');
+
+ws.onopen = function()
+{
+    testPassed("Connection established.");
+    ws.close();
+};
+
+ws.onclose = function(event)
+{
+    finishJSTest();
+};
+
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>
