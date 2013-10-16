@@ -1430,7 +1430,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
             service->GetExtensionById(kAdBlockCrxId, true));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_ExtensionInstallBlacklistWildcard) {
+// Flaky on windows; http://crbug.com/307994.
+#if defined(OS_WIN)
+#define MAYBE_ExtensionInstallBlacklistWildcard DISABLED_ExtensionInstallBlacklistWildcard
+#else
+#define MAYBE_ExtensionInstallBlacklistWildcard ExtensionInstallBlacklistWildcard
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
   // Verify that a wildcard blacklist takes effect.
   EXPECT_TRUE(InstallExtension(kAdBlockCrxName));
   ExtensionService* service = extension_service();
