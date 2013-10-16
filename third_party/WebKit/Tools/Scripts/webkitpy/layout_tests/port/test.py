@@ -101,8 +101,8 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 108
-TOTAL_SKIPS = 27
+TOTAL_TESTS = 112
+TOTAL_SKIPS = 28
 
 UNEXPECTED_PASSES = 1
 UNEXPECTED_FAILURES = 24
@@ -142,6 +142,10 @@ def unit_test_list():
               expected_text="foo\n\n", actual_text="foo\n")
     tests.add('failures/expected/newlines_with_excess_CR.html',
               expected_text="foo\r\r\r\n", actual_text="foo\n")
+    tests.add('failures/expected/testharness.html',
+              actual_text='FAIL: assert fired\n', expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
     tests.add('failures/expected/text.html', actual_text='text_fail-png')
     tests.add('failures/expected/skip_text.html', actual_text='text diff')
     tests.add('failures/flaky/text.html')
@@ -190,6 +194,10 @@ layer at (0,0) size 800x34
     tests.add('passes/checksum_in_image.html',
               expected_image='tEXtchecksum\x00checksum_in_image-checksum')
     tests.add('passes/skipped/skip.html')
+    tests.add('passes/testharness.html',
+              actual_text='PASS: assert is fine\n', expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
 
     # Note that here the checksums don't match but the images do, so this test passes "unexpectedly".
     # See https://bugs.webkit.org/show_bug.cgi?id=69444 .
@@ -290,6 +298,7 @@ Bug(test) failures/expected/newlines_trailing.html [ Failure ]
 Bug(test) failures/expected/newlines_with_excess_CR.html [ Failure ]
 Bug(test) failures/expected/reftest.html [ ImageOnlyFailure ]
 Bug(test) failures/expected/text.html [ Failure ]
+Bug(test) failures/expected/testharness.html [ Failure ]
 Bug(test) failures/expected/timeout.html [ Timeout ]
 Bug(test) failures/expected/keyboard.html [ WontFix ]
 Bug(test) failures/expected/exception.html [ WontFix ]

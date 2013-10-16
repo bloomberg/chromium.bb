@@ -123,6 +123,9 @@ def _interpret_test_failures(failures):
     if test_failures.FailureMissingImage in failure_types or test_failures.FailureMissingImageHash in failure_types:
         test_dict['is_missing_image'] = True
 
+    if test_failures.FailureTestHarnessAssertion in failure_types:
+        test_dict['is_testharness_test'] = True
+
     return test_dict
 
 
