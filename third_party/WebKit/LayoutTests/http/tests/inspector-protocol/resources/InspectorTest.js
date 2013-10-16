@@ -163,6 +163,16 @@ InspectorTest.completeTestIfError = function(messageObject)
     return false;
 }
 
+InspectorTest.completeTestIfError = function(messageObject)
+{
+    if (messageObject.error) {
+        InspectorTest.log(messageObject.error.message);
+        InspectorTest.completeTest();
+        return true;
+    }
+    return false;
+}
+
 InspectorTest.checkExpectation = function(fail, name, messageObject)
 {
     if (fail === !!messageObject.error) {
