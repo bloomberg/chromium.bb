@@ -378,6 +378,7 @@ public class ContentViewCore
     private Runnable mDeferredHandleFadeInRunnable;
 
     private PositionObserver mPositionObserver;
+    private PositionObserver.Listener mPositionListener;
 
     // Size of the viewport in physical pixels as set from onSizeChanged.
     private int mViewportWidthPix;
@@ -718,6 +719,14 @@ public class ContentViewCore
 
         mContainerView = containerView;
         mPositionObserver = new ViewPositionObserver(mContainerView);
+        mPositionListener = new PositionObserver.Listener() {
+            @Override
+            public void onPositionChanged(int x, int y) {
+                if (isSelectionHandleShowing() || isInsertionHandleShowing()) {
+                    temporarilyHideTextHandles();
+                }
+            }
+        };
 
         int windowNativePointer = windowAndroid != null ? windowAndroid.getNativePointer() : 0;
 
@@ -2096,6 +2105,7 @@ public class ContentViewCore
         if (mInsertionHandleController != null) {
             mInsertionHandleController.hideAndDisallowAutomaticShowing();
         }
+        mPositionObserver.removeListener(mPositionListener);
     }
 
     private void showSelectActionBar() {
@@ -2525,6 +2535,9 @@ public class ContentViewCore
                 }
             }
             mHasSelection = false;
+        }
+        if (isSelectionHandleShowing() || isInsertionHandleShowing()) {
+            mPositionObserver.addListener(mPositionListener);
         }
     }
 
