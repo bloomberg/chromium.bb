@@ -76,7 +76,6 @@ const char kUrlQueryName[] = "u";
 const int kMaxTranslateLoadCheckAttempts = 20;
 
 TranslateManager::~TranslateManager() {
-  weak_method_factory_.InvalidateWeakPtrs();
 }
 
 // static
@@ -287,8 +286,8 @@ void TranslateManager::NotifyTranslateError(
 }
 
 TranslateManager::TranslateManager()
-  : weak_method_factory_(this),
-    max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts) {
+  : max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
+    weak_method_factory_(this) {
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,

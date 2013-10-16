@@ -44,12 +44,11 @@ const char TranslateScript::kJavascriptLoaderCallbackQueryValue[] =
     "cr.googleTranslate.onLoadJavascript";
 
 TranslateScript::TranslateScript()
-    : weak_method_factory_(this),
-      expiration_delay_(base::TimeDelta::FromDays(kExpirationDelayDays)) {
+    : expiration_delay_(base::TimeDelta::FromDays(kExpirationDelayDays)),
+      weak_method_factory_(this) {
 }
 
 TranslateScript::~TranslateScript() {
-  weak_method_factory_.InvalidateWeakPtrs();
 }
 
 void TranslateScript::Request(const Callback& callback) {

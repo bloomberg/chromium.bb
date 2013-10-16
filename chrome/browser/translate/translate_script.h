@@ -73,8 +73,6 @@ class TranslateScript {
   // The callback when the script is fetched or a server error occured.
   void OnScriptFetchComplete(int id, bool success, const std::string& data);
 
-  base::WeakPtrFactory<TranslateScript> weak_method_factory_;
-
   // URL fetcher to fetch the translate script.
   scoped_ptr<TranslateURLFetcher> fetcher_;
 
@@ -87,6 +85,8 @@ class TranslateScript {
 
   // The callback called when the server sends a response.
   Callback callback_;
+
+  base::WeakPtrFactory<TranslateScript> weak_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateScript);
 };

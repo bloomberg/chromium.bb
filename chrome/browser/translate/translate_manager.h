@@ -197,8 +197,6 @@ class TranslateManager : public content::NotificationObserver {
 
   content::NotificationRegistrar notification_registrar_;
 
-  base::WeakPtrFactory<TranslateManager> weak_method_factory_;
-
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
 
@@ -220,6 +218,8 @@ class TranslateManager : public content::NotificationObserver {
   // An instance of TranslateAcceptLanguages which manages Accept languages of
   // each profiles.
   scoped_ptr<TranslateAcceptLanguages> accept_languages_;
+
+  base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };
