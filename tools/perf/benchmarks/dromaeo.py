@@ -20,7 +20,7 @@ class DromaeoBenchmark(test.Test):
     # Subclasses are expected to define a class member called query_param.
     if not hasattr(self, 'query_param'):
       raise NotImplementedError('query_param not in Dromaeo benchmark.')
-    url = ('file:///../../../../chrome/test/data/dromaeo/index.html'
+    url = ('file://../../../../chrome/test/data/dromaeo/index.html'
            '?%s&automated' % self.query_param)
     # The docstring of benchmark classes may also be used as a description
     # when 'run_benchmarks list' is run.
