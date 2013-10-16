@@ -5,35 +5,45 @@
 {
   'targets': [
     {
-      'target_name': 'system_icu',
+      'target_name': 'icudata',
       'type': 'none',
-      'toolsets': ['host', 'target'],
       'direct_dependent_settings': {
+        'cflags': [
+          '<!@(pkg-config --cflags icu-uc)',
+        ],
         'defines': [
           'U_USING_ICU_NAMESPACE=0',
         ],
       },
       'link_settings': {
         'ldflags': [
-          '<!@(icu-config --ldflags)',
+          '<!@(pkg-config --libs-only-L --libs-only-other icu-uc)',
         ],
         'libraries': [
-          '<!@(icu-config --ldflags-libsonly)',
+          '<!@(pkg-config --libs-only-l icu-uc)',
         ],
       },
-    },
-    {
-      'target_name': 'icudata',
-      'type': 'none',
-      'dependencies': ['system_icu'],
-      'export_dependent_settings': ['system_icu'],
     },
     {
       'target_name': 'icui18n',
       'type': 'none',
       'toolsets': ['host', 'target'],
-      'dependencies': ['system_icu'],
-      'export_dependent_settings': ['system_icu'],
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(pkg-config --cflags icu-i18n)',
+        ],
+        'defines': [
+          'U_USING_ICU_NAMESPACE=0',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(pkg-config --libs-only-L --libs-only-other icu-i18n)',
+        ],
+        'libraries': [
+          '<!@(pkg-config --libs-only-l icu-i18n)',
+        ],
+      },
       'variables': {
         'headers_root_path': 'source/i18n',
         'header_filenames': [
@@ -119,8 +129,22 @@
       'target_name': 'icuuc',
       'type': 'none',
       'toolsets': ['host', 'target'],
-      'dependencies': ['system_icu'],
-      'export_dependent_settings': ['system_icu'],
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(pkg-config --cflags icu-uc)',
+        ],
+        'defines': [
+          'U_USING_ICU_NAMESPACE=0',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(pkg-config --libs-only-L --libs-only-other icu-uc)',
+        ],
+        'libraries': [
+          '<!@(pkg-config --libs-only-l icu-uc)',
+        ],
+      },
       'variables': {
         'headers_root_path': 'source/common',
         'header_filenames': [
