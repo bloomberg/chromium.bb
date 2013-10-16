@@ -331,7 +331,9 @@ DaemonInstallerWin::~DaemonInstallerWin() {
 }
 
 void DaemonInstallerWin::Done(HRESULT result) {
-  done_.Run(result);
+  CompletionCallback done = done_;
+  done_.Reset();
+  done.Run(result);
 }
 
 // static
