@@ -730,6 +730,8 @@
             '<(libjingle_source)/talk/media/devices/dummydevicemanager.h',
             '<(libjingle_source)/talk/media/devices/filevideocapturer.cc',
             '<(libjingle_source)/talk/media/devices/filevideocapturer.h',
+            '<(libjingle_source)/talk/media/sctp/sctputils.cc',
+            '<(libjingle_source)/talk/media/sctp/sctputils.h',
             '<(libjingle_source)/talk/media/webrtc/webrtccommon.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcpassthroughrender.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcpassthroughrender.h',
