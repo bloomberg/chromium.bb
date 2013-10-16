@@ -638,6 +638,12 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
                                  WindowOpenDisposition disposition,
                                  const GURL& alternate_nav_url,
                                  size_t index) {
+  const string16& user_text =
+      user_input_in_progress_ ? user_text_ : permanent_text_;
+  scoped_ptr<OmniboxNavigationObserver> observer(
+      new OmniboxNavigationObserver(profile_, user_text, match,
+                                    alternate_nav_url));
+
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
   if (popup_model()->IsOpen()) {
@@ -658,7 +664,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
           base::TimeDelta::FromMilliseconds(-1);
     }
     OmniboxLog log(
-        autocomplete_controller()->input().text(),
+        user_text,
         just_deleted_text_,
         autocomplete_controller()->input().type(),
         popup_model()->selected_line(),
@@ -712,6 +718,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
       // Don't increment usage count for extension keywords.
       if (delegate_->ProcessExtensionKeyword(template_url, match,
                                              disposition)) {
+        observer->OnSuccessfulNavigation();
         if (disposition != NEW_BACKGROUND_TAB)
           view_->RevertAll();
         return;
@@ -751,6 +758,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
 
   if (match.type == AutocompleteMatchType::EXTENSION_APP) {
     ExtensionAppProvider::LaunchAppFromOmnibox(match, profile_, disposition);
+    observer->OnSuccessfulNavigation();
   } else {
     base::TimeDelta query_formulation_time =
         base::TimeTicks::Now() - time_user_first_modified_omnibox_;
@@ -772,10 +780,6 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     }
 
     if (destination_url.is_valid()) {
-      // The OmniboxNavigationObserver will listen for the pending navigation
-      // notification that will be issued as a result of the "open URL."
-      scoped_ptr<OmniboxNavigationObserver> observer(
-          new OmniboxNavigationObserver(alternate_nav_url));
       // This calls RevertAll again.
       base::AutoReset<bool> tmp(&in_revert_, true);
       controller_->OnAutocompleteAccept(

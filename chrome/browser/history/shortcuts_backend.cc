@@ -160,8 +160,6 @@ ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
                                 content::Source<Profile>(profile));
     notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                                 content::Source<Profile>(profile));
-    notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                                content::Source<Profile>(profile));
   }
 }
 
@@ -191,6 +189,24 @@ void ShortcutsBackend::RemoveObserver(ShortcutsBackendObserver* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
+void ShortcutsBackend::OnOmniboxNavigation(const string16& text,
+                                           const AutocompleteMatch& match) {
+  const string16 text_lowercase(base::i18n::ToLower(text));
+  const base::Time now(base::Time::Now());
+  for (ShortcutMap::const_iterator it(
+       shortcuts_map_.lower_bound(text_lowercase));
+       it != shortcuts_map_.end() &&
+           StartsWith(it->first, text_lowercase, true); ++it) {
+    if (match.destination_url == it->second.match_core.destination_url) {
+      UpdateShortcut(Shortcut(it->second.id, text, Shortcut::MatchCore(match),
+                              now, it->second.number_of_hits + 1));
+      return;
+    }
+  }
+  AddShortcut(Shortcut(base::GenerateGUID(), text, Shortcut::MatchCore(match),
+                       now, 1));
+}
+
 ShortcutsBackend::~ShortcutsBackend() {
 }
 
@@ -214,45 +230,22 @@ void ShortcutsBackend::Observe(int type,
     return;
   }
 
-  if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    if (content::Details<const history::URLsDeletedDetails>(details)->
-            all_history) {
-      DeleteAllShortcuts();
-    }
-    const URLRows& rows(
-        content::Details<const history::URLsDeletedDetails>(details)->rows);
-    std::vector<std::string> shortcut_ids;
+  DCHECK_EQ(chrome::NOTIFICATION_HISTORY_URLS_DELETED, type);
+  const history::URLsDeletedDetails* deleted_details =
+      content::Details<const history::URLsDeletedDetails>(details).ptr();
+  if (deleted_details->all_history)
+    DeleteAllShortcuts();
+  const URLRows& rows(deleted_details->rows);
+  std::vector<std::string> shortcut_ids;
 
-    for (GuidMap::const_iterator it(guid_map_.begin()); it != guid_map_.end();
-         ++it) {
-      if (std::find_if(
-          rows.begin(), rows.end(), URLRow::URLRowHasURL(
-              it->second->second.match_core.destination_url)) != rows.end())
-        shortcut_ids.push_back(it->first);
-    }
-    DeleteShortcutsWithIds(shortcut_ids);
-    return;
+  for (GuidMap::const_iterator it(guid_map_.begin()); it != guid_map_.end();
+        ++it) {
+    if (std::find_if(
+        rows.begin(), rows.end(), URLRow::URLRowHasURL(
+            it->second->second.match_core.destination_url)) != rows.end())
+      shortcut_ids.push_back(it->first);
   }
-
-  DCHECK(type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL);
-
-  OmniboxLog* log = content::Details<OmniboxLog>(details).ptr();
-  string16 text_lowercase(base::i18n::ToLower(log->text));
-
-  const AutocompleteMatch& match(log->result.match_at(log->selected_index));
-  for (ShortcutMap::const_iterator it(
-       shortcuts_map_.lower_bound(text_lowercase));
-       it != shortcuts_map_.end() &&
-           StartsWith(it->first, text_lowercase, true); ++it) {
-    if (match.destination_url == it->second.match_core.destination_url) {
-      UpdateShortcut(Shortcut(it->second.id, log->text,
-                              Shortcut::MatchCore(match), base::Time::Now(),
-                              it->second.number_of_hits + 1));
-      return;
-    }
-  }
-  AddShortcut(Shortcut(base::GenerateGUID(), log->text,
-                       Shortcut::MatchCore(match), base::Time::Now(), 1));
+  DeleteShortcutsWithIds(shortcut_ids);
 }
 
 void ShortcutsBackend::InitInternal() {

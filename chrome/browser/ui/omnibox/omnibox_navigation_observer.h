@@ -7,15 +7,17 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace content {
-class NavigationController;
+namespace history {
+class ShortcutsBackend;
 }
 
 namespace net {
@@ -33,7 +35,7 @@ class URLRequestStatus;
 //     displays an infobar once the search result has also loaded.  See
 //     AlternateNavInfoBarDelegate.
 // (2) Omnibox navigations that complete successfully are added to the
-//     Shortcuts backend.  TODO(pkasting): Not yet implemented.
+//     Shortcuts backend.
 //
 // TODO(pkasting): Probably NOTIFICATION_OMNIBOX_OPENED_URL should disappear and
 // everyone who listened to it should be triggered from this class instead.
@@ -52,10 +54,18 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
     LOAD_COMMITTED,
   };
 
-  explicit OmniboxNavigationObserver(const GURL& alternate_nav_url);
+  OmniboxNavigationObserver(Profile* profile,
+                            const string16& text,
+                            const AutocompleteMatch& match,
+                            const GURL& alternate_nav_url);
   virtual ~OmniboxNavigationObserver();
 
   LoadState load_state() const { return load_state_; }
+
+  // Called directly by OmniboxEditModel when an extension-related navigation
+  // occurs.  Such navigations don't trigger an immediate NAV_ENTRY_PENDING and
+  // must be handled separately.
+  void OnSuccessfulNavigation();
 
  private:
   enum FetchState {
@@ -85,7 +95,11 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
   // the alternate nav infobar if necessary, and deletes |this|.
   void OnAllLoadingFinished();
 
-  GURL alternate_nav_url_;
+  const string16 text_;
+  const AutocompleteMatch match_;
+  const GURL alternate_nav_url_;
+  scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;  // May be NULL
+                                                                // in incognito.
   scoped_ptr<net::URLFetcher> fetcher_;
   LoadState load_state_;
   FetchState fetch_state_;

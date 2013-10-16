@@ -117,6 +117,11 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   void AddObserver(ShortcutsBackendObserver* obs);
   void RemoveObserver(ShortcutsBackendObserver* obs);
 
+  // Called when a successful omnibox navigation occurs.  Adds a corresponding
+  // shortcut.
+  void OnOmniboxNavigation(const string16& text,
+                           const AutocompleteMatch& match);
+
  private:
   friend class base::RefCountedThreadSafe<ShortcutsBackend>;
   friend class ShortcutsProviderTest;

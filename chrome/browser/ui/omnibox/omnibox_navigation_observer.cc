@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
 
+#include "chrome/browser/history/shortcuts_backend.h"
+#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
@@ -49,8 +51,14 @@ bool IsValidNavigation(const GURL& original_url, const GURL& final_url) {
 // OmniboxNavigationObserver --------------------------------------------------
 
 OmniboxNavigationObserver::OmniboxNavigationObserver(
+    Profile* profile,
+    const string16& text,
+    const AutocompleteMatch& match,
     const GURL& alternate_nav_url)
-    : alternate_nav_url_(alternate_nav_url),
+    : text_(text),
+      match_(match),
+      alternate_nav_url_(alternate_nav_url),
+      shortcuts_backend_(ShortcutsBackendFactory::GetForProfile(profile)),
       load_state_(LOAD_NOT_SEEN),
       fetch_state_(FETCH_NOT_COMPLETE) {
   if (alternate_nav_url_.is_valid()) {
@@ -66,6 +74,11 @@ OmniboxNavigationObserver::OmniboxNavigationObserver(
 }
 
 OmniboxNavigationObserver::~OmniboxNavigationObserver() {
+}
+
+void OmniboxNavigationObserver::OnSuccessfulNavigation() {
+  if (shortcuts_backend_)
+    shortcuts_backend_->OnOmniboxNavigation(text_, match_);
 }
 
 void OmniboxNavigationObserver::Observe(
@@ -88,6 +101,9 @@ void OmniboxNavigationObserver::Observe(
 void OmniboxNavigationObserver::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
   load_state_ = LOAD_COMMITTED;
+  if (ResponseCodeIndicatesSuccess(load_details.http_status_code) &&
+      IsValidNavigation(match_.destination_url, load_details.entry->GetURL()))
+    OnSuccessfulNavigation();
   if (!fetcher_ || (fetch_state_ != FETCH_NOT_COMPLETE))
     OnAllLoadingFinished();  // deletes |this|!
 }
@@ -111,6 +127,7 @@ void OmniboxNavigationObserver::NavigateToPendingEntry(
 
 void OmniboxNavigationObserver::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  DCHECK_EQ(fetcher_.get(), source);
   const net::URLRequestStatus& status = source->GetStatus();
   int response_code = source->GetResponseCode();
   fetch_state_ =
