@@ -415,8 +415,8 @@ def preprocess_type_and_value(idl_type, cpp_value, extended_attributes):
     return idl_type, cpp_value
 
 
-def v8_conversion_type_and_includes(idl_type):
-    """Returns V8 conversion type and any additional includes.
+def v8_conversion_type(idl_type, extended_attributes, includes):
+    """Returns V8 conversion type, adding any additional includes.
 
     The V8 conversion type is used to select the C++ -> V8 conversion function
     or v8SetReturnValue* function; it can be an idl_type, a cpp_type, or a
@@ -424,32 +424,40 @@ def v8_conversion_type_and_includes(idl_type):
     """
     # Basic types, without additional includes
     if idl_type in CPP_INT_TYPES:
-        return 'int', set()
+        return 'int'
     if idl_type in CPP_UNSIGNED_TYPES:
-        return 'unsigned', set()
+        return 'unsigned'
+    if idl_type == 'DOMString':
+        if 'TreatReturnedNullStringAs' not in extended_attributes:
+            return 'DOMString'
+        treat_returned_null_string_as = extended_attributes['TreatReturnedNullStringAs']
+        if treat_returned_null_string_as == 'Null':
+            return 'StringOrNull'
+        if treat_returned_null_string_as == 'Undefined':
+            return 'StringOrUndefined'
+        raise 'Unrecognized TreatReturnNullStringAs value: "%s"' % treat_returned_null_string_as
     if basic_type(idl_type) or idl_type == 'ScriptValue':
-        return idl_type, set()
+        return idl_type
 
     # Data type with potential additional includes
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
         if interface_type(this_array_or_sequence_type):
-            includes = includes_for_type(this_array_or_sequence_type)
-        else:
-            includes = set()
-        return 'array', includes
+            includes.update(includes_for_type(this_array_or_sequence_type))
+        return 'array'
 
     if idl_type == 'EventHandler':
-        return 'EventHandler', set(['bindings/v8/V8AbstractEventListener.h'])
+        includes.add('bindings/v8/V8AbstractEventListener.h')
+        return 'EventHandler'
 
-    includes = includes_for_type(idl_type)
+    includes.update(includes_for_type(idl_type))
     if idl_type == 'SerializedScriptValue':
-        return 'SerializedScriptValue', includes
+        return 'SerializedScriptValue'
 
     # Pointer type
     includes.add('wtf/GetPtr.h')  # FIXME: Is this necessary?
     includes.add('wtf/RefPtr.h')
-    return 'DOMWrapper', includes
+    return 'DOMWrapper'
 
 
 V8_SET_RETURN_VALUE = {
@@ -457,6 +465,9 @@ V8_SET_RETURN_VALUE = {
     'int': 'v8SetReturnValueInt({callback_info}, {cpp_value});',
     'unsigned': 'v8SetReturnValueUnsigned({callback_info}, {cpp_value});',
     'DOMString': 'v8SetReturnValueString({callback_info}, {cpp_value}, {isolate});',
+    # [TreatNullReturnValueAs]
+    'StringOrNull': 'v8SetReturnValueStringOrNull({callback_info}, {cpp_value}, {isolate});',
+    'StringOrUndefined': 'v8SetReturnValueStringOrUndefined({callback_info}, {cpp_value}, {isolate});',
     'void': '',
     # No special v8SetReturnValue* function (set value directly)
     'float': 'v8SetReturnValue({callback_info}, {cpp_value});',
@@ -474,7 +485,7 @@ V8_SET_RETURN_VALUE = {
 }
 
 
-def v8_set_return_value(idl_type, cpp_value, callback_info, isolate, creation_context='', extended_attributes=None, script_wrappable=''):
+def v8_set_return_value(idl_type, cpp_value, includes, callback_info, isolate, creation_context='', extended_attributes=None, script_wrappable=''):
     """Returns a statement that converts a C++ value to a V8 value and sets it as a return value."""
     def dom_wrapper_conversion_type():
         if not script_wrappable:
@@ -482,17 +493,17 @@ def v8_set_return_value(idl_type, cpp_value, callback_info, isolate, creation_co
         return 'DOMWrapperFast'
 
     idl_type, cpp_value = preprocess_type_and_value(idl_type, cpp_value, extended_attributes)
-    v8_conversion_type, includes = v8_conversion_type_and_includes(idl_type)
+    this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes, includes)
     # SetReturn-specific overrides
-    if v8_conversion_type in ['Date', 'EventHandler', 'ScriptValue', 'SerializedScriptValue', 'array']:
+    if this_v8_conversion_type in ['Date', 'EventHandler', 'ScriptValue', 'SerializedScriptValue', 'array']:
         # Convert value to V8 and then use general v8SetReturnValue
-        cpp_value, _ = cpp_value_to_v8_value(idl_type, cpp_value, isolate, callback_info=callback_info)
-    if v8_conversion_type == 'DOMWrapper':
-        v8_conversion_type = dom_wrapper_conversion_type()
+        cpp_value = cpp_value_to_v8_value(idl_type, cpp_value, includes, isolate, callback_info=callback_info, extended_attributes=extended_attributes)
+    if this_v8_conversion_type == 'DOMWrapper':
+        this_v8_conversion_type = dom_wrapper_conversion_type()
 
-    format_string = V8_SET_RETURN_VALUE[v8_conversion_type]
+    format_string = V8_SET_RETURN_VALUE[this_v8_conversion_type]
     statement = format_string.format(callback_info=callback_info, cpp_value=cpp_value, creation_context=creation_context, isolate=isolate, script_wrappable=script_wrappable)
-    return statement, includes
+    return statement
 
 
 CPP_VALUE_TO_V8_VALUE = {
@@ -514,10 +525,10 @@ CPP_VALUE_TO_V8_VALUE = {
 }
 
 
-def cpp_value_to_v8_value(idl_type, cpp_value, isolate, callback_info='', creation_context='', extended_attributes=None):
+def cpp_value_to_v8_value(idl_type, cpp_value, includes, isolate, callback_info='', creation_context='', extended_attributes=None):
     """Returns an expression that converts a C++ value to a V8 value."""
     idl_type, cpp_value = preprocess_type_and_value(idl_type, cpp_value, extended_attributes)
-    v8_conversion_type, includes = v8_conversion_type_and_includes(idl_type)
-    format_string = CPP_VALUE_TO_V8_VALUE[v8_conversion_type]
+    this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes, includes)
+    format_string = CPP_VALUE_TO_V8_VALUE[this_v8_conversion_type]
     statement = format_string.format(callback_info=callback_info, cpp_value=cpp_value, creation_context=creation_context, isolate=isolate)
-    return statement, includes
+    return statement

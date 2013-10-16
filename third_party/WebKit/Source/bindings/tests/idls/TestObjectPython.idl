@@ -137,4 +137,6 @@ interface TestObjectPython {
     [StrictTypeChecking] readonly attribute float strictTypeCheckingReadonlyFloatAttribute;  // FIXME: only applicable to writable attributes, implement with setters
     [StrictTypeChecking] readonly attribute TestInterface strictTypeCheckingReadonlyTestInterfaceAttribute;  // FIXME: only applicable to writable attributes, implement with setters
     [TreatNullAs=NullString] readonly attribute DOMString treatNullAsNullStringReadonlyStringAttribute;  // FIXME: only applicable to writable attributes, implement with setters
+    [TreatReturnedNullStringAs=Null] readonly attribute DOMString treatReturnedNullStringAsNullReadonlyStringAttribute;
+    [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString treatReturnedNullStringAsUndefinedReadonlyStringAttribute;
 };

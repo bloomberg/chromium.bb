@@ -105,11 +105,10 @@ def generate_attribute_and_includes(interface, attribute):
 
     if this_is_keep_alive_for_gc:
         return_v8_value_statement = 'v8SetReturnValue(info, wrapper);'
-        type_includes = v8_types.includes_for_type(idl_type)
+        includes.update(v8_types.includes_for_type(idl_type))
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
-        return_v8_value_statement, type_includes = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
-    includes.update(type_includes)
+        return_v8_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, includes, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
     contents['return_v8_value_statement'] = return_v8_value_statement
 
     if (idl_type == 'EventHandler' and
