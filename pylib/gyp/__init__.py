@@ -312,9 +312,6 @@ def gyp_main(args):
   parser.add_option('-I', '--include', dest='includes', action='append',
                     metavar='INCLUDE', type='path',
                     help='files to include in all loaded .gyp files')
-  parser.add_option('--msvs-version', dest='msvs_version',
-                    regenerate=False,
-                    help='Deprecated; use -G msvs_version=MSVS_VERSION instead')
   # --no-circular-check disables the check for circular relationships between
   # .gyp files.  These relationships should not exist, but they've only been
   # observed to be harmful with the Xcode generator.  Chromium's .gyp files
@@ -482,15 +479,6 @@ def gyp_main(args):
   generator_flags = NameValueListToDict(gen_flags)
   if DEBUG_GENERAL in gyp.debug.keys():
     DebugOutput(DEBUG_GENERAL, "generator_flags: %s", generator_flags)
-
-  # TODO: Remove this and the option after we've gotten folks to move to the
-  # generator flag.
-  if options.msvs_version:
-    print >>sys.stderr, \
-      'DEPRECATED: Use generator flag (-G msvs_version=' + \
-      options.msvs_version + ') instead of --msvs-version=' + \
-      options.msvs_version
-    generator_flags['msvs_version'] = options.msvs_version
 
   # Generate all requested formats (use a set in case we got one format request
   # twice)
