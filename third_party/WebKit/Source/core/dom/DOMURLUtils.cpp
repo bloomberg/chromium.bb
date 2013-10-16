@@ -162,11 +162,7 @@ void DOMURLUtils::setSearch(DOMURLUtils* impl, const String& value)
     KURL url = impl->url();
     if (!url.isValid())
         return;
-
-    String newSearch = value[0] == '?' ? value.substring(1) : value;
-    // Make sure that '#' in the query does not leak to the hash.
-    url.setQuery(newSearch.replaceWithLiteral('#', "%23"));
-
+    url.setQuery(value);
     impl->setURL(url);
 }
 
