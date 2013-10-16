@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -124,6 +125,8 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
 
 BrowserNonClientFrameView::TabStripInsets
 GlassBrowserFrameView::GetTabStripInsets(bool restored) const {
+  if (!browser_view()->IsTabStripVisible())
+    return TabStripInsets();
   // TODO: include OTR and caption.
   return TabStripInsets(NonClientTopBorderHeight(restored), 0, 0);
 }
@@ -233,10 +236,9 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 // GlassBrowserFrameView, views::View overrides:
 
 void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
-  if (!browser_view()->IsTabStripVisible())
-    return;  // Nothing is visible, so don't bother to paint.
-
-  PaintToolbarBackground(canvas);
+  if (browser_view()->IsToolbarVisible() &&
+      browser_view()->toolbar()->ShouldPaintBackground())
+    PaintToolbarBackground(canvas);
   if (!frame()->IsMaximized())
     PaintRestoredClientEdge(canvas);
 }
@@ -300,42 +302,46 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   // Tile the toolbar image starting at the frame edge on the left and where
   // the tabstrip is on the top.
   int y = toolbar_bounds.y();
-  int dest_y = y + (kFrameShadowThickness * 2);
+  int dest_y = browser_view()->IsTabStripVisible()
+                   ? y + (kFrameShadowThickness * 2)
+                   : y;
   canvas->TileImageInt(*theme_toolbar,
                        x + GetThemeBackgroundXInset(),
                        dest_y - GetTabStripInsets(false).top, x,
                        dest_y, w, theme_toolbar->height());
 
-  // Draw rounded corners for the tab.
-  gfx::ImageSkia* toolbar_left_mask =
-      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
-  gfx::ImageSkia* toolbar_right_mask =
-      tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
+  if (browser_view()->IsTabStripVisible()) {
+    // Draw rounded corners for the tab.
+    gfx::ImageSkia* toolbar_left_mask =
+        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
+    gfx::ImageSkia* toolbar_right_mask =
+        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
 
-  // We mask out the corners by using the DestinationIn transfer mode,
-  // which keeps the RGB pixels from the destination and the alpha from
-  // the source.
-  SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+    // We mask out the corners by using the DestinationIn transfer mode,
+    // which keeps the RGB pixels from the destination and the alpha from
+    // the source.
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
 
-  // Mask out the top left corner.
-  canvas->DrawImageInt(*toolbar_left_mask, left_x, y, paint);
+    // Mask out the top left corner.
+    canvas->DrawImageInt(*toolbar_left_mask, left_x, y, paint);
 
-  // Mask out the top right corner.
-  int right_x =
-      x + w + kContentEdgeShadowThickness - toolbar_right_mask->width();
-  canvas->DrawImageInt(*toolbar_right_mask, right_x, y, paint);
+    // Mask out the top right corner.
+    int right_x =
+        x + w + kContentEdgeShadowThickness - toolbar_right_mask->width();
+    canvas->DrawImageInt(*toolbar_right_mask, right_x, y, paint);
 
-  // Draw left edge.
-  canvas->DrawImageInt(*toolbar_left, left_x, y);
+    // Draw left edge.
+    canvas->DrawImageInt(*toolbar_left, left_x, y);
 
-  // Draw center edge.
-  canvas->TileImageInt(*toolbar_center, left_x + toolbar_left->width(), y,
-      right_x - (left_x + toolbar_left->width()), toolbar_center->height());
+    // Draw center edge.
+    canvas->TileImageInt(*toolbar_center, left_x + toolbar_left->width(), y,
+        right_x - (left_x + toolbar_left->width()), toolbar_center->height());
 
-  // Right edge.
-  canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
-                       right_x, y);
+    // Right edge.
+    canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
+                         right_x, y);
+  }
 
   // Draw the content/toolbar separator.
   canvas->FillRect(

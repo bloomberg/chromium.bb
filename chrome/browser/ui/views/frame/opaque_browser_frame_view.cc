@@ -176,6 +176,8 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
 
 BrowserNonClientFrameView::TabStripInsets
 OpaqueBrowserFrameView::GetTabStripInsets(bool restored) const {
+  if (!browser_view()->IsTabStripVisible())
+    return TabStripInsets();
   // TODO: include OTR and caption.
   return TabStripInsets(layout_->GetTabStripInsetsTop(restored), 0, 0);
 }

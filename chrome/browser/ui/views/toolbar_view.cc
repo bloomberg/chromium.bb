@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/toolbar_view.h"
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/number_formatting.h"
 #include "base/prefs/pref_service.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/ui/views/wrench_toolbar_button.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/notification_service.h"
@@ -100,6 +102,11 @@ int GetButtonSpacing() {
       ToolbarView::kStandardSpacing : 0;
 }
 
+bool IsStreamlinedHostedAppsEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableStreamlinedHostedApps);
+}
+
 }  // namespace
 
 // static
@@ -131,8 +138,10 @@ ToolbarView::ToolbarView(Browser* browser)
   chrome::AddCommandObserver(browser_, IDC_HOME, this);
   chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
-  display_mode_ = browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
-      DISPLAYMODE_NORMAL : DISPLAYMODE_LOCATION;
+  display_mode_ = DISPLAYMODE_LOCATION;
+  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ||
+      (browser->is_app() && IsStreamlinedHostedAppsEnabled()))
+    display_mode_ = DISPLAYMODE_NORMAL;
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  content::NotificationService::AllSources());
@@ -187,7 +196,8 @@ void ToolbarView::Init() {
   location_bar_ = new LocationBarView(
       browser_, browser_->profile(),
       browser_->command_controller()->command_updater(), this,
-      display_mode_ == DISPLAYMODE_LOCATION);
+      display_mode_ == DISPLAYMODE_LOCATION ||
+          (browser_->is_app() && IsStreamlinedHostedAppsEnabled()));
 
   reload_ = new ReloadButton(location_bar_,
                              browser_->command_controller()->command_updater());
@@ -632,6 +642,10 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 bool ToolbarView::IsWrenchMenuShowing() const {
   return wrench_menu_.get() && wrench_menu_->IsShowing();
+}
+
+bool ToolbarView::ShouldPaintBackground() const {
+  return display_mode_ == DISPLAYMODE_NORMAL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

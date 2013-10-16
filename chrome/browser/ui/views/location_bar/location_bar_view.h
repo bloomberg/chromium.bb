@@ -492,7 +492,8 @@ class LocationBarView : public LocationBar,
   // The star.
   StarView* star_view_;
 
-  // Whether we're in popup mode.
+  // Whether we're in popup mode. This value also controls whether the location
+  // bar is read-only.
   const bool is_popup_mode_;
 
   // True if we should show a focus rect while the location entry field is
