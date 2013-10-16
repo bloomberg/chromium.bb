@@ -395,31 +395,6 @@ class SyncerTest : public testing::Test,
     }
   }
 
-  void DoTruncationTest(const vector<int64>& unsynced_handle_view,
-                        const vector<int64>& expected_handle_order) {
-    for (size_t limit = expected_handle_order.size() + 2; limit > 0; --limit) {
-      WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-
-      ModelSafeRoutingInfo routes;
-      GetModelSafeRoutingInfo(&routes);
-      ModelTypeSet types = GetRoutingInfoTypes(routes);
-      sessions::OrderedCommitSet output_set;
-      GetCommitIds(&wtrans, types, limit, &output_set);
-      size_t truncated_size = std::min(limit, expected_handle_order.size());
-      ASSERT_EQ(truncated_size, output_set.Size());
-      for (size_t i = 0; i < truncated_size; ++i) {
-        ASSERT_EQ(expected_handle_order[i], output_set.GetCommitHandleAt(i))
-            << "At index " << i << " with batch size limited to " << limit;
-      }
-      ASSERT_EQ(truncated_size, output_set.Size());
-      for (size_t i = 0; i < truncated_size; ++i) {
-        SCOPED_TRACE(::testing::Message("Projection mismatch with i = ") << i);
-        int64 handle = output_set.GetCommitHandleAt(i);
-        ASSERT_EQ(expected_handle_order[i], handle);
-      }
-    }
-  }
-
   const StatusController& status() {
     return session_->status_controller();
   }
@@ -534,64 +509,6 @@ TEST_F(SyncerTest, TestCallGatherUnsyncedEntries) {
   // TODO(sync): When we can dynamically connect and disconnect the mock
   // ServerConnectionManager test disconnected GetUnsyncedEntries here. It's a
   // regression for a very old bug.
-}
-
-TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
-  syncable::Id root = ids_.root();
-  // Create two server entries.
-  mock_server_->AddUpdateDirectory(ids_.MakeServer("x"), root, "X", 10, 10,
-                                   foreign_cache_guid(), "-1");
-  mock_server_->AddUpdateDirectory(ids_.MakeServer("w"), root, "W", 10, 10,
-                                   foreign_cache_guid(), "-2");
-  SyncShareNudge();
-
-  // Create some new client entries.
-  CreateUnsyncedDirectory("C", ids_.MakeLocal("c"));
-  CreateUnsyncedDirectory("B", ids_.MakeLocal("b"));
-  CreateUnsyncedDirectory("D", ids_.MakeLocal("d"));
-  CreateUnsyncedDirectory("E", ids_.MakeLocal("e"));
-  CreateUnsyncedDirectory("J", ids_.MakeLocal("j"));
-
-  vector<int64> expected_order;
-  {
-    WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    MutableEntry entry_x(&wtrans, GET_BY_ID, ids_.MakeServer("x"));
-    MutableEntry entry_b(&wtrans, GET_BY_ID, ids_.MakeLocal("b"));
-    MutableEntry entry_c(&wtrans, GET_BY_ID, ids_.MakeLocal("c"));
-    MutableEntry entry_d(&wtrans, GET_BY_ID, ids_.MakeLocal("d"));
-    MutableEntry entry_e(&wtrans, GET_BY_ID, ids_.MakeLocal("e"));
-    MutableEntry entry_w(&wtrans, GET_BY_ID, ids_.MakeServer("w"));
-    MutableEntry entry_j(&wtrans, GET_BY_ID, ids_.MakeLocal("j"));
-    entry_x.PutIsUnsynced(true);
-    entry_b.PutParentId(entry_x.GetId());
-    entry_d.PutParentId(entry_b.GetId());
-    entry_c.PutParentId(entry_x.GetId());
-    entry_c.PutPredecessor(entry_b.GetId());
-    entry_e.PutParentId(entry_c.GetId());
-    entry_w.PutPredecessor(entry_x.GetId());
-    entry_w.PutIsUnsynced(true);
-    entry_w.PutServerVersion(20);
-    entry_w.PutIsUnappliedUpdate(true);  // Fake a conflict.
-    entry_j.PutPredecessor(entry_w.GetId());
-
-    // The expected order is "x", "b", "c", "d", "e", "j", truncated
-    // appropriately.
-    expected_order.push_back(entry_x.GetMetahandle());
-    expected_order.push_back(entry_b.GetMetahandle());
-    expected_order.push_back(entry_c.GetMetahandle());
-    expected_order.push_back(entry_d.GetMetahandle());
-    expected_order.push_back(entry_e.GetMetahandle());
-    expected_order.push_back(entry_j.GetMetahandle());
-  }
-
-  // The arrangement is now: x (b (d) c (e)) w j
-  // Entry "w" is in conflict, so it is not eligible for commit.
-  vector<int64> unsynced_handle_view;
-  {
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    GetUnsyncedEntries(&rtrans, &unsynced_handle_view);
-  }
-  DoTruncationTest(unsynced_handle_view, expected_order);
 }
 
 TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {

@@ -15,15 +15,14 @@ using std::vector;
 
 namespace syncer {
 
-namespace sessions {
-class OrderedCommitSet;
-}
-
 namespace syncable {
 class BaseTransaction;
 }
 
-// These functions return handles in "commit order".  A valid commit ordering is
+// Returns up to |max_entries| metahandles of entries that belong to the
+// specified |type| and are ready for commit.
+//
+// This function returns handles in "commit order".  A valid commit ordering is
 // one where parents are placed before children, predecessors are placed before
 // successors, and deletes appear after creates and moves.
 //
@@ -32,24 +31,11 @@ class BaseTransaction;
 // system can handle receiving the elements within a folder out of order, so we
 // may be able to remove that functionality in the future.
 // See crbug.com/287938.
-
-// Returns up to |max_entries| metahandles of entries that belong to the
-// specified |type| and are ready for commit.  The returned handles will be
-// in a valid commit ordering.
 SYNC_EXPORT_PRIVATE void GetCommitIdsForType(
     syncable::BaseTransaction* trans,
     ModelType type,
     size_t max_entries,
     std::vector<int64>* out);
-
-// Fills the specified |ordered_commit_set| with up to |commit_batch_size|
-// metahandles that belong to the set of types |requested_types| and are ready
-// for commit.  The list will be in a valid commit ordering.
-SYNC_EXPORT_PRIVATE void GetCommitIds(
-    syncable::BaseTransaction* trans,
-    ModelTypeSet requested_types,
-    size_t commit_batch_size,
-    sessions::OrderedCommitSet* ordered_commit_set);
 
 }  // namespace syncer
 

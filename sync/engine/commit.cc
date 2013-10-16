@@ -5,186 +5,165 @@
 #include "sync/engine/commit.h"
 
 #include "base/debug/trace_event.h"
-#include "sync/engine/build_commit_command.h"
-#include "sync/engine/get_commit_ids.h"
-#include "sync/engine/process_commit_response_command.h"
+#include "sync/engine/commit_util.h"
+#include "sync/engine/sync_directory_commit_contribution.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/mutable_entry.h"
-#include "sync/syncable/syncable_model_neutral_write_transaction.h"
 
 namespace syncer {
 
-using sessions::SyncSession;
-using sessions::StatusController;
-using syncable::SYNCER;
-using syncable::ModelNeutralWriteTransaction;
-
-namespace {
-
-// Sets the SYNCING bits of all items in the commit set to value_to_set.
-void SetAllSyncingBitsToValue(ModelNeutralWriteTransaction* trans,
-                              const sessions::OrderedCommitSet& commit_set,
-                              bool value_to_set) {
-  const std::vector<int64>& commit_handles = commit_set.GetAllCommitHandles();
-  for (std::vector<int64>::const_iterator it = commit_handles.begin();
-       it != commit_handles.end(); ++it) {
-    syncable::ModelNeutralMutableEntry entry(
-        trans, syncable::GET_BY_HANDLE, *it);
-    if (entry.good()) {
-      entry.PutSyncing(value_to_set);
-    }
-  }
+Commit::Commit(
+    const std::map<ModelType, SyncDirectoryCommitContribution*>& contributions,
+    const sync_pb::ClientToServerMessage& message,
+    ExtensionsActivity::Records extensions_activity_buffer)
+  : contributions_(contributions),
+    deleter_(&contributions_),
+    message_(message),
+    extensions_activity_buffer_(extensions_activity_buffer),
+    cleaned_up_(false) {
 }
 
-// Sets the SYNCING bits for all items in the OrderedCommitSet.
-void SetSyncingBits(ModelNeutralWriteTransaction* trans,
-                    const sessions::OrderedCommitSet& commit_set) {
-  SetAllSyncingBitsToValue(trans, commit_set, true);
+Commit::~Commit() {
+  DCHECK(cleaned_up_);
 }
 
-// Clears the SYNCING bits for all items in the OrderedCommitSet.
-void ClearSyncingBits(syncable::Directory* dir,
-                      const sessions::OrderedCommitSet& commit_set) {
-  ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir);
-  SetAllSyncingBitsToValue(&trans, commit_set, false);
-}
-
-// Helper function that finds sync items that are ready to be committed to the
-// server and serializes them into a commit message protobuf.  It will return
-// false iff there are no entries ready to be committed at this time.
-//
-// The OrderedCommitSet parameter is an output parameter which will contain
-// the set of all items which are to be committed.  The number of items in
-// the set shall not exceed the maximum batch size.  (The default batch size
-// is currently 25, though it can be overwritten by the server.)
-//
-// The ClientToServerMessage parameter is an output parameter which will contain
-// the commit message which should be sent to the server.  It is valid iff the
-// return value of this function is true.
-bool PrepareCommitMessage(
-    sessions::SyncSession* session,
+Commit* Commit::Init(
     ModelTypeSet requested_types,
-    sessions::OrderedCommitSet* commit_set,
-    sync_pb::ClientToServerMessage* commit_message,
-    ExtensionsActivity::Records* extensions_activity_buffer) {
-  TRACE_EVENT0("sync", "PrepareCommitMessage");
-
-  commit_set->Clear();
-  commit_message->Clear();
-
-  ModelNeutralWriteTransaction trans(
-      FROM_HERE, SYNCER, session->context()->directory());
-
-  // Fetch the items to commit.
-  const size_t batch_size = session->context()->max_commit_batch_size();
-  GetCommitIds(&trans, requested_types, batch_size, commit_set);
-
-  DVLOG(1) << "Commit message will contain " << commit_set->Size() << " items.";
-  if (commit_set->Empty()) {
-    return false;
+    size_t max_entries,
+    const std::string& account_name,
+    const std::string& cache_guid,
+    CommitContributorMap* contributor_map,
+    ExtensionsActivity* extensions_activity) {
+  // Gather per-type contributions.
+  ContributionMap contributions;
+  size_t num_entries = 0;
+  for (ModelTypeSet::Iterator it = requested_types.First();
+       it.Good(); it.Inc()) {
+    CommitContributorMap::iterator cm_it = contributor_map->find(it.Get());
+    if (cm_it == contributor_map->end()) {
+      NOTREACHED()
+          << "Could not find requested type " << ModelTypeToString(it.Get())
+          << " in contributor map.";
+      continue;
+    }
+    size_t spaces_remaining = max_entries - num_entries;
+    SyncDirectoryCommitContribution* contribution =
+        cm_it->second->GetContribution(spaces_remaining);
+    if (contribution) {
+      num_entries += contribution->GetNumEntries();
+      contributions.insert(std::make_pair(it.Get(), contribution));
+    }
+    if (num_entries == max_entries) {
+      break;  // No point in continuting to iterate in this case.
+    }
   }
 
-  // Serialize the message.
-  BuildCommitCommand build_commit_command(&trans,
-                                          *commit_set,
-                                          commit_message,
-                                          extensions_activity_buffer);
-  build_commit_command.Execute(session);
+  // Give up if no one had anything to commit.
+  if (contributions.empty())
+    return NULL;
 
-  SetSyncingBits(&trans, *commit_set);
-  return true;
+  sync_pb::ClientToServerMessage message;
+  message.set_message_contents(sync_pb::ClientToServerMessage::COMMIT);
+  message.set_share(account_name);
+
+  sync_pb::CommitMessage* commit_message = message.mutable_commit();
+  commit_message->set_cache_guid(cache_guid);
+
+  // Set extensions activity if bookmark commits are present.
+  ExtensionsActivity::Records extensions_activity_buffer;
+  ContributionMap::iterator it = contributions.find(syncer::BOOKMARKS);
+  if (it != contributions.end() && it->second->GetNumEntries() != 0) {
+    commit_util::AddExtensionsActivityToMessage(
+        extensions_activity,
+        &extensions_activity_buffer,
+        commit_message);
+  }
+
+  // Set the client config params.
+  ModelTypeSet enabled_types;
+  for (CommitContributorMap::iterator it = contributor_map->begin();
+       it != contributor_map->end(); ++it) {
+    enabled_types.Put(it->first);
+  }
+  commit_util::AddClientConfigParamsToMessage(enabled_types,
+                                                    commit_message);
+
+  // Finally, serialize all our contributions.
+  for (std::map<ModelType, SyncDirectoryCommitContribution*>::iterator it =
+           contributions.begin(); it != contributions.end(); ++it) {
+    it->second->AddToCommitMessage(&message);
+  }
+
+  // If we made it this far, then we've successfully prepared a commit message.
+  return new Commit(contributions, message, extensions_activity_buffer);
 }
 
-SyncerError BuildAndPostCommitsImpl(ModelTypeSet requested_types,
-                                    Syncer* syncer,
-                                    sessions::SyncSession* session,
-                                    sessions::OrderedCommitSet* commit_set) {
-  ModelTypeSet commit_request_types;
-  while (!syncer->ExitRequested()) {
-    sync_pb::ClientToServerMessage commit_message;
-    ExtensionsActivity::Records extensions_activity_buffer;
+SyncerError Commit::PostAndProcessResponse(
+    sessions::SyncSession* session,
+    sessions::StatusController* status,
+    ExtensionsActivity* extensions_activity) {
+  ModelTypeSet request_types;
+  for (ContributionMap::const_iterator it = contributions_.begin();
+       it != contributions_.end(); ++it) {
+    request_types.Put(it->first);
+  }
+  session->mutable_status_controller()->set_commit_request_types(request_types);
 
-    if (!PrepareCommitMessage(session,
-                              requested_types,
-                              commit_set,
-                              &commit_message,
-                              &extensions_activity_buffer)) {
-      break;
-    }
+  DVLOG(1) << "Sending commit message.";
+  TRACE_EVENT_BEGIN0("sync", "PostCommit");
+  const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
+      &message_, &response_, session);
+  TRACE_EVENT_END0("sync", "PostCommit");
 
-    commit_request_types.PutAll(commit_set->Types());
-    session->mutable_status_controller()->set_commit_request_types(
-        commit_request_types);
-
-    sync_pb::ClientToServerResponse commit_response;
-
-    DVLOG(1) << "Sending commit message.";
-    TRACE_EVENT_BEGIN0("sync", "PostCommit");
-    const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-        &commit_message, &commit_response, session);
-    TRACE_EVENT_END0("sync", "PostCommit");
-
-    // TODO(rlarocque): Put all the post-commit logic in one place.
-    // See crbug.com/196338.
-
-    if (post_result != SYNCER_OK) {
-      LOG(WARNING) << "Post commit failed";
-      return post_result;
-    }
-
-    if (!commit_response.has_commit()) {
-      LOG(WARNING) << "Commit response has no commit body!";
-      return SERVER_RESPONSE_VALIDATION_FAILED;
-    }
-
-    const size_t num_responses = commit_response.commit().entryresponse_size();
-    if (num_responses != commit_set->Size()) {
-      LOG(ERROR)
-         << "Commit response has wrong number of entries! "
-         << "Expected: " << commit_set->Size() << ", "
-         << "Got: " << num_responses;
-      return SERVER_RESPONSE_VALIDATION_FAILED;
-    }
-
-    TRACE_EVENT_BEGIN0("sync", "ProcessCommitResponse");
-    ProcessCommitResponseCommand process_response_command(
-        *commit_set, commit_message, commit_response);
-    const SyncerError processing_result =
-        process_response_command.Execute(session);
-    TRACE_EVENT_END0("sync", "ProcessCommitResponse");
-
-    // If the commit failed, return the data to the ExtensionsActivityMonitor.
-    if (session->status_controller().
-        model_neutral_state().num_successful_bookmark_commits == 0) {
-      ExtensionsActivity* extensions_activity =
-          session->context()->extensions_activity();
-      extensions_activity->PutRecords(extensions_activity_buffer);
-    }
-
-    if (processing_result != SYNCER_OK) {
-      return processing_result;
-    }
-    session->SendEventNotification(SyncEngineEvent::STATUS_CHANGED);
+  if (post_result != SYNCER_OK) {
+    LOG(WARNING) << "Post commit failed";
+    return post_result;
   }
 
-  return SYNCER_OK;
+  if (!response_.has_commit()) {
+    LOG(WARNING) << "Commit response has no commit body!";
+    return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+
+  size_t message_entries = message_.commit().entries_size();
+  size_t response_entries = response_.commit().entryresponse_size();
+  if (message_entries != response_entries) {
+    LOG(ERROR)
+       << "Commit response has wrong number of entries! "
+       << "Expected: " << message_entries << ", "
+       << "Got: " << response_entries;
+    return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+
+  // Let the contributors process the responses to each of their requests.
+  SyncerError processing_result = SYNCER_OK;
+  for (std::map<ModelType, SyncDirectoryCommitContribution*>::iterator it =
+       contributions_.begin(); it != contributions_.end(); ++it) {
+    TRACE_EVENT1("sync", "ProcessCommitResponse",
+                 "type", ModelTypeToString(it->first));
+    SyncerError type_result =
+        it->second->ProcessCommitResponse(response_, status);
+    if (processing_result == SYNCER_OK && type_result != SYNCER_OK) {
+      processing_result = type_result;
+    }
+  }
+
+  // Handle bookmarks' special extensions activity stats.
+  if (session->status_controller().
+          model_neutral_state().num_successful_bookmark_commits == 0) {
+    extensions_activity->PutRecords(extensions_activity_buffer_);
+  }
+
+  return processing_result;
 }
 
-}  // namespace
-
-
-SyncerError BuildAndPostCommits(ModelTypeSet requested_types,
-                                Syncer* syncer,
-                                sessions::SyncSession* session) {
-  sessions::OrderedCommitSet commit_set;
-  SyncerError result =
-      BuildAndPostCommitsImpl(requested_types, syncer, session, &commit_set);
-  if (result != SYNCER_OK) {
-    ClearSyncingBits(session->context()->directory(), commit_set);
+void Commit::CleanUp() {
+  for (ContributionMap::iterator it = contributions_.begin();
+       it != contributions_.end(); ++it) {
+    it->second->CleanUp();
   }
-  return result;
+  cleaned_up_ = true;
 }
 
 }  // namespace syncer

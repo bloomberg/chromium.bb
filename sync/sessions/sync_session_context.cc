@@ -23,6 +23,7 @@ SyncSessionContext::SyncSessionContext(
     const std::string& invalidator_client_id)
     : connection_manager_(connection_manager),
       directory_(directory),
+      commit_contributor_deleter_(&commit_contributor_map_),
       extensions_activity_(extensions_activity),
       notifications_enabled_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
@@ -42,6 +43,21 @@ SyncSessionContext::SyncSessionContext(
 }
 
 SyncSessionContext::~SyncSessionContext() {
+}
+
+void SyncSessionContext::set_routing_info(
+    const ModelSafeRoutingInfo& routing_info) {
+  routing_info_ = routing_info;
+
+  // TODO(rlarocque): This is not a good long-term solution.  We must find a
+  // better way to initialize the set of CommitContributors.
+  STLDeleteValues<CommitContributorMap>(&commit_contributor_map_);
+  ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
+  for (ModelTypeSet::Iterator it = enabled_types.First(); it.Good(); it.Inc()) {
+    SyncDirectoryCommitContributor* contributor =
+        new SyncDirectoryCommitContributor(directory(), it.Get());
+    commit_contributor_map_.insert(std::make_pair(it.Get(), contributor));
+  }
 }
 
 }  // namespace sessions
