@@ -299,7 +299,6 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.h',
           ],
@@ -310,10 +309,29 @@
             '--',
             '<@(_inputs)',
             '--',
-            '--factory',
             '--extraDefines', '<(feature_defines)'
           ],
           'msvs_cygwin_shell': 1,
+        },
+        {
+          'action_name': 'HTMLElementFactory',
+          'inputs': [
+            '<@(make_element_factory_files)',
+            'html/HTMLTagNames.in',
+            'html/HTMLAttributeNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_element_factory.py',
+            'html/HTMLTagNames.in',
+            'html/HTMLAttributeNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
         },
         {
           'action_name': 'FontFamilyNames',

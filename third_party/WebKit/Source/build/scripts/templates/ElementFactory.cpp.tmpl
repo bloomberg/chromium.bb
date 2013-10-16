@@ -1,0 +1,92 @@
+{% from "macros.tmpl" import license -%}
+{{ license() }}
+
+#include "config.h"
+#include "{{namespace}}ElementFactory.h"
+
+#include "RuntimeEnabledFeatures.h"
+#include "{{namespace}}Names.h"
+{%- for tag in tags|sort %}
+#include "core/{{namespace|lower}}/{{tag|interface}}.h"
+{%- endfor %}
+{%- if fallback_interface %}
+#include "core/{{namespace|lower}}/{{fallback_interface}}.h"
+{%- endif %}
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/Document.h"
+#include "core/page/Settings.h"
+#include "wtf/HashMap.h"
+
+namespace WebCore {
+
+using namespace {{namespace}}Names;
+
+typedef PassRefPtr<{{namespace}}Element> (*ConstructorFunction)(const QualifiedName&, Document&, HTMLFormElement*, bool createdByParser);
+typedef HashMap<StringImpl*, ConstructorFunction> FunctionMap;
+
+static FunctionMap* g_constructors = 0;
+
+{%- for tag in tags|sort if not tag.mapToTagName and not tag.noConstructor %}
+static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(const QualifiedName& tagName, Document& document, HTMLFormElement* formElement, bool createdByParser)
+{
+{%- if tag.wrapperOnlyIfMediaIsAvailable %}
+    Settings* settings = document.settings();
+    if (!RuntimeEnabledFeatures::mediaEnabled() || (settings && !settings->mediaEnabled()))
+        return 0;
+{%- endif %}
+{%- if tag.contextConditional %}
+    if (!ContextFeatures::{{tag.contextConditional}}Enabled(&document))
+        return 0;
+{%- endif %}
+    return {{tag|interface}}::create(tagName, document
+{%- if tag.constructorNeedsFormElement %}, formElement{% endif -%}
+{%- if tag.constructorNeedsCreatedByParser %}, createdByParser{% endif -%}
+    );
+}
+{%- endfor %}
+
+{%- for tag in tags|sort if tag.mapToTagName %}
+static PassRefPtr<HTMLElement> {{tag|symbol}}Constructor(const QualifiedName& tagName, Document& document, HTMLFormElement* formElement, bool createdByParser)
+{
+    return {{tag.mapToTagName}}Constructor(QualifiedName(tagName.prefix(), {{tag.mapToTagName}}Tag.localName(), tagName.namespaceURI()), document, formElement, createdByParser);
+}
+{%- endfor %}
+
+static void addTag(const QualifiedName& tag, ConstructorFunction func)
+{
+    g_constructors->set(tag.localName().impl(), func);
+}
+
+static void createFunctionMap()
+{
+    ASSERT(!g_constructors);
+    g_constructors = new FunctionMap;
+{%- for tag in tags|sort if not tag.noConstructor %}
+    addTag({{tag|symbol}}Tag, {{tag|symbol}}Constructor);
+{%- endfor %}
+}
+
+PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(const QualifiedName& qName, Document* document, HTMLFormElement* formElement, bool createdByParser)
+{
+    if (!document)
+        return 0;
+
+    if (CustomElement::isValidName(qName.localName()) && document->registrationContext()) {
+        RefPtr<Element> element = document->registrationContext()->createCustomTagElement(*document, qName, createdByParser ? CustomElementRegistrationContext::CreatedByParser : CustomElementRegistrationContext::NotCreatedByParser);
+        ASSERT_WITH_SECURITY_IMPLICATION(element->is{{namespace}}Element());
+        return static_pointer_cast<{{namespace}}Element>(element.release());
+    }
+
+    if (!g_constructors)
+        createFunctionMap();
+    if (ConstructorFunction function = g_constructors->get(qName.localName().impl())) {
+        if (PassRefPtr<{{namespace}}Element> element = function(qName, *document, formElement, createdByParser))
+            return element;
+    }
+
+    return {{fallback_interface}}::create(qName, *document);
+}
+
+} // namespace WebCore

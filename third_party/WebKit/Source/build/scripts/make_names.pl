@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-
+#
 # Copyright (C) 2005, 2006, 2007, 2009 Apple Inc. All rights reserved.
 # Copyright (C) 2009, Julien Chaffraix <jchaffraix@webkit.org>
 # Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
