@@ -205,6 +205,11 @@ void HTMLDocument::setVlinkColor(const AtomicString& value)
     setBodyAttribute(vlinkAttr, value);
 }
 
+PassRefPtr<Document> HTMLDocument::cloneDocumentWithoutChildren()
+{
+    return create(DocumentInit(url()).withRegistrationContext(registrationContext()));
+}
+
 // --------------------------------------------------------------------------
 // not part of the DOM
 // --------------------------------------------------------------------------

@@ -1,0 +1,21 @@
+Tests that cloned documents do not share the underlying domain
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.domain is "127.0.0.1"
+PASS doc.domain is "127.0.0.1"
+PASS doc2.domain is "127.0.0.1"
+PASS document.domain is "127.0.0.1"
+PASS doc.domain is "0.0.1"
+PASS doc2.domain is "127.0.0.1"
+PASS document.domain is "0.1"
+PASS doc.domain is "0.0.1"
+PASS doc2.domain is "127.0.0.1"
+PASS document.domain is "0.1"
+PASS doc.domain is "0.0.1"
+PASS doc2.domain is "1"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

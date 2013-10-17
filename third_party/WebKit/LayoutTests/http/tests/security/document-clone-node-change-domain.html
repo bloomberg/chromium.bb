@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test-pre.js"></script>
+<script>
+
+description('Tests that cloned documents do not share the underlying domain');
+
+var doc = document.cloneNode(true);
+var doc2 = doc.cloneNode(true);
+shouldBeEqualToString('document.domain', '127.0.0.1');
+shouldBeEqualToString('doc.domain', '127.0.0.1');
+shouldBeEqualToString('doc2.domain', '127.0.0.1');
+
+doc.domain = '0.0.1';
+shouldBeEqualToString('document.domain', '127.0.0.1');
+shouldBeEqualToString('doc.domain', '0.0.1');
+shouldBeEqualToString('doc2.domain', '127.0.0.1');
+
+document.domain = '0.1';
+shouldBeEqualToString('document.domain', '0.1');
+shouldBeEqualToString('doc.domain', '0.0.1');
+shouldBeEqualToString('doc2.domain', '127.0.0.1');
+
+doc2.domain = '1';
+shouldBeEqualToString('document.domain', '0.1');
+shouldBeEqualToString('doc.domain', '0.0.1');
+shouldBeEqualToString('doc2.domain', '1');
+
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</html>

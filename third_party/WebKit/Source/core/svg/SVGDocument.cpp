@@ -101,4 +101,9 @@ bool SVGDocument::childShouldCreateRenderer(const Node& child) const
     return true;
 }
 
+PassRefPtr<Document> SVGDocument::cloneDocumentWithoutChildren()
+{
+    return create(DocumentInit(url()));
+}
+
 }
