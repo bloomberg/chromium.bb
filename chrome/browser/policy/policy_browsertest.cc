@@ -469,62 +469,49 @@ class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
 };
 #endif
 
-// This is a customized version of content::WindowedNotificationObserver that
-// waits until either of the two provided notification types is observed.
-// See content::WindowedNotificationObserver for further documentation.
-class OneOfTwoNotificationsObserver : public content::NotificationObserver {
+// This class waits until either a load stops or the WebContents is destroyed.
+class WebContentsLoadedOrDestroyedWatcher
+    : public content::WebContentsObserver {
  public:
-  // Set up to wait for one of two notifications.
-  OneOfTwoNotificationsObserver(int notification_type1, int notification_type2);
-  virtual ~OneOfTwoNotificationsObserver();
+  explicit WebContentsLoadedOrDestroyedWatcher(
+      content::WebContents* web_contents);
+  virtual ~WebContentsLoadedOrDestroyedWatcher();
 
-  // Wait until one of the specified notifications is observed. If either
-  // notification has already been received, Wait() returns immediately.
+  // Waits until the WebContents's load is done or until it is destroyed.
   void Wait();
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Overridden WebContentsObserver methods.
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
-  bool seen_;
-  bool running_;
-  content::NotificationRegistrar registrar_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(OneOfTwoNotificationsObserver);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsLoadedOrDestroyedWatcher);
 };
 
-OneOfTwoNotificationsObserver::OneOfTwoNotificationsObserver(
-    int notification_type1, int notification_type2)
-    : seen_(false), running_(false) {
-  registrar_.Add(this, notification_type1,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, notification_type2,
-                 content::NotificationService::AllSources());
+WebContentsLoadedOrDestroyedWatcher::WebContentsLoadedOrDestroyedWatcher(
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      message_loop_runner_(new content::MessageLoopRunner) {
 }
 
-OneOfTwoNotificationsObserver::~OneOfTwoNotificationsObserver() {}
+WebContentsLoadedOrDestroyedWatcher::~WebContentsLoadedOrDestroyedWatcher() {}
 
-void OneOfTwoNotificationsObserver::Wait() {
-  if (seen_)
-    return;
-  running_ = true;
-  message_loop_runner_ = new content::MessageLoopRunner;
+void WebContentsLoadedOrDestroyedWatcher::Wait() {
   message_loop_runner_->Run();
-  EXPECT_TRUE(seen_);
 }
 
-// NotificationObserver:
-void OneOfTwoNotificationsObserver::Observe(int type,
-                     const content::NotificationSource& source,
-                     const content::NotificationDetails& details) {
-  seen_ = true;
-  if (!running_)
-    return;
+void WebContentsLoadedOrDestroyedWatcher::WebContentsDestroyed(
+    content::WebContents* web_contents) {
   message_loop_runner_->Quit();
-  running_ = false;
+}
+
+void WebContentsLoadedOrDestroyedWatcher::DidStopLoading(
+    content::RenderViewHost* render_view_host) {
+  message_loop_runner_->Quit();
 }
 
 #if !defined(OS_MACOSX)
@@ -1569,9 +1556,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
     if (!(*iter)->IsLoading()) {
       ++iter;
     } else {
-      OneOfTwoNotificationsObserver(
-          content::NOTIFICATION_LOAD_STOP,
-          content::NOTIFICATION_WEB_CONTENTS_DESTROYED).Wait();
+      content::WebContents* web_contents =
+          content::WebContents::FromRenderViewHost(*iter);
+      ASSERT_TRUE(web_contents);
+      WebContentsLoadedOrDestroyedWatcher(web_contents).Wait();
 
       // Test activity may have modified the set of extension processes during
       // message processing, so re-start the iteration to catch added/removed
