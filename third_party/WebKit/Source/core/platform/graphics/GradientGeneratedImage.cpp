@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/GeneratorGeneratedImage.h"
+#include "core/platform/graphics/GradientGeneratedImage.h"
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/geometry/FloatRect.h"
@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
+void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
 {
     GraphicsContextStateSaver stateSaver(*destContext);
     destContext->setCompositeOperation(compositeOp, blendMode);
@@ -46,7 +46,7 @@ void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect
     destContext->fillRect(FloatRect(FloatPoint(), m_size));
 }
 
-void GeneratorGeneratedImage::drawPatternWithoutCache(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
+void GradientGeneratedImage::drawPatternWithoutCache(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode)
 {
     int firstColumn = static_cast<int>(floorf((((destRect.x() - phase.x()) / scale.width()) - srcRect.x()) / srcRect.width()));
@@ -99,7 +99,7 @@ void GeneratorGeneratedImage::drawPatternWithoutCache(GraphicsContext* destConte
     }
 }
 
-void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
+void GradientGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode, const IntSize& repeatSpacing)
 {
     // Allow the generator to provide visually-equivalent tiling parameters for better performance.
@@ -143,7 +143,7 @@ void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const Fl
     m_cacheTimer.restart();
 }
 
-void GeneratorGeneratedImage::invalidateCacheTimerFired(DeferrableOneShotTimer<GeneratorGeneratedImage>*)
+void GradientGeneratedImage::invalidateCacheTimerFired(DeferrableOneShotTimer<GradientGeneratedImage>*)
 {
     m_cachedImageBuffer.clear();
     m_cachedAdjustedSize = IntSize();

@@ -54,7 +54,7 @@ class ImageObserver;
 class Image : public RefCounted<Image> {
     friend class GeneratedImage;
     friend class CrossfadeGeneratedImage;
-    friend class GeneratorGeneratedImage;
+    friend class GradientGeneratedImage;
     friend class GraphicsContext;
 
 public:

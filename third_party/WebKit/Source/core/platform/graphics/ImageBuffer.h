@@ -136,7 +136,7 @@ private:
     friend class GraphicsContext;
     friend class GeneratedImage;
     friend class CrossfadeGeneratedImage;
-    friend class GeneratorGeneratedImage;
+    friend class GradientGeneratedImage;
     friend class SkiaImageFilterBuilder;
 
     IntSize m_size;

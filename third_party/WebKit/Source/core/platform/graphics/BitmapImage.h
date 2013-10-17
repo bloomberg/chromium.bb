@@ -44,7 +44,7 @@ template <typename T> class Timer;
 class BitmapImage : public Image {
     friend class GeneratedImage;
     friend class CrossfadeGeneratedImage;
-    friend class GeneratorGeneratedImage;
+    friend class GradientGeneratedImage;
     friend class GraphicsContext;
 public:
     static PassRefPtr<BitmapImage> create(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver* observer = 0)

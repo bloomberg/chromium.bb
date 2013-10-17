@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GeneratorGeneratedImage_h
-#define GeneratorGeneratedImage_h
+#ifndef GradientGeneratedImage_h
+#define GradientGeneratedImage_h
 
 #include "core/platform/graphics/GeneratedImage.h"
 #include "core/platform/graphics/Gradient.h"
@@ -38,14 +38,14 @@ namespace WebCore {
 
 static const int generatedImageCacheClearDelay = 1;
 
-class GeneratorGeneratedImage : public GeneratedImage {
+class GradientGeneratedImage : public GeneratedImage {
 public:
-    static PassRefPtr<GeneratorGeneratedImage> create(PassRefPtr<Gradient> generator, const IntSize& size)
+    static PassRefPtr<GradientGeneratedImage> create(PassRefPtr<Gradient> generator, const IntSize& size)
     {
-        return adoptRef(new GeneratorGeneratedImage(generator, size));
+        return adoptRef(new GradientGeneratedImage(generator, size));
     }
 
-    virtual ~GeneratorGeneratedImage()
+    virtual ~GradientGeneratedImage()
     {
         m_cacheTimer.stop();
     }
@@ -60,11 +60,11 @@ protected:
     void drawPatternWithoutCache(GraphicsContext*, const FloatRect&, const FloatSize&,
         const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode);
 
-    void invalidateCacheTimerFired(DeferrableOneShotTimer<GeneratorGeneratedImage>*);
+    void invalidateCacheTimerFired(DeferrableOneShotTimer<GradientGeneratedImage>*);
 
-    GeneratorGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
+    GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
         : m_gradient(generator)
-        , m_cacheTimer(this, &GeneratorGeneratedImage::invalidateCacheTimerFired, generatedImageCacheClearDelay)
+        , m_cacheTimer(this, &GradientGeneratedImage::invalidateCacheTimerFired, generatedImageCacheClearDelay)
     {
         m_size = size;
     }
@@ -72,7 +72,7 @@ protected:
     RefPtr<Gradient> m_gradient;
 
     OwnPtr<ImageBuffer> m_cachedImageBuffer;
-    DeferrableOneShotTimer<GeneratorGeneratedImage> m_cacheTimer;
+    DeferrableOneShotTimer<GradientGeneratedImage> m_cacheTimer;
     IntSize m_cachedAdjustedSize;
     unsigned m_cachedGeneratorHash;
 };

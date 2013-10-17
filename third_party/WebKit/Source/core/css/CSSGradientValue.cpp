@@ -30,8 +30,8 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/TextLinkColors.h"
-#include "core/platform/graphics/GeneratorGeneratedImage.h"
 #include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/GradientGeneratedImage.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/geometry/IntSize.h"
@@ -66,7 +66,7 @@ PassRefPtr<Image> CSSGradientValue::image(RenderObject* renderer, const IntSize&
     else
         gradient = toCSSRadialGradientValue(this)->createGradient(renderer, size);
 
-    RefPtr<Image> newImage = GeneratorGeneratedImage::create(gradient, size);
+    RefPtr<Image> newImage = GradientGeneratedImage::create(gradient, size);
     if (cacheable)
         putImage(size, newImage);
 
