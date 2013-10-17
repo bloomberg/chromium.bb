@@ -231,9 +231,9 @@ class TabCapturePerformanceTest
 }  // namespace
 
 
-// This does not work on Aura GPU bots yet
+// This does not work on Aura and Mac GPU bots yet
 // http://crbug.com/308236
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_MACOSX)
 #define MAYBE_Performance DISABLED_Performance
 #else
 #define MAYBE_Performance Performance
