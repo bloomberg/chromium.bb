@@ -234,8 +234,7 @@ class Builder(object):
           and options.build_config == 'Debug'):
         self.compile_options.extend(['--pnacl-allow-translate',
                                      '--pnacl-allow-native',
-                                     '-arch', self.arch,
-                                     '-O0'])
+                                     '-arch', self.arch])
         # Also use fast translation because we are still translating libc/libc++
         self.link_options.append('-Wt,-O0')
 
