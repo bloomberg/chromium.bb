@@ -712,6 +712,10 @@ private:
 
     void updateScrollableAreaSet(bool hasOverflow);
 
+    // Returns true our scrollable area is in the FrameView's collection of scrollable areas. This can
+    // only happen if we're both scrollable, and we do in fact overflow.
+    bool scrollsOverflow() const;
+
     void dirtyAncestorChainVisibleDescendantStatus();
     void setAncestorChainHasVisibleDescendant();
 

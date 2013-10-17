@@ -3347,6 +3347,7 @@ void FrameView::removeResizerArea(RenderBox* resizerBox)
 
 bool FrameView::addScrollableArea(ScrollableArea* scrollableArea)
 {
+    ASSERT(scrollableArea);
     if (!m_scrollableAreas)
         m_scrollableAreas = adoptPtr(new ScrollableAreaSet);
     return m_scrollableAreas->add(scrollableArea).isNewEntry;
@@ -3367,7 +3368,8 @@ bool FrameView::removeScrollableArea(ScrollableArea* scrollableArea)
 
 bool FrameView::containsScrollableArea(const ScrollableArea* scrollableArea) const
 {
-    if (!m_scrollableAreas)
+    ASSERT(scrollableArea);
+    if (!m_scrollableAreas || !scrollableArea)
         return false;
     return m_scrollableAreas->contains(const_cast<ScrollableArea*>(scrollableArea));
 }

@@ -417,8 +417,7 @@ void RenderLayer::updateCanBeStackingContainer()
     if (isStackingContext() || !m_canBePromotedToStackingContainerDirty || !acceleratedCompositingForOverflowScrollEnabled())
         return;
 
-    FrameView* frameView = renderer()->view()->frameView();
-    if (!frameView || !frameView->containsScrollableArea(scrollableArea()))
+    if (!scrollsOverflow())
         return;
 
     RenderLayer* ancestorStackingContext = this->ancestorStackingContext();
@@ -603,8 +602,6 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
     if (isRootFixedPos || otherIsRootFixedPos)
         return true;
 
-    FrameView* frameView = renderer()->view()->frameView();
-
     if (containingBlock == otherContainingBlock)
         return false;
 
@@ -612,7 +609,7 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
     // closest scrollable ancestor.
     HashSet<const RenderObject*> containingBlocks;
     while (containingBlock) {
-        if (frameView && frameView->containsScrollableArea(containingBlock->enclosingLayer()->scrollableArea()))
+        if (containingBlock->enclosingLayer()->scrollsOverflow())
             break;
         containingBlocks.add(containingBlock);
         containingBlock = containingBlock->containingBlock();
@@ -624,7 +621,7 @@ bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
     while (otherContainingBlock) {
         if (containingBlocks.contains(otherContainingBlock))
             return false;
-        if (frameView && frameView->containsScrollableArea(otherContainingBlock->enclosingLayer()->scrollableArea()))
+        if (otherContainingBlock->enclosingLayer()->scrollsOverflow())
             break;
         otherContainingBlock = otherContainingBlock->containingBlock();
     }
@@ -982,7 +979,7 @@ void RenderLayer::updateHasUnclippedDescendant()
         // compositor, we will be able to relax this restriction without it being prohibitively
         // expensive (currently, we have to do a lot of work in the compositor to honor a
         // clip child/parent relationship).
-        if (frameView->containsScrollableArea(ancestor->scrollableArea()))
+        if (ancestor->scrollsOverflow())
             setIsUnclippedDescendant(true);
         ancestor->setHasUnclippedDescendant(true);
     }
@@ -1885,9 +1882,7 @@ bool RenderLayer::needsCompositedScrolling() const
 {
     if (!compositorDrivenAcceleratedScrollingEnabled())
         return needsToBeStackingContainer();
-    if (FrameView* frameView = renderer()->view()->frameView())
-        return frameView->containsScrollableArea(scrollableArea());
-    return false;
+    return scrollsOverflow();
 }
 
 bool RenderLayer::needsToBeStackingContainer() const
@@ -1957,7 +1952,7 @@ void RenderLayer::updateNeedsCompositedScrolling()
     updateCanBeStackingContainer();
     updateDescendantDependentFlags();
 
-    ASSERT(renderer()->view()->frameView() && renderer()->view()->frameView()->containsScrollableArea(scrollableArea()));
+    ASSERT(scrollsOverflow());
     bool needsCompositedScrolling = acceleratedCompositingForOverflowScrollEnabled()
         && canBeStackingContainer()
         && !hasUnclippedDescendant();
@@ -4952,6 +4947,15 @@ void RenderLayer::updateScrollableAreaSet(bool hasOverflow)
         else
             setNeedsCompositedScrolling(false);
     }
+}
+
+bool RenderLayer::scrollsOverflow() const
+{
+    if (RenderLayerScrollableArea* scrollableArea = this->scrollableArea()) {
+        if (FrameView* frameView = renderer()->view()->frameView())
+            return frameView->containsScrollableArea(scrollableArea);
+    }
+    return false;
 }
 
 RenderLayer* RenderLayer::reflectionLayer() const
