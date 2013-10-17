@@ -30,6 +30,7 @@ class ManageProfileHandler : public OptionsPageUIHandler,
       base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
+  virtual void Uninitialize() OVERRIDE;
 
   // WebUIMessageHandler:
   virtual void RegisterMessages() OVERRIDE;

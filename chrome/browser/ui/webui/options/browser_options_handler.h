@@ -53,6 +53,7 @@ class BrowserOptionsHandler
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
+  virtual void Uninitialize() OVERRIDE;
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
