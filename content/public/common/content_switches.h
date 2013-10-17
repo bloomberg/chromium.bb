@@ -56,6 +56,7 @@ extern const char kDisableDesktopNotifications[];
 CONTENT_EXPORT extern const char kDisableDeviceMotion[];
 CONTENT_EXPORT extern const char kDisableDeviceOrientation[];
 extern const char kDisableDirectNPAPIRequests[];
+extern const char kDisableDomainBlockingFor3DAPIs[];
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
 CONTENT_EXPORT extern const char kDisableFileSystem[];
 CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];

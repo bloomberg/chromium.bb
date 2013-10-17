@@ -155,6 +155,11 @@ const char kDisableDeviceOrientation[]      = "disable-device-orientation";
 // Handles URL requests by NPAPI plugins through the renderer.
 const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 
+// Disable the per-domain blocking for 3D APIs after GPU reset.
+// This switch is intended only for tests.
+extern const char kDisableDomainBlockingFor3DAPIs[] =
+    "disable-domain-blocking-for-3d-apis";
+
 // Disable experimental WebGL support.
 const char kDisableExperimentalWebGL[]      = "disable-webgl";
 

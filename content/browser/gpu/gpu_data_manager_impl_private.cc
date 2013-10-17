@@ -1022,6 +1022,11 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
   CGGetActiveDisplayList (0, NULL, &display_count_);
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif  // OS_MACOSX
+
+  // For testing only.
+  if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs)) {
+    domain_blocking_enabled_ = false;
+  }
 }
 
 GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {

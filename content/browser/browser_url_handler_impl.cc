@@ -4,9 +4,12 @@
 
 #include "content/browser/browser_url_handler_impl.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
+#include "content/browser/web_contents/debug_urls.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
@@ -59,7 +62,18 @@ static bool ReverseViewSource(GURL* url, BrowserContext* browser_context) {
   return true;
 }
 
-static bool HandleDebugUrl(GURL* url, BrowserContext* browser_context) {
+static bool DebugURLHandler(GURL* url, BrowserContext* browser_context) {
+  // If running inside the Telemetry test harness, allow automated
+  // navigations to access browser-side debug URLs. They must use the
+  // chrome:// scheme, since the about: scheme won't be rewritten in
+  // this code path.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuBenchmarking)) {
+    if (HandleDebugURL(*url, PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
+      return true;
+    }
+  }
+
   // Circumvent processing URLs that the renderer process will handle.
   return *url == GURL(kChromeUICrashURL) ||
          *url == GURL(kChromeUIHangURL) ||
@@ -84,7 +98,7 @@ BrowserURLHandlerImpl* BrowserURLHandlerImpl::GetInstance() {
 }
 
 BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
-  AddHandlerPair(&HandleDebugUrl, BrowserURLHandlerImpl::null_handler());
+  AddHandlerPair(&DebugURLHandler, BrowserURLHandlerImpl::null_handler());
 
   GetContentClient()->browser()->BrowserURLHandlerCreated(this);
 
