@@ -782,7 +782,7 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
 
   def Analyze(self, check_sanity=False):
     filenames = glob.glob(self.log_dir + "/tsan.*")
-    analyzer = tsan_analyze.TsanAnalyzer(self._source_dir)
+    analyzer = tsan_analyze.TsanAnalyzer()
     ret = analyzer.Report(filenames, None, check_sanity)
     if ret != 0:
       logging.info(self.INFO_MESSAGE)
@@ -1041,7 +1041,7 @@ class ThreadSanitizerRV1Analyzer(tsan_analyze.TsanAnalyzer):
   TMP_FILE = "rvlog.tmp"
 
   def __init__(self, source_dir, use_gdb):
-    super(ThreadSanitizerRV1Analyzer, self).__init__(source_dir, use_gdb)
+    super(ThreadSanitizerRV1Analyzer, self).__init__(use_gdb)
     self.out = open(self.TMP_FILE, "w")
 
   def Report(self, files, testcase, check_sanity=False):
