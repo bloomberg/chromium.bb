@@ -1,9 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en">
+<!DOCTYPE html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Test of -webkit-animation-play-state</title>
-  <style type="text/css" media="screen">
+  <style>
     #box1 {
       height: 100px;
       width: 100px;
@@ -33,19 +31,21 @@
         to   { left: 100px; }
     }
   </style>
-  <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
-  <script type="text/javascript" charset="utf-8">
-    
+  <script src="resources/animation-test-helpers.js" type="text/javascript"></script>
+  <script type="text/javascript">
+
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, "box1", "webkitTransform", [1,0,0,1,25,0], 15],
-      [1.5, "box1", "webkitTransform", [1,0,0,1,50,0], 15],
-      [2.5, "box1", "webkitTransform", [1,0,0,1,75,0], 15],
-      [0.5, "box2", "left", 25, 15],
-      [1.5, "box2", "left", 50, 15],
-      [2.5, "box2", "left", 75, 15],
+      [0.5, "box1", "webkitTransform", [1,0,0,1,25,0], 24],
+      [1.1, "box1", "webkitTransform", [1,0,0,1,50,0], 5],
+      [1.5, "box1", "webkitTransform", [1,0,0,1,50,0], 5],
+      [2.5, "box1", "webkitTransform", [1,0,0,1,75,0], 24],
+      [0.5, "box2", "left", 25, 24],
+      [1.1, "box2", "left", 50, 5],
+      [1.5, "box2", "left", 50, 5],
+      [2.5, "box2", "left", 75, 24],
     ];
-    
+
     function stop()
     {
         document.getElementById("box1").style.webkitAnimationPlayState = "paused";
@@ -58,14 +58,9 @@
         document.getElementById("box2").style.webkitAnimationPlayState = "running";
     }
 
-    function setTimers()
-    {
-        setTimeout(stop, 1000);
-        setTimeout(start, 2000);
-    }
-    
-    runAnimationTest(expectedValues, setTimers, null, true);
-    
+    setTimeout(stop, 1000);
+    setTimeout(start, 2000);
+    runAnimationTest(expectedValues, null, null, true);
   </script>
 </head>
 <body>

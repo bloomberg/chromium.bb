@@ -887,7 +887,6 @@ crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash P
 crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
 crbug.com/243683 [ Linux Mac Win ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
 crbug.com/243353 animations/play-state-suspend.html [ Failure Pass ]
-crbug.com/243353 animations/play-state.html [ Failure Pass ]
 crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure Pass ]
 crbug.com/243736 storage/websql/quota-tracking.html [ Failure Pass ]

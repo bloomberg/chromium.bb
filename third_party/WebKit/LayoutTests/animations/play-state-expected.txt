@@ -1,6 +1,8 @@
 Warning this test is running in real-time and may be flaky.
 PASS - "webkitTransform" property for "box1" element at 0.5s saw something close to: 1,0,0,1,25,0
 PASS - "left" property for "box2" element at 0.5s saw something close to: 25
+PASS - "webkitTransform" property for "box1" element at 1.1s saw something close to: 1,0,0,1,50,0
+PASS - "left" property for "box2" element at 1.1s saw something close to: 50
 PASS - "webkitTransform" property for "box1" element at 1.5s saw something close to: 1,0,0,1,50,0
 PASS - "left" property for "box2" element at 1.5s saw something close to: 50
 PASS - "webkitTransform" property for "box1" element at 2.5s saw something close to: 1,0,0,1,75,0
