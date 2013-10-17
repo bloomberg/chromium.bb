@@ -50,7 +50,7 @@ void GypTargetWriter::WriteFile(const SourceFile& gyp_file,
       case Target::SHARED_LIBRARY:
       case Target::SOURCE_SET: {
         GypBinaryTargetWriter writer(targets[i].debug, targets[i].release,
-                                     file);
+                                     NULL, NULL, file);
         writer.Run();
         break;
       }

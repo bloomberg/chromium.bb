@@ -197,15 +197,16 @@ Scope::KeyValueMap GetArgsFromGypDefines() {
 
   Scope::KeyValueMap result;
 
+  static const char kIsComponentBuild[] = "is_component_build";
   if (gyp_defines["component"] == "shared_library") {
-    result["is_component_build"] = Value(NULL, true);
+    result[kIsComponentBuild] = Value(NULL, true);
   } else {
-    result["is_component_build"] = Value(NULL, false);
+    result[kIsComponentBuild] = Value(NULL, false);
   }
 
   // Windows SDK path. GYP and the GN build use the same name.
-  const char kWinSdkPath[] = "windows_sdk_path";
-  if (gyp_defines[kWinSdkPath].empty())
+  static const char kWinSdkPath[] = "windows_sdk_path";
+  if (!gyp_defines[kWinSdkPath].empty())
     result[kWinSdkPath] = Value(NULL, gyp_defines[kWinSdkPath]);
 
   return result;
