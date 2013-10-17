@@ -5,21 +5,17 @@
 #ifndef REMOTING_HOST_SETUP_NATIVE_MESSAGING_HOST_H_
 #define REMOTING_HOST_SETUP_NATIVE_MESSAGING_HOST_H_
 
-#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
+#include "base/threading/thread_checker.h"
 #include "remoting/host/setup/daemon_controller.h"
-#include "remoting/host/setup/native_messaging_reader.h"
-#include "remoting/host/setup/native_messaging_writer.h"
+#include "remoting/host/setup/native_messaging_channel.h"
 #include "remoting/host/setup/oauth_client.h"
 
 namespace base {
 class DictionaryValue;
 class ListValue;
-class SingleThreadTaskRunner;
-class Value;
 }  // namespace base
 
 namespace gaia {
@@ -33,103 +29,111 @@ class PairingRegistry;
 }  // namespace protocol
 
 // Implementation of the native messaging host process.
-class NativeMessagingHost {
+class NativeMessagingHost : public NativeMessagingChannel::Delegate {
  public:
+  typedef NativeMessagingChannel::SendResponseCallback SendResponseCallback;
+
   NativeMessagingHost(
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
-      scoped_ptr<OAuthClient> oauth_client,
-      base::PlatformFile input,
-      base::PlatformFile output,
-      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-      const base::Closure& quit_closure);
-  ~NativeMessagingHost();
+      scoped_ptr<OAuthClient> oauth_client);
+  virtual ~NativeMessagingHost();
 
-  // Starts reading and processing messages.
-  void Start();
-
-  // Posts |quit_closure| to |caller_task_runner|. This gets called whenever an
-  // error is encountered during reading and processing messages.
-  void Shutdown();
+  // NativeMessagingChannel::Delegate interface.
+  virtual void ProcessMessage(scoped_ptr<base::DictionaryValue> message,
+                              const SendResponseCallback& done) OVERRIDE;
 
  private:
-  // Processes a message received from the client app.
-  void ProcessMessage(scoped_ptr<base::Value> message);
-
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
-  bool ProcessHello(const base::DictionaryValue& message,
-                    scoped_ptr<base::DictionaryValue> response);
-  bool ProcessClearPairedClients(const base::DictionaryValue& message,
-                                 scoped_ptr<base::DictionaryValue> response);
-  bool ProcessDeletePairedClient(const base::DictionaryValue& message,
-                                 scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetHostName(const base::DictionaryValue& message,
-                          scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetPinHash(const base::DictionaryValue& message,
-                         scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGenerateKeyPair(const base::DictionaryValue& message,
-                              scoped_ptr<base::DictionaryValue> response);
-  bool ProcessUpdateDaemonConfig(const base::DictionaryValue& message,
-                                 scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetDaemonConfig(const base::DictionaryValue& message,
-                              scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetPairedClients(const base::DictionaryValue& message,
-                               scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetUsageStatsConsent(const base::DictionaryValue& message,
-                                   scoped_ptr<base::DictionaryValue> response);
-  bool ProcessStartDaemon(const base::DictionaryValue& message,
-                          scoped_ptr<base::DictionaryValue> response);
-  bool ProcessStopDaemon(const base::DictionaryValue& message,
-                         scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetDaemonState(const base::DictionaryValue& message,
-                             scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetHostClientId(const base::DictionaryValue& message,
-                             scoped_ptr<base::DictionaryValue> response);
+  bool ProcessHello(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessClearPairedClients(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessDeletePairedClient(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessGetHostName(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessGetPinHash(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessGenerateKeyPair(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessUpdateDaemonConfig(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessGetDaemonConfig(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessGetPairedClients(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessGetUsageStatsConsent(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessStartDaemon(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessStopDaemon(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessGetDaemonState(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
+  bool ProcessGetHostClientId(
+      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
   bool ProcessGetCredentialsFromAuthCode(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response);
-
-  // Sends a response back to the client app. This can be called on either the
-  // main message loop or the DaemonController's internal thread, so it
-  // PostTask()s to the main thread if necessary.
-  void SendResponse(scoped_ptr<base::DictionaryValue> response);
+      scoped_ptr<base::DictionaryValue> response,
+      const SendResponseCallback& done);
 
   // These Send... methods get called on the DaemonController's internal thread,
   // or on the calling thread if called by the PairingRegistry.
   // These methods fill in the |response| dictionary from the other parameters,
   // and pass it to SendResponse().
-  void SendConfigResponse(scoped_ptr<base::DictionaryValue> response,
+  void SendConfigResponse(const SendResponseCallback& done,
+                          scoped_ptr<base::DictionaryValue> response,
                           scoped_ptr<base::DictionaryValue> config);
-  void SendPairedClientsResponse(scoped_ptr<base::DictionaryValue> response,
+  void SendPairedClientsResponse(const SendResponseCallback& done,
+                                 scoped_ptr<base::DictionaryValue> response,
                                  scoped_ptr<base::ListValue> pairings);
   void SendUsageStatsConsentResponse(
+      const SendResponseCallback& done,
       scoped_ptr<base::DictionaryValue> response,
       const DaemonController::UsageStatsConsent& consent);
-  void SendAsyncResult(scoped_ptr<base::DictionaryValue> response,
+  void SendAsyncResult(const SendResponseCallback& done,
+                       scoped_ptr<base::DictionaryValue> response,
                        DaemonController::AsyncResult result);
-  void SendBooleanResult(scoped_ptr<base::DictionaryValue> response,
+  void SendBooleanResult(const SendResponseCallback& done,
+                         scoped_ptr<base::DictionaryValue> response,
                          bool result);
-  void SendCredentialsResponse(scoped_ptr<base::DictionaryValue> response,
+  void SendCredentialsResponse(const SendResponseCallback& done,
+                               scoped_ptr<base::DictionaryValue> response,
                                const std::string& user_email,
                                const std::string& refresh_token);
 
-  // Callbacks may be invoked by e.g. DaemonController during destruction,
-  // which use |weak_ptr_|, so it's important that it be the last member to be
-  // destroyed.
-  base::WeakPtr<NativeMessagingHost> weak_ptr_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
-  base::Closure quit_closure_;
-
-  NativeMessagingReader native_messaging_reader_;
-  NativeMessagingWriter native_messaging_writer_;
-
-  // The DaemonController may post tasks to this object during destruction (but
-  // not afterwards), so it needs to be destroyed before other members of this
-  // class (except for |weak_factory_|).
-  scoped_refptr<remoting::DaemonController> daemon_controller_;
+  scoped_refptr<DaemonController> daemon_controller_;
 
   // Used to load and update the paired clients for this host.
   scoped_refptr<protocol::PairingRegistry> pairing_registry_;
@@ -137,13 +141,9 @@ class NativeMessagingHost {
   // Used to exchange the service account authorization code for credentials.
   scoped_ptr<OAuthClient> oauth_client_;
 
-  // Keeps track of pending requests. Used to delay shutdown until all responses
-  // have been sent.
-  int pending_requests_;
+  base::ThreadChecker thread_checker_;
 
-  // True if Shutdown() has been called.
-  bool shutdown_;
-
+  base::WeakPtr<NativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<NativeMessagingHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMessagingHost);

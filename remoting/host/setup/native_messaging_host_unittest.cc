@@ -18,6 +18,7 @@
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/pin_hash.h"
+#include "remoting/host/setup/native_messaging_channel.h"
 #include "remoting/host/setup/test_util.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -237,7 +238,8 @@ class NativeMessagingHostTest : public testing::Test {
   void TestBadRequest(const base::Value& message);
 
  protected:
-  // Reference to the MockDaemonControllerDelegate, which is owned by |host_|.
+  // Reference to the MockDaemonControllerDelegate, which is owned by
+  // |channel_|.
   MockDaemonControllerDelegate* daemon_controller_delegate_;
 
  private:
@@ -247,14 +249,13 @@ class NativeMessagingHostTest : public testing::Test {
   // verifies output from output_read_handle.
   //
   // unittest -> [input] -> NativeMessagingHost -> [output] -> unittest
-  base::PlatformFile input_read_handle_;
   base::PlatformFile input_write_handle_;
   base::PlatformFile output_read_handle_;
-  base::PlatformFile output_write_handle_;
 
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
-  scoped_ptr<remoting::NativeMessagingHost> host_;
+  scoped_refptr<AutoThreadTaskRunner> task_runner_;
+  scoped_ptr<remoting::NativeMessagingChannel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMessagingHostTest);
 };
@@ -265,11 +266,14 @@ NativeMessagingHostTest::NativeMessagingHostTest()
 NativeMessagingHostTest::~NativeMessagingHostTest() {}
 
 void NativeMessagingHostTest::SetUp() {
-  ASSERT_TRUE(MakePipe(&input_read_handle_, &input_write_handle_));
-  ASSERT_TRUE(MakePipe(&output_read_handle_, &output_write_handle_));
+  base::PlatformFile input_read_handle;
+  base::PlatformFile output_write_handle;
+
+  ASSERT_TRUE(MakePipe(&input_read_handle, &input_write_handle_));
+  ASSERT_TRUE(MakePipe(&output_read_handle_, &output_write_handle));
 
   // Arrange to run |message_loop_| until no components depend on it.
-  scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
+  task_runner_ = new AutoThreadTaskRunner(
       message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
 
   daemon_controller_delegate_ = new MockDaemonControllerDelegate();
@@ -280,18 +284,22 @@ void NativeMessagingHostTest::SetUp() {
   scoped_refptr<PairingRegistry> pairing_registry =
       new SynchronousPairingRegistry(scoped_ptr<PairingRegistry::Delegate>(
           new MockPairingRegistryDelegate()));
-
-  host_.reset(new NativeMessagingHost(
-      daemon_controller,
-      pairing_registry,
-      scoped_ptr<remoting::OAuthClient>(),
-      input_read_handle_, output_write_handle_,
-      task_runner,
-      base::Bind(&NativeMessagingHostTest::DeleteHost,
-                 base::Unretained(this))));
+  scoped_ptr<NativeMessagingChannel::Delegate> host(
+      new NativeMessagingHost(daemon_controller,
+                              pairing_registry,
+                              scoped_ptr<remoting::OAuthClient>()));
+  channel_.reset(
+      new NativeMessagingChannel(host.Pass(),
+                                 input_read_handle,
+                                 output_write_handle));
 }
 
 void NativeMessagingHostTest::TearDown() {
+  // DaemonController destroys its internals asynchronously. Let these and any
+  // other pending tasks run to make sure we don't leak the memory owned by
+  // them.
+  message_loop_.RunUntilIdle();
+
   // The NativeMessagingHost dtor closes the handles that are passed to it.
   // |input_write_handle_| gets closed just before starting the host. So the
   // only handle left to close is |output_read_handle_|.
@@ -302,14 +310,16 @@ void NativeMessagingHostTest::Run() {
   // Close the write-end of input, so that the host sees EOF after reading
   // messages and won't block waiting for more input.
   base::ClosePlatformFile(input_write_handle_);
-  host_->Start();
+  channel_->Start(base::Bind(&NativeMessagingHostTest::DeleteHost,
+                             base::Unretained(this)));
   run_loop_.Run();
 }
 
 void NativeMessagingHostTest::DeleteHost() {
-  // Destroy |host_| so that it closes its end of the output pipe, so that
+  // Destroy |channel_| so that it closes its end of the output pipe, so that
   // TestBadRequest() will see EOF and won't block waiting for more data.
-  host_.reset();
+  channel_.reset();
+  task_runner_ = NULL;
 }
 
 scoped_ptr<base::DictionaryValue>
