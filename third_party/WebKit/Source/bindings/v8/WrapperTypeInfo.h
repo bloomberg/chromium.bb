@@ -60,13 +60,19 @@ namespace WebCore {
     typedef void (*DerefObjectFunction)(void*);
     typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
     typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
-    typedef void* (*OpaqueRootForGC)(void*, v8::Isolate*);
+    typedef void (*ResolveWrapperReachabilityFunction)(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     typedef void (*InstallPerContextEnabledPrototypePropertiesFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 
     enum WrapperTypePrototype {
         WrapperTypeObjectPrototype,
         WrapperTypeErrorPrototype
     };
+
+    inline void setObjectGroup(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+    {
+        // FIXME: remove reinterpret_cast after http://crrev.com/27512003 has rolled.
+        isolate->SetObjectGroupId(reinterpret_cast<const v8::Persistent<v8::Value>&>(wrapper), v8::UniqueId(reinterpret_cast<intptr_t>(object)));
+    }
 
     // This struct provides a way to store a bunch of information that is helpful when unwrapping
     // v8 objects. Each v8 bindings class has exactly one static WrapperTypeInfo member, so
@@ -122,18 +128,19 @@ namespace WebCore {
             return toEventTargetFunction(object);
         }
 
-        void* opaqueRootForGC(void* object, v8::Isolate* isolate)
+        void resolveWrapperReachability(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
         {
-            if (!opaqueRootForGCFunction)
-                return object;
-            return opaqueRootForGCFunction(object, isolate);
+            if (!resolveWrapperReachabilityFunction)
+                setObjectGroup(object, wrapper, isolate);
+            else
+                resolveWrapperReachabilityFunction(object, wrapper, isolate);
         }
 
         const GetTemplateFunction getTemplateFunction;
         const DerefObjectFunction derefObjectFunction;
         const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
         const ToEventTargetFunction toEventTargetFunction;
-        const OpaqueRootForGC opaqueRootForGCFunction;
+        const ResolveWrapperReachabilityFunction resolveWrapperReachabilityFunction;
         const InstallPerContextEnabledPrototypePropertiesFunction installPerContextEnabledPrototypePropertiesFunction;
         const WrapperTypeInfo* parentClass;
         const WrapperTypePrototype wrapperTypePrototype;

@@ -88,6 +88,12 @@ public:
         return handle;
     }
 
+    void setReferenceFrom(const v8::Persistent<v8::Object>& parent, v8::Isolate* isolate)
+    {
+        // FIXME: remove As() after v8 roll.
+        isolate->SetReference(parent, persistent()->template As<v8::Value>());
+    }
+
     void dispose()
     {
         persistent()->Dispose();

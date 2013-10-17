@@ -63,6 +63,11 @@ public:
         return true;
     }
 
+    void setReference(const v8::Persistent<v8::Object>& parent, KeyType* key, v8::Isolate* isolate)
+    {
+        m_map.get(key).setReferenceFrom(parent, isolate);
+    }
+
     bool containsKey(KeyType* key)
     {
         return m_map.find(key) != m_map.end();

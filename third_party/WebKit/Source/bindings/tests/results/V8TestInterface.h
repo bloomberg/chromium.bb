@@ -40,6 +40,7 @@ public:
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
+    static void resolveWrapperReachability(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static void implementsMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 #if ENABLE(Condition11) || ENABLE(Condition12)

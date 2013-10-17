@@ -90,6 +90,7 @@ Replaceable
 # Valid values for RuntimeEnabled and PerContextEnabled are Runtime Enabled
 # Features, listed in Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
+SetReference=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SetterRaisesException
 SpecialWrapFor=*
