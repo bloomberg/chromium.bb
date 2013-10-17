@@ -47,12 +47,6 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // Don't install default apps.
   command_line->AppendSwitch(switches::kDisableDefaultApps);
 
-#if defined(OS_LINUX)
-  // Don't collect GPU info, load GPU blacklist, or schedule a GPU blacklist
-  // auto-update on Linux bots for now (http://crbug.com/304833).
-  command_line->AppendSwitch(switches::kSkipGpuDataLoading);
-#endif
-
 #if defined(USE_AURA)
   // Disable window animations under Ash as the animations effect the
   // coordinates returned and result in flake.

@@ -369,8 +369,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   } expected_state = ENABLED;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Blacklist rule #24 disables accelerated_2d_canvas on Linux.
-  // TODO(gab): Enable GPU control lists on Linux.
-  // expected_state = BLACKLISTED;
+  expected_state = BLACKLISTED;
 #elif defined(OS_WIN)
   // Blacklist rule #67 disables accelerated_2d_canvas on XP.
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
