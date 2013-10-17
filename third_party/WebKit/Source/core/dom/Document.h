@@ -1067,7 +1067,8 @@ public:
     virtual DOMWindow* executingWindow() OVERRIDE { return domWindow(); }
     virtual void userEventWasHandled() OVERRIDE { resetLastHandledUserGestureTimestamp(); }
 
-    PassRefPtr<FontFaceSet> fonts();
+    // Can never return null.
+    FontFaceSet* fonts();
     DocumentLifecycleNotifier* lifecycleNotifier();
     bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
 
