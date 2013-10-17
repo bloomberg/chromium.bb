@@ -231,7 +231,15 @@ class TabCapturePerformanceTest
 }  // namespace
 
 
-IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
+// This does not work on Aura GPU bots yet
+// http://crbug.com/308236
+#if defined(USE_AURA)
+#define MAYBE_Performance DISABLED_Performance
+#else
+#define MAYBE_Performance Performance
+#endif
+
+IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, MAYBE_Performance) {
   RunTest("TabCapturePerformance");
 }
 
@@ -250,7 +258,7 @@ INSTANTIATE_TEST_CASE_P(
         kTestThroughWebRTC | kDisableVsync,
         kTestThroughWebRTC | kDisableVsync | kUseGpu | kForceGpuComposited));
 
-#ifdef USE_AURA
+#if defined(USE_AURA)
 // TODO(hubbe):
 // These are temporary tests for the purpose of determining what the
 // appropriate scaling quality is. Once that has been determined,
