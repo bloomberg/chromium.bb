@@ -386,7 +386,7 @@ public class InfoBarContainer extends LinearLayout {
         }
 
         for (InfoBar infoBar : barsToRemove) {
-            infoBar.dismiss();
+            infoBar.dismissJavaOnlyInfoBar();
         }
     }
 

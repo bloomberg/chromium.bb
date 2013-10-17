@@ -66,4 +66,9 @@ public class MessageInfoBar extends InfoBar {
     public CharSequence getMessageText(Context context) {
         return mTitle;
     }
+
+    @Override
+    public void onCloseButtonClicked() {
+        super.dismissJavaOnlyInfoBar();
+    }
 }

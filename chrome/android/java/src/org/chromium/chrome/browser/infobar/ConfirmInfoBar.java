@@ -104,7 +104,8 @@ public class ConfirmInfoBar extends TwoButtonInfoBar {
     public void onCloseButtonClicked() {
         if (mNativeInfoBarPtr != 0) {
             nativeOnCloseButtonClicked(mNativeInfoBarPtr);
+        } else {
+            super.dismissJavaOnlyInfoBar();
         }
-        super.onCloseButtonClicked();
     }
 }

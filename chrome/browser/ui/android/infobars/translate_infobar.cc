@@ -59,8 +59,6 @@ void TranslateInfoBar::ProcessButton(
      return; // We're closing; don't call anything, it might access the owner.
 
   if (action == InfoBarAndroid::ACTION_TRANSLATE) {
-    // Do not close the infobar upon translate since it will be replaced by a
-    // different one which will close this current infobar.
     delegate_->Translate();
     return;
   }

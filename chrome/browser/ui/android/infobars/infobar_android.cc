@@ -67,12 +67,7 @@ void InfoBarAndroid::OnButtonClicked(JNIEnv* env,
 
 void InfoBarAndroid::OnCloseButtonClicked(JNIEnv* env, jobject obj) {
   delegate_->InfoBarDismissed();
-}
-
-void InfoBarAndroid::OnInfoBarClosed(JNIEnv* env, jobject obj) {
-  java_info_bar_.Reset();  // So we don't notify Java.
-  if (owner())
-    RemoveSelf();
+  RemoveSelf();
 }
 
 void InfoBarAndroid::CloseJavaInfoBar() {

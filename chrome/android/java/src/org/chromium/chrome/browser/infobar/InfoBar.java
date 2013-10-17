@@ -53,6 +53,8 @@ public abstract class InfoBar implements InfoBarView {
     private boolean mIsDismissed;
     private boolean mControlsEnabled;
 
+    // TODO(miguelg) make it private and enforce it in the Confirm and Translate
+    // infobars.
     protected int mNativeInfoBarPtr;
 
     // Used by tests to reference infobars.
@@ -149,20 +151,16 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     /**
-     * Used to close an infobar from java. In addition to closing the infobar, notifies native
-     * that the bar needs closing.
+     * Used to close a java only infobar.
      */
-    public void dismiss() {
-        if (closeInfoBar() && mNativeInfoBarPtr != 0) {
-            // We are being closed from Java, notify C++.
-            nativeOnInfoBarClosed(mNativeInfoBarPtr);
-            mNativeInfoBarPtr = 0;
+    public void dismissJavaOnlyInfoBar() {
+        assert mNativeInfoBarPtr == 0;
+        if (closeInfoBar() && mListener != null) {
+            mListener.onInfoBarDismissed(this);
         }
     }
 
     /**
-     * Used to close an infobar from native.
-     *
      * @return whether the infobar actually needed closing.
      */
     @CalledByNative
@@ -172,9 +170,6 @@ public abstract class InfoBar implements InfoBarView {
             if (!mContainer.hasBeenDestroyed()) {
                 // If the container was destroyed, it's already been emptied of all its infobars.
                 mContainer.removeInfoBar(this);
-            }
-            if (mListener != null) {
-                mListener.onInfoBarDismissed(this);
             }
             return true;
         }
@@ -230,11 +225,6 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     @Override
-    public void onCloseButtonClicked() {
-        dismiss();
-    }
-
-    @Override
     public void createContent(InfoBarLayout layout) {
     }
 
@@ -266,7 +256,6 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     protected native void nativeOnLinkClicked(int nativeInfoBarAndroid);
-    protected native void nativeOnInfoBarClosed(int nativeInfoBarAndroid);
     protected native void nativeOnButtonClicked(
             int nativeInfoBarAndroid, int action, String actionValue);
     protected native void nativeOnCloseButtonClicked(int nativeInfoBarAndroid);

@@ -52,8 +52,6 @@ class InfoBarAndroid : public InfoBar {
                        jstring action_value);
   void OnCloseButtonClicked(JNIEnv* env, jobject obj);
 
-  void OnInfoBarClosed(JNIEnv* env, jobject obj);
-
   void CloseJavaInfoBar();
 
   // Maps from a Chromium ID (IDR_TRANSLATE) to a enum value that Java code can
