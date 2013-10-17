@@ -72,7 +72,7 @@ CompressionMessageExtensionProcessor::CompressionMessageExtensionProcessor(WebSo
 
 String CompressionMessageExtensionProcessor::handshakeString()
 {
-    return "permessage-deflate; c2s_max_window_bits";
+    return "permessage-deflate; client_max_window_bits";
 }
 
 bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String, String>& parameters)
@@ -86,48 +86,48 @@ bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String,
     WebSocketDeflater::ContextTakeOverMode mode = WebSocketDeflater::TakeOverContext;
     int windowBits = 15;
 
-    HashMap<String, String>::const_iterator c2sNoContextTakeover = parameters.find("c2s_no_context_takeover");
-    HashMap<String, String>::const_iterator c2sMaxWindowBits = parameters.find("c2s_max_window_bits");
-    HashMap<String, String>::const_iterator s2cNoContextTakeover = parameters.find("s2c_no_context_takeover");
-    HashMap<String, String>::const_iterator s2cMaxWindowBits = parameters.find("s2c_max_window_bits");
+    HashMap<String, String>::const_iterator clientNoContextTakeover = parameters.find("client_no_context_takeover");
+    HashMap<String, String>::const_iterator clientMaxWindowBits = parameters.find("client_max_window_bits");
+    HashMap<String, String>::const_iterator serverNoContextTakeover = parameters.find("server_no_context_takeover");
+    HashMap<String, String>::const_iterator serverMaxWindowBits = parameters.find("server_max_window_bits");
 
-    if (c2sNoContextTakeover != parameters.end()) {
-        if (!c2sNoContextTakeover->value.isNull()) {
-            m_failureReason = "Received invalid c2s_no_context_takeover parameter";
+    if (clientNoContextTakeover != parameters.end()) {
+        if (!clientNoContextTakeover->value.isNull()) {
+            m_failureReason = "Received invalid client_no_context_takeover parameter";
             return false;
         }
         mode = WebSocketDeflater::DoNotTakeOverContext;
         ++numProcessedParameters;
     }
-    if (c2sMaxWindowBits != parameters.end()) {
-        if (!c2sMaxWindowBits->value.length()) {
-            m_failureReason = "c2s_max_window_bits parameter must have value";
+    if (clientMaxWindowBits != parameters.end()) {
+        if (!clientMaxWindowBits->value.length()) {
+            m_failureReason = "client_max_window_bits parameter must have value";
             return false;
         }
         bool ok = false;
-        windowBits = c2sMaxWindowBits->value.toIntStrict(&ok);
-        if (!ok || windowBits < 8 || windowBits > 15 || c2sMaxWindowBits->value[0] == '+' || c2sMaxWindowBits->value[0] == '0') {
-            m_failureReason = "Received invalid c2s_max_window_bits parameter";
+        windowBits = clientMaxWindowBits->value.toIntStrict(&ok);
+        if (!ok || windowBits < 8 || windowBits > 15 || clientMaxWindowBits->value[0] == '+' || clientMaxWindowBits->value[0] == '0') {
+            m_failureReason = "Received invalid client_max_window_bits parameter";
             return false;
         }
         ++numProcessedParameters;
     }
-    if (s2cNoContextTakeover != parameters.end()) {
-        if (!s2cNoContextTakeover->value.isNull()) {
-            m_failureReason = "Received invalid s2c_no_context_takeover parameter";
+    if (serverNoContextTakeover != parameters.end()) {
+        if (!serverNoContextTakeover->value.isNull()) {
+            m_failureReason = "Received invalid server_no_context_takeover parameter";
             return false;
         }
         ++numProcessedParameters;
     }
-    if (s2cMaxWindowBits != parameters.end()) {
-        if (!s2cMaxWindowBits->value.length()) {
-            m_failureReason = "s2c_max_window_bits parameter must have value";
+    if (serverMaxWindowBits != parameters.end()) {
+        if (!serverMaxWindowBits->value.length()) {
+            m_failureReason = "server_max_window_bits parameter must have value";
             return false;
         }
         bool ok = false;
-        int bits = s2cMaxWindowBits->value.toIntStrict(&ok);
-        if (!ok || bits < 8 || bits > 15 || s2cMaxWindowBits->value[0] == '+' || s2cMaxWindowBits->value[0] == '0') {
-            m_failureReason = "Received invalid s2c_max_window_bits parameter";
+        int bits = serverMaxWindowBits->value.toIntStrict(&ok);
+        if (!ok || bits < 8 || bits > 15 || serverMaxWindowBits->value[0] == '+' || serverMaxWindowBits->value[0] == '0') {
+            m_failureReason = "Received invalid server_max_window_bits parameter";
             return false;
         }
         ++numProcessedParameters;
@@ -139,7 +139,7 @@ bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String,
     }
     HistogramSupport::histogramEnumeration("WebCore.WebSocket.PerMessageDeflateContextTakeOverMode", mode, WebSocketDeflater::ContextTakeOverModeMax);
     m_compress.enable(windowBits, mode);
-    // Since we don't request s2c_no_context_takeover and s2c_max_window_bits, they should be ignored.
+    // Since we don't request server_no_context_takeover and server_max_window_bits, they should be ignored.
     return true;
 }
 

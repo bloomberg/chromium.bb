@@ -371,30 +371,30 @@ TEST(WebSocketPerMessageDeflateTest, TestValidNegotiationResponse)
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "15");
+        params.add("client_max_window_bits", "15");
         EXPECT_TRUE(processResponse(params));
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "8");
+        params.add("client_max_window_bits", "8");
         EXPECT_TRUE(processResponse(params));
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "15");
-        params.add("c2s_no_context_takeover", String());
+        params.add("client_max_window_bits", "15");
+        params.add("client_no_context_takeover", String());
         EXPECT_TRUE(processResponse(params));
     }
     {
-        // Unsolicited s2c_no_context_takeover should be ignored.
+        // Unsolicited server_no_context_takeover should be ignored.
         HashMap<String, String> params;
-        params.add("s2c_no_context_takeover", String());
+        params.add("server_no_context_takeover", String());
         EXPECT_TRUE(processResponse(params));
     }
     {
-        // Unsolicited s2c_max_window_bits should be ignored.
+        // Unsolicited server_max_window_bits should be ignored.
         HashMap<String, String> params;
-        params.add("s2c_max_window_bits", "15");
+        params.add("server_max_window_bits", "15");
         EXPECT_TRUE(processResponse(params));
     }
 }
@@ -418,62 +418,62 @@ TEST(WebSocketPerMessageDeflateTest, TestInvalidNegotiationResponse)
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "");
+        params.add("client_max_window_bits", "");
         EXPECT_FALSE(processResponse(params));
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "16");
+        params.add("client_max_window_bits", "16");
         EXPECT_FALSE(processResponse(params));
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "7");
+        params.add("client_max_window_bits", "7");
         EXPECT_FALSE(processResponse(params));
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "+15");
+        params.add("client_max_window_bits", "+15");
         EXPECT_FALSE(processResponse(params));
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "0x9");
+        params.add("client_max_window_bits", "0x9");
         EXPECT_FALSE(processResponse(params));
     }
     {
         HashMap<String, String> params;
-        params.add("c2s_max_window_bits", "08");
+        params.add("client_max_window_bits", "08");
         EXPECT_FALSE(processResponse(params));
     }
     {
-        // Unsolicited s2c_no_context_takeover should be verified though it is not used.
+        // Unsolicited server_no_context_takeover should be verified though it is not used.
         HashMap<String, String> params;
-        params.add("s2c_no_context_takeover", "foo");
+        params.add("server_no_context_takeover", "foo");
         EXPECT_FALSE(processResponse(params));
     }
     {
-        // Unsolicited s2c_max_window_bits should be verified though it is not used.
+        // Unsolicited server_max_window_bits should be verified though it is not used.
         HashMap<String, String> params;
-        params.add("s2c_max_window_bits", "7");
+        params.add("server_max_window_bits", "7");
         EXPECT_FALSE(processResponse(params));
     }
     {
-        // Unsolicited s2c_max_window_bits should be verified though it is not used.
+        // Unsolicited server_max_window_bits should be verified though it is not used.
         HashMap<String, String> params;
-        params.add("s2c_max_window_bits", "bar");
+        params.add("server_max_window_bits", "bar");
         EXPECT_FALSE(processResponse(params));
     }
     {
-        // Unsolicited s2c_max_window_bits should be verified though it is not used.
+        // Unsolicited server_max_window_bits should be verified though it is not used.
         HashMap<String, String> params;
-        params.add("s2c_max_window_bits", "16");
+        params.add("server_max_window_bits", "16");
         EXPECT_FALSE(processResponse(params));
     }
     {
-        // Unsolicited s2c_max_window_bits should be verified though it is not used.
+        // Unsolicited server_max_window_bits should be verified though it is not used.
         HashMap<String, String> params;
-        params.add("s2c_max_window_bits", "08");
+        params.add("server_max_window_bits", "08");
         EXPECT_FALSE(processResponse(params));
     }
 }
@@ -481,6 +481,6 @@ TEST(WebSocketPerMessageDeflateTest, TestInvalidNegotiationResponse)
 TEST(WebSocketPerMessageDeflateTest, TestNegotiationRequest)
 {
     String actual = WebSocketPerMessageDeflate().createExtensionProcessor()->handshakeString();
-    EXPECT_EQ(String("permessage-deflate; c2s_max_window_bits"), actual);
+    EXPECT_EQ(String("permessage-deflate; client_max_window_bits"), actual);
 }
 } // namespace

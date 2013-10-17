@@ -1,8 +1,8 @@
 CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?x-foo' failed: Received an unexpected permessage-deflate extension parameter
-CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?c2s_max_window_bits=7' failed: Received invalid c2s_max_window_bits parameter
-CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?c2s_max_window_bits=16' failed: Received invalid c2s_max_window_bits parameter
-CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?c2s_no_context_takeover=foo' failed: Received invalid c2s_no_context_takeover parameter
-CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?c2s_max_window_bits=8;%20c2s_no_context_takeover;%20x-foo' failed: Received an unexpected permessage-deflate extension parameter
+CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?client_max_window_bits=7' failed: Received invalid client_max_window_bits parameter
+CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?client_max_window_bits=16' failed: Received invalid client_max_window_bits parameter
+CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?client_no_context_takeover=foo' failed: Received invalid client_no_context_takeover parameter
+CONSOLE ERROR: line 29: WebSocket connection to 'ws://localhost:8880/websocket/tests/hybi/permessage-deflate-invalid-parameter?client_max_window_bits=8;%20client_no_context_takeover;%20x-foo' failed: Received an unexpected permessage-deflate extension parameter
 Test whether WebSocket rejects invalid permessage-deflate parameters.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -10,16 +10,16 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Testing parameter: "x-foo"
 onclose() was called.
 PASS closeEvent.wasClean is false
-Testing parameter: "c2s_max_window_bits=7"
+Testing parameter: "client_max_window_bits=7"
 onclose() was called.
 PASS closeEvent.wasClean is false
-Testing parameter: "c2s_max_window_bits=16"
+Testing parameter: "client_max_window_bits=16"
 onclose() was called.
 PASS closeEvent.wasClean is false
-Testing parameter: "c2s_no_context_takeover=foo"
+Testing parameter: "client_no_context_takeover=foo"
 onclose() was called.
 PASS closeEvent.wasClean is false
-Testing parameter: "c2s_max_window_bits=8; c2s_no_context_takeover; x-foo"
+Testing parameter: "client_max_window_bits=8; client_no_context_takeover; x-foo"
 onclose() was called.
 PASS closeEvent.wasClean is false
 PASS successfullyParsed is true

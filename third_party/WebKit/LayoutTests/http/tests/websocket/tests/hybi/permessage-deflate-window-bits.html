@@ -17,14 +17,14 @@ var ws;
 var messageIndex;
 
 var queries = [
-    "c2s_max_window_bits=8",
-    "c2s_max_window_bits=15",
-    "c2s_no_context_takeover",
-    "c2s_max_window_bits=8&c2s_no_context_takeover"
+    "client_max_window_bits=8",
+    "client_max_window_bits=15",
+    "client_no_context_takeover",
+    "client_max_window_bits=8&client_no_context_takeover"
 ];
 
 // We construct this message so that the test will fail if the client deflater
-// doesn't care about c2s_max_window_bits.
+// doesn't care about client_max_window_bits.
 var alpha = 'abcdefghijklmnopqrstuvwxyz'
 var message = '';
 for (var i = 0; i < 30000; ++i) {

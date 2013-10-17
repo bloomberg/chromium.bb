@@ -45,10 +45,10 @@ def web_socket_do_extra_handshake(request):
     request.ws_extension_processors = [processor]
     if not processor:
         return
-    # Insert fake s2c_... parameters to make the server create
+    # Insert fake server_... parameters to make the server create
     # a negotiation response including the parameters.
-    processor._request.add_parameter('s2c_no_context_takeover', None)
-    processor._request.add_parameter('s2c_max_window_bits', '15')
+    processor._request.add_parameter('server_no_context_takeover', None)
+    processor._request.add_parameter('server_max_window_bits', '15')
 
 
 def web_socket_transfer_data(request):

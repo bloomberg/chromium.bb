@@ -39,7 +39,7 @@ _GOODBYE_MESSAGE = u'Goodbye'
 _ENABLE_MESSAGE = u'EnableCompression'
 _DISABLE_MESSAGE = u'DisableCompression'
 _bfinal = False
-_c2s_max_window_bits = 15
+_client_max_window_bits = 15
 
 
 def _get_permessage_deflate_extension_processor(request):
@@ -52,7 +52,7 @@ def _get_permessage_deflate_extension_processor(request):
 
 def web_socket_do_extra_handshake(request):
     global _bfinal
-    global _c2s_max_window_bits
+    global _client_max_window_bits
     processor = _get_permessage_deflate_extension_processor(request)
     # Remove extension processors other than
     # PerMessageDeflateExtensionProcessor to avoid conflict.
@@ -63,12 +63,12 @@ def web_socket_do_extra_handshake(request):
     if len(r) == 1:
         return
     parameters = urlparse.parse_qs(r[1], keep_blank_values=True)
-    if 'c2s_max_window_bits' in parameters:
-        window_bits = int(parameters['c2s_max_window_bits'][0])
-        processor.set_c2s_max_window_bits(window_bits)
-        _c2s_max_window_bits = window_bits
-    if 'c2s_no_context_takeover' in parameters:
-        processor.set_c2s_no_context_takeover(True)
+    if 'client_max_window_bits' in parameters:
+        window_bits = int(parameters['client_max_window_bits'][0])
+        processor.set_client_max_window_bits(window_bits)
+        _client_max_window_bits = window_bits
+    if 'client_no_context_takeover' in parameters:
+        processor.set_client_no_context_takeover(True)
     if 'set_bfinal' in parameters:
         _bfinal = True
 
@@ -96,7 +96,7 @@ def receive(request):
 def web_socket_transfer_data(request):
     processor = _get_permessage_deflate_extension_processor(request)
     processor.set_bfinal(_bfinal)
-    inflater = util._Inflater(_c2s_max_window_bits)
+    inflater = util._Inflater(_client_max_window_bits)
     while True:
         compress, possibly_compressed_body = receive(request)
         body = None

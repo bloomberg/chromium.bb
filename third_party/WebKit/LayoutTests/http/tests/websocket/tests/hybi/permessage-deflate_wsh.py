@@ -58,11 +58,11 @@ def web_socket_do_extra_handshake(request):
     if len(r) == 1:
         return
     parameters = urlparse.parse_qs(r[1], keep_blank_values=True)
-    if 'c2s_max_window_bits' in parameters:
-        window_bits = int(parameters['c2s_max_window_bits'][0])
-        processor.set_c2s_max_window_bits(window_bits)
-    if 'c2s_no_context_takeover' in parameters:
-        processor.set_c2s_no_context_takeover(True)
+    if 'client_max_window_bits' in parameters:
+        window_bits = int(parameters['client_max_window_bits'][0])
+        processor.set_client_max_window_bits(window_bits)
+    if 'client_no_context_takeover' in parameters:
+        processor.set_client_no_context_takeover(True)
     if 'set_bfinal' in parameters:
         _bfinal = True
 
