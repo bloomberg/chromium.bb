@@ -11,10 +11,12 @@ var camera = camera || {};
 
 /**
  * Creates a view controller.
+ *
  * @param {camera.View.Context} context Context of the app.
+ * @param {camera.Router} router View router to switch views.
  * @constructor
  */
-camera.View = function(context) {
+camera.View = function(context, router) {
   /**
    * @type {boolean}
    * @private
@@ -26,6 +28,12 @@ camera.View = function(context) {
    * @private
    */
   this.context_ = context;
+
+  /**
+   * @type {camera.Router}
+   * @private
+   */
+  this.router_ = router;
 };
 
 camera.View.prototype = {
@@ -34,6 +42,9 @@ camera.View.prototype = {
   },
   get context() {
     return this.context_;
+  },
+  get router() {
+    return this.router_;
   }
 };
 

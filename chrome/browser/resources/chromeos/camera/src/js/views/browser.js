@@ -18,12 +18,13 @@ camera.views = camera.views || {};
  * Creates the Browser view controller.
  *
  * @param {camera.View.Context} context Context object.
+ * @param {camera.Router} router View router to switch views.
  * @extends {camera.View}
  * @implements {camera.models.Gallery.Observer}
  * @constructor
  */
-camera.views.Browser = function(context) {
-  camera.View.call(this, context);
+camera.views.Browser = function(context, router) {
+  camera.View.call(this, context, router);
 
   /**
    * @type {camera.models.Gallery}
@@ -143,7 +144,7 @@ camera.views.Browser.prototype.onResize = function() {
  * @private
  */
 camera.views.Browser.prototype.onBackgroundClicked_ = function(event) {
-  this.context_.onGalleryRequested();
+  this.router.switchView(camera.Router.ViewIdentifier.GALLERY);
 };
 
 /**
@@ -376,7 +377,7 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
       this.exportSelection_();
       break;
     case 'U+001B':
-      this.context_.onGalleryRequested();
+      this.router.switchView(camera.Router.ViewIdentifier.GALLERY);
       break;
   }
 };

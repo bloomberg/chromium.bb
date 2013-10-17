@@ -17,10 +17,11 @@ camera.views = camera.views || {};
 /**
  * Creates the Camera view controller.
  * @param {camera.View.Context} context Context object.
+ * @param {camera.Router} router View router to switch views.
  * @constructor
  */
-camera.views.Camera = function(context) {
-  camera.View.call(this, context);
+camera.views.Camera = function(context, router) {
+  camera.View.call(this, context, router);
 
   /**
    * Gallery model used to save taken pictures.
