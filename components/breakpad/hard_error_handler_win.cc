@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/hard_error_handler_win.h"
+#include "components/breakpad/hard_error_handler_win.h"
 
 #if defined(_WIN32_WINNT_WIN8) && _MSC_VER < 1700
 // The Windows 8 SDK defines FACILITY_VISUALCPP in winerror.h, and in
@@ -15,6 +15,8 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "components/breakpad/breakpad_client.h"
+
+namespace breakpad {
 
 namespace {
 const DWORD kExceptionModuleNotFound = VcppException(ERROR_SEVERITY_ERROR,
@@ -37,7 +39,7 @@ DWORD FacilityFromException(DWORD exception_code) {
 void RaiseHardErrorMsg(long nt_status, const std::string& p1,
                                        const std::string& p2) {
   // If headless just exit silently.
-  if (breakpad::GetBreakpadClient()->IsRunningUnattended())
+  if (GetBreakpadClient()->IsRunningUnattended())
     return;
 
   HMODULE ntdll = ::GetModuleHandleA("NTDLL.DLL");
@@ -112,3 +114,5 @@ bool HardErrorHandler(EXCEPTION_POINTERS* ex_info) {
   }
   return false;
 }
+
+}  // namespace breakpad

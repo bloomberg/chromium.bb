@@ -1,11 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APP_HARD_ERROR_HANDLER_WIN_H_
-#define CHROME_APP_HARD_ERROR_HANDLER_WIN_H_
+#ifndef COMPONENTS_BREAKPAD_HARD_ERROR_HANDLER_WIN_H_
+#define COMPONENTS_BREAKPAD_HARD_ERROR_HANDLER_WIN_H_
 
 #include <windows.h>
+
+namespace breakpad {
 
 // This function is in charge of displaying a dialog box that informs the
 // user of a fatal condition in chrome. It is meant to be called from
@@ -27,5 +29,6 @@
 // possible.
 bool HardErrorHandler(EXCEPTION_POINTERS* ex_info);
 
-#endif  // CHROME_APP_HARD_ERROR_HANDLER_WIN_H_
+}  // namespace breakpad
 
+#endif  // COMPONENTS_BREAKPAD_HARD_ERROR_HANDLER_WIN_H_

@@ -14,6 +14,10 @@
           'breakpad/breakpad_client.h',
           'breakpad/breakpad_mac.h',
           'breakpad/breakpad_mac.mm',
+          'breakpad/breakpad_win.cc',
+          'breakpad/breakpad_win.h',
+          'breakpad/hard_error_handler_win.cc',
+          'breakpad/hard_error_handler_win.h',
         ],
       }],
     ],
@@ -35,6 +39,13 @@
             '../content/content.gyp:content_common',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../breakpad/breakpad.gyp:breakpad_handler',
+            '../breakpad/breakpad.gyp:breakpad_sender',
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
       ],
     },
   ],
@@ -49,6 +60,9 @@
           },
           'dependencies': [
             '../base/base.gyp:base_nacl_win64',
+            '../breakpad/breakpad.gyp:breakpad_handler_win64',
+            '../breakpad/breakpad.gyp:breakpad_sender_win64',
+            '../sandbox/sandbox.gyp:sandbox_win64',
           ],
           'configurations': {
             'Common_Base': {

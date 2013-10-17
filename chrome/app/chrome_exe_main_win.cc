@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "chrome/app/chrome_breakpad_client.h"
-#include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/app/metro_driver_win.h"
 #include "chrome/browser/chrome_process_finder_win.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/breakpad/breakpad_client.h"
+#include "components/breakpad/breakpad_win.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -34,7 +34,7 @@ int RunChrome(HINSTANCE instance) {
 
   bool exit_now = true;
   // We restarted because of a previous crash. Ask user if we should relaunch.
-  if (ShowRestartDialogIfCrashed(&exit_now)) {
+  if (breakpad::ShowRestartDialogIfCrashed(&exit_now)) {
     if (exit_now)
       return content::RESULT_CODE_NORMAL_EXIT;
   }

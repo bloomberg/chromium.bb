@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
-#include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/app/image_pre_reader_win.h"
 #include "chrome/common/chrome_constants.h"
@@ -32,6 +31,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/breakpad/breakpad_win.h"
 
 namespace {
 // The entry point signature of chrome.dll.
@@ -286,7 +286,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
   // widely deployed.
   env->UnSetVar(env_vars::kGoogleUpdateIsMachineEnvVar);
 
-  InitCrashReporter();
+  breakpad::InitCrashReporter();
   OnBeforeLaunch(file);
 
   DLL_MAIN entry_point =

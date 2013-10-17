@@ -13,11 +13,11 @@
 #include "base/process/memory.h"
 #include "base/strings/string_util.h"
 #include "base/timer/hi_res_timer_manager.h"
-#include "chrome/app/breakpad_win.h"
 #include "chrome/app/chrome_breakpad_client.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/logging_chrome.h"
 #include "components/breakpad/breakpad_client.h"
+#include "components/breakpad/breakpad_win.h"
 #include "components/nacl/broker/nacl_broker_listener.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_listener.h"
@@ -62,7 +62,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   CommandLine::Init(0, NULL);
 
   breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
-  InitCrashReporter();
+  breakpad::InitCrashReporter();
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
