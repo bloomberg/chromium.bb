@@ -2601,7 +2601,7 @@
             'html/track/TextTrackRegion.h',
             'html/track/TextTrackRegionList.cpp',
             'html/track/TextTrackRegionList.h',
-            'html/track/TrackBase.cpp',
+            'html/track/TrackBase.h',
             'html/track/TrackEvent.cpp',
             'html/track/WebVTTElement.cpp',
             'html/track/WebVTTElement.h',

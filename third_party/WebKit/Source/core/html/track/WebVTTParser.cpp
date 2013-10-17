@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/html/track/WebVTTParser.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
 #include "core/html/track/WebVTTElement.h"
@@ -110,8 +111,8 @@ FloatPoint WebVTTParser::parseFloatPercentageValuePair(const String& value, char
     return FloatPoint(firstCoord, secondCoord);
 }
 
-WebVTTParser::WebVTTParser(WebVTTParserClient* client, ExecutionContext* context)
-    : m_executionContext(context)
+WebVTTParser::WebVTTParser(WebVTTParserClient* client, Document& document)
+    : m_document(&document)
     , m_state(Initial)
     , m_currentStartTime(0)
     , m_currentEndTime(0)
@@ -316,14 +317,10 @@ PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(co
     // 4.8.10.13.4 WebVTT cue text parsing rules and
     // 4.8.10.13.5 WebVTT cue text DOM construction rules.
 
-    ASSERT(m_executionContext->isDocument());
-    Document* document = toDocument(m_executionContext);
-    ASSERT(document);
-
-    RefPtr<DocumentFragment> fragment = DocumentFragment::create(*document);
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(*m_document);
 
     if (!text.length()) {
-        fragment->parserAppendChild(Text::create(*document, ""));
+        fragment->parserAppendChild(Text::create(*m_document, ""));
         return fragment;
     }
 
@@ -334,7 +331,7 @@ PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(co
     m_languageStack.clear();
     SegmentedString content(text);
     while (m_tokenizer->nextToken(content, m_token))
-        constructTreeFromToken(*document);
+        constructTreeFromToken(*m_document);
 
     return fragment.release();
 }
@@ -344,7 +341,7 @@ void WebVTTParser::createNewCue()
     if (!m_currentContent.length())
         return;
 
-    RefPtr<TextTrackCue> cue = TextTrackCue::create(m_executionContext, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
+    RefPtr<TextTrackCue> cue = TextTrackCue::create(*m_document, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
     cue->setId(m_currentId);
     cue->setCueSettings(m_currentSettings);
 
@@ -367,7 +364,7 @@ void WebVTTParser::createNewRegion()
     if (!m_currentHeaderValue.length())
         return;
 
-    RefPtr<TextTrackRegion> region = TextTrackRegion::create(m_executionContext);
+    RefPtr<TextTrackRegion> region = TextTrackRegion::create();
     region->setRegionSettings(m_currentHeaderValue);
 
     // 15.5.10 If the text track list of regions regions contains a region

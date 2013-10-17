@@ -68,9 +68,9 @@ public:
         BadCue
     };
 
-    static PassOwnPtr<WebVTTParser> create(WebVTTParserClient* client, ExecutionContext* context)
+    static PassOwnPtr<WebVTTParser> create(WebVTTParserClient* client, Document& document)
     {
-        return adoptPtr(new WebVTTParser(client, context));
+        return adoptPtr(new WebVTTParser(client, document));
     }
 
     static inline bool isRecognizedTag(const AtomicString& tagName)
@@ -110,13 +110,12 @@ public:
     PassRefPtr<DocumentFragment> createDocumentFragmentFromCueText(const String&);
     double collectTimeStamp(const String&, unsigned*);
 
-protected:
-    WebVTTParser(WebVTTParserClient*, ExecutionContext*);
+private:
+    WebVTTParser(WebVTTParserClient*, Document&);
 
-    ExecutionContext* m_executionContext;
+    Document* m_document;
     ParseState m_state;
 
-private:
     bool hasRequiredFileIdentifier();
     ParseState collectCueId(const String&);
     ParseState collectTimingsAndSettings(const String&);

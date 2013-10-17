@@ -33,6 +33,7 @@
 
 namespace WebCore {
 
+class Document;
 class ExceptionState;
 class HTMLMediaElement;
 class TextTrack;
@@ -54,9 +55,9 @@ public:
 
 class TextTrack : public TrackBase, public ScriptWrappable {
 public:
-    static PassRefPtr<TextTrack> create(ExecutionContext* context, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
+    static PassRefPtr<TextTrack> create(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {
-        return adoptRef(new TextTrack(context, client, kind, label, language, AddTrack));
+        return adoptRef(new TextTrack(document, client, kind, label, language, AddTrack));
     }
     virtual ~TextTrack();
 
@@ -132,17 +133,25 @@ public:
 
     void removeAllCues();
 
+    Document& document() const { return *m_document; }
+
+    // EventTarget methods
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
+
 protected:
-    TextTrack(ExecutionContext*, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType);
+    TextTrack(Document&, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType);
 
     RefPtr<TextTrackCueList> m_cues;
 
 private:
-
     TextTrackRegionList* ensureTextTrackRegionList();
     RefPtr<TextTrackRegionList> m_regions;
 
     TextTrackCueList* ensureTextTrackCueList();
+
+    // FIXME: Remove this pointer and get the Document from m_client
+    Document* m_document;
 
     HTMLMediaElement* m_mediaElement;
     AtomicString m_kind;

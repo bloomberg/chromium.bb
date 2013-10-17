@@ -67,16 +67,13 @@ static const float lineHeight = 5.33;
 // Default scrolling animation time period (s).
 static const float scrollTime = 0.433;
 
-TextTrackRegion::TextTrackRegion(ExecutionContext* context)
-    : ContextLifecycleObserver(context)
-    , m_id(emptyString())
+TextTrackRegion::TextTrackRegion()
+    : m_id(emptyString())
     , m_width(defaultWidth)
     , m_heightInLines(defaultHeightInLines)
     , m_regionAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY))
     , m_viewportAnchor(FloatPoint(defaultAnchorPointX, defaultAnchorPointY))
     , m_scroll(defaultScroll)
-    , m_regionDisplayTree(0)
-    , m_cueContainer(0)
     , m_track(0)
     , m_currentTop(0)
     , m_scrollTimer(this, &TextTrackRegion::scrollTimerFired)
@@ -352,10 +349,10 @@ const AtomicString& TextTrackRegion::textTrackRegionShadowPseudoId()
     return trackRegionShadowPseudoId;
 }
 
-PassRefPtr<HTMLDivElement> TextTrackRegion::getDisplayTree()
+PassRefPtr<HTMLDivElement> TextTrackRegion::getDisplayTree(Document& document)
 {
     if (!m_regionDisplayTree) {
-        m_regionDisplayTree = HTMLDivElement::create(*ownerDocument());
+        m_regionDisplayTree = HTMLDivElement::create(document);
         prepareRegionDisplayTree();
     }
 
@@ -465,7 +462,7 @@ void TextTrackRegion::prepareRegionDisplayTree()
 
     // The cue container is used to wrap the cues and it is the object which is
     // gradually scrolled out as multiple cues are appended to the region.
-    m_cueContainer = HTMLDivElement::create(*ownerDocument());
+    m_cueContainer = HTMLDivElement::create(m_regionDisplayTree->document());
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop,
         0.0,
         CSSPrimitiveValue::CSS_PX);

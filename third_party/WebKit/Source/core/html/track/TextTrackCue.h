@@ -39,6 +39,7 @@
 
 namespace WebCore {
 
+class Document;
 class DocumentFragment;
 class ExceptionState;
 class ExecutionContext;
@@ -72,9 +73,9 @@ protected:
 class TextTrackCue : public RefCounted<TextTrackCue>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TextTrackCue);
 public:
-    static PassRefPtr<TextTrackCue> create(ExecutionContext* context, double start, double end, const String& content)
+    static PassRefPtr<TextTrackCue> create(Document& document, double start, double end, const String& content)
     {
-        return adoptRef(new TextTrackCue(context, start, end, content));
+        return adoptRef(new TextTrackCue(document, start, end, content));
     }
 
     static const AtomicString& cueShadowPseudoId()
@@ -195,15 +196,13 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
-protected:
-    TextTrackCue(ExecutionContext*, double start, double end, const String& content);
+private:
+    TextTrackCue(Document&, double start, double end, const String& content);
 
-    Document* ownerDocument() { return toDocument(m_executionContext); }
+    Document& document() const;
 
-    virtual PassRefPtr<TextTrackCueBox> createDisplayTree();
     PassRefPtr<TextTrackCueBox> displayTreeInternal();
 
-private:
     void createWebVTTNodeTree();
     void copyWebVTTNodeToDOMTree(ContainerNode* WebVTTNode, ContainerNode* root);
 
@@ -244,8 +243,6 @@ private:
 
     RefPtr<DocumentFragment> m_webVTTNodeTree;
     TextTrack* m_track;
-
-    ExecutionContext* m_executionContext;
 
     bool m_isActive;
     bool m_pauseOnExit;

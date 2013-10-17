@@ -35,13 +35,13 @@
 
 namespace WebCore {
 
-PassRefPtr<InbandTextTrack> InbandTextTrack::create(ExecutionContext* context, TextTrackClient* client, PassRefPtr<InbandTextTrackPrivate> playerPrivate)
+PassRefPtr<InbandTextTrack> InbandTextTrack::create(Document& document, TextTrackClient* client, PassRefPtr<InbandTextTrackPrivate> playerPrivate)
 {
-    return adoptRef(new InbandTextTrack(context, client, playerPrivate));
+    return adoptRef(new InbandTextTrack(document, client, playerPrivate));
 }
 
-InbandTextTrack::InbandTextTrack(ExecutionContext* context, TextTrackClient* client, PassRefPtr<InbandTextTrackPrivate> tracksPrivate)
-    : TextTrack(context, client, emptyString(), tracksPrivate->label(), tracksPrivate->language(), InBand)
+InbandTextTrack::InbandTextTrack(Document& document, TextTrackClient* client, PassRefPtr<InbandTextTrackPrivate> tracksPrivate)
+    : TextTrack(document, client, emptyString(), tracksPrivate->label(), tracksPrivate->language(), InBand)
     , m_private(tracksPrivate)
 {
     m_private->setClient(this);
@@ -140,10 +140,9 @@ void InbandTextTrack::trackRemoved()
 
 void InbandTextTrack::addWebVTTCue(InbandTextTrackPrivate* trackPrivate, double start, double end, const String& id, const String& content, const String& settings)
 {
-    UNUSED_PARAM(trackPrivate);
-    ASSERT(trackPrivate == m_private);
+    ASSERT_UNUSED(trackPrivate, trackPrivate == m_private);
 
-    RefPtr<TextTrackCue> cue = TextTrackCue::create(executionContext(), start, end, content);
+    RefPtr<TextTrackCue> cue = TextTrackCue::create(document(), start, end, content);
     cue->setId(id);
     cue->setCueSettings(settings);
 

@@ -1199,7 +1199,7 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
 
                 // If this is the first added track, create the list of text tracks.
                 if (!m_textTracks)
-                    m_textTracks = TextTrackList::create(this, ActiveDOMObject::executionContext());
+                    m_textTracks = TextTrackList::create(this);
             }
             break;
         }
@@ -2467,7 +2467,7 @@ void HTMLMediaElement::mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>
 
     // 4.8.10.12.2 Sourcing in-band text tracks
     // 1. Associate the relevant data with a new text track and its corresponding new TextTrack object.
-    RefPtr<InbandTextTrack> textTrack = InbandTextTrack::create(ActiveDOMObject::executionContext(), this, prpTrack);
+    RefPtr<InbandTextTrack> textTrack = InbandTextTrack::create(document(), this, prpTrack);
 
     // 2. Set the new text track's kind, label, and language based on the semantics of the relevant data,
     // as defined by the relevant specification. If there is no label in that data, then the label must
@@ -2570,7 +2570,7 @@ PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const S
 
     // 5. Create a new text track corresponding to the new object, and set its text track kind to kind, its text
     // track label to label, its text track language to language...
-    RefPtr<TextTrack> textTrack = TextTrack::create(ActiveDOMObject::executionContext(), this, kind, label, language);
+    RefPtr<TextTrack> textTrack = TextTrack::create(document(), this, kind, label, language);
 
     // Note, due to side effects when changing track parameters, we have to
     // first append the track to the text track list.
@@ -2593,7 +2593,7 @@ TextTrackList* HTMLMediaElement::textTracks()
         return 0;
 
     if (!m_textTracks)
-        m_textTracks = TextTrackList::create(this, ActiveDOMObject::executionContext());
+        m_textTracks = TextTrackList::create(this);
 
     return m_textTracks.get();
 }

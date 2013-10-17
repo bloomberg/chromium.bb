@@ -752,11 +752,11 @@ void MediaControlTextTrackContainerElement::updateDisplay()
         } else {
             // Let region be the WebVTT region whose region identifier
             // matches the text track cue region identifier of cue.
-            RefPtr<HTMLDivElement> regionNode = region->getDisplayTree();
+            RefPtr<HTMLDivElement> regionNode = region->getDisplayTree(document());
 
             // Append the region to the viewport, if it was not already.
             if (!contains(regionNode.get()))
-                appendChild(region->getDisplayTree());
+                appendChild(regionNode);
 
             region->appendTextTrackCueBox(displayBox);
         }

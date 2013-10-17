@@ -48,11 +48,6 @@ void V8TrackEvent::trackAttributeGetterCustom(v8::Local<v8::String> name, const 
     }
 
     switch (track->type()) {
-    case TrackBase::BaseTrack:
-        // This should never happen.
-        ASSERT_NOT_REACHED();
-        break;
-
     case TrackBase::TextTrack:
         v8SetReturnValueFast(info, static_cast<TextTrack*>(track), trackEvent);
         return;

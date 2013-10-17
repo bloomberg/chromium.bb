@@ -204,7 +204,7 @@ RenderObject* TextTrackCueBox::createRenderer(RenderStyle*)
 
 // ----------------------------
 
-TextTrackCue::TextTrackCue(ExecutionContext* context, double start, double end, const String& content)
+TextTrackCue::TextTrackCue(Document& document, double start, double end, const String& content)
     : m_startTime(start)
     , m_endTime(end)
     , m_content(content)
@@ -217,16 +217,14 @@ TextTrackCue::TextTrackCue(ExecutionContext* context, double start, double end, 
     , m_cueAlignment(Middle)
     , m_webVTTNodeTree(0)
     , m_track(0)
-    , m_executionContext(context)
     , m_isActive(false)
     , m_pauseOnExit(false)
     , m_snapToLines(true)
-    , m_cueBackgroundBox(HTMLDivElement::create(*toDocument(context)))
+    , m_cueBackgroundBox(HTMLDivElement::create(document))
     , m_displayTreeShouldChange(true)
     , m_displayDirection(CSSValueLtr)
     , m_notifyRegion(true)
 {
-    ASSERT(m_executionContext->isDocument());
     ScriptWrappable::init(this);
 }
 
@@ -235,16 +233,10 @@ TextTrackCue::~TextTrackCue()
     displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
 }
 
-PassRefPtr<TextTrackCueBox> TextTrackCue::createDisplayTree()
-{
-    ASSERT(ownerDocument());
-    return TextTrackCueBox::create(*ownerDocument(), this);
-}
-
 PassRefPtr<TextTrackCueBox> TextTrackCue::displayTreeInternal()
 {
     if (!m_displayTree)
-        m_displayTree = createDisplayTree();
+        m_displayTree = TextTrackCueBox::create(document(), this);
     return m_displayTree;
 }
 
@@ -513,7 +505,7 @@ void TextTrackCue::invalidateCueIndex()
 void TextTrackCue::createWebVTTNodeTree()
 {
     if (!m_webVTTNodeTree)
-        m_webVTTNodeTree = WebVTTParser::create(0, m_executionContext)->createDocumentFragmentFromCueText(m_content);
+        m_webVTTNodeTree = WebVTTParser::create(0, document())->createDocumentFragmentFromCueText(m_content);
 }
 
 void TextTrackCue::copyWebVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerNode* parent)
@@ -521,7 +513,7 @@ void TextTrackCue::copyWebVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerN
     for (Node* node = webVTTNode->firstChild(); node; node = node->nextSibling()) {
         RefPtr<Node> clonedNode;
         if (node->isWebVTTElement())
-            clonedNode = toWebVTTElement(node)->createEquivalentHTMLElement(ownerDocument());
+            clonedNode = toWebVTTElement(node)->createEquivalentHTMLElement(&document());
         else
             clonedNode = node->cloneNode(false);
         parent->appendChild(clonedNode);
@@ -533,7 +525,7 @@ void TextTrackCue::copyWebVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerN
 PassRefPtr<DocumentFragment> TextTrackCue::getCueAsHTML()
 {
     createWebVTTNodeTree();
-    RefPtr<DocumentFragment> clonedFragment = DocumentFragment::create(*ownerDocument());
+    RefPtr<DocumentFragment> clonedFragment = DocumentFragment::create(document());
     copyWebVTTNodeToDOMTree(m_webVTTNodeTree.get(), clonedFragment.get());
     return clonedFragment.release();
 }
@@ -542,7 +534,7 @@ PassRefPtr<DocumentFragment> TextTrackCue::createCueRenderingTree()
 {
     RefPtr<DocumentFragment> clonedFragment;
     createWebVTTNodeTree();
-    clonedFragment = DocumentFragment::create(*ownerDocument());
+    clonedFragment = DocumentFragment::create(document());
     m_webVTTNodeTree->cloneChildNodes(clonedFragment.get());
     return clonedFragment.release();
 }
@@ -800,7 +792,7 @@ void TextTrackCue::markFutureAndPastNodes(ContainerNode* root, double previousTi
         if (child->nodeName() == timestampTag) {
             unsigned position = 0;
             String timestamp = child->nodeValue();
-            double currentTimestamp = WebVTTParser::create(0, m_executionContext)->collectTimeStamp(timestamp, &position);
+            double currentTimestamp = WebVTTParser::create(0, document())->collectTimeStamp(timestamp, &position);
             ASSERT(currentTimestamp != -1);
 
             if (currentTimestamp > movieTime)
@@ -1205,7 +1197,14 @@ const AtomicString& TextTrackCue::interfaceName() const
 
 ExecutionContext* TextTrackCue::executionContext() const
 {
-    return m_executionContext;
+    ASSERT(m_cueBackgroundBox);
+    return m_cueBackgroundBox->executionContext();
+}
+
+Document& TextTrackCue::document() const
+{
+    ASSERT(m_cueBackgroundBox);
+    return m_cueBackgroundBox->document();
 }
 
 bool TextTrackCue::operator==(const TextTrackCue& cue) const

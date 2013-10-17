@@ -32,8 +32,8 @@
 #define TextTrackRegion_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/Document.h"
 #include "core/html/track/TextTrack.h"
+#include "platform/Timer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -44,11 +44,11 @@ class ExceptionState;
 class HTMLDivElement;
 class TextTrackCueBox;
 
-class TextTrackRegion : public RefCounted<TextTrackRegion>, public ContextLifecycleObserver {
+class TextTrackRegion : public RefCounted<TextTrackRegion> {
 public:
-    static PassRefPtr<TextTrackRegion> create(ExecutionContext* context)
+    static PassRefPtr<TextTrackRegion> create()
     {
-        return adoptRef(new TextTrackRegion(context));
+        return adoptRef(new TextTrackRegion());
     }
 
     virtual ~TextTrackRegion();
@@ -87,15 +87,14 @@ public:
 
     bool isScrollingRegion() { return m_scroll; }
 
-    PassRefPtr<HTMLDivElement> getDisplayTree();
+    PassRefPtr<HTMLDivElement> getDisplayTree(Document&);
 
     void appendTextTrackCueBox(PassRefPtr<TextTrackCueBox>);
     void displayLastTextTrackCueBox();
     void willRemoveTextTrackCueBox(TextTrackCueBox*);
 
 private:
-    TextTrackRegion(ExecutionContext*);
-    Document* ownerDocument() { return toDocument(executionContext()); }
+    TextTrackRegion();
 
     void prepareRegionDisplayTree();
 

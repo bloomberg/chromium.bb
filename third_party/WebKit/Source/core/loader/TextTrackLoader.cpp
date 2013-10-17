@@ -40,9 +40,9 @@
 
 namespace WebCore {
 
-TextTrackLoader::TextTrackLoader(TextTrackLoaderClient* client, ExecutionContext* context)
+TextTrackLoader::TextTrackLoader(TextTrackLoaderClient* client, Document& document)
     : m_client(client)
-    , m_executionContext(context)
+    , m_document(document)
     , m_cueLoadTimer(this, &TextTrackLoader::cueLoadTimerFired)
     , m_state(Idle)
     , m_parseOffset(0)
@@ -89,7 +89,7 @@ void TextTrackLoader::processNewCueData(Resource* resource)
         return;
 
     if (!m_cueParser)
-        m_cueParser = WebVTTParser::create(this, m_executionContext);
+        m_cueParser = WebVTTParser::create(this, m_document);
 
     const char* data;
     unsigned length;
@@ -114,8 +114,7 @@ void TextTrackLoader::deprecatedDidReceiveResource(Resource* resource)
 void TextTrackLoader::corsPolicyPreventedLoad()
 {
     DEFINE_STATIC_LOCAL(String, consoleMessage, ("Cross-origin text track load denied by Cross-Origin Resource Sharing policy."));
-    Document* document = toDocument(m_executionContext);
-    document->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, consoleMessage);
+    m_document.addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, consoleMessage);
     m_state = Failed;
 }
 
@@ -123,10 +122,9 @@ void TextTrackLoader::notifyFinished(Resource* resource)
 {
     ASSERT(m_cachedCueData == resource);
 
-    Document* document = toDocument(m_executionContext);
     if (!m_crossOriginMode.isNull()
-        && !document->securityOrigin()->canRequest(resource->response().url())
-        && !resource->passesAccessControlCheck(document->securityOrigin())) {
+        && !m_document.securityOrigin()->canRequest(resource->response().url())
+        && !resource->passesAccessControlCheck(m_document.securityOrigin())) {
 
         corsPolicyPreventedLoad();
     }
@@ -150,23 +148,21 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
     if (!m_client->shouldLoadCues(this))
         return false;
 
-    ASSERT(m_executionContext->isDocument());
-    Document* document = toDocument(m_executionContext);
-    FetchRequest cueRequest(ResourceRequest(document->completeURL(url)), FetchInitiatorTypeNames::texttrack);
+    FetchRequest cueRequest(ResourceRequest(m_document.completeURL(url)), FetchInitiatorTypeNames::texttrack);
 
     if (!crossOriginMode.isNull()) {
         m_crossOriginMode = crossOriginMode;
         StoredCredentials allowCredentials = equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-        updateRequestForAccessControl(cueRequest.mutableResourceRequest(), document->securityOrigin(), allowCredentials);
+        updateRequestForAccessControl(cueRequest.mutableResourceRequest(), m_document.securityOrigin(), allowCredentials);
     } else {
         // Cross-origin resources that are not suitably CORS-enabled may not load.
-        if (!document->securityOrigin()->canRequest(url)) {
+        if (!m_document.securityOrigin()->canRequest(url)) {
             corsPolicyPreventedLoad();
             return false;
         }
     }
 
-    ResourceFetcher* fetcher = document->fetcher();
+    ResourceFetcher* fetcher = m_document.fetcher();
     m_cachedCueData = fetcher->fetchTextTrack(cueRequest);
     if (m_cachedCueData)
         m_cachedCueData->addClient(this);

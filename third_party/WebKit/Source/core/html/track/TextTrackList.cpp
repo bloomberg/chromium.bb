@@ -36,13 +36,11 @@
 
 using namespace WebCore;
 
-TextTrackList::TextTrackList(HTMLMediaElement* owner, ExecutionContext* context)
-    : m_context(context)
-    , m_owner(owner)
+TextTrackList::TextTrackList(HTMLMediaElement* owner)
+    : m_owner(owner)
     , m_pendingEventTimer(this, &TextTrackList::asyncEventTimerFired)
     , m_dispatchingEvents(0)
 {
-    ASSERT(context->isDocument());
     ScriptWrappable::init(this);
 }
 
@@ -233,6 +231,12 @@ bool TextTrackList::contains(TextTrack* track) const
 const AtomicString& TextTrackList::interfaceName() const
 {
     return EventTargetNames::TextTrackList;
+}
+
+ExecutionContext* TextTrackList::executionContext() const
+{
+    ASSERT(m_owner);
+    return m_owner->executionContext();
 }
 
 void TextTrackList::scheduleAddTrackEvent(PassRefPtr<TextTrack> track)

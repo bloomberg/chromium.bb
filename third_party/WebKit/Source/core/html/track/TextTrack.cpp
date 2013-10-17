@@ -34,6 +34,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackCueList.h"
@@ -93,8 +94,9 @@ const AtomicString& TextTrack::showingKeyword()
     return ended;
 }
 
-TextTrack::TextTrack(ExecutionContext* context, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType type)
-    : TrackBase(context, TrackBase::TextTrack)
+TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType type)
+    : TrackBase(TrackBase::TextTrack)
+    , m_document(&document)
     , m_cues(0)
     , m_regions(0)
     , m_mediaElement(0)
@@ -481,6 +483,16 @@ bool TextTrack::isMainProgramContent() const
     // a way to express this in a machine-reable form, it is typically done with the track label, so we assume that caption
     // tracks are main content and all other track types are not.
     return m_kind == captionsKeyword();
+}
+
+const AtomicString& TextTrack::interfaceName() const
+{
+    return EventTargetNames::TextTrack;
+}
+
+ExecutionContext* TextTrack::executionContext() const
+{
+    return m_document;
 }
 
 } // namespace WebCore
