@@ -27,7 +27,7 @@ PASS cursor.key is "key1"
 PASS cursor.value is "value1"
 
 otherRequestSuccess():
-PASS afterCount is beforeCount
+PASS cursorRequestObservation.wasCollected is true
 cursor.continue()
 finalRequest = store.get(0)
 

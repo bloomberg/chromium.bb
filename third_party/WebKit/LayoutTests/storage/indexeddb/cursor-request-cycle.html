@@ -37,17 +37,11 @@ function onOpen(evt)
     otherRequest.onsuccess = function otherRequestSuccess(evt) {
         preamble(evt);
 
-        gc();
-        gc(); // FIXME: Why is this second call necessary?
-        beforeCount = window.internals.numberOfLiveNodes();
-
-        cursorRequest.canary = document.createElement('canary');
+        cursorRequestObservation = internals.observeGC(cursorRequest);
         cursorRequest = null;
 
         gc();
-        gc(); // FIXME: Why is this second call necessary?
-        afterCount = window.internals.numberOfLiveNodes();
-        shouldBe("afterCount", "beforeCount");
+        shouldBeTrue("cursorRequestObservation.wasCollected");
 
         // The following call should generate a scratch request, invisible to script:
         evalAndLog("cursor.continue()");

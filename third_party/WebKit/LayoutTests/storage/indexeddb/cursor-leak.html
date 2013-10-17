@@ -5,7 +5,13 @@
 
 description("Verify that that cursors weakly hold script value properties");
 
-indexedDBTest(prepareDatabase, onOpen);
+if (window.internals) {
+    indexedDBTest(prepareDatabase, onOpen);
+} else {
+    testFailed('This test requires access to the Internals object');
+    finishJSTest();
+}
+
 function prepareDatabase(evt)
 {
     db = event.target.result;
@@ -34,21 +40,14 @@ function onOpen(evt)
         cursor.primaryKey.cursor = cursor;
         cursor.value.cursor = cursor;
 
-        // IDB objects are not exposed, so hang a canary node off the cursor.
-        cursor.node = document.createElement('span');
-
-        gc();
-        gc(); // FIXME: Calling twice should not be necessary.
-        numberOfNodesBefore = window.internals && window.internals.numberOfLiveNodes();
+        cursorObserver = internals.observeGC(cursor);
 
         cursorRequest = null;
         cursor = null;
 
         gc();
-        gc(); // FIXME: Calling twice should not be necessary.
-        numberOfNodesAfter = window.internals && window.internals.numberOfLiveNodes();
 
-        shouldBe("numberOfNodesAfter", "numberOfNodesBefore - 1");
+        shouldBeTrue("cursorObserver.wasCollected");
         finishJSTest();
     };
 }

@@ -8,7 +8,7 @@ indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.
 dbname = "cursor-leak.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
-PASS numberOfNodesAfter is numberOfNodesBefore - 1
+PASS cursorObserver.wasCollected is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
