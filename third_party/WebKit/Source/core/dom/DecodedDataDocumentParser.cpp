@@ -41,7 +41,10 @@ size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
     if (!length)
         return 0;
 
-    if (isStopped())
+    // This should be checking isStopped(), but XMLDocumentParser prematurely
+    // stops parsing when handling an XSLT processing instruction and still
+    // needs to receive decoded bytes.
+    if (isDetached())
         return 0;
 
     String decoded = document()->decoder()->decode(data, length);
@@ -58,7 +61,10 @@ size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
 
 size_t DecodedDataDocumentParser::flush()
 {
-    if (isStopped())
+    // This should be checking isStopped(), but XMLDocumentParser prematurely
+    // stops parsing when handling an XSLT processing instruction and still
+    // needs to receive decoded bytes.
+    if (isDetached())
         return 0;
 
     // null decoder indicates there is no data received.

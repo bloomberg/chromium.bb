@@ -1161,8 +1161,14 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
         return;
 
     m_sawXSLTransform = !m_sawFirstElement && pi->isXSL();
-    if (m_sawXSLTransform && !document()->transformSourceDocument())
+    if (m_sawXSLTransform && !document()->transformSourceDocument()) {
+        // This behavior is very tricky. We call stopParsing() here because we want to stop processing the document
+        // until we're ready to apply the transform, but we actually still want to be fed decoded string pieces to
+        // accumulate in m_originalSourceForTransform. So, we call stopParsing() here and
+        // check isStopped() in element callbacks.
+        // FIXME: This contradicts the contract of DocumentParser.
         stopParsing();
+    }
 }
 
 void XMLDocumentParser::cdataBlock(const String& text)
