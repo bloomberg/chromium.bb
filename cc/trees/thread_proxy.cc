@@ -543,7 +543,6 @@ void ThreadProxy::SetNeedsRedrawOnImplThread() {
 
 void ThreadProxy::SetNeedsManageTilesOnImplThread() {
   DCHECK(IsImplThread());
-  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsManageTilesOnImplThread");
   scheduler_on_impl_thread_->SetNeedsManageTiles();
 }
 

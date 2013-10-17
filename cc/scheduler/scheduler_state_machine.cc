@@ -4,6 +4,7 @@
 
 #include "cc/scheduler/scheduler_state_machine.h"
 
+#include "base/debug/trace_event.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -901,7 +902,11 @@ void SchedulerStateMachine::SetCanDraw(bool can_draw) { can_draw_ = can_draw; }
 void SchedulerStateMachine::SetNeedsRedraw() { needs_redraw_ = true; }
 
 void SchedulerStateMachine::SetNeedsManageTiles() {
-  needs_manage_tiles_ = true;
+  if (!needs_manage_tiles_) {
+    TRACE_EVENT0("cc",
+                 "SchedulerStateMachine::SetNeedsManageTiles");
+    needs_manage_tiles_ = true;
+  }
 }
 
 void SchedulerStateMachine::SetSwapUsedIncompleteTile(
