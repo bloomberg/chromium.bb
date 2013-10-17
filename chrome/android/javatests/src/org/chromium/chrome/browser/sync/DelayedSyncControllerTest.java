@@ -112,6 +112,6 @@ public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
     }
 
     private static boolean isActivityResumed() {
-        return ActivityStatus.getState() == ActivityStatus.RESUMED;
+        return ActivityStatus.isApplicationVisible();
     }
 }

@@ -476,14 +476,7 @@ public class InvalidationService extends AndroidListener {
      */
     @VisibleForTesting
     boolean isChromeInForeground() {
-        switch (ActivityStatus.getState()) {
-            case ActivityStatus.CREATED:
-            case ActivityStatus.STARTED:
-            case ActivityStatus.RESUMED:
-                return true;
-            default:
-                return false;
-        }
+        return ActivityStatus.isApplicationVisible();
     }
 
     /** Returns whether the notification client has been started, for tests. */

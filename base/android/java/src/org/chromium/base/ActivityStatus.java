@@ -249,4 +249,15 @@ public class ActivityStatus {
     // Called to notify the native side of state changes.
     // IMPORTANT: This is always called on the main thread!
     private static native void nativeOnActivityStateChange(int newState);
+
+    /**
+     * Checks whether or not the Application's current Activity is visible to the user.  Note that
+     * this includes the PAUSED state, which can happen when the Activity is temporarily covered
+     * by another Activity's Fragment (e.g.).
+     * @return True if the Activity is visible, false otherwise.
+     */
+    public static boolean isApplicationVisible() {
+        int state = getState();
+        return state != STOPPED && state != DESTROYED;
+    }
 }

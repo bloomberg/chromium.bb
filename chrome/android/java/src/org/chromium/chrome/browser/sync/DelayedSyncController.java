@@ -93,7 +93,7 @@ public class DelayedSyncController {
     boolean shouldPerformSync(Context ctx, Bundle extras, Account account) {
         boolean manualSync = isManualSync(extras);
 
-        if (manualSync || ActivityStatus.getState() == ActivityStatus.RESUMED) {
+        if (manualSync || ActivityStatus.isApplicationVisible()) {
             clearDelayedSyncs(ctx);
             return true;
         } else {
