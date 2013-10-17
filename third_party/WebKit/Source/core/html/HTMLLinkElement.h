@@ -145,7 +145,6 @@ public:
 
     bool isDisabled() const { return linkStyle() && linkStyle()->isDisabled(); }
     bool isEnabledViaScript() const { return linkStyle() && linkStyle()->isEnabledViaScript(); }
-    void setSizes(const String&);
     DOMSettableTokenList* sizes() const;
 
     void dispatchPendingEvent(LinkEventSender*);

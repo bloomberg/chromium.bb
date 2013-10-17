@@ -96,7 +96,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
         m_type = value;
         process();
     } else if (name == sizesAttr) {
-        setSizes(value);
+        m_sizes->setValue(value);
         process();
     } else if (name == mediaAttr) {
         m_media = value.string().lower();
@@ -364,12 +364,6 @@ DOMSettableTokenList* HTMLLinkElement::sizes() const
 {
     return m_sizes.get();
 }
-
-void HTMLLinkElement::setSizes(const String& value)
-{
-    m_sizes->setValue(value);
-}
-
 
 PassRefPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
 {

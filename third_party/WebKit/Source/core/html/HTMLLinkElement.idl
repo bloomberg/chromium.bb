@@ -27,7 +27,7 @@ interface HTMLLinkElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString media;
     [Reflect, TreatNullAs=NullString] attribute DOMString rel;
     [Reflect, TreatNullAs=NullString] attribute DOMString rev;
-    [CustomSetter] attribute DOMSettableTokenList sizes;
+    [PutForwards=value] readonly attribute DOMSettableTokenList sizes;
     [Reflect, TreatNullAs=NullString] attribute DOMString target;
     [Reflect, TreatNullAs=NullString] attribute DOMString type;
 
