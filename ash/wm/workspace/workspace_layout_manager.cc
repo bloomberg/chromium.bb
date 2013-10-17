@@ -18,7 +18,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
@@ -104,10 +103,15 @@ void WorkspaceLayoutManager::OnWindowRemovedFromLayout(Window* child) {
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
                                                             bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
-  if (child->TargetVisibility())
+  if (child->TargetVisibility()) {
     WindowPositioner::RearrangeVisibleWindowOnShow(child);
-  else
+  } else {
+    if (wm::GetWindowState(child)->IsFullscreen()) {
+      ash::Shell::GetInstance()->NotifyFullscreenStateChange(
+          false, child->GetRootWindow());
+    }
     WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
+  }
   UpdateDesktopVisibility();
 }
 

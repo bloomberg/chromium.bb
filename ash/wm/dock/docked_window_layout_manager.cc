@@ -39,10 +39,9 @@ const int DockedWindowLayoutManager::kMaxDockWidth = 360;
 const int DockedWindowLayoutManager::kMinDockWidth = 200;
 // static
 const int DockedWindowLayoutManager::kMinDockGap = 2;
-//static
+// static
 const int DockedWindowLayoutManager::kIdealWidth = 250;
-//static
-const int kMaxVisibleWindows = 2;
+const int kMinimumHeight = 250;
 const int kSlideDurationMs = 120;
 const int kFadeDurationMs = 720;
 
@@ -104,6 +103,79 @@ bool IsUsedByLayout(aura::Window* window) {
           !IsPopupOrTransient(window));
 }
 
+void UndockWindow(aura::Window* window) {
+  aura::Window* focused =
+      aura::client::GetFocusClient(window)->GetFocusedWindow();
+  bool had_focus = window == focused || window->Contains(focused);
+  window->Hide();
+  window->layer()->GetAnimator()->StopAnimating();
+  gfx::Rect previous_bounds = window->bounds();
+  aura::Window* previous_parent = window->parent();
+  window->SetDefaultParentByRootWindow(window->GetRootWindow(), gfx::Rect());
+  if (window->parent() != previous_parent)
+    wm::ReparentTransientChildrenOfChild(window->parent(), window);
+  // Animate maximize animation from previous window bounds.
+  if (wm::GetWindowState(window)->IsMaximized())
+    window->layer()->SetBounds(previous_bounds);
+  window->Show();
+  // Restore focus if the window had it before.
+  if (had_focus && !wm::GetWindowState(window)->IsFullscreen())
+    focused->Focus();
+}
+
+// Returns width that is as close as possible to |target_width| while being
+// consistent with docked min and max restrictions and respects the |window|'s
+// minimum and maximum size.
+int GetWindowWidthCloseTo(const aura::Window* window, int target_width) {
+  if (!wm::GetWindowState(window)->CanResize()) {
+    DCHECK_LE(window->bounds().width(),
+              DockedWindowLayoutManager::kMaxDockWidth);
+    return window->bounds().width();
+  }
+  int width = std::max(DockedWindowLayoutManager::kMinDockWidth,
+                       std::min(target_width,
+                                DockedWindowLayoutManager::kMaxDockWidth));
+  if (window->delegate()) {
+    if (window->delegate()->GetMinimumSize().width() != 0)
+      width = std::max(width, window->delegate()->GetMinimumSize().width());
+    if (window->delegate()->GetMaximumSize().width() != 0)
+      width = std::min(width, window->delegate()->GetMaximumSize().width());
+  }
+  DCHECK_LE(width, DockedWindowLayoutManager::kMaxDockWidth);
+  return width;
+}
+
+// Returns height that is as close as possible to |target_height| while
+// respecting the |window|'s minimum and maximum size.
+int GetWindowHeightCloseTo(const aura::Window* window, int target_height) {
+  if (!wm::GetWindowState(window)->CanResize())
+    return window->bounds().height();
+  int minimum_height = kMinimumHeight;
+  int maximum_height = 0;
+  const aura::WindowDelegate* delegate(window->delegate());
+  if (delegate) {
+    if (delegate->GetMinimumSize().height() != 0) {
+      minimum_height = std::max(kMinimumHeight,
+                                delegate->GetMinimumSize().height());
+    }
+    if (delegate->GetMaximumSize().height() != 0)
+      maximum_height = delegate->GetMaximumSize().height();
+  }
+  if (minimum_height)
+    target_height = std::max(target_height, minimum_height);
+  if (maximum_height)
+    target_height = std::min(target_height, maximum_height);
+  return target_height;
+}
+
+// A functor used to sort the windows in order of their minimum height.
+struct CompareMinimumHeight {
+  bool operator()(WindowWithHeight win1, WindowWithHeight win2) {
+    return GetWindowHeightCloseTo(win1.window(), 0) <
+        GetWindowHeightCloseTo(win2.window(), 0);
+  }
+};
+
 // A functor used to sort the windows in order of their center Y position.
 // |delta| is a pre-calculated distance from the bottom of one window to the top
 // of the next. Its value can be positive (gap) or negative (overlap).
@@ -114,13 +186,18 @@ struct CompareWindowPos {
       : dragged_window_(dragged_window),
         delta_(delta / 2) {}
 
-  bool operator()(aura::Window* win1, aura::Window* win2) {
+  bool operator()(WindowWithHeight window_with_height1,
+                  WindowWithHeight window_with_height2) {
     // Use target coordinates since animations may be active when windows are
     // reordered.
-    const gfx::Rect win1_bounds = ScreenAsh::ConvertRectToScreen(
+    aura::Window* win1(window_with_height1.window());
+    aura::Window* win2(window_with_height2.window());
+    gfx::Rect win1_bounds = ScreenAsh::ConvertRectToScreen(
         win1->parent(), win1->GetTargetBounds());
-    const gfx::Rect win2_bounds = ScreenAsh::ConvertRectToScreen(
+    gfx::Rect win2_bounds = ScreenAsh::ConvertRectToScreen(
         win2->parent(), win2->GetTargetBounds());
+    win1_bounds.set_height(window_with_height1.height_);
+    win2_bounds.set_height(window_with_height2.height_);
     // If one of the windows is the |dragged_window_| attempt to make an
     // earlier swap between the windows than just based on their centers.
     // This is possible if the dragged window is at least as tall as the other
@@ -177,7 +254,6 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       in_fullscreen_(workspace_controller_->GetWindowState() ==
           WORKSPACE_WINDOW_STATE_FULL_SCREEN),
       docked_width_(0),
-      max_visible_windows_(kMaxVisibleWindows),
       alignment_(DOCKED_ALIGNMENT_NONE),
       last_active_window_(NULL),
       background_widget_(new DockedBackgroundWidget(dock_container_)) {
@@ -229,13 +305,13 @@ void DockedWindowLayoutManager::StartDragging(aura::Window* window) {
 
 void DockedWindowLayoutManager::DockDraggedWindow(aura::Window* window) {
   DCHECK(!IsPopupOrTransient(window));
-  OnWindowDocked(window);
+  OnDraggedWindowDocked(window);
   Relayout();
 }
 
 void DockedWindowLayoutManager::UndockDraggedWindow() {
   DCHECK(!IsPopupOrTransient(dragged_window_));
-  OnWindowUndocked();
+  OnDraggedWindowUndocked();
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
   is_dragged_from_dock_ = false;
@@ -245,7 +321,7 @@ void DockedWindowLayoutManager::FinishDragging() {
   DCHECK(dragged_window_);
   DCHECK(!IsPopupOrTransient(dragged_window_));
   if (is_dragged_window_docked_)
-    OnWindowUndocked();
+    OnDraggedWindowUndocked();
   DCHECK (!is_dragged_window_docked_);
   // Stop observing a window unless it is docked container's child in which
   // case it needs to keep being observed after the drag completes.
@@ -321,11 +397,22 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
     return false;
   // If a window is wide and cannot be resized down to maximum width allowed
   // then it cannot be docked.
+  // TODO(varkha). Prevent windows from changing size programmatically while
+  // they are docked. The size will take effect only once a window is undocked.
+  // See http://crbug.com/307792.
   if (window->bounds().width() > kMaxDockWidth &&
       (!wm::GetWindowState(window)->CanResize() ||
        (window->delegate() &&
         window->delegate()->GetMinimumSize().width() != 0 &&
         window->delegate()->GetMinimumSize().width() > kMaxDockWidth))) {
+    return false;
+  }
+  // If a window is tall and cannot be resized down to maximum height allowed
+  // then it cannot be docked.
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
+  if (GetWindowHeightCloseTo(window, work_area.height() - 2 * kMinDockGap) >
+      work_area.height() - 2 * kMinDockGap) {
     return false;
   }
   // Cannot dock on the other size from an existing dock.
@@ -348,6 +435,7 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
 ////////////////////////////////////////////////////////////////////////////////
 // DockLayoutManager, aura::LayoutManager implementation:
 void DockedWindowLayoutManager::OnWindowResized() {
+  MaybeMinimizeChildrenExcept(dragged_window_);
   Relayout();
   // When screen resizes update the insets even when dock width or alignment
   // does not change.
@@ -417,6 +505,7 @@ void DockedWindowLayoutManager::SetChildBounds(
 void DockedWindowLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::DISPLAY_INSETS_CHANGED);
+  MaybeMinimizeChildrenExcept(dragged_window_);
 }
 
 void DockedWindowLayoutManager::OnFullscreenStateChanged(
@@ -429,9 +518,11 @@ void DockedWindowLayoutManager::OnFullscreenStateChanged(
   {
     // prevent Relayout from getting called multiple times during this
     base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
-    for (aura::Window::Windows::const_iterator iter =
-             dock_container_->children().begin();
-         iter != dock_container_->children().end(); ++iter) {
+    // Use a copy of children array because a call to MinimizeDockedWindow or
+    // RestoreDockedWindow can change order.
+    aura::Window::Windows children(dock_container_->children());
+    for (aura::Window::Windows::const_iterator iter = children.begin();
+         iter != children.end(); ++iter) {
       aura::Window* window(*iter);
       if (IsPopupOrTransient(window))
         continue;
@@ -492,18 +583,7 @@ void DockedWindowLayoutManager::OnWindowShowTypeChanged(
   } else if (window_state->IsMaximizedOrFullscreen()) {
     // Reparenting changes the source bounds for the animation if a window is
     // visible so hide it here and show later when it is already in the desktop.
-    if (window_state->IsMaximized())
-      window->Hide();
-    gfx::Rect previous_bounds = window->bounds();
-    aura::Window* previous_parent = window->parent();
-    window->SetDefaultParentByRootWindow(window->GetRootWindow(), gfx::Rect());
-    if (window->parent() != previous_parent)
-      wm::ReparentTransientChildrenOfChild(window->parent(), window);
-    if (window_state->IsMaximized()) {
-      // Animate maximize animation from previous window bounds.
-      SetChildBoundsDirect(window, previous_bounds);
-      window->Show();
-    }
+    UndockWindow(window);
   } else {
     RestoreDockedWindow(window_state);
   }
@@ -570,15 +650,23 @@ void DockedWindowLayoutManager::OnWindowActivated(aura::Window* gained_active,
 
 void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
     aura::Window* child) {
-  // Account for the |child| by initializing to 1.
-  int child_index = 1;
+  // Minimize any windows that don't fit without overlap.
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
+  int available_room = work_area.height() - kMinDockGap;
+  if (child)
+    available_room -= (GetWindowHeightCloseTo(child, 0) + kMinDockGap);
+  // Use a copy of children array because a call to Minimize can change order.
   aura::Window::Windows children(dock_container_->children());
   aura::Window::Windows::const_reverse_iterator iter = children.rbegin();
   while (iter != children.rend()) {
     aura::Window* window(*iter++);
     if (window == child || !IsUsedByLayout(window))
       continue;
-    if (++child_index > max_visible_windows_)
+    int room_needed = GetWindowHeightCloseTo(window, 0) + kMinDockGap;
+    if (available_room > room_needed)
+      available_room -= room_needed;
+    else
       wm::GetWindowState(window)->Minimize();
   }
 }
@@ -601,6 +689,12 @@ void DockedWindowLayoutManager::RestoreDockedWindow(
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
       dock_container_);
   const gfx::Rect work_area = display.work_area();
+
+  // Evict the window if it can no longer be docked because of its height.
+  if (!CanDockWindow(window, SNAP_NONE)) {
+    UndockWindow(window);
+    return;
+  }
   gfx::Rect bounds(window->bounds());
   bounds.set_y(work_area.y() - bounds.height());
   window->SetBounds(bounds);
@@ -608,7 +702,7 @@ void DockedWindowLayoutManager::RestoreDockedWindow(
   MaybeMinimizeChildrenExcept(window);
 }
 
-void DockedWindowLayoutManager::OnWindowDocked(aura::Window* window) {
+void DockedWindowLayoutManager::OnDraggedWindowDocked(aura::Window* window) {
   DCHECK(!is_dragged_window_docked_);
   is_dragged_window_docked_ = true;
 
@@ -617,7 +711,7 @@ void DockedWindowLayoutManager::OnWindowDocked(aura::Window* window) {
     alignment_ = DOCKED_ALIGNMENT_NONE;
 }
 
-void DockedWindowLayoutManager::OnWindowUndocked() {
+void DockedWindowLayoutManager::OnDraggedWindowUndocked() {
   // If this is the first window getting docked - update alignment.
   if (!IsAnyWindowDocked())
     alignment_ = GetAlignmentOfWindow(dragged_window_);
@@ -630,24 +724,6 @@ bool DockedWindowLayoutManager::IsAnyWindowDocked() {
   return CalculateAlignment() != DOCKED_ALIGNMENT_NONE;
 }
 
-// static
-int DockedWindowLayoutManager::GetWindowWidthCloseTo(aura::Window* window,
-                                                     int target_width) {
-  if (!wm::GetWindowState(window)->CanResize()) {
-    DCHECK_LE(window->bounds().width(), kMaxDockWidth);
-    return window->bounds().width();
-  }
-  int width = std::max(kMinDockWidth, std::min(target_width, kMaxDockWidth));
-  if (window->delegate()) {
-    if (window->delegate()->GetMinimumSize().width() != 0)
-      width = std::max(width, window->delegate()->GetMinimumSize().width());
-    if (window->delegate()->GetMaximumSize().width() != 0)
-      width = std::min(width, window->delegate()->GetMaximumSize().width());
-  }
-  DCHECK_LE(width, kMaxDockWidth);
-  return width;
-}
-
 void DockedWindowLayoutManager::Relayout() {
   if (in_layout_)
     return;
@@ -657,7 +733,7 @@ void DockedWindowLayoutManager::Relayout() {
 
   gfx::Rect dock_bounds = dock_container_->GetBoundsInScreen();
   aura::Window* active_window = NULL;
-  aura::Window::Windows visible_windows;
+  std::vector<WindowWithHeight> visible_windows;
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
     aura::Window* window(dock_container_->children()[i]);
 
@@ -678,26 +754,65 @@ void DockedWindowLayoutManager::Relayout() {
       DCHECK(!active_window);
       active_window = window;
     }
-    visible_windows.push_back(window);
+    visible_windows.push_back(WindowWithHeight(window));
   }
-
   // Consider docked dragged_window_ when fanning out other child windows.
   if (is_dragged_window_docked_) {
-    visible_windows.push_back(dragged_window_);
+    visible_windows.push_back(WindowWithHeight(dragged_window_));
     DCHECK(!active_window);
     active_window = dragged_window_;
   }
 
-  // Calculate free space or overlap.
-  gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
-      dock_container_);
-  const gfx::Rect work_area = display.work_area();
-  int available_room = work_area.height();
+  // Position docked windows as well as the window being dragged.
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
+  int available_room = CalculateWindowHeightsAndRemainingRoom(work_area,
+                                                              &visible_windows);
+  FanOutChildren(work_area,
+                 CalculateIdealWidth(visible_windows),
+                 available_room,
+                 &visible_windows);
+
+  // After the first Relayout allow the windows to change their order easier
+  // since we know they are docked.
+  is_dragged_from_dock_ = true;
+  UpdateStacking(active_window);
+}
+
+int DockedWindowLayoutManager::CalculateWindowHeightsAndRemainingRoom(
+    const gfx::Rect work_area,
+    std::vector<WindowWithHeight>* visible_windows) {
+  int available_room = work_area.height() - kMinDockGap;
+  int remaining_windows = visible_windows->size();
+
+  // Sort windows by their minimum heights and calculate target heights.
+  std::sort(visible_windows->begin(), visible_windows->end(),
+            CompareMinimumHeight());
+  // Distribute the free space among the docked windows. Since the windows are
+  // sorted (tall windows first) we can now assume that any window which
+  // required more space than the current window will have already been
+  // accounted for previously in this loop, so we can safely give that window
+  // its proportional share of the remaining space.
+  for (std::vector<WindowWithHeight>::reverse_iterator iter =
+           visible_windows->rbegin();
+      iter != visible_windows->rend(); ++iter) {
+    iter->height_ = GetWindowHeightCloseTo(
+        iter->window(), available_room / remaining_windows - kMinDockGap);
+    available_room -= (iter->height_ + kMinDockGap);
+    remaining_windows--;
+  }
+  return available_room;
+}
+
+int DockedWindowLayoutManager::CalculateIdealWidth(
+    const std::vector<WindowWithHeight>& visible_windows) {
+  // Calculate ideal width for the docked area adjusting the dragged window
+  // or other windows as necessary.
   int ideal_docked_width = 0;
-  for (aura::Window::Windows::const_iterator iter = visible_windows.begin();
-      iter != visible_windows.end(); ++iter) {
-    aura::Window* window = *iter;
-    available_room -= window->bounds().height();
+  for (std::vector<WindowWithHeight>::const_iterator iter =
+           visible_windows.begin();
+       iter != visible_windows.end(); ++iter) {
+    const aura::Window* window = iter->window();
 
     // Adjust the dragged window to the dock. If that is not possible then
     // other docked windows area adjusted to the one that is being dragged.
@@ -722,29 +837,40 @@ void DockedWindowLayoutManager::Relayout() {
     ideal_docked_width = std::max(std::min(ideal_docked_width, kMaxDockWidth),
                                   kMinDockWidth);
   }
-  const int num_windows = visible_windows.size();
-  const float delta = (float)available_room /
+  return ideal_docked_width;
+}
+
+void DockedWindowLayoutManager::FanOutChildren(
+    const gfx::Rect& work_area,
+    int ideal_docked_width,
+    int available_room,
+    std::vector<WindowWithHeight>* visible_windows) {
+  gfx::Rect dock_bounds = dock_container_->GetBoundsInScreen();
+
+  // Calculate initial vertical offset and the gap or overlap between windows.
+  const int num_windows = visible_windows->size();
+  const float delta = kMinDockGap + (float)available_room /
       ((available_room > 0 || num_windows <= 1) ?
           num_windows + 1 : num_windows - 1);
-  float y_pos = work_area.y() + ((available_room > 0) ? delta : 0);
+  float y_pos = work_area.y() + ((delta > 0) ? delta : kMinDockGap);
 
   // Docked area is shown only if there is at least one non-dragged visible
   // docked window.
   docked_width_ = ideal_docked_width;
-  if (visible_windows.empty() ||
-      (visible_windows.size() == 1 && visible_windows[0] == dragged_window_)) {
+  if (visible_windows->empty() ||
+      (visible_windows->size() == 1 &&
+          (*visible_windows)[0].window() == dragged_window_)) {
     docked_width_ = 0;
   }
 
   // Sort windows by their center positions and fan out overlapping
   // windows.
-  std::sort(visible_windows.begin(),
-            visible_windows.end(),
+  std::sort(visible_windows->begin(), visible_windows->end(),
             CompareWindowPos(is_dragged_from_dock_ ? dragged_window_ : NULL,
-                             delta));
-  for (aura::Window::Windows::const_iterator iter = visible_windows.begin();
-      iter != visible_windows.end(); ++iter) {
-    aura::Window* window = *iter;
+                delta));
+  for (std::vector<WindowWithHeight>::iterator iter = visible_windows->begin();
+      iter != visible_windows->end(); ++iter) {
+    aura::Window* window = iter->window();
     gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(
         window->parent(), window->GetTargetBounds());
     // A window is extended or shrunk to be as close as possible to the docked
@@ -765,6 +891,7 @@ void DockedWindowLayoutManager::Relayout() {
     }
 
     // Fan out windows evenly distributing the overlap or remaining free space.
+    bounds.set_height(iter->height_);
     bounds.set_y(std::max(work_area.y(),
                           std::min(work_area.bottom() - bounds.height(),
                                    static_cast<int>(y_pos + 0.5))));
@@ -802,8 +929,6 @@ void DockedWindowLayoutManager::Relayout() {
       SetChildBoundsDirect(window, bounds);
     }
   }
-  is_dragged_from_dock_ = true;
-  UpdateStacking(active_window);
 }
 
 void DockedWindowLayoutManager::UpdateDockBounds(

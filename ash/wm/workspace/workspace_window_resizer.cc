@@ -436,7 +436,8 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   // is called, so it does not matter.
   if (window_state()->IsNormalShowState() &&
       (window()->type() != aura::client::WINDOW_TYPE_PANEL ||
-       !window_state()->panel_attached()) &&
+       !window_state()->panel_attached() ||
+       dock_layout_->is_dragged_window_docked()) &&
       (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
     if (!window_state()->HasRestoreBounds()) {
       gfx::Rect initial_bounds = ScreenAsh::ConvertRectToScreen(

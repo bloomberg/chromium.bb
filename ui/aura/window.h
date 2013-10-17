@@ -101,6 +101,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void SetTransparent(bool transparent);
 
   WindowDelegate* delegate() { return delegate_; }
+  const WindowDelegate* delegate() const { return delegate_; }
 
   const gfx::Rect& bounds() const;
 
