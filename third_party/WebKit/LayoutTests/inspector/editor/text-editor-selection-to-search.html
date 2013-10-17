@@ -10,51 +10,34 @@ function test()
 {
     var panel = WebInspector.showPanel("sources");
 
-    function selectionToSearchInputTest() {
-        WebInspector.searchController.showSearchField();
-        InspectorTest.addResult(WebInspector.searchController._searchInputElement.value);
-        WebInspector.advancedSearchController.show();
-        InspectorTest.addResult(WebInspector.advancedSearchController._searchView._search.value);
+    InspectorTest.showScriptSource("edit-me.js", step1);
+
+    function step1(sourceFrame)
+    {
+        sourceFrame._textEditor.setSelection(findString(sourceFrame, "return"));
+        setTimeout(step2);
     }
 
-    InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
+    function step2()
+    {
+        WebInspector.searchController.showSearchField();
+        InspectorTest.addResult("Search controller: '" + WebInspector.searchController._searchInputElement.value + "'");
+        WebInspector.advancedSearchController.show();
+        InspectorTest.addResult("Advanced search controller: '" + WebInspector.advancedSearchController._searchView._search.value + "'");
+        InspectorTest.completeTest();
+    }
 
-    function getLineColumn(sourceFrame, string) {
+    function findString(sourceFrame, string)
+    {
         for (var i = 0; i < sourceFrame._textEditor.linesCount; ++i) {
             var line = sourceFrame._textEditor.line(i);
             var column = line.indexOf(string);
             if (column === -1)
                 continue;
-            return {line: i, column: column};
-            break;
+            return new WebInspector.TextRange(i, column, i, column + string.length);
         }
     }
-
-    function setSelection(sourceFrame, from, to) {
-        range = new WebInspector.TextRange(from.line, from.column, to.line, to.column);
-        return sourceFrame._textEditor.setSelection(range);
-    }
-
-    function didShowScriptSource(sourceFrame)
-    {
-        var string = 'return';
-        var lineColumn = getLineColumn(sourceFrame, string);
-        
-        InspectorTest.runTestSuite([
-            function testWordSelectionToSearchQuery(next)
-            {
-                setSelection(sourceFrame, lineColumn, {line: lineColumn.line, column: lineColumn.column + string.length});
-                setTimeout(secondStep);
-                function secondStep()
-                {
-                    selectionToSearchInputTest();
-                    next();
-                }
-            },
-        ]);
-    }
-};
-
+}
 </script>
 
 </head>
