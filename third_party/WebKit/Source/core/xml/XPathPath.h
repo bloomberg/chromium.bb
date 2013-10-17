@@ -39,7 +39,7 @@ namespace WebCore {
 
         class Filter : public Expression {
         public:
-            Filter(PassOwnPtr<Expression>, const Vector<Predicate*>& = Vector<Predicate*>());
+            Filter(PassOwnPtr<Expression>, Vector<OwnPtr<Predicate> >&);
             virtual ~Filter();
 
             virtual Value evaluate() const;

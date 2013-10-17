@@ -39,17 +39,21 @@
 namespace WebCore {
 namespace XPath {
 
-Step::Step(Axis axis, const NodeTest& nodeTest, const Vector<Predicate*>& predicates)
+Step::Step(Axis axis, const NodeTest& nodeTest)
     : m_axis(axis)
     , m_nodeTest(nodeTest)
-    , m_predicates(predicates)
 {
+}
+
+Step::Step(Axis axis, const NodeTest& nodeTest, Vector<OwnPtr<Predicate> >& predicates)
+    : m_axis(axis)
+    , m_nodeTest(nodeTest)
+{
+    m_predicates.swap(predicates);
 }
 
 Step::~Step()
 {
-    deleteAllValues(m_predicates);
-    deleteAllValues(m_nodeTest.mergedPredicates());
 }
 
 void Step::optimize()
@@ -57,13 +61,14 @@ void Step::optimize()
     // Evaluate predicates as part of node test if possible to avoid building unnecessary NodeSets.
     // E.g., there is no need to build a set of all "foo" nodes to evaluate "foo[@bar]", we can check the predicate while enumerating.
     // This optimization can be applied to predicates that are not context node list sensitive, or to first predicate that is only context position sensitive, e.g. foo[position() mod 2 = 0].
-    Vector<Predicate*> remainingPredicates;
+    Vector<OwnPtr<Predicate> > remainingPredicates;
     for (size_t i = 0; i < m_predicates.size(); ++i) {
-        Predicate* predicate = m_predicates[i];
+        OwnPtr<Predicate> predicate(m_predicates[i].release());
         if ((!predicate->isContextPositionSensitive() || m_nodeTest.mergedPredicates().isEmpty()) && !predicate->isContextSizeSensitive() && remainingPredicates.isEmpty()) {
-            m_nodeTest.mergedPredicates().append(predicate);
-        } else
-            remainingPredicates.append(predicate);
+            m_nodeTest.mergedPredicates().append(predicate.release());
+        } else {
+            remainingPredicates.append(predicate.release());
+        }
     }
     swap(remainingPredicates, m_predicates);
 }
@@ -95,13 +100,13 @@ void optimizeStepPair(Step* first, Step* second, bool& dropSecondStep)
 bool Step::predicatesAreContextListInsensitive() const
 {
     for (size_t i = 0; i < m_predicates.size(); ++i) {
-        Predicate* predicate = m_predicates[i];
+        Predicate* predicate = m_predicates[i].get();
         if (predicate->isContextPositionSensitive() || predicate->isContextSizeSensitive())
             return false;
     }
 
     for (size_t i = 0; i < m_nodeTest.mergedPredicates().size(); ++i) {
-        Predicate* predicate = m_nodeTest.mergedPredicates()[i];
+        Predicate* predicate = m_nodeTest.mergedPredicates()[i].get();
         if (predicate->isContextPositionSensitive() || predicate->isContextSizeSensitive())
             return false;
     }
@@ -118,7 +123,7 @@ void Step::evaluate(Node* context, NodeSet& nodes) const
 
     // Check predicates that couldn't be merged into node test.
     for (unsigned i = 0; i < m_predicates.size(); i++) {
-        Predicate* predicate = m_predicates[i];
+        Predicate* predicate = m_predicates[i].get();
 
         NodeSet newNodes;
         if (!nodes.isSorted())
@@ -217,9 +222,9 @@ static inline bool nodeMatches(Node* node, Step::Axis axis, const Step::NodeTest
     // Only the first merged predicate may depend on position.
     ++evaluationContext.position;
 
-    const Vector<Predicate*>& mergedPredicates = nodeTest.mergedPredicates();
+    const Vector<OwnPtr<Predicate> >& mergedPredicates = nodeTest.mergedPredicates();
     for (unsigned i = 0; i < mergedPredicates.size(); i++) {
-        Predicate* predicate = mergedPredicates[i];
+        Predicate* predicate = mergedPredicates[i].get();
 
         evaluationContext.node = node;
         // No need to set context size - we only get here when evaluating predicates that do not depend on it.

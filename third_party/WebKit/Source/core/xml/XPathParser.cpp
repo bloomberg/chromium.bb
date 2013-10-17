@@ -479,11 +479,9 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSRe
         deleteAllValues(m_parseNodes);
         m_parseNodes.clear();
 
-        HashSet<Vector<Predicate*>*>::iterator pend = m_predicateVectors.end();
-        for (HashSet<Vector<Predicate*>*>::iterator it = m_predicateVectors.begin(); it != pend; ++it) {
-            deleteAllValues(**it);
+        HashSet<Vector<OwnPtr<Predicate> >*>::iterator pend = m_predicateVectors.end();
+        for (HashSet<Vector<OwnPtr<Predicate> >*>::iterator it = m_predicateVectors.begin(); it != pend; ++it)
             delete *it;
-        }
         m_predicateVectors.clear();
 
         HashSet<Vector<OwnPtr<Expression> >*>::iterator eend = m_expressionVectors.end();
@@ -540,7 +538,7 @@ void Parser::unregisterParseNode(ParseNode* node)
     m_parseNodes.remove(node);
 }
 
-void Parser::registerPredicateVector(Vector<Predicate*>* vector)
+void Parser::registerPredicateVector(Vector<OwnPtr<Predicate> >* vector)
 {
     if (vector == 0)
         return;
@@ -550,7 +548,7 @@ void Parser::registerPredicateVector(Vector<Predicate*>* vector)
     m_predicateVectors.add(vector);
 }
 
-void Parser::deletePredicateVector(Vector<Predicate*>* vector)
+void Parser::deletePredicateVector(Vector<OwnPtr<Predicate> >* vector)
 {
     if (vector == 0)
         return;

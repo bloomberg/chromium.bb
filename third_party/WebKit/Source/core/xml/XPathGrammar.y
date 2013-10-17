@@ -62,7 +62,7 @@ using namespace XPath;
     EqTestOp::Opcode eqop;
     String* str;
     Expression* expr;
-    Vector<Predicate*>* predList;
+    Vector<OwnPtr<Predicate> >* predList;
     Vector<OwnPtr<Expression> >* argList;
     Step* step;
     LocationPath* locationPath;
@@ -291,15 +291,15 @@ OptionalPredicateList:
 PredicateList:
     Predicate
     {
-        $$ = new Vector<Predicate*>;
-        $$->append(new Predicate(adoptPtr($1)));
+        $$ = new Vector<OwnPtr<Predicate> >;
+        $$->append(adoptPtr(new Predicate(adoptPtr($1))));
         parser->unregisterParseNode($1);
         parser->registerPredicateVector($$);
     }
     |
     PredicateList Predicate
     {
-        $$->append(new Predicate(adoptPtr($2)));
+        $$->append(adoptPtr(new Predicate(adoptPtr($2))));
         parser->unregisterParseNode($2);
     }
     ;

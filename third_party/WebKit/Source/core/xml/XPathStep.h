@@ -61,11 +61,27 @@ public:
         NodeTest(Kind kind, const String& data) : m_kind(kind), m_data(data) { }
         NodeTest(Kind kind, const String& data, const String& namespaceURI) : m_kind(kind), m_data(data), m_namespaceURI(namespaceURI) { }
 
+        NodeTest(const NodeTest& o)
+            : m_kind(o.m_kind)
+            , m_data(o.m_data)
+            , m_namespaceURI(o.m_namespaceURI)
+        {
+            ASSERT(o.m_mergedPredicates.isEmpty());
+        }
+        NodeTest& operator=(const NodeTest& o)
+        {
+            m_kind = o.m_kind;
+            m_data = o.m_data;
+            m_namespaceURI = o.m_namespaceURI;
+            ASSERT(o.m_mergedPredicates.isEmpty());
+            return *this;
+        }
+
         Kind kind() const { return m_kind; }
         const AtomicString& data() const { return m_data; }
         const AtomicString& namespaceURI() const { return m_namespaceURI; }
-        Vector<Predicate*>& mergedPredicates() { return m_mergedPredicates; }
-        const Vector<Predicate*>& mergedPredicates() const { return m_mergedPredicates; }
+        Vector<OwnPtr<Predicate> >& mergedPredicates() { return m_mergedPredicates; }
+        const Vector<OwnPtr<Predicate> >& mergedPredicates() const { return m_mergedPredicates; }
 
     private:
         Kind m_kind;
@@ -73,10 +89,11 @@ public:
         AtomicString m_namespaceURI;
 
         // When possible, we merge some or all predicates with node test for better performance.
-        Vector<Predicate*> m_mergedPredicates;
+        Vector<OwnPtr<Predicate> > m_mergedPredicates;
     };
 
-    Step(Axis, const NodeTest&, const Vector<Predicate*>& predicates = Vector<Predicate*>());
+    Step(Axis, const NodeTest&);
+    Step(Axis, const NodeTest&, Vector<OwnPtr<Predicate> >&);
     ~Step();
 
     void optimize();
@@ -96,7 +113,7 @@ private:
 
     Axis m_axis;
     NodeTest m_nodeTest;
-    Vector<Predicate*> m_predicates;
+    Vector<OwnPtr<Predicate> > m_predicates;
 };
 
 void optimizeStepPair(Step*, Step*, bool& dropSecondStep);
