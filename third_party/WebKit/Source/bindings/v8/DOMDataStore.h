@@ -192,9 +192,9 @@ private:
     static bool holderContainsWrapper(v8::Local<v8::Object> holder, ScriptWrappable* wrappable)
     {
         // Verify our assumptions about the main world.
-        v8::Persistent<v8::Object>* persistent = wrappable->unsafePersistent().persistent();
-        ASSERT(wrappable->unsafePersistent().isEmpty() || !(holder == *persistent) || current(v8::Isolate::GetCurrent())->m_type == MainWorld);
-        return holder == *persistent;
+        UnsafePersistent<v8::Object> unsafePersistent = wrappable->unsafePersistent();
+        ASSERT(unsafePersistent.isEmpty() || !(holder == *unsafePersistent.persistent()) || current(v8::Isolate::GetCurrent())->m_type == MainWorld);
+        return holder == *unsafePersistent.persistent();
     }
 
     WrapperWorldType m_type;
