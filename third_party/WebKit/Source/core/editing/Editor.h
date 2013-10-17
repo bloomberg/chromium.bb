@@ -190,8 +190,6 @@ public:
     bool smartInsertDeleteEnabled();
     bool isSelectTrailingWhitespaceEnabled();
 
-    bool setSelectionOffsets(int selectionStart, int selectionEnd);
-
     bool preventRevealSelection() const { return m_preventRevealSelection; }
 
     void setStartNewKillRingSequence(bool);

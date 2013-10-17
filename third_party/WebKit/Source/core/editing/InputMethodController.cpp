@@ -88,6 +88,11 @@ InputMethodController::~InputMethodController()
 {
 }
 
+bool InputMethodController::hasComposition() const
+{
+    return m_compositionNode && m_compositionNode->isContentEditable();
+}
+
 inline Editor& InputMethodController::editor() const
 {
     return m_frame.editor();
@@ -122,16 +127,37 @@ void InputMethodController::selectComposition() const
     m_frame.selection().setSelection(selection, 0);
 }
 
-void InputMethodController::confirmComposition()
+bool InputMethodController::confirmComposition()
 {
-    if (!m_compositionNode)
-        return;
-    finishComposition(m_compositionNode->data().substring(m_compositionStart, m_compositionEnd - m_compositionStart), ConfirmComposition);
+    if (!hasComposition())
+        return false;
+    return finishComposition(m_compositionNode->data().substring(m_compositionStart, m_compositionEnd - m_compositionStart), ConfirmComposition);
 }
 
-void InputMethodController::confirmComposition(const String& text)
+bool InputMethodController::confirmComposition(const String& text)
 {
-    finishComposition(text, ConfirmComposition);
+    return finishComposition(text, ConfirmComposition);
+}
+
+bool InputMethodController::confirmCompositionOrInsertText(const String& text, ConfirmCompositionBehavior confirmBehavior)
+{
+    if (!hasComposition()) {
+        if (!text.length())
+            return false;
+        editor().insertText(text, 0);
+        return true;
+    }
+
+    if (text.length()) {
+        confirmComposition(text);
+        return true;
+    }
+
+    if (confirmBehavior != KeepSelection)
+        return confirmComposition();
+
+    SelectionOffsetsScope selectionOffsetsScope(this);
+    return confirmComposition();
 }
 
 void InputMethodController::confirmCompositionAndResetState()
@@ -139,25 +165,12 @@ void InputMethodController::confirmCompositionAndResetState()
     if (!hasComposition())
         return;
 
-    // We should verify the parent node of this IME composition node are
-    // editable because JavaScript may delete a parent node of the composition
-    // node. In this case, WebKit crashes while deleting texts from the parent
-    // node, which doesn't exist any longer.
-    RefPtr<Range> range = compositionRange();
-    if (range) {
-        Node* node = range->startContainer();
-        if (!node || !node->isContentEditable())
-            return;
-    }
-
     // EditorClient::willSetInputMethodState() resets input method and the composition string is committed.
     editorClient().willSetInputMethodState();
 }
 
 void InputMethodController::cancelComposition()
 {
-    if (!m_compositionNode)
-        return;
     finishComposition(emptyString(), CancelComposition);
 }
 
@@ -179,8 +192,11 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
     editorClient().didCancelCompositionOnSelectionChange();
 }
 
-void InputMethodController::finishComposition(const String& text, FinishCompositionMode mode)
+bool InputMethodController::finishComposition(const String& text, FinishCompositionMode mode)
 {
+    if (!hasComposition())
+        return false;
+
     ASSERT(mode == ConfirmComposition || mode == CancelComposition);
 
     Editor::RevealSelectionScope revealSelectionScope(&editor());
@@ -191,7 +207,7 @@ void InputMethodController::finishComposition(const String& text, FinishComposit
         selectComposition();
 
     if (m_frame.selection().isNone())
-        return;
+        return false;
 
     // Dispatch a compositionend event to the focused node.
     // We should send this event before sending a TextEvent as written in Section 6.2.2 and 6.2.3 of
@@ -217,6 +233,8 @@ void InputMethodController::finishComposition(const String& text, FinishComposit
         // An open typing command that disagrees about current selection would cause issues with typing later on.
         TypingCommand::closeTyping(&m_frame);
     }
+
+    return true;
 }
 
 void InputMethodController::setComposition(const String& text, const Vector<CompositionUnderline>& underlines, unsigned selectionStart, unsigned selectionEnd)
@@ -250,7 +268,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         //    Send a compositionend event when function deletes the existing composition node, i.e.
         //    m_compositionNode != 0 && test.isEmpty().
         RefPtr<CompositionEvent> event;
-        if (!m_compositionNode) {
+        if (!hasComposition()) {
             // We should send a compositionstart event only when the given text is not empty because this
             // function doesn't create a composition node when the text is empty.
             if (!text.isEmpty()) {
@@ -346,7 +364,7 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
 
 PassRefPtr<Range> InputMethodController::compositionRange() const
 {
-    if (!m_compositionNode)
+    if (!hasComposition())
         return 0;
     unsigned length = m_compositionNode->length();
     unsigned start = std::min(m_compositionStart, length);
@@ -373,8 +391,33 @@ bool InputMethodController::setSelectionOffsets(const PlainTextOffsets& selectio
 {
     if (selectionOffsets.isNull())
         return false;
-    // FIXME: We should move Editor::setSelectionOffsets() into InputMethodController class.
-    return editor().setSelectionOffsets(selectionOffsets.start(), selectionOffsets.end());
+    Element* rootEditableElement = m_frame.selection().rootEditableElement();
+    if (!rootEditableElement)
+        return false;
+
+    RefPtr<Range> range = TextIterator::rangeFromLocationAndLength(rootEditableElement, selectionOffsets.start(), selectionOffsets.end() - selectionOffsets.start());
+    if (!range)
+        return false;
+
+    return m_frame.selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, true);
+}
+
+bool InputMethodController::setEditableSelectionOffsets(const PlainTextOffsets& selectionOffsets)
+{
+    if (!editor().canEdit())
+        return false;
+    return setSelectionOffsets(selectionOffsets);
+}
+
+void InputMethodController::extendSelectionAndDelete(int before, int after)
+{
+    if (!editor().canEdit())
+        return;
+    PlainTextOffsets selectionOffsets = getSelectionOffsets();
+    if (selectionOffsets.isNull())
+        return;
+    setSelectionOffsets(PlainTextOffsets(std::max(static_cast<int>(selectionOffsets.start()) - before, 0), selectionOffsets.end() + after));
+    TypingCommand::deleteSelection(*m_frame.document());
 }
 
 } // namespace WebCore

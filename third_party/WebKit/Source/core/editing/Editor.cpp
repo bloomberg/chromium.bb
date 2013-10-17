@@ -1061,19 +1061,6 @@ void Editor::revealSelectionAfterEditingOperation(const ScrollAlignment& alignme
     m_frame.selection().revealSelection(alignment, revealExtentOption);
 }
 
-bool Editor::setSelectionOffsets(int selectionStart, int selectionEnd)
-{
-    Element* rootEditableElement = m_frame.selection().rootEditableElement();
-    if (!rootEditableElement)
-        return false;
-
-    RefPtr<Range> range = TextIterator::rangeFromLocationAndLength(rootEditableElement, selectionStart, selectionEnd - selectionStart);
-    if (!range)
-        return false;
-
-    return m_frame.selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, true);
-}
-
 void Editor::transpose()
 {
     if (!canEdit())

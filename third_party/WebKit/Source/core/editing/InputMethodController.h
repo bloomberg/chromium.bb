@@ -46,6 +46,7 @@ public:
     size_t end() const { return m_end; }
     size_t start() const { return m_start; }
     bool isNull() const { return m_start == kNotFound; }
+    size_t length() const { ASSERT(!isNull()); return m_end - m_start; }
 private:
     size_t m_start;
     size_t m_end;
@@ -54,18 +55,27 @@ private:
 class InputMethodController {
     WTF_MAKE_NONCOPYABLE(InputMethodController);
 public:
+    enum ConfirmCompositionBehavior {
+        DoNotKeepSelection,
+        KeepSelection,
+    };
+
     static PassOwnPtr<InputMethodController> create(Frame&);
     ~InputMethodController();
 
     // international text input composition
-    bool hasComposition() const { return m_compositionNode; }
+    bool hasComposition() const;
     void setComposition(const String&, const Vector<CompositionUnderline>&, unsigned selectionStart, unsigned selectionEnd);
     void setCompositionFromExistingText(const Vector<CompositionUnderline>&, unsigned compositionStart, unsigned compositionEnd);
-    // Inserts the text that is being composed as a regular text.
-    // This method does nothing if composition node is not present.
-    void confirmComposition();
-    // Inserts the given text string in the place of the existing composition, or replaces the selection if composition is not present.
-    void confirmComposition(const String& text);
+    // Inserts the text that is being composed as a regular text and returns true
+    // if composition exists.
+    bool confirmComposition();
+    // Inserts the given text string in the place of the existing composition
+    // and returns true.
+    bool confirmComposition(const String& text);
+    // Inserts the text that is being composed or specified non-empty text and
+    // returns true.
+    bool confirmCompositionOrInsertText(const String& text, ConfirmCompositionBehavior);
     void confirmCompositionAndResetState();
     // Deletes the existing composition text.
     void cancelComposition();
@@ -80,6 +90,11 @@ public:
     const Vector<CompositionUnderline>& customCompositionUnderlines() const { return m_customCompositionUnderlines; }
 
     void clear();
+
+    PlainTextOffsets getSelectionOffsets() const;
+    // Returns true if setting selection to specified offsets, otherwise false.
+    bool setEditableSelectionOffsets(const PlainTextOffsets&);
+    void extendSelectionAndDelete(int before, int after);
 
 private:
     class SelectionOffsetsScope {
@@ -109,8 +124,8 @@ private:
     bool insertTextForConfirmedComposition(const String& text);
     void selectComposition() const;
     enum FinishCompositionMode { ConfirmComposition, CancelComposition };
-    void finishComposition(const String&, FinishCompositionMode);
-    PlainTextOffsets getSelectionOffsets() const;
+    // Returns true if composition exists.
+    bool finishComposition(const String&, FinishCompositionMode);
     bool setSelectionOffsets(const PlainTextOffsets&);
 };
 

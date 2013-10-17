@@ -2157,39 +2157,7 @@ bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBe
     Frame* focused = focusedWebCoreFrame();
     if (!focused || !m_imeAcceptEvents)
         return false;
-    Editor& editor = focused->editor();
-    InputMethodController& inputMethodController = focused->inputMethodController();
-    if (!inputMethodController.hasComposition() && !text.length())
-        return false;
-
-    // We should verify the parent node of this IME composition node are
-    // editable because JavaScript may delete a parent node of the composition
-    // node. In this case, WebKit crashes while deleting texts from the parent
-    // node, which doesn't exist any longer.
-    RefPtr<Range> range = inputMethodController.compositionRange();
-    if (range) {
-        Node* node = range->startContainer();
-        if (!node || !node->isContentEditable())
-            return false;
-    }
-
-    if (inputMethodController.hasComposition()) {
-        if (text.length()) {
-            inputMethodController.confirmComposition(String(text));
-        } else {
-            size_t location;
-            size_t length;
-            caretOrSelectionRange(&location, &length);
-
-            inputMethodController.confirmComposition();
-            if (selectionBehavior == KeepSelection)
-                editor.setSelectionOffsets(location, location + length);
-        }
-    } else {
-        editor.insertText(String(text), 0);
-    }
-
-    return true;
+    return focused->inputMethodController().confirmCompositionOrInsertText(text, selectionBehavior == KeepSelection ? InputMethodController::KeepSelection : InputMethodController::DoNotKeepSelection);
 }
 
 bool WebViewImpl::compositionRange(size_t* location, size_t* length)
@@ -2398,9 +2366,7 @@ bool WebViewImpl::setEditableSelectionOffsets(int start, int end)
     const Frame* focused = focusedWebCoreFrame();
     if (!focused)
         return false;
-
-    Editor& editor = focused->editor();
-    return editor.canEdit() && editor.setSelectionOffsets(start, end);
+    return focused->inputMethodController().setEditableSelectionOffsets(PlainTextOffsets(start, end));
 }
 
 bool WebViewImpl::setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines)
@@ -2442,19 +2408,7 @@ void WebViewImpl::extendSelectionAndDelete(int before, int after)
     const Frame* focused = focusedWebCoreFrame();
     if (!focused)
         return;
-
-    Editor& editor = focused->editor();
-    if (!editor.canEdit())
-        return;
-
-    FrameSelection& selection = focused->selection();
-    size_t location;
-    size_t length;
-    RefPtr<Range> range = selection.selection().firstRange();
-    if (range && TextIterator::getLocationAndLengthFromRange(selection.rootEditableElement(), range.get(), location, length)) {
-        editor.setSelectionOffsets(max(static_cast<int>(location) - before, 0), location + length + after);
-        focused->document()->execCommand("delete", true);
-    }
+    focused->inputMethodController().extendSelectionAndDelete(before, after);
 }
 
 bool WebViewImpl::isSelectionEditable() const
@@ -2483,12 +2437,13 @@ bool WebViewImpl::caretOrSelectionRange(size_t* location, size_t* length)
     if (!focused)
         return false;
 
-    FrameSelection& selection = focused->selection();
-    RefPtr<Range> range = selection.selection().firstRange();
-    if (!range)
+    PlainTextOffsets selectionOffsets = focused->inputMethodController().getSelectionOffsets();
+    if (selectionOffsets.isNull())
         return false;
 
-    return TextIterator::getLocationAndLengthFromRange(selection.rootEditableElementOrTreeScopeRootNode(), range.get(), *location, *length);
+    *location = selectionOffsets.start();
+    *length = selectionOffsets.length();
+    return true;
 }
 
 void WebViewImpl::setTextDirection(WebTextDirection direction)
