@@ -96,7 +96,7 @@ deps = {
     'src/third_party/scons-2.0.1':
         Var('git_url') + '/native_client/src/third_party/scons-2.0.1.git@c81c95aff36392cffede13382dd5fcad25c0a603',
     'src/third_party/sfntly/cpp/src':
-        Var('git_url') + '/external/sfntly/cpp/src.git@cfb2f1743f0169ad8d01035458617bce97107539',
+        Var('git_url') + '/external/sfntly/cpp/src.git@8f090032dd4f8f8908f338cc73bb840b788377f2',
     'src/third_party/skia/gyp':
         Var('git_url') + '/external/skia/gyp.git@677423c478960d4a99c409a8017e0f14a393601d',
     'src/third_party/skia/include':
@@ -120,7 +120,7 @@ deps = {
     'src/third_party/webgl_conformance':
         Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@126dfd50f28b39ec70eae771c0e5805508687e6e',
     'src/third_party/webpagereplay':
-        Var('git_url') + '/external/web-page-replay.git@4bb19b79437f638749383e180f44722637c1aa65',
+        Var('git_url') + '/external/web-page-replay.git@b4773b3704bce171f67f25bccdae6125296fea6e',
     'src/third_party/webrtc':
         Var('git_url') + '/external/webrtc/stable/webrtc.git@636cca276f966a63b9b7437e56256bdfd06ce67d',
     'src/third_party/yasm/source/patched-yasm':
