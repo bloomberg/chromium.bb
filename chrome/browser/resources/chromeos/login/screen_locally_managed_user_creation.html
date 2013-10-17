@@ -82,6 +82,21 @@
         </div>
       </div>
     </div>
+
+    <div id="managed-user-creation-import" class="page-no-marketing" hidden>
+      <div class="logo-padded-text">
+        <div>
+          <div class="page-title"
+              i18n-content="importExistingSupervisedUserTitle"></div>
+          <div class="page-title-explanation"
+              i18n-content="importExistingSupervisedUserText"></div>
+        </div>
+      </div>
+      <div class="logo-padded-text">
+        <div id="managed-user-creation-import-pane"></div>
+      </div>
+    </div>
+
     <div id="managed-user-creation-created" class="step-no-logo" hidden>
       <div class="marketing">
         <img src="chrome://theme/IDR_SUPERVISED_ILLUSTRATION_DONE">
@@ -115,6 +130,12 @@
       <div class="id-spinner inline-spinner"></div>
     </div>
   </div>
+  <div class="template-import-supervised-user-link button-link" hidden>
+    <a href="#" class="signin-link" i18n-content="importSupervisedUserLink"></a>
+  </div>
+  <div class="template-create-supervised-user-link button-link" hidden>
+    <a href="#" class="signin-link" i18n-content="createSupervisedUserLink"></a>
+  </div>
   <div id="managed-user-creation-manager-template" hidden
       class="manager-pod">
     <div class="managed-user-creation-manager-info-block">
@@ -128,5 +149,9 @@
       <input class="managed-user-creation-manager-password" type="password"
           i18n-values="placeholder:createManagedUserManagerPasswordHint" />
     </div>
+  </div>
+  <div id="managed-user-creation-import-template" hidden class="import-pod">
+    <img class="import-pod-image"></img>
+    <div class="import-pod-name"></div>
   </div>
 </div>

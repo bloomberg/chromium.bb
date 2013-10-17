@@ -171,8 +171,13 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
   const char kName3[] = "Crush";
   const char kName4[] = "Dory";
   const char kAvatar1[] = "";
+#if defined(OS_CHROMEOS)
+  const char kAvatar2[] = "chromeos-avatar-index:0";
+  const char kAvatar3[] = "chromeos-avatar-index:20";
+#else
   const char kAvatar2[] = "chrome-avatar-index:0";
   const char kAvatar3[] = "chrome-avatar-index:20";
+#endif
   const char kAvatar4[] = "";
   {
     DictionaryPrefUpdate update(prefs(), prefs::kManagedUsers);
@@ -274,18 +279,42 @@ TEST_F(ManagedUserSyncServiceTest, GetAvatarIndex) {
   EXPECT_EQ(ManagedUserSyncService::kNoAvatar, avatar);
 
   std::string avatar_str = ManagedUserSyncService::BuildAvatarString(24);
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ("chromeos-avatar-index:24", avatar_str);
+#else
   EXPECT_EQ("chrome-avatar-index:24", avatar_str);
+#endif
   EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar));
   EXPECT_EQ(24, avatar);
 
   avatar_str = ManagedUserSyncService::BuildAvatarString(0);
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ("chromeos-avatar-index:0", avatar_str);
+#else
   EXPECT_EQ("chrome-avatar-index:0", avatar_str);
+#endif
   EXPECT_TRUE(ManagedUserSyncService::GetAvatarIndex(avatar_str, &avatar));
   EXPECT_EQ(0, avatar);
 
   EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("wrong-prefix:5",
                                                       &avatar));
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chromeos-avatar-indes:2",
+                                                      &avatar));
 
+  EXPECT_FALSE(
+      ManagedUserSyncService::GetAvatarIndex("chromeos-avatar-indexxx:2",
+                                             &avatar));
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chromeos-avatar-index:",
+                                                      &avatar));
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chromeos-avatar-index:x",
+                                                      &avatar));
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chrome-avatar-index:5",
+                                                      &avatar));
+#else
   EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chrome-avatar-indes:2",
                                                       &avatar));
 
@@ -297,4 +326,8 @@ TEST_F(ManagedUserSyncServiceTest, GetAvatarIndex) {
 
   EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chrome-avatar-index:x",
                                                       &avatar));
+
+  EXPECT_FALSE(ManagedUserSyncService::GetAvatarIndex("chromeos-avatar-index:5",
+                                                      &avatar));
+#endif
 }

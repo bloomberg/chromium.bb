@@ -31,7 +31,6 @@ namespace chromeos {
 
 namespace {
 
-const int kDummyAvatarIndex = -111;
 const int kMasterKeySize = 32;
 const int kUserCreationTimeoutSeconds = 30; // 30 seconds.
 
@@ -48,11 +47,16 @@ bool StoreManagedUserFiles(const std::string& token,
 
 } // namespace
 
+// static
+const int LocallyManagedUserCreationController::kDummyAvatarIndex = -111;
+
 LocallyManagedUserCreationController::StatusConsumer::~StatusConsumer() {}
 
 LocallyManagedUserCreationController::UserCreationContext::UserCreationContext()
-    : token_acquired(false),
+    : avatar_index(kDummyAvatarIndex),
+      token_acquired(false),
       token_succesfully_written(false),
+      creation_type(NEW_USER),
       manager_profile(NULL) {}
 
 LocallyManagedUserCreationController::UserCreationContext::
@@ -78,11 +82,30 @@ LocallyManagedUserCreationController::~LocallyManagedUserCreationController() {
   current_controller_ = NULL;
 }
 
-void LocallyManagedUserCreationController::SetUpCreation(string16 display_name,
-                                                         std::string password) {
+void LocallyManagedUserCreationController::SetUpCreation(
+    const string16& display_name,
+    const std::string& password,
+    int avatar_index) {
   DCHECK(creation_context_);
   creation_context_->display_name = display_name;
   creation_context_->password = password;
+  creation_context_->avatar_index = avatar_index;
+}
+
+void LocallyManagedUserCreationController::StartImport(
+    const string16& display_name,
+    const std::string& password,
+    int avatar_index,
+    const std::string& sync_id,
+    const std::string& master_key) {
+  DCHECK(creation_context_);
+  creation_context_->creation_type = USER_IMPORT;
+  creation_context_->display_name = display_name;
+  creation_context_->password = password;
+  creation_context_->avatar_index = avatar_index;
+  creation_context_->sync_user_id = sync_id;
+  creation_context_->master_key = master_key;
+  StartCreation();
 }
 
 void LocallyManagedUserCreationController::SetManagerProfile(
@@ -113,8 +136,11 @@ void LocallyManagedUserCreationController::StartCreation() {
 
   creation_context_->local_user_id =
         UserManager::Get()->GenerateUniqueLocallyManagedUserId();
-  creation_context_->sync_user_id =
-      ManagedUserRegistrationUtility::GenerateNewManagedUserId();
+
+  if (creation_context_->creation_type == NEW_USER) {
+    creation_context_->sync_user_id =
+        ManagedUserRegistrationUtility::GenerateNewManagedUserId();
+  }
 
   UserManager::Get()->CreateLocallyManagedUserRecord(
       creation_context_->manager_id,
@@ -155,12 +181,15 @@ void LocallyManagedUserCreationController::OnMountSuccess(
     const std::string& mount_hash) {
   creation_context_->mount_hash = mount_hash;
 
-  // Generate master password.
-  char master_key_bytes[kMasterKeySize];
-  crypto::RandBytes(&master_key_bytes, sizeof(master_key_bytes));
-  creation_context_->master_key = StringToLowerASCII(base::HexEncode(
-      reinterpret_cast<const void*>(master_key_bytes),
-      sizeof(master_key_bytes)));
+  if (creation_context_->creation_type == NEW_USER) {
+    // Generate master password.
+    char master_key_bytes[kMasterKeySize];
+    crypto::RandBytes(&master_key_bytes, sizeof(master_key_bytes));
+    creation_context_->master_key = StringToLowerASCII(base::HexEncode(
+        reinterpret_cast<const void*>(master_key_bytes),
+        sizeof(master_key_bytes)));
+  }
+
   VLOG(1) << "Adding master key";
   authenticator_->AddMasterKey(creation_context_->local_user_id,
                                creation_context_->password,
@@ -174,7 +203,7 @@ void LocallyManagedUserCreationController::OnAddKeySuccess() {
 
   VLOG(1) << "Creating user on server";
   ManagedUserRegistrationInfo info(creation_context_->display_name,
-                                   kDummyAvatarIndex);
+                                   creation_context_->avatar_index);
   info.master_key = creation_context_->master_key;
   timeout_timer_.Stop();
   creation_context_->registration_utility->Register(

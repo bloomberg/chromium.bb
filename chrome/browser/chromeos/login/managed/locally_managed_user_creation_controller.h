@@ -34,6 +34,11 @@ namespace chromeos {
 class LocallyManagedUserCreationController
     : public ManagedUserAuthenticator::AuthStatusConsumer {
  public:
+  // This constant is used to indicate that user does not have one of default
+  // avatars: either he has no chromeos avatar at all, or has an external
+  // image as an avatar.
+  static const int kDummyAvatarIndex;
+
   enum ErrorCode {
     NO_ERROR,
     CRYPTOHOME_NO_MOUNT,
@@ -65,7 +70,21 @@ class LocallyManagedUserCreationController
     return current_controller_;
   }
 
-  void SetUpCreation(string16 display_name, std::string password);
+  // Set up controller for creating new supervised user with |display_name|,
+  // |password| and avatar indexed by |avatar_index|. StartCreation() have to
+  // be called to actually start creating user.
+  void SetUpCreation(const string16& display_name,
+                     const std::string& password,
+                     int avatar_index);
+
+  // Configures and initiates importing existing supervised user to this device.
+  // Existing user is identified by |sync_id|, has |display_name|, |password|,
+  // |avatar_index|. The master key for cryptohome is a |master_key|.
+  void StartImport(const string16& display_name,
+                   const std::string& password,
+                   int avatar_index,
+                   const std::string& sync_id,
+                   const std::string& master_key);
   void SetManagerProfile(Profile* manager_profile);
   void StartCreation();
   void CancelCreation();
@@ -73,12 +92,19 @@ class LocallyManagedUserCreationController
   std::string GetManagedUserId();
 
  private:
+  // Indicates if we create new user, or import an existing one.
+  enum CreationType {
+    NEW_USER,
+    USER_IMPORT,
+  };
+
   // Contains information necessary for new user creation.
   struct UserCreationContext {
     UserCreationContext();
     ~UserCreationContext();
 
     string16 display_name;
+    int avatar_index;
     std::string manager_id;
     std::string local_user_id; // Used to identify cryptohome.
     std::string sync_user_id;  // Used to identify user in manager's sync data.
@@ -88,6 +114,7 @@ class LocallyManagedUserCreationController
     bool token_acquired;
     std::string token;
     bool token_succesfully_written;
+    CreationType creation_type;
     Profile* manager_profile;
     scoped_ptr<ManagedUserRegistrationUtility> registration_utility;
   };

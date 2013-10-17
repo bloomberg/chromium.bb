@@ -6,6 +6,8 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
+#include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -15,6 +17,9 @@
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service.h"
+#include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -26,6 +31,8 @@ namespace chromeos {
 
 namespace {
 
+const char kAvatarURLKey[] = "avatarurl";
+const char kRandomAvatarKey[] = "randomAvatar";
 const char kNameOfIntroScreen[] = "intro";
 const char kNameOfNewUserParametersScreen[] = "username";
 
@@ -176,8 +183,40 @@ void LocallyManagedUserCreationScreen::CreateManagedUser(
     const string16& display_name,
     const std::string& managed_user_password) {
   DCHECK(controller_.get());
-  controller_->SetUpCreation(display_name, managed_user_password);
+  int image;
+  if (selected_image_ == User::kExternalImageIndex)
+    // TODO(dzhioev): crbug/249660
+    image = LocallyManagedUserCreationController::kDummyAvatarIndex;
+  else
+    image = selected_image_;
+  controller_->SetUpCreation(display_name, managed_user_password, image);
   controller_->StartCreation();
+}
+
+void LocallyManagedUserCreationScreen::ImportManagedUser(
+    const std::string& user_id) {
+  DCHECK(controller_.get());
+  DCHECK(existing_users_.get());
+  VLOG(1) << "Importing user " << user_id;
+  DictionaryValue* user_info;
+  if (!existing_users_->GetDictionary(user_id, &user_info)) {
+    LOG(ERROR) << "Can not import non-existing user " << user_id;
+    return;
+  }
+  string16 display_name;
+  std::string master_key;
+  std::string avatar;
+  int avatar_index = LocallyManagedUserCreationController::kDummyAvatarIndex;
+  user_info->GetString(ManagedUserSyncService::kName, &display_name);
+  user_info->GetString(ManagedUserSyncService::kMasterKey, &master_key);
+  user_info->GetString(ManagedUserSyncService::kChromeOsAvatar, &avatar);
+  ManagedUserSyncService::GetAvatarIndex(avatar, &avatar_index);
+
+  controller_->StartImport(display_name,
+                           std::string(),
+                           avatar_index,
+                           user_id,
+                           master_key);
 }
 
 void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
@@ -196,7 +235,17 @@ void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
   controller_->SetManagerProfile(manager_profile);
   if (actor_)
     actor_->ShowUsernamePage();
+
   last_page_ = kNameOfNewUserParametersScreen;
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(::switches::kAllowCreateExistingManagedUsers))
+    return;
+
+  ManagedUserSyncServiceFactory::GetForProfile(manager_profile)->
+      GetManagedUsersAsync(base::Bind(
+          &LocallyManagedUserCreationScreen::OnGetManagedUsers,
+          weak_factory_.GetWeakPtr()));
 }
 
 void LocallyManagedUserCreationScreen::OnManagerCryptohomeAuthenticated() {
@@ -304,6 +353,48 @@ void LocallyManagedUserCreationScreen::OnCameraPresenceCheckDone() {
     actor_->SetCameraPresent(
         CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
   }
+}
+
+void LocallyManagedUserCreationScreen::OnGetManagedUsers(
+    const base::DictionaryValue* users) {
+  // Copy for passing to WebUI, contains only id, name and avatar URL.
+  scoped_ptr<base::ListValue> ui_users(new base::ListValue());
+
+  // Stored copy, contains all necessary information.
+  existing_users_.reset(new base::DictionaryValue());
+  for (base::DictionaryValue::Iterator it(*users); !it.IsAtEnd();
+       it.Advance()) {
+    base::DictionaryValue* local_copy =
+        static_cast<base::DictionaryValue*>(it.value().DeepCopy());
+    base::DictionaryValue* ui_copy =
+        static_cast<base::DictionaryValue*>(new base::DictionaryValue());
+
+    int avatar_index = LocallyManagedUserCreationController::kDummyAvatarIndex;
+    std::string chromeos_avatar;
+    if (local_copy->GetString(ManagedUserSyncService::kChromeOsAvatar,
+                              &chromeos_avatar) &&
+        !chromeos_avatar.empty() &&
+        ManagedUserSyncService::GetAvatarIndex(
+            chromeos_avatar, &avatar_index)) {
+      ui_copy->SetString(kAvatarURLKey, GetDefaultImageUrl(avatar_index));
+    } else {
+      int i = base::RandInt(kFirstDefaultImageIndex, kDefaultImagesCount - 1);
+      local_copy->SetString(
+          ManagedUserSyncService::kChromeOsAvatar,
+          ManagedUserSyncService::BuildAvatarString(i));
+      local_copy->SetBoolean(kRandomAvatarKey, true);
+      ui_copy->SetString(kAvatarURLKey, GetDefaultImageUrl(i));
+    }
+
+    string16 display_name;
+    local_copy->GetString(ManagedUserSyncService::kName, &display_name);
+    ui_copy->SetString(ManagedUserSyncService::kName, display_name);
+    ui_copy->SetString("id", it.key());
+
+    existing_users_->Set(it.key(), local_copy);
+    ui_users->Append(ui_copy);
+  }
+  actor_->ShowExistingManagedUsers(ui_users.get());
 }
 
 void LocallyManagedUserCreationScreen::OnPhotoTaken(

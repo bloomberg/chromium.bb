@@ -36,6 +36,12 @@
   overflow-x: auto;
 }
 
+#managed-user-creation .button-link {
+  font-size: small;
+  padding: 0 20px;
+  position: absolute;
+}
+
 .below-marketing::-webkit-scrollbar {
   width: 8px;
 }
@@ -191,6 +197,27 @@ input.managed-user-creation-manager-password,
   margin-left: 10px !important;
 }
 
+.import-pod {
+  height: 32px;
+  opacity: 0.8;
+  padding: 6px;
+  width: 626px;
+}
+
+.import-pod .import-pod-name {
+  color: #000;
+  display: inline;
+  max-height: 30px;
+  vertical-align: top;
+}
+
+.import-pod .import-pod-image {
+  border: 1px solid gray;
+  display: inline;
+  height: 30px;
+  width: 30px;
+}
+
 .manager-pod {
   height: 32px;
   opacity: 0.8;
@@ -265,12 +292,24 @@ input.managed-user-creation-manager-password,
   opacity: 1;
 }
 
+.import-pod.focused {
+  background-color: rgb(66, 129, 244);
+  opacity: 1;
+}
+
 .manager-pod.focused .managed-user-creation-manager-email {
   color: #fff;
 }
 
 .manager-pod.focused .managed-user-creation-manager-name {
   color: #fff;
+}
+
+#managed-user-creation-import-pane {
+  border: 1px solid #c8c8c8;
+  height: 400px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .manager-pod .password-error,

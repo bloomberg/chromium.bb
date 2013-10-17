@@ -54,7 +54,8 @@ class ManagedUserSyncService : public BrowserContextKeyedService,
   // where INDEX is the integer to be extracted. |avatar_str| can be empty
   // in case there is no avatar synced for a managed user in which case
   // |avatar_index| is set to -1.
-  static bool GetAvatarIndex(const std::string& avatar_str, int* avatar_index);
+  static bool GetAvatarIndex(const std::string& avatar_str,
+                             int* avatar_index);
 
   // Given an |avatar_index|, it returns a string of the form:
   // "chrome-avatar-index:INDEX" where INDEX = |avatar_index|.

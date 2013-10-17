@@ -115,6 +115,17 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
   builder->Add("createManagedUserCreatedText3",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_3);
 
+  builder->Add("importExistingSupervisedUserTitle",
+               IDS_IMPORT_EXISTING_MANAGED_USER_TITLE);
+  builder->Add("importExistingSupervisedUserText",
+               IDS_IMPORT_EXISTING_MANAGED_USER_TEXT);
+  builder->Add("managedUserCreationFlowImportButtonTitle",
+               IDS_IMPORT_EXISTING_MANAGED_USER_OK);
+  builder->Add("importSupervisedUserLink",
+               IDS_PROFILES_IMPORT_EXISTING_MANAGED_USER_LINK);
+  builder->Add("createSupervisedUserLink",
+               IDS_CREATE_NEW_USER_LINK);
+
   builder->Add("managementURL", chrome::kSupervisedUserManagementDisplayURL);
 
   // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
@@ -145,6 +156,13 @@ void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
   AddCallback("managerSelectedOnLocallyManagedUserCreationFlow",
               &LocallyManagedUserCreationScreenHandler::
                   HandleManagerSelected);
+  AddCallback("userSelectedForImportInManagedUserCreationFlow",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleImportUserSelected);
+  AddCallback("importSupervisedUser",
+              &LocallyManagedUserCreationScreenHandler::
+                  HandleImportSupervisedUser);
+
 
   // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
   // It should be removed by issue 251179.
@@ -244,6 +262,12 @@ void LocallyManagedUserCreationScreenHandler::HandleManagerSelected(
   WallpaperManager::Get()->SetUserWallpaper(manager_id);
 }
 
+void LocallyManagedUserCreationScreenHandler::HandleImportUserSelected(
+    const std::string& user_id) {
+  if (!delegate_)
+    return;
+}
+
 void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
     const string16& name) {
   if (NULL != UserManager::Get()->
@@ -291,6 +315,17 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE));
 
   delegate_->CreateManagedUser(new_user_name, new_user_password);
+}
+
+void LocallyManagedUserCreationScreenHandler::HandleImportSupervisedUser(
+    const std::string& user_id) {
+  if (!delegate_)
+    return;
+
+  ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
+      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE));
+
+  delegate_->ImportManagedUser(user_id);
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleAuthenticateManager(
@@ -359,6 +394,11 @@ void LocallyManagedUserCreationScreenHandler::ShowPage(
 
 void LocallyManagedUserCreationScreenHandler::SetCameraPresent(bool present) {
   CallJS("setCameraPresent", present);
+}
+
+void LocallyManagedUserCreationScreenHandler::ShowExistingManagedUsers(
+    const base::ListValue* users) {
+  CallJS("setExistingManagedUsers", *users);
 }
 
 }  // namespace chromeos
