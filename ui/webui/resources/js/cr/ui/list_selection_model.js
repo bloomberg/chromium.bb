@@ -98,15 +98,18 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Returns the last selected index or -1 if no item selected.
+     * Returns the nearest selected index or -1 if no item selected.
+     * @param {number} index The origin index.
      * @type {number}
+     * @private
      */
-    get lastSelectedIndex() {
-      var result = -1;
+    getNearestSelectedIndex_: function(index) {
+      var result = Infinity;
       for (var i in this.selectedIndexes_) {
-        result = Math.max(result, Number(i));
+        if (Math.abs(i - index) < Math.abs(result - index))
+          result = i;
       }
-      return result;
+      return result < this.length ? result : -1;
     },
 
     /**
@@ -297,7 +300,7 @@ cr.define('cr.ui', function() {
       // selected items. This rule is not enforces until end of batch update.
       if (!this.changeCount_ && !this.independentLeadItem_ &&
           !this.getIndexSelected(index)) {
-        index = this.lastSelectedIndex;
+        index = this.getNearestSelectedIndex_(index);
       }
       return index;
     },
