@@ -412,7 +412,7 @@ deps_os = {
       "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
 
     "src/third_party/gold":
-      "/trunk/deps/third_party/gold@203758",
+      "/trunk/deps/third_party/gold@228995",
 
     "src/third_party/libmtp":
       "/trunk/deps/third_party/libmtp@206535",
