@@ -29,7 +29,7 @@ struct PasswordForm;
 // generation between the browser (which shows the popup and generates
 // passwords) and WebKit (shows the generation icon in the password field).
 class PasswordGenerationAgent : public content::RenderViewObserver,
-                                  public WebKit::WebPasswordGeneratorClient {
+                                public WebKit::WebPasswordGeneratorClient {
  public:
   explicit PasswordGenerationAgent(content::RenderView* render_view);
   virtual ~PasswordGenerationAgent();
@@ -53,7 +53,6 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
   // Message handlers.
   void OnFormNotBlacklisted(const PasswordForm& form);
   void OnPasswordAccepted(const base::string16& password);
-  void OnPasswordGenerationEnabled(bool enabled);
   void OnAccountCreationFormsDetected(
       const std::vector<autofill::FormData>& forms);
 
@@ -61,10 +60,6 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
   void MaybeShowIcon();
 
   content::RenderView* render_view_;
-
-  // True if password generation is enabled for the profile associated
-  // with this renderer.
-  bool enabled_;
 
   // Stores the origin of the account creation form we detected.
   scoped_ptr<PasswordForm> possible_account_creation_form_;
@@ -75,8 +70,9 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
   std::vector<GURL> not_blacklisted_password_form_origins_;
 
   // Stores each password form for which the Autofill server classifies one of
-  // the form's fields as an ACCOUNT_CREATION_PASSWORD.
-  std::vector<autofill::FormData> account_creation_forms_;
+  // the form's fields as an ACCOUNT_CREATION_PASSWORD. These forms will
+  // not be sent if the feature is disabled.
+  std::vector<autofill::FormData> generation_enabled_forms_;
 
   std::vector<WebKit::WebInputElement> passwords_;
 

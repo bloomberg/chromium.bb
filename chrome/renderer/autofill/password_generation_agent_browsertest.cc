@@ -91,11 +91,6 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     return decoration.hasNonEmptyBoundingBox();
   }
 
-  void SetPasswordGenerationEnabledMessage(void) {
-    AutofillMsg_PasswordGenerationEnabled msg(0, true);
-    generation_manager_->OnMessageReceived(msg);
-  }
-
   void SetNotBlacklistedMessage(const char* form_str) {
     autofill::PasswordForm form;
     form.origin =
@@ -180,9 +175,6 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   LoadHTML(kAccountCreationFormHTML);
   ExpectPasswordGenerationIconShown("first_password", false);
 
-  // Pretend like password generation was enabled.
-  SetPasswordGenerationEnabledMessage();
-
   // Pretend like We have received message indicating site is not blacklisted,
   // and we have received message indicating the form is classified as
   // ACCOUNT_CREATION_FORM form Autofill server. We should show the icon.
@@ -207,7 +199,6 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
 
 TEST_F(PasswordGenerationAgentTest, FillTest) {
   // Make sure that we are enabled before loading HTML.
-  SetPasswordGenerationEnabledMessage();
   LoadHTML(kAccountCreationFormHTML);
 
   WebDocument document = GetMainFrame()->document();
@@ -242,9 +233,6 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
 }
 
 TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
-  // Make sure password generation is enabled.
-  SetPasswordGenerationEnabledMessage();
-
   // Did not receive not blacklisted message. Don't show password generation
   // icon.
   LoadHTML(kAccountCreationFormHTML);
@@ -275,9 +263,6 @@ TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
 }
 
 TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
-  // Make sure password generation is enabled.
-  SetPasswordGenerationEnabledMessage();
-
   // Did not receive account creation forms detected messege. Don't show
   // password generation icon.
   LoadHTML(kAccountCreationFormHTML);

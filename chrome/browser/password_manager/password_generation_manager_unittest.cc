@@ -42,11 +42,6 @@ class TestPasswordGenerationManager : public PasswordGenerationManager {
       : PasswordGenerationManager(contents) {}
   virtual ~TestPasswordGenerationManager() {}
 
-  virtual void SendStateToRenderer(content::RenderViewHost* host,
-                                   bool enabled) OVERRIDE {
-    sent_states_.push_back(enabled);
-  }
-
   virtual void SendAccountCreationFormsToRenderer(
       content::RenderViewHost* host,
       const std::vector<autofill::FormData>& forms) OVERRIDE {
@@ -54,16 +49,8 @@ class TestPasswordGenerationManager : public PasswordGenerationManager {
         sent_account_creation_forms_.begin(), forms.begin(), forms.end());
   }
 
-  const std::vector<bool>& GetSentStates() {
-    return sent_states_;
-  }
-
   const std::vector<autofill::FormData>& GetSentAccountCreationForms() {
     return sent_account_creation_forms_;
-  }
-
-  void ClearSentStates() {
-    sent_states_.clear();
   }
 
   void ClearSentAccountCreationForms() {
@@ -71,7 +58,6 @@ class TestPasswordGenerationManager : public PasswordGenerationManager {
   }
 
  private:
-  std::vector<bool> sent_states_;
   std::vector<autofill::FormData> sent_account_creation_forms_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPasswordGenerationManager);
@@ -91,8 +77,8 @@ class PasswordGenerationManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void UpdateState(bool new_renderer) {
-    password_generation_manager_->UpdateState(NULL, new_renderer);
+  bool IsGenerationEnabled() {
+    return password_generation_manager_->IsGenerationEnabled();
   }
 
   void DetectAccountCreationForms(
@@ -115,7 +101,7 @@ class IncognitoPasswordGenerationManagerTest :
   }
 };
 
-TEST_F(PasswordGenerationManagerTest, UpdateState) {
+TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
   PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
   PasswordManager::CreateForWebContentsAndDelegate(
       web_contents(),
@@ -133,95 +119,39 @@ TEST_F(PasswordGenerationManagerTest, UpdateState) {
   preferred_set.Put(syncer::PASSWORDS);
   sync_service->ChangePreferredDataTypes(preferred_set);
 
-  // Enabled state remains false, should not sent.
+  // Pref is false, should not be enabled.
   prefs->SetBoolean(prefs::kPasswordGenerationEnabled, false);
-  UpdateState(false);
-  EXPECT_EQ(0u, password_generation_manager_->GetSentStates().size());
+  EXPECT_FALSE(IsGenerationEnabled());
 
-  // Enabled state from false to true, should sent true.
+  // Pref is true, should be enabled.
   prefs->SetBoolean(prefs::kPasswordGenerationEnabled, true);
-  UpdateState(false);
-  EXPECT_EQ(1u, password_generation_manager_->GetSentStates().size());
-  EXPECT_TRUE(password_generation_manager_->GetSentStates()[0]);
-  password_generation_manager_->ClearSentStates();
+  EXPECT_TRUE(IsGenerationEnabled());
 
-  // Enabled states remains true, should not sent.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, true);
-  UpdateState(false);
-  EXPECT_EQ(0u, password_generation_manager_->GetSentStates().size());
+  // Change syncing preferences to not include passwords. Generation should
+  // be disabled.
+  preferred_set.Put(syncer::EXTENSIONS);
+  preferred_set.Remove(syncer::PASSWORDS);
+  sync_service->ChangePreferredDataTypes(preferred_set);
+  EXPECT_FALSE(IsGenerationEnabled());
 
-  // Enabled states from true to false, should sent false.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, false);
-  UpdateState(false);
-  EXPECT_EQ(1u, password_generation_manager_->GetSentStates().size());
-  EXPECT_FALSE(password_generation_manager_->GetSentStates()[0]);
-  password_generation_manager_->ClearSentStates();
-
-  // When a new render_view is created, we send the state even if it's the
-  // same.
-  UpdateState(true);
-  EXPECT_EQ(1u, password_generation_manager_->GetSentStates().size());
-  EXPECT_FALSE(password_generation_manager_->GetSentStates()[0]);
-  password_generation_manager_->ClearSentStates();
+  // Disable syncing. Generation should also be disabled.
+  sync_service->DisableForUser();
+  EXPECT_FALSE(IsGenerationEnabled());
 }
 
-TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncState) {
+TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
+  // Setup so that IsGenerationEnabled() returns true.
   PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
   PasswordManager::CreateForWebContentsAndDelegate(
       web_contents(),
       PasswordManagerDelegateImpl::FromWebContents(web_contents()));
 
-  PrefService* prefs = profile()->GetPrefs();
-
-  // Allow this test to control what should get synced.
-  prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
-  // Always set password generation enabled check box so we can test the
-  // behavior of password sync.
-  prefs->SetBoolean(prefs::kPasswordGenerationEnabled, true);
-
-  // Sync some things, but not passwords. Shouldn't send anything since
-  // password generation is disabled by default.
   ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
       profile());
   sync_service->SetSyncSetupCompleted();
-  syncer::ModelTypeSet preferred_set;
-  preferred_set.Put(syncer::EXTENSIONS);
-  preferred_set.Put(syncer::PREFERENCES);
-  sync_service->ChangePreferredDataTypes(preferred_set);
-  syncer::ModelTypeSet new_set = sync_service->GetActiveDataTypes();
-  UpdateState(false);
-  EXPECT_EQ(0u, password_generation_manager_->GetSentStates().size());
 
-  // Now sync passwords.
-  preferred_set.Put(syncer::PASSWORDS);
-  sync_service->ChangePreferredDataTypes(preferred_set);
-  UpdateState(false);
-  EXPECT_EQ(1u, password_generation_manager_->GetSentStates().size());
-  EXPECT_TRUE(password_generation_manager_->GetSentStates()[0]);
-  password_generation_manager_->ClearSentStates();
+  profile()->GetPrefs()->SetBoolean(prefs::kPasswordGenerationEnabled, true);
 
-  // Add some additional synced state. Nothing should be sent.
-  preferred_set.Put(syncer::THEMES);
-  sync_service->ChangePreferredDataTypes(preferred_set);
-  UpdateState(false);
-  EXPECT_EQ(0u, password_generation_manager_->GetSentStates().size());
-
-  // Disable syncing. This should disable the feature.
-  sync_service->DisableForUser();
-  UpdateState(false);
-  EXPECT_EQ(1u, password_generation_manager_->GetSentStates().size());
-  EXPECT_FALSE(password_generation_manager_->GetSentStates()[0]);
-  password_generation_manager_->ClearSentStates();
-
-  // When a new render_view is created, we send the state even if it's the
-  // same.
-  UpdateState(true);
-  EXPECT_EQ(1u, password_generation_manager_->GetSentStates().size());
-  EXPECT_FALSE(password_generation_manager_->GetSentStates()[0]);
-  password_generation_manager_->ClearSentStates();
-}
-
-TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
   autofill::FormData login_form;
   login_form.origin = GURL("http://www.yahoo.com/login/");
   autofill::FormFieldData username;
@@ -273,8 +203,8 @@ TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
 
 TEST_F(IncognitoPasswordGenerationManagerTest,
        UpdatePasswordSyncStateIncognito) {
-  // Disable password manager by going incognito, and enable syncing. The
-  // feature should still be disabled, and nothing will be sent.
+  // Disable password manager by going incognito. Even though syncing is
+  // enabled, generation should still be disabled.
   PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
   PasswordManager::CreateForWebContentsAndDelegate(
       web_contents(),
@@ -290,6 +220,5 @@ TEST_F(IncognitoPasswordGenerationManagerTest,
 
   browser_sync::SyncPrefs sync_prefs(profile()->GetPrefs());
   sync_prefs.SetSyncSetupCompleted();
-  UpdateState(false);
-  EXPECT_EQ(0u, password_generation_manager_->GetSentStates().size());
+  EXPECT_FALSE(IsGenerationEnabled());
 }

@@ -1424,6 +1424,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kEnableExperimentalFormFilling,
       autofill::switches::kEnableInteractiveAutocomplete,
       autofill::switches::kEnablePasswordGeneration,
+      autofill::switches::kNoAutofillNecessaryForPasswordGeneration,
       extensions::switches::kAllowLegacyExtensionManifests,
       extensions::switches::kAllowScriptingGallery,
       extensions::switches::kEnableExperimentalExtensionApis,

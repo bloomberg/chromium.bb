@@ -136,10 +136,6 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptDataListSuggestion,
 IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
                     base::string16 /* generated_password */)
 
-// Tells the renderer whether password generation is enabled.
-IPC_MESSAGE_ROUTED1(AutofillMsg_PasswordGenerationEnabled,
-                    bool /* is_enabled */)
-
 // Tells the renderer that the password field has accept the suggestion.
 IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
                     base::string16 /* username value*/)

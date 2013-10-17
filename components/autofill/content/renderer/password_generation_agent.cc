@@ -4,10 +4,12 @@
 
 #include "components/autofill/content/renderer/password_generation_agent.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/autofill_messages.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -93,8 +95,7 @@ bool ContainsForm(const std::vector<autofill::FormData>& forms,
 PasswordGenerationAgent::PasswordGenerationAgent(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
-      render_view_(render_view),
-      enabled_(false) {
+      render_view_(render_view) {
   render_view_->GetWebView()->setPasswordGeneratorClient(this);
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
@@ -112,7 +113,7 @@ void PasswordGenerationAgent::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   // password generation icon.
   if (!frame->parent()) {
     not_blacklisted_password_form_origins_.clear();
-    account_creation_forms_.clear();
+    generation_enabled_forms_.clear();
     possible_account_creation_form_.reset(new PasswordForm());
     passwords_.clear();
   }
@@ -121,9 +122,6 @@ void PasswordGenerationAgent::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
 void PasswordGenerationAgent::DidFinishLoad(WebKit::WebFrame* frame) {
   // We don't want to generate passwords if the browser won't store or sync
   // them.
-  if (!enabled_)
-    return;
-
   if (!ShouldAnalyzeDocument(frame->document()))
     return;
 
@@ -201,8 +199,6 @@ bool PasswordGenerationAgent::OnMessageReceived(const IPC::Message& message) {
                         OnFormNotBlacklisted)
     IPC_MESSAGE_HANDLER(AutofillMsg_GeneratedPasswordAccepted,
                         OnPasswordAccepted)
-    IPC_MESSAGE_HANDLER(AutofillMsg_PasswordGenerationEnabled,
-                        OnPasswordGenerationEnabled)
     IPC_MESSAGE_HANDLER(AutofillMsg_AccountCreationFormsDetected,
                         OnAccountCreationFormsDetected)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -227,36 +223,42 @@ void PasswordGenerationAgent::OnPasswordAccepted(
   }
 }
 
-void PasswordGenerationAgent::OnPasswordGenerationEnabled(bool enabled) {
-  enabled_ = enabled;
-}
-
 void PasswordGenerationAgent::OnAccountCreationFormsDetected(
     const std::vector<autofill::FormData>& forms) {
-  account_creation_forms_.insert(
-      account_creation_forms_.end(), forms.begin(), forms.end());
+  generation_enabled_forms_.insert(
+      generation_enabled_forms_.end(), forms.begin(), forms.end());
   MaybeShowIcon();
 }
 
 void PasswordGenerationAgent::MaybeShowIcon() {
-  // We should show the password generation icon only when we have detected
-  // account creation form, we have confirmed from browser that this form
-  // is not blacklisted by the users, and the Autofill server has marked one
-  // of its field as ACCOUNT_CREATION_PASSWORD.
-  if (!possible_account_creation_form_.get() ||
-      passwords_.empty() ||
-      not_blacklisted_password_form_origins_.empty() ||
-      account_creation_forms_.empty()) {
+  // Make sure local heuristics have identified a possible account creation
+  // form.
+  if (!possible_account_creation_form_.get() || passwords_.empty()) {
+    DVLOG(2) << "Local hueristics have not detected a possible account "
+             << "creation form";
     return;
   }
 
-  if (!ContainsURL(not_blacklisted_password_form_origins_,
+  // Verify that it's not blacklisted.
+  if (not_blacklisted_password_form_origins_.empty() ||
+      !ContainsURL(not_blacklisted_password_form_origins_,
                    possible_account_creation_form_->origin)) {
+    DVLOG(2) << "Have not recieved confirmation that password form isn't "
+             << "blacklisted";
     return;
   }
 
-  if (!ContainsForm(account_creation_forms_,
-                    *possible_account_creation_form_)) {
+  // Ensure that we get a ping from Autofill saying that this form is used for
+  // account creation. Note that this message will not be set if this feature
+  // is not enabled. If kNoAutofillNecessaryForPasswordGeneration is set,
+  // skip this check. This switch should only be used in testing environments.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoAutofillNecessaryForPasswordGeneration) &&
+      (generation_enabled_forms_.empty() ||
+       !ContainsForm(generation_enabled_forms_,
+                     *possible_account_creation_form_))) {
+    DVLOG(2) << "Have not recieved confirmation from Autofill that form is used"
+             << " for account creation";
     return;
   }
 

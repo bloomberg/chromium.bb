@@ -31,24 +31,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordGenerationManager);
 
 PasswordGenerationManager::PasswordGenerationManager(
     content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      enabled_(false),
-      weak_factory_(this) {
-  RegisterWithSyncService();
-}
+    : content::WebContentsObserver(contents) {}
 
 PasswordGenerationManager::~PasswordGenerationManager() {}
-
-// static
-void PasswordGenerationManager::CreateForWebContents(
-    content::WebContents* contents) {
-  content::WebContentsUserData<PasswordGenerationManager>::
-      CreateForWebContents(contents);
-
-  // Start observing changes to relevant prefs. This is not called in the
-  // constructor so that it's not enabled in testing.
-  FromWebContents(contents)->SetUpPrefChangeRegistrar();
-}
 
 // static
 void PasswordGenerationManager::RegisterProfilePrefs(
@@ -74,31 +59,10 @@ void PasswordGenerationManager::DetectAccountCreationForms(
       }
     }
   }
-  SendAccountCreationFormsToRenderer(web_contents()->GetRenderViewHost(),
-                                     account_creation_forms);
-}
-
-void PasswordGenerationManager::RegisterWithSyncService() {
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (sync_service)
-    sync_service->AddObserver(this);
-}
-
-void PasswordGenerationManager::SetUpPrefChangeRegistrar() {
-  registrar_.Init(Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext())->GetPrefs());
-  registrar_.Add(
-      prefs::kPasswordGenerationEnabled,
-      base::Bind(&PasswordGenerationManager::OnPrefStateChanged,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void PasswordGenerationManager::RenderViewCreated(
-    content::RenderViewHost* host) {
-  UpdateState(host, true);
+  if (!account_creation_forms.empty() && IsGenerationEnabled()) {
+    SendAccountCreationFormsToRenderer(web_contents()->GetRenderViewHost(),
+                                       account_creation_forms);
+  }
 }
 
 bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
@@ -112,42 +76,21 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void PasswordGenerationManager::WebContentsDestroyed(
-    content::WebContents* contents) {
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (sync_service && sync_service->HasObserver(this))
-    sync_service->RemoveObserver(this);
-}
-
-void PasswordGenerationManager::OnPrefStateChanged() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (web_contents() && web_contents()->GetRenderViewHost())
-    UpdateState(web_contents()->GetRenderViewHost(), false);
-}
-
-void PasswordGenerationManager::OnStateChanged() {
-  // It is possible for sync state to change during tab contents destruction.
-  // In this case, we don't need to update the renderer since it's going away.
-  if (web_contents() && web_contents()->GetRenderViewHost())
-    UpdateState(web_contents()->GetRenderViewHost(), false);
-}
-
 // In order for password generation to be enabled, we need to make sure:
 // (1) Password sync is enabled,
 // (2) Password manager is enabled, and
 // (3) Password generation preference check box is checked.
-void PasswordGenerationManager::UpdateState(content::RenderViewHost* host,
-                                            bool new_renderer) {
+bool PasswordGenerationManager::IsGenerationEnabled() const {
+  if (!web_contents())
+    return false;
+
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
 
-  bool saving_passwords_enabled =
-      PasswordManager::FromWebContents(web_contents())->IsSavingEnabled();
-
-  bool preference_checked = profile->GetPrefs()->GetBoolean(
-      prefs::kPasswordGenerationEnabled);
+  if (!PasswordManager::FromWebContents(web_contents())->IsSavingEnabled()) {
+    DVLOG(2) << "Generation disabled because password saving is disabled";
+    return false;
+  }
 
   bool password_sync_enabled = false;
   ProfileSyncService* sync_service =
@@ -157,21 +100,17 @@ void PasswordGenerationManager::UpdateState(content::RenderViewHost* host,
     password_sync_enabled = (sync_service->HasSyncSetupCompleted() &&
                              sync_set.Has(syncer::PASSWORDS));
   }
-
-  bool new_enabled = (password_sync_enabled &&
-                      saving_passwords_enabled &&
-                      preference_checked);
-
-  if (new_enabled != enabled_ || new_renderer) {
-    enabled_ = new_enabled;
-    SendStateToRenderer(host, enabled_);
+  if (!password_sync_enabled) {
+    DVLOG(2) << "Generation disabled because passwords are not being synced";
+    return false;
   }
-}
 
-void PasswordGenerationManager::SendStateToRenderer(
-    content::RenderViewHost* host, bool enabled) {
-  host->Send(new AutofillMsg_PasswordGenerationEnabled(host->GetRoutingID(),
-                                                       enabled));
+  if (!profile->GetPrefs()->GetBoolean(prefs::kPasswordGenerationEnabled)) {
+    DVLOG(2) << "Generation disabled by user";
+    return false;
+  }
+
+  return true;
 }
 
 void PasswordGenerationManager::SendAccountCreationFormsToRenderer(
