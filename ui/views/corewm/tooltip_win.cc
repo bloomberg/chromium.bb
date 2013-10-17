@@ -59,7 +59,7 @@ bool TooltipWin::EnsureTooltipWindow() {
     return true;
 
   tooltip_hwnd_ = CreateWindowEx(
-      WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles() | WS_EX_TOPMOST,
+      WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, TTS_NOPREFIX | WS_POPUP, 0, 0, 0, 0,
       parent_hwnd_, NULL, NULL, NULL);
   if (!tooltip_hwnd_) {
