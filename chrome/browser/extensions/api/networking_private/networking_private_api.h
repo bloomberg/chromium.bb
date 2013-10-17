@@ -136,6 +136,60 @@ class NetworkingPrivateGetVisibleNetworksFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetVisibleNetworksFunction);
 };
 
+// Implements the chrome.networkingPrivate.getEnabledNetworkTypes method.
+class NetworkingPrivateGetEnabledNetworkTypesFunction
+    : public SyncExtensionFunction {
+ public:
+  NetworkingPrivateGetEnabledNetworkTypesFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getEnabledNetworkTypes",
+                             NETWORKINGPRIVATE_GETENABLEDNETWORKTYPES);
+
+ protected:
+  virtual ~NetworkingPrivateGetEnabledNetworkTypesFunction();
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetEnabledNetworkTypesFunction);
+};
+
+// Implements the chrome.networkingPrivate.enableNetworkType method.
+class NetworkingPrivateEnableNetworkTypeFunction
+    : public SyncExtensionFunction {
+ public:
+  NetworkingPrivateEnableNetworkTypeFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.enableNetworkType",
+                             NETWORKINGPRIVATE_ENABLENETWORKTYPE);
+
+ protected:
+  virtual ~NetworkingPrivateEnableNetworkTypeFunction();
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEnableNetworkTypeFunction);
+};
+
+// Implements the chrome.networkingPrivate.disableNetworkType method.
+class NetworkingPrivateDisableNetworkTypeFunction
+    : public SyncExtensionFunction {
+ public:
+  NetworkingPrivateDisableNetworkTypeFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.disableNetworkType",
+                             NETWORKINGPRIVATE_DISABLENETWORKTYPE);
+
+ protected:
+  virtual ~NetworkingPrivateDisableNetworkTypeFunction();
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDisableNetworkTypeFunction);
+};
+
 // Implements the chrome.networkingPrivate.requestNetworkScan method.
 class NetworkingPrivateRequestNetworkScanFunction
     : public SyncExtensionFunction {

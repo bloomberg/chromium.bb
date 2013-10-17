@@ -290,6 +290,52 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetEnabledNetworkTypesFunction
+
+NetworkingPrivateGetEnabledNetworkTypesFunction::
+~NetworkingPrivateGetEnabledNetworkTypesFunction() {
+}
+
+bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunImpl() {
+  base::ListValue* network_list = new base::ListValue;
+
+  network_list->Append(new base::StringValue("Ethernet"));
+  network_list->Append(new base::StringValue("WiFi"));
+  network_list->Append(new base::StringValue("Cellular"));
+
+  SetResult(network_list);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateEnableNetworkTypeFunction
+
+NetworkingPrivateEnableNetworkTypeFunction::
+~NetworkingPrivateEnableNetworkTypeFunction() {
+}
+
+bool NetworkingPrivateEnableNetworkTypeFunction::RunImpl() {
+  scoped_ptr<api::EnableNetworkType::Params> params =
+      api::EnableNetworkType::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateDisableNetworkTypeFunction
+
+NetworkingPrivateDisableNetworkTypeFunction::
+~NetworkingPrivateDisableNetworkTypeFunction() {
+}
+
+bool NetworkingPrivateDisableNetworkTypeFunction::RunImpl() {
+  scoped_ptr<api::DisableNetworkType::Params> params =
+      api::DisableNetworkType::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateRequestNetworkScanFunction
 
 NetworkingPrivateRequestNetworkScanFunction::

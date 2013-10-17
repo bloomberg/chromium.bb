@@ -22,6 +22,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
+#include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 
 namespace api = extensions::api::networking_private;
@@ -31,6 +32,7 @@ using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
+using chromeos::NetworkTypePattern;
 using chromeos::ShillManagerClient;
 
 namespace {
@@ -301,6 +303,108 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
   }
 
   SetResult(network_properties_list);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetEnabledNetworkTypesFunction
+
+NetworkingPrivateGetEnabledNetworkTypesFunction::
+~NetworkingPrivateGetEnabledNetworkTypesFunction() {
+}
+
+bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunImpl() {
+  NetworkStateHandler* state_handler =
+      NetworkHandler::Get()->network_state_handler();
+
+  base::ListValue* network_list = new base::ListValue;
+
+  if (state_handler->IsTechnologyEnabled(NetworkTypePattern::Ethernet()))
+    network_list->AppendString("Ethernet");
+  if (state_handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()))
+    network_list->AppendString("WiFi");
+  if (state_handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()))
+    network_list->AppendString("Cellular");
+
+  SetResult(network_list);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateEnableNetworkTypeFunction
+
+NetworkingPrivateEnableNetworkTypeFunction::
+~NetworkingPrivateEnableNetworkTypeFunction() {
+}
+
+bool NetworkingPrivateEnableNetworkTypeFunction::RunImpl() {
+  scoped_ptr<api::EnableNetworkType::Params> params =
+      api::EnableNetworkType::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  NetworkStateHandler* state_handler =
+      NetworkHandler::Get()->network_state_handler();
+
+  switch (params->network_type) {
+    case api::NETWORK_TYPE_ETHERNET:
+      state_handler->SetTechnologyEnabled(
+          NetworkTypePattern::Ethernet(), true,
+          chromeos::network_handler::ErrorCallback());
+      break;
+
+    case api::NETWORK_TYPE_WIFI:
+      state_handler->SetTechnologyEnabled(
+          NetworkTypePattern::WiFi(), true,
+          chromeos::network_handler::ErrorCallback());
+      break;
+
+    case api::NETWORK_TYPE_CELLULAR:
+      state_handler->SetTechnologyEnabled(
+          NetworkTypePattern::Cellular(), true,
+          chromeos::network_handler::ErrorCallback());
+      break;
+
+    default:
+      break;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateDisableNetworkTypeFunction
+
+NetworkingPrivateDisableNetworkTypeFunction::
+~NetworkingPrivateDisableNetworkTypeFunction() {
+}
+
+bool NetworkingPrivateDisableNetworkTypeFunction::RunImpl() {
+  scoped_ptr<api::DisableNetworkType::Params> params =
+      api::DisableNetworkType::Params::Create(*args_);
+  NetworkStateHandler* state_handler =
+      NetworkHandler::Get()->network_state_handler();
+
+  switch (params->network_type) {
+    case api::NETWORK_TYPE_ETHERNET:
+      state_handler->SetTechnologyEnabled(
+          NetworkTypePattern::Ethernet(), false,
+          chromeos::network_handler::ErrorCallback());
+      break;
+
+    case api::NETWORK_TYPE_WIFI:
+      state_handler->SetTechnologyEnabled(
+          NetworkTypePattern::WiFi(), false,
+          chromeos::network_handler::ErrorCallback());
+      break;
+
+    case api::NETWORK_TYPE_CELLULAR:
+      state_handler->SetTechnologyEnabled(
+          NetworkTypePattern::Cellular(), false,
+          chromeos::network_handler::ErrorCallback());
+      break;
+
+    default:
+      break;
+  }
+
   return true;
 }
 

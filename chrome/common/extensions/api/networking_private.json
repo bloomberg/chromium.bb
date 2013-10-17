@@ -53,6 +53,11 @@
             "description": "A string containing the BSSID of the device.  Only set if the device has already been setup."
           }
         }
+      },
+      {
+        "id": "NetworkType",
+        "type": "string",
+        "enum": ["Ethernet", "WiFi", "Cellular"]
       }
     ],
     "functions": [
@@ -190,6 +195,44 @@
                 "items": { "$ref": "NetworkProperties" }
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "getEnabledNetworkTypes",
+        "description": "Returns a list of the enabled network type.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "networkList",
+                "type": "array",
+                "items": { "$ref": "NetworkType" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "enableNetworkType",
+        "description": "Enable the specified network type.",
+        "parameters": [
+          {
+            "name": "networkType",
+            "$ref": "NetworkType"
+          }
+        ]
+      },
+      {
+        "name": "disableNetworkType",
+        "description": "Disable the specified network type.",
+        "parameters": [
+          {
+            "name": "networkType",
+            "$ref": "NetworkType"
           }
         ]
       },
