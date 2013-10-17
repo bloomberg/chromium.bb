@@ -423,6 +423,8 @@ public:
     // Only safe to call from RenderLayerModelObject::destroyLayer()
     void operator delete(void*);
 
+    bool adjustForForceCompositedScrollingMode(bool) const;
+
     bool isComposited() const { return m_compositedLayerMapping; }
     bool hasCompositedMask() const;
     bool hasCompositedClippingMask() const;
@@ -552,7 +554,7 @@ private:
     // FIXME: This is a temporary flag and should be removed once accelerated
     // overflow scroll is ready (crbug.com/254111).
     bool compositorDrivenAcceleratedScrollingEnabled() const;
-    void updateCanBeStackingContainer();
+    void updateDescendantsAreContiguousInStackingOrder();
     void collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote);
     void collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote);
 
@@ -570,7 +572,8 @@ private:
 
     void updateOutOfFlowPositioned(const RenderStyle* oldStyle);
 
-    void setNeedsCompositedScrolling(bool);
+    bool setNeedsCompositedScrolling(bool);
+    bool setNeedsToBeStackingContainer(bool);
     void didUpdateNeedsCompositedScrolling();
 
     // Returns true if the position changed.
@@ -755,7 +758,7 @@ private:
     CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
 
     // Returns true if z ordering would not change if this layer were a stacking container.
-    bool canBeStackingContainer() const;
+    bool descendantsAreContiguousInStackingOrder() const;
 
     friend class CompositedLayerMapping;
     friend class RenderLayerCompositor;
@@ -785,16 +788,18 @@ protected:
     unsigned m_isUnclippedDescendant : 1;
 
     unsigned m_needsCompositedScrolling : 1;
-    unsigned m_needsCompositedScrollingHasBeenRecorded : 1;
+    unsigned m_needsToBeStackingContainerHasBeenRecorded : 1;
     unsigned m_willUseCompositedScrollingHasBeenRecorded : 1;
 
     unsigned m_isScrollableAreaHasBeenRecorded : 1;
 
+    unsigned m_needsToBeStackingContainer : 1;
+
     // If this is true, then no non-descendant appears between any of our
     // descendants in stacking order. This is one of the requirements of being
     // able to safely become a stacking context.
-    unsigned m_canBePromotedToStackingContainer : 1;
-    unsigned m_canBePromotedToStackingContainerDirty : 1;
+    unsigned m_descendantsAreContiguousInStackingOrder : 1;
+    unsigned m_descendantsAreContiguousInStackingOrderDirty : 1;
 
     const unsigned m_isRootLayer : 1;
 
