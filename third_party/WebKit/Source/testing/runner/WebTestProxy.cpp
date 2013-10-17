@@ -534,12 +534,16 @@ string WebTestProxyBase::captureTree(bool debugRenderTree)
     WebScriptController::flushConsoleMessages();
 
     bool shouldDumpAsText = m_testInterfaces->testRunner()->shouldDumpAsText();
+    bool shouldDumpAsMarkup = m_testInterfaces->testRunner()->shouldDumpAsMarkup();
     bool shouldDumpAsPrinted = m_testInterfaces->testRunner()->isPrinting();
     WebFrame* frame = webView()->mainFrame();
     string dataUtf8;
     if (shouldDumpAsText) {
         bool recursive = m_testInterfaces->testRunner()->shouldDumpChildFramesAsText();
         dataUtf8 = shouldDumpAsPrinted ? dumpFramesAsPrintedText(frame, recursive) : dumpFramesAsText(frame, recursive);
+    } else if (shouldDumpAsMarkup) {
+        // Append a newline for the test driver.
+        dataUtf8 = frame->contentAsMarkup().utf8() + "\n";
     } else {
         bool recursive = m_testInterfaces->testRunner()->shouldDumpChildFrameScrollPositions();
         WebFrame::RenderAsTextControls renderTextBehavior = WebFrame::RenderAsTextNormal;

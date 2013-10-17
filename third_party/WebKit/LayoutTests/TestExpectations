@@ -1187,3 +1187,6 @@ crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ NeedsRebaseline 
 
 crbug.com/303922 fast/borders/border-radius-with-empty-inner-border.html [ NeedsRebaseline ]
 crbug.com/303383 fast/borders/empty-border-radius.html [ NeedsRebaseline ]
+
+# Temporary suppression to be removed immediately when the CL lands; Windows try bots have CRLF bugs.
+Bug(davidben) [ Win ] fast/frames/viewsource/viewsource-incomplete-token.html [ Failure Pass ]

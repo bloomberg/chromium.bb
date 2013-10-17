@@ -364,6 +364,7 @@ void TestRunner::reset()
 #endif
         m_webView->removeInjectedStyleSheets();
         m_webView->setVisibilityState(WebPageVisibilityStateVisible, true);
+        m_webView->mainFrame()->enableViewSourceMode(false);
 
         if (m_pageOverlay) {
             m_webView->removePageOverlay(m_pageOverlay);
@@ -395,6 +396,7 @@ void TestRunner::reset()
 
     m_dumpEditingCallbacks = false;
     m_dumpAsText = false;
+    m_dumpAsMarkup = false;
     m_generatePixelResults = true;
     m_dumpChildFrameScrollPositions = false;
     m_dumpChildFramesAsText = false;
@@ -483,6 +485,16 @@ void TestRunner::setShouldDumpAsText(bool value)
     m_dumpAsText = value;
 }
 
+bool TestRunner::shouldDumpAsMarkup()
+{
+    return m_dumpAsMarkup;
+}
+
+void TestRunner::setShouldDumpAsMarkup(bool value)
+{
+    m_dumpAsMarkup = value;
+}
+
 bool TestRunner::shouldGeneratePixelResults()
 {
     checkResponseMimeType();
@@ -532,6 +544,11 @@ bool TestRunner::shouldDumpPingLoaderCallbacks() const
 void TestRunner::setShouldDumpPingLoaderCallbacks(bool value)
 {
     m_dumpPingLoaderCallbacks = value;
+}
+
+void TestRunner::setShouldEnableViewSource(bool value)
+{
+    m_webView->mainFrame()->enableViewSourceMode(value);
 }
 
 bool TestRunner::shouldDumpUserGestureInFrameLoadCallbacks() const

@@ -33,6 +33,7 @@
 #include "core/html/HTMLBaseElement.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
@@ -66,6 +67,8 @@ void HTMLViewSourceDocument::createContainingTable()
     RefPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*this);
     parserAppendChild(html);
     html->lazyAttach();
+    RefPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
+    html->parserAppendChild(head);
     RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
     html->parserAppendChild(body);
 
@@ -96,8 +99,7 @@ void HTMLViewSourceDocument::addSource(const String& source, HTMLToken& token)
         processDoctypeToken(source, token);
         break;
     case HTMLToken::EndOfFile:
-        if (!m_tbody->hasChildNodes())
-            addLine(String());
+        processEndOfFileToken(source, token);
         break;
     case HTMLToken::StartTag:
     case HTMLToken::EndTag:
@@ -116,6 +118,13 @@ void HTMLViewSourceDocument::processDoctypeToken(const String& source, HTMLToken
 {
     m_current = addSpanWithClassName("webkit-html-doctype");
     addText(source, "webkit-html-doctype");
+    m_current = m_td;
+}
+
+void HTMLViewSourceDocument::processEndOfFileToken(const String& source, HTMLToken&)
+{
+    m_current = addSpanWithClassName("webkit-html-end-of-file");
+    addText(source, "webkit-html-end-of-file");
     m_current = m_td;
 }
 
@@ -142,7 +151,7 @@ void HTMLViewSourceDocument::processTagToken(const String& source, HTMLToken& to
         index = addRange(source, index, iter->nameRange.end - token.startIndex(), "webkit-html-attribute-name");
 
         if (tagName == baseTag && name == hrefAttr)
-            m_current = addBase(value);
+            addBase(value);
 
         index = addRange(source, index, iter->valueRange.start - token.startIndex(), "");
 

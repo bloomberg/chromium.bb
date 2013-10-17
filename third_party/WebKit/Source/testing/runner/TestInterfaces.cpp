@@ -142,6 +142,11 @@ void TestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generat
     }
     if (spec.find("/inspector/") != string::npos)
         m_testRunner->showDevTools();
+    if (spec.find("/viewsource/") != string::npos) {
+        m_testRunner->setShouldEnableViewSource(true);
+        m_testRunner->setShouldGeneratePixelResults(false);
+        m_testRunner->setShouldDumpAsMarkup(true);
+    }
 }
 
 void TestInterfaces::windowOpened(WebTestProxyBase* proxy)

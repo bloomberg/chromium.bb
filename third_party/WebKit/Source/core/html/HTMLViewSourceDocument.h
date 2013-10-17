@@ -48,6 +48,7 @@ private:
     virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
 
     void processDoctypeToken(const String& source, HTMLToken&);
+    void processEndOfFileToken(const String& source, HTMLToken&);
     void processTagToken(const String& source, HTMLToken&);
     void processCommentToken(const String& source, HTMLToken&);
     void processCharacterToken(const String& source, HTMLToken&);

@@ -58,14 +58,17 @@ void HTMLSourceTracker::end(SegmentedString& currentInput, HTMLTokenizer* tokeni
 
 String HTMLSourceTracker::sourceForToken(const HTMLToken& token)
 {
-    if (token.type() == HTMLToken::EndOfFile)
-        return String(); // Hides the null character we use to mark the end of file.
-
     if (!m_cachedSourceForToken.isEmpty())
         return m_cachedSourceForToken;
 
-    ASSERT(!token.startIndex());
-    size_t length = static_cast<size_t>(token.endIndex() - token.startIndex());
+    size_t length;
+    if (token.type() == HTMLToken::EndOfFile) {
+        // Consume the remainder of the input, omitting the null character we use to mark the end of the file.
+        length = m_previousSource.length() + m_currentSource.length() - 1;
+    } else {
+        ASSERT(!token.startIndex());
+        length = static_cast<size_t>(token.endIndex() - token.startIndex());
+    }
 
     StringBuilder source;
     source.reserveCapacity(length);

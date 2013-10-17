@@ -93,13 +93,16 @@ public:
     bool isPrinting() const;
     bool shouldDumpAsText();
     bool shouldDumpAsTextWithPixelResults();
+    bool shouldDumpAsMarkup();
     bool shouldDumpChildFrameScrollPositions() const;
     bool shouldDumpChildFramesAsText() const;
     void showDevTools();
     void setShouldDumpAsText(bool);
+    void setShouldDumpAsMarkup(bool);
     void setShouldGeneratePixelResults(bool);
     void setShouldDumpFrameLoadCallbacks(bool);
     void setShouldDumpPingLoaderCallbacks(bool);
+    void setShouldEnableViewSource(bool);
     bool shouldDumpEditingCallbacks() const;
     bool shouldDumpFrameLoadCallbacks() const;
     bool shouldDumpPingLoaderCallbacks() const;
@@ -608,6 +611,10 @@ private:
     // If true and if dump_as_text_ is true, the test_shell will recursively
     // dump all frames as plain text.
     bool m_dumpChildFramesAsText;
+
+    // If true, the test_shell will produce a dump of the DOM rather than a text
+    // representation of the renderer.
+    bool m_dumpAsMarkup;
 
     // If true, the test_shell will print out the child frame scroll offsets as
     // well.
