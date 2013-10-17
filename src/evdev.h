@@ -49,6 +49,12 @@ enum evdev_device_capability {
 	EVDEV_TOUCH = (1 << 4),
 };
 
+enum evdev_device_seat_capability {
+	EVDEV_SEAT_POINTER = (1 << 0),
+	EVDEV_SEAT_KEYBOARD = (1 << 1),
+	EVDEV_SEAT_TOUCH = (1 << 2)
+};
+
 struct evdev_device {
 	struct weston_seat *seat;
 	struct wl_list link;
@@ -80,6 +86,7 @@ struct evdev_device {
 
 	enum evdev_event_type pending_event;
 	enum evdev_device_capability caps;
+	enum evdev_device_seat_capability seat_caps;
 
 	int is_mt;
 };

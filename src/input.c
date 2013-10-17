@@ -447,11 +447,11 @@ seat_send_updated_caps(struct weston_seat *seat)
 	enum wl_seat_capability caps = 0;
 	struct wl_resource *resource;
 
-	if (seat->pointer)
+	if (seat->pointer_device_count > 0)
 		caps |= WL_SEAT_CAPABILITY_POINTER;
-	if (seat->keyboard)
+	if (seat->keyboard_device_count > 0)
 		caps |= WL_SEAT_CAPABILITY_KEYBOARD;
-	if (seat->touch)
+	if (seat->touch_device_count > 0)
 		caps |= WL_SEAT_CAPABILITY_TOUCH;
 
 	wl_resource_for_each(resource, &seat->base_resource_list) {
@@ -1630,8 +1630,12 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 {
 	struct weston_keyboard *keyboard;
 
-	if (seat->keyboard)
+	if (seat->keyboard) {
+		seat->keyboard_device_count += 1;
+		if (seat->keyboard_device_count == 1)
+			seat_send_updated_caps(seat);
 		return 0;
+	}
 
 #ifdef ENABLE_XKBCOMMON
 	if (seat->compositor->use_xkbcommon) {
@@ -1663,6 +1667,7 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 	}
 
 	seat->keyboard = keyboard;
+	seat->keyboard_device_count = 1;
 	keyboard->seat = seat;
 
 	seat_send_updated_caps(seat);
@@ -1671,21 +1676,46 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 }
 
 WL_EXPORT void
+weston_seat_release_keyboard(struct weston_seat *seat)
+{
+	seat->keyboard_device_count--;
+	if (seat->keyboard_device_count == 0) {
+		seat_send_updated_caps(seat);
+	}
+}
+
+WL_EXPORT void
 weston_seat_init_pointer(struct weston_seat *seat)
 {
 	struct weston_pointer *pointer;
 
-	if (seat->pointer)
+	if (seat->pointer) {
+		seat->pointer_device_count += 1;
+		if (seat->pointer_device_count == 1)
+			seat_send_updated_caps(seat);
 		return;
+	}
 
 	pointer = weston_pointer_create();
 	if (pointer == NULL)
 		return;
 
 	seat->pointer = pointer;
-		pointer->seat = seat;
+	seat->pointer_device_count = 1;
+	pointer->seat = seat;
 
 	seat_send_updated_caps(seat);
+}
+
+WL_EXPORT void
+weston_seat_release_pointer(struct weston_seat *seat)
+{
+	struct weston_pointer *pointer = seat->pointer;
+
+	seat->pointer_device_count--;
+	if (seat->pointer_device_count == 0) {
+		seat_send_updated_caps(seat);
+	}
 }
 
 WL_EXPORT void
@@ -1693,17 +1723,31 @@ weston_seat_init_touch(struct weston_seat *seat)
 {
 	struct weston_touch *touch;
 
-	if (seat->touch)
+	if (seat->touch) {
+		seat->touch_device_count += 1;
+		if (seat->touch_device_count == 1)
+			seat_send_updated_caps(seat);
 		return;
+	}
 
 	touch = weston_touch_create();
 	if (touch == NULL)
 		return;
 
 	seat->touch = touch;
+	seat->touch_device_count = 1;
 	touch->seat = seat;
 
 	seat_send_updated_caps(seat);
+}
+
+WL_EXPORT void
+weston_seat_release_touch(struct weston_seat *seat)
+{
+	seat->touch_device_count--;
+	if (seat->touch_device_count == 0) {
+		seat_send_updated_caps(seat);
+	}
 }
 
 WL_EXPORT void

@@ -565,6 +565,7 @@ evdev_configure_device(struct evdev_device *device)
 	if ((device->caps & (EVDEV_MOTION_ABS | EVDEV_MOTION_REL)) &&
 	    (device->caps & EVDEV_BUTTON)) {
 		weston_seat_init_pointer(device->seat);
+		device->seat_caps |= EVDEV_SEAT_POINTER;
 		weston_log("input device %s, %s is a pointer caps =%s%s%s\n",
 			   device->devname, device->devnode,
 			   device->caps & EVDEV_MOTION_ABS ? " absolute-motion" : "",
@@ -574,11 +575,13 @@ evdev_configure_device(struct evdev_device *device)
 	if ((device->caps & EVDEV_KEYBOARD)) {
 		if (weston_seat_init_keyboard(device->seat, NULL) < 0)
 			return -1;
+		device->seat_caps |= EVDEV_SEAT_KEYBOARD;
 		weston_log("input device %s, %s is a keyboard\n",
 			   device->devname, device->devnode);
 	}
 	if ((device->caps & EVDEV_TOUCH)) {
 		weston_seat_init_touch(device->seat);
+		device->seat_caps |= EVDEV_SEAT_TOUCH;
 		weston_log("input device %s, %s is a touch device\n",
 			   device->devname, device->devnode);
 	}
@@ -602,6 +605,7 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 		container_of(ec->output_list.next, struct weston_output, link);
 
 	device->seat = seat;
+	device->seat_caps = 0;
 	device->is_mt = 0;
 	device->mtdev = NULL;
 	device->devnode = strdup(path);
@@ -648,6 +652,13 @@ void
 evdev_device_destroy(struct evdev_device *device)
 {
 	struct evdev_dispatch *dispatch;
+
+	if (device->seat_caps & EVDEV_SEAT_POINTER)
+		weston_seat_release_pointer(device->seat);
+	if (device->seat_caps & EVDEV_SEAT_KEYBOARD)
+		weston_seat_release_keyboard(device->seat);
+	if (device->seat_caps & EVDEV_SEAT_TOUCH)
+		weston_seat_release_touch(device->seat);
 
 	dispatch = device->dispatch;
 	if (dispatch)

@@ -461,6 +461,9 @@ struct weston_seat {
 	struct weston_pointer *pointer;
 	struct weston_keyboard *keyboard;
 	struct weston_touch *touch;
+	int pointer_device_count;
+	int keyboard_device_count;
+	int touch_device_count;
 
 	struct weston_output *output; /* constraint */
 
@@ -1124,10 +1127,16 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 		 const char *seat_name);
 void
 weston_seat_init_pointer(struct weston_seat *seat);
+void
+weston_seat_release_pointer(struct weston_seat *seat);
 int
 weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap);
 void
+weston_seat_release_keyboard(struct weston_seat *seat);
+void
 weston_seat_init_touch(struct weston_seat *seat);
+void
+weston_seat_release_touch(struct weston_seat *seat);
 void
 weston_seat_repick(struct weston_seat *seat);
 
