@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -105,7 +106,7 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
        ++iter) {
     const Extension* extension = iter->get();
     if (profile->IsOffTheRecord() &&
-        !service->IsIncognitoEnabled(extension->id()))
+        !extension_util::IsIncognitoEnabled(extension->id(), service))
       continue;
 
     FileBrowserHandler::List* handler_list =

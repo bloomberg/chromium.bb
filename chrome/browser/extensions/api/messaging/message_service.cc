@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
@@ -211,7 +212,8 @@ void MessageService::OpenChannelToExtension(
       ExtensionSystem::Get(profile)->extension_service();
 
   if (profile->IsOffTheRecord() &&
-      !extension_service->IsIncognitoEnabled(target_extension_id)) {
+      !extension_util::IsIncognitoEnabled(target_extension_id,
+                                          extension_service)) {
     // Allow the security token apps (normal, dev) to be connectable from
     // incognito profiles. See http://crbug.com/295845.
     std::set<std::string> incognito_whitelist;

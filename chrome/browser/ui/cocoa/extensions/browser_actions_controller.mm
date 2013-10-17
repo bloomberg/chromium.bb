@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -761,8 +762,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   // Only display incognito-enabled extensions while in incognito mode.
   return
       (!profile_->IsOffTheRecord() ||
-       extensions::ExtensionSystem::Get(profile_)->extension_service()->
-           IsIncognitoEnabled(extension->id()));
+       extension_util::IsIncognitoEnabled(
+          extension->id(),
+          extensions::ExtensionSystem::Get(profile_)->extension_service()));
 }
 
 - (void)showChevronIfNecessaryInFrame:(NSRect)frame animate:(BOOL)animate {

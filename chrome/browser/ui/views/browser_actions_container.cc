@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -808,8 +809,9 @@ bool BrowserActionsContainer::ShouldDisplayBrowserAction(
   // Only display incognito-enabled extensions while in incognito mode.
   return
       (!profile_->IsOffTheRecord() ||
-       extensions::ExtensionSystem::Get(profile_)->extension_service()->
-           IsIncognitoEnabled(extension->id()));
+       extension_util::IsIncognitoEnabled(
+           extension->id(),
+           extensions::ExtensionSystem::Get(profile_)->extension_service()));
 }
 
 void BrowserActionsContainer::ShowPopup(

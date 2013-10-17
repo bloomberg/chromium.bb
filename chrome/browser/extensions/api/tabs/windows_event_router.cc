@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
@@ -115,8 +116,9 @@ static void WillDispatchWindowFocusedEvent(Profile* new_active_profile,
   // can't see the new focused window across the incognito boundary.
   // See crbug.com/46610.
   if (new_active_profile && new_active_profile != profile &&
-      !extensions::ExtensionSystem::Get(profile)->extension_service()->
-          CanCrossIncognito(extension)) {
+      !extension_util::CanCrossIncognito(
+          extension,
+          extensions::ExtensionSystem::Get(profile)->extension_service())) {
     event_args->Clear();
     event_args->Append(new base::FundamentalValue(
         extension_misc::kUnknownWindowId));

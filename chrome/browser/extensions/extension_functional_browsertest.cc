@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -65,7 +66,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {
   // Verify that the extension is enabled and allowed in incognito
   // is disabled.
   EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id_));
-  EXPECT_FALSE(service->IsIncognitoEnabled(last_loaded_extension_id_));
+  EXPECT_FALSE(extension_util::IsIncognitoEnabled(last_loaded_extension_id_,
+                                                  service));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
@@ -73,24 +75,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
   InstallExtensionSilently(service, "google_talk.crx");
 
   // Disable the extension and verify.
-  service->SetIsIncognitoEnabled(last_loaded_extension_id_, false);
+  extension_util::SetIsIncognitoEnabled(
+      last_loaded_extension_id_, service, false);
   service->DisableExtension(last_loaded_extension_id_,
                             Extension::DISABLE_USER_ACTION);
   EXPECT_FALSE(service->IsExtensionEnabled(last_loaded_extension_id_));
 
   // Enable the extension and verify.
-  service->SetIsIncognitoEnabled(last_loaded_extension_id_, false);
+  extension_util::SetIsIncognitoEnabled(
+      last_loaded_extension_id_, service, false);
   service->EnableExtension(last_loaded_extension_id_);
   EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id_));
 
   // Allow extension in incognito mode and verify.
   service->EnableExtension(last_loaded_extension_id_);
-  service->SetIsIncognitoEnabled(last_loaded_extension_id_, true);
-  EXPECT_TRUE(service->IsIncognitoEnabled(last_loaded_extension_id_));
+  extension_util::SetIsIncognitoEnabled(
+      last_loaded_extension_id_, service, true);
+  EXPECT_TRUE(extension_util::IsIncognitoEnabled(last_loaded_extension_id_,
+                                                 service));
 
   // Disallow extension in incognito mode and verify.
   service->EnableExtension(last_loaded_extension_id_);
-  service->SetIsIncognitoEnabled(last_loaded_extension_id_, false);
-  EXPECT_FALSE(service->IsIncognitoEnabled(last_loaded_extension_id_));
+  extension_util::SetIsIncognitoEnabled(
+      last_loaded_extension_id_, service, false);
+  EXPECT_FALSE(extension_util::IsIncognitoEnabled(last_loaded_extension_id_,
+                                                  service));
 }
 }  // namespace extensions

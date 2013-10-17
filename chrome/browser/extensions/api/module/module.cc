@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace extensions {
@@ -51,7 +52,7 @@ bool ExtensionIsAllowedIncognitoAccessFunction::RunImpl() {
   const Extension* extension = GetExtension();
 
   SetResult(new base::FundamentalValue(
-      ext_service->IsIncognitoEnabled(extension->id())));
+      extension_util::IsIncognitoEnabled(extension->id(), ext_service)));
   return true;
 }
 
@@ -61,7 +62,7 @@ bool ExtensionIsAllowedFileSchemeAccessFunction::RunImpl() {
   const Extension* extension = GetExtension();
 
   SetResult(new base::FundamentalValue(
-      ext_service->AllowFileAccess(extension)));
+      extension_util::AllowFileAccess(extension, ext_service)));
   return true;
 }
 

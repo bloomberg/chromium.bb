@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -116,20 +117,20 @@ bool SyncExtensionHelper::IsExtensionEnabled(
 
 void SyncExtensionHelper::IncognitoEnableExtension(
     Profile* profile, const std::string& name) {
-  profile->GetExtensionService()->SetIsIncognitoEnabled(
-      extensions::id_util::GenerateId(name), true);
+  extension_util::SetIsIncognitoEnabled(extensions::id_util::GenerateId(name),
+                                        profile->GetExtensionService(), true);
 }
 
 void SyncExtensionHelper::IncognitoDisableExtension(
     Profile* profile, const std::string& name) {
-  profile->GetExtensionService()->SetIsIncognitoEnabled(
-      extensions::id_util::GenerateId(name), false);
+  extension_util::SetIsIncognitoEnabled(extensions::id_util::GenerateId(name),
+                                        profile->GetExtensionService(), false);
 }
 
 bool SyncExtensionHelper::IsIncognitoEnabled(
     Profile* profile, const std::string& name) const {
-  return profile->GetExtensionService()->IsIncognitoEnabled(
-      extensions::id_util::GenerateId(name));
+  return extension_util::IsIncognitoEnabled(
+      extensions::id_util::GenerateId(name), profile->GetExtensionService());
 }
 
 
@@ -197,7 +198,7 @@ SyncExtensionHelper::ExtensionStateMap
         ExtensionState::ENABLED :
         ExtensionState::DISABLED;
     extension_state_map[id].incognito_enabled =
-        extension_service->IsIncognitoEnabled(id);
+        extension_util::IsIncognitoEnabled(id, extension_service);
 
     DVLOG(2) << "Extension " << (*it)->id() << " in profile "
              << profile_debug_name << " is "
@@ -215,7 +216,7 @@ SyncExtensionHelper::ExtensionStateMap
   for (id = pending_crx_ids.begin(); id != pending_crx_ids.end(); ++id) {
     extension_state_map[*id].enabled_state = ExtensionState::PENDING;
     extension_state_map[*id].incognito_enabled =
-        extension_service->IsIncognitoEnabled(*id);
+        extension_util::IsIncognitoEnabled(*id, extension_service);
     DVLOG(2) << "Extension " << *id << " in profile "
              << profile_debug_name << " is pending";
   }

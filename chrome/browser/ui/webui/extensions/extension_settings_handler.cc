@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
@@ -209,13 +210,13 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("terminated",
       extension_service_->terminated_extensions()->Contains(extension->id()));
   extension_data->SetBoolean("enabledIncognito",
-      extension_service_->IsIncognitoEnabled(extension->id()));
+      extension_util::IsIncognitoEnabled(extension->id(), extension_service_));
   extension_data->SetBoolean("incognitoCanBeToggled",
                              extension->can_be_incognito_enabled() &&
                              !extension->force_incognito_enabled());
   extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
   extension_data->SetBoolean("allowFileAccess",
-                             extension_service_->AllowFileAccess(extension));
+      extension_util::AllowFileAccess(extension, extension_service_));
   extension_data->SetBoolean("allow_reload",
       Manifest::IsUnpackedLocation(extension->location()));
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
@@ -861,8 +862,9 @@ void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
   // Bug: http://crbug.com/41384
   base::AutoReset<bool> auto_reset_ignore_notifications(
       &ignore_notifications_, true);
-  extension_service_->SetIsIncognitoEnabled(extension->id(),
-                                            enable_str == "true");
+  extension_util::SetIsIncognitoEnabled(extension->id(),
+                                        extension_service_,
+                                        enable_str == "true");
 }
 
 void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
@@ -883,7 +885,8 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
     return;
   }
 
-  extension_service_->SetAllowFileAccess(extension, allow_str == "true");
+  extension_util::SetAllowFileAccess(
+      extension, extension_service_, allow_str == "true");
 }
 
 void ExtensionSettingsHandler::HandleUninstallMessage(

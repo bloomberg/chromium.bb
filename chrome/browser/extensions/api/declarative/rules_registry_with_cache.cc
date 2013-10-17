@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -402,7 +403,7 @@ RulesRegistryWithCache::RuleStorageOnUI::ReadRulesForInstalledExtensions() {
           (*i)->HasAPIPermission(APIPermission::kDeclarativeWebRequest);
       bool respects_off_the_record =
           !(profile_->IsOffTheRecord()) ||
-          extension_service->IsIncognitoEnabled((*i)->id());
+          extension_util::IsIncognitoEnabled((*i)->id(), extension_service);
       if (needs_apis_storing_rules && respects_off_the_record)
         ReadFromStorage((*i)->id());
     }

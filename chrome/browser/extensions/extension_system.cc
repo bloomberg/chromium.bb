@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_warning_badge_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
@@ -395,7 +396,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
         GetInstallTime(extension->id());
   }
   bool incognito_enabled =
-      extension_service()->IsIncognitoEnabled(extension->id());
+      extension_util::IsIncognitoEnabled(extension->id(), extension_service());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::AddExtension, info_map(),

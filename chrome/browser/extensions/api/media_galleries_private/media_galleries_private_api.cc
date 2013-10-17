@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
@@ -381,7 +382,7 @@ bool MediaGalleriesPrivateGetHandlersFunction::RunImpl() {
        ++iter) {
     const Extension* extension = iter->get();
     if (profile_->IsOffTheRecord() &&
-        !service->IsIncognitoEnabled(extension->id()))
+        !extension_util::IsIncognitoEnabled(extension->id(), service))
       continue;
 
     MediaGalleriesHandler::List* handler_list =

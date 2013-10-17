@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -402,7 +403,7 @@ int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {
   for (ExtensionList::iterator iter = toolbar_items_.begin();
        iter != toolbar_items_.end();
        ++iter, ++original_index) {
-    if (service_->IsIncognitoEnabled((*iter)->id())) {
+    if (extension_util::IsIncognitoEnabled((*iter)->id(), service_)) {
       if (incognito_index == i)
         break;
       ++i;
@@ -418,7 +419,7 @@ int ExtensionToolbarModel::OriginalIndexToIncognito(int original_index) {
        ++iter, ++i) {
     if (original_index == i)
       break;
-    if (service_->IsIncognitoEnabled((*iter)->id()))
+    if (extension_util::IsIncognitoEnabled((*iter)->id(), service_))
       ++incognito_index;
   }
   return incognito_index;

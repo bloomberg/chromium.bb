@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
@@ -161,7 +162,7 @@ void ExtensionAppProvider::RefreshAppList() {
     // provider is currently only used in the app launcher.
 
     if (profile_->IsOffTheRecord() &&
-        !extension_service->CanLoadInIncognito(app))
+        !extension_util::CanLoadInIncognito(app, extension_service))
       continue;
 
     GURL launch_url = app->is_platform_app() ?

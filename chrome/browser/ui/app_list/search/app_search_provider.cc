@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string.h"
@@ -82,7 +83,7 @@ void AppSearchProvider::AddApps(const ExtensionSet* extensions,
       continue;
 
     if (profile_->IsOffTheRecord() &&
-        !service->CanLoadInIncognito(app))
+        !extension_util::CanLoadInIncognito(app, service))
       continue;
     apps_.push_back(new App(app));
   }

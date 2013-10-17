@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -188,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
        it != service->extensions()->end(); ++it) {
     if ((*it)->location() == extensions::Manifest::COMPONENT)
       continue;
-    if (service->AllowFileAccess(it->get()))
+    if (extension_util::AllowFileAccess(it->get(), service))
       extension_list.push_back(it->get());
   }
 
@@ -196,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
     content::WindowedNotificationObserver user_scripts_observer(
         chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
-    service->SetAllowFileAccess(extension_list[i], false);
+    extension_util::SetAllowFileAccess(extension_list[i], service, false);
     user_scripts_observer.Wait();
   }
 

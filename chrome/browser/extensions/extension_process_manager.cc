@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -957,7 +958,7 @@ bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
     const Extension* extension) {
   // Keep in sync with duplicate in extension_info_map.cc.
   ExtensionService* service = GetProfile()->GetExtensionService();
-  return service && service->IsIncognitoEnabled(extension->id());
+  return extension_util::IsIncognitoEnabled(extension->id(), service);
 }
 
 void IncognitoExtensionProcessManager::Observe(

@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/gfx/favicon_size.h"
@@ -161,7 +162,7 @@ bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
   if (!all_items || all_items->empty())
     return false;
 
-  *can_cross_incognito = service->CanCrossIncognito(*extension);
+  *can_cross_incognito = extension_util::CanCrossIncognito(*extension, service);
   items = GetRelevantExtensionItems(*all_items,
                                     *can_cross_incognito);
 

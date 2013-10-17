@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -341,9 +342,10 @@ scoped_ptr<developer::ItemInfo>
     }
   }
 
-  info->incognito_enabled = service->IsIncognitoEnabled(item.id());
+  info->incognito_enabled =
+      extension_util::IsIncognitoEnabled(item.id(),service);
   info->wants_file_access = item.wants_file_access();
-  info->allow_file_access = service->AllowFileAccess(&item);
+  info->allow_file_access = extension_util::AllowFileAccess(&item, service);
   info->allow_reload = Manifest::IsUnpackedLocation(item.location());
   info->is_unpacked = Manifest::IsUnpackedLocation(item.location());
   info->terminated = service->terminated_extensions()->Contains(item.id());
@@ -608,7 +610,7 @@ bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
                << extension->id();
     result = false;
   } else {
-    service->SetAllowFileAccess(extension, params->allow);
+    extension_util::SetAllowFileAccess(extension, service, params->allow);
     result = true;
   }
 
@@ -630,7 +632,8 @@ bool DeveloperPrivateAllowIncognitoFunction::RunImpl() {
   if (!extension)
     result = false;
   else
-    service->SetIsIncognitoEnabled(extension->id(), params->allow);
+    extension_util::SetIsIncognitoEnabled(
+        extension->id(),service, params->allow);
 
   return result;
 }

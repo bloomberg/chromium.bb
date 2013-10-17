@@ -732,6 +732,8 @@
         'browser/extensions/extension_toolbar_model.h',
         'browser/extensions/extension_uninstall_dialog.cc',
         'browser/extensions/extension_uninstall_dialog.h',
+        'browser/extensions/extension_util.cc',
+        'browser/extensions/extension_util.h',
         'browser/extensions/extension_warning_badge_service.cc',
         'browser/extensions/extension_warning_badge_service.h',
         'browser/extensions/extension_warning_service.cc',

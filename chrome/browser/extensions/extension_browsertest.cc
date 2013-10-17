@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -192,11 +193,11 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile()));
-    CHECK(!service->IsIncognitoEnabled(extension_id) ||
+    CHECK(!extension_util::IsIncognitoEnabled(extension_id, service) ||
           extension->force_incognito_enabled());
 
     if (flags & kFlagEnableIncognito) {
-      service->SetIsIncognitoEnabled(extension_id, true);
+      extension_util::SetIsIncognitoEnabled(extension_id, service, true);
       load_signal.Wait();
       extension = service->GetExtensionById(extension_id, false);
       CHECK(extension) << extension_id << " not found after reloading.";
@@ -207,9 +208,9 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile()));
-    CHECK(service->AllowFileAccess(extension));
+    CHECK(extension_util::AllowFileAccess(extension, service));
     if (!(flags & kFlagEnableFileAccess)) {
-      service->SetAllowFileAccess(extension, false);
+      extension_util::SetAllowFileAccess(extension, service, false);
       load_signal.Wait();
       extension = service->GetExtensionById(extension_id, false);
       CHECK(extension) << extension_id << " not found after reloading.";

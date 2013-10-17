@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -228,7 +229,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
     // extension uses split mode.
     bool incognito_override_allowed =
         extensions::IncognitoInfo::IsSplitMode(extension) &&
-        service->IsIncognitoEnabled(extension->id());
+        extension_util::IsIncognitoEnabled(extension->id(), service);
     if (profile->IsOffTheRecord() && !incognito_override_allowed) {
       ++i;
       continue;

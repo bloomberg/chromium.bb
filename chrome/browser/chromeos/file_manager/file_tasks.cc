@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
@@ -390,7 +391,7 @@ void FindFileHandlerTasks(
       continue;
 
     if (profile->IsOffTheRecord() &&
-        !service->IsIncognitoEnabled(extension->id()))
+        !extension_util::IsIncognitoEnabled(extension->id(), service))
       continue;
 
     typedef std::vector<const extensions::FileHandlerInfo*> FileHandlerList;

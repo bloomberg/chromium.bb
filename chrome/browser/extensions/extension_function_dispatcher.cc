@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/process_map.h"
@@ -346,7 +347,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   function_ui->SetRenderViewHost(render_view_host);
   function_ui->set_dispatcher(AsWeakPtr());
   function_ui->set_profile(profile_);
-  function->set_include_incognito(service->CanCrossIncognito(extension));
+  function->set_include_incognito(extension_util::CanCrossIncognito(extension,
+                                                                    service));
 
   if (!CheckPermissions(function.get(), extension, params, callback))
     return;

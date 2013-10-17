@@ -50,6 +50,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
@@ -282,28 +283,6 @@ const Extension* ExtensionService::GetInstalledApp(const GURL& url) const {
 
 bool ExtensionService::IsInstalledApp(const GURL& url) const {
   return !!GetInstalledApp(url);
-}
-
-const Extension* ExtensionService::GetIsolatedAppForRenderer(
-    int renderer_child_id) const {
-  std::set<std::string> extension_ids =
-      process_map_.GetExtensionsInProcess(renderer_child_id);
-  // All apps in one process share the same partition.
-  // It is only possible for the app to have isolated storage
-  // if there is only 1 app in the process.
-  if (extension_ids.size() != 1)
-    return NULL;
-
-  const extensions::Extension* extension =
-      extensions_.GetByID(*(extension_ids.begin()));
-  // We still need to check if the extension has isolated storage,
-  // because it's common for there to be one extension in a process
-  // without isolated storage.
-  if (extension &&
-      extensions::AppIsolationInfo::HasIsolatedStorage(extension))
-    return extension;
-
-  return NULL;
 }
 
 // static
@@ -1250,6 +1229,10 @@ extensions::ExtensionPrefs* ExtensionService::extension_prefs() {
   return extension_prefs_;
 }
 
+const extensions::ExtensionPrefs* ExtensionService::extension_prefs() const {
+  return extension_prefs_;
+}
+
 extensions::SettingsFrontend* ExtensionService::settings_frontend() {
   return settings_frontend_.get();
 }
@@ -1415,9 +1398,10 @@ syncer::SyncError ExtensionService::ProcessSyncChanges(
 
 extensions::ExtensionSyncData ExtensionService::GetExtensionSyncData(
     const Extension& extension) const {
-  return extensions::ExtensionSyncData(extension,
-                                       IsExtensionEnabled(extension.id()),
-                                       IsIncognitoEnabled(extension.id()));
+  return extensions::ExtensionSyncData(
+      extension,
+      IsExtensionEnabled(extension.id()),
+      extension_util::IsIncognitoEnabled(extension.id(), this));
 }
 
 extensions::AppSyncData ExtensionService::GetAppSyncData(
@@ -1425,7 +1409,7 @@ extensions::AppSyncData ExtensionService::GetAppSyncData(
   return extensions::AppSyncData(
       extension,
       IsExtensionEnabled(extension.id()),
-      IsIncognitoEnabled(extension.id()),
+      extension_util::IsIncognitoEnabled(extension.id(), this),
       extension_prefs_->extension_sorting()->GetAppLaunchOrdinal(
           extension.id()),
       extension_prefs_->extension_sorting()->GetPageOrdinal(extension.id()));
@@ -1570,7 +1554,8 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
   bool extension_installed = (extension != NULL);
   int result = extension ?
       extension->version()->CompareTo(extension_sync_data.version()) : 0;
-  SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled());
+  extension_util::SetIsIncognitoEnabled(
+      id, this, extension_sync_data.incognito_enabled());
   extension = NULL;  // No longer safe to use.
 
   if (extension_installed) {
@@ -1607,79 +1592,6 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
   return true;
 }
 
-bool ExtensionService::IsIncognitoEnabled(
-    const std::string& extension_id) const {
-  const Extension* extension = GetInstalledExtension(extension_id);
-  if (extension && !extension->can_be_incognito_enabled())
-    return false;
-  // If this is an existing component extension we always allow it to
-  // work in incognito mode.
-  if (extension && extension->location() == Manifest::COMPONENT)
-    return true;
-  if (extension && extension->force_incognito_enabled())
-    return true;
-
-  // Check the prefs.
-  return extension_prefs_->IsIncognitoEnabled(extension_id);
-}
-
-void ExtensionService::SetIsIncognitoEnabled(
-    const std::string& extension_id, bool enabled) {
-  const Extension* extension = GetInstalledExtension(extension_id);
-  if (extension && !extension->can_be_incognito_enabled())
-    return;
-  if (extension && extension->location() == Manifest::COMPONENT) {
-    // This shouldn't be called for component extensions unless they are
-    // syncable.
-    DCHECK(extensions::sync_helper::IsSyncable(extension));
-
-    // If we are here, make sure the we aren't trying to change the value.
-    DCHECK_EQ(enabled, IsIncognitoEnabled(extension_id));
-
-    return;
-  }
-
-  // Broadcast unloaded and loaded events to update browser state. Only bother
-  // if the value changed and the extension is actually enabled, since there is
-  // no UI otherwise.
-  bool old_enabled = extension_prefs_->IsIncognitoEnabled(extension_id);
-  if (enabled == old_enabled)
-    return;
-
-  extension_prefs_->SetIsIncognitoEnabled(extension_id, enabled);
-
-  bool extension_is_enabled = extensions_.Contains(extension_id);
-
-  // When we reload the extension the ID may be invalidated if we've passed it
-  // by const ref everywhere. Make a copy to be safe.
-  std::string id = extension_id;
-  if (extension_is_enabled)
-    ReloadExtension(id);
-
-  // Reloading the extension invalidates the |extension| pointer.
-  extension = GetInstalledExtension(id);
-  if (extension)
-    SyncExtensionChangeIfNeeded(*extension);
-}
-
-bool ExtensionService::CanCrossIncognito(const Extension* extension) const {
-  // We allow the extension to see events and data from another profile iff it
-  // uses "spanning" behavior and it has incognito access. "split" mode
-  // extensions only see events for a matching profile.
-  CHECK(extension);
-  return IsIncognitoEnabled(extension->id()) &&
-         !extensions::IncognitoInfo::IsSplitMode(extension);
-}
-
-bool ExtensionService::CanLoadInIncognito(const Extension* extension) const {
-  if (extension->is_hosted_app())
-    return true;
-  // Packaged apps and regular extensions need to be enabled specifically for
-  // incognito (and split mode should be set).
-  return extensions::IncognitoInfo::IsSplitMode(extension) &&
-         IsIncognitoEnabled(extension->id());
-}
-
 void ExtensionService::OnExtensionMoved(
     const std::string& moved_extension_id,
     const std::string& predecessor_extension_id,
@@ -1692,27 +1604,6 @@ void ExtensionService::OnExtensionMoved(
   const Extension* extension = GetInstalledExtension(moved_extension_id);
   if (extension)
     SyncExtensionChangeIfNeeded(*extension);
-}
-
-bool ExtensionService::AllowFileAccess(const Extension* extension) const {
-  return (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableExtensionsFileAccessCheck) ||
-          extension_prefs_->AllowFileAccess(extension->id()));
-}
-
-void ExtensionService::SetAllowFileAccess(const Extension* extension,
-                                          bool allow) {
-  // Reload to update browser state. Only bother if the value changed and the
-  // extension is actually enabled, since there is no UI otherwise.
-  bool old_allow = AllowFileAccess(extension);
-  if (allow == old_allow)
-    return;
-
-  extension_prefs_->SetAllowFileAccess(extension->id(), allow);
-
-  bool extension_is_enabled = extensions_.Contains(extension->id());
-  if (extension_is_enabled)
-    ReloadExtension(extension->id());
 }
 
 // Some extensions will autoupdate themselves externally from Chrome.  These

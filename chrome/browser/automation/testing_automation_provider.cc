@@ -58,6 +58,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -3576,7 +3577,7 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
         Manifest::IsUnpackedLocation(location));
     extension_value->SetBoolean("is_enabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean("allowed_in_incognito",
-                                service->IsIncognitoEnabled(id));
+        extension_util::IsIncognitoEnabled(id, service));
     extension_value->SetBoolean(
         "has_page_action",
         extension_action_manager->GetPageAction(*extension) != NULL);
@@ -3684,7 +3685,8 @@ void TestingAutomationProvider::SetExtensionStateById(
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   }
 
-  service->SetIsIncognitoEnabled(extension->id(), allow_in_incognito);
+  extension_util::SetIsIncognitoEnabled(
+      extension->id(), service, allow_in_incognito);
 }
 
 // See TriggerPageActionById() in chrome/test/pyautolib/pyauto.py

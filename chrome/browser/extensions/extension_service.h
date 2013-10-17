@@ -146,11 +146,6 @@ class ExtensionService
   // Returns whether the URL is from either a hosted or packaged app.
   bool IsInstalledApp(const GURL& url) const;
 
-  // If the renderer is hosting an installed app with isolated storage,
-  // returns it, otherwise returns NULL.
-  const extensions::Extension* GetIsolatedAppForRenderer(
-      int renderer_child_id) const;
-
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
   static bool UninstallExtensionHelper(ExtensionService* extensions_service,
@@ -188,11 +183,6 @@ class ExtensionService
 
   extensions::ProcessMap* process_map() { return &process_map_; }
 
-  // Whether this extension can run in an incognito window.
-  virtual bool IsIncognitoEnabled(const std::string& extension_id) const;
-  virtual void SetIsIncognitoEnabled(const std::string& extension_id,
-                                     bool enabled);
-
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor. This will
   // trigger a sync if needed. Empty strings are used to indicate no successor
@@ -200,19 +190,6 @@ class ExtensionService
   void OnExtensionMoved(const std::string& moved_extension_id,
                         const std::string& predecessor_extension_id,
                         const std::string& successor_extension_id);
-
-  // Returns true if the given extension can see events and data from another
-  // sub-profile (incognito to original profile, or vice versa).
-  bool CanCrossIncognito(const extensions::Extension* extension) const;
-
-  // Returns true if the given extension can be loaded in incognito.
-  bool CanLoadInIncognito(const extensions::Extension* extension) const;
-
-  // Whether this extension can inject scripts into pages with file URLs.
-  bool AllowFileAccess(const extensions::Extension* extension) const;
-  // Will reload the extension since this permission is applied at loading time
-  // only.
-  void SetAllowFileAccess(const extensions::Extension* extension, bool allow);
 
   // Whether the persistent background page, if any, is ready. We don't load
   // other components until then. If there is no background page, or if it is
@@ -512,6 +489,7 @@ class ExtensionService
   // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
   // ExtensionPrefs* mutable_extension_prefs().
   extensions::ExtensionPrefs* extension_prefs();
+  const extensions::ExtensionPrefs* extension_prefs() const;
 
   extensions::SettingsFrontend* settings_frontend();
 

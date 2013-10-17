@@ -19,6 +19,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
@@ -373,8 +374,9 @@ void UserScriptMaster::Observe(int type,
       extensions_info_[extension->id()] =
           ExtensionSet::ExtensionPathAndDefaultLocale(
               extension->path(), LocaleInfo::GetDefaultLocale(extension));
-      bool incognito_enabled = extensions::ExtensionSystem::Get(profile_)->
-          extension_service()->IsIncognitoEnabled(extension->id());
+      bool incognito_enabled = extension_util::IsIncognitoEnabled(
+          extension->id(),
+          extensions::ExtensionSystem::Get(profile_)->extension_service());
       const UserScriptList& scripts =
           ContentScriptsInfo::GetContentScripts(extension);
       for (UserScriptList::const_iterator iter = scripts.begin();

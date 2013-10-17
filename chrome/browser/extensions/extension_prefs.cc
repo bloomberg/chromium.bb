@@ -1001,7 +1001,7 @@ bool ExtensionPrefs::IsActive(const std::string& extension_id) {
   return is_active;
 }
 
-bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {
+bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) const {
   return ReadPrefAsBooleanAndReturn(extension_id, kPrefIncognitoEnabled);
 }
 
@@ -1011,7 +1011,7 @@ void ExtensionPrefs::SetIsIncognitoEnabled(const std::string& extension_id,
                       new base::FundamentalValue(enabled));
 }
 
-bool ExtensionPrefs::AllowFileAccess(const std::string& extension_id) {
+bool ExtensionPrefs::AllowFileAccess(const std::string& extension_id) const {
   return ReadPrefAsBooleanAndReturn(extension_id, kPrefAllowFileAccess);
 }
 

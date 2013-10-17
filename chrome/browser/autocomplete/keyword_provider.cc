@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -204,7 +205,8 @@ string16 KeywordProvider::GetKeywordForText(const string16& text) const {
         GetExtensionById(template_url->GetExtensionId(), false);
     if (!extension ||
         (profile_->IsOffTheRecord() &&
-        !extension_service->IsIncognitoEnabled(extension->id())))
+        !extension_util::IsIncognitoEnabled(extension->id(),
+                                            extension_service)))
       return string16();
   }
 
@@ -281,7 +283,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
           service->GetExtensionById(template_url->GetExtensionId(), false);
       bool enabled =
           extension && (!profile_->IsOffTheRecord() ||
-                        service->IsIncognitoEnabled(extension->id()));
+                        extension_util::IsIncognitoEnabled(extension->id(),
+                                                           service));
       if (!enabled) {
         i = matches.erase(i);
         continue;
