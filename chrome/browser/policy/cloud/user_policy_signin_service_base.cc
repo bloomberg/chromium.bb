@@ -7,17 +7,14 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -33,9 +30,6 @@ UserPolicySigninServiceBase::UserPolicySigninServiceBase(
       request_context_(request_context),
       device_management_service_(device_management_service),
       weak_factory_(this) {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
-    return;
-
   // Initialize/shutdown the UserCloudPolicyManager when the user signs out.
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
@@ -175,9 +169,6 @@ scoped_ptr<CloudPolicyClient> UserPolicySigninServiceBase::PrepareToRegister(
 
 bool UserPolicySigninServiceBase::ShouldLoadPolicyForUser(
     const std::string& username) {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
-    return false;  // Cloud policy is disabled.
-
   if (username.empty())
     return false;  // Not signed in.
 

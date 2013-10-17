@@ -4,7 +4,6 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
@@ -12,7 +11,6 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/policy/core/common/policy_switches.h"
 
 namespace policy {
 
@@ -53,10 +51,6 @@ scoped_ptr<UserCloudPolicyManager>
     UserCloudPolicyManagerFactory::CreateManagerForProfile(
         Profile* profile,
         bool force_immediate_load) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCloudPolicyOnSignin)) {
-    return scoped_ptr<UserCloudPolicyManager>();
-  }
   scoped_ptr<UserCloudPolicyStore> store(UserCloudPolicyStore::Create(profile));
   if (force_immediate_load)
     store->LoadImmediately();

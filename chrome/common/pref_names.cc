@@ -2208,10 +2208,6 @@ const char kPerformanceTracingEnabled[] =
 // Value of the enums in TabStrip::LayoutType as an int.
 const char kTabStripLayoutType[] = "tab_strip_layout_type";
 
-// If true, cloud policy for the user is not loaded when the user signs in.
-const char kDisableCloudPolicyOnSignin[] =
-    "policy.disable_cloud_policy_on_signin";
-
 // Indicates that factory reset was requested from options page.
 const char kFactoryResetRequested[] = "FactoryResetRequested";
 

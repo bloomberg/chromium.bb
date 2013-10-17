@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client_registration_helper.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -36,9 +34,6 @@ UserPolicySigninService::UserPolicySigninService(
                                   request_context,
                                   device_management_service),
       oauth2_token_service_(token_service) {
-  if (profile->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
-    return;
-
   // ProfileOAuth2TokenService should not yet have loaded its tokens since this
   // happens in the background after PKS initialization - so this service
   // should always be created before the oauth token is available.

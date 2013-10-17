@@ -13,10 +13,6 @@ namespace switches {
 // policy which affects many users is changed.
 const char kCloudPolicyInvalidationDelay[]  = "cloud-policy-invalidation-delay";
 
-// If present, disables the loading and application of cloud policy for
-// signed-in users.
-const char kDisableCloudPolicyOnSignin[]    = "disable-cloud-policy-on-signin";
-
 // Disables pushing cloud policy to Chrome using an invalidation service.
 const char kDisableCloudPolicyPush[]        = "disable-cloud-policy-push";
 

@@ -13,7 +13,6 @@ namespace policy {
 namespace switches {
 
 POLICY_EXPORT extern const char kCloudPolicyInvalidationDelay[];
-POLICY_EXPORT extern const char kDisableCloudPolicyOnSignin[];
 POLICY_EXPORT extern const char kDisableCloudPolicyPush[];
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

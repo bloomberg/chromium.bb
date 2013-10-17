@@ -89,10 +89,6 @@ UserPolicySigninServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 
 void UserPolicySigninServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterBooleanPref(
-      prefs::kDisableCloudPolicyOnSignin,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if defined(OS_ANDROID)
   user_prefs->RegisterInt64Pref(
       prefs::kLastPolicyCheckTime,
