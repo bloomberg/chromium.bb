@@ -9,6 +9,7 @@ import logging
 import optparse
 import os
 import re
+import shutil
 import sys
 import threading
 import time
@@ -218,7 +219,7 @@ def _PullTraces(controllers, output, compress):
     _ArchiveFiles(trace_files, result)
   elif output:
     result = output
-    os.rename(trace_files[0], result)
+    shutil.move(trace_files[0], result)
   else:
     result = trace_files[0]
 
