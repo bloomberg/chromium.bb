@@ -58,6 +58,14 @@ void RecordUmaResponseCode(int code) {
       code);
 }
 
+void RecordUmaAccessPoints(int count) {
+  const int min = 0;
+  const int max = 10;
+  const int buckets = 11;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Geolocation.NetworkLocationRequest.AccessPoints",
+      count, min, max, buckets);
+}
+
 // Local functions
 // Creates the request url to send to the server.
 GURL FormRequestURL(const GURL& url);
@@ -107,6 +115,7 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
                                          const WifiData& wifi_data,
                                          const base::Time& timestamp) {
   RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_START);
+  RecordUmaAccessPoints(wifi_data.access_point_data.size());
   if (url_fetcher_ != NULL) {
     DVLOG(1) << "NetworkLocationRequest : Cancelling pending request";
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_CANCEL);

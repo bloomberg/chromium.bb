@@ -4895,6 +4895,12 @@ other types of suffix sets.
   <summary>Events in GeolocationInfoBarDelegateAndroid.</summary>
 </histogram>
 
+<histogram name="Geolocation.NetworkLocationRequest.AccessPoints">
+  <summary>
+    The number of wifi access points used to determine geolocation.
+  </summary>
+</histogram>
+
 <histogram name="Geolocation.NetworkLocationRequest.Event"
     enum="NetworkLocationRequestEvent">
   <summary>Events in NetworkLocationRequest.</summary>
