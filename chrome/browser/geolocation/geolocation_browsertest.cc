@@ -477,7 +477,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForSecondTab) {
+// See http://crbug.com/308358
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfoBarResponse(current_url(), true);
