@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="/js-test-resources/js-test-pre.js"></script>
+<script src="/websocket/tests/hybi/resources/connect-error-by-no-websocket-server.js"></script>
+</head>
+<body>
+<div id="description"></div>
+<div id="console"></div>
+<script>
+description("Test that WebSocket fires error event if no WebSocket Server can be connected, and connection is closed from onerror event");
+
+doTest(8889, true, false);
+
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>
