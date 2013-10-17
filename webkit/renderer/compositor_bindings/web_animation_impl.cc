@@ -96,11 +96,9 @@ void WebAnimationImpl::setAlternatesDirection(bool alternates) {
   animation_->set_alternates_direction(alternates);
 }
 
-scoped_ptr<cc::Animation> WebAnimationImpl::CloneToAnimation() {
-  scoped_ptr<cc::Animation> to_return(
-      animation_->Clone(cc::Animation::NonControllingInstance));
-  to_return->set_needs_synchronized_start_time(true);
-  return to_return.Pass();
+scoped_ptr<cc::Animation> WebAnimationImpl::PassAnimation() {
+  animation_->set_needs_synchronized_start_time(true);
+  return animation_.Pass();
 }
 
 #define COMPILE_ASSERT_MATCHING_ENUMS(webkit_name, cc_name)                    \

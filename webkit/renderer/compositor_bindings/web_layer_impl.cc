@@ -191,8 +191,12 @@ void WebLayerImpl::setAnimationDelegate(
 }
 
 bool WebLayerImpl::addAnimation(WebKit::WebAnimation* animation) {
-  return layer_->AddAnimation(
-      static_cast<WebAnimationImpl*>(animation)->CloneToAnimation());
+  bool result = layer_->AddAnimation(
+      static_cast<WebAnimationImpl*>(animation)->PassAnimation());
+#if defined(ANIMATION_OWNERSHIP_TRANSFER)
+  delete animation;
+#endif
+  return result;
 }
 
 void WebLayerImpl::removeAnimation(int animation_id) {

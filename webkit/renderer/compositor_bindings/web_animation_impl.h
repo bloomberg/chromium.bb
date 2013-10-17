@@ -36,7 +36,7 @@ class WebAnimationImpl : public WebKit::WebAnimation {
   virtual bool alternatesDirection() const;
   virtual void setAlternatesDirection(bool alternates);
 
-  scoped_ptr<cc::Animation> CloneToAnimation();
+  scoped_ptr<cc::Animation> PassAnimation();
 
  private:
   scoped_ptr<cc::Animation> animation_;
