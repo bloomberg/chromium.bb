@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_COMMON_PREF_NAMES_H_
-#define COMPONENTS_POLICY_CORE_COMMON_PREF_NAMES_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_PREF_NAMES_H_
+#define COMPONENTS_POLICY_CORE_COMMON_POLICY_PREF_NAMES_H_
 
 #include "components/policy/policy_export.h"
 
@@ -18,4 +18,4 @@ POLICY_EXPORT extern const char kLastPolicyStatisticsUpdate[];
 }  // prefs
 }  // namespace policy
 
-#endif  // COMPONENTS_POLICY_CORE_COMMON_PREF_NAMES_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_POLICY_PREF_NAMES_H_

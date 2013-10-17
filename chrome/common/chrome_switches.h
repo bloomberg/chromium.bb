@@ -64,7 +64,6 @@ extern const char kChromeFrame[];
 extern const char kChromeVersion[];
 extern const char kCipherSuiteBlacklist[];
 extern const char kClearTokenService[];
-extern const char kCloudPolicyInvalidationDelay[];
 extern const char kCloudPrintDeleteFile[];
 extern const char kCloudPrintFile[];
 extern const char kCloudPrintJobTitle[];
@@ -97,8 +96,6 @@ extern const char kDisableBatchedShutdown[];
 extern const char kDisableBundledPpapiFlash[];
 extern const char kDisableBookmarkAutocompleteProvider[];
 extern const char kDisableClientSidePhishingDetection[];
-extern const char kDisableCloudPolicyOnSignin[];
-extern const char kDisableCloudPolicyPush[];
 extern const char kDisableComponentExtensionsWithBackgroundPages[];
 extern const char kDisableComponentUpdate[];
 extern const char kDisableCRLSets[];
@@ -417,7 +414,6 @@ extern const char kPluginsMetadataServerURL[];
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 extern const char kEnableSpdyProxyAuth[];
-extern const char kFakeCloudPolicyType[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)

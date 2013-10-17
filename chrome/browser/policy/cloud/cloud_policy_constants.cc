@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/policy/core/common/policy_switches.h"
 
 namespace policy {
 

@@ -46,10 +46,6 @@ specific_include_rules = {
     "+chrome/browser/signin/oauth2_token_service.h",
   ],
 
-  r"cloud_policy_constants\.cc": [
-    "+chrome/common/chrome_switches.h",
-  ],
-
   r"cloud_policy_core_unittest\.cc": [
     "+chrome/browser/prefs/browser_prefs.h",
     "+chrome/common/pref_names.h",
@@ -57,7 +53,6 @@ specific_include_rules = {
 
   r"cloud_policy_invalidator\.cc": [
     "+chrome/browser/invalidation/invalidation_service.h",
-    "+chrome/common/chrome_switches.h",
   ],
 
   r"cloud_policy_invalidator_unittest\.cc": [
@@ -70,7 +65,6 @@ specific_include_rules = {
 
   r"cloud_policy_refresh_scheduler\.cc": [
     "+chrome/browser/chrome_notification_types.h",
-    "+chrome/common/chrome_switches.h",
     "+content/public/browser/notification_details.h",
   ],
 
@@ -106,7 +100,6 @@ specific_include_rules = {
   r"user_cloud_policy_invalidator_factory\.cc": [
     "+chrome/browser/invalidation/invalidation_service_factory.h",
     "+chrome/browser/profiles/profile.h",
-    "+chrome/common/chrome_switches.h",
     "+chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h",
     "+chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h",
   ],
@@ -122,7 +115,6 @@ specific_include_rules = {
 
   r"user_cloud_policy_manager_factory\.cc": [
     "+chrome/browser/profiles/profile.h",
-    "+chrome/common/chrome_switches.h",
   ],
 
   r"user_cloud_policy_store\.cc": [

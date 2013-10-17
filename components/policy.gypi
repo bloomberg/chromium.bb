@@ -22,6 +22,8 @@
           'sources': [
             'policy/core/common/policy_pref_names.cc',
             'policy/core/common/policy_pref_names.h',
+            'policy/core/common/policy_switches.cc',
+            'policy/core/common/policy_switches.h',
             'policy/core/common/schema.cc',
             'policy/core/common/schema.h',
             'policy/core/common/schema_internal.h',

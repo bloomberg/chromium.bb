@@ -18,7 +18,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/enterprise_metrics.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "policy/policy_constants.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 

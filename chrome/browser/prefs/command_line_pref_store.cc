@@ -16,6 +16,10 @@
 #include "chrome/common/pref_names.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "components/policy/core/common/policy_switches.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
 #endif
@@ -70,8 +74,10 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { chromeos::switches::kEnableTouchpadThreeFingerClick,
           prefs::kEnableTouchpadThreeFingerClick, true },
 #endif
-      { switches::kDisableCloudPolicyOnSignin,
+#if defined(ENABLE_CONFIGURATION_POLICY)
+      { policy::switches::kDisableCloudPolicyOnSignin,
           prefs::kDisableCloudPolicyOnSignin, true },
+#endif
       { switches::kDisableAsyncDns, prefs::kBuiltInDnsClientEnabled, false },
       { switches::kEnableAsyncDns, prefs::kBuiltInDnsClientEnabled, true },
 };

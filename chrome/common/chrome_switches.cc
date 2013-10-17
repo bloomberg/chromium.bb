@@ -176,12 +176,6 @@ const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 // expiration of credentials during testing.
 const char kClearTokenService[]             = "clear-token-service";
 
-// The maximum amount of delay in ms between receiving a cloud policy
-// invalidation and fetching the policy. A random delay up to this value is used
-// to prevent Chrome clients from overwhelming the cloud policy server when a
-// policy which affects many users is changed.
-const char kCloudPolicyInvalidationDelay[]  = "cloud-policy-invalidation-delay";
-
 // Used with kCloudPrintFile. Tells Chrome to delete the file when finished
 // displaying the print dialog.
 const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
@@ -316,9 +310,6 @@ const char kDisableBookmarkAutocompleteProvider[] =
 // preferences.
 const char kDisableClientSidePhishingDetection[] =
     "disable-client-side-phishing-detection";
-
-// Disables pushing cloud policy to Chrome using an invalidation service.
-const char kDisableCloudPolicyPush[]        = "disable-cloud-policy-push";
 
 // Disable default component extensions with background pages - useful for
 // performance tests where these pages may interfere with perf results.
@@ -972,10 +963,6 @@ const char kLimitedInstallFromWebstore[]    = "limited-install-from-webstore";
 // Comma-separated list of directories with component extensions to load.
 const char kLoadComponentExtension[]        = "load-component-extension";
 
-// If present, disables the loading and application of cloud policy for
-// signed-in users.
-const char kDisableCloudPolicyOnSignin[]    = "disable-cloud-policy-on-signin";
-
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
@@ -1534,13 +1521,6 @@ const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
 #if defined(OS_ANDROID) || defined(OS_IOS)
 // Enable SPDY proxy.
 const char kEnableSpdyProxyAuth[]           = "enable-spdy-proxy-auth";
-
-// Registers for cloud policy using the BROWSER client type instead of the
-// ANDROID_BROWSER or IOS_BROWSER types.
-// This allows skipping the server whitelist.
-// TODO(joaodasilva): remove this. http://crbug.com/248527
-const char kFakeCloudPolicyType[]           = "fake-cloud-policy-type";
-
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
