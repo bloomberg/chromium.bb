@@ -128,6 +128,9 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 				device->output = output;
 	}
 
+	if (input->enabled == 1)
+		weston_seat_repick(&seat->base);
+
 	return 0;
 }
 
@@ -262,6 +265,8 @@ udev_input_enable(struct udev_input *input, struct udev *udev)
 
 	if (udev_input_add_devices(input, udev) < 0)
 		return -1;
+
+	input->enabled = 1;
 
 	return 0;
 }

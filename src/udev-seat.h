@@ -39,6 +39,7 @@ struct udev_input {
 	struct wl_event_source *udev_monitor_source;
 	char *seat_id;
 	struct weston_compositor *compositor;
+	int enabled;
 };
 
 

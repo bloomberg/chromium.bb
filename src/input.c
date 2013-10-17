@@ -45,7 +45,7 @@ static void unbind_resource(struct wl_resource *resource)
 	wl_list_remove(wl_resource_get_link(resource));
 }
 
-void
+WL_EXPORT void
 weston_seat_repick(struct weston_seat *seat)
 {
 	const struct weston_pointer *pointer = seat->pointer;
