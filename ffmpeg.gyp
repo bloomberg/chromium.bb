@@ -46,7 +46,7 @@
         'asm_sources': [
         ],
       }],
-      ['MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"', {
+      ['OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
         'os_config%': 'win-vs2013',
       }, {
         'conditions': [
@@ -135,7 +135,7 @@
         },
       ] # targets
     }], # arch != arm
-    ['OS == "win" and clang == 0 and MSVS_VERSION != "2013" and MSVS_VERSION == "2013e"', {
+    ['OS == "win" and clang == 0 and MSVS_VERSION != "2013" and MSVS_VERSION != "2013e"', {
       # Convert the source code from c99 to c89 if we're on Windows and not
       # using clang, which can compile c99 directly.  Clang support is
       # experimental and unsupported. VS2013 also supports enough of C99 to
@@ -230,12 +230,6 @@
             ['target_arch != "arm" and target_arch != "mipsel"', {
               'dependencies': [
                 'ffmpeg_yasm',
-              ],
-            }],
-            ['OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
-              'defines': [
-                # Per http://www.ffmpeg.org/platform.html.
-                'inline=__inline',
               ],
             }],
             ['clang == 1', {
@@ -444,7 +438,7 @@
                 4116, 4307, 4273, 4005, 4056, 4756,
               ],
               'conditions': [
-                ['clang == 1 or MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"', {
+                ['clang == 1 or (OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"))', {
                   'defines': [
                     'inline=__inline',
                     'strtoll=_strtoi64',
