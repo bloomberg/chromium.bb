@@ -20,14 +20,12 @@ crbug.com/247466 [ Debug ] inspector/debugger/linkifier.html [ Skip ]
 
 crbug.com/273119 [ XP ] inspector/styles/styles-new-API.html [ Pass Failure ]
 
-crbug.com/256518 [ Win7 Debug ] pointer-lock/mouse-event-delivery.html [ Pass Crash ]
-
 # Sometimes the output includes an empty line, sometimes it doesn't. Flake.
 crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
 
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Timeout ]
 
-crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Crash Failure Pass ]
+crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 
@@ -206,8 +204,6 @@ webkit.org/b/83303 [ Linux ] svg/transforms/text-with-pattern-with-svg-transform
 webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ NeedsRebaseline ]
 
 webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
-
-webkit.org/b/111626 [ Mac Debug ] svg/css/font-face-crash.html [ Crash Pass ]
 
 Bug(fmalita) svg/filters/filter-clip.svg [ NeedsManualRebaseline ]
 Bug(fmalita) svg/transforms/text-with-mask-with-svg-transform.svg [ NeedsManualRebaseline ]
@@ -458,8 +454,7 @@ crbug.com/780807 http/tests/misc/webtiming-origins.html [ Failure Pass ]
 
 webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.html [ Failure Pass Timeout ]
 
-# It doesn't crash on Release bots, but crashes on try bots (Release + Assserts).
-crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass Crash ]
+crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
 # Flaky since added by r86478
 crbug.com/82881 http/tests/appcache/interrupted-update.html [ Failure Pass ]
@@ -691,8 +686,6 @@ webkit.org/b/100023 [ Mac ] fast/sub-pixel/file-upload-control-at-fractional-off
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
-webkit.org/b/102131 fast/workers/worker-exception-during-navigation.html [ Crash Pass ]
-
 crbug.com/237003 [ Win Mac Debug ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_iframe_self_navigation.html [ Failure Pass ]
 crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_dynamic_insertion.html [ Pass Timeout ]
 crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Timeout ]
@@ -794,7 +787,6 @@ crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
-crbug.com/238082 [ Win Mac Linux Debug ] media/media-continues-playing-after-replace-source.html [ Crash Pass ]
 crbug.com/88588 [ Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
 
 crbug.com/252344 http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
@@ -906,7 +898,6 @@ crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-combined-missing.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-transform-parameters.html [ Crash ]
-crbug.com/168853 [ Debug ] fast/loader/stateobjects/replacestate-in-onunload.html [ Crash ]
 crbug.com/243353 animations/suspend-resume-animation.html [ Failure Pass ]
 crbug.com/243353 animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243378 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.html [ Failure ]
@@ -914,7 +905,6 @@ crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure ImageOnlyFailure 
 crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
 crbug.com/243593 [ Win ] fast/media/color-does-not-include-alpha.html [ Failure ]
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure ]
-crbug.com/243599 [ Release ] fast/loader/stateobjects/replacestate-in-onunload.html [ Crash Pass ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
 crbug.com/243683 [ Linux Mac Win ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
@@ -970,7 +960,6 @@ crbug.com/248067 [ Linux Mac Win ] storage/storagequota-query-usage.html [ Pass 
 crbug.com/248121 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
 crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure ]
 crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
-crbug.com/260655 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
 
 crbug.com/254332 [ Linux ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse.html [ ImageOnlyFailure Pass ]
@@ -983,7 +972,7 @@ crbug.com/254332 [ Linux Win ] fast/forms/range/range-focus-by-mouse.html [ Imag
 crbug.com/254332 [ Win ] fast/forms/submit/submit-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
-crbug.com/256506 crypto/worker-random-values-limits.html [ Pass Crash ]
+crbug.com/256506 [ Win7 Debug ] crypto/worker-random-values-limits.html [ Pass Crash ]
 
 crbug.com/244266 [ Win Debug ] virtual/threaded/animations/animation-controller-drt-api.html [ Failure Pass ]
 
@@ -1213,8 +1202,6 @@ crbug.com/307570 fast/images/image-zoom-to-25.html [ Pass Failure ]
 crbug.com/307570 virtual/deferred/fast/images/image-zoom-to-25.html [ Pass Failure ]
 
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
-
-crbug.com/306645 plugins/destroy-plugin-from-callback.html [ Pass Crash ]
 
 crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
 crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ NeedsRebaseline ]
