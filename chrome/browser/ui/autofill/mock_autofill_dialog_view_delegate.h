@@ -60,12 +60,12 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
       string16(DialogSection, ServerFieldType, const string16&));
   MOCK_METHOD2(InputsAreValid, ValidityMessages(DialogSection,
                                                 const DetailOutputMap&));
-  MOCK_METHOD6(UserEditedOrActivatedInput,void(DialogSection,
-                                               const DetailInput*,
-                                               gfx::NativeView,
-                                               const gfx::Rect&,
-                                               const string16&,
-                                               bool was_edit));
+  MOCK_METHOD6(UserEditedOrActivatedInput, void(DialogSection,
+                                                const DetailInput*,
+                                                gfx::NativeView,
+                                                const gfx::Rect&,
+                                                const string16&,
+                                                bool was_edit));
   MOCK_METHOD1(HandleKeyPressEventInInput,
                bool(const content::NativeWebKeyboardEvent& event));
   MOCK_METHOD0(FocusMoved, void());
@@ -82,6 +82,9 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD0(OnAccept, bool());
   MOCK_METHOD0(profile, Profile*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
+
+  // Set which web contents initiated showing the dialog.
+  void SetWebContents(content::WebContents* contents);
 
  private:
   DetailInputs default_inputs_;

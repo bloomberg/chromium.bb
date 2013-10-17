@@ -92,6 +92,7 @@
             '../content/content_resources.gyp:content_resources',
 
             'web_modal',
+            'web_modal_test',
           ],
           'conditions': [
             ['OS == "ios"', {
@@ -116,6 +117,7 @@
               ],
               'dependencies!': [
                 'web_modal',
+                'web_modal_test',
               ],
             }],
             ['OS == "android" and gtest_target_type == "shared_library"', {

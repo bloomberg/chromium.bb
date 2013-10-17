@@ -1654,6 +1654,7 @@
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
         'browser/ui/views/accelerator_table_unittest.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
+        'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
         'browser/ui/views/autofill/decorated_textfield_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bubble_view_unittest.cc',
@@ -1988,12 +1989,6 @@
         '../tools/json_schema_compiler/test/objects_unittest.cc',
         '../tools/json_schema_compiler/test/simple_api_unittest.cc',
         '../tools/json_schema_compiler/test/error_generation_unittest.cc',
-        '../ui/views/test/desktop_test_views_delegate.cc',
-        '../ui/views/test/desktop_test_views_delegate.h',
-        '../ui/views/test/test_views_delegate.cc',
-        '../ui/views/test/test_views_delegate.h',
-        '../ui/views/test/views_test_base.cc',
-        '../ui/views/test/views_test_base.h',
         '../ui/webui/resources/js/cr.js',
         '../webkit/browser/blob/mock_blob_url_request_context.cc',
         '../webkit/browser/blob/mock_blob_url_request_context.h',
@@ -2647,7 +2642,9 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
+            '../components/components.gyp:web_modal_test',
             '../ui/views/views.gyp:views',
+            '../ui/views/views.gyp:views_test_support',
           ],
           'sources!': [
             'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',

@@ -167,6 +167,26 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
 
+ protected:
+  // What the entire dialog should be doing (e.g. gathering info from the user,
+  // asking the user to sign in, etc.).
+  enum DialogMode {
+    DETAIL_INPUT,
+    LOADING,
+    SIGN_IN,
+  };
+
+  // Changes the function of the whole dialog. Currently this can show a loading
+  // shield, an embedded sign in web view, or the more typical detail input mode
+  // (suggestions and form inputs).
+  void ShowDialogInMode(DialogMode dialog_mode);
+
+  // Exposed for testing.
+  views::View* GetLoadingShieldForTesting();
+  views::View* GetSignInWebviewForTesting();
+  views::View* GetNotificationAreaForTesting();
+  views::View* GetScrollableAreaForTesting();
+
  private:
   // A class that creates and manages a widget for error messages.
   class ErrorBubble : public views::BubbleDelegateView {

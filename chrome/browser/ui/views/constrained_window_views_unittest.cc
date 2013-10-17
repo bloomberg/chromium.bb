@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/constrained_window_views.h"
 
-#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -12,10 +12,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-
-namespace web_modal {
-class WebContentsModalDialogHostObserver;
-}
 
 namespace views {
 
@@ -39,37 +35,6 @@ class DialogContents : public DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(DialogContents);
 };
 
-class DialogHost : public web_modal::WebContentsModalDialogHost {
- public:
-  explicit DialogHost(gfx::NativeView host_view)
-      : host_view_(host_view),
-        max_dialog_size_(5000, 5000) {
-  }
-
-  virtual ~DialogHost() {}
-
-  void set_max_dialog_size(const gfx::Size& max_dialog_size) {
-    max_dialog_size_ = max_dialog_size;
-  }
-
-  // Overridden from WebContentsModalDialogHost:
-  virtual gfx::NativeView GetHostView() const OVERRIDE { return host_view_; }
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE {
-    return gfx::Point();
-  }
-  virtual gfx::Size GetMaximumDialogSize() OVERRIDE { return max_dialog_size_; }
-  virtual void AddObserver(
-      web_modal::ModalDialogHostObserver* observer) OVERRIDE {};
-  virtual void RemoveObserver(
-      web_modal::ModalDialogHostObserver* observer) OVERRIDE {};
-
- private:
-  gfx::NativeView host_view_;
-  gfx::Size max_dialog_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(DialogHost);
-};
-
 class ConstrainedWindowViewsTest : public ViewsTestBase {
  public:
   ConstrainedWindowViewsTest() : contents_(NULL) {}
@@ -83,7 +48,9 @@ class ConstrainedWindowViewsTest : public ViewsTestBase {
     params.delegate = contents_;
     dialog_.reset(new Widget);
     dialog_->Init(params);
-    dialog_host_.reset(new DialogHost(dialog_->GetNativeView()));
+    dialog_host_.reset(new web_modal::TestWebContentsModalDialogHost(
+        dialog_->GetNativeView()));
+    dialog_host_->set_max_dialog_size(gfx::Size(5000, 5000));
 
     // Make sure the dialog size is dominated by the preferred size of the
     // contents.
@@ -104,12 +71,14 @@ class ConstrainedWindowViewsTest : public ViewsTestBase {
   }
 
   DialogContents* contents() { return contents_; }
-  DialogHost* dialog_host() { return dialog_host_.get(); }
+  web_modal::TestWebContentsModalDialogHost* dialog_host() {
+    return dialog_host_.get();
+  }
   Widget* dialog() { return dialog_.get(); }
 
  private:
   DialogContents* contents_;
-  scoped_ptr<DialogHost> dialog_host_;
+  scoped_ptr<web_modal::TestWebContentsModalDialogHost> dialog_host_;
   scoped_ptr<Widget> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViewsTest);

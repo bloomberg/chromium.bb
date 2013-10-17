@@ -29,6 +29,9 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
                                                      gfx::Image(),
                                                      string16(),
                                                      gfx::Image()));
+  DefaultValue<FieldIconMap>::Set(FieldIconMap());
+  DefaultValue<std::vector<DialogNotification> >::Set(
+      std::vector<DialogNotification>());
 
   // SECTION_CC *must* have a CREDIT_CARD_VERIFICATION_CODE field.
   const DetailInput kCreditCardInputs[] = {
@@ -49,6 +52,11 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
       .WillByDefault(Return(false));
 }
 
+void MockAutofillDialogViewDelegate::SetWebContents(
+    content::WebContents* contents) {
+  testing::DefaultValue<content::WebContents*>::Set(contents);
+}
+
 MockAutofillDialogViewDelegate::~MockAutofillDialogViewDelegate() {
   using testing::DefaultValue;
 
@@ -57,6 +65,9 @@ MockAutofillDialogViewDelegate::~MockAutofillDialogViewDelegate() {
   DefaultValue<ValidityMessages>::Clear();
   DefaultValue<string16>::Clear();
   DefaultValue<const DetailInputs&>::Clear();
+  DefaultValue<FieldIconMap>::Clear();
+  DefaultValue<std::vector<DialogNotification> >::Clear();
+  DefaultValue<content::WebContents*>::Clear();
 }
 
 }  // namespace autofill

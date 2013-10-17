@@ -648,6 +648,46 @@ void AutofillDialogViews::AccountChooser::OnMenuButtonClicked(
   }
 }
 
+void AutofillDialogViews::ShowDialogInMode(DialogMode dialog_mode) {
+  std::vector<views::View*> visible;
+
+  if (dialog_mode == LOADING) {
+    visible.push_back(loading_shield_);
+  } else if (dialog_mode == SIGN_IN) {
+    visible.push_back(sign_in_webview_);
+  } else {
+    DCHECK_EQ(DETAIL_INPUT, dialog_mode);
+    visible.push_back(notification_area_);
+    visible.push_back(scrollable_area_);
+  }
+
+  for (size_t i = 0; i < visible.size(); ++i) {
+    DCHECK_GE(GetIndexOf(visible[i]), 0);
+  }
+
+  for (int i = 0; i < child_count(); ++i) {
+    views::View* child = child_at(i);
+    child->SetVisible(
+        std::find(visible.begin(), visible.end(), child) != visible.end());
+  }
+}
+
+views::View* AutofillDialogViews::GetLoadingShieldForTesting() {
+  return loading_shield_;
+}
+
+views::View* AutofillDialogViews::GetSignInWebviewForTesting() {
+  return sign_in_webview_;
+}
+
+views::View* AutofillDialogViews::GetNotificationAreaForTesting() {
+  return notification_area_;
+}
+
+views::View* AutofillDialogViews::GetScrollableAreaForTesting() {
+  return scrollable_area_;
+}
+
 void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
                                                       int event_flags) {
   delegate_->SignInLinkClicked();
@@ -877,9 +917,10 @@ void AutofillDialogViews::OnWidgetClosing(views::Widget* widget) {
 void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
                                                 const gfx::Rect& new_bounds) {
   // Notify the web contents of its new auto-resize limits.
-  if (sign_in_delegate_ && sign_in_webview_->visible())
+  if (sign_in_delegate_ && sign_in_webview_->visible()) {
     sign_in_delegate_->UpdateLimitsAndEnableAutoResize(
         GetMinimumSignInViewSize(), GetMaximumSignInViewSize());
+  }
   HideErrorBubble();
 }
 
@@ -1358,9 +1399,11 @@ void AutofillDialogViews::UpdateAccountChooser() {
     if (show_loading) {
       loading_shield_height_ = std::max(kInitialLoadingShieldHeight,
                                         GetContentsBounds().height());
+      ShowDialogInMode(LOADING);
+    } else {
+      ShowDialogInMode(DETAIL_INPUT);
     }
 
-    loading_shield_->SetVisible(show_loading);
     InvalidateLayout();
     ContentsPreferredSizeChanged();
   }
@@ -1398,7 +1441,6 @@ void AutofillDialogViews::UpdateButtonStrip() {
 }
 
 void AutofillDialogViews::UpdateOverlay() {
-  DialogOverlayState overlay_state = delegate_->GetDialogOverlay();
   overlay_view_->UpdateState();
 }
 
@@ -1503,15 +1545,16 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
           GetMinimumSignInViewSize(), GetMaximumSignInViewSize()));
   sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
 
-  sign_in_webview_->SetVisible(true);
+  ShowDialogInMode(SIGN_IN);
   sign_in_webview_->RequestFocus();
+
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
   return &sign_in_webview_->web_contents()->GetController();
 }
 
 void AutofillDialogViews::HideSignIn() {
-  sign_in_webview_->SetVisible(false);
+  ShowDialogInMode(DETAIL_INPUT);
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
 }
@@ -1936,15 +1979,15 @@ void AutofillDialogViews::InitChildViews() {
   AddChildView(scrollable_area_);
 
   loading_shield_ = new LoadingAnimationView(delegate_->SpinnerText());
-  loading_shield_->SetVisible(false);
   AddChildView(loading_shield_);
 
   sign_in_webview_ = new views::WebView(delegate_->profile());
-  sign_in_webview_->SetVisible(false);
   AddChildView(sign_in_webview_);
 
   overlay_view_ = new OverlayView(delegate_);
   overlay_view_->SetVisible(false);
+
+  ShowDialogInMode(DETAIL_INPUT);
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {

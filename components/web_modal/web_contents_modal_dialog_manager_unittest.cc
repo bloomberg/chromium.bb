@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
 #include "components/web_modal/native_web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
+#include "components/web_modal/test_web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,42 +70,6 @@ class TestNativeWebContentsModalDialogManager
   DialogStateMap dialog_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNativeWebContentsModalDialogManager);
-};
-
-class TestWebContentsModalDialogManagerDelegate
-    : public WebContentsModalDialogManagerDelegate {
- public:
-  TestWebContentsModalDialogManagerDelegate()
-      : web_contents_visible_(true),
-        web_contents_blocked_(false) {
-  }
-
-  // WebContentsModalDialogManagerDelegate overrides
-  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                     bool blocked) OVERRIDE {
-    web_contents_blocked_ = blocked;
-  }
-
-  virtual WebContentsModalDialogHost* GetWebContentsModalDialogHost() OVERRIDE {
-    return NULL;
-  }
-
-  virtual bool IsWebContentsVisible(
-      content::WebContents* web_contents) OVERRIDE {
-    return web_contents_visible_;
-  }
-
-  void set_web_contents_visible(bool visible) {
-    web_contents_visible_ = visible;
-  }
-
-  bool web_contents_blocked() const { return web_contents_blocked_; }
-
- private:
-  bool web_contents_visible_;
-  bool web_contents_blocked_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebContentsModalDialogManagerDelegate);
 };
 
 class WebContentsModalDialogManagerTest
