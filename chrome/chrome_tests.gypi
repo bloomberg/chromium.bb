@@ -2506,21 +2506,6 @@
         }],
       ],
     },
-    {
-      # Executable that contains all the tests to be run on the GPU bots.
-      'target_name': 'gpu_tests',
-      'type': 'executable',
-      'dependencies': [
-        # Runtime dependencies
-        '../third_party/mesa/mesa.gyp:osmesa',
-      ],
-      'includes': [
-        'test/gpu/test_support_gpu.gypi'
-      ],
-      'sources': [
-        'test/gpu/gpu_feature_browsertest.cc',
-      ],
-    },
   ],
   'conditions': [
     ['OS=="mac"', {
@@ -2938,7 +2923,6 @@
                 '../url/url.gyp:url_unittests',
                 'browser_tests',
                 'chromedriver_unittests',
-                'gpu_tests',
                 'performance_ui_tests',
                 'pyautolib',
                 'sync_integration_tests',

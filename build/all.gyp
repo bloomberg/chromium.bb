@@ -394,7 +394,7 @@
           'target_name': 'chromium_gpu_builder',
           'type': 'none',
           'dependencies': [
-            '../chrome/chrome.gyp:gpu_tests',
+            '../chrome/chrome.gyp:chrome',
             '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:performance_ui_tests',
             '../content/content.gyp:content_browsertests',
@@ -407,13 +407,23 @@
                 '../gpu/gles2_conform_test/gles2_conform_test.gyp:gles2_conform_test',
               ],
             }], # internal_gles2_conform
+            ['OS!="ios" and OS!="win"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:minidump_stackwalk',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:linux_symbols'
+              ],
+            }],
           ],
         }, # target_name: chromium_gpu_builder
         {
           'target_name': 'chromium_gpu_debug_builder',
           'type': 'none',
           'dependencies': [
-            '../chrome/chrome.gyp:gpu_tests',
+            '../chrome/chrome.gyp:chrome',
             '../content/content.gyp:content_browsertests',
             '../content/content.gyp:content_gl_tests',
             '../gpu/gpu.gyp:gl_tests',
@@ -424,6 +434,16 @@
                 '../gpu/gles2_conform_test/gles2_conform_test.gyp:gles2_conform_test',
               ],
             }], # internal_gles2_conform
+            ['OS!="ios" and OS!="win"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:minidump_stackwalk',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:linux_symbols'
+              ],
+            }],
           ],
         }, # target_name: chromium_gpu_debug_builder
         {
