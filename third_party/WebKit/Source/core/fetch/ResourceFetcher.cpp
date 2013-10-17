@@ -971,8 +971,10 @@ void ResourceFetcher::didLoadResource(Resource* resource)
             info->setInitialRequest(resource->resourceRequest());
             info->setFinalResponse(resource->response());
             info->setLoadFinishTime(resource->loadFinishTime());
-            if (DOMWindow* initiatorWindow = initiatorDocument->domWindow())
-                initiatorWindow->performance()->addResourceTiming(*info, initiatorDocument);
+            if (DOMWindow* initiatorWindow = initiatorDocument->domWindow()) {
+                if (Performance* performance = initiatorWindow->performance())
+                    performance->addResourceTiming(*info, initiatorDocument);
+            }
         }
     }
 
