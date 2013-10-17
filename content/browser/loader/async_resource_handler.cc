@@ -243,6 +243,8 @@ bool AsyncResourceHandler::OnWillRead(int request_id,
 
 bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
                                            bool* defer) {
+  DCHECK_GE(bytes_read, 0);
+
   if (!bytes_read)
     return true;
 

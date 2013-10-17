@@ -406,6 +406,8 @@ void ResourceDispatcher::OnReceivedData(int request_id,
                                         int data_offset,
                                         int data_length,
                                         int encoded_data_length) {
+  DCHECK_GT(data_length, 0);
+
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (request_info && data_length > 0) {
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
