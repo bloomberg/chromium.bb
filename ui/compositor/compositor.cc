@@ -375,10 +375,8 @@ PendingSwap::~PendingSwap() {
 
 namespace ui {
 
-Compositor::Compositor(CompositorDelegate* delegate,
-                       gfx::AcceleratedWidget widget)
-    : delegate_(delegate),
-      root_layer_(NULL),
+Compositor::Compositor(gfx::AcceleratedWidget widget)
+    : root_layer_(NULL),
       widget_(widget),
       posted_swaps_(new PostedSwapQueue()),
       device_scale_factor_(0.0f),
@@ -386,7 +384,11 @@ Compositor::Compositor(CompositorDelegate* delegate,
       last_ended_frame_(0),
       next_draw_is_resize_(false),
       disable_schedule_composite_(false),
-      compositor_lock_(NULL) {
+      compositor_lock_(NULL),
+      defer_draw_scheduling_(false),
+      waiting_on_compositing_end_(false),
+      draw_on_compositing_end_(false),
+      schedule_draw_factory_(this) {
   DCHECK(g_compositor_initialized)
       << "Compositor::Initialize must be called before creating a Compositor.";
 
@@ -443,8 +445,6 @@ Compositor::~Compositor() {
   CancelCompositorLock();
   DCHECK(!compositor_lock_);
 
-  // Don't call |CompositorDelegate::ScheduleDraw| from this point.
-  delegate_ = NULL;
   if (root_layer_)
     root_layer_->SetCompositor(NULL);
 
@@ -551,10 +551,14 @@ void Compositor::Terminate() {
 }
 
 void Compositor::ScheduleDraw() {
-  if (g_compositor_thread)
+  if (g_compositor_thread) {
     host_->Composite(base::TimeTicks::Now());
-  else if (delegate_)
-    delegate_->ScheduleDraw();
+  } else if (!defer_draw_scheduling_) {
+    defer_draw_scheduling_ = true;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&Compositor::Draw, schedule_draw_factory_.GetWeakPtr()));
+  }
 }
 
 void Compositor::SetRootLayer(Layer* root_layer) {
@@ -577,6 +581,15 @@ void Compositor::SetHostHasTransparentBackground(
 
 void Compositor::Draw() {
   DCHECK(!g_compositor_thread);
+
+  defer_draw_scheduling_ = false;
+  if (waiting_on_compositing_end_) {
+    draw_on_compositing_end_ = true;
+    return;
+  }
+  waiting_on_compositing_end_ = true;
+
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "Compositor::Draw", last_started_frame_ + 1);
 
   if (!root_layer_)
     return;
@@ -782,6 +795,16 @@ void Compositor::CancelCompositorLock() {
 
 void Compositor::NotifyEnd() {
   last_ended_frame_++;
+  TRACE_EVENT_ASYNC_END0("ui", "Compositor::Draw", last_ended_frame_);
+  waiting_on_compositing_end_ = false;
+  if (draw_on_compositing_end_) {
+    draw_on_compositing_end_ = false;
+
+    // Call ScheduleDraw() instead of Draw() in order to allow other
+    // CompositorObservers to be notified before starting another
+    // draw cycle.
+    ScheduleDraw();
+  }
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingEnded(this));

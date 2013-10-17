@@ -19,8 +19,7 @@
 
 namespace ui {
 
-class TestCompositorHostX11 : public TestCompositorHost,
-                              public CompositorDelegate {
+class TestCompositorHostX11 : public TestCompositorHost {
  public:
   TestCompositorHostX11(const gfx::Rect& bounds);
   virtual ~TestCompositorHostX11();
@@ -30,9 +29,6 @@ class TestCompositorHostX11 : public TestCompositorHost,
   virtual void Show() OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
 
-  // Overridden from CompositorDelegate:
-  virtual void ScheduleDraw() OVERRIDE;
-
   void Draw();
 
   gfx::Rect bounds_;
@@ -41,14 +37,11 @@ class TestCompositorHostX11 : public TestCompositorHost,
 
   XID window_;
 
-  base::WeakPtrFactory<TestCompositorHostX11> method_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostX11);
 };
 
 TestCompositorHostX11::TestCompositorHostX11(const gfx::Rect& bounds)
-    : bounds_(bounds),
-      method_factory_(this) {
+    : bounds_(bounds) {
 }
 
 TestCompositorHostX11::~TestCompositorHostX11() {
@@ -76,22 +69,12 @@ void TestCompositorHostX11::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
-  compositor_.reset(new ui::Compositor(this, window_));
+  compositor_.reset(new ui::Compositor(window_));
   compositor_->SetScaleAndSize(1.0f, bounds_.size());
 }
 
 ui::Compositor* TestCompositorHostX11::GetCompositor() {
   return compositor_.get();
-}
-
-void TestCompositorHostX11::ScheduleDraw() {
-  DCHECK(!ui::Compositor::WasInitializedWithThread());
-  if (!method_factory_.HasWeakPtrs()) {
-    base::MessageLoopForUI::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&TestCompositorHostX11::Draw,
-                   method_factory_.GetWeakPtr()));
-  }
 }
 
 void TestCompositorHostX11::Draw() {

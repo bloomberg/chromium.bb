@@ -213,16 +213,6 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
 
-// An interface to allow the compositor to communicate with its owner.
-class COMPOSITOR_EXPORT CompositorDelegate {
- public:
-  // Requests the owner to schedule a redraw of the layer tree.
-  virtual void ScheduleDraw() = 0;
-
- protected:
-  virtual ~CompositorDelegate() {}
-};
-
 // This class represents a lock on the compositor, that can be used to prevent
 // commits to the compositor tree while we're waiting for an asynchronous
 // event. The typical use case is when waiting for a renderer to produce a frame
@@ -294,8 +284,7 @@ class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       public base::SupportsWeakPtr<Compositor> {
  public:
-  Compositor(CompositorDelegate* delegate,
-             gfx::AcceleratedWidget widget);
+  explicit Compositor(gfx::AcceleratedWidget widget);
   virtual ~Compositor();
 
   // Set up the compositor ContextFactory for a test environment. Unit tests
@@ -428,7 +417,6 @@ class COMPOSITOR_EXPORT Compositor
   // Notifies the compositor that compositing is complete.
   void NotifyEnd();
 
-  CompositorDelegate* delegate_;
   gfx::Size size_;
 
   // The root of the Layer tree drawn by this compositor.
@@ -455,6 +443,15 @@ class COMPOSITOR_EXPORT Compositor
   bool disable_schedule_composite_;
 
   CompositorLock* compositor_lock_;
+
+  // Prevent more than one draw from being scheduled.
+  bool defer_draw_scheduling_;
+
+  // Used to prevent Draw()s while a composite is in progress.
+  bool waiting_on_compositing_end_;
+  bool draw_on_compositing_end_;
+
+  base::WeakPtrFactory<Compositor> schedule_draw_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Compositor);
 };

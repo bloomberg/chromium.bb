@@ -26,7 +26,6 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/view_prop.h"
-#include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -149,19 +148,14 @@ RootWindow::RootWindow(const CreateParams& params)
       event_dispatch_target_(NULL),
       gesture_recognizer_(ui::GestureRecognizer::Create(this)),
       synthesize_mouse_move_(false),
-      waiting_on_compositing_end_(false),
-      draw_on_compositing_end_(false),
-      defer_draw_scheduling_(false),
       move_hold_count_(0),
-      schedule_paint_factory_(this),
       event_factory_(this),
       held_event_factory_(this),
       repostable_event_factory_(this) {
   SetName("RootWindow");
 
-  compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));
+  compositor_.reset(new ui::Compositor(host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
-  compositor_->AddObserver(this);
 
   prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),
                                kRootWindowForAcceleratedWidget,
@@ -171,7 +165,6 @@ RootWindow::RootWindow(const CreateParams& params)
 RootWindow::~RootWindow() {
   TRACE_EVENT0("shutdown", "RootWindow::Destructor");
 
-  compositor_->RemoveObserver(this);
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
   compositor_.reset();
@@ -315,24 +308,6 @@ bool RootWindow::ConfineCursorToWindow() {
   // to the root window. This is ok because this option is currently only
   // being used in fullscreen mode, so root_window bounds = window bounds.
   return host_->ConfineCursorToRootWindow();
-}
-
-void RootWindow::Draw() {
-  defer_draw_scheduling_ = false;
-  if (waiting_on_compositing_end_) {
-    draw_on_compositing_end_ = true;
-    return;
-  }
-  waiting_on_compositing_end_ = true;
-
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::Draw",
-                           compositor_->last_started_frame() + 1);
-
-  compositor_->Draw();
-}
-
-void RootWindow::ScheduleFullRedraw() {
-  compositor_->ScheduleFullRedraw();
 }
 
 void RootWindow::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
@@ -559,54 +534,6 @@ ui::EventTarget* RootWindow::GetParentTarget() {
   return client::GetEventClient(this) ?
       client::GetEventClient(this)->GetToplevelEventTarget() :
           Env::GetInstance();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, ui::CompositorDelegate implementation:
-
-void RootWindow::ScheduleDraw() {
-  DCHECK(!ui::Compositor::WasInitializedWithThread());
-  if (!defer_draw_scheduling_) {
-    defer_draw_scheduling_ = true;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&RootWindow::Draw, schedule_paint_factory_.GetWeakPtr()));
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, ui::CompositorObserver implementation:
-
-void RootWindow::OnCompositingDidCommit(ui::Compositor*) {
-}
-
-void RootWindow::OnCompositingStarted(ui::Compositor*,
-                                      base::TimeTicks start_time) {
-}
-
-void RootWindow::OnCompositingEnded(ui::Compositor*) {
-  TRACE_EVENT_ASYNC_END0("ui", "RootWindow::Draw",
-                         compositor_->last_ended_frame());
-  waiting_on_compositing_end_ = false;
-  if (draw_on_compositing_end_) {
-    draw_on_compositing_end_ = false;
-
-    // Call ScheduleDraw() instead of Draw() in order to allow other
-    // ui::CompositorObservers to be notified before starting another
-    // draw cycle.
-    ScheduleDraw();
-  }
-}
-
-void RootWindow::OnCompositingAborted(ui::Compositor*) {
-}
-
-void RootWindow::OnCompositingLockStateChanged(ui::Compositor*) {
-}
-
-void RootWindow::OnUpdateVSyncParameters(ui::Compositor* compositor,
-                                         base::TimeTicks timebase,
-                                         base::TimeDelta interval) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

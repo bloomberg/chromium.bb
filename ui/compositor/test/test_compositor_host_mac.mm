@@ -78,8 +78,7 @@ class AppKitHost : public FoundationHost {
 
 // TestCompositorHostMac provides a window surface and a coordinated compositor
 // for use in the compositor unit tests.
-class TestCompositorHostMac : public TestCompositorHost,
-                              public CompositorDelegate,
+class TestCompositorHostMac : public TestCompositorHost
                               public AppKitHost {
  public:
   TestCompositorHostMac(const gfx::Rect& bounds);
@@ -89,9 +88,6 @@ class TestCompositorHostMac : public TestCompositorHost,
   // TestCompositorHost:
   virtual void Show() OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
-
-  // CompositorDelegate:
-  virtual void ScheduleDraw() OVERRIDE;
 
   gfx::Rect bounds_;
   scoped_ptr<ui::Compositor> compositor_;
@@ -128,7 +124,7 @@ void TestCompositorHostMac::Show() {
                               defer:NO];
   base::scoped_nsobject<AcceleratedTestView> view(
       [[AcceleratedTestView alloc] init]);
-  compositor_.reset(new ui::Compositor(this, view, bounds_.size()));
+  compositor_.reset(new ui::Compositor(view, bounds_.size()));
   [view setCompositor:compositor_.get()];
   [window_ setContentView:view];
   [window_ orderFront:nil];
@@ -136,15 +132,6 @@ void TestCompositorHostMac::Show() {
 
 ui::Compositor* TestCompositorHostMac::GetCompositor() {
   return compositor_.get();
-}
-
-void TestCompositorHostMac::ScheduleDraw() {
-  DCHECK(!ui::Compositor::WasInitializedWithThread());
-  if (!compositor_.get())
-    return;
-
-  // Force display now.
-  [window_ display];
 }
 
 // static

@@ -343,7 +343,7 @@ TEST_F(LayerWithRealCompositorTest, Hierarchy) {
   DrawTree(l1.get());
 }
 
-class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
+class LayerWithDelegateTest : public testing::Test {
  public:
   LayerWithDelegateTest() {}
   virtual ~LayerWithDelegateTest() {}
@@ -353,7 +353,7 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
     bool allow_test_contexts = true;
     Compositor::InitializeContextFactoryForTests(allow_test_contexts);
     Compositor::Initialize();
-    compositor_.reset(new Compositor(this, gfx::kNullAcceleratedWidget));
+    compositor_.reset(new Compositor(gfx::kNullAcceleratedWidget));
     compositor_->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
   }
 
@@ -403,15 +403,6 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
 
   void WaitForCommit() {
     DrawWaiterForTest::WaitForCommit(compositor());
-  }
-
-  // CompositorDelegate overrides.
-  virtual void ScheduleDraw() OVERRIDE {
-    DCHECK(!ui::Compositor::WasInitializedWithThread());
-    if (compositor_) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&Compositor::Draw, compositor_->AsWeakPtr()));
-    }
   }
 
  private:

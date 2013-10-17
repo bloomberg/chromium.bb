@@ -12,12 +12,11 @@
 namespace ui {
 
 class TestCompositorHostWin : public TestCompositorHost,
-                              public gfx::WindowImpl,
-                              public CompositorDelegate {
+                              public gfx::WindowImpl {
  public:
   TestCompositorHostWin(const gfx::Rect& bounds) {
     Init(NULL, bounds);
-    compositor_.reset(new ui::Compositor(this, hwnd()));
+    compositor_.reset(new ui::Compositor(hwnd()));
     compositor_->SetScaleAndSize(1.0f, GetSize());
   }
 
@@ -31,14 +30,6 @@ class TestCompositorHostWin : public TestCompositorHost,
   }
   virtual ui::Compositor* GetCompositor() OVERRIDE {
     return compositor_.get();
-  }
-
-  // Overridden from CompositorDelegate:
-  virtual void ScheduleDraw() OVERRIDE {
-    DCHECK(!ui::Compositor::WasInitializedWithThread());
-    RECT rect;
-    ::GetClientRect(hwnd(), &rect);
-    InvalidateRect(hwnd(), &rect, FALSE);
   }
 
  private:

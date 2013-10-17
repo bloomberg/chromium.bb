@@ -19,7 +19,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_dispatcher.h"
@@ -53,9 +52,7 @@ class RootWindowTransformer;
 class TestScreen;
 
 // RootWindow is responsible for hosting a set of windows.
-class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
-                               public ui::CompositorObserver,
-                               public Window,
+class AURA_EXPORT RootWindow : public Window,
                                public ui::EventDispatcherDelegate,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver,
@@ -255,20 +252,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Overridden from ui::EventTarget:
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;
 
-  // Overridden from ui::CompositorDelegate:
-  virtual void ScheduleDraw() OVERRIDE;
-
-  // Overridden from ui::CompositorObserver:
-  virtual void OnCompositingDidCommit(ui::Compositor*) OVERRIDE;
-  virtual void OnCompositingStarted(ui::Compositor*,
-                                    base::TimeTicks start_time) OVERRIDE;
-  virtual void OnCompositingEnded(ui::Compositor*) OVERRIDE;
-  virtual void OnCompositingAborted(ui::Compositor*) OVERRIDE;
-  virtual void OnCompositingLockStateChanged(ui::Compositor*) OVERRIDE;
-  virtual void OnUpdateVSyncParameters(ui::Compositor* compositor,
-                                       base::TimeTicks timebase,
-                                       base::TimeDelta interval) OVERRIDE;
-
   // Overridden from ui::LayerDelegate:
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
 
@@ -435,9 +418,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   scoped_ptr<ui::ViewProp> prop_;
 
   scoped_ptr<RootWindowTransformer> transformer_;
-
-  // Used to schedule painting.
-  base::WeakPtrFactory<RootWindow> schedule_paint_factory_;
 
   // Use to post mouse move event.
   base::WeakPtrFactory<RootWindow> event_factory_;
