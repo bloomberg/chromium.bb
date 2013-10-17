@@ -422,7 +422,7 @@ bool DownloadItemModel::IsDangerous() const {
   return download_->IsDangerous();
 }
 
-bool DownloadItemModel::IsMalicious() const {
+bool DownloadItemModel::MightBeMalicious() const {
   if (!IsDangerous())
     return false;
   switch (download_->GetDangerType()) {
@@ -441,6 +441,31 @@ bool DownloadItemModel::IsMalicious() const {
       NOTREACHED();
       // Fallthrough.
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool DownloadItemModel::IsMalicious() const {
+  if (!MightBeMalicious())
+    return false;
+  switch (download_->GetDangerType()) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      return true;
+
+    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
+    case content::DOWNLOAD_DANGER_TYPE_MAX:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      // We shouldn't get any of these due to the MightBeMalicious() test above.
+      NOTREACHED();
+      // Fallthrough.
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return false;
   }
   NOTREACHED();

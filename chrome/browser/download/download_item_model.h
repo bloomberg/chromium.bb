@@ -81,6 +81,10 @@ class DownloadItemModel {
   bool IsDangerous() const;
 
   // Is this considered a malicious download? Implies IsDangerous().
+  bool MightBeMalicious() const;
+
+  // Is this considered a malicious download with very high confidence?
+  // Implies IsDangerous() and MightBeMalicious().
   bool IsMalicious() const;
 
   // Is safe browsing download feedback feature available for this download?

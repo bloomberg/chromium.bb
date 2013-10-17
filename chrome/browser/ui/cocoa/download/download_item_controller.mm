@@ -172,7 +172,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
             *font_list_, kTextWidth));
     confirmButtonTitle =
         base::SysUTF16ToNSString(downloadModel->GetWarningConfirmButtonText());
-    if (downloadModel->IsMalicious())
+    if (downloadModel->MightBeMalicious())
       alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING).ToNSImage();
     else
       alertIcon = rb.GetNativeImageNamed(IDR_WARNING).ToNSImage();

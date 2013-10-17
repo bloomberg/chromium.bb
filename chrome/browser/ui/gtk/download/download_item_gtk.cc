@@ -237,13 +237,15 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     gtk_util::CenterWidgetInHBox(dangerous_hbox_.get(), dangerous_decline,
                                  false, 0);
 
-    // Create the ok button.
-    GtkWidget* dangerous_accept = gtk_button_new_with_label(
-        UTF16ToUTF8(download_model_.GetWarningConfirmButtonText()).c_str());
-    g_signal_connect(dangerous_accept, "clicked",
-                     G_CALLBACK(OnDangerousAcceptThunk), this);
-    gtk_util::CenterWidgetInHBox(dangerous_hbox_.get(), dangerous_accept, false,
-                                 0);
+    // Create the ok button, if this is the kind that can be bypassed.
+    if (!download_model_.IsMalicious()) {
+      GtkWidget* dangerous_accept = gtk_button_new_with_label(
+          UTF16ToUTF8(download_model_.GetWarningConfirmButtonText()).c_str());
+      g_signal_connect(dangerous_accept, "clicked",
+                       G_CALLBACK(OnDangerousAcceptThunk), this);
+      gtk_util::CenterWidgetInHBox(
+          dangerous_hbox_.get(), dangerous_accept, false, 0);
+    }
 
     // Put it in an alignment so that padding will be added on the left and
     // right.
@@ -630,15 +632,16 @@ void DownloadItemGtk::UpdateDangerWarning() {
 
 void DownloadItemGtk::UpdateDangerIcon() {
   if (theme_service_->UsingNativeTheme()) {
-    const char* stock = download_model_.IsMalicious() ?
+    const char* stock = download_model_.MightBeMalicious() ?
         GTK_STOCK_DIALOG_ERROR : GTK_STOCK_DIALOG_WARNING;
     gtk_image_set_from_stock(
         GTK_IMAGE(dangerous_image_), stock, GTK_ICON_SIZE_SMALL_TOOLBAR);
   } else {
     // Set the warning icon.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    int pixbuf_id = download_model_.IsMalicious() ? IDR_SAFEBROWSING_WARNING
-                                                  : IDR_WARNING;
+    int pixbuf_id =
+        download_model_.MightBeMalicious() ? IDR_SAFEBROWSING_WARNING
+                                           : IDR_WARNING;
     gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_),
                               rb.GetNativeImageNamed(pixbuf_id).ToGdkPixbuf());
   }

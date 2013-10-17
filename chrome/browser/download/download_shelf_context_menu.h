@@ -69,6 +69,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   ui::SimpleMenuModel* GetInProgressMenuModel();
   ui::SimpleMenuModel* GetFinishedMenuModel();
   ui::SimpleMenuModel* GetInterruptedMenuModel();
+  ui::SimpleMenuModel* GetMaybeMaliciousMenuModel();
   ui::SimpleMenuModel* GetMaliciousMenuModel();
 
   // We show slightly different menus if the download is in progress vs. if the
@@ -76,6 +77,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   scoped_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;
   scoped_ptr<ui::SimpleMenuModel> finished_download_menu_model_;
   scoped_ptr<ui::SimpleMenuModel> interrupted_download_menu_model_;
+  scoped_ptr<ui::SimpleMenuModel> maybe_malicious_download_menu_model_;
   scoped_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
 
   // Information source.

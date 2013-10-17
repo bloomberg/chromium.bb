@@ -55,10 +55,12 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
   DownloadItemModel download_model(download_item_);
   // We shouldn't be opening a context menu for a dangerous download, unless it
   // is a malicious download.
-  DCHECK(!download_model.IsDangerous() || download_model.IsMalicious());
+  DCHECK(!download_model.IsDangerous() || download_model.MightBeMalicious());
 
   if (download_model.IsMalicious())
     model = GetMaliciousMenuModel();
+  else if (download_model.MightBeMalicious())
+    model = GetMaybeMaliciousMenuModel();
   else if (download_item_->GetState() == DownloadItem::COMPLETE)
     model = GetFinishedMenuModel();
   else if (download_item_->GetState() == DownloadItem::INTERRUPTED)
@@ -307,17 +309,39 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetInterruptedMenuModel() {
   return interrupted_download_menu_model_.get();
 }
 
-ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaliciousMenuModel() {
+ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaybeMaliciousMenuModel() {
+  if (maybe_malicious_download_menu_model_)
+    return maybe_malicious_download_menu_model_.get();
+
+  maybe_malicious_download_menu_model_.reset(new ui::SimpleMenuModel(this));
+
+  maybe_malicious_download_menu_model_->AddItemWithStringId(
+      DISCARD, IDS_DOWNLOAD_MENU_DISCARD);
+  maybe_malicious_download_menu_model_->AddItemWithStringId(
+      KEEP, IDS_DOWNLOAD_MENU_KEEP);
+  maybe_malicious_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+  maybe_malicious_download_menu_model_->AddItemWithStringId(
+      LEARN_MORE_SCANNING, IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING);
+  LOG(INFO) << "GetMaybeMaliciousMenuModel";
+  return maybe_malicious_download_menu_model_.get();
+}
+
+ui::SimpleMenuModel*
+DownloadShelfContextMenu::GetMaliciousMenuModel() {
   if (malicious_download_menu_model_)
     return malicious_download_menu_model_.get();
 
   malicious_download_menu_model_.reset(new ui::SimpleMenuModel(this));
 
-  malicious_download_menu_model_->AddItemWithStringId(
-      DISCARD, IDS_DOWNLOAD_MENU_DISCARD);
-  malicious_download_menu_model_->AddItemWithStringId(
-      KEEP, IDS_DOWNLOAD_MENU_KEEP);
-  malicious_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+  // If the primary action is "record & discard", this also puts a plain
+  // "discard" option in the dropdown. Otherwise this dropdown doesn't need it
+  // because there is no alternative besides "learn more".
+  DownloadItemModel download_model(download_item_);
+  if (download_model.ShouldAllowDownloadFeedback()) {
+    maybe_malicious_download_menu_model_->AddItemWithStringId(
+        DISCARD, IDS_DOWNLOAD_MENU_DISCARD);
+  }
+  LOG(INFO) << "GetMaliciousMenuModel";
   malicious_download_menu_model_->AddItemWithStringId(
       LEARN_MORE_SCANNING, IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING);
 

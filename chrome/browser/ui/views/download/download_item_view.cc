@@ -1074,7 +1074,7 @@ void DownloadItemView::ClearWarningDialog() {
 
 void DownloadItemView::ShowWarningDialog() {
   DCHECK(mode_ != DANGEROUS_MODE && mode_ != MALICIOUS_MODE);
-  mode_ = ((model_.IsMalicious()) ? MALICIOUS_MODE : DANGEROUS_MODE);
+  mode_ = model_.MightBeMalicious() ? MALICIOUS_MODE : DANGEROUS_MODE;
 
   body_state_ = NORMAL;
   drop_down_state_ = NORMAL;
