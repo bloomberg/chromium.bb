@@ -271,7 +271,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     dm.addEventListener('scan-cancelled', this.onScanCancelled_.bind(this));
     dm.addEventListener('scan-updated', this.onScanUpdated_.bind(this));
     dm.addEventListener('rescan-completed',
-                        this.refreshCurrentDirectoryMetadata_.bind(this));
+                        this.onRescanCompleted_.bind(this));
 
     var sm = this.directoryModel_.getFileListSelection();
     sm.addEventListener('change', function() {
@@ -2679,6 +2679,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.scanInProgress_ = false;
     this.table_.list.endBatchUpdates();
     this.grid_.endBatchUpdates();
+  };
+
+  /**
+   * Handle the 'rescan-completed' from the DirectoryModel.
+   * @private
+   */
+  FileManager.prototype.onRescanCompleted_ = function() {
+    this.refreshCurrentDirectoryMetadata_();
+    this.selectionHandler_.onFileSelectionChanged();
   };
 
   /**
