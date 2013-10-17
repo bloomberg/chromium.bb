@@ -33,12 +33,19 @@ function createAnimatedRectInstance() {
 }
 
 function cleanup() {
+    // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
+    // FIXME: Unclear why two calls to collect() are required, see crbug.com/307614
+    GCController.collect();
+    GCController.collect();
+    var originalLiveElements = internals.numberOfLiveNodes();
+
     while (g.hasChildNodes())
         g.removeChild(g.lastChild);
 
     GCController.collect();
 
-    var liveDelta = window.internals.numberOfLiveNodes() - originalLiveElements;
+    // FIXME: Why is this 400 instead of 200?
+    var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 400;
     if (liveDelta == 0)
         log("PASS");
     else
@@ -48,10 +55,6 @@ function cleanup() {
 }
 
 function startTest() {
-    // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
-    GCController.collect();
-    originalLiveElements = window.internals.numberOfLiveNodes();
-    
     // Hold a reference to rect.x.baseVal on the root instance.
     xBaseVal = document.getElementById("rect").x.baseVal;
 
