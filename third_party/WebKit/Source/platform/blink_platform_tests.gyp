@@ -52,13 +52,6 @@
           '<(DEPTH)/base/allocator/allocator.gyp:allocator',
         ]
       }],
-      ['toolkit_uses_gtk == 0',
-        {
-          'sources/': [
-            ['exclude', 'Gtk\\.cpp$']
-          ]
-        }
-      ],
     ]
   }],
 }
