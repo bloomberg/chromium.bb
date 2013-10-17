@@ -256,7 +256,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   CompletionCallback io_callback_;
   CompletionCallback callback_;
 
-  scoped_refptr<HttpNetworkSession> session_;
+  HttpNetworkSession* session_;
 
   BoundNetLog net_log_;
   const HttpRequestInfo* request_;

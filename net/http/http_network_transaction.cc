@@ -159,7 +159,7 @@ HttpNetworkTransaction::~HttpNetworkTransaction() {
       } else {
         // Otherwise, we try to drain the response body.
         HttpStreamBase* stream = stream_.release();
-        stream->Drain(session_.get());
+        stream->Drain(session_);
       }
     }
   }
