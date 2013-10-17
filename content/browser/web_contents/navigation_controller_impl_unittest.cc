@@ -2637,6 +2637,20 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   contents()->DidStartProvisionalLoadForFrame(
       test_rvh(), 1, -1, true, GURL(kUnreachableWebDataURL));
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
+
+  // We should remember if the pending entry will replace the current one.
+  // http://crbug.com/308444.
+  contents()->DidStartProvisionalLoadForFrame(
+      test_rvh(), 1, -1, true, url1);
+  NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
+      set_should_replace_entry(true);
+  contents()->DidStartProvisionalLoadForFrame(
+      test_rvh(), 1, -1, true, url2);
+  EXPECT_TRUE(
+      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
+          should_replace_entry());
+  test_rvh()->SendNavigate(0, url2);
+  EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());
 }
 
 // Tests that the URLs for renderer-initiated navigations are not displayed to

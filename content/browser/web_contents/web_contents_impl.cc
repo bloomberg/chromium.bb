@@ -2199,6 +2199,13 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
                                             GetBrowserContext()));
       entry->set_site_instance(
           static_cast<SiteInstanceImpl*>(GetSiteInstance()));
+      // TODO(creis): If there's a pending entry already, find a safe way to
+      // update it instead of replacing it and copying over things like this.
+      if (pending_entry &&
+          NavigationEntryImpl::FromNavigationEntry(pending_entry)->
+              should_replace_entry()) {
+        entry->set_should_replace_entry(true);
+      }
       controller_.SetPendingEntry(entry);
       NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
     }
