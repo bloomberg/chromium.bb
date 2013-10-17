@@ -18,7 +18,7 @@ a Native Client module written in C++. The PNaCl toolchain is used to enable
 running the Native Client module directly from a web page.
 
 It's recommended to read the :doc:`Native Client Technical Overview
-<../overview>` prior to going through this tutorial.
+</overview>` prior to going through this tutorial.
 
 What the application in this tutorial does
 ------------------------------------------
@@ -43,14 +43,14 @@ does not wait for, or may not even expect, a response. This behavior is
 analogous to client/server communication on the web, where the client posts a
 message to the server and returns immediately. The Native Client messaging
 system is part of the Pepper API, and is described in detail in
-:doc:`Developer's Guide: Messaging System <coding/message-system>`.
+:doc:`Developer's Guide: Messaging System </devguide/coding/message-system>`.
 
 TODO: would it be better to compare to web-worker communication?
 
 Step 1: Download and install the Native Client SDK
 ==================================================
 
-Follow the instructions on the :doc:`Download <../sdk/download>` page to
+Follow the instructions on the :doc:`Download </sdk/download>` page to
 download and install the Native Client SDK.
 
 .. _tutorial_step_2:
@@ -72,11 +72,11 @@ rule called ``serve`` is the easiest way to invoke it:
   :class: note
 
   The SDK may consist of several "bundles", one per Chrome/Pepper version (see
-  :doc:`versioning information <../version>`). In the sample invocation above
+  :doc:`versioning information </version>`). In the sample invocation above
   ``pepper_$(VERSION)`` refers to the specific version you want to use. For
   example, ``pepper_31``. If you don't know which version you need, use the
   one labeled ``(stable)`` by ``naclsdk list``. See :doc:`Download the Native
-  Client SDK <../sdk/download>` for more details.
+  Client SDK </sdk/download>` for more details.
 
 If no port number is specified, the server defaults to port 5103, and can be
 accessed at http://localhost:5103.
@@ -137,7 +137,7 @@ The stub code for the tutorial is avalable in the SDK, in
 It's a good idea to take a look at these files now---they contain a large amount
 of comments that help explain their structure and contents. For more details
 on the structure of a typical Native Client application, see
-:doc:`Application Structure <coding/application-structure>`.
+:doc:`Application Structure </devguide/coding/application-structure>`.
 
 The stub code is intentionally very minimal. The C++ code does not do anything
 except correctly initialize itself. The JavaScript code waits for the Native
@@ -158,7 +158,7 @@ Since the sample is located within the SDK tree, the Makefile knows how to find
 the PNaCl toolchain automatically and use it to build the module. If you're
 building applications outside the NaCl SDK tree, you should set the
 ``$NACL_SDK_ROOT`` environment variable. See :doc:`Building Native Client
-Modules <devcycle/building>` for more details.
+Modules </devguide//devcycle/building>` for more details.
 
 Assuming the local server was started according to the instructions in
 :ref:`Step 2 <tutorial_step_2>`, you can now load the sample by pointing Chrome
@@ -265,20 +265,18 @@ Another useful debugging aid is the Chrome JavaScript console (available via the
 ``Tools`` menu in Chrome). Examine it for clues about what went wrong. For
 example, if there's a message saying "NaCl module crashed", there is a
 possibility that the Native Client module has a bug; :doc:`debugging
-<devcycle/debugging>` may be required.
+</devguide/devcycle/debugging>` may be required.
 
 There's more information about troubleshooting in the documentation:
 
 * :ref:`FAQ Troubleshooting <faq_troubleshooting>`.
-* The :doc:`Progress Events <coding/progress-events>` document contains some
-  useful information about handling error events.
-
-.. TODO: fix links to :ref:/:doc: once ReST-ified.
+* The :doc:`Progress Events </devguide/coding/progress-events>` document
+  contains some useful information about handling error events.
 
 Next steps
 ==========
 
-* See the :doc:`Application Structure <coding/application-structure>`
+* See the :doc:`Application Structure </devguide/coding/application-structure>`
   chapter in the Developer's Guide for information about how to structure a
   Native Client module.
 * Check the `C++ Reference
@@ -287,10 +285,10 @@ Next steps
 * Browse through the source code of the SDK examples (in the ``examples``
   directory) to learn additional techniques for writing Native Client
   applications and using the Pepper APIs.
-* See the :doc:`Building <devcycle/building>`, :doc:`Running
-  <devcycle/running>`, and :doc:`Debugging pages <devcycle/debugging>`
-  for information about how to build, run, and debug Native Client
-  applications.
+* See the :doc:`Building </devguide/devcycle/building>`, :doc:`Running
+  </devguide/devcycle/running>`, and :doc:`Debugging pages
+  </devguide/devcycle/debugging>` for information about how to build, run, and
+  debug Native Client applications.
 * Check the `naclports <http://code.google.com/p/naclports/>`_ project to see
   what libraries have been ported for use with Native Client. If you port an
   open-source library for your own use, we recommend adding it to naclports

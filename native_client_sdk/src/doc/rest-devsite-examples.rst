@@ -69,7 +69,8 @@ document name within the angle brackets is relative to the root dir of the
 devsite doc tree and does not have an extension.
 
 Here's a link to a document in a subdirectory: :doc:`the tutorial
-<devguide/tutorial>`. And a link to a subdirectory index page :doc:`devguide index <devguide/index>`.
+<devguide/tutorial/tutorial-part1>`. And a link to a subdirectory index page
+:doc:`devguide index <devguide/index>`.
 
 To sections inside documents
 ----------------------------

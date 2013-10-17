@@ -17,7 +17,8 @@ Contents:
    sdk/release-notes.rst
    sdk/release-notes.rst
    devguide/index.rst
-   devguide/tutorial.rst
+   devguide/tutorial/index.rst
+   devguide/tutorial/tutorial-part1.rst
    devguide/devcycle/index.rst
    devguide/devcycle/building.rst
    devguide/devcycle/running.rst

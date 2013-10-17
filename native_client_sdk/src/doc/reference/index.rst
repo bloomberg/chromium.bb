@@ -2,13 +2,8 @@
 Reference
 #########
 
-The Native Client Reference section includes details about Native Client
-that may be of interest to developers. For example, it contains details
-about the NaCl manifest file format, and details about the Portable
-Native Client bitcode.
-
-If there are any additional details about Native Client that would
-be of interest to developers and should be included in this References
-section, please send feedback to the
-`native-client-discuss group
-<https://groups.google.com/group/native-client-discuss>`_.
+The reference section includes more in-depth details about some aspects of
+developing with Native Client, such as the NaCl manifest file format. In
+addition, it contains information that's mainly of interest to developers who
+want to have a better understanding of how NaCl and PNaCl work under the hood;
+for example, the PNaCl stable bitcode reference.

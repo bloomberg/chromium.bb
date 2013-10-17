@@ -226,6 +226,6 @@ Next steps:
   information about the SDK and new bundles.
 * If you're just getting started with Native Client, we recommend reading
   the :doc:`Technical Overview <../overview>` and walking through the
-  :doc:`Getting Started Tutorial </devguide/tutorial>`.
+  :doc:`Getting Started Tutorial </devguide/tutorial/index>`.
 * If you'd rather dive into information about the toolchains, see
   :doc:`Building Native Client Modules </devguide/devcycle/building>`.

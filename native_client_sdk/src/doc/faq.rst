@@ -160,7 +160,7 @@ on Windows, or Xcode on Mac OSX.
 I'm not familiar with native development tools, can I still use the Native Client SDK?
 --------------------------------------------------------------------------------------
 
-You may find our :doc:`Tutorial <devguide/tutorial>` and :doc:`Building
+You may find our :doc:`Tutorial <devguide/tutorial/index>` and :doc:`Building
 instructions <devguide/devcycle/building>` useful, and you can look at
 the code and Makefiles for the SDK examples to understand how the
 examples are built and run.

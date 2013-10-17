@@ -15,7 +15,7 @@ Introduction
 This document describes how to build Native Client modules. It is intended for
 developers who have experience writing, compiling, and linking C and C++ code.
 If you haven't read the Native Client :doc:`Technical Overview
-<../../overview>` and :doc:`Tutorial <../tutorial>`, we recommend starting
+<../../overview>` and :doc:`Tutorial <../tutorial/index>`, we recommend starting
 with those.
 
 .. _target_architectures:
