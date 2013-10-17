@@ -157,6 +157,8 @@ cat <<EOF > "${rundir}/etc/gerrit.config"
 	listenAddress = *:${ssh_port}
 [sendemail]
 	enable = false
+[container]
+	javaOptions = -Duser.home=${rundir}/tmp
 EOF
 
 # Initialize the gerrit instance.
