@@ -42,6 +42,13 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Call back to the controller, to inform of the user's decision.
   void SetPermission(bool update_content_setting, bool allowed);
 
+  // Marks a flag internally to indicate that the user has interacted with the
+  // bar. This makes it possible to log from the destructor when the bar has not
+  // been used, i.e. it has been ignored by the user.
+  void set_user_has_interacted() {
+    user_has_interacted_ = true;
+  }
+
  private:
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
@@ -60,6 +67,9 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
   GURL requesting_frame_;
   int contents_unique_id_;
   std::string display_languages_;
+
+  // Whether the user has interacted with the geolocation infobar.
+  bool user_has_interacted_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarDelegate);
 };

@@ -4885,6 +4885,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Geolocation.InfoBarDelegate.Event"
+    enum="GeolocationInfoBarDelegateEvent">
+  <summary>Events in GeolocationInfoBarDelegate.</summary>
+</histogram>
+
+<histogram name="Geolocation.InfoBarDelegateAndroid.Event"
+    enum="GeolocationInfoBarDelegateAndroidEvent">
+  <summary>Events in GeolocationInfoBarDelegateAndroid.</summary>
+</histogram>
+
 <histogram name="Geolocation.NetworkLocationRequest.Event"
     enum="NetworkLocationRequestEvent">
   <summary>Events in NetworkLocationRequest.</summary>
@@ -22496,6 +22506,23 @@ other types of suffix sets.
   <int value="16385" label="FOLDER"/>
   <int value="32769" label="FILE"/>
   <int value="32770" label="PDF"/>
+</enum>
+
+<enum name="GeolocationInfoBarDelegateAndroidEvent" type="int">
+  <int value="0" label="User allowed the page to use geolocation">
+    For the Android platform the count for this event should be exactly the same
+    as the corresponding event in the GeolocationInfoBarDelegateEvent enum.
+  </int>
+  <int value="1" label="User opened geolocation settings"/>
+</enum>
+
+<enum name="GeolocationInfoBarDelegateEvent" type="int">
+  <int value="0" label="The bar was created"/>
+  <int value="1" label="User allowed use of geolocation"/>
+  <int value="2" label="User denied use of geolocation"/>
+  <int value="3" label="User dismissed the bar"/>
+  <int value="4" label="User clicked on link"/>
+  <int value="5" label="User ignored the bar"/>
 </enum>
 
 <enum name="GestureActionType" type="int">
