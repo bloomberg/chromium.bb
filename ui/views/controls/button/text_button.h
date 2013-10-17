@@ -65,7 +65,6 @@ class VIEWS_EXPORT TextButtonDefaultBorder : public TextButtonBorder {
   TextButtonDefaultBorder();
   virtual ~TextButtonDefaultBorder();
 
- protected:
   // TextButtonDefaultBorder takes and retains ownership of these |painter|s.
   void set_normal_painter(Painter* painter) { normal_painter_.reset(painter); }
   void set_hot_painter(Painter* painter) { hot_painter_.reset(painter); }

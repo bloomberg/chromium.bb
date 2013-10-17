@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/avatar_label.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h"
+#include "chrome/browser/ui/views/new_avatar_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -150,7 +152,12 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  UpdateAvatarInfo();
+  if (browser_view->IsRegularOrGuestSession() &&
+      profiles::IsNewProfileManagementEnabled())
+    UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
+  else
+    UpdateAvatarInfo();
+
   if (!browser_view->IsOffTheRecord()) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                    content::NotificationService::AllSources());
@@ -215,7 +222,9 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // label.
   if ((avatar_button() &&
        avatar_button()->GetMirroredBounds().Contains(point)) ||
-      (avatar_label() && avatar_label()->GetMirroredBounds().Contains(point)))
+      (avatar_label() && avatar_label()->GetMirroredBounds().Contains(point)) ||
+      (new_avatar_button() &&
+       new_avatar_button()->GetMirroredBounds().Contains(point)))
     return HTCLIENT;
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);
@@ -396,6 +405,8 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
     frame()->Restore();
   else if (sender == close_button_)
     frame()->Close();
+  else if (sender == new_avatar_button())
+    ShowProfileChooserViewBubble();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -427,7 +438,11 @@ void OpaqueBrowserFrameView::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      UpdateAvatarInfo();
+      if (browser_view() ->IsRegularOrGuestSession() &&
+          profiles::IsNewProfileManagementEnabled())
+        UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
+      else
+        UpdateAvatarInfo();
       break;
     default:
       NOTREACHED() << "Got a notification we didn't register for!";
@@ -475,6 +490,10 @@ gfx::Size OpaqueBrowserFrameView::GetBrowserViewMinimumSize() const {
 
 bool OpaqueBrowserFrameView::ShouldShowAvatar() const {
   return browser_view()->ShouldShowAvatar();
+}
+
+bool OpaqueBrowserFrameView::IsRegularOrGuestSession() const {
+  return browser_view()->IsRegularOrGuestSession();
 }
 
 gfx::ImageSkia OpaqueBrowserFrameView::GetOTRAvatarIcon() const {

@@ -9,6 +9,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/window/frame_buttons.h"
 
+class NewAvatarButton;
 class OpaqueBrowserFrameViewLayoutDelegate;
 
 namespace views {
@@ -100,6 +101,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   void LayoutWindowControls(views::View* host);
   void LayoutTitleBar(views::View* host);
   void LayoutAvatar();
+  void LayoutNewStyleAvatar(views::View* host);
 
   void ConfigureButton(views::View* host,
                        views::FrameButton button_id,
@@ -167,6 +169,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   views::View* avatar_label_;
   views::View* avatar_button_;
+  NewAvatarButton* new_avatar_button_;
 
   std::vector<views::FrameButton> leading_buttons_;
   std::vector<views::FrameButton> trailing_buttons_;

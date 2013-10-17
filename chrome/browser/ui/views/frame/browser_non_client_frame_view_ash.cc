@@ -531,8 +531,7 @@ void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeFrameImageId() const {
-  bool is_incognito = browser_view()->IsOffTheRecord() &&
-                      !browser_view()->IsGuestSession();
+  bool is_incognito = !browser_view()->IsRegularOrGuestSession();
   if (browser_view()->IsBrowserTypeNormal()) {
     // Use the standard resource ids to allow users to theme the frames.
     if (ShouldPaintAsActive()) {
