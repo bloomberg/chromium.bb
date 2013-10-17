@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/base_requests.h"
@@ -119,6 +118,12 @@ typedef base::Callback<void(const FileSystemMetadata&)>
 typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path)>
     MarkMountedCallback;
+
+// Callback for GetCacheEntryByPath.
+// |success| indicates if the operation was successful.
+// |cache_entry| is the obtained cache entry.
+typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
+    GetCacheEntryCallback;
 
 // The mode of opening a file.
 enum OpenMode {

@@ -36,6 +36,7 @@ class JobScheduler;
 
 namespace internal {
 class ChangeListLoader;
+class FileCache;
 class ResourceMetadata;
 class SyncClient;
 }  // namespace internal

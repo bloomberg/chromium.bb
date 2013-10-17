@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 
 #include "base/file_util.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
@@ -117,9 +118,13 @@ TEST_F(DownloadOperationTest,
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(tmp_file, content));
 
   FileError error = FILE_ERROR_FAILED;
-  cache()->StoreOnUIThread(
-      "<id>", "<md5>", tmp_file,
-      internal::FileCache::FILE_OPERATION_COPY,
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::Store,
+                 base::Unretained(cache()),
+                 "<id>", "<md5>", tmp_file,
+                 internal::FileCache::FILE_OPERATION_COPY),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -147,10 +152,14 @@ TEST_F(DownloadOperationTest,
   // The cache entry should be removed in order to free up space.
   FileCacheEntry cache_entry;
   bool result = true;
-  cache()->GetCacheEntryOnUIThread(
-      "<id>",
-      google_apis::test_util::CreateCopyResultCallback(&result,
-                                                       &cache_entry));
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::GetCacheEntry,
+                 base::Unretained(cache()),
+                 "<id>",
+                 &cache_entry),
+      google_apis::test_util::CreateCopyResultCallback(&result));
   test_util::RunBlockingPoolTask();
   ASSERT_FALSE(result);
 }
@@ -196,11 +205,15 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {
 
   // Store something as cached version of this file.
   FileError error = FILE_ERROR_OK;
-  cache()->StoreOnUIThread(
-      GetLocalId(file_in_root),
-      src_entry.file_specific_info().md5(),
-      temp_file,
-      internal::FileCache::FILE_OPERATION_COPY,
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::Store,
+                 base::Unretained(cache()),
+                 GetLocalId(file_in_root),
+                 src_entry.file_specific_info().md5(),
+                 temp_file,
+                 internal::FileCache::FILE_OPERATION_COPY),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -359,11 +372,15 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId_FromCache) {
 
   // Store something as cached version of this file.
   FileError error = FILE_ERROR_FAILED;
-  cache()->StoreOnUIThread(
-      GetLocalId(file_in_root),
-      src_entry.file_specific_info().md5(),
-      temp_file,
-      internal::FileCache::FILE_OPERATION_COPY,
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::Store,
+                 base::Unretained(cache()),
+                 GetLocalId(file_in_root),
+                 src_entry.file_specific_info().md5(),
+                 temp_file,
+                 internal::FileCache::FILE_OPERATION_COPY),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -402,16 +419,24 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
 
   // Store the file as a cache, marking it to be dirty.
   FileError error = FILE_ERROR_FAILED;
-  cache()->StoreOnUIThread(
-      GetLocalId(file_in_root),
-      src_entry.file_specific_info().md5(),
-      dirty_file,
-      internal::FileCache::FILE_OPERATION_COPY,
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::Store,
+                 base::Unretained(cache()),
+                 GetLocalId(file_in_root),
+                 src_entry.file_specific_info().md5(),
+                 dirty_file,
+                 internal::FileCache::FILE_OPERATION_COPY),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  cache()->MarkDirtyOnUIThread(
-      GetLocalId(file_in_root),
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::MarkDirty,
+                 base::Unretained(cache()),
+                 GetLocalId(file_in_root)),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

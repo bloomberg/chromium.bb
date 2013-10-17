@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 
 #include "base/file_util.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
@@ -60,9 +61,14 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
       GetLocalId(remote_dest_path)));
   FileCacheEntry cache_entry;
   bool found = false;
-  cache()->GetCacheEntryOnUIThread(
-      GetLocalId(remote_dest_path),
-      google_apis::test_util::CreateCopyResultCallback(&found, &cache_entry));
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::FileCache::GetCacheEntry,
+                 base::Unretained(cache()),
+                 GetLocalId(remote_dest_path),
+                 &cache_entry),
+      google_apis::test_util::CreateCopyResultCallback(&found));
   test_util::RunBlockingPoolTask();
   EXPECT_TRUE(found);
   EXPECT_TRUE(cache_entry.is_present());

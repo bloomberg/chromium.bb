@@ -69,16 +69,6 @@ void RunGetFileFromCacheCallback(const GetFileFromCacheCallback& callback,
   callback.Run(error, *file_path);
 }
 
-// Runs callback with pointers dereferenced.
-// Used to implement GetCacheEntry().
-void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
-                              FileCacheEntry* cache_entry,
-                              bool success) {
-  DCHECK(cache_entry);
-  DCHECK(!callback.is_null());
-  callback.Run(success, *cache_entry);
-}
-
 }  // namespace
 
 FileCache::FileCache(ResourceMetadataStorage* storage,
@@ -112,23 +102,6 @@ void FileCache::AssertOnSequencedWorkerPool() {
 
 bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
   return cache_file_directory_.IsParent(path);
-}
-
-void FileCache::GetCacheEntryOnUIThread(const std::string& id,
-                                        const GetCacheEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FileCacheEntry* cache_entry = new FileCacheEntry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&FileCache::GetCacheEntry,
-                 base::Unretained(this),
-                 id,
-                 cache_entry),
-      base::Bind(
-          &RunGetCacheEntryCallback, callback, base::Owned(cache_entry)));
 }
 
 bool FileCache::GetCacheEntry(const std::string& id, FileCacheEntry* entry) {
@@ -192,25 +165,6 @@ FileError FileCache::GetFile(const std::string& id,
 
   *cache_file_path = GetCacheFilePath(id);
   return FILE_ERROR_OK;
-}
-
-void FileCache::StoreOnUIThread(const std::string& id,
-                                const std::string& md5,
-                                const base::FilePath& source_path,
-                                FileOperationType file_operation_type,
-                                const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::PostTaskAndReplyWithResult(blocking_task_runner_.get(),
-                                   FROM_HERE,
-                                   base::Bind(&FileCache::Store,
-                                              base::Unretained(this),
-                                              id,
-                                              md5,
-                                              source_path,
-                                              file_operation_type),
-                                   callback);
 }
 
 FileError FileCache::Store(const std::string& id,
@@ -341,18 +295,6 @@ void FileCache::MarkAsUnmountedOnUIThread(
       callback);
 }
 
-void FileCache::MarkDirtyOnUIThread(const std::string& id,
-                                    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&FileCache::MarkDirty, base::Unretained(this), id),
-      callback);
-}
-
 FileError FileCache::MarkDirty(const std::string& id) {
   AssertOnSequencedWorkerPool();
 
@@ -397,18 +339,6 @@ FileError FileCache::ClearDirty(const std::string& id, const std::string& md5) {
   cache_entry.set_is_dirty(false);
   return storage_->PutCacheEntry(id, cache_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
-}
-
-void FileCache::RemoveOnUIThread(const std::string& id,
-                                 const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&FileCache::Remove, base::Unretained(this), id),
-      callback);
 }
 
 FileError FileCache::Remove(const std::string& id) {
