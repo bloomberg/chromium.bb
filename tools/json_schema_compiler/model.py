@@ -208,6 +208,7 @@ class Function(object):
                 available to
   - |params| a list of parameters to the function (order matters). A separate
              parameter is used for each choice of a 'choices' parameter
+  - |deprecated| a reason and possible alternative for a deprecated function
   - |description| a description of the function (if provided)
   - |callback| the callback parameter to the function. There should be exactly
                one
@@ -228,6 +229,7 @@ class Function(object):
     self.platforms = _GetPlatforms(json)
     self.params = []
     self.description = json.get('description')
+    self.deprecated = json.get('deprecated')
     self.callback = None
     self.optional = json.get('optional', False)
     self.parent = parent

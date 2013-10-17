@@ -242,6 +242,9 @@ class _JSCModel(object):
       'returns': None,
       'id': _CreateId(function, 'method')
     }
+    if (function.deprecated is not None):
+      function_dict['deprecated'] = self._FormatDescription(
+          function.deprecated)
     if (function.parent is not None and
         not isinstance(function.parent, model.Namespace)):
       function_dict['parentName'] = function.parent.simple_name
