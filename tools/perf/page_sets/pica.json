@@ -12,7 +12,7 @@
       "smoothness": {
         "action": "tap_element",
         "find_element_expression": "document.querySelector('pi-app').$.Topics.$.topics.$.container.querySelector('.item > .card')",
-        "wait_for_event": "g-panels-select"
+        "wait_for_event": "polymer-pages-animation-end"
       }
     }
   ]
