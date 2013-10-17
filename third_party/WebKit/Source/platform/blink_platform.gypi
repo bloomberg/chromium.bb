@@ -220,6 +220,8 @@
       'geometry/Region.h',
       'geometry/RoundedRect.cpp',
       'geometry/RoundedRect.h',
+      'geometry/TransformState.cpp',
+      'geometry/TransformState.h',
       'graphics/angle/ANGLEPlatformBridge.cpp',
       'graphics/angle/ANGLEPlatformBridge.h',
       'graphics/ImageOrientation.cpp',

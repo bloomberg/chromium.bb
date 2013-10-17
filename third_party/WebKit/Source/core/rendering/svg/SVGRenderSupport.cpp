@@ -26,7 +26,6 @@
 
 #include "core/rendering/svg/SVGRenderSupport.h"
 
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/SubtreeLayoutScope.h"
@@ -40,6 +39,7 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
+#include "platform/geometry/TransformState.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {

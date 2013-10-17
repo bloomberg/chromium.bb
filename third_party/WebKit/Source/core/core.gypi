@@ -2949,8 +2949,6 @@
             'platform/graphics/transforms/SkewTransformOperation.cpp',
             'platform/graphics/transforms/SkewTransformOperation.h',
             'platform/graphics/transforms/TransformOperations.cpp',
-            'platform/graphics/transforms/TransformState.cpp',
-            'platform/graphics/transforms/TransformState.h',
             'platform/graphics/transforms/TranslateTransformOperation.cpp',
             'platform/graphics/transforms/TranslateTransformOperation.h',
             'platform/graphics/win/FontCustomPlatformDataWin.cpp',

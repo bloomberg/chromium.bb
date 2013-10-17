@@ -28,9 +28,9 @@
 
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "platform/geometry/TransformState.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {

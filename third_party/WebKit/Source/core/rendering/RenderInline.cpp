@@ -27,7 +27,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
@@ -39,6 +38,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/TransformState.h"
 
 using namespace std;
 

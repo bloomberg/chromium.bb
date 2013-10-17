@@ -31,7 +31,6 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/SimpleFontData.h"
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRepainter.h"
@@ -50,6 +49,7 @@
 #include "core/svg/SVGURIReference.h"
 #include "platform/FloatConversion.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/TransformState.h"
 
 namespace WebCore {
 

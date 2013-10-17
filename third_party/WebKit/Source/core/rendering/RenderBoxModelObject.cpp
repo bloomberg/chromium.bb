@@ -33,7 +33,6 @@
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/Path.h"
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/RenderBlock.h"
@@ -44,6 +43,7 @@
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderView.h"
+#include "platform/geometry/TransformState.h"
 #include "wtf/CurrentTime.h"
 
 using namespace std;

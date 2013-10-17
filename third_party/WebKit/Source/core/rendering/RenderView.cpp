@@ -31,7 +31,6 @@
 #include "core/page/Page.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/FlowThreadController.h"
@@ -44,6 +43,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/TransformState.h"
 
 namespace WebCore {
 

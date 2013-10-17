@@ -37,7 +37,6 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestResult.h"
@@ -61,6 +60,7 @@
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/TransformState.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/transforms/TransformState.h"
+#include "platform/geometry/TransformState.h"
 
 #include "wtf/PassOwnPtr.h"
 
@@ -69,9 +69,9 @@ void TransformState::translateMappedCoordinates(const LayoutSize& offset)
 
 void TransformState::move(const LayoutSize& offset, TransformAccumulation accumulate)
 {
-    if (accumulate == FlattenTransform || !m_accumulatedTransform)
+    if (accumulate == FlattenTransform || !m_accumulatedTransform) {
         m_accumulatedOffset += offset;
-    else {
+    } else {
         applyAccumulatedOffset();
         if (m_accumulatingTransform && m_accumulatedTransform) {
             // If we're accumulating into an existing transform, apply the translation.
@@ -80,9 +80,10 @@ void TransformState::move(const LayoutSize& offset, TransformAccumulation accumu
             // Then flatten if necessary.
             if (accumulate == FlattenTransform)
                 flatten();
-        } else
+        } else {
             // Just move the point and/or quad.
             translateMappedCoordinates(offset);
+        }
     }
     m_accumulatingTransform = accumulate == AccumulateTransform;
 }
@@ -95,8 +96,9 @@ void TransformState::applyAccumulatedOffset()
         if (m_accumulatedTransform) {
             translateTransform(offset);
             flatten();
-        } else
+        } else {
             translateMappedCoordinates(offset);
+        }
     }
 }
 

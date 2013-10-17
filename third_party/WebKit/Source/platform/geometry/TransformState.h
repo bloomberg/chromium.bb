@@ -26,17 +26,17 @@
 #ifndef TransformState_h
 #define TransformState_h
 
-#include "platform/transforms/AffineTransform.h"
-#include "platform/transforms/TransformationMatrix.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
+#include "platform/transforms/AffineTransform.h"
+#include "platform/transforms/TransformationMatrix.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
-class TransformState {
+class PLATFORM_EXPORT TransformState {
 public:
     enum TransformDirection { ApplyTransformDirection, UnapplyInverseTransformDirection };
     enum TransformAccumulation { FlattenTransform, AccumulateTransform };

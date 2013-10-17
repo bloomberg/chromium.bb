@@ -50,7 +50,6 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderApplet.h"
@@ -63,6 +62,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
+#include "platform/geometry/TransformState.h"
 #include "wtf/TemporaryChange.h"
 
 #if !LOG_DISABLED
