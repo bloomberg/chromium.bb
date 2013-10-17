@@ -5,6 +5,8 @@
             'Alignment.h',
             'ArrayBuffer.cpp',
             'ArrayBuffer.h',
+            'ArrayBufferBuilder.cpp',
+            'ArrayBufferBuilder.h',
             'ArrayBufferContents.cpp',
             'ArrayBufferContents.h',
             'ArrayBufferDeallocationObserver.h',
@@ -215,6 +217,7 @@
             'unicode/icu/UnicodeIcu.h',
         ],
         'wtf_unittest_files': [
+            'ArrayBufferBuilderTest.cpp',
             'CheckedArithmeticTest.cpp',
             'FunctionalTest.cpp',
             'HashMapTest.cpp',

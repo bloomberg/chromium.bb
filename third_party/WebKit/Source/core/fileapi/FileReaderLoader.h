@@ -34,7 +34,10 @@
 #include "core/fileapi/FileError.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "weborigin/KURL.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferBuilder.h"
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
 
@@ -74,8 +77,22 @@ public:
 
     String stringResult();
     PassRefPtr<ArrayBuffer> arrayBufferResult() const;
-    unsigned bytesLoaded() const { return m_bytesLoaded; }
-    unsigned totalBytes() const { return m_totalBytes; }
+
+    // Returns the total bytes received. Bytes ignored by m_rawData won't be
+    // counted.
+    //
+    // This value doesn't grow more than numeric_limits<unsigned> when
+    // m_readType is not set to ReadByClient.
+    long long bytesLoaded() const { return m_bytesLoaded; }
+
+    // Before didReceiveResponse() is called: Returns -1.
+    // After didReceiveResponse() is called:
+    // - If the size of the resource is known (from
+    //   m_response.expectedContentLength() or once didFinishLoading() is
+    //   called), returns it.
+    // - Otherwise, returns -1.
+    long long totalBytes() const { return m_totalBytes; }
+
     FileError::ErrorCode errorCode() const { return m_errorCode; }
 
     void setEncoding(const String&);
@@ -85,6 +102,7 @@ private:
     void startInternal(ExecutionContext*, const Stream*, PassRefPtr<BlobDataHandle>);
     void terminate();
     void cleanup();
+
     void failed(FileError::ErrorCode);
     void convertToText();
     void convertToDataURL();
@@ -100,7 +118,7 @@ private:
     bool m_urlForReadingIsStream;
     RefPtr<ThreadableLoader> m_loader;
 
-    RefPtr<ArrayBuffer> m_rawData;
+    OwnPtr<ArrayBufferBuilder> m_rawData;
     bool m_isRawDataConverted;
 
     String m_stringResult;
@@ -108,10 +126,14 @@ private:
     // The decoder used to decode the text data.
     RefPtr<TextResourceDecoder> m_decoder;
 
-    bool m_variableLength;
     bool m_finishedLoading;
-    unsigned m_bytesLoaded;
-    unsigned m_totalBytes;
+    long long m_bytesLoaded;
+    // If the total size of the resource is unknown, m_totalBytes is set to -1
+    // until completion of loading, and the buffer for receiving data is set to
+    // dynamically grow. Otherwise, m_totalBytes is set to the total size and
+    // the buffer for receiving data of m_totalBytes is allocated and never grow
+    // even when extra data is appeneded.
+    long long m_totalBytes;
 
     bool m_hasRange;
     unsigned m_rangeStart;

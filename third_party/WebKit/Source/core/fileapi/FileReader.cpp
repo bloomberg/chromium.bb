@@ -264,7 +264,15 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
 
 void FileReader::fireEvent(const AtomicString& type)
 {
-    dispatchEvent(ProgressEvent::create(type, true, m_loader ? m_loader->bytesLoaded() : 0, m_loader ? m_loader->totalBytes() : 0));
+    if (!m_loader) {
+        dispatchEvent(ProgressEvent::create(type, false, 0, 0));
+        return;
+    }
+
+    if (m_loader->totalBytes() >= 0)
+        dispatchEvent(ProgressEvent::create(type, true, m_loader->bytesLoaded(), m_loader->totalBytes()));
+    else
+        dispatchEvent(ProgressEvent::create(type, false, m_loader->bytesLoaded(), 0));
 }
 
 PassRefPtr<ArrayBuffer> FileReader::arrayBufferResult() const
