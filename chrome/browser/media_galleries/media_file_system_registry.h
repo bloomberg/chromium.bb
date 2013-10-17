@@ -24,8 +24,6 @@ class ExtensionGalleriesHost;
 class MediaFileSystemContext;
 class MediaGalleriesPreferences;
 class Profile;
-class ScopedMTPDeviceMapEntry;
-
 
 namespace content {
 class RenderViewHost;
@@ -65,6 +63,8 @@ struct MediaFileSystemInfo {
 typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
     MediaFileSystemsCallback;
 
+// Tracks usage of filesystems by extensions.
+// This object lives on the UI thread.
 class MediaFileSystemRegistry
     : public RemovableStorageObserver,
       public MediaGalleriesPreferences::GalleryChangeObserver {
@@ -73,15 +73,15 @@ class MediaFileSystemRegistry
   virtual ~MediaFileSystemRegistry();
 
   // Passes to |callback| the list of media filesystem IDs and paths for a
-  // given RVH. Called on the UI thread.
+  // given RVH.
   void GetMediaFileSystemsForExtension(
       const content::RenderViewHost* rvh,
       const extensions::Extension* extension,
       const MediaFileSystemsCallback& callback);
 
   // Returns the media galleries preferences for the specified |profile|.
-  // Called on the UI thread. Caller is responsible for ensuring that the
-  // preferences are initialized before use.
+  // Caller is responsible for ensuring that the preferences are initialized
+  // before use.
   MediaGalleriesPreferences* GetPreferences(Profile* profile);
 
   // RemovableStorageObserver implementation.
@@ -100,15 +100,14 @@ class MediaFileSystemRegistry
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
 
-  // Map a filesystem id (fsid) to the reference to an MTP device.
-  typedef std::map<std::string, scoped_refptr<ScopedMTPDeviceMapEntry> >
-      MTPDeviceEntryMap;
+  // Map a filesystem id (fsid) to an MTP device location.
+  typedef std::map<std::string, base::FilePath::StringType>
+      MTPDeviceFileSystemMap;
 
-  // Map a MTP or PTP device location to the raw pointer of
-  // ScopedMTPDeviceMapEntry. It is safe to store a raw pointer in this
-  // map.
-  typedef std::map<const base::FilePath::StringType, ScopedMTPDeviceMapEntry*>
-      MTPDeviceDelegateMap;
+  // Map a MTP or PTP device location to a count of current uses of that
+  // location.
+  typedef std::map<const base::FilePath::StringType, int>
+      MTPDeviceUsageMap;
 
   virtual void OnPermissionRemoved(MediaGalleriesPreferences* pref,
                                    const std::string& extension_id,
@@ -116,30 +115,25 @@ class MediaFileSystemRegistry
   virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
                                 MediaGalleryPrefId pref_id) OVERRIDE;
 
-  // Returns ScopedMTPDeviceMapEntry object for the given |device_location|.
-  scoped_refptr<ScopedMTPDeviceMapEntry> GetOrCreateScopedMTPDeviceMapEntry(
+  // Register that an MTP filesystem is in use for the given |device_location|.
+  void RegisterMTPFileSystem(
       const base::FilePath::StringType& device_location,
       const std::string& fsid);
 
+  // Removes the MTP entry associated with the given
+  // |device_location|. Signals the MTPDeviceMapService to destroy the
+  // delegate if there are no more uses of it.
   void RevokeMTPFileSystem(const std::string& fsid);
 
   void OnExtensionGalleriesHostEmpty(Profile* profile,
                                      const std::string& extension_id);
 
-  // Removes the ScopedMTPDeviceMapEntry associated with the given
-  // |device_location|.
-  void RemoveScopedMTPDeviceMapEntry(
-      const base::FilePath::StringType& device_location);
-
-  // Only accessed on the UI thread. This map owns all the
-  // ExtensionGalleriesHost objects created.
+  // This map owns all the ExtensionGalleriesHost objects created.
   ExtensionGalleriesHostMap extension_hosts_map_;
 
-  // Contains a map of fsid to ScopedMTPDeviceMapEntry.
-  MTPDeviceEntryMap mtp_device_map_;
+  MTPDeviceFileSystemMap mtp_device_map_;
 
-  // Only accessed on the UI thread.
-  MTPDeviceDelegateMap mtp_device_delegate_map_;
+  MTPDeviceUsageMap mtp_device_usage_map_;
 
   scoped_ptr<MediaFileSystemContext> file_system_context_;
 

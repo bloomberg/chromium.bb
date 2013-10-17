@@ -23,7 +23,6 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
-#include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -299,8 +298,6 @@ class ExtensionGalleriesHost
 
  private:
   typedef std::map<MediaGalleryPrefId, MediaFileSystemInfo> PrefIdFsInfoMap;
-  typedef std::map<MediaGalleryPrefId, scoped_refptr<ScopedMTPDeviceMapEntry> >
-      MediaDeviceEntryReferencesMap;
 
   // Private destructor and friend declaration for ref counted implementation.
   friend class base::RefCountedThreadSafe<ExtensionGalleriesHost>;
@@ -577,7 +574,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
         IsolatedContext::GetInstance()->RegisterFileSystemForPath(
             fileapi::kFileSystemTypeDeviceMedia, path, &fs_name);
     CHECK(!fsid.empty());
-    registry_->GetOrCreateScopedMTPDeviceMapEntry(path.value(), fsid);
+    registry_->RegisterMTPFileSystem(path.value(), fsid);
     return fsid;
   }
 
@@ -590,11 +587,6 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
 
     registry_->RevokeMTPFileSystem(fsid);
-  }
-
-  virtual void RemoveScopedMTPDeviceMapEntry(
-      const base::FilePath::StringType& device_location) OVERRIDE {
-    registry_->RemoveScopedMTPDeviceMapEntry(device_location);
   }
 
  private:
@@ -615,7 +607,7 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
   // and then can remove this.
   if (StorageMonitor::GetInstance())
     StorageMonitor::GetInstance()->RemoveObserver(this);
-  DCHECK(mtp_device_delegate_map_.empty());
+  DCHECK(mtp_device_usage_map_.empty());
 }
 
 void MediaFileSystemRegistry::OnPermissionRemoved(
@@ -669,44 +661,43 @@ void MediaFileSystemRegistry::OnGalleryRemoved(
   }
 }
 
-scoped_refptr<ScopedMTPDeviceMapEntry>
-MediaFileSystemRegistry::GetOrCreateScopedMTPDeviceMapEntry(
+void MediaFileSystemRegistry::RegisterMTPFileSystem(
     const base::FilePath::StringType& device_location,
     const std::string& fsid) {
-  MTPDeviceDelegateMap::iterator delegate_it =
-      mtp_device_delegate_map_.find(device_location);
-  if (delegate_it != mtp_device_delegate_map_.end())
-    return delegate_it->second;
+  MTPDeviceUsageMap::iterator delegate_it =
+      mtp_device_usage_map_.find(device_location);
+  if (delegate_it == mtp_device_usage_map_.end()) {
+    // Note that this initializes the delegate asynchronously, but since
+    // the delegate will only be used from the IO thread, it is guaranteed
+    // to be created before use of it expects it to be there.
+    InitMTPDeviceAsyncDelegate(device_location);
+    mtp_device_usage_map_[device_location] = 0;
+  }
 
-  scoped_refptr<ScopedMTPDeviceMapEntry> mtp_device_host =
-      new ScopedMTPDeviceMapEntry(device_location, file_system_context_.get());
-  // Note that this initializes the delegate asynchronously, but since
-  // the delegate will only be used from the IO thread, it is guaranteed
-  // to be created before use of it expects it to be there.
-  InitMTPDeviceAsyncDelegate(device_location);
-  mtp_device_delegate_map_[device_location] = mtp_device_host.get();
-  mtp_device_map_[fsid] = mtp_device_host;
-  return mtp_device_host;
+  mtp_device_usage_map_[device_location]++;
+  mtp_device_map_[fsid] = device_location;
 }
 
+// TODO(gbillock): Move all this accounting to the MTPDeviceMapService.
 void MediaFileSystemRegistry::RevokeMTPFileSystem(const std::string& fsid) {
-  // If this was an MTP device, remove reference to it.
-  mtp_device_map_.erase(fsid);
-}
-
-void MediaFileSystemRegistry::RemoveScopedMTPDeviceMapEntry(
-    const base::FilePath::StringType& device_location) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&MTPDeviceMapService::RemoveAsyncDelegate,
-                 base::Unretained(MTPDeviceMapService::GetInstance()),
-                 device_location));
-
-  MTPDeviceDelegateMap::iterator delegate_it =
-      mtp_device_delegate_map_.find(device_location);
-  DCHECK(delegate_it != mtp_device_delegate_map_.end());
-  mtp_device_delegate_map_.erase(delegate_it);
+  MTPDeviceFileSystemMap::iterator i = mtp_device_map_.find(fsid);
+  if (i != mtp_device_map_.end()) {
+    base::FilePath::StringType device_location = i->second;
+    mtp_device_map_.erase(i);
+    MTPDeviceUsageMap::iterator delegate_it =
+        mtp_device_usage_map_.find(device_location);
+    DCHECK(delegate_it != mtp_device_usage_map_.end());
+    mtp_device_usage_map_[device_location]--;
+    if (mtp_device_usage_map_[device_location] == 0) {
+      mtp_device_usage_map_.erase(delegate_it);
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(&MTPDeviceMapService::RemoveAsyncDelegate,
+                     base::Unretained(MTPDeviceMapService::GetInstance()),
+                     device_location));
+    }
+  }
 }
 
 void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(

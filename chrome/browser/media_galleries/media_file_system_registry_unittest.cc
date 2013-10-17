@@ -29,7 +29,6 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
-#include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -84,9 +83,6 @@ class TestMediaFileSystemContext : public MediaFileSystemContext {
 
   virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE;
 
-  virtual void RemoveScopedMTPDeviceMapEntry(
-      const base::FilePath::StringType& device_location) OVERRIDE;
-
   base::FilePath GetPathForId(const std::string& fsid) const;
 
   MediaFileSystemRegistry* registry() { return registry_; }
@@ -137,7 +133,7 @@ std::string TestMediaFileSystemContext::RegisterFileSystemForMTPDevice(
     const std::string& device_id, const base::FilePath& path) {
   CHECK(!StorageInfo::IsMassStorageDevice(device_id));
   std::string fsid = AddFSEntry(device_id, path);
-  registry_->GetOrCreateScopedMTPDeviceMapEntry(path.value(), fsid);
+  registry_->RegisterMTPFileSystem(path.value(), fsid);
   return fsid;
 }
 
@@ -146,11 +142,6 @@ void TestMediaFileSystemContext::RevokeFileSystem(const std::string& fsid) {
     return;
   EXPECT_EQ(1U, file_systems_by_id_.erase(fsid));
   registry_->RevokeMTPFileSystem(fsid);
-}
-
-void TestMediaFileSystemContext::RemoveScopedMTPDeviceMapEntry(
-    const base::FilePath::StringType& device_location) {
-  registry_->RemoveScopedMTPDeviceMapEntry(device_location);
 }
 
 base::FilePath TestMediaFileSystemContext::GetPathForId(

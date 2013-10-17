@@ -31,11 +31,6 @@ class MediaFileSystemContext {
 
   // Revoke the passed |fsid|.
   virtual void RevokeFileSystem(const std::string& fsid) = 0;
-
-  // Signal the registry that a particular MTP device map entry is no longer
-  // needed.
-  virtual void RemoveScopedMTPDeviceMapEntry(
-      const base::FilePath::StringType& device_location) = 0;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_FILE_SYSTEM_CONTEXT_H_
