@@ -33,6 +33,7 @@ const char kGooglePresentationMimeType[] =
 const char kGoogleSpreadsheetMimeType[] =
     "application/vnd.google-apps.spreadsheet";
 const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";
+const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
 ScopedVector<std::string> CopyScopedVectorString(
     const ScopedVector<std::string>& source) {
@@ -307,7 +308,10 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
   }
 
   file->set_download_url(entry.download_url());
-  file->set_mime_type(entry.content_mime_type());
+  if (entry.is_folder())
+    file->set_mime_type(kDriveFolderMimeType);
+  else
+    file->set_mime_type(entry.content_mime_type());
 
   file->set_md5_checksum(entry.file_md5());
   file->set_file_size(entry.file_size());
