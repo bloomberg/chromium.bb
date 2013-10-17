@@ -166,8 +166,6 @@ class GpuCommandBufferStub
       media::VideoCodecProfile profile,
       IPC::Message* reply_message);
 
-  void OnCreateSurfaceCapturer(IPC::Message* reply_message);
-
   void OnSetSurfaceVisible(bool visible);
 
   void OnDiscardBackbuffer();
