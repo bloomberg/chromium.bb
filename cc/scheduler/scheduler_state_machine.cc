@@ -648,13 +648,15 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
 
   // Update the commit state. We expect and wait for a draw if the commit
   // was not aborted or if we are in a readback or forced draw.
-  if (!commit_was_aborted)
+  if (!commit_was_aborted) {
+    DCHECK(commit_state_ == COMMIT_STATE_READY_TO_COMMIT);
     commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
-  else if (readback_state_ != READBACK_STATE_IDLE ||
-           forced_redraw_state_ != FORCED_REDRAW_STATE_IDLE)
+  } else if (readback_state_ != READBACK_STATE_IDLE ||
+             forced_redraw_state_ != FORCED_REDRAW_STATE_IDLE) {
     commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
-  else
+  } else {
     commit_state_ = COMMIT_STATE_IDLE;
+  }
 
   // Update state if we have a new active tree to draw, or if the active tree
   // was unchanged but we need to do a readback or forced draw.
