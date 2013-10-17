@@ -463,7 +463,7 @@ public:
     void didAffectSelector(AffectedSelectorMask);
 
     ElementShadow* shadow() const;
-    ElementShadow* ensureShadow();
+    ElementShadow& ensureShadow();
     PassRefPtr<ShadowRoot> createShadowRoot(ExceptionState&);
     ShadowRoot* shadowRoot() const;
 
