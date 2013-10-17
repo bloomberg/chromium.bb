@@ -1367,6 +1367,15 @@ internal_arm_paladin.add_config('daisy-paladin',
 )
 
 # arm full compile
+internal_arm_paladin.add_config('beaglebone-paladin',
+  boards=['beaglebone'],
+  packages=['chromeos-base/chromeos'],
+  images=['base'],
+  rootfs_verification=False,
+  important=False,
+  paladin_builder_name='beaglebone paladin',
+)
+
 internal_arm_paladin.add_config('daisy_spring-paladin',
   full_paladin,
   boards=['daisy_spring'],
@@ -1621,6 +1630,13 @@ _release.add_config('wolf-release',
 ### Arm release configs.
 
 _arm_release = _release.derive(arm)
+
+_arm_release.add_config('beaglebone-release',
+  boards=['beaglebone'],
+  packages=['chromeos-base/chromeos'],
+  images=['base'],
+  rootfs_verification=False,
+)
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
