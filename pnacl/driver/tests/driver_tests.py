@@ -11,6 +11,7 @@ import unittest
 
 MODULES = [
     'default_output_filename_test',
+    'diagnostic_flags_test',
     'driver_env_test',
     'driver_tools_test',
     'expand_response_file_test',

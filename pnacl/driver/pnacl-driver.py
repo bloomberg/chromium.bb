@@ -187,6 +187,10 @@ def AddTranslatorFlag(*args):
 def AddCCFlag(*args):
   env.append('CC_FLAGS', *args)
 
+def AddDiagnosticFlag(*args):
+  env.append('CC_FLAGS', *args)
+  env.set('DIAGNOSTIC', '1')
+
 def AddBPrefix(prefix):
   prefix = pathtools.normalize(prefix)
   if pathtools.isdir(prefix) and not prefix.endswith('/'):
@@ -403,16 +407,14 @@ GCCPatterns = [
   ( '(-mfloat-abi=.+)',       AddCCFlag),
 
   # GCC diagnostic mode triggers
-  ( '(-print-.*)',            "env.set('DIAGNOSTIC', '1')"),
-  ( '(--print.*)',            "env.set('DIAGNOSTIC', '1')"),
-  ( '(-dumpspecs)',           "env.set('DIAGNOSTIC', '1')"),
-  ( '(--version)',            "env.set('DIAGNOSTIC', '1')"),
-  ( '(-V)',                   "env.set('DIAGNOSTIC', '1')\n"
-                              "env.clear('CC_FLAGS')"),
+  ( '(-print-.*)',            AddDiagnosticFlag),
+  ( '(--print.*)',            AddDiagnosticFlag),
+  ( '(-dumpspecs)',           AddDiagnosticFlag),
+  ( '(--version)',            AddDiagnosticFlag),
   # These are preprocessor flags which should be passed to the frontend, but
   # should not prevent the usual -i flags (which DIAGNOSTIC mode does)
   ( '(-d[DIMNU])',            AddCCFlag),
-  ( '(-d.*)',                 "env.set('DIAGNOSTIC', '1')"),
+  ( '(-d.*)',                 AddDiagnosticFlag),
 
   # Catch all other command-line arguments
   ( '(-.+)',              "env.append('UNMATCHED', $0)"),
@@ -462,7 +464,7 @@ def main(argv):
   # parse the output. In these cases we do not alter the incoming
   # commandline. It is also important to not emit spurious messages.
   if env.getbool('DIAGNOSTIC'):
-    Run(env.get('CC') + env.get('CC_FLAGS') + argv)
+    Run(env.get('CC') + env.get('CC_FLAGS'))
     return 0
 
   unmatched = env.get('UNMATCHED')
@@ -496,7 +498,7 @@ def main(argv):
     if env.getbool('VERBOSE'):
       # -v can be invoked without any inputs. Runs the original
       # command without modifying the commandline for this case.
-      Run(env.get('CC') + env.get('CC_FLAGS') + argv)
+      Run(env.get('CC') + env.get('CC_FLAGS'))
       return 0
     else:
       Log.Fatal('No input files')
