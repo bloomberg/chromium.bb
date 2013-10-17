@@ -33,7 +33,6 @@ button {
 
 #header button,
 #corner-buttons button {
-  opacity: 0;
   transition: opacity 200ms linear;
 }
 
@@ -60,16 +59,16 @@ button {
   background-color: rgba(90, 90, 90, 0.75);
 }
 
-body.expanded #header button,
-body.expanded #corner-buttons button {
-  opacity: 1;
+body:not(.expanded) #header button,
+body:not(.expanded) #corner-buttons button {
+  opacity: 0;
 }
 
 #toolbar-stripe {
   position: relative;
 }
 
-#toolbar .gallery-button.flash {
+#toolbar .gallery-switch.flash {
   -webkit-animation: flashButton 300ms linear 1s 3;
 }
 
@@ -97,8 +96,8 @@ body.expanded #corner-buttons button {
   top: 0;
 }
 
-#side-buttons .gallery-button,
-#corner-buttons .gallery-button {
+#side-buttons .gallery-switch,
+#corner-buttons .gallery-switch {
   background-image: -webkit-image-set(
       url(../images/topbar_button_gallery.png) 1x,
       url(../images/2x/topbar_button_gallery.png) 2x);
@@ -127,15 +126,41 @@ body.expanded #corner-buttons button {
   z-index: 2;  /* Hack to enable touch scrolling in gallery. */
 }
 
+#corner-buttons button[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 body:not(.gallery):not(.browser) #corner-buttons {
   display: none;
 }
 
-body.gallery #side-buttons .gallery-button,
-body.gallery #corner-buttons .gallery-button,
-body.browser #side-buttons .gallery-button,
-body.browser #corner-buttons .gallery-button {
-  background-color: rgb(66, 129, 244);
+body:not(.browser) #corner-buttons #browser-print,
+body:not(.browser) #corner-buttons #browser-export {
+  display: none;
+}
+
+#corner-buttons #browser-print {
+  background-image: -webkit-image-set(
+      url(../images/browser_button_print.png) 1x,
+      url(../images/2x/browser_button_print.png) 2x);
+}
+
+#corner-buttons #browser-export {
+  background-image: -webkit-image-set(
+      url(../images/browser_button_export.png) 1x,
+      url(../images/2x/browser_button_export.png) 2x);
+}
+
+#corner-buttons #gallery-delete {
+  background-image: -webkit-image-set(
+      url(../images/gallery_button_delete.png) 1x,
+      url(../images/2x/gallery_button_delete.png) 2x);
+}
+
+body.gallery #corner-buttons .gallery-switch:not(:hover):not(:active),
+body.browser #corner-buttons .gallery-switch:not(:hover):not(:active) {
+  background-color: #555555;
 }
 
 #header #maximize-button {

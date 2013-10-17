@@ -62,6 +62,12 @@ camera.views.Browser = function(context) {
   // Register clicking on the background to close the browser view.
   document.querySelector('#browser').addEventListener('click',
       this.onBackgroundClicked_.bind(this));
+
+  // Listen for clicking on the browser buttons.
+  document.querySelector('#browser-print').addEventListener(
+      'click', this.onPrintButtonClicked_.bind(this));
+  document.querySelector('#browser-export').addEventListener(
+      'click', this.onExportButtonClicked_.bind(this));
 };
 
 camera.views.Browser.prototype = {
@@ -101,6 +107,7 @@ camera.views.Browser.prototype.renderPictures_ = function() {
 camera.views.Browser.prototype.onEnter = function() {
   this.onResize();
   this.scrollTracker_.start();
+  this.updateButtons_();
   document.body.classList.add('browser');
 };
 
@@ -134,6 +141,27 @@ camera.views.Browser.prototype.onBackgroundClicked_ = function(event) {
 };
 
 /**
+ * Handles clicking on the print button.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Browser.prototype.onPrintButtonClicked_ = function(event) {
+  // TODO(mtomasz): Implement a better printing.
+  // See: crbug.com/308389
+  window.print();
+};
+
+/**
+ * Handles clicking on the export button.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Browser.prototype.onExportButtonClicked_ = function(event) {
+  this.exportSelection_();
+};
+
+
+/**
  * Handles ending of scrolling.
  * @private
  */
@@ -159,6 +187,21 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
     this.model_.currentIndex = minIndex;
 
   this.updatePicturesResolutions_();
+};
+
+/**
+ * Updates visibility of the browser buttons.
+ * @private
+ */
+camera.views.Browser.prototype.updateButtons_ = function() {
+  var pictureSelected = this.model_.currentIndex !== null;
+  if (pictureSelected) {
+    document.querySelector('#browser-print').removeAttribute('disabled');
+    document.querySelector('#browser-export').removeAttribute('disabled');
+  } else {
+    document.querySelector('#browser-print').setAttribute('disabled', '');
+    document.querySelector('#browser-export').setAttribute('disabled', '');
+  }
 };
 
 /**
@@ -226,6 +269,8 @@ camera.views.Browser.prototype.onCurrentIndexChanged = function(
    camera.util.scrollToCenter(this.currentPicture_().element,
                               this.scroller_);
   }
+
+  this.updateButtons_();
 };
 
 /**
@@ -240,13 +285,20 @@ camera.views.Browser.prototype.onPictureDeleting = function(index) {
   // without scrolling and without scrolling. Use a timer, to wait until
   // the picture is deleted from the model.
   setTimeout(this.updatePicturesResolutions_.bind(this), 0);
+
+  // TODO(mtomasz): Introduce a onPictureDeleted callback to avoid these
+  // timers.
+  setTimeout(this.updateButtons_.bind(this), 0);
 };
 
 /**
- * Saves the picture with the specified index to the external storage.
+ * Exports the selected picture. If nothing selected, then nothing happens.
  * @private
  */
-camera.views.Browser.prototype.exportPicture_ = function() {
+camera.views.Browser.prototype.exportSelection_ = function() {
+  if (!this.currentPicture_())
+    return;
+
   var accepts = [{
     description: '*.jpg',
     extensions: ['jpg", "jpeg'],

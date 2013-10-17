@@ -458,7 +458,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
 
   // Show flashing animation with the shutter sound.
   document.body.classList.add('show-shutter');
-  var galleryButton = document.querySelector('#toolbar .gallery-button');
+  var galleryButton = document.querySelector('#toolbar .gallery-switch');
   camera.util.setAnimationClass(galleryButton, galleryButton, 'flash');
   setTimeout(function() {
     document.body.classList.remove('show-shutter');

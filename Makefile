@@ -9,11 +9,16 @@ CHROME=google-chrome
 SRC_RESOURCES= \
 	src/_locales/en/messages.json \
 	src/css/main.css \
+	src/images/2x/browser_button_export.png \
+	src/images/2x/browser_button_print.png \
 	src/images/2x/camera_button_picture.png \
 	src/images/2x/camera_button_video.png \
+	src/images/2x/gallery_button_delete.png \
 	src/images/2x/topbar_button_close.png \
 	src/images/2x/topbar_button_gallery.png \
 	src/images/2x/topbar_button_maximize.png \
+	src/images/browser_button_export.png \
+	src/images/browser_button_print.png \
 	src/images/camera_app_icons_128.png \
 	src/images/camera_app_icons_256.png \
 	src/images/camera_app_icons_32.png \
@@ -24,6 +29,7 @@ SRC_RESOURCES= \
 	src/images/camera_app_icons_favicon_32.png \
 	src/images/camera_button_picture.png \
 	src/images/camera_button_video.png \
+	src/images/gallery_button_delete.png \
 	src/images/no_camera.svg \
 	src/images/topbar_button_close.png \
 	src/images/topbar_button_gallery.png \

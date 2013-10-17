@@ -48,6 +48,10 @@ camera.views.Gallery = function(context) {
 
   // End of properties, seal the object.
   Object.seal(this);
+
+  // Listen for clicking on the delete button.
+  document.querySelector('#gallery-delete').addEventListener(
+      'click', this.onDeleteButtonClicked_.bind(this));
 };
 
 /**
@@ -163,6 +167,7 @@ camera.views.Gallery.prototype.renderPictures_ = function() {
  */
 camera.views.Gallery.prototype.onEnter = function() {
   this.onResize();
+  this.updateButtons_();
   document.body.classList.add('gallery');
 };
 
@@ -183,6 +188,31 @@ camera.views.Gallery.prototype.onResize = function() {
                               this.scroller_,
                               camera.util.SmoothScroller.Mode.INSTANT);
   }
+};
+
+/**
+ * Handles clicking on the delete button.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Gallery.prototype.onDeleteButtonClicked_ = function(event) {
+  this.deleteSelection_();
+};
+
+/**
+ * Deletes the currently selected picture. If nothing selected, then nothing
+ * happens.
+ * @private
+ */
+camera.views.Gallery.prototype.deleteSelection_ = function() {
+  if (!this.currentPicture_())
+    return;
+
+  this.model_.deletePicture(this.currentPicture_().picture,
+      function() {},
+      function() {
+        // TODO(mtomasz): Handle errors.
+      });
 };
 
 /**
@@ -207,6 +237,18 @@ camera.views.Gallery.prototype.currentPicture_ = function() {
 };
 
 /**
+ * Updates visibility of the gallery buttons.
+ * @private
+ */
+camera.views.Gallery.prototype.updateButtons_ = function() {
+  var pictureSelected = this.model_.currentIndex !== null;
+  if (pictureSelected)
+    document.querySelector('#gallery-delete').removeAttribute('disabled');
+  else
+    document.querySelector('#gallery-delete').setAttribute('disabled', '');
+};
+
+/**
  * @override
  */
 camera.views.Gallery.prototype.onCurrentIndexChanged = function(
@@ -220,6 +262,9 @@ camera.views.Gallery.prototype.onCurrentIndexChanged = function(
     camera.util.ensureVisible(this.currentPicture_().element,
                               this.scroller_);
   }
+
+  // Update visibility of the gallery buttons.
+  this.updateButtons_();
 };
 
 /**
@@ -278,14 +323,11 @@ camera.views.Gallery.prototype.onKeyPressed = function(event) {
       this.model_.currentIndex = this.model_.length - 1;
       break;
     case 'U+007F':
-      this.model_.deletePicture(currentPicture.picture,
-                function() {},
-                function() {
-                  // TODO(mtomasz): Handle errors.
-                });
+      this.deleteSelection_();
       break;
     case 'Enter':
-      this.context_.onBrowserRequested();
+      if (this.model_.length)
+        this.context_.onBrowserRequested();
       break;
     case 'U+001B':
       this.context_.onCameraRequested();
