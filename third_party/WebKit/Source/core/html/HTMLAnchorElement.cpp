@@ -704,4 +704,9 @@ void HTMLAnchorElement::PrefetchEventHandler::prefetch(WebKit::WebPreconnectMoti
     m_hasIssuedPreconnect = true;
 }
 
+bool HTMLAnchorElement::isInteractiveContent() const
+{
+    return true;
+}
+
 }

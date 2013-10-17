@@ -40,9 +40,10 @@ public:
 
 private:
     HTMLLabelElement(const QualifiedName&, Document&);
+    bool isInInteractiveContent(Node*) const;
 
     virtual bool rendererIsFocusable() const OVERRIDE;
-
+    virtual bool isInteractiveContent() const OVERRIDE;
     virtual void accessKeyAction(bool sendMouseEvents);
 
     // Overridden to update the hover/active state of the corresponding control.

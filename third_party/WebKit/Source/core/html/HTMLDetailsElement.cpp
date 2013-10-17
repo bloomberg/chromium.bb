@@ -107,4 +107,9 @@ void HTMLDetailsElement::toggleOpen()
     setAttribute(openAttr, m_isOpen ? nullAtom : emptyAtom);
 }
 
+bool HTMLDetailsElement::isInteractiveContent() const
+{
+    return true;
+}
+
 }

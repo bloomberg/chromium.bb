@@ -135,4 +135,9 @@ void HTMLIFrameElement::didRecalcStyle(StyleRecalcChange styleChange)
         contentDocument()->recalcStyle(styleChange);
 }
 
+bool HTMLIFrameElement::isInteractiveContent() const
+{
+    return true;
+}
+
 }

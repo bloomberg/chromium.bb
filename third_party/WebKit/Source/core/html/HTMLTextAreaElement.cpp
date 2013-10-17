@@ -543,4 +543,9 @@ void HTMLTextAreaElement::updatePlaceholderText()
     placeholder->setTextContent(placeholderText, ASSERT_NO_EXCEPTION);
 }
 
+bool HTMLTextAreaElement::isInteractiveContent() const
+{
+    return true;
+}
+
 }

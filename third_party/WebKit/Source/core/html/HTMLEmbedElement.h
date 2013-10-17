@@ -53,6 +53,7 @@ private:
     void parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues);
 
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
+    virtual bool isInteractiveContent() const OVERRIDE;
 };
 
 }
