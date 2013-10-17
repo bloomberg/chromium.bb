@@ -623,6 +623,7 @@ skia::RefPtr<SkPicture> InProcessViewRenderer::CapturePicture(int width,
 
 void InProcessViewRenderer::EnableOnNewPicture(bool enabled) {
   on_new_picture_enable_ = enabled;
+  EnsureContinuousInvalidation(NULL, false);
 }
 
 void InProcessViewRenderer::SetIsPaused(bool paused) {
@@ -879,7 +880,8 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
   // This method should be called again when any of these conditions change.
   bool need_invalidate =
       compositor_needs_continuous_invalidate_ || invalidate_ignore_compositor;
-  bool throttle = is_paused_ || (attached_to_window_ && !window_visible_);
+  bool throttle = (is_paused_ && !on_new_picture_enable_) ||
+                  (attached_to_window_ && !window_visible_);
   if (!need_invalidate || block_invalidates_ || throttle)
     return;
 
