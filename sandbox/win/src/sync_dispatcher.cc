@@ -36,12 +36,12 @@ SyncDispatcher::SyncDispatcher(PolicyBase* policy_base)
 bool SyncDispatcher::SetupService(InterceptionManager* manager,
                                   int service) {
   bool ret = false;
+  // We need to intercept kernelbase.dll on Windows 7 and beyond and
+  // kernel32.dll for earlier versions.
   static const wchar_t* kWin32SyncDllName =
       base::win::GetVersion() >= base::win::VERSION_WIN7 ? kKernelBasedllName :
           kKerneldllName;
 
-  // We need to intercept kernelbase.dll on Windows 8 and beyond and
-  // kernel32.dll for earlier versions.
   if (IPC_CREATEEVENT_TAG == service) {
     ret = INTERCEPT_EAT(manager, kWin32SyncDllName, CreateEventW,
                         CREATE_EVENTW_ID, 20);
@@ -53,7 +53,7 @@ bool SyncDispatcher::SetupService(InterceptionManager* manager,
     ret = INTERCEPT_EAT(manager, kWin32SyncDllName, OpenEventW, OPEN_EVENTW_ID,
                         16);
     if (ret) {
-      ret = INTERCEPT_EAT(manager, kWin32SyncDllName, OpenEventW,
+      ret = INTERCEPT_EAT(manager, kWin32SyncDllName, OpenEventA,
                           OPEN_EVENTA_ID, 16);
     }
   }
