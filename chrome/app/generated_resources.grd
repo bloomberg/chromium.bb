@@ -6785,6 +6785,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_HIDPI_DESCRIPTION" desc="Description of flag to enable/disable HiDPI Support.">
         If enabled, application size and layout will adapt to the operating system's DPI settings.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ACCELERATED_SCROLLABLE_FRAMES_NAME" desc="Name of the flag to enable accelerated scrollable frames.">
+        Enable accelerated scrollable frames.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ACCELERATED_SCROLLABLE_FRAMES_DESCRIPTION" desc="Description for the flag to enable accelerated scrollable frames.">
+        Enables accelerated compositing for scrollable frames.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_COMPOSITED_SCROLLING_FOR_FRAMES_NAME" desc="Name of the flag to enable composited scrolling for frames.">
+        Enable composited scrolling for frames.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_COMPOSITED_SCROLLING_FOR_FRAMES_DESCRIPTION" desc="Description for the flag to enable composited scrolling for frames.">
+        Enable accelerated scrolling by the compositer for frames.
+      </message>
       <message name="IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME" desc="Name of the flag to enable streamlined hosted apps.">
         Enable experimental streamlined hosted apps.
       </message>

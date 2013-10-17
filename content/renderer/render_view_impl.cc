@@ -31,6 +31,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
 #include "content/child/child_thread.h"
@@ -606,6 +607,38 @@ static bool ShouldUseAcceleratedCompositingForOverflowScroll(
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
+static bool ShouldUseAcceleratedCompositingForScrollableFrames(
+    float device_scale_factor) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableAcceleratedScrollableFrames))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableAcceleratedScrollableFrames))
+    return true;
+
+  if (!cc::switches::IsLCDTextEnabled())
+    return true;
+
+  return DeviceScaleEnsuresTextQuality(device_scale_factor);
+}
+
+static bool ShouldUseCompositedScrollingForFrames(
+    float device_scale_factor) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableCompositedScrollingForFrames))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableCompositedScrollingForFrames))
+    return true;
+
+  if (!cc::switches::IsLCDTextEnabled())
+    return true;
+
+  return DeviceScaleEnsuresTextQuality(device_scale_factor);
+}
+
 static bool ShouldUseTransitionCompositing(float device_scale_factor) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -899,6 +932,10 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       ShouldUseTransitionCompositing(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForFixedRootBackgroundEnabled(
       ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
+  webview()->settings()->setAcceleratedCompositingForScrollableFramesEnabled(
+      ShouldUseAcceleratedCompositingForScrollableFrames(device_scale_factor_));
+  webview()->settings()->setCompositedScrollingForFramesEnabled(
+      ShouldUseCompositedScrollingForFrames(device_scale_factor_));
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
@@ -6006,6 +6043,11 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->settings()->
         setAcceleratedCompositingForFixedRootBackgroundEnabled(
             ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
+    webview()->settings()->setAcceleratedCompositingForScrollableFramesEnabled(
+        ShouldUseAcceleratedCompositingForScrollableFrames(
+            device_scale_factor_));
+    webview()->settings()->setCompositedScrollingForFramesEnabled(
+        ShouldUseCompositedScrollingForFrames(device_scale_factor_));
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();
