@@ -4863,9 +4863,19 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_DELETE_SHORTCUT" desc="The text shown when you hover over the X inside the input text field.">
         Delete shortcut
       </message>
-      <message name="IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE" desc="The generic 'activate extension' text used as description for some commands">
+      <message name="IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE" desc="The generic 'activate extension' text used as description for some commands.">
         Activate the extension
       </message>
+      <message name="IDS_EXTENSION_COMMANDS_GLOBAL" desc="The tooltip for commands that are global in nature.">
+        This keyboard shortcut is active at all times (not just when Chrome has focus). Click to change.
+      </message>
+      <message name="IDS_EXTENSION_COMMANDS_NOT_GLOBAL" desc="The tooltip for commands that are not global in nature.">
+        This keyboard shortcut is only active when Chrome has focus. Click to change.
+      </message>
+      <message name="IDS_EXTENSION_COMMANDS_NOT_GLOBAL_PERMANENT" desc="The tooltip for commands that are not global in nature and never can be.">
+        This keyboard shortcut is only active when Chrome has focus.
+      </message>
+
       <message name="IDS_EXTENSION_PACK_DIALOG_TITLE" desc="Title of pack extension dialog">
         Pack Extension
       </message>

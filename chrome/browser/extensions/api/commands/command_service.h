@@ -115,12 +115,14 @@ class CommandService : public ProfileKeyedAPI,
   // |allow_overrides| is false, the keybinding must be free for the change to
   // be recorded (as determined by the master list in |user_prefs|). If
   // |allow_overwrites| is true, any previously recorded keybinding for this
-  // |accelerator| will be overwritten. Returns true if the change was
-  // successfully recorded.
+  // |accelerator| will be overwritten. If |global| is true, the command will
+  // be registered as a global command (be active even when Chrome does not have
+  // focus. Returns true if the change was successfully recorded.
   bool AddKeybindingPref(const ui::Accelerator& accelerator,
                          std::string extension_id,
                          std::string command_name,
-                         bool allow_overrides);
+                         bool allow_overrides,
+                         bool global);
 
   // Removes all keybindings for a given extension by its |extension_id|.
   // |command_name| is optional and if specified, causes only the command with
@@ -135,12 +137,15 @@ class CommandService : public ProfileKeyedAPI,
                              const std::string& command_name,
                              const std::string& keystroke);
 
-  // Finds the shortcut assigned to a command with the name |command_name|
-  // within an extension with id |extension_id|. Returns an empty Accelerator
-  // object (with keycode VKEY_UNKNOWN) if no shortcut is assigned or the
-  // command is not found.
-  ui::Accelerator FindShortcutForCommand(const std::string& extension_id,
-                                         const std::string& command);
+  // Toggles the scope of the keybinding.
+  void ToggleScope(const std::string& extension_id,
+                   const std::string& command_name);
+
+  // Finds the command with the name |command_name| within an extension with id
+  // |extension_id| . Returns an empty Command object (with keycode
+  // VKEY_UNKNOWN) if the command is not found.
+  Command FindCommandByName(const std::string& extension_id,
+                            const std::string& command);
 
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,

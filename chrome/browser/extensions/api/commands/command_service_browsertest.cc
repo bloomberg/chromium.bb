@@ -42,9 +42,8 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest, RemoveShortcutSurvivesUpdate) {
   EXPECT_TRUE(service->GetExtensionById(kId, false) != NULL);
 
   // Verify it has a command of Alt+Shift+F.
-  ui::Accelerator accelerator =
-      command_service->FindShortcutForCommand(
-          kId, manifest_values::kBrowserActionCommandEvent);
+  ui::Accelerator accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
   EXPECT_EQ(ui::VKEY_F, accelerator.key_code());
   EXPECT_FALSE(accelerator.IsCtrlDown());
   EXPECT_TRUE(accelerator.IsShiftDown());
@@ -55,8 +54,8 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest, RemoveShortcutSurvivesUpdate) {
       kId, manifest_values::kBrowserActionCommandEvent);
 
   // Verify it got removed.
-  accelerator = command_service->FindShortcutForCommand(
-      kId, manifest_values::kBrowserActionCommandEvent);
+  accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
   EXPECT_EQ(ui::VKEY_UNKNOWN, accelerator.key_code());
 
   // Update to version 2.
@@ -64,8 +63,8 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest, RemoveShortcutSurvivesUpdate) {
   EXPECT_TRUE(service->GetExtensionById(kId, false) != NULL);
 
   // Verify it is still set to nothing.
-  accelerator = command_service->FindShortcutForCommand(
-      kId, manifest_values::kBrowserActionCommandEvent);
+  accelerator = command_service->FindCommandByName(
+      kId, manifest_values::kBrowserActionCommandEvent).accelerator();
   EXPECT_EQ(ui::VKEY_UNKNOWN, accelerator.key_code());
 }
 

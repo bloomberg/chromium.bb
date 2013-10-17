@@ -103,9 +103,13 @@ void GlobalShortcutListenerWin::UnregisterAccelerator(
   if (it == hotkey_ids_.end())
     return;
 
-  UnregisterHotKey(gfx::SingletonHwnd::GetInstance()->hwnd(), it->second);
-  hotkey_ids_.erase(it);
+  bool success = !!UnregisterHotKey(
+      gfx::SingletonHwnd::GetInstance()->hwnd(), it->second);
+  // This call should always succeed, as long as we pass in the right HWND and
+  // an id we've used to register before.
+  DCHECK(success);
 
+  hotkey_ids_.erase(it);
   GlobalShortcutListener::UnregisterAccelerator(accelerator, observer);
 }
 

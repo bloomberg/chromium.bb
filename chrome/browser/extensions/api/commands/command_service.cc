@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
@@ -30,6 +31,7 @@ namespace {
 
 const char kExtension[] = "extension";
 const char kCommandName[] = "command_name";
+const char kGlobal[] = "global";
 
 // A preference that indicates that the initial keybindings for the given
 // extension have been set.
@@ -155,18 +157,21 @@ bool CommandService::GetNamedCommands(const std::string& extension_id,
 
   extensions::CommandMap::const_iterator iter = commands->begin();
   for (; iter != commands->end(); ++iter) {
-    ui::Accelerator shortcut_assigned =
-        FindShortcutForCommand(extension_id, iter->second.command_name());
+    // Look up to see if the user has overridden how the command should work.
+    extensions::Command saved_command =
+        FindCommandByName(extension_id, iter->second.command_name());
+    ui::Accelerator shortcut_assigned = saved_command.accelerator();
 
     if (type == ACTIVE_ONLY && shortcut_assigned.key_code() == ui::VKEY_UNKNOWN)
       continue;
 
     extensions::Command command = iter->second;
-    if (scope != ANY_SCOPE && ((scope == GLOBAL) != command.global()))
+    if (scope != ANY_SCOPE && ((scope == GLOBAL) != saved_command.global()))
       continue;
 
     if (shortcut_assigned.key_code() != ui::VKEY_UNKNOWN)
       command.set_accelerator(shortcut_assigned);
+    command.set_global(saved_command.global());
 
     (*command_map)[iter->second.command_name()] = command;
   }
@@ -178,7 +183,8 @@ bool CommandService::AddKeybindingPref(
     const ui::Accelerator& accelerator,
     std::string extension_id,
     std::string command_name,
-    bool allow_overrides) {
+    bool allow_overrides,
+    bool global) {
   if (accelerator.key_code() == ui::VKEY_UNKNOWN)
     return false;
 
@@ -194,6 +200,7 @@ bool CommandService::AddKeybindingPref(
   base::DictionaryValue* keybinding = new base::DictionaryValue();
   keybinding->SetString(kExtension, extension_id);
   keybinding->SetString(kCommandName, command_name);
+  keybinding->SetBoolean(kGlobal, global);
 
   bindings->Set(key, keybinding);
 
@@ -231,16 +238,30 @@ void CommandService::Observe(
 void CommandService::UpdateKeybindingPrefs(const std::string& extension_id,
                                            const std::string& command_name,
                                            const std::string& keystroke) {
+  extensions::Command command = FindCommandByName(extension_id, command_name);
+
   // The extension command might be assigned another shortcut. Remove that
   // shortcut before proceeding.
   RemoveKeybindingPrefs(extension_id, command_name);
 
   ui::Accelerator accelerator =
       Command::StringToAccelerator(keystroke, command_name);
-  AddKeybindingPref(accelerator, extension_id, command_name, true);
+  AddKeybindingPref(accelerator, extension_id, command_name,
+                    true, command.global());
 }
 
-ui::Accelerator CommandService::FindShortcutForCommand(
+void CommandService::ToggleScope(const std::string& extension_id,
+                                 const std::string& command_name) {
+  extensions::Command command = FindCommandByName(extension_id, command_name);
+
+  // Pre-existing shortcuts must be removed before proceeding because the
+  // handlers for global and non-global extensions are not one and the same.
+  RemoveKeybindingPrefs(extension_id, command_name);
+  AddKeybindingPref(command.accelerator(), extension_id,
+                    command_name, true, !command.global());
+}
+
+Command CommandService::FindCommandByName(
     const std::string& extension_id, const std::string& command) {
   const base::DictionaryValue* bindings =
       profile_->GetPrefs()->GetDictionary(prefs::kExtensionCommands);
@@ -257,15 +278,18 @@ ui::Accelerator CommandService::FindShortcutForCommand(
     item->GetString(kCommandName, &command_name);
     if (command != command_name)
       continue;
+    bool global = false;
+    if (FeatureSwitch::global_commands()->IsEnabled())
+      item->GetBoolean(kGlobal, &global);
 
     std::string shortcut = it.key();
     if (StartsWithASCII(shortcut, Command::CommandPlatform() + ":", true))
       shortcut = shortcut.substr(Command::CommandPlatform().length() + 1);
 
-    return Command::StringToAccelerator(shortcut, command_name);
+    return Command(command_name, string16(), shortcut, global);
   }
 
-  return ui::Accelerator();
+  return Command();
 }
 
 void CommandService::AssignInitialKeybindings(const Extension* extension) {
@@ -289,7 +313,8 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
       AddKeybindingPref(iter->second.accelerator(),
                         extension->id(),
                         iter->second.command_name(),
-                        false);  // Overwriting not allowed.
+                        false,  // Overwriting not allowed.
+                        iter->second.global());
     }
   }
 
@@ -301,7 +326,8 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
       AddKeybindingPref(browser_action_command->accelerator(),
                         extension->id(),
                         browser_action_command->command_name(),
-                        false);  // Overwriting not allowed.
+                        false,   // Overwriting not allowed.
+                        false);  // Browser actions can't be global.
     }
   }
 
@@ -313,7 +339,8 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
       AddKeybindingPref(page_action_command->accelerator(),
                         extension->id(),
                         page_action_command->command_name(),
-                        false);  // Overwriting not allowed.
+                        false,   // Overwriting not allowed.
+                        false);  // Page actions can't be global.
     }
   }
 
@@ -325,7 +352,8 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
       AddKeybindingPref(script_badge_command->accelerator(),
                         extension->id(),
                         script_badge_command->command_name(),
-                        false);  // Overwriting not allowed.
+                        false,   // Overwriting not allowed.
+                        false);  // Script badges can't be global.
     }
   }
 }
@@ -407,8 +435,10 @@ bool CommandService::GetExtensionActionCommand(
   if (!requested_command)
     return false;
 
-  ui::Accelerator shortcut_assigned =
-      FindShortcutForCommand(extension_id, requested_command->command_name());
+  // Look up to see if the user has overridden how the command should work.
+  extensions::Command saved_command =
+      FindCommandByName(extension_id, requested_command->command_name());
+  ui::Accelerator shortcut_assigned = saved_command.accelerator();
 
   if (active)
     *active = (shortcut_assigned.key_code() != ui::VKEY_UNKNOWN);

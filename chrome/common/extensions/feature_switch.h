@@ -18,6 +18,7 @@ namespace extensions {
 class FeatureSwitch {
  public:
   static FeatureSwitch* easy_off_store_install();
+  static FeatureSwitch* global_commands();
   static FeatureSwitch* script_badges();
   static FeatureSwitch* script_bubble();
   static FeatureSwitch* prompt_for_external_extensions();

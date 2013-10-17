@@ -63,6 +63,9 @@ class Command {
   void set_accelerator(ui::Accelerator accelerator) {
     accelerator_ = accelerator;
   }
+  void set_global(bool global) {
+    global_ = global;
+  }
 
  private:
   std::string command_name_;

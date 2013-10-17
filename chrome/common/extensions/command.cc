@@ -9,7 +9,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/common/chrome_version_info.h"  // TODO(finnur): Remove.
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
@@ -511,11 +513,13 @@ base::DictionaryValue* Command::ToValue(const Extension* extension,
   base::DictionaryValue* extension_data = new base::DictionaryValue();
 
   string16 command_description;
+  bool extension_action = false;
   if (command_name() == values::kBrowserActionCommandEvent ||
       command_name() == values::kPageActionCommandEvent ||
       command_name() == values::kScriptBadgeCommandEvent) {
     command_description =
         l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE);
+    extension_action = true;
   } else {
     command_description = description();
   }
@@ -524,6 +528,16 @@ base::DictionaryValue* Command::ToValue(const Extension* extension,
   extension_data->SetString("keybinding", accelerator().GetShortcutText());
   extension_data->SetString("command_name", command_name());
   extension_data->SetString("extension_id", extension->id());
+  extension_data->SetBoolean("global", global());
+  extension_data->SetBoolean("extension_action", extension_action);
+
+  if (FeatureSwitch::global_commands()->IsEnabled()) {
+    // TODO(finnur): This is to make sure we don't show the config UI beyond
+    // dev and will be removed when we launch.
+    static bool stable_or_beta =
+        chrome::VersionInfo::GetChannel() >= chrome::VersionInfo::CHANNEL_BETA;
+    extension_data->SetBoolean("scope_ui_visible", !stable_or_beta);
+  }
 
   return extension_data;
 }

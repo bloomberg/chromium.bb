@@ -60,9 +60,9 @@ bool GetAllCommandsFunction::RunImpl() {
 
   for (extensions::CommandMap::const_iterator iter = named_commands.begin();
        iter != named_commands.end(); ++iter) {
-    ui::Accelerator shortcut_assigned =
-        command_service->FindShortcutForCommand(
-            extension_->id(), iter->second.command_name());
+    extensions::Command command = command_service->FindCommandByName(
+        extension_->id(), iter->second.command_name());
+    ui::Accelerator shortcut_assigned = command.accelerator();
     active = (shortcut_assigned.key_code() != ui::VKEY_UNKNOWN);
 
     command_list->Append(CreateCommandValue(iter->second, active));

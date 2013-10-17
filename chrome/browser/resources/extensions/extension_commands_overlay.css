@@ -56,6 +56,11 @@
   margin-top: 1px;
 }
 
+.command-scope {
+  padding-left: 0.3em;
+  padding-top: 0.6em;
+}
+
 .capturing {
   background: rgb(243, 244, 255);
   border: solid 1px rgb(140, 147, 255);

@@ -4,9 +4,13 @@
 
 // Called when the user activates the command.
 chrome.commands.onCommand.addListener(function(command) {
-  chrome.tabs.executeScript(null, {
-      code: "document.body.bgColor='" + command + "'" });
-  chrome.test.notifyPass();
+  if (command == "Ctrl-Shift-9-Valid-Global-Shortcut") {
+    chrome.test.notifyPass();
+    return;
+  }
+
+  // Everything else is a failure case.
+  chrome.test.notifyFail("Unexpected command received: " + command);
 });
 
 chrome.test.notifyPass();

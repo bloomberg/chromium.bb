@@ -245,6 +245,7 @@ extern const char kForceFirstRun[];
 extern const char kForceVariationIds[];
 extern const char kForceLoadCloudPolicy[];
 extern const char kGaiaProfileInfo[];
+extern const char kGlobalCommands[];
 extern const char kGoogleBaseURL[];
 extern const char kGoogleSearchDomainCheckURL[];
 extern const char kGSSAPILibraryName[];

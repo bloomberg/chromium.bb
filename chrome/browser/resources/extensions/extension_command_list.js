@@ -262,6 +262,29 @@ cr.define('options', function() {
       commandClear.title = loadTimeData.getString('extensionCommandsDelete');
       commandClear.addEventListener('click', this.handleClear_.bind(this));
 
+      if (command.scope_ui_visible) {
+        var commandScope = node.querySelector('.command-scope');
+        commandScope.hidden = false;
+        commandScope.id = this.createElementId_(
+            'toggleCommandScope', command.extension_id, command.command_name);
+        if (command.global) {
+          // TODO(finnur): Use another icon, this is just a placeholder.
+          commandScope.src = 'chrome://theme/IDR_ACCESSED_COOKIES';
+          commandScope.title =
+              loadTimeData.getString('extensionCommandsGlobalTooltip');
+        } else {
+          commandScope.src = 'chrome://theme/IDR_PRODUCT_LOGO_16';
+          var tooltip = command.extension_action ?
+              'extensionCommandsNotGlobalPermanentTooltip' :
+              'extensionCommandsNotGlobalTooltip';
+          commandScope.title = loadTimeData.getString(tooltip);
+        }
+        if (!command.extension_action) {
+          commandScope.addEventListener(
+              'click', this.handleToggleCommandScope_.bind(this));
+        }
+      }
+
       this.appendChild(node);
     },
 
@@ -420,6 +443,17 @@ cr.define('options', function() {
       var parsed = this.parseElementId_('clear', event.target.id);
       chrome.send('setExtensionCommandShortcut',
           [parsed.extensionId, parsed.commandName, '']);
+    },
+
+    /**
+     * A handler for the toggling the scope of the command.
+     * @param {Event} event The mouse event to consider.
+     * @private
+     */
+    handleToggleCommandScope_: function(event) {
+      var parsed = this.parseElementId_('toggleCommandScope', event.target.id);
+      chrome.send('toggleCommandScope',
+          [parsed.extensionId, parsed.commandName]);
     },
 
     /**

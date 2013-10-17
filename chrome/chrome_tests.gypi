@@ -199,6 +199,7 @@
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_crash_recovery_browsertest.cc',
         'browser/extensions/extension_function_test_utils.cc',
+        'browser/extensions/extension_commands_global_registry_apitest.cc',
         'browser/extensions/extension_keybinding_apitest.cc',
         'browser/extensions/extension_test_message_listener.cc',
         'browser/extensions/extension_test_message_listener.h',

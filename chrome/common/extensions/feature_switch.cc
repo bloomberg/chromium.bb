@@ -21,6 +21,9 @@ class CommonSwitches {
       : easy_off_store_install(
             ::switches::kEasyOffStoreExtensionInstall,
             FeatureSwitch::DEFAULT_DISABLED),
+        global_commands(
+            ::switches::kGlobalCommands,
+            FeatureSwitch::DEFAULT_DISABLED),
         script_badges(
             ::switches::kScriptBadges,
             FeatureSwitch::DEFAULT_DISABLED),
@@ -39,6 +42,7 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED) {}
 
   FeatureSwitch easy_off_store_install;
+  FeatureSwitch global_commands;
   FeatureSwitch script_badges;
   FeatureSwitch script_bubble;
   FeatureSwitch prompt_for_external_extensions;
@@ -52,6 +56,9 @@ base::LazyInstance<CommonSwitches> g_common_switches =
 
 FeatureSwitch* FeatureSwitch::easy_off_store_install() {
   return &g_common_switches.Get().easy_off_store_install;
+}
+FeatureSwitch* FeatureSwitch::global_commands() {
+  return &g_common_switches.Get().global_commands;
 }
 FeatureSwitch* FeatureSwitch::script_badges() {
   return &g_common_switches.Get().script_badges;
