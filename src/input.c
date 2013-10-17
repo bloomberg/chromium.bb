@@ -1719,6 +1719,9 @@ weston_seat_release_pointer(struct weston_seat *seat)
 					 wl_fixed_from_int(0),
 					 wl_fixed_from_int(0));
 
+		if (pointer->sprite)
+			pointer_unmap_sprite(pointer);
+
 		seat_send_updated_caps(seat);
 	}
 }
