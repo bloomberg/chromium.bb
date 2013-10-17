@@ -14,25 +14,28 @@ This tutorial uses the <a href="http://code.google.com/apis/documents/">Google D
 <h2 id="requirements">Requirements</h2>
 
 <p>
-This tutorial expects that you have some experience writing extensions for Google Chrome and some familiarity with the <a href="http://code.google.com/apis/accounts/docs/OAuth.html">3-legged OAuth</a> flow. Although you don’t need a background in the <a href="http://code.google.com/apis/documents/">Google Documents List Data API</a> (or the other <a href="http://code.google.com/apis/gdata/">Google Data APIs</a> for that matter), having a understanding of the protocol may be helpful.
+This tutorial expects that you have some experience writing extensions for Google Chrome and some familiarity with the <a href="http://code.google.com/apis/accounts/docs/OAuth.html">3-legged OAuth</a> flow. Although you don’t need a background in the <a href="http://code.google.com/apis/documents/">Google Documents List Data API</a> (or the other <a href="http://code.google.com/apis/gdata/">Google Data APIs</a> for that matter), having an understanding of the protocol may be helpful.
 </p>
 
 <h2 id="getting-started">Getting started</h2>
 
 <p>
-First, copy over the three library files from the Chromium source tree at <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/">.../examples/extensions/oauth_contacts/</a>:
+First, copy the four library files from the Chromium source tree at <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/">.../examples/extensions/oauth_contacts/</a>:
 </p>
 <ul>
 <li><strong><a href="examples/extensions/oauth_contacts/chrome_ex_oauth.html" download="chrome_ex_oauth.html">chrome_ex_oauth.html</a></strong> - interstitial page for the oauth_callback URL</li>
 <li><strong><a href="examples/extensions/oauth_contacts/chrome_ex_oauth.js" download="chrome_ex_oauth.js">chrome_ex_oauth.js</a></strong> - core OAuth library</li>
 <li><strong><a href="examples/extensions/oauth_contacts/chrome_ex_oauthsimple.js" download="chrome_ex_oauthsimple.js">chrome_ex_oauthsimple.js</a></strong> - helpful wrapper for chrome_ex_oauth.js</li>
+<li><strong><a href="examples/extensions/oauth_contacts/onload.js" download="onload.js">onload.js</a></strong> -
+initializes chrome_ex_oauth.html and redirects the page if needed to start the OAuth flow</li>
 </ul>
 
-<p>Place the three library files in the root of your extension directory (or wherever your JavaScript is stored). Then include both .js files in your background page in the following order:</p>
+<p>Place the four library files in the root of your extension directory (or wherever your JavaScript is stored). Then include the .js files in your background page in the following order:</p>
 
 <pre>
 &lt;script type="text/javascript" src="chrome_ex_oauthsimple.js"&gt;&lt;/script&gt;
 &lt;script type="text/javascript" src="chrome_ex_oauth.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="onload.js"&gt;&lt;/script&gt;
 </pre>
 
 <p>Your background page will manage the OAuth flow.</p>
