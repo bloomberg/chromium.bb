@@ -3,7 +3,7 @@
   "user_agent_type": "desktop",
   "pages": [
     {
-      "url": "file:///endure/indexeddb_app.html",
+      "url": "file://endure/indexeddb_app.html",
       "name": "indexeddb_offline",
       "why": "Simulates user input while offline and sync while online.",
       "navigate_steps": [
