@@ -1203,7 +1203,6 @@ void WebContentsImpl::Observe(int type,
 }
 
 void WebContentsImpl::Init(const WebContents::CreateParams& params) {
-  should_normally_be_visible_ = !params.initially_hidden;
   render_manager_.Init(
       params.browser_context, params.site_instance, params.routing_id,
       params.main_frame_routing_id);
