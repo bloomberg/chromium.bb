@@ -362,29 +362,43 @@ static size_t irt_interface_query(const char *interface_ident,
   return 0;
 }
 
-/* Layout for empty argv/env arrays. */
-struct startup_info {
-  void (*cleanup_func)();
-  int envc;
-  int argc;
-  char *argv0;
-  char *envp0;
-  Elf32_auxv_t auxv[2];
-};
+int main(int argc, char **argv, char **environ) {
+  /* Find size of environ array. */
+  size_t env_count = 0;
+  while (environ[env_count] != NULL)
+    env_count++;
 
-int main(int argc, char **argv) {
-  /* TODO(mseaborn): Copy across argv and environment arrays. */
-  struct startup_info info;
-  info.cleanup_func = NULL;
-  info.envc = 0;
-  info.argc = 0;
-  info.argv0 = NULL;
-  info.envp0 = NULL;
-  info.auxv[0].a_type = AT_SYSINFO;
-  info.auxv[0].a_un.a_val = (uintptr_t) irt_interface_query;
-  info.auxv[1].a_type = 0;
-  info.auxv[1].a_un.a_val = 0;
+  size_t count =
+      1  /* cleanup_func pointer */
+      + 2  /* envc and argc counts */
+      + argc + 1  /* argv array, with terminator */
+      + env_count + 1  /* environ array, with terminator */
+      + 4;  /* auxv: 2 entries, one of them the terminator */
+  uintptr_t *data = malloc(count * sizeof(uintptr_t));
+  if (data == NULL) {
+    fprintf(stderr, "Failed to allocate argv/env/auxv array\n");
+    return 1;
+  }
+  size_t pos = 0;
+  data[pos++] = 0;  /* cleanup_func pointer */
+  data[pos++] = env_count;
+  data[pos++] = argc;
+  /* Copy arrays, with terminators. */
+  int i;
+  for (i = 0; i < argc; i++)
+    data[pos++] = (uintptr_t) argv[i];
+  data[pos++] = 0;
+  for (i = 0; i < env_count; i++)
+    data[pos++] = (uintptr_t) environ[i];
+  data[pos++] = 0;
+  /* auxv[0] */
+  data[pos++] = AT_SYSINFO;
+  data[pos++] = (uintptr_t) irt_interface_query;
+  /* auxv[1] */
+  data[pos++] = 0;
+  data[pos++] = 0;
+  assert(pos == count);
 
-  _user_start(&info);
+  _user_start(data);
   return 1;
 }

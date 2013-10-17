@@ -628,7 +628,8 @@ mode-buildbot-tc-x8632-linux() {
     --mode=nacl_irt_test platform=x86-32 -j8 \
     run_hello_world_test_irt \
     run_irt_futex_test_irt \
-    run_thread_test_irt
+    run_thread_test_irt \
+    run_float_test_irt
 }
 
 mode-buildbot-tc-x8632-mac() {
