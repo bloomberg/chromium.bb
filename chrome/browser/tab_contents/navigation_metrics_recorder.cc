@@ -7,6 +7,13 @@
 #include "base/metrics/histogram.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "chrome/browser/metro_utils/metro_chrome_win.h"
+#endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NavigationMetricsRecorder);
 
@@ -69,4 +76,21 @@ void NavigationMetricsRecorder::DidNavigateMainFrame(
       const content::FrameNavigateParams& params) {
   RecordMainFrameNavigation(details);
 }
+
+void NavigationMetricsRecorder::DidStartLoading(
+    content::RenderViewHost* render_view_host) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    gfx::NativeView view = render_view_host->GetView()->GetNativeView();
+    if (view) {
+      chrome::HostDesktopType desktop =
+          chrome::GetHostDesktopTypeForNativeView(view);
+      UMA_HISTOGRAM_ENUMERATION("Win8.PageLoad",
+                                chrome::GetWin8Environment(desktop),
+                                chrome::WIN_8_ENVIRONMENT_MAX);
+    }
+  }
+#endif
+}
+
 

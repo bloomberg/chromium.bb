@@ -19346,6 +19346,13 @@ other types of suffix sets.
   <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
 </histogram>
 
+<histogram name="Win8.PageLoad" enum="Win8PageLoadType">
+  <summary>
+    Count of page loads in each of the 2 different environments (metro/desktop)
+    on Windows 8.
+  </summary>
+</histogram>
+
 <histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
   <summary>
     Incremented each time the TimeTicks field trial runs on a machine with
@@ -27754,6 +27761,13 @@ other types of suffix sets.
   <int value="1" label="kStatusCodeTypeByClient"/>
   <int value="2" label="kStatusCodeTypeByUser"/>
   <int value="3" label="kStatusCodeTypeConsideredDead"/>
+</enum>
+
+<enum name="Win8PageLoadType" type="int">
+  <int value="0" label="Metro"/>
+  <int value="1" label="Desktop"/>
+  <int value="2" label="Metro Aura"/>
+  <int value="3" label="Desktop Aura"/>
 </enum>
 
 <enum name="WindowsVersion" type="int">
