@@ -112,16 +112,29 @@
       }, { # OS!="mac"
         'sources/': [
           ['exclude', 'mac/'],
+          ['exclude', 'Mac\\.mm$'],
         ],
       }],
       ['OS=="win"', {
         'sources/': [
+          ['exclude', 'Posix\\.cpp$'],
           # We use LocaleWin.cpp instead of LocaleICU.cpp
           ['exclude', 'LocaleICU\\.(cpp|h)$'],
         ],
       }, { # OS!="win"
         'sources/': [
           ['exclude', 'win/'],
+          ['exclude', 'Win\\.cpp$'],
+        ],
+      }],
+      ['toolkit_uses_gtk == 0', {
+        'sources/': [
+          ['exclude', 'Gtk\\.cpp$'],
+        ],
+      }],
+      ['OS!="android"', {
+        'sources/': [
+          ['exclude', 'Android\\.cpp$'],
         ],
       }],
       ['"WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {
