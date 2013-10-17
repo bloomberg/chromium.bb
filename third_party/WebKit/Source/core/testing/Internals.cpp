@@ -191,6 +191,7 @@ void Internals::resetToConsistentState(Page* page)
     ASSERT(page);
 
     page->setDeviceScaleFactor(1);
+    page->setIsCursorVisible(true);
     page->setPageScaleFactor(1, IntPoint(0, 0));
     page->setPagination(Pagination());
     TextRun::setAllowsRoundingHacks(false);
