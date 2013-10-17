@@ -99,6 +99,7 @@ namespace WebCore {
         // FIXME: This is the same as requestURL(). We should remove one of them.
         const KURL& url() const;
         const KURL& unreachableURL() const;
+        bool isURLValidForNewHistoryEntry() const;
 
         const KURL& originalURL() const;
         const KURL& requestURL() const;

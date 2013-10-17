@@ -30,12 +30,12 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
+#include "core/page/BackForwardClient.h"
 #include "core/page/Page.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
@@ -56,7 +56,7 @@ unsigned History::length() const
         return 0;
     if (!m_frame->page())
         return 0;
-    return m_frame->page()->backForward().count();
+    return m_frame->page()->backForward().backForwardListCount();
 }
 
 SerializedScriptValue* History::state()

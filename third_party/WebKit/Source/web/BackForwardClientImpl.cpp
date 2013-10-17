@@ -47,13 +47,6 @@ BackForwardClientImpl::~BackForwardClientImpl()
 {
 }
 
-void BackForwardClientImpl::didAddItem()
-{
-    // If WebCore adds a new HistoryItem, it means this is a new navigation (ie,
-    // not a reload or back/forward).
-    m_webView->observeNewNavigation();
-}
-
 int BackForwardClientImpl::backListCount()
 {
     if (!m_webView->client())
@@ -69,5 +62,13 @@ int BackForwardClientImpl::forwardListCount()
 
     return m_webView->client()->historyForwardListCount();
 }
+
+int BackForwardClientImpl::backForwardListCount()
+{
+    if (!m_webView->client())
+        return 0;
+    return backListCount() + 1 + forwardListCount();
+}
+
 
 } // namespace WebKit

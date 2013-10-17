@@ -48,7 +48,6 @@
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
-#include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -310,7 +309,10 @@ void FrameLoader::receivedFirstData()
 {
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
-    m_client->dispatchDidCommitLoad();
+    NavigationHistoryPolicy navigationHistoryPolicy = NavigationReusedHistoryEntry;
+    if (m_loadType == FrameLoadTypeStandard && m_documentLoader->isURLValidForNewHistoryEntry())
+        navigationHistoryPolicy = NavigationCreatedHistoryEntry;
+    m_client->dispatchDidCommitLoad(navigationHistoryPolicy);
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
     m_frame->page()->didCommitLoad(m_frame);
     dispatchDidClearWindowObjectsInAllWorlds();
@@ -557,7 +559,10 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
         m_documentLoader->appendRedirect(oldURL);
     m_documentLoader->appendRedirect(newURL);
 
-    m_client->dispatchDidNavigateWithinPage();
+    NavigationHistoryPolicy navigationHistoryPolicy = NavigationReusedHistoryEntry;
+    if (updateBackForwardList == UpdateBackForwardList || sameDocumentNavigationSource == SameDocumentNavigationPushState)
+        navigationHistoryPolicy = NavigationCreatedHistoryEntry;
+    m_client->dispatchDidNavigateWithinPage(navigationHistoryPolicy);
     m_client->dispatchDidReceiveTitle(m_frame->document()->title());
 
     if (m_frame->document()->loadEventFinished())
@@ -798,7 +803,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     loadWithNavigationAction(request, action, type, 0, SubstituteData(), overrideEncoding);
 }
 
-void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItemPolicy)
+void FrameLoader::stopAllLoaders()
 {
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
@@ -813,13 +818,8 @@ void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItem
 
     m_inStopAllLoaders = true;
 
-    // If no new load is in progress, we should clear the provisional item from history
-    // before we call stopLoading.
-    if (clearProvisionalItemPolicy == ShouldClearProvisionalItem)
-        history()->setProvisionalItem(0);
-
     for (RefPtr<Frame> child = m_frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
-        child->loader()->stopAllLoaders(clearProvisionalItemPolicy);
+        child->loader()->stopAllLoaders();
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->stopLoading();
     if (m_documentLoader)
@@ -1006,11 +1006,6 @@ void FrameLoader::checkLoadCompleteForThisFrame()
         m_provisionalDocumentLoader = 0;
         m_progressTracker->progressCompleted();
         m_state = FrameStateComplete;
-
-        // Reset the back forward list to the last committed history item at the top level.
-        RefPtr<HistoryItem> item = m_frame->page()->mainFrame()->loader()->history()->currentItem();
-        if (isBackForwardLoadType(loadType()) && !history()->provisionalItem() && item)
-            m_frame->page()->backForward().setCurrentItem(item.get());
     }
 
     if (m_state != FrameStateCommittedPage)
@@ -1254,6 +1249,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
             m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = 0;
     }
+    history()->setProvisionalItem(0);
     loadInSameDocument(request.url(), 0, isNewNavigation);
 }
 
@@ -1368,7 +1364,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     }
 
     // A new navigation is in progress, so don't clear the history's provisional item.
-    stopAllLoaders(ShouldNotClearProvisionalItem);
+    stopAllLoaders();
 
     // <rdar://problem/6250856> - In certain circumstances on pages with multiple frames, stopAllLoaders()
     // might detach the current FrameLoader, in which case we should bail on this newly defunct load.
@@ -1569,7 +1565,6 @@ void FrameLoader::insertDummyHistoryItem()
 {
     RefPtr<HistoryItem> currentItem = HistoryItem::create();
     history()->setCurrentItem(currentItem.get());
-    frame()->page()->backForward().setCurrentItem(currentItem.get());
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()

@@ -58,11 +58,6 @@ namespace WebCore {
         NavigationTypeOther
     };
 
-    enum ClearProvisionalItemPolicy {
-        ShouldClearProvisionalItem,
-        ShouldNotClearProvisionalItem
-    };
-
     enum ObjectContentType {
         ObjectContentNone,
         ObjectContentImage,

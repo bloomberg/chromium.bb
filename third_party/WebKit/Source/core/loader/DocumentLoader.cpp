@@ -164,6 +164,11 @@ void DocumentLoader::replaceRequestURLForSameDocumentNavigation(const KURL& url)
     m_request.setURL(url);
 }
 
+bool DocumentLoader::isURLValidForNewHistoryEntry() const
+{
+    return !originalRequest().url().isEmpty() || !unreachableURL().isEmpty();
+}
+
 void DocumentLoader::setRequest(const ResourceRequest& req)
 {
     // Replacing an unreachable URL with alternate content looks like a server-side

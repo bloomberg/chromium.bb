@@ -397,10 +397,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_backForwardClientImpl(this)
     , m_fixedLayoutSizeLock(false)
     , m_shouldAutoResize(false)
-    , m_observedNewNavigation(false)
-#ifndef NDEBUG
-    , m_newNavigationLoader(0)
-#endif
     , m_zoomLevel(0)
     , m_minimumZoomLevel(zoomFactorToZoomLevel(minTextSizeMultiplier))
     , m_maximumZoomLevel(zoomFactorToZoomLevel(maxTextSizeMultiplier))
@@ -3643,18 +3639,9 @@ void WebView::removeInjectedStyleSheets()
     PageGroup::sharedGroup()->removeInjectedStyleSheets();
 }
 
-void WebViewImpl::didCommitLoad(bool* isNewNavigation, bool isNavigationWithinPage)
+void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPage)
 {
-    if (isNewNavigation)
-        *isNewNavigation = m_observedNewNavigation;
-
-#ifndef NDEBUG
-    ASSERT(!m_observedNewNavigation
-        || m_page->mainFrame()->loader()->documentLoader() == m_newNavigationLoader);
-    m_newNavigationLoader = 0;
-#endif
-    m_observedNewNavigation = false;
-    if (*isNewNavigation && !isNavigationWithinPage)
+    if (isNewNavigation && !isNavigationWithinPage)
         m_pageScaleConstraintsSet.setNeedsReset(true);
 
     // Make sure link highlight from previous page is cleared.
@@ -3722,14 +3709,6 @@ void WebViewImpl::startDragging(Frame* frame,
     ASSERT(!m_doingDragAndDrop);
     m_doingDragAndDrop = true;
     m_client->startDragging(WebFrameImpl::fromFrame(frame), dragData, mask, dragImage, dragImageOffset);
-}
-
-void WebViewImpl::observeNewNavigation()
-{
-    m_observedNewNavigation = true;
-#ifndef NDEBUG
-    m_newNavigationLoader = m_page->mainFrame()->loader()->documentLoader();
-#endif
 }
 
 void WebViewImpl::setIgnoreInputEvents(bool newValue)

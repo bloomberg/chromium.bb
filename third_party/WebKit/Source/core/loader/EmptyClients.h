@@ -29,9 +29,9 @@
 #ifndef EmptyClients_h
 #define EmptyClients_h
 
-#include "core/history/BackForwardClient.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/BackForwardClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
 #include "core/page/DragClient.h"
@@ -200,7 +200,7 @@ public:
     virtual void dispatchDidStartProvisionalLoad() OVERRIDE { }
     virtual void dispatchDidReceiveTitle(const String&) OVERRIDE { }
     virtual void dispatchDidChangeIcons(IconType) OVERRIDE { }
-    virtual void dispatchDidCommitLoad() OVERRIDE { }
+    virtual void dispatchDidCommitLoad(NavigationHistoryPolicy) OVERRIDE { }
     virtual void dispatchDidFailProvisionalLoad(const ResourceError&) OVERRIDE { }
     virtual void dispatchDidFailLoad(const ResourceError&) OVERRIDE { }
     virtual void dispatchDidFinishDocumentLoad() OVERRIDE { }
@@ -226,7 +226,7 @@ public:
 
     virtual void transitionToCommittedForNewPage() OVERRIDE { }
 
-    virtual void navigateBackForward(int offset) const OVERRIDE { }
+    virtual bool navigateBackForward(int offset) const OVERRIDE { return false; }
     virtual void didDisplayInsecureContent() OVERRIDE { }
     virtual void didRunInsecureContent(SecurityOrigin*, const KURL&) OVERRIDE { }
     virtual void didDetectXSS(const KURL&, bool) OVERRIDE { }
@@ -336,9 +336,9 @@ public:
 
 class EmptyBackForwardClient : public BackForwardClient {
 public:
-    virtual void didAddItem() OVERRIDE { }
     virtual int backListCount() OVERRIDE { return 0; }
     virtual int forwardListCount() OVERRIDE { return 0; }
+    virtual int backForwardListCount() OVERRIDE { return 0; }
 };
 
 void fillWithEmptyClients(Page::PageClients&);

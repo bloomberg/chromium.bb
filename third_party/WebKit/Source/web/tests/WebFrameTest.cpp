@@ -851,8 +851,7 @@ TEST_F(WebFrameTest, FixedLayoutInitializeAtMinimumScale)
     webViewHelper.webView()->layout();
 
     // Make sure we don't reset to initial scale if the page continues to load.
-    bool isNewNavigation;
-    webViewHelper.webViewImpl()->didCommitLoad(&isNewNavigation, false);
+    webViewHelper.webViewImpl()->didCommitLoad(false, false);
     webViewHelper.webViewImpl()->didChangeContentsSize();
     EXPECT_EQ(userPinchPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 
@@ -891,8 +890,7 @@ TEST_F(WebFrameTest, WideDocumentInitializeAtMinimumScale)
     webViewHelper.webView()->layout();
 
     // Make sure we don't reset to initial scale if the page continues to load.
-    bool isNewNavigation;
-    webViewHelper.webViewImpl()->didCommitLoad(&isNewNavigation, false);
+    webViewHelper.webViewImpl()->didCommitLoad(false, false);
     webViewHelper.webViewImpl()->didChangeContentsSize();
     EXPECT_EQ(userPinchPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 

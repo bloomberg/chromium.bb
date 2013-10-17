@@ -83,6 +83,11 @@ class FetchRequest;
     class SubstituteData;
     class Widget;
 
+    enum NavigationHistoryPolicy {
+        NavigationCreatedHistoryEntry,
+        NavigationReusedHistoryEntry
+    };
+
     class FrameLoaderClient {
     public:
         virtual ~FrameLoaderClient() { }
@@ -101,12 +106,12 @@ class FetchRequest;
 
         virtual void dispatchDidHandleOnloadEvents() = 0;
         virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
-        virtual void dispatchDidNavigateWithinPage() { }
+        virtual void dispatchDidNavigateWithinPage(NavigationHistoryPolicy) { }
         virtual void dispatchWillClose() = 0;
         virtual void dispatchDidStartProvisionalLoad() = 0;
         virtual void dispatchDidReceiveTitle(const String&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
-        virtual void dispatchDidCommitLoad() = 0;
+        virtual void dispatchDidCommitLoad(NavigationHistoryPolicy) = 0;
         virtual void dispatchDidFailProvisionalLoad(const ResourceError&) = 0;
         virtual void dispatchDidFailLoad(const ResourceError&) = 0;
         virtual void dispatchDidFinishDocumentLoad() = 0;
@@ -127,7 +132,7 @@ class FetchRequest;
 
         virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) = 0;
 
-        virtual void navigateBackForward(int offset) const = 0;
+        virtual bool navigateBackForward(int offset) const = 0;
 
         // Another page has accessed the initial empty document of this frame.
         // It is no longer safe to display a provisional URL, since a URL spoof

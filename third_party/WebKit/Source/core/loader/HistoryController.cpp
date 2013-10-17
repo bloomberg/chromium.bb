@@ -32,7 +32,6 @@
 #include "core/loader/HistoryController.h"
 
 #include "core/dom/Document.h"
-#include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/loader/DocumentLoader.h"
@@ -160,19 +159,15 @@ void HistoryController::goToItem(HistoryItem* targetItem)
         return;
     }
 
-    // Set the BF cursor before commit, which lets the user quickly click back/forward again.
-    // - plus, it only makes sense for the top level of the operation through the frametree,
-    // as opposed to happening for some/one of the page commits that might happen soon
-    RefPtr<HistoryItem> currentItem = page->backForward().currentItem();
-    page->backForward().setCurrentItem(targetItem);
+    clearProvisionalItemsInAllFrames();
 
     // First set the provisional item of any frames that are not actually navigating.
     // This must be done before trying to navigate the desired frame, because some
     // navigations can commit immediately (such as about:blank).  We must be sure that
     // all frames have provisional items set before the commit.
-    recursiveSetProvisionalItem(targetItem, currentItem.get());
+    recursiveSetProvisionalItem(targetItem, m_currentItem.get());
     // Now that all other frames have provisional items, do the actual navigation.
-    recursiveGoToItem(targetItem, currentItem.get());
+    recursiveGoToItem(targetItem, m_currentItem.get());
 }
 
 void HistoryController::setDefersLoading(bool defer)
@@ -182,6 +177,12 @@ void HistoryController::setDefersLoading(bool defer)
         goToItem(m_deferredItem.get());
         m_deferredItem = 0;
     }
+}
+
+void HistoryController::clearProvisionalItemsInAllFrames()
+{
+    for (RefPtr<Frame> frame = m_frame->page()->mainFrame(); frame; frame = frame->tree()->traverseNext())
+        frame->loader()->history()->m_provisionalItem = 0;
 }
 
 // There are 2 things you might think of as "history", all of which are handled by these functions.
@@ -226,6 +227,8 @@ void HistoryController::updateForCommit()
         Page* page = m_frame->page();
         ASSERT(page);
         page->mainFrame()->loader()->history()->recursiveUpdateForCommit();
+    } else if (type != FrameLoadTypeRedirectWithLockedBackForwardList) {
+        m_provisionalItem = 0;
     }
 
     if (type == FrameLoadTypeStandard)
@@ -497,7 +500,7 @@ void HistoryController::createNewBackForwardItem(bool doClip)
     if (!page)
         return;
 
-    if (m_frame->loader()->documentLoader()->originalRequest().url().isEmpty() && m_frame->loader()->documentLoader()->unreachableURL().isEmpty())
+    if (!m_frame->loader()->documentLoader()->isURLValidForNewHistoryEntry())
         return;
 
     Frame* mainFrame = page->mainFrame();
@@ -505,7 +508,6 @@ void HistoryController::createNewBackForwardItem(bool doClip)
 
     RefPtr<HistoryItem> topItem = mainFrame->loader()->history()->createItemTree(m_frame, doClip);
     LOG(BackForward, "WebCoreBackForward - Adding backforward item %p for frame %s", topItem.get(), m_frame->loader()->documentLoader()->url().string().ascii().data());
-    page->backForward().addItem(topItem.release());
 }
 
 void HistoryController::updateWithoutCreatingNewBackForwardItem()
@@ -542,7 +544,6 @@ void HistoryController::pushState(PassRefPtr<SerializedScriptValue> stateObject,
     // the pushState() arguments.
     m_currentItem->setStateObject(stateObject);
     m_currentItem->setURLString(urlString);
-    page->backForward().addItem(topItem.release());
 }
 
 void HistoryController::replaceState(PassRefPtr<SerializedScriptValue> stateObject, const String& urlString)

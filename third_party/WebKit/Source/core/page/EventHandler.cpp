@@ -51,12 +51,13 @@
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/fetch/ImageResource.h"
-#include "core/history/BackForwardController.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/page/BackForwardClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/DragController.h"
 #include "core/page/DragState.h"
@@ -3408,14 +3409,7 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
     Page* page = m_frame->page();
     if (!page)
         return;
-
-    bool handledEvent = false;
-
-    if (event->shiftKey())
-        handledEvent = page->backForward().goForward();
-    else
-        handledEvent = page->backForward().goBack();
-
+    bool handledEvent = page->mainFrame()->loader()->client()->navigateBackForward(event->shiftKey() ? 1 : -1);
     if (handledEvent)
         event->setDefaultHandled();
 }

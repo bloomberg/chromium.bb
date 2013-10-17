@@ -38,9 +38,9 @@ class BackForwardClient {
 public:
     virtual ~BackForwardClient() { }
 
-    virtual void didAddItem() = 0;
     virtual int backListCount() = 0;
     virtual int forwardListCount() = 0;
+    virtual int backForwardListCount() = 0;
 };
 
 } // namespace WebCore

@@ -73,7 +73,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMPoint.h"
 #include "core/frame/Frame.h"
-#include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"

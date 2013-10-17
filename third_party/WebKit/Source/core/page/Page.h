@@ -38,7 +38,6 @@ namespace WebCore {
 
 class AutoscrollController;
 class BackForwardClient;
-class BackForwardController;
 class Chrome;
 class ChromeClient;
 class ClientRectList;
@@ -168,7 +167,7 @@ public:
 
     Settings& settings() const { return *m_settings; }
     ProgressTracker& progress() const { return *m_progress; }
-    BackForwardController& backForward() const { return *m_backForwardController; }
+    BackForwardClient& backForward() const { return *m_backForwardClient; }
 
     UseCounter& useCounter() { return m_useCounter; }
 
@@ -266,11 +265,11 @@ private:
     const OwnPtr<Settings> m_settings;
     const OwnPtr<ProgressTracker> m_progress;
 
-    const OwnPtr<BackForwardController> m_backForwardController;
     RefPtr<Frame> m_mainFrame;
 
     mutable RefPtr<PluginData> m_pluginData;
 
+    BackForwardClient* m_backForwardClient;
     EditorClient* const m_editorClient;
     ValidationMessageClient* m_validationMessageClient;
 

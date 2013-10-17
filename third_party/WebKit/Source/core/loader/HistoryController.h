@@ -94,6 +94,8 @@ private:
     void createNewBackForwardItem(bool doClip);
     void updateWithoutCreatingNewBackForwardItem();
 
+    void clearProvisionalItemsInAllFrames();
+
     Frame* m_frame;
 
     RefPtr<HistoryItem> m_currentItem;

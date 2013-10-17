@@ -130,7 +130,6 @@
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/frame/Console.h"
-#include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormElement.h"
@@ -1019,7 +1018,9 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
         || !frame()->loader()->activeDocumentLoader()->isLoadingInAPISense()))
         frame()->loader()->history()->saveDocumentAndScrollState();
 
-    return WebHistoryItem(frame()->page()->backForward().currentItem());
+    if (HistoryItem* item = frame()->loader()->history()->provisionalItem())
+        return WebHistoryItem(item);
+    return WebHistoryItem(frame()->page()->mainFrame()->loader()->history()->currentItem());
 }
 
 void WebFrameImpl::enableViewSourceMode(bool enable)

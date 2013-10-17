@@ -27,7 +27,6 @@
 #include "core/editing/Caret.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -102,7 +101,7 @@ Page::Page(PageClients& pageClients)
     , m_pointerLockController(PointerLockController::create(this))
     , m_settings(Settings::create(this))
     , m_progress(ProgressTracker::create())
-    , m_backForwardController(BackForwardController::create(this, pageClients.backForwardClient))
+    , m_backForwardClient(pageClients.backForwardClient)
     , m_editorClient(pageClients.editorClient)
     , m_validationMessageClient(0)
     , m_subframeCount(0)

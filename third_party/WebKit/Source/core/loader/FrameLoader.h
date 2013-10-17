@@ -98,7 +98,7 @@ public:
     // FIXME: These are all functions which stop loads. We have too many.
     // Warning: stopAllLoaders can and will detach the Frame out from under you. All callers need to either protect the Frame
     // or guarantee they won't in any way access the Frame after stopAllLoaders returns.
-    void stopAllLoaders(ClearProvisionalItemPolicy = ShouldClearProvisionalItem);
+    void stopAllLoaders();
     void stopLoading();
     bool closeURL();
     // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.

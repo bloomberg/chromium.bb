@@ -347,12 +347,11 @@ void FrameLoaderClientImpl::dispatchDidReceiveServerRedirectForProvisionalLoad()
         m_webFrame->client()->didReceiveServerRedirectForProvisionalLoad(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidNavigateWithinPage()
+void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(NavigationHistoryPolicy navigationHistoryPolicy)
 {
-    bool isNewNavigation;
-    m_webFrame->viewImpl()->didCommitLoad(&isNewNavigation, true);
+    m_webFrame->viewImpl()->didCommitLoad(navigationHistoryPolicy == NavigationCreatedHistoryEntry, true);
     if (m_webFrame->client())
-        m_webFrame->client()->didNavigateWithinPage(m_webFrame, isNewNavigation);
+        m_webFrame->client()->didNavigateWithinPage(m_webFrame, navigationHistoryPolicy == NavigationCreatedHistoryEntry);
 }
 
 void FrameLoaderClientImpl::dispatchWillClose()
@@ -379,14 +378,11 @@ void FrameLoaderClientImpl::dispatchDidChangeIcons(WebCore::IconType type)
         m_webFrame->client()->didChangeIcon(m_webFrame, static_cast<WebIconURL::Type>(type));
 }
 
-void FrameLoaderClientImpl::dispatchDidCommitLoad()
+void FrameLoaderClientImpl::dispatchDidCommitLoad(NavigationHistoryPolicy navigationHistoryPolicy)
 {
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    bool isNewNavigation;
-    webview->didCommitLoad(&isNewNavigation, false);
-
+    m_webFrame->viewImpl()->didCommitLoad(navigationHistoryPolicy == NavigationCreatedHistoryEntry, false);
     if (m_webFrame->client())
-        m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, isNewNavigation);
+        m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, navigationHistoryPolicy == NavigationCreatedHistoryEntry);
 }
 
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
@@ -495,11 +491,19 @@ void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, Na
     }
 }
 
-void FrameLoaderClientImpl::navigateBackForward(int offset) const
+bool FrameLoaderClientImpl::navigateBackForward(int offset) const
 {
     WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview->client())
-        webview->client()->navigateBackForwardSoon(offset);
+    if (!webview->client())
+        return false;
+
+    ASSERT(offset);
+    offset = std::min(offset, webview->client()->historyForwardListCount());
+    offset = std::max(offset, -webview->client()->historyBackListCount());
+    if (!offset)
+        return false;
+    webview->client()->navigateBackForwardSoon(offset);
+    return true;
 }
 
 void FrameLoaderClientImpl::didAccessInitialDocument()

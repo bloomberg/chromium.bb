@@ -34,7 +34,6 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "core/events/Event.h"
-#include "core/history/BackForwardController.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
@@ -42,8 +41,10 @@
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/frame/Frame.h"
+#include "core/page/BackForwardClient.h"
 #include "core/page/Page.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/CurrentTime.h"
@@ -204,7 +205,7 @@ public:
         }
         // go(i!=0) from a frame navigates into the history of the frame only,
         // in both IE and NS (but not in Mozilla). We can't easily do that.
-        frame->page()->backForward().goBackOrForward(m_historySteps);
+        frame->page()->mainFrame()->loader()->client()->navigateBackForward(m_historySteps);
     }
 
 private:
@@ -372,8 +373,8 @@ void NavigationScheduler::scheduleHistoryNavigation(int steps)
 
     // Invalid history navigations (such as history.forward() during a new load) have the side effect of cancelling any scheduled
     // redirects. We also avoid the possibility of cancelling the current load by avoiding the scheduled redirection altogether.
-    BackForwardController& backForward = m_frame->page()->backForward();
-    if (steps > backForward.forwardCount() || -steps > backForward.backCount()) {
+    BackForwardClient& backForward = m_frame->page()->backForward();
+    if (steps > backForward.forwardListCount() || -steps > backForward.backListCount()) {
         cancel();
         return;
     }

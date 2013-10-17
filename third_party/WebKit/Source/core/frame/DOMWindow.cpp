@@ -58,7 +58,6 @@
 #include "core/frame/Location.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/Screen.h"
-#include "core/history/BackForwardController.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -68,6 +67,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/appcache/ApplicationCache.h"
 #include "core/frame/BarProp.h"
+#include "core/page/BackForwardClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
@@ -882,7 +882,7 @@ void DOMWindow::close(ExecutionContext* context)
     Settings* settings = m_frame->settings();
     bool allowScriptsToCloseWindows = settings && settings->allowScriptsToCloseWindows();
 
-    if (!(page->openedByDOM() || page->backForward().count() <= 1 || allowScriptsToCloseWindows))
+    if (!(page->openedByDOM() || page->backForward().backForwardListCount() <= 1 || allowScriptsToCloseWindows))
         return;
 
     if (!m_frame->loader()->shouldClose())
