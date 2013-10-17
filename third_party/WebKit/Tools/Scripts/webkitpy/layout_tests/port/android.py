@@ -744,6 +744,7 @@ class ChromiumAndroidDriver(driver.Driver):
         self._android_commands = android_devices.get_device(port._executive, worker_number)
         self._driver_details = driver_details
         self._debug_logging = self._port._debug_logging
+        self._created_cmd_line = False
 
         # FIXME: If we taught ProfileFactory about "target" devices we could
         # just use the logic in Driver instead of duplicating it here.
@@ -765,6 +766,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
     def __del__(self):
         self._teardown_performance()
+        self._clean_up_cmd_line()
         super(ChromiumAndroidDriver, self).__del__()
 
     def _update_kallsyms_cache(self, output_dir):
@@ -1036,7 +1038,18 @@ class ChromiumAndroidDriver(driver.Driver):
             return False
 
         self._android_commands.run(['logcat', '-c'])
+
+        cmd_line_file_path = self._driver_details.command_line_file()
+        original_cmd_line_file_path = cmd_line_file_path + '.orig'
+        if self._android_commands.file_exists(cmd_line_file_path) and not self._android_commands.file_exists(original_cmd_line_file_path):
+            # We check for both the normal path and the backup because we do not want to step
+            # on the backup. Otherwise, we'd clobber the backup whenever we changed the
+            # command line during the run.
+            self._android_commands.run(['shell', 'mv', cmd_line_file_path, original_cmd_line_file_path])
+
         self._android_commands.run(['shell', 'echo'] + self._android_driver_cmd_line(pixel_tests, per_test_args) + ['>', self._driver_details.command_line_file()])
+        self._created_cmd_line = True
+
         start_result = self._android_commands.run(['shell', 'am', 'start', '-e', 'RunInSubThread', '-n', self._driver_details.activity_name()])
         if start_result.find('Exception') != -1:
             self._log_error('Failed to start the content_shell application. Exception:\n' + start_result)
@@ -1127,6 +1140,20 @@ class ChromiumAndroidDriver(driver.Driver):
         if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
             if not ChromiumAndroidDriver._loop_with_timeout(self._remove_all_pipes, DRIVER_START_STOP_TIMEOUT_SECS):
                 raise AssertionError('Failed to remove fifo files. May be locked.')
+
+        self._clean_up_cmd_line()
+
+    def _clean_up_cmd_line(self):
+        if not self._created_cmd_line:
+            return
+
+        cmd_line_file_path = self._driver_details.command_line_file()
+        original_cmd_line_file_path = cmd_line_file_path + '.orig'
+        if self._android_commands.file_exists(original_cmd_line_file_path):
+            self._android_commands.run(['shell', 'mv', original_cmd_line_file_path, cmd_line_file_path])
+        elif self._android_commands.file_exists(cmd_line_file_path):
+            self._android_commands.run(['shell', 'rm', cmd_line_file_path])
+        self._created_cmd_line = False
 
     def _command_from_driver_input(self, driver_input):
         command = super(ChromiumAndroidDriver, self)._command_from_driver_input(driver_input)
