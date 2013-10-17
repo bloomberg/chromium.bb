@@ -119,6 +119,8 @@ def Load(build_files, format, default_variables={},
                 'generator_wants_static_library_dependencies_adjusted', True),
     'generator_wants_sorted_dependencies':
         getattr(generator, 'generator_wants_sorted_dependencies', False),
+    'generator_filelist_path':
+        getattr(generator, 'generator_filelist_path', None),
   }
 
   # Process the input specific to this generator.

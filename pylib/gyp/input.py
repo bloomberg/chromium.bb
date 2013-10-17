@@ -109,6 +109,8 @@ invalid_configuration_keys = [
 # Controls whether or not the generator supports multiple toolsets.
 multiple_toolsets = False
 
+# Converts filelist paths to output paths.
+generator_filelist_path = None
 
 def GetIncludedBuildFiles(build_file_path, aux_data, included=None):
   """Return a list of all build files included into build_file_path.
@@ -781,7 +783,7 @@ def ExpandVariables(input, phase, variables, build_file):
       # Find the build file's directory, so commands can be run or file lists
       # generated relative to it.
       build_file_dir = os.path.dirname(build_file)
-      if build_file_dir == '':
+      if build_file_dir == '' and not file_list:
         # If build_file is just a leaf filename indicating a file in the
         # current directory, build_file_dir might be an empty string.  Set
         # it to None to signal to subprocess.Popen that it should run the
@@ -798,9 +800,11 @@ def ExpandVariables(input, phase, variables, build_file):
       else:
         contents_list = contents.split(' ')
       replacement = contents_list[0]
-      path = replacement
-      if build_file_dir and not os.path.isabs(path):
-        path = os.path.join(build_file_dir, path)
+      if os.path.isabs(replacement):
+        raise GypError('| cannot handle absolute paths, got "%s"' % replacement)
+
+      path = generator_filelist_path(build_file_dir, replacement)
+      replacement = gyp.common.RelativePath(path, build_file_dir)
       f = gyp.common.WriteOnDiff(path)
       for i in contents_list[1:]:
         f.write('%s\n' % i)
@@ -2598,6 +2602,11 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   global multiple_toolsets
   multiple_toolsets = generator_input_info[
       'generator_supports_multiple_toolsets']
+
+  global generator_filelist_path
+  generator_filelist_path = generator_input_info['generator_filelist_path']
+  if not generator_filelist_path:
+    generator_filelist_path = lambda a, b: os.path.join(a, b)
 
   # A generator can have other lists (in addition to sources) be processed
   # for rules.
