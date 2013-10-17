@@ -31,16 +31,36 @@ del _path
 # Retry a git operation if git returns a error response with any of these
 # messages. It's all observed 'bad' GoB responses so far.
 GIT_TRANSIENT_ERRORS = (
-    r'! \[remote rejected\].* -> .* \(error in hook\)', # crbug.com/285832
-    r'! \[remote rejected\].* -> .* \(failed to lock\)', # crbug.com/289932
-    r'remote error: Internal Server Error', # crbug.com/285832
-    r'fatal: Couldn\'t find remote ref ', # crbug.com/294449
-    r'git fetch_pack: expected ACK/NAK, got', # crbug.com/220543
-    r'protocol error: bad pack header', # crbug.com/189455
-    r'The remote end hung up unexpectedly', # crbug.com/202807
+    # crbug.com/285832
+    r'! \[remote rejected\].* -> .* \(error in hook\)',
+
+    # crbug.com/289932
+    r'! \[remote rejected\].* -> .* \(failed to lock\)',
+
+    # crbug.com/307156
+    r'! \[remote rejected\].* -> .* \(error in Gerrit backend\)',
+
+    # crbug.com/285832
+    r'remote error: Internal Server Error',
+
+    # crbug.com/294449
+    r'fatal: Couldn\'t find remote ref ',
+
+    # crbug.com/220543
+    r'git fetch_pack: expected ACK/NAK, got',
+
+    # crbug.com/189455
+    r'protocol error: bad pack header',
+
+    # crbug.com/202807
+    r'The remote end hung up unexpectedly',
+
+    # crbug.com/298189
     r'error: gnutls_handshake\(\) failed: A TLS packet with unexpected length '
-    r'was received. while accessing', # crbug.com/298189
-    r'RPC failed; result=\d+, HTTP code = \d+', # crbug.com/187444
+    r'was received. while accessing',
+
+    # crbug.com/187444
+    r'RPC failed; result=\d+, HTTP code = \d+',
 )
 
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS))
