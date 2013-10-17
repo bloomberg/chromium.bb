@@ -27,6 +27,7 @@
 #include "modules/speech/SpeechSynthesis.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include "core/platform/PlatformSpeechSynthesizer.h"
 #include "modules/speech/SpeechSynthesisEvent.h"
@@ -35,13 +36,14 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechSynthesis> SpeechSynthesis::create()
+PassRefPtr<SpeechSynthesis> SpeechSynthesis::create(ExecutionContext* context)
 {
-    return adoptRef(new SpeechSynthesis());
+    return adoptRef(new SpeechSynthesis(context));
 }
 
-SpeechSynthesis::SpeechSynthesis()
-    : m_platformSpeechSynthesizer(PlatformSpeechSynthesizer::create(this))
+SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
+    : ContextLifecycleObserver(context)
+    , m_platformSpeechSynthesizer(PlatformSpeechSynthesizer::create(this))
     , m_currentSpeechUtterance(0)
     , m_isPaused(false)
 {
@@ -53,9 +55,16 @@ void SpeechSynthesis::setPlatformSynthesizer(PassOwnPtr<PlatformSpeechSynthesize
     m_platformSpeechSynthesizer = synthesizer;
 }
 
+ExecutionContext* SpeechSynthesis::executionContext() const
+{
+    return ContextLifecycleObserver::executionContext();
+}
+
 void SpeechSynthesis::voicesDidChange()
 {
     m_voiceList.clear();
+    if (!executionContext()->activeDOMObjectsAreStopped())
+        dispatchEvent(Event::create(EventTypeNames::voiceschanged));
 }
 
 const Vector<RefPtr<SpeechSynthesisVoice> >& SpeechSynthesis::getVoices()
@@ -142,7 +151,8 @@ void SpeechSynthesis::resume()
 
 void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned long charIndex, const String& name)
 {
-    utterance->dispatchEvent(SpeechSynthesisEvent::create(type, charIndex, (currentTime() - utterance->startTime()), name));
+    if (!executionContext()->activeDOMObjectsAreStopped())
+        utterance->dispatchEvent(SpeechSynthesisEvent::create(type, charIndex, (currentTime() - utterance->startTime()), name));
 }
 
 void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utterance, bool errorOccurred)
@@ -212,6 +222,11 @@ void SpeechSynthesis::speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUt
 {
     if (utterance->client())
         handleSpeakingCompleted(static_cast<SpeechSynthesisUtterance*>(utterance->client()), true);
+}
+
+const AtomicString& SpeechSynthesis::interfaceName() const
+{
+    return EventTargetNames::SpeechSynthesisUtterance;
 }
 
 } // namespace WebCore

@@ -33,6 +33,7 @@ PassOwnPtr<PlatformSpeechSynthesizerMock> PlatformSpeechSynthesizerMock::create(
 {
     OwnPtr<PlatformSpeechSynthesizerMock> synthesizer = adoptPtr(new PlatformSpeechSynthesizerMock(client));
     synthesizer->initializeVoiceList();
+    client->voicesDidChange();
     return synthesizer.release();
 }
 

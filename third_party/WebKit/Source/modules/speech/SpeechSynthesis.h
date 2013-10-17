@@ -27,6 +27,8 @@
 #define SpeechSynthesis_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
+#include "core/events/EventTarget.h"
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include "core/platform/PlatformSpeechSynthesizer.h"
 #include "modules/speech/SpeechSynthesisUtterance.h"
@@ -42,9 +44,10 @@ class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 class SpeechSynthesisVoice;
 
-class SpeechSynthesis : public PlatformSpeechSynthesizerClient, public ScriptWrappable, public RefCounted<SpeechSynthesis> {
+class SpeechSynthesis : public PlatformSpeechSynthesizerClient, public ScriptWrappable, public RefCounted<SpeechSynthesis>, public ContextLifecycleObserver, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(SpeechSynthesis);
 public:
-    static PassRefPtr<SpeechSynthesis> create();
+    static PassRefPtr<SpeechSynthesis> create(ExecutionContext*);
 
     bool pending() const;
     bool speaking() const;
@@ -60,8 +63,12 @@ public:
     // Used in testing to use a mock platform synthesizer
     void setPlatformSynthesizer(PassOwnPtr<PlatformSpeechSynthesizer>);
 
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
+
+    virtual ExecutionContext* executionContext() const;
+
 private:
-    SpeechSynthesis();
+    explicit SpeechSynthesis(ExecutionContext*);
 
     // PlatformSpeechSynthesizerClient override methods.
     virtual void voicesDidChange() OVERRIDE;
@@ -81,6 +88,9 @@ private:
     SpeechSynthesisUtterance* m_currentSpeechUtterance;
     Deque<RefPtr<SpeechSynthesisUtterance> > m_utteranceQueue;
     bool m_isPaused;
+
+    // EventTarget
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 };
 
 } // namespace WebCore

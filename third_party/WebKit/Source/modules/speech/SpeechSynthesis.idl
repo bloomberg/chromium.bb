@@ -26,7 +26,7 @@
 [
     NoInterfaceObject,
     RuntimeEnabled=SpeechSynthesis
-] interface SpeechSynthesis  {
+] interface SpeechSynthesis : EventTarget {
     readonly attribute boolean pending;
     readonly attribute boolean speaking;
     readonly attribute boolean paused;
@@ -36,4 +36,6 @@
     void pause();
     void resume();
     sequence<SpeechSynthesisVoice> getVoices();
+
+    attribute EventHandler onvoiceschanged;
 };

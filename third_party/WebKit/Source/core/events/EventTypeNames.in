@@ -180,6 +180,7 @@ updateready
 updatestart
 upgradeneeded
 versionchange
+voiceschanged
 volumechange
 waiting
 webglcontextcreationerror
