@@ -132,6 +132,7 @@ class MemoryMetric(Metric):
       AddSummary('WorkingSetSize', 'vm_%s_final_size' % metric)
       AddSummary('PrivateDirty', 'vm_private_dirty_final')
       AddSummary('ProportionalSetSize', 'vm_proportional_set_size_final')
+      AddSummary('SharedDirty', 'vm_shared_dirty_final')
       AddSummary('VMPeak', 'vm_peak_size')
       AddSummary('WorkingSetSizePeak', '%s_peak_size' % metric)
 
