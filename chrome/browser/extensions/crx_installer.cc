@@ -108,7 +108,9 @@ CrxInstaller::CrxInstaller(
     : install_directory_(service_weak->install_directory()),
       install_source_(Manifest::INTERNAL),
       approved_(false),
-      expected_manifest_strict_checking_(true),
+      expected_manifest_check_level_(
+          WebstoreInstaller::MANIFEST_CHECK_LEVEL_STRICT),
+      expected_version_strict_checking_(false),
       extensions_enabled_(service_weak->extensions_enabled()),
       delete_source_(false),
       create_app_shortcut_(false),
@@ -143,9 +145,15 @@ CrxInstaller::CrxInstaller(
     // Mark the extension as approved, but save the expected manifest and ID
     // so we can check that they match the CRX's.
     approved_ = true;
-    expected_manifest_.reset(approval->manifest->DeepCopy());
-    expected_manifest_strict_checking_ = approval->strict_manifest_check;
+    expected_manifest_check_level_ = approval->manifest_check_level;
+    if (expected_manifest_check_level_ !=
+        WebstoreInstaller::MANIFEST_CHECK_LEVEL_NONE)
+      expected_manifest_.reset(approval->manifest->DeepCopy());
     expected_id_ = approval->extension_id;
+  }
+  if (approval->minimum_version.get()) {
+    expected_version_.reset(new Version(*approval->minimum_version));
+    expected_version_strict_checking_ = false;
   }
 
   show_dialog_callback_ = approval->show_dialog_callback;
@@ -247,21 +255,41 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
                                    ASCIIToUTF16(extension->id())));
   }
 
-  if (expected_version_.get() &&
-      !expected_version_->Equals(*extension->version())) {
-    return CrxInstallerError(
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
-            ASCIIToUTF16(expected_version_->GetString()),
-            ASCIIToUTF16(extension->version()->GetString())));
+  if (expected_version_.get()) {
+    if (expected_version_strict_checking_) {
+      if (!expected_version_->Equals(*extension->version())) {
+        return CrxInstallerError(
+            l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
+              ASCIIToUTF16(expected_version_->GetString()),
+              ASCIIToUTF16(extension->version()->GetString())));
+      }
+    } else {
+      if (extension->version()->CompareTo(*expected_version_) < 0) {
+        return CrxInstallerError(
+            l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
+              ASCIIToUTF16(expected_version_->GetString() + "+"),
+              ASCIIToUTF16(extension->version()->GetString())));
+      }
+    }
   }
 
   // Make sure the manifests match if we want to bypass the prompt.
   if (approved_) {
     bool valid = false;
-    if (expected_manifest_.get()) {
+    if (expected_manifest_check_level_ ==
+        WebstoreInstaller::MANIFEST_CHECK_LEVEL_NONE) {
+        // To skip manifest checking, the extension must be a shared module
+        // and not request any permissions.
+        if (SharedModuleInfo::IsSharedModule(extension) &&
+            PermissionsData::GetActivePermissions(extension)->IsEmpty()) {
+          valid = true;
+        }
+    } else {
       valid = expected_manifest_->Equals(original_manifest_.get());
-      if (!valid && !expected_manifest_strict_checking_) {
+      if (!valid && expected_manifest_check_level_ ==
+          WebstoreInstaller::MANIFEST_CHECK_LEVEL_LOOSE) {
         std::string error;
         scoped_refptr<Extension> dummy_extension =
             Extension::Create(base::FilePath(),
@@ -278,6 +306,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
         }
       }
     }
+
     if (!valid)
       return CrxInstallerError(
           l10n_util::GetStringUTF16(IDS_EXTENSION_MANIFEST_INVALID));

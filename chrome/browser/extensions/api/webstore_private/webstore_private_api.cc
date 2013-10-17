@@ -468,6 +468,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
   // If we are enabling the launcher, we should not show the app list in order
   // to train the user to open it themselves at least once.
   approval->skip_post_install_ui = params_->details.enable_launcher;
+  approval->dummy_extension = dummy_extension_;
   approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
   g_pending_approvals.Get().PushApproval(approval.Pass());
 

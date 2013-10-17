@@ -2384,12 +2384,14 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
   crash_keys::SetActiveExtensions(extension_ids);
 }
 
-ExtensionService::ImportStatus ExtensionService::SatisfyImports(
-    const Extension* extension) {
+ExtensionService::ImportStatus ExtensionService::CheckImports(
+    const extensions::Extension* extension,
+    std::list<SharedModuleInfo::ImportInfo>* missing_modules,
+    std::list<SharedModuleInfo::ImportInfo>* outdated_modules) {
+  DCHECK(extension);
+  DCHECK(missing_modules && missing_modules->empty());
+  DCHECK(outdated_modules && outdated_modules->empty());
   ImportStatus status = IMPORT_STATUS_OK;
-  std::vector<std::string> pending;
-  // TODO(elijahtaylor): Message the user if there is a failure that is
-  // unrecoverable.
   if (SharedModuleInfo::ImportsModules(extension)) {
     const std::vector<SharedModuleInfo::ImportInfo>& imports =
         SharedModuleInfo::GetImports(extension);
@@ -2401,7 +2403,7 @@ ExtensionService::ImportStatus ExtensionService::SatisfyImports(
       if (!imported_module) {
         if (extension->from_webstore()) {
           status = IMPORT_STATUS_UNSATISFIED;
-          pending.push_back(i->extension_id);
+          missing_modules->push_back(*i);
         } else {
           return IMPORT_STATUS_UNRECOVERABLE;
         }
@@ -2410,6 +2412,7 @@ ExtensionService::ImportStatus ExtensionService::SatisfyImports(
       } else if (version_required.IsValid() &&
                  imported_module->version()->CompareTo(version_required) < 0) {
         if (imported_module->from_webstore()) {
+          outdated_modules->push_back(*i);
           status = IMPORT_STATUS_UNSATISFIED;
         } else {
           return IMPORT_STATUS_UNRECOVERABLE;
@@ -2417,12 +2420,21 @@ ExtensionService::ImportStatus ExtensionService::SatisfyImports(
       }
     }
   }
+  return status;
+}
+
+ExtensionService::ImportStatus ExtensionService::SatisfyImports(
+    const Extension* extension) {
+  std::list<SharedModuleInfo::ImportInfo> noinstalled;
+  std::list<SharedModuleInfo::ImportInfo> outdated;
+  ImportStatus status = CheckImports(extension, &noinstalled, &outdated);
+  if (status == IMPORT_STATUS_UNRECOVERABLE)
+    return status;
   if (status == IMPORT_STATUS_UNSATISFIED) {
-    for (std::vector<std::string>::const_iterator iter = pending.begin();
-         iter != pending.end();
-         ++iter) {
+    std::list<SharedModuleInfo::ImportInfo>::const_iterator iter;
+    for (iter = noinstalled.begin(); iter != noinstalled.end(); ++iter) {
       pending_extension_manager()->AddFromExtensionImport(
-          *iter,
+          iter->extension_id,
           extension_urls::GetWebstoreUpdateUrl(),
           IsSharedModule);
     }

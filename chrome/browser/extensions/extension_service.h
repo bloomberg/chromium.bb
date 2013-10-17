@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -36,6 +37,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -396,6 +398,13 @@ class ExtensionService
    IMPORT_STATUS_UNSATISFIED,
    IMPORT_STATUS_UNRECOVERABLE
   };
+
+  // Checks an extension's imports. No installed and outdated imports will be
+  // stored in |missing_modules| and |outdated_modules|.
+  ImportStatus CheckImports(
+      const extensions::Extension* extension,
+      std::list<extensions::SharedModuleInfo::ImportInfo>* missing_modules,
+      std::list<extensions::SharedModuleInfo::ImportInfo>* outdated_modules);
 
   // Checks an extension's shared module imports to see if they are satisfied.
   // If they are not, this function adds the dependencies to the pending install

@@ -24,7 +24,8 @@ bool Contains(const std::string& source, const std::string& target) {
 TEST(WebstoreInstallerTest, PlatformParams) {
   std::string id = extensions::id_util::GenerateId("some random string");
   std::string source = "inline";
-  GURL url = WebstoreInstaller::GetWebstoreInstallURL(id, source);
+  GURL url = WebstoreInstaller::GetWebstoreInstallURL(id,
+      WebstoreInstaller::INSTALL_SOURCE_INLINE);
   std::string query = url.query();
   EXPECT_TRUE(Contains(query,StringPrintf("os=%s", OmahaQueryParams::getOS())));
   EXPECT_TRUE(Contains(query,StringPrintf("arch=%s",
