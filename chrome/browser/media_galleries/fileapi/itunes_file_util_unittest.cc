@@ -28,7 +28,6 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
-using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemURL;

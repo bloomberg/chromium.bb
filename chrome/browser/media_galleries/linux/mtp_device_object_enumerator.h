@@ -10,21 +10,18 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
-#include "webkit/browser/fileapi/file_system_file_util.h"
 
 // Used to enumerate top-level files of an media file system.
-class MTPDeviceObjectEnumerator
-    : public fileapi::FileSystemFileUtil::AbstractFileEnumerator {
+class MTPDeviceObjectEnumerator {
  public:
   explicit MTPDeviceObjectEnumerator(const std::vector<MtpFileEntry>& entries);
 
-  virtual ~MTPDeviceObjectEnumerator();
+  ~MTPDeviceObjectEnumerator();
 
-  // AbstractFileEnumerator:
-  virtual base::FilePath Next() OVERRIDE;
-  virtual int64 Size() OVERRIDE;
-  virtual bool IsDirectory() OVERRIDE;
-  virtual base::Time LastModifiedTime() OVERRIDE;
+  base::FilePath Next();
+  int64 Size();
+  bool IsDirectory();
+  base::Time LastModifiedTime();
 
   // If the current file entry is valid, returns true and fills in |entry_id|
   // with the entry identifier else returns false and |entry_id| is not set.

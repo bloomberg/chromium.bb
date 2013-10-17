@@ -22,7 +22,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/file_system_file_util.h"
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -160,16 +159,6 @@ const char kTestFileContents[] = "test";
 }
 
 @end
-
-// Advances the enumerator. When the method returns, signals the waiting
-// event.
-void EnumerateAndSignal(
-    fileapi::FileSystemFileUtil::AbstractFileEnumerator* enumerator,
-    base::WaitableEvent* event,
-    base::FilePath* path) {
-  *path = enumerator->Next();
-  event->Signal();
-}
 
 class MTPDeviceDelegateImplMacTest : public testing::Test {
  public:

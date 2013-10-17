@@ -98,34 +98,32 @@ string16 GetFileObjectIdFromPathOnBlockingPoolThread(
 
 // Returns a pointer to a new instance of AbstractFileEnumerator for the given
 // |root| directory. Called on a blocking pool thread.
-scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
+scoped_ptr<MTPDeviceObjectEnumerator>
 CreateFileEnumeratorOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& root) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!device_info.registered_device_path.empty());
   DCHECK(!root.empty());
-  scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-      file_enumerator(new fileapi::FileSystemFileUtil::EmptyFileEnumerator());
   IPortableDevice* device =
       PortableDeviceMapService::GetInstance()->GetPortableDevice(
           device_info.registered_device_path);
   if (!device)
-    return file_enumerator.Pass();
+    return scoped_ptr<MTPDeviceObjectEnumerator>();
 
   string16 object_id = GetFileObjectIdFromPathOnBlockingPoolThread(device_info,
                                                                    root);
   if (object_id.empty())
-    return file_enumerator.Pass();
+    return scoped_ptr<MTPDeviceObjectEnumerator>();
 
   MTPDeviceObjectEntries entries;
   if (!media_transfer_protocol::GetDirectoryEntries(device, object_id,
                                                     &entries) ||
       entries.empty())
-    return file_enumerator.Pass();
+    return scoped_ptr<MTPDeviceObjectEnumerator>();
 
-  file_enumerator.reset(new MTPDeviceObjectEnumerator(entries));
-  return file_enumerator.Pass();
+  return scoped_ptr<MTPDeviceObjectEnumerator>(
+      new MTPDeviceObjectEnumerator(entries));
 }
 
 // Opens the device for communication on a blocking pool thread.
@@ -195,8 +193,11 @@ base::PlatformFileError ReadDirectoryOnBlockingPoolThread(
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
   base::FilePath current;
-  scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator> file_enum =
+  scoped_ptr<MTPDeviceObjectEnumerator> file_enum =
       CreateFileEnumeratorOnBlockingPoolThread(device_info, root);
+  if (!file_enum)
+    return error;
+
   while (!(current = file_enum->Next()).empty()) {
     fileapi::DirectoryEntry entry;
     entry.is_directory = file_enum->IsDirectory();
@@ -290,7 +291,6 @@ void DeletePortableDeviceOnBlockingPoolThread(
   PortableDeviceMapService::GetInstance()->RemovePortableDevice(
       registered_device_path);
 }
-
 
 }  // namespace
 
