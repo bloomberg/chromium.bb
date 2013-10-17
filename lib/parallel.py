@@ -11,7 +11,13 @@ import functools
 import logging
 import multiprocessing
 import os
-import Queue
+try:
+  import Queue
+except ImportError:
+  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
+  # with naming variables as "queue".  Maybe we'll transition at some point.
+  # pylint: disable=F0401
+  import queue as Queue
 import signal
 import sys
 import tempfile
