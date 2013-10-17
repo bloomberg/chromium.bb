@@ -450,7 +450,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   base::MessageLoopForIO message_loop;
 
   WrapperTestLauncherDelegate delegate(launcher_delegate, jobs);
-  return base::LaunchTests(&delegate, argc, argv);
+  base::TestLauncher launcher(&delegate);
+  bool success = launcher.Run(argc, argv);
+  return (success ? 0 : 1);
 }
 
 TestLauncherDelegate* GetCurrentTestLauncherDelegate() {

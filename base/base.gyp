@@ -892,6 +892,8 @@
         'test/launcher/parallel_test_launcher.h',
         'test/launcher/test_launcher.cc',
         'test/launcher/test_launcher.h',
+        'test/launcher/test_result.cc',
+        'test/launcher/test_result.h',
         'test/launcher/test_results_tracker.cc',
         'test/launcher/test_results_tracker.h',
         'test/launcher/unit_test_launcher.cc',

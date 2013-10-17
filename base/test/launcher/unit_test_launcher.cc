@@ -367,14 +367,15 @@ int LaunchUnitTests(int argc,
   MessageLoopForIO message_loop;
 
   base::UnitTestLauncherDelegate delegate(jobs, batch_limit);
-  int exit_code = base::LaunchTests(&delegate, argc, argv);
+  base::TestLauncher launcher(&delegate);
+  bool success = launcher.Run(argc, argv);
 
   fprintf(stdout,
           "Tests took %" PRId64 " seconds.\n",
           (base::TimeTicks::Now() - start_time).InSeconds());
   fflush(stdout);
 
-  return exit_code;
+  return (success ? 0 : 1);
 }
 
 }  // namespace base

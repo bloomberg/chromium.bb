@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/test/launcher/test_launcher.h"
+#include "base/test/launcher/test_result.h"
 #include "base/threading/thread_checker.h"
 
 class CommandLine;

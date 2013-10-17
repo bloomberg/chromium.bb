@@ -11,6 +11,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/launcher/test_launcher.h"
 #include "base/values.h"
 
 namespace base {

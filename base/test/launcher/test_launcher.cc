@@ -190,223 +190,6 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
   }
 }
 
-// Launches tests using a TestLauncherDelegate.
-class TestLauncher {
- public:
-  explicit TestLauncher(TestLauncherDelegate* launcher_delegate)
-      : launcher_delegate_(launcher_delegate),
-        total_shards_(1),
-        shard_index_(0),
-        cycles_(1) {
-  }
-
-  // Runs the launcher. Must be called at most once.
-  bool Run(int argc, char** argv) WARN_UNUSED_RESULT {
-    if (!Init())
-      return false;
-
-#if defined(OS_POSIX)
-    CHECK_EQ(0, pipe(g_shutdown_pipe));
-
-    struct sigaction action;
-    memset(&action, 0, sizeof(action));
-    sigemptyset(&action.sa_mask);
-    action.sa_handler = &ShutdownPipeSignalHandler;
-
-    CHECK_EQ(0, sigaction(SIGINT, &action, NULL));
-    CHECK_EQ(0, sigaction(SIGQUIT, &action, NULL));
-    CHECK_EQ(0, sigaction(SIGTERM, &action, NULL));
-
-    MessageLoopForIO::FileDescriptorWatcher controller;
-    SignalFDWatcher watcher;
-
-    CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
-              g_shutdown_pipe[0],
-              true,
-              MessageLoopForIO::WATCH_READ,
-              &controller,
-              &watcher));
-#endif  // defined(OS_POSIX)
-
-    bool success = true;
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        Bind(&TestLauncher::RunTestIteration,
-             Unretained(this),
-             &success,
-             true));
-
-    MessageLoop::current()->Run();
-
-    if (cycles_ != 1)
-      results_tracker_.PrintSummaryOfAllIterations();
-
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
-      FilePath summary_path(command_line->GetSwitchValuePath(
-                                switches::kTestLauncherSummaryOutput));
-      if (!results_tracker_.SaveSummaryAsJSON(summary_path)) {
-        LOG(ERROR) << "Failed to save test launcher output summary.";
-      }
-    }
-
-    return success;
-  }
-
- private:
-  bool Init() WARN_UNUSED_RESULT {
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-    if (command_line->HasSwitch(kGTestListTestsFlag)) {
-      // Child gtest processes would list tests instead of running tests.
-      // TODO(phajdan.jr): Restore support for the flag.
-      LOG(ERROR) << kGTestListTestsFlag << " is not supported.";
-      return false;
-    }
-
-    if (!TakeInt32FromEnvironment(kTestTotalShards, &total_shards_))
-      return false;
-    if (!TakeInt32FromEnvironment(kTestShardIndex, &shard_index_))
-      return false;
-    if (shard_index_ < 0 ||
-        total_shards_ < 0 ||
-        shard_index_ >= total_shards_) {
-      LOG(ERROR) << "Invalid environment variables: we require 0 <= "
-                 << kTestShardIndex << " < " << kTestTotalShards
-                 << ", but you have " << kTestShardIndex << "=" << shard_index_
-                 << ", " << kTestTotalShards << "=" << total_shards_ << ".\n";
-      return false;
-    }
-
-    if (command_line->HasSwitch(kGTestRepeatFlag) &&
-        !StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag),
-                     &cycles_)) {
-      LOG(ERROR) << "Invalid value for " << kGTestRepeatFlag;
-      return false;
-    }
-
-    // Split --gtest_filter at '-', if there is one, to separate into
-    // positive filter and negative filter portions.
-    std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
-    positive_test_filter_ = filter;
-    size_t dash_pos = filter.find('-');
-    if (dash_pos != std::string::npos) {
-      // Everything up to the dash.
-      positive_test_filter_ = filter.substr(0, dash_pos);
-
-      // Everything after the dash.
-      negative_test_filter_ = filter.substr(dash_pos + 1);
-    }
-
-    if (!results_tracker_.Init(*command_line)) {
-      LOG(ERROR) << "Failed to initialize test results tracker.";
-      return 1;
-    }
-
-    return true;
-  }
-
-  // Runs all tests in current iteration. Uses callbacks to communicate success.
-  void RunTests() {
-    testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
-
-    int num_runnable_tests = 0;
-
-    for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
-      const testing::TestCase* test_case = unit_test->GetTestCase(i);
-      for (int j = 0; j < test_case->total_test_count(); ++j) {
-        const testing::TestInfo* test_info = test_case->GetTestInfo(j);
-        std::string test_name = test_info->test_case_name();
-        test_name.append(".");
-        test_name.append(test_info->name());
-
-        // Skip disabled tests.
-        const CommandLine* command_line = CommandLine::ForCurrentProcess();
-        if (test_name.find("DISABLED") != std::string::npos &&
-            !command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
-          continue;
-        }
-
-        std::string filtering_test_name =
-            launcher_delegate_->GetTestNameForFiltering(test_case, test_info);
-
-        // Skip the test that doesn't match the filter string (if given).
-        if ((!positive_test_filter_.empty() &&
-             !MatchesFilter(filtering_test_name, positive_test_filter_)) ||
-            MatchesFilter(filtering_test_name, negative_test_filter_)) {
-          continue;
-        }
-
-        if (!launcher_delegate_->ShouldRunTest(test_case, test_info))
-          continue;
-
-        if (num_runnable_tests++ % total_shards_ != shard_index_)
-          continue;
-
-        results_tracker_.OnTestStarted(test_name);
-        MessageLoop::current()->PostTask(
-            FROM_HERE,
-            Bind(&TestLauncherDelegate::RunTest,
-                 Unretained(launcher_delegate_),
-                 test_case,
-                 test_info,
-                 Bind(&TestResultsTracker::AddTestResult,
-                      Unretained(&results_tracker_))));
-      }
-    }
-
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        Bind(&TestLauncherDelegate::RunRemainingTests,
-             Unretained(launcher_delegate_)));
-
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        Bind(&TestResultsTracker::OnAllTestsStarted,
-             Unretained(&results_tracker_)));
-  }
-
-  void RunTestIteration(bool* final_result, bool run_tests_success) {
-    if (!run_tests_success) {
-      // Signal failure, but continue to run all requested test iterations.
-      // With the summary of all iterations at the end this is a good default.
-      *final_result = false;
-    }
-
-    if (cycles_ == 0) {
-      MessageLoop::current()->Quit();
-      return;
-    }
-
-    // Special value "-1" means "repeat indefinitely".
-    cycles_ = (cycles_ == -1) ? cycles_ : cycles_ - 1;
-
-    launcher_delegate_->OnTestIterationStarting();
-
-    results_tracker_.OnTestIterationStarting(
-        Bind(&TestLauncher::RunTestIteration, Unretained(this), final_result));
-
-    MessageLoop::current()->PostTask(
-        FROM_HERE, Bind(&TestLauncher::RunTests, Unretained(this)));
-  }
-
-  TestLauncherDelegate* launcher_delegate_;
-
-  // Support for outer sharding, just like gtest does.
-  int32 total_shards_;  // Total number of outer shards, at least one.
-  int32 shard_index_;   // Index of shard the launcher is to run.
-
-  int cycles_;  // Number of remaining test itreations, or -1 for infinite.
-
-  // Test filters (empty means no filter). Entries are separated by colons.
-  std::string positive_test_filter_;
-  std::string negative_test_filter_;
-
-  TestResultsTracker results_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLauncher);
-};
-
 }  // namespace
 
 const char kGTestFilterFlag[] = "gtest_filter";
@@ -416,34 +199,202 @@ const char kGTestRepeatFlag[] = "gtest_repeat";
 const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 const char kGTestOutputFlag[] = "gtest_output";
 
-TestResult::TestResult() : status(TEST_UNKNOWN) {
+TestLauncherDelegate::~TestLauncherDelegate() {
 }
 
-TestResult::~TestResult() {
+TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate)
+    : launcher_delegate_(launcher_delegate),
+      total_shards_(1),
+      shard_index_(0),
+      cycles_(1) {
 }
 
-std::string TestResult::StatusAsString() const {
-  switch (status) {
-    case TEST_UNKNOWN:
-      return "UNKNOWN";
-    case TEST_SUCCESS:
-      return "SUCCESS";
-    case TEST_FAILURE:
-      return "FAILURE";
-    case TEST_CRASH:
-      return "CRASH";
-    case TEST_TIMEOUT:
-      return "TIMEOUT";
-    case TEST_SKIPPED:
-      return "SKIPPED";
-     // Rely on compiler warnings to ensure all possible values are handled.
+bool TestLauncher::Run(int argc, char** argv) {
+  if (!Init())
+    return false;
+
+#if defined(OS_POSIX)
+  CHECK_EQ(0, pipe(g_shutdown_pipe));
+
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  sigemptyset(&action.sa_mask);
+  action.sa_handler = &ShutdownPipeSignalHandler;
+
+  CHECK_EQ(0, sigaction(SIGINT, &action, NULL));
+  CHECK_EQ(0, sigaction(SIGQUIT, &action, NULL));
+  CHECK_EQ(0, sigaction(SIGTERM, &action, NULL));
+
+  MessageLoopForIO::FileDescriptorWatcher controller;
+  SignalFDWatcher watcher;
+
+  CHECK(MessageLoopForIO::current()->WatchFileDescriptor(
+            g_shutdown_pipe[0],
+            true,
+            MessageLoopForIO::WATCH_READ,
+            &controller,
+            &watcher));
+#endif  // defined(OS_POSIX)
+
+  bool success = true;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&TestLauncher::RunTestIteration,
+           Unretained(this),
+           &success,
+           true));
+
+  MessageLoop::current()->Run();
+
+  if (cycles_ != 1)
+    results_tracker_.PrintSummaryOfAllIterations();
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
+    FilePath summary_path(command_line->GetSwitchValuePath(
+                              switches::kTestLauncherSummaryOutput));
+    if (!results_tracker_.SaveSummaryAsJSON(summary_path)) {
+      LOG(ERROR) << "Failed to save test launcher output summary.";
+    }
   }
 
-  NOTREACHED();
-  return std::string();
+  return success;
 }
 
-TestLauncherDelegate::~TestLauncherDelegate() {
+bool TestLauncher::Init() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(kGTestListTestsFlag)) {
+    // Child gtest processes would list tests instead of running tests.
+    // TODO(phajdan.jr): Restore support for the flag.
+    LOG(ERROR) << kGTestListTestsFlag << " is not supported.";
+    return false;
+  }
+
+  if (!TakeInt32FromEnvironment(kTestTotalShards, &total_shards_))
+    return false;
+  if (!TakeInt32FromEnvironment(kTestShardIndex, &shard_index_))
+    return false;
+  if (shard_index_ < 0 ||
+      total_shards_ < 0 ||
+      shard_index_ >= total_shards_) {
+    LOG(ERROR) << "Invalid environment variables: we require 0 <= "
+               << kTestShardIndex << " < " << kTestTotalShards
+               << ", but you have " << kTestShardIndex << "=" << shard_index_
+               << ", " << kTestTotalShards << "=" << total_shards_ << ".\n";
+    return false;
+  }
+
+  if (command_line->HasSwitch(kGTestRepeatFlag) &&
+      !StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag),
+                   &cycles_)) {
+    LOG(ERROR) << "Invalid value for " << kGTestRepeatFlag;
+    return false;
+  }
+
+  // Split --gtest_filter at '-', if there is one, to separate into
+  // positive filter and negative filter portions.
+  std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
+  positive_test_filter_ = filter;
+  size_t dash_pos = filter.find('-');
+  if (dash_pos != std::string::npos) {
+    // Everything up to the dash.
+    positive_test_filter_ = filter.substr(0, dash_pos);
+
+    // Everything after the dash.
+    negative_test_filter_ = filter.substr(dash_pos + 1);
+  }
+
+  if (!results_tracker_.Init(*command_line)) {
+    LOG(ERROR) << "Failed to initialize test results tracker.";
+    return 1;
+  }
+
+  return true;
+}
+
+void TestLauncher::RunTests() {
+  testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
+
+  int num_runnable_tests = 0;
+
+  for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
+    const testing::TestCase* test_case = unit_test->GetTestCase(i);
+    for (int j = 0; j < test_case->total_test_count(); ++j) {
+      const testing::TestInfo* test_info = test_case->GetTestInfo(j);
+      std::string test_name = test_info->test_case_name();
+      test_name.append(".");
+      test_name.append(test_info->name());
+
+      // Skip disabled tests.
+      const CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (test_name.find("DISABLED") != std::string::npos &&
+          !command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
+        continue;
+      }
+
+      std::string filtering_test_name =
+          launcher_delegate_->GetTestNameForFiltering(test_case, test_info);
+
+      // Skip the test that doesn't match the filter string (if given).
+      if ((!positive_test_filter_.empty() &&
+           !MatchesFilter(filtering_test_name, positive_test_filter_)) ||
+          MatchesFilter(filtering_test_name, negative_test_filter_)) {
+        continue;
+      }
+
+      if (!launcher_delegate_->ShouldRunTest(test_case, test_info))
+        continue;
+
+      if (num_runnable_tests++ % total_shards_ != shard_index_)
+        continue;
+
+      results_tracker_.OnTestStarted(test_name);
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          Bind(&TestLauncherDelegate::RunTest,
+               Unretained(launcher_delegate_),
+               test_case,
+               test_info,
+               Bind(&TestResultsTracker::AddTestResult,
+                    Unretained(&results_tracker_))));
+    }
+  }
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&TestLauncherDelegate::RunRemainingTests,
+           Unretained(launcher_delegate_)));
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&TestResultsTracker::OnAllTestsStarted,
+           Unretained(&results_tracker_)));
+}
+
+void TestLauncher::RunTestIteration(bool* final_result,
+                                    bool run_tests_success) {
+  if (!run_tests_success) {
+    // Signal failure, but continue to run all requested test iterations.
+    // With the summary of all iterations at the end this is a good default.
+    *final_result = false;
+  }
+
+  if (cycles_ == 0) {
+    MessageLoop::current()->Quit();
+    return;
+  }
+
+  // Special value "-1" means "repeat indefinitely".
+  cycles_ = (cycles_ == -1) ? cycles_ : cycles_ - 1;
+
+  launcher_delegate_->OnTestIterationStarting();
+
+  results_tracker_.OnTestIterationStarting(
+      Bind(&TestLauncher::RunTestIteration, Unretained(this), final_result));
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE, Bind(&TestLauncher::RunTests, Unretained(this)));
 }
 
 std::string GetTestOutputSnippet(const TestResult& result,
@@ -601,14 +552,6 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   base::CloseProcessHandle(process_handle);
 
   return exit_code;
-}
-
-int LaunchTests(TestLauncherDelegate* launcher_delegate,
-                int argc,
-                char** argv) {
-  // TODO(phajdan.jr): Replace usage of LaunchTests with code below.
-  TestLauncher launcher(launcher_delegate);
-  return launcher.Run(argc, argv) ? 0 : 1;
 }
 
 }  // namespace base
