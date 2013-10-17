@@ -551,10 +551,10 @@ TEST_F(BufferedDataSourceTest, SetBitrate) {
   Stop();
 }
 
-TEST_F(BufferedDataSourceTest, SetPlaybackRate) {
+TEST_F(BufferedDataSourceTest, MediaPlaybackRateChanged) {
   InitializeWith206Response();
 
-  data_source_->SetPlaybackRate(2.0f);
+  data_source_->MediaPlaybackRateChanged(2.0f);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2.0f, data_source_playback_rate());
   EXPECT_EQ(2.0f, loader_playback_rate());

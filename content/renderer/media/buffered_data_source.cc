@@ -192,35 +192,26 @@ void BufferedDataSource::Abort() {
   frame_ = NULL;
 }
 
-void BufferedDataSource::SetPlaybackRate(float playback_rate) {
+void BufferedDataSource::MediaPlaybackRateChanged(float playback_rate) {
   DCHECK(render_loop_->BelongsToCurrentThread());
   DCHECK(loader_.get());
 
   if (playback_rate < 0.0f)
     return;
-  if (playback_rate != 0)
-    media_has_played_ = true;
 
   playback_rate_ = playback_rate;
   loader_->SetPlaybackRate(playback_rate);
+}
 
-  if (!loader_->range_supported()) {
-    // 200 responses end up not being reused to satisfy future range requests,
-    // and we don't want to get too far ahead of the read-head (and thus require
-    // a restart), so keep to the thresholds.
-    loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
-  } else if (media_has_played_ && playback_rate == 0) {
-    // If the playback has started (at which point the preload value is ignored)
-    // and we're paused, then try to load as much as possible (the loader will
-    // fall back to kCapacityDefer if it knows the current response won't be
-    // useful from the cache in the future).
-    loader_->UpdateDeferStrategy(BufferedResourceLoader::kNeverDefer);
-  } else {
-    // If media is currently playing or the page indicated preload=auto,
-    // use threshold strategy to enable/disable deferring when the buffer
-    // is full/depleted.
-    loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
-  }
+void BufferedDataSource::MediaIsPlaying() {
+  DCHECK(render_loop_->BelongsToCurrentThread());
+  media_has_played_ = true;
+  UpdateDeferStrategy(false);
+}
+
+void BufferedDataSource::MediaIsPaused() {
+  DCHECK(render_loop_->BelongsToCurrentThread());
+  UpdateDeferStrategy(true);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -540,6 +531,30 @@ void BufferedDataSource::UpdateHostState_Locked() {
 
   if (assume_fully_buffered_)
     host()->AddBufferedByteRange(0, total_bytes_);
+}
+
+void BufferedDataSource::UpdateDeferStrategy(bool paused) {
+  // 200 responses end up not being reused to satisfy future range requests,
+  // and we don't want to get too far ahead of the read-head (and thus require
+  // a restart), so keep to the thresholds.
+  if (!loader_->range_supported()) {
+    loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
+    return;
+  }
+
+  // If the playback has started (at which point the preload value is ignored)
+  // and we're paused, then try to load as much as possible (the loader will
+  // fall back to kCapacityDefer if it knows the current response won't be
+  // useful from the cache in the future).
+  if (media_has_played_ && paused) {
+    loader_->UpdateDeferStrategy(BufferedResourceLoader::kNeverDefer);
+    return;
+  }
+
+  // If media is currently playing or the page indicated preload=auto,
+  // use threshold strategy to enable/disable deferring when the buffer
+  // is full/depleted.
+  loader_->UpdateDeferStrategy(BufferedResourceLoader::kCapacityDefer);
 }
 
 }  // namespace content

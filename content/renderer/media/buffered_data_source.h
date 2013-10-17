@@ -73,9 +73,11 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   // Method called on the render thread.
   void Abort();
 
-  // Notifies of a change in the current playback rate.
-  // TODO(rileya): Don't use SetPlaybackRate() for signaling play and pause.
-  void SetPlaybackRate(float playback_rate);
+  // Notifies changes in playback state for controlling media buffering
+  // behavior.
+  void MediaPlaybackRateChanged(float playback_rate);
+  void MediaIsPlaying();
+  void MediaIsPaused();
 
   // media::DataSource implementation.
   // Called from demuxer thread.
@@ -132,6 +134,10 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   void ReportOrQueueBufferedBytes(int64 start, int64 end);
 
   void UpdateHostState_Locked();
+
+  // Update |loader_|'s deferring strategy in response to a play/pause, or
+  // change in playback rate.
+  void UpdateDeferStrategy(bool paused);
 
   base::WeakPtrFactory<BufferedDataSource> weak_factory_;
   base::WeakPtr<BufferedDataSource> weak_this_;

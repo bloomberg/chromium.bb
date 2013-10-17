@@ -257,9 +257,6 @@ class WebMediaPlayerImpl
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 
-  // Sets playback rate on |pipeline_| and (if it exists) |data_source_|.
-  void SetPlaybackRate(float playback_rate);
-
   WebKit::WebFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
