@@ -2001,6 +2001,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyTextTransform:
     case CSSPropertyTop:
     case CSSPropertyTouchAction:
+    case CSSPropertyTouchActionDelay:
     case CSSPropertyUnicodeBidi:
     case CSSPropertyVariable:
     case CSSPropertyVerticalAlign:

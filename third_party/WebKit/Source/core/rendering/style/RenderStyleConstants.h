@@ -519,6 +519,8 @@ enum TouchAction { TouchActionAuto, TouchActionNone };
 
 enum EIsolation { IsolationAuto, IsolationIsolate };
 
+enum TouchActionDelay { TouchActionDelayNone, TouchActionDelayScript };
+
 // Reasonable maximum to prevent insane font sizes from causing crashes on some platforms (such as Windows).
 static const float maximumAllowedFontSize = 1000000.0f;
 

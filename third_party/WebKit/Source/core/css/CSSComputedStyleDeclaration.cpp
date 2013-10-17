@@ -199,6 +199,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyTextTransform,
     CSSPropertyTop,
     CSSPropertyTouchAction,
+    CSSPropertyTouchActionDelay,
     CSSPropertyTransitionDelay,
     CSSPropertyTransitionDuration,
     CSSPropertyTransitionProperty,
@@ -2331,6 +2332,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return valueForPositionOffset(style.get(), CSSPropertyTop, renderer, m_node->document().renderView());
         case CSSPropertyTouchAction:
             return cssValuePool().createValue(style->touchAction());
+        case CSSPropertyTouchActionDelay:
+            return cssValuePool().createValue(style->touchActionDelay());
         case CSSPropertyUnicodeBidi:
             return cssValuePool().createValue(style->unicodeBidi());
         case CSSPropertyVerticalAlign:

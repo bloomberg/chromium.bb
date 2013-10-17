@@ -742,6 +742,10 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (RuntimeEnabledFeatures::cssTouchActionEnabled() && (valueID == CSSValueAuto || valueID == CSSValueNone))
             return true;
         break;
+    case CSSPropertyTouchActionDelay: // none | script
+        if (RuntimeEnabledFeatures::cssTouchActionEnabled() && (valueID == CSSValueScript || valueID == CSSValueNone))
+            return true;
+        break;
     case CSSPropertyVisibility: // visible | hidden | collapse | inherit
         if (valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueCollapse)
             return true;
@@ -997,6 +1001,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
     case CSSPropertyTouchAction:
+    case CSSPropertyTouchActionDelay:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
     case CSSPropertyWebkitBackfaceVisibility:
@@ -2846,6 +2851,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
     case CSSPropertyTouchAction:
+    case CSSPropertyTouchActionDelay:
     case CSSPropertyVariable:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:

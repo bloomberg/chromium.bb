@@ -4941,6 +4941,35 @@ template<> inline CSSPrimitiveValue::operator EIsolation() const
     return IsolationAuto;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TouchActionDelay t)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_VALUE_ID;
+    switch (t) {
+    case TouchActionDelayNone:
+        m_value.valueID = CSSValueNone;
+        break;
+    case TouchActionDelayScript:
+        m_value.valueID = CSSValueScript;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator TouchActionDelay() const
+{
+    switch (m_value.valueID) {
+    case CSSValueNone:
+        return TouchActionDelayNone;
+    case CSSValueScript:
+        return TouchActionDelayScript;
+    default:
+        break;
+    }
+
+    ASSERT_NOT_REACHED();
+    return TouchActionDelayNone;
+}
+
 }
 
 #endif

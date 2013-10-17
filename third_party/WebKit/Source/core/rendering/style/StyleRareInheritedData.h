@@ -106,6 +106,7 @@ public:
     unsigned m_textUnderlinePosition : 3; // TextUnderlinePosition
 #endif // CSS3_TEXT
     unsigned m_rubyPosition : 1; // RubyPosition
+    unsigned m_touchActionDelay : 1; // TouchActionDelay
 
     AtomicString hyphenationString;
     short hyphenationLimitBefore;

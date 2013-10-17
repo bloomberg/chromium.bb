@@ -74,6 +74,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , textEmphasisFill(TextEmphasisFillFilled)
     , textEmphasisMark(TextEmphasisMarkNone)
     , textEmphasisPosition(TextEmphasisPositionOver)
+    , m_touchActionDelay(RenderStyle::initialTouchActionDelay())
     , m_textAlignLast(RenderStyle::initialTextAlignLast())
     , m_textJustify(RenderStyle::initialTextJustify())
     , m_textOrientation(TextOrientationVerticalRight)
@@ -127,6 +128,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , textEmphasisFill(o.textEmphasisFill)
     , textEmphasisMark(o.textEmphasisMark)
     , textEmphasisPosition(o.textEmphasisPosition)
+    , m_touchActionDelay(o.m_touchActionDelay)
     , m_textAlignLast(o.m_textAlignLast)
     , m_textJustify(o.m_textJustify)
     , m_textOrientation(o.m_textOrientation)
@@ -199,6 +201,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && textEmphasisFill == o.textEmphasisFill
         && textEmphasisMark == o.textEmphasisMark
         && textEmphasisPosition == o.textEmphasisPosition
+        && m_touchActionDelay == o.m_touchActionDelay
         && m_textAlignLast == o.m_textAlignLast
         && m_textJustify == o.m_textJustify
         && m_textOrientation == o.m_textOrientation

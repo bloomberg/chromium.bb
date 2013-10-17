@@ -1,0 +1,44 @@
+﻿<!DOCTYPE HTML>
+<html>
+  <head>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <style>
+      /*
+      Give some rules below something to override in order to test
+      that they really are being parsed
+      */
+      .defscript {
+        touch-action-delay: none;
+      }
+    </style>
+  </head>
+  <body>
+    <p id="description"></p>
+    <div class="test" id="default" expected="script"></div>
+    <div class="test defscript" id="stylesheet-none" expected="none"></div>
+    <div class="test defscript" id="stylesheet-explicit-script" style="touch-action-delay: script;" expected="script"></div>
+    <div class="test defscript" id="stylesheet-explicit-none" style="touch-action-delay: none;" expected="none">
+      <div class="test" id="inherited" expected="none"></div>
+      <div class="test" id="explicit-inherit" style="touch-action-delay: inherit;" expected="none"></div>
+    </div>
+    <div class="test defscript" id="initial" style="touch-action-delay: initial;" expected="script"></div>
+    <div class="test" id="explicit-invalid" style="touch-action-delay: bogus;" expected="script"></div>
+    <div class="test" id="explicit-script" style="touch-action-delay: script;" expected="script"></div>
+    <div id="console"></div>
+    <script>
+      description("Test the parsing and application of the touch-action-delay property.");
+
+      var tests = document.querySelectorAll('.test');
+      var style;
+      for (var i = 0; i < tests.length; i++) {
+        debug('Test case: ' + tests[i].id);
+        style = window.getComputedStyle(tests[i]);
+        shouldBeEqualToString('style.touchActionDelay', tests[i].attributes.expected.value);
+        debug('');
+      }
+
+      successfullyParsed = true;
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+  </body>
+</html>

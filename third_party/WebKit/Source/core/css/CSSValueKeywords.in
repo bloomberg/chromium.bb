@@ -1007,3 +1007,7 @@ markers
 // isolation
 // auto
 isolate
+
+// touch-action-delay
+// none
+script

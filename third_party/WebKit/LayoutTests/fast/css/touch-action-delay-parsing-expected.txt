@@ -1,0 +1,36 @@
+Test the parsing and application of the touch-action-delay property.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Test case: default
+PASS style.touchActionDelay is "script"
+
+Test case: stylesheet-none
+PASS style.touchActionDelay is "none"
+
+Test case: stylesheet-explicit-script
+PASS style.touchActionDelay is "script"
+
+Test case: stylesheet-explicit-none
+PASS style.touchActionDelay is "none"
+
+Test case: inherited
+PASS style.touchActionDelay is "none"
+
+Test case: explicit-inherit
+PASS style.touchActionDelay is "none"
+
+Test case: initial
+PASS style.touchActionDelay is "script"
+
+Test case: explicit-invalid
+PASS style.touchActionDelay is "script"
+
+Test case: explicit-script
+PASS style.touchActionDelay is "script"
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
