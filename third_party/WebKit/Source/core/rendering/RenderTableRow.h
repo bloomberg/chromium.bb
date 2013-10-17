@@ -94,8 +94,6 @@ private:
 
     virtual const char* renderName() const { return (isAnonymous() || isPseudoElement()) ? "RenderTableRow (anonymous)" : "RenderTableRow"; }
 
-    virtual bool isTableRow() const { return true; }
-
     virtual void willBeRemovedFromTree() OVERRIDE;
 
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0);

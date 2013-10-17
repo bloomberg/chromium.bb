@@ -61,7 +61,6 @@ public:
     virtual ~RenderSVGResourceFilter();
 
     virtual const char* renderName() const { return "RenderSVGResourceFilter"; }
-    virtual bool isSVGResourceFilter() const OVERRIDE { return true; }
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true);
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true);

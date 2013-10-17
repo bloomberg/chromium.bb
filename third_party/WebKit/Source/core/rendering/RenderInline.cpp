@@ -44,8 +44,8 @@ using namespace std;
 
 namespace WebCore {
 
-RenderInline::RenderInline(Element* element)
-    : RenderBoxModelObject(element)
+RenderInline::RenderInline(Element* element, RenderObjectType renderObjectType, unsigned renderObjectBaseTypes)
+    : RenderBoxModelObject(element, renderObjectType, renderObjectBaseTypes | RenderInlineBaseObjectType)
     , m_alwaysCreateLineBoxes(false)
 {
     setChildrenInline(true);

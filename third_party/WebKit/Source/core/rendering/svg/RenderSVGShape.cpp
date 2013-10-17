@@ -45,8 +45,8 @@
 
 namespace WebCore {
 
-RenderSVGShape::RenderSVGShape(SVGGraphicsElement* node)
-    : RenderSVGModelObject(node)
+RenderSVGShape::RenderSVGShape(SVGGraphicsElement* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
+    : RenderSVGModelObject(node, renderObjectType, renderBaseObjectTypes | RenderSVGShapeBaseObjectType)
     , m_needsBoundariesUpdate(false) // Default is false, the cached rects are empty from the beginning.
     , m_needsShapeUpdate(true) // Default is true, so we grab a Path object once from SVGGraphicsElement.
     , m_needsTransformUpdate(true) // Default is true, so we grab a AffineTransform object once from SVGGraphicsElement.

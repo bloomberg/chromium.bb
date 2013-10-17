@@ -85,8 +85,8 @@ static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
     widgetNewParentMap().set(child, parent);
 }
 
-RenderWidget::RenderWidget(Element* element)
-    : RenderReplaced(element)
+RenderWidget::RenderWidget(Element* element, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
+    : RenderReplaced(element, renderObjectType, renderBaseObjectTypes | RenderWidgetBaseObjectType)
     , m_widget(0)
     , m_frameView(element->document().view())
     // Reference counting is used to prevent the widget from being

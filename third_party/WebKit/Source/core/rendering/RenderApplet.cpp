@@ -27,7 +27,7 @@
 namespace WebCore {
 
 RenderApplet::RenderApplet(HTMLAppletElement* applet)
-    : RenderEmbeddedObject(applet)
+    : RenderEmbeddedObject(applet, RenderAppletObjectType)
 {
     setInline(true);
 }

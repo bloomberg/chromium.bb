@@ -45,8 +45,6 @@ class RenderMultiColumnSet FINAL : public RenderRegionSet {
 public:
     static RenderMultiColumnSet* createAnonymous(RenderFlowThread*);
 
-    virtual bool isRenderMultiColumnSet() const OVERRIDE { return true; }
-
     unsigned computedColumnCount() const { return m_computedColumnCount; }
     LayoutUnit computedColumnWidth() const { return m_computedColumnWidth; }
     LayoutUnit computedColumnHeight() const { return m_computedColumnHeight; }

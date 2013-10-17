@@ -37,8 +37,8 @@ using namespace std;
 
 namespace WebCore {
 
-RenderPart::RenderPart(Element* node)
-    : RenderWidget(node)
+RenderPart::RenderPart(Element* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
+    : RenderWidget(node, renderObjectType, renderBaseObjectTypes | RenderPartBaseObjectType)
 {
     setInline(false);
 }

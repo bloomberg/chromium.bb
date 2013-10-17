@@ -42,7 +42,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderVideo::RenderVideo(HTMLVideoElement* video)
-    : RenderMedia(video)
+    : RenderMedia(video, RenderVideoObjectType)
 {
     setIntrinsicSize(calculateIntrinsicSize());
 }

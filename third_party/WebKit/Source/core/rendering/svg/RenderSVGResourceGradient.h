@@ -43,7 +43,7 @@ class GraphicsContext;
 
 class RenderSVGResourceGradient : public RenderSVGResourceContainer {
 public:
-    explicit RenderSVGResourceGradient(SVGGradientElement*);
+    RenderSVGResourceGradient(SVGGradientElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) OVERRIDE FINAL;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE FINAL;

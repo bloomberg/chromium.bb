@@ -60,7 +60,7 @@ static PassRefPtr<StringImpl> applySVGWhitespaceRules(PassRefPtr<StringImpl> str
 }
 
 RenderSVGInlineText::RenderSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
-    : RenderText(n, applySVGWhitespaceRules(string, false))
+    : RenderText(n, applySVGWhitespaceRules(string, false), RenderSVGInlineTextObjectType)
     , m_scalingFactor(1)
     , m_layoutAttributes(this)
 {

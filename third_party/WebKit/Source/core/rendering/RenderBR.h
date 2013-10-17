@@ -45,9 +45,6 @@ public:
 
     int lineHeight(bool firstLine) const;
 
-    // overrides
-    virtual bool isBR() const { return true; }
-
     virtual int caretMinOffset() const;
     virtual int caretMaxOffset() const;
 

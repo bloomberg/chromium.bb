@@ -47,7 +47,7 @@ using namespace std;
 namespace WebCore {
 
 RenderSVGRoot::RenderSVGRoot(SVGElement* node)
-    : RenderReplaced(node)
+    : RenderReplaced(node, RenderSVGRootObjectType)
     , m_objectBoundingBoxValid(false)
     , m_isLayoutSizeChanged(false)
     , m_needsBoundariesOrTransformUpdate(true)

@@ -55,10 +55,8 @@ typedef ListHashSet<RenderRegion*> RenderRegionList;
 
 class RenderFlowThread: public RenderBlockFlow {
 public:
-    RenderFlowThread();
+    RenderFlowThread(RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
     virtual ~RenderFlowThread() { };
-
-    virtual bool isRenderFlowThread() const OVERRIDE FINAL { return true; }
 
     virtual void layout() OVERRIDE FINAL;
 

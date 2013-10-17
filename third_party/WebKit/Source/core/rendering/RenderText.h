@@ -35,7 +35,7 @@ public:
     // FIXME: If the node argument is not a Text node or the string argument is
     // not the content of the Text node, updating text-transform property
     // doesn't re-transform the string.
-    RenderText(Node*, PassRefPtr<StringImpl>);
+    RenderText(Node*, PassRefPtr<StringImpl>, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
 #ifndef NDEBUG
     virtual ~RenderText();
 #endif

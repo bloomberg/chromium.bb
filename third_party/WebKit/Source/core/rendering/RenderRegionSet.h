@@ -47,7 +47,7 @@ class RenderFlowThread;
 
 class RenderRegionSet : public RenderRegion {
 public:
-    RenderRegionSet(Element*, RenderFlowThread*);
+    RenderRegionSet(Element*, RenderFlowThread*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
 
 protected:
     virtual bool shouldHaveAutoLogicalHeight() const OVERRIDE { return false; }

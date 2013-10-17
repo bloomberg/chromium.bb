@@ -38,7 +38,6 @@ public:
 
 private:
     virtual const char* renderName() const { return "RenderFrame"; }
-    virtual bool isFrame() const { return true; }
 
     virtual void updateFromElement();
 

@@ -115,7 +115,7 @@ struct SameSizeAsRenderObject {
 #ifndef NDEBUG
     unsigned m_debugBitfields : 2;
 #endif
-    unsigned m_bitfields;
+    unsigned m_bitfields[3];
 };
 
 COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObject_should_stay_small);
@@ -222,7 +222,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, renderObjectCounter, ("RenderObject"));
 
-RenderObject::RenderObject(Node* node)
+RenderObject::RenderObject(Node* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
     : ImageResourceClient()
     , m_style(0)
     , m_nodeProxy(node)
@@ -233,7 +233,7 @@ RenderObject::RenderObject(Node* node)
     , m_hasAXObject(false)
     , m_setNeedsLayoutForbidden(false)
 #endif
-    , m_bitfields(node)
+    , m_bitfields(node, renderObjectType, renderBaseObjectTypes)
 {
 #ifndef NDEBUG
     renderObjectCounter.increment();

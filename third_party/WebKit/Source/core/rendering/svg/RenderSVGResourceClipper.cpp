@@ -41,7 +41,7 @@ namespace WebCore {
 RenderSVGResourceType RenderSVGResourceClipper::s_resourceType = ClipperResourceType;
 
 RenderSVGResourceClipper::RenderSVGResourceClipper(SVGClipPathElement* node)
-    : RenderSVGResourceContainer(node)
+    : RenderSVGResourceContainer(node, RenderSVGResourceClipperObjectType)
     , m_inClipExpansion(false)
 {
 }

@@ -32,7 +32,7 @@
 namespace WebCore {
 
 RenderWordBreak::RenderWordBreak(HTMLElement* element)
-    : RenderText(element, StringImpl::empty())
+    : RenderText(element, StringImpl::empty(), RenderWordBreakObjectType)
 {
 }
 

@@ -43,7 +43,6 @@ private:
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     virtual const char* renderName() const { return "RenderMeter"; }
-    virtual bool isMeter() const { return true; }
     virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
 
     double valueRatio() const;

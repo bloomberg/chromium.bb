@@ -50,7 +50,6 @@ public:
 private:
     RenderReplica();
 
-    virtual bool isReplica() const { return true; }
     virtual void computePreferredLogicalWidths();
 
 };

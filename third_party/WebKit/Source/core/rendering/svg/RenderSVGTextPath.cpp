@@ -29,7 +29,7 @@
 namespace WebCore {
 
 RenderSVGTextPath::RenderSVGTextPath(Element* element)
-    : RenderSVGInline(element)
+    : RenderSVGInline(element, RenderSVGTextPathObjectType)
 {
 }
 

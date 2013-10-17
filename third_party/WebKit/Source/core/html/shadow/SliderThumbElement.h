@@ -92,7 +92,6 @@ public:
     void updateAppearance(RenderStyle* parentStyle);
 
 private:
-    virtual bool isSliderThumb() const;
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 };
 

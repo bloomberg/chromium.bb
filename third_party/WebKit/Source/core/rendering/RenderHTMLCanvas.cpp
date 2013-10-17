@@ -39,7 +39,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderHTMLCanvas::RenderHTMLCanvas(HTMLCanvasElement* element)
-    : RenderReplaced(element, element->size())
+    : RenderReplaced(element, element->size(), RenderCanvasObjectType)
 {
     view()->frameView()->setIsVisuallyNonEmpty();
 }

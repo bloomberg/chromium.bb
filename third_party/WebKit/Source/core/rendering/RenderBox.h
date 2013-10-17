@@ -44,7 +44,7 @@ enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
 class RenderBox : public RenderBoxModelObject {
 public:
-    explicit RenderBox(ContainerNode*);
+    RenderBox(ContainerNode*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
     virtual ~RenderBox();
 
     // hasAutoZIndex only returns true if the element is positioned or a flex-item since

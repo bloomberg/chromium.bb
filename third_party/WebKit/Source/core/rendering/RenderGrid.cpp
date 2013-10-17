@@ -165,7 +165,7 @@ public:
 };
 
 RenderGrid::RenderGrid(Element* element)
-    : RenderBlock(element)
+    : RenderBlock(element, RenderGridObjectType)
     , m_gridIsDirty(true)
     , m_orderIterator(this)
     , m_gridItemOverflowGridArea(false)

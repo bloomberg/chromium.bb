@@ -47,7 +47,7 @@ class SVGElement;
 
 class RenderSVGModelObject : public RenderObject {
 public:
-    explicit RenderSVGModelObject(SVGElement*);
+    RenderSVGModelObject(SVGElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
 
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
     virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect&, bool fixed = false) const OVERRIDE FINAL;

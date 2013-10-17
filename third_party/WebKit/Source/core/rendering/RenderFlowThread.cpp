@@ -46,8 +46,8 @@
 
 namespace WebCore {
 
-RenderFlowThread::RenderFlowThread()
-    : RenderBlockFlow(0)
+RenderFlowThread::RenderFlowThread(RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
+    : RenderBlockFlow(0, renderObjectType, renderBaseObjectTypes | RenderFlowThreadBaseObjectType)
     , m_previousRegionCount(0)
     , m_autoLogicalHeightRegionsCount(0)
     , m_regionsInvalidated(false)

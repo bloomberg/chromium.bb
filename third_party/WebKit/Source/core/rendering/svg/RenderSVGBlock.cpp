@@ -28,8 +28,8 @@
 
 namespace WebCore {
 
-RenderSVGBlock::RenderSVGBlock(SVGElement* element)
-    : RenderBlockFlow(element)
+RenderSVGBlock::RenderSVGBlock(SVGElement* element, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
+    : RenderBlockFlow(element, renderObjectType, renderBaseObjectTypes | RenderSVGBlockBaseObjectType)
 {
 }
 

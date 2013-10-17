@@ -27,11 +27,10 @@ namespace WebCore {
 
 class RenderSVGInline : public RenderInline {
 public:
-    explicit RenderSVGInline(Element*);
+    RenderSVGInline(Element*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
 
     virtual const char* renderName() const { return "RenderSVGInline"; }
     virtual bool requiresLayer() const OVERRIDE FINAL { return false; }
-    virtual bool isSVGInline() const OVERRIDE FINAL { return true; }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 

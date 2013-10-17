@@ -43,7 +43,6 @@ public:
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
 private:
-    virtual bool isSVGViewportContainer() const { return true; }
     virtual const char* renderName() const { return "RenderSVGViewportContainer"; }
 
     AffineTransform viewportTransform() const;

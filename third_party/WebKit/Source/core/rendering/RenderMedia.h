@@ -34,8 +34,8 @@ class HTMLMediaElement;
 
 class RenderMedia : public RenderImage {
 public:
-    explicit RenderMedia(HTMLMediaElement*);
-    RenderMedia(HTMLMediaElement*, const IntSize& intrinsicSize);
+    RenderMedia(HTMLMediaElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    RenderMedia(HTMLMediaElement*, const IntSize& intrinsicSize, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
     virtual ~RenderMedia();
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
@@ -59,8 +59,6 @@ private:
     virtual bool canHaveChildren() const OVERRIDE FINAL { return true; }
 
     virtual const char* renderName() const { return "RenderMedia"; }
-    virtual bool isMedia() const OVERRIDE FINAL { return true; }
-    virtual bool isImage() const OVERRIDE FINAL { return false; }
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&);
 
     virtual bool requiresForcedStyleRecalcPropagation() const OVERRIDE FINAL { return true; }

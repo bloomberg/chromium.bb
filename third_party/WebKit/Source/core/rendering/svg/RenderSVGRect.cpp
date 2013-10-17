@@ -34,7 +34,7 @@
 namespace WebCore {
 
 RenderSVGRect::RenderSVGRect(SVGRectElement* node)
-    : RenderSVGShape(node)
+    : RenderSVGShape(node, RenderSVGRectObjectType)
     , m_usePathFallback(false)
 {
 }

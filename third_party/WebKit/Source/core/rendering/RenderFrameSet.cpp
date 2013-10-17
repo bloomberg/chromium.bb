@@ -40,7 +40,7 @@
 namespace WebCore {
 
 RenderFrameSet::RenderFrameSet(HTMLFrameSetElement* frameSet)
-    : RenderBox(frameSet)
+    : RenderBox(frameSet, RenderFrameSetObjectType)
     , m_isResizing(false)
     , m_isChildResizing(false)
 {

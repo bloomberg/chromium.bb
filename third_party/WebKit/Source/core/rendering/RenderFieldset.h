@@ -37,7 +37,6 @@ public:
 
 private:
     virtual const char* renderName() const { return "RenderFieldSet"; }
-    virtual bool isFieldset() const { return true; }
 
     virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&);
 

@@ -33,7 +33,7 @@ class ScrollableArea;
 
 class RenderLayerModelObject : public RenderObject {
 public:
-    explicit RenderLayerModelObject(ContainerNode*);
+    RenderLayerModelObject(ContainerNode*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
     virtual ~RenderLayerModelObject();
 
     // Called by RenderObject::willBeDestroyed() and is the only way layers should ever be destroyed
@@ -66,8 +66,6 @@ protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer*, const LayoutPoint&, const LayoutRect&) const OVERRIDE;
 
 private:
-    virtual bool isLayerModelObject() const OVERRIDE FINAL { return true; }
-
     RenderLayer* m_layer;
 
     // Used to store state between styleWillChange and styleDidChange

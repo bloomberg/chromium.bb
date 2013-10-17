@@ -42,8 +42,6 @@ public:
 
     virtual const char* renderName() const { return "RenderRubyText"; }
 
-    virtual bool isRubyText() const { return true; }
-
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
 
 private:

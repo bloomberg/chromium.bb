@@ -57,8 +57,8 @@ static const Color& replacementTextRoundedRectPressedColor()
     return lightGray;
 }
 
-RenderEmbeddedObject::RenderEmbeddedObject(Element* element)
-    : RenderPart(element)
+RenderEmbeddedObject::RenderEmbeddedObject(Element* element, RenderObjectType renderObjectType, unsigned renderObjectBaseTypes)
+    : RenderPart(element, renderObjectType, renderObjectBaseTypes | RenderEmbeddedBaseObjectType)
     , m_hasFallbackContent(false)
     , m_showsUnavailablePluginIndicator(false)
 {

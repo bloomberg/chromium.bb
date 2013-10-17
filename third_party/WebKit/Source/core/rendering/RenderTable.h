@@ -269,8 +269,6 @@ protected:
 private:
     virtual const char* renderName() const { return "RenderTable"; }
 
-    virtual bool isTable() const { return true; }
-
     virtual bool avoidsFloats() const { return true; }
 
     virtual void paint(PaintInfo&, const LayoutPoint&);

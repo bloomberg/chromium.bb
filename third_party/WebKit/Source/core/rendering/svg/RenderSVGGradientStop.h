@@ -34,7 +34,6 @@ public:
     explicit RenderSVGGradientStop(SVGStopElement*);
     virtual ~RenderSVGGradientStop();
 
-    virtual bool isSVGGradientStop() const { return true; }
     virtual const char* renderName() const { return "RenderSVGGradientStop"; }
 
     virtual void layout();

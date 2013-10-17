@@ -30,13 +30,12 @@ class RenderLayer;
 class RenderSVGResourceContainer : public RenderSVGHiddenContainer,
                                    public RenderSVGResource {
 public:
-    explicit RenderSVGResourceContainer(SVGElement*);
+    RenderSVGResourceContainer(SVGElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
     virtual ~RenderSVGResourceContainer();
 
     virtual void layout();
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
 
-    virtual bool isSVGResourceContainer() const OVERRIDE FINAL { return true; }
     virtual RenderSVGResourceContainer* toRenderSVGResourceContainer() OVERRIDE FINAL { return this; }
 
     static bool shouldTransformOnTextPainting(RenderObject*, AffineTransform&);

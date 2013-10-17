@@ -34,8 +34,6 @@ public:
     bool exactAlignment() const;
     bool stretchMethod() const;
 
-    virtual bool isSVGTextPath() const { return true; }
-
 private:
     virtual const char* renderName() const { return "RenderSVGTextPath"; }
 

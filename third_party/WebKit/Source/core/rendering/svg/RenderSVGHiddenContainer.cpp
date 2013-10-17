@@ -23,8 +23,8 @@
 
 namespace WebCore {
 
-RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element)
-    : RenderSVGContainer(element)
+RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
+    : RenderSVGContainer(element, renderObjectType, renderBaseObjectTypes | RenderSVGHiddenContainerBaseObjectType)
 {
 }
 

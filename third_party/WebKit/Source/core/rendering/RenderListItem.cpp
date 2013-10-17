@@ -39,7 +39,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderListItem::RenderListItem(Element* element)
-    : RenderBlockFlow(element)
+    : RenderBlockFlow(element, RenderListItemObjectType)
     , m_marker(0)
     , m_hasExplicitValue(false)
     , m_isValueUpToDate(false)

@@ -42,7 +42,6 @@ private:
 
     virtual void willBeDestroyed() OVERRIDE;
     virtual const char* renderName() const OVERRIDE { return "RenderQuote"; };
-    virtual bool isQuote() const OVERRIDE { return true; };
     virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;
 

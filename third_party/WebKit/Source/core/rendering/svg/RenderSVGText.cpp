@@ -54,7 +54,7 @@
 namespace WebCore {
 
 RenderSVGText::RenderSVGText(SVGTextElement* node)
-    : RenderSVGBlock(node)
+    : RenderSVGBlock(node, RenderSVGTextObjectType)
     , m_needsReordering(false)
     , m_needsPositioningValuesUpdate(false)
     , m_needsTransformUpdate(true)

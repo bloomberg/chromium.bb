@@ -44,10 +44,8 @@ class MarginInfo;
 
 class RenderBlockFlow : public RenderBlock {
 public:
-    explicit RenderBlockFlow(ContainerNode*);
+    RenderBlockFlow(ContainerNode*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
     virtual ~RenderBlockFlow();
-
-    virtual bool isRenderBlockFlow() const OVERRIDE FINAL { return true; }
 
     virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;
 protected:

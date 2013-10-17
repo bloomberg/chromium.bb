@@ -34,7 +34,7 @@
 namespace WebCore {
 
 RenderReplica::RenderReplica()
-    : RenderBox(0)
+    : RenderBox(0, RenderReplicaObjectType)
 {
     // This is a hack. Replicas are synthetic, and don't pick up the attributes of the
     // renderers being replicated, so they always report that they are inline, non-replaced.

@@ -73,7 +73,7 @@ inline static bool hasVerticalAppearance(HTMLInputElement* input)
 // --------------------------------
 
 RenderSliderThumb::RenderSliderThumb(SliderThumbElement* element)
-    : RenderBlockFlow(element)
+    : RenderBlockFlow(element, RenderSliderThumbObjectType)
 {
 }
 
@@ -93,11 +93,6 @@ void RenderSliderThumb::updateAppearance(RenderStyle* parentStyle)
         RenderTheme::theme().adjustSliderThumbSize(style(), toElement(node()));
 }
 
-bool RenderSliderThumb::isSliderThumb() const
-{
-    return true;
-}
-
 // --------------------------------
 
 // FIXME: Find a way to cascade appearance and adjust heights, and get rid of this class.
@@ -105,7 +100,7 @@ bool RenderSliderThumb::isSliderThumb() const
 class RenderSliderContainer : public RenderFlexibleBox {
 public:
     RenderSliderContainer(SliderContainerElement* element)
-        : RenderFlexibleBox(element) { }
+        : RenderFlexibleBox(element, RenderSliderContainerObjectType) { }
 public:
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 

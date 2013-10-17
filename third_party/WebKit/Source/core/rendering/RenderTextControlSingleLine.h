@@ -32,7 +32,7 @@ class HTMLInputElement;
 
 class RenderTextControlSingleLine : public RenderTextControl {
 public:
-    RenderTextControlSingleLine(HTMLInputElement*);
+    RenderTextControlSingleLine(HTMLInputElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
     virtual ~RenderTextControlSingleLine();
     // FIXME: Move createInnerTextStyle() to TextControlInnerTextElement.
     virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const;
@@ -50,7 +50,6 @@ protected:
 private:
     virtual bool hasControlClip() const;
     virtual LayoutRect controlClipRect(const LayoutPoint&) const;
-    virtual bool isTextField() const { return true; }
 
     virtual void paint(PaintInfo&, const LayoutPoint&);
     virtual void layout();
@@ -97,7 +96,7 @@ void toRenderTextControlSingleLine(const RenderTextControlSingleLine*);
 
 class RenderTextControlInnerBlock : public RenderBlockFlow {
 public:
-    RenderTextControlInnerBlock(Element* element) : RenderBlockFlow(element) { }
+    RenderTextControlInnerBlock(Element* element) : RenderBlockFlow(element, RenderTextControlInnerBlockObjectType) { }
     virtual int inlineBlockBaseline(LineDirectionMode direction) const OVERRIDE { return lastLineBoxBaseline(direction); }
 
 private:

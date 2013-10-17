@@ -33,7 +33,7 @@ class Position;
 
 class RenderInline : public RenderBoxModelObject {
 public:
-    explicit RenderInline(Element*);
+    RenderInline(Element*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
 
     static RenderInline* createAnonymous(Document*);
 
@@ -109,8 +109,6 @@ private:
     RenderObjectChildList* children() { return &m_children; }
 
     virtual const char* renderName() const;
-
-    virtual bool isRenderInline() const OVERRIDE FINAL { return true; }
 
     LayoutRect culledInlineVisualOverflowBoundingBox() const;
     InlineBox* culledInlineFirstLineBox() const;

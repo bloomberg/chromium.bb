@@ -29,7 +29,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderButton::RenderButton(Element* element)
-    : RenderFlexibleBox(element)
+    : RenderFlexibleBox(element, RenderButtonObjectType)
     , m_inner(0)
 {
 }
