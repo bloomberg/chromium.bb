@@ -1475,8 +1475,9 @@ def ComputeOutputDir(params):
 def CalculateGeneratorInputInfo(params):
   """Called by __init__ to initialize generator values based on params."""
   # E.g. "out/gypfiles"
+  toplevel = params['options'].toplevel_dir
   qualified_out_dir = os.path.normpath(os.path.join(
-      params['options'].toplevel_dir, ComputeOutputDir(params), 'gypfiles'))
+      toplevel, ComputeOutputDir(params), 'gypfiles'))
 
   def gypfile_path(build_file_dir, name):
     # build_file_dir is absolute, make it relative to toplevel
