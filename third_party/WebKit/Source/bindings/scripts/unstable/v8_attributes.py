@@ -109,7 +109,7 @@ def generate_attribute_and_includes(interface, attribute):
         'CachedAttribute' in extended_attributes or
         is_getter_raises_exception):
         contents['cpp_value_original'] = cpp_value
-        cpp_value = 'value'
+        cpp_value = 'jsValue'
     contents['cpp_value'] = cpp_value
 
     if this_is_keep_alive_for_gc:

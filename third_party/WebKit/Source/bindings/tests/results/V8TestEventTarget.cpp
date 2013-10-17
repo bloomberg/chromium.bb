@@ -120,20 +120,20 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, propertyValue, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
+    V8TRYCATCH_VOID(Node*, propertyValue, V8Node::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     bool result = collection->anonymousIndexedSetter(index, propertyValue);
     if (!result)
         return;
-    v8SetReturnValue(info, value);
+    v8SetReturnValue(info, jsValue);
 }
 
-static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
-    TestEventTargetV8Internal::indexedPropertySetter(index, value, info);
+    TestEventTargetV8Internal::indexedPropertySetter(index, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -179,7 +179,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
@@ -189,21 +189,21 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
         return;
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, value);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);
     bool result;
-    if (value->IsUndefined())
+    if (jsValue->IsUndefined())
         result = collection->anonymousNamedSetterUndefined(propertyName);
     else
         result = collection->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;
-    v8SetReturnValue(info, value);
+    v8SetReturnValue(info, jsValue);
 }
 
-static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
-    TestEventTargetV8Internal::namedPropertySetter(name, value, info);
+    TestEventTargetV8Internal::namedPropertySetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -307,16 +307,16 @@ v8::Handle<v8::FunctionTemplate> V8TestEventTarget::GetTemplate(v8::Isolate* iso
     return handleScope.Close(templ);
 }
 
-bool V8TestEventTarget::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestEventTarget::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
 }
 
-bool V8TestEventTarget::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+bool V8TestEventTarget::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
 }
 
 EventTarget* V8TestEventTarget::toEventTarget(v8::Handle<v8::Object> object)

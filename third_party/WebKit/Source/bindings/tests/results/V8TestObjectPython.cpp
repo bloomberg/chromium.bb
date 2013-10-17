@@ -789,12 +789,12 @@ static void readonlyNullableStringAttributeAttributeGetter(v8::Local<v8::String>
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     bool isNull = false;
-    String value = imp->readonlyNullableStringAttribute(isNull);
+    String jsValue = imp->readonlyNullableStringAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueString(info, value, info.GetIsolate());
+    v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
 
 static void readonlyNullableStringAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -808,12 +808,12 @@ static void readonlyNullableLongAttributeAttributeGetter(v8::Local<v8::String> n
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     bool isNull = false;
-    int value = imp->readonlyNullableLongAttribute(isNull);
+    int jsValue = imp->readonlyNullableLongAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueInt(info, value);
+    v8SetReturnValueInt(info, jsValue);
 }
 
 static void readonlyNullableLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -863,8 +863,8 @@ static void staticReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::Str
 static void readonlyEventHandlerAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    EventListener* value = imp->readonlyEventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate()));
-    v8SetReturnValue(info, value ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(value)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
+    EventListener* jsValue = imp->readonlyEventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate()));
+    v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void readonlyEventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -924,15 +924,15 @@ static void cachedAttributeReadonlyAnyAttributeAttributeGetter(v8::Local<v8::Str
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("cachedAttributeReadonlyAnyAttribute");
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     if (!imp->isValueDirty()) {
-        v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
-        if (!value.IsEmpty()) {
-            v8SetReturnValue(info, value);
+        v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
+        if (!jsValue.IsEmpty()) {
+            v8SetReturnValue(info, jsValue);
             return;
         }
     }
-    ScriptValue value = imp->cachedAttributeReadonlyAnyAttribute();
-    info.Holder()->SetHiddenValue(propertyName, value.v8Value());
-    v8SetReturnValue(info, value.v8Value());
+    ScriptValue jsValue = imp->cachedAttributeReadonlyAnyAttribute();
+    info.Holder()->SetHiddenValue(propertyName, jsValue.v8Value());
+    v8SetReturnValue(info, jsValue.v8Value());
 }
 
 static void cachedAttributeReadonlyAnyAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1141,10 +1141,10 @@ static void getterRaisesExceptionReadonlyLongAttributeAttributeGetter(v8::Local<
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
-    int value = imp->getterRaisesExceptionReadonlyLongAttribute(es);
+    int jsValue = imp->getterRaisesExceptionReadonlyLongAttribute(es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueInt(info, value);
+    v8SetReturnValueInt(info, jsValue);
 }
 
 static void getterRaisesExceptionReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1393,10 +1393,10 @@ static void raisesExceptionReadonlyLongAttributeAttributeGetter(v8::Local<v8::St
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
-    int value = imp->raisesExceptionReadonlyLongAttribute(es);
+    int jsValue = imp->raisesExceptionReadonlyLongAttribute(es);
     if (UNLIKELY(es.throwIfNeeded()))
         return;
-    v8SetReturnValueInt(info, value);
+    v8SetReturnValueInt(info, jsValue);
 }
 
 static void raisesExceptionReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1905,16 +1905,16 @@ v8::Handle<v8::FunctionTemplate> V8TestObjectPython::GetTemplate(v8::Isolate* is
     return handleScope.Close(templ);
 }
 
-bool V8TestObjectPython::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestObjectPython::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
 }
 
-bool V8TestObjectPython::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+bool V8TestObjectPython::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
 }
 
 void V8TestObjectPython::installPerContextEnabledProperties(v8::Handle<v8::Object> instance, TestObjectPython* impl, v8::Isolate* isolate)

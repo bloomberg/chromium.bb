@@ -13,9 +13,9 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(v8::Local<v8::Stri
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("{{attribute.name}}");
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     if (!imp->{{attribute.cached_attribute_validation_method}}()) {
-        v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
-        if (!value.IsEmpty()) {
-            v8SetReturnValue(info, value);
+        v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
+        if (!jsValue.IsEmpty()) {
+            v8SetReturnValue(info, jsValue);
             return;
         }
     }

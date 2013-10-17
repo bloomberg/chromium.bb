@@ -88,10 +88,10 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
-    V8TestCustomAccessors::indexedPropertySetterCustom(index, value, info);
+    V8TestCustomAccessors::indexedPropertySetterCustom(index, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -109,10 +109,10 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
-    V8TestCustomAccessors::namedPropertySetterCustom(name, value, info);
+    V8TestCustomAccessors::namedPropertySetterCustom(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -179,16 +179,16 @@ v8::Handle<v8::FunctionTemplate> V8TestCustomAccessors::GetTemplate(v8::Isolate*
     return handleScope.Close(templ);
 }
 
-bool V8TestCustomAccessors::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestCustomAccessors::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
 }
 
-bool V8TestCustomAccessors::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+bool V8TestCustomAccessors::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
 }
 
 v8::Handle<v8::Object> V8TestCustomAccessors::createWrapper(PassRefPtr<TestCustomAccessors> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

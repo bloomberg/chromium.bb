@@ -76,17 +76,17 @@ static void aAttributeGetterCallback(v8::Local<v8::String> name, const v8::Prope
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void aAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void aAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
-    imp->setA(v);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setA(cppValue);
 }
 
-static void aAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void aAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    RealClassV8Internal::aAttributeSetter(name, value, info);
+    RealClassV8Internal::aAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -103,17 +103,17 @@ static void bAttributeGetterCallback(v8::Local<v8::String> name, const v8::Prope
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void bAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void bAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
-    V8TRYCATCH_VOID(RealClass*, v, V8TestInterfaceImplementedAs::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    imp->setB(WTF::getPtr(v));
+    V8TRYCATCH_VOID(RealClass*, cppValue, V8TestInterfaceImplementedAs::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    imp->setB(WTF::getPtr(cppValue));
 }
 
-static void bAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void bAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    RealClassV8Internal::bAttributeSetter(name, value, info);
+    RealClassV8Internal::bAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -206,16 +206,16 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceImplementedAs::GetTemplate(v8::I
     return handleScope.Close(templ);
 }
 
-bool V8TestInterfaceImplementedAs::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestInterfaceImplementedAs::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, currentWorldType);
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, currentWorldType);
 }
 
-bool V8TestInterfaceImplementedAs::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+bool V8TestInterfaceImplementedAs::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, MainWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, IsolatedWorld)
+        || V8PerIsolateData::from(isolate)->hasInstance(&info, jsValue, WorkerWorld);
 }
 
 v8::Handle<v8::Object> V8TestInterfaceImplementedAs::createWrapper(PassRefPtr<RealClass> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

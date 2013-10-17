@@ -33,11 +33,11 @@ class ExecutionContext;
 
 class V8TestCallback : public TestCallback, public ActiveDOMCallback {
 public:
-    static PassRefPtr<V8TestCallback> create(v8::Handle<v8::Value> value, ExecutionContext* context)
+    static PassRefPtr<V8TestCallback> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
     {
-        ASSERT(value->IsObject());
+        ASSERT(jsValue->IsObject());
         ASSERT(context);
-        return adoptRef(new V8TestCallback(v8::Handle<v8::Object>::Cast(value), context));
+        return adoptRef(new V8TestCallback(v8::Handle<v8::Object>::Cast(jsValue), context));
     }
 
     virtual ~V8TestCallback();
