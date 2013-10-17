@@ -582,6 +582,25 @@ void TitleWatcher::TestTitle() {
   message_loop_runner_->Quit();
 }
 
+WebContentsDestroyedWatcher::WebContentsDestroyedWatcher(
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents),
+      message_loop_runner_(new MessageLoopRunner) {
+  EXPECT_TRUE(web_contents != NULL);
+}
+
+WebContentsDestroyedWatcher::~WebContentsDestroyedWatcher() {
+}
+
+void WebContentsDestroyedWatcher::Wait() {
+  message_loop_runner_->Run();
+}
+
+void WebContentsDestroyedWatcher::WebContentsDestroyed(
+    WebContents* web_contents) {
+  message_loop_runner_->Quit();
+}
+
 DOMMessageQueue::DOMMessageQueue() : waiting_for_message_(false) {
   registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
                  NotificationService::AllSources());

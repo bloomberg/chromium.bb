@@ -26,6 +26,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
@@ -70,12 +71,11 @@ class TabRestoreTest : public InProcessBrowserTest {
   }
 
   void CloseTab(int index) {
-    content::WindowedNotificationObserver tab_close_observer(
-        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-        content::NotificationService::AllSources());
+    content::WebContentsDestroyedWatcher destroyed_watcher(
+        browser()->tab_strip_model()->GetWebContentsAt(index));
     browser()->tab_strip_model()->CloseWebContentsAt(
         index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
-    tab_close_observer.Wait();
+    destroyed_watcher.Wait();
   }
 
   // Uses the undo-close-tab accelerator to undo a close-tab or close-window

@@ -958,9 +958,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
 
   ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
 
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(source->GetWebContents()));
+  content::WebContentsDestroyedWatcher destroyed_watcher(
+      source->GetWebContents());
 
   // Tell the embedder to kill the guest.
   EXPECT_TRUE(content::ExecuteScript(
@@ -968,7 +967,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
                   "removeWebviewOnExitDoCrash();"));
 
   // Wait until the guest WebContents is destroyed.
-  observer.Wait();
+  destroyed_watcher.Wait();
 }
 
 // Remove <webview> immediately after navigating it.

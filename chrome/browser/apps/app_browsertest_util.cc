@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/switches.h"
 
@@ -171,11 +172,10 @@ ShellWindow* PlatformAppBrowserTest::CreateShellWindowFromParams(
 }
 
 void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {
-  content::WindowedNotificationObserver destroyed_observer(
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::NotificationService::AllSources());
+  content::WebContentsDestroyedWatcher destroyed_watcher(
+      window->web_contents());
   window->GetBaseWindow()->Close();
-  destroyed_observer.Wait();
+  destroyed_watcher.Wait();
 }
 
 void PlatformAppBrowserTest::CallAdjustBoundsToBeVisibleOnScreenForShellWindow(

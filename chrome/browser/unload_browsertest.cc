@@ -406,11 +406,10 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   load_stop_observer.Wait();
   CheckTitle("popup");
 
-  content::WindowedNotificationObserver tab_close_observer(
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::NotificationService::AllSources());
+  content::WebContentsDestroyedWatcher destroyed_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents());
   chrome::CloseTab(browser());
-  tab_close_observer.Wait();
+  destroyed_watcher.Wait();
 
   CheckTitle("only_one_unload");
 }
@@ -494,6 +493,9 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest, MAYBE_UnloadHidden) {
   NavigateToPageInNewTab("unload_sets_cookie");
   EXPECT_EQ("", GetCookies("no_listeners"));
 
+  content::WebContentsDestroyedWatcher destroyed_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents());
+
   {
     base::RunLoop run_loop;
     FastTabCloseTabStripModelObserver observer(
@@ -506,16 +508,10 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest, MAYBE_UnloadHidden) {
   CheckTitle("no_listeners");
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  // Show that the web contents to go away after the was removed.
-  // Without unload-detached, this times-out because it happens earlier.
-  content::WindowedNotificationObserver contents_destroyed_observer(
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::NotificationService::AllSources());
-  contents_destroyed_observer.Wait();
+  // Wait for the actual destruction.
+  destroyed_watcher.Wait();
 
-  // Browser still has the same tab.
-  CheckTitle("no_listeners");
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  // Verify that the destruction had the desired effect.
   EXPECT_EQ("unloaded=ohyeah", GetCookies("no_listeners"));
 }
 

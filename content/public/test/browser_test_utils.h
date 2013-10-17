@@ -223,6 +223,24 @@ class TitleWatcher : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
 };
 
+// Watches a WebContents and blocks until it is destroyed.
+class WebContentsDestroyedWatcher : public WebContentsObserver {
+ public:
+  explicit WebContentsDestroyedWatcher(WebContents* web_contents);
+  virtual ~WebContentsDestroyedWatcher();
+
+  // Waits until the WebContents is destroyed.
+  void Wait();
+
+ private:
+  // Overridden WebContentsObserver methods.
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
+};
+
 // Watches for responses from the DOMAutomationController and keeps them in a
 // queue. Useful for waiting for a message to be received.
 class DOMMessageQueue : public NotificationObserver {
