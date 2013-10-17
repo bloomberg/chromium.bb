@@ -107,10 +107,10 @@ void freeSuperPages(void* addr, size_t len)
     ASSERT(!(len & kSuperPageOffsetMask));
 #if OS(POSIX)
     int ret = munmap(addr, len);
-    ASSERT(!ret);
+    RELEASE_ASSERT(!ret);
 #else
     BOOL ret = VirtualFree(addr, 0, MEM_RELEASE);
-    ASSERT(ret);
+    RELEASE_ASSERT(ret);
 #endif
 
     SuperPageBitmap::unregisterSuperPage(addr);
@@ -121,10 +121,10 @@ void setSystemPagesInaccessible(void* addr, size_t len)
     ASSERT(!(len & kSystemPageOffsetMask));
 #if OS(POSIX)
     int ret = mprotect(addr, len, PROT_NONE);
-    ASSERT(!ret);
+    RELEASE_ASSERT(!ret);
 #else
     BOOL ret = VirtualFree(addr, len, MEM_DECOMMIT);
-    ASSERT(ret);
+    RELEASE_ASSERT(ret);
 #endif
 }
 
@@ -133,10 +133,10 @@ void decommitSystemPages(void* addr, size_t len)
     ASSERT(!(len & kSystemPageOffsetMask));
 #if OS(POSIX)
     int ret = madvise(addr, len, MADV_FREE);
-    ASSERT(!ret);
+    RELEASE_ASSERT(!ret);
 #else
     void* ret = VirtualAlloc(addr, len, MEM_RESET, PAGE_READWRITE);
-    ASSERT(ret);
+    RELEASE_ASSERT(ret);
 #endif
 }
 

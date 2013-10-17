@@ -289,7 +289,8 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
     // Make sure it's rounded up!
     superPageSize += WTF::kSuperPageOffsetMask;
     superPageSize &= WTF::kSuperPageBaseMask;
-    root->nextSuperPage = reinterpret_cast<char*>(WTF::allocSuperPages(0, superPageSize));
+    char* superPageAddress = reinterpret_cast<char*>(WTF::allocSuperPages(0, superPageSize));
+    root->nextSuperPage = superPageAddress;
     root->totalSizeOfSuperPages = superPageSize;
     root->nextPartitionPage = root->nextSuperPage;
     root->nextPartitionPageEnd = root->nextPartitionPage + superPageSize;
@@ -343,7 +344,10 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
     }
     EXPECT_EQ(&bucket->root->seedPage, bucket->currPage);
 
-    TestShutdown();
+    // We don't do an orderly shutdown because we hacked the super pages in
+    // manually.
+    WTF::freeSuperPages(superPageAddress, superPageSize);
+    root->initialized = false;
 }
 
 // Test a large series of allocations that cross more than one underlying
