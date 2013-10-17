@@ -650,7 +650,7 @@ int Element::clientWidth()
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustForAbsoluteZoom(view->layoutWidth(), renderView);
+                return adjustForAbsoluteZoom(view->layoutSize().width(), renderView);
         }
     }
 
@@ -671,7 +671,7 @@ int Element::clientHeight()
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustForAbsoluteZoom(view->layoutHeight(), renderView);
+                return adjustForAbsoluteZoom(view->layoutSize().height(), renderView);
         }
     }
 

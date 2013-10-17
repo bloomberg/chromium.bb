@@ -1008,8 +1008,6 @@ crbug.com/280554 css3/filters/custom/custom-filter-clamp-css-color-matrix.html [
 crbug.com/280554 css3/filters/custom/custom-filter-clamp-css-mix-color-negative.html [ ImageOnlyFailure Pass ]
 crbug.com/280554 css3/filters/custom/custom-filter-clamp-css-mix-color.html [ ImageOnlyFailure Pass ]
 
-Bug(bokan) fast/dynamic/window-resize-scrollbars-test.html [ NeedsRebaseline ]
-
 crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Failure ]
 crbug.com/280342 [ Win Release ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Pass Failure ]

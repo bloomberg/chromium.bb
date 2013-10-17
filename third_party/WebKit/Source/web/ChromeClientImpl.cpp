@@ -604,7 +604,7 @@ void ChromeClientImpl::setToolTip(const String& tooltipText, TextDirection dir)
 
 void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportDescription& description) const
 {
-    m_webView->updatePageDefinedPageScaleConstraints(description);
+    m_webView->updatePageDefinedViewportConstraints(description);
 }
 
 void ChromeClientImpl::print(Frame* frame)

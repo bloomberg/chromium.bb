@@ -96,7 +96,7 @@ void FramelessScrollView::contentsResized()
 {
 }
 
-void FramelessScrollView::visibleContentsResized()
+void FramelessScrollView::scrollbarExistenceDidChange()
 {
 }
 

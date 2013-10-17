@@ -1292,6 +1292,12 @@ void RenderLayerCompositor::frameViewDidLayout()
 {
 }
 
+void RenderLayerCompositor::frameViewScrollbarsExistenceDidChange()
+{
+    if (m_containerLayer)
+        updateOverflowControlsLayers();
+}
+
 void RenderLayerCompositor::rootFixedBackgroundsChanged()
 {
     if (!supportsFixedRootBackgroundCompositing())
