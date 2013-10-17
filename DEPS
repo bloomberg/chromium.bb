@@ -259,7 +259,7 @@ deps_os = {
       "/trunk/deps/reference_builds/chrome_win@221746",
 
     "src/third_party/cygwin":
-      "/trunk/deps/third_party/cygwin@133786",
+      "/trunk/deps/third_party/cygwin@228972",
 
     "src/third_party/python_26":
       "/trunk/tools/third_party/python_26@89111",
