@@ -79,7 +79,7 @@ private:
     TransformOperationType m_type;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(TransformValue);
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSTransformValue, isTransformValue());
 
 }
 

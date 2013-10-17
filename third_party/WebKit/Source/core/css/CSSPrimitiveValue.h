@@ -385,7 +385,7 @@ private:
     } m_value;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(PrimitiveValue);
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, isPrimitiveValue());
 
 } // namespace WebCore
 

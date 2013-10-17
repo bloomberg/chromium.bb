@@ -104,7 +104,7 @@ private:
     CrossfadeSubimageObserverProxy m_crossfadeSubimageObserver;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CrossfadeValue);
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSCrossfadeValue, isCrossfadeValue());
 
 } // namespace WebCore
 
