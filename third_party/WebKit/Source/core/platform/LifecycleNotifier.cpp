@@ -27,19 +27,19 @@
 
 #include "config.h"
 #include "core/platform/LifecycleNotifier.h"
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
 LifecycleNotifier::LifecycleNotifier(LifecycleContext* context)
     : m_context(context)
-    , m_inDestructor(false)
     , m_iterating(IteratingNone)
 {
 }
 
 LifecycleNotifier::~LifecycleNotifier()
 {
-    m_inDestructor = true;
+    TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
     for (ObserverSet::iterator it = m_observers.begin(); it != m_observers.end(); it = m_observers.begin()) {
         LifecycleObserver* observer = *it;
         m_observers.remove(observer);
@@ -50,13 +50,13 @@ LifecycleNotifier::~LifecycleNotifier()
 
 void LifecycleNotifier::addObserver(LifecycleObserver* observer)
 {
-    RELEASE_ASSERT(!m_inDestructor);
+    RELEASE_ASSERT(m_iterating != IteratingOverAll);
     m_observers.add(observer);
 }
 
 void LifecycleNotifier::removeObserver(LifecycleObserver* observer)
 {
-    RELEASE_ASSERT(!m_inDestructor);
+    RELEASE_ASSERT(m_iterating != IteratingOverAll);
     m_observers.remove(observer);
 }
 

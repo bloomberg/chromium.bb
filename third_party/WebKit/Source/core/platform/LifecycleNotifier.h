@@ -54,6 +54,7 @@ protected:
 
     enum IterationType {
         IteratingNone,
+        IteratingOverAll,
         IteratingOverActiveDOMObjects,
         IteratingOverContextObservers,
         IteratingOverDocumentObservers,
@@ -68,7 +69,6 @@ private:
 
     ObserverSet m_observers;
     LifecycleContext* m_context;
-    bool m_inDestructor;
 };
 
 inline PassOwnPtr<LifecycleNotifier> LifecycleNotifier::create(LifecycleContext* context)
