@@ -3,3 +3,6 @@ pkasting@chromium.org
 stevet@chromium.org
 
 per-file *_android.*=yfriedman@chromium.org
+
+per-file default_search_policy_handler*=joaodasilva@chromium.org
+per-file default_search_policy_handler*=dconnelly@chromium.org

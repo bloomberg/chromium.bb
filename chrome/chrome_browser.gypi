@@ -1926,6 +1926,8 @@
         'browser/search/search.h',
         'browser/search/search_terms_tracker.cc',
         'browser/search/search_terms_tracker.h',
+        'browser/search_engines/default_search_policy_handler.cc',
+        'browser/search_engines/default_search_policy_handler.h',
         'browser/search_engines/search_engine_type.h',
         'browser/search_engines/search_host_to_urls_map.cc',
         'browser/search_engines/search_host_to_urls_map.h',

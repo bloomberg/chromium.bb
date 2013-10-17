@@ -18,11 +18,6 @@ class PolicyErrorMap;
 class PolicyMap;
 struct PolicyToPreferenceMapEntry;
 
-// Declares the array of policy key to preference name mappings. Contains
-// exactly DEFAULT_SEARCH_KEY entries, which are sorted according to the order
-// of entries in the DefaultSearchKey enum.
-extern const PolicyToPreferenceMapEntry kDefaultSearchPolicyMap[];
-
 // Converts policies to their corresponding preferences. Also does error
 // checking and cleans up policy values for displaying.
 class ConfigurationPolicyHandlerList {
