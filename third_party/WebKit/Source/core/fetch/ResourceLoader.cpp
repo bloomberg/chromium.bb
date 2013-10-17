@@ -407,6 +407,10 @@ void ResourceLoader::requestSynchronously()
     OwnPtr<WebKit::WebURLLoader> loader = adoptPtr(WebKit::Platform::current()->createURLLoader());
     ASSERT(loader);
 
+    RefPtr<ResourceLoader> protect(this);
+    RefPtr<ResourceLoaderHost> protectHost(m_host);
+    ResourcePtr<Resource> protectResource(m_resource);
+
     RELEASE_ASSERT(m_connectionState == ConnectionStateNew);
     m_connectionState = ConnectionStateStarted;
 
@@ -422,6 +426,8 @@ void ResourceLoader::requestSynchronously()
         return;
     }
     didReceiveResponse(0, responseOut);
+    if (m_state == Terminated)
+        return;
     RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
     m_host->didReceiveData(m_resource, dataOut.data(), dataOut.size(), resourceLoadInfo ? resourceLoadInfo->encodedDataLength : -1, m_options);
     m_resource->setResourceBuffer(dataOut);
