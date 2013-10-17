@@ -38,8 +38,7 @@ chrome.downloads.onDeterminingFilename.addListener(function(item, __suggest) {
   }
   for (var index = 0; index < rules.length; ++index) {
     var rule = rules[index];
-    if (rule.enabled &&
-        matches(rule, item) {
+    if (rule.enabled && matches(rule, item)) {
       if (rule.action == 'overwrite') {
         suggest(item.filename, 'overwrite');
       } else if (rule.action == 'prompt') {
