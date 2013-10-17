@@ -181,6 +181,10 @@ function testInputTypeResponsivenessAsync(testDoneCallback) {
     keyboard.inputTypeValue = 'number';
     assertEquals('numeric-symbol', keyboard.activeKeysetId,
         "Did not transition to numeric layout.");
+    // Check password keyboard.
+    keyboard.inputTypeValue = 'password';
+    assertEquals('system-qwerty-lower', keyboard.activeKeysetId,
+        "Did not transition to password layout.");
     // Clean up.
     keyboard.inputTypeValue = 'text';
     assertEquals('qwerty-lower', keyboard.activeKeysetId,
