@@ -29,6 +29,13 @@
 #include "ui/gfx/platform_font.h"
 
 const CGFloat kAccountChooserHeight = 20.0;
+const CGFloat kMinimumContentsHeight = 101;
+
+// Height of all decorations & paddings on main dialog together.
+const CGFloat kDecorationHeight = kAccountChooserHeight +
+                                  autofill::kDetailTopPadding +
+                                  chrome_style::kClientBottomPadding +
+                                  chrome_style::kTitleTopPadding;
 
 namespace autofill {
 
@@ -158,7 +165,8 @@ TestableAutofillDialogView* AutofillDialogCocoa::GetTestableView() {
 }
 
 void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
-  // TODO(groby): Implement Mac support for this.
+  [sheet_delegate_ onSignInResize:
+      NSMakeSize(pref_size.width(), pref_size.height())];
 }
 
 void AutofillDialogCocoa::SubmitForTesting() {
@@ -234,6 +242,12 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 #pragma mark Window Controller
 
 @interface AutofillDialogWindowController ()
+
+// Compute maximum allowed height for the dialog.
+- (CGFloat)maxHeight;
+
+// Update size constraints on sign-in container.
+- (void)updateSignInSizeConstraints;
 
 // Notification that the WebContent's view frame has changed.
 - (void)onContentViewFrameDidChange:(NSNotification*)notification;
@@ -338,8 +352,30 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   [super dealloc];
 }
 
+- (CGFloat)maxHeight {
+  NSRect dialogFrameRect = [[self window] frame];
+  NSRect browserFrameRect =
+      [webContents_->GetView()->GetTopLevelNativeWindow() frame];
+  dialogFrameRect.size.height =
+      NSMaxY(dialogFrameRect) - NSMinY(browserFrameRect);
+  dialogFrameRect = [[self window] contentRectForFrameRect:dialogFrameRect];
+  return NSHeight(dialogFrameRect);
+}
+
+- (void)updateSignInSizeConstraints {
+  // Adjust for the size of all decorations and paddings outside main content.
+  CGFloat minHeight = kMinimumContentsHeight - kDecorationHeight;
+  CGFloat maxHeight = std::max([self maxHeight] - kDecorationHeight, minHeight);
+  CGFloat width = NSWidth([[[self window] contentView] frame]);
+
+  [signInContainer_ constrainSizeToMinimum:NSMakeSize(width, minHeight)
+                                   maximum:NSMakeSize(width, maxHeight)];
+}
+
 - (void)onContentViewFrameDidChange:(NSNotification*)notification {
-  [self requestRelayout];
+  [self updateSignInSizeConstraints];
+  if ([[signInContainer_ view] isHidden])
+    [self requestRelayout];
 }
 
 - (void)cancelRelayout {
@@ -355,26 +391,21 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (NSSize)preferredSize {
   NSSize contentSize;
-  // TODO(groby): Currently, keep size identical to main container.
-  // Change to allow autoresize of web contents.
-  contentSize = [mainContainer_ preferredSize];
 
+  // Overall size is determined by either main container or sign in view.
+  if (![[mainContainer_ view] isHidden])
+    contentSize = [mainContainer_ preferredSize];
+  else
+    contentSize = [signInContainer_ preferredSize];
+
+  // Always make room for the header.
   NSSize headerSize = NSMakeSize(contentSize.width, kAccountChooserHeight);
-  NSSize size = NSMakeSize(
-      std::max(contentSize.width, headerSize.width),
-      contentSize.height + headerSize.height + autofill::kDetailTopPadding);
-  size.height += chrome_style::kClientBottomPadding +
-                 chrome_style::kTitleTopPadding;
+  NSSize size = contentSize;
+  size.height += kDecorationHeight;
 
   // Show as much of the main view as is possible without going past the
   // bottom of the browser window.
-  NSRect dialogFrameRect = [[self window] frame];
-  NSRect browserFrameRect =
-      [webContents_->GetView()->GetTopLevelNativeWindow() frame];
-  dialogFrameRect.size.height =
-      NSMaxY(dialogFrameRect) - NSMinY(browserFrameRect);
-  dialogFrameRect = [[self window] contentRectForFrameRect:dialogFrameRect];
-  size.height = std::min(NSHeight(dialogFrameRect), size.height);
+  size.height = std::min(size.height, [self maxHeight]);
 
   if (![[overlayController_ view] isHidden]) {
     CGFloat height = [overlayController_ heightForWidth:size.width];
@@ -523,6 +554,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 }
 
 - (content::NavigationController*)showSignIn {
+  [self updateSignInSizeConstraints];
   [signInContainer_ loadSignInPage];
   [[mainContainer_ view] setHidden:YES];
   [[signInContainer_ view] setHidden:NO];
@@ -552,6 +584,11 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (void)updateErrorBubble {
   [mainContainer_ updateErrorBubble];
+}
+
+- (void)onSignInResize:(NSSize)size {
+  [signInContainer_ setPreferredSize:size];
+  [self requestRelayout];
 }
 
 @end

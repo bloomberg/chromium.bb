@@ -25,11 +25,18 @@ class NavigationController;
   autofill::AutofillDialogCocoa* dialog_;  // Not owned.
   scoped_ptr<content::WebContents> webContents_;
   scoped_ptr<autofill::AutofillDialogSignInDelegate> signInDelegate_;
+
+  NSSize maxSize_;
+  NSSize minSize_;
+  NSSize preferredSize_;
 }
+
+@property(assign, nonatomic) NSSize preferredSize;
 
 - (id)initWithDialog:(autofill::AutofillDialogCocoa*)dialog;
 - (void)loadSignInPage;
 - (content::NavigationController*)navigationController;
+- (void)constrainSizeToMinimum:(NSSize)minSize maximum:(NSSize)maximum;
 
 @end
 

@@ -151,6 +151,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
 - (void)hideSignIn;
 - (void)modelChanged;
 - (void)updateErrorBubble;
+- (void)onSignInResize:(NSSize)size;
 
 @end
 
