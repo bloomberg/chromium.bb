@@ -36,3 +36,4 @@
     CSSValue getPresentationAttribute([Default=Undefined] optional DOMString name);
 };
 
+SVGElement implements GlobalEventHandlers;

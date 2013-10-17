@@ -168,102 +168,35 @@
 
     [Replaceable] readonly attribute CSS CSS;
 
-    // Events
-    attribute EventHandler onabort;
-    attribute EventHandler onbeforeunload;
-    attribute EventHandler onblur;
-    attribute EventHandler oncancel;
-    attribute EventHandler oncanplay;
-    attribute EventHandler oncanplaythrough;
-    attribute EventHandler onchange;
-    [ActivityLogging=Setter] attribute EventHandler onclick;
-    attribute EventHandler onclose;
-    attribute EventHandler oncontextmenu;
-    attribute EventHandler oncuechange;
-    [ActivityLogging=Setter] attribute EventHandler ondblclick;
-    [ActivityLogging=Setter] attribute EventHandler ondrag;
-    [ActivityLogging=Setter] attribute EventHandler ondragend;
-    [ActivityLogging=Setter] attribute EventHandler ondragenter;
-    [ActivityLogging=Setter] attribute EventHandler ondragleave;
-    [ActivityLogging=Setter] attribute EventHandler ondragover;
-    [ActivityLogging=Setter] attribute EventHandler ondragstart;
-    [ActivityLogging=Setter] attribute EventHandler ondrop;
-    attribute EventHandler ondurationchange;
-    attribute EventHandler onemptied;
-    attribute EventHandler onended;
-    attribute EventHandler onerror;
-    attribute EventHandler onfocus;
-    attribute EventHandler onhashchange;
-    [ActivityLogging=Setter] attribute EventHandler oninput;
-    attribute EventHandler oninvalid;
-    [ActivityLogging=Setter] attribute EventHandler onkeydown;
-    [ActivityLogging=Setter] attribute EventHandler onkeypress;
-    [ActivityLogging=Setter] attribute EventHandler onkeyup;
-    attribute EventHandler onload;
-    attribute EventHandler onloadeddata;
-    attribute EventHandler onloadedmetadata;
-    attribute EventHandler onloadstart;
-    attribute EventHandler onmessage;
-    [ActivityLogging=Setter] attribute EventHandler onmousedown;
-    [ActivityLogging=Setter] attribute EventHandler onmouseenter;
-    [ActivityLogging=Setter] attribute EventHandler onmouseleave;
-    [ActivityLogging=Setter] attribute EventHandler onmousemove;
-    [ActivityLogging=Setter] attribute EventHandler onmouseout;
-    [ActivityLogging=Setter] attribute EventHandler onmouseover;
-    [ActivityLogging=Setter] attribute EventHandler onmouseup;
-    [ActivityLogging=Setter] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
-    [ActivityLogging=Setter] attribute EventHandler onwheel;
-    attribute EventHandler onoffline;
-    attribute EventHandler ononline;
-    attribute EventHandler onpagehide;
-    attribute EventHandler onpageshow;
-    attribute EventHandler onpause;
-    attribute EventHandler onplay;
-    attribute EventHandler onplaying;
-    attribute EventHandler onpopstate;
-    attribute EventHandler onprogress;
-    attribute EventHandler onratechange;
-    attribute EventHandler onreset;
-    attribute EventHandler onresize;
-    attribute EventHandler onscroll;
-    attribute EventHandler onseeked;
-    attribute EventHandler onseeking;
-    attribute EventHandler onselect;
-    attribute EventHandler onshow;
-    attribute EventHandler onstalled;
-    attribute EventHandler onstorage;
-    attribute EventHandler onsubmit;
-    attribute EventHandler onsuspend;
-    attribute EventHandler ontimeupdate;
-    attribute EventHandler onunload;
-    attribute EventHandler onvolumechange;
-    attribute EventHandler onwaiting;
-
-    // Not implemented yet.
-    // attribute EventHandler onafterprint;
-    // attribute EventHandler onbeforeprint;
-    // attribute EventHandler onreadystatechange;
-    // attribute EventHandler onredo;
-    // attribute EventHandler onundo;
-
-    // Webkit extensions
-    attribute EventHandler onsearch;
+    // Event handler attributes
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationend;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationiteration;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationstart;
+    attribute EventHandler onbeforeunload;
+    [RuntimeEnabled=DeviceMotion] attribute EventHandler ondevicemotion;
+    [RuntimeEnabled=DeviceOrientation] attribute EventHandler ondeviceorientation;
+    attribute EventHandler onhashchange;
+    attribute EventHandler onmessage;
+    attribute EventHandler onoffline;
+    attribute EventHandler ononline;
+    [Conditional=ORIENTATION_EVENTS] attribute EventHandler onorientationchange;
+    attribute EventHandler onpagehide;
+    attribute EventHandler onpageshow;
+    attribute EventHandler onpopstate;
+    attribute EventHandler onresize;
+    attribute EventHandler onsearch;
+    attribute EventHandler onstorage;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchend;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
+    [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
+    attribute EventHandler ontransitionend;
+    attribute EventHandler onunload;
     attribute EventHandler onwebkitanimationend;
     attribute EventHandler onwebkitanimationiteration;
     attribute EventHandler onwebkitanimationstart;
     attribute EventHandler onwebkittransitionend;
-    attribute EventHandler ontransitionend;
-    [Conditional=ORIENTATION_EVENTS] attribute EventHandler onorientationchange;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchmove;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchend;
-    [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
-
-    [RuntimeEnabled=DeviceMotion] attribute EventHandler ondevicemotion;
-    [RuntimeEnabled=DeviceOrientation] attribute EventHandler ondeviceorientation;
+    [ActivityLogging=Setter] attribute EventHandler onwheel;
 
     [DeprecateAs=CaptureEvents] void captureEvents();
     [DeprecateAs=ReleaseEvents] void releaseEvents();
@@ -313,6 +246,7 @@
     [Custom, NotEnumerable] getter Window (DOMString name);
 };
 
+Window implements GlobalEventHandlers;
 Window implements ImageBitmapFactories;
-Window implements WindowTimers;
 Window implements WindowBase64;
+Window implements WindowTimers;

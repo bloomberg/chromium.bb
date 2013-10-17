@@ -54,3 +54,5 @@
 
     void click();
 };
+
+HTMLElement implements GlobalEventHandlers;

@@ -169,73 +169,14 @@ callback CustomElementConstructor = Element ();
 
     [RuntimeEnabled=FontLoadEvents] readonly attribute FontFaceSet fonts;
 
-    // Event handler DOM attributes
-    attribute EventHandler onabort;
-    attribute EventHandler onblur;
-    attribute EventHandler oncancel;
-    attribute EventHandler oncanplay;
-    attribute EventHandler oncanplaythrough;
-    attribute EventHandler onchange;
-    [ActivityLogging=Setter] attribute EventHandler onclick;
-    attribute EventHandler onclose;
-    attribute EventHandler oncontextmenu;
-    attribute EventHandler oncuechange;
-    [ActivityLogging=Setter] attribute EventHandler ondblclick;
-    [ActivityLogging=Setter] attribute EventHandler ondrag;
-    [ActivityLogging=Setter] attribute EventHandler ondragend;
-    [ActivityLogging=Setter] attribute EventHandler ondragenter;
-    [ActivityLogging=Setter] attribute EventHandler ondragleave;
-    [ActivityLogging=Setter] attribute EventHandler ondragover;
-    [ActivityLogging=Setter] attribute EventHandler ondragstart;
-    [ActivityLogging=Setter] attribute EventHandler ondrop;
-    attribute EventHandler ondurationchange;
-    attribute EventHandler onemptied;
-    attribute EventHandler onended;
-    attribute EventHandler onerror;
-    attribute EventHandler onfocus;
-    [ActivityLogging=Setter] attribute EventHandler oninput;
-    attribute EventHandler oninvalid;
-    [ActivityLogging=Setter] attribute EventHandler onkeydown;
-    [ActivityLogging=Setter] attribute EventHandler onkeypress;
-    [ActivityLogging=Setter] attribute EventHandler onkeyup;
-    attribute EventHandler onload;
-    attribute EventHandler onloadeddata;
-    attribute EventHandler onloadedmetadata;
-    attribute EventHandler onloadstart;
-    [ActivityLogging=Setter] attribute EventHandler onmousedown;
-    [ActivityLogging=Setter] attribute EventHandler onmouseenter;
-    [ActivityLogging=Setter] attribute EventHandler onmouseleave;
-    [ActivityLogging=Setter] attribute EventHandler onmousemove;
-    [ActivityLogging=Setter] attribute EventHandler onmouseout;
-    [ActivityLogging=Setter] attribute EventHandler onmouseover;
-    [ActivityLogging=Setter] attribute EventHandler onmouseup;
-    [ActivityLogging=Setter] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
-    [ActivityLogging=Setter] attribute EventHandler onwheel;
-    attribute EventHandler onpause;
-    attribute EventHandler onplay;
-    attribute EventHandler onplaying;
-    attribute EventHandler onprogress;
-    attribute EventHandler onratechange;
-    attribute EventHandler onreadystatechange;
-    attribute EventHandler onreset;
-    attribute EventHandler onscroll;
-    attribute EventHandler onseeked;
-    attribute EventHandler onseeking;
-    attribute EventHandler onselect;
-    attribute EventHandler onshow;
-    attribute EventHandler onstalled;
-    attribute EventHandler onsubmit;
-    attribute EventHandler onsuspend;
-    attribute EventHandler ontimeupdate;
-    attribute EventHandler onvolumechange;
-    attribute EventHandler onwaiting;
-
+    // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;
     attribute EventHandler onbeforepaste;
     attribute EventHandler oncopy;
     attribute EventHandler oncut;
     attribute EventHandler onpaste;
+    attribute EventHandler onreadystatechange;
     attribute EventHandler onsearch;
     [RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute EventHandler onsecuritypolicyviolation;
     attribute EventHandler onselectionchange;
@@ -248,6 +189,7 @@ callback CustomElementConstructor = Element ();
     attribute EventHandler onwebkitfullscreenerror;
     attribute EventHandler onwebkitpointerlockchange;
     attribute EventHandler onwebkitpointerlockerror;
+    [ActivityLogging=Setter] attribute EventHandler onwheel;
 
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,
                                                [Default=Undefined] optional EventTarget target,
@@ -278,5 +220,5 @@ callback CustomElementConstructor = Element ();
     readonly attribute HTMLScriptElement currentScript;
 };
 
+Document implements GlobalEventHandlers;
 Document implements ParentNode;
-
