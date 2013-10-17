@@ -18,12 +18,13 @@ camera.views = camera.views || {};
  * Creates the Gallery view controller.
  *
  * @param {camera.View.Context} context Context object.
+ * @param {camera.Router} router View router to switch views.
  * @extends {camera.View}
  * @implements {camera.models.Gallery.Observer}
  * @constructor
  */
-camera.views.Gallery = function(context) {
-  camera.View.call(this, context);
+camera.views.Gallery = function(context, router) {
+  camera.View.call(this, context, router);
 
   /**
    * @type {camera.models.Gallery}
@@ -328,10 +329,10 @@ camera.views.Gallery.prototype.onKeyPressed = function(event) {
       break;
     case 'Enter':
       if (this.model_.length)
-        this.context_.onBrowserRequested();
+        this.router.switchView(camera.Router.ViewIdentifier.BROWSER);
       break;
     case 'U+001B':
-      this.context_.onCameraRequested();
+      this.router.switchView(camera.Router.ViewIdentifier.CAMERA);
       break;
   }
 };
@@ -364,7 +365,7 @@ camera.views.Gallery.prototype.addPictureToDOM_ = function(picture) {
   }.bind(this));
 
   img.addEventListener('dblclick', function() {
-    this.context_.onBrowserRequested();
+    this.router.switchView(camera.Router.ViewIdentifier.BROWSER);
   }.bind(this));
 };
 

@@ -53,6 +53,7 @@ SRC_RESOURCES= \
 	src/js/main.js \
 	src/js/models/gallery.js \
 	src/js/processor.js \
+	src/js/router.js \
 	src/js/scrollbar.js \
 	src/js/test.js \
 	src/js/test_cases.js \

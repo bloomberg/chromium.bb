@@ -20,28 +20,31 @@ camera.Camera = function() {
    */
   this.context_ = new camera.Camera.Context(
       this.onError_.bind(this),
-      this.onErrorRecovered_.bind(this),
-      this.onCameraRequested_.bind(this),
-      this.onGalleryRequested_.bind(this),
-      this.onBrowserRequested_.bind(this));
+      this.onErrorRecovered_.bind(this));
+
+  /**
+   * @type {camera.Router}
+   * @private
+   */
+  this.router_ = new camera.Router(this.switchViewFromRouter_.bind(this));
 
    /**
    * @type {camera.views.Camera}
    * @private
    */
-  this.cameraView_ = new camera.views.Camera(this.context_);
+  this.cameraView_ = new camera.views.Camera(this.context_, this.router_);
 
   /**
    * @type {camera.views.Gallery}
    * @private
    */
-  this.galleryView_ = new camera.views.Gallery(this.context_);
+  this.galleryView_ = new camera.views.Gallery(this.context_, this.router_);
 
   /**
    * @type {camera.views.Browser}
    * @private
    */
-  this.browserView_ = new camera.views.Browser(this.context_);
+  this.browserView_ = new camera.views.Browser(this.context_, this.router_);
 
   /**
    * @type {camera.View}
@@ -94,12 +97,6 @@ camera.Camera = function() {
  *     when an error occurs. Arguments: identifier, first line, second line.
  * @param {function(string)} onErrorRecovered Callback to be called,
  *     when the error goes away. The argument is the error id.
- * @param {function()} onCameraRequested Callback to be called, when entering
- *     the camera view is requested.
- * @param {function()} onGalleryRequested Callback to be called, when entering
- *     the gallery view is requested.
- * @param {function()} onBrowserRequested Callback to be called, when entering
- *     the browser view is requested.
  * @constructor
  */
 camera.Camera.Context = function(
@@ -126,21 +123,6 @@ camera.Camera.Context = function(
    * @type {function(string)}
    */
   this.onErrorRecovered = onErrorRecovered;
-
-  /**
-   * @type {function()}
-   */
-  this.onCameraRequested = onCameraRequested;
-
-  /**
-   * @type {function()}
-   */
-  this.onGalleryRequested = onGalleryRequested;
-
-  /**
-   * @type {function()}
-   */
-  this.onBrowserRequested = onBrowserRequested;
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -193,6 +175,25 @@ camera.Camera.prototype.switchView_ = function(view) {
     this.currentView_.leave();
   this.currentView_ = view;
   view.enter();
+};
+
+/**
+ * Switches the view using a router's view identifier.
+ * @param {camera.Router.ViewIdentifier} viewIdentifier View identifier.
+ * @private
+ */
+camera.Camera.prototype.switchViewFromRouter_ = function(viewIdentifier) {
+  switch (viewIdentifier) {
+    case camera.Router.ViewIdentifier.CAMERA:
+      this.switchView_(this.cameraView_);
+      break;
+    case camera.Router.ViewIdentifier.GALLERY:
+      this.switchView_(this.galleryView_);
+      break;
+    case camera.Router.ViewIdentifier.BROWSER:
+      this.switchView_(this.browserView_);
+      break;
+  }
 };
 
 /**
@@ -304,30 +305,6 @@ camera.Camera.prototype.onErrorRecovered_ = function(identifier) {
   // error messages at once.
   this.context_.hasError = false;
   document.body.classList.remove('has-error');
-};
-
-/**
- * Opens the camera view, when requested from a different view.
- * @private
- */
-camera.Camera.prototype.onCameraRequested_ = function() {
-  this.switchView_(this.cameraView_);
-};
-
-/**
- * Opens the gallery view, when requested from a different view.
- * @private
- */
-camera.Camera.prototype.onGalleryRequested_ = function() {
-  this.switchView_(this.galleryView_);
-};
-
-/**
- * Opens the browser view, when requested from a different view.
- * @private
- */
-camera.Camera.prototype.onBrowserRequested_ = function() {
-  this.switchView_(this.browserView_);
 };
 
 /**
