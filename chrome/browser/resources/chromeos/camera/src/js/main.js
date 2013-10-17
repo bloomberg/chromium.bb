@@ -68,9 +68,9 @@ camera.Camera = function() {
   document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
 
   // Handle window decoration buttons.
-  document.querySelector('#toolbar .gallery-button').addEventListener('click',
+  document.querySelector('#toolbar .gallery-switch').addEventListener('click',
       this.onGalleryClicked_.bind(this));
-  document.querySelector('#corner-buttons .gallery-button').addEventListener(
+  document.querySelector('#corner-buttons .gallery-switch').addEventListener(
       'click', this.onGalleryClicked_.bind(this));
   document.querySelector('#maximize-button').addEventListener('click',
       this.onMaximizeClicked_.bind(this));
