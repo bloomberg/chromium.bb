@@ -21,6 +21,10 @@ import urlparse
 import subprocess2
 
 
+RETRY_MAX = 3
+RETRY_INITIAL_SLEEP = 0.5
+
+
 class Error(Exception):
   """gclient exception class."""
   def __init__(self, msg, *args, **kwargs):
@@ -407,7 +411,7 @@ class GClientChildren(object):
 
 def CheckCallAndFilter(args, stdout=None, filter_fn=None,
                        print_stdout=None, call_filter_on_first_line=False,
-                       **kwargs):
+                       retry=False, **kwargs):
   """Runs a command and calls back a filter function if needed.
 
   Accepts all subprocess2.Popen() parameters plus:
@@ -416,62 +420,74 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
                of the subprocess2's output. Each line has the trailing newline
                character trimmed.
     stdout: Can be any bufferable output.
+    retry: If the process exits non-zero, sleep for a brief interval and try
+           again, up to RETRY_MAX times.
 
   stderr is always redirected to stdout.
   """
   assert print_stdout or filter_fn
   stdout = stdout or sys.stdout
   filter_fn = filter_fn or (lambda x: None)
-  kid = subprocess2.Popen(
-      args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
-      **kwargs)
 
-  GClientChildren.add(kid)
+  sleep_interval = RETRY_INITIAL_SLEEP
+  run_cwd = kwargs.get('cwd', os.getcwd())
+  for _ in xrange(RETRY_MAX + 1):
+    kid = subprocess2.Popen(
+        args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
+        **kwargs)
 
-  # Do a flush of stdout before we begin reading from the subprocess2's stdout
-  stdout.flush()
+    GClientChildren.add(kid)
 
-  # Also, we need to forward stdout to prevent weird re-ordering of output.
-  # This has to be done on a per byte basis to make sure it is not buffered:
-  # normally buffering is done for each line, but if svn requests input, no
-  # end-of-line character is output after the prompt and it would not show up.
-  try:
-    in_byte = kid.stdout.read(1)
-    if in_byte:
-      if call_filter_on_first_line:
-        filter_fn(None)
-      in_line = ''
-      while in_byte:
-        if in_byte != '\r':
-          if print_stdout:
-            stdout.write(in_byte)
-          if in_byte != '\n':
-            in_line += in_byte
+    # Do a flush of stdout before we begin reading from the subprocess2's stdout
+    stdout.flush()
+
+    # Also, we need to forward stdout to prevent weird re-ordering of output.
+    # This has to be done on a per byte basis to make sure it is not buffered:
+    # normally buffering is done for each line, but if svn requests input, no
+    # end-of-line character is output after the prompt and it would not show up.
+    try:
+      in_byte = kid.stdout.read(1)
+      if in_byte:
+        if call_filter_on_first_line:
+          filter_fn(None)
+        in_line = ''
+        while in_byte:
+          if in_byte != '\r':
+            if print_stdout:
+              stdout.write(in_byte)
+            if in_byte != '\n':
+              in_line += in_byte
+            else:
+              filter_fn(in_line)
+              in_line = ''
           else:
             filter_fn(in_line)
             in_line = ''
-        else:
+          in_byte = kid.stdout.read(1)
+        # Flush the rest of buffered output. This is only an issue with
+        # stdout/stderr not ending with a \n.
+        if len(in_line):
           filter_fn(in_line)
-          in_line = ''
-        in_byte = kid.stdout.read(1)
-      # Flush the rest of buffered output. This is only an issue with
-      # stdout/stderr not ending with a \n.
-      if len(in_line):
-        filter_fn(in_line)
-    rv = kid.wait()
+      rv = kid.wait()
 
-    # Don't put this in a 'finally,' since the child may still run if we get an
-    # exception.
-    GClientChildren.remove(kid)
+      # Don't put this in a 'finally,' since the child may still run if we get
+      # an exception.
+      GClientChildren.remove(kid)
 
-  except KeyboardInterrupt:
-    print >> sys.stderr, 'Failed while running "%s"' % ' '.join(args)
-    raise
+    except KeyboardInterrupt:
+      print >> sys.stderr, 'Failed while running "%s"' % ' '.join(args)
+      raise
 
-  if rv:
-    raise subprocess2.CalledProcessError(
-        rv, args, kwargs.get('cwd', None), None, None)
-  return 0
+    if rv == 0:
+      return 0
+    if not retry:
+      break
+    print ("WARNING: subprocess '%s' in %s failed; will retry after a short "
+           'nap...' % (' '.join('"%s"' % x for x in args), run_cwd))
+    sys.sleep(sleep_interval)
+    sleep_interval *= 2
+  raise subprocess2.CalledProcessError(
+      rv, args, kwargs.get('cwd', None), None, None)
 
 
 def FindGclientRoot(from_dir, filename='.gclient'):

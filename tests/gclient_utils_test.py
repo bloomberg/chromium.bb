@@ -34,8 +34,8 @@ class GclientUtilsUnittest(GclientUtilBase):
         'GetGClientRootAndEntries', 'GetEditor', 'IsDateRevision',
         'MakeDateRevision', 'MakeFileAutoFlush', 'MakeFileAnnotated',
         'PathDifference', 'ParseCodereviewSettingsContent', 'NumLocalCpus',
-        'PrintableObject', 'RunEditor', 'GCLIENT_CHILDREN',
-        'GCLIENT_CHILDREN_LOCK', 'GClientChildren',
+        'PrintableObject', 'RETRY_INITIAL_SLEEP', 'RETRY_MAX', 'RunEditor',
+        'GCLIENT_CHILDREN', 'GCLIENT_CHILDREN_LOCK', 'GClientChildren',
         'SplitUrlRevision', 'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper',
         'WorkItem', 'codecs', 'lockedmethod', 'logging', 'os', 'pipes', 'Queue',
         're', 'rmtree', 'safe_makedirs', 'safe_rename', 'stat', 'subprocess', 
@@ -51,8 +51,9 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     def __init__(self, test_string):
       self.stdout = StringIO.StringIO(test_string)
       self.pid = 9284
+    # pylint: disable=R0201
     def wait(self):
-      pass
+      return 0
 
   def _inner(self, args, test_string):
     cwd = 'bleh'
@@ -68,6 +69,7 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
         stderr=subprocess2.STDOUT,
         bufsize=0).AndReturn(self.ProcessIdMock(test_string))
 
+    os.getcwd()
     self.mox.ReplayAll()
     compiled_pattern = gclient_utils.re.compile(r'a(.*)b')
     line_list = []

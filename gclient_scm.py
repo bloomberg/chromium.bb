@@ -281,7 +281,7 @@ class GitWrapper(SCMWrapper):
 
     fetch_cmd = [
       '-c', 'core.deltaBaseCacheLimit=2g', 'fetch', 'origin', '--prune']
-    self._Run(fetch_cmd + quiet, options)
+    self._Run(fetch_cmd + quiet, options, retry=True)
     self._Run(['reset', '--hard', revision] + quiet, options)
     self.UpdateSubmoduleConfig()
     if file_list is not None:
@@ -802,7 +802,7 @@ class GitWrapper(SCMWrapper):
 
         self._Run(cmd + [url, folder],
                   options, git_filter=True, filter_fn=filter_fn,
-                  cwd=self.cache_dir)
+                  cwd=self.cache_dir, retry=True)
       else:
         # For now, assert that host/path/to/repo.git is identical. We may want
         # to relax this restriction in the future to allow for smarter cache
@@ -819,7 +819,8 @@ class GitWrapper(SCMWrapper):
         # Would normally use `git remote update`, but it doesn't support
         # --progress, so use fetch instead.
         self._Run(['fetch'] + v + ['--multiple', '--progress', '--all'],
-                  options, git_filter=True, filter_fn=filter_fn, cwd=folder)
+                  options, git_filter=True, filter_fn=filter_fn, cwd=folder,
+                  retry=True)
 
       # If the clone has an object dependency on the existing repo, break it
       # with repack and remove the linkage.
@@ -858,16 +859,8 @@ class GitWrapper(SCMWrapper):
         dir=parent_dir)
     try:
       clone_cmd.append(tmp_dir)
-      for i in xrange(3):
-        try:
-          self._Run(clone_cmd, options, cwd=self._root_dir, git_filter=True)
-          break
-        except subprocess2.CalledProcessError as e:
-          gclient_utils.rmtree(os.path.join(tmp_dir, '.git'))
-          if e.returncode != 128 or i == 2:
-            raise
-          print(str(e))
-          print('Retrying...')
+      self._Run(clone_cmd, options, cwd=self._root_dir, git_filter=True,
+                retry=True)
       gclient_utils.safe_makedirs(self.checkout_path)
       gclient_utils.safe_rename(os.path.join(tmp_dir, '.git'),
                                 os.path.join(self.checkout_path, '.git'))
@@ -1034,24 +1027,15 @@ class GitWrapper(SCMWrapper):
   def _UpdateBranchHeads(self, options, fetch=False):
     """Adds, and optionally fetches, "branch-heads" refspecs if requested."""
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
-      backoff_time = 5
-      for _ in range(3):
-        try:
-          config_cmd = ['config', 'remote.origin.fetch',
-                        '+refs/branch-heads/*:refs/remotes/branch-heads/*',
-                        '^\\+refs/branch-heads/\\*:.*$']
-          self._Run(config_cmd, options)
-          if fetch:
-            fetch_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'fetch', 'origin']
-            if options.verbose:
-              fetch_cmd.append('--verbose')
-            self._Run(fetch_cmd, options)
-          break
-        except subprocess2.CalledProcessError, e:
-          print(str(e))
-          print('Retrying in %.1f seconds...' % backoff_time)
-          time.sleep(backoff_time)
-          backoff_time *= 1.3
+      config_cmd = ['config', 'remote.origin.fetch',
+                    '+refs/branch-heads/*:refs/remotes/branch-heads/*',
+                    '^\\+refs/branch-heads/\\*:.*$']
+      self._Run(config_cmd, options)
+      if fetch:
+        fetch_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'fetch', 'origin']
+        if options.verbose:
+          fetch_cmd.append('--verbose')
+        self._Run(fetch_cmd, options, retry=True)
 
   def _Run(self, args, _options, git_filter=False, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
