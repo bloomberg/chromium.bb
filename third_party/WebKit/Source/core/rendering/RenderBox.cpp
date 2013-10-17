@@ -848,7 +848,7 @@ IntSize RenderBox::scrolledContentOffset() const
 {
     ASSERT(hasOverflowClip());
     ASSERT(hasLayer());
-    return layer()->scrolledContentOffset();
+    return layer()->scrollableArea()->scrollOffset();
 }
 
 LayoutSize RenderBox::cachedSizeForOverflowClip() const

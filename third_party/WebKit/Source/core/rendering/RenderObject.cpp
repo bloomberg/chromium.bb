@@ -2346,7 +2346,8 @@ void RenderObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
                 // If the layer itself is scrolled, we have to undo the subtraction of its scroll
                 // offset since we want the offset relative to the scrolling content, not the
                 // element itself.
-                layerOffset.move(currentLayer->scrolledContentOffset());
+                if (currentLayer->renderer()->hasOverflowClip())
+                    layerOffset.move(currentLayer->renderBox()->scrolledContentOffset());
             }
         } else {
             currentLayer = enclosingLayer();

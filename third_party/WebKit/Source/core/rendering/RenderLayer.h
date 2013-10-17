@@ -691,8 +691,6 @@ public:
 
     int scrollXOffset() const;
     int scrollYOffset() const;
-    friend IntSize RenderBox::scrolledContentOffset() const;
-    IntSize scrolledContentOffset() const;
     IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
     // End of ScrollableArea interface
 

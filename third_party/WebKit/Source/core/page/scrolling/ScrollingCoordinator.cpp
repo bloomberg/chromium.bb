@@ -393,7 +393,8 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
                 // If the enclosing composited layer itself is scrolled, we have to undo the subtraction
                 // of its scroll offset since we want the offset relative to the scrolling content, not
                 // the element itself.
-                rect.move(compositedLayer->scrolledContentOffset());
+                if (compositedLayer->renderer()->hasOverflowClip())
+                    rect.move(compositedLayer->renderBox()->scrolledContentOffset());
             }
             compIter->value.append(rect);
         }

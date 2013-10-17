@@ -1134,7 +1134,7 @@ bool RenderLayer::updateLayerPosition()
 
         // For positioned layers, we subtract out the enclosing positioned layer's scroll offset.
         if (positionedParent->renderer()->hasOverflowClip()) {
-            LayoutSize offset = positionedParent->scrolledContentOffset();
+            LayoutSize offset = positionedParent->renderBox()->scrolledContentOffset();
             localPoint -= offset;
         }
 
@@ -1156,7 +1156,7 @@ bool RenderLayer::updateLayerPosition()
         }
 
         if (parent()->renderer()->hasOverflowClip()) {
-            IntSize scrollOffset = parent()->scrolledContentOffset();
+            IntSize scrollOffset = parent()->renderBox()->scrolledContentOffset();
             localPoint -= scrollOffset;
         }
     }
@@ -3985,9 +3985,12 @@ void RenderLayer::repaintBlockSelectionGaps()
         return;
 
     LayoutRect rect = m_blockSelectionGapsBounds;
-    rect.move(-scrolledContentOffset());
-    if (renderer()->hasOverflowClip() && !usesCompositedScrolling())
-        rect.intersect(toRenderBox(renderer())->overflowClipRect(LayoutPoint(), 0)); // FIXME: Regions not accounted for.
+    if (renderer()->hasOverflowClip()) {
+        RenderBox* box = renderBox();
+        rect.move(-box->scrolledContentOffset());
+        if (!usesCompositedScrolling())
+            rect.intersect(box->overflowClipRect(LayoutPoint(), 0)); // FIXME: Regions not accounted for.
+    }
     if (renderer()->hasClip())
         rect.intersect(toRenderBox(renderer())->clipRect(LayoutPoint(), 0)); // FIXME: Regions not accounted for.
     if (!rect.isEmpty())
@@ -5167,11 +5170,6 @@ int RenderLayer::scrollXOffset() const
 int RenderLayer::scrollYOffset() const
 {
     return m_scrollableArea ? m_scrollableArea->scrollYOffset() : 0;
-}
-
-IntSize RenderLayer::scrolledContentOffset() const
-{
-    return m_scrollableArea ? m_scrollableArea->scrollOffset() : IntSize();
 }
 
 IntRect RenderLayer::scrollCornerAndResizerRect() const
