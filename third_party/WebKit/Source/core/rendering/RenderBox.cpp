@@ -2354,11 +2354,19 @@ bool RenderBox::sizesLogicalWidthToFitContent(SizeType widthType) const
     // stretching column flexbox.
     // FIXME: Think about block-flow here.
     // https://bugs.webkit.org/show_bug.cgi?id=46473
-    if (logicalWidth.type() == Auto && !isStretchingColumnFlexItem(this) && node() && (node()->hasTagName(inputTag)
-        || node()->hasTagName(selectTag) || node()->hasTagName(buttonTag) || isHTMLTextAreaElement(node()) || node()->hasTagName(legendTag)))
+    if (logicalWidth.type() == Auto && !isStretchingColumnFlexItem(this) && autoWidthShouldFitContent())
         return true;
 
     if (isHorizontalWritingMode() != containingBlock()->isHorizontalWritingMode())
+        return true;
+
+    return false;
+}
+
+bool RenderBox::autoWidthShouldFitContent() const
+{
+    if (node() && (node()->hasTagName(inputTag) || node()->hasTagName(selectTag) || node()->hasTagName(buttonTag)
+        || isHTMLTextAreaElement(node()) || node()->hasTagName(legendTag)))
         return true;
 
     return false;
@@ -3332,6 +3340,15 @@ static void computeLogicalLeftPositionedOffset(LayoutUnit& logicalLeftPos, const
         logicalLeftPos += (child->isHorizontalWritingMode() ? containerBlock->borderLeft() : containerBlock->borderTop());
 }
 
+void RenderBox::shrinkToFitWidth(const LayoutUnit availableSpace, const LayoutUnit logicalLeftValue, const LayoutUnit bordersPlusPadding, LogicalExtentComputedValues& computedValues) const
+{
+    // FIXME: would it be better to have shrink-to-fit in one step?
+    LayoutUnit preferredWidth = maxPreferredLogicalWidth() - bordersPlusPadding;
+    LayoutUnit preferredMinWidth = minPreferredLogicalWidth() - bordersPlusPadding;
+    LayoutUnit availableWidth = availableSpace - logicalLeftValue;
+    computedValues.m_extent = min(max(preferredMinWidth, availableWidth), preferredWidth);
+}
+
 void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const RenderBoxModelObject* containerBlock, TextDirection containerDirection,
                                                    LayoutUnit containerLogicalWidth, LayoutUnit bordersPlusPadding,
                                                    Length logicalLeft, Length logicalRight, Length marginLogicalLeft, Length marginLogicalRight,
@@ -3474,11 +3491,7 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
             // RULE 3: (use shrink-to-fit for width, and no need solve of right)
             logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth, renderView);
 
-            // FIXME: would it be better to have shrink-to-fit in one step?
-            LayoutUnit preferredWidth = maxPreferredLogicalWidth() - bordersPlusPadding;
-            LayoutUnit preferredMinWidth = minPreferredLogicalWidth() - bordersPlusPadding;
-            LayoutUnit availableWidth = availableSpace - logicalLeftValue;
-            computedValues.m_extent = min(max(preferredMinWidth, availableWidth), preferredWidth);
+            shrinkToFitWidth(availableSpace, logicalLeftValue, bordersPlusPadding, computedValues);
         } else if (logicalLeftIsAuto && !logicalWidthIsAuto && !logicalRightIsAuto) {
             // RULE 4: (solve for left)
             computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth, renderView));
@@ -3486,7 +3499,10 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
         } else if (!logicalLeftIsAuto && logicalWidthIsAuto && !logicalRightIsAuto) {
             // RULE 5: (solve for width)
             logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth, renderView);
-            computedValues.m_extent = availableSpace - (logicalLeftValue + valueForLength(logicalRight, containerLogicalWidth, renderView));
+            if (autoWidthShouldFitContent())
+                shrinkToFitWidth(availableSpace, logicalLeftValue, bordersPlusPadding, computedValues);
+            else
+                computedValues.m_extent = availableSpace - (logicalLeftValue + valueForLength(logicalRight, containerLogicalWidth, renderView));
         } else if (!logicalLeftIsAuto && !logicalWidthIsAuto && logicalRightIsAuto) {
             // RULE 6: (no need solve for right)
             logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth, renderView);
