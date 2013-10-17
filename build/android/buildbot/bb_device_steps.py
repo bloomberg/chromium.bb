@@ -263,8 +263,12 @@ def RunWebkitLayoutTests(options):
 
   exit_code = RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] +
                      cmd_args)
-  if exit_code == 254:  # AKA -1, internal error.
+  if exit_code == 254: # test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
     bb_annotations.PrintMsg('?? (crashed or hung)')
+  elif exit_code == 253: # test_run_results.NO_DEVICES_EXIT_STATUS
+    bb_annotations.PrintMsg('?? (no devices found)')
+  elif exit_code == 252: # test_run_results.NO_TESTS_EXIT_STATUS
+    bb_annotations.PrintMsg('?? (no tests found)')
   else:
     full_results_path = os.path.join('..', 'layout-test-results',
                                      'full_results.json')
