@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.22",
+  "version": "2.23",
   "entries": [
     {
       "id": 1,
@@ -611,6 +611,17 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "disable_ext_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 45,
+      "cr_bugs": [307751],
+      "description": "Unfold short circuit on MacOSX.",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "unfold_short_circuit_as_ternary_operation"
       ]
     }
   ]

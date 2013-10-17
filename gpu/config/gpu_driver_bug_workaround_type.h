@@ -24,6 +24,8 @@
          disable_d3d11)                                      \
   GPU_OP(DISABLE_DEPTH_TEXTURE,                              \
          disable_depth_texture)                              \
+  GPU_OP(DISABLE_EXT_DISCARD_FRAMEBUFFER,                    \
+         disable_ext_discard_framebuffer)                    \
   GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                           \
          disable_ext_draw_buffers)                           \
   GPU_OP(DISABLE_EXT_OCCLUSION_QUERY,                        \
@@ -60,6 +62,8 @@
          swizzle_rgba_for_async_readpixels)                  \
   GPU_OP(UNBIND_FBO_ON_CONTEXT_SWITCH,                       \
          unbind_fbo_on_context_switch)                       \
+  GPU_OP(UNFOLD_SHORT_CIRCUIT_AS_TERNARY_OPERATION,          \
+         unfold_short_circuit_as_ternary_operation)          \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,          \
          use_client_side_arrays_for_stream_buffers)          \
   GPU_OP(USE_CURRENT_PROGRAM_AFTER_SUCCESSFUL_LINK,          \
@@ -70,8 +74,6 @@
          use_virtualized_gl_contexts)                        \
   GPU_OP(VALIDATE_MULTISAMPLE_BUFFER_ALLOCATION,             \
          validate_multisample_buffer_allocation)             \
-  GPU_OP(DISABLE_EXT_DISCARD_FRAMEBUFFER,                    \
-         disable_ext_discard_framebuffer)                    \
 
 namespace gpu {
 
