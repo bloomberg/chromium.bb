@@ -117,6 +117,8 @@ const char kCryptohomeTpmAttestationGetKeyPayload[] =
     "TpmAttestationGetKeyPayload";
 const char kCryptohomeTpmAttestationSetKeyPayload[] =
     "TpmAttestationSetKeyPayload";
+const char kCryptohomeTpmAttestationDeleteKeys[] =
+    "TpmAttestationDeleteKeys";
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
 const char kSignalAsyncCallStatusWithData[] = "AsyncCallStatusWithData";
