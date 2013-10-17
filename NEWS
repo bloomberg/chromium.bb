@@ -25,7 +25,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      addresses). Thanks to Joseph Lee.
    - Fixed letter sign in en-us and en-ueb tables. Thanks to John
      Boyer and Ken Perry.
-   - UEB Fixes thanks to Mesar Hameed, Ken Perry and Joseph lee:
+   - UEB Fixes thanks to Mesar Hameed, Ken Perry and Joseph Lee:
      - Fix problem with at sign.
      - Removed section of accented letters, that were left behind from
        US table.
@@ -33,6 +33,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      - Corrected mathematical forall symbol.
      - Modified emphasis dot combinations to follow UEB standard.
      - Corrected the display of period when used as a midword.
+     - Ensure 'inin' is correctly backtranslated in words such as
+       asinine, feminine and others.
    - Bulgarian bg.ctb: updated to meet modern standards (added latin
      letters, corrected punctuation/mathematical symbols, misc typos).
      Thanks to Rumiana Kamenska
