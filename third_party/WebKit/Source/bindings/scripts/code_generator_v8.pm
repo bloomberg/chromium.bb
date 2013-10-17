@@ -3043,21 +3043,22 @@ sub GenerateAttributeConfigurationParameters
     my $attrExt = $attribute->extendedAttributes;
     my $implClassName = GetImplName($interface);
 
-    my $accessControl = "v8::DEFAULT";
+    my @accessControlList;
     if ($attrExt->{"DoNotCheckSecurityOnGetter"}) {
-        $accessControl = "v8::ALL_CAN_READ";
+        push(@accessControlList, "v8::ALL_CAN_READ");
     } elsif ($attrExt->{"DoNotCheckSecurityOnSetter"}) {
-        $accessControl = "v8::ALL_CAN_WRITE";
+        push(@accessControlList, "v8::ALL_CAN_WRITE");
     } elsif ($attrExt->{"DoNotCheckSecurity"}) {
-        $accessControl = "v8::ALL_CAN_READ";
+        push(@accessControlList, "v8::ALL_CAN_READ");
         if (!IsReadonly($attribute)) {
-            $accessControl .= " | v8::ALL_CAN_WRITE";
+            push(@accessControlList, "v8::ALL_CAN_WRITE");
         }
     }
     if ($attrExt->{"Unforgeable"}) {
-        $accessControl .= " | v8::PROHIBITS_OVERWRITING";
+        push(@accessControlList, "v8::PROHIBITS_OVERWRITING");
     }
-    $accessControl = "static_cast<v8::AccessControl>(" . $accessControl . ")";
+    @accessControlList = ("v8::DEFAULT") unless @accessControlList;
+    my $accessControl = "static_cast<v8::AccessControl>(" . join(" | ", @accessControlList) . ")";
 
     my $customAccessor = HasCustomGetter($attrExt) || HasCustomSetter($attribute) || "";
     if ($customAccessor eq "VALUE_IS_MISSING") {

@@ -138,6 +138,7 @@ def generate_attribute_and_includes(interface, attribute):
         'activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # [ActivityLogging]
         'is_check_security_for_node': is_check_security_for_node,
         'is_getter_raises_exception': is_getter_raises_exception,
+        'is_unforgeable': 'Unforgeable' in extended_attributes,
     })
 
     return contents, includes
@@ -213,26 +214,31 @@ def is_keep_alive_for_gc(attribute):
              idl_type.startswith('HTML'))))
 
 
-# [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter]
+# [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter], [Unforgeable]
 def access_control_list(attribute):
     extended_attributes = attribute.extended_attributes
+    access_control = []
     if 'DoNotCheckSecurity' in extended_attributes:
-        access_control = ['v8::ALL_CAN_READ']
+        access_control.append('v8::ALL_CAN_READ')
         if not attribute.is_read_only:
             access_control.append('v8::ALL_CAN_WRITE')
-        return access_control
     if 'DoNotCheckSecurityOnSetter' in extended_attributes:
-        return ['v8::ALL_CAN_WRITE']
+        access_control.append('v8::ALL_CAN_WRITE')
     if 'DoNotCheckSecurityOnGetter' in extended_attributes:
-        return ['v8::ALL_CAN_READ']
-    return ['v8::DEFAULT']
+        access_control.append('v8::ALL_CAN_READ')
+    if 'Unforgeable' in extended_attributes:
+        access_control.append('v8::PROHIBITS_OVERWRITING')
+    return access_control or ['v8::DEFAULT']
 
 
-# [NotEnumerable]
+# [NotEnumerable], [Unforgeable]
 def property_attributes(attribute):
+    extended_attributes = attribute.extended_attributes
     property_attributes_list = []
-    if 'NotEnumerable' in attribute.extended_attributes:
+    if 'NotEnumerable' in extended_attributes:
         property_attributes_list.append('v8::DontEnum')
+    if 'Unforgeable' in extended_attributes:
+        property_attributes_list.append('v8::DontDelete')
     return property_attributes_list or ['v8::None']
 
 

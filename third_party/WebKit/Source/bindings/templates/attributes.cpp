@@ -3,6 +3,12 @@
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeGetter{{world_suffix}}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    {% if attribute.is_unforgeable %}
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class_name}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    if (holder.IsEmpty())
+        return;
+    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(holder);
+    {% endif %}
     {% if attribute.cached_attribute_validation_method %}
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("{{attribute.name}}");
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
@@ -13,7 +19,7 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(v8::Local<v8::Stri
             return;
         }
     }
-    {% elif not attribute.is_static %}
+    {% elif not (attribute.is_static or attribute.is_unforgeable) %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.is_call_with_script_execution_context %}

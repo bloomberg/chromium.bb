@@ -147,4 +147,5 @@ interface TestObjectPython {
     [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString treatReturnedNullStringAsUndefinedReadonlyStringAttribute;
     [Reflect, URL] readonly attribute DOMString urlReadonlyStringAttribute;
     [Reflect=ReflectUrlAttribute, URL] readonly attribute DOMString urlReadonlyStringAttribute;
+    [Unforgeable] readonly attribute long unforgeableReadonlyLongAttribute;
 };
