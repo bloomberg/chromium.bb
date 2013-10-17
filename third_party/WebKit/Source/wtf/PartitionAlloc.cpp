@@ -359,9 +359,9 @@ void* partitionAllocSlowPath(PartitionBucket* bucket)
     if (LIKELY(pagelist != 0)) {
         newPage = pagelist->page;
         bucket->freePages = pagelist->next;
-        partitionFree(pagelist);
     } else {
         // Fourth. If we get here, we need a brand new page.
+        // TODO: investigate to see if there is a re-entrancy concern.
         newPage = partitionAllocPage(bucket->root);
     }
 
@@ -369,7 +369,13 @@ void* partitionAllocSlowPath(PartitionBucket* bucket)
     newPage->next = newPage;
     bucket->currPage = newPage;
     partitionPageReset(newPage, bucket);
-    return partitionPageAllocAndFillFreelist(newPage);
+    char* ret = partitionPageAllocAndFillFreelist(newPage);
+
+    // We avoid re-entrancy concerns by freeing any free page list entry last,
+    // once all the operations of the actual allocation are complete.
+    if (LIKELY(pagelist != 0))
+        partitionFree(pagelist);
+    return ret;
 }
 
 void partitionFreeSlowPath(PartitionPageHeader* page)
