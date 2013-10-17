@@ -1,19 +1,38 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
- "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="50px" height="50px" viewBox="0 0 50.000000 50.000000"
- preserveAspectRatio="xMidYMid meet">
-<metadata>
-Created by potrace 1.10, written by Peter Selinger 2001-2011
-</metadata>
-<g transform="translate(0.000000,50.000000) scale(0.100000,-0.100000)"
-fill="#ffffff" stroke="none">
-<path d="M240 320 c0 -53 2 -60 20 -60 18 0 20 7 20 60 0 53 -2 60 -20 60 -18
-0 -20 -7 -20 -60z"/>
-<path d="M177 329 c-30 -30 -37 -44 -37 -77 0 -54 35 -103 85 -121 35 -12 45
--11 77 2 46 19 78 69 78 121 0 31 -7 45 -37 75 -36 34 -38 35 -41 14 -2 -12 7
--35 18 -52 20 -26 21 -33 10 -65 -26 -80 -125 -73 -146 10 -5 18 0 34 15 55
-12 17 21 40 19 52 -3 21 -5 20 -41 -14z"/>
-</g>
-</svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="43.75"
+   height="26.25"
+   id="svg2"
+   xml:space="preserve"><metadata
+     id="metadata8"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+     id="defs6"><clipPath
+       id="clipPath18"><path
+         d="M 0,21 35,21 35,0 0,0 0,21 z"
+         inkscape:connector-curvature="0"
+         id="path20" /></clipPath></defs><g
+     transform="matrix(1.25,0,0,-1.25,0,26.25)"
+     id="g10"><path
+       d="m 18.095,10.755 -1.26,0 0,6.159 1.26,0 0,-6.159 z"
+       inkscape:connector-curvature="0"
+       id="path12"
+       style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none" /><g
+       id="g14"><g
+         clip-path="url(#clipPath18)"
+         id="g16"><g
+           transform="translate(17.4648,5.8057)"
+           id="g22"><path
+             d="m 0,0 c -2.695,0 -4.889,2.193 -4.889,4.888 0,1.416 0.629,2.765 1.727,3.703 L -2.684,9 -1.864,8.042 -2.344,7.633 C -3.16,6.935 -3.629,5.935 -3.629,4.888 c 0,-2 1.628,-3.628 3.629,-3.628 2,0 3.628,1.628 3.628,3.628 0,1.037 -0.46,2.03 -1.263,2.727 L 1.89,8.028 2.716,8.979 3.191,8.567 C 4.27,7.631 4.888,6.29 4.888,4.888 4.888,2.193 2.695,0 0,0"
+             inkscape:connector-curvature="0"
+             id="path24"
+             style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none" /></g></g></g></g></svg>

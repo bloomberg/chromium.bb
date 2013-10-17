@@ -230,7 +230,6 @@ kb-key:-webkit-any(.backspace,
 
 .shutdown {
   background-image: url('images/shutdown.svg');
-  background-size: 30%; /*TODO(rsadam:) Get better svg for this */
 }
 
 .up {
@@ -259,6 +258,7 @@ kb-key:-webkit-any(.backspace,
 .mute,
 .reload,
 .right,
+.shutdown,
 .up,
 .volume-down,
 .volume-up {
