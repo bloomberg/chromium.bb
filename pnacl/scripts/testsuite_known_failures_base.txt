@@ -19,28 +19,19 @@ ldecod
 hexxagon
 consumer-lame
 consumer-typeset
-# no strings.h
 lencod
+# no netinet/in.h or netdb.h
 archie
+# different stdout/stderr interleaving, but also the pnacl output
+# is 3443 lines whereas native is 3068 lines
 mybison
-# no memory.h
-viterbi
-bullet
-gs
-security-rijndael
-huffbench
-oourafft
 # no sys/uio.h
 make_dparser
-# getrusage undeclared in newlib
-minisat
-# u_int8_t and friends undeclared in newlib
+# u_int8_t and friends undeclared in newlib;
+# no sigaction, struct itimerval, random(), srandom().
 Obsequi
-oggenc
 # struct dirent fields different in nacl than linux
 siod
-# struct flock definition
-sqlite3
 # no err.h
 network-patricia
 fasta
@@ -55,9 +46,6 @@ ReedSolomon
 plot2fig
 # no sys/utsname.h
 unix-smail
-# no fenv.h, C99 floating point exception functions not present
-uint64_to_float
-tramp3d-v4
 ############################################################################
 # Stderr/stdout related issues
 ############################################################################
@@ -66,8 +54,7 @@ tramp3d-v4
 cdecl
 pairlocalalign
 mpeg2decode
-# Prints the value of argv[0] (is NaClMain on nacl)
-kc
+linpack-pc
 
 
 ############################################################################

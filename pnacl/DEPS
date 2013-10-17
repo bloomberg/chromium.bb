@@ -7,7 +7,7 @@ vars = {
   "pnacl_libcxxabi_rev": "19222a8f373a6db1b13c4308988fd9cf1c02cb1b",
 
   "newlib_rev": "4c3e3730d0fdadc8f8a2f5b2abc0f9f7f308adbb",
-  "pnacl_llvm_testsuite_rev": "a0bc4fa53e585d008d4ea1aaeb5721fb1a141418",
+  "pnacl_llvm_testsuite_rev": "2a15755f5c587f48ded9d94d4a3f33a8f1abda3d",
   "compiler_rt_rev": "8fc63ab2a0e0ccca85b9c3cc515fd291cbbb96e9",
   "nacl_base_readonly": "http://git.chromium.org/native_client",
   "nacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",

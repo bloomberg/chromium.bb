@@ -5,9 +5,10 @@
 # newlib does not have ffsl function?
 2005-05-11-Popcount-ffs-fls
 
-# runtime errors
 # some output incorrect
 sphereflake
+alacconvert-encode
+alacconvert-decode
 
 # FP nan/inf handling
 voronoi
@@ -50,29 +51,16 @@ SingleSource/Regression/C++/EH/ctor_dtor_count
 SingleSource/Regression/C++/EH/ctor_dtor_count-2
 SingleSource/Regression/C++/EH/exception_spec_test
 SingleSource/Regression/C++/EH/function_try_block
+SingleSource/Regression/C++/EH/inlined_cleanup
+SingleSource/Regression/C++/EH/recursive-throw
 SingleSource/Regression/C++/EH/simple_rethrow
 SingleSource/Regression/C++/EH/simple_throw
 SingleSource/Regression/C++/EH/throw_rethrow_test
-
-# The "inlined_cleanup" test fails on x86-64 (but not x86-32 or ARM)
-# at run time with "exception not caught", even without the
-# -lowerinvoke pass applied.
-SingleSource/Regression/C++/EH/inlined_cleanup
 
 ############################################################################
 # TODO(stichnot)
 # New failures in updated LLVM test suite, still to be triaged
 ############################################################################
-# exec failure
-MultiSource/Applications/ALAC/encode/alacconvert-encode
-# compile failure
-MultiSource/Benchmarks/7zip/7zip-benchmark
-# exec failure
-SingleSource/Regression/C++/EH/recursive-throw
-# exec failure
-MultiSource/Applications/ALAC/decode/alacconvert-decode
-# exec failure
-SingleSource/Benchmarks/Linpack/linpack-pc
 # exec failures on ARM
 SingleSource/Benchmarks/SmallPT/smallpt arm
 MultiSource/Benchmarks/SciMark2-C/scimark2 arm
