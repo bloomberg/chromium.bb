@@ -29,13 +29,12 @@
 @implementation InfoBarController
 
 @synthesize containerController = containerController_;
-@synthesize infobar = infobar_;
 
 - (id)initWithInfoBar:(InfoBarCocoa*)infobar {
   if ((self = [super initWithNibName:@"InfoBar"
                               bundle:base::mac::FrameworkBundle()])) {
     DCHECK(infobar);
-    infobar_ = infobar;
+    infobar_ = infobar->GetWeakPtr();
   }
   return self;
 }
@@ -79,6 +78,10 @@
   [super dealloc];
 }
 
+- (InfoBarCocoa*)infobar {
+  return infobar_.get();
+}
+
 // Called when someone clicks on the embedded link.
 - (BOOL)textView:(NSTextView*)textView
    clickedOnLink:(id)link
@@ -89,7 +92,7 @@
 }
 
 - (BOOL)isOwned {
-  return infobar_->OwnerCocoa() != NULL;
+  return infobar_ && infobar_->OwnerCocoa() != NULL;
 }
 
 // Called when someone clicks on the ok button.

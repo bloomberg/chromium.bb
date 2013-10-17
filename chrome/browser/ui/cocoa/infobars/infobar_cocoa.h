@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_COCOA_H_
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/infobars/infobar.h"
 
 @class InfoBarController;
@@ -28,9 +29,14 @@ class InfoBarCocoa : public InfoBar {
   void RemoveSelfCocoa();
   InfoBarService* OwnerCocoa();
 
+  base::WeakPtr<InfoBarCocoa> GetWeakPtr();
+
  private:
   // The Objective-C class that contains most of the info bar logic.
   base::scoped_nsobject<InfoBarController> controller_;
+
+  // Used to vend the link back to this for |controller_|.
+  base::WeakPtrFactory<InfoBarCocoa> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarCocoa);
 };

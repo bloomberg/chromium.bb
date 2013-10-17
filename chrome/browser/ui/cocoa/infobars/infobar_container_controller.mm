@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
+
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
@@ -12,7 +14,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_cocoa.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -99,8 +100,10 @@
 }
 
 - (void)removeInfoBar:(InfoBarCocoa*)infobar {
-  [infobar->controller() infobarWillClose];
-  [self removeController:infobar->controller()];
+  InfoBarController* controller = infobar->controller();
+  [controller infobarWillClose];
+  infobar->set_controller(nil);
+  [self removeController:controller];
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }
 

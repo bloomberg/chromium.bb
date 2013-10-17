@@ -12,7 +12,8 @@ const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
 const int InfoBar::kDefaultBarTargetHeight = 36;
 
 InfoBarCocoa::InfoBarCocoa(InfoBarService* owner, InfoBarDelegate* delegate)
-    : InfoBar(owner, delegate) {
+    : InfoBar(owner, delegate),
+      weak_ptr_factory_(this) {
 }
 
 InfoBarCocoa::~InfoBarCocoa() {
@@ -24,4 +25,8 @@ void InfoBarCocoa::RemoveSelfCocoa() {
 
 InfoBarService* InfoBarCocoa::OwnerCocoa() {
   return owner();
+}
+
+base::WeakPtr<InfoBarCocoa> InfoBarCocoa::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }

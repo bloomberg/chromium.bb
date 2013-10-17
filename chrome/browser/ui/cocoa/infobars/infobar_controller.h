@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/weak_ptr.h"
 
 @protocol InfoBarContainerControllerBase;
 class InfoBarCocoa;
@@ -19,7 +20,7 @@ class InfoBarService;
 @interface InfoBarController : NSViewController<NSTextViewDelegate> {
  @private
   id<InfoBarContainerControllerBase> containerController_;  // weak, owns us
-  InfoBarCocoa* infobar_;  // weak, owns us
+  base::WeakPtr<InfoBarCocoa> infobar_;
 
  @protected
   IBOutlet InfoBarGradientView* infoBarView_;
@@ -41,7 +42,7 @@ class InfoBarService;
 @property(nonatomic, readonly) InfoBarDelegate* delegate;
 @property(nonatomic, readonly) InfoBarCocoa* infobar;
 
-// Initializes a new InfoBarController.
+// Initializes a new InfoBarController and takes a WeakPtr to |infobar|.
 - (id)initWithInfoBar:(InfoBarCocoa*)infobar;
 
 // Returns YES if the infobar is owned.  If this is NO, it is not safe to call
