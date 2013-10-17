@@ -36,7 +36,7 @@ class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  static const int kDBVersion = 10;
+  static const int kDBVersion = 11;
 
   // Object to iterate over entries stored in this storage.
   class Iterator {
@@ -156,6 +156,9 @@ class ResourceMetadataStorage {
 
   // Returns an object to iterate over cache entries stored in this storage.
   scoped_ptr<CacheEntryIterator> GetCacheEntryIterator();
+
+  // Returns the local ID associated with the given resource ID.
+  bool GetIdByResourceId(const std::string& resource_id, std::string* out_id);
 
  private:
   friend class ResourceMetadataStorageTest;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 
+#include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -161,6 +162,7 @@ FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
 FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,
                                      std::string* out_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(entry.local_id().empty());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
@@ -177,8 +179,13 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,
       !parent.file_info().is_directory())
     return FILE_ERROR_NOT_FOUND;
 
-  // TODO(hashimoto): Generate local ID here. crbug.com/26051
-  const std::string local_id = entry.resource_id();
+  // Generate unique local ID.
+  std::string local_id;
+  ResourceEntry existing_entry;
+  do {
+    local_id = base::GenerateGUID();
+  } while (storage_->GetEntry(local_id, &existing_entry));
+
   ResourceEntry new_entry(entry);
   new_entry.set_local_id(local_id);
 
@@ -415,13 +422,8 @@ FileError ResourceMetadata::GetIdByResourceId(const std::string& resource_id,
                                               std::string* out_local_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // TODO(hashimoto): Implement the real resource ID to local ID look up.
-  // crbug.com/260514
-  ResourceEntry entry;
-  FileError error = GetResourceEntryById(resource_id, &entry);
-  if (error == FILE_ERROR_OK)
-    *out_local_id = resource_id;
-  return error;
+  return storage_->GetIdByResourceId(resource_id, out_local_id) ?
+      FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
 }
 
 bool ResourceMetadata::PutEntryUnderDirectory(const ResourceEntry& entry) {

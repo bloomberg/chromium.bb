@@ -246,6 +246,29 @@ TEST_F(ResourceMetadataStorageTest, CacheEntryIterator) {
   EXPECT_EQ(entries.size(), num_entries);
 }
 
+TEST_F(ResourceMetadataStorageTest, GetIdByResourceId) {
+  const std::string local_id = "local_id";
+  const std::string resource_id = "resource_id";
+
+  // Resource ID to local ID mapping is not stored yet.
+  std::string id;
+  EXPECT_FALSE(storage_->GetIdByResourceId(resource_id, &id));
+
+  // Put an entry with the resource ID.
+  ResourceEntry entry;
+  entry.set_local_id(local_id);
+  entry.set_resource_id(resource_id);
+  EXPECT_TRUE(storage_->PutEntry(entry));
+
+  // Can get local ID by resource ID.
+  EXPECT_TRUE(storage_->GetIdByResourceId(resource_id, &id));
+  EXPECT_EQ(local_id, id);
+
+  // Resource ID to local ID mapping is removed.
+  EXPECT_TRUE(storage_->RemoveEntry(local_id));
+  EXPECT_FALSE(storage_->GetIdByResourceId(resource_id, &id));
+}
+
 TEST_F(ResourceMetadataStorageTest, GetChildren) {
   const std::string parents_id[] = { "mercury", "venus", "mars", "jupiter",
                                      "saturn" };
