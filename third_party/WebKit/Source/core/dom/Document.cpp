@@ -3711,7 +3711,11 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
     } else if (eventType == EventTypeNames::webkitTransitionEnd || eventType == EventTypeNames::transitionend) {
         addListenerType(TRANSITIONEND_LISTENER);
     } else if (eventType == EventTypeNames::beforeload) {
-        UseCounter::count(*this, UseCounter::BeforeLoadEvent);
+        if (m_frame && m_frame->script()->shouldBypassMainWorldContentSecurityPolicy()) {
+            UseCounter::count(*this, UseCounter::BeforeLoadEventInIsolatedWorld);
+        } else {
+            UseCounter::count(*this, UseCounter::BeforeLoadEvent);
+        }
         addListenerType(BEFORELOAD_LISTENER);
     } else if (eventType == EventTypeNames::scroll) {
         addListenerType(SCROLL_LISTENER);
