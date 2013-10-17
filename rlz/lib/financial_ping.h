@@ -58,6 +58,13 @@ class FinancialPing {
   ~FinancialPing() {}
 };
 
+#if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
+namespace test {
+void ResetSendFinancialPingInterrupted();
+bool WasSendFinancialPingInterrupted();
+}  // namespace test
+#endif
+
 }  // namespace rlz_lib
 
 

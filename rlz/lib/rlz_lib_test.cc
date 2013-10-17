@@ -19,6 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "rlz/lib/financial_ping.h"
 #include "rlz/lib/rlz_lib.h"
 #include "rlz/lib/rlz_value_store.h"
 #include "rlz/test/rlz_test_helpers.h"
@@ -416,6 +417,16 @@ TEST_F(RlzLibTest, ParsePingResponseWithStatefulEvents) {
   EXPECT_STREQ("events=W1I", value);
 }
 
+class URLRequestRAII {
+ public:
+  URLRequestRAII(net::URLRequestContextGetter* context) {
+    rlz_lib::SetURLRequestContext(context);
+  }
+  ~URLRequestRAII() {
+    rlz_lib::SetURLRequestContext(NULL);
+  }
+};
+
 TEST_F(RlzLibTest, SendFinancialPing) {
   // We don't really check a value or result in this test. All this does is
   // attempt to ping the financial server, which you can verify in Fiddler.
@@ -436,16 +447,6 @@ TEST_F(RlzLibTest, SendFinancialPing) {
       new net::TestURLRequestContextGetter(
           io_thread.message_loop()->message_loop_proxy());
   rlz_lib::SetURLRequestContext(context.get());
-
-  class URLRequestRAII {
-    public:
-     URLRequestRAII(net::URLRequestContextGetter* context) {
-       rlz_lib::SetURLRequestContext(context);
-     }
-     ~URLRequestRAII() {
-       rlz_lib::SetURLRequestContext(NULL);
-     }
-  };
 
   URLRequestRAII set_context(context.get());
 #endif
@@ -473,6 +474,52 @@ TEST_F(RlzLibTest, SendFinancialPing) {
       "swg", "GGLA", "SwgProductId1234", "en-UK", false,
       /*skip_time_check=*/true);
 }
+
+#if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
+
+void ResetContext() {
+  rlz_lib::SetURLRequestContext(NULL);
+}
+
+TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
+  // rlz_lib::SendFinancialPing fails when this is set.
+  if (!rlz_lib::SupplementaryBranding::GetBrand().empty())
+    return;
+
+#if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool pool;
+#endif
+
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+
+  base::Thread io_thread("rlz_unittest_io_thread");
+  ASSERT_TRUE(io_thread.StartWithOptions(options));
+
+  scoped_refptr<net::TestURLRequestContextGetter> context =
+      new net::TestURLRequestContextGetter(
+          io_thread.message_loop()->message_loop_proxy());
+  rlz_lib::SetURLRequestContext(context.get());
+
+  URLRequestRAII set_context(context.get());
+
+  rlz_lib::AccessPoint points[] =
+    {rlz_lib::IETB_SEARCH_BOX, rlz_lib::NO_ACCESS_POINT,
+     rlz_lib::NO_ACCESS_POINT};
+  rlz_lib::test::ResetSendFinancialPingInterrupted();
+  EXPECT_FALSE(rlz_lib::test::WasSendFinancialPingInterrupted());
+
+  base::MessageLoop loop;
+  loop.PostTask(FROM_HERE, base::Bind(&ResetContext));
+  std::string request;
+  EXPECT_FALSE(rlz_lib::SendFinancialPing(rlz_lib::TOOLBAR_NOTIFIER, points,
+      "swg", "GGLA", "SwgProductId1234", "en-UK", false,
+      /*skip_time_check=*/true));
+
+  EXPECT_TRUE(rlz_lib::test::WasSendFinancialPingInterrupted());
+  rlz_lib::test::ResetSendFinancialPingInterrupted();
+}
+#endif
 
 TEST_F(RlzLibTest, ClearProductState) {
   MachineDealCodeHelper::Clear();

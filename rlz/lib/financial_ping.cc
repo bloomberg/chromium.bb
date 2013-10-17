@@ -6,8 +6,10 @@
 
 #include "rlz/lib/financial_ping.h"
 
+#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -83,6 +85,8 @@ int64 GetSystemTimeAsInt64() {
 
 
 namespace rlz_lib {
+
+using base::subtle::AtomicWord;
 
 bool FinancialPing::FormRequest(Product product,
     const AccessPoint* access_points, const char* product_signature,
@@ -177,12 +181,15 @@ bool FinancialPing::FormRequest(Product product,
 }
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
-// The URLRequestContextGetter used by FinancialPing::PingServer().
-net::URLRequestContextGetter* g_context;
+// The pointer to URLRequestContextGetter used by FinancialPing::PingServer().
+// It is atomic pointer because it can be accessed and modified by multiple
+// threads.
+AtomicWord g_context;
 
 bool FinancialPing::SetURLRequestContext(
     net::URLRequestContextGetter* context) {
-  g_context = context;
+  base::subtle::NoBarrier_Store(
+      &g_context, reinterpret_cast<AtomicWord>(context));
   return true;
 }
 
@@ -204,8 +211,31 @@ void FinancialPingUrlFetcherDelegate::OnURLFetchComplete(
   callback_.Run();
 }
 
+#if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
+bool send_financial_ping_interrupted_for_test = false;
+#endif
+
 }  // namespace
 
+#endif
+
+#if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
+void ShutdownCheck(base::WeakPtr<base::RunLoop> weak) {
+  if (!weak.get())
+    return;
+  if (!base::subtle::NoBarrier_Load(&g_context)) {
+    send_financial_ping_interrupted_for_test = true;
+    weak->QuitClosure().Run();
+    return;
+  }
+  // How frequently the financial ping thread should check
+  // the shutdown condition?
+  const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(500);
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ShutdownCheck, weak),
+      kInterval);
+}
 #endif
 
 bool FinancialPing::PingServer(const char* request, std::string* response) {
@@ -265,8 +295,15 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
 
   return true;
 #else
+  // Copy the pointer to stack because g_context may be set to NULL
+  // in different thread. The instance is guaranteed to exist while
+  // the method is running.
+  net::URLRequestContextGetter* context =
+      reinterpret_cast<net::URLRequestContextGetter*>(
+          base::subtle::NoBarrier_Load(&g_context));
+
   // Browser shutdown will cause the context to be reset to NULL.
-  if (!g_context)
+  if (!context)
     return false;
 
   // Run a blocking event loop to match the win inet implementation.
@@ -292,11 +329,16 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
 
   // Ensure rlz_lib::SetURLRequestContext() has been called before sending
   // pings.
-  fetcher->SetRequestContext(g_context);
+  fetcher->SetRequestContext(context);
+
+  base::WeakPtrFactory<base::RunLoop> weak(&loop);
 
   const base::TimeDelta kTimeout = base::TimeDelta::FromMinutes(5);
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(
       base::MessageLoop::current());
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ShutdownCheck, weak.GetWeakPtr()));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&net::URLFetcher::Start, base::Unretained(fetcher.get())));
@@ -359,4 +401,18 @@ bool FinancialPing::ClearLastPingTime(Product product) {
   return store->ClearPingTime(product);
 }
 
-}  // namespace
+#if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
+namespace test {
+
+void ResetSendFinancialPingInterrupted() {
+  send_financial_ping_interrupted_for_test = false;
+}
+
+bool WasSendFinancialPingInterrupted() {
+  return send_financial_ping_interrupted_for_test;
+}
+
+}  // namespace test
+#endif
+
+}  // namespace rlz_lib
