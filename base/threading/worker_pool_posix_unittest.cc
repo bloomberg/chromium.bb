@@ -170,17 +170,7 @@ TEST_F(PosixDynamicThreadPoolTest, MAYBE_Basic) {
   EXPECT_EQ(1, counter_);
 }
 
-#if defined(THREAD_SANITIZER)
-// These tests fail under ThreadSanitizer, see http://crbug.com/303007.
-#define MAYBE_ReuseIdle DISABLED_ReuseIdle
-#define MAYBE_TwoActiveTasks DISABLED_TwoActiveTasks
-#define MAYBE_Complex DISABLED_Complex
-#else
-#define MAYBE_ReuseIdle ReuseIdle
-#define MAYBE_TwoActiveTasks TwoActiveTasks
-#define MAYBE_Complex Complex
-#endif
-TEST_F(PosixDynamicThreadPoolTest, MAYBE_ReuseIdle) {
+TEST_F(PosixDynamicThreadPoolTest, ReuseIdle) {
   // Add one task and wait for it to be completed.
   pool_->PostTask(FROM_HERE, CreateNewIncrementingTaskCallback());
 
@@ -199,7 +189,7 @@ TEST_F(PosixDynamicThreadPoolTest, MAYBE_ReuseIdle) {
   EXPECT_EQ(3, counter_);
 }
 
-TEST_F(PosixDynamicThreadPoolTest, MAYBE_TwoActiveTasks) {
+TEST_F(PosixDynamicThreadPoolTest, TwoActiveTasks) {
   // Add two blocking tasks.
   pool_->PostTask(FROM_HERE, CreateNewBlockingIncrementingTaskCallback());
   pool_->PostTask(FROM_HERE, CreateNewBlockingIncrementingTaskCallback());
@@ -215,7 +205,7 @@ TEST_F(PosixDynamicThreadPoolTest, MAYBE_TwoActiveTasks) {
   EXPECT_EQ(2, counter_);
 }
 
-TEST_F(PosixDynamicThreadPoolTest, MAYBE_Complex) {
+TEST_F(PosixDynamicThreadPoolTest, Complex) {
   // Add two non blocking tasks and wait for them to finish.
   pool_->PostTask(FROM_HERE, CreateNewIncrementingTaskCallback());
 
