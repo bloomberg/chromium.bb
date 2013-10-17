@@ -26,6 +26,8 @@
 #include "config.h"
 
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 
 namespace {
@@ -80,6 +82,56 @@ TEST(WTF, DoubleHashCollisions)
     ASSERT_EQ(map.get(clobberKey), 1);
     ASSERT_EQ(map.get(zeroKey), 2);
     ASSERT_EQ(map.get(negativeZeroKey), 3);
+}
+
+class DestructCounter {
+public:
+    explicit DestructCounter(int i, int* destructNumber)
+        : m_i(i)
+        , m_destructNumber(destructNumber)
+    { }
+
+    ~DestructCounter() { ++(*m_destructNumber); }
+    int get() const { return m_i; }
+
+private:
+    int m_i;
+    int* m_destructNumber;
+};
+
+typedef WTF::HashMap<int, OwnPtr<DestructCounter> > OwnPtrHashMap;
+
+TEST(WTF, HashMapWithOwnPtrAsValue)
+{
+    int destructNumber = 0;
+    OwnPtrHashMap map;
+    map.add(1, adoptPtr(new DestructCounter(1, &destructNumber)));
+    map.add(2, adoptPtr(new DestructCounter(2, &destructNumber)));
+
+    DestructCounter* counter1 = map.get(1);
+    ASSERT_EQ(1, counter1->get());
+    DestructCounter* counter2 = map.get(2);
+    ASSERT_EQ(2, counter2->get());
+    ASSERT_EQ(0, destructNumber);
+
+    for (OwnPtrHashMap::iterator iter = map.begin(); iter != map.end(); ++iter) {
+        OwnPtr<DestructCounter>& ownCounter = iter->value;
+        ASSERT_EQ(iter->key, ownCounter->get());
+    }
+    ASSERT_EQ(0, destructNumber);
+
+    OwnPtr<DestructCounter> ownCounter1 = map.take(1);
+    ASSERT_EQ(ownCounter1.get(), counter1);
+    ASSERT_FALSE(map.contains(1));
+    ASSERT_EQ(0, destructNumber);
+
+    map.remove(2);
+    ASSERT_FALSE(map.contains(2));
+    ASSERT_EQ(0, map.size());
+    ASSERT_EQ(1, destructNumber);
+
+    ownCounter1.clear();
+    ASSERT_EQ(2, destructNumber);
 }
 
 } // namespace

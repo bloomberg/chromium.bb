@@ -25,6 +25,8 @@
 
 #include "config.h"
 
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
@@ -108,6 +110,88 @@ TEST(WTF_Vector, ReverseIterator)
     ++it;
 
     EXPECT_TRUE(end == it);
+}
+
+class DestructCounter {
+public:
+    explicit DestructCounter(int i, int* destructNumber)
+        : m_i(i)
+        , m_destructNumber(destructNumber)
+    { }
+
+    ~DestructCounter() { ++(*m_destructNumber); }
+    int get() const { return m_i; }
+
+private:
+    int m_i;
+    int* m_destructNumber;
+};
+
+typedef WTF::Vector<OwnPtr<DestructCounter> > OwnPtrVector;
+
+TEST(WTF_Vector, OwnPtr)
+{
+    int destructNumber = 0;
+    OwnPtrVector vector;
+    vector.append(adoptPtr(new DestructCounter(0, &destructNumber)));
+    vector.append(adoptPtr(new DestructCounter(1, &destructNumber)));
+    ASSERT_EQ(2, vector.size());
+
+    OwnPtr<DestructCounter>& counter0 = vector.first();
+    ASSERT_EQ(0, counter0->get());
+    OwnPtr<DestructCounter>& counter1 = vector.last();
+    ASSERT_EQ(1, counter1->get());
+    ASSERT_EQ(0, destructNumber);
+
+    size_t index = 0;
+    for (OwnPtrVector::iterator iter = vector.begin(); iter != vector.end(); ++iter) {
+        OwnPtr<DestructCounter>* refCounter = iter;
+        ASSERT_EQ(index, refCounter->get()->get());
+        ASSERT_EQ(index, (*refCounter)->get());
+        index++;
+    }
+    ASSERT_EQ(0, destructNumber);
+
+    for (index = 0; index < vector.size(); index++) {
+        OwnPtr<DestructCounter>& refCounter = vector[index];
+        ASSERT_EQ(index, refCounter->get());
+        index++;
+    }
+    ASSERT_EQ(0, destructNumber);
+
+    ASSERT_EQ(0, vector[0]->get());
+    ASSERT_EQ(1, vector[1]->get());
+    vector.remove(0);
+    ASSERT_EQ(1, vector[0]->get());
+    ASSERT_EQ(1, vector.size());
+    ASSERT_EQ(1, destructNumber);
+
+    OwnPtr<DestructCounter> ownCounter1 = vector[0].release();
+    vector.remove(0);
+    ASSERT_EQ(counter1.get(), ownCounter1.get());
+    ASSERT_EQ(0, vector.size());
+    ASSERT_EQ(1, destructNumber);
+
+    ownCounter1.clear();
+    ASSERT_EQ(2, destructNumber);
+
+    int count = 1025;
+    destructNumber = 0;
+    for (int i = 0; i < count; i++)
+        vector.prepend(adoptPtr(new DestructCounter(i, &destructNumber)));
+
+    // Vector relocation must not destruct OwnPtr element.
+    ASSERT_EQ(0, destructNumber);
+    ASSERT_EQ(count, vector.size());
+
+    OwnPtrVector copyVector;
+    vector.swap(copyVector);
+    ASSERT_EQ(0, destructNumber);
+    ASSERT_EQ(count, copyVector.size());
+    ASSERT_EQ(0, vector.size());
+
+    copyVector.clear();
+    ASSERT_EQ(count, destructNumber);
 }
 
 } // namespace
