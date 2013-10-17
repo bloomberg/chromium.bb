@@ -32,6 +32,16 @@ extern const char kFirstSyncedNotificationServiceId[];
 extern const char kServiceEnabledOnce[];
 extern const char kSyncedNotificationFirstRun[];
 
+enum ChromeNotifierServiceActionType {
+  CHROME_NOTIFIER_SERVICE_ACTION_UNKNOWN,
+  CHROME_NOTIFIER_SERVICE_ACTION_FIRST_SERVICE_ENABLED,
+  CHROME_NOTIFIER_SERVICE_ACTION_FIRST_SERVICE_DISABLED,
+  // NOTE: Add new action types only immediately above this line. Also,
+  // make sure the enum list in tools/histogram/histograms.xml is
+  // updated with any change in here.
+  CHROME_NOTIFIER_SERVICE_ACTION_COUNT
+};
+
 // The ChromeNotifierService holds notifications which represent the state of
 // delivered notifications for chrome. These are obtained from the sync service
 // and kept up to date.
@@ -122,6 +132,11 @@ class ChromeNotifierService : public syncer::SyncableService,
   // When a service it turned off, scan our cache for any notifications
   // for that service, and remove them from the message center.
   void RemoveUnreadNotificationsFromSource(const std::string& notifier_id);
+
+  // When we turn a sending service on or off, collect statistics about
+  // how often users turn it on or off.
+  void CollectPerServiceEnablingStatistics(const std::string& notifier_id,
+                                           bool enabled);
 
   // When we start up or hear of a new service, turn it on by default.
   void AddNewSendingServices();

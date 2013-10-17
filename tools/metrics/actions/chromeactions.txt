@@ -446,6 +446,7 @@
 0xb685d7994214aa1f	ForwardMenu_HistoryClick9
 0xb8ea5cd4ac9a7a71	ForwardMenu_Popup
 0x87bdcab6bfd481db	ForwardMenu_ShowFullHistory
+0x78646175083b9abe	Gesture_Overview
 0x5f075ae3e1f9d038	Go
 0xab2334cdb766e7c7	GoogleNow.ButtonClicked0
 0xc06f4ecf7cf01b27	GoogleNow.ButtonClicked1
@@ -1570,6 +1571,8 @@
 0x2fbe99005588ef01	StartupTick
 0x11a755d598c0c417	Stop
 0x926a51baad949d12	Strikethrough
+0x197787e3bdf50f03	SyncedNotifications.SendingServiceDisabled
+0xb789d5822bf411fe	SyncedNotifications.SendingServiceEnabled
 0xc3100ff8c8a00184	SystemBack
 0x4c211ce58592c3e6	SystemBackForNavigation
 0x4d56afb0a9837d41	TabContextMenu_BookmarkAllTabs

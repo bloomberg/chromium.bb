@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "sync/api/sync_change.h"
@@ -35,6 +37,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
+
+using content::UserMetricsAction;
 
 namespace notifier {
 
@@ -493,8 +497,44 @@ void ChromeNotifierService::OnSyncedNotificationServiceEnabled(
     RemoveUnreadNotificationsFromSource(notifier_id_copy);
   }
 
-  // Otherwise, nothing to do, we can exit.
+  // Collect UMA statistics when a service is enabled or disabled.
+  if (enabled) {
+    content::RecordAction(
+        UserMetricsAction("SyncedNotifications.SendingServiceEnabled"));
+  } else {
+    content::RecordAction(
+        UserMetricsAction("SyncedNotifications.SendingServiceDisabled"));
+  }
+
+  // Collect individual service enabling/disabling statistics.
+  CollectPerServiceEnablingStatistics(notifier_id, enabled);
+
   return;
+}
+
+void ChromeNotifierService::CollectPerServiceEnablingStatistics(
+    const std::string& notifier_id,
+    bool enabled) {
+  // TODO(petewil) - This approach does not scale well as we add new services,
+  // but we are limited to using predefined ENUM values in histogram based UMA
+  // data, which does not permit arbitrary strings.
+  // Find a way to make it scale, or remove enum value this when we have enough
+  // data.
+
+  ChromeNotifierServiceActionType action =
+      CHROME_NOTIFIER_SERVICE_ACTION_UNKNOWN;
+
+  // Derive action type from notifier_id and enabled.
+  // TODO(petewil): Add more sending services as they are enabled.
+  if (notifier_id == std::string(kFirstSyncedNotificationServiceId)) {
+    action = enabled
+        ? CHROME_NOTIFIER_SERVICE_ACTION_FIRST_SERVICE_ENABLED
+        : CHROME_NOTIFIER_SERVICE_ACTION_FIRST_SERVICE_DISABLED;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("ChromeNotifierService.Actions",
+                            action,
+                            CHROME_NOTIFIER_SERVICE_ACTION_COUNT);
 }
 
 void ChromeNotifierService::BuildServiceListValueInplace(
@@ -616,6 +656,7 @@ void ChromeNotifierService::InitializePrefs() {
   // Get the prefs from last session into our memeber varilables
   OnEnabledSendingServiceListPrefChanged(&enabled_sending_services_);
   OnInitializedSendingServiceListPrefChanged(&initialized_sending_services_);
+
   synced_notification_first_run_ =
       profile_->GetPrefs()->GetBoolean(prefs::kSyncedNotificationFirstRun);
 }

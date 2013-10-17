@@ -1335,6 +1335,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ChromeNotifierService.Actions"
+    enum="ChromeNotifierServiceActionType">
+  <summary>
+    The actions to enable or disable services sending synced notifications.
+    Synced Notification Sending services can be individually disabled by the
+    user in the Chrome Notification center settings dialog.
+  </summary>
+</histogram>
+
 <histogram name="clickjacking.discard_download" units="ms">
   <summary>
     The length of time between a dangerous download appearing on the downloads
@@ -20126,6 +20135,12 @@ other types of suffix sets.
   <int value="2" label="Initiated by WebStore Installer"/>
   <int value="3" label="Initiated by ImageBurner"/>
   <int value="4" label="Initiated by Plugin Installer"/>
+</enum>
+
+<enum name="ChromeNotifierServiceActionType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="First service enabled"/>
+  <int value="2" label="First service disabled"/>
 </enum>
 
 <enum name="ChromeOSUserImageId" type="int">
