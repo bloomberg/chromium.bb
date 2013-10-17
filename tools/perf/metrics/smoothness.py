@@ -112,15 +112,15 @@ def CalcResults(benchmark_stats, results):
       statistics.Percentile(s.frame_times, 95.0) < 17.0)
 
 
-class MissingTimelineMarker(page_measurement.MeasurementFailure):
-  def __init__(self, name):
-    super(MissingTimelineMarker, self).__init__(
-        'Timeline marker not found: ' + name)
-
-
-class OverlappingTimelineMarkers(page_measurement.MeasurementFailure):
+class TimelineMarkerMismatchException(page_measurement.MeasurementFailure):
   def __init__(self):
-    super(OverlappingTimelineMarkers, self).__init__(
+    super(TimelineMarkerMismatchException, self).__init__(
+        'Number or order of timeline markers does not match provided labels')
+
+
+class TimelineMarkerOverlapException(page_measurement.MeasurementFailure):
+  def __init__(self):
+    super(TimelineMarkerOverlapException, self).__init__(
         'Overlapping timeline markers found')
 
 
@@ -140,13 +140,16 @@ def FindTimelineMarkers(timeline, timeline_marker_labels):
               if s.parent_slice == None]
   events.sort(key=attrgetter('start'))
 
+  if len(events) != len(timeline_marker_labels):
+    raise TimelineMarkerMismatchException()
+
   for (i, event) in enumerate(events):
     if timeline_marker_labels[i] and event.name != timeline_marker_labels[i]:
-      raise MissingTimelineMarker(timeline_marker_labels[i])
+      raise TimelineMarkerMismatchException()
 
   for i in xrange(0, len(events)):
     for j in xrange(i+1, len(events)):
       if (events[j].start < events[i].start + events[i].duration):
-        raise OverlappingTimelineMarkers()
+        raise TimelineMarkerOverlapException()
 
   return events

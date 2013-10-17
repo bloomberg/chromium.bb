@@ -91,8 +91,12 @@ class Smoothness(page_measurement.PageMeasurement):
     compound_action = page_test.GetCompoundActionFromPage(
         page, self._action_name_to_run)
     timeline_marker_labels = GetTimelineMarkerLabelsFromAction(compound_action)
-    timeline_markers = smoothness.FindTimelineMarkers(timeline,
-        timeline_marker_labels)
+    # TODO(ernstm): remove try-except when the reference build was updated?
+    try:
+      timeline_markers = smoothness.FindTimelineMarkers(
+          timeline, timeline_marker_labels)
+    except smoothness.TimelineMarkerMismatchException:
+      timeline_markers = render_process_marker
 
     benchmark_stats = RenderingStats(render_process_marker,
                                      timeline_markers,

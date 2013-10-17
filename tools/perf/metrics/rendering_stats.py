@@ -19,6 +19,7 @@ class RenderingStats(object):
     All *_time values are measured in milliseconds.
     """
     assert(len(render_process_marker) == 1)
+    assert(len(timeline_markers) > 0)
     self.renderer_process = render_process_marker[0].start_thread.parent
     self.start = timeline_markers[0].start
     self.end = timeline_markers[-1].start + timeline_markers[-1].duration
