@@ -12,7 +12,13 @@ import sys
 import tempfile
 import time
 import unittest
-import Queue
+try:
+  import Queue
+except ImportError:
+  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
+  # with naming variables as "queue".  Maybe we'll transition at some point.
+  # pylint: disable=F0401
+  import queue as Queue
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
 from chromite.lib import cros_build_lib
