@@ -10,6 +10,7 @@ description("Test that a plugin that fails to release the window script object d
 if (window.internals) {
     // Test that the live document count returns to the initial value, rather than to a specific value, so this test is robust to leaks in preceding tests.
     gc();
+    gc(); // FIXME: Unclear why this is needed, see crbug.com/307614
     var initialLiveDocumentCount = window.internals.numberOfLiveDocuments();
 
     var iframe = document.createElement('iframe');
