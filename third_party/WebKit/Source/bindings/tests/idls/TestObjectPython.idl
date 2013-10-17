@@ -116,6 +116,11 @@ interface TestObjectPython {
     [MeasureAs=TestFeature] readonly attribute long measureAsReadonlyLongAttribute;
     [NotEnumerable] readonly attribute long notEnumerableReadonlyLongAttribute;
     [PerContextEnabled=FeatureName] readonly attribute long perContextEnabledReadonlyLongAttribute;
+    [PerWorldBindings] readonly attribute long perWorldBindingsReadonlyLongAttribute;  // FIXME: when implement setters, also include a [PerWorldBindings] *readonly* attribute (to check configuration line)
+    [ActivityLogging=Access, PerWorldBindings] readonly attribute long activityLoggingAccessPerWorldBindingsReadonlyLongAttribute;
+    [ActivityLogging=AccessForIsolatedWorlds, PerWorldBindings] readonly attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsReadonlyLongAttribute;
+    [ActivityLogging=Getter, PerWorldBindings] readonly attribute long activityLoggingGetterPerWorldBindingsReadonlyLongAttribute;
+    [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] readonly attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsReadonlyLongAttribute;
     [RaisesException] readonly attribute long raisesExceptionReadonlyLongAttribute;
     [Reflect] readonly attribute TestInterface reflectReadonlyTestInterfaceAttribute;
     [Reflect=reflectedNameAttribute] readonly attribute TestInterface reflectReflectedNameAttributeReadonlyTestAttribute;

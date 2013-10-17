@@ -71,21 +71,25 @@ def v8_class_name(interface):
 
 # [ActivityLogging]
 def has_activity_logging(member, includes, access_type=None):
-    """Returns whether a definition member has activity logging of specified access type.
+    """Returns a set of world suffixes for which a definition member has activity logging, for specified access type.
 
     access_type can be 'Getter' or 'Setter' if only checking getting or setting.
     """
     if 'ActivityLogging' not in member.extended_attributes:
-        return False
+        return set()
     activity_logging = member.extended_attributes['ActivityLogging']
-    # ActivityLogging=Access means log for all access, otherwise check that
+    # [ActivityLogging=Access*] means log for all access, otherwise check that
     # value agrees with specified access_type.
-    has_logging = activity_logging in ['Access', access_type]
-    if has_logging:
-        includes.update(['bindings/v8/V8Binding.h',
-                         'bindings/v8/V8DOMActivityLogger.h',
-                         'wtf/Vector.h'])
-    return has_logging
+    has_logging = (activity_logging.startswith('Access') or
+                   (access_type and activity_logging.startswith(access_type)))
+    if not has_logging:
+        return set()
+    includes.update(['bindings/v8/V8Binding.h',
+                     'bindings/v8/V8DOMActivityLogger.h',
+                     'wtf/Vector.h'])
+    if activity_logging.endswith('ForIsolatedWorlds'):
+        return set([''])
+    return set(['', 'ForMainWorld'])
 
 
 # [CallWith]

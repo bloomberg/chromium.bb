@@ -73,8 +73,6 @@ def generate_attribute_and_includes(interface, attribute):
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
-        'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
-        'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'idl_type': idl_type,
         'is_keep_alive_for_gc': this_is_keep_alive_for_gc,
         'is_nullable': attribute.is_nullable,
@@ -82,6 +80,12 @@ def generate_attribute_and_includes(interface, attribute):
         'name': attribute.name,
         'property_attributes': property_attributes(attribute),
         'v8_type': v8_types.v8_type(idl_type),
+        'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
+        'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
+        # [PerWorldBindings]
+        'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in attribute.extended_attributes else [''],
+        'getter_for_main_world': getter_for_main_world(interface, attribute),
+        'setter_for_main_world': setter_for_main_world(interface, attribute),
     }
     if has_extended_attribute(attribute, ('Custom', 'CustomGetter')):
         contents['is_custom_getter'] = True
@@ -131,7 +135,7 @@ def generate_attribute_and_includes(interface, attribute):
                              'bindings/v8/ExceptionState.h']))
 
     contents.update({
-        'is_activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # [ActivityLogging=Access|Getter]
+        'activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # [ActivityLogging]
         'is_check_security_for_node': is_check_security_for_node,
         'is_getter_raises_exception': is_getter_raises_exception,
     })
@@ -230,3 +234,17 @@ def property_attributes(attribute):
     if 'NotEnumerable' in attribute.extended_attributes:
         property_attributes_list.append('v8::DontEnum')
     return property_attributes_list or ['v8::None']
+
+
+# [PerWorldBindings]
+def getter_for_main_world(interface, attribute):
+    if 'PerWorldBindings' not in attribute.extended_attributes:
+        return '0'
+    return '%sV8Internal::%sAttributeGetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)
+
+
+def setter_for_main_world(interface, attribute):
+    if ('PerWorldBindings' not in attribute.extended_attributes or
+        attribute.is_read_only):
+        return '0'
+    return '%sV8Internal::%sAttributeSetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)

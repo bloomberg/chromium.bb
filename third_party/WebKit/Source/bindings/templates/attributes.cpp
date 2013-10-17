@@ -1,7 +1,7 @@
 {##############################################################################}
-{% macro attribute_getter(attribute) %}
+{% macro attribute_getter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}AttributeGetter{{world_suffix}}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {% if attribute.cached_attribute_validation_method %}
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("{{attribute.name}}");
@@ -69,9 +69,9 @@ static void {{attribute.name}}AttributeGetter(v8::Local<v8::String> name, const 
 
 
 {##############################################################################}
-{% macro attribute_getter_callback(attribute) %}
+{% macro attribute_getter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     {% if attribute.deprecate_as %}
@@ -80,7 +80,7 @@ static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name
     {% if attribute.measure_as %}
     UseCounter::count(activeDOMWindow(), UseCounter::{{attribute.measure_as}});
     {% endif %}
-    {% if attribute.is_activity_logging_getter %}
+    {% if world_suffix in attribute.activity_logging_getter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 0, 0, "Getter");
@@ -88,7 +88,7 @@ static void {{attribute.name}}AttributeGetterCallback(v8::Local<v8::String> name
     {% if attribute.is_custom_getter %}
     {{v8_class_name}}::{{attribute.name}}AttributeGetterCustom(name, info);
     {% else %}
-    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter(name, info);
+    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(name, info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
