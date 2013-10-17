@@ -6,7 +6,6 @@
 
 """Unittests for build stages."""
 
-import collections
 import contextlib
 import copy
 import cPickle
@@ -1582,6 +1581,8 @@ class ReportStageTest(AbstractStageTest):
                 (commands, 'UploadArchivedFile'),):
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
     self.StartPatcher(ArchiveStageMock())
+    self.cq = CLStatusMock()
+    self.StartPatcher(self.cq)
     self.sync_stage = None
 
   def ConstructStage(self):
@@ -1603,8 +1604,11 @@ class ReportStageTest(AbstractStageTest):
     """Check that commit queue patches get serialized"""
     self.sync_stage = stages.CommitQueueSyncStage(self.options,
                                                   self.build_config)
-    self.sync_stage.pool = collections.namedtuple('changes', ['changes'])
-    self.sync_stage.pool.changes = [ MockPatch() ]
+    pool = validation_pool.ValidationPool(constants.BOTH_OVERLAYS,
+        self.build_root, build_number=3, builder_name=self.bot_id,
+        is_master=True, dryrun=True)
+    pool.changes = [MockPatch()]
+    self.sync_stage.pool = pool
     self.RunStage()
 
 
@@ -1772,20 +1776,26 @@ class CLStatusMock(partial_mock.PartialMock):
   """Partial mock for CLStatus methods in ValidationPool."""
 
   TARGET = 'chromite.buildbot.validation_pool.ValidationPool'
-  ATTRS = ('GetCLStatus', 'UpdateCLStatus',)
+  ATTRS = ('GetCLStatus', 'GetCLStatusCount', 'UpdateCLStatus',)
 
   def __init__(self):
     partial_mock.PartialMock.__init__(self)
     self.calls = {}
     self.status = {}
+    self.status_count = {}
 
   def GetCLStatus(self, _bot, change):
     return self.status.get(change)
+
+  def GetCLStatusCount(self, _bot, change, count, latest_patchset_only=True):
+    # pylint: disable=W0613
+    return self.status_count.get(change, 0)
 
   def UpdateCLStatus(self, _bot, change, status, dry_run):
     # pylint: disable=W0613
     self.calls[status] = self.calls.get(status, 0) + 1
     self.status[change] = status
+    self.status_count[change] = self.status_count.get(change, 0) + 1
 
 
 class PreCQLauncherStageTest(MasterCQSyncTest):

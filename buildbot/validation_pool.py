@@ -1873,16 +1873,37 @@ class ValidationPool(object):
                           dry_run=self.dryrun)
 
   @classmethod
-  def GetCLStatusURL(cls, bot, change):
-    """Get the status URL for |change| on |bot|."""
+  def GetCLStatusURL(cls, bot, change, latest_patchset_only=True):
+    """Get the status URL for |change| on |bot|.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+      bot: Which bot to look at. Can be CQ or PRE_CQ.
+      latest_patchset_only: If True, return the URL for tracking the latest
+        patchset. If False, return the URL for tracking all patchsets. Defaults
+        to True.
+
+    Returns:
+      The status URL, as a string.
+    """
     internal = 'int' if change.internal else 'ext'
     components = [constants.MANIFEST_VERSIONS_GS_URL, bot,
-                  internal, str(change.gerrit_number), str(change.patch_number)]
+                  internal, str(change.gerrit_number)]
+    if latest_patchset_only:
+      components.append(str(change.patch_number))
     return '/'.join(components)
 
   @classmethod
   def GetCLStatus(cls, bot, change):
-    """Get the status for |change| on |bot|."""
+    """Get the status for |change| on |bot|.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+      bot: Which bot to look at. Can be CQ or PRE_CQ.
+
+    Returns:
+      The status, as a string.
+    """
     url = cls.GetCLStatusURL(bot, change)
     ctx = gs.GSContext()
     try:
@@ -1894,15 +1915,30 @@ class ValidationPool(object):
   @classmethod
   def UpdateCLStatus(cls, bot, change, status, dry_run):
     """Update the |status| of |change| on |bot|."""
-    url = cls.GetCLStatusURL(bot, change)
-    ctx = gs.GSContext(dry_run=dry_run)
-    ctx.Copy('-', url, input=status)
-    ctx.Counter('%s/%s' % (url, status)).Increment()
+    for latest_patchset_only in (False, True):
+      url = cls.GetCLStatusURL(bot, change, latest_patchset_only)
+      ctx = gs.GSContext(dry_run=dry_run)
+      ctx.Copy('-', url, input=status)
+      ctx.Counter('%s/%s' % (url, status)).Increment()
 
   @classmethod
-  def GetCLStatusCount(cls, bot, change, status):
-    """Return how many times |change| has been set to |status| on |bot|."""
-    url = '%s/%s' % (cls.GetCLStatusURL(bot, change), status)
+  def GetCLStatusCount(cls, bot, change, status, latest_patchset_only=True):
+    """Return how many times |change| has been set to |status| on |bot|.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+      bot: Which bot to look at. Can be CQ or PRE_CQ.
+      status: The status string to look for.
+      latest_patchset_only: If True, only how many times the latest patchset has
+        been set to |status|. If False, count how many times any patchset has
+        been set to |status|. Defaults to False.
+
+    Returns:
+      The number of times |change| has been set to |status| on |bot|, as an
+      integer.
+    """
+    base_url = cls.GetCLStatusURL(bot, change, latest_patchset_only)
+    url = '%s/%s' % (base_url, status)
     return gs.GSContext().Counter(url).Get()
 
   def CreateDisjointTransactions(self, manifest, max_txn_length=None):
