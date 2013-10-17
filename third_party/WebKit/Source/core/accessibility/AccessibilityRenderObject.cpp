@@ -1658,19 +1658,16 @@ void AccessibilityRenderObject::setSelectedTextRange(const PlainTextRange& range
 
 void AccessibilityRenderObject::setValue(const String& string)
 {
-    if (!m_renderer || !m_renderer->node() || !m_renderer->node()->isElementNode())
+    if (!node() || !node()->isElementNode())
         return;
-    if (!m_renderer->isBoxModelObject())
+    if (!m_renderer || !m_renderer->isBoxModelObject())
         return;
-    RenderBoxModelObject* renderer = toRenderBoxModelObject(m_renderer);
 
-    // FIXME: Do we want to do anything here for ARIA textboxes?
-    if (renderer->isTextField()) {
-        // FIXME: This is not safe! Other elements could have a TextField renderer.
-        toHTMLInputElement(m_renderer->node())->setValue(string);
-    } else if (renderer->isTextArea()) {
-        // FIXME: This is not safe! Other elements could have a TextArea renderer.
-        toHTMLTextAreaElement(m_renderer->node())->setValue(string);
+    RenderBoxModelObject* renderer = toRenderBoxModelObject(m_renderer);
+    if (renderer->isTextField() && node()->hasTagName(inputTag)) {
+        toHTMLInputElement(node())->setValue(string);
+    } else if (renderer->isTextArea() && node()->hasTagName(textareaTag)) {
+        toHTMLTextAreaElement(node())->setValue(string);
     }
 }
 
