@@ -456,6 +456,24 @@ class AndroidPort(base.Port):
         result = self._check_file_exists(self.path_to_md5sum(), 'md5sum utility') and result
         result = self._check_file_exists(self.path_to_md5sum_host(), 'md5sum host utility') and result
         result = self._check_file_exists(self.path_to_forwarder(), 'forwarder utility') and result
+
+        if not result:
+            # There is a race condition in adb at least <= 4.3 on Linux that causes it to go offline periodically
+            # We set the processor affinity for any running adb process to attempt to work around this.
+            # See crbug.com/268450
+            if self.host.platform.is_linux():
+                pids = self._executive.running_pids(lambda name: 'adb' in name)
+                if not pids:
+                    # Apparently adb is not running, which is unusual. Running any adb command should start it.
+                    self._executive.run_command(['adb', 'devices'])
+                    pids = self._executive.running_pids(lambda name: 'adb' in name)
+                if not pids:
+                    _log.error("The adb daemon does not appear to be running.")
+                    return False
+
+                for pid in pids:
+                    self._executive.run_command(['taskset', '-p', '-c', '0', str(pid)])
+
         if result:
             # FIXME: We should figure out how to handle failures here better.
             self._check_devices(printer)
