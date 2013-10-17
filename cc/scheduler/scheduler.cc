@@ -49,8 +49,6 @@ void Scheduler::NotifyReadyToActivate() {
 
 void Scheduler::ActivatePendingTree() {
   client_->ScheduledActionActivatePendingTree();
-  if (state_machine_.ShouldTriggerBeginFrameDeadlineEarly())
-    PostBeginFrameDeadline(base::TimeTicks());
 }
 
 void Scheduler::SetNeedsCommit() {
@@ -89,9 +87,6 @@ void Scheduler::FinishCommit() {
   TRACE_EVENT0("cc", "Scheduler::FinishCommit");
   state_machine_.FinishCommit();
   ProcessScheduledActions();
-
-  if (state_machine_.ShouldTriggerBeginFrameDeadlineEarly())
-    PostBeginFrameDeadline(base::TimeTicks());
 }
 
 void Scheduler::BeginFrameAbortedByMainThread(bool did_handle) {
@@ -330,6 +325,9 @@ void Scheduler::ProcessScheduledActions() {
 
   SetupNextBeginFrameIfNeeded();
   client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());
+
+  if (state_machine_.ShouldTriggerBeginFrameDeadlineEarly())
+    PostBeginFrameDeadline(base::TimeTicks());
 }
 
 bool Scheduler::WillDrawIfNeeded() const {

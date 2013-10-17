@@ -71,7 +71,6 @@ class StateMachine : public SchedulerStateMachine {
   bool NeedsCommit() const { return needs_commit_; }
 
   void SetNeedsRedraw(bool b) { needs_redraw_ = b; }
-  bool NeedsRedraw() const { return needs_redraw_; }
 
   void SetNeedsForcedRedrawForTimeout(bool b) {
     forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
@@ -664,7 +663,7 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
             state.CommitState());
-  EXPECT_TRUE(state.NeedsRedraw());
+  EXPECT_TRUE(state.needs_redraw());
 
   // Expect to do nothing until BeginFrame deadline
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -678,7 +677,7 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
   // Should be synchronized, no draw needed, no action needed.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
-  EXPECT_FALSE(state.NeedsRedraw());
+  EXPECT_FALSE(state.needs_redraw());
 }
 
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
@@ -715,7 +714,7 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
             state.CommitState());
-  EXPECT_TRUE(state.NeedsRedraw());
+  EXPECT_TRUE(state.needs_redraw());
 
   // Expect to do nothing until BeginFrame deadline.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -729,7 +728,7 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
   // Should be synchronized, no draw needed, no action needed.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
-  EXPECT_FALSE(state.NeedsRedraw());
+  EXPECT_FALSE(state.needs_redraw());
 
   // Next BeginFrame should initiate second commit.
   state.OnBeginFrame(BeginFrameArgs::CreateForTesting());
@@ -1612,6 +1611,41 @@ TEST(SchedulerStateMachineTest, AcquireTexturesWithAbort) {
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
+}
+
+TEST(SchedulerStateMachineTest,
+    TestTriggerDeadlineEarlyAfterAbortedCommit) {
+  SchedulerSettings settings;
+  settings.deadline_scheduling_enabled = true;
+  settings.impl_side_painting = true;
+  StateMachine state(settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  // This test mirrors what happens during the first frame of a scroll gesture.
+  // First we get the input event and a BeginFrame.
+  state.OnBeginFrame(BeginFrameArgs::CreateForTesting());
+
+  // As a response the compositor requests a redraw and a commit to tell the
+  // main thread about the new scroll offset.
+  state.SetNeedsRedraw(true);
+  state.SetNeedsCommit();
+
+  // We should start the commit normally.
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Since only the scroll offset changed, the main thread will abort the
+  // commit.
+  state.BeginFrameAbortedByMainThread(true);
+
+  // Since the commit was aborted, we should draw right away instead of waiting
+  // for the deadline.
+  EXPECT_TRUE(state.ShouldTriggerBeginFrameDeadlineEarly());
 }
 
 }  // namespace

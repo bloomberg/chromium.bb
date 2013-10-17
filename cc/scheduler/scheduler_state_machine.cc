@@ -878,14 +878,28 @@ void SchedulerStateMachine::OnBeginFrameIdle() {
 }
 
 bool SchedulerStateMachine::ShouldTriggerBeginFrameDeadlineEarly() const {
+  // TODO(brianderson): This should take into account multiple commit sources.
+
   // If we are in the middle of the readback, we won't swap, so there is
   // no reason to trigger the deadline early.
   if (readback_state_ != READBACK_STATE_IDLE)
     return false;
 
-  // TODO(brianderson): This should take into account multiple commit sources.
-  return begin_frame_state_ == BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME &&
-         active_tree_needs_first_draw_;
+  if (begin_frame_state_ != BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME)
+    return false;
+
+  if (active_tree_needs_first_draw_)
+    return true;
+
+  // This is used to prioritize impl-thread draws when the main thread isn't
+  // producing anything, e.g., after an aborted commit. We also check that we
+  // don't have a pending tree -- otherwise we should give it a chance to
+  // activate.
+  // TODO(skyostil): Revisit this when we have more accurate deadline estimates.
+  if (commit_state_ == COMMIT_STATE_IDLE && needs_redraw_ && !has_pending_tree_)
+    return true;
+
+  return false;
 }
 
 void SchedulerStateMachine::DidEnterPollForAnticipatedDrawTriggers() {
