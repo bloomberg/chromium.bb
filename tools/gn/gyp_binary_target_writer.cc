@@ -144,7 +144,7 @@ std::ostream& GypBinaryTargetWriter::Indent(int spaces) {
   const char kSpaces[81] =
       "                                        "
       "                                        ";
-  CHECK(spaces == arraysize(kSpaces) - 1);
+  CHECK(static_cast<size_t>(spaces) <= arraysize(kSpaces) - 1);
   out_.write(kSpaces, spaces);
   return out_;
 }
