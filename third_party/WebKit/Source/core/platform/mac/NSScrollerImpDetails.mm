@@ -29,28 +29,66 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 
+namespace {
+
+// Declare notification names from the 10.7 SDK.
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+NSString* NSPreferredScrollerStyleDidChangeNotification = @"NSPreferredScrollerStyleDidChangeNotification";
+#endif
+
+// Storing the current NSScrollerStyle as a global is appreciably faster than
+// having it be a property of ScrollerStylerObserver.
+NSScrollerStyle g_scrollerStyle = NSScrollerStyleLegacy;
+
+}  // anonymous namespace
+
+@interface ScrollerStyleObserver : NSObject
+- (id)init;
+- (void)preferredScrollerStyleDidChange:(NSNotification*)notification;
+@end
+
+@implementation ScrollerStyleObserver
+- (id)init
+{
+    if ((self = [super init])) {
+        if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)]) {
+            g_scrollerStyle = [NSScroller preferredScrollerStyle];
+            NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+            [center addObserver:self
+                       selector:@selector(preferredScrollerStyleDidChange:)
+                           name:NSPreferredScrollerStyleDidChangeNotification
+                         object:nil];
+        }
+    }
+    return self;
+}
+
+- (void)preferredScrollerStyleDidChange:(NSNotification*)notification
+{
+    g_scrollerStyle = [NSScroller preferredScrollerStyle];
+}
+@end
+
 namespace WebCore {
 
 bool isScrollbarOverlayAPIAvailable()
 {
-    static bool apiAvailable;
-    static bool shouldInitialize = true;
-    if (shouldInitialize) {
-        shouldInitialize = false;
-        Class scrollerImpClass = NSClassFromString(@"NSScrollerImp");
-        Class scrollerImpPairClass = NSClassFromString(@"NSScrollerImpPair");
-        apiAvailable = [scrollerImpClass respondsToSelector:@selector(scrollerImpWithStyle:controlSize:horizontal:replacingScrollerImp:)]
-                       && [scrollerImpPairClass instancesRespondToSelector:@selector(scrollerStyle)];
-    }
+    static bool apiAvailable =
+        [NSClassFromString(@"NSScrollerImp") respondsToSelector:@selector(scrollerImpWithStyle:controlSize:horizontal:replacingScrollerImp:)]
+        && [NSClassFromString(@"NSScrollerImpPair") instancesRespondToSelector:@selector(scrollerStyle)];
     return apiAvailable;
 }
 
-NSScrollerStyle recommendedScrollerStyle() {
+NSScrollerStyle recommendedScrollerStyle()
+{
     if (RuntimeEnabledFeatures::overlayScrollbarsEnabled())
         return NSScrollerStyleOverlay;
-    if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)])
-        return [NSScroller preferredScrollerStyle];
-    return NSScrollerStyleLegacy;
+
+    // The ScrollerStyleObserver will update g_scrollerStyle at init and when needed.
+    // This function is hot.
+    // http://crbug.com/303205
+    static ScrollerStyleObserver* scrollerStyleObserver = [[ScrollerStyleObserver alloc] init];
+    return g_scrollerStyle;
 }
 
 }
