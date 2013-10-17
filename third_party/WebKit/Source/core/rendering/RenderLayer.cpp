@@ -2112,11 +2112,6 @@ void RenderLayer::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping
     }
 }
 
-void RenderLayer::scrollToOffset(const IntSize& scrollOffset, ScrollOffsetClamping clamp)
-{
-    m_scrollableArea->scrollToOffset(scrollOffset, clamp);
-}
-
 static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameElementBase, FrameView* frameView)
 {
     // If scrollbars aren't explicitly forbidden, permit scrolling.

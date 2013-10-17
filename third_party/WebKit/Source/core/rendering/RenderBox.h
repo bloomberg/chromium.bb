@@ -247,6 +247,8 @@ public:
     virtual void setScrollLeft(int);
     virtual void setScrollTop(int);
 
+    void scrollToOffset(const IntSize&);
+
     virtual LayoutUnit marginTop() const OVERRIDE { return m_marginBox.top(); }
     virtual LayoutUnit marginBottom() const OVERRIDE { return m_marginBox.bottom(); }
     virtual LayoutUnit marginLeft() const OVERRIDE { return m_marginBox.left(); }

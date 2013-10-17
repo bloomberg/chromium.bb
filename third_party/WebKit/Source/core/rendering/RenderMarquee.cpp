@@ -164,9 +164,9 @@ void RenderMarquee::start()
 
     if (!m_suspended && !m_stopped) {
         if (isHorizontal())
-            layer()->scrollToOffset(IntSize(m_start, 0));
+            layer()->scrollableArea()->scrollToOffset(IntSize(m_start, 0));
         else
-            layer()->scrollToOffset(IntSize(0, m_start));
+            layer()->scrollableArea()->scrollToOffset(IntSize(0, m_start));
     } else {
         m_suspended = false;
         m_stopped = false;
@@ -277,9 +277,9 @@ void RenderMarquee::timerFired(Timer<RenderMarquee>*)
     if (m_reset) {
         m_reset = false;
         if (isHorizontal())
-            layer()->scrollToXOffset(m_start);
+            layer()->scrollableArea()->scrollToXOffset(m_start);
         else
-            layer()->scrollToYOffset(m_start);
+            layer()->scrollableArea()->scrollToYOffset(m_start);
         return;
     }
 
@@ -319,9 +319,9 @@ void RenderMarquee::timerFired(Timer<RenderMarquee>*)
     }
 
     if (isHorizontal())
-        layer()->scrollToXOffset(newPos);
+        layer()->scrollableArea()->scrollToXOffset(newPos);
     else
-        layer()->scrollToYOffset(newPos);
+        layer()->scrollableArea()->scrollToYOffset(newPos);
 }
 
 } // namespace WebCore

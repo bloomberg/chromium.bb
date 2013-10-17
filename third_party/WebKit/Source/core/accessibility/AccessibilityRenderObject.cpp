@@ -1671,6 +1671,7 @@ void AccessibilityRenderObject::setValue(const String& string)
     }
 }
 
+// FIXME: This function should use an IntSize to avoid the conversion below.
 void AccessibilityRenderObject::scrollTo(const IntPoint& point) const
 {
     if (!m_renderer || !m_renderer->isBox())
@@ -1680,8 +1681,7 @@ void AccessibilityRenderObject::scrollTo(const IntPoint& point) const
     if (!box->canBeScrolledAndHasScrollableArea())
         return;
 
-    RenderLayer* layer = box->layer();
-    layer->scrollToOffset(toIntSize(point), ScrollOffsetClamped);
+    box->scrollToOffset(IntSize(point.x(), point.y()));
 }
 
 //

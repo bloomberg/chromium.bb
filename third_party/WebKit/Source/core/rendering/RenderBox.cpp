@@ -257,11 +257,11 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     if (hasOverflowClip() && oldStyle && newStyle && oldStyle->effectiveZoom() != newStyle->effectiveZoom() && layer()) {
         if (int left = layer()->scrollXOffset()) {
             left = (left / oldStyle->effectiveZoom()) * newStyle->effectiveZoom();
-            layer()->scrollToXOffset(left);
+            layer()->scrollableArea()->scrollToXOffset(left);
         }
         if (int top = layer()->scrollYOffset()) {
             top = (top / oldStyle->effectiveZoom()) * newStyle->effectiveZoom();
-            layer()->scrollToYOffset(top);
+            layer()->scrollableArea()->scrollToYOffset(top);
         }
     }
 
@@ -486,13 +486,19 @@ int RenderBox::scrollTop() const
 void RenderBox::setScrollLeft(int newLeft)
 {
     if (hasOverflowClip())
-        layer()->scrollToXOffset(newLeft, ScrollOffsetClamped);
+        layer()->scrollableArea()->scrollToXOffset(newLeft, ScrollOffsetClamped);
 }
 
 void RenderBox::setScrollTop(int newTop)
 {
     if (hasOverflowClip())
-        layer()->scrollToYOffset(newTop, ScrollOffsetClamped);
+        layer()->scrollableArea()->scrollToYOffset(newTop, ScrollOffsetClamped);
+}
+
+void RenderBox::scrollToOffset(const IntSize& offset)
+{
+    ASSERT(hasOverflowClip());
+    layer()->scrollableArea()->scrollToOffset(offset, ScrollOffsetClamped);
 }
 
 void RenderBox::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const

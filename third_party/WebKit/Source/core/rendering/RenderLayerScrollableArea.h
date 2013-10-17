@@ -120,6 +120,8 @@ public:
     LayoutRect overflowRect() const { return m_overflowRect; }
 
     void scrollToOffset(const IntSize& scrollOffset, ScrollOffsetClamping = ScrollOffsetUnclamped);
+    void scrollToXOffset(int x, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(IntSize(x, scrollYOffset()), clamp); }
+    void scrollToYOffset(int y, ScrollOffsetClamping clamp = ScrollOffsetUnclamped) { scrollToOffset(IntSize(scrollXOffset(), y), clamp); }
 
     void updateAfterLayout();
     void updateAfterStyleChange(const RenderStyle*);
