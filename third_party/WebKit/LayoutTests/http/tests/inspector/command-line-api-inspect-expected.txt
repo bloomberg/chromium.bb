@@ -28,7 +28,7 @@ Running: testRevealLocalStorage
 
 WebInspector.inspect called with: Storage
 WebInspector.inspect's hints are: ["domStorageId"]
-inspect(localStorage) = Storage {inspector: "Test of local storage reveal in inspector"}
+inspect(localStorage) = Storage {inspector: "Test of local storage reveal in inspector", length: 1}
 
 Running: testRevealSessionStorage
 

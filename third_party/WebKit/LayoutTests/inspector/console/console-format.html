@@ -7,6 +7,12 @@
 // Global Values
 var globals = [];
 
+function log(current)
+{
+    console.log(globals[current]);
+    console.log([globals[current]]);
+}
+
 function onload()
 {
     var foo = { foo: "foo"};
@@ -27,6 +33,7 @@ function onload()
     var str = "test";
     var str2 = "test named \"test\"";
     var error = new Error;
+    var errorWithMessage = new Error("my error message");
     var node = document.getElementById("p");
     var func = function() { return 1; };
     var multilinefunc = function() {
@@ -39,20 +46,19 @@ function onload()
     valuedAttribute.value = "value";
     var existingAttribute = document.getElementById("x").attributes[0];
     var throwingLengthGetter = {get length() { throw "Length called"; }};
+    var objectWithNonEnumerables = Object.create({ foo: 1 }, {
+        getFoo: { value: function() { return this.foo; } },
+        bar: { get: function() { return this.bar; }, set: function(x) { this.bar = x; } }
+    });
 
     globals = [
-        regex1, regex2, str, str2, error, node, func, multilinefunc, num, linkify,
+        regex1, regex2, str, str2, error, errorWithMessage, node, func, multilinefunc, num, linkify,
         null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
-        NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg
+        NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
+        objectWithNonEnumerables, Object.create(null), Object, Object.prototype
     ];
 
     runTest();
-}
-
-function log(current)
-{
-    console.log(globals[current]);
-    console.log([globals[current]]);
 }
 
 function test()
@@ -66,10 +72,16 @@ function test()
             var next = current + 1;
             if (next == total.description) {
                 InspectorTest.expandConsoleMessages();
-                InspectorTest.dumpConsoleMessages();
-                InspectorTest.completeTest();
-            } else
+                InspectorTest.runAfterPendingDispatches(finish);
+            } else {
                 loopOverGlobals(next, total);
+            }
+        }
+
+        function finish()
+        {
+            InspectorTest.dumpConsoleMessages();
+            InspectorTest.completeTest();
         }
 
         InspectorTest.evaluateInPage("log(" + current + ")");
