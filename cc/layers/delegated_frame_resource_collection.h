@@ -32,6 +32,10 @@ class CC_EXPORT DelegatedFrameResourceCollection
 
   void TakeUnusedResourcesForChildCompositor(ReturnedResourceArray* array);
 
+  // Considers all resources as lost, and returns true if it held any resource
+  // to lose.
+  bool LoseAllResources();
+
   // Methods for DelegatedFrameProvider.
   void RefResources(const TransferableResourceArray& resources);
   void UnrefResources(const ReturnedResourceArray& returned);
@@ -50,6 +54,7 @@ class CC_EXPORT DelegatedFrameResourceCollection
   scoped_refptr<BlockingTaskRunner> main_thread_runner_;
 
   ReturnedResourceArray returned_resources_for_child_compositor_;
+  bool lost_all_resources_;
 
   struct RefCount {
     int refs_to_return;

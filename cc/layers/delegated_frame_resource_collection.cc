@@ -10,7 +10,9 @@
 namespace cc {
 
 DelegatedFrameResourceCollection::DelegatedFrameResourceCollection()
-    : client_(NULL), main_thread_runner_(BlockingTaskRunner::current()) {
+    : client_(NULL),
+      main_thread_runner_(BlockingTaskRunner::current()),
+      lost_all_resources_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 }
 
@@ -30,9 +32,42 @@ void DelegatedFrameResourceCollection::TakeUnusedResourcesForChildCompositor(
   array->swap(returned_resources_for_child_compositor_);
 }
 
+bool DelegatedFrameResourceCollection::LoseAllResources() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(!lost_all_resources_);
+  lost_all_resources_ = true;
+
+  if (resource_id_ref_count_map_.empty())
+    return false;
+
+  ReturnedResourceArray to_return;
+
+  for (ResourceIdRefCountMap::iterator it = resource_id_ref_count_map_.begin();
+       it != resource_id_ref_count_map_.end();
+       ++it) {
+    DCHECK_GE(it->second.refs_to_wait_for, 1);
+
+    ReturnedResource returned;
+    returned.id = it->first;
+    returned.count = it->second.refs_to_return;
+    returned.lost = true;
+    to_return.push_back(returned);
+  }
+
+  returned_resources_for_child_compositor_.insert(
+      returned_resources_for_child_compositor_.end(),
+      to_return.begin(),
+      to_return.end());
+  if (client_)
+    client_->UnusedResourcesAreAvailable();
+  return true;
+}
+
 void DelegatedFrameResourceCollection::ReceivedResources(
     const TransferableResourceArray& resources) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(!lost_all_resources_);
+
   for (size_t i = 0; i < resources.size(); ++i)
     resource_id_ref_count_map_[resources[i].id].refs_to_return++;
 }
@@ -40,6 +75,9 @@ void DelegatedFrameResourceCollection::ReceivedResources(
 void DelegatedFrameResourceCollection::UnrefResources(
     const ReturnedResourceArray& returned) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  if (lost_all_resources_)
+    return;
 
   ReturnedResourceArray to_return;
 

@@ -594,6 +594,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       can_compose_inline_(true),
       has_composition_text_(false),
       last_output_surface_id_(0),
+      pending_delegated_ack_count_(0),
       skipped_frames_(false),
       last_swapped_surface_scale_factor_(1.f),
       paint_canvas_(NULL),
@@ -1474,14 +1475,14 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     window_->layer()->SetShowPaintedContent();
     frame_provider_ = NULL;
 
-    // TODO(danakj): Lose all resources and send them back here, such as:
-    // resource_collection_->LoseAllResources();
-    // SendReturnedDelegatedResources(last_output_surface_id_);
-
     // Drop the cc::DelegatedFrameResourceCollection so that we will not return
     // any resources from the old output surface with the new output surface id.
-    if (resource_collection_) {
+    if (resource_collection_.get()) {
       resource_collection_->SetClient(NULL);
+
+      if (resource_collection_->LoseAllResources())
+        SendReturnedDelegatedResources(last_output_surface_id_);
+
       resource_collection_ = NULL;
     }
     last_output_surface_id_ = output_surface_id;
@@ -1512,6 +1513,8 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     paint_observer_->OnUpdateCompositorContent();
   window_->SchedulePaintInRect(damage_rect_in_dip);
 
+  pending_delegated_ack_count_++;
+
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {
     SendDelegatedFrameAck(output_surface_id);
@@ -1533,10 +1536,28 @@ void RenderWidgetHostViewAura::SendDelegatedFrameAck(uint32 output_surface_id) {
                                                    output_surface_id,
                                                    host_->GetProcess()->GetID(),
                                                    ack);
+  DCHECK_GT(pending_delegated_ack_count_, 0);
+  pending_delegated_ack_count_--;
 }
 
 void RenderWidgetHostViewAura::UnusedResourcesAreAvailable() {
-  // TODO(danakj): If no ack is pending, collect and send resources now.
+  if (pending_delegated_ack_count_)
+    return;
+
+  SendReturnedDelegatedResources(last_output_surface_id_);
+}
+
+void RenderWidgetHostViewAura::SendReturnedDelegatedResources(
+    uint32 output_surface_id) {
+  cc::CompositorFrameAck ack;
+  if (resource_collection_)
+    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  DCHECK(!ack.resources.empty());
+  RenderWidgetHostImpl::SendReclaimCompositorResources(
+      host_->GetRoutingID(),
+      output_surface_id,
+      host_->GetProcess()->GetID(),
+      ack);
 }
 
 void RenderWidgetHostViewAura::SwapSoftwareFrame(

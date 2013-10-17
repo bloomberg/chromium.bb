@@ -519,6 +519,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       float frame_device_scale_factor,
       const ui::LatencyInfo& latency_info);
   void SendDelegatedFrameAck(uint32 output_surface_id);
+  void SendReturnedDelegatedResources(uint32 output_surface_id);
 
   // cc::DelegatedFrameProviderClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE;
@@ -614,6 +615,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // disambiguate resources with the same id coming from different output
   // surfaces.
   uint32 last_output_surface_id_;
+
+  // The number of delegated frame acks that are pending, to delay resource
+  // returns until the acks are sent.
+  int pending_delegated_ack_count_;
 
   // The damage in the previously presented buffer.
   SkRegion previous_damage_;

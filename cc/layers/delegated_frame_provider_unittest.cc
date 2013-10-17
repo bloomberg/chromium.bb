@@ -150,9 +150,9 @@ TEST_F(DelegatedFrameProviderTest, RefResources) {
   SetFrameProvider(frame.Pass());
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+      DelegatedRendererLayer::Create(NULL, frame_provider_);
   scoped_refptr<DelegatedRendererLayer> observer2 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+      DelegatedRendererLayer::Create(NULL, frame_provider_);
 
   gfx::RectF damage;
 
@@ -208,9 +208,9 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProvider) {
   SetFrameProvider(frame.Pass());
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+      DelegatedRendererLayer::Create(NULL, frame_provider_);
   scoped_refptr<DelegatedRendererLayer> observer2 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+      DelegatedRendererLayer::Create(NULL, frame_provider_);
 
   gfx::RectF damage;
 
@@ -250,9 +250,9 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProviderUntilDestroy) {
   SetFrameProvider(frame.Pass());
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+      DelegatedRendererLayer::Create(NULL, frame_provider_);
   scoped_refptr<DelegatedRendererLayer> observer2 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+      DelegatedRendererLayer::Create(NULL, frame_provider_);
 
   gfx::RectF damage;
 
@@ -294,9 +294,9 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
   SetFrameProvider(frame.Pass());
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+      DelegatedRendererLayer::Create(NULL, frame_provider_);
   scoped_refptr<DelegatedRendererLayer> observer2 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+      DelegatedRendererLayer::Create(NULL, frame_provider_);
 
   gfx::RectF damage;
 
@@ -328,6 +328,67 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
   EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
   frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
   EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
+}
+
+TEST_F(DelegatedFrameProviderTest, LostNothing) {
+  scoped_ptr<DelegatedFrameData> frame =
+      CreateFrameData(gfx::Rect(5, 5), gfx::Rect(5, 5));
+
+  TransferableResourceArray reffed = frame->resource_list;
+
+  SetFrameProvider(frame.Pass());
+
+  // There is nothing to lose.
+  EXPECT_FALSE(ReturnAndResetResourcesAvailable());
+  EXPECT_FALSE(resource_collection_->LoseAllResources());
+  EXPECT_FALSE(ReturnAndResetResourcesAvailable());
+  EXPECT_EQ(0u, resources_.size());
+}
+
+TEST_F(DelegatedFrameProviderTest, LostSomething) {
+  scoped_ptr<DelegatedFrameData> frame =
+      CreateFrameData(gfx::Rect(5, 5), gfx::Rect(5, 5));
+  AddTextureQuad(frame.get(), 444);
+  AddTransferableResource(frame.get(), 444);
+
+  SetFrameProvider(frame.Pass());
+
+  // Add a second reference on the resource.
+  frame = CreateFrameData(gfx::Rect(5, 5), gfx::Rect(5, 5));
+  AddTextureQuad(frame.get(), 444);
+  AddTransferableResource(frame.get(), 444);
+
+  SetFrameProvider(frame.Pass());
+
+  // There is something to lose.
+  EXPECT_FALSE(ReturnAndResetResourcesAvailable());
+  EXPECT_TRUE(resource_collection_->LoseAllResources());
+  EXPECT_TRUE(ReturnAndResetResourcesAvailable());
+
+  EXPECT_EQ(1u, resources_.size());
+  EXPECT_EQ(444u, resources_[0].id);
+  EXPECT_EQ(2, resources_[0].count);
+}
+
+TEST_F(DelegatedFrameProviderTest, NothingReturnedAfterLoss) {
+  scoped_ptr<DelegatedFrameData> frame =
+      CreateFrameData(gfx::Rect(1, 1), gfx::Rect(1, 1));
+  AddTextureQuad(frame.get(), 444);
+  AddTransferableResource(frame.get(), 444);
+  SetFrameProvider(frame.Pass());
+
+  EXPECT_FALSE(ReturnAndResetResourcesAvailable());
+
+  // Lose all the resources.
+  EXPECT_TRUE(resource_collection_->LoseAllResources());
+  EXPECT_TRUE(ReturnAndResetResourcesAvailable());
+  resources_.clear();
+
+  frame_provider_ = NULL;
+
+  // Nothing is returned twice.
+  EXPECT_FALSE(ReturnAndResetResourcesAvailable());
+  EXPECT_EQ(0u, resources_.size());
 }
 
 }  // namespace
