@@ -593,7 +593,7 @@ class MockWebSocketStream : public WebSocketStream {
   MOCK_METHOD1(ReadHandshakeResponse, int(const CompletionCallback& callback));
 };
 
-struct ArgumentCopyingWebSocketFactory {
+struct ArgumentCopyingWebSocketStreamFactory {
   scoped_ptr<WebSocketStreamRequest> Factory(
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
@@ -636,10 +636,10 @@ class WebSocketChannelTest : public ::testing::Test {
     channel_.reset(new WebSocketChannel(CreateEventInterface(),
                                         &connect_data_.url_request_context));
     channel_->SendAddChannelRequestForTesting(
-        connect_data_.url,
+        connect_data_.socket_url,
         connect_data_.requested_subprotocols,
         connect_data_.origin,
-        base::Bind(&ArgumentCopyingWebSocketFactory::Factory,
+        base::Bind(&ArgumentCopyingWebSocketStreamFactory::Factory,
                    base::Unretained(&connect_data_.factory)));
   }
 
@@ -669,17 +669,20 @@ class WebSocketChannelTest : public ::testing::Test {
   }
 
   // A struct containing the data that will be used to connect the channel.
+  // Grouped for readability.
   struct ConnectData {
-    // URL to (pretend to) connect to.
-    GURL url;
-    // Origin of the request
-    GURL origin;
-    // Requested protocols for the request.
-    std::vector<std::string> requested_subprotocols;
     // URLRequestContext object.
     URLRequestContext url_request_context;
-    // A fake WebSocketFactory that just records its arguments.
-    ArgumentCopyingWebSocketFactory factory;
+
+    // URL to (pretend to) connect to.
+    GURL socket_url;
+    // Requested protocols for the request.
+    std::vector<std::string> requested_subprotocols;
+    // Origin of the request
+    GURL origin;
+
+    // A fake WebSocketStreamFactory that just records its arguments.
+    ArgumentCopyingWebSocketStreamFactory factory;
   };
   ConnectData connect_data_;
 
@@ -765,18 +768,21 @@ class WebSocketChannelStreamTest : public WebSocketChannelTest {
 // Simple test that everything that should be passed to the factory function is
 // passed to the factory function.
 TEST_F(WebSocketChannelTest, EverythingIsPassedToTheFactoryFunction) {
-  connect_data_.url = GURL("ws://example.com/test");
+  connect_data_.socket_url = GURL("ws://example.com/test");
   connect_data_.origin = GURL("http://example.com/test");
   connect_data_.requested_subprotocols.push_back("Sinbad");
 
   CreateChannelAndConnect();
 
-  EXPECT_EQ(connect_data_.url, connect_data_.factory.socket_url);
-  EXPECT_EQ(connect_data_.origin, connect_data_.factory.origin);
+  const ArgumentCopyingWebSocketStreamFactory& actual =
+      connect_data_.factory;
+
+  EXPECT_EQ(&connect_data_.url_request_context, actual.url_request_context);
+
+  EXPECT_EQ(connect_data_.socket_url, actual.socket_url);
   EXPECT_EQ(connect_data_.requested_subprotocols,
-            connect_data_.factory.requested_subprotocols);
-  EXPECT_EQ(&connect_data_.url_request_context,
-            connect_data_.factory.url_request_context);
+            actual.requested_subprotocols);
+  EXPECT_EQ(connect_data_.origin, actual.origin);
 }
 
 // The documentation for WebSocketEventInterface::OnAddChannelResponse() says
