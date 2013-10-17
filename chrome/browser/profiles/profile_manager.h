@@ -193,6 +193,10 @@ class ProfileManager : public base::NonThreadSafe,
   // Sign-Out a profile against use until re-authentication.
   void SignOutProfile(Profile* profile);
 
+  // Initializes user prefs of |profile|. This includes profile name and
+  // avatar values.
+  void InitProfileUserPrefs(Profile* profile);
+
   // Register and add testing profile to the ProfileManager. Use ONLY in tests.
   // This allows the creation of Profiles outside of the standard creation path
   // for testing. If |addToCache|, adds to ProfileInfoCache as well.
@@ -276,10 +280,6 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Adds |profile| to the profile info cache if it hasn't been added yet.
   void AddProfileToCache(Profile* profile);
-
-  // Initializes user prefs of |profile|. This includes profile name and
-  // avatar values
-  void InitProfileUserPrefs(Profile* profile);
 
   // Apply settings for (desktop) Guest User profile.
   void SetGuestProfilePrefs(Profile* profile);

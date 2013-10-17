@@ -278,6 +278,7 @@ extern const char kMetricsRecordingOnly[];
 extern const char kMultiProfiles[];
 extern const char kNativeMessagingHosts[];
 extern const char kNetLogLevel[];
+extern const char kNewProfileIsSupervised[];
 extern const char kNewProfileManagement[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoDisplayingInsecureContent[];

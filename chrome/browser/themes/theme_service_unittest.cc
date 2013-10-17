@@ -26,10 +26,8 @@ namespace theme_service_internal {
 
 class ThemeServiceTest : public ExtensionServiceTestBase {
  public:
-  ThemeServiceTest() {
-    manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-  }
+  ThemeServiceTest() : is_managed_(false),
+                       manager_(TestingBrowserProcess::GetGlobal()) {}
   virtual ~ThemeServiceTest() {}
 
   // Moves a minimal theme to |temp_dir_path| and unpacks it from that
@@ -81,10 +79,12 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
 
   virtual void SetUp() {
     ExtensionServiceTestBase::SetUp();
-    InitializeEmptyExtensionService();
+    ExtensionServiceTestBase::ExtensionServiceInitParams params =
+        CreateDefaultInitParams();
+    params.profile_is_managed = is_managed_;
+    InitializeExtensionService(params);
     service_->Init();
-    bool success = manager_->SetUp();
-    ASSERT_TRUE(success);
+    ASSERT_TRUE(manager_.SetUp());
   }
 
   const CustomThemeSupplier* get_theme_supplier(ThemeService* theme_service) {
@@ -92,11 +92,14 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
   }
 
   TestingProfileManager* manager() {
-    return manager_.get();
+    return &manager_;
   }
 
+ protected:
+  bool is_managed_;
+
  private:
-  scoped_ptr<TestingProfileManager> manager_;
+  TestingProfileManager manager_;
 };
 
 // Installs then uninstalls a theme and makes sure that the ThemeService
@@ -226,9 +229,19 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
       ExtensionService::INCLUDE_DISABLED));
 }
 
+class ThemeServiceManagedUserTest : public ThemeServiceTest {
+ public:
+  ThemeServiceManagedUserTest() {}
+  virtual ~ThemeServiceManagedUserTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    is_managed_ = true;
+    ThemeServiceTest::SetUp();
+  }
+};
+
 // Checks that managed users have their own default theme.
-TEST_F(ThemeServiceTest, ManagedUserThemeReplacesDefaultTheme) {
-  ManagedUserServiceFactory::GetForProfile(profile_.get())->InitForTesting();
+TEST_F(ThemeServiceManagedUserTest, ManagedUserThemeReplacesDefaultTheme) {
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(profile_.get());
   theme_service->UseDefaultTheme();
@@ -238,23 +251,10 @@ TEST_F(ThemeServiceTest, ManagedUserThemeReplacesDefaultTheme) {
             CustomThemeSupplier::MANAGED_USER_THEME);
 }
 
-TEST_F(ThemeServiceTest, ManagedUserThemeNewUser) {
-  TestingProfile* profile = manager()->CreateTestingProfile("mu");
-  // Simulate the current initialization behavior: first the ThemeService is
-  // created, then the supervised user profile is initialized.
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile);
-  ManagedUserServiceFactory::GetForProfile(profile)->InitForTesting();
-  EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
-            CustomThemeSupplier::MANAGED_USER_THEME);
-  manager()->DeleteTestingProfile("mu");
-}
-
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Checks that managed users don't use the system theme even if it is the
 // default. The system theme is only available on Linux.
-TEST_F(ThemeServiceTest, ManagedUserThemeReplacesNativeTheme) {
-  ManagedUserServiceFactory::GetForProfile(profile_.get())->InitForTesting();
+TEST_F(ThemeServiceManagedUserTest, ManagedUserThemeReplacesNativeTheme) {
   profile_->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(profile_.get());

@@ -60,6 +60,8 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   TestingProfile::Builder builder;
   builder.SetPath(profile_path);
   builder.SetPrefService(prefs.Pass());
+  builder.SetManagedUserId(managed_user_id);
+
   TestingProfile* profile = builder.Build().release();
   profile_manager_->AddProfile(profile);  // Takes ownership.
 

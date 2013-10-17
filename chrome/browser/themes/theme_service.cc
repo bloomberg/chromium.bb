@@ -14,8 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_theme.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
@@ -97,9 +95,6 @@ ThemeService::~ThemeService() {
 void ThemeService::Init(Profile* profile) {
   DCHECK(CalledOnValidThread());
   profile_ = profile;
-
-  ManagedUserServiceFactory::GetForProfile(profile)->AddInitCallback(base::Bind(
-      &ThemeService::OnManagedUserInitialized, weak_ptr_factory_.GetWeakPtr()));
 
   LoadThemePrefs();
 
@@ -576,25 +571,6 @@ bool ThemeService::IsManagedUser() const {
 
 void ThemeService::SetManagedUserTheme() {
   SetCustomDefaultTheme(new ManagedUserTheme);
-}
-
-void ThemeService::OnManagedUserInitialized() {
-  // Currently when creating a supervised user, the ThemeService is initialized
-  // before the boolean flag indicating the profile belongs to a supervised
-  // user gets set. In order to get the custom managed user theme, we get a
-  // callback when ManagedUserService is initialized, which happens some time
-  // after the boolean flag has been set in
-  // ProfileManager::InitProfileUserPrefs() and after the
-  // NOTIFICATION_EXTENSIONS_READY notification is sent.
-  if ((theme_supplier_.get() &&
-       (theme_supplier_->get_theme_type() == CustomThemeSupplier::EXTENSION ||
-        theme_supplier_->get_theme_type() ==
-            CustomThemeSupplier::MANAGED_USER_THEME)) ||
-      !IsManagedUser()) {
-    return;
-  }
-
-  SetManagedUserTheme();
 }
 
 void ThemeService::OnInfobarDisplayed() {

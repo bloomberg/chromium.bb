@@ -552,6 +552,7 @@ bool ProfileManager::AddProfile(Profile* profile) {
   }
 
   RegisterProfile(profile, true);
+  InitProfileUserPrefs(profile);
   DoFinalInit(profile, ShouldGoOffTheRecord(profile));
   return true;
 }
@@ -731,7 +732,6 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
-  InitProfileUserPrefs(profile);
   DoFinalInitForServices(profile, go_off_the_record);
   AddProfileToCache(profile);
   DoFinalInitLogging(profile);
@@ -1013,8 +1013,14 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName))
     profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
 
-  if (!profile->GetPrefs()->HasPrefPath(prefs::kManagedUserId))
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kManagedUserId)) {
+    if (managed_user_id.empty() &&
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kNewProfileIsSupervised)) {
+      managed_user_id = "Test ID";
+    }
     profile->GetPrefs()->SetString(prefs::kManagedUserId, managed_user_id);
+  }
 }
 
 void ProfileManager::SetGuestProfilePrefs(Profile* profile) {

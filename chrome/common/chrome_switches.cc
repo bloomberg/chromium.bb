@@ -1007,9 +1007,12 @@ const char kNativeMessagingHosts[]          = "native-messaging-hosts";
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";
 
+// Marks a newly created profile as a supervised profile. Used for tests.
+const char kNewProfileIsSupervised[]        = "new-profile-is-supervised";
+
 // Use new profile management system, including profile sign-out and new
 // choosers.
-const char kNewProfileManagement[]    = "new-profile-management";
+const char kNewProfileManagement[]          = "new-profile-management";
 
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.

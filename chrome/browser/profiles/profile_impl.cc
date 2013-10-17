@@ -783,6 +783,8 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   // TODO(sky): remove this in a couple of releases (m28ish).
   prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
 
+  g_browser_process->profile_manager()->InitProfileUserPrefs(this);
+
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
 

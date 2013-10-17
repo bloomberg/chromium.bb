@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_user_constants.h"
@@ -12,12 +13,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/common/chrome_switches.h"
 
 class SingleClientManagedUserSettingsSyncTest : public SyncTest {
  public:
   SingleClientManagedUserSettingsSyncTest() : SyncTest(SINGLE_CLIENT) {}
 
   virtual ~SingleClientManagedUserSettingsSyncTest() {}
+
+  // SyncTest overrides:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    SyncTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kNewProfileIsSupervised);
+  }
 };
 
 // TODO(pavely): Fix this test. See also: http://crbug.com/279307
@@ -26,7 +34,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientManagedUserSettingsSyncTest,
   ASSERT_TRUE(SetupClients());
   for (int i = 0; i < num_clients(); ++i) {
     Profile* profile = GetProfile(i);
-    ManagedUserServiceFactory::GetForProfile(profile)->InitForTesting();
     // Managed users are prohibited from signing into the browser. Currently
     // that means they're also unable to sync anything, so override that for
     // this test.

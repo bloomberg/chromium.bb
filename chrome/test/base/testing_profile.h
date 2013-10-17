@@ -100,6 +100,10 @@ class TestingProfile : public Profile {
     // Makes the Profile being built an incognito profile.
     void SetIncognito();
 
+    // Sets the managed user ID (which is empty by default). If it is set to a
+    // non-empty string, the profile is managed.
+    void SetManagedUserId(const std::string& managed_user_id);
+
     // Creates the TestingProfile using previously-set settings.
     scoped_ptr<TestingProfile> Build();
 
@@ -113,6 +117,7 @@ class TestingProfile : public Profile {
     base::FilePath path_;
     Delegate* delegate_;
     bool incognito_;
+    std::string managed_user_id_;
     TestingFactories testing_factories_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
@@ -138,6 +143,7 @@ class TestingProfile : public Profile {
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
                  scoped_ptr<PrefServiceSyncable> prefs,
                  bool incognito,
+                 const std::string& managed_user_id,
                  const TestingFactories& factories);
 
   virtual ~TestingProfile();
@@ -347,6 +353,8 @@ class TestingProfile : public Profile {
   bool force_incognito_;
   scoped_ptr<Profile> incognito_profile_;
   Profile* original_profile_;
+
+  std::string managed_user_id_;
 
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;

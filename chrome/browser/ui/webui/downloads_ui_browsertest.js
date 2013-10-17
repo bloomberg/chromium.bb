@@ -171,9 +171,7 @@ DownloadsWebUIForSupervisedUsersTest.prototype = {
   __proto__: BaseDownloadsWebUITest.prototype,
 
   /** @override */
-  testGenPreamble: function() {
-    GEN('  ChangeProfileToSupervised();');
-  },
+  typedefCppFixture: 'DownloadsWebUIForSupervisedUsersTest',
 };
 
 // Test UI for supervised users, removing entries should be disabled

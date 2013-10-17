@@ -17,10 +17,14 @@ class DownloadsUIBrowserTest : public WebUIBrowserTest {
   // Sets the pref to allow or prohibit deleting history entries.
   void SetDeleteAllowed(bool allowed);
 
-  void ChangeProfileToSupervised();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsUIBrowserTest);
+};
+
+class DownloadsWebUIForSupervisedUsersTest : public DownloadsUIBrowserTest {
+ public:
+  // InProcessBrowserTest overrides:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_DOWNLOADS_UI_BROWSERTEST_H_

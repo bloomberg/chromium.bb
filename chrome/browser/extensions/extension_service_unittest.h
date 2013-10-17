@@ -36,6 +36,7 @@ class ExtensionServiceTestBase : public testing::Test {
     base::FilePath extensions_install_dir;
     bool autoupdate_enabled;
     bool is_first_run;
+    bool profile_is_managed;
 
     ExtensionServiceInitParams();
   };
@@ -67,8 +68,7 @@ class ExtensionServiceTestBase : public testing::Test {
   }
 
  protected:
-  void InitializeExtensionServiceHelper(bool autoupdate_enabled,
-                                        bool is_first_run);
+  ExtensionServiceInitParams CreateDefaultInitParams();
 
   // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
   // after thread_bundle_ in the destruction order.

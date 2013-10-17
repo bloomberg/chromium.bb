@@ -24,6 +24,7 @@ namespace {
 
 class MockProfileDelegate : public Profile::Delegate {
  public:
+  MOCK_METHOD1(OnPrefsLoaded, void(Profile*));
   MOCK_METHOD3(OnProfileCreated, void(Profile*, bool, bool));
 };
 

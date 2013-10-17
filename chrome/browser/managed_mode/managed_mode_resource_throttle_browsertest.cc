@@ -4,6 +4,7 @@
 
 #include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_user_constants.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -33,6 +35,7 @@ class ManagedModeResourceThrottleTest : public InProcessBrowserTest {
 
  private:
   virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
   ManagedUserService* managed_user_service_;
 };
@@ -40,7 +43,11 @@ class ManagedModeResourceThrottleTest : public InProcessBrowserTest {
 void ManagedModeResourceThrottleTest::SetUpOnMainThread() {
   managed_user_service_ =
       ManagedUserServiceFactory::GetForProfile(browser()->profile());
-  managed_user_service_->InitForTesting();
+}
+
+void ManagedModeResourceThrottleTest::SetUpCommandLine(
+    CommandLine* command_line) {
+  command_line->AppendSwitch(switches::kNewProfileIsSupervised);
 }
 
 // Tests that showing the blocking interstitial for a WebContents without a

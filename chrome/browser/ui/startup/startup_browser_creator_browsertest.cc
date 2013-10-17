@@ -960,16 +960,12 @@ class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableManagedUsers);
+    command_line->AppendSwitch(switches::kNewProfileIsSupervised);
   }
 };
 
 IN_PROC_BROWSER_TEST_F(ManagedModeBrowserCreatorTest,
                        StartupManagedModeProfile) {
-  // Make this a managed profile.
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(browser()->profile());
-  managed_user_service->InitForTesting();
-
   StartupBrowserCreator browser_creator;
 
   // Do a simple non-process-startup browser launch.

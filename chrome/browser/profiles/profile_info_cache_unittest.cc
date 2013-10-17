@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -459,6 +460,11 @@ TEST_F(ProfileInfoCacheTest, CreateManagedTestingProfile) {
     std::string managed_user_id = is_managed ? "TEST_ID" : "";
     EXPECT_EQ(managed_user_id, GetCache()->GetManagedUserIdOfProfileAtIndex(i));
   }
+
+  // Managed profiles have a custom theme, which needs to be deleted on the FILE
+  // thread. Reset the profile manager now so everything is deleted while we
+  // still have a FILE thread.
+  TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
 }
 
 TEST_F(ProfileInfoCacheTest, AddStubProfile) {

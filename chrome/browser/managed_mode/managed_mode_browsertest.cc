@@ -107,7 +107,6 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
 
     Profile* profile = browser()->profile();
     managed_user_service_ = ManagedUserServiceFactory::GetForProfile(profile);
-    managed_user_service_->InitForTesting();
     ManagedUserSettingsService* managed_user_settings_service =
         ManagedUserSettingsServiceFactory::GetForProfile(profile);
     managed_user_settings_service->SetLocalSettingForTesting(
@@ -124,6 +123,8 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
         "MAP *.example.com " + host_port + "," +
         "MAP *.new-example.com " + host_port + "," +
         "MAP *.a.com " + host_port);
+
+    command_line->AppendSwitch(switches::kNewProfileIsSupervised);
   }
 
   // Acts like a synchronous call to history's QueryHistory. Modified from

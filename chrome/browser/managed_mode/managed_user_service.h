@@ -116,9 +116,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   // managed.
   void Init();
 
-  // Marks the profile as managed and initializes it.
-  void InitForTesting();
-
   // Initializes this profile for syncing, using the provided |refresh_token| to
   // mint access tokens for Sync.
   void InitSync(const std::string& refresh_token);
@@ -144,8 +141,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
   void DidBlockNavigation(content::WebContents* web_contents);
 
-  void AddInitCallback(const base::Closure& callback);
-
   // extensions::ManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
@@ -165,7 +160,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
 
  private:
-  friend class ManagedUserServiceExtensionTest;
+  friend class ManagedUserServiceExtensionTestBase;
   friend class ManagedUserServiceFactory;
   FRIEND_TEST_ALL_PREFIXES(ManagedUserServiceTest,
                            ExtensionManagementPolicyProviderUnmanaged);
@@ -258,8 +253,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   // True iff we're waiting for the Sync service to be initialized.
   bool waiting_for_sync_initialization_;
   bool is_profile_active_;
-
-  std::vector<base::Closure> init_callbacks_;
 
   std::vector<NavigationBlockedCallback> navigation_blocked_callbacks_;
 

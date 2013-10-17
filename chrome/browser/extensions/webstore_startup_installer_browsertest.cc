@@ -171,8 +171,18 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
   EXPECT_TRUE(extension_service->extensions()->Contains(kTestExtensionId));
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
-                       InstallProhibitedForManagedUsers) {
+class WebstoreStartupInstallerManagedUsersTest
+    : public WebstoreStartupInstallerTest {
+ public:
+  // InProcessBrowserTest overrides:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    WebstoreStartupInstallerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kNewProfileIsSupervised);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerManagedUsersTest,
+                       InstallProhibited) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -181,11 +191,6 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
 
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
-
-  // Make the profile managed such that no extension installs are allowed.
-  ManagedUserService* service =
-      ManagedUserServiceFactory::GetForProfile(browser()->profile());
-  service->InitForTesting();
 
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install_prohibited.html"));
