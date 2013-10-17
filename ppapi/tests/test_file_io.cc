@@ -724,7 +724,7 @@ std::string TestFileIO::TestAbortCalls() {
   {
     {
       pp::FileIO file_io(instance_);
-      callback.WaitForResult(file_io.Open(file_ref, PP_FILEOPENFLAG_READ,
+      callback.WaitForResult(file_io.Open(file_ref, PP_FILEOPENFLAG_WRITE,
                                           callback.GetCallback()));
       CHECK_CALLBACK_BEHAVIOR(callback);
       ASSERT_EQ(PP_OK, callback.result());
