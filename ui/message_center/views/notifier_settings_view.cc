@@ -419,7 +419,7 @@ void NotifierSettingsView::UpdateContentsView(
   contents_title_view->AddChildView(top_label);
 
   string16 notifier_group_text;
-  if (provider_) {
+  if (provider_ && provider_->GetNotifierGroupCount() > 0) {
     const NotifierGroup& active_group = provider_->GetActiveNotifierGroup();
     notifier_group_text = active_group.login_info.empty()
                               ? active_group.name

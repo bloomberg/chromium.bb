@@ -162,7 +162,9 @@ void MessageCenterSettingsController::SwitchToNotifierGroup(size_t index) {
 void MessageCenterSettingsController::GetNotifierList(
     std::vector<Notifier*>* notifiers) {
   DCHECK(notifiers);
-  // TODO(mukai): Fix this for multi-profile.
+  if (notifier_groups_.empty())
+    return;
+
   // Temporarily use the last used profile to prevent chrome from crashing when
   // the default profile is not loaded.
   message_center::ProfileNotifierGroup* group =
