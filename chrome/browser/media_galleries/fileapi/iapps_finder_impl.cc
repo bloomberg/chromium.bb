@@ -22,7 +22,7 @@ void PostResultToUIThread(StorageInfo::Type type,
     device_id = StorageInfo::MakeDeviceId(type, unique_id);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback, unique_id));
+                                   base::Bind(callback, device_id));
 }
 
 }  // namespace
