@@ -21,9 +21,9 @@ namespace errors = extensions::manifest_errors;
 namespace {
 
 const WebviewInfo* GetResourcesInfo(
-    const Extension* extension) {
+    const Extension& extension) {
   return static_cast<WebviewInfo*>(
-      extension->GetManifestData(keys::kWebviewAccessibleResources));
+      extension.GetManifestData(keys::kWebviewAccessibleResources));
 }
 
 }  // namespace
@@ -39,7 +39,10 @@ bool WebviewInfo::IsResourceWebviewAccessible(
     const Extension* extension,
     const std::string& partition_id,
     const std::string& relative_path) {
-  const WebviewInfo* info = GetResourcesInfo(extension);
+  if (!extension)
+    return false;
+
+  const WebviewInfo* info = GetResourcesInfo(*extension);
   if (!info)
     return false;
 
@@ -55,12 +58,6 @@ bool WebviewInfo::IsResourceWebviewAccessible(
 
   return partition_is_privileged && extension->ResourceMatches(
       info->webview_accessible_resources_, relative_path);
-}
-
-// static
-bool WebviewInfo::HasWebviewAccessibleResources(const Extension* extension) {
-  const WebviewInfo* info = GetResourcesInfo(extension);
-  return info && info->webview_accessible_resources_.size() > 0;
 }
 
 WebviewHandler::WebviewHandler() {

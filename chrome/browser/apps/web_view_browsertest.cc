@@ -680,6 +680,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionURL) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestInvalidChromeExtensionURL) {
+  TestHelper("testInvalidChromeExtensionURL",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
   TestHelper("testEventName",
              "DoneShimTest.PASSED",

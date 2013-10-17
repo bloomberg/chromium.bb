@@ -316,6 +316,21 @@ function testChromeExtensionURL() {
   document.body.appendChild(webview);
 }
 
+// This tests verifies that webview fires a loadabort event instead of crashing
+// the browser if we attempt to navigate to a chrome-extension: URL with an
+// extension ID that does not exist.
+function testInvalidChromeExtensionURL() {
+  var invalidResource = 'chrome-extension://abc123/guest.html';
+  var webview = document.createElement('webview');
+  // foobar is a privileged partition according to the manifest file.
+  webview.partition = 'foobar';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.succeed();
+  });
+  webview.setAttribute('src', invalidResource);
+  document.body.appendChild(webview);
+}
+
 function testWebRequestAPIExistence() {
   var apiPropertiesToCheck = [
     'onBeforeRequest',
@@ -1114,6 +1129,7 @@ embedder.test.testList = {
   'testAutosizeWithPartialAttributes': testAutosizeWithPartialAttributes,
   'testAPIMethodExistence': testAPIMethodExistence,
   'testChromeExtensionURL': testChromeExtensionURL,
+  'testInvalidChromeExtensionURL': testInvalidChromeExtensionURL,
   'testWebRequestAPIExistence': testWebRequestAPIExistence,
   'testEventName': testEventName,
   'testOnEventProperties': testOnEventProperties,
