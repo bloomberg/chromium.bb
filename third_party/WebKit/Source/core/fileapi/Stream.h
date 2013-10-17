@@ -46,7 +46,9 @@ class Stream : public ScriptWrappable, public ActiveDOMObject, public RefCounted
 public:
     static PassRefPtr<Stream> create(ExecutionContext* context, const String& mediaType)
     {
-        return adoptRef(new Stream(context, mediaType));
+        RefPtr<Stream> stream = adoptRef(new Stream(context, mediaType));
+        stream->suspendIfNeeded();
+        return stream.release();
     }
 
     virtual ~Stream();
