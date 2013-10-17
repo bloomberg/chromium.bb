@@ -32,6 +32,29 @@ class QuicStreamFactoryPeer {
       const HostPortProxyPair& host_port_proxy_pair) {
     return factory->GetOrCreateCryptoConfig(host_port_proxy_pair);
   }
+
+  static bool HasActiveSession(QuicStreamFactory* factory,
+                               const HostPortProxyPair& host_port_proxy_pair) {
+    return factory->HasActiveSession(host_port_proxy_pair);
+  }
+
+  static QuicClientSession* GetActiveSession(
+      QuicStreamFactory* factory,
+      const HostPortProxyPair& host_port_proxy_pair) {
+    DCHECK(factory->HasActiveSession(host_port_proxy_pair));
+    return factory->active_sessions_[host_port_proxy_pair];
+  }
+
+  static bool IsLiveSession(QuicStreamFactory* factory,
+                            QuicClientSession* session) {
+    for (QuicStreamFactory::SessionSet::iterator it =
+             factory->all_sessions_.begin();
+         it != factory->all_sessions_.end(); ++it) {
+      if (*it == session)
+        return true;
+    }
+    return false;
+  }
 };
 
 class QuicStreamFactoryTest : public ::testing::Test {
@@ -175,6 +198,61 @@ TEST_F(QuicStreamFactoryTest, Create) {
                                  callback_.callback()));
   stream = request2.ReleaseStream();  // Will reset stream 5.
   stream.reset();  // Will reset stream 7.
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_F(QuicStreamFactoryTest, Goaway) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  socket_data.StopAfter(1);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  socket_data2.StopAfter(1);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_.get(), net_log_,
+                                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Mark the session as going away.  Ensure that while it is still alive
+  // that it is no longer active.
+  QuicClientSession* session = QuicStreamFactoryPeer::GetActiveSession(
+      &factory_, host_port_proxy_pair_);
+  factory_.OnSessionGoingAway(session);
+  EXPECT_EQ(true, QuicStreamFactoryPeer::IsLiveSession(&factory_, session));
+  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(&factory_,
+                                                       host_port_proxy_pair_));
+  EXPECT_EQ(NULL, factory_.CreateIfSessionExists(host_port_proxy_pair_,
+                                                 net_log_).get());
+
+  // Create a new request for the same destination and verify that a
+  // new session is created.
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
+                                             cert_verifier_.get(), net_log_,
+                                             callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_TRUE(QuicStreamFactoryPeer::HasActiveSession(&factory_,
+                                                      host_port_proxy_pair_));
+  EXPECT_NE(session,
+            QuicStreamFactoryPeer::GetActiveSession(
+                &factory_, host_port_proxy_pair_));
+  EXPECT_EQ(true, QuicStreamFactoryPeer::IsLiveSession(&factory_, session));
+
+  stream2.reset();
+  stream.reset();
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());

@@ -257,6 +257,7 @@ QuicStreamFactory::QuicStreamFactory(
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
+  CloseAllSessions(ERR_ABORTED);
   STLDeleteElements(&all_sessions_);
   STLDeleteValues(&active_jobs_);
   STLDeleteValues(&all_crypto_configs_);
@@ -336,14 +337,14 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
 
   QuicClientSession* session = active_sessions_[host_port_proxy_pair];
   DCHECK(session);
-  return scoped_ptr<QuicHttpStream>(new QuicHttpStream(session->GetWeakPtr()));
+  return scoped_ptr<QuicHttpStream>(
+      new QuicHttpStream(session->GetWeakPtr()));
 }
 
 void QuicStreamFactory::OnIdleSession(QuicClientSession* session) {
 }
 
-void QuicStreamFactory::OnSessionClose(QuicClientSession* session) {
-  DCHECK_EQ(0u, session->GetNumOpenStreams());
+void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
   const AliasSet& aliases = session_aliases_[session];
   for (AliasSet::const_iterator it = aliases.begin(); it != aliases.end();
        ++it) {
@@ -358,8 +359,13 @@ void QuicStreamFactory::OnSessionClose(QuicClientSession* session) {
       http_server_properties_->SetBrokenAlternateProtocol(it->first);
     }
   }
-  all_sessions_.erase(session);
   session_aliases_.erase(session);
+}
+
+void QuicStreamFactory::OnSessionClosed(QuicClientSession* session) {
+  DCHECK_EQ(0u, session->GetNumOpenStreams());
+  OnSessionGoingAway(session);
+  all_sessions_.erase(session);
   delete session;
 }
 

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/rand_util.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/test_completion_callback.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
@@ -15,6 +16,7 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/socket/socket_test_util.h"
 #include "net/udp/datagram_client_socket.h"
 
 using testing::_;
@@ -30,11 +32,22 @@ class QuicClientSessionTest : public ::testing::Test {
   QuicClientSessionTest()
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
-        session_(connection_, scoped_ptr<DatagramClientSocket>(), NULL,
+        session_(connection_, GetSocket().Pass(), NULL,
                  NULL, kServerHostname, DefaultQuicConfig(), &crypto_config_,
                  &net_log_) {
     session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    session_.CloseSessionOnError(ERR_ABORTED);
+  }
+
+  scoped_ptr<DatagramClientSocket> GetSocket() {
+    socket_factory_.AddSocketDataProvider(&socket_data_);
+    return socket_factory_.CreateDatagramClientSocket(
+        DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt),
+        &net_log_, NetLog::Source());
   }
 
   void CompleteCryptoHandshake() {
@@ -48,6 +61,8 @@ class QuicClientSessionTest : public ::testing::Test {
   QuicGuid guid_;
   PacketSavingConnection* connection_;
   CapturingNetLog net_log_;
+  MockClientSocketFactory socket_factory_;
+  StaticSocketDataProvider socket_data_;
   QuicClientSession session_;
   MockClock clock_;
   MockRandom random_;

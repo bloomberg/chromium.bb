@@ -292,6 +292,7 @@ class MockSession : public QuicSession {
                                             QuicStreamOffset offset,
                                             bool fin));
   MOCK_METHOD0(IsHandshakeComplete, bool());
+  MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSession);

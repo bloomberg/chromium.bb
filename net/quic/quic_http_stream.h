@@ -23,10 +23,11 @@ class QuicHttpStreamPeer;
 // non-owning pointer to a QuicReliableClientStream which it uses to
 // send and receive data.
 class NET_EXPORT_PRIVATE QuicHttpStream :
+      public QuicClientSession::Observer,
       public QuicReliableClientStream::Delegate,
       public HttpStream {
  public:
-  explicit QuicHttpStream(const base::WeakPtr<QuicClientSession> session);
+  explicit QuicHttpStream(const base::WeakPtr<QuicClientSession>& session);
 
   virtual ~QuicHttpStream();
 
@@ -68,6 +69,10 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   virtual void OnError(int error) OVERRIDE;
   virtual bool HasSendHeadersComplete() OVERRIDE;
 
+  // QuicClientSession::Observer implementation
+  virtual void OnCryptoHandshakeConfirmed() OVERRIDE;
+  virtual void OnSessionClosed(int error) OVERRIDE;
+
  private:
   friend class test::QuicHttpStreamPeer;
 
@@ -102,7 +107,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
 
   State next_state_;
 
-  const base::WeakPtr<QuicClientSession> session_;
+  base::WeakPtr<QuicClientSession> session_;
+  int session_error_;  // Error code from the connection shutdown.
+  bool was_handshake_confirmed_;  // True if the crypto handshake succeeded.
   QuicClientSession::StreamRequest stream_request_;
   QuicReliableClientStream* stream_;  // Non-owning.
 

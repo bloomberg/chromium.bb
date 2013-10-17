@@ -34,6 +34,14 @@ class QuicClientSessionPeer;
 
 class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
  public:
+  // An interface for observing events on a session.
+  class NET_EXPORT_PRIVATE Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnCryptoHandshakeConfirmed() = 0;
+    virtual void OnSessionClosed(int error) = 0;
+  };
+
   // A helper class used to manage a request to create a stream.
   class NET_EXPORT_PRIVATE StreamRequest {
    public:
@@ -44,7 +52,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
     // |stream| will be updated with the newly created stream.  If
     // ERR_IO_PENDING is returned, then when the request is eventuallly
     // complete |callback| will be called.
-    int StartRequest(const base::WeakPtr<QuicClientSession> session,
+    int StartRequest(const base::WeakPtr<QuicClientSession>& session,
                      QuicReliableClientStream** stream,
                      const CompletionCallback& callback);
 
@@ -84,6 +92,9 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
                     NetLog* net_log);
 
   virtual ~QuicClientSession();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Attempts to create a new stream.  If the stream can be
   // created immediately, returns OK.  If the open stream limit
@@ -149,6 +160,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
  private:
   friend class test::QuicClientSessionPeer;
 
+  typedef std::set<Observer*> ObserverSet;
   typedef std::list<StreamRequest*> StreamRequestQueue;
 
   QuicReliableClientStream* CreateOutgoingReliableStreamImpl();
@@ -157,20 +169,36 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
 
   void OnClosedStream();
 
+  // A Session may be closed via any of three methods:
+  // OnConnectionClosed - called by the connection when the connection has been
+  //     closed, perhaps due to a timeout or a protocol error.
+  // CloseSessionOnError - called from the owner of the session,
+  //     the QuicStreamFactory, when there is an error.
+  // OnReadComplete - when there is a read error.
+  // This method closes all stream and performs any necessary cleanup.
   void CloseSessionOnErrorInner(int net_error, QuicErrorCode quic_error);
 
+  void CloseAllStreams(int net_error);
+  void CloseAllObservers(int net_error);
+
+  // Notifies the factory that this session is going away and no more streams
+  // should be created from it.  This needs to be called before closing any
+  // streams, because closing a stream may cause a new stream to be created.
+  void NotifyFactoryOfSessionGoingAway();
+
   // Posts a task to notify the factory that this session has been closed.
-  void NotifyFactoryOfSessionCloseLater();
+  void NotifyFactoryOfSessionClosedLater();
 
   // Notifies the factory that this session has been closed which will
   // delete |this|.
-  void NotifyFactoryOfSessionClose();
+  void NotifyFactoryOfSessionClosed();
 
   bool require_confirmation_;
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
+  ObserverSet observers_;
   StreamRequestQueue stream_requests_;
   bool read_pending_;
   CompletionCallback callback_;

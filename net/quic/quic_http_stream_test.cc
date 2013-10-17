@@ -143,6 +143,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
   }
 
   ~QuicHttpStreamTest() {
+    session_->CloseSessionOnError(ERR_ABORTED);
     for (size_t i = 0; i < writes_.size(); i++) {
       delete writes_[i].packet;
     }

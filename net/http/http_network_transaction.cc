@@ -897,6 +897,11 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
       return result;
   }
 
+  if (result == ERR_QUIC_HANDSHAKE_FAILED) {
+    ResetConnectionAndRequestForResend();
+    return OK;
+  }
+
   if (result < 0 && result != ERR_CONNECTION_CLOSED)
     return HandleIOError(result);
 
@@ -1339,6 +1344,7 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       break;
     case ERR_SPDY_PING_FAILED:
     case ERR_SPDY_SERVER_REFUSED_STREAM:
+    case ERR_QUIC_HANDSHAKE_FAILED:
       net_log_.AddEventWithNetErrorCode(
           NetLog::TYPE_HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
       ResetConnectionAndRequestForResend();

@@ -834,18 +834,28 @@ TEST_F(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
   AddHangingNonAlternateProtocolSocketData();
 
+  // Final job that will proceed when the QUIC job fails.
+  MockRead http_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+    MockRead("hello from http"),
+    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+    MockRead(ASYNC, OK)
+  };
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     NULL, 0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+
   CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  scoped_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
-  TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
+  SendRequestAndExpectHttpResponse("hello from http");
 
   ExpectBrokenAlternateProtocolMapping();
+
+  EXPECT_TRUE(quic_data.at_read_eof());
+  EXPECT_TRUE(quic_data.at_write_eof());
 }
 
 }  // namespace test

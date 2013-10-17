@@ -47,7 +47,7 @@ QuicClientSession::StreamRequest::~StreamRequest() {
 }
 
 int QuicClientSession::StreamRequest::StartRequest(
-    const base::WeakPtr<QuicClientSession> session,
+    const base::WeakPtr<QuicClientSession>& session,
     QuicReliableClientStream** stream,
     const CompletionCallback& callback) {
   session_ = session;
@@ -112,6 +112,12 @@ QuicClientSession::QuicClientSession(
 }
 
 QuicClientSession::~QuicClientSession() {
+  // The session must be closed before it is destroyed.
+  DCHECK(streams()->empty());
+  CloseAllStreams(ERR_UNEXPECTED);
+  DCHECK(observers_.empty());
+  CloseAllObservers(ERR_UNEXPECTED);
+
   connection()->set_debug_visitor(NULL);
   net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
 
@@ -154,6 +160,16 @@ bool QuicClientSession::OnStreamFrames(
   }
 
   return QuicSession::OnStreamFrames(frames);
+}
+
+void QuicClientSession::AddObserver(Observer* observer) {
+  DCHECK(!ContainsKey(observers_, observer));
+  observers_.insert(observer);
+}
+
+void QuicClientSession::RemoveObserver(Observer* observer) {
+  DCHECK(ContainsKey(observers_, observer));
+  observers_.erase(observer);
 }
 
 int QuicClientSession::TryCreateStream(StreamRequest* request,
@@ -296,6 +312,14 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     // following code needs to changed.
     base::ResetAndReturn(&callback_).Run(OK);
   }
+  if (event == HANDSHAKE_CONFIRMED) {
+    ObserverSet::iterator it = observers_.begin();
+    while (it != observers_.end()) {
+      Observer* observer = *it;
+      ++it;
+      observer->OnCryptoHandshakeConfirmed();
+    }
+  }
   QuicSession::OnCryptoHandshakeEvent(event);
 }
 
@@ -328,12 +352,13 @@ void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",
                               connection()->version());
+  NotifyFactoryOfSessionGoingAway();
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
   }
   socket_->Close();
   QuicSession::ConnectionClose(error, from_peer);
-  NotifyFactoryOfSessionCloseLater();
+  NotifyFactoryOfSessionClosedLater();
 }
 
 void QuicClientSession::OnSuccessfulVersionNegotiation(
@@ -367,7 +392,7 @@ void QuicClientSession::StartReading() {
 void QuicClientSession::CloseSessionOnError(int error) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError", -error);
   CloseSessionOnErrorInner(error, QUIC_INTERNAL_ERROR);
-  NotifyFactoryOfSessionClose();
+  NotifyFactoryOfSessionClosed();
 }
 
 void QuicClientSession::CloseSessionOnErrorInner(int net_error,
@@ -375,18 +400,31 @@ void QuicClientSession::CloseSessionOnErrorInner(int net_error,
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(net_error);
   }
-  while (!streams()->empty()) {
-    ReliableQuicStream* stream = streams()->begin()->second;
-    QuicStreamId id = stream->id();
-    static_cast<QuicReliableClientStream*>(stream)->OnError(net_error);
-    CloseStream(id);
-  }
+  CloseAllStreams(net_error);
+  CloseAllObservers(net_error);
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CLOSE_ON_ERROR,
       NetLog::IntegerCallback("net_error", net_error));
 
   connection()->CloseConnection(quic_error, false);
   DCHECK(!connection()->connected());
+}
+
+void QuicClientSession::CloseAllStreams(int net_error) {
+  while (!streams()->empty()) {
+    ReliableQuicStream* stream = streams()->begin()->second;
+    QuicStreamId id = stream->id();
+    static_cast<QuicReliableClientStream*>(stream)->OnError(net_error);
+    CloseStream(id);
+  }
+}
+
+void QuicClientSession::CloseAllObservers(int net_error) {
+  while (!observers_.empty()) {
+    Observer* observer = *observers_.begin();
+    observers_.erase(observer);
+    observer->OnSessionClosed(net_error);
+  }
 }
 
 base::Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
@@ -412,8 +450,9 @@ void QuicClientSession::OnReadComplete(int result) {
   if (result < 0) {
     DLOG(INFO) << "Closing session on read error: " << result;
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ReadError", -result);
+    NotifyFactoryOfSessionGoingAway();
     CloseSessionOnErrorInner(result, QUIC_PACKET_READ_ERROR);
-    NotifyFactoryOfSessionCloseLater();
+    NotifyFactoryOfSessionClosedLater();
     return;
   }
 
@@ -428,26 +467,31 @@ void QuicClientSession::OnReadComplete(int result) {
   // use a weak pointer to be safe.
   connection()->ProcessUdpPacket(local_address, peer_address, packet);
   if (!connection()->connected()) {
-    stream_factory_->OnSessionClose(this);
+    stream_factory_->OnSessionClosed(this);
     return;
   }
   StartReading();
 }
 
-void QuicClientSession::NotifyFactoryOfSessionCloseLater() {
+void QuicClientSession::NotifyFactoryOfSessionGoingAway() {
+  if (stream_factory_)
+    stream_factory_->OnSessionGoingAway(this);
+}
+
+void QuicClientSession::NotifyFactoryOfSessionClosedLater() {
   DCHECK_EQ(0u, GetNumOpenStreams());
   DCHECK(!connection()->connected());
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&QuicClientSession::NotifyFactoryOfSessionClose,
+      base::Bind(&QuicClientSession::NotifyFactoryOfSessionClosed,
                  weak_factory_.GetWeakPtr()));
 }
 
-void QuicClientSession::NotifyFactoryOfSessionClose() {
+void QuicClientSession::NotifyFactoryOfSessionClosed() {
   DCHECK_EQ(0u, GetNumOpenStreams());
-  DCHECK(stream_factory_);
   // Will delete |this|.
-  stream_factory_->OnSessionClose(this);
+  if (stream_factory_)
+    stream_factory_->OnSessionClosed(this);
 }
 
 }  // namespace net

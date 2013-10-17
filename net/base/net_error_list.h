@@ -552,6 +552,10 @@ NET_ERROR(QUIC_PROTOCOL_ERROR, -356)
 // The HTTP headers were truncated by an EOF.
 NET_ERROR(RESPONSE_HEADERS_TRUNCATED, -357)
 
+// The QUIC crytpo handshake failed.  This means that the server was unable
+// to read any requests sent, so they may be resent.
+NET_ERROR(QUIC_HANDSHAKE_FAILED, -358)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

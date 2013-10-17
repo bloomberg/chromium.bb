@@ -109,8 +109,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Called by a session when it becomes idle.
   void OnIdleSession(QuicClientSession* session);
 
+  // Called by a session when it is going away and no more streams should be
+  // created on it.
+  void OnSessionGoingAway(QuicClientSession* session);
+
   // Called by a session after it shuts down.
-  void OnSessionClose(QuicClientSession* session);
+  void OnSessionClosed(QuicClientSession* session);
 
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
