@@ -29,6 +29,7 @@
 #include "SkPerlinNoiseShader.h"
 #include "SkRectShaderImageFilter.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "platform/text/TextStream.h"
 #include "wtf/MathExtras.h"
@@ -439,7 +440,8 @@ bool FETurbulence::applySkia()
 PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     SkAutoTUnref<SkShader> shader(createShader(IntRect()));
-    return adoptRef(SkRectShaderImageFilter::Create(shader, SkRect()));
+    SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
+    return adoptRef(SkRectShaderImageFilter::Create(shader, &rect));
 }
 
 static TextStream& operator<<(TextStream& ts, const TurbulenceType& type)
