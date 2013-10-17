@@ -302,11 +302,6 @@ bool StyleResolver::supportsStyleSharing(Element* element)
         return false;
     if (element->hasActiveAnimations())
         return false;
-    // When a dialog is first shown, its style is mutated to center it in the
-    // viewport. So the styles can't be shared since the viewport position and
-    // size may be different each time a dialog is opened.
-    if (element->hasTagName(dialogTag))
-        return false;
     if (isShadowHost(element) && element->shadow()->containsActiveStyles())
         return false;
     return true;
