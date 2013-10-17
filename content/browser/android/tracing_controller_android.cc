@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/browser/tracing/trace_subscriber_stdio.h"
@@ -88,6 +89,11 @@ void TracingControllerAndroid::OnTracingStopped() {
     Java_TracingControllerAndroid_onTracingStopped(env, obj.obj());
   }
   subscriber_.reset();
+}
+
+static jstring GetDefaultCategories(JNIEnv* env, jobject obj) {
+  return base::android::ConvertUTF8ToJavaString(env,
+      base::debug::CategoryFilter::kDefaultCategoryFilterString).Release();
 }
 
 bool RegisterTracingControllerAndroid(JNIEnv* env) {
