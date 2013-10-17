@@ -109,6 +109,8 @@ SVGSVGElement::~SVGSVGElement()
     // There are cases where removedFromDocument() is not called.
     // see ContainerNode::removeAllChildren, called by its destructor.
     document().accessSVGExtensions()->removeTimeContainer(this);
+
+    ASSERT(inDocument() || !accessDocumentSVGExtensions()->isSVGRootWithRelativeLengthDescendents(this));
 }
 
 const AtomicString& SVGSVGElement::contentScriptType() const
@@ -505,8 +507,12 @@ Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* ro
 
 void SVGSVGElement::removedFrom(ContainerNode* rootParent)
 {
-    if (rootParent->inDocument())
-        document().accessSVGExtensions()->removeTimeContainer(this);
+    if (rootParent->inDocument()) {
+        SVGDocumentExtensions* svgExtensions = document().accessSVGExtensions();
+        svgExtensions->removeTimeContainer(this);
+        svgExtensions->removeSVGRootWithRelativeLengthDescendents(this);
+    }
+
     SVGGraphicsElement::removedFrom(rootParent);
 }
 

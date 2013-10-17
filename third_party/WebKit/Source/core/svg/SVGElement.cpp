@@ -446,6 +446,8 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& 
 
 void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths, SVGElement* clientElement)
 {
+    ASSERT(clientElement);
+
     // If we're not yet in a document, this function will be called again from insertedInto(). Do nothing now.
     if (!inDocument())
         return;
@@ -463,12 +465,21 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
         else
             currentElement->m_elementsWithRelativeLengths.remove(clientElement);
 
-        // If the relative length state hasn't changed, we can stop propagating the notfication.
+        // If the relative length state hasn't changed, we can stop propagating the notification.
         if (hadRelativeLengths == currentElement->hasRelativeLengths())
-            break;
+            return;
 
         clientElement = currentElement;
         clientHasRelativeLengths = clientElement->hasRelativeLengths();
+    }
+
+    // Register root SVG elements for top level viewport change notifications.
+    if (clientElement->isSVGSVGElement()) {
+        SVGDocumentExtensions* svgExtensions = accessDocumentSVGExtensions();
+        if (clientElement->hasRelativeLengths())
+            svgExtensions->addSVGRootWithRelativeLengthDescendents(toSVGSVGElement(clientElement));
+        else
+            svgExtensions->removeSVGRootWithRelativeLengthDescendents(toSVGSVGElement(clientElement));
     }
 }
 

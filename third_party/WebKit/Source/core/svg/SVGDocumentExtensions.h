@@ -30,6 +30,7 @@ namespace WebCore {
 
 class Document;
 class RenderSVGResourceContainer;
+class SubtreeLayoutScope;
 class SVGElement;
 #if ENABLE(SVG_FONTS)
 class SVGFontFaceElement;
@@ -69,6 +70,11 @@ public:
     void rebuildAllElementReferencesForTarget(SVGElement*);
     void removeAllElementReferencesForTarget(SVGElement*);
 
+    void addSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
+    void removeSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
+    bool isSVGRootWithRelativeLengthDescendents(SVGSVGElement*) const;
+    void invalidateSVGRootsWithRelativeLengthDescendents(SubtreeLayoutScope*);
+
 #if ENABLE(SVG_FONTS)
     const HashSet<SVGFontFaceElement*>& svgFontFaceElements() const { return m_svgFontFaceElements; }
     void registerSVGFontFaceElement(SVGFontFaceElement*);
@@ -86,6 +92,10 @@ private:
     HashMap<AtomicString, OwnPtr<SVGPendingElements> > m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
     HashMap<SVGElement*, OwnPtr<HashSet<SVGElement*> > > m_elementDependencies;
     OwnPtr<SVGResourcesCache> m_resourcesCache;
+    HashSet<SVGSVGElement*> m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
+#if !ASSERT_DISABLED
+    bool m_inRelativeLengthSVGRootsInvalidation;
+#endif
 
 public:
     // This HashMap contains a list of pending resources. Pending resources, are such

@@ -41,7 +41,7 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/RenderWidget.h"
-#include "core/svg/SVGElement.h"
+#include "core/svg/SVGDocumentExtensions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 
@@ -311,22 +311,21 @@ void RenderView::layout()
     if (relayoutChildren) {
         layoutScope.setChildNeedsLayout(this);
         for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+            if (child->isSVGRoot())
+                continue;
+
             if ((child->isBox() && toRenderBox(child)->hasRelativeLogicalHeight())
                     || child->style()->logicalHeight().isPercent()
                     || child->style()->logicalMinHeight().isPercent()
                     || child->style()->logicalMaxHeight().isPercent()
                     || child->style()->logicalHeight().isViewportPercentage()
                     || child->style()->logicalMinHeight().isViewportPercentage()
-                    || child->style()->logicalMaxHeight().isViewportPercentage()
-                    || child->isSVGRoot())
+                    || child->style()->logicalMaxHeight().isViewportPercentage())
                 layoutScope.setChildNeedsLayout(child);
-
-            if (child->isSVGRoot()) {
-                ASSERT(child->node());
-                ASSERT(child->node()->isSVGElement());
-                toSVGElement(child->node())->invalidateRelativeLengthClients(&layoutScope);
-            }
         }
+
+        if (document().svgExtensions())
+            document().accessSVGExtensions()->invalidateSVGRootsWithRelativeLengthDescendents(&layoutScope);
     }
 
     ASSERT(!m_layoutState);
