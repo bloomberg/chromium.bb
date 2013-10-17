@@ -1,5 +1,7 @@
 {
   "": "index.html",
+  "experimental.debugger.html": "debugger.html",
+  "experimental_debugger.html": "debugger.html",
   "experimental.infobars.html": "infobars.html",
   "experimental_infobars.html": "infobars.html",
   "experimental.systemInfo_storage.html": "system_storage.html",
