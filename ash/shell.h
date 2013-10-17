@@ -27,6 +27,9 @@
 
 class CommandLine;
 
+namespace app_list {
+class AppListView;
+}
 namespace aura {
 class EventFilter;
 class RootWindow;
@@ -78,6 +81,7 @@ class AutoclickController;
 class CapsLockDelegate;
 class DesktopBackgroundController;
 class DisplayController;
+class FirstRunHelper;
 class HighContrastController;
 class Launcher;
 class LauncherDelegate;
@@ -233,6 +237,9 @@ class ASH_EXPORT Shell
 
   // Returns app list window or NULL if it is not visible.
   aura::Window* GetAppListWindow();
+
+  // Returns app list view or NULL if it is not visible.
+  app_list::AppListView* GetAppListView();
 
   // Returns true if a system-modal dialog window is currently open.
   bool IsSystemModalWindowOpen() const;
@@ -495,6 +502,12 @@ class ASH_EXPORT Shell
   bool is_touch_hud_projection_enabled() const {
     return is_touch_hud_projection_enabled_;
   }
+
+#if defined(OS_CHROMEOS)
+  // Creates instance of FirstRunHelper. Caller is responsible for deleting
+  // returned object.
+  ash::FirstRunHelper* CreateFirstRunHelper();
+#endif  // defined(OS_CHROMEOS)
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);

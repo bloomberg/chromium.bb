@@ -24,6 +24,7 @@
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/first_run/first_run_helper_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/root_window_host_factory.h"
@@ -288,6 +289,10 @@ aura::Window* Shell::GetAppListWindow() {
   return app_list_controller_.get() ? app_list_controller_->GetWindow() : NULL;
 }
 
+app_list::AppListView* Shell::GetAppListView() {
+  return app_list_controller_.get() ? app_list_controller_->GetView() : NULL;
+}
+
 bool Shell::IsSystemModalWindowOpen() const {
   if (simulate_modal_window_open_for_testing_)
     return true;
@@ -515,6 +520,12 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnTouchHudProjectionToggled(enabled));
 }
+
+#if defined(OS_CHROMEOS)
+ash::FirstRunHelper* Shell::CreateFirstRunHelper() {
+  return new ash::FirstRunHelperImpl;
+}
+#endif  // defined(OS_CHROMEOS)
 
 void Shell::DoInitialWorkspaceAnimation() {
   return GetPrimaryRootWindowController()->workspace_controller()->
