@@ -297,7 +297,7 @@ void DisplayController::InitSecondaryDisplays() {
     const gfx::Display& display = display_manager->GetDisplayAt(i);
     if (primary_display_id != display.id()) {
       aura::RootWindow* root = AddRootWindowForDisplay(display);
-      Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
+      internal::RootWindowController::CreateForSecondaryDisplay(root);
     }
   }
   UpdateHostWindowNames();
@@ -617,7 +617,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
       primary_display_id = display.id();
     DCHECK(!root_windows_.empty());
     aura::RootWindow* root = AddRootWindowForDisplay(display);
-    Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
+    internal::RootWindowController::CreateForSecondaryDisplay(root);
   }
 }
 

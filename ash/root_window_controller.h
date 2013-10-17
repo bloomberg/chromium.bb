@@ -70,13 +70,19 @@ class BootSplashScreen;
 
 // This class maintains the per root window state for ash. This class
 // owns the root window and other dependent objects that should be
-// deleted upon the deletion of the root window.  The RootWindowController
-// for particular root window is stored as a property and can be obtained
-// using |GetRootWindowController(aura::RootWindow*)| function.
+// deleted upon the deletion of the root window. This object is
+// indirectly owned and deleted by |DisplayController|.
+// The RootWindowController for particular root window is stored in
+// its property (RootWindowSettings) and can be obtained using
+// |GetRootWindowController(aura::RootWindow*)| function.
 class ASH_EXPORT RootWindowController : public ShellObserver {
  public:
-  explicit RootWindowController(aura::RootWindow* root_window);
-  virtual ~RootWindowController();
+
+  // Creates and Initialize the RootWindowController for primary display.
+  static void CreateForPrimaryDisplay(aura::RootWindow* root_window);
+
+  // Creates and Initialize the RootWindowController for secondary displays.
+  static void CreateForSecondaryDisplay(aura::RootWindow* root_window);
 
   // Returns a RootWindowController that has a launcher for given
   // |window|. This returns the RootWindowController for the |window|'s
@@ -89,6 +95,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   // Returns the RootWindowController of the target root window.
   static internal::RootWindowController* ForTargetRootWindow();
+
+  virtual ~RootWindowController();
 
   aura::RootWindow* root_window() { return root_window_.get(); }
 
@@ -163,10 +171,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
-  // Initializes the RootWindowController. |first_run_after_boot| is
-  // set to true only for primary root window after boot.
-  void Init(bool first_run_after_boot);
-
   // Show launcher view if it was created hidden (before session has started).
   void ShowLauncher();
 
@@ -217,6 +221,13 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void DeactivateKeyboard(keyboard::KeyboardController* keyboard_controller);
 
  private:
+  explicit RootWindowController(aura::RootWindow* root_window);
+
+  // Initializes the RootWindowController.  |is_primary| is true if
+  // the controller is for primary display.  |first_run_after_boot| is
+  // set to true only for primary root window after boot.
+  void Init(bool is_primary, bool first_run_after_boot);
+
   void InitLayoutManagers();
 
   // Initializes |system_background_| and possibly also |boot_splash_screen_|.

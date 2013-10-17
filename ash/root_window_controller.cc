@@ -9,10 +9,12 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
+#include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -214,27 +216,16 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
 
 namespace internal {
 
-RootWindowController::RootWindowController(aura::RootWindow* root_window)
-    : root_window_(root_window),
-      root_window_layout_(NULL),
-      docked_layout_manager_(NULL),
-      panel_layout_manager_(NULL),
-      touch_hud_debug_(NULL),
-      touch_hud_projection_(NULL) {
-  GetRootWindowSettings(root_window)->controller = this;
-  screen_dimmer_.reset(new ScreenDimmer(root_window));
-
-  stacking_controller_.reset(new StackingController);
-  aura::client::SetStackingClient(root_window, stacking_controller_.get());
-  capture_client_.reset(new views::corewm::ScopedCaptureClient(root_window));
+void RootWindowController::CreateForPrimaryDisplay(
+    aura::RootWindow * root) {
+  RootWindowController* controller = new RootWindowController(root);
+  controller->Init(true /* primary */,
+                   Shell::GetInstance()->delegate()->IsFirstRunAfterBoot());
 }
 
-RootWindowController::~RootWindowController() {
-  Shutdown();
-  root_window_.reset();
-  // The CaptureClient needs to be around for as long as the RootWindow is
-  // valid.
-  capture_client_.reset();
+void RootWindowController::CreateForSecondaryDisplay(aura::RootWindow * root) {
+  RootWindowController* controller = new RootWindowController(root);
+  controller->Init(false /* secondary */, false /* first run */);
 }
 
 // static
@@ -251,6 +242,14 @@ RootWindowController* RootWindowController::ForWindow(
 // static
 RootWindowController* RootWindowController::ForTargetRootWindow() {
   return internal::GetRootWindowController(Shell::GetTargetRootWindow());
+}
+
+RootWindowController::~RootWindowController() {
+  Shutdown();
+  root_window_.reset();
+  // The CaptureClient needs to be around for as long as the RootWindow is
+  // valid.
+  capture_client_.reset();
 }
 
 void RootWindowController::SetWallpaperController(
@@ -323,22 +322,6 @@ aura::Window* RootWindowController::GetContainer(int container_id) {
 
 const aura::Window* RootWindowController::GetContainer(int container_id) const {
   return root_window_->GetChildById(container_id);
-}
-
-void RootWindowController::Init(bool first_run_after_boot) {
-  root_window_->SetCursor(ui::kCursorPointer);
-  CreateContainersInRootWindow(root_window_.get());
-  CreateSystemBackground(first_run_after_boot);
-
-  InitLayoutManagers();
-  InitTouchHuds();
-
-  if (Shell::GetPrimaryRootWindowController()->
-      GetSystemModalLayoutManager(NULL)->has_modal_background()) {
-    GetSystemModalLayoutManager(NULL)->CreateModalBackground();
-  }
-
-  Shell::GetInstance()->AddShellObserver(this);
 }
 
 void RootWindowController::ShowLauncher() {
@@ -570,6 +553,57 @@ void RootWindowController::DeactivateKeyboard(
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
+
+RootWindowController::RootWindowController(aura::RootWindow* root_window)
+    : root_window_(root_window),
+      root_window_layout_(NULL),
+      docked_layout_manager_(NULL),
+      panel_layout_manager_(NULL),
+      touch_hud_debug_(NULL),
+      touch_hud_projection_(NULL) {
+  GetRootWindowSettings(root_window)->controller = this;
+  screen_dimmer_.reset(new ScreenDimmer(root_window));
+
+  stacking_controller_.reset(new StackingController);
+  aura::client::SetStackingClient(root_window, stacking_controller_.get());
+  capture_client_.reset(new views::corewm::ScopedCaptureClient(root_window));
+}
+
+void RootWindowController::Init(bool is_primary, bool first_run_after_boot) {
+  Shell::GetInstance()->InitRootWindow(root_window_.get());
+
+  root_window_->SetCursor(ui::kCursorPointer);
+  CreateContainersInRootWindow(root_window_.get());
+  CreateSystemBackground(first_run_after_boot);
+
+  InitLayoutManagers();
+  InitTouchHuds();
+
+  if (Shell::GetPrimaryRootWindowController()->
+      GetSystemModalLayoutManager(NULL)->has_modal_background()) {
+    GetSystemModalLayoutManager(NULL)->CreateModalBackground();
+  }
+
+  Shell* shell = Shell::GetInstance();
+  shell->AddShellObserver(this);
+
+  if (is_primary) {
+    shell->InitKeyboard(this);
+  } else {
+    root_window_layout()->OnWindowResized();
+    shell->desktop_background_controller()->OnRootWindowAdded(
+        root_window_.get());
+    shell->high_contrast_controller()->OnRootWindowAdded(root_window_.get());
+    root_window_->ShowRootWindow();
+    // Activate new root for testing.
+    // TODO(oshima): remove this.
+    shell->set_target_root_window(root_window_.get());
+
+    // Create a launcher if a user is already logged.
+    if (shell->session_state_delegate()->NumberOfLoggedInUsers())
+      shelf()->CreateLauncher();
+  }
+}
 
 void RootWindowController::InitLayoutManagers() {
   root_window_layout_ =

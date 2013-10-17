@@ -266,15 +266,8 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
 
   aura::RootWindow* root =
       wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size()));
-  // TODO(oshima): The root and root window controller shouldn't be
-  // NULL even for the out-of-bounds |location_in_screen| (It should
-  // return the primary root). Investigate why/how this is
-  // happening. crbug.com/165214.
-  internal::RootWindowController* rwc = internal::GetRootWindowController(root);
-  CHECK(rwc) << "root=" << root
-             << ", location:" << location_in_screen.ToString();
-  if (rwc)
-    rwc->ShowContextMenu(location_in_screen, source_type);
+  internal::GetRootWindowController(root)->
+      ShowContextMenu(location_in_screen, source_type);
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
@@ -521,27 +514,6 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
   is_touch_hud_projection_enabled_ = enabled;
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnTouchHudProjectionToggled(enabled));
-}
-
-void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
-  internal::RootWindowController* controller =
-      new internal::RootWindowController(root);
-  // Pass false for the |is_first_run_after_boot| parameter so we'll show a
-  // black background on this display instead of trying to mimic the boot splash
-  // screen.
-  InitRootWindowController(controller, false);
-
-  controller->root_window_layout()->OnWindowResized();
-  desktop_background_controller_->OnRootWindowAdded(root);
-  high_contrast_controller_->OnRootWindowAdded(root);
-  root->ShowRootWindow();
-  // Activate new root for testing.
-  // TODO(oshima): remove this.
-  target_root_window_ = root;
-
-  // Create a launcher if a user is already logged.
-  if (Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers())
-    controller->shelf()->CreateLauncher();
 }
 
 void Shell::DoInitialWorkspaceAnimation() {
@@ -869,11 +841,9 @@ void Shell::Init() {
   system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
   DCHECK(system_tray_delegate_.get());
 
+  internal::RootWindowController::CreateForPrimaryDisplay(root_window);
   internal::RootWindowController* root_window_controller =
-      new internal::RootWindowController(root_window);
-  InitRootWindowController(root_window_controller,
-                           delegate_->IsFirstRunAfterBoot());
-  InitKeyboard(root_window_controller);
+      internal::GetRootWindowController(root_window);
 
   locale_notification_controller_.reset(
       new internal::LocaleNotificationController);
@@ -941,11 +911,7 @@ void Shell::InitKeyboard(internal::RootWindowController* root) {
   }
 }
 
-void Shell::InitRootWindowController(
-    internal::RootWindowController* controller,
-    bool first_run_after_boot) {
-
-  aura::RootWindow* root_window = controller->root_window();
+void Shell::InitRootWindow(aura::RootWindow* root_window) {
   DCHECK(activation_client_);
   DCHECK(visibility_controller_.get());
   DCHECK(drag_drop_controller_.get());
@@ -971,8 +937,6 @@ void Shell::InitRootWindowController(
   }
   if (user_action_client_)
     aura::client::SetUserActionClient(root_window, user_action_client_.get());
-
-  controller->Init(first_run_after_boot);
 }
 
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {

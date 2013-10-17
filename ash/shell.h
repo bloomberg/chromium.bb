@@ -454,9 +454,6 @@ class ASH_EXPORT Shell
     browser_context_ = browser_context;
   }
 
-  // Initializes the root window to be used for a secondary display.
-  void InitRootWindowForSecondaryDisplay(aura::RootWindow* root);
-
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
@@ -519,11 +516,8 @@ class ASH_EXPORT Shell
   // Initializes virtual keyboard controller and attaches it to |root|.
   void InitKeyboard(internal::RootWindowController* root);
 
-  // Initializes the root window and root window controller so that it
-  // can host browser windows. |first_run_after_boot| is true for the
-  // primary display only first time after boot.
-  void InitRootWindowController(internal::RootWindowController* root,
-                                bool first_run_after_boot);
+  // Initializes the root window so that it can host browser windows.
+  void InitRootWindow(aura::RootWindow* root_window);
 
   // ash::internal::SystemModalContainerEventFilterDelegate overrides:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;
