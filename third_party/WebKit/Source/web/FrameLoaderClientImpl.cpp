@@ -54,6 +54,7 @@
 #include "WebViewImpl.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentFullscreen.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/dom/WheelController.h"
@@ -487,6 +488,7 @@ void FrameLoaderClientImpl::postProgressFinishedNotification()
 void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, NavigationPolicy policy, const String& suggestedName)
 {
     if (m_webFrame->client()) {
+        DocumentFullscreen::webkitCancelFullScreen(m_webFrame->frame()->document());
         WrappedResourceRequest webreq(request);
         m_webFrame->client()->loadURLExternally(
             m_webFrame, webreq, static_cast<WebNavigationPolicy>(policy), suggestedName);

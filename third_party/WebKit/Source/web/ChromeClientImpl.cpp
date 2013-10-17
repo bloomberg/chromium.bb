@@ -71,6 +71,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityObject.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentFullscreen.h"
 #include "core/dom/Node.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/DocumentLoader.h"
@@ -237,6 +238,8 @@ Page* ChromeClientImpl::createWindow(
     WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
     if (policy == WebNavigationPolicyIgnore)
         policy = getNavigationPolicy();
+
+    DocumentFullscreen::webkitCancelFullScreen(frame->document());
 
     WebViewImpl* newView = toWebViewImpl(
         m_webView->client()->createView(WebFrameImpl::fromFrame(frame), WrappedResourceRequest(r.resourceRequest()), features, r.frameName(), policy));
