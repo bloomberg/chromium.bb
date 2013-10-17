@@ -260,7 +260,6 @@ webkit.org/b/111004 [ Win Linux ] accessibility/svg-remote-element.html [ Failur
 # The implementation of CSS Animations on the Web Animations model is still in progress
 # These can't be rebaselined because they're reftests.
 crbug.com/258896 virtual/web-animations-css/animations/opacity-transform-animation.html [ ImageOnlyFailure ]
-crbug.com/258896 virtual/web-animations-css/animations/play-state-paused.html [ ImageOnlyFailure ]
 # These can't be rebaselined because they're crashes.
 crbug.com/306967 virtual/web-animations-css/animations/cross-fade-background-image.html [ Crash Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ Crash ]
@@ -268,8 +267,6 @@ crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/change-keyframes-name.html [ Failure ]
-# dynamic-stylesheet-loading.html starts to be timeout in range 159179:159181.
-crbug.com/258896 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Failure Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-iteration-count-non-integer.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-reverse.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/play-state.html [ Failure ]
@@ -281,6 +278,8 @@ crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
 # These can't be rebaselined because they time out.
+# dynamic-stylesheet-loading.html starts to be timeout in range 159179:159181.
+crbug.com/258896 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Failure Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-forwards.html [ Timeout Pass ]
 
 crbug.com/305070 [ Debug ] animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash ]
@@ -817,7 +816,6 @@ crbug.com/248938 [ Mac ] virtual/threaded/animations/3d/matrix-transform-type-an
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/animation-welcome-safari.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/opacity-transform-animation.html [ Pass ImageOnlyFailure Timeout ]
-crbug.com/248938 virtual/threaded/animations/play-state-paused.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 [ Mac Linux ] virtual/threaded/animations/additive-transform-animations.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/animations/fill-mode-forwards.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure ]
