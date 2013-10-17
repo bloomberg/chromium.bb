@@ -4,7 +4,6 @@
 
 #include "media/midi/midi_manager_mac.h"
 
-#include <iostream>
 #include <string>
 
 #include "base/debug/trace_event.h"
@@ -110,6 +109,7 @@ MIDIManagerMac::~MIDIManagerMac() {
     MIDIPortDispose(coremidi_output_);
 }
 
+// static
 void MIDIManagerMac::ReadMIDIDispatch(const MIDIPacketList* packet_list,
                                       void* read_proc_refcon,
                                       void* src_conn_refcon) {
@@ -177,6 +177,7 @@ void MIDIManagerMac::SendMIDIData(MIDIManagerClient* client,
   client->AccumulateMIDIBytesSent(data.size());
 }
 
+// static
 MIDIPortInfo MIDIManagerMac::GetPortInfoFromEndpoint(
     MIDIEndpointRef endpoint) {
   SInt32 id_number = 0;
@@ -200,11 +201,13 @@ MIDIPortInfo MIDIManagerMac::GetPortInfoFromEndpoint(
   return MIDIPortInfo(id, manufacturer, name, version);
 }
 
+// static
 double MIDIManagerMac::MIDITimeStampToSeconds(MIDITimeStamp timestamp) {
   UInt64 nanoseconds = AudioConvertHostTimeToNanos(timestamp);
   return static_cast<double>(nanoseconds) / 1.0e9;
 }
 
+// static
 MIDITimeStamp MIDIManagerMac::SecondsToMIDITimeStamp(double seconds) {
   UInt64 nanos = UInt64(seconds * 1.0e9);
   return AudioConvertNanosToHostTime(nanos);
