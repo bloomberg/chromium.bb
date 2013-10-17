@@ -449,7 +449,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderChangedAfterSwap) {
 // This test opens two pages in http and there is no RenderViewHost swap,
 // therefore the embedder created on first page navigation stays the same in
 // web_contents.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderSameAfterNav) {
+// Failing flakily on Windows: crbug.com/308405
+#if defined(OS_WIN)
+#define MAYBE_EmbedderSameAfterNav DISABLED_EmbedderSameAfterNav
+#else
+#define MAYBE_EmbedderSameAfterNav EmbedderSameAfterNav
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_EmbedderSameAfterNav) {
   const char kEmbedderURL[] = "/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
   WebContentsImpl* embedder_web_contents = test_embedder()->web_contents();
