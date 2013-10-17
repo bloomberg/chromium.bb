@@ -56,7 +56,7 @@ void NaClHttpResponseHeaders::Parse(const std::string& headers_str) {
     std::string key = tokens[0];
     // Also ignore keys that start with white-space (they are invalid).
     // See: HttpResponseHeadersTest.NormalizeHeadersLeadingWhitespace.
-    if (key[0] == ' ' || key[0] == '\t')
+    if (key.length() == 0 || key[0] == ' ' || key[0] == '\t')
       continue;
     // TODO(jvoung): replace some of this with TrimWhitespaceASCII when
     // we move code to chromium.
