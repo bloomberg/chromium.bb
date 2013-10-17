@@ -59,7 +59,7 @@ private:
     float m_denominatorValue;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSAspectRatioValue, isAspectRatioValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(AspectRatioValue);
 
 }
 

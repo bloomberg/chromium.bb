@@ -72,7 +72,7 @@ private:
     FilterOperationType m_type;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSFilterValue, isFilterValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(FilterValue);
 
 }
 

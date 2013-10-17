@@ -67,7 +67,7 @@ private:
     AtomicString m_initiatorName;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageValue, isImageValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(ImageValue);
 
 } // namespace WebCore
 

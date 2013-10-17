@@ -64,7 +64,7 @@ private:
     bool m_accessedShader;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSShaderValue, isShaderValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(ShaderValue);
 
 } // namespace WebCore
 

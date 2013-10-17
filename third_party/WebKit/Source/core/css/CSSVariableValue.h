@@ -59,7 +59,7 @@ private:
     const String m_value;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSVariableValue, isVariableValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(VariableValue);
 
 }
 

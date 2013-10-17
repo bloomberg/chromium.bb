@@ -242,8 +242,19 @@ inline bool compareCSSValuePtr(const RefPtr<CSSValueType>& first, const RefPtr<C
     return first ? second && first->equals(*second) : !second;
 }
 
-#define DEFINE_CSS_VALUE_TYPE_CASTS(thisType, predicate) \
-    DEFINE_TYPE_CASTS(thisType, CSSValue, value, value->predicate, value.predicate)
+#define DEFINE_CSS_VALUE_TYPE_CASTS(ValueTypeName) \
+inline const CSS##ValueTypeName* toCSS##ValueTypeName(const CSSValue* value) \
+{ \
+    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->is##ValueTypeName()); \
+    return static_cast<const CSS##ValueTypeName*>(value); \
+} \
+inline CSS##ValueTypeName* toCSS##ValueTypeName(CSSValue* value) \
+{ \
+    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->is##ValueTypeName()); \
+    return static_cast<CSS##ValueTypeName*>(value); \
+} \
+void toCSS##ValueTypeName(const CSS##ValueTypeName*); \
+void toCSS##ValueTypeName(const CSS##ValueTypeName&)
 
 } // namespace WebCore
 

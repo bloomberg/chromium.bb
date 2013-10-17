@@ -131,7 +131,7 @@ protected:
     bool m_repeating;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSGradientValue, isGradientValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(GradientValue);
 
 class CSSLinearGradientValue : public CSSGradientValue {
 public:
@@ -170,7 +170,7 @@ private:
     RefPtr<CSSPrimitiveValue> m_angle; // may be null.
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSLinearGradientValue, isLinearGradientValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(LinearGradientValue);
 
 class CSSRadialGradientValue : public CSSGradientValue {
 public:
@@ -233,7 +233,7 @@ private:
     RefPtr<CSSPrimitiveValue> m_endVerticalSize;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSRadialGradientValue, isRadialGradientValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(RadialGradientValue);
 
 } // namespace WebCore
 
