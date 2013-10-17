@@ -1680,6 +1680,7 @@ weston_seat_release_keyboard(struct weston_seat *seat)
 {
 	seat->keyboard_device_count--;
 	if (seat->keyboard_device_count == 0) {
+		weston_keyboard_set_focus(seat->keyboard, NULL);
 		seat_send_updated_caps(seat);
 	}
 }
@@ -1714,6 +1715,10 @@ weston_seat_release_pointer(struct weston_seat *seat)
 
 	seat->pointer_device_count--;
 	if (seat->pointer_device_count == 0) {
+		weston_pointer_set_focus(pointer, NULL,
+					 wl_fixed_from_int(0),
+					 wl_fixed_from_int(0));
+
 		seat_send_updated_caps(seat);
 	}
 }
@@ -1746,6 +1751,7 @@ weston_seat_release_touch(struct weston_seat *seat)
 {
 	seat->touch_device_count--;
 	if (seat->touch_device_count == 0) {
+		weston_touch_set_focus(seat, NULL);
 		seat_send_updated_caps(seat);
 	}
 }
