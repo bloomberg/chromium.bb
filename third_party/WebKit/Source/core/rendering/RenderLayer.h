@@ -425,14 +425,17 @@ public:
     // Only safe to call from RenderLayerModelObject::destroyLayer()
     void operator delete(void*);
 
-    bool adjustForForceCompositedScrollingMode(bool) const;
+    CompositingState compositingState() const;
 
-    bool isComposited() const { return m_compositedLayerMapping; }
-    bool hasCompositedMask() const;
-    bool hasCompositedClippingMask() const;
+    // NOTE: If you are accessing the CompositedLayerMapping as a boolean condition to determine the state of compositing for this layer,
+    // then you may have incorrect logic. Use compositingState() instead.
     CompositedLayerMapping* compositedLayerMapping() const { return m_compositedLayerMapping.get(); }
     CompositedLayerMapping* ensureCompositedLayerMapping();
     void clearCompositedLayerMapping(bool layerBeingDestroyed = false);
+    bool adjustForForceCompositedScrollingMode(bool) const;
+
+    bool hasCompositedMask() const;
+    bool hasCompositedClippingMask() const;
     bool needsCompositedScrolling() const;
     bool needsToBeStackingContainer() const;
 
@@ -445,7 +448,7 @@ public:
 
     bool paintsWithTransparency(PaintBehavior paintBehavior) const
     {
-        return isTransparent() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || !isComposited());
+        return isTransparent() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
     }
 
     bool paintsWithTransform(PaintBehavior) const;

@@ -226,7 +226,9 @@ void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(con
             absoluteTransform = layerTransform->toAffineTransform() * absoluteTransform;
 
         // We can stop at compositing layers, to match the backing resolution.
-        if (layer->isComposited())
+        // FIXME: should we be computing the transform to the nearest composited layer,
+        // or the nearest composited layer that does not paint into its ancestor?
+        if (layer->compositedLayerMapping())
             break;
 
         layer = layer->parent();

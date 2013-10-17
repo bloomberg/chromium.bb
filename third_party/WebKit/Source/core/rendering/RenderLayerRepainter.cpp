@@ -125,7 +125,7 @@ inline bool RenderLayerRepainter::shouldRepaintAfterLayout() const
     // Composited layers that were moved during a positioned movement only
     // layout, don't need to be repainted. They just need to be recomposited.
     ASSERT(m_repaintStatus == NeedsFullRepaintForPositionedMovementLayout);
-    return !m_renderer->isComposited() || (m_renderer->isComposited() && m_renderer->layer()->compositedLayerMapping()->paintsIntoCompositedAncestor());
+    return m_renderer->compositingState() != PaintsIntoOwnBacking;
 }
 
 // Since we're only painting non-composited layers, we know that they all share the same repaintContainer.
@@ -134,7 +134,7 @@ void RenderLayerRepainter::repaintIncludingNonCompositingDescendants(RenderLayer
     m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer->clippedOverflowRectForRepaint(repaintContainer)));
 
     for (RenderLayer* curr = m_renderer->layer()->firstChild(); curr; curr = curr->nextSibling()) {
-        if (!curr->isComposited())
+        if (!curr->compositedLayerMapping())
             curr->repainter().repaintIncludingNonCompositingDescendants(repaintContainer);
     }
 }
@@ -144,7 +144,7 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
     LayoutRect repaintRect = m_repaintRect;
     for (RenderLayer* child = m_renderer->layer()->firstChild(); child; child = child->nextSibling()) {
         // Don't include repaint rects for composited child layers; they will paint themselves and have a different origin.
-        if (child->isComposited())
+        if (child->compositedLayerMapping())
             continue;
 
         repaintRect.unite(child->repainter().repaintRectIncludingNonCompositingDescendants());
