@@ -64,10 +64,10 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(v8::Local<v8::Stri
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
         V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "{{attribute.name}}", wrapper);
-        {{attribute.return_v8_value_statement}}
+        {{attribute.v8_set_return_value}};
     }
     {% else %}
-    {{attribute.return_v8_value_statement}}
+    {{attribute.v8_set_return_value}};
     {% endif %}
 }
 {% endfilter %}
@@ -91,7 +91,7 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 0, 0, "Getter");
     {% endif %}
-    {% if attribute.is_custom_getter %}
+    {% if attribute.has_custom_getter %}
     {{v8_class_name}}::{{attribute.name}}AttributeGetterCustom(name, info);
     {% else %}
     {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(name, info);
@@ -99,4 +99,26 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 {% endfilter %}
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro attribute_setter(attribute, world_suffix) %}
+static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+{
+    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
+    {{attribute.v8_value_to_local_cpp_value}};
+    {{attribute.cpp_setter}};
+}
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro attribute_setter_callback(attribute, world_suffix) %}
+static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(name, value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
 {% endmacro %}

@@ -80,6 +80,8 @@ NamedConstructor=*
 NoInterfaceObject
 NotEnumerable
 OverrideBuiltins
+# Valid values for [PerContextEnabled] are Context Features, in
+# ContextFeatures::FeatureType in Source/core/dom/ContextFeatures.h
 PerContextEnabled=*
 PerWorldBindings
 PutForwards=*
@@ -87,8 +89,8 @@ RaisesException
 ReadOnly
 Reflect=|*
 Replaceable
-# Valid values for RuntimeEnabled and PerContextEnabled are Runtime Enabled
-# Features, listed in Source/core/page/RuntimeEnabledFeatures.in
+# Valid values for [RuntimeEnabled] are the Runtime Enabled Features, listed in
+# Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
 SetReference=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow

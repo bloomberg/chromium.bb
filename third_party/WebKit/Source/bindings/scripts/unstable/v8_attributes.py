@@ -37,7 +37,7 @@ For details, see bug http://crbug.com/239771
 
 import v8_types
 import v8_utilities
-from v8_utilities import cpp_name, has_extended_attribute, uncapitalize
+from v8_utilities import capitalize, cpp_name, has_extended_attribute, uncapitalize
 
 
 def generate_attributes(interface):
@@ -68,27 +68,30 @@ def generate_attribute_and_includes(interface, attribute):
     idl_type = attribute.data_type
     extended_attributes = attribute.extended_attributes
     this_is_keep_alive_for_gc = is_keep_alive_for_gc(attribute)
+    has_setter = not attribute.is_read_only  # FIXME: need to check [Reflect] and [PutForwards]
     contents = {
         'access_control_list': access_control_list(attribute),
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
+        'getter_callback_name': getter_callback_name(interface, attribute),
+        'getter_callback_name_for_main_world': getter_callback_name_for_main_world(interface, attribute),
         'idl_type': idl_type,
+        'has_setter': has_setter,
         'is_keep_alive_for_gc': this_is_keep_alive_for_gc,
         'is_nullable': attribute.is_nullable,
         'is_static': attribute.is_static,
         'name': attribute.name,
-        'property_attributes': property_attributes(attribute),
-        'v8_type': v8_types.v8_type(idl_type),
         'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
+        'property_attributes': property_attributes(attribute),
+        'setter_callback_name': setter_callback_name(interface, attribute),
+        'setter_callback_name_for_main_world': setter_callback_name_for_main_world(interface, attribute),
+        'v8_type': v8_types.v8_type(idl_type),
         'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
-        # [PerWorldBindings]
-        'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in attribute.extended_attributes else [''],
-        'getter_for_main_world': getter_for_main_world(interface, attribute),
-        'setter_for_main_world': setter_for_main_world(interface, attribute),
+        'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in attribute.extended_attributes else [''],  # [PerWorldBindings]
     }
     if has_extended_attribute(attribute, ('Custom', 'CustomGetter')):
-        contents['is_custom_getter'] = True
+        contents['has_custom_getter'] = True
         return contents, set()
 
     includes = set()
@@ -110,12 +113,12 @@ def generate_attribute_and_includes(interface, attribute):
     contents['cpp_value'] = cpp_value
 
     if this_is_keep_alive_for_gc:
-        return_v8_value_statement = 'v8SetReturnValue(info, wrapper);'
+        v8_set_return_value_statement = 'v8SetReturnValue(info, wrapper)'
         includes.update(v8_types.includes_for_type(idl_type))
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
-        return_v8_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, includes, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
-    contents['return_v8_value_statement'] = return_v8_value_statement
+        v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, includes, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
+    contents['v8_set_return_value'] = v8_set_return_value_statement
 
     if (idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
@@ -139,6 +142,15 @@ def generate_attribute_and_includes(interface, attribute):
         'is_check_security_for_node': is_check_security_for_node,
         'is_getter_raises_exception': is_getter_raises_exception,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
+    })
+
+    # Setter
+    if not has_setter:
+        return contents, includes
+
+    contents.update({
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'value', 'v', includes, 'info.GetIsolate()'),
+        'cpp_setter': 'imp->set%s(v)' % capitalize(cpp_name(attribute)),
     })
 
     return contents, includes
@@ -214,6 +226,16 @@ def is_keep_alive_for_gc(attribute):
              idl_type.startswith('HTML'))))
 
 
+def getter_callback_name(interface, attribute):
+    return '%sV8Internal::%sAttributeGetterCallback' % (cpp_name(interface), attribute.name)
+
+
+def setter_callback_name(interface, attribute):
+    if attribute.is_read_only:
+        return '0'
+    return '%sV8Internal::%sAttributeSetterCallback' % (cpp_name(interface), attribute.name)
+
+
 # [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter], [Unforgeable]
 def access_control_list(attribute):
     extended_attributes = attribute.extended_attributes
@@ -243,13 +265,13 @@ def property_attributes(attribute):
 
 
 # [PerWorldBindings]
-def getter_for_main_world(interface, attribute):
+def getter_callback_name_for_main_world(interface, attribute):
     if 'PerWorldBindings' not in attribute.extended_attributes:
         return '0'
     return '%sV8Internal::%sAttributeGetterCallbackForMainWorld' % (cpp_name(interface), attribute.name)
 
 
-def setter_for_main_world(interface, attribute):
+def setter_callback_name_for_main_world(interface, attribute):
     if ('PerWorldBindings' not in attribute.extended_attributes or
         attribute.is_read_only):
         return '0'

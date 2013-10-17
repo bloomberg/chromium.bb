@@ -327,10 +327,10 @@ V8_VALUE_TO_CPP_VALUE_AND_INCLUDES = {
 }
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, isolate):
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
-        return v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate)
+        return v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, includes, isolate)
 
     if callback_function_type(idl_type):
         idl_type = 'any'
@@ -344,46 +344,44 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate):
 
     if idl_type in V8_VALUE_TO_CPP_VALUE_PRIMITIVE:
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE_PRIMITIVE[idl_type]
-        includes = set()
     elif idl_type in V8_VALUE_TO_CPP_VALUE_AND_INCLUDES:
-        cpp_expression_format, includes = V8_VALUE_TO_CPP_VALUE_AND_INCLUDES[idl_type]
+        cpp_expression_format, new_includes = V8_VALUE_TO_CPP_VALUE_AND_INCLUDES[idl_type]
+        includes.update(new_includes)
     else:
         cpp_expression_format = (
     'V8{idl_type}::HasInstance({v8_value}, {isolate}, worldType({isolate})) ? '
     'V8{idl_type}::toNative(v8::Handle<v8::Object>::Cast({v8_value})) : 0')
-        includes = includes_for_type(idl_type)
+        includes.update(includes_for_type(idl_type))
         includes.add('V8%s.h' % idl_type)
 
-    cpp_expression = cpp_expression_format.format(arguments=arguments, idl_type=idl_type, isolate=isolate, v8_value=v8_value)
-    return cpp_expression, includes
+    return cpp_expression_format.format(arguments=arguments, idl_type=idl_type, isolate=isolate, v8_value=v8_value)
 
 
-def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate):
+def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, includes, isolate):
     if interface_type(this_array_or_sequence_type):
         this_cpp_type = None
         expression_format = '(toRefPtrNativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {isolate}))'
-        includes = set(['V8%s.h' % this_array_or_sequence_type])
+        includes.add('V8%s.h' % this_array_or_sequence_type)
     else:
         this_cpp_type = cpp_type(this_array_or_sequence_type)
         expression_format = 'toNativeArray<{cpp_type}>({v8_value}, {isolate})'
-        includes = set()
     expression = expression_format.format(array_or_sequence_type=this_array_or_sequence_type, cpp_type=this_cpp_type, isolate=isolate, v8_value=v8_value)
-    return expression, includes
+    return expression
 
 
-def v8_value_to_cpp_value_statement(idl_type, extended_attributes, v8_value, variable_name, isolate):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, includes, isolate):
+    """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
     this_cpp_type = cpp_type(idl_type, extended_attributes=extended_attributes, used_as_argument=True)
 
     if idl_type == 'DOMString':
-        format_string = 'V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID({cpp_type}, {variable_name}, {cpp_value});'
+        format_string = 'V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID({cpp_type}, {variable_name}, {cpp_value})'
     elif 'EnforceRange' in extended_attributes:
-        format_string = 'V8TRYCATCH_WITH_TYPECHECK_VOID({cpp_type}, {variable_name}, {cpp_value}, {isolate});'
+        format_string = 'V8TRYCATCH_WITH_TYPECHECK_VOID({cpp_type}, {variable_name}, {cpp_value}, {isolate})'
     else:
-        format_string = 'V8TRYCATCH_VOID({cpp_type}, {variable_name}, {cpp_value});'
+        format_string = 'V8TRYCATCH_VOID({cpp_type}, {variable_name}, {cpp_value})'
 
-    cpp_value, includes = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate)
-    statement = format_string.format(cpp_type=this_cpp_type, cpp_value=cpp_value, isolate=isolate, variable_name=variable_name)
-    return statement, includes
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, isolate)
+    return format_string.format(cpp_type=this_cpp_type, cpp_value=cpp_value, isolate=isolate, variable_name=variable_name)
 
 
 ################################################################################
@@ -461,27 +459,27 @@ def v8_conversion_type(idl_type, extended_attributes, includes):
 
 
 V8_SET_RETURN_VALUE = {
-    'boolean': 'v8SetReturnValueBool({callback_info}, {cpp_value});',
-    'int': 'v8SetReturnValueInt({callback_info}, {cpp_value});',
-    'unsigned': 'v8SetReturnValueUnsigned({callback_info}, {cpp_value});',
-    'DOMString': 'v8SetReturnValueString({callback_info}, {cpp_value}, {isolate});',
+    'boolean': 'v8SetReturnValueBool({callback_info}, {cpp_value})',
+    'int': 'v8SetReturnValueInt({callback_info}, {cpp_value})',
+    'unsigned': 'v8SetReturnValueUnsigned({callback_info}, {cpp_value})',
+    'DOMString': 'v8SetReturnValueString({callback_info}, {cpp_value}, {isolate})',
     # [TreatNullReturnValueAs]
-    'StringOrNull': 'v8SetReturnValueStringOrNull({callback_info}, {cpp_value}, {isolate});',
-    'StringOrUndefined': 'v8SetReturnValueStringOrUndefined({callback_info}, {cpp_value}, {isolate});',
+    'StringOrNull': 'v8SetReturnValueStringOrNull({callback_info}, {cpp_value}, {isolate})',
+    'StringOrUndefined': 'v8SetReturnValueStringOrUndefined({callback_info}, {cpp_value}, {isolate})',
     'void': '',
     # No special v8SetReturnValue* function (set value directly)
-    'float': 'v8SetReturnValue({callback_info}, {cpp_value});',
-    'double': 'v8SetReturnValue({callback_info}, {cpp_value});',
+    'float': 'v8SetReturnValue({callback_info}, {cpp_value})',
+    'double': 'v8SetReturnValue({callback_info}, {cpp_value})',
     # No special v8SetReturnValue* function, but instead convert value to V8
     # and then use general v8SetReturnValue.
-    'array': 'v8SetReturnValue({callback_info}, {cpp_value});',
-    'Date': 'v8SetReturnValue({callback_info}, {cpp_value});',
-    'EventHandler': 'v8SetReturnValue({callback_info}, {cpp_value});',
-    'ScriptValue': 'v8SetReturnValue({callback_info}, {cpp_value});',
-    'SerializedScriptValue': 'v8SetReturnValue({callback_info}, {cpp_value});',
+    'array': 'v8SetReturnValue({callback_info}, {cpp_value})',
+    'Date': 'v8SetReturnValue({callback_info}, {cpp_value})',
+    'EventHandler': 'v8SetReturnValue({callback_info}, {cpp_value})',
+    'ScriptValue': 'v8SetReturnValue({callback_info}, {cpp_value})',
+    'SerializedScriptValue': 'v8SetReturnValue({callback_info}, {cpp_value})',
     # DOMWrapper
-    'DOMWrapperFast': 'v8SetReturnValueFast({callback_info}, {cpp_value}, {script_wrappable});',
-    'DOMWrapperDefault': 'v8SetReturnValue({callback_info}, {cpp_value}, {creation_context});',
+    'DOMWrapperFast': 'v8SetReturnValueFast({callback_info}, {cpp_value}, {script_wrappable})',
+    'DOMWrapperDefault': 'v8SetReturnValue({callback_info}, {cpp_value}, {creation_context})',
 }
 
 

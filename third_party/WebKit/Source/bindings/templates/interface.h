@@ -42,7 +42,7 @@ public:
     static void derefObject(void*);
     static WrapperTypeInfo info;
     {% for attribute in attributes %}
-    {% if attribute.is_custom_getter %}{# FIXME: and not attribute.implemented_by #}
+    {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}
     {% filter conditional(attribute.conditional_string) %}
     static void {{attribute.name}}AttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
     {% endfilter %}

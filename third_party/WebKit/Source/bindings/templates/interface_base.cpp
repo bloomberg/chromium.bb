@@ -57,15 +57,20 @@ namespace {{cpp_class_name}}V8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-{% from 'attributes.cpp' import attribute_getter, attribute_getter_callback
+{% from 'attributes.cpp' import attribute_getter, attribute_getter_callback,
+       attribute_setter, attribute_setter_callback
    with context %}
 {% for attribute in attributes %}
 {% for world_suffix in attribute.world_suffixes %}
-{% if not attribute.is_custom_getter %}
+{% if not attribute.has_custom_getter %}
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
 {{attribute_getter_callback(attribute, world_suffix)}}
 {% endfor %}
+{% if attribute.has_setter %}
+{{attribute_setter(attribute, world_suffix)}}
+{{attribute_setter_callback(attribute, world_suffix)}}
+{% endif %}
 {% endfor %}
 } // namespace {{cpp_class_name}}V8Internal
 
