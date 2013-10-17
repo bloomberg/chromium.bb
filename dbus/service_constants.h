@@ -367,7 +367,6 @@ const char kTypeProperty[] = "Type";
 const char kDeviceProperty[] = "Device";
 const char kProfileProperty[] = "Profile";
 const char kConnectivityStateProperty[] = "ConnectivityState";
-const char kFavoriteProperty[] = "Favorite";
 const char kConnectableProperty[] = "Connectable";
 const char kAutoConnectProperty[] = "AutoConnect";
 const char kIsActiveProperty[] = "IsActive";
