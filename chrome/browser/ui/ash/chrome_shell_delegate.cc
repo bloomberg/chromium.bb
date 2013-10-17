@@ -254,7 +254,9 @@ app_list::AppListViewDelegate*
   // Shell will own the created delegate, and the delegate will own
   // the controller.
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  return new AppListViewDelegate(new AppListControllerDelegateAsh(), profile);
+  return new AppListViewDelegate(
+      scoped_ptr<AppListControllerDelegate>(new AppListControllerDelegateAsh()),
+      profile);
 }
 
 ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(

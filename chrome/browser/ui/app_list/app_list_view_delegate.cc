@@ -76,9 +76,10 @@ void PopulateUsers(const ProfileInfoCache& profile_info,
 
 }  // namespace
 
-AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller,
-                                         Profile* profile)
-    : controller_(controller),
+AppListViewDelegate::AppListViewDelegate(
+    scoped_ptr<AppListControllerDelegate> controller,
+    Profile* profile)
+    : controller_(controller.Pass()),
       profile_(profile),
       model_(NULL) {
   CHECK(controller_);

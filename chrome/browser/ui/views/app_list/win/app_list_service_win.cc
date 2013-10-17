@@ -312,19 +312,22 @@ void SetWindowAttributes(HWND hwnd) {
 
 class AppListFactoryWin : public AppListFactory {
  public:
-  explicit AppListFactoryWin(
-      scoped_ptr<AppListControllerDelegate> delegate)
-      : delegate_(delegate.Pass()) {}
-  virtual ~AppListFactoryWin() {}
+  explicit AppListFactoryWin(AppListServiceWin* service)
+      : service_(service) {
+  }
+
+  virtual ~AppListFactoryWin() {
+  }
 
   virtual AppList* CreateAppList(
       Profile* profile,
       const base::Closure& on_should_dismiss) OVERRIDE {
     // The controller will be owned by the view delegate, and the delegate is
     // owned by the app list view. The app list view manages it's own lifetime.
-    // TODO(koz): Make AppListViewDelegate take a scoped_ptr.
+    scoped_ptr<AppListControllerDelegate> controller_delegate(
+        new AppListControllerDelegateWin(service_));
     AppListViewDelegate* view_delegate = new AppListViewDelegate(
-        delegate_.get(), profile);
+        controller_delegate.Pass(), profile);
     app_list::AppListView* view = new app_list::AppListView(view_delegate);
     gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
     view->InitAsBubbleAtFixedLocation(NULL,
@@ -339,8 +342,8 @@ class AppListFactoryWin : public AppListFactory {
  private:
   // PaginationModel that is shared across all views.
   app_list::PaginationModel pagination_model_;
+  AppListServiceWin* service_;
 
-  scoped_ptr<AppListControllerDelegate> delegate_;
   DISALLOW_COPY_AND_ASSIGN(AppListFactoryWin);
 };
 
@@ -355,9 +358,7 @@ AppListServiceWin* AppListServiceWin::GetInstance() {
 AppListServiceWin::AppListServiceWin()
     : enable_app_list_on_next_init_(false),
       shower_(new AppListShower(
-          scoped_ptr<AppListFactory>(
-              new AppListFactoryWin(scoped_ptr<AppListControllerDelegate>(
-                  new AppListControllerDelegateWin(this)))),
+          scoped_ptr<AppListFactory>(new AppListFactoryWin(this)),
           scoped_ptr<KeepAliveService>(new KeepAliveServiceImpl))),
       weak_factory_(this) {}
 

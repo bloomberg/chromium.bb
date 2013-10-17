@@ -454,7 +454,9 @@ void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
   }
 
   scoped_ptr<app_list::AppListViewDelegate> delegate(
-      new AppListViewDelegate(new AppListControllerDelegateCocoa(), profile()));
+      new AppListViewDelegate(
+          scoped_ptr<AppListControllerDelegate>(
+              new AppListControllerDelegateCocoa()), profile()));
   [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
 }
 

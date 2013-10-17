@@ -47,7 +47,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public ProfileInfoCacheObserver {
  public:
   // The delegate will take ownership of the controller.
-  AppListViewDelegate(AppListControllerDelegate* controller, Profile* profile);
+  AppListViewDelegate(scoped_ptr<AppListControllerDelegate> controller,
+                      Profile* profile);
   virtual ~AppListViewDelegate();
 
  private:
