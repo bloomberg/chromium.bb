@@ -43,6 +43,7 @@ FileGrid.decorate = function(self, metadataCache) {
 
   self.scrollBar_ = new MainPanelScrollBar();
   self.scrollBar_.initialize(self.parentNode, self);
+  self.setBottomMarginForPanel(0);
 
   self.itemConstructor = function(entry) {
     var item = self.ownerDocument.createElement('LI');
@@ -228,7 +229,9 @@ FileGrid.Item.decorate = function(li, entry, grid) {
  * @param {number} margin Margin to be set in px.
  */
 FileGrid.prototype.setBottomMarginForPanel = function(margin) {
-  this.style.paddingBottom = margin + 'px';
+  // +20 bottom margin is needed to match the bottom margin size with the
+  // margin between its items.
+  this.style.paddingBottom = (margin + 20) + 'px';
   this.scrollBar_.setBottomMarginForPanel(margin);
 };
 
