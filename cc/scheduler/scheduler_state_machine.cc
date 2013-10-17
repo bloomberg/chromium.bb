@@ -934,6 +934,12 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(bool success) {
   draw_if_possible_failed_ = !success;
   if (draw_if_possible_failed_) {
     needs_redraw_ = true;
+
+    // If we're already in the middle of a redraw, we don't need to
+    // restart it.
+    if (forced_redraw_state_ != FORCED_REDRAW_STATE_IDLE)
+      return;
+
     needs_commit_ = true;
     consecutive_failed_draws_++;
     if (settings_.timeout_and_draw_when_animation_checkerboards &&
@@ -946,6 +952,7 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(bool success) {
     }
   } else {
     consecutive_failed_draws_ = 0;
+    forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
   }
 }
 

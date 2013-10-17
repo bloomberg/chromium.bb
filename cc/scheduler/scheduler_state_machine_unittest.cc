@@ -60,6 +60,10 @@ class StateMachine : public SchedulerStateMachine {
   void SetCommitState(CommitState cs) { commit_state_ = cs; }
   CommitState CommitState() const { return commit_state_; }
 
+  ForcedRedrawOnTimeoutState ForcedRedrawState() const {
+    return forced_redraw_state_;
+  }
+
   void SetBeginFrameState(BeginFrameState bfs) { begin_frame_state_ = bfs; }
 
   BeginFrameState begin_frame_state() const { return begin_frame_state_; }
@@ -303,6 +307,89 @@ TEST(SchedulerStateMachineTest,
      TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit_Deadline) {
   bool deadline_scheduling_enabled = true;
   TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit(
+      deadline_scheduling_enabled);
+}
+
+void TestFailedDrawsDoNotRestartForcedDraw(
+    bool deadline_scheduling_enabled) {
+  SchedulerSettings scheduler_settings;
+  int drawLimit = 1;
+  scheduler_settings.maximum_number_of_failed_draws_before_draw_is_forced_ =
+    drawLimit;
+  scheduler_settings.deadline_scheduling_enabled = deadline_scheduling_enabled;
+  scheduler_settings.impl_side_painting = true;
+  StateMachine state(scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  // Start a commit.
+  state.SetNeedsCommit();
+  if (!deadline_scheduling_enabled) {
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
+  }
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginFrame(BeginFrameArgs::CreateForTesting());
+  if (deadline_scheduling_enabled) {
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
+  }
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.CommitPending());
+
+  // Then initiate a draw.
+  state.SetNeedsRedraw(true);
+  state.OnBeginFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+
+  // Fail the draw enough times to force a redraw,
+  // then once more for good measure.
+  for (int i = 0; i < drawLimit; ++i)
+    state.DidDrawIfPossibleCompleted(false);
+  state.DidDrawIfPossibleCompleted(false);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  EXPECT_TRUE(state.RedrawPending());
+  // But the commit is ongoing.
+  EXPECT_TRUE(state.CommitPending());
+  EXPECT_TRUE(state.ForcedRedrawState() ==
+              SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_COMMIT);
+
+  state.FinishCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.RedrawPending());
+  EXPECT_FALSE(state.CommitPending());
+
+  // Now force redraw should be in waiting for activation
+  EXPECT_TRUE(state.ForcedRedrawState() ==
+    SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION);
+
+  // After failing additional draws, we should still be in a forced
+  // redraw, but not back in WAITING_FOR_COMMIT.
+  for (int i = 0; i < drawLimit; ++i)
+    state.DidDrawIfPossibleCompleted(false);
+  state.DidDrawIfPossibleCompleted(false);
+  EXPECT_TRUE(state.RedrawPending());
+  EXPECT_TRUE(state.ForcedRedrawState() ==
+    SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION);
+}
+
+TEST(SchedulerStateMachineTest,
+     TestFailedDrawsDoNotRestartForcedDraw) {
+  bool deadline_scheduling_enabled = false;
+  TestFailedDrawsDoNotRestartForcedDraw(
+      deadline_scheduling_enabled);
+}
+
+TEST(SchedulerStateMachineTest,
+     TestFailedDrawsDoNotRestartForcedDraw_Deadline) {
+  bool deadline_scheduling_enabled = true;
+  TestFailedDrawsDoNotRestartForcedDraw(
       deadline_scheduling_enabled);
 }
 
