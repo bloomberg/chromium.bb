@@ -40,7 +40,7 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
-class AccessibilityObject;
+class AXObject;
 class ColorChooser;
 class ColorChooserClient;
 class Element;
@@ -159,7 +159,7 @@ public:
                              const WebCore::IntRect& bounds,
                              bool handleExternally);
     virtual void popupClosed(WebCore::PopupContainer* popupContainer);
-    virtual void postAccessibilityNotification(WebCore::AccessibilityObject*, WebCore::AXObjectCache::AXNotification);
+    virtual void postAccessibilityNotification(WebCore::AXObject*, WebCore::AXObjectCache::AXNotification);
     virtual String acceptLanguages() OVERRIDE;
 
     // ChromeClientImpl:

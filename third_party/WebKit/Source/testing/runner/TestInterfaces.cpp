@@ -30,7 +30,7 @@
 
 #include "TestInterfaces.h"
 
-#include "AccessibilityControllerChromium.h"
+#include "AccessibilityController.h"
 #include "EventSender.h"
 #include "GamepadController.h"
 #include "TestRunner.h"

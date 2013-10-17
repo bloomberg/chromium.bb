@@ -65,7 +65,7 @@ public:
     virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
 
 private:
-    friend class AccessibilityRenderObject;
+    friend class AXRenderObject;
     friend class SVGImageChromeClient;
     friend class SVGImageForContainer;
 

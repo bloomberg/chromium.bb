@@ -49,7 +49,7 @@ class NSResponder;
 
 namespace WebCore {
 
-class AccessibilityObject;
+class AXObject;
 class ColorChooser;
 class ColorChooserClient;
 class DateTimeChooser;
@@ -239,7 +239,7 @@ public:
     virtual bool isPasswordGenerationEnabled() const { return false; }
     virtual void openPasswordGenerator(HTMLInputElement*) { }
 
-    virtual void postAccessibilityNotification(AccessibilityObject*, AXObjectCache::AXNotification) { }
+    virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) { }
     virtual String acceptLanguages() = 0;
 
     enum DialogType {

@@ -30,7 +30,7 @@
 
 #include "public/testing/WebTestProxy.h"
 
-#include "AccessibilityControllerChromium.h"
+#include "AccessibilityController.h"
 #include "EventSender.h"
 #include "MockColorChooser.h"
 #include "MockWebSpeechInputController.h"

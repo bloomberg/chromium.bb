@@ -29,10 +29,10 @@
 {
   'variables': {
     'test_runner_files': [
-      'AccessibilityControllerChromium.cpp',
-      'AccessibilityControllerChromium.h',
-      'AccessibilityUIElementChromium.cpp',
-      'AccessibilityUIElementChromium.h',
+      'AccessibilityController.cpp',
+      'AccessibilityController.h',
+      'WebAXObjectProxy.cpp',
+      'WebAXObjectProxy.h',
       'CppBoundClass.cpp',
       'CppBoundClass.h',
       'CppVariant.cpp',

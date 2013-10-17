@@ -2388,7 +2388,7 @@ void CanvasRenderingContext2D::updateFocusRingAccessibility(const Path& path, El
     // isn't focused because assistive technology might try to explore the object's
     // location before it gets focus.
     if (AXObjectCache* axObjectCache = element->document().existingAXObjectCache()) {
-        if (AccessibilityObject* obj = axObjectCache->getOrCreate(element)) {
+        if (AXObject* obj = axObjectCache->getOrCreate(element)) {
             // Get the bounding rect and apply transformations.
             FloatRect bounds = m_path.boundingRect();
             AffineTransform ctm = state().m_transform;

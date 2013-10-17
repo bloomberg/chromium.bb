@@ -68,8 +68,8 @@
 #include "WebViewImpl.h"
 #include "WebWindowFeatures.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/accessibility/AccessibilityObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFullscreen.h"
 #include "core/dom/Node.h"
@@ -798,7 +798,7 @@ void ChromeClientImpl::getPopupMenuInfo(PopupContainer* popupContainer,
     info->rightAligned = popupContainer->menuStyle().textDirection() == RTL;
 }
 
-void ChromeClientImpl::postAccessibilityNotification(AccessibilityObject* obj, AXObjectCache::AXNotification notification)
+void ChromeClientImpl::postAccessibilityNotification(AXObject* obj, AXObjectCache::AXNotification notification)
 {
     // Alert assistive technology about the accessibility object notification.
     if (!obj)

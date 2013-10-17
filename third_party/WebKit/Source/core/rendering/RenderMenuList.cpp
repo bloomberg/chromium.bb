@@ -27,8 +27,8 @@
 
 #include <math.h>
 #include "HTMLNames.h"
+#include "core/accessibility/AXMenuList.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/accessibility/AccessibilityMenuList.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -388,7 +388,7 @@ void RenderMenuList::didUpdateActiveOption(int optionIndex)
     HTMLElement* listItem = select->listItems()[listIndex];
     ASSERT(listItem);
     if (listItem->confusingAndOftenMisusedAttached()) {
-        if (AccessibilityMenuList* menuList = toAccessibilityMenuList(document().axObjectCache()->get(this)))
+        if (AXMenuList* menuList = toAXMenuList(document().axObjectCache()->get(this)))
             menuList->didUpdateActiveOption(optionIndex);
     }
 }

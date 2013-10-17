@@ -34,12 +34,12 @@
 #include "HTMLNames.h"
 #include "WebDocument.h"
 #include "WebNode.h"
+#include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/accessibility/AccessibilityObject.h"
-#include "core/accessibility/AccessibilityTable.h"
-#include "core/accessibility/AccessibilityTableCell.h"
-#include "core/accessibility/AccessibilityTableColumn.h"
-#include "core/accessibility/AccessibilityTableRow.h"
+#include "core/accessibility/AXTable.h"
+#include "core/accessibility/AXTableCell.h"
+#include "core/accessibility/AXTableColumn.h"
+#include "core/accessibility/AXTableRow.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
@@ -518,7 +518,7 @@ WebAXObject WebAXObject::hitTest(const WebPoint& point) const
         return WebAXObject();
 
     IntPoint contentsPoint = m_private->documentFrameView()->windowToContents(point);
-    RefPtr<AccessibilityObject> hit = m_private->accessibilityHitTest(contentsPoint);
+    RefPtr<AXObject> hit = m_private->accessibilityHitTest(contentsPoint);
 
     if (hit)
         return WebAXObject(hit);
@@ -826,10 +826,10 @@ unsigned WebAXObject::columnCount() const
     if (isDetached())
         return false;
 
-    if (!m_private->isAccessibilityTable())
+    if (!m_private->isAXTable())
         return 0;
 
-    return toAccessibilityTable(m_private.get())->columnCount();
+    return toAXTable(m_private.get())->columnCount();
 }
 
 unsigned WebAXObject::rowCount() const
@@ -837,10 +837,10 @@ unsigned WebAXObject::rowCount() const
     if (isDetached())
         return false;
 
-    if (!m_private->isAccessibilityTable())
+    if (!m_private->isAXTable())
         return 0;
 
-    return toAccessibilityTable(m_private.get())->rowCount();
+    return toAXTable(m_private.get())->rowCount();
 }
 
 WebAXObject WebAXObject::cellForColumnAndRow(unsigned column, unsigned row) const
@@ -848,11 +848,11 @@ WebAXObject WebAXObject::cellForColumnAndRow(unsigned column, unsigned row) cons
     if (isDetached())
         return WebAXObject();
 
-    if (!m_private->isAccessibilityTable())
+    if (!m_private->isAXTable())
         return WebAXObject();
 
-    WebCore::AccessibilityTableCell* cell = toAccessibilityTable(m_private.get())->cellForColumnAndRow(column, row);
-    return WebAXObject(static_cast<WebCore::AccessibilityObject*>(cell));
+    WebCore::AXTableCell* cell = toAXTable(m_private.get())->cellForColumnAndRow(column, row);
+    return WebAXObject(static_cast<WebCore::AXObject*>(cell));
 }
 
 WebAXObject WebAXObject::headerContainerObject() const
@@ -860,10 +860,10 @@ WebAXObject WebAXObject::headerContainerObject() const
     if (isDetached())
         return WebAXObject();
 
-    if (!m_private->isAccessibilityTable())
+    if (!m_private->isAXTable())
         return WebAXObject();
 
-    return WebAXObject(toAccessibilityTable(m_private.get())->headerContainer());
+    return WebAXObject(toAXTable(m_private.get())->headerContainer());
 }
 
 WebAXObject WebAXObject::rowAtIndex(unsigned rowIndex) const
@@ -871,10 +871,10 @@ WebAXObject WebAXObject::rowAtIndex(unsigned rowIndex) const
     if (isDetached())
         return WebAXObject();
 
-    if (!m_private->isAccessibilityTable())
+    if (!m_private->isAXTable())
         return WebAXObject();
 
-    const AccessibilityObject::AccessibilityChildrenVector& rows = toAccessibilityTable(m_private.get())->rows();
+    const AXObject::AccessibilityChildrenVector& rows = toAXTable(m_private.get())->rows();
     if (rowIndex < rows.size())
         return WebAXObject(rows[rowIndex]);
 
@@ -886,10 +886,10 @@ WebAXObject WebAXObject::columnAtIndex(unsigned columnIndex) const
     if (isDetached())
         return WebAXObject();
 
-    if (!m_private->isAccessibilityTable())
+    if (!m_private->isAXTable())
         return WebAXObject();
 
-    const AccessibilityObject::AccessibilityChildrenVector& columns = toAccessibilityTable(m_private.get())->columns();
+    const AXObject::AccessibilityChildrenVector& columns = toAXTable(m_private.get())->columns();
     if (columnIndex < columns.size())
         return WebAXObject(columns[columnIndex]);
 
@@ -904,7 +904,7 @@ unsigned WebAXObject::rowIndex() const
     if (!m_private->isTableRow())
         return 0;
 
-    return WebCore::toAccessibilityTableRow(m_private.get())->rowIndex();
+    return WebCore::toAXTableRow(m_private.get())->rowIndex();
 }
 
 WebAXObject WebAXObject::rowHeader() const
@@ -915,7 +915,7 @@ WebAXObject WebAXObject::rowHeader() const
     if (!m_private->isTableRow())
         return WebAXObject();
 
-    return WebAXObject(WebCore::toAccessibilityTableRow(m_private.get())->headerObject());
+    return WebAXObject(WebCore::toAXTableRow(m_private.get())->headerObject());
 }
 
 unsigned WebAXObject::columnIndex() const
@@ -926,7 +926,7 @@ unsigned WebAXObject::columnIndex() const
     if (m_private->roleValue() != ColumnRole)
         return 0;
 
-    return WebCore::toAccessibilityTableColumn(m_private.get())->columnIndex();
+    return WebCore::toAXTableColumn(m_private.get())->columnIndex();
 }
 
 WebAXObject WebAXObject::columnHeader() const
@@ -937,7 +937,7 @@ WebAXObject WebAXObject::columnHeader() const
     if (m_private->roleValue() != ColumnRole)
         return WebAXObject();
 
-    return WebAXObject(WebCore::toAccessibilityTableColumn(m_private.get())->headerObject());
+    return WebAXObject(WebCore::toAXTableColumn(m_private.get())->headerObject());
 }
 
 unsigned WebAXObject::cellColumnIndex() const
@@ -949,7 +949,7 @@ unsigned WebAXObject::cellColumnIndex() const
         return 0;
 
     pair<unsigned, unsigned> columnRange;
-    WebCore::toAccessibilityTableCell(m_private.get())->columnIndexRange(columnRange);
+    WebCore::toAXTableCell(m_private.get())->columnIndexRange(columnRange);
     return columnRange.first;
 }
 
@@ -962,7 +962,7 @@ unsigned WebAXObject::cellColumnSpan() const
         return 0;
 
     pair<unsigned, unsigned> columnRange;
-    WebCore::toAccessibilityTableCell(m_private.get())->columnIndexRange(columnRange);
+    WebCore::toAXTableCell(m_private.get())->columnIndexRange(columnRange);
     return columnRange.second;
 }
 
@@ -975,7 +975,7 @@ unsigned WebAXObject::cellRowIndex() const
         return 0;
 
     pair<unsigned, unsigned> rowRange;
-    WebCore::toAccessibilityTableCell(m_private.get())->rowIndexRange(rowRange);
+    WebCore::toAXTableCell(m_private.get())->rowIndexRange(rowRange);
     return rowRange.first;
 }
 
@@ -988,7 +988,7 @@ unsigned WebAXObject::cellRowSpan() const
         return 0;
 
     pair<unsigned, unsigned> rowRange;
-    WebCore::toAccessibilityTableCell(m_private.get())->rowIndexRange(rowRange);
+    WebCore::toAXTableCell(m_private.get())->rowIndexRange(rowRange);
     return rowRange.second;
 }
 
@@ -1010,18 +1010,18 @@ void WebAXObject::scrollToGlobalPoint(const WebPoint& point) const
         m_private->scrollToGlobalPoint(point);
 }
 
-WebAXObject::WebAXObject(const WTF::PassRefPtr<WebCore::AccessibilityObject>& object)
+WebAXObject::WebAXObject(const WTF::PassRefPtr<WebCore::AXObject>& object)
     : m_private(object)
 {
 }
 
-WebAXObject& WebAXObject::operator=(const WTF::PassRefPtr<WebCore::AccessibilityObject>& object)
+WebAXObject& WebAXObject::operator=(const WTF::PassRefPtr<WebCore::AXObject>& object)
 {
     m_private = object;
     return *this;
 }
 
-WebAXObject::operator WTF::PassRefPtr<WebCore::AccessibilityObject>() const
+WebAXObject::operator WTF::PassRefPtr<WebCore::AXObject>() const
 {
     return m_private.get();
 }

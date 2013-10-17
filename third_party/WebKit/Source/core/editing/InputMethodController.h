@@ -38,7 +38,7 @@ class Range;
 class Text;
 
 // FIXME: We should move PlainTextOffsets to own file for using InputMethodController
-// and TextIterator and unify PlainTextRange defined in AccessibilityObject.h.
+// and TextIterator and unify PlainTextRange defined in AXObject.h.
 class PlainTextOffsets {
 public:
     PlainTextOffsets();

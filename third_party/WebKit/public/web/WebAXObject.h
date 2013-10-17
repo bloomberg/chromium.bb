@@ -40,7 +40,7 @@
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebCore { class AccessibilityObject; }
+namespace WebCore { class AXObject; }
 
 namespace WebKit {
 
@@ -51,7 +51,7 @@ class WebURL;
 struct WebPoint;
 struct WebRect;
 
-// A container for passing around a reference to AccessibilityObject.
+// A container for passing around a reference to AXObject.
 class WebAXObject {
 public:
     ~WebAXObject() { reset(); }
@@ -203,13 +203,13 @@ public:
     BLINK_EXPORT void scrollToGlobalPoint(const WebPoint&) const;
 
 #if BLINK_IMPLEMENTATION
-    WebAXObject(const WTF::PassRefPtr<WebCore::AccessibilityObject>&);
-    WebAXObject& operator=(const WTF::PassRefPtr<WebCore::AccessibilityObject>&);
-    operator WTF::PassRefPtr<WebCore::AccessibilityObject>() const;
+    WebAXObject(const WTF::PassRefPtr<WebCore::AXObject>&);
+    WebAXObject& operator=(const WTF::PassRefPtr<WebCore::AXObject>&);
+    operator WTF::PassRefPtr<WebCore::AXObject>() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::AccessibilityObject> m_private;
+    WebPrivatePtr<WebCore::AXObject> m_private;
 };
 
 } // namespace WebKit
