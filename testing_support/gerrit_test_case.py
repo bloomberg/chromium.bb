@@ -39,11 +39,7 @@ to gerrit.
 """
 
 import collections
-from cStringIO import StringIO
 import errno
-import httplib
-import imp
-import json
 import netrc
 import os
 import re
