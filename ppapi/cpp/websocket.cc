@@ -39,11 +39,8 @@ int32_t WebSocket::Connect(const Var& url, const Var protocols[],
 
   // Convert protocols to C interface.
   PP_Var *c_protocols = NULL;
-  if (protocol_count) {
+  if (protocol_count)
     c_protocols = new PP_Var[protocol_count];
-    if (!c_protocols)
-      return PP_ERROR_NOMEMORY;
-  }
   for (uint32_t i = 0; i < protocol_count; ++i)
     c_protocols[i] = protocols[i].pp_var();
 

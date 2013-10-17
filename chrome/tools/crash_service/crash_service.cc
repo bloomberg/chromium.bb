@@ -218,10 +218,6 @@ bool CrashService::Initialize(const std::wstring& command_line) {
   if (max_reports > 0) {
     // Create the http sender object.
     sender_ = new CrashReportSender(checkpoint_path.value());
-    if (!sender_) {
-      LOG(ERROR) << "could not create sender";
-      return false;
-    }
     sender_->set_max_reports_per_day(max_reports);
   }
 
