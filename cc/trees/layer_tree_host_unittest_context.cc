@@ -2154,9 +2154,8 @@ TEST_F(UIResourceLostBeforeActivateTree,
   RunTest(true, false, true);
 }
 
-// Failing flakily: crbug.com/308435
 TEST_F(UIResourceLostBeforeActivateTree,
-       DISABLED_RunMultiThread_DelegatingRenderer_ImplSidePaint) {
+       RunMultiThread_DelegatingRenderer_ImplSidePaint) {
   RunTest(true, true, true);
 }
 
