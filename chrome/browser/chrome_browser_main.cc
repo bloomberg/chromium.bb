@@ -380,6 +380,12 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
   RegisterPepperFlashComponent(cus);
   RegisterSwiftShaderComponent(cus);
+#endif
+
+  g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(
+      cus, command_line);
+
+#if !defined(OS_CHROMEOS)
   RegisterWidevineCdmComponent(cus);
 
   // CRLSetFetcher attempts to load a CRL set from either the local disk or
@@ -387,9 +393,6 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   if (!command_line.HasSwitch(switches::kDisableCRLSets))
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
 #endif
-
-  g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(
-      cus, command_line);
 
   cus->Start();
 }
