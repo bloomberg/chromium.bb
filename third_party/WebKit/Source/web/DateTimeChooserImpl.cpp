@@ -44,8 +44,6 @@
 #include "platform/Language.h"
 #include "platform/NotImplemented.h"
 #include "platform/text/PlatformLocale.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebLocalizedString.h"
 
 #if !ENABLE(CALENDAR_PICKER)
 #error "ENABLE_INPUT_MULTIPLE_FIELDS_UI requires ENABLE_CALENDAR_PICKER in Chromium."
@@ -108,14 +106,14 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
     String todayLabelString;
     String otherDateLabelString;
     if (m_parameters.type == WebCore::InputTypeNames::month()) {
-        todayLabelString = Platform::current()->queryLocalizedString(WebLocalizedString::ThisMonthButtonLabel);
-        otherDateLabelString = Platform::current()->queryLocalizedString(WebLocalizedString::OtherMonthLabel);
+        todayLabelString = locale().queryString(WebLocalizedString::ThisMonthButtonLabel);
+        otherDateLabelString = locale().queryString(WebLocalizedString::OtherMonthLabel);
     } else if (m_parameters.type == WebCore::InputTypeNames::week()) {
-        todayLabelString = Platform::current()->queryLocalizedString(WebLocalizedString::ThisWeekButtonLabel);
-        otherDateLabelString = Platform::current()->queryLocalizedString(WebLocalizedString::OtherWeekLabel);
+        todayLabelString = locale().queryString(WebLocalizedString::ThisWeekButtonLabel);
+        otherDateLabelString = locale().queryString(WebLocalizedString::OtherWeekLabel);
     } else {
-        todayLabelString = Platform::current()->queryLocalizedString(WebLocalizedString::CalendarToday);
-        otherDateLabelString = Platform::current()->queryLocalizedString(WebLocalizedString::OtherDateLabel);
+        todayLabelString = locale().queryString(WebLocalizedString::CalendarToday);
+        otherDateLabelString = locale().queryString(WebLocalizedString::OtherDateLabel);
     }
 
     addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", writer);
@@ -134,8 +132,8 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
     addProperty("currentValue", m_parameters.currentValue, writer);
     addProperty("locale", m_parameters.locale.string(), writer);
     addProperty("todayLabel", todayLabelString, writer);
-    addProperty("clearLabel", Platform::current()->queryLocalizedString(WebLocalizedString::CalendarClear), writer);
-    addProperty("weekLabel", Platform::current()->queryLocalizedString(WebLocalizedString::WeekNumberLabel), writer);
+    addProperty("clearLabel", locale().queryString(WebLocalizedString::CalendarClear), writer);
+    addProperty("weekLabel", locale().queryString(WebLocalizedString::WeekNumberLabel), writer);
     addProperty("weekStartDay", m_locale->firstDayOfWeek(), writer);
     addProperty("shortMonthLabels", m_locale->shortMonthLabels(), writer);
     addProperty("dayLabels", m_locale->weekDayShortLabels(), writer);

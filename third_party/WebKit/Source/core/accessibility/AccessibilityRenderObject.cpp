@@ -66,8 +66,7 @@
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebLocalizedString.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/StdLibExtras.h"
 
 using WebKit::WebLocalizedString;
@@ -863,7 +862,7 @@ KURL AccessibilityRenderObject::url() const
 
 static String queryString(WebLocalizedString::Name name)
 {
-    return WebKit::Platform::current()->queryLocalizedString(name);
+    return Locale::defaultLocale().queryString(name);
 }
 
 String AccessibilityRenderObject::actionVerb() const

@@ -30,8 +30,7 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityMediaControls.h"
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebLocalizedString.h"
+#include "platform/text/PlatformLocale.h"
 
 namespace WebCore {
 
@@ -41,7 +40,7 @@ using namespace HTMLNames;
 
 static inline String queryString(WebLocalizedString::Name name)
 {
-    return WebKit::Platform::current()->queryLocalizedString(name);
+    return Locale::defaultLocale().queryString(name);
 }
 
 AccessibilityMediaControl::AccessibilityMediaControl(RenderObject* renderer)

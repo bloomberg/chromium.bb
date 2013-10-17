@@ -34,8 +34,6 @@
 #include "core/frame/FrameView.h"
 #include "core/platform/ColorChooserClient.h"
 #include "platform/geometry/IntRect.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebLocalizedString.h"
 
 using namespace WebCore;
 
@@ -96,7 +94,7 @@ void ColorChooserPopupUIController::writeDocument(DocumentWriter& writer)
     PagePopupClient::addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", writer);
     PagePopupClient::addProperty("values", suggestionValues, writer);
-    PagePopupClient::addProperty("otherColorLabel", Platform::current()->queryLocalizedString(WebLocalizedString::OtherColorLabel), writer);
+    PagePopupClient::addProperty("otherColorLabel", locale().queryString(WebLocalizedString::OtherColorLabel), writer);
     addProperty("anchorRectInScreen", anchorRectInScreen, writer);
     PagePopupClient::addString("};\n", writer);
     writer.addData(pickerCommonJs, sizeof(pickerCommonJs));

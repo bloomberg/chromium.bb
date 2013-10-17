@@ -38,8 +38,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "platform/UserGestureIndicator.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebLocalizedString.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
@@ -319,7 +318,7 @@ AccessibilityOrientation AccessibilityObject::orientation() const
 #if HAVE(ACCESSIBILITY)
 static String queryString(WebLocalizedString::Name name)
 {
-    return WebKit::Platform::current()->queryLocalizedString(name);
+    return Locale::defaultLocale().queryString(name);
 }
 
 String AccessibilityObject::actionVerb() const
