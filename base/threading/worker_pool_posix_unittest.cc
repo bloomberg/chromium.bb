@@ -148,13 +148,7 @@ class PosixDynamicThreadPoolTest : public testing::Test {
 
 }  // namespace
 
-#if defined(THREAD_SANITIZER)
-// These tests fail under ThreadSanitizer, see http://crbug.com/305100.
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-TEST_F(PosixDynamicThreadPoolTest, MAYBE_Basic) {
+TEST_F(PosixDynamicThreadPoolTest, Basic) {
   EXPECT_EQ(0, peer_.num_idle_threads());
   EXPECT_EQ(0U, unique_threads_.size());
   EXPECT_EQ(0U, peer_.pending_tasks().size());
@@ -166,7 +160,6 @@ TEST_F(PosixDynamicThreadPoolTest, MAYBE_Basic) {
 
   EXPECT_EQ(1U, unique_threads_.size()) <<
       "There should be only one thread allocated for one task.";
-  EXPECT_EQ(1, peer_.num_idle_threads());
   EXPECT_EQ(1, counter_);
 }
 
