@@ -14,10 +14,13 @@ function createElement(tokenList)
 
 debug('- Tests from http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/');
 
-// HTMLOutputElement::htmlFor is readonly attribute.
+// HTMLOutputElement::htmlFor setter is forwarding assignment to DOMSettableTokenList.value attribute.
 createElement('x');
-element.htmlFor = 'y';
+shouldBeEqualToString('element.htmlFor.value', 'x');
 shouldBeEqualToString('String(element.htmlFor)', 'x');
+element.htmlFor = 'y';
+shouldBeEqualToString('element.htmlFor.value', 'y');
+shouldBeEqualToString('String(element.htmlFor)', 'y');
 
 // http://simon.html5.org/test/html/dom/reflecting/DOMTokenList/getting/001.htm
 createElement('');
