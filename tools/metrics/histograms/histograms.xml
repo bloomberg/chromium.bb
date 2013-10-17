@@ -13858,6 +13858,27 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer.GpuLatency" units="milliseconds">
+  <summary>
+    The delay between the compositor submitting a command to the GPU and that
+    command executing on the GPU. This delay is measured once per frame.
+  </summary>
+</histogram>
+
+<histogram name="Renderer.GpuLatencyOverestimate" units="milliseconds">
+  <summary>
+    The amount by which GPU latency was overestimated in a particular frame (0
+    if the latency was perfectly predicted or underestimated).
+  </summary>
+</histogram>
+
+<histogram name="Renderer.GpuLatencyUnderestimate" units="milliseconds">
+  <summary>
+    The amount by which GPU latency was underestimated in a particular frame (0
+    if the latency was perfectly predicted or overestimated).
+  </summary>
+</histogram>
+
 <histogram name="Renderer.PixelIncreaseFromTransitions">
   <summary>
     A lower-bound on the percentage increase in memory that would result from

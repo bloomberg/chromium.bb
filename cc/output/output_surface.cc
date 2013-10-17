@@ -13,6 +13,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "cc/output/compositor_frame.h"
@@ -433,7 +434,32 @@ void OutputSurface::UpdateAndMeasureGpuLatency() {
         query_id, GL_QUERY_RESULT_EXT, &value);
     pending_gpu_latency_query_ids_.pop_front();
     available_gpu_latency_query_ids_.push_back(query_id);
-    gpu_latency_history_.InsertSample(base::TimeDelta::FromMicroseconds(value));
+
+    base::TimeDelta latency = base::TimeDelta::FromMicroseconds(value);
+    base::TimeDelta latency_estimate = GpuLatencyEstimate();
+    gpu_latency_history_.InsertSample(latency);
+
+    base::TimeDelta latency_overestimate;
+    base::TimeDelta latency_underestimate;
+    if (latency > latency_estimate)
+      latency_underestimate = latency - latency_estimate;
+    else
+      latency_overestimate = latency_estimate - latency;
+    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.GpuLatency",
+                               latency,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMilliseconds(100),
+                               50);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.GpuLatencyUnderestimate",
+                               latency_underestimate,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMilliseconds(100),
+                               50);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.GpuLatencyOverestimate",
+                               latency_overestimate,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMilliseconds(100),
+                               50);
   }
 
   unsigned gpu_latency_query_id;
