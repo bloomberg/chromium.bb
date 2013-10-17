@@ -1374,8 +1374,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   void RestoreStateForAttrib(GLuint attrib);
 
   // If texture is a stream texture, this will update the stream to the newest
-  // buffer.
-  void UpdateStreamTextureIfNeeded(Texture* texture);
+  // buffer and bind the texture implicitly.
+  void UpdateStreamTextureIfNeeded(Texture* texture, GLuint texture_unit_index);
 
   // Returns false if unrenderable textures were replaced.
   bool PrepareTexturesForRender();
@@ -5741,13 +5741,16 @@ void GLES2DecoderImpl::PerformanceWarning(
                      std::string("PERFORMANCE WARNING: ") + msg);
 }
 
-void GLES2DecoderImpl::UpdateStreamTextureIfNeeded(Texture* texture) {
+void GLES2DecoderImpl::UpdateStreamTextureIfNeeded(Texture* texture,
+                                                   GLuint texture_unit_index) {
   if (texture && texture->IsStreamTexture()) {
     DCHECK(stream_texture_manager());
     StreamTexture* stream_tex =
         stream_texture_manager()->LookupStreamTexture(texture->service_id());
-    if (stream_tex)
+    if (stream_tex) {
+      glActiveTexture(GL_TEXTURE0 + texture_unit_index);
       stream_tex->Update();
+    }
   }
 }
 
@@ -5773,7 +5776,7 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
         TextureRef* texture =
             texture_unit.GetInfoForSamplerType(uniform_info->type).get();
         if (texture)
-          UpdateStreamTextureIfNeeded(texture->texture());
+          UpdateStreamTextureIfNeeded(texture->texture(), texture_unit_index);
         if (have_unrenderable_textures &&
             (!texture || !texture_manager()->CanRender(texture))) {
           textures_set = true;

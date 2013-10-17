@@ -5638,6 +5638,9 @@ TEST_F(GLES2DecoderManualInitTest, DrawStreamTextureCHROMIUM) {
   EXPECT_CALL(*stream_texture_manager(), LookupStreamTexture(kServiceTextureId))
       .WillOnce(Return(&stream_texture))
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(stream_texture, Update())
       .Times(1)
       .RetiresOnSaturation();

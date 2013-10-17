@@ -27,10 +27,7 @@ StreamTextureManagerAndroid::StreamTextureAndroid::~StreamTextureAndroid() {
 }
 
 void StreamTextureManagerAndroid::StreamTextureAndroid::Update() {
-  GLint texture_id = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
   surface_texture_->UpdateTexImage();
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
   if (matrix_callback_.is_null())
     return;
 
