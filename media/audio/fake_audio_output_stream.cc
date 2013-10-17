@@ -22,7 +22,7 @@ FakeAudioOutputStream::FakeAudioOutputStream(AudioManagerBase* manager,
                                              const AudioParameters& params)
     : audio_manager_(manager),
       callback_(NULL),
-      fake_consumer_(manager->GetMessageLoop(), params) {
+      fake_consumer_(manager->GetWorkerLoop(), params) {
 }
 
 FakeAudioOutputStream::~FakeAudioOutputStream() {
@@ -60,7 +60,7 @@ void FakeAudioOutputStream::GetVolume(double* volume) {
 };
 
 void FakeAudioOutputStream::CallOnMoreData(AudioBus* audio_bus) {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetWorkerLoop()->BelongsToCurrentThread());
   callback_->OnMoreData(audio_bus, AudioBuffersState());
 }
 

@@ -107,6 +107,7 @@ class MockAudioManager : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD0(ShowAudioInputSettings, void());
   MOCK_METHOD0(GetMessageLoop, scoped_refptr<base::MessageLoopProxy>());
+  MOCK_METHOD0(GetWorkerLoop, scoped_refptr<base::MessageLoopProxy>());
   MOCK_METHOD1(GetAudioInputDeviceNames, void(
       media::AudioDeviceNames* device_name));
 
@@ -144,6 +145,8 @@ class AudioOutputProxyTest : public testing::Test {
  protected:
   virtual void SetUp() {
     EXPECT_CALL(manager_, GetMessageLoop())
+        .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
+    EXPECT_CALL(manager_, GetWorkerLoop())
         .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
     InitDispatcher(base::TimeDelta::FromMilliseconds(kTestCloseDelayMs));
   }
