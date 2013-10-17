@@ -73,6 +73,12 @@ var gDtmfSender = null;
  */
 var STUN_SERVER = 'stun.l.google.com:19302';
 
+/**
+ * If true, any created peer connection will use RTP data
+ * channels. Otherwise it will use SCTP data channels.
+ */
+var gUseRtpDataChannels = true;
+
 // Public interface to tests.
 
 
@@ -112,15 +118,23 @@ function remotePeerIsConnected() {
 }
 
 /**
+ * Set if RTP data channels should be used for peerconnections.
+ * @param{boolean} useRtpDataChannel
+ */
+function useRtpDataChannelsForNewPeerConnections(useRtpDataChannels) {
+  gUseRtpDataChannels = useRtpDataChannels;
+}
+
+/**
  * Creates a peer connection. Must be called before most other public functions
  * in this file.
  */
-function preparePeerConnection(enableLogging, useRtpDataChannel) {
+function preparePeerConnection(enableLogging) {
   if (gPeerConnection != null)
     throw failTest('creating peer connection, but we already have one.');
 
   gPeerConnection = createPeerConnection(STUN_SERVER, enableLogging,
-                                         useRtpDataChannel);
+                                         gUseRtpDataChannels);
   returnToTest('ok-peerconnection-created');
 }
 
@@ -534,7 +548,8 @@ function handlePeerMessage_(peerId, message) {
     // The other side is calling us.
     debug('We are being called: answer...');
 
-    gPeerConnection = createPeerConnection(STUN_SERVER, false, true );
+    gPeerConnection = createPeerConnection(STUN_SERVER, false,
+                                           gUseRtpDataChannels);
     if (gAutoAddLocalToPeerConnectionStreamWhenCalled &&
         obtainGetUserMediaResult() == 'ok-got-stream') {
       debug('We have a local stream, so hook it up automatically.');

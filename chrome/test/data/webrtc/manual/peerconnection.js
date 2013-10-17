@@ -14,6 +14,22 @@ $ = function(id) {
   return document.getElementById(id);
 };
 
+/**
+ * Sets the global variable gUseRtpDataChannel in message_handling.js
+ * based on the check box element 'data-channel-type-rtp' checked status on
+ * peerconnection.html. Also prints a help text to inform the user.
+ */
+function setPcDataChannelType() {
+  var useRtpDataChannels = $('data-channel-type-rtp').checked;
+  useRtpDataChannelsForNewPeerConnections(useRtpDataChannels);
+  if (useRtpDataChannels) {
+    debug('Make sure to tick the RTP check box on both the calling and ' +
+          'answering side to ensure a data channel can be setup properly as ' +
+          'it has to use the same transport protocol (RTP to RTP and SCTP to ' +
+          'SCTP).');
+  }
+}
+
 // The *Here functions are called from peerconnection.html and will make calls
 // into our underlying JavaScript library with the values from the page
 // (have to be named differently to avoid name clashes with existing functions).
@@ -215,6 +231,7 @@ window.onload = function() {
   displayVideoSize_($('local-view'));
   displayVideoSize_($('remote-view'));
   getDevices();
+  setPcDataChannelType();
 };
 
 /**
@@ -232,7 +249,7 @@ function checkIfDeviceDropdownsArePopulated() {
          updateGetUserMediaConstraints, false);
   }
   else {
-    debug('addEventListener is not supported by your browser, cannot update' +
+    debug('addEventListener is not supported by your browser, cannot update ' +
           'device source ID\'s automatically. Select a device from the audio ' +
           'or video source drop down menu to update device source id\'s');
   }
@@ -250,14 +267,12 @@ window.onbeforeunload = function() {
 
 /**
  * Create the peer connection if none is up (this is just convenience to
- * avoid having a separate button for that). Initialize useRtpDataChannel
- * variable based on the 'data-channel-type-rtp' element's checked status.
+ * avoid having a separate button for that).
  * @private
  */
 function ensureHasPeerConnection_() {
   if (getReadyState() == 'no-peer-connection') {
-    var useRtpDataChannel = $('data-channel-type-rtp').checked;
-    preparePeerConnection(false, useRtpDataChannel);
+    preparePeerConnection(false);
   }
 }
 

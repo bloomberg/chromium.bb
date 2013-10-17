@@ -95,7 +95,8 @@
       <button onclick="toggleRemoteAudioFromHere();">Toggle Audio</button><br/>
       Data Channel:
       <button onclick="createDataChannelFromHere();">Create</button>
-      RTP <input type="checkbox" id="data-channel-type-rtp"/>
+      RTP <input type="checkbox" id="data-channel-type-rtp"
+          onclick="setPcDataChannelType();"/>
       <button onclick="closeDataChannelFromHere();">Close</button>
       status:
       <input type="text" id="data-channel-status" size="10" value="not created"
