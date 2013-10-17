@@ -21,10 +21,6 @@ class FindBar;
 class Profile;
 class TemplateURL;
 
-namespace extensions {
-class Extension;
-}
-
 namespace chrome {
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.
@@ -39,12 +35,6 @@ void EditSearchEngine(gfx::NativeWindow parent,
                       TemplateURL* template_url,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile);
-
-// Shows the create chrome app shortcut dialog box.
-void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                        Profile* profile,
-                                        const extensions::Extension* app,
-                                        const base::Closure& close_callback);
 
 }  // namespace chrome
 

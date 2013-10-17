@@ -44,7 +44,6 @@
 #import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -102,13 +101,6 @@ NSPoint GetPointForBubble(content::WebContents* web_contents,
   point = [view convertPoint:point toView:nil];
   point = [[view window] convertBaseToScreen:point];
   return point;
-}
-
-void CreateShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info) {
-  // creation_locations will be ignored by CreatePlatformShortcuts on Mac.
-  ShellIntegration::ShortcutLocations creation_locations;
-  web_app::CreateShortcuts(shortcut_info, creation_locations,
-                           web_app::SHORTCUT_CREATION_BY_USER);
 }
 
 }  // namespace
@@ -596,14 +588,6 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if ([BrowserWindowUtils shouldHandleKeyboardEvent:event])
     [BrowserWindowUtils handleKeyboardEvent:event.os_event inWindow:window()];
-}
-
-void BrowserWindowCocoa::ShowCreateChromeAppShortcutsDialog(
-    Profile* profile, const extensions::Extension* app) {
-  // Normally we would show a dialog, but since we always create the app
-  // shortcut in /Applications there are no options for the user to choose.
-  web_app::UpdateShortcutInfoAndIconForApp(*app, profile,
-                                           base::Bind(&CreateShortcuts));
 }
 
 void BrowserWindowCocoa::Cut() {

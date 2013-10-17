@@ -296,10 +296,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
 
-  // Shows the create chrome app shortcut dialog box.
-  virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
-      const extensions::Extension* app) = 0;
-
   // Clipboard commands applied to the whole browser window.
   virtual void Cut() = 0;
   virtual void Copy() = 0;

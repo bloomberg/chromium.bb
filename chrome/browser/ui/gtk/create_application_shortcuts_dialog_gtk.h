@@ -112,17 +112,14 @@ class CreateWebApplicationShortcutsDialogGtk
 class CreateChromeApplicationShortcutsDialogGtk
   : public CreateApplicationShortcutsDialogGtk {
  public:
-  // Displays the dialog box to create application shortcuts for |app|.
-  static void Show(GtkWindow* parent, Profile* profile,
-                   const extensions::Extension* app);
-
-  CreateChromeApplicationShortcutsDialogGtk(GtkWindow* parent,
-                                            Profile* profile,
-                                            const extensions::Extension* app);
-
+  CreateChromeApplicationShortcutsDialogGtk(
+      GtkWindow* parent,
+      Profile* profile,
+      const extensions::Extension* app,
+      const base::Closure& close_callback);
 
  protected:
-  virtual ~CreateChromeApplicationShortcutsDialogGtk() {}
+  virtual ~CreateChromeApplicationShortcutsDialogGtk();
 
   virtual void CreateDesktopShortcut(
       const ShellIntegration::ShortcutInfo& shortcut_info,
@@ -132,9 +129,9 @@ class CreateChromeApplicationShortcutsDialogGtk
   void OnShortcutInfoLoaded(
       const ShellIntegration::ShortcutInfo& shortcut_info);
 
- private:
   const extensions::Extension* app_;
   base::FilePath profile_path_;
+  base::Closure close_callback_;
   DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutsDialogGtk);
 };
 

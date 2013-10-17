@@ -56,14 +56,16 @@ void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
   new CreateWebApplicationShortcutsDialogGtk(parent_window, web_contents);
 }
 
-}  // namespace chrome
-
-void CreateChromeApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
-                                                     Profile* profile,
-                                                     const Extension* app) {
-  new CreateChromeApplicationShortcutsDialogGtk(parent, profile, app);
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow parent_window,
+    Profile* profile,
+    const extensions::Extension* app,
+    const base::Closure& close_callback) {
+  new CreateChromeApplicationShortcutsDialogGtk(parent_window, profile, app,
+                                                close_callback);
 }
 
+}  // namespace chrome
 
 CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
     GtkWindow* parent)
@@ -314,10 +316,12 @@ CreateChromeApplicationShortcutsDialogGtk::
     CreateChromeApplicationShortcutsDialogGtk(
         GtkWindow* parent,
         Profile* profile,
-        const Extension* app)
-      : CreateApplicationShortcutsDialogGtk(parent),
-        app_(app),
-        profile_path_(profile->GetPath())  {
+        const Extension* app,
+        const base::Closure& close_callback)
+    : CreateApplicationShortcutsDialogGtk(parent),
+      app_(app),
+      profile_path_(profile->GetPath()),
+      close_callback_(close_callback) {
 
   // Place Chrome app shortcuts in the "Chrome Apps" submenu.
   shortcut_menu_subdir_ = web_app::GetAppShortcutsSubdirName();
@@ -328,6 +332,12 @@ CreateChromeApplicationShortcutsDialogGtk::
       base::Bind(
           &CreateChromeApplicationShortcutsDialogGtk::OnShortcutInfoLoaded,
           this));
+}
+
+CreateChromeApplicationShortcutsDialogGtk::
+    ~CreateChromeApplicationShortcutsDialogGtk() {
+  if (!close_callback_.is_null())
+    close_callback_.Run();
 }
 
 // Called when the app's ShortcutInfo (with icon) is loaded.

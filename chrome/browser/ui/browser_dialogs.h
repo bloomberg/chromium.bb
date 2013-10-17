@@ -77,6 +77,14 @@ void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
                                      content::WebContents* web_contents);
 #endif
 
+// Shows the create chrome app shortcut dialog box.
+// On Mac, this creates a shortcut without prompting.
+// |close_callback| may be null.
+void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
+                                        Profile* profile,
+                                        const extensions::Extension* app,
+                                        const base::Closure& close_callback);
+
 // Shows a color chooser that reports to the given WebContents.
 content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                         SkColor initial_color);

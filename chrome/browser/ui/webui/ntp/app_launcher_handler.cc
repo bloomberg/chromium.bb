@@ -27,6 +27,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -602,8 +603,9 @@ void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
 
   Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
-  browser->window()->ShowCreateChromeAppShortcutsDialog(
-      browser->profile(), extension);
+  chrome::ShowCreateChromeAppShortcutsDialog(
+      browser->window()->GetNativeWindow(), browser->profile(), extension,
+      base::Closure());
 }
 
 void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
