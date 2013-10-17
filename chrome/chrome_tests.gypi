@@ -1537,6 +1537,8 @@
         'test/remoting/key_code_conv.h',
         'test/remoting/key_code_map.h',
         'test/remoting/me2me_browsertest.cc',
+        'test/remoting/page_load_notification_observer.cc',
+        'test/remoting/page_load_notification_observer.h',
         'test/remoting/remote_desktop_browsertest.cc',
         'test/remoting/remote_desktop_browsertest.h',
         'test/remoting/waiter.cc',

@@ -39,7 +39,9 @@ function onLoad() {
     remoting.connector.reconnect();
   };
   var doAuthRedirect = function() {
-    remoting.oauth2.doAuthRedirect();
+    if (!remoting.isAppsV2) {
+      remoting.oauth2.doAuthRedirect();
+    }
   };
   /** @param {Event} event The event. */
   var stopDaemon = function(event) {

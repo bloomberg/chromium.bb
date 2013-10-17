@@ -5,8 +5,8 @@
 #ifndef CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
 #define CHROME_TEST_REMOTING_REMOTE_DESKTOP_BROWSERTEST_H_
 
+#include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -19,6 +19,7 @@ const char kOverrideUserDataDir[] = "override-user-data-dir";
 const char kNoCleanup[] = "no-cleanup";
 const char kNoInstall[] = "no-install";
 const char kWebAppCrx[] = "webapp-crx";
+const char kWebAppUnpacked[] = "webapp-unpacked";
 const char kUsername[] = "username";
 const char kkPassword[] = "password";
 const char kMe2MePin[] = "me2me-pin";
@@ -33,9 +34,11 @@ inline void _ASSERT_TRUE(bool condition) {
 
 }  // namespace
 
+using extensions::Extension;
+
 namespace remoting {
 
-class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
+class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
  public:
   RemoteDesktopBrowserTest();
   virtual ~RemoteDesktopBrowserTest();
@@ -57,7 +60,10 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   void VerifyInternetAccess();
 
   // Install the chromoting extension from a crx file.
-  void InstallChromotingApp();
+  void InstallChromotingAppCrx();
+
+  // Install the unpacked chromoting extension.
+  void InstallChromotingAppUnpacked();
 
   // Uninstall the chromoting extension.
   void UninstallChromotingApp();
@@ -151,7 +157,23 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   base::FilePath WebAppCrxPath() { return webapp_crx_; }
 
   // Helper to get the extension ID of the installed chromoting webapp.
-  std::string ChromotingID() { return chromoting_id_; }
+  std::string ChromotingID() { return extension_->id(); }
+
+  // Is this a appsv2 web app?
+  bool is_platform_app() {
+    return extension_->GetType() == extensions::Manifest::TYPE_PLATFORM_APP;
+  }
+
+  // Are we testing an unpacked extension?
+  bool is_unpacked() {
+    return !webapp_unpacked_.empty();
+  }
+
+  // The "active" WebContents instance the test needs to interact with.
+  content::WebContents* active_web_contents() {
+    DCHECK(!web_contents_stack_.empty());
+    return web_contents_stack_.back();
+  }
 
   // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
   // This is useful for diagnostic purposes.
@@ -166,67 +188,62 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
     return GURL("chrome-extension://" + ChromotingID() + "/main.html");
   }
 
-  // Helper to retrieve the current URL of the active tab in the active browser
-  // window.
+  // Helper to retrieve the current URL in the active WebContents.
   GURL GetCurrentURL() {
-    return GetCurrentURLInBrowser(active_browser_);
-  }
-
-  // Helper to retrieve the current URL of the active tab in the given browser
-  // window.
-  static GURL GetCurrentURLInBrowser(Browser* browser) {
-    return browser->tab_strip_model()->GetActiveWebContents()->GetURL();
+    return active_web_contents()->GetURL();
   }
 
   // Helpers to execute javascript code on a web page.
 
-  // Helper to execute a javascript code snippet on the current page of
-  // the active browser window.
+  // Helper to execute a javascript code snippet in the active WebContents.
   void ExecuteScript(const std::string& script);
 
-  // Helper to execute a javascript code snippet one the current page of
-  // the active browser window and wait for page load to complete.
+  // Helper to execute a javascript code snippet in the active WebContents
+  // and wait for page load to complete.
   void ExecuteScriptAndWaitForAnyPageLoad(const std::string& script);
 
-  // Helper to execute a javascript code snippet one the current page of
-  // the active browser window and wait until the target url is loaded.
-  // This is used when the target page is loaded after one or more redirections.
-  void ExecuteScriptAndWaitForPageLoad(const std::string& script,
-                                       const GURL& target);
-
-  // Helper to execute a javascript code snippet on the current page of
-  // the active browser window and extract the boolean result.
+  // Helper to execute a javascript code snippet in the active WebContents
+  // and extract the boolean result.
   bool ExecuteScriptAndExtractBool(const std::string& script) {
-    return ExecuteScriptAndExtractBool(active_browser_, script);
+    return ExecuteScriptAndExtractBool(active_web_contents(), script);
   }
 
-  // Helper to execute a javascript code snippet one the current page of
-  // the active browser window and extract the boolean result.
-  static bool ExecuteScriptAndExtractBool(Browser* browser,
+  // Helper to execute a javascript code snippet and extract the boolean result.
+  static bool ExecuteScriptAndExtractBool(content::WebContents* web_contents,
                                           const std::string& script);
 
-  // Helper to execute a javascript code snippet one the current page of
-  // the active browser window and extract the int result.
-  int ExecuteScriptAndExtractInt(const std::string& script);
+  // Helper to execute a javascript code snippet in the active WebContents
+  // and extract the int result.
+  int ExecuteScriptAndExtractInt(const std::string& script) {
+    return ExecuteScriptAndExtractInt(active_web_contents(), script);
+  }
 
-  // Helper to execute a javascript code snippet one the current page of
-  // the active browser window and extract the string result.
-  std::string ExecuteScriptAndExtractString(const std::string& script);
+  // Helper to execute a javascript code snippet and extract the int result.
+  static int ExecuteScriptAndExtractInt(content::WebContents* web_contents,
+                                        const std::string& script);
 
-  // Helper to navigate to a given url.
-  void NavigateToURLAndWaitForPageLoad(const GURL& url);
+  // Helper to execute a javascript code snippet in the active WebContents
+  // and extract the string result.
+  std::string ExecuteScriptAndExtractString(const std::string& script) {
+    return ExecuteScriptAndExtractString(active_web_contents(), script);
+  }
 
-  // Helper to check whether an html element with the given name exists on
-  // the current page of the active browser window.
+  // Helper to execute a javascript code snippet and extract the string result.
+  static std::string ExecuteScriptAndExtractString(
+      content::WebContents* web_contents, const std::string& script);
+
+  // Helper to check whether an html element with the given name exists in
+  // the active WebContents.
   bool HtmlElementExists(const std::string& name) {
     return ExecuteScriptAndExtractBool(
         "document.getElementById(\"" + name + "\") != null");
   }
 
-  // Helper to check whether a html element with the given name is visible.
+  // Helper to check whether a html element with the given name is visible in
+  // the active WebContents.
   bool HtmlElementVisible(const std::string& name);
 
-  // Click on the named HTML control.
+  // Click on the named HTML control in the active WebContents.
   void ClickOnControl(const std::string& name);
 
   // Wait for the me2me connection to be established.
@@ -243,13 +260,15 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // has been established.
   bool IsSessionConnected();
 
-  // Callback used by ExecuteScriptAndWaitForPageLoad to check whether
-  // the given page is currently loaded in the given browser window.
-  static bool IsURLLoadedInWindow(Browser* browser, const GURL& url);
+  // Callback used by Approve to check whether the chromoting app has
+  // successfully authenticated with the Google services.
+  bool IsAuthenticated() {
+      return IsAuthenticatedInWindow(active_web_contents());
+  }
 
   // Callback used by Approve to check whether the chromoting app has
-  // successfully authenticated with the google services.
-  static bool IsAuthenticated(Browser* browser);
+  // successfully authenticated with the Google services.
+  static bool IsAuthenticatedInWindow(content::WebContents* web_contents);
 
   // Fields
 
@@ -258,27 +277,22 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // to override the default resolver while the test is active.
   scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
 
-  // The "active" browser window the test needs to interact with.
-  // We initialize |active_browser_| to the browser instance created by
-  // InProcessBrowserTest as the initial browser window to run test in.
-  // Whenever a new browser window is spawned and needs attention
-  // |active_browser_| is set to that browser window and all subsequent
-  // test actions happen there.
-  // And when the focus is returned to the original browser window
-  // |active_browser_| is reset to browser().
-  // This pattern is sufficient for simple streamlined workflows where all
-  // the browser windows form a LIFO stack. The test always interacts
-  // with the "active" window which is always on the top of the "browser
-  // stack". See also http://crrev.com/chrome/browser/ui/browser_list.h
-  // If we ever need to deal with more complicated workflows the test
-  // code will need to explicitly pass browser instances to the helper
-  // routines.
-  Browser* active_browser_;
+  // Stores all the WebContents instance in a stack so that we can easily
+  // return to the previous instance.
+  // The active WebContents instance is always stored at the top of the stack.
+  // Initially the stack contains the WebContents instance created by
+  // InProcessBrowserTest as the initial context to run test in.
+  // Whenever a WebContents instance is spawned and needs attention we
+  // push it onto the stack and that becomes the active instance.
+  // And once we are done with the current WebContents instance
+  // we pop it off the stack, returning to the previous instance.
+  std::vector<content::WebContents*> web_contents_stack_;
 
   bool no_cleanup_;
   bool no_install_;
-  std::string chromoting_id_;
+  const Extension* extension_;
   base::FilePath webapp_crx_;
+  base::FilePath webapp_unpacked_;
   std::string username_;
   std::string password_;
   std::string me2me_pin_;

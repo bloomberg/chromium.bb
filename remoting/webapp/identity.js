@@ -151,3 +151,12 @@ remoting.Identity.Callbacks = function(onOk, onError) {
   /** @type {function(remoting.Error):void} */
   this.onError = onError;
 };
+
+/**
+ * Returns whether the web app has authenticated with the Google services.
+ *
+ * @return {boolean}
+ */
+remoting.Identity.prototype.isAuthenticated = function() {
+  return remoting.identity.email_ != null;
+};
