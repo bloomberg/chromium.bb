@@ -1009,8 +1009,6 @@ _x86_full_boards = frozenset([
   'amd64-generic',
   'butterfly',
   'parrot',
-  'parrot32',
-  'parrot64',
   'link',
   'lumpy',
   'stout',
@@ -1299,17 +1297,6 @@ internal_paladin.add_config('samus-paladin',
 )
 
 # x86 full unit tests
-internal_paladin.add_config('parrot32-paladin',
-  boards=['parrot32'],
-  paladin_builder_name='parrot32 paladin',
-  quick_unit=False,
-)
-
-internal_paladin.add_config('parrot64-paladin',
-  boards=['parrot64'],
-  paladin_builder_name='parrot64 paladin',
-)
-
 internal_paladin.add_config('peppy-paladin',
   boards=['peppy'],
   paladin_builder_name='peppy paladin',
@@ -1572,17 +1559,6 @@ _release.add_config('lumpy-release',
 
 _release.add_config('parrot-release',
   boards=['parrot'],
-)
-
-_release.add_config('parrot32-release',
-  boards=['parrot32'],
-  # TODO(moch): Need to setup machines in the lab with this configuration
-  # Until then disabling hw_tests so that builder works
-  hw_tests=[],
-)
-
-_release.add_config('parrot64-release',
-  boards=['parrot64'],
 )
 
 _release.add_config('peppy-release',
