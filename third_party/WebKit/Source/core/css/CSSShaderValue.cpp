@@ -81,7 +81,7 @@ StyleShader* CSSShaderValue::cachedOrPendingShader()
     return m_shader.get();
 }
 
-String CSSShaderValue::customCssText() const
+String CSSShaderValue::customCSSText() const
 {
     StringBuilder result;
     result.appendLiteral("url(");

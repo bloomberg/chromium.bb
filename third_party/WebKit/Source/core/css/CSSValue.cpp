@@ -241,73 +241,73 @@ String CSSValue::cssText() const
 
     switch (classType()) {
     case AspectRatioClass:
-        return toCSSAspectRatioValue(this)->customCssText();
+        return toCSSAspectRatioValue(this)->customCSSText();
     case BorderImageSliceClass:
-        return toCSSBorderImageSliceValue(this)->customCssText();
+        return toCSSBorderImageSliceValue(this)->customCSSText();
     case CanvasClass:
-        return toCSSCanvasValue(this)->customCssText();
+        return toCSSCanvasValue(this)->customCSSText();
     case CursorImageClass:
-        return toCSSCursorImageValue(this)->customCssText();
+        return toCSSCursorImageValue(this)->customCSSText();
     case FontClass:
-        return toCSSFontValue(this)->customCssText();
+        return toCSSFontValue(this)->customCSSText();
     case FontFaceSrcClass:
-        return toCSSFontFaceSrcValue(this)->customCssText();
+        return toCSSFontFaceSrcValue(this)->customCSSText();
     case FontFeatureClass:
-        return toCSSFontFeatureValue(this)->customCssText();
+        return toCSSFontFeatureValue(this)->customCSSText();
     case FunctionClass:
-        return toCSSFunctionValue(this)->customCssText();
+        return toCSSFunctionValue(this)->customCSSText();
     case LinearGradientClass:
-        return toCSSLinearGradientValue(this)->customCssText();
+        return toCSSLinearGradientValue(this)->customCSSText();
     case RadialGradientClass:
-        return toCSSRadialGradientValue(this)->customCssText();
+        return toCSSRadialGradientValue(this)->customCSSText();
     case CrossfadeClass:
-        return toCSSCrossfadeValue(this)->customCssText();
+        return toCSSCrossfadeValue(this)->customCSSText();
     case ImageClass:
-        return toCSSImageValue(this)->customCssText();
+        return toCSSImageValue(this)->customCSSText();
     case InheritedClass:
-        return toCSSInheritedValue(this)->customCssText();
+        return toCSSInheritedValue(this)->customCSSText();
     case InitialClass:
-        return toCSSInitialValue(this)->customCssText();
+        return toCSSInitialValue(this)->customCSSText();
     case GridTemplateClass:
-        return toCSSGridTemplateValue(this)->customCssText();
+        return toCSSGridTemplateValue(this)->customCSSText();
     case PrimitiveClass:
-        return toCSSPrimitiveValue(this)->customCssText();
+        return toCSSPrimitiveValue(this)->customCSSText();
     case ReflectClass:
-        return toCSSReflectValue(this)->customCssText();
+        return toCSSReflectValue(this)->customCSSText();
     case ShadowClass:
-        return toCSSShadowValue(this)->customCssText();
+        return toCSSShadowValue(this)->customCSSText();
     case CubicBezierTimingFunctionClass:
-        return toCSSCubicBezierTimingFunctionValue(this)->customCssText();
+        return toCSSCubicBezierTimingFunctionValue(this)->customCSSText();
     case StepsTimingFunctionClass:
-        return toCSSStepsTimingFunctionValue(this)->customCssText();
+        return toCSSStepsTimingFunctionValue(this)->customCSSText();
     case UnicodeRangeClass:
-        return toCSSUnicodeRangeValue(this)->customCssText();
+        return toCSSUnicodeRangeValue(this)->customCSSText();
     case ValueListClass:
-        return toCSSValueList(this)->customCssText();
+        return toCSSValueList(this)->customCSSText();
     case CSSTransformClass:
-        return toCSSTransformValue(this)->customCssText();
+        return toCSSTransformValue(this)->customCSSText();
     case LineBoxContainClass:
-        return toCSSLineBoxContainValue(this)->customCssText();
+        return toCSSLineBoxContainValue(this)->customCSSText();
     case CalculationClass:
-        return toCSSCalcValue(this)->customCssText();
+        return toCSSCalcValue(this)->customCSSText();
     case ImageSetClass:
-        return toCSSImageSetValue(this)->customCssText();
+        return toCSSImageSetValue(this)->customCSSText();
     case CSSFilterClass:
-        return toCSSFilterValue(this)->customCssText();
+        return toCSSFilterValue(this)->customCSSText();
     case CSSArrayFunctionValueClass:
-        return toCSSArrayFunctionValue(this)->customCssText();
+        return toCSSArrayFunctionValue(this)->customCSSText();
     case CSSMixFunctionValueClass:
-        return toCSSMixFunctionValue(this)->customCssText();
+        return toCSSMixFunctionValue(this)->customCSSText();
     case CSSShaderClass:
-        return toCSSShaderValue(this)->customCssText();
+        return toCSSShaderValue(this)->customCSSText();
     case VariableClass:
         return toCSSVariableValue(this)->value();
     case SVGColorClass:
-        return toSVGColor(this)->customCssText();
+        return toSVGColor(this)->customCSSText();
     case SVGPaintClass:
-        return toSVGPaint(this)->customCssText();
+        return toSVGPaint(this)->customCSSText();
     case CSSSVGDocumentClass:
-        return toCSSSVGDocumentValue(this)->customCssText();
+        return toCSSSVGDocumentValue(this)->customCSSText();
     }
     ASSERT_NOT_REACHED();
     return String();

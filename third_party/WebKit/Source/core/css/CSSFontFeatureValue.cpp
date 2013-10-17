@@ -37,7 +37,7 @@ CSSFontFeatureValue::CSSFontFeatureValue(const String& tag, int value)
 {
 }
 
-String CSSFontFeatureValue::customCssText() const
+String CSSFontFeatureValue::customCSSText() const
 {
     StringBuilder builder;
     builder.append('\'');

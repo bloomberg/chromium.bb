@@ -1617,7 +1617,7 @@ bool InspectorStyleSheet::setStyleText(CSSStyleDeclaration* style, const String&
         return false;
 
     TrackExceptionState es;
-    style->setCssText(text, es);
+    style->setCSSText(text, es);
     if (!es.hadException())
         m_parsedStyleSheet->setText(patchedStyleSheetText);
 

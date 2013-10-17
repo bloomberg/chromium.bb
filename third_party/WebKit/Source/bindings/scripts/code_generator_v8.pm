@@ -5964,11 +5964,11 @@ sub FirstLetterToUpperCase
 {
     my $param = shift;
     my $ret = ucfirst($param);
-    # xmlEncoding becomes XMLEncoding, but xmlllang becomes Xmllang.
-    $ret =~ s/Xml/XML/ if $ret =~ /^Xml[^a-z]/;
-    $ret =~ s/Css/CSS/ if $ret =~ /^Css[^T]/;  # css -> setCSS, except setCssText.
-    $ret =~ s/Ime/IME/ if $ret =~ /^Ime/;  # ime -> setIME
-    $ret =~ s/Svg/SVG/ if $ret =~ /^Svg/;  # svg -> setSVG
+    # Capitalize initial acronym, e.g., xml -> setXML
+    $ret =~ s/Xml/XML/ if $ret =~ /^Xml/;
+    $ret =~ s/Css/CSS/ if $ret =~ /^Css/;
+    $ret =~ s/Ime/IME/ if $ret =~ /^Ime/;
+    $ret =~ s/Svg/SVG/ if $ret =~ /^Svg/;
     return $ret;
 }
 

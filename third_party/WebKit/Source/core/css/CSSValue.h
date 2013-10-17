@@ -32,7 +32,7 @@ namespace WebCore {
 class ExceptionState;
 class StyleSheetContents;
 
-enum CssTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
+enum CSSTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
 
 // FIXME: The current CSSValue and subclasses should be turned into internal types (StyleValue).
 // The few subtypes that are actually exposed in CSSOM can be seen in the cloneForCSSOM() function.
@@ -61,7 +61,7 @@ public:
     Type cssValueType() const;
 
     String cssText() const;
-    void setCssText(const String&, ExceptionState&) { } // FIXME: Not implemented.
+    void setCSSText(const String&, ExceptionState&) { } // FIXME: Not implemented.
     String serializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 
     bool isPrimitiveValue() const { return m_classType == PrimitiveClass; }

@@ -41,7 +41,7 @@ COMPILE_ASSERT(StyleRuleBase::Region == static_cast<StyleRuleBase::Type>(CSSRule
 
 COMPILE_ASSERT(StyleRuleBase::Viewport == static_cast<StyleRuleBase::Type>(CSSRule::VIEWPORT_RULE), enums_should_match);
 
-void CSSRule::setCssText(const String&)
+void CSSRule::setCSSText(const String&)
 {
     notImplemented();
 }

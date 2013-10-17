@@ -42,7 +42,7 @@ public:
         return adoptRef(new CSSArrayFunctionValue());
     }
 
-    String customCssText() const;
+    String customCSSText() const;
 
     PassRefPtr<CSSArrayFunctionValue> cloneForCSSOM() const;
 

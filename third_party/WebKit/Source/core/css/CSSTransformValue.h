@@ -64,7 +64,7 @@ public:
         return adoptRef(new CSSTransformValue(type));
     }
 
-    String customCssText() const;
+    String customCSSText() const;
     bool equals(const CSSTransformValue& other) const { return m_type == other.m_type && CSSValueList::equals(other); }
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 

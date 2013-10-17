@@ -46,7 +46,7 @@ public:
     CSSPrimitiveValue* offset() const { return m_offset.get(); }
     CSSValue* mask() const { return m_mask.get(); }
 
-    String customCssText() const;
+    String customCSSText() const;
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 
     void addSubresourceStyleURLs(ListHashSet<KURL>&, const StyleSheetContents*) const;

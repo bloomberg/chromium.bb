@@ -60,7 +60,7 @@ DocumentResource* CSSSVGDocumentValue::load(ResourceFetcher* loader)
     return m_document.get();
 }
 
-String CSSSVGDocumentValue::customCssText() const
+String CSSSVGDocumentValue::customCSSText() const
 {
     return quoteCSSStringIfNeeded(m_url);
 }

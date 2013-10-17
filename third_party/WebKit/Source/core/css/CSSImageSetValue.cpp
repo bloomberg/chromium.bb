@@ -129,7 +129,7 @@ StyleImage* CSSImageSetValue::cachedOrPendingImageSet(float deviceScaleFactor)
     return m_imageSet.get();
 }
 
-String CSSImageSetValue::customCssText() const
+String CSSImageSetValue::customCSSText() const
 {
     StringBuilder result;
     result.append("-webkit-image-set(");

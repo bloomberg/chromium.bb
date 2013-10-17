@@ -42,9 +42,9 @@ CSSArrayFunctionValue::CSSArrayFunctionValue(const CSSArrayFunctionValue& cloneF
 {
 }
 
-String CSSArrayFunctionValue::customCssText() const
+String CSSArrayFunctionValue::customCSSText() const
 {
-    return "array(" + CSSValueList::customCssText() + ')';
+    return "array(" + CSSValueList::customCSSText() + ')';
 }
 
 PassRefPtr<CSSArrayFunctionValue> CSSArrayFunctionValue::cloneForCSSOM() const

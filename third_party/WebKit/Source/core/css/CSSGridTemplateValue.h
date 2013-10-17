@@ -42,7 +42,7 @@ public:
     static PassRefPtr<CSSGridTemplateValue> create(const NamedGridAreaMap& gridAreaMap, size_t rowCount, size_t columnCount) { return adoptRef(new CSSGridTemplateValue(gridAreaMap, rowCount, columnCount)); }
     ~CSSGridTemplateValue() { }
 
-    String customCssText() const;
+    String customCSSText() const;
 
     const NamedGridAreaMap& gridAreaMap() const { return m_gridAreaMap; }
     size_t rowCount() const { return m_rowCount; }

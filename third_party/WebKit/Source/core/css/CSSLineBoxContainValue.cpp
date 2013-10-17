@@ -37,7 +37,7 @@ CSSLineBoxContainValue::CSSLineBoxContainValue(unsigned value)
 {
 }
 
-String CSSLineBoxContainValue::customCssText() const
+String CSSLineBoxContainValue::customCSSText() const
 {
     StringBuilder text;
 

@@ -48,7 +48,7 @@ public:
         return IntPoint(-1, -1);
     }
 
-    String customCssText() const;
+    String customCSSText() const;
 
     bool updateIfSVGCursorIsUsed(Element*);
     StyleImage* cachedImage(ResourceFetcher*, float deviceScaleFactor);

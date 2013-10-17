@@ -51,7 +51,7 @@ public:
     StyleFetchedShader* resource(ResourceFetcher*);
     StyleShader* cachedOrPendingShader();
 
-    String customCssText() const;
+    String customCSSText() const;
 
     bool equals(const CSSShaderValue&) const;
 

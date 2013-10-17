@@ -1271,7 +1271,7 @@ String CSSComputedStyleDeclaration::cssText() const
     return result.toString();
 }
 
-void CSSComputedStyleDeclaration::setCssText(const String&, ExceptionState& es)
+void CSSComputedStyleDeclaration::setCSSText(const String&, ExceptionState& es)
 {
     es.throwDOMException(NoModificationAllowedError, "Failed to set the 'cssText' property on a computed 'CSSStyleDeclaration': computed styles are read-only.");
 }

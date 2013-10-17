@@ -31,10 +31,10 @@ class Attribute;
 class SVGLangSpace {
 public:
     const AtomicString& xmllang() const { return m_lang; }
-    void setXmllang(const AtomicString& xmlLang);
+    void setXMLlang(const AtomicString& xmlLang);
 
     const AtomicString& xmlspace() const;
-    void setXmlspace(const AtomicString& xmlSpace);
+    void setXMLspace(const AtomicString& xmlSpace);
 
     bool parseAttribute(const QualifiedName&, const AtomicString&);
     bool isKnownAttribute(const QualifiedName&);

@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-void SVGLangSpace::setXmllang(const AtomicString& xmlLang)
+void SVGLangSpace::setXMLlang(const AtomicString& xmlLang)
 {
     m_lang = xmlLang;
 }
@@ -41,7 +41,7 @@ const AtomicString& SVGLangSpace::xmlspace() const
     return m_space;
 }
 
-void SVGLangSpace::setXmlspace(const AtomicString& xmlSpace)
+void SVGLangSpace::setXMLspace(const AtomicString& xmlSpace)
 {
     m_space = xmlSpace;
 }
@@ -49,11 +49,11 @@ void SVGLangSpace::setXmlspace(const AtomicString& xmlSpace)
 bool SVGLangSpace::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name.matches(XMLNames::langAttr)) {
-        setXmllang(value);
+        setXMLlang(value);
         return true;
     }
     if (name.matches(XMLNames::spaceAttr)) {
-        setXmlspace(value);
+        setXMLspace(value);
         return true;
     }
 

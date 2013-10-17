@@ -461,7 +461,7 @@ bool CSSGradientValue::knownToBeOpaque(const RenderObject*) const
     return true;
 }
 
-String CSSLinearGradientValue::customCssText() const
+String CSSLinearGradientValue::customCSSText() const
 {
     StringBuilder result;
     if (m_gradientType == CSSDeprecatedLinearGradient) {
@@ -736,7 +736,7 @@ bool CSSLinearGradientValue::equals(const CSSLinearGradientValue& other) const
     return equalXorY && m_stops == other.m_stops;
 }
 
-String CSSRadialGradientValue::customCssText() const
+String CSSRadialGradientValue::customCSSText() const
 {
     StringBuilder result;
 

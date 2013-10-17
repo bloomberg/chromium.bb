@@ -66,7 +66,7 @@ public:
     void setInstanceUpdatesBlocked(bool);
 
     String xmlbase() const;
-    void setXmlbase(const String&);
+    void setXMLbase(const String&);
 
     SVGSVGElement* ownerSVGElement() const;
     SVGElement* viewportElement() const;

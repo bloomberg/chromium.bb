@@ -92,7 +92,7 @@ public:
     void setUri(const String&);
     void setPaint(unsigned short paintType, const String& uri, const String& rgbColor, const String& iccColor, ExceptionState&);
 
-    String customCssText() const;
+    String customCSSText() const;
 
     PassRefPtr<SVGPaint> cloneForCSSOM() const;
 

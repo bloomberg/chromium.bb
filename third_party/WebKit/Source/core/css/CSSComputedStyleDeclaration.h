@@ -112,7 +112,7 @@ private:
     virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&);
     virtual String removeProperty(const String& propertyName, ExceptionState&);
     virtual String cssText() const;
-    virtual void setCssText(const String&, ExceptionState&);
+    virtual void setCSSText(const String&, ExceptionState&);
     virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID);
     virtual String getPropertyValueInternal(CSSPropertyID);
     virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&);

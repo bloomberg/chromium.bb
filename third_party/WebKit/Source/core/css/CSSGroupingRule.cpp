@@ -108,7 +108,7 @@ void CSSGroupingRule::deleteRule(unsigned index, ExceptionState& es)
     m_childRuleCSSOMWrappers.remove(index);
 }
 
-void CSSGroupingRule::appendCssTextForItems(StringBuilder& result) const
+void CSSGroupingRule::appendCSSTextForItems(StringBuilder& result) const
 {
     unsigned size = length();
     for (unsigned i = 0; i < size; ++i) {

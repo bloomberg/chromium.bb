@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-String CSSCubicBezierTimingFunctionValue::customCssText() const
+String CSSCubicBezierTimingFunctionValue::customCSSText() const
 {
     return "cubic-bezier("
         + String::number(m_x1) + ", "
@@ -44,7 +44,7 @@ bool CSSCubicBezierTimingFunctionValue::equals(const CSSCubicBezierTimingFunctio
     return m_x1 == other.m_x1 && m_x2 == other.m_x2 && m_y1 == other.m_y1 && m_y2 == other.m_y2;
 }
 
-String CSSStepsTimingFunctionValue::customCssText() const
+String CSSStepsTimingFunctionValue::customCSSText() const
 {
     return "steps(" + String::number(m_steps) + ", " + (m_stepAtStart ? "start" : "end") + ')';
 }

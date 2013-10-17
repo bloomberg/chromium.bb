@@ -50,7 +50,7 @@ public:
 protected:
     CSSGroupingRule(StyleRuleGroup* groupRule, CSSStyleSheet* parent);
 
-    void appendCssTextForItems(StringBuilder&) const;
+    void appendCSSTextForItems(StringBuilder&) const;
 
     RefPtr<StyleRuleGroup> m_groupRule;
     mutable Vector<RefPtr<CSSRule> > m_childRuleCSSOMWrappers;

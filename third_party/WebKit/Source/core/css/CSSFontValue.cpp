@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-String CSSFontValue::customCssText() const
+String CSSFontValue::customCSSText() const
 {
     // font variant weight size / line-height family
 

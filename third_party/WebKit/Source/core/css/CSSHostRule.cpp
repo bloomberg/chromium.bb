@@ -36,7 +36,7 @@ String CSSHostRule::cssText() const
 {
     StringBuilder result;
     result.appendLiteral("@host { \n");
-    appendCssTextForItems(result);
+    appendCSSTextForItems(result);
     result.append('}');
     return result.toString();
 }

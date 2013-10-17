@@ -73,9 +73,9 @@ CSSTransformValue::CSSTransformValue(TransformOperationType op)
 {
 }
 
-String CSSTransformValue::customCssText() const
+String CSSTransformValue::customCSSText() const
 {
-    return transformValueToCssString(m_type, CSSValueList::customCssText());
+    return transformValueToCssString(m_type, CSSValueList::customCSSText());
 }
 
 String CSSTransformValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const

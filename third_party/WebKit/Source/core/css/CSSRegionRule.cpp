@@ -53,7 +53,7 @@ String CSSRegionRule::cssText() const
 
     // Then add the rules.
     result.appendLiteral(" { \n");
-    appendCssTextForItems(result);
+    appendCSSTextForItems(result);
     result.append('}');
     return result.toString();
 }

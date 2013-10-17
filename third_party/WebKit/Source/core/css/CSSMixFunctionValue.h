@@ -42,7 +42,7 @@ public:
         return adoptRef(new CSSMixFunctionValue());
     }
 
-    String customCssText() const;
+    String customCSSText() const;
 
     PassRefPtr<CSSMixFunctionValue> cloneForCSSOM() const;
 

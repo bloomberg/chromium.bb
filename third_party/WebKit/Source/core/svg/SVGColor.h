@@ -69,7 +69,7 @@ public:
     void setRGBColorICCColor(const String& rgbColor, const String& iccColor, ExceptionState&);
     void setColor(unsigned short colorType, const String& rgbColor, const String& iccColor, ExceptionState&);
 
-    String customCssText() const;
+    String customCSSText() const;
 
     ~SVGColor() { }
 

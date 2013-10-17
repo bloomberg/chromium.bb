@@ -74,7 +74,7 @@ CSSCursorImageValue::~CSSCursorImageValue()
     }
 }
 
-String CSSCursorImageValue::customCssText() const
+String CSSCursorImageValue::customCSSText() const
 {
     StringBuilder result;
     result.append(m_imageValue->cssText());

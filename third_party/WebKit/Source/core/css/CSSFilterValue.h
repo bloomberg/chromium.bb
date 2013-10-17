@@ -57,7 +57,7 @@ public:
         return adoptRef(new CSSFilterValue(type));
     }
 
-    String customCssText() const;
+    String customCSSText() const;
 
     FilterOperationType operationType() const { return m_type; }
 

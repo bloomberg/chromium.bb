@@ -63,7 +63,7 @@ private:
     virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) OVERRIDE;
     virtual String removeProperty(const String& propertyName, ExceptionState&) OVERRIDE;
     virtual String cssText() const OVERRIDE;
-    virtual void setCssText(const String&, ExceptionState&) OVERRIDE;
+    virtual void setCSSText(const String&, ExceptionState&) OVERRIDE;
     virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE;
     virtual String getPropertyValueInternal(CSSPropertyID) OVERRIDE;
     virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) OVERRIDE;

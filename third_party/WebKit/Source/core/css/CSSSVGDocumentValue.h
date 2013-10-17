@@ -41,7 +41,7 @@ public:
     DocumentResource* cachedSVGDocument() const { return m_document.get(); }
     DocumentResource* load(ResourceFetcher*);
 
-    String customCssText() const;
+    String customCSSText() const;
     const String& url() const { return m_url; }
     bool loadRequested() const { return m_loadRequested; }
     bool equals(const CSSSVGDocumentValue&) const;

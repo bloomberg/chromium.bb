@@ -53,7 +53,7 @@ String CSSMediaRule::cssText() const
         result.append(' ');
     }
     result.appendLiteral("{ \n");
-    appendCssTextForItems(result);
+    appendCSSTextForItems(result);
     result.append('}');
     return result.toString();
 }

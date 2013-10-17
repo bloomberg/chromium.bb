@@ -308,7 +308,7 @@ public:
 
     template<typename T> inline operator T() const; // Defined in CSSPrimitiveValueMappings.h
 
-    String customCssText(CssTextFormattingFlags = QuoteCSSStringIfNeeded) const;
+    String customCSSText(CSSTextFormattingFlags = QuoteCSSStringIfNeeded) const;
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
     bool hasVariableReference() const;
 

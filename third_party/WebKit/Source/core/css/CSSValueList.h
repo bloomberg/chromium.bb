@@ -59,7 +59,7 @@ public:
     bool hasValue(CSSValue*) const;
     PassRefPtr<CSSValueList> copy();
 
-    String customCssText(CssTextFormattingFlags = QuoteCSSStringIfNeeded) const;
+    String customCSSText(CSSTextFormattingFlags = QuoteCSSStringIfNeeded) const;
     bool equals(const CSSValueList&) const;
     bool equals(const CSSValue&) const;
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;

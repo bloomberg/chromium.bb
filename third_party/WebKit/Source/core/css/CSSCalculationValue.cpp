@@ -136,7 +136,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitTypes type)
     return false;
 }
 
-static String buildCssText(const String& expression)
+static String buildCSSText(const String& expression)
 {
     StringBuilder result;
     result.append("calc");
@@ -149,9 +149,9 @@ static String buildCssText(const String& expression)
     return result.toString();
 }
 
-String CSSCalcValue::customCssText() const
+String CSSCalcValue::customCSSText() const
 {
-    return buildCssText(m_expression->customCssText());
+    return buildCSSText(m_expression->customCSSText());
 }
 
 bool CSSCalcValue::equals(const CSSCalcValue& other) const
@@ -161,7 +161,7 @@ bool CSSCalcValue::equals(const CSSCalcValue& other) const
 
 String CSSCalcValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
-    return buildCssText(m_expression->serializeResolvingVariables(variables));
+    return buildCSSText(m_expression->serializeResolvingVariables(variables));
 }
 
 bool CSSCalcValue::hasVariableReference() const
@@ -209,7 +209,7 @@ public:
         return !m_value->getDoubleValue();
     }
 
-    virtual String customCssText() const
+    virtual String customCSSText() const
     {
         return m_value->cssText();
     }
@@ -444,7 +444,7 @@ public:
         return evaluate(leftValue, rightValue);
     }
 
-    static String buildCssText(const String& leftExpression, const String& rightExpression, CalcOperator op)
+    static String buildCSSText(const String& leftExpression, const String& rightExpression, CalcOperator op)
     {
         StringBuilder result;
         result.append('(');
@@ -458,14 +458,14 @@ public:
         return result.toString();
     }
 
-    virtual String customCssText() const
+    virtual String customCSSText() const
     {
-        return buildCssText(m_leftSide->customCssText(), m_rightSide->customCssText(), m_operator);
+        return buildCSSText(m_leftSide->customCSSText(), m_rightSide->customCSSText(), m_operator);
     }
 
     virtual String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
     {
-        return buildCssText(m_leftSide->serializeResolvingVariables(variables), m_rightSide->serializeResolvingVariables(variables), m_operator);
+        return buildCSSText(m_leftSide->serializeResolvingVariables(variables), m_rightSide->serializeResolvingVariables(variables), m_operator);
     }
 
     virtual bool hasVariableReference() const

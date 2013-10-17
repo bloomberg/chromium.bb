@@ -42,9 +42,9 @@ CSSMixFunctionValue::CSSMixFunctionValue(const CSSMixFunctionValue& cloneFrom)
 {
 }
 
-String CSSMixFunctionValue::customCssText() const
+String CSSMixFunctionValue::customCSSText() const
 {
-    return "mix(" + CSSValueList::customCssText() + ")";
+    return "mix(" + CSSValueList::customCSSText() + ")";
 }
 
 PassRefPtr<CSSMixFunctionValue> CSSMixFunctionValue::cloneForCSSOM() const

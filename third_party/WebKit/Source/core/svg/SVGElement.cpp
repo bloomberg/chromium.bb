@@ -318,7 +318,7 @@ String SVGElement::xmlbase() const
     return fastGetAttribute(XMLNames::baseAttr);
 }
 
-void SVGElement::setXmlbase(const String& value)
+void SVGElement::setXMLbase(const String& value)
 {
     setAttribute(XMLNames::baseAttr, value);
 }

@@ -88,7 +88,7 @@ String StylePropertySerializer::asText() const
             continue;
         case CSSPropertyContent:
             if (property.value()->isValueList())
-                value = toCSSValueList(property.value())->customCssText(AlwaysQuoteCSSString);
+                value = toCSSValueList(property.value())->customCSSText(AlwaysQuoteCSSString);
             break;
         case CSSPropertyBorderTopWidth:
         case CSSPropertyBorderRightWidth:

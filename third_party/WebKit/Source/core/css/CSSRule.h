@@ -84,7 +84,7 @@ public:
     CSSRule* parentRule() const { return m_parentIsRule ? m_parentRule : 0; }
 
     // NOTE: Just calls notImplemented().
-    void setCssText(const String&);
+    void setCSSText(const String&);
 
 protected:
     CSSRule(CSSStyleSheet* parent)

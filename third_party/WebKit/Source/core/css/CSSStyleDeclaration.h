@@ -48,7 +48,7 @@ public:
 
     virtual CSSRule* parentRule() const = 0;
     virtual String cssText() const = 0;
-    virtual void setCssText(const String&, ExceptionState&) = 0;
+    virtual void setCSSText(const String&, ExceptionState&) = 0;
     virtual unsigned length() const = 0;
     virtual String item(unsigned index) const = 0;
     virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName) = 0;
