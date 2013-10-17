@@ -41,6 +41,14 @@ const char kTestUploadExistingFilePath[] = "/upload/existingfile/path";
 const char kTestUploadNewFilePath[] = "/upload/newfile/path";
 const char kTestDownloadPathPrefix[] = "/download/";
 
+// Used as a GetContentCallback.
+void AppendContent(std::string* out,
+                   GDataErrorCode error,
+                   scoped_ptr<std::string> content) {
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  out->append(*content);
+}
+
 }  // namespace
 
 class DriveApiRequestsTest : public testing::Test {
@@ -1544,6 +1552,41 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
 
   std::string contents;
   base::ReadFileToString(temp_file, &contents);
+  base::DeleteFile(temp_file, false);
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(kTestDownloadPathPrefix + kTestId, http_request_.relative_url);
+  EXPECT_EQ(kDownloadedFilePath, temp_file);
+
+  const std::string expected_contents = kTestId + kTestId + kTestId;
+  EXPECT_EQ(expected_contents, contents);
+}
+
+TEST_F(DriveApiRequestsTest, DownloadFileRequest_GetContentCallback) {
+  const base::FilePath kDownloadedFilePath =
+      temp_dir_.path().AppendASCII("cache_file");
+  const std::string kTestId("dummyId");
+
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  base::FilePath temp_file;
+  std::string contents;
+  {
+    base::RunLoop run_loop;
+    drive::DownloadFileRequest* request = new drive::DownloadFileRequest(
+        request_sender_.get(),
+        *url_generator_,
+        kTestId,
+        kDownloadedFilePath,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&result_code, &temp_file)),
+        base::Bind(&AppendContent, &contents),
+        ProgressCallback());
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
   base::DeleteFile(temp_file, false);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
