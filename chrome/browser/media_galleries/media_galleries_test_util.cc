@@ -23,10 +23,17 @@
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/media_galleries/fileapi/iapps_finder_impl.h"
+#include "chrome/browser/policy/preferences_mock_mac.h"
+#endif  // OS_MACOSX
+
 #if defined(OS_WIN)
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
-#endif
+#endif  // OS_WIN
 
 scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
     const std::string& name,
@@ -102,7 +109,7 @@ void EnsureMediaDirectoriesExists::WriteCustomPicasaAppDataPathToRegistry(
                         KEY_SET_VALUE);
   key.WriteValue(picasa::kPicasaRegistryAppDataKey, path.value().c_str());
 }
-#endif
+#endif  // OS_WIN
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 base::FilePath
@@ -110,7 +117,7 @@ EnsureMediaDirectoriesExists::GetFakePicasaFoldersRootPath() const {
   DCHECK(fake_dir_.IsValid());
   return fake_dir_.path().AppendASCII("picasa_folders");
 }
-#endif
+#endif  // OS_WIN || OS_MACOSX
 
 void EnsureMediaDirectoriesExists::Init() {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -120,18 +127,36 @@ void EnsureMediaDirectoriesExists::Init() {
   ASSERT_TRUE(fake_dir_.CreateUniqueTempDir());
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // This is to control whether or not tests think iTunes and Picasa are
-  // installed.
+  // This is to control whether or not tests think iTunes (on Windows) and
+  // Picasa are installed.
   app_data_override_.reset(new base::ScopedPathOverride(
       base::DIR_APP_DATA, GetFakeAppDataPath()));
+#endif  // OS_WIN || OS_MACOSX
+
 #if defined(OS_WIN)
   // Picasa on Windows is by default in the DIR_LOCAL_APP_DATA directory.
   local_app_data_override_.reset(new base::ScopedPathOverride(
       base::DIR_LOCAL_APP_DATA, GetFakeLocalAppDataPath()));
   // Picasa also looks in the registry for an alternate path.
   registry_override_.OverrideRegistry(HKEY_CURRENT_USER, L"hkcu_picasa");
-#endif
-#endif
+#endif  // OS_WIN
+
+#if defined(OS_MACOSX)
+  mac_preferences_.reset(new MockPreferences);
+  iapps::SetMacPreferencesForTesting(mac_preferences_.get());
+
+  // iTunes override.
+  mac_preferences_->AddTestItem(
+      base::mac::NSToCFCast(iapps::kITunesRecentDatabasePathsKey),
+      base::SysUTF8ToNSString(fake_dir_.path().AppendASCII("itunes").value()),
+      false);
+
+  // iPhoto override.
+  mac_preferences_->AddTestItem(
+      base::mac::NSToCFCast(iapps::kIPhotoRecentDatabasesKey),
+      base::SysUTF8ToNSString(fake_dir_.path().AppendASCII("iphoto").value()),
+      false);
+#endif // OS_MACOSX
 
   music_override_.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_MUSIC, fake_dir_.path().AppendASCII("music")));
@@ -140,5 +165,5 @@ void EnsureMediaDirectoriesExists::Init() {
   video_override_.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_VIDEOS, fake_dir_.path().AppendASCII("videos")));
   num_galleries_ = 3;
-#endif
+#endif  // OS_CHROMEOS || OS_ANDROID
 }
