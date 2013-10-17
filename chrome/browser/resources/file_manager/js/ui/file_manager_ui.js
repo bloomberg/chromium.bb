@@ -8,15 +8,23 @@
  * The root of the file manager's view managing the DOM of Files.app.
  *
  * @param {HTMLElement} element Top level element of Files.app.
+ * @param {DialogType} dialogType Dialog type.
  * @constructor.
  */
-var FileManagerUI = function(element) {
+var FileManagerUI = function(element, dialogType) {
   /**
    * Top level element of Files.app.
    * @type {HTMLElement}
    * @private
    */
   this.element_ = element;
+
+  /**
+   * Dialog type.
+   * @type {DialogType}
+   * @private
+   */
+  this.dialogType_ = dialogType;
 
   /**
    * Error dialog.
@@ -66,7 +74,94 @@ var FileManagerUI = function(element) {
    */
   this.searchBox = null;
 
+  /**
+   * File type selector in the footer.
+   * @type {HTMLElement}
+   */
+  this.fileTypeSelector = null;
+
+  /**
+   * OK button in the footer.
+   * @type {HTMLElement}
+   */
+  this.okButton = null;
+
+  /**
+   * Cancel button in the footer.
+   * @type {HTMLElement}
+   */
+  this.cancelButton = null;
+
   Object.seal(this);
+
+  // Initialize the header.
+  this.element_.querySelector('#app-name').innerText =
+      chrome.runtime.getManifest().name;
+
+  // Initialize dialog type.
+  this.initDialogType_();
+
+  // Pre-populate the static localized strings.
+  i18nTemplate.process(this.element_.ownerDocument, loadTimeData);
+};
+
+/**
+ * Tweak the UI to become a particular kind of dialog, as determined by the
+ * dialog type parameter passed to the constructor.
+ *
+ * @private
+ */
+FileManagerUI.prototype.initDialogType_ = function() {
+  // Obtain elements.
+  var hasFooterPanel =
+      this.dialogType_ == DialogType.SELECT_SAVEAS_FILE ||
+      this.dialogType_ == DialogType.SELECT_FOLDER;
+
+  // If the footer panel exists, the buttons are placed there. Otherwise,
+  // the buttons are on the preview panel.
+  var parentPanelOfButtons = this.element_.ownerDocument.querySelector(
+      !hasFooterPanel ? '.preview-panel' : '.dialog-footer');
+  parentPanelOfButtons.classList.add('button-panel');
+  this.fileTypeSelector = parentPanelOfButtons.querySelector('.file-type');
+  this.okButton = parentPanelOfButtons.querySelector('.ok');
+  this.cancelButton = parentPanelOfButtons.querySelector('.cancel');
+
+  // Set attributes.
+  var defaultTitle;
+  var okLabel = str('OPEN_LABEL');
+
+  switch (this.dialogType_) {
+    case DialogType.SELECT_FOLDER:
+      defaultTitle = str('SELECT_FOLDER_TITLE');
+      break;
+
+    case DialogType.SELECT_UPLOAD_FOLDER:
+      defaultTitle = str('SELECT_UPLOAD_FOLDER_TITLE');
+      okLabel = str('UPLOAD_LABEL');
+      break;
+
+    case DialogType.SELECT_OPEN_FILE:
+      defaultTitle = str('SELECT_OPEN_FILE_TITLE');
+      break;
+
+    case DialogType.SELECT_OPEN_MULTI_FILE:
+      defaultTitle = str('SELECT_OPEN_MULTI_FILE_TITLE');
+      break;
+
+    case DialogType.SELECT_SAVEAS_FILE:
+      defaultTitle = str('SELECT_SAVEAS_FILE_TITLE');
+      okLabel = str('SAVE_LABEL');
+      break;
+
+    case DialogType.FULL_PAGE:
+      break;
+
+    default:
+      throw new Error('Unknown dialog type: ' + this.dialogType);
+  }
+
+  this.okButton.textContent = okLabel;
+  this.element_.setAttribute('type', this.dialogType_);
 };
 
 /**
