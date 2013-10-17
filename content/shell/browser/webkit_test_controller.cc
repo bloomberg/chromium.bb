@@ -105,9 +105,7 @@ void WebKitTestResultPrinter::PrintImageFooter() {
     return;
   if (!capture_text_only_) {
     *output_ << "#EOF\n";
-    *error_ << "#EOF\n";
     output_->flush();
-    error_->flush();
   }
   state_ = AFTER_TEST;
 }
@@ -138,9 +136,7 @@ void WebKitTestResultPrinter::PrintAudioFooter() {
     return;
   if (!capture_text_only_) {
     *output_ << "#EOF\n";
-    *error_ << "#EOF\n";
     output_->flush();
-    error_->flush();
   }
   state_ = IN_IMAGE_BLOCK;
 }
@@ -178,6 +174,15 @@ void WebKitTestResultPrinter::PrintEncodedBinaryData(
 
   *output_ << "Content-Length: " << data_base64.length() << "\n";
   output_->write(data_base64.c_str(), data_base64.length());
+}
+
+void WebKitTestResultPrinter::CloseStderr() {
+  if (state_ != AFTER_TEST)
+    return;
+  if (!capture_text_only_) {
+    *error_ << "#EOF\n";
+    error_->flush();
+  }
 }
 
 
@@ -279,6 +284,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   DCHECK(CalledOnValidThread());
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
+  printer_->CloseStderr();
   send_configuration_to_next_host_ = false;
   test_phase_ = BETWEEN_TESTS;
   is_compositing_test_ = false;

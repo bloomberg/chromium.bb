@@ -75,6 +75,8 @@ class WebKitTestResultPrinter {
   void AddMessageRaw(const std::string& message);
   void AddErrorMessage(const std::string& message);
 
+  void CloseStderr();
+
  private:
   void PrintEncodedBinaryData(const std::vector<unsigned char>& data);
 
