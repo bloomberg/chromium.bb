@@ -1983,6 +1983,8 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   display: block;
   height: 17px;
   opacity: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

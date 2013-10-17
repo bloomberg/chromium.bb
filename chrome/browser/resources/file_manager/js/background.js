@@ -594,6 +594,7 @@ function initApp() {
   // Fetch strings and initialize the context menu.
   queue.run(function(callback) {
     chrome.fileBrowserPrivate.getStrings(function(strings) {
+      loadTimeData.data = strings;
       initContextMenu(strings);
       chrome.storage.local.set({strings: strings}, callback);
     });

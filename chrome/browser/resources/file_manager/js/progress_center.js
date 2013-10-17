@@ -280,6 +280,13 @@ var ProgressCenterHandler = function(fileOperationManager, progressCenter) {
   this.deletingItem_ = null;
 
   /**
+   * Number of deleted files.
+   * @type {number}
+   * @private
+   */
+  this.totalDeleted_ = 0;
+
+  /**
    * File operation manager.
    * @type {FileOperationManager}
    * @private
@@ -304,6 +311,79 @@ var ProgressCenterHandler = function(fileOperationManager, progressCenter) {
 };
 
 /**
+ * Generate a progress message from the event.
+ * @param {Event} event Progress event.
+ * @return {string} message.
+ * @private
+ */
+ProgressCenterHandler.getMessage_ = function(event) {
+  if (event.reason === 'ERROR') {
+    switch (event.error.code) {
+      case util.FileOperationErrorType.TARGET_EXISTS:
+        var name = error.data.name;
+        if (error.data.isDirectory)
+          name += '/';
+        switch (event.status.operationType) {
+          case 'COPY': return strf('COPY_TARGET_EXISTS_ERROR', name);
+          case 'MOVE': return strf('MOVE_TARGET_EXISTS_ERROR', name);
+          case 'ZIP': return strf('ZIP_TARGET_EXISTS_ERROR', name);
+          default: return strf('TRANSFER_TARGET_EXISTS_ERROR', name);
+        }
+
+      case util.FileOperationErrorType.FILESYSTEM_ERROR:
+        var detail = util.getFileErrorString(event.error.data.code);
+        switch (event.status.operationType) {
+          case 'COPY': return strf('COPY_FILESYSTEM_ERROR', detail);
+          case 'MOVE': return strf('MOVE_FILESYSTEM_ERROR', detail);
+          case 'ZIP': return strf('ZIP_FILESYSTEM_ERROR', detail);
+          default: return strf('TRANSFER_FILESYSTEM_ERROR', detail);
+        }
+
+      default:
+        switch (event.status.operationType) {
+          case 'COPY': return strf('COPY_UNEXPECTED_ERROR', event.error);
+          case 'MOVE': return strf('MOVE_UNEXPECTED_ERROR', event.error);
+          case 'ZIP': return strf('ZIP_UNEXPECTED_ERROR', event.error);
+          default: return strf('TRANSFER_UNEXPECTED_ERROR', event.error);
+        }
+    }
+  } else if (event.status.numRemainingItems === 1) {
+    var name = event.status.processingEntry.name;
+    switch (event.status.operationType) {
+      case 'COPY': return strf('COPY_FILE_NAME', name);
+      case 'MOVE': return strf('MOVE_FILE_NAME', name);
+      case 'ZIP': return strf('ZIP_FILE_NAME', name);
+      default: return strf('TRANSFER_FILE_NAME', name);
+    }
+  } else {
+    var remainNumber = event.status.numRemainingItems;
+    switch (event.status.operationType) {
+      case 'COPY': return strf('COPY_ITEMS_REMAINING', remainNumber);
+      case 'MOVE': return strf('MOVE_ITEMS_REMAINING', remainNumber);
+      case 'ZIP': return strf('ZIP_ITEMS_REMAINING', remainNumber);
+      default: return strf('TRANSFER_ITEMS_REMAINING', remainNumber);
+    }
+  }
+};
+
+/**
+ * Generate a delete message from the event.
+ * @param {Event} event Progress event.
+ * @param {number} totalDeleted Total number of deleted files.
+ * @return {string} message.
+ * @private
+ */
+ProgressCenterHandler.getDeleteMessage_ = function(event, totalDeleted) {
+  if (totalDeleted === 1) {
+    var fullPath = util.extractFilePath(event.urls[0]);
+    var fileName = PathUtil.split(fullPath).pop();
+    return strf('DELETED_MESSAGE', fileName);
+  } else {
+    return strf('DELETED_MESSAGE_PLURAL', totalDeleted);
+  }
+};
+
+/**
  * Handles the copy-progress event.
  * @param {Event} event The copy-progress event.
  * @private
@@ -317,13 +397,12 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
         return;
       }
       this.copyingItem_ = new ProgressCenterItem();
-      // TODO(hirono): Specifying the correct message.
-      this.copyingItem_.message = 'Copying ...';
+      this.copyingItem_.message = ProgressCenterHandler.getMessage_(event);
       this.copyingItem_.progressMax = event.status.totalBytes;
       this.copyingItem_.progressValue = event.status.processedBytes;
       this.copyingItem_.cancelCallback = function() {
         this.fileOperationManager_.requestCancel(function() {
-          this.copyingItem_.message = 'Canceled.';
+          this.copyingItem_.message = strf('COPY_CANCELLED');
           this.copyingItem_.state = ProgressItemState.CANCELED;
           progressCenter.updateItem(this.copyingItem_);
           this.copyingItem_ = null;
@@ -338,6 +417,7 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
         console.error('Cannot find copying item.');
         return;
       }
+      this.copyingItem_.message = ProgressCenterHandler.getMessage_(event);
       this.copyingItem_.progressValue = event.status.processedBytes;
       progressCenter.updateItem(this.copyingItem_);
       break;
@@ -348,13 +428,12 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
         console.error('Cannot find copying item.');
         return;
       }
-      // TODO(hirono): Replace the message with the string assets.
       if (event.reason === 'SUCCESS') {
-        this.copyingItem_.message = 'Complete.';
+        // TODO(hirono): Add a message for complete.
         this.copyingItem_.state = ProgressItemState.COMPLETE;
         this.copyingItem_.progressValue = this.copyingItem_.progressMax;
       } else {
-        this.copyingItem_.message = 'Error.';
+        this.copyingItem_.message = ProgressCenterHandler.getMessage_(event);
         this.copyingItem_.state = ProgressItemState.ERROR;
       }
       progressCenter.updateItem(this.copyingItem_);
@@ -375,9 +454,11 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
         console.error('Previous delete is not completed.');
         return;
       }
+      this.totalDeleted_ = 0;
       this.deletingItem_ = new ProgressCenterItem();
       // TODO(hirono): Specifying the correct message.
-      this.deletingItem_.message = 'Deleting...';
+      this.deletingItem_.message =
+          ProgressCenterHandler.getDeleteMessage_(event, this.totalDeleted_);
       this.deletingItem_.progressMax = 100;
       progressCenter.addItem(this.deletingItem_);
       break;
@@ -387,6 +468,9 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
         console.error('Cannot find deleting item.');
         return;
       }
+      this.totalDeleted_ += event.urls.length;
+      this.deletingItem_.message =
+          ProgressCenterHandler.getDeleteMessage_(event, this.totalDeleted_);
       progressCenter.updateItem(this.deletingItem_);
       break;
 
@@ -397,11 +481,13 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
         return;
       }
       if (event.reason === 'SUCCESS') {
-        this.deletingItem_.message = 'Complete.';
+        this.totalDeleted_ += event.urls.length;
+        this.deletingItem_.message =
+            ProgressCenterHandler.getDeleteMessage_(event, this.totalDeleted_);
         this.deletingItem_.state = ProgressItemState.COMPLETE;
         this.deletingItem_.progressValue = this.deletingItem_.progressMax;
       } else {
-        this.deletingItem_.message = 'Error.';
+        this.deletingItem_.message = str('DELETE_ERROR');
         this.deletingItem_.state = ProgressItemState.ERROR;
       }
       progressCenter.updateItem(this.deletingItem_);

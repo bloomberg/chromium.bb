@@ -223,6 +223,7 @@
   "app": {
     "background": {
       "scripts": [
+        "chrome://resources/js/load_time_data.js",
         "chrome://resources/js/cr.js",
         "chrome://resources/js/cr/event_target.js",
         "chrome://resources/js/cr/ui/array_data_model.js",
