@@ -41,6 +41,8 @@
 COMPILE_ASSERT(WTF::kPartitionPageSize * 4 <= WTF::kSuperPageSize, ok_partition_page_size);
 COMPILE_ASSERT(!(WTF::kSuperPageSize % WTF::kPartitionPageSize), ok_partition_page_multiple);
 COMPILE_ASSERT(!(WTF::kPartitionPageSize % WTF::kSubPartitionPageSize), ok_sub_partition_page_multiple);
+COMPILE_ASSERT(sizeof(WTF::PartitionPageHeader) <= WTF::kPartitionPageHeaderSize, PartitionPageHeader_not_too_big);
+COMPILE_ASSERT(!(WTF::kPartitionPageHeaderSize % sizeof(void*)), PartitionPageHeader_size_should_be_multiple_of_pointer_size);
 
 namespace WTF {
 
@@ -218,8 +220,7 @@ static ALWAYS_INLINE void partitionUnusePage(PartitionPageHeader* page)
 
 static ALWAYS_INLINE size_t partitionBucketSlots(const PartitionBucket* bucket)
 {
-    COMPILE_ASSERT(!(sizeof(PartitionPageHeader) % sizeof(void*)), PartitionPageHeader_size_should_be_multiple_of_pointer_size);
-    return (kPartitionPageSize - sizeof(PartitionPageHeader)) / partitionBucketSize(bucket);
+    return (kPartitionPageSize - kPartitionPageHeaderSize) / partitionBucketSize(bucket);
 }
 
 static ALWAYS_INLINE void partitionPageReset(PartitionPageHeader* page, PartitionBucket* bucket)
@@ -247,7 +248,7 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPageHeader
 
     size_t size = partitionBucketSize(bucket);
     char* base = reinterpret_cast<char*>(page);
-    char* returnObject = base + sizeof(PartitionPageHeader) + (size * page->numAllocatedSlots);
+    char* returnObject = base + kPartitionPageHeaderSize + (size * page->numAllocatedSlots);
     char* nextFreeObject = returnObject + size;
     char* subPageLimit = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(returnObject) + kSubPartitionPageMask) & ~kSubPartitionPageMask);
 
@@ -485,7 +486,7 @@ void partitionDumpStats(const PartitionRoot& root)
             if (page != &bucket.root->seedPage) {
                 ++numActivePages;
                 numActiveBytes += (page->numAllocatedSlots * bucketSlotSize);
-                size_t pageBytesResident = ((bucketNumSlots - page->numUnprovisionedSlots) * bucketSlotSize) + sizeof(PartitionPageHeader);
+                size_t pageBytesResident = ((bucketNumSlots - page->numUnprovisionedSlots) * bucketSlotSize) + kPartitionPageHeaderSize;
                 // Round up to sub page size.
                 pageBytesResident = (pageBytesResident + kSubPartitionPageMask) & ~kSubPartitionPageMask;
                 numResidentBytes += pageBytesResident;

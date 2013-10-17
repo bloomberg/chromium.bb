@@ -118,6 +118,10 @@ static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
 static const size_t kPartitionPageSize = 1 << 14; // 16KB
 static const size_t kPartitionPageOffsetMask = kPartitionPageSize - 1;
 static const size_t kPartitionPageBaseMask = ~kPartitionPageOffsetMask;
+// This is set to a typical modern cacheline size, to minimize effects of
+// partitionAlloc() cacheline bouncing, or more accurately, to behave similarly
+// to other bucketing allocators such as tcmalloc.
+static const size_t kPartitionPageHeaderSize = 64;
 // To avoid fragmentation via never-used freelist entries, we hand out partition
 // freelist sections gradually, in units that resemble the dominant system page
 // size.
@@ -228,10 +232,10 @@ ALWAYS_INLINE PartitionPageHeader* partitionPointerToPage(void* ptr)
     uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);
     // Checks that the pointer is after the page header. You can't free the
     // page header!
-    ASSERT((pointerAsUint & kPartitionPageOffsetMask) >= sizeof(PartitionPageHeader));
+    ASSERT((pointerAsUint & kPartitionPageOffsetMask) >= kPartitionPageHeaderSize);
     PartitionPageHeader* page = reinterpret_cast<PartitionPageHeader*>(pointerAsUint & kPartitionPageBaseMask);
     // Checks that the pointer is a multiple of bucket size.
-    ASSERT(!(((pointerAsUint & kPartitionPageOffsetMask) - sizeof(PartitionPageHeader)) % partitionBucketSize(page->bucket)));
+    ASSERT(!(((pointerAsUint & kPartitionPageOffsetMask) - kPartitionPageHeaderSize) % partitionBucketSize(page->bucket)));
     return page;
 }
 
