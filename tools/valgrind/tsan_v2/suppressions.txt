@@ -110,9 +110,6 @@ race:CommandLine::current_process_commandline_
 # http://crbug.com/270037
 race:gLibCleanupFunctions
 
-# http://crbug.com/270675
-race:net::RuleBasedHostResolverProc::Resolve
-
 # http://crbug.com/272095
 race:base::g_top_manager
 
