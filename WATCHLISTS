@@ -242,7 +242,7 @@
                   'chrome/browser/google_apis/'
     },
     'drive_resource_metadata': {
-      'filepath': 'chrome/browser/chromeos/drive/drive_resource_metadata'
+      'filepath': 'chrome/browser/chromeos/drive/resource_metadata'
     },
     'extension': {
       'filepath': 'extension',
