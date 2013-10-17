@@ -223,7 +223,8 @@ void P2PSocketDispatcherHost::OnAcceptIncomingTcpConnection(
 
 void P2PSocketDispatcherHost::OnSend(int socket_id,
                                      const net::IPEndPoint& socket_address,
-                                     const std::vector<char>& data) {
+                                     const std::vector<char>& data,
+                                     uint64 packet_id) {
   P2PSocketHost* socket = LookupSocket(socket_id);
   if (!socket) {
     LOG(ERROR) << "Received P2PHostMsg_Send for invalid socket_id.";
@@ -239,7 +240,7 @@ void P2PSocketDispatcherHost::OnSend(int socket_id,
     return;
   }
 
-  socket->Send(socket_address, data);
+  socket->Send(socket_address, data, packet_id);
 }
 
 void P2PSocketDispatcherHost::OnDestroySocket(int socket_id) {

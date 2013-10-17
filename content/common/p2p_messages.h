@@ -73,10 +73,11 @@ IPC_MESSAGE_CONTROL3(P2PHostMsg_AcceptIncomingTcpConnection,
                     int /* connected_socket_id */)
 
 // TODO(sergeyu): Use shared memory to pass the data.
-IPC_MESSAGE_CONTROL3(P2PHostMsg_Send,
+IPC_MESSAGE_CONTROL4(P2PHostMsg_Send,
                      int /* socket_id */,
                      net::IPEndPoint /* socket_address */,
-                     std::vector<char> /* data */)
+                     std::vector<char> /* data */,
+                     uint64 /* packet_id */)
 
 IPC_MESSAGE_CONTROL1(P2PHostMsg_DestroySocket,
                      int /* socket_id */)

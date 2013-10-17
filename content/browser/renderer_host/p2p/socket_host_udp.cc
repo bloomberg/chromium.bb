@@ -38,14 +38,6 @@ bool IsTransientError(int error) {
          error == net::ERR_OUT_OF_MEMORY;
 }
 
-uint64 GetUniqueEventId(const content::P2PSocketHostUdp* obj,
-                        uint64 packet_id) {
-  uint64 uid = reinterpret_cast<uintptr_t>(obj);
-  uid <<= 32;
-  uid |= packet_id;
-  return uid;
-}
-
 }  // namespace
 
 namespace content {
@@ -68,7 +60,6 @@ P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
     : P2PSocketHost(message_sender, id),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
       send_pending_(false),
-      send_packet_count_(0),
       throttler_(throttler) {
 }
 
@@ -168,7 +159,8 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
 }
 
 void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
-                            const std::vector<char>& data) {
+                            const std::vector<char>& data,
+                            uint64 packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was
     // sent by hasn't been processed the renderer.
@@ -193,17 +185,15 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
   }
 
   if (send_pending_) {
-    send_queue_.push_back(PendingPacket(to, data, send_packet_count_));
+    send_queue_.push_back(PendingPacket(to, data, packet_id));
   } else {
-    PendingPacket packet(to, data, send_packet_count_);
+    PendingPacket packet(to, data, packet_id);
     DoSend(packet);
   }
-  ++send_packet_count_;
 }
 
 void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
-  TRACE_EVENT_ASYNC_BEGIN1("p2p", "Udp::DoSend",
-                           GetUniqueEventId(this, packet.id),
+  TRACE_EVENT_ASYNC_STEP1("p2p", "Send", packet.id, "UdpAsyncSendTo",
                            "size", packet.size);
   int result = socket_->SendTo(
       packet.data.get(),
@@ -246,8 +236,7 @@ void P2PSocketHostUdp::OnSend(uint64 packet_id, int result) {
 }
 
 void P2PSocketHostUdp::HandleSendResult(uint64 packet_id, int result) {
-  TRACE_EVENT_ASYNC_END1("p2p", "Udp::DoSend",
-                         GetUniqueEventId(this, packet_id),
+  TRACE_EVENT_ASYNC_END1("p2p", "Send", packet_id,
                          "result", result);
   if (result > 0) {
     message_sender_->Send(new P2PMsg_OnSendComplete(id_));

@@ -116,6 +116,10 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   Delegate* delegate_;
   State state_;
 
+  // These two fields are used to identify packets for tracing.
+  uint32 random_socket_id_;
+  uint32 next_packet_id_;
+
   DISALLOW_COPY_AND_ASSIGN(P2PSocketClient);
 };
 

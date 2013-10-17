@@ -38,7 +38,8 @@ class CONTENT_EXPORT P2PSocketHost {
 
   // Sends |data| on the socket to |to|.
   virtual void Send(const net::IPEndPoint& to,
-                    const std::vector<char>& data) = 0;
+                    const std::vector<char>& data,
+                    uint64 packet_id) = 0;
 
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address, int id) = 0;

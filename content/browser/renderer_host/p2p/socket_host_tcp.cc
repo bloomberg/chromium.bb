@@ -272,7 +272,8 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
 }
 
 void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
-                                const std::vector<char>& data) {
+                                const std::vector<char>& data,
+                                uint64 packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was
     // sent by hasn't been processed the renderer.

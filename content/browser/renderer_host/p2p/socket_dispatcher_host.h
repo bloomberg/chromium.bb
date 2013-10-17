@@ -71,7 +71,8 @@ class P2PSocketDispatcherHost
                                      int connected_socket_id);
   void OnSend(int socket_id,
               const net::IPEndPoint& socket_address,
-              const std::vector<char>& data);
+              const std::vector<char>& data,
+              uint64 packet_id);
   void OnDestroySocket(int socket_id);
 
   void DoGetNetworkList();

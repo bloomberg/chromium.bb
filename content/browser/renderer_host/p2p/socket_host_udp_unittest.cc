@@ -209,15 +209,15 @@ TEST_F(P2PSocketHostUdpTest, SendStunNoAuth) {
 
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
-  socket_host_->Send(dest1_, packet1);
+  socket_host_->Send(dest1_, packet1, 0);
 
   std::vector<char> packet2;
   CreateStunResponse(&packet2);
-  socket_host_->Send(dest1_, packet2);
+  socket_host_->Send(dest1_, packet2, 0);
 
   std::vector<char> packet3;
   CreateStunError(&packet3);
-  socket_host_->Send(dest1_, packet3);
+  socket_host_->Send(dest1_, packet3, 0);
 
   ASSERT_EQ(sent_packets_.size(), 3U);
   ASSERT_EQ(sent_packets_[0].second, packet1);
@@ -234,7 +234,7 @@ TEST_F(P2PSocketHostUdpTest, SendDataNoAuth) {
 
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest1_, packet);
+  socket_host_->Send(dest1_, packet, 0);
 
   ASSERT_EQ(sent_packets_.size(), 0U);
 }
@@ -256,7 +256,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunRequest) {
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest1_, packet);
+  socket_host_->Send(dest1_, packet, 0);
 
   ASSERT_EQ(1U, sent_packets_.size());
   ASSERT_EQ(dest1_, sent_packets_[0].first);
@@ -279,7 +279,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponse) {
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  socket_host_->Send(dest1_, packet);
+  socket_host_->Send(dest1_, packet, 0);
 
   ASSERT_EQ(1U, sent_packets_.size());
   ASSERT_EQ(dest1_, sent_packets_[0].first);
@@ -302,7 +302,7 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponseDifferentHost) {
   EXPECT_CALL(sender_, Send(
       MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
-  socket_host_->Send(dest2_, packet);
+  socket_host_->Send(dest2_, packet, 0);
 }
 
 // Verify throttler not allowing unlimited sending of ICE messages to
@@ -316,12 +316,12 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimit) {
   std::vector<char> packet1;
   CreateStunRequest(&packet1);
   throttler_.SetSendIceBandwidth(packet1.size() * 2);
-  socket_host_->Send(dest1_, packet1);
-  socket_host_->Send(dest2_, packet1);
+  socket_host_->Send(dest1_, packet1, 0);
+  socket_host_->Send(dest2_, packet1, 0);
 
   net::IPEndPoint dest3 = ParseAddress(kTestIpAddress1, 2222);
   // This packet must be dropped by the throttler.
-  socket_host_->Send(dest3, packet1);
+  socket_host_->Send(dest3, packet1, 0);
   ASSERT_EQ(sent_packets_.size(), 2U);
 }
 
@@ -345,21 +345,21 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimitAfterReceive) {
   CreateStunRequest(&packet1);
   throttler_.SetSendIceBandwidth(packet1.size());
   // |dest1_| is known address, throttling will not be applied.
-  socket_host_->Send(dest1_, packet1);
+  socket_host_->Send(dest1_, packet1, 0);
   // Trying to send the packet to dest1_ in the same window. It should go.
-  socket_host_->Send(dest1_, packet1);
+  socket_host_->Send(dest1_, packet1, 0);
 
   // Throttler should allow this packet to go through.
-  socket_host_->Send(dest2_, packet1);
+  socket_host_->Send(dest2_, packet1, 0);
 
   net::IPEndPoint dest3 = ParseAddress(kTestIpAddress1, 2223);
   // This packet will be dropped, as limit only for a single packet.
-  socket_host_->Send(dest3, packet1);
+  socket_host_->Send(dest3, packet1, 0);
   net::IPEndPoint dest4 = ParseAddress(kTestIpAddress1, 2224);
   // This packet should also be dropped.
-  socket_host_->Send(dest4, packet1);
+  socket_host_->Send(dest4, packet1, 0);
   // |dest1| is known, we can send as many packets to it.
-  socket_host_->Send(dest1_, packet1);
+  socket_host_->Send(dest1_, packet1, 0);
   ASSERT_EQ(sent_packets_.size(), 4U);
 }
 
