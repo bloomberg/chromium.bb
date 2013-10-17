@@ -2899,7 +2899,8 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 // move) for the given event. Customize here to be more selective about which
 // key presses to autohide on.
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event {
-  return ([event type] == NSKeyDown) ? YES : NO;
+  return ([event type] == NSKeyDown &&
+             !([event modifierFlags] & NSCommandKeyMask)) ? YES : NO;
 }
 
 - (NSArray *)accessibilityArrayAttributeValues:(NSString *)attribute
