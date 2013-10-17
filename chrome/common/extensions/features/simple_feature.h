@@ -81,7 +81,8 @@ class SimpleFeature : public Feature {
 
   virtual std::string GetAvailabilityMessage(AvailabilityResult result,
                                              Manifest::Type type,
-                                             const GURL& url) const OVERRIDE;
+                                             const GURL& url,
+                                             Context context) const OVERRIDE;
 
   virtual std::set<Context>* GetContexts() OVERRIDE;
 
@@ -97,6 +98,8 @@ class SimpleFeature : public Feature {
                                   Manifest::Type type) const;
   Availability CreateAvailability(AvailabilityResult result,
                                   const GURL& url) const;
+  Availability CreateAvailability(AvailabilityResult result,
+                                  Context context) const;
 
  private:
   // For clarity and consistency, we handle the default value of each of these

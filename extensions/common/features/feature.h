@@ -144,7 +144,8 @@ class Feature {
 
   virtual std::string GetAvailabilityMessage(AvailabilityResult result,
                                              Manifest::Type type,
-                                             const GURL& url) const = 0;
+                                             const GURL& url,
+                                             Context context) const = 0;
 
   virtual bool IsIdInWhitelist(const std::string& extension_id) const = 0;
 

@@ -172,6 +172,7 @@ TEST_F(ExtensionSimpleFeatureTest, PackageType) {
 
 TEST_F(ExtensionSimpleFeatureTest, Context) {
   SimpleFeature feature;
+  feature.set_name("somefeature");
   feature.GetContexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
   feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
@@ -199,20 +200,44 @@ TEST_F(ExtensionSimpleFeatureTest, Context) {
 
   feature.extension_types()->clear();
   feature.extension_types()->insert(Manifest::TYPE_THEME);
-  EXPECT_EQ(Feature::INVALID_TYPE, feature.IsAvailableToContext(
-      extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
-      Feature::CHROMEOS_PLATFORM).result());
+  {
+    Feature::Availability availability = feature.IsAvailableToContext(
+        extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
+        Feature::CHROMEOS_PLATFORM);
+    EXPECT_EQ(Feature::INVALID_TYPE, availability.result());
+    EXPECT_EQ("'somefeature' is only allowed for themes, "
+              "but this is a legacy packaged app.",
+              availability.message());
+  }
+
   feature.extension_types()->clear();
   feature.extension_types()->insert(Manifest::TYPE_LEGACY_PACKAGED_APP);
-
   feature.GetContexts()->clear();
   feature.GetContexts()->insert(Feature::UNBLESSED_EXTENSION_CONTEXT);
-  EXPECT_EQ(Feature::INVALID_CONTEXT, feature.IsAvailableToContext(
-      extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
-      Feature::CHROMEOS_PLATFORM).result());
+  feature.GetContexts()->insert(Feature::CONTENT_SCRIPT_CONTEXT);
+  {
+    Feature::Availability availability = feature.IsAvailableToContext(
+        extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
+        Feature::CHROMEOS_PLATFORM);
+    EXPECT_EQ(Feature::INVALID_CONTEXT, availability.result());
+    EXPECT_EQ("'somefeature' is only allowed to run in extension iframes and "
+              "content scripts, but this is a privileged page",
+              availability.message());
+  }
+
+  feature.GetContexts()->insert(Feature::WEB_PAGE_CONTEXT);
+  {
+    Feature::Availability availability = feature.IsAvailableToContext(
+        extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
+        Feature::CHROMEOS_PLATFORM);
+    EXPECT_EQ(Feature::INVALID_CONTEXT, availability.result());
+    EXPECT_EQ("'somefeature' is only allowed to run in extension iframes, "
+              "content scripts, and web pages, but this is a privileged page",
+              availability.message());
+  }
+
   feature.GetContexts()->clear();
   feature.GetContexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
-
   feature.set_location(Feature::COMPONENT_LOCATION);
   EXPECT_EQ(Feature::INVALID_LOCATION, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,

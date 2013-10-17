@@ -72,13 +72,14 @@ bool ComplexFeature::IsInternal() const {
 
 std::string ComplexFeature::GetAvailabilityMessage(AvailabilityResult result,
                                                    Manifest::Type type,
-                                                   const GURL& url) const {
+                                                   const GURL& url,
+                                                   Context context) const {
   if (result == IS_AVAILABLE)
     return std::string();
 
   // TODO(justinlin): Form some kind of combined availabilities/messages from
   // SimpleFeatures.
-  return features_[0]->GetAvailabilityMessage(result, type, url);
+  return features_[0]->GetAvailabilityMessage(result, type, url, context);
 }
 
 bool ComplexFeature::IsIdInWhitelist(const std::string& extension_id) const {

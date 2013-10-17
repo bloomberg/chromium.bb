@@ -147,8 +147,8 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
     EXPECT_EQ(1U, extension->install_warnings().size());
     const extensions::InstallWarning& warning =
         extension->install_warnings()[0];
-    EXPECT_EQ("'oauth2' is only allowed for extensions, legacy packaged apps "
-                  "and packaged apps, and this is a hosted app.",
+    EXPECT_EQ("'oauth2' is only allowed for extensions, legacy packaged apps, "
+                  "and packaged apps, but this is a hosted app.",
               warning.message);
     EXPECT_EQ("", OAuth2Info::GetOAuth2Info(extension.get()).client_id);
     EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension.get()).scopes.empty());

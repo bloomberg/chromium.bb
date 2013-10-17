@@ -43,7 +43,8 @@ class ComplexFeature : public Feature {
   virtual std::string GetAvailabilityMessage(
       AvailabilityResult result,
       Manifest::Type type,
-      const GURL& url) const OVERRIDE;
+      const GURL& url,
+      Context context) const OVERRIDE;
 
   virtual std::set<Context>* GetContexts() OVERRIDE;
 

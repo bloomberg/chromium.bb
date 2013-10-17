@@ -154,8 +154,9 @@ void ParseURLPatterns(const base::DictionaryValue* value,
   }
 }
 
-// Gets a human-readable name for the given extension type.
-std::string GetDisplayTypeName(Manifest::Type type) {
+// Gets a human-readable name for the given extension type, suitable for giving
+// to developers in an error message.
+std::string GetDisplayName(Manifest::Type type) {
   switch (type) {
     case Manifest::TYPE_UNKNOWN:
       return "unknown";
@@ -174,9 +175,53 @@ std::string GetDisplayTypeName(Manifest::Type type) {
     case Manifest::TYPE_SHARED_MODULE:
       return "shared module";
   }
-
   NOTREACHED();
-  return std::string();
+  return "";
+}
+
+// Gets a human-readable name for the given context type, suitable for giving
+// to developers in an error message.
+std::string GetDisplayName(Feature::Context context) {
+  switch (context) {
+    case Feature::UNSPECIFIED_CONTEXT:
+      return "unknown";
+    case Feature::BLESSED_EXTENSION_CONTEXT:
+      // "privileged" is vague but hopefully the developer will understand that
+      // means background or app window.
+      return "privileged page";
+    case Feature::UNBLESSED_EXTENSION_CONTEXT:
+      // "iframe" is a bit of a lie/oversimplification, but that's the most
+      // common unblessed context.
+      return "extension iframe";
+    case Feature::CONTENT_SCRIPT_CONTEXT:
+      return "content script";
+    case Feature::WEB_PAGE_CONTEXT:
+      return "web page";
+  }
+  NOTREACHED();
+  return "";
+}
+
+// Gets a human-readable list of the display names (pluralized, comma separated
+// with the "and" in the correct place) for each of |enum_types|.
+template <typename EnumType>
+std::string ListDisplayNames(const std::vector<EnumType> enum_types) {
+  std::string display_name_list;
+  for (size_t i = 0; i < enum_types.size(); ++i) {
+    // Pluralize type name.
+    display_name_list += GetDisplayName(enum_types[i]) + "s";
+    // Comma-separate entries, with an Oxford comma if there is more than 2
+    // total entries.
+    if (enum_types.size() > 2) {
+      if (i < enum_types.size() - 2)
+        display_name_list += ", ";
+      else if (i == enum_types.size() - 2)
+        display_name_list += ", and ";
+    } else if (enum_types.size() == 2 && i == 0) {
+      display_name_list += " and ";
+    }
+  }
+  return display_name_list;
 }
 
 std::string HashExtensionId(const std::string& extension_id) {
@@ -332,11 +377,8 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
       return result;
   }
 
-  if (!contexts_.empty() && contexts_.find(context) == contexts_.end()) {
-    return extension ?
-        CreateAvailability(INVALID_CONTEXT, extension->GetType()) :
-        CreateAvailability(INVALID_CONTEXT);
-  }
+  if (!contexts_.empty() && contexts_.find(context) == contexts_.end())
+    return CreateAvailability(INVALID_CONTEXT, context);
 
   if (!matches_.is_empty() && !matches_.MatchesURL(url))
     return CreateAvailability(INVALID_URL, url);
@@ -345,7 +387,10 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
 }
 
 std::string SimpleFeature::GetAvailabilityMessage(
-    AvailabilityResult result, Manifest::Type type, const GURL& url) const {
+    AvailabilityResult result,
+    Manifest::Type type,
+    const GURL& url,
+    Context context) const {
   switch (result) {
     case IS_AVAILABLE:
       return std::string();
@@ -356,33 +401,20 @@ std::string SimpleFeature::GetAvailabilityMessage(
     case INVALID_URL:
       return base::StringPrintf("'%s' is not allowed on %s.",
                                 name().c_str(), url.spec().c_str());
-    case INVALID_TYPE: {
-      std::string allowed_type_names;
-      // Turn the set of allowed types into a vector so that it's easier to
-      // inject the appropriate separator into the display string.
-      std::vector<Manifest::Type> extension_types(
-          extension_types_.begin(), extension_types_.end());
-      for (size_t i = 0; i < extension_types.size(); i++) {
-        // Pluralize type name.
-        allowed_type_names += GetDisplayTypeName(extension_types[i]) + "s";
-        if (i == extension_types_.size() - 2) {
-          allowed_type_names += " and ";
-        } else if (i != extension_types_.size() - 1) {
-          allowed_type_names += ", ";
-        }
-      }
-
+    case INVALID_TYPE:
       return base::StringPrintf(
-          "'%s' is only allowed for %s, and this is a %s.",
+          "'%s' is only allowed for %s, but this is a %s.",
           name().c_str(),
-          allowed_type_names.c_str(),
-          GetDisplayTypeName(type).c_str());
-    }
+          ListDisplayNames(std::vector<Manifest::Type>(
+              extension_types_.begin(), extension_types_.end())).c_str(),
+          GetDisplayName(type).c_str());
     case INVALID_CONTEXT:
       return base::StringPrintf(
-          "'%s' is not allowed for specified context type content script, "
-          " extension page, web page, etc.).",
-          name().c_str());
+          "'%s' is only allowed to run in %s, but this is a %s",
+          name().c_str(),
+          ListDisplayNames(std::vector<Context>(
+              contexts_.begin(), contexts_.end())).c_str(),
+          GetDisplayName(context).c_str());
     case INVALID_LOCATION:
       return base::StringPrintf(
           "'%s' is not allowed for specified install location.",
@@ -407,7 +439,7 @@ std::string SimpleFeature::GetAvailabilityMessage(
           name().c_str());
     case UNSUPPORTED_CHANNEL:
       return base::StringPrintf(
-          "'%s' requires Google Chrome %s channel or newer, and this is the "
+          "'%s' requires Google Chrome %s channel or newer, but this is the "
               "%s channel.",
           name().c_str(),
           GetChannelName(channel_).c_str(),
@@ -421,19 +453,30 @@ std::string SimpleFeature::GetAvailabilityMessage(
 Feature::Availability SimpleFeature::CreateAvailability(
     AvailabilityResult result) const {
   return Availability(
-      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, GURL()));
+      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, GURL(),
+                                     UNSPECIFIED_CONTEXT));
 }
 
 Feature::Availability SimpleFeature::CreateAvailability(
     AvailabilityResult result, Manifest::Type type) const {
-  return Availability(result, GetAvailabilityMessage(result, type, GURL()));
+  return Availability(result, GetAvailabilityMessage(result, type, GURL(),
+                                                     UNSPECIFIED_CONTEXT));
 }
 
 Feature::Availability SimpleFeature::CreateAvailability(
     AvailabilityResult result,
     const GURL& url) const {
   return Availability(
-      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, url));
+      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, url,
+                                     UNSPECIFIED_CONTEXT));
+}
+
+Feature::Availability SimpleFeature::CreateAvailability(
+    AvailabilityResult result,
+    Context context) const {
+  return Availability(
+      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, GURL(),
+                                     context));
 }
 
 std::set<Feature::Context>* SimpleFeature::GetContexts() {
