@@ -304,6 +304,8 @@
             }],
             ['OS=="win" or OS=="mac"', {
               'sources': [
+                'utility/media_galleries/iapps_xml_utils.cc',
+                'utility/media_galleries/iapps_xml_utils.h',
                 'utility/media_galleries/itunes_library_parser.cc',
                 'utility/media_galleries/itunes_library_parser.h',
                 'utility/media_galleries/picasa_album_table_reader.cc',
@@ -312,6 +314,12 @@
                 'utility/media_galleries/picasa_albums_indexer.h',
                 'utility/media_galleries/pmp_column_reader.cc',
                 'utility/media_galleries/pmp_column_reader.h',
+              ],
+            }],
+            ['OS=="mac"', {
+              'sources': [
+                'utility/media_galleries/iphoto_library_parser.cc',
+                'utility/media_galleries/iphoto_library_parser.h',
               ],
             }],
             ['use_openssl==1', {

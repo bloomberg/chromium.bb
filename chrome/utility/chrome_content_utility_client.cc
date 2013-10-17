@@ -47,7 +47,12 @@
 #include "ui/gfx/gdi_util.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX)
+#include "chrome/utility/media_galleries/iphoto_library_parser.h"
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
+#include "chrome/utility/media_galleries/iapps_xml_utils.h"
 #include "chrome/utility/media_galleries/itunes_library_parser.h"
 #include "chrome/utility/media_galleries/picasa_album_table_reader.h"
 #include "chrome/utility/media_galleries/picasa_albums_indexer.h"
@@ -145,6 +150,11 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesPrefXml,
                         OnParseITunesPrefXml)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseIPhotoLibraryXmlFile,
+                        OnParseIPhotoLibraryXmlFile)
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesLibraryXmlFile,
@@ -557,14 +567,25 @@ void ChromeContentUtilityClient::OnParseITunesPrefXml(
 }
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX)
+void ChromeContentUtilityClient::OnParseIPhotoLibraryXmlFile(
+    const IPC::PlatformFileForTransit& iphoto_library_file) {
+  iphoto::IPhotoLibraryParser parser;
+  base::PlatformFile file =
+      IPC::PlatformFileForTransitToPlatformFile(iphoto_library_file);
+  bool result = parser.Parse(iapps::ReadPlatformFileAsString(file));
+  Send(new ChromeUtilityHostMsg_GotIPhotoLibrary(result, parser.library()));
+  ReleaseProcessIfNeeded();
+}
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void ChromeContentUtilityClient::OnParseITunesLibraryXmlFile(
     const IPC::PlatformFileForTransit& itunes_library_file) {
   itunes::ITunesLibraryParser parser;
   base::PlatformFile file =
       IPC::PlatformFileForTransitToPlatformFile(itunes_library_file);
-  bool result = parser.Parse(
-      itunes::ITunesLibraryParser::ReadITunesLibraryXmlFile(file));
+  bool result = parser.Parse(iapps::ReadPlatformFileAsString(file));
   Send(new ChromeUtilityHostMsg_GotITunesLibrary(result, parser.library()));
   ReleaseProcessIfNeeded();
 }

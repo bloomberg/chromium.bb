@@ -2412,6 +2412,11 @@
             'utility/media_galleries/pmp_column_reader_unittest.cc',
           ],
         }],
+        ['OS=="mac"', {
+          'sources': [
+            'utility/media_galleries/iphoto_library_parser_unittest.cc',
+          ],
+        }],
         ['enable_rlz==0', {
           'sources!': [
             'browser/rlz/rlz_unittest.cc',

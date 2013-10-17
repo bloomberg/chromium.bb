@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_MEDIA_GALLERIES_ITUNES_LIBRARY_PARSER_H_
-#define CHROME_UTILITY_MEDIA_GALLERIES_ITUNES_LIBRARY_PARSER_H_
+#ifndef CHROME_UTILITY_MEDIA_GALLERIES_IPHOTO_LIBRARY_PARSER_H_
+#define CHROME_UTILITY_MEDIA_GALLERIES_IPHOTO_LIBRARY_PARSER_H_
 
 #include <string>
 
 #include "base/platform_file.h"
-#include "chrome/common/media_galleries/itunes_library.h"
+#include "chrome/common/media_galleries/iphoto_library.h"
 
-namespace itunes {
+namespace iphoto {
 
-class ITunesLibraryParser {
+class IPhotoLibraryParser {
  public:
-  ITunesLibraryParser();
-  ~ITunesLibraryParser();
+  IPhotoLibraryParser();
+  ~IPhotoLibraryParser();
 
   // Returns true if at least one track was found. Malformed track entries
   // are silently ignored.
@@ -26,9 +26,9 @@ class ITunesLibraryParser {
  private:
   parser::Library library_;
 
-  DISALLOW_COPY_AND_ASSIGN(ITunesLibraryParser);
+  DISALLOW_COPY_AND_ASSIGN(IPhotoLibraryParser);
 };
 
-}  // namespace itunes
+}  // namespace iphoto
 
-#endif  // CHROME_UTILITY_MEDIA_GALLERIES_ITUNES_LIBRARY_PARSER_H_
+#endif  // CHROME_UTILITY_MEDIA_GALLERIES_IPHOTO_LIBRARY_PARSER_H_

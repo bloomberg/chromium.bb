@@ -14,6 +14,7 @@
 #include "base/tuple.h"
 #include "base/values.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/media_galleries/iphoto_library.h"
 #include "chrome/common/media_galleries/itunes_library.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
@@ -64,6 +65,19 @@ IPC_STRUCT_TRAITS_BEGIN(safe_browsing::zip_analyzer::Results)
   IPC_STRUCT_TRAITS_MEMBER(has_archive)
 IPC_STRUCT_TRAITS_END()
 
+#if defined(OS_MACOSX)
+IPC_STRUCT_TRAITS_BEGIN(iphoto::parser::Photo)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(location)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(iphoto::parser::Library)
+  IPC_STRUCT_TRAITS_MEMBER(albums)
+  IPC_STRUCT_TRAITS_MEMBER(all_photos)
+IPC_STRUCT_TRAITS_END()
+#endif  // defined(OS_MACOSX)
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
 IPC_STRUCT_TRAITS_BEGIN(itunes::parser::Track)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(location)
@@ -92,6 +106,7 @@ IPC_STRUCT_TRAITS_BEGIN(picasa::FolderINIContents)
   IPC_STRUCT_TRAITS_MEMBER(folder_path)
   IPC_STRUCT_TRAITS_MEMBER(ini_contents)
 IPC_STRUCT_TRAITS_END()
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 //------------------------------------------------------------------------------
 // Utility process messages:
@@ -170,6 +185,13 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseITunesPrefXml,
                      std::string /* XML to parse */)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+// Tell the utility process to parse the iPhoto library XML file and
+// return the parse result as well as the iPhoto library as an iphoto::Library.
+IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseIPhotoLibraryXmlFile,
+                     IPC::PlatformFileForTransit /* XML file to parse */)
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Tell the utility process to parse the iTunes library XML file and
@@ -302,6 +324,14 @@ IPC_MESSAGE_CONTROL1(
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GotITunesDirectory,
                      base::FilePath /* Path to iTunes library */)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+// Reply after parsing the iPhoto library XML file with the parser result and
+// an iphoto::Library data structure.
+IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GotIPhotoLibrary,
+                     bool /* Parser result */,
+                     iphoto::parser::Library /* iPhoto library */)
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Reply after parsing the iTunes library XML file with the parser result and

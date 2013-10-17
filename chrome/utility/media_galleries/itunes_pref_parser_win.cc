@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/media_galleries/itunes_xml_utils.h"
+#include "chrome/utility/media_galleries/iapps_xml_utils.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace itunes {
@@ -20,24 +20,24 @@ base::FilePath::StringType FindLibraryLocationInPrefXml(
     return result;
 
   // Find the plist node and then search within that tag.
-  if (!SeekToNodeAtCurrentDepth(&reader, "plist"))
+  if (!iapps::SeekToNodeAtCurrentDepth(&reader, "plist"))
     return result;
   if (!reader.Read())
     return result;
 
-  if (!SeekToNodeAtCurrentDepth(&reader, "dict"))
+  if (!iapps::SeekToNodeAtCurrentDepth(&reader, "dict"))
     return result;
 
-  if (!SeekInDict(&reader, "User Preferences"))
+  if (!iapps::SeekInDict(&reader, "User Preferences"))
     return result;
 
-  if (!SeekToNodeAtCurrentDepth(&reader, "dict"))
+  if (!iapps::SeekToNodeAtCurrentDepth(&reader, "dict"))
     return result;
 
-  if (!SeekInDict(&reader, "iTunes Library XML Location:1"))
+  if (!iapps::SeekInDict(&reader, "iTunes Library XML Location:1"))
     return result;
 
-  if (!SeekToNodeAtCurrentDepth(&reader, "data"))
+  if (!iapps::SeekToNodeAtCurrentDepth(&reader, "data"))
     return result;
 
   std::string pref_value;
