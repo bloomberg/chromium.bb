@@ -874,7 +874,6 @@
             'browser/gpu/gpu_info_browsertest.cc',
             'browser/gpu/gpu_ipc_browsertests.cc',
             'browser/gpu/gpu_memory_test.cc',
-            'browser/gpu/gpu_pixel_browsertest.cc',
             'browser/indexed_db/indexed_db_browsertest.cc',
             'browser/loader/resource_dispatcher_host_browsertest.cc',
             'browser/media/encrypted_media_browsertest.cc',
