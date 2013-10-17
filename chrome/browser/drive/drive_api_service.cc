@@ -84,11 +84,16 @@ const char kDriveAppsReadonlyScope[] =
 // Mime type to create a directory.
 const char kFolderMimeType[] = "application/vnd.google-apps.folder";
 
-// Expected max number of files resources in a http request.
-// Be careful not to use something too small because it might overload the
-// server. Be careful not to use something too large because it takes longer
-// time to fetch the result without UI response.
-const int kMaxNumFilesResourcePerRequest = 500;
+// Max number of file entries to be fetched in a single http request.
+//
+// The larger the number is,
+// - The total running time to fetch the whole file list will become shorter.
+// - The running time for a single request tends to become longer.
+// Since the file list fetching is a completely background task, for our side,
+// only the total time matters. However, the server seems to have a time limit
+// per single request, which disables us to set the largest value (1000).
+// TODO(kinaba): make it larger when the server gets faster.
+const int kMaxNumFilesResourcePerRequest = 250;
 const int kMaxNumFilesResourcePerRequestForSearch = 50;
 
 // For performance, we declare all fields we use.
