@@ -1320,6 +1320,9 @@ private:
     bool m_sawElementsInKnownNamespaces;
     bool m_isSrcdocDocument;
     bool m_isMobileDocument;
+    // Set in Document::initSecurityContext() at Document creation, per:
+    // http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-seamless
+    bool m_mayDisplaySeamlesslyWithParent;
 
     RenderObject* m_renderer;
     RefPtr<DocumentEventQueue> m_eventQueue;

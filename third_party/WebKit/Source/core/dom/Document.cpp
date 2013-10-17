@@ -434,6 +434,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_sawElementsInKnownNamespaces(false)
     , m_isSrcdocDocument(false)
     , m_isMobileDocument(false)
+    , m_mayDisplaySeamlesslyWithParent(false)
     , m_renderer(0)
     , m_eventQueue(DocumentEventQueue::create(this))
     , m_weakFactory(this)

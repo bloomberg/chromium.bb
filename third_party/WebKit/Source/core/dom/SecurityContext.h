@@ -84,10 +84,6 @@ protected:
     void didFailToInitializeSecurityOrigin() { m_haveInitializedSecurityOrigin = false; }
     bool haveInitializedSecurityOrigin() const { return m_haveInitializedSecurityOrigin; }
 
-    // Set in Document::initSecurityContext() at Document creation, per:
-    // http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-seamless
-    bool m_mayDisplaySeamlesslyWithParent;
-
 private:
     bool m_haveInitializedSecurityOrigin;
     SandboxFlags m_sandboxFlags;
