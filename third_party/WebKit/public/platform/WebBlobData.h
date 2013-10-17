@@ -31,6 +31,7 @@
 #ifndef WebBlobData_h
 #define WebBlobData_h
 
+#include "WebNonCopyable.h"
 #include "WebPrivateOwnPtr.h"
 #include "WebString.h"
 #include "WebThreadSafeData.h"
@@ -39,13 +40,13 @@
 #define USE_BLOB_UUIDS
 
 namespace WebCore { class BlobData; }
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WTF { template <typename T> class PassOwnPtr; }
 #endif
 
 namespace WebKit {
 
-class WebBlobData {
+class WebBlobData : public WebNonCopyable {
 public:
     struct Item {
         enum { TypeData, TypeFile, TypeBlob, TypeFileSystemURL } type;
@@ -58,26 +59,26 @@ public:
         double expectedModificationTime; // 0.0 means that the time is not set.
     };
 
-    WebBlobData();
-    ~WebBlobData();
+    BLINK_PLATFORM_EXPORT WebBlobData();
+    BLINK_PLATFORM_EXPORT ~WebBlobData();
 
     bool isNull() const { return !m_private.get(); }
 
     // Returns the number of items.
-    BLINK_EXPORT size_t itemCount() const;
+    BLINK_PLATFORM_EXPORT size_t itemCount() const;
 
     // Retrieves the values of the item at the given index. Returns false if
     // index is out of bounds.
-    BLINK_EXPORT bool itemAt(size_t index, Item& result) const;
+    BLINK_PLATFORM_EXPORT bool itemAt(size_t index, Item& result) const;
 
-    BLINK_EXPORT WebString contentType() const;
+    BLINK_PLATFORM_EXPORT WebString contentType() const;
 
-    BLINK_EXPORT WebString contentDisposition() const;
+    BLINK_PLATFORM_EXPORT WebString contentDisposition() const;
 
-#if BLINK_IMPLEMENTATION
-    WebBlobData(const WTF::PassOwnPtr<WebCore::BlobData>&);
-    WebBlobData& operator=(const WTF::PassOwnPtr<WebCore::BlobData>&);
-    operator WTF::PassOwnPtr<WebCore::BlobData>();
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebBlobData(const WTF::PassOwnPtr<WebCore::BlobData>&);
+    BLINK_PLATFORM_EXPORT WebBlobData& operator=(const WTF::PassOwnPtr<WebCore::BlobData>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassOwnPtr<WebCore::BlobData>();
 #endif
 
 private:

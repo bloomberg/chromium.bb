@@ -20,7 +20,7 @@
 #ifndef FormData_h
 #define FormData_h
 
-#include "core/platform/network/BlobData.h"
+#include "platform/blob/BlobData.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"

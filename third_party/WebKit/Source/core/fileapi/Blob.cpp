@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/fileapi/Blob.h"
 
-#include "core/fileapi/BlobRegistry.h"
-#include "core/fileapi/BlobURL.h"
 #include "core/fileapi/File.h"
+#include "platform/blob/BlobRegistry.h"
+#include "platform/blob/BlobURL.h"
 
 namespace WebCore {
 

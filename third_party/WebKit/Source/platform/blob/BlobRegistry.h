@@ -28,44 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef BlobRegistry_h
+#define BlobRegistry_h
 
-#include "core/fileapi/BlobURL.h"
-
-#include "platform/UUID.h"
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
-#include "wtf/text/WTFString.h"
+#include "platform/PlatformExport.h"
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-const char BlobURL::kBlobProtocol[] = "blob";
+class BlobData;
+class BlobDataHandle;
+class KURL;
+class RawData;
+class SecurityOrigin;
 
-KURL BlobURL::createPublicURL(SecurityOrigin* securityOrigin)
-{
-    ASSERT(securityOrigin);
-    return createBlobURL(securityOrigin->toString());
-}
+// A bridging class for calling WebKit::WebBlobRegistry methods.
+class PLATFORM_EXPORT BlobRegistry {
+public:
+    // Methods for controlling Blobs.
+    static void registerBlobData(const String& uuid, PassOwnPtr<BlobData>);
+    static void addBlobDataRef(const String& uuid);
+    static void removeBlobDataRef(const String& uuid);
+    static void registerPublicBlobURL(SecurityOrigin*, const KURL&, PassRefPtr<BlobDataHandle>);
+    static void revokePublicBlobURL(const KURL&);
 
-String BlobURL::getOrigin(const KURL& url)
-{
-    ASSERT(url.protocolIs(kBlobProtocol));
-
-    unsigned startIndex = url.pathStart();
-    unsigned endIndex = url.pathAfterLastSlash();
-    return url.string().substring(startIndex, endIndex - startIndex - 1);
-}
-
-KURL BlobURL::createInternalStreamURL()
-{
-    return createBlobURL("blobinternal://");
-}
-
-KURL BlobURL::createBlobURL(const String& originString)
-{
-    ASSERT(!originString.isEmpty());
-    String urlString = "blob:" + encodeWithURLEscapeSequences(originString) + '/' + createCanonicalUUIDString();
-    return KURL::createIsolated(ParsedURLString, urlString);
-}
+    // Methods for controlling Streams.
+    static void registerStreamURL(const KURL&, const String&);
+    static void registerStreamURL(SecurityOrigin*, const KURL&, const KURL& srcURL);
+    static void addDataToStream(const KURL&, PassRefPtr<RawData>);
+    static void finalizeStream(const KURL&);
+    static void abortStream(const KURL&);
+    static void unregisterStreamURL(const KURL&);
+};
 
 } // namespace WebCore
+
+#endif // BlobRegistry_h

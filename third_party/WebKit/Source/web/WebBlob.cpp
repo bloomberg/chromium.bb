@@ -34,7 +34,7 @@
 #include "V8Blob.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/fileapi/Blob.h"
-#include "core/platform/network/BlobData.h"
+#include "platform/blob/BlobData.h"
 #include "wtf/PassOwnPtr.h"
 
 using namespace WebCore;

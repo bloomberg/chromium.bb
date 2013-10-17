@@ -42,7 +42,7 @@ namespace WebCore {
 
 class BlobDataHandle;
 
-class RawData : public ThreadSafeRefCounted<RawData> {
+class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
 public:
     static PassRefPtr<RawData> create()
     {
@@ -61,7 +61,7 @@ private:
     Vector<char> m_data;
 };
 
-struct BlobDataItem {
+struct PLATFORM_EXPORT BlobDataItem {
     static const long long toEndOfFile;
 
     // Default constructor.
@@ -158,7 +158,7 @@ private:
 
 typedef Vector<BlobDataItem> BlobDataItemList;
 
-class BlobData {
+class PLATFORM_EXPORT BlobData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<BlobData> create();
@@ -196,7 +196,7 @@ private:
 };
 
 
-class BlobDataHandle : public ThreadSafeRefCounted<BlobDataHandle> {
+class PLATFORM_EXPORT BlobDataHandle : public ThreadSafeRefCounted<BlobDataHandle> {
 public:
     // For empty blob construction.
     static PassRefPtr<BlobDataHandle> create()

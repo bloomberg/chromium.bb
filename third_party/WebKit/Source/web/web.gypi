@@ -112,7 +112,6 @@
       'WebArrayBufferView.cpp',
       'WebBindings.cpp',
       'WebBlob.cpp',
-      'WebBlobData.cpp',
       'WebCache.cpp',
       'WebCachedURLRequest.cpp',
       'WebColorName.cpp',

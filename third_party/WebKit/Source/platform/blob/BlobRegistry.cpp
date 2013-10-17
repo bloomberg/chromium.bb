@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "core/fileapi/BlobRegistry.h"
+#include "platform/blob/BlobRegistry.h"
 
-#include "core/fileapi/BlobURL.h"
-#include "core/platform/network/BlobData.h"
+#include "platform/blob/BlobData.h"
+#include "platform/blob/BlobURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobData.h"
 #include "public/platform/WebBlobRegistry.h"

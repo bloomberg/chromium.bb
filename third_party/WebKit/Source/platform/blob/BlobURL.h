@@ -28,48 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/platform/WebThreadSafeData.h"
+#ifndef BlobURL_h
+#define BlobURL_h
 
-#include "core/platform/network/BlobData.h"
+#include "platform/PlatformExport.h"
+#include "wtf/Forward.h"
 
-using namespace WebCore;
+namespace WebCore {
 
-namespace WebKit {
+class KURL;
+class SecurityOrigin;
 
-void WebThreadSafeData::reset()
-{
-    m_private.reset();
+// Public blob URLs are of the form
+//     blob:%escaped_origin%/%UUID%
+// The origin of the host page is encoded in the URL value to
+// allow easy lookup of the origin when security checks need to be performed.
+// When loading blobs via ResourceHandle or when reading blobs via FileReader
+// the loader conducts security checks that examine the origin of host page
+// encoded in the blob url.
+class PLATFORM_EXPORT BlobURL {
+public:
+    static KURL createPublicURL(SecurityOrigin*);
+    static String getOrigin(const KURL&);
+
+    static KURL createInternalStreamURL();
+
+private:
+    static KURL createBlobURL(const String& originString);
+    static const char kBlobProtocol[];
+    BlobURL() { }
+};
+
 }
 
-void WebThreadSafeData::assign(const WebThreadSafeData& other)
-{
-    m_private = other.m_private;
-}
-
-size_t WebThreadSafeData::size() const
-{
-    if (m_private.isNull())
-        return 0;
-    return m_private->length();
-}
-
-const char* WebThreadSafeData::data() const
-{
-    if (m_private.isNull())
-        return 0;
-    return m_private->data();
-}
-
-WebThreadSafeData::WebThreadSafeData(const PassRefPtr<RawData>& data)
-    : m_private(data.leakRef())
-{
-}
-
-WebThreadSafeData& WebThreadSafeData::operator=(const PassRefPtr<RawData>& data)
-{
-    m_private = data;
-    return *this;
-}
-
-} // namespace WebKit
+#endif // BlobURL_h

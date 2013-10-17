@@ -33,8 +33,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fileapi/Blob.h"
-#include "core/fileapi/BlobURL.h"
 #include "core/html/PublicURLManager.h"
+#include "platform/blob/BlobURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 

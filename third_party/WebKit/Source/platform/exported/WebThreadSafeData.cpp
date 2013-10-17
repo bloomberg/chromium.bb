@@ -28,40 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BlobRegistry_h
-#define BlobRegistry_h
+#include "config.h"
+#include "public/platform/WebThreadSafeData.h"
 
-#include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/blob/BlobData.h"
 
-namespace WebCore {
+using namespace WebCore;
 
-class BlobData;
-class BlobDataHandle;
-class KURL;
-class RawData;
-class SecurityOrigin;
+namespace WebKit {
 
-// A bridging class for calling WebKit::WebBlobRegistry methods.
-class BlobRegistry {
-public:
-    // Methods for controlling Blobs.
-    static void registerBlobData(const String& uuid, PassOwnPtr<BlobData>);
-    static void addBlobDataRef(const String& uuid);
-    static void removeBlobDataRef(const String& uuid);
-    static void registerPublicBlobURL(SecurityOrigin*, const KURL&, PassRefPtr<BlobDataHandle>);
-    static void revokePublicBlobURL(const KURL&);
+void WebThreadSafeData::reset()
+{
+    m_private.reset();
+}
 
-    // Methods for controlling Streams.
-    static void registerStreamURL(const KURL&, const String&);
-    static void registerStreamURL(SecurityOrigin*, const KURL&, const KURL& srcURL);
-    static void addDataToStream(const KURL&, PassRefPtr<RawData>);
-    static void finalizeStream(const KURL&);
-    static void abortStream(const KURL&);
-    static void unregisterStreamURL(const KURL&);
-};
+void WebThreadSafeData::assign(const WebThreadSafeData& other)
+{
+    m_private = other.m_private;
+}
 
-} // namespace WebCore
+size_t WebThreadSafeData::size() const
+{
+    if (m_private.isNull())
+        return 0;
+    return m_private->length();
+}
 
-#endif // BlobRegistry_h
+const char* WebThreadSafeData::data() const
+{
+    if (m_private.isNull())
+        return 0;
+    return m_private->data();
+}
+
+WebThreadSafeData::WebThreadSafeData(const PassRefPtr<RawData>& data)
+    : m_private(data.leakRef())
+{
+}
+
+WebThreadSafeData& WebThreadSafeData::operator=(const PassRefPtr<RawData>& data)
+{
+    m_private = data;
+    return *this;
+}
+
+} // namespace WebKit

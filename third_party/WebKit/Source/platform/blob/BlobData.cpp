@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "core/platform/network/BlobData.h"
+#include "platform/blob/BlobData.h"
 
-#include "core/fileapi/BlobRegistry.h"
 #include "platform/UUID.h"
+#include "platform/blob/BlobRegistry.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

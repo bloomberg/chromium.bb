@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/fileapi/Stream.h"
 
-#include "core/fileapi/BlobRegistry.h"
-#include "core/fileapi/BlobURL.h"
-#include "core/platform/network/BlobData.h"
+#include "platform/blob/BlobData.h"
+#include "platform/blob/BlobRegistry.h"
+#include "platform/blob/BlobURL.h"
 
 namespace WebCore {
 

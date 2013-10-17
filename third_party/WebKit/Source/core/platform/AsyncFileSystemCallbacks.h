@@ -31,9 +31,9 @@
 #ifndef AsyncFileSystemCallbacks_h
 #define AsyncFileSystemCallbacks_h
 
-#include "core/platform/network/BlobData.h"
 #include "platform/FileMetadata.h"
 #include "platform/FileSystemType.h"
+#include "platform/blob/BlobData.h"
 #include "public/platform/WebFileWriter.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"

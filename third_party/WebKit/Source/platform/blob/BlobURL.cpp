@@ -28,36 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BlobURL_h
-#define BlobURL_h
+#include "config.h"
+#include "platform/blob/BlobURL.h"
 
-#include "wtf/Forward.h"
+#include "platform/UUID.h"
+#include "weborigin/KURL.h"
+#include "weborigin/SecurityOrigin.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class KURL;
-class SecurityOrigin;
+const char BlobURL::kBlobProtocol[] = "blob";
 
-// Public blob URLs are of the form
-//     blob:%escaped_origin%/%UUID%
-// The origin of the host page is encoded in the URL value to
-// allow easy lookup of the origin when security checks need to be performed.
-// When loading blobs via ResourceHandle or when reading blobs via FileReader
-// the loader conducts security checks that examine the origin of host page
-// encoded in the blob url.
-class BlobURL {
-public:
-    static KURL createPublicURL(SecurityOrigin*);
-    static String getOrigin(const KURL&);
-
-    static KURL createInternalStreamURL();
-
-private:
-    static KURL createBlobURL(const String& originString);
-    static const char kBlobProtocol[];
-    BlobURL() { }
-};
-
+KURL BlobURL::createPublicURL(SecurityOrigin* securityOrigin)
+{
+    ASSERT(securityOrigin);
+    return createBlobURL(securityOrigin->toString());
 }
 
-#endif // BlobURL_h
+String BlobURL::getOrigin(const KURL& url)
+{
+    ASSERT(url.protocolIs(kBlobProtocol));
+
+    unsigned startIndex = url.pathStart();
+    unsigned endIndex = url.pathAfterLastSlash();
+    return url.string().substring(startIndex, endIndex - startIndex - 1);
+}
+
+KURL BlobURL::createInternalStreamURL()
+{
+    return createBlobURL("blobinternal://");
+}
+
+KURL BlobURL::createBlobURL(const String& originString)
+{
+    ASSERT(!originString.isEmpty());
+    String urlString = "blob:" + encodeWithURLEscapeSequences(originString) + '/' + createCanonicalUUIDString();
+    return KURL::createIsolated(ParsedURLString, urlString);
+}
+
+} // namespace WebCore

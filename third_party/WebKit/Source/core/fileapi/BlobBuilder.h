@@ -31,7 +31,7 @@
 #ifndef BlobBuilder_h
 #define BlobBuilder_h
 
-#include "core/platform/network/BlobData.h"
+#include "platform/blob/BlobData.h"
 #include "wtf/Forward.h"
 
 namespace WTF{
