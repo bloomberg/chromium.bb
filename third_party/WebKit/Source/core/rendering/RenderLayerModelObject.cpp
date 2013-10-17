@@ -111,7 +111,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
             if (diff == StyleDifferenceRepaintLayer) {
                 layer()->repaintIncludingDescendants();
                 if (!(oldStyle->clip() == newStyle->clip()))
-                    layer()->clearClipRectsIncludingDescendants();
+                    layer()->clipper().clearClipRectsIncludingDescendants();
             } else if (diff == StyleDifferenceRepaint || newStyle->outlineSize() < oldStyle->outlineSize())
                 repaint();
         }

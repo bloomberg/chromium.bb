@@ -45,10 +45,10 @@
 #ifndef RenderLayer_h
 #define RenderLayer_h
 
-#include "core/rendering/ClipRect.h"
 #include "core/rendering/CompositingReasons.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderLayerClipper.h"
 #include "core/rendering/RenderLayerRepainter.h"
 #include "core/rendering/RenderLayerScrollableArea.h"
 
@@ -207,9 +207,6 @@ public:
 
     const LayoutSize& offsetForInFlowPosition() const { return m_offsetForInFlowPosition; }
 
-    void clearClipRectsIncludingDescendants(ClipRectsType typeToClear = AllClipRectTypes);
-    void clearClipRects(ClipRectsType typeToClear = AllClipRectTypes);
-
     void addBlockSelectionGapsBounds(const LayoutRect&);
     void clearBlockSelectionGapsBounds();
     void repaintBlockSelectionGaps();
@@ -351,39 +348,12 @@ public:
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
     void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior, RenderObject* paintingRoot = 0);
 
-    struct ClipRectsContext {
-        ClipRectsContext(const RenderLayer* inRootLayer, RenderRegion* inRegion, ClipRectsType inClipRectsType, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize, ShouldRespectOverflowClip inRespectOverflowClip = RespectOverflowClip)
-            : rootLayer(inRootLayer)
-            , region(inRegion)
-            , clipRectsType(inClipRectsType)
-            , overlayScrollbarSizeRelevancy(inOverlayScrollbarSizeRelevancy)
-            , respectOverflowClip(inRespectOverflowClip)
-        { }
-        const RenderLayer* rootLayer;
-        RenderRegion* region;
-        ClipRectsType clipRectsType;
-        OverlayScrollbarSizeRelevancy overlayScrollbarSizeRelevancy;
-        ShouldRespectOverflowClip respectOverflowClip;
-    };
-
     // This method figures out our layerBounds in coordinates relative to
     // |rootLayer}.  It also computes our background and foreground clip rects
     // for painting/event handling.
     // Pass offsetFromRoot if known.
     void calculateRects(const ClipRectsContext&, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
         ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot = 0) const;
-
-    // Compute and cache clip rects computed with the given layer as the root
-    void updateClipRects(const ClipRectsContext&);
-    // Compute and return the clip rects. If useCached is true, will used previously computed clip rects on ancestors
-    // (rather than computing them all from scratch up the parent chain).
-    void calculateClipRects(const ClipRectsContext&, ClipRects&) const;
-
-    ClipRects* clipRects(const ClipRectsContext& context) const
-    {
-        ASSERT(context.clipRectsType < NumCachedClipRectsTypes);
-        return m_clipRectsCache ? m_clipRectsCache->getClipRects(context.clipRectsType, context.respectOverflowClip).get() : 0;
-    }
 
     LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
     LayoutRect selfClipRect() const; // Returns the background clip rect of the layer in the document's coordinate space.
@@ -550,6 +520,7 @@ public:
     // FIXME: This should probably return a ScrollableArea but a lot of internal methods are mistakenly exposed.
     RenderLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
     RenderLayerRepainter& repainter() { return m_repainter; }
+    RenderLayerClipper& clipper() { return m_clipper; }
 
 private:
     enum CollectLayersBehavior {
@@ -887,8 +858,6 @@ protected:
     // overflow layers, but that may change in the future.
     OwnPtr<Vector<RenderLayer*> > m_normalFlowList;
 
-    OwnPtr<ClipRectsCache> m_clipRectsCache;
-
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;
     LayoutUnit m_staticBlockPosition;
@@ -931,6 +900,7 @@ private:
     OwnPtr<RenderLayerScrollableArea> m_scrollableArea;
 
     RenderLayerRepainter m_repainter;
+    RenderLayerClipper m_clipper; // FIXME: Lazily allocate?
 };
 
 inline void RenderLayer::clearZOrderLists()
