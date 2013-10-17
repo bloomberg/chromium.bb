@@ -36,7 +36,7 @@ import traceback
 
 from webkitpy.common.host import Host
 from webkitpy.layout_tests.controllers.manager import Manager
-from webkitpy.layout_tests.models.test_run_results import INTERRUPTED_EXIT_STATUS
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import configuration_options, platform_options
 from webkitpy.layout_tests.views import buildbot_results
 from webkitpy.layout_tests.views import printing
@@ -44,10 +44,6 @@ from webkitpy.layout_tests.views import printing
 
 _log = logging.getLogger(__name__)
 
-
-# This is a randomly chosen exit code that can be tested against to
-# indicate that an unexpected exception occurred.
-EXCEPTIONAL_EXIT_STATUS = 254
 
 
 def main(argv, stdout, stderr):
@@ -71,23 +67,26 @@ def main(argv, stdout, stderr):
     except NotImplementedError, e:
         # FIXME: is this the best way to handle unsupported port names?
         print >> stderr, str(e)
-        return EXCEPTIONAL_EXIT_STATUS
+        return test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
     try:
         run_details = run(port, options, args, stderr)
-        if run_details.exit_code != -1 and not run_details.initial_results.keyboard_interrupted:
+        if run_details.exit_code not in test_run_results.ERROR_CODES and not run_details.initial_results.keyboard_interrupted:
             bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
             bot_printer.print_results(run_details)
 
         return run_details.exit_code
     # We need to still handle KeyboardInterrupt, atleast for webkitpy unittest cases.
     except KeyboardInterrupt:
-        return INTERRUPTED_EXIT_STATUS
+        return test_run_results.INTERRUPTED_EXIT_STATUS
+    except test_run_results.TestRunException as e:
+        print >> stderr, e.msg
+        return e.code
     except BaseException as e:
         if isinstance(e, Exception):
             print >> stderr, '\n%s raised: %s' % (e.__class__.__name__, str(e))
             traceback.print_exc(file=stderr)
-        return EXCEPTIONAL_EXIT_STATUS
+        return test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
 
 def parse_args(args):

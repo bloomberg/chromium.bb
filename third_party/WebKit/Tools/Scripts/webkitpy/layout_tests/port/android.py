@@ -37,6 +37,7 @@ import time
 
 from multiprocessing.pool import ThreadPool
 
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import driver
@@ -325,7 +326,7 @@ class AndroidDevices(object):
                                        error_handler=executive.ignore_error, debug_logging=self._debug_logging)
         devices = re_device.findall(result)
         if not devices:
-            raise AssertionError('Unable to find attached Android devices. ADB output: %s' % result)
+            return []
 
         for device_serial in sorted(devices):
             commands = AndroidCommands(executive, device_serial, self._debug_logging)
@@ -339,9 +340,6 @@ class AndroidDevices(object):
                 continue
 
             self._usable_devices.append(commands)
-
-        if not self._usable_devices:
-            raise AssertionError('No usable devices are available for running layout tests.')
 
         return self._usable_devices
 
@@ -442,11 +440,10 @@ class AndroidPort(base.Port):
         return 0.0
 
     def default_child_processes(self):
-        usable_device_count = len(self._devices.usable_devices(self._executive))
-        if not usable_device_count:
-            raise AssertionError('There are no devices available to run the layout tests on.')
-
-        return usable_device_count
+        usable_devices = self._devices.usable_devices(self._executive)
+        if not usable_devices:
+            raise test_run_results.TestRunException(test_run_results.NO_DEVICES_EXIT_STATUS, "Unable to find any attached Android devices.")
+        return len(usable_devices)
 
     def check_wdiff(self, logging=True):
         return self._host_port.check_wdiff(logging)

@@ -50,7 +50,7 @@ from webkitpy.common.host_mock import MockHost
 
 from webkitpy.layout_tests import port
 from webkitpy.layout_tests import run_webkit_tests
-from webkitpy.layout_tests.models.test_run_results import INTERRUPTED_EXIT_STATUS
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import Port
 from webkitpy.layout_tests.port import test
 from webkitpy.test.skip import skip_if
@@ -299,7 +299,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Note that this also tests running a test marked as SKIP if
         # you specify it explicitly.
         details, _, _ = logging_run(['failures/expected/keyboard.html', '--child-processes', '1'], tests_included=True)
-        self.assertEqual(details.exit_code, INTERRUPTED_EXIT_STATUS)
+        self.assertEqual(details.exit_code, test_run_results.INTERRUPTED_EXIT_STATUS)
 
         if self.should_test_processes:
             _, regular_output, _ = logging_run(['failures/expected/keyboard.html', 'passes/text.html', '--child-processes', '2', '--skipped=ignore'], tests_included=True, shared_port=False)
@@ -307,12 +307,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_no_tests_found(self):
         details, err, _ = logging_run(['resources'], tests_included=True)
-        self.assertEqual(details.exit_code, -1)
+        self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
         self.assertContains(err, 'No tests to run.\n')
 
     def test_no_tests_found_2(self):
         details, err, _ = logging_run(['foo'], tests_included=True)
-        self.assertEqual(details.exit_code, -1)
+        self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
         self.assertContains(err, 'No tests to run.\n')
 
     def test_natural_order(self):
@@ -469,7 +469,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(['passes/text.html'], tests_run)
         host.filesystem.remove(filename)
         details, err, user = logging_run(['--test-list=%s' % filename], tests_included=True, host=host)
-        self.assertEqual(details.exit_code, -1)
+        self.assertEqual(details.exit_code, test_run_results.NO_TESTS_EXIT_STATUS)
         self.assertNotEmpty(err)
 
     def test_test_list_with_prefix(self):
@@ -801,7 +801,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         stderr = StringIO.StringIO()
         res = run_webkit_tests.main(['--platform', 'foo'], stdout, stderr)
 
-        self.assertEqual(res, run_webkit_tests.EXCEPTIONAL_EXIT_STATUS)
+        self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
         self.assertEqual(stdout.getvalue(), '')
         self.assertTrue('unsupported platform' in stderr.getvalue())
 
@@ -813,7 +813,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             port_name = 'mac-lion'
         out = StringIO.StringIO()
         err = StringIO.StringIO()
-        self.assertEqual(run_webkit_tests.main(['--platform', port_name, 'fast/harness/results.html'], out, err), -1)
+        self.assertEqual(run_webkit_tests.main(['--platform', port_name, 'fast/harness/results.html'], out, err), test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
 
     def test_verbose_in_child_processes(self):
         # When we actually run multiple processes, we may have to reconfigure logging in the
@@ -991,7 +991,7 @@ class MainTest(unittest.TestCase):
         def successful_run(port, options, args, stderr):
 
             class FakeRunDetails(object):
-                exit_code = -1
+                exit_code = test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
             return FakeRunDetails()
 
@@ -1003,14 +1003,14 @@ class MainTest(unittest.TestCase):
         try:
             run_webkit_tests.run = interrupting_run
             res = run_webkit_tests.main([], stdout, stderr)
-            self.assertEqual(res, INTERRUPTED_EXIT_STATUS)
+            self.assertEqual(res, test_run_results.INTERRUPTED_EXIT_STATUS)
 
             run_webkit_tests.run = successful_run
             res = run_webkit_tests.main(['--platform', 'test'], stdout, stderr)
-            self.assertEqual(res, -1)
+            self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
 
             run_webkit_tests.run = exception_raising_run
             res = run_webkit_tests.main([], stdout, stderr)
-            self.assertEqual(res, run_webkit_tests.EXCEPTIONAL_EXIT_STATUS)
+            self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
         finally:
             run_webkit_tests.run = orig_run_fn

@@ -50,7 +50,6 @@ from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_input import TestInput
-from webkitpy.layout_tests.models.test_run_results import INTERRUPTED_EXIT_STATUS
 
 _log = logging.getLogger(__name__)
 
@@ -185,7 +184,7 @@ class Manager(object):
             paths, test_names = self._collect_tests(args)
         except IOError:
             # This is raised if --test-list doesn't exist
-            return test_run_results.RunDetails(exit_code=-1)
+            return test_run_results.RunDetails(exit_code=test_run_results.NO_TESTS_EXIT_STATUS)
 
         self._printer.write_update("Parsing expectations ...")
         self._expectations = test_expectations.TestExpectations(self._port, test_names)
@@ -196,10 +195,10 @@ class Manager(object):
         # Check to make sure we're not skipping every test.
         if not tests_to_run:
             _log.critical('No tests to run.')
-            return test_run_results.RunDetails(exit_code=-1)
+            return test_run_results.RunDetails(exit_code=test_run_results.NO_TESTS_EXIT_STATUS)
 
         if not self._set_up_run(tests_to_run):
-            return test_run_results.RunDetails(exit_code=-1)
+            return test_run_results.RunDetails(exit_code=test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
 
         # Don't retry failures if an explicit list of tests was passed in.
         if self._options.retry_failures is None:
@@ -254,7 +253,7 @@ class Manager(object):
             results_path = self._filesystem.join(self._results_directory, "results.html")
             self._copy_results_html_file(results_path)
             if initial_results.keyboard_interrupted:
-                exit_code = INTERRUPTED_EXIT_STATUS
+                exit_code = test_run_results.INTERRUPTED_EXIT_STATUS
             else:
                 if self._options.show_results and (exit_code or (self._options.full_results_html and initial_results.total_failures)):
                     self._port.show_results_html_file(results_path)

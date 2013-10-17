@@ -37,7 +37,24 @@ from webkitpy.layout_tests.models import test_failures
 
 _log = logging.getLogger(__name__)
 
+# This matches what the shell does on POSIX.
 INTERRUPTED_EXIT_STATUS = signal.SIGINT + 128
+
+# POSIX limits status codes to 0-255. Normally run-webkit-tests returns the number
+# of tests that failed. These indicate exceptional conditions triggered by the
+# script itself, so we count backwards from 255 (aka -1) to enumerate them.
+UNEXPECTED_ERROR_EXIT_STATUS = 255
+NO_DEVICES_EXIT_STATUS = 254
+NO_TESTS_EXIT_STATUS = 253
+
+ERROR_CODES = (INTERRUPTED_EXIT_STATUS, UNEXPECTED_ERROR_EXIT_STATUS, NO_DEVICES_EXIT_STATUS, NO_TESTS_EXIT_STATUS)
+
+
+class TestRunException(Exception):
+    def __init__(self, code, msg):
+        self.code = code
+        self.msg = msg
+
 
 class TestRunResults(object):
     def __init__(self, expectations, num_tests):
