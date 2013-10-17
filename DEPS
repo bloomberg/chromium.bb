@@ -28,7 +28,7 @@ vars = {
   "ffmpeg_revision": "227119",
   "ffmpeg_hash": "aacd7f27b8e80d4371bdf77e46dff5396bc66b9b",
 
-  "sfntly_revision": "134",
+  "sfntly_revision": "228",
   "lighttpd_revision": "33737",
   "skia_revision": "11799",
   "skia_hash": "7f31a8df2b3b91e10a0bf5f1b1e3e2819bf5daa8",
