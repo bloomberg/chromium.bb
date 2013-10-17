@@ -23,6 +23,8 @@ PASS window.ononline is func
 PASS window.ononline is frameSet.ononline
 PASS window.onresize is func
 PASS window.onresize is frameSet.onresize
+PASS window.onscroll is func
+PASS window.onscroll is frameSet.onscroll
 PASS window.onstorage is func
 PASS window.onstorage is frameSet.onstorage
 PASS window.onunload is func

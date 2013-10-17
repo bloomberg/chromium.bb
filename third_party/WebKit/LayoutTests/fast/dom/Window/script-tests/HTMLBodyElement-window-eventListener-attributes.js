@@ -52,6 +52,10 @@ document.body.onresize = func;
 shouldBe("window.onresize", "func");
 shouldBe("window.onresize", "document.body.onresize");
 
+document.body.onscroll = func;
+shouldBe("window.onscroll", "func");
+shouldBe("window.onscroll", "document.body.onscroll");
+
 document.body.onstorage = func;
 shouldBe("window.onstorage", "func");
 shouldBe("window.onstorage", "document.body.onstorage");

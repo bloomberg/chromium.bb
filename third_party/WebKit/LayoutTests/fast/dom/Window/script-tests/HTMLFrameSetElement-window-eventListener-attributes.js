@@ -53,6 +53,10 @@ frameSet.onresize = func;
 shouldBe("window.onresize", "func");
 shouldBe("window.onresize", "frameSet.onresize");
 
+frameSet.onscroll = func;
+shouldBe("window.onscroll", "func");
+shouldBe("window.onscroll", "frameSet.onscroll");
+
 frameSet.onstorage = func;
 shouldBe("window.onstorage", "func");
 shouldBe("window.onstorage", "frameSet.onstorage");
