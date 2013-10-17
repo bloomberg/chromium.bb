@@ -113,6 +113,9 @@ class DesktopMediaListView : public views::View,
   // Called by DesktopMediaSourceView when selection has changed.
   void OnSelectionChanged();
 
+  // Called by DesktopMediaSourceView when a source has been double-clicked.
+  void OnDoubleClick();
+
   // Returns currently selected source.
   DesktopMediaSourceView* GetSelection();
 
@@ -149,6 +152,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
 
   // Called by DesktopMediaListView.
   void OnSelectionChanged();
+  void OnDoubleClick();
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -292,7 +296,12 @@ void DesktopMediaSourceView::OnFocus() {
 }
 
 bool DesktopMediaSourceView::OnMousePressed(const ui::MouseEvent& event) {
-  RequestFocus();
+  if (event.GetClickCount() == 1) {
+    RequestFocus();
+  } else if (event.GetClickCount() == 2) {
+    RequestFocus();
+    parent_->OnDoubleClick();
+  }
   return true;
 }
 
@@ -314,6 +323,10 @@ void DesktopMediaListView::StartUpdating(
 
 void DesktopMediaListView::OnSelectionChanged() {
   parent_->OnSelectionChanged();
+}
+
+void DesktopMediaListView::OnDoubleClick() {
+  parent_->OnDoubleClick();
 }
 
 DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
@@ -548,6 +561,11 @@ void DesktopMediaPickerDialogView::DeleteDelegate() {
 
 void DesktopMediaPickerDialogView::OnSelectionChanged() {
   GetDialogClientView()->UpdateDialogButtons();
+}
+
+void DesktopMediaPickerDialogView::OnDoubleClick() {
+  // This will call Accept() and close the dialog.
+  GetDialogClientView()->AcceptWindow();
 }
 
 DesktopMediaPickerViews::DesktopMediaPickerViews()
