@@ -80,7 +80,7 @@ bool AnimationControllerPrivate::clear(RenderObject* renderer)
     if (!animation)
         return false;
     animation->clearRenderer();
-    return animation->suspended();
+    return !animation->suspended();
 }
 
 void AnimationControllerPrivate::updateAnimations(double& timeToNextService, double& timeToNextEvent, SetNeedsStyleRecalc callSetNeedsStyleRecalc/* = DoNotCallSetNeedsStyleRecalc*/)
