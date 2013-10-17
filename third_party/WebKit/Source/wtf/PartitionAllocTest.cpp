@@ -269,12 +269,33 @@ TEST(WTF_PartitionAlloc, PageTransitions)
 TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
 {
     TestSetup();
-    WTF::PartitionBucket* freePageBucket = &allocator.root()->buckets()[WTF::kInternalMetadataBucket];
+    PartitionRoot* root = allocator.root();
+    WTF::PartitionBucket* freePageBucket = root->buckets() + WTF::kInternalMetadataBucket;
     size_t bucketIdx = kTestAllocSize >> WTF::kBucketShift;
-    WTF::PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
+    WTF::PartitionBucket* bucket = root->buckets() + bucketIdx;
 
     size_t numToFillFreeListPage = (WTF::kPartitionPageSize - sizeof(WTF::PartitionPageHeader)) / sizeof(WTF::PartitionMetadataBucketEntrySize);
     OwnPtr<WTF::PartitionPageHeader*[]> pages = adoptArrayPtr(new WTF::PartitionPageHeader*[numToFillFreeListPage]);
+
+    // To get this test to work reliably, we need to pre-allocate a contiguous
+    // super page region. If we don't, mapping collisions could fragment the
+    // super page span and this messes up our expectations of the contents of
+    // the metadata bucket.
+    EXPECT_EQ(0, root->nextSuperPage);
+    EXPECT_EQ(0, root->totalSizeOfSuperPages);
+    // The +3 is because we'll need two partition pages for the free list pages
+    // and one partition page for the different-sized bucket.
+    size_t superPageSize = (numToFillFreeListPage + 3) * WTF::kPartitionPageSize;
+    // Make sure it's rounded up!
+    superPageSize += WTF::kSuperPageOffsetMask;
+    superPageSize &= WTF::kSuperPageBaseMask;
+    root->nextSuperPage = reinterpret_cast<char*>(WTF::allocSuperPages(0, superPageSize));
+    root->totalSizeOfSuperPages = superPageSize;
+    root->nextPartitionPage = root->nextSuperPage;
+    root->nextPartitionPageEnd = root->nextPartitionPage + superPageSize;
+    root->firstExtent.superPageBase = root->nextSuperPage;
+    root->firstExtent.superPagesEnd = root->nextSuperPage + superPageSize;
+
     size_t i;
     for (i = 0; i < numToFillFreeListPage; ++i) {
         pages[i] = GetFullPage(kTestAllocSize);

@@ -61,7 +61,7 @@ static const size_t kNumSystemPagesPerSuperPage = kSuperPageSize / kSystemPageSi
 // differ. The returned address will be aligned to kSuperPageSize.
 // len is in bytes, and must be a multiple of kSuperPageSize.
 // This call will exit the process if the allocation cannot be satisfied.
-void* allocSuperPages(void* addr, size_t len);
+WTF_EXPORT void* allocSuperPages(void* addr, size_t len);
 
 // Free one or more super pages.
 // addr and len must match a previous call to allocPages().
