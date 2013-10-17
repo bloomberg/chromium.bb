@@ -22,6 +22,7 @@ function mockLongPressType(label,
   // Verify that candidates popup window is initally hidden.
   var keyset = keyboard.querySelector('#' + keyboard.activeKeysetId);
   assertTrue(!!keyset, 'Unable to find active keyset.');
+  var mockEvent = { pointerId:1 };
   var candidatesPopup = keyset.querySelector('kb-altkey-container');
   assertTrue(!!candidatesPopup, 'Unable to find altkey container.');
   assertTrue(candidatesPopup.hidden,
@@ -31,7 +32,7 @@ function mockLongPressType(label,
   var key = findKey(label);
   var altKey = null;
   assertTrue(!!key, 'Unable to find key labelled "' + label + '".');
-  key.down();
+  key.down(mockEvent);
   mockTimer.tick(1000);
   if (opt_variant && opt_variant.noCandidates) {
     assertTrue(candidatesPopup.hidden, 'Candidate popup should remain hidden.');
@@ -68,18 +69,20 @@ function mockLongPressType(label,
     });
   }
   if (altKey) {
-    altKey.over({relatedTarget: altKey});
+    // A keyout event should be dispatched before a keyover event.
+    key.out(mockEvent);
+    altKey.over({pointerId: 1, relatedTarget: altKey});
     if (abortSelection)
-      altKey.out({relatedTarget: altKey});
+      altKey.out({pointerId: 1, relatedTarget: altKey});
     else
-      altKey.up();
+      altKey.up(mockEvent);
 
     // Verify that the candidate list is hidden on a pointer up event.
-    candidatesPopup.up();
+    candidatesPopup.up(mockEvent);
     assertTrue(candidatesPopup.hidden,
                'Candidate popup should be hidden after inserting a character.');
   } else {
-    key.up();
+    key.up(mockEvent);
   }
 }
 
@@ -133,4 +136,33 @@ function testLongPressTypeAccentedCharacterAsync(testDoneCallback) {
   onKeyboardReady('testLongPressTypeAccentedCharacterAsync',
                   runTest,
                   testDoneCallback);
+}
+
+/**
+ * When typing quickly, one can often press a second key before releasing the
+ * first. This test confirms that both keys are typed in the correct order.
+ */
+function testAutoReleasePreviousKey(testDoneCallback) {
+  var runTest = function() {
+    var key = findKey('a');
+    assertTrue(!!key, 'Unable to find key labelled "a".');
+    var unicodeValue = 'a'.charCodeAt(0);
+    var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
+    send.addExpectation({
+      type: 'keydown',
+      charValue: unicodeValue,
+      keyCode: 0x41,
+      shiftKey: false
+    });
+    send.addExpectation({
+      type: 'keyup',
+      charValue: unicodeValue,
+      keyCode: 0x41,
+      shiftKey: false
+    });
+    var mockEvent = { pointerId:2 };
+    key.down(mockEvent);
+    mockTypeCharacter('s', 0x53, false);
+  };
+  onKeyboardReady('testAutoReleasePreviousKey', runTest, testDoneCallback);
 }

@@ -327,8 +327,10 @@
         if (this.skipEvent(detail))
           return;
 
-        if (this.lastPressedKey)
+        if (this.lastPressedKey) {
           this.lastPressedKey.classList.remove('active');
+          this.lastPressedKey.autoRelease();
+        }
         this.lastPressedKey = event.target;
         this.lastPressedKey.classList.add('active');
         repeatKey.cancel();
@@ -456,16 +458,19 @@
           return;
         if (swipeInProgress)
           return;
-        this.lastPressedKey.classList.remove('active');
+        if (this.lastPressedKey)
+          this.lastPressedKey.classList.remove('active');
         // Keyset transition key. This is needed to transition from upper
         // to lower case when we are not in caps mode, as well as when
         // we're ending chording.
         this.changeKeyset(detail);
 
-        if (this.lastPressedKey.charValue != event.target.charValue)
+        if (this.lastPressedKey &&
+            this.lastPressedKey.charValue != event.target.charValue)
           return;
         if (repeatKey.key == event.target) {
           repeatKey.cancel();
+          this.lastPressedKey = null;
           return;
         }
         var toLayoutId = detail.toLayout;
@@ -509,6 +514,7 @@
           this.keyTyped(detail);
         else
           insertText(char);
+        this.lastPressedKey = null;
       },
 
       /*
@@ -526,7 +532,8 @@
           this.classList.add('caps-locked');
           // Makes last pressed key inactive if transit to a new keyset on long
           // press.
-          this.lastPressedKey.classList.remove('active');
+          if (this.lastPressedKey)
+            this.lastPressedKey.classList.remove('active');
         }
       },
 

@@ -53,6 +53,9 @@
             char: this.char || this.textContent
         };
         this.fire('key-up', detail);
+      },
+      // TODO(bshe): kb-altkey should extend from kb-key-base.
+      autoRelease: function() {
       }
     });
   </script>

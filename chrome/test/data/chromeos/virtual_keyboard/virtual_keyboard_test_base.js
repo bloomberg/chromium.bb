@@ -154,9 +154,10 @@ function mockTypeCharacter(label, keyCode, shiftModifier, opt_unicode) {
     keyCode: keyCode,
     shiftKey: shiftModifier
   });
+  var mockEvent = { pointerId:1 };
   // Fake typing the key.
-  key.down();
-  key.up();
+  key.down(mockEvent);
+  key.up(mockEvent);
 }
 
 /**

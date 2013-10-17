@@ -69,6 +69,7 @@
       repeat: false,
       invert: false,
       longPressTimer: null,
+      pointerId: undefined,
 
       /**
        * The keyset transition rules. It defines which keyset to transit to on
@@ -108,16 +109,34 @@
           });
         }
       },
+
       down: function(event) {
+        this.pointerId = event.pointerId;
         var detail = this.populateDetails('down');
         this.fire('key-down', detail);
         this.longPressTimer = this.generateLongPressTimer();
       },
       out: function(event) {
         this.classList.remove('active');
+        this.pointerId = undefined;
         clearTimeout(this.longPressTimer);
       },
       up: function(event) {
+        this.autoRelease();
+      },
+
+      /**
+       * Releases the pressed key programmatically and fires key-up event. This
+       * should be called if a second key is pressed while the first key is not
+       * released yet.
+       */
+      autoRelease: function() {
+        if (this.pointerId === undefined)
+          return;
+
+        // Invalidates the pointerId so the subsequent pointerup event is a
+        // noop.
+        this.pointerId = undefined;
         clearTimeout(this.longPressTimer);
         var detail = this.populateDetails('up');
         this.fire('key-up', detail);
