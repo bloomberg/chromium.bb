@@ -170,7 +170,11 @@ static void UpdateClipRectsForClipChild(
   // If the layer has no clip_parent, or the ancestor is the same as its actual
   // parent, then we don't need special clip rects. Bail now and leave the out
   // parameters untouched.
-  const LayerType* clip_parent = layer->clip_parent();
+  const LayerType* clip_parent = layer->scroll_parent();
+
+  if (!clip_parent)
+    clip_parent = layer->clip_parent();
+
   if (!clip_parent || clip_parent == layer->parent())
     return;
 
@@ -187,12 +191,25 @@ static void UpdateClipRectsForClipChild(
   // wanted to. But more importantly, this matches the expectations of
   // CalculateDrawPropertiesInternal. If we, say, create a render surface, these
   // clip rects will want to be in its target space, not ours.
-  *clip_rect_in_parent_target_space =
-      TranslateRectToTargetSpace<LayerType, RenderSurfaceType>(
-          *clip_parent,
-          *layer->parent(),
-          *clip_rect_in_parent_target_space,
-          TranslateRectDirectionToDescendant);
+  if (clip_parent == layer->clip_parent()) {
+    *clip_rect_in_parent_target_space =
+        TranslateRectToTargetSpace<LayerType, RenderSurfaceType>(
+            *clip_parent,
+            *layer->parent(),
+            *clip_rect_in_parent_target_space,
+            TranslateRectDirectionToDescendant);
+  } else {
+    // If we're being clipped by our scroll parent, we must translate through
+    // our common ancestor. This happens to be our parent, so it is sufficent to
+    // translate from our clip parent's space to the space of its ancestor (our
+    // parent).
+    *clip_rect_in_parent_target_space =
+        TranslateRectToTargetSpace<LayerType, RenderSurfaceType>(
+            *layer->parent(),
+            *clip_parent,
+            *clip_rect_in_parent_target_space,
+            TranslateRectDirectionToAncestor);
+  }
 }
 
 // We collect an accumulated drawable content rect per render surface.
@@ -1045,6 +1062,9 @@ static void PreCalculateMetaInformation(
     num_descendants_that_draw_content = 1000;
   }
 
+  layer->draw_properties().sorted_for_recursion = false;
+  layer->draw_properties().has_child_with_a_scroll_parent = false;
+
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
 
@@ -1059,6 +1079,8 @@ static void PreCalculateMetaInformation(
     num_descendants_that_draw_content +=
         child_layer->draw_properties().num_descendants_that_draw_content;
 
+    if (child_layer->scroll_parent())
+      layer->draw_properties().has_child_with_a_scroll_parent = true;
     recursive_data->Merge(data_for_child);
   }
 
@@ -1133,6 +1155,117 @@ struct DataForRecursion {
   bool subtree_can_use_lcd_text;
   bool subtree_is_visible_from_ancestor;
 };
+
+template <typename LayerType>
+static LayerType* GetChildContainingLayer(const LayerType& parent,
+                                          LayerType* layer) {
+  for (LayerType* ancestor = layer; ancestor; ancestor = ancestor->parent()) {
+    if (ancestor->parent() == &parent)
+      return ancestor;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+template <typename LayerType>
+static void AddScrollParentChain(std::vector<LayerType*>* out,
+                                 const LayerType& parent,
+                                 LayerType* layer) {
+  // At a high level, this function walks up the chain of scroll parents
+  // recursively, and once we reach the end of the chain, we add the child
+  // of |parent| containing each scroll ancestor as we unwind. The result is
+  // an ordering of parent's children that ensures that scroll parents are
+  // visited before their descendants.
+  // Take for example this layer tree:
+  //
+  // + stacking_context
+  //   + scroll_child (1)
+  //   + scroll_parent_graphics_layer (*)
+  //   | + scroll_parent_scrolling_layer
+  //   |   + scroll_parent_scrolling_content_layer (2)
+  //   + scroll_grandparent_graphics_layer (**)
+  //     + scroll_grandparent_scrolling_layer
+  //       + scroll_grandparent_scrolling_content_layer (3)
+  //
+  // The scroll child is (1), its scroll parent is (2) and its scroll
+  // grandparent is (3). Note, this doesn't mean that (2)'s scroll parent is
+  // (3), it means that (*)'s scroll parent is (3). We don't want our list to
+  // look like [ (3), (2), (1) ], even though that does have the ancestor chain
+  // in the right order. Instead, we want [ (**), (*), (1) ]. That is, only want
+  // (1)'s siblings in the list, but we want them to appear in such an order
+  // that the scroll ancestors get visited in the correct order.
+  //
+  // So our first task at this step of the recursion is to determine the layer
+  // that we will potentionally add to the list. That is, the child of parent
+  // containing |layer|.
+  LayerType* child = GetChildContainingLayer(parent, layer);
+  if (child->draw_properties().sorted_for_recursion)
+    return;
+
+  if (LayerType* scroll_parent = child->scroll_parent())
+    AddScrollParentChain(out, parent, scroll_parent);
+
+  out->push_back(child);
+  child->draw_properties().sorted_for_recursion = true;
+}
+
+template <typename LayerType>
+static bool SortChildrenForRecursion(std::vector<LayerType*>* out,
+                                     const LayerType& parent) {
+  out->reserve(parent.children().size());
+  bool order_changed = false;
+  for (size_t i = 0; i < parent.children().size(); ++i) {
+    LayerType* current =
+        LayerTreeHostCommon::get_child_as_raw_ptr(parent.children(), i);
+
+    if (current->draw_properties().sorted_for_recursion) {
+      order_changed = true;
+      continue;
+    }
+
+    AddScrollParentChain(out, parent, current);
+  }
+
+  DCHECK_EQ(parent.children().size(), out->size());
+  return order_changed;
+}
+
+template <typename LayerType>
+static void GetNewDescendantsStartIndexAndCount(LayerType* layer,
+                                                size_t* start_index,
+                                                size_t* count) {
+  *start_index = layer->draw_properties().index_of_first_descendants_addition;
+  *count = layer->draw_properties().num_descendants_added;
+}
+
+template <typename LayerType>
+static void GetNewRenderSurfacesStartIndexAndCount(LayerType* layer,
+                                                   size_t* start_index,
+                                                   size_t* count) {
+  *start_index = layer->draw_properties()
+                     .index_of_first_render_surface_layer_list_addition;
+  *count = layer->draw_properties().num_render_surfaces_added;
+}
+
+template <typename LayerType,
+          typename LayerListType,
+          typename GetIndexAndCountType>
+static void AddUnsortedLayerListContributions(
+    const LayerType& parent,
+    const LayerListType& source,
+    LayerListType* target,
+    GetIndexAndCountType get_index_and_count) {
+  for (size_t i = 0; i < parent.children().size(); ++i) {
+    LayerType* child =
+        LayerTreeHostCommon::get_child_as_raw_ptr(parent.children(), i);
+
+    size_t start_index = 0;
+    size_t count = 0;
+    get_index_and_count(child, &start_index, &count);
+    for (size_t j = start_index; j < start_index + count; ++j)
+      target->push_back(source.at(j));
+  }
+}
 
 // Recursively walks the layer tree starting at the given node and computes all
 // the necessary transformations, clip rects, render surfaces, etc.
@@ -1760,22 +1893,83 @@ static void CalculateDrawPropertiesInternal(
     data_for_children.subtree_is_visible_from_ancestor = layer_is_visible;
   }
 
+  // These are the layer lists that will be passed to our children to populate.
+  LayerListType* render_surface_layer_list_for_children =
+      render_surface_layer_list;
+  LayerListType* descendants_for_children = &descendants;
+
+  // If we visit our children out of order, we will put their contributions to
+  // descendants and render_surface_layer_list aside during recursion and add
+  // them to the real lists afterwards in the correct order.
+  scoped_ptr<LayerListType> unsorted_render_surface_layer_list;
+  scoped_ptr<LayerListType> unsorted_descendants;
+
+  std::vector<LayerType*> sorted_children;
+  bool child_order_changed = false;
+  if (layer_draw_properties.has_child_with_a_scroll_parent)
+    child_order_changed = SortChildrenForRecursion(&sorted_children, *layer);
+
+  if (child_order_changed) {
+    // We'll be visiting our children out of order; use the temporary lists.
+    unsorted_render_surface_layer_list.reset(new LayerListType);
+    unsorted_descendants.reset(new LayerListType);
+    render_surface_layer_list_for_children =
+        unsorted_render_surface_layer_list.get();
+    descendants_for_children = unsorted_descendants.get();
+  }
+
   for (size_t i = 0; i < layer->children().size(); ++i) {
+    // If one of layer's children has a scroll parent, then we may have to
+    // visit the children out of order. The new order is stored in
+    // sorted_children. Otherwise, we'll grab the child directly from the
+    // layer's list of children.
     LayerType* child =
-        LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
+        layer_draw_properties.has_child_with_a_scroll_parent
+            ? sorted_children[i]
+            : LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
+
+    child->draw_properties().index_of_first_descendants_addition =
+        descendants_for_children->size();
+    child->draw_properties().index_of_first_render_surface_layer_list_addition =
+        render_surface_layer_list_for_children->size();
+
     CalculateDrawPropertiesInternal<LayerType,
                                     LayerListType,
                                     RenderSurfaceType>(
         child,
         globals,
         data_for_children,
-        render_surface_layer_list,
-        &descendants,
+        render_surface_layer_list_for_children,
+        descendants_for_children,
         accumulated_surface_state);
+
     if (child->render_surface() &&
         !child->render_surface()->content_rect().IsEmpty()) {
-      descendants.push_back(child);
+      descendants_for_children->push_back(child);
     }
+
+    child->draw_properties().num_descendants_added =
+        descendants_for_children->size() -
+        child->draw_properties().index_of_first_descendants_addition;
+    child->draw_properties().num_render_surfaces_added =
+        render_surface_layer_list_for_children->size() -
+        child->draw_properties()
+            .index_of_first_render_surface_layer_list_addition;
+  }
+
+  // Add the unsorted layer list contributions, if necessary.
+  if (child_order_changed) {
+    AddUnsortedLayerListContributions(
+        *layer,
+        *unsorted_render_surface_layer_list,
+        render_surface_layer_list,
+        &GetNewRenderSurfacesStartIndexAndCount<LayerType>);
+
+    AddUnsortedLayerListContributions(
+        *layer,
+        *unsorted_descendants,
+        &descendants,
+        &GetNewDescendantsStartIndexAndCount<LayerType>);
   }
 
   // Compute the total drawable_content_rect for this subtree (the rect is in
