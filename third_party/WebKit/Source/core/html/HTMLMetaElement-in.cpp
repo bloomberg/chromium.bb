@@ -398,33 +398,39 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
 {
     ASSERT(!content.isNull());
 
-    if (!document().settings() || !document().shouldOverrideLegacyViewport(origin))
+    if (!document().settings())
         return;
 
-    ViewportDescription newDescriptionFromLegacyTag(origin);
-    parseContentAttribute(content, &HTMLMetaElement::processViewportKeyValuePair, (void*)&newDescriptionFromLegacyTag);
+    if (!document().shouldOverrideLegacyDescription(origin))
+        return;
 
-    if (newDescriptionFromLegacyTag.minZoom == ViewportDescription::ValueAuto)
-        newDescriptionFromLegacyTag.minZoom = 0.25;
+    ViewportDescription descriptionFromLegacyTag(origin);
+    if (document().shouldMergeWithLegacyDescription(origin))
+        descriptionFromLegacyTag = document().viewportDescription();
 
-    if (newDescriptionFromLegacyTag.maxZoom == ViewportDescription::ValueAuto) {
-        newDescriptionFromLegacyTag.maxZoom = 5;
-        newDescriptionFromLegacyTag.minZoom = std::min(newDescriptionFromLegacyTag.minZoom, float(5));
+    parseContentAttribute(content, &HTMLMetaElement::processViewportKeyValuePair, (void*)&descriptionFromLegacyTag);
+
+    if (descriptionFromLegacyTag.minZoom == ViewportDescription::ValueAuto)
+        descriptionFromLegacyTag.minZoom = 0.25;
+
+    if (descriptionFromLegacyTag.maxZoom == ViewportDescription::ValueAuto) {
+        descriptionFromLegacyTag.maxZoom = 5;
+        descriptionFromLegacyTag.minZoom = std::min(descriptionFromLegacyTag.minZoom, float(5));
     }
 
     const Settings* settings = document().settings();
 
-    if (newDescriptionFromLegacyTag.maxWidth.isAuto()) {
-        if (newDescriptionFromLegacyTag.zoom == ViewportDescription::ValueAuto) {
-            newDescriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
-            newDescriptionFromLegacyTag.maxWidth = Length(settings->layoutFallbackWidth(), Fixed);
-        } else if (newDescriptionFromLegacyTag.maxHeight.isAuto()) {
-            newDescriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
-            newDescriptionFromLegacyTag.maxWidth = Length(ExtendToZoom);
+    if (descriptionFromLegacyTag.maxWidth.isAuto()) {
+        if (descriptionFromLegacyTag.zoom == ViewportDescription::ValueAuto) {
+            descriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
+            descriptionFromLegacyTag.maxWidth = Length(settings->layoutFallbackWidth(), Fixed);
+        } else if (descriptionFromLegacyTag.maxHeight.isAuto()) {
+            descriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
+            descriptionFromLegacyTag.maxWidth = Length(ExtendToZoom);
         }
     }
 
-    document().setViewportDescription(newDescriptionFromLegacyTag);
+    document().setViewportDescription(descriptionFromLegacyTag);
 }
 
 

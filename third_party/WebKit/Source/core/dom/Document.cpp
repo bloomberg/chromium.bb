@@ -2936,6 +2936,11 @@ void Document::processHttpEquivXFrameOptions(const String& content)
     }
 }
 
+bool Document::shouldMergeWithLegacyDescription(ViewportDescription::Type origin)
+{
+    return settings() && settings()->viewportMetaMergeContentQuirk() && m_legacyViewportDescription.isMetaViewportType() && m_legacyViewportDescription.type == origin;
+}
+
 void Document::setViewportDescription(const ViewportDescription& viewportDescription)
 {
     if (viewportDescription.isLegacyViewportType()) {
@@ -2949,7 +2954,7 @@ void Document::setViewportDescription(const ViewportDescription& viewportDescrip
     } else {
         // If the legacy viewport tag has higher priority than the cascaded @viewport
         // descriptors, use the values from the legacy tag.
-        if (!shouldOverrideLegacyViewport(viewportDescription.type))
+        if (!shouldOverrideLegacyDescription(viewportDescription.type))
             m_viewportDescription = m_legacyViewportDescription;
         else
             m_viewportDescription = viewportDescription;

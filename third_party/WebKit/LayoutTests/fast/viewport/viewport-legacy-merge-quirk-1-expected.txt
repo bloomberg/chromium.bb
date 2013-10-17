@@ -1,0 +1,2 @@
+ALERT: viewport size 640x704 scale 1 with limits [1, 1] and userScalable false
+

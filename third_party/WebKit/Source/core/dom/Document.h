@@ -313,7 +313,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitvisibilitychange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
 
-    bool shouldOverrideLegacyViewport(ViewportDescription::Type);
+    bool shouldMergeWithLegacyDescription(ViewportDescription::Type);
+    bool shouldOverrideLegacyDescription(ViewportDescription::Type);
     void setViewportDescription(const ViewportDescription&);
     const ViewportDescription& viewportDescription() const { return m_viewportDescription; }
 #ifndef NDEBUG
@@ -1415,7 +1416,7 @@ inline const Document* Document::templateDocument() const
     return m_templateDocument.get();
 }
 
-inline bool Document::shouldOverrideLegacyViewport(ViewportDescription::Type origin)
+inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)
 {
     // The different (legacy) meta tags have different priorities based on the type
     // regardless of which order they appear in the DOM. The priority is given by the
