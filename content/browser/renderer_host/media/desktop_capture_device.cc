@@ -15,9 +15,11 @@
 #include "content/public/common/desktop_media_id.h"
 #include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_and_cursor_composer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
 
@@ -357,15 +359,24 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 
   switch (source.type) {
     case DesktopMediaID::TYPE_SCREEN: {
-      capturer.reset(webrtc::ScreenCapturer::Create(options));
+      scoped_ptr<webrtc::DesktopCapturer> screen_capturer;
+      screen_capturer.reset(webrtc::ScreenCapturer::Create(options));
+      if (screen_capturer) {
+        capturer.reset(new webrtc::DesktopAndCursorComposer(
+            screen_capturer.release(),
+            webrtc::MouseCursorMonitor::CreateForScreen(options)));
+      }
       break;
     }
 
     case DesktopMediaID::TYPE_WINDOW: {
       scoped_ptr<webrtc::WindowCapturer> window_capturer(
           webrtc::WindowCapturer::Create(options));
-      if (window_capturer && window_capturer->SelectWindow(source.id))
-        capturer.reset(window_capturer.release());
+      if (window_capturer && window_capturer->SelectWindow(source.id)) {
+        capturer.reset(new webrtc::DesktopAndCursorComposer(
+            window_capturer.release(),
+            webrtc::MouseCursorMonitor::CreateForWindow(options, source.id)));
+      }
       break;
     }
 
@@ -378,7 +389,7 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   if (capturer)
     result.reset(new DesktopCaptureDevice(task_runner, capturer.Pass()));
 
-  return result.Pass();;
+  return result.Pass();
 }
 
 DesktopCaptureDevice::DesktopCaptureDevice(
