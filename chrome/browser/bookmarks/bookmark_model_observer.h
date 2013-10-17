@@ -57,6 +57,14 @@ class BookmarkModelObserver {
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) = 0;
 
+  // Invoked before the metainfo of a node is changed.
+  virtual void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
+                                            const BookmarkNode* node) {}
+
+  // Invoked when the metainfo on a node changes.
+  virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
+                                       const BookmarkNode* node) {}
+
   // Invoked when a favicon has been loaded or changed.
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
                                           const BookmarkNode* node) = 0;

@@ -496,14 +496,29 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
 void BookmarkModel::SetNodeMetaInfo(const BookmarkNode* node,
                                     const std::string& key,
                                     const std::string& value) {
+  // TODO(noyau): Right now the notification is send even if the meta info
+  // doesn't change. Checking first with the current API will decode the meta
+  // info twice, a non optimal solution.
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillChangeBookmarkMetaInfo(this, node));
+
   if (AsMutable(node)->SetMetaInfo(key, value) && store_.get())
     store_->ScheduleSave();
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkMetaInfoChanged(this, node));
 }
 
 void BookmarkModel::DeleteNodeMetaInfo(const BookmarkNode* node,
                                        const std::string& key) {
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillChangeBookmarkMetaInfo(this, node));
+
   if (AsMutable(node)->DeleteMetaInfo(key) && store_.get())
     store_->ScheduleSave();
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkMetaInfoChanged(this, node));
 }
 
 void BookmarkModel::SetDateAdded(const BookmarkNode* node,
