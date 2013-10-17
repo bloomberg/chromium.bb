@@ -155,6 +155,38 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
   // Select the closest picture to the center of the window.
   if (minIndex != -1)
     this.model_.currentIndex = minIndex;
+
+  this.updatePicturesResolutions_();
+};
+
+/**
+ * Updates resolutions of the pictures. The selected picture will be high
+ * resolution, and all the rest low. This method waits until CSS transitions
+ * are finished (if any).
+ *
+ * @private
+ */
+camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
+ var updateResolutions = function() {
+    for (var index = 0; index < this.pictures_.length; index++) {
+      this.pictures_[index].displayResolution =
+          (index == this.model_.currentIndex) ?
+              camera.views.Gallery.DOMPicture.DisplayResolution.HIGH :
+              camera.views.Gallery.DOMPicture.DisplayResolution.LOW;
+    }
+  }.bind(this);
+
+  // Wait until the zoom-in transition is finished, and then update pictures'
+  // resolutions.
+  if (this.model_.currentIndex !== null) {
+    camera.util.waitForTransitionCompletion(
+        this.pictures_[this.model_.currentIndex].element,
+        250,  // Timeout in ms.
+        updateResolutions);
+  } else {
+    // No selection.
+    updateResolutions();
+  }
 };
 
 /**
@@ -188,8 +220,10 @@ camera.views.Browser.prototype.onCurrentIndexChanged = function(
   if (newIndex !== null && newIndex < this.model_.length)
     this.pictureByIndex_(newIndex).element.classList.add('selected');
 
-  camera.util.scrollToCenter(this.currentPicture_().element,
-                             this.scroller_);
+  if (newIndex !== null) {
+   camera.util.scrollToCenter(this.currentPicture_().element,
+                              this.scroller_);
+  }
 };
 
 /**
@@ -199,6 +233,11 @@ camera.views.Browser.prototype.onPictureDeleting = function(index) {
   this.pictures_[index].element.parentNode.removeChild(
     this.pictures_[index].element);
   this.pictures_.splice(index, 1);
+
+  // Update the resolutions, since the current image might have changed
+  // without scrolling and without scrolling. Use a timer, to wait until
+  // the picture is deleted from the model.
+  setTimeout(this.updatePicturesResolutions_.bind(this), 0);
 };
 
 /**
@@ -293,7 +332,6 @@ camera.views.Browser.prototype.addPictureToDOM_ = function(picture) {
   var gallery = document.querySelector('#browser .padder');
   var boundsPadder = gallery.querySelector('.bounds-padder');
   var img = document.createElement('img');
-  img.src = picture.thumbnailURL;
   gallery.insertBefore(img, boundsPadder.nextSibling);
 
   // Add to the collection.

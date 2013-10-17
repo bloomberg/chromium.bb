@@ -54,7 +54,7 @@ camera.views.Gallery = function(context) {
  * object with the DOM element.
  *
  * @param {camera.models.Gallery.Picture} picture Picture data.
- * @param {HTMLElement} element DOM element holding the picture.
+ * @param {HTMLImageElement} element DOM element holding the picture.
  * @constructor
  */
 camera.views.Gallery.DOMPicture = function(picture, element) {
@@ -70,8 +70,27 @@ camera.views.Gallery.DOMPicture = function(picture, element) {
    */
   this.element_ = element;
 
-  // End of properties. Freeze the object.
-  Object.freeze(this);
+  /**
+   * @type {camera.views.Gallery.DOMPicture.DisplayResolution}
+   * @private
+   */
+  this.displayResolution_ =
+      camera.views.Gallery.DOMPicture.DisplayResolution.LOW;
+
+  // End of properties. Seal the object.
+  Object.seal(this);
+
+  // Load the image.
+  this.updateImage_();
+};
+
+/**
+ * Sets resolution of the picture to be displayed.
+ * @enum {number}
+ */
+camera.views.Gallery.DOMPicture.DisplayResolution = {
+  LOW: 0,
+  HIGH: 1
 };
 
 camera.views.Gallery.DOMPicture.prototype = {
@@ -80,6 +99,30 @@ camera.views.Gallery.DOMPicture.prototype = {
   },
   get element() {
     return this.element_;
+  },
+  set displayResolution(value) {
+    if (this.displayResolution_ == value)
+      return;
+    this.displayResolution_ = value;
+    this.updateImage_();
+  },
+  get displayResolution() {
+    return this.displayResolution_;
+  }
+};
+
+/**
+ * Loads the picture into the DOM element.
+ * @private
+ */
+camera.views.Gallery.DOMPicture.prototype.updateImage_ = function() {
+  switch (this.displayResolution_) {
+    case camera.views.Gallery.DOMPicture.DisplayResolution.LOW:
+      this.element_.src = this.picture_.thumbnailURL;
+      break;
+    case camera.views.Gallery.DOMPicture.DisplayResolution.HIGH:
+      this.element_.src = this.picture_.imageURL;
+      break;
   }
 };
 
@@ -171,8 +214,10 @@ camera.views.Gallery.prototype.onCurrentIndexChanged = function(
   if (newIndex !== null && newIndex < this.model_.length)
     this.pictureByIndex_(newIndex).element.classList.add('selected');
 
-  camera.util.ensureVisible(this.currentPicture_().element,
-                            this.scroller_);
+  if (newIndex !== null) {
+    camera.util.ensureVisible(this.currentPicture_().element,
+                              this.scroller_);
+  }
 };
 
 /**
@@ -263,7 +308,6 @@ camera.views.Gallery.prototype.onPictureAdded = function(index) {
 camera.views.Gallery.prototype.addPictureToDOM_ = function(picture) {
   var gallery = document.querySelector('#gallery .padder');
   var img = document.createElement('img');
-  img.src = picture.thumbnailURL;
   gallery.insertBefore(img, gallery.firstChild);
 
   // Add to the collection.
