@@ -138,18 +138,6 @@ public class ActivityStatus {
     }
 
     /**
-     * Indicates that the current activity is paused.
-     *
-     * Use explicit state checking instead.
-     */
-    @Deprecated
-    public static boolean isPaused() {
-        if (sActivity == null) return false;
-        Integer currentStatus = sActivityStates.get(sActivity);
-        return currentStatus != null && currentStatus.intValue() == PAUSED;
-    }
-
-    /**
      * @return The current activity.
      */
     public static Activity getActivity() {
@@ -186,7 +174,7 @@ public class ActivityStatus {
      *   <li> Activity A - CREATED
      *   <li> Activity A - STARTED
      *   <li> Activity A - RESUMED
-     *   <li> -- Staring Activity B --
+     *   <li> -- Starting Activity B --
      *   <li> Activity A - PAUSED
      *   <li> Activity B - CREATED
      *   <li> Activity B - STARTED
