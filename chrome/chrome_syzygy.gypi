@@ -50,14 +50,12 @@
           'action_name': 'Instrument Chrome with SyzyAsan',
           'msvs_cygwin_shell': 0,
           'inputs': [
-            '<(PRODUCT_DIR)/<(dll_name).dll',
             '<(DEPTH)/chrome/tools/build/win/win-syzyasan-filter.txt',
+            '<(PRODUCT_DIR)/<(dll_name).dll',
           ],
           'outputs': [
             '<(dest_dir)/<(dll_name).dll',
             '<(dest_dir)/<(dll_name).dll.pdb',
-            '<(dest_dir)/syzyasan_rtl.dll',
-            '<(dest_dir)/syzyasan_rtl.dll.pdb',
             '<(dest_dir)/win-syzyasan-filter-<(dll_name).txt.json',
           ],
           'action': [
@@ -73,6 +71,9 @@
             '--destination_dir', '<(dest_dir)',
           ],
         },
+      ],
+      'dependencies': [
+        'copy_syzyasan_binaries',
       ],
     }],
   ],

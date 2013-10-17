@@ -200,11 +200,10 @@
       'type': 'none',
       'conditions': [
         ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
-            'dependencies': [
-              '../chrome/installer/mini_installer_syzygy.gyp:*',
-            ],
-          },
-        ],
+          'dependencies': [
+            '../chrome/installer/mini_installer_syzygy.gyp:*',
+          ],
+        }],
       ],
     }, # target_name: All_syzygy
     {

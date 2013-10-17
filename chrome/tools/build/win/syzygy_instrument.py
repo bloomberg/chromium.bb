@@ -22,10 +22,6 @@ _DEFAULT_SYZYGY_DIR = os.path.abspath(os.path.join(
 # Basenames of various tools.
 _INSTRUMENT_EXE = 'instrument.exe'
 _GENFILTER_EXE = 'genfilter.exe'
-_ASAN_AGENT_DLL = 'syzyasan_rtl.dll'
-
-# Default agents for known modes.
-_DEFAULT_AGENT_DLLS = { 'asan': _ASAN_AGENT_DLL }
 
 _LOGGER = logging.getLogger()
 
@@ -87,24 +83,6 @@ def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
   return _Shell(*cmd)
 
 
-def _CopyAgentDLL(agent_dll, destination_dir):
-  """Copy the agent DLL and PDB to the destination directory."""
-  dirname, agent_name = os.path.split(agent_dll);
-  agent_dst_name = os.path.join(destination_dir, agent_name);
-  shutil.copyfile(agent_dll, agent_dst_name)
-
-  # Search for the corresponding PDB file. We use this approach because
-  # the naming convention for PDBs has changed recently (from 'foo.pdb'
-  # to 'foo.dll.pdb') and we want to support both conventions during the
-  # transition.
-  agent_pdbs = glob.glob(os.path.splitext(agent_dll)[0] + '*.pdb')
-  if len(agent_pdbs) != 1:
-    raise RuntimeError('Failed to locate PDB file for %s' % agent_name)
-  agent_pdb = agent_pdbs[0]
-  agent_dst_pdb = os.path.join(destination_dir, os.path.split(agent_pdb)[1])
-  shutil.copyfile(agent_pdb, agent_dst_pdb)
-
-
 def main(options):
   # Make sure the destination directory exists.
   if not os.path.isdir(options.destination_dir):
@@ -128,9 +106,6 @@ def main(options):
                     options.destination_dir,
                     options.output_filter_file)
 
-  # Copy the agent DLL and PDB to the destination directory.
-  _CopyAgentDLL(options.agent_dll, options.destination_dir);
-
 
 def _ParseOptions():
   option_parser = optparse.OptionParser()
@@ -140,9 +115,6 @@ def _ParseOptions():
       help='The path to the input symbol file.')
   option_parser.add_option('--mode',
       help='Specifies which instrumentation mode is to be used.')
-  option_parser.add_option('--agent_dll',
-      help='The agent DLL used by this instrumentation. If not specified a '
-           'default will be searched for.')
   option_parser.add_option('--syzygy-dir', default=_DEFAULT_SYZYGY_DIR,
       help='Instrumenter executable to use, defaults to "%default".')
   option_parser.add_option('-d', '--destination_dir',
@@ -165,14 +137,6 @@ def _ParseOptions():
     option_parser.error('You must provide a destination directory.')
   if options.filter and not options.output_filter_file:
     option_parser.error('You must provide a filter output file.')
-
-  if not options.agent_dll:
-    if not options.mode in _DEFAULT_AGENT_DLLS:
-      option_parser.error('No known default agent DLL for mode "%s".' %
-          options.mode)
-    options.agent_dll = os.path.abspath(os.path.join(options.syzygy_dir,
-        _DEFAULT_AGENT_DLLS[options.mode]))
-    _LOGGER.info('Using default agent DLL: %s' % options.agent_dll)
 
   return options
 
