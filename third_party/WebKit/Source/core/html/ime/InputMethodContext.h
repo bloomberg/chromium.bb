@@ -47,7 +47,7 @@ class ExecutionContext;
 class InputMethodController;
 class Node;
 
-class InputMethodContext : public ScriptWrappable, public EventTarget {
+class InputMethodContext : public ScriptWrappable, public EventTargetWithInlineData {
 public:
     static PassOwnPtr<InputMethodContext> create(HTMLElement*);
     ~InputMethodContext();
@@ -70,9 +70,6 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData& ensureEventTargetData() OVERRIDE { return m_eventTargetData; }
-
     DEFINE_ATTRIBUTE_EVENT_LISTENER(candidatewindowshow);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(candidatewindowupdate);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(candidatewindowhide);
@@ -93,7 +90,6 @@ private:
     HTMLElement* m_element;
     OwnPtr<Composition> m_composition;
     Vector<unsigned> m_segments;
-    EventTargetData m_eventTargetData;
 };
 
 } // namespace WebCore
