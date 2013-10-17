@@ -29,7 +29,7 @@
     {% for comp in comparisons %}
       <div class="row">
         <div class="cell">
-          Diff<br>
+          Diff&nbsp;&nbsp;({{ "%.1f"|format(comp['percent_different']) }}%)<br>
           <a class="imagelink" href="{{ comp['diff'] }}">
             <img class="image" src={{ comp['diff'] }}>
           </a>
@@ -49,8 +49,8 @@
         <div class="cell">
           <br>
           <div class="info">
-            {{ comp['test_name'] }}<br>
-            <a href='/debug_view?test_run={{ comp['test_run'] }}&test_name={{ comp['test_name'] }}'>Debug View</a>
+            {{ comp['expectation'] }}<br>
+            <a href='/debug_view?test_run={{ comp['test_run'] }}&expectation={{ comp['expectation'] }}'>Debug View</a>
           </div>
         </div>
       </div>

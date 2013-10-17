@@ -26,12 +26,12 @@ class DebugViewHandler(webapp2.RequestHandler):
 
     GET Parameters:
       test_run: The test run.
-      test_name: The test name.
+      expectation: The expectation name.
     """
     test_run = self.request.get('test_run')
-    test_name = self.request.get('test_name')
-    expected_path = ispy_utils.GetTestPath(test_run, test_name, 'expected.png')
-    actual_path = ispy_utils.GetFailurePath(test_run, test_name, 'actual.png')
+    expectation = self.request.get('expectation')
+    expected_path = ispy_utils.GetExpectationPath(expectation, 'expected.png')
+    actual_path = ispy_utils.GetFailurePath(test_run, expectation, 'actual.png')
     data = {}
 
     def _ImagePath(url):
@@ -40,6 +40,6 @@ class DebugViewHandler(webapp2.RequestHandler):
     data['expected'] = _ImagePath(expected_path)
     data['actual'] = _ImagePath(actual_path)
     data['test_run'] = test_run
-    data['test_name'] = test_name
+    data['expectation'] = expectation
     template = JINJA.get_template('debug_view.html')
     self.response.write(template.render(data))

@@ -29,31 +29,31 @@ class UpdateMaskHandler(webapp2.RequestHandler):
     to the device list view.
     """
     test_run = self.request.get('test_run')
-    test_name = self.request.get('test_name')
+    expectation = self.request.get('expectation')
 
     # Short-circuit if a parameter is missing.
-    if not (test_run and test_name):
+    if not (test_run and expectation):
       self.response.header['Content-Type'] = 'json/application'
       self.response.write(json.dumps(
-          {'error': 'test_run, and test_name, must be '
+          {'error': '\'test_run\' and \'expectation\' must be '
                     'supplied to update a mask.'}))
       return
     # Otherwise, set up the utilities.
     self.bucket = gs_bucket.GoogleCloudStorageBucket(constants.BUCKET)
     self.ispy = ispy_utils.ISpyUtils(self.bucket)
     # Short-circuit if the failure does not exist.
-    if not self.ispy.FailureExists(test_run, test_name):
+    if not self.ispy.FailureExists(test_run, expectation):
       self.response.header['Content-Type'] = 'json/application'
       self.response.write(json.dumps(
         {'error': 'Could not update mask because failure does not exist.'}))
       return
     # Get the failure namedtuple (which also computes the diff).
-    failure = self.ispy.GetFailure(test_run, test_name)
+    failure = self.ispy.GetFailure(test_run, expectation)
     # Upload the new mask in place of the original.
     self.ispy.UpdateImage(
-        ispy_utils.GetTestPath(test_run, test_name, 'mask.png'),
+        ispy_utils.GetExpectationPath(expectation, 'mask.png'),
         image_tools.ConvertDiffToMask(failure.diff))
-    # Now that there is no div for the two images, remove the failure.
-    self.ispy.RemoveFailure(test_run, test_name)
-    # Redirect back to the sites list for the device.
+    # Now that there is no diff for the two images, remove the failure.
+    self.ispy.RemoveFailure(test_run, expectation)
+    # Redirect back to the sites list for the test run.
     self.redirect('/?test_run=%s' % test_run)

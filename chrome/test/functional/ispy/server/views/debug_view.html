@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Debug {{ test_name }}</title>
+    <title>Debug {{ expectation }}</title>
     <script language="javascript">
     var current = 0;
     var toggle_interval = null;
@@ -38,7 +38,7 @@
     <br>
     <form action="/update_mask" method="post" onsubmit="return confirmSubmit();">
       <input type="hidden" name="test_run" value="{{ test_run }}"/>
-      <input type="hidden" name="test_name" value="{{ test_name }}"/>
+      <input type="hidden" name="expectation" value="{{ expectation }}"/>
       <input type="submit" value="Ignore similar diffs in the future"/>
     </form>
     <br>

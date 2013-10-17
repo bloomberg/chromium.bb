@@ -13,32 +13,31 @@ import sys
 import image_tools
 
 
-def GetTestPath(test_run, test_name, file_name=''):
-  """Get the path to a test file in the given test run and test.
+def GetExpectationPath(expectation, file_name=''):
+  """Get the path to a test file in the given test run and expectation.
 
   Args:
-    test_run: name of the test run.
-    test_name: name of the test.
+    expectation: name of the expectation.
     file_name: name of the file.
 
   Returns:
     the path as a string relative to the bucket.
   """
-  return 'tests/%s/%s/%s' % (test_run, test_name, file_name)
+  return 'expectations/%s/%s' % (expectation, file_name)
 
 
-def GetFailurePath(test_run, test_name, file_name=''):
+def GetFailurePath(test_run, expectation, file_name=''):
   """Get the path to a failure file in the given test run and test.
 
   Args:
     test_run: name of the test run.
-    test_name: name of the test.
+    expectation: name of the expectation.
     file_name: name of the file.
 
   Returns:
     the path as a string relative to the bucket.
   """
-  return 'failures/%s/%s/%s' % (test_run, test_name, file_name)
+  return 'failures/%s/%s/%s' % (test_run, expectation, file_name)
 
 
 class ISpyUtils(object):
@@ -87,120 +86,115 @@ class ISpyUtils(object):
     self.cloud_bucket.UpdateFile(full_path, image_tools.EncodePNG(image))
 
 
-  def UploadTest(self, test_run, test_name, images):
-    """Creates and uploads a test to GS from a set of images and name.
+  def UploadExpectation(self, expectation, images):
+    """Creates and uploads an expectation to GS from a set of images and name.
 
     This method generates a mask from the uploaded images, then
-      uploads the mask and first of the images to GS as a test.
+      uploads the mask and first of the images to GS as a expectation.
 
     Args:
-      test_run: the name of the test_run.
-      test_name: the name of the test.
+      expectation: name for this expectation, any existing expectation with the
+        name will be replaced.
       images: a list of RGB encoded PIL.Images
     """
     mask = image_tools.InflateMask(image_tools.CreateMask(images), 7)
     self.UploadImage(
-        GetTestPath(test_run, test_name, 'expected.png'), images[0])
-    self.UploadImage(GetTestPath(test_run, test_name, 'mask.png'), mask)
+        GetExpectationPath(expectation, 'expected.png'), images[0])
+    self.UploadImage(GetExpectationPath(expectation, 'mask.png'), mask)
 
-  def RunTest(self, test_run, test_name, actual):
+  def RunTest(self, test_run, expectation, actual):
     """Runs an image comparison, and uploads discrepancies to GS.
 
     Args:
       test_run: the name of the test_run.
-      test_name: the name of the test to run.
-      actual: an RGB-encoded PIL.Image that is the actual result of the
-        test.
+      expectation: the name of the expectation to use for comparison.
+      actual: an RGB-encoded PIL.Image that is the actual result.
 
     Raises:
-      cloud_bucket.NotFoundError: if the given test_name is not found.
+      cloud_bucket.NotFoundError: if the given expectation is not found.
     """
-    test = self.GetTest(test_run, test_name)
-    if not image_tools.SameImage(actual, test.expected, mask=test.mask):
+    expectation_tuple = self.GetExpectation(expectation)
+    if not image_tools.SameImage(
+        actual, expectation_tuple.expected, mask=expectation_tuple.mask):
       self.UploadImage(
-          GetFailurePath(test_run, test_name, 'actual.png'), actual)
+          GetFailurePath(test_run, expectation, 'actual.png'), actual)
       diff, diff_pxls = image_tools.VisualizeImageDifferences(
-          test.expected, actual, mask=test.mask)
-      self.UploadImage(GetFailurePath(test_run, test_name, 'diff.png'), diff)
+          expectation_tuple.expected, actual, mask=expectation_tuple.mask)
+      self.UploadImage(GetFailurePath(test_run, expectation, 'diff.png'), diff)
       self.cloud_bucket.UploadFile(
-          GetFailurePath(test_run, test_name, 'info.txt'),
+          GetFailurePath(test_run, expectation, 'info.txt'),
           json.dumps({
             'different_pixels': diff_pxls,
             'fraction_different':
                 diff_pxls / float(actual.size[0] * actual.size[1])}),
           'application/json')
 
-  def GetTest(self, test_run, test_name):
-    """Returns given test from GS.
+  def GetExpectation(self, expectation):
+    """Returns the given expectation from GS.
 
     Args:
-      test_run: the name of the test_run.
-      test_name: the name of the test to get from GS.
+      expectation: the name of the expectation to get.
 
     Returns:
-      A named tuple: 'Test', containing two images: expected and mask.
+      A named tuple: 'Expectation', containing two images: expected and mask.
 
     Raises:
       cloud_bucket.NotFoundError: if the test is not found in GS.
     """
-    Test = collections.namedtuple('Test', ['expected', 'mask'])
-    return Test(self.DownloadImage(GetTestPath(test_run, test_name,
-                                               'expected.png')),
-                self.DownloadImage(GetTestPath(test_run, test_name,
-                                               'mask.png')))
+    Expectation = collections.namedtuple('Expectation', ['expected', 'mask'])
+    return Expectation(self.DownloadImage(GetExpectationPath(expectation,
+                                                             'expected.png')),
+                       self.DownloadImage(GetExpectationPath(expectation,
+                                                             'mask.png')))
 
-  def TestExists(self, test_run, test_name):
-    """Returns whether the given test exists in GS.
+  def ExpectationExists(self, expectation):
+    """Returns whether the given expectation exists in GS.
 
     Args:
-      test_run: the name of the test_run.
-      test_name: the name of the test to look for.
+      expectation: the name of the expectation to check.
 
     Returns:
       A boolean indicating whether the test exists.
     """
     expected_image_exists = self.cloud_bucket.FileExists(
-        GetTestPath(test_run, test_name, 'expected.png'))
+        GetExpectationPath(expectation, 'expected.png'))
     mask_image_exists = self.cloud_bucket.FileExists(
-        GetTestPath(test_run, test_name, 'mask.png'))
+        GetExpectationPath(expectation, 'mask.png'))
     return expected_image_exists and mask_image_exists
 
-  def FailureExists(self, test_run, test_name):
-    """Returns whether the given run exists in GS.
+  def FailureExists(self, test_run, expectation):
+    """Returns whether a failure for the expectation exists for the given run.
 
     Args:
       test_run: the name of the test_run.
-      test_name: the name of the test that failed.
+      expectation: the name of the expectation that failed.
 
     Returns:
       A boolean indicating whether the failure exists.
     """
     actual_image_exists = self.cloud_bucket.FileExists(
-        GetFailurePath(test_run, test_name, 'actual.png'))
-    test_exists = self.TestExists(test_run, test_name)
+        GetFailurePath(test_run, expectation, 'actual.png'))
+    test_exists = self.ExpectationExists(expectation)
     info_exists = self.cloud_bucket.FileExists(
-        GetFailurePath(test_run, test_name, 'info.txt'))
+        GetFailurePath(test_run, expectation, 'info.txt'))
     return test_exists and actual_image_exists and info_exists
 
-  def RemoveTest(self, test_run, test_name):
-    """Removes a Test from GS, and all associated failures with that test.
+  def RemoveExpectation(self, expectation):
+    """Removes an expectation and all associated failures with that test.
 
     Args:
-      test_run: the name of the test_run.
-      test_name: the name of the test to remove.
+      expectation: the name of the expectation to remove.
     """
     test_paths = self.cloud_bucket.GetAllPaths(
-        GetTestPath(test_run, test_name))
-    failure_paths = self.cloud_bucket.GetAllPaths(
-        GetFailurePath(test_run, test_name))
-    for path in itertools.chain(failure_paths, test_paths):
+        GetExpectationPath(expectation))
+    for path in test_paths:
       self.cloud_bucket.RemoveFile(path)
 
-  def UploadTestPinkOut(self, test_run, test_name, images, pint_out, rgb):
+  def UploadExpectationPinkOut(self, expectation, images, pint_out, rgb):
     """Uploads an ispy-test to GS with the pink_out workaround.
 
     Args:
-      test_name: The name of the test to be uploaded.
+      expectation: the name of the expectation to be uploaded.
       images: a json encoded list of base64 encoded png images.
       pink_out: an image.
       RGB: a json list representing the RGB values of a color to mask out.
@@ -214,29 +208,27 @@ class ISpyUtils(object):
     mask = image_tools.CreateMask(images)
     mask = image_tools.InflateMask(image_tools.CreateMask(images), 7)
     combined_mask = image_tools.AddMasks([mask, pink_out])
-    self.UploadImage(GetTestPath(test_run, test_name, 'expected.png'),
-                     images[0])
-    self.UploadImage(GetTestPath(test_run, test_name, 'mask.png'),
-                     combined_mask)
+    self.UploadImage(GetExpectationPath(expectation, 'expected.png'), images[0])
+    self.UploadImage(GetExpectationPath(expectation, 'mask.png'), combined_mask)
 
-  def RemoveFailure(self, test_run, test_name):
+  def RemoveFailure(self, test_run, expectation):
     """Removes a failure from GS.
 
     Args:
       test_run: the name of the test_run.
-      test_name: the test on which the failure to be removed occured.
+      expectation: the expectation on which the failure to be removed occured.
     """
     failure_paths = self.cloud_bucket.GetAllPaths(
-        GetFailurePath(test_run, test_name))
+        GetFailurePath(test_run, expectation))
     for path in failure_paths:
       self.cloud_bucket.RemoveFile(path)
 
-  def GetFailure(self, test_run, test_name):
+  def GetFailure(self, test_run, expectation):
     """Returns a given test failure's expected, diff, and actual images.
 
     Args:
       test_run: the name of the test_run.
-      test_name: the name of the test the result corresponds to.
+      expectation: the name of the expectation the result corresponds to.
 
     Returns:
       A named tuple: Failure containing three images: expected, diff, and
@@ -245,16 +237,14 @@ class ISpyUtils(object):
     Raises:
       cloud_bucket.NotFoundError: if the result is not found in GS.
     """
-    test_path = GetTestPath(test_run, test_name)
-    failure_path = GetFailurePath(test_run, test_name)
     expected = self.DownloadImage(
-        GetTestPath(test_run, test_name, 'expected.png'))
+        GetExpectationPath(expectation, 'expected.png'))
     actual = self.DownloadImage(
-        GetFailurePath(test_run, test_name, 'actual.png'))
+        GetFailurePath(test_run, expectation, 'actual.png'))
     diff = self.DownloadImage(
-        GetFailurePath(test_run, test_name, 'diff.png'))
+        GetFailurePath(test_run, expectation, 'diff.png'))
     info = json.loads(self.cloud_bucket.DownloadFile(
-        GetFailurePath(test_run, test_name, 'info.txt')))
+        GetFailurePath(test_run, expectation, 'info.txt')))
     Failure = collections.namedtuple(
         'Failure', ['expected', 'diff', 'actual', 'info'])
     return Failure(expected, diff, actual, info)

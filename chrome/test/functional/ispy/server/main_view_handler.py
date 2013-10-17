@@ -49,8 +49,8 @@ class MainViewHandler(webapp2.RequestHandler):
     """
     template = JINJA.get_template('list_view.html')
     data = {}
-    test_runs = set([re.match(r'^tests/([^/]+)/.+$', path).groups()[0]
-                   for path in ispy.GetAllPaths('tests/')])
+    test_runs = set([path.lstrip('/').split('/')[1] for path in
+                    ispy.GetAllPaths('failures/')])
     base_url = '/?test_run=%s'
     data['links'] = [(test_run, base_url % test_run) for test_run in test_runs]
     self.response.write(template.render(data))
@@ -67,13 +67,12 @@ class MainViewHandler(webapp2.RequestHandler):
     """
     paths = set([path for path in ispy.GetAllPaths('failures/' + test_run)
                  if path.endswith('actual.png')])
-    rows = [self._CreateRow(test_run, path, ispy)
-            for path in paths]
+    rows = [self._CreateRow(test_run, path, ispy) for path in paths]
     if rows:
       # Function that sorts by the different_pixels field in the failure-info.
-      def _Sorter(x, y):
-        return cmp(y['info']['fraction_different'],
-                   x['info']['fraction_different'])
+      def _Sorter(a, b):
+        return cmp(b['percent_different'],
+                   a['percent_different'])
       template = JINJA.get_template('main_view.html')
       self.response.write(
           template.render({'comparisons': sorted(rows, _Sorter),
@@ -98,16 +97,15 @@ class MainViewHandler(webapp2.RequestHandler):
         in the main_view html template.
     """
     res = {}
-    pattern = r'^failures/%s/([^/]+)/.+$' % test_run
-    res['test_name'] = re.match(
-        pattern, path).groups()[0]
+    res['expectation'] = path.lstrip('/').split('/')[2]
     res['test_run'] = test_run
     res['info'] = json.loads(ispy.cloud_bucket.DownloadFile(
-        ispy_utils.GetFailurePath(res['test_run'], res['test_name'],
+        ispy_utils.GetFailurePath(res['test_run'], res['expectation'],
                                   'info.txt')))
-    expected = ispy_utils.GetTestPath(test_run, res['test_name'],
-                                      'expected.png')
-    diff = ispy_utils.GetFailurePath(test_run, res['test_name'], 'diff.png')
+    expected = ispy_utils.GetExpectationPath(
+        res['expectation'], 'expected.png')
+    diff = ispy_utils.GetFailurePath(test_run, res['expectation'], 'diff.png')
+    res['percent_different'] = res['info']['fraction_different'] * 100
     res['expected_path'] = expected
     res['diff_path'] = diff
     res['actual_path'] = path
