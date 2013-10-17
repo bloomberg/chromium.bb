@@ -293,8 +293,12 @@ public abstract class TabBase implements NavigationClient {
      */
     public void reload() {
         // TODO(dtrainor): Should we try to rebuild the ContentView if it's frozen?
-        ContentViewCore contentViewCore = getContentViewCore();
-        if (contentViewCore != null) contentViewCore.reload();
+        if (mContentViewCore != null) mContentViewCore.reload();
+    }
+
+    /** Stop the current navigation. */
+    public void stopLoading() {
+        if (mContentViewCore != null) mContentViewCore.stopLoading();
     }
 
     /**
