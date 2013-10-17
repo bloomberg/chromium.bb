@@ -29,8 +29,6 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/geometry/FloatRect.h"
 
-#define SKIA_MAX_PATTERN_SIZE 32767
-
 namespace WebCore {
 
 void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
@@ -46,13 +44,15 @@ void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect&
     destContext->fillRect(FloatRect(FloatPoint(), m_size));
 }
 
-void GradientGeneratedImage::drawPatternWithoutCache(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode)
+void GradientGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
+    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode, const IntSize& repeatSpacing)
 {
+    float stepX = srcRect.width() + repeatSpacing.width();
+    float stepY = srcRect.height() + repeatSpacing.height();
     int firstColumn = static_cast<int>(floorf((((destRect.x() - phase.x()) / scale.width()) - srcRect.x()) / srcRect.width()));
     int firstRow = static_cast<int>(floorf((((destRect.y() - phase.y()) / scale.height())  - srcRect.y()) / srcRect.height()));
     for (int i = firstColumn; ; ++i) {
-        float dstX = (srcRect.x() + i * srcRect.width()) * scale.width() + phase.x();
+        float dstX = (srcRect.x() + i * stepX) * scale.width() + phase.x();
         // assert that first column encroaches left edge of dstRect.
         ASSERT(i > firstColumn || dstX <= destRect.x());
         ASSERT(i == firstColumn || dstX > destRect.x());
@@ -71,11 +71,11 @@ void GradientGeneratedImage::drawPatternWithoutCache(GraphicsContext* destContex
         FloatRect tileDstRect;
         tileDstRect.setX(dstX);
         tileDstRect.setWidth(dstMaxX - dstX);
-        visibleSrcRect.setX((tileDstRect.x() - phase.x()) / scale.width() - i * srcRect.width());
+        visibleSrcRect.setX((tileDstRect.x() - phase.x()) / scale.width() - i * stepX);
         visibleSrcRect.setWidth(tileDstRect.width() / scale.width());
 
         for (int j = firstRow; ; j++) {
-            float dstY = (srcRect.y() + j * srcRect.height()) * scale.height() + phase.y();
+            float dstY = (srcRect.y() + j * stepY) * scale.height() + phase.y();
             // assert that first row encroaches top edge of dstRect.
             ASSERT(j > firstRow || dstY <= destRect.y());
             ASSERT(j == firstRow || dstY > destRect.y());
@@ -92,61 +92,11 @@ void GradientGeneratedImage::drawPatternWithoutCache(GraphicsContext* destContex
 
             tileDstRect.setY(dstY);
             tileDstRect.setHeight(dstMaxY - dstY);
-            visibleSrcRect.setY((tileDstRect.y() - phase.y()) / scale.height() - j * srcRect.height());
+            visibleSrcRect.setY((tileDstRect.y() - phase.y()) / scale.height() - j * stepY);
             visibleSrcRect.setHeight(tileDstRect.height() / scale.height());
             draw(destContext, tileDstRect, visibleSrcRect, compositeOp, blendMode);
         }
     }
-}
-
-void GradientGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode blendMode, const IntSize& repeatSpacing)
-{
-    // Allow the generator to provide visually-equivalent tiling parameters for better performance.
-    IntSize adjustedSize = m_size;
-    FloatRect adjustedSrcRect = srcRect;
-
-    m_gradient->adjustParametersForTiledDrawing(adjustedSize, adjustedSrcRect);
-
-    if (adjustedSize.width() > SKIA_MAX_PATTERN_SIZE || adjustedSize.height() > SKIA_MAX_PATTERN_SIZE) {
-        // Workaround to fix crbug.com/241486
-        // SkBitmapProcShader is unable to handle cached tiles >= 32k pixels high or wide.
-        drawPatternWithoutCache(destContext, srcRect, scale, phase, compositeOp, destRect, blendMode);
-        return;
-    }
-
-    // Factor in the destination context's scale to generate at the best resolution.
-    // FIXME: No need to get the full CTM here, we just need the scale.
-    AffineTransform destContextCTM = destContext->getCTM(GraphicsContext::DefinitelyIncludeDeviceScale);
-    float xScale = fabs(destContextCTM.xScale());
-    float yScale = fabs(destContextCTM.yScale());
-    FloatSize scaleWithoutCTM(scale.width() / xScale, scale.height() / yScale);
-    adjustedSrcRect.scale(xScale, yScale);
-
-    unsigned generatorHash = m_gradient->hash();
-
-    if (!m_cachedImageBuffer || m_cachedGeneratorHash != generatorHash || m_cachedAdjustedSize != adjustedSize || !destContext->isCompatibleWithBuffer(m_cachedImageBuffer.get())) {
-        m_cachedImageBuffer = destContext->createCompatibleBuffer(adjustedSize, m_gradient->hasAlpha());
-        if (!m_cachedImageBuffer)
-            return;
-
-        // Fill with the generated image.
-        m_cachedImageBuffer->context()->setFillGradient(m_gradient);
-        m_cachedImageBuffer->context()->fillRect(FloatRect(FloatPoint(), adjustedSize));
-
-        m_cachedGeneratorHash = generatorHash;
-        m_cachedAdjustedSize = adjustedSize;
-    }
-
-    // Tile the image buffer into the context.
-    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, scaleWithoutCTM, phase, compositeOp, destRect, blendMode, repeatSpacing);
-    m_cacheTimer.restart();
-}
-
-void GradientGeneratedImage::invalidateCacheTimerFired(DeferrableOneShotTimer<GradientGeneratedImage>*)
-{
-    m_cachedImageBuffer.clear();
-    m_cachedAdjustedSize = IntSize();
 }
 
 }

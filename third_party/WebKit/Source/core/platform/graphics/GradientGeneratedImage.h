@@ -30,13 +30,10 @@
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "platform/Timer.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
-
-static const int generatedImageCacheClearDelay = 1;
 
 class GradientGeneratedImage : public GeneratedImage {
 public:
@@ -47,7 +44,6 @@ public:
 
     virtual ~GradientGeneratedImage()
     {
-        m_cacheTimer.stop();
     }
 
 protected:
@@ -57,24 +53,13 @@ protected:
         const FloatSize&, const FloatPoint&, CompositeOperator,
         const FloatRect&, BlendMode, const IntSize& repeatSpacing) OVERRIDE;
 
-    void drawPatternWithoutCache(GraphicsContext*, const FloatRect&, const FloatSize&,
-        const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode);
-
-    void invalidateCacheTimerFired(DeferrableOneShotTimer<GradientGeneratedImage>*);
-
     GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
         : m_gradient(generator)
-        , m_cacheTimer(this, &GradientGeneratedImage::invalidateCacheTimerFired, generatedImageCacheClearDelay)
     {
         m_size = size;
     }
 
     RefPtr<Gradient> m_gradient;
-
-    OwnPtr<ImageBuffer> m_cachedImageBuffer;
-    DeferrableOneShotTimer<GradientGeneratedImage> m_cacheTimer;
-    IntSize m_cachedAdjustedSize;
-    unsigned m_cachedGeneratorHash;
 };
 
 }

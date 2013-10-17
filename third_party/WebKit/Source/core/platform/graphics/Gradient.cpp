@@ -35,10 +35,6 @@
 #include "third_party/skia/include/core/SkColorShader.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/StringHasher.h"
-
-using WTF::pairIntHash;
 
 namespace WebCore {
 
@@ -51,7 +47,6 @@ Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
     , m_aspectRatio(1)
     , m_stopsSorted(false)
     , m_spreadMethod(SpreadMethodPad)
-    , m_cachedHash(0)
     , m_drawInPMColorSpace(false)
 {
 }
@@ -65,35 +60,12 @@ Gradient::Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r
     , m_aspectRatio(aspectRatio)
     , m_stopsSorted(false)
     , m_spreadMethod(SpreadMethodPad)
-    , m_cachedHash(0)
     , m_drawInPMColorSpace(false)
 {
 }
 
 Gradient::~Gradient()
 {
-}
-
-void Gradient::adjustParametersForTiledDrawing(IntSize& size, FloatRect& srcRect)
-{
-    if (m_radial)
-        return;
-
-    if (srcRect.isEmpty())
-        return;
-
-    if (m_p0.x() == m_p1.x()) {
-        size.setWidth(1);
-        srcRect.setWidth(1);
-        srcRect.setX(0);
-        return;
-    }
-    if (m_p0.y() != m_p1.y())
-        return;
-
-    size.setHeight(1);
-    srcRect.setHeight(1);
-    srcRect.setY(0);
 }
 
 void Gradient::addColorStop(float value, const Color& color)
@@ -107,8 +79,6 @@ void Gradient::addColorStop(float value, const Color& color)
 
     m_stopsSorted = false;
     m_gradient.clear();
-
-    invalidateHash();
 }
 
 void Gradient::addColorStop(const Gradient::ColorStop& stop)
@@ -117,8 +87,6 @@ void Gradient::addColorStop(const Gradient::ColorStop& stop)
 
     m_stopsSorted = false;
     m_gradient.clear();
-
-    invalidateHash();
 }
 
 static inline bool compareStops(const Gradient::ColorStop& a, const Gradient::ColorStop& b)
@@ -137,8 +105,6 @@ void Gradient::sortStopsIfNecessary()
         return;
 
     std::stable_sort(m_stops.begin(), m_stops.end(), compareStops);
-
-    invalidateHash();
 }
 
 bool Gradient::hasAlpha() const
@@ -160,8 +126,6 @@ void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod)
         return;
 
     m_spreadMethod = spreadMethod;
-
-    invalidateHash();
 }
 
 void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace)
@@ -171,8 +135,6 @@ void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace)
 
     m_drawInPMColorSpace = drawInPMColorSpace;
     m_gradient.clear();
-
-    invalidateHash();
 }
 
 void Gradient::setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation)
@@ -183,50 +145,6 @@ void Gradient::setGradientSpaceTransform(const AffineTransform& gradientSpaceTra
     m_gradientSpaceTransformation = gradientSpaceTransformation;
     if (m_gradient)
         m_gradient->setLocalMatrix(affineTransformToSkMatrix(m_gradientSpaceTransformation));
-
-    invalidateHash();
-}
-
-unsigned Gradient::hash() const
-{
-    if (m_cachedHash)
-        return m_cachedHash;
-
-    struct {
-        AffineTransform gradientSpaceTransformation;
-        FloatPoint p0;
-        FloatPoint p1;
-        float r0;
-        float r1;
-        float aspectRatio;
-        GradientSpreadMethod spreadMethod;
-        bool radial;
-        bool drawInPMColorSpace;
-    } parameters;
-
-    // StringHasher requires that the memory it hashes be a multiple of two in size.
-    COMPILE_ASSERT(!(sizeof(parameters) % 2), Gradient_parameters_size_should_be_multiple_of_two);
-    COMPILE_ASSERT(!(sizeof(ColorStop) % 2), Color_stop_size_should_be_multiple_of_two);
-
-    // Ensure that any padding in the struct is zero-filled, so it will not affect the hash value.
-    memset(&parameters, 0, sizeof(parameters));
-
-    parameters.gradientSpaceTransformation = m_gradientSpaceTransformation;
-    parameters.p0 = m_p0;
-    parameters.p1 = m_p1;
-    parameters.r0 = m_r0;
-    parameters.r1 = m_r1;
-    parameters.aspectRatio = m_aspectRatio;
-    parameters.spreadMethod = m_spreadMethod;
-    parameters.radial = m_radial;
-    parameters.drawInPMColorSpace = m_drawInPMColorSpace;
-
-    unsigned parametersHash = StringHasher::hashMemory(&parameters, sizeof(parameters));
-    unsigned stopHash = StringHasher::hashMemory(m_stops.data(), m_stops.size() * sizeof(ColorStop));
-
-    m_cachedHash = pairIntHash(parametersHash, stopHash);
-
-    return m_cachedHash;
 }
 
 static inline U8CPU F2B(float x)

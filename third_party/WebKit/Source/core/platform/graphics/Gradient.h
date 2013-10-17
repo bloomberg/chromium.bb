@@ -84,7 +84,6 @@ public:
             return;
 
         m_p0 = p;
-        invalidateHash();
     }
 
     void setP1(const FloatPoint& p)
@@ -93,7 +92,6 @@ public:
             return;
 
         m_p1 = p;
-        invalidateHash();
     }
 
     float startRadius() const { return m_r0; }
@@ -105,7 +103,6 @@ public:
             return;
 
         m_r0 = r;
-        invalidateHash();
     }
 
     void setEndRadius(float r)
@@ -114,7 +111,6 @@ public:
             return;
 
         m_r1 = r;
-        invalidateHash();
     }
 
     float aspectRatio() const { return m_aspectRatio; }
@@ -129,11 +125,6 @@ public:
     GradientSpreadMethod spreadMethod() { return m_spreadMethod; }
     void setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation);
     AffineTransform gradientSpaceTransform() { return m_gradientSpaceTransformation; }
-
-    void adjustParametersForTiledDrawing(IntSize&, FloatRect&);
-
-    unsigned hash() const;
-    void invalidateHash() { m_cachedHash = 0; }
 
 private:
     Gradient(const FloatPoint& p0, const FloatPoint& p1);
@@ -156,8 +147,6 @@ private:
     AffineTransform m_gradientSpaceTransformation;
 
     bool m_drawInPMColorSpace;
-
-    mutable unsigned m_cachedHash;
 
     RefPtr<SkShader> m_gradient;
 };
