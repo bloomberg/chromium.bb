@@ -655,6 +655,23 @@ TEST(XFormTest, SetRotate2D) {
   }
 }
 
+TEST(XFormTest, TransformPointWithExtremePerspective) {
+  Point3F point(1.f, 1.f, 1.f);
+  Transform perspective;
+  perspective.ApplyPerspectiveDepth(1.f);
+  Point3F transformed = point;
+  perspective.TransformPoint(&transformed);
+  EXPECT_EQ(point.ToString(), transformed.ToString());
+
+  transformed = point;
+  perspective.MakeIdentity();
+  perspective.ApplyPerspectiveDepth(1.1f);
+  perspective.TransformPoint(&transformed);
+  EXPECT_FLOAT_EQ(11.f, transformed.x());
+  EXPECT_FLOAT_EQ(11.f, transformed.y());
+  EXPECT_FLOAT_EQ(11.f, transformed.z());
+}
+
 TEST(XFormTest, BlendTranslate) {
   Transform from;
   for (int i = -5; i < 15; ++i) {

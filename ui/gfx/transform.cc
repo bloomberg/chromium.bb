@@ -480,8 +480,9 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
 
   xform.mapMScalars(p);
 
-  if (p[3] != 1 && abs(p[3]) > 0) {
-    point->SetPoint(p[0] / p[3], p[1] / p[3], p[2]/ p[3]);
+  if (p[3] != SK_MScalar1 && p[3] != 0.f) {
+    float w_inverse = SK_MScalar1 / p[3];
+    point->SetPoint(p[0] * w_inverse, p[1] * w_inverse, p[2] * w_inverse);
   } else {
     point->SetPoint(p[0], p[1], p[2]);
   }
