@@ -443,52 +443,8 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
     } else if (name == mediagroupAttr)
         setMediaGroup(value);
-    else if (name == onabortAttr)
-        setAttributeEventListener(EventTypeNames::abort, createAttributeEventListener(this, name, value));
     else if (name == onbeforeloadAttr)
         setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
-    else if (name == oncanplayAttr)
-        setAttributeEventListener(EventTypeNames::canplay, createAttributeEventListener(this, name, value));
-    else if (name == oncanplaythroughAttr)
-        setAttributeEventListener(EventTypeNames::canplaythrough, createAttributeEventListener(this, name, value));
-    else if (name == ondurationchangeAttr)
-        setAttributeEventListener(EventTypeNames::durationchange, createAttributeEventListener(this, name, value));
-    else if (name == onemptiedAttr)
-        setAttributeEventListener(EventTypeNames::emptied, createAttributeEventListener(this, name, value));
-    else if (name == onendedAttr)
-        setAttributeEventListener(EventTypeNames::ended, createAttributeEventListener(this, name, value));
-    else if (name == onerrorAttr)
-        setAttributeEventListener(EventTypeNames::error, createAttributeEventListener(this, name, value));
-    else if (name == onloadeddataAttr)
-        setAttributeEventListener(EventTypeNames::loadeddata, createAttributeEventListener(this, name, value));
-    else if (name == onloadedmetadataAttr)
-        setAttributeEventListener(EventTypeNames::loadedmetadata, createAttributeEventListener(this, name, value));
-    else if (name == onloadstartAttr)
-        setAttributeEventListener(EventTypeNames::loadstart, createAttributeEventListener(this, name, value));
-    else if (name == onpauseAttr)
-        setAttributeEventListener(EventTypeNames::pause, createAttributeEventListener(this, name, value));
-    else if (name == onplayAttr)
-        setAttributeEventListener(EventTypeNames::play, createAttributeEventListener(this, name, value));
-    else if (name == onplayingAttr)
-        setAttributeEventListener(EventTypeNames::playing, createAttributeEventListener(this, name, value));
-    else if (name == onprogressAttr)
-        setAttributeEventListener(EventTypeNames::progress, createAttributeEventListener(this, name, value));
-    else if (name == onratechangeAttr)
-        setAttributeEventListener(EventTypeNames::ratechange, createAttributeEventListener(this, name, value));
-    else if (name == onseekedAttr)
-        setAttributeEventListener(EventTypeNames::seeked, createAttributeEventListener(this, name, value));
-    else if (name == onseekingAttr)
-        setAttributeEventListener(EventTypeNames::seeking, createAttributeEventListener(this, name, value));
-    else if (name == onstalledAttr)
-        setAttributeEventListener(EventTypeNames::stalled, createAttributeEventListener(this, name, value));
-    else if (name == onsuspendAttr)
-        setAttributeEventListener(EventTypeNames::suspend, createAttributeEventListener(this, name, value));
-    else if (name == ontimeupdateAttr)
-        setAttributeEventListener(EventTypeNames::timeupdate, createAttributeEventListener(this, name, value));
-    else if (name == onvolumechangeAttr)
-        setAttributeEventListener(EventTypeNames::volumechange, createAttributeEventListener(this, name, value));
-    else if (name == onwaitingAttr)
-        setAttributeEventListener(EventTypeNames::waiting, createAttributeEventListener(this, name, value));
     else
         HTMLElement::parseAttribute(name, value);
 }
