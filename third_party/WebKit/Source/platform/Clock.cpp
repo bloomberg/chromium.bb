@@ -46,14 +46,12 @@ void Clock::setCurrentTime(double time)
 
 double Clock::currentTime() const
 {
-    if (m_running)
-        m_lastTime = now();
-    return ((m_lastTime - m_startTime) * m_rate) + m_offset;
+    return currentDelta() + m_offset;
 }
 
 void Clock::setPlayRate(double rate)
 {
-    m_offset = now();
+    m_offset += currentDelta();
     m_lastTime = m_startTime = now();
     m_rate = rate;
 }
@@ -72,7 +70,7 @@ void Clock::stop()
     if (!m_running)
         return;
 
-    m_offset = now();
+    m_offset += currentDelta();
     m_lastTime = m_startTime = now();
     m_running = false;
 }
@@ -80,6 +78,13 @@ void Clock::stop()
 double Clock::now() const
 {
     return WTF::currentTime();
+}
+
+double Clock::currentDelta() const
+{
+    if (m_running)
+        m_lastTime = now();
+    return (m_lastTime - m_startTime) * m_rate;
 }
 
 PassOwnPtr<Clock> Clock::create()

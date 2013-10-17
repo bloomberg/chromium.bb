@@ -49,4 +49,13 @@ TEST(Clock, StartStop)
     EXPECT_FALSE(clock->isRunning());
 }
 
+TEST(Clock, SetCurrentTimeThenStartStop)
+{
+    OwnPtr<Clock> clock = Clock::create();
+    clock->setCurrentTime(10.0);
+    clock->start();
+    clock->stop();
+    EXPECT_TRUE(clock->currentTime() >= 10.0);
+}
+
 } // namespace

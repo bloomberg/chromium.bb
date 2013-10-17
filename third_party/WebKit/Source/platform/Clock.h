@@ -49,6 +49,7 @@ public:
 private:
     Clock();
     double now() const;
+    double currentDelta() const;
 
     bool m_running;
     double m_rate;
