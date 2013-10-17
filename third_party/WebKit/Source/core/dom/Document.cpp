@@ -435,7 +435,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_isSrcdocDocument(false)
     , m_isMobileDocument(false)
     , m_mayDisplaySeamlesslyWithParent(false)
-    , m_renderer(0)
+    , m_renderView(0)
     , m_eventQueue(DocumentEventQueue::create(this))
     , m_weakFactory(this)
     , m_contextDocument(initializer.contextDocument())
@@ -1964,11 +1964,11 @@ void Document::attach(const AttachContext& context)
     ASSERT(!confusingAndOftenMisusedAttached());
     ASSERT(!m_axObjectCache || this != topDocument());
 
-    // Create the rendering tree
-    setRenderer(new RenderView(this));
-    renderView()->setIsInWindow(true);
+    m_renderView = new RenderView(this);
+    setRenderer(m_renderView);
 
-    m_renderer->setStyle(StyleResolver::styleForDocument(*this));
+    m_renderView->setIsInWindow(true);
+    m_renderView->setStyle(StyleResolver::styleForDocument(*this));
     view()->updateCompositingLayersAfterStyleChange();
 
     m_styleResolverThrowawayTimer.startRepeating(60);
@@ -2001,7 +2001,7 @@ void Document::detach(const AttachContext& context)
     if (svgExtensions())
         accessSVGExtensions()->pauseAnimations();
 
-    RenderObject* render = renderer();
+    RenderView* renderView = m_renderView;
 
     documentWillBecomeInactive();
 
@@ -2015,6 +2015,7 @@ void Document::detach(const AttachContext& context)
 
     // indicate destruction mode, i.e. confusingAndOftenMisusedAttached() but renderer == 0
     setRenderer(0);
+    m_renderView = 0;
 
     m_hoverNode = 0;
     m_focusedElement = 0;
@@ -2028,8 +2029,8 @@ void Document::detach(const AttachContext& context)
 
     clearStyleResolver();
 
-    if (render)
-        render->destroy();
+    if (renderView)
+        renderView->destroy();
 
     if (m_touchEventTargets && m_touchEventTargets->size() && parentDocument())
         parentDocument()->didRemoveEventTargetNode(this);

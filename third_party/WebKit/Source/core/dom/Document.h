@@ -544,17 +544,7 @@ public:
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     void prepareForDestruction();
 
-    // Implemented in RenderView.h to avoid a cyclic header dependency this just
-    // returns renderer so callers can avoid verbose casts.
-    RenderView* renderView() const;
-
-    // Shadow the implementations on Node to provide faster access for documents.
-    RenderObject* renderer() const { return m_renderer; }
-    void setRenderer(RenderObject* renderer)
-    {
-        m_renderer = renderer;
-        Node::setRenderer(renderer);
-    }
+    RenderView* renderView() const { return m_renderView; }
 
     AXObjectCache* existingAXObjectCache() const;
     AXObjectCache* axObjectCache() const;
@@ -1329,7 +1319,7 @@ private:
     // http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-seamless
     bool m_mayDisplaySeamlesslyWithParent;
 
-    RenderObject* m_renderer;
+    RenderView* m_renderView;
     RefPtr<DocumentEventQueue> m_eventQueue;
 
     WeakPtrFactory<Document> m_weakFactory;
