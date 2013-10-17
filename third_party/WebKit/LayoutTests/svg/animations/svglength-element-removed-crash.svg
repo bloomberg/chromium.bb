@@ -19,29 +19,14 @@ function load() {
 
     var rect = document.getElementsByTagName("rect")[0];
     var baseValReference = rect.x.baseVal;
-    
-    // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
-    GCController.collect();
-    // FIXME(crbug.com/307614): one call to GCController.collect() should be enough.
-    GCController.collect();
-    var originalLiveElements = window.internals.numberOfLiveNodes();
 
     rect.parentNode.removeChild(rect);
-    rect = 0;
-    
+    rect = null;
+
     GCController.collect();
-    
-    // The rest of this test should FAIL without requiring gmalloc if this test has regressed.
-    var liveDelta = window.internals.numberOfLiveNodes() - originalLiveElements;
-    
-    // Make sure that the <rect> is still alive; if it's not, liveDelta will be -1.
-    if (liveDelta == 0)
-        log(" PASS");
-    else
-        log(" FAIL: " + liveDelta + " extra live node(s)");
-        
+
     // This line will crash with gmalloc if this test has regressed.
-    log(" x = " + baseValReference.value);
+    log("PASS x = " + baseValReference.value);
 }
 ]]>
 </script>
