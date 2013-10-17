@@ -20,6 +20,8 @@
         '../components/components.gyp:translate_language_detection',
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
+        '../media/cast/cast.gyp:cast_config',
+        '../media/cast/cast_sender.gyp:cast_sender',
         '../net/net.gyp:net',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',

@@ -20,7 +20,7 @@
       ], # source
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/net/net.gyp:*',
+        '<(DEPTH)/net/net.gyp:net',
       ],
     },
   ],

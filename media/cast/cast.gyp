@@ -30,7 +30,7 @@
           'dependencies': [
             'cast_config',
             'cast_receiver.gyp:cast_receiver_impl',
-            'cast_sender.gyp:cast_sender_impl',
+            'cast_sender.gyp:cast_sender',
             '<(DEPTH)/base/base.gyp:run_all_unittests',
             '<(DEPTH)/net/net.gyp:net',
             '<(DEPTH)/testing/gmock.gyp:gmock',

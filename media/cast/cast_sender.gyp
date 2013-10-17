@@ -10,7 +10,7 @@
   ],
   'targets': [
     {
-      'target_name': 'cast_sender_impl',
+      'target_name': 'cast_sender',
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)/',
