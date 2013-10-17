@@ -327,10 +327,10 @@ NodeRareData* Node::rareData() const
     return static_cast<NodeRareData*>(m_data.m_rareData);
 }
 
-NodeRareData* Node::ensureRareData()
+NodeRareData& Node::ensureRareData()
 {
     if (hasRareData())
-        return rareData();
+        return *rareData();
 
     NodeRareData* data;
     if (isElementNode())
@@ -341,7 +341,7 @@ NodeRareData* Node::ensureRareData()
 
     m_data.m_rareData = data;
     setFlag(HasRareDataFlag);
-    return data;
+    return *data;
 }
 
 void Node::clearRareData()
@@ -380,7 +380,7 @@ void Node::setNodeValue(const String&)
 
 PassRefPtr<NodeList> Node::childNodes()
 {
-    return ensureRareData()->ensureNodeLists()->ensureChildNodeList(this);
+    return ensureRareData().ensureNodeLists()->ensureChildNodeList(this);
 }
 
 Node *Node::lastDescendant() const
@@ -1203,8 +1203,8 @@ PassRefPtr<NodeList> Node::getElementsByTagName(const AtomicString& localName)
         return 0;
 
     if (document().isHTMLDocument())
-        return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLTagNodeList>(this, HTMLTagNodeListType, localName);
-    return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<TagNodeList>(this, TagNodeListType, localName);
+        return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<HTMLTagNodeList>(this, HTMLTagNodeListType, localName);
+    return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<TagNodeList>(this, TagNodeListType, localName);
 }
 
 PassRefPtr<NodeList> Node::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
@@ -1215,23 +1215,23 @@ PassRefPtr<NodeList> Node::getElementsByTagNameNS(const AtomicString& namespaceU
     if (namespaceURI == starAtom)
         return getElementsByTagName(localName);
 
-    return ensureRareData()->ensureNodeLists()->addCacheWithQualifiedName(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localName);
+    return ensureRareData().ensureNodeLists()->addCacheWithQualifiedName(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localName);
 }
 
 PassRefPtr<NodeList> Node::getElementsByName(const String& elementName)
 {
-    return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<NameNodeList>(this, NameNodeListType, elementName);
+    return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<NameNodeList>(this, NameNodeListType, elementName);
 }
 
 PassRefPtr<NodeList> Node::getElementsByClassName(const String& classNames)
 {
-    return ensureRareData()->ensureNodeLists()->addCacheWithName<ClassNodeList>(this, ClassNodeListType, classNames);
+    return ensureRareData().ensureNodeLists()->addCacheWithName<ClassNodeList>(this, ClassNodeListType, classNames);
 }
 
 PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name)
 {
     ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
-    return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<RadioNodeList>(this, RadioNodeListType, name);
+    return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<RadioNodeList>(this, RadioNodeListType, name);
 }
 
 PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& es)
@@ -2160,7 +2160,7 @@ void Node::getRegisteredMutationObserversOfType(HashMap<MutationObserver*, Mutat
 void Node::registerMutationObserver(MutationObserver* observer, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
 {
     MutationObserverRegistration* registration = 0;
-    Vector<OwnPtr<MutationObserverRegistration> >& registry = ensureRareData()->ensureMutationObserverData()->registry;
+    Vector<OwnPtr<MutationObserverRegistration> >& registry = ensureRareData().ensureMutationObserverData()->registry;
     for (size_t i = 0; i < registry.size(); ++i) {
         if (registry[i]->observer() == observer) {
             registration = registry[i].get();
@@ -2197,7 +2197,7 @@ void Node::unregisterMutationObserver(MutationObserverRegistration* registration
 
 void Node::registerTransientMutationObserver(MutationObserverRegistration* registration)
 {
-    ensureRareData()->ensureMutationObserverData()->transientRegistry.add(registration);
+    ensureRareData().ensureMutationObserverData()->transientRegistry.add(registration);
 }
 
 void Node::unregisterTransientMutationObserver(MutationObserverRegistration* registration)
@@ -2478,7 +2478,7 @@ unsigned Node::connectedSubframeCount() const
 void Node::incrementConnectedSubframeCount(unsigned amount)
 {
     ASSERT(isContainerNode());
-    ensureRareData()->incrementConnectedSubframeCount(amount);
+    ensureRareData().incrementConnectedSubframeCount(amount);
 }
 
 void Node::decrementConnectedSubframeCount(unsigned amount)

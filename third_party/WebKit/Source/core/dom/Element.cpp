@@ -235,9 +235,9 @@ inline ElementRareData* Element::elementRareData() const
     return static_cast<ElementRareData*>(rareData());
 }
 
-inline ElementRareData* Element::ensureElementRareData()
+inline ElementRareData& Element::ensureElementRareData()
 {
-    return static_cast<ElementRareData*>(ensureRareData());
+    return static_cast<ElementRareData&>(ensureRareData());
 }
 
 void Element::clearTabIndexExplicitlyIfNeeded()
@@ -248,7 +248,7 @@ void Element::clearTabIndexExplicitlyIfNeeded()
 
 void Element::setTabIndexExplicitly(short tabIndex)
 {
-    ensureElementRareData()->setTabIndexExplicitly(tabIndex);
+    ensureElementRareData().setTabIndexExplicitly(tabIndex);
 }
 
 bool Element::supportsFocus() const
@@ -375,12 +375,12 @@ void Element::setBooleanAttribute(const QualifiedName& name, bool value)
 
 NamedNodeMap* Element::attributes() const
 {
-    ElementRareData* rareData = const_cast<Element*>(this)->ensureElementRareData();
-    if (NamedNodeMap* attributeMap = rareData->attributeMap())
+    ElementRareData& rareData = const_cast<Element*>(this)->ensureElementRareData();
+    if (NamedNodeMap* attributeMap = rareData.attributeMap())
         return attributeMap;
 
-    rareData->setAttributeMap(NamedNodeMap::create(const_cast<Element*>(this)));
-    return rareData->attributeMap();
+    rareData.setAttributeMap(NamedNodeMap::create(const_cast<Element*>(this)));
+    return rareData.attributeMap();
 }
 
 ActiveAnimations* Element::activeAnimations() const
@@ -392,10 +392,10 @@ ActiveAnimations* Element::activeAnimations() const
 
 ActiveAnimations* Element::ensureActiveAnimations()
 {
-    ElementRareData* rareData = ensureElementRareData();
-    if (!elementRareData()->activeAnimations())
-        rareData->setActiveAnimations(adoptPtr(new ActiveAnimations()));
-    return rareData->activeAnimations();
+    ElementRareData& rareData = ensureElementRareData();
+    if (!rareData.activeAnimations())
+        rareData.setActiveAnimations(adoptPtr(new ActiveAnimations()));
+    return rareData.activeAnimations();
 }
 
 bool Element::hasActiveAnimations() const
@@ -1675,7 +1675,7 @@ ElementShadow* Element::shadow() const
 
 ElementShadow& Element::ensureShadow()
 {
-    return ensureElementRareData()->ensureShadow();
+    return ensureElementRareData().ensureShadow();
 }
 
 void Element::didAffectSelector(AffectedSelectorMask mask)
@@ -2125,7 +2125,7 @@ void Element::focus(bool restorePreviousSelection, FocusDirection direction)
     doc.updateLayoutIgnorePendingStylesheets();
 
     if (!isFocusable()) {
-        ensureElementRareData()->setNeedsFocusAppearanceUpdateSoonAfterAttach(true);
+        ensureElementRareData().setNeedsFocusAppearanceUpdateSoonAfterAttach(true);
         return;
     }
 
@@ -2291,7 +2291,7 @@ void Element::setMinimumSizeForResizing(const LayoutSize& size)
 {
     if (!hasRareData() && size == defaultMinimumSizeForResizing())
         return;
-    ensureElementRareData()->setMinimumSizeForResizing(size);
+    ensureElementRareData().setMinimumSizeForResizing(size);
 }
 
 RenderStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
@@ -2315,66 +2315,66 @@ RenderStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
         // document tree and figure out when to destroy the computed style for such elements.
         return 0;
 
-    ElementRareData* data = ensureElementRareData();
-    if (!data->computedStyle())
-        data->setComputedStyle(document().styleForElementIgnoringPendingStylesheets(this));
-    return pseudoElementSpecifier ? data->computedStyle()->getCachedPseudoStyle(pseudoElementSpecifier) : data->computedStyle();
+    ElementRareData& rareData = ensureElementRareData();
+    if (!rareData.computedStyle())
+        rareData.setComputedStyle(document().styleForElementIgnoringPendingStylesheets(this));
+    return pseudoElementSpecifier ? rareData.computedStyle()->getCachedPseudoStyle(pseudoElementSpecifier) : rareData.computedStyle();
 }
 
 void Element::setStyleAffectedByEmpty()
 {
-    ensureElementRareData()->setStyleAffectedByEmpty(true);
+    ensureElementRareData().setStyleAffectedByEmpty(true);
 }
 
 void Element::setChildrenAffectedByHover(bool value)
 {
     if (value || hasRareData())
-        ensureElementRareData()->setChildrenAffectedByHover(value);
+        ensureElementRareData().setChildrenAffectedByHover(value);
 }
 
 void Element::setChildrenAffectedByActive(bool value)
 {
     if (value || hasRareData())
-        ensureElementRareData()->setChildrenAffectedByActive(value);
+        ensureElementRareData().setChildrenAffectedByActive(value);
 }
 
 void Element::setChildrenAffectedByDrag(bool value)
 {
     if (value || hasRareData())
-        ensureElementRareData()->setChildrenAffectedByDrag(value);
+        ensureElementRareData().setChildrenAffectedByDrag(value);
 }
 
 void Element::setChildrenAffectedByFirstChildRules()
 {
-    ensureElementRareData()->setChildrenAffectedByFirstChildRules(true);
+    ensureElementRareData().setChildrenAffectedByFirstChildRules(true);
 }
 
 void Element::setChildrenAffectedByLastChildRules()
 {
-    ensureElementRareData()->setChildrenAffectedByLastChildRules(true);
+    ensureElementRareData().setChildrenAffectedByLastChildRules(true);
 }
 
 void Element::setChildrenAffectedByDirectAdjacentRules()
 {
-    ensureElementRareData()->setChildrenAffectedByDirectAdjacentRules(true);
+    ensureElementRareData().setChildrenAffectedByDirectAdjacentRules(true);
 }
 
 void Element::setChildrenAffectedByForwardPositionalRules()
 {
-    ensureElementRareData()->setChildrenAffectedByForwardPositionalRules(true);
+    ensureElementRareData().setChildrenAffectedByForwardPositionalRules(true);
 }
 
 void Element::setChildrenAffectedByBackwardPositionalRules()
 {
-    ensureElementRareData()->setChildrenAffectedByBackwardPositionalRules(true);
+    ensureElementRareData().setChildrenAffectedByBackwardPositionalRules(true);
 }
 
 void Element::setChildIndex(unsigned index)
 {
-    ElementRareData* rareData = ensureElementRareData();
+    ElementRareData& rareData = ensureElementRareData();
     if (RenderStyle* style = renderStyle())
         style->setUnique();
-    rareData->setChildIndex(index);
+    rareData.setChildIndex(index);
 }
 
 bool Element::hasFlagsSetDuringStylingOfChildren() const
@@ -2453,7 +2453,7 @@ unsigned Element::rareDataChildIndex() const
 
 void Element::setIsInCanvasSubtree(bool isInCanvasSubtree)
 {
-    ensureElementRareData()->setIsInCanvasSubtree(isInCanvasSubtree);
+    ensureElementRareData().setIsInCanvasSubtree(isInCanvasSubtree);
 }
 
 bool Element::isInCanvasSubtree() const
@@ -2466,7 +2466,7 @@ void Element::setIsInsideRegion(bool value)
     if (value == isInsideRegion())
         return;
 
-    ensureElementRareData()->setIsInsideRegion(value);
+    ensureElementRareData().setIsInsideRegion(value);
 }
 
 bool Element::isInsideRegion() const
@@ -2476,7 +2476,7 @@ bool Element::isInsideRegion() const
 
 void Element::setRegionOversetState(RegionOversetState state)
 {
-    ensureElementRareData()->setRegionOversetState(state);
+    ensureElementRareData().setRegionOversetState(state);
 }
 
 RegionOversetState Element::regionOversetState() const
@@ -2585,7 +2585,7 @@ void Element::createPseudoElement(PseudoId pseudoId)
         document().addToTopLayer(element.get(), this);
     element->attach();
 
-    ensureElementRareData()->setPseudoElement(pseudoId, element.release());
+    ensureElementRareData().setPseudoElement(pseudoId, element.release());
 }
 
 PseudoElement* Element::pseudoElement(PseudoId pseudoId) const
@@ -2615,18 +2615,18 @@ bool Element::webkitMatchesSelector(const String& selector, ExceptionState& es)
 
 DOMTokenList* Element::classList()
 {
-    ElementRareData* data = ensureElementRareData();
-    if (!data->classList())
-        data->setClassList(ClassList::create(this));
-    return data->classList();
+    ElementRareData& rareData = ensureElementRareData();
+    if (!rareData.classList())
+        rareData.setClassList(ClassList::create(this));
+    return rareData.classList();
 }
 
 DOMStringMap* Element::dataset()
 {
-    ElementRareData* data = ensureElementRareData();
-    if (!data->dataset())
-        data->setDataset(DatasetDOMStringMap::create(this));
-    return data->dataset();
+    ElementRareData& rareData = ensureElementRareData();
+    if (!rareData.dataset())
+        rareData.setDataset(DatasetDOMStringMap::create(this));
+    return rareData.dataset();
 }
 
 KURL Element::getURLAttribute(const QualifiedName& name) const
@@ -2702,7 +2702,7 @@ bool Element::containsFullScreenElement() const
 
 void Element::setContainsFullScreenElement(bool flag)
 {
-    ensureElementRareData()->setContainsFullScreenElement(flag);
+    ensureElementRareData().setContainsFullScreenElement(flag);
     setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
@@ -2728,7 +2728,7 @@ void Element::setIsInTopLayer(bool inTopLayer)
 {
     if (isInTopLayer() == inTopLayer)
         return;
-    ensureElementRareData()->setIsInTopLayer(inTopLayer);
+    ensureElementRareData().setIsInTopLayer(inTopLayer);
 
     // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under RenderView according to its
     // top layer position, or in its usual place if not in the top layer.
@@ -3009,15 +3009,15 @@ PassRefPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType ty
     RefPtr<HTMLCollection> collection;
     if (type == TableRows) {
         ASSERT(hasTagName(tableTag));
-        return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLTableRowsCollection>(this, type);
+        return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<HTMLTableRowsCollection>(this, type);
     } else if (type == SelectOptions) {
         ASSERT(hasTagName(selectTag));
-        return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLOptionsCollection>(this, type);
+        return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<HTMLOptionsCollection>(this, type);
     } else if (type == FormControls) {
         ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
-        return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLFormControlsCollection>(this, type);
+        return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<HTMLFormControlsCollection>(this, type);
     }
-    return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLCollection>(this, type);
+    return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<HTMLCollection>(this, type);
 }
 
 static void scheduleLayerUpdateCallback(Node* node)
@@ -3049,7 +3049,7 @@ void Element::setSavedLayerScrollOffset(const IntSize& size)
 {
     if (size.isZero() && !hasRareData())
         return;
-    ensureElementRareData()->setSavedLayerScrollOffset(size);
+    ensureElementRareData().setSavedLayerScrollOffset(size);
 }
 
 PassRefPtr<Attr> Element::attrIfExists(const QualifiedName& name)
@@ -3186,7 +3186,7 @@ void Element::createUniqueElementData()
 
 InputMethodContext* Element::inputMethodContext()
 {
-    return ensureElementRareData()->ensureInputMethodContext(toHTMLElement(this));
+    return ensureElementRareData().ensureInputMethodContext(toHTMLElement(this));
 }
 
 bool Element::hasPendingResources() const
@@ -3196,12 +3196,12 @@ bool Element::hasPendingResources() const
 
 void Element::setHasPendingResources()
 {
-    ensureElementRareData()->setHasPendingResources(true);
+    ensureElementRareData().setHasPendingResources(true);
 }
 
 void Element::clearHasPendingResources()
 {
-    ensureElementRareData()->setHasPendingResources(false);
+    ensureElementRareData().setHasPendingResources(false);
 }
 
 struct PresentationAttributeCacheKey {

@@ -872,7 +872,7 @@ void ContainerNode::setHovered(bool over)
 
 PassRefPtr<HTMLCollection> ContainerNode::children()
 {
-    return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLCollection>(this, NodeChildren);
+    return ensureRareData().ensureNodeLists()->addCacheWithAtomicName<HTMLCollection>(this, NodeChildren);
 }
 
 Element* ContainerNode::firstElementChild() const
