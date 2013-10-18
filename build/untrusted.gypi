@@ -225,18 +225,20 @@
                 'tool_name': 'newlib',
                 'out_newlib64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-64 nexe',
+                 'variables': {
+                   'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
-                    '>(source_list_newlib64)',
+                    '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
@@ -264,19 +266,21 @@
              'variables': {
                 'tool_name': 'newlib',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                 'out_newlib64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-64 nlib',
+                 'variables': {
+                   'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
-                    '>(source_list_newlib64)',
+                    '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
@@ -305,18 +309,20 @@
                 'tool_name': 'irt',
                 'out_newlib64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build IRT x86-64 nexe',
+                 'variables': {
+                   'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
-                    '>(source_list_newlib64)',
+                    '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
@@ -345,19 +351,21 @@
              'variables': {
                 'tool_name': 'irt',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                 'out_newlib64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
                {
                  'action_name': 'build irt x86-64 nlib',
+                 'variables': {
+                   'source_list_newlib64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
-                    '>(source_list_newlib64)',
+                    '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
@@ -387,18 +395,20 @@
                 'tool_name': 'newlib',
                 'out_newlib32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-32 nexe',
+                 'variables': {
+                   'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
-                    '>(source_list_newlib32)',
+                    '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
@@ -427,18 +437,20 @@
                 'tool_name': 'newlib',
                 'out_newlib32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build newlib x86-32 nlib',
+                 'variables': {
+                   'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
-                    '>(source_list_newlib32)',
+                    '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
@@ -467,18 +479,20 @@
                 'tool_name': 'irt',
                 'out_newlib32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build IRT x86-32 nexe',
+                 'variables': {
+                   'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
-                    '>(source_list_newlib32)',
+                    '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
@@ -507,18 +521,20 @@
                 'tool_name': 'irt',
                 'out_newlib32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
                 'objdir_newlib32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build IRT x86-32 nlib',
+                 'variables': {
+                   'source_list_newlib32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
-                    '>(source_list_newlib32)',
+                    '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
@@ -553,18 +569,20 @@
                'tool_name': 'newlib',
                'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
                'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-               'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
                 'action_name': 'build newlib arm nexe',
+                'variables': {
+                  'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps_newlib_arm)',
-                   '>(source_list_newlib_arm)',
+                   '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
@@ -593,18 +611,20 @@
               'tool_name': 'newlib',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-              'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
                 'action_name': 'build newlib arm nlib',
+                 'variables': {
+                   'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                 },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps_newlib_arm)',
-                   '>(source_list_newlib_arm)',
+                   '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
@@ -633,18 +653,20 @@
                'tool_name': 'irt',
                'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
                'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-               'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
                 'action_name': 'build IRT arm nexe',
+                'variables': {
+                  'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps_newlib_arm)',
-                   '>(source_list_newlib_arm)',
+                   '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
@@ -673,18 +695,20 @@
               'tool_name': 'irt',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-              'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
                 'action_name': 'build IRT arm nlib',
+                'variables': {
+                  'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps_newlib_arm)',
-                   '>(source_list_newlib_arm)',
+                   '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
@@ -715,18 +739,20 @@
               'tool_name': 'newlib',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
               'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-              'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
             },
             'actions': [
               {
                 'action_name': 'build newlib arm nlib (via pnacl)',
+                'variables': {
+                  'source_list_newlib_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                   '>@(extra_deps_newlib_arm)',
-                  '>(source_list_newlib_arm)',
+                  '^(source_list_newlib_arm)',
                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
                 ],
                 'outputs': ['>(out_newlib_arm)'],
@@ -761,18 +787,20 @@
                'tool_name': 'newlib',
                'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips.nexe',
                'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
-               'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
             },
             'actions': [
               {
                 'action_name': 'build newlib mips nexe',
+                'variables': {
+                  'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps_newlib_mips)',
-                   '>(source_list_newlib_mips)',
+                   '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
@@ -801,18 +829,20 @@
               'tool_name': 'newlib',
               'out_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
               'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
-              'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
             },
             'actions': [
               {
                 'action_name': 'build newlib mips nlib',
+                'variables': {
+                  'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                    '>@(extra_deps_newlib_mips)',
-                   '>(source_list_newlib_mips)',
+                   '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
@@ -841,18 +871,20 @@
                'tool_name': 'irt',
                'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips.nexe',
                'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
-               'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
             },
             'actions': [
               {
                 'action_name': 'build IRT mips nexe',
+                'variables': {
+                  'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                    '>@(extra_deps_newlib_mips)',
-                   '>(source_list_newlib_mips)',
+                   '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
@@ -881,18 +913,20 @@
               'tool_name': 'irt',
               'out_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
               'objdir_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)-mips/>(_target_name)',
-              'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
             },
             'actions': [
               {
                 'action_name': 'build IRT mips nlib',
+                'variables': {
+                  'source_list_newlib_mips%': '^|(<(tool_name)-mips.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                    '>@(extra_deps_newlib_mips)',
-                   '>(source_list_newlib_mips)',
+                   '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
@@ -927,18 +961,20 @@
                 'tool_name': 'glibc',
                 'out_glibc64%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x64.nexe',
                 'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_glibc64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-64 nexe',
+                 'variables': {
+                   'source_list_glibc64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
-                    '>(source_list_glibc64)',
+                    '^(source_list_glibc64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
@@ -967,19 +1003,20 @@
                 'tool_name': 'glibc',
                 'out_glibc32%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_x32.nexe',
                 'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_glibc32%': '<(tool_name)-x86-32.>(_target_name).source_list.gypcmd',
-                'source_list_glibc32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-32 nexe',
+                 'variables': {
+                   'source_list_glibc32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
-                    '>(source_list_glibc32)',
+                    '^(source_list_glibc32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
@@ -1007,19 +1044,21 @@
              'variables': {
                 'tool_name': 'glibc',
                 'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
-                'source_list_glibc64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                 'out_glibc64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-64 nlib',
+                 'variables': {
+                   'source_list_glibc64%': '^|(<(tool_name)-x86-64.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
-                    '>(source_list_glibc64)',
+                    '^(source_list_glibc64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
@@ -1048,18 +1087,20 @@
                 'tool_name': 'glibc',
                 'out_glibc32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
                 'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32/>(_target_name)',
-                'source_list_glibc32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-32 nlib',
+                 'variables': {
+                   'source_list_glibc32%': '^|(<(tool_name)-x86-32.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
-                    '>(source_list_glibc32)',
+                    '^(source_list_glibc32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
@@ -1087,19 +1128,21 @@
              'variables': {
                 'tool_name': 'glibc',
                 'objdir_glibc64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64-so/>(_target_name)',
-                'source_list_glibc64%': '^|(<(tool_name)-x86-64-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                 'out_glibc64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nso_target)',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-64 nso',
+                 'variables': {
+                   'source_list_glibc64%': '^|(<(tool_name)-x86-64-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
-                    '>(source_list_glibc64)',
+                    '^(source_list_glibc64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
@@ -1128,18 +1171,20 @@
                 'tool_name': 'glibc',
                 'out_glibc32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nso_target)',
                 'objdir_glibc32%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-32-so/>(_target_name)',
-                'source_list_glibc32%': '^|(<(tool_name)-x86-32-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
              'actions': [
                {
                  'action_name': 'build glibc x86-32 nso',
+                 'variables': {
+                   'source_list_glibc32%': '^|(<(tool_name)-x86-32-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
-                    '>(source_list_glibc32)',
+                    '^(source_list_glibc32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
@@ -1211,7 +1256,6 @@
           'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
           'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
           'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-          'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
           'link_flags': [
             '-O3',
           ],
@@ -1220,13 +1264,16 @@
         'actions': [
           {
             'action_name': 'build newlib pexe',
+            'variables': {
+              'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+            },
             'msvs_cygwin_shell': 0,
             'description': 'building >(out_pnacl_newlib)',
             'inputs': [
               '<(DEPTH)/native_client/build/build_nexe.py',
               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
               '>@(extra_deps_pnacl_newlib)',
-              '>(source_list_pnacl_newlib)',
+              '^(source_list_pnacl_newlib)',
               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
             ],
             'outputs': ['>(out_pnacl_newlib)'],
@@ -1330,19 +1377,21 @@
         'variables': {
           'tool_name': 'pnacl_newlib',
           'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)-pnacl/>(_target_name)',
-          'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
           'out_pnacl_newlib%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib/>(nlib_target)',
         },
         'actions': [
           {
             'action_name': 'build newlib plib',
+            'variables': {
+              'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+            },
             'msvs_cygwin_shell': 0,
             'description': 'building >(out_pnacl_newlib)',
             'inputs': [
               '<(DEPTH)/native_client/build/build_nexe.py',
               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
               '>@(extra_deps_pnacl_newlib)',
-              '>(source_list_pnacl_newlib)',
+              '^(source_list_pnacl_newlib)',
               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
             ],
             'outputs': ['>(out_pnacl_newlib)'],
