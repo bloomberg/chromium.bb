@@ -32,7 +32,7 @@
       ],
     },
     {
-      'target_name': 'web_modal_test',
+      'target_name': 'web_modal_test_support',
       'type': 'static_library',
       'dependencies': [
         'web_modal',

@@ -2653,7 +2653,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../components/components.gyp:web_modal_test',
+            '../components/components.gyp:web_modal_test_support',
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_test_support',
           ],
