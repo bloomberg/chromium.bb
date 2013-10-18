@@ -48,20 +48,21 @@ camera.util.setAnimationClass = function(
  * Waits for animation completion and calls the callback.
  *
  * @param {HTMLElement} animationElement Element to be animated.
- * @param {number} timeout Timeout for completion.
+ * @param {number} timeout Timeout for completion. 0 for no timeout.
  * @param {function()} onCompletion Completion callback.
  */
 camera.util.waitForAnimationCompletion = function(
     animationElement, timeout, onCompletion) {
   var completed = false;
-  var onAnimationCompleted = function() {
-    if (completed)
+  var onAnimationCompleted = function(opt_event) {
+    if (completed || (opt_event && opt_event.target != animationElement))
       return;
     completed = true;
     animationElement.removeEventListener(onAnimationCompleted);
     onCompletion();
   };
-  setTimeout(onAnimationCompleted, timeout);
+  if (timeout)
+      setTimeout(onAnimationCompleted, timeout);
   animationElement.addEventListener('webkitAnimationEnd', onAnimationCompleted);
 };
 
@@ -69,20 +70,21 @@ camera.util.waitForAnimationCompletion = function(
  * Waits for transition completion and calls the callback.
  *
  * @param {HTMLElement} transitionElement Element to be transitioned.
- * @param {number} timeout Timeout for completion.
+ * @param {number} timeout Timeout for completion. 0 for no timeout.
  * @param {function()} onCompletion Completion callback.
  */
 camera.util.waitForTransitionCompletion = function(
     transitionElement, timeout, onCompletion) {
   var completed = false;
-  var onTransitionCompleted = function() {
-    if (completed)
+  var onTransitionCompleted = function(opt_event) {
+    if (completed || (opt_event && opt_event.target != transitionElement))
       return;
     completed = true;
     transitionElement.removeEventListener(onTransitionCompleted);
     onCompletion();
   };
-  setTimeout(onTransitionCompleted, timeout);
+  if (timeout)
+      setTimeout(onTransitionCompleted, timeout);
   transitionElement.addEventListener(
       'webkitTransitionEnd', onTransitionCompleted);
 };
@@ -92,9 +94,10 @@ camera.util.waitForTransitionCompletion = function(
  *
  * @param {HTMLElement} element Element to be visible.
  * @param {camera.util.SmoothScroller} scroller Scroller to be used.
- * @param {=boolean} opt_immediate True for immediate scroll.
+ * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
+ *     SMOOTH.
  */
-camera.util.ensureVisible = function(element, scroller, opt_immediate) {
+camera.util.ensureVisible = function(element, scroller, opt_mode) {
   var parent = scroller.element;
   var scrollLeft = parent.scrollLeft;
   var scrollTop = parent.scrollTop;
@@ -113,15 +116,7 @@ camera.util.ensureVisible = function(element, scroller, opt_immediate) {
     scrollLeft = Math.round(element.offsetLeft + element.offsetWidth * 1.5 -
         parent.offsetWidth);
   }
-  if (scrollTop != parent.scrollTop ||
-      scrollLeft != parent.scrollLeft) {
-    if (opt_immediate) {
-      parent.scrollLeft = scrollLeft;
-      parent.scrollTop = scrollTop;
-    } else {
-      scroller.scrollTo(scrollLeft, scrollTop);
-    }
-  }
+  scroller.scrollTo(scrollLeft, scrollTop, opt_mode);
 };
 
 /**
@@ -129,28 +124,17 @@ camera.util.ensureVisible = function(element, scroller, opt_immediate) {
  *
  * @param {HTMLElement} element Element to be visible.
  * @param {camera.util.SmoothScroller} scroller Scroller to be used.
- * @param {=boolean} opt_immediate True for immediate scroll.
+ * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
+ *     SMOOTH.
  */
-camera.util.scrollToCenter = function(element, scroller, opt_immediate) {
+camera.util.scrollToCenter = function(element, scroller, opt_mode) {
   var parent = scroller.element;
   var scrollLeft = Math.round(element.offsetLeft + element.offsetWidth / 2 -
     parent.offsetWidth / 2);
   var scrollTop = Math.round(element.offsetTop + element.offsetHeight / 2 -
     parent.offsetHeight / 2);
 
-  if (scrollTop != parent.scrollTop ||
-      scrollLeft != parent.scrollLeft) {
-    scroller.scrollTo(scrollLeft, scrollTop);
-  }
-  if (scrollTop != parent.scrollTop ||
-      scrollLeft != parent.scrollLeft) {
-    if (opt_immediate) {
-      parent.scrollLeft = scrollLeft;
-      parent.scrollTop = scrollTop;
-    } else {
-      scroller.scrollTo(scrollLeft, scrollTop);
-    }
-  }
+  scroller.scrollTo(scrollLeft, scrollTop, opt_mode);
 };
 
 /**
@@ -209,12 +193,15 @@ camera.util.StyleEffect.prototype.isActive = function() {
 };
 
 /**
- * Performs smooth scrolling of a scrollable dom element.
+ * Performs smooth scrolling of a scrollable DOM element using a accelerated
+ * CSS3 transform and transition for smooth animation.
  *
- * @param {HTMLElement} element Element to be scerolled.
+ * @param {HTMLElement} element Element to be scrolled.
+ * @param {HTMLElement} padder Element holding contents within the scrollable
+ *     element.
  * @constructor
  */
-camera.util.SmoothScroller = function(element) {
+camera.util.SmoothScroller = function(element, padder) {
   /**
    * @type {HTMLElement}
    * @private
@@ -222,97 +209,50 @@ camera.util.SmoothScroller = function(element) {
   this.element_ = element;
 
   /**
-   * Last value of scrollLeft and scrollTop to detect if a the scroll value
-   * has been changed externally while animating.
-   * @type {Array.<number>}
+   * @type {HTMLElement}
    * @private
    */
-  this.lastScrollPosition_ = null;
+  this.padder_ = padder;
 
   /**
-   * Current, not rounded scroll position when animating.
-   * @type {Array.<number>}
+   * @type {boolean}
    * @private
    */
-  this.currentPosition_ = null;
+  this.animating_ = false;
 
   /**
-   * Target position, set to the value passed to scrollTo().
-   * @type {Array.<number>}
+   * @type {number}
    * @private
    */
-  this.targetPosition_ = null;
+  this.animationId_ = 0;
 
   // End of properties. Seal the object.
   Object.seal(this);
 };
 
 /**
- * Speed of the scrolling animation. Between 0 (slow) and 1 (immediate). Must
- * be larger than 0.
- *
+ * Smooth scrolling animation duration in milliseconds.
  * @type {number}
  * @const
  */
-camera.util.SmoothScroller.SPEED = 0.1;
+camera.util.SmoothScroller.DURATION = 500;
+
+/**
+ * Mode of scrolling.
+ * @enum {number}
+ */
+camera.util.SmoothScroller.Mode = {
+  SMOOTH: 0,
+  INSTANT: 1
+};
 
 camera.util.SmoothScroller.prototype = {
   get element() {
     return this.element_;
   },
   get animating() {
-    return !!this.targetPosition_;
+    return this.animating_;
   }
-};
-
-/**
- * Animates one frame.
- * @private
- */
-camera.util.SmoothScroller.prototype.animate_ = function() {
-  var dx = (this.targetPosition_[0] - this.currentPosition_[0]);
-  var dy = (this.targetPosition_[1] - this.currentPosition_[1]);
-
-  // If the remaining distance is very small, then finish.
-  if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
-    this.element_.scrollLeft = Math.round(this.targetPosition_[0]);
-    this.element_.scrollTop = Math.round(this.targetPosition_[1]);
-    this.targetPosition_ = null;
-    return;
-  }
-
-  var previousPosition = this.currentPosition_.slice(0);
-  this.currentPosition_[0] += dx * camera.util.SmoothScroller.SPEED;
-  this.currentPosition_[1] += dy * camera.util.SmoothScroller.SPEED;
-
-  // Terminate the animation if interrupted by a manual scroll change.
-  if (this.element_.scrollLeft != this.lastScrollPosition_[0] ||
-      this.element_.scrollTop != this.lastScrollPosition_[1]) {
-    this.targetPosition_ = null;
-    return;
-  }
-
-  // Calculate the new values to be set.
-  var setX = Math.round(this.currentPosition_[0]);
-  var setY = Math.round(this.currentPosition_[1]);
-
-  // Apply the new values only if they are different than the previous ones.
-  this.element_.scrollLeft = setX;
-  this.element_.scrollTop = setY;
-
-  // Finish if the update didn't change anything, but should.
-  if (this.element_.scrollLeft != setX &&
-      setX != Math.round(previousPosition[0]) &&
-      this.element_.scrollTop != setY &&
-      setY != Math.round(previousPosition[1])) {
-    this.targetPosition_ = null;
-    return;
-  }
-
-  // Remember the last set position and continue the animation.
-  this.lastScrollPosition_[0] = this.element_.scrollLeft;
-  this.lastScrollPosition_[1] = this.element_.scrollTop;
-  webkitRequestAnimationFrame(this.animate_.bind(this));
 };
 
 /**
@@ -320,18 +260,70 @@ camera.util.SmoothScroller.prototype.animate_ = function() {
  *
  * @param {number} x X Target scrollLeft value.
  * @param {number} y Y Target scrollTop value.
+ * @param {camera.util.SmoothScroller.Mode=} opt_mode Scrolling mode. Default:
+ *     SMOOTH.
  */
-camera.util.SmoothScroller.prototype.scrollTo = function(x, y) {
-  var isAnimating = this.animating;
+camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
+  var mode = opt_mode || camera.util.SmoothScroller.Mode.SMOOTH;
 
-  this.targetPosition_ = [x, y];
-  this.lastScrollPosition_ =
-      [this.element_.scrollLeft, this.element_.scrollTop];
-  this.currentPosition_ = this.lastScrollPosition_.slice(0);
+  // Limit to the allowed values.
+  var x = Math.max(
+      0, Math.min(x, this.element_.scrollWidth - this.element_.offsetWidth));
+  var y = Math.max(
+      0, Math.min(y, this.element_.scrollHeight - this.element_.offsetHeight));
 
-  // It is not animating, then fire an animation frame.
-  if (!isAnimating)
-    this.animate_();
+  switch (mode) {
+    case camera.util.SmoothScroller.Mode.INSTANT:
+      // Cancel any current animations.
+      if (this.animating_) {
+        this.padder_.style.transition = '';
+        this.padder_.style.webkitTransform = '';
+        this.animationId_++;  // Invalidate the animation by increasing the id.
+        this.animating_ = false;
+      }
+
+      this.element_.scrollLeft = x;
+      this.element_.scrollTop = y;
+      break;
+
+    case camera.util.SmoothScroller.Mode.SMOOTH:
+      // Calculate translating offset using the accelerated CSS3 transform.
+      var dx = x - this.element_.scrollLeft;
+      var dy = y - this.element_.scrollTop;
+      this.padder_.style.transition = '-webkit-transform ' +
+          camera.util.SmoothScroller.DURATION + 'ms';
+      var transformString =
+          'translate(' + -dx + 'px, ' + -dy + 'px)';
+
+      // If nothing to scroll, then exit.
+      if (this.padder_.style.webkitTransform == transformString ||
+          (!dx && !dy)) {
+        return;
+      }
+
+      this.animating_ = true;
+
+      // Invalidate previous invocations.
+      var currentAnimationId = ++this.animationId_;
+      this.padder_.style.webkitTransform = transformString;
+
+      // Remove translation, and switch to scrollLeft/scrollTop when the
+      // animation is finished.
+      camera.util.waitForTransitionCompletion(
+          this.padder_,
+          0,
+          function() {
+            // Check if the animation got invalidated by a later scroll.
+            if (currentAnimationId != this.animationId_)
+              return;
+            this.element_.scrollLeft = x;
+            this.element_.scrollTop = y;
+            this.padder_.style.transition = '';
+            this.padder_.style.webkitTransform = '';
+            this.animating_ = false;
+          }.bind(this));
+      break;
+  }
 };
 
 /**
@@ -386,8 +378,8 @@ camera.util.Queue.prototype.continue_ = function() {
  * Tracks the mouse for click and move, and the touch screen for touches. If
  * any of these are detected, then the callback is called.
  *
- * @type {HTMLElement} element Element to be monitored.
- * @type {function()} callback Callback triggered on events detected.
+ * @param {HTMLElement} element Element to be monitored.
+ * @param {function()} callback Callback triggered on events detected.
  * @constructor
  */
 camera.util.PointerTracker = function(element, callback) {
@@ -422,7 +414,7 @@ camera.util.PointerTracker = function(element, callback) {
 /**
  * Handles the mouse down event.
  *
- * @type {Event} event Mouse down event.
+ * @param {Event} event Mouse down event.
  * @private
  */
 camera.util.PointerTracker.prototype.onMouseDown_ = function(event) {
@@ -433,7 +425,7 @@ camera.util.PointerTracker.prototype.onMouseDown_ = function(event) {
 /**
  * Handles the mouse move event.
  *
- * @type {Event} event Mouse move event.
+ * @param {Event} event Mouse move event.
  * @private
  */
 camera.util.PointerTracker.prototype.onMouseMove_ = function(event) {
@@ -452,7 +444,7 @@ camera.util.PointerTracker.prototype.onMouseMove_ = function(event) {
 /**
  * Handles the touch start event.
  *
- * @type {Event} event Touch start event.
+ * @param {Event} event Touch start event.
  * @private
  */
 camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
@@ -462,7 +454,7 @@ camera.util.PointerTracker.prototype.onTouchStart_ = function(event) {
 /**
  * Handles the touch move event.
  *
- * @type {Event} event Touch move event.
+ * @param {Event} event Touch move event.
  * @private
  */
 camera.util.PointerTracker.prototype.onTouchMove_ = function(event) {
@@ -470,20 +462,21 @@ camera.util.PointerTracker.prototype.onTouchMove_ = function(event) {
 };
 
 /**
- * Tracks scrolling and calls a callback, when scrolling is started and ended.
+ * Tracks scrolling and calls a callback, when scrolling is started and ended
+ * by either the scroller or the user.
  *
- * @param {HTMLElement} element Element to be tracked.
+ * @param {camera.util.SmoothScroller} scroller Scroller object to be tracked.
  * @param {function()} onScrollStarted Callback called when scrolling is
  *     started.
  * @param {function()} onScrollEnded Callback called when scrolling is ended.
  * @constructor
  */
-camera.util.ScrollTracker = function(element, onScrollStarted, onScrollEnded) {
+camera.util.ScrollTracker = function(scroller, onScrollStarted, onScrollEnded) {
   /**
-   * @type {HTMLElement}
+   * @type {camera.util.SmoothScroller}
    * @private
    */
-  this.element_ = element;
+  this.scroller_ = scroller;
 
   /**
    * @type {function()}
@@ -534,8 +527,10 @@ camera.util.ScrollTracker = function(element, onScrollStarted, onScrollEnded) {
   Object.seal(this);
 
   // Register event handlers.
-  this.element_.addEventListener('mousedown', this.onMouseDown_.bind(this));
-  this.element_.addEventListener('touchstart', this.onTouchStart_.bind(this));
+  this.scroller_.element.addEventListener(
+      'mousedown', this.onMouseDown_.bind(this));
+  this.scroller_.element.addEventListener(
+      'touchstart', this.onTouchStart_.bind(this));
   window.addEventListener('mouseup', this.onMouseUp_.bind(this));
   window.addEventListener('touchend', this.onTouchEnd_.bind(this));
 };
@@ -600,11 +595,12 @@ camera.util.ScrollTracker.prototype.stop = function() {
  * @private
  */
 camera.util.ScrollTracker.prototype.probe_ = function() {
-  var scrollLeft = this.element_.scrollLeft;
-  var scrollTop = this.element_.scrollTop;
+  var scrollLeft = this.scroller_.element.scrollLeft;
+  var scrollTop = this.scroller_.element.scrollTop;
 
   if (scrollLeft != this.lastScrollPosition_[0] ||
-      scrollTop != this.lastScrollPosition_[1]) {
+      scrollTop != this.lastScrollPosition_[1] ||
+      this.scroller_.animating) {
     if (!this.scrolling_)
       this.onScrollStarted_();
     this.scrolling_ = true;

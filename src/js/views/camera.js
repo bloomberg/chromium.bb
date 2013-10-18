@@ -185,7 +185,8 @@ camera.views.Camera = function(context) {
    * @private
    */
   this.scroller_ = new camera.util.SmoothScroller(
-      document.querySelector('#effects'));
+      document.querySelector('#effects'),
+      document.querySelector('#effects .padder'));
 
   /**
    * True if the window has been shown during startup. Used to avoid showing
@@ -305,7 +306,7 @@ camera.views.Camera.prototype.onLeave = function() {
  */
 camera.views.Camera.prototype.addEffect_ = function(effect) {
   // Create the preview on the ribbon.
-  var list = document.querySelector('#effects');
+  var list = document.querySelector('#effects .padder');
   var wrapper = document.createElement('div');
   wrapper.className = 'preview-canvas-wrapper';
   var canvas = fx.canvas();
