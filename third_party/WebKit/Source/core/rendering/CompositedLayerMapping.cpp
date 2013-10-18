@@ -715,7 +715,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         if (style->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
             clientBox.move(renderBox->verticalScrollbarWidth(), 0);
 
-        IntSize adjustedScrollOffset = m_owningLayer->adjustedScrollOffset();
+        IntSize adjustedScrollOffset = m_owningLayer->scrollableArea()->adjustedScrollOffset();
         m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location()));
         m_scrollingLayer->setSize(clientBox.size());
 

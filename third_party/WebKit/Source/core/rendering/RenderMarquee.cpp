@@ -302,7 +302,7 @@ void RenderMarquee::timerFired(Timer<RenderMarquee>*)
         bool positive = range > 0;
         int clientSize = (isHorizontal() ? clientWidth() : clientHeight());
         int increment = abs(intValueForLength(style()->marqueeIncrement(), clientSize));
-        int currentPos = (isHorizontal() ? layer()->scrollXOffset() : layer()->scrollYOffset());
+        int currentPos = (isHorizontal() ? layer()->scrollableArea()->scrollXOffset() : layer()->scrollableArea()->scrollYOffset());
         newPos =  currentPos + (addIncrement ? increment : -increment);
         if (positive)
             newPos = min(newPos, endPoint);

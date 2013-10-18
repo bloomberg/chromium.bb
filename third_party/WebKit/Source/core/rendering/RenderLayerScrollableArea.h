@@ -148,6 +148,8 @@ public:
     int verticalScrollbarWidth(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
     int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 
+    IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -157,7 +159,6 @@ private:
     void computeScrollDimensions();
 
     IntSize clampScrollOffset(const IntSize&) const;
-    IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
 
     void setScrollOffset(const IntSize& scrollOffset) { m_scrollOffset = scrollOffset; }
 

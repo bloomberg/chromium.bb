@@ -255,11 +255,11 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     // If our zoom factor changes and we have a defined scrollLeft/Top, we need to adjust that value into the
     // new zoomed coordinate space.
     if (hasOverflowClip() && oldStyle && newStyle && oldStyle->effectiveZoom() != newStyle->effectiveZoom() && layer()) {
-        if (int left = layer()->scrollXOffset()) {
+        if (int left = layer()->scrollableArea()->scrollXOffset()) {
             left = (left / oldStyle->effectiveZoom()) * newStyle->effectiveZoom();
             layer()->scrollableArea()->scrollToXOffset(left);
         }
-        if (int top = layer()->scrollYOffset()) {
+        if (int top = layer()->scrollableArea()->scrollYOffset()) {
             top = (top / oldStyle->effectiveZoom()) * newStyle->effectiveZoom();
             layer()->scrollableArea()->scrollToYOffset(top);
         }
@@ -475,12 +475,12 @@ int RenderBox::scrollHeight() const
 
 int RenderBox::scrollLeft() const
 {
-    return hasOverflowClip() ? layer()->scrollXOffset() : 0;
+    return hasOverflowClip() ? layer()->scrollableArea()->scrollXOffset() : 0;
 }
 
 int RenderBox::scrollTop() const
 {
-    return hasOverflowClip() ? layer()->scrollYOffset() : 0;
+    return hasOverflowClip() ? layer()->scrollableArea()->scrollYOffset() : 0;
 }
 
 void RenderBox::setScrollLeft(int newLeft)

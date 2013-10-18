@@ -2168,11 +2168,11 @@ void RenderLayer::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping
         restrictedByLineClamp = !renderer()->parent()->style()->lineClamp().isNone();
 
     if (renderer()->hasOverflowClip() && !restrictedByLineClamp) {
-        IntSize newScrollOffset = adjustedScrollOffset() + delta;
+        IntSize newScrollOffset = scrollableArea()->adjustedScrollOffset() + delta;
         m_scrollableArea->scrollToOffset(newScrollOffset, clamp);
 
         // If this layer can't do the scroll we ask the next layer up that can scroll to try
-        IntSize remainingScrollOffset = newScrollOffset - adjustedScrollOffset();
+        IntSize remainingScrollOffset = newScrollOffset - scrollableArea()->adjustedScrollOffset();
         if (!remainingScrollOffset.isZero() && renderer()->parent()) {
             if (RenderLayer* scrollableLayer = enclosingScrollableLayer())
                 scrollableLayer->scrollByRecursively(remainingScrollOffset, clamp);
@@ -2229,11 +2229,11 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
         LayoutRect layerBounds(0, 0, box->clientWidth(), box->clientHeight());
         LayoutRect r = getRectToExpose(layerBounds, localExposeRect, alignX, alignY);
 
-        IntSize clampedScrollOffset = m_scrollableArea->clampScrollOffset(adjustedScrollOffset() + toIntSize(roundedIntRect(r).location()));
-        if (clampedScrollOffset != adjustedScrollOffset()) {
-            IntSize oldScrollOffset = adjustedScrollOffset();
+        IntSize clampedScrollOffset = scrollableArea()->clampScrollOffset(scrollableArea()->adjustedScrollOffset() + toIntSize(roundedIntRect(r).location()));
+        if (clampedScrollOffset != scrollableArea()->adjustedScrollOffset()) {
+            IntSize oldScrollOffset = scrollableArea()->adjustedScrollOffset();
             m_scrollableArea->scrollToOffset(clampedScrollOffset);
-            IntSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
+            IntSize scrollOffsetDifference = scrollableArea()->adjustedScrollOffset() - oldScrollOffset;
             localExposeRect.move(-scrollOffsetDifference);
             newRect = LayoutRect(box->localToAbsoluteQuad(FloatQuad(FloatRect(localExposeRect)), UseTransforms).boundingBox());
         }
@@ -5261,18 +5261,6 @@ void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->addLayerHitTestRects(rects);
-}
-
-int RenderLayer::scrollXOffset() const
-{
-    // FIXME: We should add an ASSERT where it makes sense to force callers
-    // to check if we have a scrollable area before calling its methods.
-    return m_scrollableArea ? m_scrollableArea->scrollXOffset() : 0;
-}
-
-int RenderLayer::scrollYOffset() const
-{
-    return m_scrollableArea ? m_scrollableArea->scrollYOffset() : 0;
 }
 
 IntRect RenderLayer::scrollCornerAndResizerRect() const

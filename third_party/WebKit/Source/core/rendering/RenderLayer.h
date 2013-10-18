@@ -699,9 +699,6 @@ private:
 public:
     bool usesCompositedScrolling() const;
 
-    int scrollXOffset() const;
-    int scrollYOffset() const;
-    IntSize adjustedScrollOffset() const { return IntSize(scrollXOffset(), scrollYOffset()); }
     // End of ScrollableArea interface
 
 private:

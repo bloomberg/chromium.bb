@@ -5517,8 +5517,8 @@ int RenderBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
         // (the content inside them moves).  This matches WinIE as well, which just bottom-aligns them.
         // We also give up on finding a baseline if we have a vertical scrollbar, or if we are scrolled
         // vertically (e.g., an overflow:hidden block that has had scrollTop moved).
-        bool ignoreBaseline = (layer() && layer()->scrollableArea() && (isMarquee() || (direction == HorizontalLine ? (layer()->scrollableArea()->verticalScrollbar() || layer()->scrollYOffset())
-            : (layer()->scrollableArea()->horizontalScrollbar() || layer()->scrollXOffset())))) || (isWritingModeRoot() && !isRubyRun());
+        bool ignoreBaseline = (layer() && layer()->scrollableArea() && (isMarquee() || (direction == HorizontalLine ? (layer()->scrollableArea()->verticalScrollbar() || layer()->scrollableArea()->scrollYOffset())
+            : (layer()->scrollableArea()->horizontalScrollbar() || layer()->scrollableArea()->scrollXOffset())))) || (isWritingModeRoot() && !isRubyRun());
 
         int baselinePos = ignoreBaseline ? -1 : inlineBlockBaseline(direction);
 
