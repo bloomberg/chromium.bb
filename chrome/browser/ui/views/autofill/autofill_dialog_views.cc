@@ -484,12 +484,25 @@ AutofillDialogViews::ErrorBubble::ErrorBubble(views::View* anchor,
                                               views::View* anchor_container,
                                               const base::string16& message)
     : anchor_(anchor),
-      anchor_container_(anchor_container) {
+      anchor_container_(anchor_container),
+      show_above_anchor_(
+          anchor->GetClassName() == views::Combobox::kViewClassName) {
   DCHECK(anchor_container_->Contains(anchor));
-
   SetAnchorView(anchor_);
-  set_arrow(ShouldArrowGoOnTheRight() ? views::BubbleBorder::TOP_RIGHT :
-                                        views::BubbleBorder::TOP_LEFT);
+
+  // TODO(dbeam): currently we assume that combobox menus always show downward
+  // (which isn't true). If the invalid combobox is low enough on the screen,
+  // its menu will actually show upward and obscure the bubble. Figure out when
+  // this might happen and adjust |show_above_anchor_| accordingly. This is not
+  // that big of deal because it rarely happens in practice.
+  if (show_above_anchor_) {
+    set_arrow(ShouldArrowGoOnTheRight() ? views::BubbleBorder::BOTTOM_RIGHT :
+                                          views::BubbleBorder::BOTTOM_LEFT);
+  } else {
+    set_arrow(ShouldArrowGoOnTheRight() ? views::BubbleBorder::TOP_RIGHT :
+                                          views::BubbleBorder::TOP_LEFT);
+  }
+
   set_margins(gfx::Insets(kErrorBubbleVerticalMargin,
                           kErrorBubbleHorizontalMargin,
                           kErrorBubbleVerticalMargin,
@@ -540,6 +553,10 @@ gfx::Size AutofillDialogViews::ErrorBubble::GetPreferredSize() {
 gfx::Rect AutofillDialogViews::ErrorBubble::GetBubbleBounds() {
   gfx::Rect bounds = views::BubbleDelegateView::GetBubbleBounds();
   gfx::Rect anchor_bounds = anchor_->GetBoundsInScreen();
+
+  if (show_above_anchor_)
+    bounds.set_y(anchor_bounds.y() - GetBubbleFrameView()->height());
+
   anchor_bounds.Inset(-GetBubbleFrameView()->bubble_border()->GetInsets());
   bounds.set_x(ShouldArrowGoOnTheRight() ?
       anchor_bounds.right() - bounds.width() - kBubbleBorderVisibleWidth :

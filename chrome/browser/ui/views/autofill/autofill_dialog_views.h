@@ -227,6 +227,9 @@ class AutofillDialogViews : public AutofillDialogView,
     // right edge of |anchor_|. Must contain |anchor_|.
     views::View* const anchor_container_;  // Weak.
 
+    // Whether the bubble should be shown above the anchor (default is below).
+    const bool show_above_anchor_;
+
     DISALLOW_COPY_AND_ASSIGN(ErrorBubble);
   };
 
