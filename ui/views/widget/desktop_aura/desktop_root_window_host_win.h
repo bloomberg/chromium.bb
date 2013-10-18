@@ -48,6 +48,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   // Overridden from DesktopRootWindowHost:
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) OVERRIDE;
+  virtual void InitFocus(aura::Window* window) OVERRIDE;
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
@@ -98,7 +99,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void OnRootViewLayout() const OVERRIDE;
   virtual void OnNativeWidgetFocus() OVERRIDE;
   virtual void OnNativeWidgetBlur() OVERRIDE;
-  virtual bool IsAnimatingClosed() const OVERRIDE;
 
   // Overridden from aura::RootWindowHost:
   virtual void SetDelegate(aura::RootWindowHostDelegate* delegate) OVERRIDE;

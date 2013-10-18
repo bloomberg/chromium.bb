@@ -49,6 +49,7 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   // Caller takes ownership of returned RootWindow.
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) = 0;
+  virtual void InitFocus(aura::Window* window) = 0;
 
   // Creates and returns the Tooltip implementation to use. Return value is
   // owned by DesktopNativeWidgetAura and lives as long as
@@ -125,10 +126,6 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   // blurred.
   virtual void OnNativeWidgetFocus() = 0;
   virtual void OnNativeWidgetBlur() = 0;
-
-  // Returns true if the Widget was closed but is still showing because of
-  // animations.
-  virtual bool IsAnimatingClosed() const = 0;
 };
 
 }  // namespace views
