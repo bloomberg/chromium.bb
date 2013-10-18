@@ -109,6 +109,9 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {{attribute.v8_value_to_local_cpp_value}};
     {{attribute.cpp_setter}};
+    {% if attribute.cached_attribute_validation_method %}
+    info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("{{attribute.name}}")); // Invalidate the cached value.
+    {% endif %}
 }
 {% endmacro %}
 
