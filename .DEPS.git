@@ -313,7 +313,7 @@ deps_os = {
         'src/third_party/bison':
             Var('git_url') + '/chromium/deps/bison.git@083c9a45e4affdd5464ee2b224c2df649c6e26c3',
         'src/third_party/cygwin':
-            Var('git_url') + '/chromium/deps/cygwin.git@3711a17ddd629317f40676bdcc564f32fd7a4fd2',
+            Var('git_url') + '/chromium/deps/cygwin.git@b0a440065673ae5a93e51b6a1e4765b71aaad59d',
         'src/third_party/gnu_binutils':
             Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
         'src/third_party/gperf':
