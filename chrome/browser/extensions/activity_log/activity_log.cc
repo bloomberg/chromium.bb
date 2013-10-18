@@ -47,6 +47,10 @@ namespace {
 using extensions::Action;
 using constants::kArgUrlPlaceholder;
 
+// If DOM API methods start with this string, we flag them as being of type
+// DomActionType::XHR.
+const char kDomXhrPrefix[] = "XMLHttpRequest.";
+
 // Specifies a possible action to take to get an extracted URL in the ApiInfo
 // structure below.
 enum Transformation {
@@ -531,6 +535,18 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
   // Perform some preprocessing of the Action data: convert tab IDs to URLs and
   // mask out incognito URLs if appropriate.
   ExtractUrls(action, profile_);
+
+  // Mark DOM XHR requests as such, for easier processing later.
+  if (action->action_type() == Action::ACTION_DOM_ACCESS &&
+      StartsWithASCII(action->api_name(), kDomXhrPrefix, true) &&
+      action->other()) {
+    DictionaryValue* other = action->mutable_other();
+    int dom_verb = -1;
+    if (other->GetInteger(constants::kActionDomVerb, &dom_verb) &&
+        dom_verb == DomActionType::METHOD) {
+      other->SetInteger(constants::kActionDomVerb, DomActionType::XHR);
+    }
+  }
 
   if (uma_policy_)
     uma_policy_->ProcessAction(action);

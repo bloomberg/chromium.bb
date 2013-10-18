@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -110,12 +111,23 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
   static void RetrieveActions_ArgUrlExtraction(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    const DictionaryValue* other = NULL;
+    int dom_verb = -1;
+
     ASSERT_EQ(4U, i->size());
     scoped_refptr<Action> action = i->at(0);
     ASSERT_EQ("XMLHttpRequest.open", action->api_name());
     ASSERT_EQ("[\"POST\",\"\\u003Carg_url\\u003E\"]",
               ActivityLogPolicy::Util::Serialize(action->args()));
     ASSERT_EQ("http://api.google.com/", action->arg_url().spec());
+    // Test that the dom_verb field was changed to XHR (from METHOD).  This
+    // could be tested on all retrieved XHR actions but it would be redundant,
+    // so just test once.
+    other = action->other();
+    ASSERT_TRUE(other);
+    ASSERT_TRUE(other->GetInteger(activity_log_constants::kActionDomVerb,
+                                  &dom_verb));
+    ASSERT_EQ(DomActionType::XHR, dom_verb);
 
     action = i->at(1);
     ASSERT_EQ("XMLHttpRequest.open", action->api_name());
@@ -241,6 +253,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
   action->set_page_url(GURL("http://www.google.com/"));
   action->mutable_args()->AppendString("POST");
   action->mutable_args()->AppendString("http://api.google.com/");
+  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
+                                      DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit a DOM API call with a relative URL in the argument, which should be
@@ -252,6 +266,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
   action->set_page_url(GURL("http://www.google.com/"));
   action->mutable_args()->AppendString("POST");
   action->mutable_args()->AppendString("/api/");
+  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
+                                      DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit a DOM API call with a relative URL but no base page URL against
@@ -262,6 +278,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
                       "XMLHttpRequest.open");
   action->mutable_args()->AppendString("POST");
   action->mutable_args()->AppendString("/api/");
+  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
+                                      DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit an API call with an embedded URL.
