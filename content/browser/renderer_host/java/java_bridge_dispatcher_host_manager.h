@@ -48,7 +48,6 @@ class JavaBridgeDispatcherHostManager
   // WebContentsObserver overrides
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
   virtual void DocumentAvailableInMainFrame() OVERRIDE;
 
   void JavaBoundObjectCreated(const base::android::JavaRef<jobject>& object);

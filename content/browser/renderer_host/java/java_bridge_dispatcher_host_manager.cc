@@ -102,14 +102,6 @@ void JavaBridgeDispatcherHostManager::RenderViewDeleted(
   instances_.erase(render_view_host);
 }
 
-void JavaBridgeDispatcherHostManager::WebContentsDestroyed(
-    WebContents* web_contents) {
-  // When a WebContents is shutting down, it clears its observers before
-  // it kills all of its RenderViewHosts, so we won't get a call to
-  // RenderViewDeleted() for all RenderViewHosts.
-  instances_.clear();
-}
-
 void JavaBridgeDispatcherHostManager::DocumentAvailableInMainFrame() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Called when the window object has been cleared in the main frame.

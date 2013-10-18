@@ -148,8 +148,6 @@ void ClientMapEntryUpdater::RenderViewDeleted(RenderViewHost* rvh) {
 }
 
 void ClientMapEntryUpdater::WebContentsDestroyed(WebContents* web_contents) {
-  if (web_contents->GetRenderViewHost())
-    RenderViewDeleted(web_contents->GetRenderViewHost());
   delete this;
 }
 

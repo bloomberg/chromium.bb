@@ -414,6 +414,17 @@ WebContentsImpl::~WebContentsImpl() {
   }
 #endif
 
+  RenderViewHost* pending_rvh = render_manager_.pending_render_view_host();
+  if (pending_rvh) {
+    FOR_EACH_OBSERVER(WebContentsObserver,
+                      observers_,
+                      RenderViewDeleted(pending_rvh));
+  }
+
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    RenderViewDeleted(render_manager_.current_host()));
+
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     WebContentsImplDestroyed());

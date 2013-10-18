@@ -139,10 +139,6 @@ class RenderViewHostDestructionObserver
     process_manager_->UnregisterRenderViewHost(render_view_host);
   }
 
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
-    RenderViewDeleted(web_contents->GetRenderViewHost());
-  }
-
   ExtensionProcessManager* process_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostDestructionObserver);
