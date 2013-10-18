@@ -367,7 +367,7 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
                 });
       break;
     case 'Enter':
-      this.exportPicture_();
+      this.exportSelection_();
       break;
     case 'U+001B':
       this.context_.onGalleryRequested();
