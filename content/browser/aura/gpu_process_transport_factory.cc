@@ -435,8 +435,10 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
         base::Bind(&GpuProcessTransportFactory::
                         OnLostMainThreadSharedContextInsideCallback,
                    callback_factory_.GetWeakPtr()));
-    if (!shared_main_thread_contexts_->BindToCurrentThread())
+    if (!shared_main_thread_contexts_->BindToCurrentThread()) {
       shared_main_thread_contexts_ = NULL;
+      offscreen_compositor_contexts_ = NULL;
+    }
   }
   return shared_main_thread_contexts_;
 }
