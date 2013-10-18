@@ -64,6 +64,10 @@ var WEB_VIEW_EVENTS = {
      fields: ['processId', 'reason']
   },
   'loadabort': {
+    cancelable: true,
+    customHandler: function(webViewInternal, event, webViewEvent) {
+      webViewInternal.handleLoadAbortEvent_(event, webViewEvent);
+    },
     evt: CreateEvent('webview.onLoadAbort'),
     fields: ['url', 'isTopLevel', 'reason']
   },
@@ -634,6 +638,21 @@ WebViewInternal.prototype.setupEventProperty_ = function(eventName) {
  */
 WebViewInternal.prototype.getPermissionTypes_ = function() {
   return ['media', 'geolocation', 'pointerLock', 'download'];
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.handleLoadAbortEvent_ =
+    function(event, webViewEvent) {
+  var showWarningMessage = function(reason) {
+    var WARNING_MSG_LOAD_ABORTED = '<webview>: ' +
+        'The load has aborted with reason "%1".';
+    window.console.warn(WARNING_MSG_LOAD_ABORTED.replace('%1', reason));
+  };
+  if (this.webviewNode_.dispatchEvent(webViewEvent)) {
+    showWarningMessage(event.reason);
+  }
 };
 
 /**
