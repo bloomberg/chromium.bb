@@ -1010,8 +1010,6 @@ crbug.com/282496 [ Linux Release ] css3/filters/custom/composited/custom-filter-
 
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
 
-crbug.com/229910 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
-
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Pass ImageOnlyFailure ]
 crbug.com/284779 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass Crash ]
