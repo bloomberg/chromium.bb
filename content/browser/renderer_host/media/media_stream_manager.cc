@@ -752,14 +752,17 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
       }
 
       request->requester->StreamGenerated(label, audio_devices, video_devices);
-      request->ui_proxy->OnStarted(
-          base::Bind(&MediaStreamManager::StopStreamFromUI,
-                     base::Unretained(this), label));
       break;
     }
     default:
       NOTREACHED();
       break;
+  }
+
+  if (request->ui_proxy.get()) {
+    request->ui_proxy->OnStarted(
+        base::Bind(&MediaStreamManager::StopStreamFromUI,
+                   base::Unretained(this), label));
   }
 }
 
