@@ -124,10 +124,12 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
             case CSSPropertyBackgroundPositionX:
             case CSSPropertyBackgroundPositionY:
             case CSSPropertyBackgroundSize:
+            case CSSPropertyWebkitBackgroundSize:
                 fillLayer = new FillLayer(BackgroundFillLayer);
                 break;
             case CSSPropertyWebkitMaskPositionX:
             case CSSPropertyWebkitMaskPositionY:
+            case CSSPropertyWebkitMaskSize:
                 fillLayer = new FillLayer(MaskFillLayer);
                 break;
             default:
@@ -148,6 +150,8 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
             fillLayer->setYPosition(animatableValueToLength(values[i].get(), state));
             break;
         case CSSPropertyBackgroundSize:
+        case CSSPropertyWebkitBackgroundSize:
+        case CSSPropertyWebkitMaskSize:
             setFillSize<property>(fillLayer, values[i].get(), state);
             break;
         default:
@@ -170,6 +174,8 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
             fillLayer->clearYPosition();
             break;
         case CSSPropertyBackgroundSize:
+        case CSSPropertyWebkitBackgroundSize:
+        case CSSPropertyWebkitMaskSize:
             fillLayer->clearSize();
             break;
         default:
@@ -409,6 +415,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyTop:
         style->setTop(animatableValueToLength(value, state));
         return;
+    case CSSPropertyWebkitBackgroundSize:
+        setOnFillLayers<CSSPropertyWebkitBackgroundSize>(style->accessBackgroundLayers(), value, state);
+        return;
     case CSSPropertyWebkitBorderHorizontalSpacing:
         style->setHorizontalBorderSpacing(animatableValueRoundClampTo<unsigned short>(value));
         return;
@@ -455,6 +464,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyWebkitMaskPositionY:
         setOnFillLayers<CSSPropertyWebkitMaskPositionY>(style->accessMaskLayers(), value, state);
+        return;
+    case CSSPropertyWebkitMaskSize:
+        setOnFillLayers<CSSPropertyWebkitMaskSize>(style->accessMaskLayers(), value, state);
         return;
     case CSSPropertyWebkitPerspective:
         style->setPerspective(clampTo<float>(toAnimatableDouble(value)->toDouble()));

@@ -155,7 +155,7 @@ inline static PassRefPtr<AnimatableValue> createFromFillLayers(const FillLayer* 
             if (!fillLayer->isYPositionSet())
                 break;
             values.append(createFromLength(fillLayer->yPosition(), style));
-        } else if (property == CSSPropertyBackgroundSize) {
+        } else if (property == CSSPropertyBackgroundSize || property == CSSPropertyWebkitMaskSize) {
             if (!fillLayer->isSizeSet())
                 break;
             values.append(createFromFillSize(fillLayer->size(), style));
@@ -199,6 +199,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyBackgroundPositionY:
         return createFromFillLayers<CSSPropertyBackgroundPositionY>(style->backgroundLayers(), style);
     case CSSPropertyBackgroundSize:
+    case CSSPropertyWebkitBackgroundSize:
         return createFromFillLayers<CSSPropertyBackgroundSize>(style->backgroundLayers(), style);
     case CSSPropertyBaselineShift:
         return AnimatableSVGLength::create(style->baselineShiftValue());
@@ -362,6 +363,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromFillLayers<CSSPropertyWebkitMaskPositionX>(style->maskLayers(), style);
     case CSSPropertyWebkitMaskPositionY:
         return createFromFillLayers<CSSPropertyWebkitMaskPositionY>(style->maskLayers(), style);
+    case CSSPropertyWebkitMaskSize:
+        return createFromFillLayers<CSSPropertyWebkitMaskSize>(style->maskLayers(), style);
     case CSSPropertyWebkitPerspective:
         return createFromDouble(style->perspective());
     case CSSPropertyWebkitPerspectiveOriginX:

@@ -23,7 +23,7 @@
 <script>
 // Matched keywords in size value list.
 assertInterpolation({
-  property: 'background-size',
+  property: '-webkit-background-size',
   from: '0px 0px, 0px 0px, contain, cover',
   to: '40px 40px, 40px 40px, contain, cover',
 }, [
@@ -38,7 +38,7 @@ assertInterpolation({
 
 // Mismatched keywords in size value list.
 assertInterpolation({
-  property: 'background-size',
+  property: '-webkit-background-size',
   from: '0px 0px, 0px 0px, contain, cover',
   to: '40px 40px, 40px 40px, cover, contain',
 }, [
@@ -53,7 +53,7 @@ assertInterpolation({
 
 // Equal number of size values as background images.
 assertInterpolation({
-  property: 'background-size',
+  property: '-webkit-background-size',
   from: '0px 0px, 0px 0px, 0px 0px, 0px 0px',
   to: '20px 20px, 40px 40px, 60px 60px, 100px 100px',
 }, [
@@ -68,7 +68,7 @@ assertInterpolation({
 
 // Single size value repeated over background images.
 assertInterpolation({
-  property: 'background-size',
+  property: '-webkit-background-size',
   from: '0px 0px',
   to: '80px 80px',
 }, [
@@ -83,7 +83,7 @@ assertInterpolation({
 
 // Mismatched numbers of size values.
 assertInterpolation({
-  property: 'background-size',
+  property: '-webkit-background-size',
   from: '0px 0px, 80px 0px',
   to: '40px 40px, 80px 80px, 0px 80px',
 }, [
