@@ -225,7 +225,7 @@ def _ToolSetOrAppend(tools, tool_name, setting, value, only_if_unset=False):
   tool = tools[tool_name]
   if tool.get(setting):
     if only_if_unset: return
-    if type(tool[setting]) == list:
+    if type(tool[setting]) == list and type(value) == list:
       tool[setting] += value
     else:
       raise TypeError(
@@ -2887,7 +2887,7 @@ def _FinalizeMSBuildSettings(spec, configuration):
     _ToolAppend(msbuild_settings, 'ClCompile',
                 'PrecompiledHeaderFile', precompiled_header)
     _ToolAppend(msbuild_settings, 'ClCompile',
-                'ForcedIncludeFiles', precompiled_header)
+                'ForcedIncludeFiles', [precompiled_header])
   # Loadable modules don't generate import libraries;
   # tell dependent projects to not expect one.
   if spec['type'] == 'loadable_module':
