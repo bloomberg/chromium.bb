@@ -11,6 +11,7 @@
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/layers/texture_layer.h"
 
 namespace cc {
 
@@ -49,10 +50,11 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     success &= list->GetInteger(2, &aperture_width);
     success &= list->GetInteger(3, &aperture_height);
 
-    success &= dict->GetList("ImageBounds", &list);
-    int image_width, image_height;
-    success &= list->GetInteger(0, &image_width);
-    success &= list->GetInteger(1, &image_height);
+    ListValue* bounds;
+    success &= dict->GetList("ImageBounds", &bounds);
+    double image_width, image_height;
+    success &= bounds->GetDouble(0, &image_height);
+    success &= bounds->GetDouble(1, &image_width);
 
     success &= dict->GetList("Border", &list);
     int border_x, border_y, border_width, border_height;
@@ -73,12 +75,13 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     nine_patch_layer->SetBitmap(bitmap);
     nine_patch_layer->SetAperture(
         gfx::Rect(aperture_x, aperture_y, aperture_width, aperture_height));
-
     nine_patch_layer->SetBorder(
         gfx::Rect(border_x, border_y, border_width, border_height));
     nine_patch_layer->SetFillCenter(fill_center);
 
     new_layer = nine_patch_layer;
+  } else if (layer_type == "TextureLayer") {
+    new_layer = TextureLayer::Create(NULL);
   } else if (layer_type == "PictureLayer") {
     new_layer = PictureLayer::Create(content_client);
   } else {  // Type "Layer" or "unknown"

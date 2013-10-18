@@ -4,6 +4,8 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include <sstream>
+
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -12,6 +14,8 @@
 #include "cc/layers/content_layer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/layers/texture_layer.h"
+#include "cc/resources/texture_mailbox.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/lap_timer.h"
 #include "cc/test/layer_tree_json_parser.h"
@@ -236,6 +240,52 @@ TEST_F(ScrollingLayerTreePerfTest, LongScrollablePageSingleThread) {
 TEST_F(ScrollingLayerTreePerfTest, LongScrollablePageThreadedImplSide) {
   SetTestName("long_scrollable_page_threaded_impl_side");
   ReadTestFile("long_scrollable_page");
+  RunTestWithImplSidePainting();
+}
+
+static void EmptyReleaseCallback(unsigned sync_point, bool lost_resource) {}
+
+// Simulates main-thread scrolling on each frame.
+class BrowserCompositorInvalidateLayerTreePerfTest
+    : public LayerTreeHostPerfTestJsonReader {
+ public:
+  BrowserCompositorInvalidateLayerTreePerfTest()
+      : next_sync_point_(1) {
+  }
+
+  virtual void BuildTree() OVERRIDE {
+    LayerTreeHostPerfTestJsonReader::BuildTree();
+    tab_contents_ =
+        static_cast<TextureLayer*>(
+            layer_tree_host()->root_layer()->children()[0]->
+                                             children()[0]->
+                                             children()[0]->
+                                             children()[0].get());
+    ASSERT_TRUE(tab_contents_.get());
+  }
+
+  virtual void Layout() OVERRIDE {
+    gpu::Mailbox gpu_mailbox;
+    std::ostringstream name_stream;
+    name_stream << "name" << next_sync_point_;
+    const char* name = name_stream.str().c_str();
+    memcpy(gpu_mailbox.name, name, strlen(name) + 1);
+    scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
+        base::Bind(&EmptyReleaseCallback));
+    TextureMailbox mailbox(gpu_mailbox, next_sync_point_);
+    next_sync_point_++;
+
+    tab_contents_->SetTextureMailbox(mailbox, callback.Pass());
+  }
+
+ private:
+  scoped_refptr<TextureLayer> tab_contents_;
+  unsigned next_sync_point_;
+};
+
+TEST_F(BrowserCompositorInvalidateLayerTreePerfTest, DenseBrowserUI) {
+  SetTestName("dense_layer_tree");
+  ReadTestFile("dense_layer_tree");
   RunTestWithImplSidePainting();
 }
 
