@@ -838,8 +838,6 @@
         'browser/extensions/suggest_permission_util.h',
         'browser/extensions/suggest_permission_util.cc',
         'browser/extensions/sync_bundle.h',
-        'browser/extensions/tab_capability_tracker.cc',
-        'browser/extensions/tab_capability_tracker.h',
         'browser/extensions/tab_helper.cc',
         'browser/extensions/tab_helper.h',
         'browser/extensions/theme_installed_infobar_delegate.cc',

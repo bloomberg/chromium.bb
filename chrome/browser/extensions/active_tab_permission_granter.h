@@ -8,8 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "chrome/browser/extensions/tab_capability_tracker.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -28,7 +26,8 @@ class Extension;
 
 // Responsible for granting and revoking tab-specific permissions to extensions
 // with the activeTab or tabCapture permission.
-class ActiveTabPermissionGranter : public TabCapabilityTracker::Observer {
+class ActiveTabPermissionGranter : public content::WebContentsObserver,
+                                   public content::NotificationObserver {
  public:
   ActiveTabPermissionGranter(content::WebContents* web_contents,
                              int tab_id,
@@ -40,9 +39,21 @@ class ActiveTabPermissionGranter : public TabCapabilityTracker::Observer {
   void GrantIfRequested(const Extension* extension);
 
  private:
-  // TabCapabilityTracker::Observer implementation.
-  virtual void OnGranted(const Extension* extension) OVERRIDE;
-  virtual void OnRevoked(const ExtensionSet* extensions) OVERRIDE;
+  // content::WebContentsObserver implementation.
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* web_contents)
+      OVERRIDE;
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Clears any tab-specific permissions for all extensions on |tab_id_| and
+  // notifies renderers.
+  void ClearActiveExtensionsAndNotify();
 
   // Gets the current page id.
   int32 GetPageID();
@@ -50,9 +61,12 @@ class ActiveTabPermissionGranter : public TabCapabilityTracker::Observer {
   // The tab ID for this tab.
   int tab_id_;
 
-  content::WebContents* web_contents_;
+  // Extensions with the activeTab permission that have been granted
+  // tab-specific permissions until the next navigation/refresh.
+  ExtensionSet granted_extensions_;
 
-  TabCapabilityTracker tab_capability_tracker_;
+  // Listen to extension unloaded notifications.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveTabPermissionGranter);
 };
