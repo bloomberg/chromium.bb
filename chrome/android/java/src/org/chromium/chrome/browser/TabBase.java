@@ -226,6 +226,20 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
+     * Loads the current navigation if there is a pending lazy load (after tab restore).
+     */
+    public void loadIfNecessary() {
+        if (mContentViewCore != null) mContentViewCore.loadIfNecessary();
+    }
+
+    /**
+     * Requests the current navigation to be loaded upon the next call to loadIfNecessary().
+     */
+    protected void requestRestoreLoad() {
+        if (mContentViewCore != null) mContentViewCore.requestRestoreLoad();
+    }
+
+    /**
      * @return Whether or not the {@link TabBase} is currently showing an interstitial page, such as
      *         a bad HTTPS page.
      */

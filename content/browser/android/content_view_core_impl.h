@@ -147,6 +147,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void GoForward(JNIEnv* env, jobject obj);
   void GoToOffset(JNIEnv* env, jobject obj, jint offset);
   void GoToNavigationIndex(JNIEnv* env, jobject obj, jint index);
+  void LoadIfNecessary(JNIEnv* env, jobject obj);
+  void RequestRestoreLoad(JNIEnv* env, jobject obj);
   void StopLoading(JNIEnv* env, jobject obj);
   void Reload(JNIEnv* env, jobject obj);
   void CancelPendingReload(JNIEnv* env, jobject obj);

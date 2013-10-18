@@ -1189,6 +1189,20 @@ public class ContentViewCore
     }
 
     /**
+     * Loads the current navigation if there is a pending lazy load (after tab restore).
+     */
+    public void loadIfNecessary() {
+        if (mNativeContentViewCore != 0) nativeLoadIfNecessary(mNativeContentViewCore);
+    }
+
+    /**
+     * Requests the current navigation to be loaded upon the next call to loadIfNecessary().
+     */
+    public void requestRestoreLoad() {
+        if (mNativeContentViewCore != 0) nativeRequestRestoreLoad(mNativeContentViewCore);
+    }
+
+    /**
      * Reload the current page.
      */
     public void reload() {
@@ -3211,6 +3225,8 @@ public class ContentViewCore
     private native void nativeGoForward(int nativeContentViewCoreImpl);
     private native void nativeGoToOffset(int nativeContentViewCoreImpl, int offset);
     private native void nativeGoToNavigationIndex(int nativeContentViewCoreImpl, int index);
+    private native void nativeLoadIfNecessary(int nativeContentViewCoreImpl);
+    private native void nativeRequestRestoreLoad(int nativeContentViewCoreImpl);
 
     private native void nativeStopLoading(int nativeContentViewCoreImpl);
 

@@ -1167,6 +1167,15 @@ void ContentViewCoreImpl::GoToNavigationIndex(JNIEnv* env,
   UpdateTabCrashedFlag();
 }
 
+void ContentViewCoreImpl::LoadIfNecessary(JNIEnv* env, jobject obj) {
+  web_contents_->GetController().LoadIfNecessary();
+  UpdateTabCrashedFlag();
+}
+
+void ContentViewCoreImpl::RequestRestoreLoad(JNIEnv* env, jobject obj) {
+  web_contents_->GetController().SetNeedsReload();
+}
+
 void ContentViewCoreImpl::StopLoading(JNIEnv* env, jobject obj) {
   web_contents_->Stop();
 }
