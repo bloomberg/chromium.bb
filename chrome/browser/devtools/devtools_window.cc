@@ -621,6 +621,9 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     DevToolsDockSide dock_side,
                                     bool shared_worker_frontend,
                                     bool external_frontend) {
+  if (base_url.SchemeIs("data"))
+    return base_url;
+
   std::string frontend_url(
       base_url.is_empty() ? chrome::kChromeUIDevToolsURL : base_url.spec());
   ThemeService* tp = ThemeServiceFactory::GetForProfile(profile);
