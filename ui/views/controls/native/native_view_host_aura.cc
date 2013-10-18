@@ -5,7 +5,7 @@
 #include "ui/views/controls/native/native_view_host_aura.h"
 
 #include "base/logging.h"
-#include "ui/aura/focus_manager.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view_constants_aura.h"

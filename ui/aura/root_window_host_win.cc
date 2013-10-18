@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/message_loop/message_loop.h"
-#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
