@@ -4,7 +4,6 @@
 
 """Module containing the base class for the stages that a builder runs."""
 
-import copy
 import os
 import re
 import sys
@@ -28,6 +27,7 @@ from chromite.lib import cros_build_lib
 
 class BuilderStage(object):
   """Parent class for stages to be performed by a builder."""
+  # Used to remove 'Stage' suffix of stage class when generating stage name.
   name_stage_re = re.compile(r'(\w+)Stage')
 
   # TODO(sosa): Remove these once we have a SEND/RECIEVE IPC mechanism
@@ -35,16 +35,13 @@ class BuilderStage(object):
   overlays = None
   push_overlays = None
 
-  # Class variable that stores the branch to build and test
-  _target_manifest_branch = None
-
   # Class should set this if they have a corresponding no<stage> option that
   # skips their stage.
   # TODO(mtennant): Rename this something like skip_option_name.
   option_name = None
 
   # Class should set this if they have a corresponding setting in
-  # self._build_config that skips their stage.
+  # the build_config that skips their stage.
   # TODO(mtennant): Rename this something like skip_config_name.
   config_name = None
 
@@ -62,21 +59,18 @@ class BuilderStage(object):
     """
     return 'trybot-%s' % bot_name if remote_trybot else bot_name
 
-  @staticmethod
-  def SetManifestBranch(branch):
-    BuilderStage._target_manifest_branch = branch
-
   @classmethod
   def StageNamePrefix(cls):
-    return cls.name_stage_re.match(cls.__name__).group(1)
+    """Return cls.__name__ with any 'Stage' suffix removed."""
+    match = cls.name_stage_re.match(cls.__name__)
+    assert match, 'Class name %s does not end with Stage' % cls.__name__
+    return match.group(1)
 
-  def __init__(self, options, build_config, suffix=None, attempt=None,
-               max_retry=None):
+  def __init__(self, builder_run, suffix=None, attempt=None, max_retry=None):
     """Create a builder stage.
 
     Args:
-      options: Command-line options, from cbuildbot.py
-      build_config: The configuration dictionary, from cbuildbot_config.py
+      builder_run: The BuilderRun object for the run this stage is part of.
       suffix: The suffix to append to the buildbot name. Defaults to None.
       attempt: If this build is to be retried, the current attempt number
         (starting from 1). Defaults to None. Is only valid if |max_retry| is
@@ -84,29 +78,38 @@ class BuilderStage(object):
       max_retry: The maximum number of retries. Defaults to None. Is only valid
         if |attempt| is also specified.
     """
-    self._options = options
-    self._bot_id = self.GetBotId(build_config['name'], options.remote_trybot)
+    self._run = builder_run
 
     if bool(attempt) != bool(max_retry):
-      raise AssertionError('max_retry and attempt must be specified together.')
+      raise ValueError('max_retry and attempt must be specified together.')
 
     self._attempt = attempt
     self._max_retry = max_retry
-    self._build_config = copy.deepcopy(build_config)
-    self._prefix = self.StageNamePrefix()
-    self.name = self._prefix
+
+    # Construct self.name, the name string for this stage instance.
+    self.name = self._prefix = self.StageNamePrefix()
     if suffix:
-      self.name = self._prefix + suffix
-    self._boards = self._build_config['boards']
-    self._build_root = os.path.abspath(self._options.buildroot)
+      self.name += suffix
+
+    # See GetBotId for details.
+    self._bot_id = self.GetBotId(self._run.config.name,
+                                 self._run.options.remote_trybot)
+
+    # self._boards holds list of boards involved in this run.
+    # TODO(mtennant): Replace self._boards with a self._run.boards?
+    self._boards = self._run.config.boards
+
+    # TODO(mtennant): Try to rely on just self._run.buildroot directly, if
+    # the os.path.abspath can be applied there instead.
+    self._build_root = os.path.abspath(self._run.buildroot)
     self._prebuilt_type = None
-    if self._options.prebuilts and self._build_config['prebuilts']:
-      self._prebuilt_type = self._build_config['build_type']
+    if self._run.ShouldUploadPrebuilts():
+      self._prebuilt_type = self._run.config.build_type
 
     # Determine correct chrome_rev.
-    self._chrome_rev = self._build_config['chrome_rev']
-    if self._options.chrome_rev:
-      self._chrome_rev = self._options.chrome_rev
+    self._chrome_rev = self._run.config.chrome_rev
+    if self._run.options.chrome_rev:
+      self._chrome_rev = self._run.options.chrome_rev
 
   def GetStageNames(self):
     """Get a list of the places where this stage has recorded results."""
@@ -123,34 +126,34 @@ class BuilderStage(object):
       The fully formed URL
     """
     return validation_pool.ValidationPool.ConstructDashboardURL(
-        self._build_config['overlays'], self._options.remote_trybot,
-        os.environ.get('BUILDBOT_BUILDERNAME', self._build_config['name']),
-        self._options.buildnumber, stage=stage)
+        self._run.config.overlays, self._run.options.remote_trybot,
+        os.environ.get('BUILDBOT_BUILDERNAME', self._run.config.name),
+        self._run.options.buildnumber, stage=stage)
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
     overlays = portage_utilities.FindOverlays(
-        self._build_config['overlays'], buildroot=self._build_root)
+        self._run.config.overlays, buildroot=self._build_root)
     push_overlays = portage_utilities.FindOverlays(
-        self._build_config['push_overlays'], buildroot=self._build_root)
+        self._run.config.push_overlays, buildroot=self._build_root)
 
     # Sanity checks.
     # We cannot push to overlays that we don't rev.
     assert set(push_overlays).issubset(set(overlays))
     # Either has to be a master or not have any push overlays.
-    assert self._build_config['master'] or not push_overlays
+    assert self._run.config.master or not push_overlays
 
     return overlays, push_overlays
 
   def GetRepoRepository(self, **kwds):
     """Create a new repo repository object."""
-    manifest_url = self._options.manifest_repo_url
+    manifest_url = self._run.options.manifest_repo_url
     if manifest_url is None:
-      manifest_url = self._build_config['manifest_repo_url']
+      manifest_url = self._run.config.manifest_repo_url
 
-    kwds.setdefault('referenced_repo', self._options.reference_repo)
-    kwds.setdefault('branch', self._target_manifest_branch)
-    kwds.setdefault('manifest', self._build_config['manifest'])
+    kwds.setdefault('referenced_repo', self._run.options.reference_repo)
+    kwds.setdefault('branch', self._run.manifest_branch)
+    kwds.setdefault('manifest', self._run.config.manifest)
 
     return repository.RepoRepository(manifest_url, self._build_root, **kwds)
 
@@ -296,8 +299,8 @@ class BuilderStage(object):
   def Run(self):
     """Have the builder execute the stage."""
     # See if this stage should be skipped.
-    if (self.option_name and not getattr(self._options, self.option_name) or
-        self.config_name and not self._build_config[self.config_name]):
+    if (self.option_name and not getattr(self._run.options, self.option_name) or
+        self.config_name and not getattr(self._run.config, self.config_name)):
       self._PrintLoudly('Not running Stage %s' % self.name)
       self.HandleSkip()
       results_lib.Results.Record(self.name, results_lib.Results.SKIPPED,

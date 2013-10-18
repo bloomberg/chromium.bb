@@ -17,17 +17,13 @@ import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config as config
-from chromite.buildbot import cbuildbot_stages
+from chromite.buildbot import cbuildbot_run
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel_unittest
 from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 # pylint: disable=W0212,R0904
@@ -72,6 +68,8 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
     self.options.patches = None
     self.options.prebuilts = False
 
+    self.run = cbuildbot_run.BuilderRun(self.options, self.build_config)
+
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
     self.build_config['chromeos_official'] = True
@@ -99,7 +97,7 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
-    cbuildbot.SimpleBuilder(self.options, self.build_config).Run()
+    cbuildbot.SimpleBuilder(self.run).Run()
 
     self.assertTrue('CHROMEOS_OFFICIAL' in os.environ)
 
@@ -138,7 +136,7 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
-    cbuildbot.SimpleBuilder(self.options, self.build_config).Run()
+    cbuildbot.SimpleBuilder(self.run).Run()
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
@@ -159,7 +157,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
     self.PatchObject(cbuildbot.Builder, '_RunStage')
     self.PatchObject(cbuildbot.SimpleBuilder, '_RunParallelStages')
-    self.PatchObject(cbuildbot_stages.ArchiveStage, 'GetVersion',
+    self.PatchObject(cbuildbot_run.BuilderRun, 'GetVersion',
                      return_value='1234.0.0')
     self.StartPatcher(parallel_unittest.ParallelMock())
 
@@ -178,48 +176,46 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     # Yikes.
     options.managed_chrome = build_config['sync_chrome']
 
-    return (options, build_config)
+    return cbuildbot_run.BuilderRun(options, build_config)
 
   def testRunStagesPreCQ(self):
     """Verify RunStages for PRE_CQ_LAUNCHER_TYPE builders"""
-    options, build_config = self._initConfig('pre-cq-launcher')
-    cbuildbot.SimpleBuilder(options, build_config).RunStages()
+    builder_run = self._initConfig('pre-cq-launcher')
+    cbuildbot.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesBranchUtil(self):
     """Verify RunStages for CREATE_BRANCH_TYPE builders"""
     extra_argv = ['--branch-name', 'foo', '--version', '1234']
-    options, build_config = self._initConfig(constants.BRANCH_UTIL_CONFIG,
-                                             extra_argv=extra_argv)
-    cbuildbot.SimpleBuilder(options, build_config).RunStages()
+    builder_run = self._initConfig(constants.BRANCH_UTIL_CONFIG,
+                                   extra_argv=extra_argv)
+    cbuildbot.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesChrootBuilder(self):
     """Verify RunStages for CHROOT_BUILDER_TYPE builders"""
-    options, build_config = self._initConfig('chromiumos-sdk')
-    cbuildbot.SimpleBuilder(options, build_config).RunStages()
+    builder_run = self._initConfig('chromiumos-sdk')
+    cbuildbot.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesRefreshPackages(self):
     """Verify RunStages for REFRESH_PACKAGES_TYPE builders"""
-    options, build_config = self._initConfig('refresh-packages')
-    cbuildbot.SimpleBuilder(options, build_config).RunStages()
+    builder_run = self._initConfig('refresh-packages')
+    cbuildbot.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesDefaultBuild(self):
     """Verify RunStages for standard board builders"""
-    options, build_config = self._initConfig('x86-generic-full')
-    cbuildbot.SimpleBuilder(options, build_config).RunStages()
+    builder_run = self._initConfig('x86-generic-full')
+    cbuildbot.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesDefaultBuildCompileCheck(self):
     """Verify RunStages for standard board builders (compile only)"""
     extra_argv = ['--compilecheck']
-    options, build_config = self._initConfig('x86-generic-full',
-                                             extra_argv=extra_argv)
-    cbuildbot.SimpleBuilder(options, build_config).RunStages()
+    builder_run = self._initConfig('x86-generic-full', extra_argv=extra_argv)
+    cbuildbot.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesDefaultBuildHwTests(self):
     """Verify RunStages for boards w/hwtests"""
     extra_argv = ['--hwtest']
-    options, build_config = self._initConfig('lumpy-release',
-                                             extra_argv=extra_argv)
-    cbuildbot.SimpleBuilder(options, build_config).RunStages()
+    builder_run = self._initConfig('lumpy-release', extra_argv=extra_argv)
+    cbuildbot.SimpleBuilder(builder_run).RunStages()
 
 
 class LogTest(cros_test_lib.MoxTestCase):

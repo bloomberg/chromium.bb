@@ -86,19 +86,20 @@ class ForgivingBuilderStage(bs.BuilderStage):
 class RetryStage(object):
   """Retry a given stage multiple times to see if it passes."""
 
-  def __init__(self, options, build_config, max_retry, stage, *args, **kwargs):
+  def __init__(self, builder_run, max_retry, stage, *args, **kwargs):
     """Create a RetryStage object.
 
     Args:
-      options, build_config: See arguments to bs.BuilderStage.__init__()
+      builder_run: See arguments to bs.BuilderStage.__init__()
       max_retry: The number of times to try the given stage.
       stage: The stage class to create.
       *args: A list of arguments to pass to the stage constructor.
       **kwargs: A list of keyword arguments to pass to the stage constructor.
     """
+    self._run = builder_run
     self.max_retry = max_retry
     self.stage = stage
-    self.args = (options, build_config) + args
+    self.args = (builder_run,) + args
     self.kwargs = kwargs
     self.names = []
     self.attempt = None
@@ -126,9 +127,8 @@ class RetryStage(object):
 
 class BoardSpecificBuilderStage(bs.BuilderStage):
 
-  def __init__(self, options, build_config, board, **kwargs):
-    super(BoardSpecificBuilderStage, self).__init__(options, build_config,
-                                                    **kwargs)
+  def __init__(self, builder_run, board, **kwargs):
+    super(BoardSpecificBuilderStage, self).__init__(builder_run, **kwargs)
     self._current_board = board
 
     if not isinstance(board, basestring):
@@ -136,13 +136,13 @@ class BoardSpecificBuilderStage(bs.BuilderStage):
 
     # Add a board name suffix to differentiate between various boards (in case
     # more than one board is built on a single builder.)
-    if len(self._boards) > 1 or build_config['grouped']:
+    if len(self._boards) > 1 or self._run.config.grouped:
       self.name = '%s [%s]' % (self.name, board)
 
   def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
     """Get the location of the current image."""
-    buildroot, board = self._options.buildroot, self._current_board
-    return os.path.join(buildroot, 'src', 'build', 'images', board, pointer)
+    return os.path.join(self._run.buildroot, 'src', 'build', 'images',
+                        self._current_board, pointer)
 
 
 class ArchivingStage(BoardSpecificBuilderStage):
@@ -200,28 +200,31 @@ class ArchivingStage(BoardSpecificBuilderStage):
       return None
     return 'public-read'
 
-  def __init__(self, options, build_config, board, archive_stage, **kwargs):
-    super(ArchivingStage, self).__init__(options, build_config, board,
-                                         **kwargs)
-    self.acl = self.GetUploadACL(build_config)
+  def __init__(self, builder_run, board, archive_stage, **kwargs):
+    super(ArchivingStage, self).__init__(builder_run, board, **kwargs)
+    self.acl = self.GetUploadACL(self._run.config)
     self.archive_stage = archive_stage
 
-    if options.remote_trybot:
-      self.debug = options.debug_forced
+    if self._run.options.remote_trybot:
+      self.debug = self._run.options.debug_forced
     else:
-      self.debug = options.debug
+      self.debug = self._run.options.debug
 
-    self.version = archive_stage.GetVersion()
+    # TODO(mtennant): builder_run.GetVersion() directly instead of
+    # storing in self.version during constructor here.
+    self.version = builder_run.GetVersion()
 
-    trybot = not options.buildbot or options.debug
+    # TODO(mtennant): Candidate for self._run.IsTrybot().
+    trybot = not self._run.options.buildbot or self._run.options.debug
     archive_root = self.GetLocalArchiveRoot(self._build_root, trybot)
     self.bot_archive_root = os.path.join(archive_root, self._bot_id)
     self.archive_path = os.path.join(self.bot_archive_root, self.version)
     self.base_upload_url = self.GetBaseUploadURL(
-        build_config, options.archive_base, options.remote_trybot)
+        self._run.config, self._run.options.archive_base,
+        self._run.options.remote_trybot)
     self.upload_url = '%s/%s' % (self.base_upload_url, self.version)
 
-    if options.buildbot or options.remote_trybot:
+    if self._run.options.buildbot or self._run.options.remote_trybot:
       base_download_url = gs.PRIVATE_BASE_HTTPS_URL
       self.download_url = self.upload_url.replace('gs://', base_download_url)
     else:
@@ -297,7 +300,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
         metadata. If None, no such status information will be included. It not
         None, this should be a derivative of MasterSlaveSyncCompletionStage.
     """
-    config = self._build_config
+    config = self._run.config
 
     start_time = results_lib.Results.start_time
     current_time = datetime.datetime.now()
@@ -308,7 +311,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
     sdk_verinfo = cros_build_lib.LoadKeyValueFile(
         os.path.join(self._build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
-    verinfo = self.archive_stage.GetVersionInfo(self._build_root)
+    verinfo = self._run.GetVersionInfo(self._build_root)
     metadata = {
         # Version of the metadata format.
         'metadata-version': '2',
@@ -316,7 +319,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
         'bot-config': config['name'],
         'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
         'boards': config['boards'],
-        'build-number': self._options.buildnumber,
+        'build-number': self._run.buildnumber,
         'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
         'status': {
             'current-time': current_time_stamp,
@@ -451,24 +454,25 @@ class CleanUpStage(bs.BuilderStage):
   def _DeleteArchivedPerfResults(self):
     """Clear any previously stashed perf results from hw testing."""
     for result in glob.glob(os.path.join(
-        self._options.log_dir, '*.%s' % HWTestStage.PERF_RESULTS_EXTENSION)):
+        self._run.options.log_dir,
+        '*.%s' % HWTestStage.PERF_RESULTS_EXTENSION)):
       os.remove(result)
 
   def _DeleteChromeBuildOutput(self):
-    chrome_src = os.path.join(self._options.chrome_root, 'src')
+    chrome_src = os.path.join(self._run.options.chrome_root, 'src')
     for out_dir in glob.glob(os.path.join(chrome_src, 'out_*')):
       osutils.RmDir(out_dir)
 
   def PerformStage(self):
-    if (not (self._options.buildbot or self._options.remote_trybot)
-        and self._options.clobber):
+    if (not (self._run.options.buildbot or self._run.options.remote_trybot)
+        and self._run.options.clobber):
       if not commands.ValidateClobber(self._build_root):
         cros_build_lib.Die("--clobber in local mode must be approved.")
 
     # If we can't get a manifest out of it, then it's not usable and must be
     # clobbered.
     manifest = None
-    if not self._options.clobber:
+    if not self._run.options.clobber:
       try:
         manifest = git.ManifestCheckout.Cached(self._build_root, search=False)
       except (KeyboardInterrupt, MemoryError, SystemExit):
@@ -487,16 +491,17 @@ class CleanUpStage(bs.BuilderStage):
 
     if manifest is None:
       self._DeleteChroot()
-      repository.ClearBuildRoot(self._build_root, self._options.preserve_paths)
+      repository.ClearBuildRoot(self._build_root,
+                                self._run.options.preserve_paths)
     else:
       tasks = [functools.partial(commands.BuildRootGitCleanup,
                                  self._build_root),
                functools.partial(commands.WipeOldOutput, self._build_root),
                self._DeleteArchivedTrybotImages,
                self._DeleteArchivedPerfResults]
-      if self._options.chrome_root:
+      if self._run.options.chrome_root:
         tasks.append(self._DeleteChromeBuildOutput)
-      if self._build_config['chroot_replace'] and self._options.build:
+      if self._run.config.chroot_replace and self._run.options.build:
         tasks.append(self._DeleteChroot)
       else:
         tasks.append(self._CleanChroot)
@@ -505,15 +510,15 @@ class CleanUpStage(bs.BuilderStage):
 
 class PatchChangesStage(bs.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
-  def __init__(self, options, build_config, patch_pool):
+  def __init__(self, builder_run, patch_pool, **kwargs):
     """Construct a PatchChangesStage.
 
     Args:
-      options, build_config: See arguments to bs.BuilderStage.__init__()
+      builder_run: BuilderRun object.
       patch_pool: A TrybotPatchPool object containing the different types of
                   patches to apply.
     """
-    bs.BuilderStage.__init__(self, options, build_config)
+    super(PatchChangesStage, self).__init__(builder_run, **kwargs)
     self.patch_pool = patch_pool
 
   @staticmethod
@@ -576,7 +581,7 @@ class PatchChangesStage(bs.BuilderStage):
 
     # If we're an external builder, ignore internal patches.
     helper_pool = validation_pool.HelperPool.SimpleCreate(
-        cros_internal=self._build_config['internal'], cros=True)
+        cros_internal=self._run.config.internal, cros=True)
 
     # Limit our resolution to non-manifest patches.
     patch_series = NoisyPatchSeries(
@@ -597,10 +602,10 @@ class BootstrapStage(PatchChangesStage):
   """
   option_name = 'bootstrap'
 
-  def __init__(self, options, build_config, chromite_patch_pool,
-               manifest_patch_pool=None):
+  def __init__(self, builder_run, chromite_patch_pool,
+               manifest_patch_pool=None, **kwargs):
     super(BootstrapStage, self).__init__(
-        options, build_config, trybot_patch_pool.TrybotPatchPool())
+        builder_run, trybot_patch_pool.TrybotPatchPool(), **kwargs)
     self.chromite_patch_pool = chromite_patch_pool
     self.manifest_patch_pool = manifest_patch_pool
     self.returncode = None
@@ -619,21 +624,22 @@ class BootstrapStage(PatchChangesStage):
     """
     checkout_dir = os.path.join(self.tempdir, 'manfest-checkout')
     repository.CloneGitRepo(checkout_dir,
-                            self._build_config['manifest_repo_url'])
+                            self._run.config.manifest_repo_url)
 
     patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
         checkout_dir, deps_filter_fn=trybot_patch_pool.ManifestFilter,
-        tracking_branch=self._target_manifest_branch)
+        tracking_branch=self._run.manifest_branch)
 
     self._ApplyPatchSeries(patch_series, patch_pool)
     # Create the branch that 'repo init -b <target_branch> -u <patched_repo>'
     # will look for.
-    cmd = ['branch', '-f', self._target_manifest_branch, constants.PATCH_BRANCH]
+    cmd = ['branch', '-f', self._run.manifest_branch,
+           constants.PATCH_BRANCH]
     git.RunGit(checkout_dir, cmd)
 
     # Verify that the patched manifest loads properly. Propagate any errors as
     # exceptions.
-    manifest = os.path.join(checkout_dir, self._build_config['manifest'])
+    manifest = os.path.join(checkout_dir, self._run.config.manifest)
     git.Manifest.Cached(manifest, manifest_include_dir=checkout_dir)
     return checkout_dir
 
@@ -673,8 +679,8 @@ class BootstrapStage(PatchChangesStage):
     # branches. Now, if we wanted to test patches for both the bootstrap code
     # (on master) and the branched chromite (say, R20), we need to filter the
     # patches by branch.
-    filter_branch = self._target_manifest_branch
-    if self._options.test_bootstrap:
+    filter_branch = self._run.manifest_branch
+    if self._run.options.test_bootstrap:
       filter_branch = 'master'
 
     chromite_dir = os.path.join(self.tempdir, 'chromite')
@@ -698,12 +704,13 @@ class BootstrapStage(PatchChangesStage):
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
     if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):
       cbuildbot_path = 'chromite/buildbot/cbuildbot'
+    # pylint: disable=W0212
     cmd = self.FilterArgsForTargetCbuildbot(self.tempdir, cbuildbot_path,
-                                       self._options)
+                                            self._run.options)
 
-    extra_params = ['--sourceroot=%s' % self._options.sourceroot]
-    extra_params.extend(self._options.bootstrap_args)
-    if self._options.test_bootstrap:
+    extra_params = ['--sourceroot=%s' % self._run.options.sourceroot]
+    extra_params.extend(self._run.options.bootstrap_args)
+    if self._run.options.test_bootstrap:
       # We don't want re-executed instance to see this.
       cmd = [a for a in cmd if a != '--test-bootstrap']
     else:
@@ -727,11 +734,14 @@ class SyncStage(bs.BuilderStage):
   option_name = 'sync'
   output_manifest_sha1 = True
 
-  def __init__(self, options, build_config):
-    super(SyncStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, **kwargs):
+    super(SyncStage, self).__init__(builder_run, **kwargs)
     self.repo = None
     self.skip_sync = False
-    self.internal = self._build_config['internal']
+
+    # TODO(mtennant): Why keep a duplicate copy of this config value
+    # at self.internal when it can always be retrieved from config?
+    self.internal = self._run.config.internal
 
   def _GetManifestVersionsRepoUrl(self, read_only=False):
     return cbuildbot_config.GetManifestVersionsRepoUrl(
@@ -747,7 +757,7 @@ class SyncStage(bs.BuilderStage):
 
   def GetNextManifest(self):
     """Returns the manifest to use."""
-    return self._build_config['manifest']
+    return self._run.config.manifest
 
   def ManifestCheckout(self, next_manifest):
     """Checks out the repository to the given manifest."""
@@ -765,7 +775,7 @@ class SyncStage(bs.BuilderStage):
     with osutils.TempDir() as tempdir:
       # Save off the last manifest.
       fresh_sync = True
-      if os.path.exists(self.repo.directory) and not self._options.clobber:
+      if os.path.exists(self.repo.directory) and not self._run.options.clobber:
         old_filename = os.path.join(tempdir, 'old.xml')
         try:
           old_contents = self.repo.ExportManifest()
@@ -781,7 +791,7 @@ class SyncStage(bs.BuilderStage):
       # Print the blamelist.
       if fresh_sync:
         cros_build_lib.PrintBuildbotStepText('(From scratch)')
-      elif self._options.buildbot:
+      elif self._run.options.buildbot:
         lkgm_manager.GenerateBlameList(self.repo, old_filename)
 
 
@@ -811,17 +821,21 @@ class ChromeLKGMSyncStage(SyncStage):
 
   def GetNextManifest(self):
     """Override: Gets the LKGM from the Chrome tree."""
-    chrome_lkgm = commands.GetChromeLKGM(self._options.chrome_version)
+    chrome_lkgm = commands.GetChromeLKGM(self._run.options.chrome_version)
 
     # We need a full buildspecs manager here as we need an initialized manifest
     # manager with paths to the spec.
+    # TODO(mtennant): Consider registering as manifest_manager run param, for
+    # consistency, but be careful that consumers do not get confused.
+    # Currently only the "manifest_manager" from ManifestVersionedSync (and
+    # subclasses) is used later in the flow.
     manifest_manager = manifest_version.BuildSpecsManager(
       source_repo=self.repo,
       manifest_repo=self._GetManifestVersionsRepoUrl(read_only=False),
       build_name=self._bot_id,
       incr_type='build',
       force=False,
-      branch=self._target_manifest_branch)
+      branch=self._run.manifest_branch)
 
     manifest_manager.BootstrapFromVersion(chrome_lkgm)
     return manifest_manager.GetLocalManifest(chrome_lkgm)
@@ -830,13 +844,14 @@ class ChromeLKGMSyncStage(SyncStage):
 class ManifestVersionedSyncStage(SyncStage):
   """Stage that generates a unique manifest file, and sync's to it."""
 
-  manifest_manager = None
+  # TODO(mtennant): Make this into a builder run value.
   output_manifest_sha1 = False
 
-  def __init__(self, options, build_config):
+  def __init__(self, builder_run, **kwargs):
     # Perform the sync at the end of the stage to the given manifest.
-    super(ManifestVersionedSyncStage, self).__init__(options, build_config)
+    super(ManifestVersionedSyncStage, self).__init__(builder_run, **kwargs)
     self.repo = None
+    self.manifest_manager = None
 
     # If a builder pushes changes (even with dryrun mode), we need a writable
     # repository. Otherwise, the push will be rejected by the server.
@@ -847,29 +862,39 @@ class ManifestVersionedSyncStage(SyncStage):
     #    means that we'll create a new manifest, even if there are no changes.
     # 2. If we're running with --debug, we should always run through to
     #    completion, so as to ensure a complete test.
-    self._force = self._chrome_rev or options.debug
+    self._force = self._chrome_rev or self._run.options.debug
 
   def HandleSkip(self):
     """Initializes a manifest manager to the specified version if skipped."""
     super(ManifestVersionedSyncStage, self).HandleSkip()
-    if self._options.force_version:
+    if self._run.options.force_version:
       self.Initialize()
-      self.ForceVersion(self._options.force_version)
+      self.ForceVersion(self._run.options.force_version)
 
   def ForceVersion(self, version):
     """Creates a manifest manager from given version and returns manifest."""
     cros_build_lib.PrintBuildbotStepText(version)
-    return ManifestVersionedSyncStage.manifest_manager.BootstrapFromVersion(
-        version)
+    return self.manifest_manager.BootstrapFromVersion(version)
 
   def VersionIncrementType(self):
     """Return which part of the version number should be incremented."""
-    return ('build' if self._target_manifest_branch == 'master' else 'branch')
+    if self._run.manifest_branch == 'master':
+      return 'build'
+
+    return 'branch'
+
+  def RegisterManifestManager(self, manifest_manager):
+    """Save the given manifest manager for later use in this run.
+
+    Args:
+      manifest_manager: Expected to be a BuildSpecsManager.
+    """
+    self._run.attrs.manifest_manager = self.manifest_manager = manifest_manager
 
   def Initialize(self):
     """Initializes a manager that manages manifests for associated stages."""
 
-    dry_run = self._options.debug
+    dry_run = self._run.options.debug
 
     self._InitializeRepo()
 
@@ -877,17 +902,16 @@ class ManifestVersionedSyncStage(SyncStage):
     assert not self._chrome_rev, \
         'chrome_rev is unsupported on release builders.'
 
-    ManifestVersionedSyncStage.manifest_manager = \
-        manifest_version.BuildSpecsManager(
-            source_repo=self.repo,
-            manifest_repo=self.manifest_repo,
-            manifest=self._build_config['manifest'],
-            build_name=self._bot_id,
-            incr_type=self.VersionIncrementType(),
-            force=self._force,
-            branch=self._target_manifest_branch,
-            dry_run=dry_run,
-            master=self._build_config['master'])
+    self.RegisterManifestManager(manifest_version.BuildSpecsManager(
+        source_repo=self.repo,
+        manifest_repo=self.manifest_repo,
+        manifest=self._run.config.manifest,
+        build_name=self._bot_id,
+        incr_type=self.VersionIncrementType(),
+        force=self._force,
+        branch=self._run.manifest_branch,
+        dry_run=dry_run,
+        master=self._run.config.master))
 
   def GetNextManifest(self):
     """Uses the initialized manifest manager to get the next manifest."""
@@ -935,65 +959,64 @@ class ManifestVersionedSyncStage(SyncStage):
 
   def PerformStage(self):
     self.Initialize()
-    if self._options.force_version:
-      next_manifest = self.ForceVersion(self._options.force_version)
+    if self._run.options.force_version:
+      next_manifest = self.ForceVersion(self._run.options.force_version)
     else:
       next_manifest = self.GetNextManifest()
 
     if not next_manifest:
       cros_build_lib.Info('Found no work to do.')
-      if ManifestVersionedSyncStage.manifest_manager.DidLastBuildFail():
+      if self._run.attrs.manifest_manager.DidLastBuildFail():
         raise results_lib.StepFailure('The previous build failed.')
       else:
         sys.exit(0)
 
     # Log this early on for the release team to grep out before we finish.
-    if ManifestVersionedSyncStage.manifest_manager:
+    if self.manifest_manager:
       self._Print('\nRELEASETAG: %s\n' % (
-          ManifestVersionedSyncStage.manifest_manager.current_version))
+          self.manifest_manager.current_version))
 
     # To keep local trybots working, remove restricted checkouts from the
     # official manifest we get from manifest-versions.
     with self.LocalizeManifest(
-        next_manifest, filter_cros=self._options.local) as new_manifest:
+        next_manifest, filter_cros=self._run.options.local) as new_manifest:
       self.ManifestCheckout(new_manifest)
 
 
 class MasterSlaveSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
+  # TODO(mtennant): Turn this into self._run.attrs.sub_manager or similar.
   sub_manager = None
 
-  def __init__(self, options, build_config):
-    super(MasterSlaveSyncStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, **kwargs):
+    super(MasterSlaveSyncStage, self).__init__(builder_run, **kwargs)
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
     self.skip_sync = True
 
   def _GetInitializedManager(self, internal):
     """Returns an initialized lkgm manager."""
-    increment = ('build' if self._target_manifest_branch == 'master'
-                 else 'branch')
+    increment = self.VersionIncrementType()
     return lkgm_manager.LKGMManager(
         source_repo=self.repo,
         manifest_repo=cbuildbot_config.GetManifestVersionsRepoUrl(
             internal, read_only=False),
-        manifest=self._build_config['manifest'],
+        manifest=self._run.config.manifest,
         build_name=self._bot_id,
-        build_type=self._build_config['build_type'],
+        build_type=self._run.config.build_type,
         incr_type=increment,
         force=self._force,
-        branch=self._target_manifest_branch,
-        dry_run=self._options.debug,
-        master=self._build_config['master'])
+        branch=self._run.manifest_branch,
+        dry_run=self._run.options.debug,
+        master=self._run.config.master)
 
   def Initialize(self):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
     self._InitializeRepo()
-    ManifestVersionedSyncStage.manifest_manager = self._GetInitializedManager(
-        self.internal)
-    if (self._build_config['master'] and
-        self._GetSlavesForMaster(self._build_config)):
+    self.RegisterManifestManager(self._GetInitializedManager(self.internal))
+    if (self._run.config.master and
+        self._GetSlavesForMaster(self._run.config)):
       assert self.internal, 'Unified masters must use an internal checkout.'
       MasterSlaveSyncStage.sub_manager = self._GetInitializedManager(False)
 
@@ -1011,7 +1034,7 @@ class MasterSlaveSyncStage(ManifestVersionedSyncStage):
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
 
-    if self._build_config['master']:
+    if self._run.config.master:
       manifest = self.manifest_manager.CreateNewCandidate()
       if MasterSlaveSyncStage.sub_manager:
         MasterSlaveSyncStage.sub_manager.CreateFromManifest(manifest)
@@ -1028,11 +1051,11 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
   applying them into its own checkout.
   """
 
-  def __init__(self, options, build_config):
-    super(CommitQueueSyncStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, **kwargs):
+    super(CommitQueueSyncStage, self).__init__(builder_run, **kwargs)
     # Figure out the builder's name from the buildbot waterfall.
-    builder_name = build_config['paladin_builder_name']
-    self.builder_name = builder_name if builder_name else build_config['name']
+    builder_name = self._run.config.paladin_builder_name
+    self.builder_name = builder_name if builder_name else self._run.config.name
 
     # The pool of patches to be picked up by the commit queue.
     # - For the master commit queue, it's initialized in GetNextManifest.
@@ -1045,7 +1068,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
   def HandleSkip(self):
     """Handles skip and initializes validation pool from manifest."""
     super(CommitQueueSyncStage, self).HandleSkip()
-    filename = self._options.validation_pool
+    filename = self._run.options.validation_pool
     if filename:
       self.pool = validation_pool.ValidationPool.Load(filename)
     else:
@@ -1073,9 +1096,9 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     # so the repo will already be sync'd appropriately. This means that
     # AcquirePoolFromManifest doesn't need to sync.
     self.pool = validation_pool.ValidationPool.AcquirePoolFromManifest(
-        manifest, self._build_config['overlays'], self.repo,
-        self._options.buildnumber, self.builder_name,
-        self._build_config['master'], self._options.debug)
+        manifest, self._run.config.overlays, self.repo,
+        self._run.buildnumber, self.builder_name,
+        self._run.config.master, self._run.options.debug)
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
@@ -1084,19 +1107,19 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
 
-    if self._build_config['master']:
+    if self._run.config.master:
       try:
         # In order to acquire a pool, we need an initialized buildroot.
         if not git.FindRepoDir(self.repo.directory):
           self.repo.Initialize()
 
         self.pool = pool = validation_pool.ValidationPool.AcquirePool(
-            self._build_config['overlays'], self.repo,
-            self._options.buildnumber, self.builder_name,
-            self._options.debug, check_tree_open=not self._options.debug,
-            changes_query=self._options.cq_gerrit_override,
-            change_filter=self.ChangeFilter,
-            throttled_ok=False)
+            self._run.config.overlays, self.repo,
+            self._run.buildnumber, self.builder_name,
+            self._run.options.debug,
+            check_tree_open=not self._run.options.debug,
+            changes_query=self._run.options.cq_gerrit_override,
+            change_filter=self.ChangeFilter, throttled_ok=False)
 
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
@@ -1117,7 +1140,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
 
   def PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
-    if self._options.force_version:
+    if self._run.options.force_version:
       self.HandleSkip()
     else:
       ManifestVersionedSyncStage.PerformStage(self)
@@ -1128,9 +1151,9 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
 
   option_name = 'sync'
 
-  def __init__(self, options, build_config, sync_stage, success):
+  def __init__(self, builder_run, sync_stage, success, **kwargs):
     super(ManifestVersionedSyncCompletionStage, self).__init__(
-        options, build_config)
+        builder_run, **kwargs)
     self.sync_stage = sync_stage
     self.success = success
     # Message that can be set that well be sent along with the status in
@@ -1138,9 +1161,8 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
     self.message = None
 
   def PerformStage(self):
-    if ManifestVersionedSyncStage.manifest_manager:
-      ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
-          success=self.success, message=self.message)
+    self._run.attrs.manifest_manager.UpdateStatus(
+        success=self.success, message=self.message)
 
 
 class ImportantBuilderFailedException(results_lib.StepFailure):
@@ -1156,19 +1178,18 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def _FetchSlaveStatuses(self):
     """Fetch and return build status for this build and any of its slaves."""
-    if self._options.debug:
+    if self._run.options.debug:
       # In debug mode, nothing is uploaded to Google Storage, so we bypass
       # the extra hop and just look at what we have locally.
       status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
       status_obj = manifest_version.BuilderStatus(status, self.message)
       return {self._bot_id: status_obj}
-    elif not self._build_config['master']:
+    elif not self._run.config.master:
       # Slaves only need to look at their own status.
-      return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-          [self._bot_id])
+      return self._run.attrs.manifest_manager.GetBuildersStatus([self._bot_id])
     else:
-      builders = self._GetSlavesForMaster(self._build_config)
-      manager = ManifestVersionedSyncStage.manifest_manager
+      builders = self._GetSlavesForMaster(self._run.config)
+      manager = self._run.attrs.manifest_manager
       sub_manager = MasterSlaveSyncStage.sub_manager
       if sub_manager:
         public_builders = [b['name'] for b in builders if not b['internal']]
@@ -1181,13 +1202,13 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def _AbortCQHWTests(self):
     """Abort any HWTests started by the CQ."""
-    manifest_manager = ManifestVersionedSyncStage.manifest_manager
-    if (cbuildbot_config.IsCQType(self._build_config['build_type']) and
+    manifest_manager = self._run.attrs.manifest_manager
+    if (cbuildbot_config.IsCQType(self._run.config.build_type) and
         manifest_manager is not None and
-        self._target_manifest_branch == 'master'):
+        self._run.manifest_branch == 'master'):
       release_tag = manifest_manager.current_version
       if release_tag and not commands.HaveHWTestsBeenAborted(release_tag):
-        commands.AbortHWTests(release_tag, self._options.debug)
+        commands.AbortHWTests(release_tag, self._run.options.debug)
 
   def _HandleStageException(self, exception):
     """Decide whether an exception should be treated as fatal."""
@@ -1198,7 +1219,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # report a warning instead.
     # pylint: disable=W0212
     if (isinstance(exception, ImportantBuilderFailedException) and
-        not self._build_config['master']):
+        not self._run.config.master):
       return self._HandleExceptionAsWarning(exception)
     else:
       # In all other cases, exceptions should be treated as fatal. To
@@ -1215,13 +1236,12 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     """
     # We only promote for the pfq, not chrome pfq.
     # TODO(build): Run this logic in debug mode too.
-    if (not self._options.debug and
-        cbuildbot_config.IsPFQType(self._build_config['build_type']) and
-        self._build_config['master'] and
-        self._target_manifest_branch == 'master' and
-        ManifestVersionedSyncStage.manifest_manager is not None and
-        self._build_config['build_type'] != constants.CHROME_PFQ_TYPE):
-      ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
+    if (not self._run.options.debug and
+        cbuildbot_config.IsPFQType(self._run.config.build_type) and
+        self._run.config.master and
+        self._run.manifest_branch == 'master' and
+        self._run.config.build_type != constants.CHROME_PFQ_TYPE):
+      self._run.attrs.manifest_manager.PromoteCandidate()
       if MasterSlaveSyncStage.sub_manager:
         MasterSlaveSyncStage.sub_manager.PromoteCandidate()
 
@@ -1256,23 +1276,22 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         'Please check the logs of these builders for details.']))
 
   def PerformStage(self):
-    if ManifestVersionedSyncStage.manifest_manager:
-      # Upload our pass/fail status to Google Storage.
-      ManifestVersionedSyncStage.manifest_manager.UploadStatus(
-          success=self.success, message=self.message)
+    # Upload our pass/fail status to Google Storage.
+    self._run.attrs.manifest_manager.UploadStatus(
+        success=self.success, message=self.message)
 
-      statuses = self._FetchSlaveStatuses()
-      self._slave_statuses = statuses
-      failing = set(builder for builder, status in statuses.iteritems()
-                    if status.Failed())
-      inflight = set(builder for builder, status in statuses.iteritems()
-                     if status.Inflight())
+    statuses = self._FetchSlaveStatuses()
+    self._slave_statuses = statuses
+    failing = set(builder for builder, status in statuses.iteritems()
+                  if status.Failed())
+    inflight = set(builder for builder, status in statuses.iteritems()
+                   if status.Inflight())
 
-      if failing or inflight:
-        self.HandleFailure(failing, inflight)
-        raise ImportantBuilderFailedException()
-      else:
-        self.HandleSuccess()
+    if failing or inflight:
+      self.HandleFailure(failing, inflight)
+      raise ImportantBuilderFailedException()
+    else:
+      self.HandleSuccess()
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.
@@ -1291,14 +1310,14 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
 
   def HandleSuccess(self):
-    if self._build_config['master']:
+    if self._run.config.master:
       self.sync_stage.pool.SubmitPool()
       # After submitting the pool, update the commit hashes for uprevved
       # ebuilds.
       manifest = git.ManifestCheckout.Cached(self._build_root)
       portage_utilities.EBuild.UpdateCommitHashesForChanges(
           self.sync_stage.pool.changes, self._build_root, manifest)
-      if cbuildbot_config.IsPFQType(self._build_config['build_type']):
+      if cbuildbot_config.IsPFQType(self._run.config.build_type):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
   def HandleFailure(self, failing, inflight):
@@ -1325,11 +1344,11 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # When we're debugging hardware test failures, it's useful to see the
     # results on all platforms, to see if the failure is platform-specific.
     tracebacks = results_lib.Results.GetTracebacks()
-    if not self.success and self._build_config['important']:
+    if not self.success and self._run.config['important']:
       if len(tracebacks) != 1 or tracebacks[0].failed_prefix != 'HWTest':
         self._AbortCQHWTests()
 
-    if self._build_config['master']:
+    if self._run.config.master:
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
       messages = [self._slave_statuses[x].message for x in failing]
@@ -1352,23 +1371,22 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         self.sync_stage.pool.HandleValidationTimeout()
 
   def PerformStage(self):
-    if not self.success and self._build_config['important']:
+    if not self.success and self._run.config.important:
       # This message is sent along with the failed status to the master to
       # indicate a failure.
       self.message = self.sync_stage.pool.GetValidationFailedMessage()
 
     super(CommitQueueCompletionStage, self).PerformStage()
 
-    if ManifestVersionedSyncStage.manifest_manager:
-      ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
-          success=self.success, message=self.message)
+    self._run.attrs.manifest_manager.UpdateStatus(
+        success=self.success, message=self.message)
 
 
 class PreCQSyncStage(SyncStage):
   """Sync and apply patches to test if they compile."""
 
-  def __init__(self, options, build_config, patches):
-    super(PreCQSyncStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, patches, **kwargs):
+    super(PreCQSyncStage, self).__init__(builder_run, **kwargs)
 
     # The list of patches to test.
     self.patches = patches
@@ -1380,24 +1398,24 @@ class PreCQSyncStage(SyncStage):
   def HandleSkip(self):
     """Handles skip and loads validation pool from disk."""
     super(PreCQSyncStage, self).HandleSkip()
-    filename = self._options.validation_pool
+    filename = self._run.options.validation_pool
     if filename:
       self.pool = validation_pool.ValidationPool.Load(filename)
 
   def PerformStage(self):
     super(PreCQSyncStage, self).PerformStage()
     self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
-        self._build_config['overlays'], self._build_root,
-        self._options.buildnumber, self._build_config['name'],
-        dryrun=self._options.debug_forced, changes=self.patches)
+        self._run.config.overlays, self._build_root,
+        self._run.buildnumber, self._run.config.name,
+        dryrun=self._run.options.debug_forced, changes=self.patches)
     self.pool.ApplyPoolIntoRepo()
 
 
 class PreCQCompletionStage(bs.BuilderStage):
   """Reports the status of a trybot run to Google Storage and Gerrit."""
 
-  def __init__(self, options, build_config, sync_stage, success):
-    super(PreCQCompletionStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, sync_stage, success, **kwargs):
+    super(PreCQCompletionStage, self).__init__(builder_run, **kwargs)
     self.sync_stage = sync_stage
     self.success = success
 
@@ -1429,8 +1447,8 @@ class PreCQLauncherStage(SyncStage):
   # once.
   MAX_PATCHES_PER_TRYBOT_RUN = 50
 
-  def __init__(self, options, build_config):
-    super(PreCQLauncherStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, **kwargs):
+    super(PreCQLauncherStage, self).__init__(builder_run, **kwargs)
     self.skip_sync = True
     self.launching = {}
     self.retried = set()
@@ -1485,13 +1503,13 @@ class PreCQLauncherStage(SyncStage):
             pool.SendNotification(change, '%(details)s', details=msg)
             pool.RemoveCommitReady(change)
             pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_FAILED,
-                                self._options.debug)
+                                self._run.options.debug)
             self.retried.discard(change)
           else:
             # Try the change again.
             self.retried.add(change)
             pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_WAITING,
-                                self._options.debug)
+                                self._run.options.debug)
       elif status == self.STATUS_INFLIGHT:
         # Once a Pre-CQ run actually starts, it'll set the status to
         # STATUS_INFLIGHT.
@@ -1503,7 +1521,7 @@ class PreCQLauncherStage(SyncStage):
         # as 'Ready' next time we check, we'll know the CL is truly still ready.
         busy.add(change)
         pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_WAITING,
-                            self._options.debug)
+                            self._run.options.debug)
       elif status == self.STATUS_PASSED:
         passed.add(change)
 
@@ -1517,7 +1535,7 @@ class PreCQLauncherStage(SyncStage):
     """
     cmd = ['cbuildbot', '--remote', '--nobootstrap',
            constants.PRE_CQ_BUILDER_NAME]
-    if self._options.debug:
+    if self._run.options.debug:
       cmd.append('--debug')
     for patch in plan:
       number = cros_patch.FormatGerritNumber(
@@ -1527,7 +1545,7 @@ class PreCQLauncherStage(SyncStage):
     for patch in plan:
       if pool.GetCLStatus(PRE_CQ, patch) != self.STATUS_PASSED:
         pool.UpdateCLStatus(PRE_CQ, patch, self.STATUS_LAUNCHING,
-                            self._options.debug)
+                            self._run.options.debug)
 
   def GetDisjointTransactionsToTest(self, pool, changes):
     """Get the list of disjoint transactions to test.
@@ -1590,10 +1608,11 @@ class PreCQLauncherStage(SyncStage):
 
     # Loop through all of the changes until we hit a timeout.
     validation_pool.ValidationPool.AcquirePool(
-        self._build_config['overlays'], self.repo,
-        self._options.buildnumber, urllib.quote(constants.PRE_CQ_LAUNCHER_NAME),
-        dryrun=self._options.debug,
-        changes_query=self._options.cq_gerrit_override,
+        self._run.config.overlays, self.repo,
+        self._run.buildnumber,
+        urllib.quote(constants.PRE_CQ_LAUNCHER_NAME),
+        dryrun=self._run.options.debug,
+        changes_query=self._run.options.cq_gerrit_override,
         check_tree_open=False, change_filter=self.ProcessChanges)
 
 
@@ -1623,11 +1642,11 @@ class BranchUtilStage(bs.BuilderStage):
 
   COMMIT_MESSAGE = 'Bump %(target)s after branching %(branch)s'
 
-  def __init__(self, options, build_config):
-    super(BranchUtilStage, self).__init__(options, build_config)
-    self.dryrun = self._options.debug_forced
-    self.branch_name = git.NormalizeRef(self._options.branch_name)
-    self.rename_to = git.NormalizeRef(self._options.rename_to)
+  def __init__(self, builder_run, **kwargs):
+    super(BranchUtilStage, self).__init__(builder_run, **kwargs)
+    self.dryrun = self._run.options.debug_forced
+    self.branch_name = git.NormalizeRef(self._run.options.branch_name)
+    self.rename_to = git.NormalizeRef(self._run.options.rename_to)
 
   def RunPush(self, checkout, src_ref, dest_ref, force=False):
     """Perform a git push for a checkout.
@@ -1713,7 +1732,7 @@ class BranchUtilStage(bs.BuilderStage):
 
     # Complain if the branch already exists.
     dest_sha1 = self.GetSHA1(src_checkout, new_branch)
-    force = (self._options.force_create or self._options.delete_branch)
+    force = (self._run.options.force_create or self._run.options.delete_branch)
     if dest_sha1 and not force:
       src_sha1 = self.GetSHA1(src_checkout, src_ref) or src_ref
       if src_sha1 != dest_sha1:
@@ -1723,7 +1742,7 @@ class BranchUtilStage(bs.BuilderStage):
       cros_build_lib.Info('Checkout %s already contains branch %s and it '
                           'already points to revision %s', src_checkout['name'],
                           new_branch, dest_sha1)
-    elif self._options.delete_branch or self.rename_to:
+    elif self._run.options.delete_branch or self.rename_to:
       # Create the new branch (if needed).
       old_branch = '%s%s' % (self.branch_name, suffix)
       if self.rename_to:
@@ -1735,7 +1754,7 @@ class BranchUtilStage(bs.BuilderStage):
         self.RunPush(src_checkout, src_ref='', dest_ref=old_branch)
     else:
       self.RunPush(src_checkout, src_ref=src_ref, dest_ref=new_branch,
-                   force=self._options.force_create)
+                   force=self._run.options.force_create)
 
   def UpdateManifest(self, manifest_path):
     """Rewrite |manifest_path| to point at the right branch.
@@ -1778,7 +1797,7 @@ class BranchUtilStage(bs.BuilderStage):
     these should all be checked out to 'refs/heads/<new_branch>', so we go
     through the manifest and fix those checkouts.
     """
-    assert not self._options.delete_branch, 'Can\'t fix a deleted branch.'
+    assert not self._run.options.delete_branch, 'Can\'t fix a deleted branch.'
 
     for project in constants.MANIFEST_PROJECTS:
       manifest_checkout = repo_manifest.FindCheckout(project)
@@ -1852,7 +1871,7 @@ class BranchUtilStage(bs.BuilderStage):
     # new branch doesn't actually get created in dryrun mode).
     push_to = git.RemoteRef(push_remote, self.branch_name)
     version_info = manifest_version.VersionInfo(
-        version_string=self._options.force_version)
+        version_string=self._run.options.force_version)
     incr_type, incr_target = self.DetermineBranchIncrParams(version_info)
     message = self.COMMIT_MESSAGE % {
         'target': incr_target,
@@ -1889,7 +1908,7 @@ class BranchUtilStage(bs.BuilderStage):
 
     tot_version_info = manifest_version.VersionInfo.from_repo(self._build_root)
     if (self.branch_name.startswith('refs/heads/release-') or
-        tot_version_info.VersionString() == self._options.force_version):
+        tot_version_info.VersionString() == self._run.options.force_version):
       incr_type, incr_target = self.DetermineSourceIncrParams(
           source_branch, self.branch_name)
       message = self.COMMIT_MESSAGE % {
@@ -1920,10 +1939,10 @@ class BranchUtilStage(bs.BuilderStage):
     args = [[repo_manifest, x] for x in checkouts]
     parallel.RunTasksInProcessPool(self.ProcessCheckout, args, processes=16)
 
-    if not self._options.delete_branch:
+    if not self._run.options.delete_branch:
       self.FixUpManifests(repo_manifest)
 
-    if self._options.delete_branch or self.rename_to:
+    if self._run.options.delete_branch or self.rename_to:
       return
 
     overlay_name = 'chromiumos/overlays/chromiumos-overlay'
@@ -1942,7 +1961,7 @@ class RefreshPackageStatusStage(bs.BuilderStage):
   def PerformStage(self):
     commands.RefreshPackageStatus(buildroot=self._build_root,
                                   boards=self._boards,
-                                  debug=self._options.debug)
+                                  debug=self._run.options.debug)
 
 
 class InitSDKStage(bs.BuilderStage):
@@ -1950,21 +1969,21 @@ class InitSDKStage(bs.BuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, options, build_config):
-    super(InitSDKStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, **kwargs):
+    super(InitSDKStage, self).__init__(builder_run, **kwargs)
     self._env = {}
-    if self._options.clobber:
+    if self._run.options.clobber:
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
-    self._latest_toolchain = (self._build_config['latest_toolchain'] or
-                              self._options.latest_toolchain)
-    if self._latest_toolchain and self._build_config['gcc_githash']:
+    self._latest_toolchain = (self._run.config.latest_toolchain or
+                              self._run.options.latest_toolchain)
+    if self._latest_toolchain and self._run.config.gcc_githash:
       self._env['USE'] = 'git_gcc'
-      self._env['GCC_GITHASH'] = self._build_config['gcc_githash']
+      self._env['GCC_GITHASH'] = self._run.config.gcc_githash
 
   def PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    replace = self._build_config['chroot_replace']
+    replace = self._run.config.chroot_replace
     if os.path.isdir(self._build_root) and not replace:
       try:
         commands.RunChrootUpgradeHooks(self._build_root)
@@ -1974,12 +1993,12 @@ class InitSDKStage(bs.BuilderStage):
         replace = True
 
     if not os.path.isdir(chroot_path) or replace:
-      use_sdk = (self._build_config['use_sdk'] and not self._options.nosdk)
+      use_sdk = (self._run.config.use_sdk and not self._run.options.nosdk)
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=replace,
           use_sdk=use_sdk,
-          chrome_root=self._options.chrome_root,
+          chrome_root=self._run.options.chrome_root,
           extra_env=self._env)
 
 
@@ -1988,14 +2007,14 @@ class SetupBoardStage(InitSDKStage):
 
   option_name = 'build'
 
-  def __init__(self, options, build_config, boards=None):
-    super(SetupBoardStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, boards=None, **kwargs):
+    super(SetupBoardStage, self).__init__(builder_run, **kwargs)
     if boards is not None:
       self._boards = boards
 
   def PerformStage(self):
     # Calculate whether we should use binary packages.
-    usepkg = (self._build_config['usepkg_setup_board'] and
+    usepkg = (self._run.config.usepkg_setup_board and
               not self._latest_toolchain)
 
     # We need to run chroot updates on most builders because they uprev after
@@ -2003,7 +2022,7 @@ class SetupBoardStage(InitSDKStage):
     # is run prior to InitSDK. This is not just an optimization: It helps
     # workaround http://crbug.com/225509
     chroot_upgrade = (
-      self._build_config['build_type'] != constants.CHROOT_BUILDER_TYPE)
+      self._run.config.build_type != constants.CHROOT_BUILDER_TYPE)
 
     # Iterate through boards to setup.
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
@@ -2015,15 +2034,15 @@ class SetupBoardStage(InitSDKStage):
 
       commands.SetupBoard(
           self._build_root, board=board_to_build, usepkg=usepkg,
-          chrome_binhost_only=self._build_config['chrome_binhost_only'],
-          force=self._build_config['board_replace'],
+          chrome_binhost_only=self._run.config.chrome_binhost_only,
+          force=self._run.config.board_replace,
           extra_env=self._env, chroot_upgrade=chroot_upgrade,
-          profile=self._options.profile or self._build_config['profile'])
+          profile=self._run.options.profile or self._run.config.profile)
       chroot_upgrade = False
 
     commands.SetSharedUserPassword(
         self._build_root,
-        password=self._build_config['shared_user_password'])
+        password=self._run.config.shared_user_password)
 
 
 class UprevStage(bs.BuilderStage):
@@ -2033,15 +2052,15 @@ class UprevStage(bs.BuilderStage):
 
   option_name = 'uprev'
 
-  def __init__(self, options, build_config, boards=None, enter_chroot=True):
-    super(UprevStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, boards=None, enter_chroot=True, **kwargs):
+    super(UprevStage, self).__init__(builder_run, **kwargs)
     self._enter_chroot = enter_chroot
     if boards is not None:
       self._boards = boards
 
   def PerformStage(self):
     # Perform other uprevs.
-    if self._build_config['uprev']:
+    if self._run.config.uprev:
       overlays, _ = self._ExtractOverlays()
       commands.UprevPackages(self._build_root,
                              self._boards,
@@ -2054,9 +2073,10 @@ class SyncChromeStage(bs.BuilderStage):
 
   option_name = 'managed_chrome'
 
-  def __init__(self, options, build_config):
-    super(SyncChromeStage, self).__init__(options, build_config)
+  def __init__(self, builder_run, **kwargs):
+    super(SyncChromeStage, self).__init__(builder_run, **kwargs)
     # PerformStage() will fill this out for us.
+    # TODO(mtennant): Replace with a run param.
     self.chrome_version = None
 
   def PerformStage(self):
@@ -2064,16 +2084,16 @@ class SyncChromeStage(bs.BuilderStage):
     chrome_atom_to_build = None
     if self._chrome_rev:
       chrome_atom_to_build = commands.MarkChromeAsStable(
-          self._build_root, self._target_manifest_branch,
+          self._build_root, self._run.manifest_branch,
           self._chrome_rev, self._boards,
-          chrome_version=self._options.chrome_version)
+          chrome_version=self._run.options.chrome_version)
 
     kwargs = {}
     if self._chrome_rev == constants.CHROME_REV_SPEC:
-      kwargs['revision'] = self._options.chrome_version
+      kwargs['revision'] = self._run.options.chrome_version
       cpv = None
       cros_build_lib.PrintBuildbotStepText('revision %s' % kwargs['revision'])
-      self.chrome_version = self._options.chrome_version
+      self.chrome_version = self._run.options.chrome_version
     else:
       cpv = portage_utilities.BestVisible(constants.CHROME_CP,
                                           buildroot=self._build_root)
@@ -2081,12 +2101,12 @@ class SyncChromeStage(bs.BuilderStage):
       cros_build_lib.PrintBuildbotStepText('tag %s' % kwargs['tag'])
       self.chrome_version = kwargs['tag']
 
-    useflags = self._build_config['useflags']
-    commands.SyncChrome(self._build_root, self._options.chrome_root, useflags,
-                        **kwargs)
+    useflags = self._run.config.useflags
+    commands.SyncChrome(self._build_root, self._run.options.chrome_root,
+                        useflags, **kwargs)
     if (self._chrome_rev and not chrome_atom_to_build and
-        self._options.buildbot and
-        self._build_config['build_type'] == constants.CHROME_PFQ_TYPE):
+        self._run.options.buildbot and
+        self._run.config.build_type == constants.CHROME_PFQ_TYPE):
       cros_build_lib.Info('Chrome already uprevved')
       sys.exit(0)
 
@@ -2097,44 +2117,44 @@ class PatchChromeStage(bs.BuilderStage):
   option_name = 'rietveld_patches'
 
   def PerformStage(self):
-    for patch in ' '.join(self._options.rietveld_patches).split():
+    for patch in ' '.join(self._run.options.rietveld_patches).split():
       patch, colon, subdir = patch.partition(':')
       if not colon:
         subdir = 'src'
-      commands.PatchChrome(self._options.chrome_root, patch, subdir)
+      commands.PatchChrome(self._run.options.chrome_root, patch, subdir)
 
 
 class BuildPackagesStage(ArchivingStage):
   """Build Chromium OS packages."""
 
   option_name = 'build'
-  def __init__(self, options, build_config, board, archive_stage,
-               pgo_generate=False, pgo_use=False):
-    useflags = build_config['useflags'][:]
+  def __init__(self, builder_run, board, archive_stage,
+               pgo_generate=False, pgo_use=False, **kwargs):
+    super(BuildPackagesStage, self).__init__(builder_run, board,
+                                             archive_stage, **kwargs)
     self._pgo_generate, self._pgo_use = pgo_generate, pgo_use
-    suffix = None
     assert not pgo_generate or not pgo_use
+
+    useflags = self._run.config.useflags[:]
     if pgo_generate:
-      suffix = ' [%s]' % constants.USE_PGO_GENERATE
+      self.name += ' [%s]' % constants.USE_PGO_GENERATE
       useflags.append(constants.USE_PGO_GENERATE)
     elif pgo_use:
-      suffix = ' [%s]' % constants.USE_PGO_USE
+      self.name += ' [%s]' % constants.USE_PGO_USE
       useflags.append(constants.USE_PGO_USE)
-    super(BuildPackagesStage, self).__init__(options, build_config, board,
-                                             archive_stage, suffix=suffix)
 
     self._env = {}
     if useflags:
       self._env['USE'] = ' '.join(useflags)
 
-    if self._options.chrome_root:
+    if self._run.options.chrome_root:
       self._env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
 
-    if self._options.clobber:
+    if self._run.options.clobber:
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
-    self._build_autotest = (self._build_config['build_tests'] and
-                            self._options.tests)
+    self._build_autotest = (self._run.config.build_tests and
+                            self._run.options.tests)
 
   def _GetArchitectures(self):
     """Get the list of architectures built by this builder."""
@@ -2147,15 +2167,14 @@ class BuildPackagesStage(ArchivingStage):
                                           buildroot=self._build_root)
       commands.WaitForPGOData(self._GetArchitectures(), cpv)
 
-    config = self._build_config
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._build_autotest,
-                   usepkg=config['usepkg_build_packages'],
-                   chrome_binhost_only=config['chrome_binhost_only'],
-                   packages=config['packages'],
+                   usepkg=self._run.config.usepkg_build_packages,
+                   chrome_binhost_only=self._run.config.chrome_binhost_only,
+                   packages=self._run.config.packages,
                    skip_chroot_upgrade=True,
-                   chrome_root=self._options.chrome_root,
+                   chrome_root=self._run.options.chrome_root,
                    extra_env=self._env)
 
 
@@ -2168,7 +2187,7 @@ class ChromeSDKStage(ArchivingStage):
     self._pkg_dir = os.path.join(
         self._build_root, constants.DEFAULT_CHROOT_DIR,
         'build', self._current_board, 'var', 'db', 'pkg')
-    self.chrome_src = os.path.join(self._options.chrome_root, 'src')
+    self.chrome_src = os.path.join(self._run.options.chrome_root, 'src')
     self.out_board_dir = os.path.join(
         self.chrome_src, 'out_%s' % self._current_board)
 
@@ -2176,8 +2195,8 @@ class ChromeSDKStage(ArchivingStage):
     """Generate and upload sysroot for building Chrome."""
     assert self.archive_path.startswith(self._build_root)
     extra_env = {}
-    if self._build_config['useflags']:
-      extra_env['USE'] = ' '.join(self._build_config['useflags'])
+    if self._run.config.useflags:
+      extra_env['USE'] = ' '.join(self._run.config.useflags)
     in_chroot_path = git.ReinterpretPathForChroot(self.archive_path)
     cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
            self._current_board, '--package', constants.CHROME_CP]
@@ -2253,7 +2272,7 @@ class ChromeSDKStage(ArchivingStage):
         extra_args = ['--cwd', self.chrome_src, '--sdk-path', self.archive_path]
         sdk_cmd = commands.ChromeSDK(
             self._build_root, self._current_board, chrome_src=self.chrome_src,
-            goma=self._build_config['chrome_sdk_goma'],
+            goma=self._run.config.chrome_sdk_goma,
             extra_args=extra_args, cache_dir=cache_dir)
         self._BuildChrome(sdk_cmd)
         self._TestDeploy(sdk_cmd)
@@ -2270,17 +2289,17 @@ class BuildImageStage(BuildPackagesStage):
       images_can_build = set(['test'])
     else:
       images_can_build = set(['base', 'dev', 'test'])
-    images_to_build = set(self._build_config['images']).intersection(
+    images_to_build = set(self._run.config.images).intersection(
         images_can_build)
 
     version = self.archive_stage.release_tag
-    disk_layout = self._build_config['disk_layout']
+    disk_layout = self._run.config.disk_layout
     if self._pgo_generate:
       disk_layout = constants.PGO_GENERATE_DISK_LAYOUT
       if version:
         version = '%s-pgo-generate' % version
 
-    rootfs_verification = self._build_config['rootfs_verification']
+    rootfs_verification = self._run.config.rootfs_verification
     commands.BuildImage(self._build_root,
                         self._current_board,
                         sorted(images_to_build),
@@ -2302,25 +2321,25 @@ class BuildImageStage(BuildPackagesStage):
          lambda: self._GenerateAuZip(cbuildbot_image_link)])
 
   def _BuildVMImage(self):
-    if self._build_config['vm_tests'] and not self._pgo_generate:
+    if self._run.config.vm_tests and not self._pgo_generate:
       commands.BuildVMImageForTesting(
           self._build_root,
           self._current_board,
-          disk_layout=self._build_config['disk_vm_layout'],
+          disk_layout=self._run.config.disk_vm_layout,
           extra_env=self._env)
 
   def ArchivePayloads(self):
     """Archives update payloads when they are ready."""
     with osutils.TempDir(prefix='cbuildbot-payloads') as tempdir:
       with self.ArtifactUploader() as queue:
-        if self._build_config['upload_hw_test_artifacts']:
+        if self._run.config.upload_hw_test_artifacts:
           image_path = os.path.join(self.GetImageDirSymlink(),
                                     'chromiumos_test_image.bin')
           # For non release builds, we are only interested in generating
           # payloads for the purpose of imaging machines. This means we
           # shouldn't generate delta payloads for n-1->n testing.
           # TODO: Add a config flag for generating delta payloads instead.
-          if (self._build_config['build_type'] == constants.CANARY_TYPE and
+          if (self._run.config.build_type == constants.CANARY_TYPE and
               not self._pgo_generate):
             commands.GenerateNPlus1Payloads(
                 self._build_root, self.bot_archive_root, image_path, tempdir)
@@ -2365,11 +2384,11 @@ class BuildImageStage(BuildPackagesStage):
   def PerformStage(self):
     # Build images and autotest tarball in parallel.
     steps = []
-    if (self._build_config['upload_hw_test_artifacts'] or
-        self._build_config['archive_build_debug']) and self._build_autotest:
+    if (self._run.config.upload_hw_test_artifacts or
+        self._run.config.archive_build_debug) and self._build_autotest:
       steps.append(self._BuildAutotestTarballs)
 
-    if self._build_config['images']:
+    if self._run.config.images:
       steps.append(self._BuildImages)
 
     parallel.RunParallelSteps(steps)
@@ -2407,13 +2426,13 @@ class UnitTestStage(BoardSpecificBuilderStage):
 
   def PerformStage(self):
     extra_env = {}
-    if self._build_config['useflags']:
-      extra_env['USE'] = ' '.join(self._build_config['useflags'])
+    if self._run.config.useflags:
+      extra_env['USE'] = ' '.join(self._run.config.useflags)
     with timeout_util.Timeout(self.UNIT_TEST_TIMEOUT):
       commands.RunUnitTests(self._build_root,
                             self._current_board,
-                            full=(not self._build_config['quick_unit']),
-                            blacklist=self._build_config['unittest_blacklist'],
+                            full=(not self._run.config.quick_unit),
+                            blacklist=self._run.config.unittest_blacklist,
                             extra_env=extra_env)
 
     if os.path.exists(os.path.join(self.GetImageDirSymlink(),
@@ -2435,7 +2454,7 @@ class VMTestStage(ArchivingStage):
 
     # Wait for breakpad symbols.
     got_symbols = False
-    if self._options.archive:
+    if self._run.options.archive:
       got_symbols = self.archive_stage.WaitForBreakpadSymbols()
     filenames = commands.GenerateStackTraces(
         self._build_root, self._current_board, test_tarball, self.archive_path,
@@ -2469,7 +2488,7 @@ class VMTestStage(ArchivingStage):
     test_results_dir = commands.CreateTestRoot(self._build_root)
     test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
     try:
-      test_type = self._build_config['vm_tests']
+      test_type = self._run.config.vm_tests
       commands.RunTestSuite(self._build_root,
                             self._current_board,
                             self.GetImageDirSymlink(),
@@ -2479,7 +2498,7 @@ class VMTestStage(ArchivingStage):
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             archive_dir=self.bot_archive_root)
 
-      if self._build_config['build_type'] == constants.CANARY_TYPE:
+      if self._run.config.build_type == constants.CANARY_TYPE:
         commands.RunDevModeTest(
             self._build_root, self._current_board, self.GetImageDirSymlink())
 
@@ -2510,10 +2529,10 @@ class HWTestStage(ArchivingStage):
 
   PERF_RESULTS_EXTENSION = 'results'
 
-  def __init__(self, options, build_config, board, archive_stage, suite_config):
-    super(HWTestStage, self).__init__(options, build_config, board,
-                                      archive_stage,
-                                      suffix=' [%s]' % suite_config.suite)
+  def __init__(self, builder_run, board, archive_stage, suite_config, **kwargs):
+    super(HWTestStage, self).__init__(builder_run, board, archive_stage,
+                                      suffix=' [%s]' % suite_config.suite,
+                                      **kwargs)
     self.suite_config = suite_config
     self.wait_for_results = True
 
@@ -2527,10 +2546,10 @@ class HWTestStage(ArchivingStage):
                                   HWTestStage.PERF_RESULTS_EXTENSION)
     gs_results_file = '/'.join([self.upload_url, result_file_name])
     gs_context = gs.GSContext()
-    gs_context.Copy(gs_results_file, self._options.log_dir)
+    gs_context.Copy(gs_results_file, self._run.options.log_dir)
     # Prints out the actual result from gs_context.Copy.
     logging.info('Copy of %s completed. Printing below:', result_file_name)
-    self._PrintFile(os.path.join(self._options.log_dir, result_file_name))
+    self._PrintFile(os.path.join(self._run.options.log_dir, result_file_name))
 
   def _CheckAborted(self):
     aborted = (self.archive_stage.release_tag and
@@ -2577,10 +2596,10 @@ class HWTestStage(ArchivingStage):
       return
 
     build = '/'.join([self._bot_id, self.version])
-    if self._options.remote_trybot and self._options.hwtest:
-      debug = self._options.debug_forced
+    if self._run.options.remote_trybot and self._run.options.hwtest:
+      debug = self._run.options.debug_forced
     else:
-      debug = self._options.debug
+      debug = self._run.options.debug
     lab_status.CheckLabStatus(self._current_board)
     with timeout_util.Timeout(
         self.suite_config.timeout  + constants.HWTEST_TIMEOUT_EXTENSION):
@@ -2745,11 +2764,13 @@ class ArchiveStage(ArchivingStage):
   option_name = 'archive'
 
   # This stage is intended to run in the background, in parallel with tests.
-  def __init__(self, options, build_config, board, release_tag,
-               chrome_version=None):
-    self.release_tag = release_tag
+  def __init__(self, builder_run, board, chrome_version=None, **kwargs):
+    super(ArchiveStage, self).__init__(builder_run, board, self, **kwargs)
     self.chrome_version = chrome_version
-    super(ArchiveStage, self).__init__(options, build_config, board, self)
+
+    # TODO(mtennant): Places that use this release_tag attribute should
+    # move to use self._run.attrs.release_tag directly.
+    self.release_tag = getattr(self._run.attrs, 'release_tag', None)
 
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._recovery_image_status_queue = multiprocessing.Queue()
@@ -2759,27 +2780,6 @@ class ArchiveStage(ArchivingStage):
 
     # Setup the archive path. This is used by other stages.
     self._SetupArchivePath()
-
-  @classmethod
-  def GetVersionInfo(cls, build_root):
-    """Helper for picking apart various version bits.
-
-    This method only exists so that tests can override it.
-    """
-    return manifest_version.VersionInfo.from_repo(build_root)
-
-  @cros_build_lib.MemoizedSingleCall
-  def GetVersion(self):
-    """Helper for calculating self.version."""
-    verinfo = self.GetVersionInfo(self._build_root)
-    calc_version = self.release_tag or verinfo.VersionString()
-    calc_version = 'R%s-%s' % (verinfo.chrome_branch, calc_version)
-
-    # Non-versioned builds need the build number to uniquify the image.
-    if not self.release_tag:
-      calc_version += '-b%s' % self._options.buildnumber
-
-    return calc_version
 
   def WaitForRecoveryImage(self):
     """Wait until artifacts needed by SignerTest stage are created.
@@ -2821,7 +2821,7 @@ class ArchiveStage(ArchivingStage):
 
   def _SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""
-    if self._options.buildbot:
+    if self._run.options.buildbot:
       # Buildbot: Clear out any leftover build artifacts, if present.
       osutils.RmDir(self.archive_path, ignore_missing=True)
     else:
@@ -2869,12 +2869,13 @@ class ArchiveStage(ArchivingStage):
   def BuildAndArchiveDeltaSysroot(self):
     """Generate and upload delta sysroot for initial build_packages."""
     extra_env = {}
-    if self._build_config['useflags']:
-      extra_env['USE'] = ' '.join(self._build_config['useflags'])
+    if self._run.config.useflags:
+      extra_env['USE'] = ' '.join(self._run.config.useflags)
     in_chroot_path = git.ReinterpretPathForChroot(self.archive_path)
     cmd = ['generate_delta_sysroot', '--out-dir', in_chroot_path,
            '--board', self._current_board]
-    if not self._build_config['build_tests'] or not self._options.tests:
+    # TODO(mtennant): Make this condition into one run param.
+    if not self._run.config.build_tests or not self._run.options.tests:
       cmd.append('--skip-tests')
     cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
                               extra_env=extra_env)
@@ -2882,7 +2883,7 @@ class ArchiveStage(ArchivingStage):
 
   def PerformStage(self):
     buildroot = self._build_root
-    config = self._build_config
+    config = self._run.config
     board = self._current_board
     debug = self.debug
     upload_url = self.upload_url
@@ -2936,7 +2937,7 @@ class ArchiveStage(ArchivingStage):
 
     def UploadSymbols():
       """Upload generated debug symbols."""
-      if self._options.remote_trybot or self.debug:
+      if self._run.options.remote_trybot or self.debug:
         # For debug builds, limit ourselves to just uploading 1 symbol.
         # This way trybots and such still exercise this code.
         cnt = 1
@@ -3007,7 +3008,8 @@ class ArchiveStage(ArchivingStage):
       """Build and archive the HWQual images."""
       # TODO(petermayo): This logic needs to be exported from the BuildTargets
       # stage rather than copied/re-evaluated here.
-      autotest_built = config['build_tests'] and self._options.tests and (
+      # TODO(mtennant): Make this autotest_built concept into a run param.
+      autotest_built = config['build_tests'] and self._run.options.tests and (
           config['upload_hw_test_artifacts'] or config['archive_build_debug'])
 
       if config['hwqual'] and autotest_built:
@@ -3068,13 +3070,14 @@ class ArchiveStage(ArchivingStage):
       sign_types = []
       if config['name'].endswith('-%s' % cbuildbot_config.CONFIG_TYPE_FIRMWARE):
         sign_types += ['firmware']
-      commands.PushImages(buildroot,
-                          board=board,
-                          branch_name='master',
-                          archive_url=upload_url,
-                          dryrun=debug or not config['push_image'],
-                          profile=self._options.profile or config['profile'],
-                          sign_types=sign_types)
+      commands.PushImages(
+          buildroot,
+          board=board,
+          branch_name='master',
+          archive_url=upload_url,
+          dryrun=debug or not config['push_image'],
+          profile=self._run.options.profile or config['profile'],
+          sign_types=sign_types)
 
     def ArchiveReleaseArtifacts():
       with self.ArtifactUploader(self._release_upload_queue, archive=False):
@@ -3098,9 +3101,9 @@ class ArchiveStage(ArchivingStage):
 
     def MarkAsLatest():
       # Update and upload LATEST file.
-      verinfo = self.GetVersionInfo(self._build_root)
+      verinfo = self._run.GetVersionInfo(self._build_root)
       calc_version = self.release_tag or verinfo.VersionString()
-      filenames = ('LATEST-%s' % self._target_manifest_branch,
+      filenames = ('LATEST-%s' % self._run.manifest_branch,
                    'LATEST-%s' % calc_version)
       for filename in filenames:
         latest_path = os.path.join(self.bot_archive_root, filename)
@@ -3110,12 +3113,12 @@ class ArchiveStage(ArchivingStage):
             debug, acl=self.acl)
 
     try:
-      if not self._build_config['pgo_generate']:
+      if not self._run.config.pgo_generate:
         BuildAndArchiveArtifacts()
         MarkAsLatest()
     finally:
       commands.RemoveOldArchives(self.bot_archive_root,
-                                 self._options.max_archive_builds)
+                                 self._run.options.max_archive_builds)
 
   def _HandleStageException(self, exception):
     # Tell the HWTestStage not to wait for artifacts to be uploaded
@@ -3130,28 +3133,27 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
   option_name = 'prebuilts'
   config_name = 'prebuilts'
 
-  def __init__(self, options, build_config, board, archive_stage, suffix=None):
-    super(UploadPrebuiltsStage, self).__init__(options, build_config, board,
-                                               suffix=suffix)
+  def __init__(self, builder_run, board, archive_stage, **kwargs):
+    super(UploadPrebuiltsStage, self).__init__(builder_run, board, **kwargs)
     self._archive_stage = archive_stage
 
   def GenerateCommonArgs(self):
     """Generate common prebuilt arguments."""
     generated_args = []
-    if self._options.debug:
+    if self._run.options.debug:
       generated_args.append('--debug')
 
-    profile = self._options.profile or self._build_config['profile']
+    profile = self._run.options.profile or self._run.config.profile
     if profile:
       generated_args.extend(['--profile', profile])
 
     # Generate the version if we are a manifest_version build.
-    if self._build_config['manifest_version']:
+    if self._run.config.manifest_version:
       assert self._archive_stage, 'Archive stage missing for versioned build.'
-      version = self._archive_stage.GetVersion()
+      version = self._run.GetVersion()
       generated_args.extend(['--set-version', version])
 
-    if self._build_config['git_sync']:
+    if self._run.config.git_sync:
       # Git sync should never be set for pfq type builds.
       assert not cbuildbot_config.IsPFQType(self._prebuilt_type)
       generated_args.extend(['--git-sync'])
@@ -3188,7 +3190,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     binhosts = []
 
     # Whether we publish public prebuilts.
-    public = (self._build_config['prebuilts'] == constants.PUBLIC)
+    public = self._run.config.prebuilts == constants.PUBLIC
     # Common args we generate for all types of builds.
     generated_args = self.GenerateCommonArgs()
     # Args we specifically add for public/private build types.
@@ -3209,7 +3211,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
       for binhost in filter(None, binhosts):
         generated_args.extend(['--previous-binhost-url', binhost])
 
-      if self._build_config['master'] and board == self._boards[-1]:
+      if self._run.config.master and board == self._boards[-1]:
         # The master builder updates all the binhost conf files, and needs to do
         # so only once so as to ensure it doesn't try to update the same file
         # more than once. As multiple boards can be built on the same builder,
@@ -3217,7 +3219,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
         # upload_prebuilts for the last board. The other boards are treated as
         # slave boards.
         generated_args.append('--sync-binhost-conf')
-        for c in self._GetSlavesForMaster(self._build_config):
+        for c in self._GetSlavesForMaster(self._run.config):
           if c['prebuilts'] == constants.PUBLIC:
             public_builders.append(c['name'])
             public_args.extend(self._AddOptionsForSlave(c['name'], board))
@@ -3248,9 +3250,9 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
   def PerformStage(self):
     generated_args = generated_args = self.GenerateCommonArgs()
     commands.UploadDevInstallerPrebuilts(
-        binhost_bucket=self._build_config['binhost_bucket'],
-        binhost_key=self._build_config['binhost_key'],
-        binhost_base_url=self._build_config['binhost_base_url'],
+        binhost_bucket=self._run.config.binhost_bucket,
+        binhost_key=self._run.config.binhost_key,
+        binhost_base_url=self._run.config.binhost_base_url,
         buildroot=self._build_root,
         board=self._current_board,
         extra_args=generated_args)
@@ -3259,14 +3261,13 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
 class PublishUprevChangesStage(bs.BuilderStage):
   """Makes uprev changes from pfq live for developers."""
 
-  def __init__(self, options, build_config, success):
+  def __init__(self, builder_run, success, **kwargs):
     """Constructor.
 
     Args:
-      options, build_config: See arguments to bs.BuilderStage.__init__()
-      success: Whether the build succeeded.
+      builder_run: BuilderRun object.
     """
-    bs.BuilderStage.__init__(self, options, build_config)
+    super(PublishUprevChangesStage, self).__init__(builder_run, **kwargs)
     self.success = success
 
   def PerformStage(self):
@@ -3282,17 +3283,17 @@ class PublishUprevChangesStage(bs.BuilderStage):
       commands.BuildRootGitCleanup(self._build_root)
 
       # Sync down the latest changes we have submitted.
-      if self._options.sync:
-        next_manifest = self._build_config['manifest']
+      if self._run.options.sync:
+        next_manifest = self._run.config.manifest
         repo = self.GetRepoRepository()
         repo.Sync(next_manifest)
 
       # Commit an uprev locally.
-      if self._options.uprev and self._build_config['uprev']:
+      if self._run.options.uprev and self._run.config.uprev:
         commands.UprevPackages(self._build_root, self._boards, overlays)
 
     # Push the uprev commit.
-    commands.UprevPush(self._build_root, push_overlays, self._options.debug)
+    commands.UprevPush(self._build_root, push_overlays, self._run.options.debug)
 
 
 class ReportStage(bs.BuilderStage):
@@ -3305,13 +3306,22 @@ class ReportStage(bs.BuilderStage):
 <body>
 <h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
 
-  def __init__(self, options, build_config, archive_stages, version,
-               sync_instance, completion_instance=None):
-    bs.BuilderStage.__init__(self, options, build_config)
+  def __init__(self, builder_run, archive_stages, sync_instance,
+               completion_instance=None, **kwargs):
+    super(ReportStage, self).__init__(builder_run, **kwargs)
+    # TODO(mtennant): All these should be retrieved from builder_run instead.
+    # Or, more correctly, the info currently retrieved from these stages should
+    # be stored and retrieved from builder_run instead.
     self._archive_stages = archive_stages
-    self._version = version if version else ''
     self._sync_instance = sync_instance
     self._completion_instance = completion_instance
+
+    # TODO(mtennant): In the future, we should avoid accessing run attributes
+    # in stage constructors, but instead do so at PerformStage time.  This
+    # is so that the Builder can construct all stage objects for a flow
+    # and then run them.  In other words, a stage object should not assume
+    # that it is ready to run at construction time.
+    self._version = getattr(self._run.attrs, 'release_tag', '')
 
   def _UpdateStreakCounter(self, final_status, counter_name,
                            dry_run=False):
@@ -3345,9 +3355,8 @@ class ReportStage(bs.BuilderStage):
     logging.debug('Streak counter value is %s', streak_value)
     return streak_value
 
-
   def PerformStage(self):
-    acl = ArchivingStage.GetUploadACL(self._build_config)
+    acl = ArchivingStage.GetUploadACL(self._run.config)
     archive_urls = {}
 
     for board_config, archive_stage in sorted(self._archive_stages.iteritems()):
@@ -3383,8 +3392,8 @@ class ReportStage(bs.BuilderStage):
       # Generate the index page needed for public reading.
       uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)
       if not os.path.exists(uploaded):
-        if (not self._build_config['compilecheck'] and
-            not self._options.compilecheck):
+        if (not self._run.config.compilecheck and
+            not self._run.options.compilecheck):
           # UPLOADED doesn't exist.  Normal if buildboard failed.
           logging.warning('board %s did not make it to the archive stage; '
                           'skipping', board)
