@@ -41,7 +41,7 @@ AudioOutputDispatcherImpl::~AudioOutputDispatcherImpl() {
 }
 
 bool AudioOutputDispatcherImpl::OpenStream() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   paused_proxies_++;
 
@@ -58,7 +58,7 @@ bool AudioOutputDispatcherImpl::OpenStream() {
 bool AudioOutputDispatcherImpl::StartStream(
     AudioOutputStream::AudioSourceCallback* callback,
     AudioOutputProxy* stream_proxy) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (idle_streams_.empty() && !CreateAndOpenStream())
     return false;
@@ -85,7 +85,7 @@ bool AudioOutputDispatcherImpl::StartStream(
 }
 
 void AudioOutputDispatcherImpl::StopStream(AudioOutputProxy* stream_proxy) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   AudioStreamMap::iterator it = proxy_to_physical_map_.find(stream_proxy);
   DCHECK(it != proxy_to_physical_map_.end());
@@ -108,7 +108,7 @@ void AudioOutputDispatcherImpl::StopStream(AudioOutputProxy* stream_proxy) {
 
 void AudioOutputDispatcherImpl::StreamVolumeSet(AudioOutputProxy* stream_proxy,
                                                 double volume) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   AudioStreamMap::iterator it = proxy_to_physical_map_.find(stream_proxy);
   if (it != proxy_to_physical_map_.end()) {
     AudioOutputStream* physical_stream = it->second;
@@ -117,7 +117,7 @@ void AudioOutputDispatcherImpl::StreamVolumeSet(AudioOutputProxy* stream_proxy,
 }
 
 void AudioOutputDispatcherImpl::StopStreamTask() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (pausing_streams_.empty())
     return;
@@ -129,7 +129,7 @@ void AudioOutputDispatcherImpl::StopStreamTask() {
 }
 
 void AudioOutputDispatcherImpl::CloseStream(AudioOutputProxy* stream_proxy) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   while (!pausing_streams_.empty()) {
     idle_streams_.push_back(pausing_streams_.back());
@@ -146,7 +146,7 @@ void AudioOutputDispatcherImpl::CloseStream(AudioOutputProxy* stream_proxy) {
 }
 
 void AudioOutputDispatcherImpl::Shutdown() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   // Cancel any pending tasks to close paused streams or create new ones.
   weak_this_.InvalidateWeakPtrs();
@@ -167,7 +167,7 @@ void AudioOutputDispatcherImpl::Shutdown() {
 }
 
 bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
       params_, output_device_id_, input_device_id_);
   if (!stream)
@@ -182,7 +182,7 @@ bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
 }
 
 void AudioOutputDispatcherImpl::OpenTask() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   // Make sure that we have at least one stream allocated if there
   // are paused streams.
   if (paused_proxies_ > 0 && idle_streams_.empty() &&
@@ -195,7 +195,7 @@ void AudioOutputDispatcherImpl::OpenTask() {
 
 // This method is called by |close_timer_|.
 void AudioOutputDispatcherImpl::ClosePendingStreams() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   while (!idle_streams_.empty()) {
     idle_streams_.back()->Close();
     idle_streams_.pop_back();

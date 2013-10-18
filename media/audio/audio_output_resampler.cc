@@ -175,7 +175,7 @@ void AudioOutputResampler::Initialize() {
 }
 
 bool AudioOutputResampler::OpenStream() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (dispatcher_->OpenStream()) {
     // Only record the UMA statistic if we didn't fallback during construction
@@ -235,7 +235,7 @@ bool AudioOutputResampler::OpenStream() {
 bool AudioOutputResampler::StartStream(
     AudioOutputStream::AudioSourceCallback* callback,
     AudioOutputProxy* stream_proxy) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   OnMoreDataConverter* resampler_callback = NULL;
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
@@ -255,12 +255,12 @@ bool AudioOutputResampler::StartStream(
 
 void AudioOutputResampler::StreamVolumeSet(AudioOutputProxy* stream_proxy,
                                            double volume) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   dispatcher_->StreamVolumeSet(stream_proxy, volume);
 }
 
 void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   dispatcher_->StopStream(stream_proxy);
 
   // Now that StopStream() has completed the underlying physical stream should
@@ -272,7 +272,7 @@ void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
 }
 
 void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   dispatcher_->CloseStream(stream_proxy);
 
   // We assume that StopStream() is always called prior to CloseStream(), so
@@ -285,7 +285,7 @@ void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
 }
 
 void AudioOutputResampler::Shutdown() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   // No AudioOutputProxy objects should hold a reference to us when we get
   // to this stage.

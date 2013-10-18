@@ -4,7 +4,7 @@
 
 #include "media/audio/audio_output_dispatcher.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 
 namespace media {
 
@@ -14,7 +14,7 @@ AudioOutputDispatcher::AudioOutputDispatcher(
     const std::string& output_device_id,
     const std::string& input_device_id)
     : audio_manager_(audio_manager),
-      message_loop_(base::MessageLoop::current()),
+      message_loop_(audio_manager->GetMessageLoop()),
       params_(params),
       output_device_id_(output_device_id),
       input_device_id_(input_device_id) {
@@ -24,7 +24,7 @@ AudioOutputDispatcher::AudioOutputDispatcher(
 }
 
 AudioOutputDispatcher::~AudioOutputDispatcher() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
 }
 
 }  // namespace media
