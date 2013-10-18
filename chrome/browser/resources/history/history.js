@@ -1544,21 +1544,19 @@ function load() {
   cr.ui.FocusManager.disableMouseFocusOnButtons();
 
   if (isMobileVersion()) {
-    if (searchField) {
-      // Move the search box out of the header.
-      var resultsDisplay = $('results-display');
-      resultsDisplay.parentNode.insertBefore($('search-field'), resultsDisplay);
+    // Move the search box out of the header.
+    var resultsDisplay = $('results-display');
+    resultsDisplay.parentNode.insertBefore($('search-field'), resultsDisplay);
 
-      window.addEventListener(
-          'resize', historyView.updateClearBrowsingDataButton_);
+    window.addEventListener(
+        'resize', historyView.updateClearBrowsingDataButton_);
 
-      // When the search field loses focus, add a delay before updating the
-      // visibility, otherwise the button will flash on the screen before the
-      // keyboard animates away.
-      searchField.addEventListener('blur', function() {
-        setTimeout(historyView.updateClearBrowsingDataButton_, 250);
-      });
-    }
+    // When the search field loses focus, add a delay before updating the
+    // visibility, otherwise the button will flash on the screen before the
+    // keyboard animates away.
+    searchField.addEventListener('blur', function() {
+      setTimeout(historyView.updateClearBrowsingDataButton_, 250);
+    });
 
     // Move the button to the bottom of the page.
     $('history-page').appendChild($('clear-browsing-data'));
