@@ -317,6 +317,7 @@ void AudioRendererImpl::SetVolume(float volume) {
 void AudioRendererImpl::DecodedAudioReady(
     AudioDecoder::Status status,
     const scoped_refptr<AudioBuffer>& buffer) {
+  DVLOG(1) << __FUNCTION__ << "(" << status << ")";
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -368,36 +369,41 @@ bool AudioRendererImpl::HandleSplicerBuffer(
     // no more data will be arriving.
     if (state_ == kUnderflow || state_ == kRebuffering)
       ChangeState_Locked(kPlaying);
+  } else {
+    if (state_ == kPrerolling && IsBeforePrerollTime(buffer))
+      return true;
+
+    if (state_ != kUninitialized && state_ != kStopped)
+      algorithm_->EnqueueBuffer(buffer);
   }
 
   switch (state_) {
     case kUninitialized:
       NOTREACHED();
       return false;
+
     case kPaused:
-      if (!buffer->end_of_stream())
-        algorithm_->EnqueueBuffer(buffer);
       DCHECK(!pending_read_);
       base::ResetAndReturn(&pause_cb_).Run();
       return false;
-    case kPrerolling:
-      if (IsBeforePrerollTime(buffer))
-        return true;
 
-      if (!buffer->end_of_stream()) {
-        algorithm_->EnqueueBuffer(buffer);
-        if (!algorithm_->IsQueueFull())
-          return false;
-      }
+    case kPrerolling:
+      if (!buffer->end_of_stream() && !algorithm_->IsQueueFull())
+        return true;
       ChangeState_Locked(kPaused);
       base::ResetAndReturn(&preroll_cb_).Run(PIPELINE_OK);
       return false;
+
     case kPlaying:
     case kUnderflow:
-    case kRebuffering:
-      if (!buffer->end_of_stream())
-        algorithm_->EnqueueBuffer(buffer);
       return false;
+
+    case kRebuffering:
+      if (!algorithm_->IsQueueFull())
+        return true;
+      ChangeState_Locked(kPlaying);
+      return false;
+
     case kStopped:
       return false;
   }
@@ -441,6 +447,7 @@ bool AudioRendererImpl::CanRead_Locked() {
 }
 
 void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
+  DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_GE(playback_rate, 0);
   DCHECK(sink_);
@@ -461,7 +468,8 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
 
 bool AudioRendererImpl::IsBeforePrerollTime(
     const scoped_refptr<AudioBuffer>& buffer) {
-  return (state_ == kPrerolling) && buffer.get() && !buffer->end_of_stream() &&
+  DCHECK_EQ(state_, kPrerolling);
+  return buffer && !buffer->end_of_stream() &&
          (buffer->timestamp() + buffer->duration()) < preroll_timestamp_;
 }
 
@@ -485,9 +493,6 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     float playback_rate = algorithm_->playback_rate();
     if (playback_rate == 0)
       return 0;
-
-    if (state_ == kRebuffering && algorithm_->IsQueueFull())
-      ChangeState_Locked(kPlaying);
 
     // Mute audio by returning 0 when not playing.
     if (state_ != kPlaying)

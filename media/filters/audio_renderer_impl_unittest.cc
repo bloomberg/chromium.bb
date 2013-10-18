@@ -11,8 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/fake_audio_renderer_sink.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/base/mock_audio_renderer_sink.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/audio_renderer_impl.h"
@@ -25,8 +25,6 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::NiceMock;
-using ::testing::StrictMock;
 
 namespace media {
 
@@ -71,10 +69,10 @@ class AudioRendererImplTest : public ::testing::Test {
 
     ScopedVector<AudioDecoder> decoders;
     decoders.push_back(decoder_);
-
+    sink_ = new FakeAudioRendererSink();
     renderer_.reset(new AudioRendererImpl(
         message_loop_.message_loop_proxy(),
-        new NiceMock<MockAudioRendererSink>(),
+        sink_,
         decoders.Pass(),
         SetDecryptorReadyCB(),
         false));
@@ -119,7 +117,6 @@ class AudioRendererImplTest : public ::testing::Test {
   void Initialize() {
     EXPECT_CALL(*decoder_, Initialize(_, _, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
-
     InitializeWithStatus(PIPELINE_OK);
 
     next_timestamp_.reset(
@@ -236,10 +233,15 @@ class AudioRendererImplTest : public ::testing::Test {
   //
   // |muted| is optional and if passed will get set if the value of
   // the consumed data is muted audio.
-  bool ConsumeBufferedData(uint32 requested_frames, bool* muted) {
+  bool ConsumeBufferedData(int requested_frames, bool* muted) {
     scoped_ptr<AudioBus> bus =
-        AudioBus::Create(kChannels, std::max(requested_frames, 1u));
-    uint32 frames_read = renderer_->Render(bus.get(), 0);
+        AudioBus::Create(kChannels, std::max(requested_frames, 1));
+    int frames_read;
+    if (!sink_->Render(bus.get(), 0, &frames_read)) {
+      if (muted)
+        *muted = true;
+      return false;
+    }
 
     if (muted)
       *muted = frames_read < 1 || bus->channel(0)[0] == kMutedAudio;
@@ -341,6 +343,7 @@ class AudioRendererImplTest : public ::testing::Test {
   // Fixture members.
   base::MessageLoop message_loop_;
   scoped_ptr<AudioRendererImpl> renderer_;
+  scoped_refptr<FakeAudioRendererSink> sink_;
 
  private:
   TimeTicks GetTime() {
@@ -530,6 +533,43 @@ TEST_F(AudioRendererImplTest, Underflow_ResumeFromCallback) {
   DeliverRemainingAudio();
   EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
+}
+
+TEST_F(AudioRendererImplTest, Underflow_SetPlaybackRate) {
+  Initialize();
+  Preroll();
+  Play();
+
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  WaitForPendingRead();
+
+  EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
+
+  // Verify the next FillBuffer() call triggers the underflow callback
+  // since the decoder hasn't delivered any data after it was drained.
+  const size_t kDataSize = 1024;
+  EXPECT_CALL(*this, OnUnderflow())
+      .WillOnce(Invoke(this, &AudioRendererImplTest::CallResumeAfterUnderflow));
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
+  EXPECT_EQ(0u, frames_buffered());
+
+  EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
+
+  // Simulate playback being paused.
+  renderer_->SetPlaybackRate(0);
+
+  EXPECT_EQ(FakeAudioRendererSink::kPaused, sink_->state());
+
+  // Deliver data to resolve the underflow.
+  DeliverRemainingAudio();
+
+  EXPECT_EQ(FakeAudioRendererSink::kPaused, sink_->state());
+
+  // Simulate playback being resumed.
+  renderer_->SetPlaybackRate(1);
+
+  EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
 }
 
 TEST_F(AudioRendererImplTest, AbortPendingRead_Preroll) {
