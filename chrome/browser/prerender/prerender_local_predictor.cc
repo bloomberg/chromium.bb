@@ -846,6 +846,8 @@ bool PrerenderLocalPredictor::ApplyParsedPrerenderServiceResponse(
                                               in_index == 1,
                                               (1 - in_index_timed_out) == 1);
       }
+      if (list->GetSize() > 0)
+        RecordEvent(EVENT_PRERENDER_SERIVCE_RETURNED_HINTING_CANDIDATES);
     }
   }
 
@@ -1104,6 +1106,8 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       }
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL_SERVICE);
     }
+
+    RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_EXAMINE_NEXT_URL_NOT_SKIPPED);
 
     // We need to check whether we can issue a prerender for this URL.
     // We test a set of conditions. Each condition can either rule out
