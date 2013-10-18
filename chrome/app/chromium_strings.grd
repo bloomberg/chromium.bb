@@ -665,6 +665,15 @@ Chromium is unable to recover your settings.
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may change how your searches work in Chromium.
       </message>
 
+      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"
+         desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
+        This file is malicious, and Chromium has blocked it.
+      </message>
+      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT"
+         desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing.">
+        <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> is malicious, and Chromium has blocked it.
+      </message>
+
       <!-- Remove in-progress downloads confirmation dialog -->
       <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one download is in progress.">
         A download is currently in progress. Do you want to exit Chromium and cancel the download?

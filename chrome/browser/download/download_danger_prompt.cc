@@ -8,7 +8,6 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_field_trial.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "content/public/browser/download_danger_type.h"
@@ -112,15 +111,8 @@ string16 DownloadDangerPromptImpl::GetMessage() {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: // Fall through
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
-      std::string trial_condition =
-          base::FieldTrialList::FindFullName(kMalwareWarningFinchTrialName);
-      if (trial_condition.empty()) {
-        return l10n_util::GetStringFUTF16(
-            IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
-            download_->GetFileNameToReportUser().LossyDisplayName());
-      }
-      return AssembleMalwareFinchString(
-          trial_condition,
+      return l10n_util::GetStringFUTF16(
+          IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
           download_->GetFileNameToReportUser().LossyDisplayName());
     }
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
