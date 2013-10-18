@@ -53,6 +53,8 @@
       'PlatformWheelEvent.h',
       'PurgeableBuffer.cpp',
       'PurgeableBuffer.h',
+      'SSLKeyGenerator.cpp',
+      'SSLKeyGenerator.h',
       'SecureTextInput.cpp',
       'SecureTextInput.h',
       'SerializedResource.h',
