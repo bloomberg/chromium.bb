@@ -533,6 +533,14 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   if (command_line.HasSwitch(switches::kDisableCompositedScrollingForFrames))
     prefs.composited_scrolling_for_frames_enabled = false;
 
+  prefs.universal_accelerated_compositing_for_overflow_scroll_enabled = false;
+  if (command_line.HasSwitch(
+          switches::kEnableUniversalAcceleratedOverflowScroll))
+    prefs.universal_accelerated_compositing_for_overflow_scroll_enabled = true;
+  if (command_line.HasSwitch(
+          switches::kDisableUniversalAcceleratedOverflowScroll))
+    prefs.universal_accelerated_compositing_for_overflow_scroll_enabled = false;
+
   prefs.show_paint_rects =
       command_line.HasSwitch(switches::kShowPaintRects);
   prefs.accelerated_compositing_enabled =

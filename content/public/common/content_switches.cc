@@ -294,6 +294,11 @@ const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 // Disables the threaded HTML parser in Blink
 const char kDisableThreadedHTMLParser[]     = "disable-threaded-html-parser";
 
+// Disable accelerated overflow scrolling in corner cases (that would not be
+// handled by enable-accelerated-overflow-scroll).
+const char kDisableUniversalAcceleratedOverflowScroll[] =
+    "disable-universal-accelerated-overflow-scroll";
+
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
 
@@ -542,6 +547,10 @@ const char kEnableTextServicesFramework[]   = "enable-text-services-framework";
 
 // Enable multithreaded GPU compositing of web content.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
+
+// Enable accelerated overflow scrolling in all cases.
+const char kEnableUniversalAcceleratedOverflowScroll[] =
+    "enable-universal-accelerated-overflow-scroll";
 
 // Enable screen capturing support for MediaStream API.
 const char kEnableUserMediaScreenCapturing[] =
