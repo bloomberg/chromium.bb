@@ -11,10 +11,8 @@
 #include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
-#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/pnacl_types.h"
@@ -24,7 +22,6 @@
 #include "ipc/ipc_platform_file.h"
 
 using content::BrowserThread;
-using extensions::SharedModuleInfo;
 
 namespace {
 
@@ -152,67 +149,18 @@ void DoRegisterOpenedNaClExecutableFile(
   nacl_host_message_filter->Send(reply_msg);
 }
 
-// Convert the file URL into a file path in the extension directory.
-// This function is security sensitive.  Be sure to check with a security
-// person before you modify it.
-bool GetExtensionFilePath(
-    scoped_refptr<ExtensionInfoMap> extension_info_map,
-    const GURL& file_url,
-    base::FilePath* file_path) {
-  // Check that the URL is recognized by the extension system.
-  const extensions::Extension* extension =
-      extension_info_map->extensions().GetExtensionOrAppByURL(file_url);
-  if (!extension)
-    return false;
-
-  std::string path = file_url.path();
-  extensions::ExtensionResource resource;
-
-  if (SharedModuleInfo::IsImportedPath(path)) {
-    // Check if this is a valid path that is imported for this extension.
-    std::string new_extension_id;
-    std::string new_relative_path;
-    SharedModuleInfo::ParseImportedPath(path, &new_extension_id,
-                                        &new_relative_path);
-    const extensions::Extension* new_extension =
-        extension_info_map->extensions().GetByID(new_extension_id);
-    if (!new_extension)
-      return false;
-
-    if (!SharedModuleInfo::ImportsExtensionById(extension, new_extension_id) ||
-        !SharedModuleInfo::IsExportAllowed(new_extension, new_relative_path)) {
-      return false;
-    }
-
-    resource = new_extension->GetResource(new_relative_path);
-  } else {
-    // Check that the URL references a resource in the extension.
-    resource = extension->GetResource(path);
-  }
-
-  if (resource.empty())
-    return false;
-
-  const base::FilePath resource_file_path = resource.GetFilePath();
-  if (resource_file_path.empty())
-    return false;
-
-  *file_path = resource_file_path;
-  return true;
-}
-
 // Convert the file URL into a file descriptor.
 // This function is security sensitive.  Be sure to check with a security
 // person before you modify it.
 void DoOpenNaClExecutableOnThreadPool(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    scoped_refptr<ExtensionInfoMap> extension_info_map,
     const GURL& file_url,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   base::FilePath file_path;
-  if (!GetExtensionFilePath(extension_info_map, file_url, &file_path)) {
+  if (!NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
+          file_url, true /* use_blocking_api */, &file_path)) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
   }
@@ -299,7 +247,6 @@ bool PnaclCanOpenFile(const std::string& filename,
 
 void OpenNaClExecutable(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    scoped_refptr<ExtensionInfoMap> extension_info_map,
     int render_view_id,
     const GURL& file_url,
     IPC::Message* reply_msg) {
@@ -309,7 +256,6 @@ void OpenNaClExecutable(
         base::Bind(
             &OpenNaClExecutable,
             nacl_host_message_filter,
-            extension_info_map,
             render_view_id, file_url, reply_msg));
     return;
   }
@@ -339,7 +285,6 @@ void OpenNaClExecutable(
       base::Bind(
           &DoOpenNaClExecutableOnThreadPool,
           nacl_host_message_filter,
-          extension_info_map,
           file_url, reply_msg))) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
   }

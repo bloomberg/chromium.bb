@@ -10,7 +10,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 
-class ExtensionInfoMap;
 class GURL;
 class NaClHostMessageFilter;
 
@@ -56,7 +55,6 @@ bool PnaclCanOpenFile(const std::string& filename,
 // Opens a NaCl executable file for reading and executing.
 void OpenNaClExecutable(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    scoped_refptr<ExtensionInfoMap> extension_info_map,
     int render_view_id,
     const GURL& file_url,
     IPC::Message* reply_msg);

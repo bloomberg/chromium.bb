@@ -60,6 +60,12 @@ class TestNaClBrowserDelegate : public NaClBrowserDelegate {
     return NULL;
   }
 
+  virtual bool MapUrlToLocalFilePath(const GURL& file_url,
+                                     bool use_blocking_api,
+                                     base::FilePath* file_path) OVERRIDE {
+    return false;
+  }
+
   virtual void TryInstallPnacl(
       const base::Callback<void(bool)>& installed) OVERRIDE {
     installed.Run(should_pnacl_install_succeed_);

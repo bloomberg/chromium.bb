@@ -53,6 +53,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/message_handler.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -71,6 +72,7 @@
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
+#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -1270,6 +1272,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   content::WebUIControllerFactory::RegisterFactory(
       ChromeWebUIControllerFactory::GetInstance());
 
+  // NaClBrowserDelegateImpl is accessed inside PostProfileInit().
+  // So make sure to create it before that.
+#if !defined(DISABLE_NACL)
+  NaClBrowserDelegateImpl* delegate = new NaClBrowserDelegateImpl(
+    extensions::ExtensionSystem::Get(profile_)->info_map());
+  NaClBrowser::SetDelegate(delegate);
+#endif
+
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).
   PostProfileInit();
@@ -1436,7 +1446,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                           parsed_command_line().GetSwitchValuePath(
                               switches::kPnaclDir));
   }
-  NaClProcessHost::EarlyStartup(new NaClBrowserDelegateImpl);
+  NaClProcessHost::EarlyStartup();
 #endif
 
   // Make sure initial prefs are recorded

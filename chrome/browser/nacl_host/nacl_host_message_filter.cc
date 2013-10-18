@@ -4,42 +4,25 @@
 
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_file_host.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/nacl_host/pnacl_host.h"
 #include "components/nacl/common/nacl_host_messages.h"
-#include "extensions/common/constants.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-
-static base::FilePath GetManifestPath(
-    ExtensionInfoMap* extension_info_map, const std::string& manifest) {
-  GURL manifest_url(manifest);
-  const extensions::Extension* extension = extension_info_map->extensions()
-      .GetExtensionOrAppByURL(manifest_url);
-  if (extension != NULL &&
-      manifest_url.SchemeIs(extensions::kExtensionScheme)) {
-    std::string path = manifest_url.path();
-    TrimString(path, "/", &path);  // Remove first slash
-    return extension->path().AppendASCII(path);
-  }
-  return base::FilePath();
-}
+#include "url/gurl.h"
 
 NaClHostMessageFilter::NaClHostMessageFilter(
     int render_process_id,
     bool is_off_the_record,
     const base::FilePath& profile_directory,
-    ExtensionInfoMap* extension_info_map,
     net::URLRequestContextGetter* request_context)
     : render_process_id_(render_process_id),
       off_the_record_(is_off_the_record),
       profile_directory_(profile_directory),
       request_context_(request_context),
-      extension_info_map_(extension_info_map),
       weak_ptr_factory_(this) {
 }
 
@@ -94,9 +77,14 @@ void NaClHostMessageFilter::OnLaunchNaCl(
       launch_params.enable_crash_throttling,
       off_the_record_,
       profile_directory_);
-  base::FilePath manifest_url =
-      GetManifestPath(extension_info_map_.get(), launch_params.manifest_url);
-  host->Launch(this, reply_msg, manifest_url);
+  GURL manifest_url(launch_params.manifest_url);
+  base::FilePath manifest_path;
+  // We're calling MapUrlToLocalFilePath with the non-blocking API
+  // because we're running in the I/O thread. Ideally we'd use the other path,
+  // which would cover more cases.
+  NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
+      manifest_url, false /* use_blocking_api */, &manifest_path);
+  host->Launch(this, reply_msg, manifest_path);
 }
 
 void NaClHostMessageFilter::ReplyEnsurePnaclInstalled(
@@ -202,7 +190,7 @@ void NaClHostMessageFilter::OnNaClErrorStatus(int render_view_id,
 void NaClHostMessageFilter::OnOpenNaClExecutable(int render_view_id,
                                                  const GURL& file_url,
                                                  IPC::Message* reply_msg) {
-  nacl_file_host::OpenNaClExecutable(this, extension_info_map_,
-                                     render_view_id, file_url, reply_msg);
+  nacl_file_host::OpenNaClExecutable(this, render_view_id, file_url,
+                                     reply_msg);
 }
 #endif

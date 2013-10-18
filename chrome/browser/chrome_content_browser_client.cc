@@ -48,6 +48,8 @@
 #include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
+#include "chrome/browser/nacl_host/nacl_browser.h"
+#include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -869,11 +871,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       webrtc_logging_handler_host));
 #endif
 #if !defined(DISABLE_NACL)
-  ExtensionInfoMap* extension_info_map =
-      extensions::ExtensionSystem::Get(profile)->info_map();
   host->AddFilter(new NaClHostMessageFilter(
       id, profile->IsOffTheRecord(),
-      profile->GetPath(), extension_info_map,
+      profile->GetPath(),
       context));
 #endif
 #if defined(OS_ANDROID)

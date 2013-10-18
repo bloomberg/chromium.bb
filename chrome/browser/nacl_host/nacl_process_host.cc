@@ -28,7 +28,6 @@
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/nacl/common/nacl_browser_delegate.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_messages.h"
@@ -313,8 +312,7 @@ void NaClProcessHost::OnProcessCrashed(int exit_status) {
 
 // This is called at browser startup.
 // static
-void NaClProcessHost::EarlyStartup(NaClBrowserDelegate* delegate) {
-  NaClBrowser::SetDelegate(delegate);
+void NaClProcessHost::EarlyStartup() {
   NaClBrowser::GetInstance()->EarlyStartup();
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Open the IRT file early to make sure that it isn't replaced out from

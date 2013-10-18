@@ -9,6 +9,8 @@
 
 #include "base/callback_forward.h"
 
+class GURL;
+
 namespace base {
 class FilePath;
 }
@@ -55,6 +57,17 @@ class NaClBrowserDelegate {
   // Returns a HostFactory that hides the details of its embedder.
   virtual ppapi::host::HostFactory* CreatePpapiHostFactory(
       content::BrowserPpapiHost* ppapi_host) = 0;
+  // Returns true on success, false otherwise. On success, map |url| to a
+  // full pathname of a file in the local filesystem. |file_path| should not be
+  // changed on failure. This mapping should be a best effort, for example,
+  // "chrome-extension:" could be mapped to the location of unpacked
+  // extensions. If this method is called in a blocking thread you should set
+  // |use_blocking_api| to true, so calling blocking file API is allowed
+  // otherwise non blocking API will be used (which only handles a subset of the
+  // urls checking only the url scheme against kExtensionScheme).
+  virtual bool MapUrlToLocalFilePath(const GURL& url,
+                                     bool use_blocking_api,
+                                     base::FilePath* file_path) = 0;
   // Install PNaCl if this operation is supported. On success, the |installed|
   // callback should be called with true, and on failure (or not supported),
   // the |installed| callback should be called with false.

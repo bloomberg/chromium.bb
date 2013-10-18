@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_NACL_HOST_NACL_BROWSER_DELEGATE_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
 
 class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
  public:
-  NaClBrowserDelegateImpl() {}
-  virtual ~NaClBrowserDelegateImpl() {}
+  explicit NaClBrowserDelegateImpl(ExtensionInfoMap* extension_info_map);
+  virtual ~NaClBrowserDelegateImpl();
 
   virtual void ShowNaClInfobar(int render_process_id, int render_view_id,
                                int error_id) OVERRIDE;
@@ -25,6 +26,13 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
       content::BrowserPpapiHost* ppapi_host) OVERRIDE;
   virtual void TryInstallPnacl(
       const base::Callback<void(bool)>& installed) OVERRIDE;
+  virtual bool MapUrlToLocalFilePath(const GURL& url,
+                                     bool is_blocking,
+                                     base::FilePath* file_path) OVERRIDE;
+
+ private:
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  DISALLOW_COPY_AND_ASSIGN(NaClBrowserDelegateImpl);
 };
 
 

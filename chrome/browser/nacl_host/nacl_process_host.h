@@ -23,7 +23,6 @@
 
 class CommandLine;
 class ExtensionInfoMap;
-class NaClBrowserDelegate;
 class NaClHostMessageFilter;
 
 namespace content {
@@ -76,7 +75,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   virtual void OnProcessCrashed(int exit_status) OVERRIDE;
 
   // Do any minimal work that must be done at browser startup.
-  static void EarlyStartup(NaClBrowserDelegate* delegate);
+  static void EarlyStartup();
 
   // Initialize the new NaCl process. Result is returned by sending ipc
   // message reply_msg.

@@ -10,7 +10,6 @@
 #include "base/platform_file.h"
 #include "content/public/browser/browser_message_filter.h"
 
-class ExtensionInfoMap;
 class GURL;
 
 namespace nacl {
@@ -31,7 +30,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   NaClHostMessageFilter(int render_process_id,
                         bool is_off_the_record,
                         const base::FilePath& profile_directory,
-                        ExtensionInfoMap* extension_info_map,
                         net::URLRequestContextGetter* request_context);
 
   // content::BrowserMessageFilter methods:
@@ -82,7 +80,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   bool off_the_record_;
   base::FilePath profile_directory_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   base::WeakPtrFactory<NaClHostMessageFilter> weak_ptr_factory_;
 

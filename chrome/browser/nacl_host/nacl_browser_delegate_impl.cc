@@ -5,16 +5,32 @@
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
+#include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/constants.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
+
+using extensions::SharedModuleInfo;
+
+NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
+    ExtensionInfoMap* extension_info_map)
+    : extension_info_map_(extension_info_map) {
+}
+
+NaClBrowserDelegateImpl::~NaClBrowserDelegateImpl() {
+}
 
 void NaClBrowserDelegateImpl::ShowNaClInfobar(int render_process_id,
                                               int render_view_id,
@@ -67,4 +83,65 @@ void NaClBrowserDelegateImpl::TryInstallPnacl(
     pci->RequestFirstInstall(installed);
   else
     installed.Run(false);
+}
+
+// This function is security sensitive.  Be sure to check with a security
+// person before you modify it.
+bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
+    const GURL& file_url, bool use_blocking_api, base::FilePath* file_path) {
+  DCHECK(extension_info_map_);
+  // Check that the URL is recognized by the extension system.
+  const extensions::Extension* extension =
+      extension_info_map_->extensions().GetExtensionOrAppByURL(file_url);
+  if (!extension)
+    return false;
+
+  // This is a short-cut which avoids calling a blocking file operation
+  // (GetFilePath()), so that this can be called on the IO thread. It only
+  // handles a subset of the urls.
+  if (!use_blocking_api) {
+    if (file_url.SchemeIs(extensions::kExtensionScheme)) {
+      std::string path = file_url.path();
+      TrimString(path, "/", &path);  // Remove first slash
+      *file_path = extension->path().AppendASCII(path);
+      return true;
+    }
+    return false;
+  }
+
+  std::string path = file_url.path();
+  extensions::ExtensionResource resource;
+
+  if (SharedModuleInfo::IsImportedPath(path)) {
+    // Check if this is a valid path that is imported for this extension.
+    std::string new_extension_id;
+    std::string new_relative_path;
+    SharedModuleInfo::ParseImportedPath(path, &new_extension_id,
+                                        &new_relative_path);
+    const extensions::Extension* new_extension =
+        extension_info_map_->extensions().GetByID(new_extension_id);
+    if (!new_extension)
+      return false;
+
+    if (!SharedModuleInfo::ImportsExtensionById(extension, new_extension_id) ||
+        !SharedModuleInfo::IsExportAllowed(new_extension, new_relative_path)) {
+      return false;
+    }
+
+    resource = new_extension->GetResource(new_relative_path);
+  } else {
+    // Check that the URL references a resource in the extension.
+    resource = extension->GetResource(path);
+  }
+
+  if (resource.empty())
+    return false;
+
+  // GetFilePath is a blocking function call.
+  const base::FilePath resource_file_path = resource.GetFilePath();
+  if (resource_file_path.empty())
+    return false;
+
+  *file_path = resource_file_path;
+  return true;
 }
