@@ -15,6 +15,10 @@ var recognizer = new webkitSpeechRecognition();
       notify(recognizer == null ? 'fail' : 'success');
       return;
 
+    case "#oneshot":
+      recognizer.continuous = false;
+      break;
+
     case "#continuous":
       recognizer.continuous = true;
       break;
