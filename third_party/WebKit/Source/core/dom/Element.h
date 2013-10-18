@@ -62,6 +62,8 @@ class ShareableElementData;
 class StylePropertySet;
 class UniqueElementData;
 
+struct PresentationAttributeCacheKey;
+
 class ElementData : public RefCounted<ElementData> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -418,7 +420,6 @@ public:
     void synchronizeStyleAttributeInternal() const;
 
     const StylePropertySet* presentationAttributeStyle();
-    virtual bool isPresentationAttribute(const QualifiedName&) const { return false; }
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) { }
 
     // For exposing to DOM only.
@@ -676,6 +677,8 @@ protected:
         ScriptWrappable::init(this);
     }
 
+    virtual bool isPresentationAttribute(const QualifiedName&) const { return false; }
+
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, CSSValueID identifier);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, double value, CSSPrimitiveValue::UnitTypes);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, const String& value);
@@ -714,8 +717,6 @@ protected:
 private:
     void styleAttributeChanged(const AtomicString& newStyleString, AttributeModificationReason);
 
-    void updatePresentationAttributeStyle();
-
     void inlineStyleChanged();
     PropertySetCSSStyleDeclaration* inlineStyleCSSOMWrapper();
     void setInlineStyleFromString(const AtomicString&);
@@ -723,6 +724,9 @@ private:
 
     StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
     void recalcChildStyle(StyleRecalcChange);
+
+    void makePresentationAttributeCacheKey(PresentationAttributeCacheKey&) const;
+    void rebuildPresentationAttributeStyle();
 
     void updatePseudoElement(PseudoId, StyleRecalcChange);
 
@@ -999,9 +1003,7 @@ inline const StylePropertySet* Element::presentationAttributeStyle()
     if (!elementData())
         return 0;
     if (elementData()->m_presentationAttributeStyleIsDirty)
-        updatePresentationAttributeStyle();
-    // Need to call elementData() again since updatePresentationAttributeStyle()
-    // might swap it with a UniqueElementData.
+        rebuildPresentationAttributeStyle();
     return elementData()->presentationAttributeStyle();
 }
 

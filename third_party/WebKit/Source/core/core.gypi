@@ -1914,8 +1914,6 @@
             'dom/PositionIterator.h',
             'dom/PostAttachCallbacks.cpp',
             'dom/PostAttachCallbacks.h',
-            'dom/PresentationAttributeStyle.cpp',
-            'dom/PresentationAttributeStyle.h',
             'dom/ProcessingInstruction.cpp',
             'dom/ProcessingInstruction.h',
             'dom/Promise.h',
