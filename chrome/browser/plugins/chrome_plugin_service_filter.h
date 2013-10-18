@@ -58,6 +58,9 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   // Authorizes all plug-ins for a given process.
   void AuthorizeAllPlugins(int render_process_id);
 
+  // Returns whether the plugin is found in restricted_plugins_.
+  bool IsPluginRestricted(const base::FilePath& plugin_path);
+
   // PluginServiceFilter implementation:
   virtual bool IsPluginAvailable(
       int render_process_id,

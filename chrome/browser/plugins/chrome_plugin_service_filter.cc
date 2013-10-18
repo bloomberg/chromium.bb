@@ -67,6 +67,12 @@ void ChromePluginServiceFilter::UnrestrictPlugin(
   restricted_plugins_.erase(plugin_path);
 }
 
+bool ChromePluginServiceFilter::IsPluginRestricted(
+    const base::FilePath& plugin_path) {
+  base::AutoLock auto_lock(lock_);
+  return restricted_plugins_.find(plugin_path) != restricted_plugins_.end();
+}
+
 bool ChromePluginServiceFilter::IsPluginAvailable(
     int render_process_id,
     int render_view_id,

@@ -254,7 +254,9 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
       plugin_setting != CONTENT_SETTING_BLOCK &&
       uses_default_content_setting &&
       plugin_policy != PluginPrefs::POLICY_ENABLED &&
-      group_policy != PluginPrefs::POLICY_ENABLED) {
+      group_policy != PluginPrefs::POLICY_ENABLED &&
+      !ChromePluginServiceFilter::GetInstance()->IsPluginRestricted(
+          plugin.path)) {
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kBlocked;
     return;
   }
