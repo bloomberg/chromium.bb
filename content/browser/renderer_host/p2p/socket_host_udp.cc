@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
@@ -133,12 +134,12 @@ void P2PSocketHostUdp::OnRecv(int result) {
 }
 
 void P2PSocketHostUdp::HandleReadResult(int result) {
-  DCHECK_EQ(state_, STATE_OPEN);
+  DCHECK_EQ(STATE_OPEN, state_);
 
   if (result > 0) {
     std::vector<char> data(recv_buffer_->data(), recv_buffer_->data() + result);
 
-    if (connected_peers_.find(recv_address_) == connected_peers_.end()) {
+    if (!ContainsKey(connected_peers_, recv_address_)) {
       P2PSocketHost::StunMessageType type;
       bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
       if (stun && IsRequestOrResponse(type)) {
@@ -167,7 +168,7 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
     return;
   }
 
-  if (connected_peers_.find(to) == connected_peers_.end()) {
+  if (!ContainsKey(connected_peers_, to)) {
     P2PSocketHost::StunMessageType type;
     bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
     if (!stun || type == STUN_DATA_INDICATION) {
@@ -194,7 +195,7 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
 
 void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   TRACE_EVENT_ASYNC_STEP1("p2p", "Send", packet.id, "UdpAsyncSendTo",
-                           "size", packet.size);
+                          "size", packet.size);
   int result = socket_->SendTo(
       packet.data.get(),
       packet.size,
