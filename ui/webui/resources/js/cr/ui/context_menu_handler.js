@@ -53,6 +53,7 @@ cr.define('cr.ui', function() {
       this.showingEvents_.add(doc, 'focus', this);
       this.showingEvents_.add(win, 'popstate', this);
       this.showingEvents_.add(win, 'resize', this);
+      this.showingEvents_.add(win, 'blur', this);
       this.showingEvents_.add(menu, 'contextmenu', this);
       this.showingEvents_.add(menu, 'activate', this);
       this.positionMenu_(e, menu);
@@ -179,6 +180,10 @@ cr.define('cr.ui', function() {
         case 'focus':
           if (!this.menu.contains(e.target))
             this.hideMenu();
+          break;
+
+        case 'blur':
+          this.hideMenu();
           break;
 
         case 'popstate':
