@@ -314,9 +314,7 @@ bool Shell::IsSystemModalWindowOpen() const {
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   // Use translucent-style window frames for dialogs.
-  CustomFrameViewAsh* frame_view = new CustomFrameViewAsh;
-  frame_view->Init(widget);
-  return frame_view;
+  return new CustomFrameViewAsh(widget);
 }
 
 void Shell::RotateFocus(Direction direction) {

@@ -629,9 +629,7 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
       return new ash::PanelFrameView(widget, frame_type);
     }
     if (!frameless_) {
-      ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh();
-      frame->Init(widget);
-      return frame;
+      return new ash::CustomFrameViewAsh(widget);
     }
   }
 #endif

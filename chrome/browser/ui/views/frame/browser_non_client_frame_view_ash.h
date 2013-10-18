@@ -13,8 +13,9 @@
 class TabIconView;
 
 namespace ash {
+class FrameBorderHitTestController;
 class FrameCaptionButtonContainerView;
-class FramePainter;
+class HeaderPainter;
 }
 namespace views {
 class ImageButton;
@@ -112,8 +113,12 @@ class BrowserNonClientFrameViewAsh
   // For popups, the window icon.
   TabIconView* window_icon_;
 
-  // Painter for the frame header.
-  scoped_ptr<ash::FramePainter> frame_painter_;
+  // Helper class for painting the header.
+  scoped_ptr<ash::HeaderPainter> header_painter_;
+
+  // Updates the hittest bounds overrides based on the window show type.
+  scoped_ptr<ash::FrameBorderHitTestController>
+      frame_border_hit_test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/frame_painter.h"
+#include "ash/wm/header_painter.h"
 
 #include <vector>
 
@@ -42,9 +42,6 @@ using aura::Window;
 using views::Widget;
 
 namespace {
-// TODO(jamescook): Border is specified to be a single pixel overlapping
-// the web content and may need to be built into the shadow layers instead.
-const int kBorderThickness = 0;
 // Space between left edge of window and popup window icon.
 const int kIconOffsetX = 9;
 // Height and width of window icon.
@@ -199,18 +196,20 @@ std::vector<Window*> GetWindowsForSoloHeaderUpdate(RootWindow* root_window) {
 namespace ash {
 
 // static
-int FramePainter::kActiveWindowOpacity = 255;  // 1.0
-int FramePainter::kInactiveWindowOpacity = 255;  // 1.0
-int FramePainter::kSoloWindowOpacity = 77;  // 0.3
+int HeaderPainter::kActiveWindowOpacity = 255;  // 1.0
+int HeaderPainter::kInactiveWindowOpacity = 255;  // 1.0
+int HeaderPainter::kSoloWindowOpacity = 77;  // 0.3
 
 ///////////////////////////////////////////////////////////////////////////////
-// FramePainter, public:
+// HeaderPainter, public:
 
-FramePainter::FramePainter()
+HeaderPainter::HeaderPainter()
     : frame_(NULL),
+      header_view_(NULL),
       window_icon_(NULL),
       caption_button_container_(NULL),
       window_(NULL),
+      header_height_(0),
       top_left_corner_(NULL),
       top_edge_(NULL),
       top_right_corner_(NULL),
@@ -223,7 +222,7 @@ FramePainter::FramePainter()
       crossfade_theme_frame_overlay_id_(0),
       crossfade_opacity_(0) {}
 
-FramePainter::~FramePainter() {
+HeaderPainter::~HeaderPainter() {
   // Sometimes we are destroyed before the window closes, so ensure we clean up.
   if (window_) {
     window_->RemoveObserver(this);
@@ -231,14 +230,17 @@ FramePainter::~FramePainter() {
   }
 }
 
-void FramePainter::Init(
+void HeaderPainter::Init(
     views::Widget* frame,
+    views::View* header_view,
     views::View* window_icon,
     FrameCaptionButtonContainerView* caption_button_container) {
   DCHECK(frame);
+  DCHECK(header_view);
   // window_icon may be NULL.
   DCHECK(caption_button_container);
   frame_ = frame;
+  header_view_ = header_view;
   window_icon_ = window_icon;
   caption_button_container_ = caption_button_container;
 
@@ -256,135 +258,82 @@ void FramePainter::Init(
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToImageSkia();
 
   window_ = frame->GetNativeWindow();
-  gfx::Insets mouse_outer_insets(-kResizeOutsideBoundsSize,
-                                 -kResizeOutsideBoundsSize,
-                                 -kResizeOutsideBoundsSize,
-                                 -kResizeOutsideBoundsSize);
-  gfx::Insets touch_outer_insets = mouse_outer_insets.Scale(
-      kResizeOutsideBoundsScaleForTouch);
-  // Ensure we get resize cursors for a few pixels outside our bounds.
-  window_->SetHitTestBoundsOverrideOuter(mouse_outer_insets,
-                                         touch_outer_insets);
-  // Ensure we get resize cursors just inside our bounds as well.
-  UpdateHitTestBoundsOverrideInner();
 
-  // Watch for maximize/restore/fullscreen state changes.  Observer removes
-  // itself in OnWindowDestroying() below, or in the destructor if we go away
-  // before the window.
+  // Observer removes itself in OnWindowDestroying() below, or in the destructor
+  // if we go away before the window.
   window_->AddObserver(this);
   wm::GetWindowState(window_)->AddObserver(this);
 
-  // Solo-window header updates are handled by the workspace controller when
+  // Solo-window header updates are handled by the WorkspaceLayoutManager when
   // this window is added to the desktop.
 }
 
 // static
-void FramePainter::SetSoloWindowHeadersEnabled(bool enabled) {
+void HeaderPainter::SetSoloWindowHeadersEnabled(bool enabled) {
   solo_window_header_enabled = enabled;
 }
 
 // static
-void FramePainter::UpdateSoloWindowHeader(RootWindow* root_window) {
-  // Use a separate function here so callers outside of FramePainter don't need
+void HeaderPainter::UpdateSoloWindowHeader(RootWindow* root_window) {
+  // Use a separate function here so callers outside of HeaderPainter don't need
   // to know about "ignorable_window".
   UpdateSoloWindowInRoot(root_window, NULL /* ignorable_window */);
 }
 
-gfx::Rect FramePainter::GetBoundsForClientView(
-    int top_height,
-    const gfx::Rect& window_bounds) const {
-  return gfx::Rect(
-      kBorderThickness,
-      top_height,
-      std::max(0, window_bounds.width() - (2 * kBorderThickness)),
-      std::max(0, window_bounds.height() - top_height - kBorderThickness));
+// static
+gfx::Rect HeaderPainter::GetBoundsForClientView(
+    int header_height,
+    const gfx::Rect& window_bounds) {
+  gfx::Rect client_bounds(window_bounds);
+  client_bounds.Inset(0, header_height, 0, 0);
+  return client_bounds;
 }
 
-gfx::Rect FramePainter::GetWindowBoundsForClientBounds(
-    int top_height,
-    const gfx::Rect& client_bounds) const {
-  return gfx::Rect(std::max(0, client_bounds.x() - kBorderThickness),
-                   std::max(0, client_bounds.y() - top_height),
-                   client_bounds.width() + (2 * kBorderThickness),
-                   client_bounds.height() + top_height + kBorderThickness);
+// static
+gfx::Rect HeaderPainter::GetWindowBoundsForClientBounds(
+      int header_height,
+      const gfx::Rect& client_bounds) {
+  gfx::Rect window_bounds(client_bounds);
+  window_bounds.Inset(0, -header_height, 0, 0);
+  if (window_bounds.y() < 0)
+    window_bounds.set_y(0);
+  return window_bounds;
 }
 
-int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
-                                   const gfx::Point& point) {
-  gfx::Rect expanded_bounds = view->bounds();
-  int outside_bounds = kResizeOutsideBoundsSize;
-
-  if (aura::Env::GetInstance()->is_touch_down())
-    outside_bounds *= kResizeOutsideBoundsScaleForTouch;
-  expanded_bounds.Inset(-outside_bounds, -outside_bounds);
-
-  if (!expanded_bounds.Contains(point))
+int HeaderPainter::NonClientHitTest(const gfx::Point& point) const {
+  gfx::Point point_in_header_view(point);
+  views::View::ConvertPointFromWidget(header_view_, &point_in_header_view);
+  if (!GetHeaderLocalBounds().Contains(point_in_header_view))
     return HTNOWHERE;
-
-  // Check the frame first, as we allow a small area overlapping the contents
-  // to be used for resize handles.
-  bool can_ever_resize = frame_->widget_delegate() ?
-      frame_->widget_delegate()->CanResize() :
-      false;
-  // Don't allow overlapping resize handles when the window is maximized or
-  // fullscreen, as it can't be resized in those states.
-  int resize_border =
-      frame_->IsMaximized() || frame_->IsFullscreen() ? 0 :
-      kResizeInsideBoundsSize;
-  int frame_component = view->GetHTComponentForFrame(point,
-                                                     resize_border,
-                                                     resize_border,
-                                                     kResizeAreaCornerSize,
-                                                     kResizeAreaCornerSize,
-                                                     can_ever_resize);
-  if (frame_component != HTNOWHERE)
-    return frame_component;
-
-  int client_component = frame_->client_view()->NonClientHitTest(point);
-  if (client_component != HTNOWHERE)
-    return client_component;
-
   if (caption_button_container_->visible()) {
     gfx::Point point_in_caption_button_container(point);
-    views::View::ConvertPointToTarget(view, caption_button_container_,
+    views::View::ConvertPointFromWidget(caption_button_container_,
         &point_in_caption_button_container);
-    client_component = caption_button_container_->NonClientHitTest(
+    int component = caption_button_container_->NonClientHitTest(
         point_in_caption_button_container);
-    if (client_component != HTNOWHERE)
-      return client_component;
+    if (component != HTNOWHERE)
+      return component;
   }
-
   // Caption is a safe default.
   return HTCAPTION;
 }
 
-gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
-  gfx::Size min_size = frame_->client_view()->GetMinimumSize();
-  // Ensure we can display the top of the caption area.
-  gfx::Rect client_bounds = view->GetBoundsForClientView();
-  min_size.Enlarge(0, client_bounds.y());
-  // Ensure we have enough space for the window icon and buttons.  We allow
+int HeaderPainter::GetMinimumHeaderWidth() const {
+  // Ensure we have enough space for the window icon and buttons. We allow
   // the title string to collapse to zero width.
-  int title_width = GetTitleOffsetX() +
+  return GetTitleOffsetX() +
       caption_button_container_->GetMinimumSize().width();
-  if (title_width > min_size.width())
-    min_size.set_width(title_width);
-  return min_size;
 }
 
-gfx::Size FramePainter::GetMaximumSize(views::NonClientFrameView* view) {
-  return frame_->client_view()->GetMaximumSize();
-}
-
-int FramePainter::GetRightInset() const {
+int HeaderPainter::GetRightInset() const {
   return caption_button_container_->GetPreferredSize().width();
 }
 
-int FramePainter::GetThemeBackgroundXInset() const {
+int HeaderPainter::GetThemeBackgroundXInset() const {
   return kThemeFrameImageInsetX;
 }
 
-bool FramePainter::ShouldUseMinimalHeaderStyle(Themed header_themed) const {
+bool HeaderPainter::ShouldUseMinimalHeaderStyle(Themed header_themed) const {
   // Use the minimalistic header style whenever |frame_| is maximized or
   // fullscreen EXCEPT:
   // - If the user has installed a theme with custom images for the header.
@@ -395,11 +344,10 @@ bool FramePainter::ShouldUseMinimalHeaderStyle(Themed header_themed) const {
       wm::GetWindowState(frame_->GetNativeWindow())->tracked_by_workspace();
 }
 
-void FramePainter::PaintHeader(views::NonClientFrameView* view,
-                               gfx::Canvas* canvas,
-                               HeaderMode header_mode,
-                               int theme_frame_id,
-                               int theme_frame_overlay_id) {
+void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
+                                HeaderMode header_mode,
+                                int theme_frame_id,
+                                int theme_frame_overlay_id) {
   bool initial_paint = (previous_theme_frame_id_ == 0);
   if (!initial_paint &&
       (previous_theme_frame_id_ != theme_frame_id ||
@@ -437,7 +385,6 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
     theme_frame_overlay = theme_provider->GetImageSkiaNamed(
         theme_frame_overlay_id);
   }
-  header_frame_bounds_ = gfx::Rect(0, 0, view->width(), theme_frame->height());
 
   int corner_radius = GetHeaderCornerRadius();
   SkPaint paint;
@@ -469,7 +416,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                   crossfade_theme_frame,
                                   crossfade_theme_frame_overlay,
                                   paint,
-                                  header_frame_bounds_,
+                                  GetHeaderLocalBounds(),
                                   corner_radius,
                                   GetThemeBackgroundXInset());
 
@@ -484,7 +431,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                               theme_frame,
                               theme_frame_overlay,
                               paint,
-                              header_frame_bounds_,
+                              GetHeaderLocalBounds(),
                               corner_radius,
                               GetThemeBackgroundXInset());
 
@@ -502,21 +449,22 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
     return;
 
   // Draw the top corners and edge.
+  int top_left_width = top_left_corner_->width();
   int top_left_height = top_left_corner_->height();
   canvas->DrawImageInt(*top_left_corner_,
-                       0, 0, top_left_corner_->width(), top_left_height,
-                       0, 0, top_left_corner_->width(), top_left_height,
+                       0, 0, top_left_width, top_left_height,
+                       0, 0, top_left_width, top_left_height,
                        false);
   canvas->TileImageInt(*top_edge_,
-      top_left_corner_->width(),
+      top_left_width,
       0,
-      view->width() - top_left_corner_->width() - top_right_corner_->width(),
+      header_view_->width() - top_left_width - top_right_corner_->width(),
       top_edge_->height());
   int top_right_height = top_right_corner_->height();
   canvas->DrawImageInt(*top_right_corner_,
                        0, 0,
                        top_right_corner_->width(), top_right_height,
-                       view->width() - top_right_corner_->width(), 0,
+                       header_view_->width() - top_right_corner_->width(), 0,
                        top_right_corner_->width(), top_right_height,
                        false);
 
@@ -529,7 +477,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   // Header right edge.
   int header_right_height = theme_frame->height() - top_right_height;
   canvas->TileImageInt(*header_right_edge_,
-                       view->width() - header_right_edge_->width(),
+                       header_view_->width() - header_right_edge_->width(),
                        top_right_height,
                        header_right_edge_->width(),
                        header_right_height);
@@ -538,24 +486,20 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   // to the edge of the window.
 }
 
-void FramePainter::PaintHeaderContentSeparator(views::NonClientFrameView* view,
-                                               gfx::Canvas* canvas) {
-  // Paint the line just above the content area.
-  gfx::Rect client_bounds = view->GetBoundsForClientView();
-  canvas->FillRect(gfx::Rect(client_bounds.x(),
-                             client_bounds.y() - kHeaderContentSeparatorSize,
-                             client_bounds.width(),
+void HeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
+  canvas->FillRect(gfx::Rect(0,
+                             header_height_ - kHeaderContentSeparatorSize,
+                             header_view_->width(),
                              kHeaderContentSeparatorSize),
                    kHeaderContentSeparatorColor);
 }
 
-int FramePainter::HeaderContentSeparatorSize() const {
+int HeaderPainter::HeaderContentSeparatorSize() const {
   return kHeaderContentSeparatorSize;
 }
 
-void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
-                                 gfx::Canvas* canvas,
-                                 const gfx::Font& title_font) {
+void HeaderPainter::PaintTitleBar(gfx::Canvas* canvas,
+                                  const gfx::Font& title_font) {
   // The window icon is painted by its own views::View.
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
@@ -565,7 +509,7 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
     canvas->DrawStringInt(delegate->GetWindowTitle(),
                           title_font,
                           title_color,
-                          view->GetMirroredXForRect(title_bounds),
+                          header_view_->GetMirroredXForRect(title_bounds),
                           title_bounds.y(),
                           title_bounds.width(),
                           title_bounds.height(),
@@ -573,8 +517,7 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
   }
 }
 
-void FramePainter::LayoutHeader(views::NonClientFrameView* view,
-                                bool shorter_layout) {
+void HeaderPainter::LayoutHeader(bool shorter_layout) {
   caption_button_container_->set_header_style(shorter_layout ?
       FrameCaptionButtonContainerView::HEADER_STYLE_SHORT :
       FrameCaptionButtonContainerView::HEADER_STYLE_TALL);
@@ -583,7 +526,7 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
   gfx::Size caption_button_container_size =
       caption_button_container_->GetPreferredSize();
   caption_button_container_->SetBounds(
-      view->width() - caption_button_container_size.width(),
+      header_view_->width() - caption_button_container_size.width(),
       0,
       caption_button_container_size.width(),
       caption_button_container_size.height());
@@ -597,11 +540,11 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
   }
 }
 
-void FramePainter::SchedulePaintForTitle(const gfx::Font& title_font) {
-  frame_->non_client_view()->SchedulePaintInRect(GetTitleBounds(title_font));
+void HeaderPainter::SchedulePaintForTitle(const gfx::Font& title_font) {
+  header_view_->SchedulePaintInRect(GetTitleBounds(title_font));
 }
 
-void FramePainter::OnThemeChanged() {
+void HeaderPainter::OnThemeChanged() {
   // We do not cache the images for |previous_theme_frame_id_| and
   // |previous_theme_frame_overlay_id_|. Changing the theme changes the images
   // returned from ui::ThemeProvider for |previous_theme_frame_id_|
@@ -612,30 +555,25 @@ void FramePainter::OnThemeChanged() {
 
   if (crossfade_animation_.get() && crossfade_animation_->is_animating()) {
     crossfade_animation_.reset();
-    frame_->non_client_view()->SchedulePaintInRect(header_frame_bounds_);
+    header_view_->SchedulePaintInRect(GetHeaderLocalBounds());
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowStateObserver overrides:
-void FramePainter::OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
-                                               bool old) {
+void HeaderPainter::OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
+                                                bool old) {
   // When 'TrackedByWorkspace' changes, we are going to paint the header
   // differently. Schedule a paint to ensure everything is updated correctly.
   if (window_state->tracked_by_workspace())
-    frame_->non_client_view()->SchedulePaint();
-}
-
-void FramePainter::OnWindowShowTypeChanged(wm::WindowState* window_state,
-                                           wm::WindowShowType old_type) {
-  UpdateHitTestBoundsOverrideInner();
+    header_view_->SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 
-void FramePainter::OnWindowVisibilityChanged(aura::Window* window,
-                                             bool visible) {
+void HeaderPainter::OnWindowVisibilityChanged(aura::Window* window,
+                                              bool visible) {
   // OnWindowVisibilityChanged can be called for the child windows of |window_|.
   if (window != window_)
     return;
@@ -645,7 +583,7 @@ void FramePainter::OnWindowVisibilityChanged(aura::Window* window,
   UpdateSoloWindowInRoot(window_->GetRootWindow(), visible ? NULL : window_);
 }
 
-void FramePainter::OnWindowDestroying(aura::Window* destroying) {
+void HeaderPainter::OnWindowDestroying(aura::Window* destroying) {
   DCHECK_EQ(window_, destroying);
 
   // Must be removed here and not in the destructor, as the aura::Window is
@@ -660,7 +598,7 @@ void FramePainter::OnWindowDestroying(aura::Window* destroying) {
   window_ = NULL;
 }
 
-void FramePainter::OnWindowBoundsChanged(aura::Window* window,
+void HeaderPainter::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
   // TODO(sky): this isn't quite right. What we really want is a method that
@@ -672,13 +610,13 @@ void FramePainter::OnWindowBoundsChanged(aura::Window* window,
   }
 }
 
-void FramePainter::OnWindowAddedToRootWindow(aura::Window* window) {
+void HeaderPainter::OnWindowAddedToRootWindow(aura::Window* window) {
   // Needs to trigger the window appearance change if the window moves across
   // root windows and a solo window is already in the new root.
   UpdateSoloWindowInRoot(window->GetRootWindow(), NULL /* ignore_window */);
 }
 
-void FramePainter::OnWindowRemovingFromRootWindow(aura::Window* window) {
+void HeaderPainter::OnWindowRemovingFromRootWindow(aura::Window* window) {
   // Needs to trigger the window appearance change if the window moves across
   // root windows and only one window is left in the previous root.  Because
   // |window| is not yet moved, |window| has to be ignored.
@@ -688,25 +626,29 @@ void FramePainter::OnWindowRemovingFromRootWindow(aura::Window* window) {
 ///////////////////////////////////////////////////////////////////////////////
 // gfx::AnimationDelegate overrides:
 
-void FramePainter::AnimationProgressed(const gfx::Animation* animation) {
-  frame_->non_client_view()->SchedulePaintInRect(header_frame_bounds_);
+void HeaderPainter::AnimationProgressed(const gfx::Animation* animation) {
+  header_view_->SchedulePaintInRect(GetHeaderLocalBounds());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// FramePainter, private:
+// HeaderPainter, private:
 
-int FramePainter::GetTitleOffsetX() const {
+gfx::Rect HeaderPainter::GetHeaderLocalBounds() const {
+  return gfx::Rect(header_view_->width(), header_height_);
+}
+
+int HeaderPainter::GetTitleOffsetX() const {
   return window_icon_ ?
       window_icon_->bounds().right() + kTitleIconOffsetX :
       kTitleNoIconOffsetX;
 }
 
-int FramePainter::GetCaptionButtonContainerCenterY() const {
+int HeaderPainter::GetCaptionButtonContainerCenterY() const {
   return caption_button_container_->y() +
       caption_button_container_->height() / 2;
 }
 
-int FramePainter::GetHeaderCornerRadius() const {
+int HeaderPainter::GetHeaderCornerRadius() const {
   // Use square corners for maximized and fullscreen windows when they are
   // tracked by the workspace code. (Windows which are not tracked by the
   // workspace code are used for tab dragging.)
@@ -716,7 +658,7 @@ int FramePainter::GetHeaderCornerRadius() const {
   return square_corners ? 0 : kCornerRadius;
 }
 
-int FramePainter::GetHeaderOpacity(
+int HeaderPainter::GetHeaderOpacity(
     HeaderMode header_mode,
     int theme_frame_id,
     int theme_frame_overlay_id) const {
@@ -742,7 +684,7 @@ int FramePainter::GetHeaderOpacity(
   return kInactiveWindowOpacity;
 }
 
-bool FramePainter::UseSoloWindowHeader() const {
+bool HeaderPainter::UseSoloWindowHeader() const {
   if (!solo_window_header_enabled)
     return false;
   // Don't use transparent headers for panels, pop-ups, etc.
@@ -755,7 +697,7 @@ bool FramePainter::UseSoloWindowHeader() const {
 }
 
 // static
-bool FramePainter::UseSoloWindowHeaderInRoot(RootWindow* root_window,
+bool HeaderPainter::UseSoloWindowHeaderInRoot(RootWindow* root_window,
                                              Window* ignore_window) {
   int visible_window_count = 0;
   std::vector<Window*> windows = GetWindowsForSoloHeaderUpdate(root_window);
@@ -780,7 +722,7 @@ bool FramePainter::UseSoloWindowHeaderInRoot(RootWindow* root_window,
 }
 
 // static
-void FramePainter::UpdateSoloWindowInRoot(RootWindow* root,
+void HeaderPainter::UpdateSoloWindowInRoot(RootWindow* root,
                                           Window* ignore_window) {
 #if defined(OS_WIN)
   // Non-Ash Windows doesn't do solo-window counting for transparency effects,
@@ -810,28 +752,15 @@ void FramePainter::UpdateSoloWindowInRoot(RootWindow* root,
   }
 }
 
-void FramePainter::UpdateHitTestBoundsOverrideInner() {
-  // Maximized and fullscreen windows don't want resize handles overlapping the
-  // content area, because when the user moves the cursor to the right screen
-  // edge we want them to be able to hit the scroll bar.
-  if (wm::GetWindowState(window_)->IsMaximizedOrFullscreen()) {
-    window_->set_hit_test_bounds_override_inner(gfx::Insets());
-  } else {
-    window_->set_hit_test_bounds_override_inner(
-        gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
-                    kResizeInsideBoundsSize, kResizeInsideBoundsSize));
-  }
-}
-
-void FramePainter::SchedulePaintForHeader() {
+void HeaderPainter::SchedulePaintForHeader() {
   int top_left_height = top_left_corner_->height();
   int top_right_height = top_right_corner_->height();
-  frame_->non_client_view()->SchedulePaintInRect(
-      gfx::Rect(0, 0, frame_->non_client_view()->width(),
+  header_view_->SchedulePaintInRect(
+      gfx::Rect(0, 0, header_view_->width(),
                 std::max(top_left_height, top_right_height)));
 }
 
-gfx::Rect FramePainter::GetTitleBounds(const gfx::Font& title_font) {
+gfx::Rect HeaderPainter::GetTitleBounds(const gfx::Font& title_font) {
   int title_x = GetTitleOffsetX();
   // Center the text with respect to the caption button container. This way it
   // adapts to the caption button height and aligns exactly with the window

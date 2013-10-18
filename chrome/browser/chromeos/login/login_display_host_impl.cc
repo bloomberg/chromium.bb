@@ -10,7 +10,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/frame_painter.h"
+#include "ash/wm/header_painter.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -765,7 +765,7 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
 void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_window_)
     return;
-  ash::FramePainter::SetSoloWindowHeadersEnabled(false);
+  ash::HeaderPainter::SetSoloWindowHeadersEnabled(false);
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -808,7 +808,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
 void LoginDisplayHostImpl::ResetLoginWindowAndView() {
   if (!login_window_)
     return;
-  ash::FramePainter::SetSoloWindowHeadersEnabled(true);
+  ash::HeaderPainter::SetSoloWindowHeadersEnabled(true);
   login_window_->Close();
   login_window_ = NULL;
   login_view_ = NULL;

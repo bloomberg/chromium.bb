@@ -7,20 +7,18 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
-#include "ui/aura/aura_export.h"
 #include "ui/gfx/font.h"
-#include "ui/views/controls/button/button.h"  // ButtonListener
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
-class ImageButton;
 class ImageView;
 }
 
 namespace ash {
 
 class FrameCaptionButtonContainerView;
-class FramePainter;
+class FrameBorderHitTestController;
+class HeaderPainter;
 
 class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
  public:
@@ -39,7 +37,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
   virtual const char* GetClassName() const OVERRIDE;
 
  private:
-  void InitFramePainter();
+  void InitHeaderPainter();
 
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
@@ -62,12 +60,17 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
 
   // Child View class describing the panel's title bar behavior
   // and buttons, owned by the view hierarchy
-  scoped_ptr<FramePainter> frame_painter_;
   views::Widget* frame_;
   FrameCaptionButtonContainerView* caption_button_container_;
   views::ImageView* window_icon_;
   gfx::Rect client_view_bounds_;
   const gfx::Font title_font_;
+
+  // Helper class for painting the header.
+  scoped_ptr<HeaderPainter> header_painter_;
+
+  // Updates the hittest bounds overrides based on the window show type.
+  scoped_ptr<FrameBorderHitTestController> frame_border_hit_test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);
 };

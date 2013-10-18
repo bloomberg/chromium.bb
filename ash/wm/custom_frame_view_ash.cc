@@ -5,12 +5,11 @@
 #include "ash/wm/custom_frame_view_ash.h"
 
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/frame_painter.h"
+#include "ash/wm/frame_border_hit_test_controller.h"
+#include "ash/wm/header_painter.h"
 #include "grit/ash_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -35,18 +34,12 @@ const char CustomFrameViewAsh::kViewClassName[] = "CustomFrameViewAsh";
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, public:
-CustomFrameViewAsh::CustomFrameViewAsh()
-    : frame_(NULL),
+CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
+    : frame_(frame),
       caption_button_container_(NULL),
-      frame_painter_(new ash::FramePainter) {
-}
-
-CustomFrameViewAsh::~CustomFrameViewAsh() {
-}
-
-void CustomFrameViewAsh::Init(views::Widget* frame) {
-  frame_ = frame;
-
+      header_painter_(new ash::HeaderPainter),
+      frame_border_hit_test_controller_(
+          new FrameBorderHitTestController(frame_)) {
   // Unfortunately, there is no views::WidgetDelegate::CanMinimize(). Assume
   // that the window frame can be minimized if it can be maximized.
   FrameCaptionButtonContainerView::MinimizeAllowed minimize_allowed =
@@ -57,26 +50,29 @@ void CustomFrameViewAsh::Init(views::Widget* frame) {
       minimize_allowed);
   AddChildView(caption_button_container_);
 
-  frame_painter_->Init(frame_, NULL, caption_button_container_);
+  header_painter_->Init(frame_, this, NULL, caption_button_container_);
+}
+
+CustomFrameViewAsh::~CustomFrameViewAsh() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, views::NonClientFrameView overrides:
 gfx::Rect CustomFrameViewAsh::GetBoundsForClientView() const {
   int top_height = NonClientTopBorderHeight();
-  return frame_painter_->GetBoundsForClientView(top_height,
-                                                bounds());
+  return HeaderPainter::GetBoundsForClientView(top_height, bounds());
 }
 
 gfx::Rect CustomFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   int top_height = NonClientTopBorderHeight();
-  return frame_painter_->GetWindowBoundsForClientBounds(top_height,
-                                                        client_bounds);
+  return HeaderPainter::GetWindowBoundsForClientBounds(top_height,
+                                                       client_bounds);
 }
 
 int CustomFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  return frame_painter_->NonClientHitTest(this, point);
+  return FrameBorderHitTestController::NonClientHitTest(this,
+      header_painter_.get(), point);
 }
 
 void CustomFrameViewAsh::GetWindowMask(const gfx::Size& size,
@@ -92,7 +88,7 @@ void CustomFrameViewAsh::UpdateWindowIcon() {
 }
 
 void CustomFrameViewAsh::UpdateWindowTitle() {
-  frame_painter_->SchedulePaintForTitle(GetTitleFont());
+  header_painter_->SchedulePaintForTitle(GetTitleFont());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +103,8 @@ gfx::Size CustomFrameViewAsh::GetPreferredSize() {
 
 void CustomFrameViewAsh::Layout() {
   // Use the shorter maximized layout headers.
-  frame_painter_->LayoutHeader(this, true);
+  header_painter_->LayoutHeader(true);
+  header_painter_->set_header_height(NonClientTopBorderHeight());
 }
 
 void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
@@ -121,21 +118,20 @@ void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
 
   bool paint_as_active = ShouldPaintAsActive();
   int theme_image_id = 0;
-  if (frame_painter_->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO))
+  if (header_painter_->ShouldUseMinimalHeaderStyle(HeaderPainter::THEMED_NO))
     theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
   else if (paint_as_active)
     theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
   else
     theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
 
-  frame_painter_->PaintHeader(
-      this,
+  header_painter_->PaintHeader(
       canvas,
-      paint_as_active ? FramePainter::ACTIVE : FramePainter::INACTIVE,
+      paint_as_active ? HeaderPainter::ACTIVE : HeaderPainter::INACTIVE,
       theme_image_id,
       0);
-  frame_painter_->PaintTitleBar(this, canvas, GetTitleFont());
-  frame_painter_->PaintHeaderContentSeparator(this, canvas);
+  header_painter_->PaintTitleBar(canvas, GetTitleFont());
+  header_painter_->PaintHeaderContentSeparator(canvas);
   canvas->Restore();
 }
 
@@ -144,11 +140,15 @@ const char* CustomFrameViewAsh::GetClassName() const {
 }
 
 gfx::Size CustomFrameViewAsh::GetMinimumSize() {
-  return frame_painter_->GetMinimumSize(this);
+  gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
+  return gfx::Size(
+      std::max(header_painter_->GetMinimumHeaderWidth(),
+               min_client_view_size.width()),
+      NonClientTopBorderHeight() + min_client_view_size.height());
 }
 
 gfx::Size CustomFrameViewAsh::GetMaximumSize() {
-  return frame_painter_->GetMaximumSize(this);
+  return frame_->client_view()->GetMaximumSize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ int CustomFrameViewAsh::NonClientTopBorderHeight() const {
   // Reserve enough space to see the buttons, including any offset from top and
   // reserving space for the separator line.
   return caption_button_container_->bounds().bottom() +
-      frame_painter_->HeaderContentSeparatorSize();
+      header_painter_->HeaderContentSeparatorSize();
 }
 
 }  // namespace ash

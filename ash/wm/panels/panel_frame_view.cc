@@ -5,17 +5,13 @@
 #include "ash/wm/panels/panel_frame_view.h"
 
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/frame_painter.h"
+#include "ash/wm/frame_border_hit_test_controller.h"
+#include "ash/wm/header_painter.h"
 #include "grit/ash_resources.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -30,9 +26,11 @@ PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
     : frame_(frame),
       caption_button_container_(NULL),
       window_icon_(NULL),
-      title_font_(gfx::Font(views::NativeWidgetAura::GetWindowTitleFont())) {
+      title_font_(gfx::Font(views::NativeWidgetAura::GetWindowTitleFont())),
+      frame_border_hit_test_controller_(
+          new FrameBorderHitTestController(frame_)) {
   if (frame_type != FRAME_NONE)
-    InitFramePainter();
+    InitHeaderPainter();
 }
 
 PanelFrameView::~PanelFrameView() {
@@ -42,8 +40,8 @@ const char* PanelFrameView::GetClassName() const {
   return kViewClassName;
 }
 
-void PanelFrameView::InitFramePainter() {
-  frame_painter_.reset(new FramePainter);
+void PanelFrameView::InitHeaderPainter() {
+  header_painter_.reset(new HeaderPainter);
 
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_,
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
@@ -54,27 +52,32 @@ void PanelFrameView::InitFramePainter() {
     AddChildView(window_icon_);
   }
 
-  frame_painter_->Init(frame_, window_icon_, caption_button_container_);
+  header_painter_->Init(frame_, this, window_icon_, caption_button_container_);
 }
 
 int PanelFrameView::NonClientTopBorderHeight() const {
-  if (!frame_painter_)
+  if (!header_painter_)
     return 0;
   // Reserve enough space to see the buttons and the separator line.
   return caption_button_container_->bounds().bottom() +
-      frame_painter_->HeaderContentSeparatorSize();
+      header_painter_->HeaderContentSeparatorSize();
 }
 
 gfx::Size PanelFrameView::GetMinimumSize() {
-  if (!frame_painter_)
+  if (!header_painter_)
     return gfx::Size();
-  return frame_painter_->GetMinimumSize(this);
+  gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
+  return gfx::Size(
+      std::max(header_painter_->GetMinimumHeaderWidth(),
+               min_client_view_size.width()),
+      NonClientTopBorderHeight() + min_client_view_size.height());
 }
 
 void PanelFrameView::Layout() {
-  if (!frame_painter_)
+  if (!header_painter_)
     return;
-  frame_painter_->LayoutHeader(this, true);
+  header_painter_->LayoutHeader(true);
+  header_painter_->set_header_height(NonClientTopBorderHeight());
 }
 
 void PanelFrameView::ResetWindowControls() {
@@ -91,9 +94,9 @@ void PanelFrameView::UpdateWindowIcon() {
 }
 
 void PanelFrameView::UpdateWindowTitle() {
-  if (!frame_painter_)
+  if (!header_painter_)
     return;
-  frame_painter_->SchedulePaintForTitle(title_font_);
+  header_painter_->SchedulePaintForTitle(title_font_);
 }
 
 void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
@@ -101,45 +104,45 @@ void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
 }
 
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
-  if (!frame_painter_)
+  if (!header_painter_)
     return HTNOWHERE;
-  return frame_painter_->NonClientHitTest(this, point);
+  return FrameBorderHitTestController::NonClientHitTest(this,
+      header_painter_.get(), point);
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
-  if (!frame_painter_)
+  if (!header_painter_)
     return;
   bool paint_as_active = ShouldPaintAsActive();
   int theme_frame_id = 0;
-  if (frame_painter_->ShouldUseMinimalHeaderStyle(FramePainter::THEMED_NO))
+  if (header_painter_->ShouldUseMinimalHeaderStyle(HeaderPainter::THEMED_NO))
     theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
   else if (paint_as_active)
     theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
   else
     theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
 
-  frame_painter_->PaintHeader(
-      this,
+  header_painter_->PaintHeader(
       canvas,
-      paint_as_active ? FramePainter::ACTIVE : FramePainter::INACTIVE,
+      paint_as_active ? HeaderPainter::ACTIVE : HeaderPainter::INACTIVE,
       theme_frame_id,
       0);
-  frame_painter_->PaintTitleBar(this, canvas, title_font_);
-  frame_painter_->PaintHeaderContentSeparator(this, canvas);
+  header_painter_->PaintTitleBar(canvas, title_font_);
+  header_painter_->PaintHeaderContentSeparator(canvas);
 }
 
 gfx::Rect PanelFrameView::GetBoundsForClientView() const {
-  if (!frame_painter_)
+  if (!header_painter_)
     return bounds();
-  return frame_painter_->GetBoundsForClientView(
+  return HeaderPainter::GetBoundsForClientView(
       NonClientTopBorderHeight(), bounds());
 }
 
 gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  if (!frame_painter_)
+  if (!header_painter_)
     return client_bounds;
-  return frame_painter_->GetWindowBoundsForClientBounds(
+  return HeaderPainter::GetWindowBoundsForClientBounds(
       NonClientTopBorderHeight(), client_bounds);
 }
 

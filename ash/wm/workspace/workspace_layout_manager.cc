@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/base_layout_manager.h"
-#include "ash/wm/frame_painter.h"
+#include "ash/wm/header_painter.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
@@ -278,7 +278,7 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
 void WorkspaceLayoutManager::UpdateDesktopVisibility() {
   if (shelf_)
     shelf_->UpdateVisibilityState();
-  FramePainter::UpdateSoloWindowHeader(window_->GetRootWindow());
+  HeaderPainter::UpdateSoloWindowHeader(window_->GetRootWindow());
 }
 
 void WorkspaceLayoutManager::UpdateBoundsFromShowState(

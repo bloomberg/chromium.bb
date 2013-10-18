@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_FRAME_PAINTER_H_
-#define ASH_WM_FRAME_PAINTER_H_
+#ifndef ASH_WM_HEADER_PAINTER_H_
+#define ASH_WM_HEADER_PAINTER_H_
 
 #include "ash/ash_export.h"
 #include "ash/wm/window_state_observer.h"
@@ -28,7 +28,6 @@ class Size;
 class SlideAnimation;
 }
 namespace views {
-class NonClientFrameView;
 class View;
 class Widget;
 }
@@ -36,12 +35,10 @@ class Widget;
 namespace ash {
 class FrameCaptionButtonContainerView;
 
-// Helper class for painting window frames.  Exists to share code between
-// various implementations of views::NonClientFrameView.  Canonical source of
-// layout constants for Ash window frames.
-class ASH_EXPORT FramePainter : public aura::WindowObserver,
-                                public gfx::AnimationDelegate,
-                                public wm::WindowStateObserver {
+// Helper class for painting the window header.
+class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
+                                 public gfx::AnimationDelegate,
+                                 public wm::WindowStateObserver {
  public:
   // Opacity values for the window header in various states, from 0 to 255.
   static int kActiveWindowOpacity;
@@ -58,17 +55,12 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
     THEMED_NO
   };
 
-  // What happens when the |size_button_| is pressed.
-  enum SizeButtonBehavior {
-    SIZE_BUTTON_MINIMIZES,
-    SIZE_BUTTON_MAXIMIZES
-  };
+  HeaderPainter();
+  virtual ~HeaderPainter();
 
-  FramePainter();
-  virtual ~FramePainter();
-
-  // |frame| and buttons are used for layout and are not owned.
+  // None of the parameters are owned.
   void Init(views::Widget* frame,
+            views::View* header_view,
             views::View* window_icon,
             FrameCaptionButtonContainerView* caption_button_container);
 
@@ -79,16 +71,28 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // using frame painters in |root_window|.
   static void UpdateSoloWindowHeader(aura::RootWindow* root_window);
 
-  // Helpers for views::NonClientFrameView implementations.
-  gfx::Rect GetBoundsForClientView(int top_height,
-                                   const gfx::Rect& window_bounds) const;
-  gfx::Rect GetWindowBoundsForClientBounds(
-      int top_height,
-      const gfx::Rect& client_bounds) const;
-  int NonClientHitTest(views::NonClientFrameView* view,
-                       const gfx::Point& point);
-  gfx::Size GetMinimumSize(views::NonClientFrameView* view);
-  gfx::Size GetMaximumSize(views::NonClientFrameView* view);
+  // Returns the bounds of the client view for a window with |header_height|
+  // and |window_bounds|. The return value and |window_bounds| are in the
+  // views::NonClientView's coordinates.
+  static gfx::Rect GetBoundsForClientView(int header_height,
+                                          const gfx::Rect& window_bounds);
+
+  // Returns the bounds of the window given |header_height| and |client_bounds|.
+  // The return value and |client_bounds| are in the views::NonClientView's
+  // coordinates.
+  static gfx::Rect GetWindowBoundsForClientBounds(
+      int header_height,
+      const gfx::Rect& client_bounds);
+
+  // Determines the window HT* code at |point|. Returns HTNOWHERE if |point| is
+  // not within the top |header_height_| of |header_view_|. |point| is in the
+  // coordinates of |header_view_|'s widget. The client view must be hittested
+  // before calling this method because a browser's tabs are in the top
+  // |header_height_| of |header_view_|.
+  int NonClientHitTest(const gfx::Point& point) const;
+
+  // Returns the header's minimum width.
+  int GetMinimumHeaderWidth() const;
 
   // Returns the inset from the right edge.
   int GetRightInset() const;
@@ -99,32 +103,34 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Returns true if the header should be painted using a minimalistic style.
   bool ShouldUseMinimalHeaderStyle(Themed header_themed) const;
 
-  // Paints the frame header.
+  // Paints the header.
   // |theme_frame_overlay_id| is 0 if no overlay image should be used.
-  void PaintHeader(views::NonClientFrameView* view,
-                   gfx::Canvas* canvas,
+  void PaintHeader(gfx::Canvas* canvas,
                    HeaderMode header_mode,
                    int theme_frame_id,
                    int theme_frame_overlay_id);
 
-  // Paints the header/content separator line.  Exists as a separate function
+  // Paints the header/content separator line. Exists as a separate function
   // because some windows with complex headers (e.g. browsers with tab strips)
   // need to draw their own line.
-  void PaintHeaderContentSeparator(views::NonClientFrameView* view,
-                                   gfx::Canvas* canvas);
+  void PaintHeaderContentSeparator(gfx::Canvas* canvas);
 
   // Returns size of the header/content separator line in pixels.
   int HeaderContentSeparatorSize() const;
 
   // Paint the title bar, primarily the title string.
-  void PaintTitleBar(views::NonClientFrameView* view,
-                     gfx::Canvas* canvas,
-                     const gfx::Font& title_font);
+  void PaintTitleBar(gfx::Canvas* canvas, const gfx::Font& title_font);
 
   // Performs layout for the header based on whether we want the shorter
   // appearance. |shorter_layout| is typically used for maximized windows, but
   // not always.
-  void LayoutHeader(views::NonClientFrameView* view, bool shorter_layout);
+  void LayoutHeader(bool shorter_layout);
+
+  // Sets the height of the header. The height of the header affects painting,
+  // and non client hit tests. It does not affect layout.
+  void set_header_height(int header_height) {
+    header_height_ = header_height;
+  }
 
   // Schedule a re-paint of the entire title.
   void SchedulePaintForTitle(const gfx::Font& title_font);
@@ -142,29 +148,32 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE;
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
 
-  // ash::WindowStateObserver overrides:
+  // ash::WindowStateObserver override:
   virtual void OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
                                            bool old) OVERRIDE;
-  virtual void OnWindowShowTypeChanged(wm::WindowState* window_state,
-                                       wm::WindowShowType old_type) OVERRIDE;
 
   // Overridden from gfx::AnimationDelegate
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, CreateAndDeleteSingleWindow);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeader);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderWithApp);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderWithPanel);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderModal);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderConstrained);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderNotDrawn);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderMultiDisplay);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, GetHeaderOpacity);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, TitleIconAlignment);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, ChildWindowVisibility);
-  FRIEND_TEST_ALL_PREFIXES(FramePainterTest,
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, CreateAndDeleteSingleWindow);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeader);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderWithApp);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderWithPanel);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderModal);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderConstrained);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderNotDrawn);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, UseSoloWindowHeaderMultiDisplay);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, GetHeaderOpacity);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, TitleIconAlignment);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, ChildWindowVisibility);
+  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest,
                            NoCrashShutdownWithAlwaysOnTopWindow);
+
+  // Returns the header bounds in the coordinates of |header_view_|. The header
+  // is assumed to be positioned at the top left corner of |header_view_| and to
+  // have the same width as |header_view_|.
+  gfx::Rect GetHeaderLocalBounds() const;
 
   // Returns the offset between window left edge and title string.
   int GetTitleOffsetX() const;
@@ -200,10 +209,6 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   static void UpdateSoloWindowInRoot(aura::RootWindow* root_window,
                                      aura::Window* ignore_window);
 
-  // Updates the size of the region inside of |window_| in which the resize
-  // handles are shown based on |window_|'s show type.
-  void UpdateHitTestBoundsOverrideInner();
-
   // Schedules a paint for the header. Used when transitioning from no header to
   // a header (or other way around).
   void SchedulePaintForHeader();
@@ -214,9 +219,13 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
 
   // Not owned
   views::Widget* frame_;
+  views::View* header_view_;
   views::View* window_icon_;  // May be NULL.
   FrameCaptionButtonContainerView* caption_button_container_;
   aura::Window* window_;
+
+  // The height of the header.
+  int header_height_;
 
   // Window frame header/caption parts.
   const gfx::ImageSkia* top_left_corner_;
@@ -235,12 +244,11 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   int crossfade_theme_frame_overlay_id_;
   int crossfade_opacity_;
 
-  gfx::Rect header_frame_bounds_;
   scoped_ptr<gfx::SlideAnimation> crossfade_animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(FramePainter);
+  DISALLOW_COPY_AND_ASSIGN(HeaderPainter);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_FRAME_PAINTER_H_
+#endif  // ASH_WM_HEADER_PAINTER_H_

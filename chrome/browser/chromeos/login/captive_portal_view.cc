@@ -77,8 +77,7 @@ views::NonClientFrameView* CaptivePortalView::CreateNonClientFrameView(
     return views::DialogDelegate::CreateNewStyleFrameView(widget,
                                                           force_opaque_border);
   }
-  ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh;
-  frame->Init(widget);
+  ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh(widget);
   // Always use "active" look.
   frame->SetInactiveRenderingDisabled(true);
   return frame;

@@ -6,7 +6,8 @@
 
 #include "ash/ash_switches.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/frame_painter.h"
+#include "ash/wm/frame_border_hit_test_controller.h"
+#include "ash/wm/header_painter.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
@@ -83,7 +84,9 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     : BrowserNonClientFrameView(frame, browser_view),
       caption_button_container_(NULL),
       window_icon_(NULL),
-      frame_painter_(new ash::FramePainter) {
+      header_painter_(new ash::HeaderPainter),
+      frame_border_hit_test_controller_(
+          new ash::FrameBorderHitTestController(frame)) {
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
@@ -106,7 +109,7 @@ void BrowserNonClientFrameViewAsh::Init() {
   UpdateAvatarInfo();
 
   // Frame painter handles layout.
-  frame_painter_->Init(frame(), window_icon_, caption_button_container_);
+  header_painter_->Init(frame(), this, window_icon_, caption_button_container_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,7 +139,7 @@ BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
   int extra_right = ash::switches::UseAlternateFrameCaptionButtonStyle() ?
       kTabstripRightSpacingAlternateCaptionButtonStyle :
       kTabstripRightSpacing;
-  int right = frame_painter_->GetRightInset() + extra_right;
+  int right = header_painter_->GetRightInset() + extra_right;
 
   int top = NonClientTopBorderHeight();
   if (force_restored)
@@ -159,7 +162,7 @@ BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
-  return frame_painter_->GetThemeBackgroundXInset();
+  return header_painter_->GetThemeBackgroundXInset();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
@@ -172,18 +175,19 @@ void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForClientView() const {
   int top_height = NonClientTopBorderHeight();
-  return frame_painter_->GetBoundsForClientView(top_height, bounds());
+  return ash::HeaderPainter::GetBoundsForClientView(top_height, bounds());
 }
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   int top_height = NonClientTopBorderHeight();
-  return frame_painter_->GetWindowBoundsForClientBounds(top_height,
-                                                        client_bounds);
+  return ash::HeaderPainter::GetWindowBoundsForClientBounds(top_height,
+                                                            client_bounds);
 }
 
 int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  int hit_test = frame_painter_->NonClientHitTest(this, point);
+  int hit_test = ash::FrameBorderHitTestController::NonClientHitTest(this,
+      header_painter_.get(), point);
 
   // See if the point is actually within the avatar menu button or within
   // the avatar label.
@@ -229,7 +233,7 @@ void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
 
 void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
   if (!frame()->IsFullscreen())
-    frame_painter_->SchedulePaintForTitle(BrowserFrame::GetTitleFont());
+    header_painter_->SchedulePaintForTitle(BrowserFrame::GetTitleFont());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -250,25 +254,24 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   int theme_frame_overlay_image_id = GetThemeFrameOverlayImageId();
 
   ui::ThemeProvider* theme_provider = GetThemeProvider();
-  ash::FramePainter::Themed header_themed = ash::FramePainter::THEMED_NO;
+  ash::HeaderPainter::Themed header_themed = ash::HeaderPainter::THEMED_NO;
   if (theme_provider->HasCustomImage(theme_frame_image_id) ||
       (theme_frame_overlay_image_id != 0 &&
        theme_provider->HasCustomImage(theme_frame_overlay_image_id))) {
-    header_themed = ash::FramePainter::THEMED_YES;
+    header_themed = ash::HeaderPainter::THEMED_YES;
   }
 
-  if (frame_painter_->ShouldUseMinimalHeaderStyle(header_themed))
+  if (header_painter_->ShouldUseMinimalHeaderStyle(header_themed))
     theme_frame_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
 
-  frame_painter_->PaintHeader(
-      this,
+  header_painter_->PaintHeader(
       canvas,
       ShouldPaintAsActive() ?
-          ash::FramePainter::ACTIVE : ash::FramePainter::INACTIVE,
+          ash::HeaderPainter::ACTIVE : ash::HeaderPainter::INACTIVE,
       theme_frame_image_id,
       theme_frame_overlay_image_id);
   if (browser_view()->ShouldShowWindowTitle())
-    frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
+    header_painter_->PaintTitleBar(canvas, BrowserFrame::GetTitleFont());
   if (browser_view()->IsToolbarVisible())
     PaintToolbarBackground(canvas);
   else
@@ -276,7 +279,15 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {
-  frame_painter_->LayoutHeader(this, UseShortHeader());
+  header_painter_->LayoutHeader(UseShortHeader());
+  int header_height = 0;
+  if (browser_view()->IsTabStripVisible()) {
+    header_height = GetTabStripInsets(false).top +
+        browser_view()->GetTabStripHeight();
+  } else {
+    header_height = NonClientTopBorderHeight();
+  }
+  header_painter_->set_header_height(header_height);
   if (avatar_button())
     LayoutAvatar();
   BrowserNonClientFrameView::Layout();
@@ -339,12 +350,16 @@ void BrowserNonClientFrameViewAsh::GetAccessibleState(
 }
 
 gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
-  return frame_painter_->GetMinimumSize(this);
+  gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
+  return gfx::Size(
+      std::max(header_painter_->GetMinimumHeaderWidth(),
+               min_client_view_size.width()),
+      NonClientTopBorderHeight() + min_client_view_size.height());
 }
 
 void BrowserNonClientFrameViewAsh::OnThemeChanged() {
   BrowserNonClientFrameView::OnThemeChanged();
-  frame_painter_->OnThemeChanged();
+  header_painter_->OnThemeChanged();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

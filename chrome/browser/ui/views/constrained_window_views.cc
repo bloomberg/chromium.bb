@@ -647,8 +647,7 @@ views::NonClientFrameView* CreateConstrainedStyleNonClientFrameView(
                                                           force_opaque_border);
   }
 #if defined(USE_ASH)
-  ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh;
-  frame->Init(widget);
+  ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh(widget);
   // Always use "active" look.
   frame->SetInactiveRenderingDisabled(true);
   return frame;
