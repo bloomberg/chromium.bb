@@ -1010,9 +1010,6 @@ crbug.com/282496 [ Linux Release ] css3/filters/custom/composited/custom-filter-
 
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
 
-crbug.com/260899 [ Mac ] fast/forms/select-overflow-scroll-inherited.html [ NeedsRebaseline ]
-crbug.com/260899 [ Mac ] fast/forms/select-overflow-scroll.html [ NeedsRebaseline ]
-
 crbug.com/229910 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
 
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
