@@ -39,6 +39,13 @@ camera.views.Gallery = function(context) {
   this.pictures_ = [];
 
   /**
+   * @type {camera.VerticalScrollBar}
+   * @private
+   */
+  this.scrollBar_ = new camera.VerticalScrollBar(
+      document.querySelector('#gallery'));
+
+  /**
    * @type {camera.util.SmoothScroller}
    * @private
    */

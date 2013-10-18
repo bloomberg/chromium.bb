@@ -1,6 +1,6 @@
 body {
   -webkit-box-align: center;
-  background-color: black;
+  background: black;
   bottom: 0;
   display: -webkit-box;
   left: 0;
@@ -8,6 +8,55 @@ body {
   position: absolute;
   right: 0;
   top: 0;
+}
+
+.scrollbar-track {
+  padding: 2px;
+  position: fixed;
+}
+
+.scrollbar-track-horizontal {
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.scrollbar-track-vertical {
+  bottom: 0;
+  right: 0;
+  top: 0;
+}
+
+.scrollbar-thumb {
+  background: white;
+  border: 1px solid #555;
+  border-radius: 3px;
+  box-sizing: border-box;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 100ms;
+}
+
+body.expanded .scrollbar-track .scrollbar-thumb {
+  opacity: 0.4;
+}
+
+body .scrollbar-track .scrollbar-thumb:hover {
+  opacity: 0.6;
+}
+
+body .scrollbar-track .scrollbar-thumb:active {
+  opacity: 0.8;
+}
+
+.scrollbar-track-horizontal,
+.scrollbar-track-horizontal .scrollbar-thumb {
+  height: 8px;
+}
+
+.scrollbar-track-vertical,
+.scrollbar-track-vertical .scrollbar-thumb {
+  width: 8px;
 }
 
 button {
@@ -19,7 +68,7 @@ button {
   -webkit-box-pack: end;
   display: -webkit-box;
   left: 0;
-  padding: 8px;
+  padding: 10px;
   pointer-events: auto;
   position: absolute;
   right: 0;
@@ -84,8 +133,8 @@ body:not(.expanded) #corner-buttons button {
   }
 }
 
-#side-buttons {
-  -webkit-box-align: center;
+#side-buttons,
+#corner-buttons {
   -webkit-box-pack: end;
   bottom: 0;
   display: -webkit-box;
@@ -103,21 +152,18 @@ body:not(.expanded) #corner-buttons button {
       url(../images/2x/topbar_button_gallery.png) 2x);
 }
 
-#side-buttons button {
-  pointer-events: auto;
+#side-buttons {
+  -webkit-box-align: center;
+  padding: 0 10px;
 }
 
 #corner-buttons {
   -webkit-box-align: end;
-  -webkit-box-pack: end;
-  bottom: 0;
-  display: -webkit-box;
-  left: 0;
   padding: 10px;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
+}
+
+#side-buttons button {
+  pointer-events: auto;
 }
 
 #corner-buttons button {
@@ -200,7 +246,7 @@ body.browser #toolbar {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   bottom: 0;
   color: white;
   display: none;
@@ -238,17 +284,18 @@ canvas {
 }
 
 ::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
+  width: 0;
+  height: 0;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: transparent;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: gray;
-  border-radius: 4px;
+  background: transparent;
+  width: 0;
+  height: 0;
 }
 
 #effects li {
@@ -258,6 +305,14 @@ canvas {
   -webkit-margin-end: 10px;
   display: -webkit-box;
   padding: 0;
+}
+
+#effects li:first-child {
+  padding-left: 10px;
+}
+
+#effects li:last-child {
+  padding-right: 10px;
 }
 
 #effects li div.preview-canvas-wrapper {
@@ -325,10 +380,10 @@ canvas {
 
 #toolbar {
   -webkit-transform: translateY(200px);
-  background-color: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.75);
   bottom: 0;
   left: 0;
-  padding: 10px;
+  padding: 10px 0;
   position: absolute;
   right: 0;
   transition: -webkit-transform 200ms linear;
@@ -339,7 +394,7 @@ body.expanded:not(.has-error) #toolbar {
 }
 
 #shutter {
-  background-color: white;
+  background: white;
   bottom: 0;
   left: 0;
   opacity: 0;
@@ -383,7 +438,6 @@ body.browser #picture-preview {
 #browser {
   bottom: 0;
   left: 0;
-  margin: 10px;
   overflow: auto;
   position: absolute;
   right: 0;
@@ -392,7 +446,7 @@ body.browser #picture-preview {
 }
 
 #gallery .padder {
-  padding: 8px;
+  padding: 15px;
 }
 
 #gallery img {
@@ -409,7 +463,7 @@ body.browser #picture-preview {
 }
 
 #browser {
-  background-color: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.8);
   visibility: hidden;
 }
 
