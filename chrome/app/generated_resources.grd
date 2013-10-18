@@ -1831,13 +1831,29 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         Confirm Download
       </message>
+      <message name="IDS_RESTORE_KEEP_DANGEROUS_DOWNLOAD_TITLE"
+               desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
+        Recover malware?
+      </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD"
                desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         This might hurt. Don't say we didn't warn you...
       </message>
+      <message name="IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD"
+               desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a malicious download">
+        This file will harm your computer.
+      </message>
       <message name="IDS_CONFIRM_DOWNLOAD_AGAIN"
                desc="Text for the button used to confirm the dialog asking whether the user really meant to keep dangerous download.">
         Keep anyway
+      </message>
+      <message name="IDS_CONFIRM_DOWNLOAD_AGAIN_MALICIOUS"
+               desc="The text for the button used to confirm that the user DOES want to keep malware. Don't translate the English string literally; for translations, translate 'Recover anyway'">
+        Hurt me plenty
+      </message>
+      <message name="IDS_CONFIRM_CANCEL_AGAIN_MALICIOUS"
+               desc="Text for the button used to indicate that the user does NOT want to restore a malicious download.">
+        Be safe
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">

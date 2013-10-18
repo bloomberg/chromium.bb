@@ -77,8 +77,10 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
     EXPECT_CALL(download_, GetFileNameToReportUser()).WillRepeatedly(Return(
         base::FilePath(FILE_PATH_LITERAL("evil.exe"))));
     EXPECT_CALL(download_, AddObserver(_))
-      .WillOnce(SaveArg<0>(&download_observer_));
+        .WillOnce(SaveArg<0>(&download_observer_));
     EXPECT_CALL(download_, RemoveObserver(Eq(ByRef(download_observer_))));
+    EXPECT_CALL(download_, GetDangerType())
+        .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL));
   }
 
   void CreatePrompt() {
