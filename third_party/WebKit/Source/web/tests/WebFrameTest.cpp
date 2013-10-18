@@ -82,8 +82,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebUnitTestSupport.h"
+#include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
+#include "public/platform/WebUnitTestSupport.h"
 #include "wtf/dtoa/utils.h"
 #include "wtf/Forward.h"
 #include <map>
@@ -284,6 +285,32 @@ TEST_F(WebFrameTest, ChromePageNoJavascript)
     // Now retrieve the frame's text and ensure it wasn't modified by running javascript.
     std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
     EXPECT_EQ(std::string::npos, content.find("Clobbered"));
+}
+
+TEST_F(WebFrameTest, LocationSetHostWithMissingPort)
+{
+    std::string fileName = "print-location-href.html";
+    registerMockedHttpURLLoad(fileName);
+    URLTestHelpers::registerMockedURLLoad(toKURL("http://www.test.com:0/" + fileName), WebString::fromUTF8(fileName));
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+
+    /// Pass true to enable JavaScript.
+    webViewHelper.initializeAndLoad(m_baseURL + fileName, true);
+
+    // Setting host to "hostname:" should be treated as "hostname:0".
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:location.host = 'www.test.com:'; void 0;");
+
+    runPendingTasks();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.body.textContent = location.href; void 0;");
+    // Required to see any updates in contentAsText.
+    runPendingTasks();
+    webViewHelper.webView()->layout();
+
+    std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
+    EXPECT_EQ("http://www.test.com:0/" + fileName, content);
 }
 
 class CSSCallbackWebFrameClient : public WebFrameClient {
