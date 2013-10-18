@@ -8,6 +8,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "skia/ext/refptr.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -84,6 +86,24 @@ class LocatedEventHandlerView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(LocatedEventHandlerView);
 };
+
+void DrawGradientRect(const gfx::Rect& rect, SkColor start_color,
+                      SkColor end_color, bool is_horizontal,
+                      gfx::Canvas* canvas) {
+  SkColor colors[2] = { start_color, end_color };
+  SkPoint points[2];
+  points[0].iset(0, 0);
+  if (is_horizontal)
+    points[1].iset(rect.width() + 1, 0);
+  else
+    points[1].iset(0, rect.height() + 1);
+  skia::RefPtr<SkShader> shader(skia::AdoptRef(
+      SkGradientShader::CreateLinear(points, colors, NULL, 2,
+                                     SkShader::kClamp_TileMode)));
+  SkPaint paint;
+  paint.setShader(shader.get());
+  canvas->DrawRect(rect, paint);
+}
 
 }  // namespace
 
@@ -277,17 +297,22 @@ gfx::Size ColorChooserView::SaturationValueView::GetPreferredSize() {
 }
 
 void ColorChooserView::SaturationValueView::OnPaint(gfx::Canvas* canvas) {
-  SkScalar hsv[3];
-  hsv[0] = hue_;
-  SkScalar scalar_size = SkIntToScalar(kSaturationValueSize - 1);
-  for (int x = kBorderWidth; x < width() - kBorderWidth; ++x) {
-    hsv[1] = SkScalarDiv(SkIntToScalar(x), scalar_size);
-    for (int y = kBorderWidth; y < height() - kBorderWidth; ++y) {
-      hsv[2] = SK_Scalar1 - SkScalarDiv(SkIntToScalar(y), scalar_size);
-      canvas->FillRect(gfx::Rect(x, y, 1, 1), SkHSVToColor(255, hsv));
-    }
-  }
+  gfx::Rect color_bounds = bounds();
+  color_bounds.Inset(GetInsets());
 
+  // Paints horizontal gradient first for saturation.
+  SkScalar hsv[3] = { hue_, SK_Scalar1, SK_Scalar1 };
+  SkScalar left_hsv[3] = { hue_, 0, SK_Scalar1 };
+  DrawGradientRect(color_bounds, SkHSVToColor(255, left_hsv),
+                   SkHSVToColor(255, hsv), true /* is_horizontal */, canvas);
+
+  // Overlays vertical gradient for value.
+  SkScalar hsv_bottom[3] = { 0, SK_Scalar1, 0 };
+  DrawGradientRect(color_bounds, SK_ColorTRANSPARENT,
+                   SkHSVToColor(255, hsv_bottom), false /* is_horizontal */,
+                   canvas);
+
+  // Draw the crosshair marker.
   // The background is very dark at the bottom of the view.  Use a white
   // marker in that case.
   SkColor indicator_color =
@@ -302,6 +327,7 @@ void ColorChooserView::SaturationValueView::OnPaint(gfx::Canvas* canvas) {
                 marker_position_.y(),
                 kSaturationValueIndicatorSize * 2 + 1, 1),
       indicator_color);
+
   OnPaintBorder(canvas);
 }
 
