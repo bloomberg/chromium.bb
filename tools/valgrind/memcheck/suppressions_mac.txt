@@ -2638,11 +2638,11 @@
    bug_308683_a
    Memcheck:Uninitialized
    fun:_ZN7content16P2PSocketHostUdp4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEEy
-   fun:_ZN7content40P2PSocketHostUdpTest_Send*
+   fun:_ZN7content*P2PSocketHostUdpTest_Send*
 }
 {
    bug_308683_b
    Memcheck:Uninitialized
    fun:_ZN7content20P2PSocketHostTcpBase4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEEy
-   fun:_ZN7content40P2PSocketHost*
+   fun:_ZN7content*P2PSocketHost*
 }
