@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #if defined(OS_CHROMEOS)
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #endif
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
@@ -42,7 +42,7 @@ void GetMachineIDAsync(const DeviceIDFetcher::IDCallback& callback) {
 #if defined(OS_WIN) && defined(ENABLE_RLZ)
   rlz_lib::GetMachineId(&result);
 #elif defined(OS_CHROMEOS)
-  result = chromeos::CryptohomeLibrary::Get()->GetSystemSaltSync();
+  result = chromeos::SystemSaltGetter::Get()->GetSystemSaltSync();
   if (result.empty()) {
     // cryptohome must not be running; re-request after a delay.
     const int64 kRequestSystemSaltDelayMs = 500;

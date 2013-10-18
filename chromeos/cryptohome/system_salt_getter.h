@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_
-#define CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_
+#ifndef CHROMEOS_CRYPTOHOME_SYSTEM_SALT_GETTER_H_
+#define CHROMEOS_CRYPTOHOME_SYSTEM_SALT_GETTER_H_
 
 #include <string>
 #include <vector>
@@ -15,8 +15,7 @@
 namespace chromeos {
 
 // This class is used to get the system salt from cryptohome and cache it.
-// TODO(satorux): Rename this to SystemSaltGetter. crbug.com/305906
-class CHROMEOS_EXPORT CryptohomeLibrary {
+class CHROMEOS_EXPORT SystemSaltGetter {
  public:
   typedef base::Callback<void(const std::string& system_salt)>
       GetSystemSaltCallback;
@@ -25,7 +24,7 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   static void Initialize();
   static bool IsInitialized();
   static void Shutdown();
-  static CryptohomeLibrary* Get();
+  static SystemSaltGetter* Get();
 
   // Converts |salt| to a hex encoded string.
   static std::string ConvertRawSaltToHexString(const std::vector<uint8>& salt);
@@ -46,8 +45,8 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
   std::string GetCachedSystemSalt();
 
  protected:
-  CryptohomeLibrary();
-  ~CryptohomeLibrary();
+  SystemSaltGetter();
+  ~SystemSaltGetter();
 
  private:
   // Loads the system salt from cryptohome and caches it.
@@ -55,9 +54,9 @@ class CHROMEOS_EXPORT CryptohomeLibrary {
 
   std::string system_salt_;
 
-  DISALLOW_COPY_AND_ASSIGN(CryptohomeLibrary);
+  DISALLOW_COPY_AND_ASSIGN(SystemSaltGetter);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_
+#endif  // CHROMEOS_CRYPTOHOME_SYSTEM_SALT_GETTER_H_

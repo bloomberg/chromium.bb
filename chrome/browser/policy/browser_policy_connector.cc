@@ -70,7 +70,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -198,11 +198,11 @@ BrowserPolicyConnector::BrowserPolicyConnector()
   platform_provider_.reset(CreatePlatformProvider());
 
 #if defined(OS_CHROMEOS)
-  // CryptohomeLibrary or DBusThreadManager may be uninitialized on unit tests.
+  // SystemSaltGetter or DBusThreadManager may be uninitialized on unit tests.
 
-  // TODO(satorux): Remove CryptohomeLibrary::IsInitialized() when it's ready
+  // TODO(satorux): Remove SystemSaltGetter::IsInitialized() when it's ready
   // (removing it now breaks tests). crbug.com/141016.
-  if (chromeos::CryptohomeLibrary::IsInitialized() &&
+  if (chromeos::SystemSaltGetter::IsInitialized() &&
       chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();

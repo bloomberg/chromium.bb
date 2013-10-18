@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,7 +111,7 @@ void ManagedUserAuthenticator::AuthenticateToMount(
   current_state_.reset(new ManagedUserAuthenticator::AuthAttempt(
       canonicalized, password, false));
 
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<ManagedUserAuthenticator>(this),
@@ -126,7 +126,7 @@ void ManagedUserAuthenticator::AuthenticateToCreate(
   current_state_.reset(new ManagedUserAuthenticator::AuthAttempt(
       canonicalized, password, false));
 
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<ManagedUserAuthenticator>(this),
@@ -142,7 +142,7 @@ void ManagedUserAuthenticator::AddMasterKey(
   current_state_.reset(new ManagedUserAuthenticator::AuthAttempt(
       canonicalized, password, true));
 
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&AddKey,
                  current_state_.get(),
                  scoped_refptr<ManagedUserAuthenticator>(this),

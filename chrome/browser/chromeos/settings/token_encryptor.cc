@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "crypto/encryptor.h"
 #include "crypto/nss_util.h"
 #include "crypto/sha2.h"
@@ -63,7 +63,7 @@ std::string CryptohomeTokenEncryptor::DecryptWithSystemSalt(
 bool CryptohomeTokenEncryptor::LoadSystemSaltKey() {
   // Assume the system salt should be obtained beforehand at login time.
   if (system_salt_.empty())
-    system_salt_ = CryptohomeLibrary::Get()->GetCachedSystemSalt();
+    system_salt_ = SystemSaltGetter::Get()->GetCachedSystemSalt();
   if (system_salt_.empty())
     return false;
   if (!system_salt_key_.get())

@@ -24,8 +24,8 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -58,7 +58,7 @@ class ParallelAuthenticatorTest : public testing::Test {
         password_("fakepass"),
         hash_ascii_(ParallelAuthenticator::HashPassword(
             password_,
-            CryptohomeLibrary::ConvertRawSaltToHexString(
+            SystemSaltGetter::ConvertRawSaltToHexString(
                 FakeCryptohomeClient::GetStubSystemSalt()))),
         user_manager_enabler_(new MockUserManager),
         mock_caller_(NULL),
@@ -77,7 +77,7 @@ class ParallelAuthenticatorTest : public testing::Test {
 
     // Ownership of mock_dbus_thread_manager_ is taken.
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
-    CryptohomeLibrary::Initialize();
+    SystemSaltGetter::Initialize();
 
     auth_ = new ParallelAuthenticator(&consumer_);
     state_.reset(new TestAttemptState(UserContext(username_,
@@ -91,7 +91,7 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   // Tears down the test fixture.
   virtual void TearDown() {
-    CryptohomeLibrary::Shutdown();
+    SystemSaltGetter::Shutdown();
     DBusThreadManager::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();

@@ -82,7 +82,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -268,7 +268,7 @@ class DBusServices {
     CrosDBusService::Initialize();
 
     LoginState::Initialize();
-    CryptohomeLibrary::Initialize();
+    SystemSaltGetter::Initialize();
     CertLoader::Initialize();
 
     // This function and SystemKeyEventListener use InputMethodManager.
@@ -315,7 +315,7 @@ class DBusServices {
     disks::DiskMountManager::Shutdown();
     input_method::Shutdown();
 
-    CryptohomeLibrary::Shutdown();
+    SystemSaltGetter::Shutdown();
     LoginState::Shutdown();
 
     CrosDBusService::Shutdown();

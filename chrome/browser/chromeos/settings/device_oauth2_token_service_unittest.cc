@@ -11,7 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -104,11 +104,11 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     scoped_ptr<MockDBusThreadManagerWithoutGMock> mock_dbus_thread_manager(
         new MockDBusThreadManagerWithoutGMock);
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager.release());
-    CryptohomeLibrary::Initialize();
+    SystemSaltGetter::Initialize();
   }
 
   virtual void TearDown() OVERRIDE {
-    CryptohomeLibrary::Shutdown();
+    SystemSaltGetter::Shutdown();
     DBusThreadManager::Shutdown();
     base::RunLoop().RunUntilIdle();
   }

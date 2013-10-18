@@ -42,8 +42,8 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -215,7 +215,7 @@ class LoginUtilsTest : public testing::Test,
     // which is part of io_thread_state_.
     DBusThreadManager::InitializeForTesting(&mock_dbus_thread_manager_);
 
-    CryptohomeLibrary::Initialize();
+    SystemSaltGetter::Initialize();
     LoginState::Initialize();
 
     EXPECT_CALL(mock_statistics_provider_, GetMachineStatistic(_, _))
@@ -279,7 +279,7 @@ class LoginUtilsTest : public testing::Test,
 
     input_method::Shutdown();
     LoginState::Shutdown();
-    CryptohomeLibrary::Shutdown();
+    SystemSaltGetter::Shutdown();
 
     // These trigger some tasks that have to run while BrowserThread::UI
     // exists. Delete all the profiles before deleting the connector.

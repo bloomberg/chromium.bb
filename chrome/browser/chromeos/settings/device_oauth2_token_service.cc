@@ -16,7 +16,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -238,7 +238,7 @@ void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // TODO(xiyuan): Use async GetSystemSalt after merging to M31.
-  const std::string system_salt = CryptohomeLibrary::Get()->GetSystemSaltSync();
+  const std::string system_salt = SystemSaltGetter::Get()->GetSystemSaltSync();
   if (system_salt.empty()) {
     const int64 kRequestSystemSaltDelayMs = 500;
     content::BrowserThread::PostDelayedTask(
@@ -266,7 +266,7 @@ std::string DeviceOAuth2TokenService::GetRefreshToken(
         local_state_->GetString(prefs::kDeviceRobotAnyApiRefreshToken);
 
     // TODO(xiyuan): This needs a proper fix after M31.
-    LOG_IF(ERROR, CryptohomeLibrary::Get()->GetSystemSaltSync().empty())
+    LOG_IF(ERROR, SystemSaltGetter::Get()->GetSystemSaltSync().empty())
         << "System salt is not available for decryption";
 
     refresh_token_ = token_encryptor_->DecryptWithSystemSalt(

@@ -148,7 +148,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   }
 
   // Returns the stub system salt as raw bytes. (not as a string encoded in the
-  // format used by CryptohomeLibrary::ConvertRawSaltToHexString()).
+  // format used by SystemSaltGetter::ConvertRawSaltToHexString()).
   static std::vector<uint8> GetStubSystemSalt();
 
  private:

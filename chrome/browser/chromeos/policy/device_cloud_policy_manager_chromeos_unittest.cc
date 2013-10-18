@@ -25,7 +25,7 @@
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/mock_statistics_provider.h"
@@ -102,9 +102,9 @@ class DeviceCloudPolicyManagerChromeOSTest
         request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
-    // This is needed as CryptohomeLibrary is used for encrypting tokens in
+    // This is needed as SystemSaltGetter is used for encrypting tokens in
     // CryptohomeTokenEncryptor.
-    chromeos::CryptohomeLibrary::Initialize();
+    chromeos::SystemSaltGetter::Initialize();
     url_fetcher_response_code_ = 200;
     url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","
                                    "\"expires_in\":1234,"
@@ -116,7 +116,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     DeviceSettingsTestBase::TearDown();
 
     chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
-    chromeos::CryptohomeLibrary::Shutdown();
+    chromeos::SystemSaltGetter::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 

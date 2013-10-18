@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
@@ -223,7 +223,7 @@ void ParallelAuthenticator::AuthenticateToLogin(
   // Reset the verified flag.
   owner_is_verified_ = false;
 
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this),
@@ -252,7 +252,7 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
   // Reset the verified flag.
   owner_is_verified_ = false;
 
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this),
@@ -285,7 +285,7 @@ void ParallelAuthenticator::AuthenticateToUnlock(
           user_context.password));
   remove_user_data_on_failure_ = false;
   check_key_attempted_ = true;
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&CheckKey,
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this)));
@@ -302,7 +302,7 @@ void ParallelAuthenticator::LoginAsLocallyManagedUser(
                            User::USER_TYPE_LOCALLY_MANAGED,
                            false));
   remove_user_data_on_failure_ = false;
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this),
@@ -355,7 +355,7 @@ void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
       false));
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this),
@@ -455,7 +455,7 @@ void ParallelAuthenticator::RecoverEncryptedData(
     const std::string& old_password) {
   migrate_attempted_ = true;
   current_state_->ResetCryptohomeStatus();
-  CryptohomeLibrary::Get()->GetSystemSalt(
+  SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Migrate,
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this),
@@ -582,7 +582,7 @@ void ParallelAuthenticator::Resolve() {
       mount_flags |= cryptohome::CREATE_IF_MISSING;
     case RECOVER_MOUNT:
       current_state_->ResetCryptohomeStatus();
-      CryptohomeLibrary::Get()->GetSystemSalt(
+      SystemSaltGetter::Get()->GetSystemSalt(
           base::Bind(&Mount,
                      current_state_.get(),
                      scoped_refptr<ParallelAuthenticator>(this),

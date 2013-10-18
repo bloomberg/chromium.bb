@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/cryptohome/cryptohome_library.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -15,33 +15,33 @@
 namespace chromeos {
 namespace {
 
-CryptohomeLibrary* g_cryptohome_library = NULL;
+SystemSaltGetter* g_system_salt_getter = NULL;
 
 }  // namespace
 
-CryptohomeLibrary::CryptohomeLibrary() {
+SystemSaltGetter::SystemSaltGetter() {
 }
 
-CryptohomeLibrary::~CryptohomeLibrary() {
+SystemSaltGetter::~SystemSaltGetter() {
 }
 
-void CryptohomeLibrary::GetSystemSalt(
+void SystemSaltGetter::GetSystemSalt(
     const GetSystemSaltCallback& callback) {
   // TODO(hashimoto): Stop using GetSystemSaltSynt(). crbug.com/141009
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(callback, GetSystemSaltSync()));
 }
 
-std::string CryptohomeLibrary::GetSystemSaltSync() {
+std::string SystemSaltGetter::GetSystemSaltSync() {
   LoadSystemSalt();  // no-op if it's already loaded.
   return system_salt_;
 }
 
-std::string CryptohomeLibrary::GetCachedSystemSalt() {
+std::string SystemSaltGetter::GetCachedSystemSalt() {
   return system_salt_;
 }
 
-void CryptohomeLibrary::LoadSystemSalt() {
+void SystemSaltGetter::LoadSystemSalt() {
   if (!system_salt_.empty())
     return;
   std::vector<uint8> salt;
@@ -54,32 +54,32 @@ void CryptohomeLibrary::LoadSystemSalt() {
 }
 
 // static
-void CryptohomeLibrary::Initialize() {
-  CHECK(!g_cryptohome_library);
-  g_cryptohome_library = new CryptohomeLibrary();
+void SystemSaltGetter::Initialize() {
+  CHECK(!g_system_salt_getter);
+  g_system_salt_getter = new SystemSaltGetter();
 }
 
 // static
-bool CryptohomeLibrary::IsInitialized() {
-  return g_cryptohome_library;
+bool SystemSaltGetter::IsInitialized() {
+  return g_system_salt_getter;
 }
 
 // static
-void CryptohomeLibrary::Shutdown() {
-  CHECK(g_cryptohome_library);
-  delete g_cryptohome_library;
-  g_cryptohome_library = NULL;
+void SystemSaltGetter::Shutdown() {
+  CHECK(g_system_salt_getter);
+  delete g_system_salt_getter;
+  g_system_salt_getter = NULL;
 }
 
 // static
-CryptohomeLibrary* CryptohomeLibrary::Get() {
-  CHECK(g_cryptohome_library)
-      << "CryptohomeLibrary::Get() called before Initialize()";
-  return g_cryptohome_library;
+SystemSaltGetter* SystemSaltGetter::Get() {
+  CHECK(g_system_salt_getter)
+      << "SystemSaltGetter::Get() called before Initialize()";
+  return g_system_salt_getter;
 }
 
 // static
-std::string CryptohomeLibrary::ConvertRawSaltToHexString(
+std::string SystemSaltGetter::ConvertRawSaltToHexString(
     const std::vector<uint8>& salt) {
   return StringToLowerASCII(base::HexEncode(
       reinterpret_cast<const void*>(salt.data()), salt.size()));
