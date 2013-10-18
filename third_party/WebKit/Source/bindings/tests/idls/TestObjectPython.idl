@@ -52,6 +52,11 @@ interface TestObjectPython {
     attribute unsigned long unsignedLongAttribute;
     attribute unsigned long long unsignedLongLongAttribute;
     attribute unsigned short unsignedShortAttribute;
+    // Special names (start with acronym)
+    attribute long cssAttribute;
+    attribute long imeAttribute;
+    attribute long svgAttribute;
+    attribute long xmlAttribute;
     // Non-wrapper types
     readonly attribute NodeFilter readonlyNodeFilterAttribute;
     readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;

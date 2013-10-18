@@ -53,20 +53,11 @@ def has_extended_attribute_value(extended_attributes, key, value):
 
 
 def capitalize(name):
-    """Capitalize first letter or initial acronym (* with some exceptions).
-
-    Used in setter names.
-    """
-    name = name[0].upper() + name[1:]
-    # xmlEncoding becomes XMLEncoding, but xmlllang becomes Xmllang.
-    # FIXME: Remove these special cases
-    if name.startswith('CssText') or re.match('Xml[a-z]', name):
-        return name
+    """Capitalize first letter or initial acronym (used in setter names)."""
     for acronym in ACRONYMS:
-        if name.startswith(acronym.capitalize()):
-            name.replace(acronym.capitalize(), acronym)
-            return name
-    return name
+        if name.startswith(acronym.lower()):
+            return name.replace(acronym.lower(), acronym)
+    return name[0].upper() + name[1:]
 
 
 def uncapitalize(name):
