@@ -900,7 +900,6 @@ crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-combined-missing.ht
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-transform-parameters.html [ Crash ]
 crbug.com/243353 animations/suspend-resume-animation.html [ Failure Pass ]
 crbug.com/243353 animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
-crbug.com/243378 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.html [ Failure ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
 crbug.com/243593 [ Win ] fast/media/color-does-not-include-alpha.html [ Failure ]

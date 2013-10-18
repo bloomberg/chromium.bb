@@ -84,7 +84,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac Win ] compositing/gestures [ WontFix ]
 [ Mac Win ] editing/selection/linux_selection_color.html [ WontFix ]
 [ Mac Win ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
-[ Mac Win ] fast/text/chromium-linux-text-subpixel-positioning.html [ WontFix ]
 [ Mac Win ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
 [ Mac Win ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
 [ Mac Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
@@ -105,3 +104,6 @@ media/stable [ WontFix ]
 
 # We only run it through the virtual stable test suite.
 webexposed/stableOnly [ WontFix ]
+
+# We only run it through the virtual linux-subpixel test suite.
+platform/linux/fast/text/subpixel/chromium-linux-text-subpixel-positioning.html [ WontFix ]
