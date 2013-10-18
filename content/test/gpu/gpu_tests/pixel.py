@@ -162,8 +162,6 @@ class Pixel(test.Test):
     group.add_option('--build-revision',
         help='Chrome revision being tested.',
         default="unknownrev")
-    group.add_option('--gtest_output',
-        help='Ignored argument for compatibility with runtest.py harness')
     parser.add_option_group(group)
 
   def CreateExpectations(self, page_set):
