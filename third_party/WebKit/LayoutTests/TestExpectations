@@ -195,9 +195,6 @@ webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg
 
 webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
 
-Bug(fmalita) svg/filters/filter-clip.svg [ NeedsManualRebaseline ]
-Bug(fmalita) svg/transforms/text-with-mask-with-svg-transform.svg [ NeedsManualRebaseline ]
-
 Bug(fmalita) css3/compositing/background-blend-mode-tiled-gradient.html [ NeedsManualRebaseline ]
 Bug(fmalita) css3/filters/effect-reference-hw.html [ NeedsManualRebaseline ]
 Bug(fmalita) fast/backgrounds/gradient-background-leakage-2.html [ NeedsManualRebaseline ]
