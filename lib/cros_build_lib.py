@@ -295,7 +295,8 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                  coming from subprocess as well.
     error_code_ok: Does not raise an exception when command returns a non-zero
                    exit code.  Instead, returns the CommandResult object
-                   containing the exit code.
+                   containing the exit code. Note: will still raise an
+                   exception if the cmd file does not exist.
     kill_timeout: If we're interrupted, how long should we give the invoked
                   process to shutdown from a SIGTERM before we SIGKILL it.
                   Specified in seconds.
@@ -1265,7 +1266,10 @@ def SetupBasicLogging(level=logging.DEBUG):
 
 class ApiMismatchError(Exception):
   """Raised by GetTargetChromiteApiVersion."""
-  pass
+
+
+class NoChromiteError(Exception):
+  """Raised when an expected chromite installation was missing."""
 
 
 def GetTargetChromiteApiVersion(buildroot, validate_version=True):
@@ -1282,9 +1286,19 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
 
   Returns the version number in (major, minor) tuple.
   """
-  api = RunCommandCaptureOutput(
-      [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
-      cwd=buildroot, error_code_ok=True)
+  try:
+    api = RunCommandCaptureOutput(
+        [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
+        cwd=buildroot, error_code_ok=True)
+  except RunCommandError:
+    # Although error_code_ok=True was used, this exception will still be raised
+    # if the executible did not exist.
+    full_cbuildbot_path = os.path.join(buildroot, constants.PATH_TO_CBUILDBOT)
+    if not os.path.exists(full_cbuildbot_path):
+      raise NoChromiteError('No cbuildbot found in buildroot %s, expected to '
+                            'find %s. ' % (buildroot, full_cbuildbot_path))
+    raise
+
   # If the command failed, then we're targeting a cbuildbot that lacks the
   # option; assume 0:0 (ie, initial state).
   major = minor = 0

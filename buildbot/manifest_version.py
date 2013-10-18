@@ -29,17 +29,18 @@ NUM_RETRIES = 20
 
 class VersionUpdateException(Exception):
   """Exception gets thrown for failing to update the version file"""
-  pass
 
 
 class StatusUpdateException(Exception):
   """Exception gets thrown for failure to update the status"""
-  pass
 
 
 class GenerateBuildSpecException(Exception):
   """Exception gets thrown for failure to Generate a buildspec for the build"""
-  pass
+
+
+class BuildSpecsValueError(Exception):
+  """Exception gets thrown when a encountering invalid values."""
 
 
 def RefreshManifestCheckout(manifest_dir, manifest_repo):
@@ -566,6 +567,10 @@ class BuildSpecsManager(object):
     Returns path of version.  By default if version is not set, returns the path
     of the current version.
     """
+    if not self.all_specs_dir:
+      raise BuildSpecsValueError('GetLocalManifest failed, BuildSpecsManager '
+                                 'instance not yet initialized by call to '
+                                 'InitializeManifestVariables.')
     if version:
       return os.path.join(self.all_specs_dir, version + '.xml')
     elif self.current_version:
@@ -579,7 +584,11 @@ class BuildSpecsManager(object):
     # Only refresh the manifest checkout if needed.
     if not self.InitializeManifestVariables(version=version):
       self.RefreshManifestCheckout()
-      self.InitializeManifestVariables(version=version)
+      if not self.InitializeManifestVariables(version=version):
+        raise BuildSpecsValueError('Failure in BootstrapFromVersion. '
+                                   'InitializeManifestVariables failed after '
+                                   'RefreshManifestCheckout for version '
+                                   '%s.' % version)
 
     # Return the current manifest.
     self.current_version = version
