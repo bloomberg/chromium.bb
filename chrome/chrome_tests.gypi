@@ -457,9 +457,9 @@
               ],
             }],
             ['use_aura==1', {
-              'sources/': [
-                ['exclude', '^browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc'],
-                ['exclude', '^browser/ui/views/native_widget_win_interactive_uitest.cc'],
+              'sources!': [
+                'browser/ui/views/accessibility/browser_views_accessibility_browsertest.cc',
+                'browser/ui/views/native_widget_win_interactive_uitest.cc',
               ],
             }],
           ],
