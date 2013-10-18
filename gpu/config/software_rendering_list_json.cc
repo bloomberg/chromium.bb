@@ -930,23 +930,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 65,
-      "description": "Force compositing mode is unstable in Win Vista.",
-      "cr_bugs": [170421],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "=",
-          "value": "6.0"
-        }
-      },
-      "features": [
-        "flash_3d",
-        "flash_stage3d",
-        "force_compositing_mode"
-      ]
-    },
-    {
       "id": 66,
       "description": "Force compositing mode is unstable in MacOSX earlier than 10.8.",
       "cr_bugs": [174101],
@@ -1157,16 +1140,18 @@ LONG_STRING_CONST(
     },
     {
       "id": 79,
-      "description": "Disable force compositing mode on all Windows versions prior to Vista.",
-      "cr_bugs": [273920],
+      "description": "Disable force compositing mode on all Windows versions prior to and including Vista.",
+      "cr_bugs": [273920, 170421],
       "os": {
         "type": "win",
         "version": {
-          "op": "<",
+          "op": "<=",
           "value": "6.0"
         }
       },
       "features": [
+        "flash_3d",
+        "flash_stage3d",
         "force_compositing_mode"
       ]
     }

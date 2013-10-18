@@ -252,18 +252,12 @@ bool IsForceCompositingModeEnabled() {
   if (!CanDoAcceleratedCompositing() || IsForceCompositingModeBlacklisted())
     return false;
 
-  // Hardcode some platforms to use FCM, this has to be done here instead of via
-  // the field trial so that this configuration is used on try bots as well.
-  // TODO(gab): Do the same thing in IsThreadedCompositingEnabled() once this is
-  // stable.
-  // TODO(gab): Use the GPU blacklist instead of hardcoding OS versions here
-  // https://codereview.chromium.org/23534006.
-#if defined(OS_MACOSX)
-  // Mac OSX 10.8+ has been shipping with FCM enabled at 100% since M28.
-  return base::mac::IsOSMountainLionOrLater();
-#elif defined(OS_WIN)
-  // Windows Vista+ has been shipping with FCM enabled at 100% since M24.
-  return base::win::GetVersion() >= base::win::VERSION_VISTA;
+// TODO(gab): Do the same thing for TCM above once this is stable.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // Windows Vista+ has been shipping with FCM enabled at 100% since M24 and
+  // Mac OSX 10.8+ since M28. The blacklist check above takes care of returning
+  // false before this hits on unsupported Win/Mac versions.
+  return true;
 #endif
 
   return false;
