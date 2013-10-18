@@ -1154,7 +1154,4 @@ crbug.com/307570 virtual/deferred/fast/images/image-zoom-to-25.html [ Pass Failu
 
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 
-crbug.com/303922 fast/borders/border-radius-with-empty-inner-border.html [ NeedsRebaseline ]
-crbug.com/303383 fast/borders/empty-border-radius.html [ NeedsRebaseline ]
-
 crbug.com/308952 [ Win ] inspector/editor/text-editor-reveal-line.html [ Failure ]
