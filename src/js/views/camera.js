@@ -81,29 +81,28 @@ camera.views.Camera = function(context) {
    * @type {fx.Canvas}
    * @private
    */
-  this.mainCanvas_ = fx.canvas();
+  this.mainCanvas_ = null;
 
   /**
    * The main (full screen canvas) for fast capture.
    * @type {fx.Canvas}
    * @private
    */
-  this.mainFastCanvas_ = fx.canvas();
+  this.mainFastCanvas_ = null;
 
   /**
    * The main (full screen) processor in the full quality mode.
    * @type {camera.Processor}
    * @private
    */
-  this.mainProcessor_ = new camera.Processor(this.video_, this.mainCanvas_);
+  this.mainProcessor_ = null;
 
   /**
    * The main (full screen) processor in the fast mode.
    * @type {camera.Processor}
    * @private
    */
-  this.mainFastProcessor_ = new camera.Processor(
-      this.video_, this.mainFastCanvas_, camera.Processor.Mode.FAST);
+  this.mainFastProcessor_ = null;
 
   /**
    * Processors for effect previews.
@@ -218,37 +217,11 @@ camera.views.Camera = function(context) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  // Insert the main canvas to its container.
-  document.querySelector('#main-canvas-wrapper').appendChild(this.mainCanvas_);
-  document.querySelector('#main-fast-canvas-wrapper').appendChild(
-      this.mainFastCanvas_);
-
-  // Set the default effect.
-  this.mainProcessor_.effect = new camera.effects.Swirl();
-
   // Synchronize bounds of the video now, when window is resized or if the
   // video dimensions are loaded.
   this.video_.addEventListener('loadedmetadata',
       this.synchronizeBounds_.bind(this));
   this.synchronizeBounds_();
-
-  // Prepare effect previews.
-  this.addEffect_(new camera.effects.Normal(this.tracker_));
-  this.addEffect_(new camera.effects.Vintage(this.tracker_));
-  this.addEffect_(new camera.effects.BigHead(this.tracker_));
-  this.addEffect_(new camera.effects.BigJaw(this.tracker_));
-  this.addEffect_(new camera.effects.BunnyHead(this.tracker_));
-  this.addEffect_(new camera.effects.Swirl(this.tracker_));
-  this.addEffect_(new camera.effects.Grayscale(this.tracker_));
-  this.addEffect_(new camera.effects.Sepia(this.tracker_));
-  this.addEffect_(new camera.effects.Colorize(this.tracker_));
-  this.addEffect_(new camera.effects.Newspaper(this.tracker_));
-  this.addEffect_(new camera.effects.Funky(this.tracker_));
-  this.addEffect_(new camera.effects.TiltShift(this.tracker_));
-  this.addEffect_(new camera.effects.Cinema(this.tracker_));
-
-  // Select the default effect.
-  this.setCurrentEffect_(0);
 
   // TODO(mtomasz): Make the ribbon scrollable by dragging.
 
@@ -258,10 +231,6 @@ camera.views.Camera = function(context) {
 
   // Load the shutter sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
-
-  // Start the camera capture.
-  // TODO(mtomasz): Consider moving to enter() for a lighter constructor.
-  this.start();
 };
 
 camera.views.Camera.prototype = {
@@ -279,6 +248,58 @@ camera.views.Camera.prototype = {
  * @override
  */
 camera.views.Camera.prototype.initialize = function(callback) {
+  // Initialize the webgl canvases.
+  try {
+    this.mainCanvas_ = fx.canvas();
+    this.mainFastCanvas_ = fx.canvas();
+  }
+  catch (e) {
+    // TODO(mtomasz): Replace with a better icon.
+    this.context_.onError('no-camera',
+        chrome.i18n.getMessage('errorMsgNoWebGL'),
+        chrome.i18n.getMessage('errorMsgNoWebGLHint'));
+
+    // Show the window, since the camera initialization will not happen (due
+    // to lack of webgl).
+    chrome.app.window.current().show();
+    this.shownAtStartup_ = true;
+  }
+
+  if (this.mainCanvas_ && this.mainFastCanvas_) {
+    // Initialize the processors.
+    this.mainProcessor_ = new camera.Processor(this.video_, this.mainCanvas_);
+    this.mainFastProcessor_ = new camera.Processor(
+        this.video_, this.mainFastCanvas_, camera.Processor.Mode.FAST);
+
+    // Insert the main canvas to its container.
+    document.querySelector('#main-canvas-wrapper').appendChild(
+        this.mainCanvas_);
+    document.querySelector('#main-fast-canvas-wrapper').appendChild(
+        this.mainFastCanvas_);
+
+    // Set the default effect.
+    this.mainProcessor_.effect = new camera.effects.Swirl();
+
+    // Prepare effect previews.
+    this.addEffect_(new camera.effects.Normal(this.tracker_));
+    this.addEffect_(new camera.effects.Vintage(this.tracker_));
+    this.addEffect_(new camera.effects.BigHead(this.tracker_));
+    this.addEffect_(new camera.effects.BigJaw(this.tracker_));
+    this.addEffect_(new camera.effects.BunnyHead(this.tracker_));
+    this.addEffect_(new camera.effects.Swirl(this.tracker_));
+    this.addEffect_(new camera.effects.Grayscale(this.tracker_));
+    this.addEffect_(new camera.effects.Sepia(this.tracker_));
+    this.addEffect_(new camera.effects.Colorize(this.tracker_));
+    this.addEffect_(new camera.effects.Newspaper(this.tracker_));
+    this.addEffect_(new camera.effects.Funky(this.tracker_));
+    this.addEffect_(new camera.effects.TiltShift(this.tracker_));
+    this.addEffect_(new camera.effects.Cinema(this.tracker_));
+
+    // Select the default effect.
+    this.setCurrentEffect_(0);
+  }
+
+  // Acquire the gallery model.
   camera.models.Gallery.getInstance(function(model) {
     this.model_ = model;
     callback();
@@ -294,6 +315,9 @@ camera.views.Camera.prototype.initialize = function(callback) {
  * @override
  */
 camera.views.Camera.prototype.onEnter = function() {
+  if (!this.running_ && this.mainCanvas_ && this.mainFastCanvas_)
+    this.start_();
+
   this.onResize();
 };
 
@@ -620,8 +644,9 @@ camera.views.Camera.prototype.stop = function() {
 
 /**
  * Starts capturing the camera with the highest possible resolution.
+ * @private
  */
-camera.views.Camera.prototype.start = function() {
+camera.views.Camera.prototype.start_ = function() {
   var index = 0;
 
   var onSuccess = function(width, height) {
