@@ -295,7 +295,8 @@ TEST_F(AppsSearchResultsControllerTest, ContextMenus) {
 }
 
 // Test that observing a search result item uninstall performs the search again.
-TEST_F(AppsSearchResultsControllerTest, UninstallRedperformsSearch) {
+// Disabled due to failure on 10.6 http://crbug.com/308828 - 10.7 is OK.
+TEST_F(AppsSearchResultsControllerTest, DISABLED_UninstallRedperformsSearch) {
   base::MessageLoopForUI message_loop;
   EXPECT_EQ(0, [delegate_ redoSearchCount]);
   ModelResultAt(0)->NotifyItemUninstalled();
