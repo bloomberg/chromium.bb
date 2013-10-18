@@ -120,7 +120,13 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
   base::ProcessHandle dev_appserver_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
+#if defined (OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_MANUAL_WorksOnApprtc DISABLED_MANUAL_WorksOnApprtc
+#else
+#define MAYBE_MANUAL_WorksOnApprtc MANUAL_WorksOnApprtc
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MAYBE_MANUAL_WorksOnApprtc) {
   if (!LaunchApprtcInstanceOnLocalhost()) {
     // TODO(phoglund): assert on this once everything is in place on the bots.
     return;
