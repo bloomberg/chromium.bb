@@ -618,6 +618,8 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
     if (isStopped())
         return;
 
+    TRACE_EVENT0("webkit", "HTMLDocumentParser::insert");
+
     // pumpTokenizer can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
     RefPtr<HTMLDocumentParser> protect(this);
