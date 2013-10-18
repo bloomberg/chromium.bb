@@ -124,11 +124,6 @@
           'sources!': [
             'input_state_lookup.cc',
           ],
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'ForcedIncludeFiles': [ 'build/intsafe_workaround.h' ],
-            },
-          },
         }],
       ],
     },
