@@ -62,8 +62,6 @@ class CONTENT_EXPORT ImmediateInputRouter
       const TouchEventWithLatencyInfo& touch_event) OVERRIDE;
   virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const OVERRIDE;
   virtual bool ShouldForwardTouchEvent() const OVERRIDE;
-  virtual bool ShouldForwardGestureEvent(
-      const GestureEventWithLatencyInfo& gesture_event) const OVERRIDE;
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -103,6 +101,14 @@ private:
   void FilterAndSendWebInputEvent(const WebKit::WebInputEvent& input_event,
                                   const ui::LatencyInfo& latency_info,
                                   bool is_keyboard_shortcut);
+  // Returns true if the event was consumed by the OverscrollController, called
+  // immediately prior to sending |input_event| to the renderer.
+  bool OfferToOverscrollController(const WebKit::WebInputEvent& input_event,
+                                   const ui::LatencyInfo& latency_info);
+  // Returns true if the event was consumed by the client, called immediately
+  // prior to sending |input_event| to the renderer.
+  bool OfferToClient(const WebKit::WebInputEvent& input_event,
+                     const ui::LatencyInfo& latency_info);
 
   // IPC message handlers
   void OnInputEventAck(WebKit::WebInputEvent::Type event_type,

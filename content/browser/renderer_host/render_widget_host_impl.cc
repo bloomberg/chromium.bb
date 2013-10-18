@@ -2096,11 +2096,6 @@ bool RenderWidgetHostImpl::ShouldForwardTouchEvent() const {
   return input_router_->ShouldForwardTouchEvent();
 }
 
-bool RenderWidgetHostImpl::ShouldForwardGestureEvent(
-    const GestureEventWithLatencyInfo& gesture_event) const {
-  return input_router_->ShouldForwardGestureEvent(gesture_event);
-}
-
 void RenderWidgetHostImpl::StartUserGesture() {
   OnUserGesture();
 }

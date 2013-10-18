@@ -26,7 +26,7 @@ OverscrollController::OverscrollController(
 OverscrollController::~OverscrollController() {
 }
 
-bool OverscrollController::WillDispatchEvent(
+OverscrollController::Disposition OverscrollController::DispatchEvent(
     const WebKit::WebInputEvent& event,
     const ui::LatencyInfo& latency_info) {
   if (scroll_state_ != STATE_UNKNOWN) {
@@ -68,13 +68,10 @@ bool OverscrollController::WillDispatchEvent(
       // A gesture-event isn't sent to the GestureEventFilter when overscroll is
       // in progress. So dispatch the event through the RenderWidgetHost so that
       // it can reach the GestureEventFilter.
-      const WebKit::WebGestureEvent& gevent =
-          static_cast<const WebKit::WebGestureEvent&>(event);
-      return render_widget_host_->ShouldForwardGestureEvent(
-          GestureEventWithLatencyInfo(gevent, latency_info));
+      return SHOULD_FORWARD_TO_GESTURE_FILTER;
     }
 
-    return true;
+    return SHOULD_FORWARD_TO_RENDERER;
   }
 
   if (overscroll_mode_ != OVERSCROLL_NONE && DispatchEventResetsState(event)) {
@@ -83,23 +80,20 @@ bool OverscrollController::WillDispatchEvent(
       // A gesture-event isn't sent to the GestureEventFilter when overscroll is
       // in progress. So dispatch the event through the RenderWidgetHost so that
       // it can reach the GestureEventFilter.
-      const WebKit::WebGestureEvent& gevent =
-          static_cast<const WebKit::WebGestureEvent&>(event);
-      return render_widget_host_->ShouldForwardGestureEvent(
-          GestureEventWithLatencyInfo(gevent, latency_info));
+      return SHOULD_FORWARD_TO_GESTURE_FILTER;
     }
 
     // Let the event be dispatched to the renderer.
-    return true;
+    return SHOULD_FORWARD_TO_RENDERER;
   }
 
   if (overscroll_mode_ != OVERSCROLL_NONE) {
     // Consume the event only if it updates the overscroll state.
     if (ProcessEventForOverscroll(event))
-      return false;
+      return CONSUMED;
   }
 
-  return true;
+  return SHOULD_FORWARD_TO_RENDERER;
 }
 
 void OverscrollController::ReceivedEventACK(const WebKit::WebInputEvent& event,

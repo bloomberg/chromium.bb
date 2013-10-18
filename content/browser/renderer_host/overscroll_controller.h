@@ -42,12 +42,18 @@ class OverscrollController {
   explicit OverscrollController(RenderWidgetHostImpl* widget_host);
   virtual ~OverscrollController();
 
+  // The result of |DispatchEvent()|, indicating either how the event was
+  // handled, or how it should be handled by the caller.
+  enum Disposition {
+    CONSUMED,
+    SHOULD_FORWARD_TO_RENDERER,
+    SHOULD_FORWARD_TO_GESTURE_FILTER
+  };
   // This must be called when dispatching any event from the
   // RenderWidgetHostView so that the state of the overscroll gesture can be
   // updated properly.
-  // Returns true if the event should be dispatched, false otherwise.
-  bool WillDispatchEvent(const WebKit::WebInputEvent& event,
-                         const ui::LatencyInfo& latency_info);
+  Disposition DispatchEvent(const WebKit::WebInputEvent& event,
+                            const ui::LatencyInfo& latency_info);
 
   // This must be called when the ACK for any event comes in. This updates the
   // overscroll gesture status as appropriate.

@@ -157,10 +157,6 @@ class MockInputRouter : public InputRouter {
     return NULL;
   }
   virtual bool ShouldForwardTouchEvent() const OVERRIDE { return true; }
-  virtual bool ShouldForwardGestureEvent(
-      const GestureEventWithLatencyInfo& gesture_event) const OVERRIDE {
-    return true;
-  }
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {

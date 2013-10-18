@@ -54,11 +54,6 @@ class InputRouter : public IPC::Listener {
   // router.  When |false|, the caller can forego sending touch events, and
   // instead consume them directly.
   virtual bool ShouldForwardTouchEvent() const = 0;
-
-  // Returns |true| if the caller should immediately forward the provided
-  // |gesture_event| to the router.
-  virtual bool ShouldForwardGestureEvent(
-      const GestureEventWithLatencyInfo& gesture_event) const = 0;
 };
 
 }  // namespace content

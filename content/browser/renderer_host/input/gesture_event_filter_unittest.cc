@@ -63,11 +63,15 @@ class GestureEventFilterTest : public testing::Test,
 
  protected:
 
-  void SimulateGestureEvent(const WebGestureEvent& gesture) {
+  // Returns the result of |GestureEventFilter::ShouldForward()|.
+  bool SimulateGestureEvent(const WebGestureEvent& gesture) {
     GestureEventWithLatencyInfo gesture_with_latency(gesture,
                                                      ui::LatencyInfo());
-    if (filter()->ShouldForward(gesture_with_latency))
+    if (filter()->ShouldForward(gesture_with_latency)) {
       ++sent_gesture_event_count_;
+      return true;
+    }
+    return false;
   }
 
   void SimulateGestureEvent(WebInputEvent::Type type,
@@ -944,6 +948,19 @@ TEST_F(GestureEventFilterTest, DebounceDropsDeferredEvents) {
     WebGestureEvent merged_event = GestureEventQueueEventAt(i);
     EXPECT_EQ(expected[i], merged_event.type);
   }
+}
+
+TEST_F(GestureEventFilterTest, DropZeroVelocityFlings) {
+  WebGestureEvent gesture_event;
+  gesture_event.type = WebInputEvent::GestureFlingStart;
+  gesture_event.sourceDevice = WebGestureEvent::Touchpad;
+  gesture_event.data.flingStart.velocityX = 0.f;
+  gesture_event.data.flingStart.velocityY = 0.f;
+  ASSERT_EQ(0U, GetAndResetSentGestureEventCount());
+  ASSERT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_FALSE(SimulateGestureEvent(gesture_event));
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
 }
 
 }  // namespace content

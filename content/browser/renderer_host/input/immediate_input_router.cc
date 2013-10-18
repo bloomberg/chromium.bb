@@ -183,7 +183,7 @@ void ImmediateInputRouter::SendGestureEvent(
   HandleGestureScroll(gesture_event);
 
   if (!IsInOverscrollGesture() &&
-      !ShouldForwardGestureEvent(gesture_event)) {
+      !gesture_event_filter_->ShouldForward(gesture_event)) {
     OverscrollController* controller = client_->GetOverscrollController();
     if (controller)
       controller->DiscardingGestureEvent(gesture_event.event);
@@ -244,11 +244,6 @@ bool ImmediateInputRouter::ShouldForwardTouchEvent() const {
   // still events in the touch-queue. In such cases, the new events should still
   // get into the queue.
   return has_touch_handler_ || !touch_event_queue_->empty();
-}
-
-bool ImmediateInputRouter::ShouldForwardGestureEvent(
-    const GestureEventWithLatencyInfo& touch_event) const {
-  return gesture_event_filter_->ShouldForward(touch_event);
 }
 
 bool ImmediateInputRouter::OnMessageReceived(const IPC::Message& message) {
@@ -326,37 +321,11 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
   TRACE_EVENT1("input", "ImmediateInputRouter::FilterAndSendWebInputEvent",
                "type", WebInputEventTraits::GetName(input_event.type));
 
-  // Yield events to the OverscrollController before forwarding.
-  OverscrollController* controller = client_->GetOverscrollController();
-  if (controller && !controller->WillDispatchEvent(input_event, latency_info)) {
-    InputEventAckState overscroll_ack =
-        WebInputEvent::isTouchEventType(input_event.type) ?
-            INPUT_EVENT_ACK_STATE_NOT_CONSUMED : INPUT_EVENT_ACK_STATE_CONSUMED;
-    ProcessInputEventAck(input_event.type,
-                         overscroll_ack,
-                         latency_info,
-                         OVERSCROLL_CONTROLLER);
-    // WARNING: |this| may be deleted at this point.
+  if (OfferToOverscrollController(input_event, latency_info))
     return;
-  }
 
-  // Yield events to the client to either synchronously handle the event or drop
-  // it entirely.
-  InputEventAckState filter_ack = client_->FilterInputEvent(input_event,
-                                                            latency_info);
-  switch (filter_ack) {
-    // Send the ACK and early exit.
-    case INPUT_EVENT_ACK_STATE_CONSUMED:
-    case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
-      next_mouse_move_.reset();
-      ProcessInputEventAck(input_event.type, filter_ack, latency_info, CLIENT);
-      // WARNING: |this| may be deleted at this point.
-      return;
-    case INPUT_EVENT_ACK_STATE_UNKNOWN:
-      return;
-    default:
-      break;
-  }
+  if (OfferToClient(input_event, latency_info))
+    return;
 
   // Transmit any pending wheel events on a non-wheel event. This ensures that
   // the renderer receives the final PhaseEnded wheel event, which is necessary
@@ -374,6 +343,67 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
 
   // Any input event cancels a pending mouse move event.
   next_mouse_move_.reset();
+}
+
+bool ImmediateInputRouter::OfferToOverscrollController(
+    const WebInputEvent& input_event,
+    const ui::LatencyInfo& latency_info) {
+  OverscrollController* controller = client_->GetOverscrollController();
+  if (!controller)
+    return false;
+
+  OverscrollController::Disposition disposition =
+      controller->DispatchEvent(input_event, latency_info);
+
+  bool consumed = disposition == OverscrollController::CONSUMED;
+
+  if (disposition == OverscrollController::SHOULD_FORWARD_TO_GESTURE_FILTER) {
+    DCHECK(WebInputEvent::isGestureEventType(input_event.type));
+    const WebKit::WebGestureEvent& gesture_event =
+        static_cast<const WebKit::WebGestureEvent&>(input_event);
+    // An ACK is expected for the event, so mark it as consumed.
+    consumed = !gesture_event_filter_->ShouldForward(
+        GestureEventWithLatencyInfo(gesture_event, latency_info));
+  }
+
+  if (consumed) {
+    InputEventAckState overscroll_ack =
+        WebInputEvent::isTouchEventType(input_event.type) ?
+            INPUT_EVENT_ACK_STATE_NOT_CONSUMED : INPUT_EVENT_ACK_STATE_CONSUMED;
+    ProcessInputEventAck(input_event.type,
+                         overscroll_ack,
+                         latency_info,
+                         OVERSCROLL_CONTROLLER);
+    // WARNING: |this| may be deleted at this point.
+  }
+
+  return consumed;
+}
+
+bool ImmediateInputRouter::OfferToClient(const WebInputEvent& input_event,
+                                         const ui::LatencyInfo& latency_info) {
+  bool consumed = false;
+
+  InputEventAckState filter_ack =
+      client_->FilterInputEvent(input_event, latency_info);
+  switch (filter_ack) {
+    case INPUT_EVENT_ACK_STATE_CONSUMED:
+    case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
+      // Send the ACK and early exit.
+      next_mouse_move_.reset();
+      ProcessInputEventAck(input_event.type, filter_ack, latency_info, CLIENT);
+      // WARNING: |this| may be deleted at this point.
+      consumed = true;
+      break;
+    case INPUT_EVENT_ACK_STATE_UNKNOWN:
+      // Simply drop the event.
+      consumed = true;
+      break;
+    default:
+      break;
+  }
+
+  return consumed;
 }
 
 void ImmediateInputRouter::OnInputEventAck(

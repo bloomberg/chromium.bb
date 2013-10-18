@@ -305,8 +305,6 @@ TEST_F(ImmediateInputRouterTest, IgnoreKeyEventsWeDidntSend) {
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 }
 
-// GestureEventFilter tests should be factored out of
-// ImmediateInputRouterTest. See crbug.com/301807.
 TEST_F(ImmediateInputRouterTest, CoalescesWheelEvents) {
   // Simulate wheel events.
   SimulateWheelEvent(0, -5, 0, false);  // sent directly
@@ -346,17 +344,6 @@ TEST_F(ImmediateInputRouterTest, CoalescesWheelEvents) {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-
-  // FIXME(kouhei): Below is testing gesture event filter. Maybe separate test?
-  {
-    WebGestureEvent gesture_event;
-    gesture_event.type = WebInputEvent::GestureFlingStart;
-    gesture_event.sourceDevice = WebGestureEvent::Touchpad;
-    gesture_event.data.flingStart.velocityX = 0.f;
-    gesture_event.data.flingStart.velocityY = 0.f;
-    EXPECT_FALSE(input_router_->ShouldForwardGestureEvent(
-        GestureEventWithLatencyInfo(gesture_event, ui::LatencyInfo())));
-  }
 }
 
 TEST_F(ImmediateInputRouterTest,
