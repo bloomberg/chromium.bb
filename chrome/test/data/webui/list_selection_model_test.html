@@ -157,8 +157,8 @@ function testAdjust12() {
 
   adjust(sm, 5, 20, 10);
 
-  assertEquals(4, sm.leadIndex, 'lead');
-  assertEquals(4, sm.anchorIndex, 'anchor');
+  assertEquals(-1, sm.leadIndex, 'lead');
+  assertEquals(-1, sm.anchorIndex, 'anchor');
   assertArrayEquals(range(0, 4), sm.selectedIndexes);
 }
 
@@ -191,8 +191,8 @@ function testLeadAndAnchor2() {
   sm.leadIndex = sm.anchorIndex = 10;
   sm.selectAll();
 
-  assertEquals(19, sm.leadIndex, 'lead');
-  assertEquals(19, sm.anchorIndex, 'anchor');
+  assertEquals(-1, sm.leadIndex, 'lead');
+  assertEquals(-1, sm.anchorIndex, 'anchor');
 }
 
 </script>
