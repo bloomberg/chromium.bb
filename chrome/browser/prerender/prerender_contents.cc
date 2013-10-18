@@ -17,12 +17,12 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_render_view_host_observer.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/common/prerender_messages.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/notification_service.h"
@@ -277,10 +277,6 @@ void PrerenderContents::StartPrerendering(
   // Set the size of the prerender WebContents.
   prerender_contents_->GetView()->SizeContents(size_);
 
-  // Register as an observer of the RenderViewHost so we get messages.
-  render_view_host_observer_.reset(
-      new PrerenderRenderViewHostObserver(this, GetRenderViewHostMutable()));
-
   child_id_ = GetRenderViewHost()->GetProcess()->GetID();
   route_id_ = GetRenderViewHost()->GetRoutingID();
 
@@ -508,6 +504,18 @@ void PrerenderContents::DidUpdateFaviconURL(
   }
 }
 
+bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  // The following messages we do want to consume.
+  IPC_BEGIN_MESSAGE_MAP(PrerenderContents, message)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CancelPrerenderForPrinting,
+                        OnCancelPrerenderForPrinting)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
 bool PrerenderContents::AddAliasURL(const GURL& url) {
   const bool http = url.SchemeIs(content::kHttpScheme);
   const bool https = url.SchemeIs(content::kHttpsScheme);
@@ -629,12 +637,6 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
        match_complete_status() == MATCH_COMPLETE_REPLACEMENT)) {
     NotifyPrerenderStop();
   }
-
-  // We may destroy the PrerenderContents before we have initialized the
-  // RenderViewHost. Otherwise set the Observer's PrerenderContents to NULL to
-  // avoid any more messages being sent.
-  if (render_view_host_observer_)
-    render_view_host_observer_->set_prerender_contents(NULL);
 }
 
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
@@ -671,7 +673,6 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 
 WebContents* PrerenderContents::ReleasePrerenderContents() {
   prerender_contents_->SetDelegate(NULL);
-  render_view_host_observer_.reset();
   content::WebContentsObserver::Observe(NULL);
   SessionStorageNamespace* session_storage_namespace =
       GetSessionStorageNamespace();
@@ -728,5 +729,8 @@ SessionStorageNamespace* PrerenderContents::GetSessionStorageNamespace() const {
       GetDefaultSessionStorageNamespace();
 }
 
+void PrerenderContents::OnCancelPrerenderForPrinting() {
+  Destroy(FINAL_STATUS_WINDOW_PRINT);
+}
 
 }  // namespace prerender

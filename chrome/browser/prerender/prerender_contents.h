@@ -44,7 +44,6 @@ namespace prerender {
 
 class PrerenderHandle;
 class PrerenderManager;
-class PrerenderRenderViewHostObserver;
 
 class PrerenderContents : public content::NotificationObserver,
                           public content::WebContentsObserver {
@@ -231,6 +230,7 @@ class PrerenderContents : public content::NotificationObserver,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidUpdateFaviconURL(int32 page_id,
       const std::vector<content::FaviconURL>& urls) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
 
@@ -330,10 +330,11 @@ class PrerenderContents : public content::NotificationObserver,
   // Needs to be able to call the constructor.
   friend class PrerenderContentsFactoryImpl;
 
-  friend class PrerenderRenderViewHostObserver;
-
   // Returns the ProcessMetrics for the render process, if it exists.
   base::ProcessMetrics* MaybeGetProcessMetrics();
+
+  // Message handlers.
+  void OnCancelPrerenderForPrinting();
 
   ObserverList<Observer> observer_list_;
 
@@ -394,8 +395,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // The prerendered WebContents; may be null.
   scoped_ptr<content::WebContents> prerender_contents_;
-
-  scoped_ptr<PrerenderRenderViewHostObserver> render_view_host_observer_;
 
   scoped_ptr<WebContentsDelegateImpl> web_contents_delegate_;
 
