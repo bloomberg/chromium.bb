@@ -148,9 +148,13 @@ def generate_attribute_and_includes(interface, attribute):
     if not has_setter:
         return contents, includes
 
+    if v8_types.interface_type(idl_type) and not v8_types.array_type(idl_type):
+        cpp_value = 'WTF::getPtr(cppValue)'
+    else:
+        cpp_value = 'cppValue'
     contents.update({
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
-        'cpp_setter': 'imp->set%s(cppValue)' % capitalize(cpp_name(attribute)),
+        'cpp_setter': 'imp->set%s(%s)' % (capitalize(cpp_name(attribute)), cpp_value),
     })
 
     return contents, includes

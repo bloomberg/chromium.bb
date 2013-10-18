@@ -38,9 +38,9 @@ interface TestObjectPython {
     readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     readonly attribute long readonlyLongAttribute;
     // Basic types
-    readonly attribute Date readonlyDateAttribute;
-    readonly attribute DOMString readonlyStringAttribute;
-    readonly attribute DOMTimeStamp readonlyDOMTimeStampAttribute;
+    attribute Date dateAttribute;
+    attribute DOMString stringAttribute;
+    readonly attribute DOMTimeStamp readonlyDOMTimeStampAttribute;  // FIXME: Perl CG doesn't translate typedef DOMTimeStamp -> unsigned long long; remove readonly once moved to Python-only
     attribute boolean booleanAttribute;
     attribute byte byteAttribute;
     attribute double doubleAttribute;
@@ -58,9 +58,11 @@ interface TestObjectPython {
     attribute long svgAttribute;
     attribute long xmlAttribute;
     // Non-wrapper types
-    readonly attribute NodeFilter readonlyNodeFilterAttribute;
-    readonly attribute SerializedScriptValue readonlySerializedScriptValueAttribute;
+    attribute NodeFilter nodeFilterAttribute;
+    attribute SerializedScriptValue serializedScriptValueAttribute;
     attribute any anyAttribute;
+    // Special V8 -> C++ types (RefPtr exceptions, special conversion)
+    attribute DOMStringList domStringListAttribute;
     // DOM Node types
     readonly attribute Document readonlyDocumentAttribute;
     readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
@@ -85,8 +87,8 @@ interface TestObjectPython {
     readonly attribute TestInterfaceEmpty[] readonlyTestInterfaceEmptyArrayAttribute;
     readonly attribute float[] readonlyFloatArrayAttribute;
     // Nullable attributes
-    readonly attribute DOMString? readonlyNullableStringAttribute;
-    readonly attribute long? readonlyNullableLongAttribute;
+    attribute DOMString? nullableStringAttribute;
+    attribute long? nullableLongAttribute;
     // Enumerations
     readonly attribute TestEnum readonlyTestEnumAttribute;
     // Static attributes (Blink extension)
@@ -94,7 +96,7 @@ interface TestObjectPython {
     static readonly attribute long staticReadonlyLongAttribute;
     // Miscellaneous special types
     readonly attribute EventHandler readonlyEventHandlerAttribute;
-    readonly attribute Promise readonlyPromiseAttribute;
+    attribute Promise promiseAttribute;
 
     // Extended attributes
     [ActivityLogging=Access] readonly attribute long activityLogAccessReadonlyLongAttribute;

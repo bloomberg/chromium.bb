@@ -120,7 +120,8 @@ def interface_type(idl_type):
                composite_type(idl_type) or
                callback_function_type(idl_type) or
                enum_type(idl_type) or
-               idl_type == 'object')
+               idl_type == 'object' or
+               idl_type == 'Promise')  # Promise will be basic in future
 
 
 def sequence_type(idl_type):
@@ -210,11 +211,19 @@ CPP_UNSIGNED_TYPES = set([
     'unsigned long',
     'unsigned short',
 ])
-CPP_SPECIAL_CONVERSION_TYPES = {
+CPP_SPECIAL_CONVERSION_RULES = {
+    'Date': 'double',
     'Promise': 'ScriptPromise',
     'any': 'ScriptValue',
     'boolean': 'bool',
 }
+CPP_REF_PTR_CONVERSION_TYPES = set([
+    # FIXME: overlaps with NON_WRAPPER_TYPES
+    # FIXME: other special cases occur only for methods (not attributes)
+    'DOMStringList',
+    'NodeFilter',
+    'SerializedScriptValue',
+])
 
 def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     """Returns C++ type corresponding to IDL type."""
@@ -225,8 +234,10 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         return 'int'
     if idl_type in CPP_UNSIGNED_TYPES:
         return 'unsigned'
-    if idl_type in CPP_SPECIAL_CONVERSION_TYPES:
-        return CPP_SPECIAL_CONVERSION_TYPES[idl_type]
+    if idl_type in CPP_SPECIAL_CONVERSION_RULES:
+        return CPP_SPECIAL_CONVERSION_RULES[idl_type]
+    if idl_type in CPP_REF_PTR_CONVERSION_TYPES:
+        return 'RefPtr<%s>' % idl_type
     if idl_type == 'DOMString' or enum_type(idl_type):
         # enum is internally a string
         if used_as_argument:
@@ -300,7 +311,9 @@ def includes_for_type(idl_type):
 # V8 -> C++
 ################################################################################
 
-V8_VALUE_TO_CPP_VALUE_PRIMITIVE = {
+V8_VALUE_TO_CPP_VALUE_BASIC = {
+    'Date': 'toWebCoreDate({v8_value})',
+    'DOMString': '{v8_value}',
     'boolean': '{v8_value}->BooleanValue()',
     'float': 'static_cast<float>({v8_value}->NumberValue())',
     'double': 'static_cast<double>({v8_value}->NumberValue())',
@@ -319,8 +332,12 @@ V8_VALUE_TO_CPP_VALUE_AND_INCLUDES = {
             set(['bindings/v8/ScriptValue.h'])),
     'Dictionary': ('Dictionary({v8_value}, {isolate})',
                    set(['bindings/v8/Dictionary.h'])),
+    'DOMStringList': ('toDOMStringList({v8_value}, {isolate})', set()),
     'MediaQueryListListener': ('MediaQueryListListener::create({v8_value})',
                                set(['core/css/MediaQueryListListener.h'])),
+    'NodeFilter': ('toNodeFilter({v8_value}, {isolate})', set()),
+    'Promise': ('ScriptPromise({v8_value})',
+                set(['bindings/v8/ScriptPromise.h'])),
     'SerializedScriptValue': (
         'SerializedScriptValue::create({v8_value}, {isolate})',
         set(['bindings/v8/SerializedScriptValue.h'])),
@@ -342,8 +359,8 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, iso
     else:  # NormalConversion
         arguments = v8_value
 
-    if idl_type in V8_VALUE_TO_CPP_VALUE_PRIMITIVE:
-        cpp_expression_format = V8_VALUE_TO_CPP_VALUE_PRIMITIVE[idl_type]
+    if idl_type in V8_VALUE_TO_CPP_VALUE_BASIC:
+        cpp_expression_format = V8_VALUE_TO_CPP_VALUE_BASIC[idl_type]
     elif idl_type in V8_VALUE_TO_CPP_VALUE_AND_INCLUDES:
         cpp_expression_format, new_includes = V8_VALUE_TO_CPP_VALUE_AND_INCLUDES[idl_type]
         includes.update(new_includes)
