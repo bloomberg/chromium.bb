@@ -209,10 +209,6 @@ aura::RootWindow* DesktopRootWindowHostX11::Init(
   return InitRootWindow(sanitized_params);
 }
 
-void DesktopRootWindowHostX11::InitFocus(aura::Window* window) {
-  focus_client_->FocusWindow(window);
-}
-
 scoped_ptr<corewm::Tooltip> DesktopRootWindowHostX11::CreateTooltip() {
   return scoped_ptr<corewm::Tooltip>(
       new corewm::TooltipAura(gfx::SCREEN_TYPE_NATIVE));
@@ -587,6 +583,10 @@ void DesktopRootWindowHostX11::OnNativeWidgetFocus() {
 void DesktopRootWindowHostX11::OnNativeWidgetBlur() {
   if (xwindow_)
     native_widget_delegate_->AsWidget()->GetInputMethod()->OnBlur();
+}
+
+bool DesktopRootWindowHostX11::IsAnimatingClosed() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

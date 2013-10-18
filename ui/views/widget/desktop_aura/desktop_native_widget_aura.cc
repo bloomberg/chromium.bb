@@ -339,8 +339,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
       params.desktop_root_window_host :
       DesktopRootWindowHost::Create(native_widget_delegate_,
                                     this, params.bounds);
-  root_window_.reset(
-      desktop_root_window_host_->Init(window_, params));
+  root_window_.reset(desktop_root_window_host_->Init(window_, params));
 
   UpdateWindowTransparency();
 
@@ -383,8 +382,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     root_window_->AddPreTargetHandler(focus_manager->GetEventHandler());
   }
 
-  window_->Show();
-  desktop_root_window_host_->InitFocus(window_);
+  aura::client::GetFocusClient(window_)->FocusWindow(window_);
 
   aura::client::SetActivationDelegate(window_, this);
 
@@ -997,6 +995,12 @@ void DesktopNativeWidgetAura::OnRootWindowHostCloseRequested(
 
 void DesktopNativeWidgetAura::OnRootWindowHostResized(
     const aura::RootWindow* root) {
+  // Don't update the bounds of the child layers when animating closed. If we
+  // did it would force a paint, which we don't want. We don't want the paint
+  // as we can't assume any of the children are valid.
+  if (desktop_root_window_host_->IsAnimatingClosed())
+    return;
+
   gfx::Rect new_bounds = gfx::Rect(root->bounds().size());
   // TODO(ananta)
   // This code by default scales the bounds rectangle by 1.

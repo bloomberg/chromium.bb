@@ -21,6 +21,14 @@ bool DesktopFocusRules::SupportsChildActivation(aura::Window* window) const {
          window->GetRootWindow() == window;
 }
 
+bool DesktopFocusRules::IsWindowConsideredVisibleForActivation(
+    aura::Window* window) const {
+  // |content_window_| is initially hidden and made visible from Show(). Even in
+  // this state we still want it to be active.
+  return BaseFocusRules::IsWindowConsideredVisibleForActivation(window) ||
+      (window == content_window_);
+}
+
 aura::Window* DesktopFocusRules::GetToplevelWindow(
     aura::Window* window) const {
   aura::Window* top_level_window =
