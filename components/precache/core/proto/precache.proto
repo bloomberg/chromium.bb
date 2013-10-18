@@ -1,0 +1,38 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package precache;
+
+// Chrome requires this.
+option optimize_for = LITE_RUNTIME;
+
+// Information about a cacheable resource to be precached.
+message PrecacheResource {
+  // The URL of the resource. This field must always be present.
+  optional string url = 1;
+};
+
+// A manifest of cacheable resources to be precached for a specific starting
+// URL.
+message PrecacheManifest {
+  // List of resources that we predict that the user will need if they are
+  // likely to fetch the starting URL.
+  repeated PrecacheResource resource = 1;
+};
+
+message PrecacheConfigurationSettings {
+  // The whitelist of starting URLs that are currently supported. Precaching
+  // should only be attempted for starting URLs that are in this list.
+  repeated string whitelisted_starting_url = 1;
+
+  // The maximum rank of the user's most visited URLs to consider precaching
+  // resources for, starting from 1. For example, a value of 10 means that only
+  // URLs that are both in the user's top 10 most visited URLs and in the
+  // whitelist will be considered as starting URLs for resource precaching.
+  // This is specified by the server for testing purposes, so that we can
+  // easily adjust how aggressively we precache resources.
+  optional int64 maximum_rank_starting_url = 2 [default = 10];
+};

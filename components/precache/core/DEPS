@@ -1,0 +1,10 @@
+include_rules = [
+  "+net/base",
+  "+net/url_request",
+]
+
+specific_include_rules = {
+  '.*_[a-z]*test\.cc': [
+    "+net/http",
+  ],
+}

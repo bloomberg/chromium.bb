@@ -21,6 +21,7 @@
     'onc.gypi',
     'plugins.gypi',
     'policy.gypi',
+    'precache.gypi',
     'sessions.gypi',
     'startup_metric_utils.gypi',
     'translate.gypi',

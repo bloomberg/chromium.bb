@@ -697,6 +697,10 @@ const char kDisablePnaclCrashThrottling[]   = "disable-pnacl-crash-throttling";
 // Disables the installation of Portable Native Client.
 const char kDisablePnaclInstall[]           = "disable-pnacl-install";
 
+// Enables the proactive populating of the disk cache with Web resources that
+// are likely to be needed in future page fetches.
+const char kEnablePrecache[]                = "enable-precache";
+
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
 // --enable-profiling=0

@@ -35,6 +35,9 @@ per-file onc.gypi=gspencer@chromium.org
 per-file onc.gypi=pneubeck@chromium.org
 per-file onc.gypi=stevenjb@chromium.org
 
+per-file precache*=bengr@chromium.org
+per-file precache*=sclittle@chromium.org
+
 per-file policy.gypi=mnissler@chromium.org
 per-file policy.gypi=pastarmovj@chromium.org
 per-file policy.gypi=joaodasilva@chromium.org
