@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/app_container.h"
-
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
@@ -11,6 +9,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/public/system/core.h"
+#include "mojo/shell/app_container.h"
 
 typedef MojoResult (*MojoMainFunction)(mojo::Handle pipe);
 

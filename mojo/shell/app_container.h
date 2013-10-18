@@ -10,7 +10,6 @@
 #include "mojo/public/system/core.h"
 
 namespace base {
-class FilePath;
 class Thread;
 }
 
