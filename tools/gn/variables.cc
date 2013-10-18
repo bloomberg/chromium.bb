@@ -23,8 +23,26 @@ const char kComponentMode_Help[] =
     "  build config script.\n"
     "\n"
     "Possible values:\n"
-    "  \"shared_library\"\n"
-    "  \"static_library\"\n";
+    "  - \"shared_library\"\n"
+    "  - \"source_set\"\n"
+    "  - \"static_library\"\n";
+
+const char kCpuArch[] = "cpu_arch";
+const char kCpuArch_HelpShort[] =
+    "cpu_arch: [string] Current processor architecture.";
+const char kCpuArch_Help[] =
+    "cpu_arch: Current processor architecture.\n"
+    "\n"
+    "  The initial value is based on the current architecture of the host\n"
+    "  system. However, the build configuration can set this to any value.\n"
+    "\n"
+    "  This value is not used internally by GN for any purpose, so you can\n"
+    "  set it to whatever value is relevant to your build.\n"
+    "\n"
+    "Possible initial values set by GN:\n"
+    "  - \"ia32\"\n"
+    "  - \"ia64\"\n"
+    "  - \"arm\"\n";
 
 const char kCurrentToolchain[] = "current_toolchain";
 const char kCurrentToolchain_HelpShort[] =
@@ -42,6 +60,30 @@ const char kCurrentToolchain_Help[] =
     "    executable(\"output_thats_64_bit_only\") {\n"
     "      ...\n";
 
+const char kBuildCpuArch[] = "build_cpu_arch";
+const char kBuildCpuArch_HelpShort[] =
+    "build_cpu_arch: [string] The default value for the \"cpu_arch\" "
+    "variable.";
+const char kBuildCpuArch_Help[] =
+    "build_cpu_arch: The default value for the \"cpu_arch\" variable.\n"
+    "\n"
+    "  This value has the same definition as \"cpu_arch\" (see\n"
+    "  \"gn help cpu_arch\") but should be treated as read-only. This is so\n"
+    "  the build can override the \"cpu_arch\" variable for doing\n"
+    "  cross-compiles, but can still access the host build system's CPU\n"
+    "  architecture.\n";
+
+const char kBuildOs[] = "build_os";
+const char kBuildOs_HelpShort[] =
+    "build_os: [string] The default value for the \"os\" variable.";
+const char kBuildOs_Help[] =
+    "build_os: [string] The default value for the \"os\" variable.\n"
+    "\n"
+    "  This value has the same definition as \"os\" (see \"gn help os\") but\n"
+    "  should be treated as read-only. This is so the build can override\n"
+    "  the \"os\" variable for doing cross-compiles, but can still access\n"
+    "  the host build system's operating system type.\n";
+
 const char kDefaultToolchain[] = "default_toolchain";
 const char kDefaultToolchain_HelpShort[] =
     "default_toolchain: [string] Label of the default toolchain.";
@@ -51,41 +93,32 @@ const char kDefaultToolchain_Help[] =
     "  A fully-qualified label representing the default toolchain, which may\n"
     "  not necessarily be the current one (see \"current_toolchain\").\n";
 
-const char kIsLinux[] = "is_linux";
-const char kIsLinux_HelpShort[] =
-    "is_linux: [boolean] Indicates the current build is for Linux.";
-const char kIsLinux_Help[] =
-    "is_linux: Indicates the current build is for Linux.\n"
+const char kOs[] = "os";
+const char kOs_HelpShort[] =
+    "os: [string] Indicates the operating system of the current build.";
+const char kOs_Help[] =
+    "os: Indicates the operating system of the current build."
     "\n"
-    "  Set by default when running on Linux. Can be overridden by command-\n"
-    "  line arguments or by toolchain arguments.\n";
-
-const char kIsMac[] = "is_mac";
-const char kIsMac_HelpShort[] =
-    "is_mac: [boolean] Indicates the current build is for Mac.";
-const char kIsMac_Help[] =
-    "is_mac: Indicates the current build is for Mac.\n"
+    "  This value is set by default based on the current host operating\n"
+    "  system. The build configuration can override the value to anything\n"
+    "  it wants, or it can be set via the build arguments on the command\n"
+    "  line.\n"
     "\n"
-    "  Set by default when running on Mac. Can be overridden by command-\n"
-    "  line arguments or by toolchain arguments.\n";
-
-const char kIsPosix[] = "is_posix";
-const char kIsPosix_HelpShort[] =
-    "is_posix: [boolean] Indicates the current build is for Posix.";
-const char kIsPosix_Help[] =
-    "is_posix: Indicates the current build is for Posix.\n"
+    "  If you want to know the default value without any overrides, you can\n"
+    "  use \"default_os\" (see \"gn help default_os\").\n"
     "\n"
-    "  Set by default when running Linux or Mac. Can be overridden by\n"
-    "  command-line arguments or by toolchain arguments.\n";
-
-const char kIsWin[] = "is_win";
-const char kIsWin_HelpShort[] =
-    "is_win: [boolean] Indicates the current build is for Windows.";
-const char kIsWin_Help[] =
-    "is_win: Indicates the current build is for Windows.\n"
+    "  Note that this returns the most specific value. So even though\n"
+    "  Android and ChromeOS are both Linux, the more specific value will\n"
+    "  be returned.\n"
     "\n"
-    "  Set by default when running on Windows. Can be overridden by command-\n"
-    "  line arguments or by toolchain arguments.\n";
+    "Some possible values:\n"
+    "  - \"amiga\"\n"
+    "  - \"android\"\n"
+    "  - \"chromeos\"\n"
+    "  - \"ios\"\n"
+    "  - \"linux\"\n"
+    "  - \"mac\"\n"
+    "  - \"win\"\n";
 
 const char kPythonPath[] = "python_path";
 const char kPythonPath_HelpShort[] =
@@ -698,13 +731,13 @@ VariableInfo::VariableInfo(const char* in_help_short, const char* in_help)
 const VariableInfoMap& GetBuiltinVariables() {
   static VariableInfoMap info_map;
   if (info_map.empty()) {
+    INSERT_VARIABLE(BuildCpuArch)
+    INSERT_VARIABLE(BuildOs)
+    INSERT_VARIABLE(CpuArch)
     INSERT_VARIABLE(ComponentMode)
     INSERT_VARIABLE(CurrentToolchain)
     INSERT_VARIABLE(DefaultToolchain)
-    INSERT_VARIABLE(IsLinux)
-    INSERT_VARIABLE(IsMac)
-    INSERT_VARIABLE(IsPosix)
-    INSERT_VARIABLE(IsWin)
+    INSERT_VARIABLE(Os)
     INSERT_VARIABLE(PythonPath)
     INSERT_VARIABLE(RootBuildDir)
     INSERT_VARIABLE(RootGenDir)

@@ -24,22 +24,10 @@ declare_args() {
   #   0 means no symbols.
   symbol_level = 2
 
-  # Set to build the Android version.
-  is_android = false
   # Component build.
   is_component_build = false
-  # ChromeOS build.
-  is_chromeos = false
   # Debug build.
   is_debug = true
-  # IOS build.
-  is_ios = false
-
-  # Set when building with the "untrusted" Native Client toolchain.
-  #
-  # Do not set directly, this will be set automatically when compiling targets
-  # with a NaCl toolchain.
-  is_nacl = false
 
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
@@ -51,6 +39,101 @@ declare_args() {
   use_aura = false
   # Ozone is enabled.
   use_ozone = false
+}
+
+# =============================================================================
+# OS DEFINITIONS
+# =============================================================================
+#
+# We set these various is_FOO booleans for convenience in writing OS-based
+# conditions.
+#
+# - is_android, is_chromeos, is_ios, and is_win should be obvious.
+# - is_mac is set only for desktop Mac. It is not set on iOS.
+# - is_posix is true for mac and any Unix-like system (basically everything
+#   except Windows).
+# - is_linux is true for any Linux variant including Android and ChromeOS.
+#
+# Do not add more is_* variants here for random lesser-used Unix systems like
+# aix or one of the BSDs. If you need to check these, just check the os value
+# directly.
+
+if (os == "win") {
+  is_android = false
+  is_chromeos = false
+  is_ios = false
+  is_linux = false
+  is_mac = false
+  is_nacl = false
+  is_posix = false
+  is_win = true
+} else if (os == "mac") {
+  is_android = false
+  is_chromeos = false
+  is_ios = false
+  is_linux = false
+  is_mac = true
+  is_nacl = false
+  is_posix = true
+  is_win = false
+} else if (os == "android") {
+  is_android = false
+  is_chromeos = false
+  is_ios = false
+  is_linux = true
+  is_mac = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
+} else if (os == "chromeos") {
+  is_android = false
+  is_chromeos = true
+  is_ios = false
+  is_linux = true
+  is_mac = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
+} else if (os == "nacl") {
+  # os == "nacl" will be passed by the nacl toolchain definition. It is not
+  # set by default or on the command line. We treat is as a Posix variant.
+  is_android = false
+  is_chromeos = false
+  is_ios = false
+  is_linux = false
+  is_mac = false
+  is_nacl = true
+  is_posix = true
+  is_win = false
+} else if (os == "ios") {
+  is_android = false
+  is_chromeos = false
+  is_ios = true
+  is_linux = false
+  is_mac = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
+} else if (os == "linux") {
+  is_android = false
+  is_chromeos = false
+  is_ios = false
+  is_linux = true
+  is_mac = false
+  is_nacl = false
+  is_posix = true
+  is_win = false
+}
+
+# =============================================================================
+# CPU ARCHITECTURE
+# =============================================================================
+
+if (is_win) {
+  # Always use 32-bit on Windows, even when compiling on a 64-bit host OS.
+  # TODO(brettw) when we support 64-bit cross-compiles, we probably need to
+  # set a build arg in the toolchain to disable this override.
+  cpu_arch = "ia32"
 }
 
 # =============================================================================
@@ -273,11 +356,25 @@ set_defaults("source_set") {
 # ==============================================================================
 # TOOLCHAIN SETUP
 # ==============================================================================
+#
+# Here we set the default toolchain, as well as the variable host_toolchain
+# which will identify the toolchain corresponding to the local system when
+# doing cross-compiles. When not cross-compiling, this will be the same as the
+# default toolchain.
 
 if (is_win) {
-  set_default_toolchain("//build/toolchain/win:32")
+  host_toolchain = "//build/toolchain/win:32"
+  set_default_toolchain(host_toolchain)
 } else if (is_linux) {
-  set_default_toolchain("//build/toolchain/linux:gcc")
+  host_toolchain = "//build/toolchain/linux:host"
+  if (cpu_arch == "arm" && build_cpu_arch != "arm") {
+    # Special toolchain for ARM cross-compiling.
+    set_default_toolchain("//build/toolchain/linux:arm-cross-compile")
+  } else {
+    # Use whatever GCC is on the current platform.
+    set_default_toolchain(host_toolchain)
+  }
 } else if (is_mac) {
-  set_default_toolchain("//build/toolchain/mac:clang")
+  host_toolchain = "//build/toolchain/mac:clang"
+  set_default_toolchain(host_toolchain)
 }

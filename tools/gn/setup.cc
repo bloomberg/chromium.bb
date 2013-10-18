@@ -238,7 +238,7 @@ bool Setup::DoSetup() {
     build_settings_.SetBuildDir(SourceDir(build_path_8));
   } else {
     // Default output dir.
-    build_settings_.SetBuildDir(SourceDir("//out/gn/"));
+    build_settings_.SetBuildDir(SourceDir("//out/Default/"));
   }
 
   return true;

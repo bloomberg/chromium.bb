@@ -4,7 +4,12 @@
 
 #include "tools/gn/args.h"
 
+#include "build/build_config.h"
 #include "tools/gn/variables.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 const char kBuildArgs_Help[] =
     "Build Arguments Overview\n"
@@ -16,16 +21,16 @@ const char kBuildArgs_Help[] =
     "\n"
     "  First, system default arguments are set based on the current system.\n"
     "  The built-in arguments are:\n"
-    "   - is_linux\n"
-    "   - is_mac\n"
-    "   - is_posix (set for Linux and Mac)\n"
-    "   - is_win\n"
+    "   - cpu_arch (by default this is the same as \"default_cpu_arch\")\n"
+    "   - default_cpu_arch\n"
+    "   - default_os\n"
+    "   - os (by default this is the same as \"default_os\")\n"
     "\n"
     "  Second, arguments specified on the command-line via \"--args\" are\n"
     "  applied. These can override the system default ones, and add new ones.\n"
     "  These are whitespace-separated. For example:\n"
     "\n"
-    "    gn --args=\"is_win=true enable_doom_melon=false\"\n"
+    "    gn --args=\"enable_doom_melon=false\" os=\\\"beos\\\"\n"
     "\n"
     "  Third, toolchain overrides are applied. These are specified in the\n"
     "  toolchain_args section of a toolchain definition. The use-case for\n"
@@ -50,6 +55,10 @@ const char kBuildArgs_Help[] =
     "  arguments to apply to multiple buildfiles.\n";
 
 Args::Args() {
+  // These system values are always overridden and won't appear in a
+  // declare_args call, so mark them as used to prevent a warning later.
+  declared_arguments_[variables::kOs] = Value();
+  declared_arguments_[variables::kCpuArch] = Value();
 }
 
 Args::Args(const Args& other)
@@ -155,34 +164,72 @@ bool Args::VerifyAllOverridesUsed(Err* err) const {
 }
 
 void Args::SetSystemVars(Scope* dest) const {
+  // Host OS.
+  const char* os = NULL;
 #if defined(OS_WIN)
-  Value is_win(NULL, true);
-  Value is_posix(NULL, false);
+  os = "win";
+#elif defined(OS_MACOSX)
+  os = "mac";
+#elif defined(OS_LINUX)
+  os = "linux";
 #else
-  Value is_win(NULL, false);
-  Value is_posix(NULL, true);
+  #error Unknown OS type.
 #endif
-  dest->SetValue(variables::kIsWin, is_win, NULL);
-  dest->SetValue(variables::kIsPosix, is_posix, NULL);
-  declared_arguments_[variables::kIsWin] = is_win;
-  declared_arguments_[variables::kIsPosix] = is_posix;
+  Value os_val(NULL, std::string(os));
+  dest->SetValue(variables::kBuildOs, os_val, NULL);
+  dest->SetValue(variables::kOs, os_val, NULL);
+  declared_arguments_[variables::kBuildOs] = os_val;
+  declared_arguments_[variables::kOs] = os_val;
 
-#if defined(OS_MACOSX)
-  Value is_mac(NULL, true);
+  // Host architecture.
+  static const char kIa32[] = "ia32";
+  static const char kIa64[] = "ia64";
+  const char* arch = NULL;
+#if defined(OS_WIN)
+  // ...on Windows, set the CPU architecture based on the underlying OS, not
+  // whatever the current bit-tedness of the GN binary is.
+  const base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  switch (os_info->architecture()) {
+    case base::win::OSInfo::X86_ARCHITECTURE:
+      arch = kIa32;
+      break;
+    case base::win::OSInfo::X64_ARCHITECTURE:
+      arch = kIa64;
+      break;
+    default:
+      CHECK(false) << "Windows architecture not handled.";
+      break;
+  }
 #else
-  Value is_mac(NULL, false);
+  // ...on all other platforms, just use the bit-tedness of the current
+  // process.
+  #if defined(ARCH_CPU_X86_64)
+    arch = kIa64;
+  #elif defined(ARCH_CPU_X86)
+    arch = kIa32;
+  #elif defined(ARCH_CPU_ARMEL)
+    static const char kArm[] = "arm";
+    arch = kArm;
+  #else
+    #error Unknown architecture.
+  #endif
 #endif
-  dest->SetValue(variables::kIsMac, is_mac, NULL);
-  declared_arguments_[variables::kIsMac] = is_mac;
+  // Avoid unused var warning.
+  (void)kIa32;
+  (void)kIa64;
 
-#if defined(OS_LINUX)
-  Value is_linux(NULL, true);
-#else
-  Value is_linux(NULL, false);
-#endif
-  dest->SetValue(variables::kIsLinux, is_linux, NULL);
-  declared_arguments_[variables::kIsLinux] = is_linux;
+  Value arch_val(NULL, std::string(arch));
+  dest->SetValue(variables::kBuildCpuArch, arch_val, NULL);
+  dest->SetValue(variables::kCpuArch, arch_val, NULL);
+  declared_arguments_[variables::kBuildOs] = arch_val;
+  declared_arguments_[variables::kOs] = arch_val;
+
+  // Mark these variables used so the build config file can override them
+  // without geting a warning about overwriting an unused variable.
+  dest->MarkUsed(variables::kCpuArch);
+  dest->MarkUsed(variables::kOs);
 }
+
 
 void Args::ApplyOverrides(const Scope::KeyValueMap& values,
                           Scope* scope) const {

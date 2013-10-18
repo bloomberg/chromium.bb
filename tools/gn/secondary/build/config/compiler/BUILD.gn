@@ -80,33 +80,37 @@ config("compiler") {
         "-pthread",
         "-pipe",  # Use pipes for communicating between sub-processes. Faster.
       ]
-      gold_path = rebase_path("//third_party/gold", ".", root_build_dir)
-      ldflags += [
-        # Use Gold for linking: it is checked out in the source tree.
-        "-B$gold_path",
 
+      # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
+      # address space, and it doesn't support cross-compiling).
+      if (cpu_arch == "ia64") {
+        gold_path = rebase_path("//third_party/gold", ".", root_build_dir)
+        ldflags += [
+          "-B$gold_path",
+
+          # There seems to be a conflict of --icf and -pie in gold which can
+          # generate crashy binaries. As a security measure, -pie takes
+          # precendence for now.
+          # TODO(brettw) common.gypi has this only for target toolset.
+          #"-Wl,--icf=safe",
+          "-Wl,--icf=none",
+
+          # Experimentation found that using four linking threads
+          # saved ~20% of link time.
+          # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
+          # Only apply this to the target linker, since the host
+          # linker might not be gold, but isn't used much anyway.
+          "-Wl,--threads",
+          "-Wl,--thread-count=4",
+        ]
+      }
+
+      ldflags += [
         "-fPIC",
         "-pthread",
         "-Wl,-z,noexecstack",
         "-Wl,-z,now",
         "-Wl,-z,relro",
-
-        # TODO(brettw) gold linker flags, only target.
-        # There seems to be a conflict of --icf and -pie in gold which can
-        # generate crashy binaries. As a security measure, -pie takes
-        # precendence for now.
-        # TODO(brettw) common.gypi has this only for target toolset.
-        #"-Wl,--icf=safe",
-        "-Wl,--icf=none",
-
-        # TODO(brettw) gold linker flags, only target.
-        # Experimentation found that using four linking threads
-        # saved ~20% of link time.
-        # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
-        # Only apply this to the target linker, since the host
-        # linker might not be gold, but isn't used much anyway.
-        "-Wl,--threads",
-        "-Wl,--thread-count=4",
       ]
     }
 

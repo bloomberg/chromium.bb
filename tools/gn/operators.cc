@@ -356,7 +356,7 @@ Value ExecuteNotEquals(Scope* scope,
                        Err* err) {
   // Evaluate in terms of ==.
   Value result = ExecuteEqualsEquals(scope, op_node, left, right, err);
-  result.int_value() = static_cast<int64>(!result.int_value());
+  result.boolean_value() = !result.boolean_value();
   return result;
 }
 

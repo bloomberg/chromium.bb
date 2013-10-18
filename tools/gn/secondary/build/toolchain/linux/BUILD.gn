@@ -4,9 +4,12 @@
 
 cc = "gcc"
 cxx = "g++"
+ar = "ar"
 ld = cxx
 
-toolchain("gcc") {
+# Everything up to the toolchain args is an exact copy of the GCC version
+# below. Keep in sync! Only the compiler variable definitions have changed.
+toolchain("host") {
   # Make these apply to all tools below.
   lib_prefix = "-l"
   lib_dir_prefix="-L"
@@ -26,7 +29,7 @@ toolchain("gcc") {
     deps = "gcc"
   }
   tool("alink") {
-    command = "rm -f \$out && ar rcs \$out \$in"
+    command = "rm -f \$out && $ar rcs \$out \$in"
     description = "AR \$out"
   }
   tool("solink") {
@@ -47,5 +50,73 @@ toolchain("gcc") {
   tool("copy") {
     command = "ln -f \$in \$out 2>/dev/null || (rm -rf \$out && cp -af \$in \$out)"
     description = "COPY \$in \$out"
+  }
+
+  # When invoking this toolchain not as the default one, these args will be
+  # passed to the build. They are ignored when this is the default toolchain.
+  toolchain_args() {
+    # Pass the current CPU architecture to the build as the toolchain to use.
+    # If the default toolchain is set to ARM and the local system is x86, this
+    # will make this secondary toolchain refer to the host GCC again.
+    cpu_arch = build_cpu_arch
+  }
+}
+
+# ARM Cross-Compile ------------------------------------------------------------
+
+cc = "arm-linux-gnueabi-gcc"
+cxx = "arm-linux-gnueabi-g++"
+ar = "arm-linux-gnueabi-ar"
+ld = cxx
+
+# Everything up the the toolchain args is an exact copy of the GCC version
+# below. Keep in sync! Only the compiler variable definitions have changed.
+toolchain("arm-cross-compile") {
+  # Make these apply to all tools below.
+  lib_prefix = "-l"
+  lib_dir_prefix="-L"
+
+  tool("cc") {
+    # cflags_pch_c
+    command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c -c \$in -o \$out"
+    description = "CC \$out"
+    depfile = "\$out.d"
+    deps = "gcc"
+  }
+  tool("cxx") {
+    # cflags_pch_cc
+    command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc -c \$in -o \$out"
+    description = "CXX \$out"
+    depfile = "\$out.d"
+    deps = "gcc"
+  }
+  tool("alink") {
+    command = "rm -f \$out && $ar rcs \$out \$in"
+    description = "AR \$out"
+  }
+  tool("solink") {
+    command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ]; then $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
+    description = "SOLINK \$lib"
+    #pool = "link_pool"
+    restat = "1"
+  }
+  tool("link") {
+    command = "$ld \$ldflags -o \$out -Wl,--start-group \$in \$solibs -Wl,--end-group \$libs"
+    description = "LINK \$out"
+    #pool = "link_pool"
+  }
+  tool("stamp") {
+    command = "\${postbuilds}touch \$out"
+    description = "STAMP \$out"
+  }
+  tool("copy") {
+    command = "ln -f \$in \$out 2>/dev/null || (rm -rf \$out && cp -af \$in \$out)"
+    description = "COPY \$in \$out"
+  }
+
+  # When invoking this toolchain not as the default one, these args will be
+  # passed to the build. They are ignored when this is the default toolchain.
+  toolchain_args() {
+    cpu_arch = "arm"
   }
 }
