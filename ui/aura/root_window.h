@@ -133,12 +133,6 @@ class AURA_EXPORT RootWindow : public Window,
   // Clips the cursor movement to the root_window.
   bool ConfineCursorToWindow();
 
-  // Draws the necessary set of windows.
-  void Draw();
-
-  // Draw the whole screen.
-  void ScheduleFullRedraw();
-
   // Draw the damage_rect.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
@@ -244,31 +238,18 @@ class AURA_EXPORT RootWindow : public Window,
   // coordinates. This may return a point outside the root window's bounds.
   gfx::Point GetLastMouseLocationInRoot() const;
 
-  // Overridden from Window:
-  virtual RootWindow* GetRootWindow() OVERRIDE;
-  virtual const RootWindow* GetRootWindow() const OVERRIDE;
-  virtual void SetTransform(const gfx::Transform& transform) OVERRIDE;
-
-  // Overridden from ui::EventTarget:
-  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
-
-  // Overridden from ui::LayerDelegate:
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
-
-  // Overridden from Window:
-  virtual bool CanFocus() const OVERRIDE;
-  virtual bool CanReceiveEvents() const OVERRIDE;
-
-  // Overridden from aura::client::CaptureDelegate:
-  virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
-  virtual void SetNativeCapture() OVERRIDE;
-  virtual void ReleaseNativeCapture() OVERRIDE;
-
   // Exposes RootWindowHost::QueryMouseLocation() for test purposes.
   bool QueryMouseLocationForTest(gfx::Point* point) const;
 
   void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
   gfx::Transform GetRootTransform() const;
+
+  // Overridden from Window:
+  virtual RootWindow* GetRootWindow() OVERRIDE;
+  virtual const RootWindow* GetRootWindow() const OVERRIDE;
+  virtual void SetTransform(const gfx::Transform& transform) OVERRIDE;
+  virtual bool CanFocus() const OVERRIDE;
+  virtual bool CanReceiveEvents() const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowTest, KeepTranslatedEventInRoot);
@@ -322,6 +303,17 @@ class AURA_EXPORT RootWindow : public Window,
   // transform and insets.
   void UpdateRootWindowSize(const gfx::Size& host_size);
 
+  // Overridden from ui::EventTarget:
+  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
+
+  // Overridden from ui::LayerDelegate:
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+
+  // Overridden from aura::client::CaptureDelegate:
+  virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
+  virtual void SetNativeCapture() OVERRIDE;
+  virtual void ReleaseNativeCapture() OVERRIDE;
+
   // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
 
@@ -367,10 +359,6 @@ class AURA_EXPORT RootWindow : public Window,
   // passed in.
   bool DispatchGestureEventRepost(ui::GestureEvent* event);
   void DispatchHeldEvents();
-
-  // Parses the switch describing the initial size for the host window and
-  // returns bounds for the window.
-  gfx::Rect GetInitialHostWindowBounds() const;
 
   // Posts a task to send synthesized mouse move event if there
   // is no a pending task.

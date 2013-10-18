@@ -25,7 +25,7 @@ void CaptureController::Detach(aura::RootWindow* root) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CaptureController, client::CaptureClient implementation:
+// CaptureController, aura::client::CaptureClient implementation:
 
 void CaptureController::SetCapture(aura::Window* new_capture_window) {
   if (capture_window_ == new_capture_window)
@@ -60,16 +60,21 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
 
   for (RootWindows::const_iterator i = root_windows.begin();
        i != root_windows.end(); ++i) {
-    (*i)->UpdateCapture(old_capture_window, new_capture_window);
+    aura::client::CaptureDelegate* delegate = *i;
+    delegate->UpdateCapture(old_capture_window, new_capture_window);
   }
 
   aura::RootWindow* capture_root =
       capture_window_ ? capture_window_->GetRootWindow() : NULL;
   if (capture_root != old_capture_root) {
-    if (old_capture_root)
-      old_capture_root->ReleaseNativeCapture();
-    if (capture_root)
-      capture_root->SetNativeCapture();
+    if (old_capture_root) {
+      aura::client::CaptureDelegate* delegate = old_capture_root;
+      delegate->ReleaseNativeCapture();
+    }
+    if (capture_root) {
+      aura::client::CaptureDelegate* delegate = capture_root;
+      delegate->SetNativeCapture();
+    }
   }
 }
 

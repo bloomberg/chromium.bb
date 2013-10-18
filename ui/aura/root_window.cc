@@ -490,21 +490,8 @@ gfx::Point RootWindow::GetLastMouseLocationInRoot() const {
   return location;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, Window overrides:
-
-RootWindow* RootWindow::GetRootWindow() {
-  return this;
-}
-
-const RootWindow* RootWindow::GetRootWindow() const {
-  return this;
-}
-
-void RootWindow::SetTransform(const gfx::Transform& transform) {
-  scoped_ptr<RootWindowTransformer> transformer(
-      new SimpleRootWindowTransformer(this, transform));
-  SetRootWindowTransformer(transformer.Pass());
+bool RootWindow::QueryMouseLocationForTest(gfx::Point* point) const {
+  return host_->QueryMouseLocation(point);
 }
 
 void RootWindow::SetRootWindowTransformer(
@@ -527,45 +514,21 @@ gfx::Transform RootWindow::GetRootTransform() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindow, ui::EventTarget implementation:
+// RootWindow, Window overrides:
 
-ui::EventTarget* RootWindow::GetParentTarget() {
-  return client::GetEventClient(this) ?
-      client::GetEventClient(this)->GetToplevelEventTarget() :
-          Env::GetInstance();
+RootWindow* RootWindow::GetRootWindow() {
+  return this;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, ui::LayerDelegate implementation:
-
-void RootWindow::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-  const bool cursor_is_in_bounds =
-      GetBoundsInScreen().Contains(Env::GetInstance()->last_mouse_location());
-  bool cursor_visible = false;
-  client::CursorClient* cursor_client = client::GetCursorClient(this);
-  if (cursor_is_in_bounds && cursor_client) {
-    cursor_visible = cursor_client->IsCursorVisible();
-    if (cursor_visible)
-      cursor_client->HideCursor();
-  }
-  host_->OnDeviceScaleFactorChanged(device_scale_factor);
-  Window::OnDeviceScaleFactorChanged(device_scale_factor);
-  // Update the device scale factor of the cursor client only when the last
-  // mouse location is on this root window.
-  if (cursor_is_in_bounds) {
-    if (cursor_client) {
-      const gfx::Display& display =
-          gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
-      cursor_client->SetDisplay(display);
-    }
-  }
-  if (cursor_is_in_bounds && cursor_client && cursor_visible)
-    cursor_client->ShowCursor();
+const RootWindow* RootWindow::GetRootWindow() const {
+  return this;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, overridden from aura::Window:
+void RootWindow::SetTransform(const gfx::Transform& transform) {
+  scoped_ptr<RootWindowTransformer> transformer(
+      new SimpleRootWindowTransformer(this, transform));
+  SetRootWindowTransformer(transformer.Pass());
+}
 
 bool RootWindow::CanFocus() const {
   return IsVisible();
@@ -573,59 +536,6 @@ bool RootWindow::CanFocus() const {
 
 bool RootWindow::CanReceiveEvents() const {
   return IsVisible();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, overridden from aura::client::CaptureDelegate:
-
-void RootWindow::UpdateCapture(Window* old_capture, Window* new_capture) {
-  if (!new_capture && old_capture && old_capture->GetRootWindow() != this) {
-    // If we no longer contain the window that had capture make sure we clean
-    // state in the GestureRecognizer. Since we don't contain the window we'll
-    // never get notification of its destruction and clean up state.
-    // We do this early on as OnCaptureLost() may delete |old_capture|.
-    gesture_recognizer_->CleanupStateForConsumer(old_capture);
-  }
-
-  // |mouse_moved_handler_| may have been set to a Window in a different root
-  // (see below). Clear it here to ensure we don't end up referencing a stale
-  // Window.
-  if (mouse_moved_handler_ && !Contains(mouse_moved_handler_))
-    mouse_moved_handler_ = NULL;
-
-  if (old_capture && old_capture->GetRootWindow() == this &&
-      old_capture->delegate()) {
-    // Send a capture changed event with bogus location data.
-    ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
-                         gfx::Point(), 0);
-
-    ProcessEvent(old_capture, &event);
-
-    old_capture->delegate()->OnCaptureLost();
-  }
-
-  if (new_capture) {
-    // Make all subsequent mouse events go to the capture window. We shouldn't
-    // need to send an event here as OnCaptureLost() should take care of that.
-    if (mouse_moved_handler_ || Env::GetInstance()->IsMouseButtonDown())
-      mouse_moved_handler_ = new_capture;
-  } else {
-    // Make sure mouse_moved_handler gets updated.
-    SynthesizeMouseMoveEvent();
-  }
-  mouse_pressed_handler_ = NULL;
-}
-
-void RootWindow::SetNativeCapture() {
-  host_->SetCapture();
-}
-
-void RootWindow::ReleaseNativeCapture() {
-  host_->ReleaseCapture();
-}
-
-bool RootWindow::QueryMouseLocationForTest(gfx::Point* point) const {
-  return host_->QueryMouseLocation(point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -691,6 +601,13 @@ bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
   return handled;
 }
 
+void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
+  if (attached->IsVisible() &&
+      attached->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
+    PostMouseMoveEventAfterWindowChange();
+  }
+}
+
 void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
                                                RootWindow* new_root) {
   DCHECK(aura::client::GetCaptureWindow(this) != this);
@@ -745,15 +662,103 @@ void RootWindow::UpdateRootWindowSize(const gfx::Size& host_size) {
   SetBounds(transformer_->GetRootWindowBounds(host_size));
 }
 
-void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
-  if (attached->IsVisible() &&
-      attached->ContainsPointInRoot(GetLastMouseLocationInRoot()))
-    PostMouseMoveEventAfterWindowChange();
+////////////////////////////////////////////////////////////////////////////////
+// RootWindow, ui::EventTarget implementation:
+
+ui::EventTarget* RootWindow::GetParentTarget() {
+  return client::GetEventClient(this) ?
+      client::GetEventClient(this)->GetToplevelEventTarget() :
+          Env::GetInstance();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// RootWindow, ui::LayerDelegate implementation:
+
+void RootWindow::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  const bool cursor_is_in_bounds =
+      GetBoundsInScreen().Contains(Env::GetInstance()->last_mouse_location());
+  bool cursor_visible = false;
+  client::CursorClient* cursor_client = client::GetCursorClient(this);
+  if (cursor_is_in_bounds && cursor_client) {
+    cursor_visible = cursor_client->IsCursorVisible();
+    if (cursor_visible)
+      cursor_client->HideCursor();
+  }
+  host_->OnDeviceScaleFactorChanged(device_scale_factor);
+  Window::OnDeviceScaleFactorChanged(device_scale_factor);
+  // Update the device scale factor of the cursor client only when the last
+  // mouse location is on this root window.
+  if (cursor_is_in_bounds) {
+    if (cursor_client) {
+      const gfx::Display& display =
+          gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
+      cursor_client->SetDisplay(display);
+    }
+  }
+  if (cursor_is_in_bounds && cursor_client && cursor_visible)
+    cursor_client->ShowCursor();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RootWindow, aura::client::CaptureDelegate implementation:
+
+void RootWindow::UpdateCapture(Window* old_capture,
+                               Window* new_capture) {
+  if (!new_capture && old_capture && old_capture->GetRootWindow() != this) {
+    // If we no longer contain the window that had capture make sure we clean
+    // state in the GestureRecognizer. Since we don't contain the window we'll
+    // never get notification of its destruction and clean up state.
+    // We do this early on as OnCaptureLost() may delete |old_capture|.
+    gesture_recognizer_->CleanupStateForConsumer(old_capture);
+  }
+
+  // |mouse_moved_handler_| may have been set to a Window in a different root
+  // (see below). Clear it here to ensure we don't end up referencing a stale
+  // Window.
+  if (mouse_moved_handler_ && !Contains(mouse_moved_handler_))
+    mouse_moved_handler_ = NULL;
+
+  if (old_capture && old_capture->GetRootWindow() == this &&
+      old_capture->delegate()) {
+    // Send a capture changed event with bogus location data.
+    ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
+                         gfx::Point(), 0);
+
+    ProcessEvent(old_capture, &event);
+
+    old_capture->delegate()->OnCaptureLost();
+  }
+
+  if (new_capture) {
+    // Make all subsequent mouse events go to the capture window. We shouldn't
+    // need to send an event here as OnCaptureLost() should take care of that.
+    if (mouse_moved_handler_ || Env::GetInstance()->IsMouseButtonDown())
+      mouse_moved_handler_ = new_capture;
+  } else {
+    // Make sure mouse_moved_handler gets updated.
+    SynthesizeMouseMoveEvent();
+  }
+  mouse_pressed_handler_ = NULL;
+}
+
+void RootWindow::SetNativeCapture() {
+  host_->SetCapture();
+}
+
+void RootWindow::ReleaseNativeCapture() {
+  host_->ReleaseCapture();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RootWindow, ui::EventDispatcherDelegate implementation:
 
 bool RootWindow::CanDispatchToTarget(ui::EventTarget* target) {
   return event_dispatch_target_ == target;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// RootWindow, ui::GestureEventHelper implementation:
 
 bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
   return DispatchGestureEvent(event);
@@ -762,6 +767,9 @@ bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
 bool RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
   return OnHostTouchEvent(event);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// RootWindow, ui::LayerAnimationObserver implementation:
 
 void RootWindow::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* animation) {
@@ -934,32 +942,6 @@ void RootWindow::DispatchMouseEventRepost(ui::MouseEvent* event) {
   root->DispatchMouseEventToTarget(event, target);
 }
 
-bool RootWindow::DispatchGestureEventRepost(ui::GestureEvent* event) {
-  if (event->type() != ui::ET_GESTURE_TAP_DOWN)
-    return false;
-
-  // Cleanup stale gesture events for the old gesture target.
-  GestureConsumer* old_consumer = GetGestureTarget(event);
-  if (old_consumer)
-    CleanupGestureRecognizerState(static_cast<aura::Window*>(old_consumer));
-
-  Window* new_consumer = GetEventHandlerForPoint(event->root_location());
-  if (new_consumer) {
-    ui::GestureEvent begin_gesture(
-        ui::ET_GESTURE_BEGIN,
-        event->x(),
-        event->y(),
-        event->flags(),
-        event->time_stamp(),
-        ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0),
-        event->touch_ids_bitfield());
-    ProcessEvent(new_consumer, &begin_gesture);
-    ProcessEvent(new_consumer, event);
-    return event->handled();
-  }
-  return false;
-}
-
 bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
                                             Window* target) {
   client::CursorClient* cursor_client = client::GetCursorClient(this);
@@ -1111,6 +1093,32 @@ bool RootWindow::DispatchTouchEventImpl(ui::TouchEvent* event) {
       event_for_gr, result, target));
 
   return ProcessGestures(gestures.get()) ? true : handled;
+}
+
+bool RootWindow::DispatchGestureEventRepost(ui::GestureEvent* event) {
+  if (event->type() != ui::ET_GESTURE_TAP_DOWN)
+    return false;
+
+  // Cleanup stale gesture events for the old gesture target.
+  GestureConsumer* old_consumer = GetGestureTarget(event);
+  if (old_consumer)
+    CleanupGestureRecognizerState(static_cast<aura::Window*>(old_consumer));
+
+  Window* new_consumer = GetEventHandlerForPoint(event->root_location());
+  if (new_consumer) {
+    ui::GestureEvent begin_gesture(
+        ui::ET_GESTURE_BEGIN,
+        event->x(),
+        event->y(),
+        event->flags(),
+        event->time_stamp(),
+        ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0),
+        event->touch_ids_bitfield());
+    ProcessEvent(new_consumer, &begin_gesture);
+    ProcessEvent(new_consumer, event);
+    return event->handled();
+  }
+  return false;
 }
 
 void RootWindow::DispatchHeldEvents() {

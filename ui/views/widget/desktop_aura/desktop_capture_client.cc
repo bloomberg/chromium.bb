@@ -56,13 +56,14 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
 
   capture_window_ = new_capture_window;
 
-  root_->UpdateCapture(old_capture_window, new_capture_window);
+  aura::client::CaptureDelegate* delegate = root_;
+  delegate->UpdateCapture(old_capture_window, new_capture_window);
 
   // Initiate native capture updating.
   if (!capture_window_) {
-    root_->ReleaseNativeCapture();
+    delegate->ReleaseNativeCapture();
   } else if (!old_capture_window) {
-    root_->SetNativeCapture();
+    delegate->SetNativeCapture();
   }  // else case is capture is remaining in our root, nothing to do.
 }
 
