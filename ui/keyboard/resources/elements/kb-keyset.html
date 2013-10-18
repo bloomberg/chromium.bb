@@ -61,7 +61,7 @@
         }
 
         altkeyContainer.keyset = id;
-        event.target.classList.remove('active');
+        event.target.dropKey();
         activeAltKeySet.style.width = event.target.clientWidth *
             activeAltKeySet.childElementCount + 'px';
         activeAltKeySet.style.height = event.target.clientHeight + 'px';

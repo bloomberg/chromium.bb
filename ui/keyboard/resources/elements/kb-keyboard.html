@@ -285,15 +285,25 @@
           return;
         swipeStatus.offset_x += event.screenX - swipeStatus.pre_x;
         swipeStatus.offset_y += event.screenY - swipeStatus.pre_y;
-        if (Math.abs(swipeStatus.offset_x) > MIN_SWIPE_DIST ||
-            Math.abs(swipeStatus.offset_y) > MIN_SWIPE_DIST) {
+        // Inflates the initial minimal swipe distance that triggers swipe
+        // gesture. It can reduce the accidental cursor movements during fast
+        // typing. After entered swipe gesture mode, the minimal swipe distance
+        // is set to a smaller distance to allow for more responsive cursor
+        // movement.
+        var minSwipeDist =
+            swipeInProgress ? MIN_SWIPE_DIST : 2 * MIN_SWIPE_DIST;
+        if (Math.abs(swipeStatus.offset_x) > minSwipeDist ||
+            Math.abs(swipeStatus.offset_y) > minSwipeDist) {
           swipeInProgress = true;
-          this.lastPressedKey.classList.remove('active');
+          if (this.lastPressedKey) {
+            this.lastPressedKey.classList.remove('active');
+            this.lastPressedKey = null;
+          }
         }
-        if (swipeStatus.offset_x > MIN_SWIPE_DIST) {
+        if (swipeStatus.offset_x > minSwipeDist) {
           swipeStatus.swipeDirection |= SWIPE_DIRECTION.RIGHT;
           swipeStatus.offset_x = 0;
-        } else if (swipeStatus.offset_x < -MIN_SWIPE_DIST) {
+        } else if (swipeStatus.offset_x < -minSwipeDist) {
           swipeStatus.swipeDirection |= SWIPE_DIRECTION.LEFT;
           swipeStatus.offset_x = 0;
         }
@@ -301,10 +311,10 @@
         // degree. This can also be larger.
         if (Math.abs(event.screenY - swipeStatus.pre_y) >
             Math.abs(event.screenX - swipeStatus.pre_x)) {
-          if (swipeStatus.offset_y > MIN_SWIPE_DIST) {
+          if (swipeStatus.offset_y > minSwipeDist) {
             swipeStatus.swipeDirection |= SWIPE_DIRECTION.DOWN;
             swipeStatus.offset_y = 0;
-          } else if (swipeStatus.offset_y < -MIN_SWIPE_DIST) {
+          } else if (swipeStatus.offset_y < -minSwipeDist) {
             swipeStatus.swipeDirection |= SWIPE_DIRECTION.UP;
             swipeStatus.offset_y = 0;
           }
@@ -423,6 +433,14 @@
        *     kb-keyboard.
        */
       up: function(event) {
+        // When touch typing, it is very possible that finger moves slightly out
+        // of the key area before releases. The key should not be dropped in
+        // this case.
+        if (this.lastPressedKey &&
+            this.lastPressedKey.pointerId == event.pointerId) {
+          this.lastPressedKey.autoRelease();
+        }
+
         if (this.dblDetail_) {
           this.dblDetail_.clickCount++;
           if (this.dblDetail_.clickCount == 2) {
@@ -466,8 +484,9 @@
         this.changeKeyset(detail);
 
         if (this.lastPressedKey &&
-            this.lastPressedKey.charValue != event.target.charValue)
+            this.lastPressedKey.charValue != event.target.charValue) {
           return;
+        }
         if (repeatKey.key == event.target) {
           repeatKey.cancel();
           this.lastPressedKey = null;

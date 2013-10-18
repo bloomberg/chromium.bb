@@ -118,7 +118,6 @@
       },
       out: function(event) {
         this.classList.remove('active');
-        this.pointerId = undefined;
         clearTimeout(this.longPressTimer);
       },
       up: function(event) {
@@ -140,6 +139,15 @@
         clearTimeout(this.longPressTimer);
         var detail = this.populateDetails('up');
         this.fire('key-up', detail);
+      },
+
+      /**
+       * Drops the pressed key.
+       */
+      dropKey: function() {
+        this.classList.remove('active');
+        clearTimeout(this.longPressTimer);
+        this.pointerId = undefined;
       },
 
       /**

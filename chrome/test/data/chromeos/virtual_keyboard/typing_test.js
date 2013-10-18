@@ -166,3 +166,57 @@ function testAutoReleasePreviousKey(testDoneCallback) {
   };
   onKeyboardReady('testAutoReleasePreviousKey', runTest, testDoneCallback);
 }
+
+/**
+ * When touch typing, one can often press a key and move slightly out of the key
+ * area before releasing the key. This test confirms that the key is not
+ * dropped.
+ */
+function testFingerOutType(testDoneCallback) {
+  var runTest = function() {
+    var key = findKey('a');
+    assertTrue(!!key, 'Unable to find key labelled "a".');
+    var unicodeValue = 'a'.charCodeAt(0);
+    var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
+
+    // Test finger moves out of typed key slightly before release. The key
+    // should not be dropped.
+    send.addExpectation({
+      type: 'keydown',
+      charValue: unicodeValue,
+      keyCode: 0x41,
+      shiftKey: false
+    });
+    send.addExpectation({
+      type: 'keyup',
+      charValue: unicodeValue,
+      keyCode: 0x41,
+      shiftKey: false
+    });
+    var mockEvent = { pointerId:2 };
+    key.down(mockEvent);
+    key.out(mockEvent);
+    // Mocks finger releases after moved out of the 'a' key.
+    keyboard.up(mockEvent);
+
+    // Test a second finger types on a different key before first finger
+    // releases (yet moves out of the typed key). The first typed key should not
+    // be dropped.
+    send.addExpectation({
+      type: 'keydown',
+      charValue: unicodeValue,
+      keyCode: 0x41,
+      shiftKey: false
+    });
+    send.addExpectation({
+      type: 'keyup',
+      charValue: unicodeValue,
+      keyCode: 0x41,
+      shiftKey: false
+    });
+    key.down(mockEvent);
+    key.out(mockEvent);
+    mockTypeCharacter('s', 0x53, false);
+  };
+  onKeyboardReady('testFingerOutType', runTest, testDoneCallback);
+}
