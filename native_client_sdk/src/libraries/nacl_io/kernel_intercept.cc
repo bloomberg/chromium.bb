@@ -286,6 +286,31 @@ int ki_kill(pid_t pid, int sig) {
   return s_kp->kill(pid, sig);
 }
 
+int ki_killpg(pid_t pid, int sig) {
+  errno = ENOSYS;
+  return -1;
+}
+
+int ki_sigaction(int, const struct sigaction*, struct sigaction*) {
+  errno = ENOSYS;
+  return -1;
+}
+
+int ki_sigpause(int sigmask) {
+  errno = ENOSYS;
+  return -1;
+}
+
+int ki_sigpending(sigset_t* set) {
+  errno = ENOSYS;
+  return -1;
+}
+
+int ki_sigsuspend(const sigset_t* set) {
+  errno = ENOSYS;
+  return -1;
+}
+
 sighandler_t ki_signal(int signum, sighandler_t handler) {
   ON_NOSYS_RETURN(SIG_ERR);
   return s_kp->sigset(signum, handler);
