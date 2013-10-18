@@ -10,6 +10,7 @@ import logging
 import os
 import psutil
 import signal
+import shutil
 import time
 
 from pylib import android_commands
@@ -58,8 +59,9 @@ def Setup(test_options):
   Returns:
     A tuple of (TestRunnerFactory, tests).
   """
-  if not os.path.exists(constants.PERF_OUTPUT_DIR):
-    os.makedirs(constants.PERF_OUTPUT_DIR)
+  if os.path.exists(constants.PERF_OUTPUT_DIR):
+    shutil.rmtree(constants.PERF_OUTPUT_DIR)
+  os.makedirs(constants.PERF_OUTPUT_DIR)
 
   # Before running the tests, kill any leftover server.
   _KillPendingServers()
