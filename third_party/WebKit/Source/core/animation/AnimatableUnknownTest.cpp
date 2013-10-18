@@ -40,7 +40,7 @@ using namespace WebCore;
 
 namespace {
 
-class AnimatableUnknownTest : public ::testing::Test {
+class CoreAnimationAnimatableUnknownTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -58,17 +58,17 @@ protected:
     RefPtr<AnimatableValue> otherAnimatableUnknown;
 };
 
-TEST_F(AnimatableUnknownTest, Create)
+TEST_F(CoreAnimationAnimatableUnknownTest, Create)
 {
     EXPECT_TRUE(animatableUnknown);
 }
 
-TEST_F(AnimatableUnknownTest, ToCSSValue)
+TEST_F(CoreAnimationAnimatableUnknownTest, ToCSSValue)
 {
     EXPECT_EQ(cssValue, toAnimatableUnknown(animatableUnknown.get())->toCSSValue());
 }
 
-TEST_F(AnimatableUnknownTest, Interpolate)
+TEST_F(CoreAnimationAnimatableUnknownTest, Interpolate)
 {
     EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0).get())->toCSSValue());
     EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0.4).get())->toCSSValue());
@@ -83,7 +83,7 @@ TEST_F(AnimatableUnknownTest, Interpolate)
     EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(otherAnimatableUnknown.get(), animatableUnknown.get(), 1).get())->toCSSValue());
 }
 
-TEST_F(AnimatableUnknownTest, Add)
+TEST_F(CoreAnimationAnimatableUnknownTest, Add)
 {
     EXPECT_EQ(otherCSSValue, toAnimatableUnknown(AnimatableValue::add(animatableUnknown.get(), otherAnimatableUnknown.get()).get())->toCSSValue());
     EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::add(otherAnimatableUnknown.get(), animatableUnknown.get()).get())->toCSSValue());

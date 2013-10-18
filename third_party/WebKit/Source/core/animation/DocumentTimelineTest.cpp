@@ -44,7 +44,7 @@ using namespace WebCore;
 
 namespace {
 
-class DocumentTimelineTest : public ::testing::Test {
+class CoreAnimationDocumentTimelineTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -61,7 +61,7 @@ protected:
     Timing timing;
 };
 
-TEST_F(DocumentTimelineTest, EmptyKeyframeAnimation)
+TEST_F(CoreAnimationDocumentTimelineTest, EmptyKeyframeAnimation)
 {
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector());
     RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
@@ -76,7 +76,7 @@ TEST_F(DocumentTimelineTest, EmptyKeyframeAnimation)
     EXPECT_FLOAT_EQ(100, timeline->currentTime());
 }
 
-TEST_F(DocumentTimelineTest, ZeroTimeAsPerfTime)
+TEST_F(CoreAnimationDocumentTimelineTest, ZeroTimeAsPerfTime)
 {
     timeline = DocumentTimeline::create(document.get());
 
@@ -94,7 +94,7 @@ TEST_F(DocumentTimelineTest, ZeroTimeAsPerfTime)
     EXPECT_EQ(100, timeline->currentTime());
 }
 
-TEST_F(DocumentTimelineTest, PauseForTesting)
+TEST_F(CoreAnimationDocumentTimelineTest, PauseForTesting)
 {
     float seekTime = 1;
     RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timing);
@@ -107,7 +107,7 @@ TEST_F(DocumentTimelineTest, PauseForTesting)
     EXPECT_FLOAT_EQ(seekTime, player2->currentTime());
 }
 
-TEST_F(DocumentTimelineTest, NumberOfActiveAnimations)
+TEST_F(CoreAnimationDocumentTimelineTest, NumberOfActiveAnimations)
 {
     Timing timingForwardFill;
     timingForwardFill.hasIterationDuration = true;

@@ -149,7 +149,7 @@ private:
 
     mutable RefPtr<CSSPrimitiveValue> m_cachedCSSPrimitiveValue;
 
-    friend class AnimatableLengthTest;
+    friend class CoreAnimationAnimatableLengthTest;
 };
 
 inline const AnimatableLength* toAnimatableLength(const AnimatableValue* value)

@@ -39,19 +39,19 @@ using namespace WebCore;
 
 namespace {
 
-TEST(AnimatableDoubleTest, Create)
+TEST(CoreAnimationAnimatableDoubleTest, Create)
 {
     EXPECT_TRUE(static_cast<bool>(AnimatableDouble::create(5).get()));
     EXPECT_TRUE(static_cast<bool>(AnimatableDouble::create(10).get()));
 }
 
-TEST(AnimatableDoubleTest, Equal)
+TEST(CoreAnimationAnimatableDoubleTest, Equal)
 {
     EXPECT_TRUE(AnimatableDouble::create(10)->equals(AnimatableDouble::create(10).get()));
     EXPECT_FALSE(AnimatableDouble::create(5)->equals(AnimatableDouble::create(10).get()));
 }
 
-TEST(AnimatableDoubleTest, ToCSSValue)
+TEST(CoreAnimationAnimatableDoubleTest, ToCSSValue)
 {
     RefPtr<CSSValue> cssValue5 = CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_NUMBER);
     RefPtr<CSSValue> cssValue10 = CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_NUMBER);
@@ -59,14 +59,14 @@ TEST(AnimatableDoubleTest, ToCSSValue)
     EXPECT_FALSE(AnimatableDouble::create(5)->toCSSValue()->equals(*cssValue10.get()));
 }
 
-TEST(AnimatableDoubleTest, ToDouble)
+TEST(CoreAnimationAnimatableDoubleTest, ToDouble)
 {
     EXPECT_EQ(5.9, AnimatableDouble::create(5.9)->toDouble());
     EXPECT_EQ(-10, AnimatableDouble::create(-10)->toDouble());
 }
 
 
-TEST(AnimatableDoubleTest, Interpolate)
+TEST(CoreAnimationAnimatableDoubleTest, Interpolate)
 {
     RefPtr<AnimatableDouble> from10 = AnimatableDouble::create(10);
     RefPtr<AnimatableDouble> to20 = AnimatableDouble::create(20);
@@ -79,7 +79,7 @@ TEST(AnimatableDoubleTest, Interpolate)
     EXPECT_EQ(25, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 1.5).get())->toDouble());
 }
 
-TEST(AnimatableDoubleTest, Add)
+TEST(CoreAnimationAnimatableDoubleTest, Add)
 {
     EXPECT_EQ(-10, toAnimatableDouble(AnimatableValue::add(AnimatableDouble::create(-2).get(), AnimatableDouble::create(-8).get()).get())->toDouble());
     EXPECT_EQ(0, toAnimatableDouble(AnimatableValue::add(AnimatableDouble::create(50).get(), AnimatableDouble::create(-50).get()).get())->toDouble());

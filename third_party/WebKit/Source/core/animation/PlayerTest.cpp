@@ -41,7 +41,7 @@ using namespace WebCore;
 
 namespace {
 
-class PlayerTest : public ::testing::Test {
+class CoreAnimationPlayerTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -63,7 +63,7 @@ protected:
     RefPtr<Player> player;
 };
 
-TEST_F(PlayerTest, InitialState)
+TEST_F(CoreAnimationPlayerTest, InitialState)
 {
     EXPECT_EQ(0, timeline->currentTime());
     EXPECT_EQ(0, player->currentTime());
@@ -73,7 +73,7 @@ TEST_F(PlayerTest, InitialState)
     EXPECT_EQ(0, player->timeDrift());
 }
 
-TEST_F(PlayerTest, CreatePlayerAfterTimelineStarted)
+TEST_F(CoreAnimationPlayerTest, CreatePlayerAfterTimelineStarted)
 {
     updateTimeline(1234);
     EXPECT_EQ(1234, timeline->currentTime());
@@ -82,7 +82,7 @@ TEST_F(PlayerTest, CreatePlayerAfterTimelineStarted)
     EXPECT_EQ(0, player->currentTime());
 }
 
-TEST_F(PlayerTest, PauseUnpause)
+TEST_F(CoreAnimationPlayerTest, PauseUnpause)
 {
     updateTimeline(200);
     player->setPaused(true);
@@ -101,7 +101,7 @@ TEST_F(PlayerTest, PauseUnpause)
     EXPECT_EQ(200, player->timeDrift());
 }
 
-TEST_F(PlayerTest, PauseBeforeTimelineStarted)
+TEST_F(CoreAnimationPlayerTest, PauseBeforeTimelineStarted)
 {
     player->setPaused(true);
     EXPECT_TRUE(player->paused());
@@ -124,7 +124,7 @@ TEST_F(PlayerTest, PauseBeforeTimelineStarted)
     EXPECT_EQ(100, player->timeDrift());
 }
 
-TEST_F(PlayerTest, SetCurrentTime)
+TEST_F(CoreAnimationPlayerTest, SetCurrentTime)
 {
     updateTimeline(0);
     player->setCurrentTime(250);
@@ -132,7 +132,7 @@ TEST_F(PlayerTest, SetCurrentTime)
     EXPECT_EQ(-250, player->timeDrift());
 }
 
-TEST_F(PlayerTest, SetCurrentTimeBeforeTimelineStarted)
+TEST_F(CoreAnimationPlayerTest, SetCurrentTimeBeforeTimelineStarted)
 {
     player->setCurrentTime(250);
     EXPECT_EQ(250, player->currentTime());
@@ -142,7 +142,7 @@ TEST_F(PlayerTest, SetCurrentTimeBeforeTimelineStarted)
     EXPECT_EQ(250, player->currentTime());
 }
 
-TEST_F(PlayerTest, SetPlaybackRate)
+TEST_F(CoreAnimationPlayerTest, SetPlaybackRate)
 {
     updateTimeline(0);
     player->setPlaybackRate(2);
@@ -155,7 +155,7 @@ TEST_F(PlayerTest, SetPlaybackRate)
     EXPECT_EQ(0, player->timeDrift());
 }
 
-TEST_F(PlayerTest, SetPlaybackRateBeforeTimelineStarted)
+TEST_F(CoreAnimationPlayerTest, SetPlaybackRateBeforeTimelineStarted)
 {
     player->setPlaybackRate(2);
     EXPECT_EQ(0, player->currentTime());
@@ -166,7 +166,7 @@ TEST_F(PlayerTest, SetPlaybackRateBeforeTimelineStarted)
     EXPECT_EQ(0, player->timeDrift());
 }
 
-TEST_F(PlayerTest, SetPlaybackRateWhilePaused)
+TEST_F(CoreAnimationPlayerTest, SetPlaybackRateWhilePaused)
 {
     updateTimeline(100);
     player->setPaused(true);
@@ -184,7 +184,7 @@ TEST_F(PlayerTest, SetPlaybackRateWhilePaused)
     EXPECT_EQ(300, player->timeDrift());
 }
 
-TEST_F(PlayerTest, SetPlaybackRateNaN)
+TEST_F(CoreAnimationPlayerTest, SetPlaybackRateNaN)
 {
     updateTimeline(0);
     player->setPlaybackRate(nullValue());
@@ -197,7 +197,7 @@ TEST_F(PlayerTest, SetPlaybackRateNaN)
     EXPECT_TRUE(isNull(player->timeDrift()));
 }
 
-TEST_F(PlayerTest, SetPlaybackRateInfinity)
+TEST_F(CoreAnimationPlayerTest, SetPlaybackRateInfinity)
 {
     updateTimeline(0);
     player->setPlaybackRate(std::numeric_limits<double>::infinity());
@@ -210,7 +210,7 @@ TEST_F(PlayerTest, SetPlaybackRateInfinity)
     EXPECT_TRUE(isNull(player->timeDrift()));
 }
 
-TEST_F(PlayerTest, SetPlaybackRateMax)
+TEST_F(CoreAnimationPlayerTest, SetPlaybackRateMax)
 {
     updateTimeline(0);
     player->setPlaybackRate(std::numeric_limits<double>::max());
@@ -222,7 +222,7 @@ TEST_F(PlayerTest, SetPlaybackRateMax)
     EXPECT_EQ(std::numeric_limits<double>::infinity(), player->currentTime());
 }
 
-TEST_F(PlayerTest, SetCurrentTimeNan)
+TEST_F(CoreAnimationPlayerTest, SetCurrentTimeNan)
 {
     updateTimeline(0);
     player->setCurrentTime(nullValue());
@@ -234,7 +234,7 @@ TEST_F(PlayerTest, SetCurrentTimeNan)
     EXPECT_TRUE(isNull(player->timeDrift()));
 }
 
-TEST_F(PlayerTest, SetCurrentTimeInfinity)
+TEST_F(CoreAnimationPlayerTest, SetCurrentTimeInfinity)
 {
     updateTimeline(0);
     player->setCurrentTime(std::numeric_limits<double>::infinity());
@@ -246,7 +246,7 @@ TEST_F(PlayerTest, SetCurrentTimeInfinity)
     EXPECT_EQ(-std::numeric_limits<double>::infinity(), player->timeDrift());
 }
 
-TEST_F(PlayerTest, SetCurrentTimeMax)
+TEST_F(CoreAnimationPlayerTest, SetCurrentTimeMax)
 {
     updateTimeline(0);
     player->setCurrentTime(std::numeric_limits<double>::max());
