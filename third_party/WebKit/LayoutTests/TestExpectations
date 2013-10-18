@@ -1197,6 +1197,9 @@ crbug.com/306280 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.htm
 
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
+crbug.com/307570 fast/images/image-zoom-to-25.html [ Pass Failure ]
+crbug.com/307570 virtual/deferred/fast/images/image-zoom-to-25.html [ Pass Failure ]
+
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 
 crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
