@@ -2374,18 +2374,18 @@ void Element::setChildIndex(unsigned index)
     rareData.setChildIndex(index);
 }
 
-bool Element::hasFlagsSetDuringStylingOfChildren() const
+bool Element::childrenSupportStyleSharing() const
 {
     if (!hasRareData())
-        return false;
-    return rareDataChildrenAffectedByHover()
-        || rareDataChildrenAffectedByActive()
-        || rareDataChildrenAffectedByDrag()
-        || rareDataChildrenAffectedByFirstChildRules()
-        || rareDataChildrenAffectedByLastChildRules()
-        || rareDataChildrenAffectedByDirectAdjacentRules()
-        || rareDataChildrenAffectedByForwardPositionalRules()
-        || rareDataChildrenAffectedByBackwardPositionalRules();
+        return true;
+    return !rareDataChildrenAffectedByHover()
+        && !rareDataChildrenAffectedByActive()
+        && !rareDataChildrenAffectedByDrag()
+        && !rareDataChildrenAffectedByFirstChildRules()
+        && !rareDataChildrenAffectedByLastChildRules()
+        && !rareDataChildrenAffectedByDirectAdjacentRules()
+        && !rareDataChildrenAffectedByForwardPositionalRules()
+        && !rareDataChildrenAffectedByBackwardPositionalRules();
 }
 
 bool Element::rareDataStyleAffectedByEmpty() const
@@ -3397,7 +3397,7 @@ bool Element::supportsStyleSharing() const
         return false;
     if (focused())
         return false;
-    if (parentElement()->hasFlagsSetDuringStylingOfChildren())
+    if (!parentElement()->childrenSupportStyleSharing())
         return false;
     if (hasScopedHTMLStyleChild())
         return false;

@@ -79,15 +79,7 @@ private:
     AtomicString m_language;
 };
 
-inline WebVTTElement* toWebVTTElement(Node* node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isWebVTTElement());
-    return static_cast<WebVTTElement*>(node);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toWebVTTElement(const WebVTTElement*);
-
+DEFINE_NODE_TYPE_CASTS(WebVTTElement, isWebVTTElement());
 
 } // namespace WebCore
 

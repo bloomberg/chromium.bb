@@ -32,7 +32,6 @@
 #include "HTMLNames.h"
 #include "XMLNames.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/StyleResolverState.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -56,47 +55,42 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static inline bool parentElementPreventsSharing(const Element* parentElement)
+bool SharedStyleFinder::canShareStyleWithControl(Element& candidate) const
 {
-    return parentElement->hasFlagsSetDuringStylingOfChildren();
-}
-
-bool SharedStyleFinder::canShareStyleWithControl(const ElementResolveContext& context, Element* element) const
-{
-    if (!element->hasTagName(inputTag) || !context.element()->hasTagName(inputTag))
+    if (!candidate.hasTagName(inputTag) || !element().hasTagName(inputTag))
         return false;
 
-    HTMLInputElement* thisInputElement = toHTMLInputElement(element);
-    HTMLInputElement* otherInputElement = toHTMLInputElement(context.element());
+    HTMLInputElement& candidateInput = toHTMLInputElement(candidate);
+    HTMLInputElement& thisInput = toHTMLInputElement(element());
 
-    if (thisInputElement->isAutofilled() != otherInputElement->isAutofilled())
+    if (candidateInput.isAutofilled() != thisInput.isAutofilled())
         return false;
-    if (thisInputElement->shouldAppearChecked() != otherInputElement->shouldAppearChecked())
+    if (candidateInput.shouldAppearChecked() != thisInput.shouldAppearChecked())
         return false;
-    if (thisInputElement->shouldAppearIndeterminate() != otherInputElement->shouldAppearIndeterminate())
+    if (candidateInput.shouldAppearIndeterminate() != thisInput.shouldAppearIndeterminate())
         return false;
-    if (thisInputElement->isRequired() != otherInputElement->isRequired())
-        return false;
-
-    if (element->isDisabledFormControl() != context.element()->isDisabledFormControl())
+    if (candidateInput.isRequired() != thisInput.isRequired())
         return false;
 
-    if (element->isDefaultButtonForForm() != context.element()->isDefaultButtonForForm())
+    if (candidate.isDisabledFormControl() != element().isDisabledFormControl())
         return false;
 
-    if (element->document().containsValidityStyleRules()) {
-        bool willValidate = element->willValidate();
+    if (candidate.isDefaultButtonForForm() != element().isDefaultButtonForForm())
+        return false;
 
-        if (willValidate != context.element()->willValidate())
+    if (document().containsValidityStyleRules()) {
+        bool willValidate = candidate.willValidate();
+
+        if (willValidate != element().willValidate())
             return false;
 
-        if (willValidate && (element->isValidFormControlElement() != context.element()->isValidFormControlElement()))
+        if (willValidate && (candidate.isValidFormControlElement() != element().isValidFormControlElement()))
             return false;
 
-        if (element->isInRange() != context.element()->isInRange())
+        if (candidate.isInRange() != element().isInRange())
             return false;
 
-        if (element->isOutOfRange() != context.element()->isOutOfRange())
+        if (candidate.isOutOfRange() != element().isOutOfRange())
             return false;
     }
 
@@ -112,120 +106,116 @@ bool SharedStyleFinder::classNamesAffectedByRules(const SpaceSplitString& classN
     return false;
 }
 
-static inline bool elementHasDirectionAuto(Element* element)
-{
-    // FIXME: This line is surprisingly hot, we may wish to inline hasDirectionAuto into StyleResolver.
-    return element->isHTMLElement() && toHTMLElement(element)->hasDirectionAuto();
-}
-
-static inline const AtomicString& typeAttributeValue(const Element* element)
+static inline const AtomicString& typeAttributeValue(const Element& element)
 {
     // type is animatable in SVG so we need to go down the slow path here.
-    return element->isSVGElement() ? element->getAttribute(typeAttr) : element->fastGetAttribute(typeAttr);
+    return element.isSVGElement() ? element.getAttribute(typeAttr) : element.fastGetAttribute(typeAttr);
 }
 
-bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(const ElementResolveContext& context, Element* sharingCandidate) const
+bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(Element& candidate) const
 {
-    if (context.element()->elementData() == sharingCandidate->elementData())
+    if (element().elementData() == candidate.elementData())
         return true;
-    if (context.element()->fastGetAttribute(XMLNames::langAttr) != sharingCandidate->fastGetAttribute(XMLNames::langAttr))
+    if (element().fastGetAttribute(XMLNames::langAttr) != candidate.fastGetAttribute(XMLNames::langAttr))
         return false;
-    if (context.element()->fastGetAttribute(langAttr) != sharingCandidate->fastGetAttribute(langAttr))
+    if (element().fastGetAttribute(langAttr) != candidate.fastGetAttribute(langAttr))
         return false;
 
     // These two checks must be here since RuleSet has a specail case to allow style sharing between elements
     // with type and readonly attributes whereas other attribute selectors prevent sharing.
-    if (typeAttributeValue(context.element()) != typeAttributeValue(sharingCandidate))
+    if (typeAttributeValue(element()) != typeAttributeValue(candidate))
         return false;
-    if (context.element()->fastGetAttribute(readonlyAttr) != sharingCandidate->fastGetAttribute(readonlyAttr))
+    if (element().fastGetAttribute(readonlyAttr) != candidate.fastGetAttribute(readonlyAttr))
         return false;
 
     if (!m_elementAffectedByClassRules) {
-        if (sharingCandidate->hasClass() && classNamesAffectedByRules(sharingCandidate->classNames()))
+        if (candidate.hasClass() && classNamesAffectedByRules(candidate.classNames()))
             return false;
-    } else if (sharingCandidate->hasClass()) {
+    } else if (candidate.hasClass()) {
         // SVG elements require a (slow!) getAttribute comparision because "class" is an animatable attribute for SVG.
-        if (context.element()->isSVGElement()) {
-            if (context.element()->getAttribute(classAttr) != sharingCandidate->getAttribute(classAttr))
+        if (element().isSVGElement()) {
+            if (element().getAttribute(classAttr) != candidate.getAttribute(classAttr))
                 return false;
-        } else if (context.element()->classNames() != sharingCandidate->classNames()) {
+        } else if (element().classNames() != candidate.classNames()) {
             return false;
         }
     } else {
         return false;
     }
 
-    if (context.element()->presentationAttributeStyle() != sharingCandidate->presentationAttributeStyle())
+    if (element().presentationAttributeStyle() != candidate.presentationAttributeStyle())
         return false;
 
-    if (context.element()->hasTagName(progressTag)) {
-        if (context.element()->shouldAppearIndeterminate() != sharingCandidate->shouldAppearIndeterminate())
+    // FIXME: Consider removing this, it's unlikely we'll have so many progress elements
+    // that sharing the style makes sense. Instead we should just not support style sharing
+    // for them.
+    if (element().hasTagName(progressTag)) {
+        if (element().shouldAppearIndeterminate() != candidate.shouldAppearIndeterminate())
             return false;
     }
 
     return true;
 }
 
-bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& context, Element* element) const
+bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 {
-    if (context.element() == element)
+    if (element() == candidate)
         return false;
-    Element* parent = element->parentElement();
-    RenderStyle* style = element->renderStyle();
+    Element* parent = candidate.parentElement();
+    RenderStyle* style = candidate.renderStyle();
     if (!style)
         return false;
     if (!parent)
         return false;
-    if (context.element()->parentElement()->renderStyle() != parent->renderStyle())
+    if (element().parentElement()->renderStyle() != parent->renderStyle())
         return false;
     if (style->unique())
         return false;
     if (style->hasUniquePseudoStyle())
         return false;
-    if (element->tagQName() != context.element()->tagQName())
+    if (candidate.tagQName() != element().tagQName())
         return false;
-    if (element->inlineStyle())
+    if (candidate.inlineStyle())
         return false;
-    if (element->needsStyleRecalc())
+    if (candidate.needsStyleRecalc())
         return false;
-    if (element->isSVGElement() && toSVGElement(element)->animatedSMILStyleProperties())
+    if (candidate.isSVGElement() && toSVGElement(candidate).animatedSMILStyleProperties())
         return false;
-    if (element->isLink() != context.element()->isLink())
+    if (candidate.isLink() != element().isLink())
         return false;
-    if (element->hovered() != context.element()->hovered())
+    if (candidate.hovered() != element().hovered())
         return false;
-    if (element->active() != context.element()->active())
+    if (candidate.active() != element().active())
         return false;
-    if (element->focused() != context.element()->focused())
+    if (candidate.focused() != element().focused())
         return false;
-    if (element->shadowPseudoId() != context.element()->shadowPseudoId())
+    if (candidate.shadowPseudoId() != element().shadowPseudoId())
         return false;
-    if (element == element->document().cssTarget())
+    if (candidate == document().cssTarget())
         return false;
-    if (!sharingCandidateHasIdenticalStyleAffectingAttributes(context, element))
+    if (!sharingCandidateHasIdenticalStyleAffectingAttributes(candidate))
         return false;
-    if (element->additionalPresentationAttributeStyle() != context.element()->additionalPresentationAttributeStyle())
+    if (candidate.additionalPresentationAttributeStyle() != element().additionalPresentationAttributeStyle())
         return false;
-
-    if (element->hasID() && m_features.idsInRules.contains(element->idForStyleResolution().impl()))
+    if (candidate.hasID() && m_features.idsInRules.contains(candidate.idForStyleResolution().impl()))
         return false;
-    if (element->hasScopedHTMLStyleChild())
+    if (candidate.hasScopedHTMLStyleChild())
         return false;
-    if (isShadowHost(element) && element->shadow()->containsActiveStyles())
+    if (candidate.shadow() && candidate.shadow()->containsActiveStyles())
         return 0;
 
     // FIXME: We should share style for option and optgroup whenever possible.
     // Before doing so, we need to resolve issues in HTMLSelectElement::recalcListItems
     // and RenderMenuList::setText. See also https://bugs.webkit.org/show_bug.cgi?id=88405
-    if (element->hasTagName(optionTag) || isHTMLOptGroupElement(element))
+    if (candidate.hasTagName(optionTag) || candidate.hasTagName(optgroupTag))
         return false;
 
-    bool isControl = element->isFormControlElement();
+    bool isControl = candidate.isFormControlElement();
 
-    if (isControl != context.element()->isFormControlElement())
+    if (isControl != element().isFormControlElement())
         return false;
 
-    if (isControl && !canShareStyleWithControl(context, element))
+    if (isControl && !canShareStyleWithControl(candidate))
         return false;
 
     if (style->transitions() || style->animations())
@@ -233,31 +223,32 @@ bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& co
 
     // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
     // See comments in RenderObject::setStyle().
-    if (element->hasTagName(iframeTag) || element->hasTagName(frameTag) || element->hasTagName(embedTag) || element->hasTagName(objectTag) || element->hasTagName(appletTag) || element->hasTagName(canvasTag))
+    if (candidate.hasTagName(iframeTag) || candidate.hasTagName(frameTag) || candidate.hasTagName(embedTag) || candidate.hasTagName(objectTag) || candidate.hasTagName(appletTag) || candidate.hasTagName(canvasTag))
         return false;
 
-    if (elementHasDirectionAuto(element))
+    // FIXME: This line is surprisingly hot, we may wish to inline hasDirectionAuto into StyleResolver.
+    if (candidate.isHTMLElement() && toHTMLElement(candidate).hasDirectionAuto())
         return false;
 
-    if (element->isLink() && context.elementLinkState() != style->insideLink())
+    if (candidate.isLink() && m_context.elementLinkState() != style->insideLink())
         return false;
 
-    if (element->isUnresolvedCustomElement() != context.element()->isUnresolvedCustomElement())
+    if (candidate.isUnresolvedCustomElement() != element().isUnresolvedCustomElement())
         return false;
 
     // Deny sharing styles between WebVTT and non-WebVTT nodes.
-    if (element->isWebVTTElement() != context.element()->isWebVTTElement())
+    if (candidate.isWebVTTElement() != element().isWebVTTElement())
         return false;
 
-    if (element->isWebVTTElement() && context.element()->isWebVTTElement() && toWebVTTElement(element)->isPastNode() != toWebVTTElement(context.element())->isPastNode())
+    if (candidate.isWebVTTElement() && element().isWebVTTElement() && toWebVTTElement(candidate).isPastNode() != toWebVTTElement(element()).isPastNode())
         return false;
 
-    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&element->document())) {
-        if (element == fullscreen->webkitCurrentFullScreenElement() || context.element() == fullscreen->webkitCurrentFullScreenElement())
+    if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(&document())) {
+        if (candidate == fullscreen->webkitCurrentFullScreenElement() || element() == fullscreen->webkitCurrentFullScreenElement())
             return false;
     }
 
-    if (context.element()->parentElement() != parent) {
+    if (element().parentElement() != parent) {
         if (!parent->isStyledElement())
             return false;
         if (parent->hasScopedHTMLStyleChild())
@@ -268,29 +259,27 @@ bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& co
             return false;
         if (parent->hasID() && m_features.idsInRules.contains(parent->idForStyleResolution().impl()))
             return false;
-        if (parentElementPreventsSharing(parent))
+        if (!parent->childrenSupportStyleSharing())
             return false;
     }
 
     return true;
 }
 
-#ifdef STYLE_STATS
-Element* SharedStyleFinder::searchDocumentForSharedStyle(const ElementResolveContext& context) const
+bool SharedStyleFinder::documentContainsValidCandidate() const
 {
-    for (Element* element = context.element()->document().documentElement(); element; element = ElementTraversal::next(element)) {
-        if (canShareStyleWithElement(context, element))
-            return element;
+    for (Element* element = document().documentElement(); element; element = ElementTraversal::next(element)) {
+        if (canShareStyleWithElement(*element))
+            return true;
     }
-    return 0;
+    return false;
 }
-#endif
 
-inline Element* SharedStyleFinder::findElementForStyleSharing(const ElementResolveContext& context) const
+inline Element* SharedStyleFinder::findElementForStyleSharing() const
 {
-    StyleSharingList& styleSharingList = m_styleResolver->styleSharingList();
+    StyleSharingList& styleSharingList = m_styleResolver.styleSharingList();
     for (StyleSharingList::iterator it = styleSharingList.begin(); it != styleSharingList.end(); ++it) {
-        if (!canShareStyleWithElement(context, it->get()))
+        if (!canShareStyleWithElement(**it))
             continue;
         Element* element = it->get();
         if (it != styleSharingList.begin()) {
@@ -300,44 +289,39 @@ inline Element* SharedStyleFinder::findElementForStyleSharing(const ElementResol
         }
         return element;
     }
-    m_styleResolver->addToStyleSharingList(context.element());
+    m_styleResolver.addToStyleSharingList(&element());
     return 0;
 }
 
-bool SharedStyleFinder::matchesRuleSet(const ElementResolveContext& context, RuleSet* ruleSet)
+bool SharedStyleFinder::matchesRuleSet(RuleSet* ruleSet)
 {
     if (!ruleSet)
         return false;
-    ElementRuleCollector collector(context, m_styleResolver->selectorFilter());
+    ElementRuleCollector collector(m_context, m_styleResolver.selectorFilter());
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
-RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& context)
+RenderStyle* SharedStyleFinder::findSharedStyle()
 {
     STYLE_STATS_ADD_SEARCH();
 
-    if (!context.element()->supportsStyleSharing())
+    if (!element().supportsStyleSharing())
         return 0;
 
     STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING();
 
     // Cache whether context.element() is affected by any known class selectors.
-    // FIXME: This should be an explicit out parameter, instead of a member variable.
-    m_elementAffectedByClassRules = context.element() && context.element()->hasClass() && classNamesAffectedByRules(context.element()->classNames());
+    m_elementAffectedByClassRules = element().hasClass() && classNamesAffectedByRules(element().classNames());
 
-    Element* shareElement = findElementForStyleSharing(context);
+    Element* shareElement = findElementForStyleSharing();
 
 #ifdef STYLE_STATS
     // FIXME: these stats don't to into account whether or not sibling/attribute
     // rules prevent these nodes from actually sharing
-    if (shareElement) {
+    if (shareElement)
         STYLE_STATS_ADD_SEARCH_FOUND_SIBLING_FOR_SHARING();
-    } else {
-        shareElement = searchDocumentForSharedStyle(context);
-        if (shareElement)
-            STYLE_STATS_ADD_SEARCH_MISSED_SHARING();
-        shareElement = 0;
-    }
+    else if (documentContainsValidCandidate())
+        STYLE_STATS_ADD_SEARCH_MISSED_SHARING();
 #endif
 
     // If we have exhausted all our budget or our cousins.
@@ -345,10 +329,10 @@ RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& c
         return 0;
 
     // Can't share if sibling or attribute rules apply. This is checked at the end as it should rarely fail.
-    if (matchesRuleSet(context, m_siblingRuleSet) || matchesRuleSet(context, m_uncommonAttributeRuleSet))
+    if (matchesRuleSet(m_siblingRuleSet) || matchesRuleSet(m_uncommonAttributeRuleSet))
         return 0;
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
-    if (parentElementPreventsSharing(context.element()->parentElement()))
+    if (element().parentElement()->childrenSupportStyleSharing())
         return 0;
     STYLE_STATS_ADD_STYLE_SHARED();
     return shareElement->renderStyle();

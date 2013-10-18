@@ -489,7 +489,7 @@ public:
     bool childrenAffectedByBackwardPositionalRules() const { return hasRareData() && rareDataChildrenAffectedByBackwardPositionalRules(); }
     unsigned childIndex() const { return hasRareData() ? rareDataChildIndex() : 0; }
 
-    bool hasFlagsSetDuringStylingOfChildren() const;
+    bool childrenSupportStyleSharing() const;
 
     void setStyleAffectedByEmpty();
     void setChildrenAffectedByHover(bool);
