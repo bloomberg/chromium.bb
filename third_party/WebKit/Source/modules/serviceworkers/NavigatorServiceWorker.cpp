@@ -32,16 +32,15 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8ServiceWorker.h"
-#include "bindings/v8/CallbackPromiseAdapter.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/frame/Frame.h"
-#include "core/frame/Navigator.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/frame/Frame.h"
+#include "core/frame/Navigator.h"
 #include "core/workers/SharedWorker.h"
+#include "modules/serviceworkers/CallbackPromiseAdapter.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
@@ -120,10 +119,9 @@ ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* ex
         return ScriptPromise();
     }
 
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
-    ensureProvider()->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorker>(resolver, executionContext));
-    return promise;
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ensureProvider()->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter(resolver, executionContext));
+    return resolver->promise();
 }
 
 ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* context, Navigator* navigator, const String& pattern, ExceptionState& es)
@@ -148,10 +146,9 @@ ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* 
         return ScriptPromise();
     }
 
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
-    ensureProvider()->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorker>(resolver, executionContext));
-    return promise;
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ensureProvider()->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter(resolver, executionContext));
+    return resolver->promise();
 }
 
 void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()

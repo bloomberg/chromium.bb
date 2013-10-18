@@ -37,7 +37,7 @@
 #include "WebInputEventConversion.h"
 #include "core/events/EventTarget.h"
 #include "core/events/KeyboardEvent.h"
-#include "platform/KeyboardCodes.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 
 using namespace WebCore;
 using namespace WebKit;

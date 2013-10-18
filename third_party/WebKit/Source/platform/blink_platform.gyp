@@ -127,16 +127,6 @@
           ['exclude', 'Win\\.cpp$'],
         ],
       }],
-      ['toolkit_uses_gtk == 0', {
-        'sources/': [
-          ['exclude', 'Gtk\\.cpp$'],
-        ],
-      }],
-      ['OS!="android"', {
-        'sources/': [
-          ['exclude', 'Android\\.cpp$'],
-        ],
-      }],
       ['"WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {
         'include_dirs': [
           '<(DEPTH)/third_party/ffmpeg',

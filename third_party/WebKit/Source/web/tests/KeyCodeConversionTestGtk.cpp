@@ -29,31 +29,38 @@
  */
 
 #include "config.h"
-#include "bindings/v8/ScriptPromise.h"
 
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/custom/V8PromiseCustom.h"
+#include "core/platform/chromium/KeyCodeConversion.h"
 
-#include <v8.h>
+#include <gdk/gdkkeysyms.h>
+#include <gtest/gtest.h>
+#include "core/platform/chromium/KeyboardCodes.h"
 
-namespace WebCore {
+using namespace WebCore;
 
-ScriptPromise ScriptPromise::createPending(ExecutionContext* context)
+namespace {
+
+TEST(KeyCodeConversionTest, KeyPadClear)
 {
-    ASSERT(v8::Context::InContext());
-    ASSERT(context);
-    v8::Isolate* isolate = toIsolate(context);
-    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(toV8Context(context, DOMWrapperWorld::current())->Global(), isolate);
-    return ScriptPromise(promise, isolate);
+    EXPECT_EQ(VKEY_CLEAR, windowsKeyCodeForKeyEvent(GDK_KP_Begin));
 }
 
-ScriptPromise ScriptPromise::createPending()
+TEST(KeyCodeConversionTest, KeyPadInsert)
 {
-    ASSERT(v8::Context::InContext());
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Handle<v8::Object> promise = V8PromiseCustom::createPromise(v8::Object::New(), isolate);
-    return ScriptPromise(promise, isolate);
+    EXPECT_EQ(windowsKeyCodeForKeyEvent(GDK_Insert),
+        windowsKeyCodeForKeyEvent(GDK_KP_Insert));
 }
 
-} // namespace WebCore
+TEST(KeyCodeConversionTest, KeyPadDelete)
+{
+    EXPECT_EQ(windowsKeyCodeForKeyEvent(GDK_Delete),
+        windowsKeyCodeForKeyEvent(GDK_KP_Delete));
+}
+
+TEST(KeyCodeConversionTest, AltGr)
+{
+    EXPECT_EQ(windowsKeyCodeForKeyEvent(GDK_Alt_R),
+        windowsKeyCodeForKeyEvent(GDK_ISO_Level3_Shift));
+}
+
+} // anonymous namespace

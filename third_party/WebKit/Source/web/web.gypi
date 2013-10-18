@@ -356,6 +356,7 @@
       ['toolkit_uses_gtk == 1',
         {
           'web_unittest_files': [
+            'tests/KeyCodeConversionTestGtk.cpp',
             'tests/WebInputEventFactoryTestGtk.cpp',
           ],
         }

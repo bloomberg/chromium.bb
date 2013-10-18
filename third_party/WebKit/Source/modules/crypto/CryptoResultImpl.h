@@ -46,7 +46,7 @@ class CryptoResultImpl : public CryptoResult {
 public:
     ~CryptoResultImpl();
 
-    static PassRefPtr<CryptoResultImpl> create(ScriptPromise);
+    static PassRefPtr<CryptoResultImpl> create();
 
     virtual void completeWithError() OVERRIDE;
     virtual void completeWithBuffer(const WebKit::WebArrayBuffer&) OVERRIDE;
@@ -54,8 +54,10 @@ public:
     virtual void completeWithKey(const WebKit::WebCryptoKey&) OVERRIDE;
     virtual void completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey) OVERRIDE;
 
+    ScriptPromise promise();
+
 private:
-    explicit CryptoResultImpl(ScriptPromise);
+    CryptoResultImpl();
     void finish();
 
     RefPtr<ScriptPromiseResolver> m_promiseResolver;

@@ -23,8 +23,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WindowsKeyboardCodes_h
-#define WindowsKeyboardCodes_h
+#ifndef VK_UNKNOWN
+
+#define VK_UNKNOWN 0
 
 // Left mouse button
 // Right mouse button
@@ -316,4 +317,4 @@
 
 #define VK_OEM_CLEAR 0xFE // Clear key
 
-#endif // WindowsKeyboardCodes_h
+#endif // VK_UNKNOWN
