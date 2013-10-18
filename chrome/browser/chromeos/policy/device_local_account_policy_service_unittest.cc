@@ -51,7 +51,8 @@ class DeviceLocalAccountPolicyServiceTest
         cros_settings_(&device_settings_service_),
         service_(&device_settings_test_helper_,
                  &device_settings_service_,
-                 &cros_settings_) {}
+                 &cros_settings_,
+                 loop_.message_loop_proxy()) {}
 
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();

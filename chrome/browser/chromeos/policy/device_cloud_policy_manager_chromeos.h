@@ -46,9 +46,12 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   typedef base::Callback<void(EnrollmentStatus)> EnrollmentCallback;
 
   // |task_runner| is the runner for policy refresh tasks.
+  // |background_task_runner| is used to execute long-running background tasks
+  // that may involve file I/O.
   DeviceCloudPolicyManagerChromeOS(
       scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       EnterpriseInstallAttributes* install_attributes);
   virtual ~DeviceCloudPolicyManagerChromeOS();
 
@@ -115,6 +118,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
   scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   EnterpriseInstallAttributes* install_attributes_;
 
   DeviceManagementService* device_management_service_;

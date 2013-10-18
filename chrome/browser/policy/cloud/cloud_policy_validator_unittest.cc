@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
-#include "content/public/test/test_browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,8 +39,7 @@ class CloudPolicyValidatorTest : public testing::Test {
         timestamp_option_(CloudPolicyValidatorBase::TIMESTAMP_REQUIRED),
         ignore_missing_dm_token_(CloudPolicyValidatorBase::DM_TOKEN_REQUIRED),
         allow_key_rotation_(true),
-        existing_dm_token_(PolicyBuilder::kFakeToken),
-        file_thread_(content::BrowserThread::FILE, &loop_) {
+        existing_dm_token_(PolicyBuilder::kFakeToken) {
     policy_.SetDefaultNewSigningKey();
   }
 
@@ -64,8 +63,8 @@ class CloudPolicyValidatorTest : public testing::Test {
         PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(&public_key));
     policy_.Build();
 
-    UserCloudPolicyValidator* validator =
-        UserCloudPolicyValidator::Create(policy_.GetCopy());
+    UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
+        policy_.GetCopy(), base::MessageLoopProxy::current());
     validator->ValidateTimestamp(timestamp_, timestamp_,
                                  timestamp_option_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername);
@@ -102,8 +101,6 @@ class CloudPolicyValidatorTest : public testing::Test {
 
  private:
   MOCK_METHOD1(ValidationCompletion, void(UserCloudPolicyValidator* validator));
-
-  content::TestBrowserThread file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyValidatorTest);
 };

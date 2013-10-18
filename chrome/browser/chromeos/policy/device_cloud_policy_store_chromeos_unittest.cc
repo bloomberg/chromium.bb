@@ -39,7 +39,8 @@ class DeviceCloudPolicyStoreChromeOSTest
         install_attributes_(new EnterpriseInstallAttributes(
             fake_cryptohome_client_.get())),
         store_(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
-                                                  install_attributes_.get())) {
+                                                  install_attributes_.get(),
+                                                  loop_.message_loop_proxy())) {
     fake_cryptohome_client_->Init(NULL /* no dbus::Bus */);
   }
 
@@ -99,8 +100,10 @@ class DeviceCloudPolicyStoreChromeOSTest
                                                     std::string());
     install_attributes_.reset(new EnterpriseInstallAttributes(
         fake_cryptohome_client_.get()));
-    store_.reset(new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
-                                                    install_attributes_.get()));
+    store_.reset(
+        new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
+                                           install_attributes_.get(),
+                                           loop_.message_loop_proxy()));
   }
 
   scoped_ptr<chromeos::FakeCryptohomeClient> fake_cryptohome_client_;

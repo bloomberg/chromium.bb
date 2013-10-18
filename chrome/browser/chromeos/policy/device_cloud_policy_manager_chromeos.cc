@@ -82,6 +82,7 @@ bool GetMachineFlag(const std::string& key, bool default_value) {
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     EnterpriseInstallAttributes* install_attributes)
     : CloudPolicyManager(
           PolicyNamespaceKey(dm_protocol::kChromeDevicePolicyType,
@@ -89,6 +90,7 @@ DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
           store.get(),
           task_runner),
       device_store_(store.Pass()),
+      background_task_runner_(background_task_runner),
       install_attributes_(install_attributes),
       device_management_service_(NULL),
       local_state_(NULL) {}
@@ -120,7 +122,8 @@ void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
 
   enrollment_handler_.reset(
       new EnrollmentHandlerChromeOS(
-          device_store_.get(), install_attributes_, CreateClient(), auth_token,
+          device_store_.get(), install_attributes_, CreateClient(),
+          background_task_runner_, auth_token,
           install_attributes_->GetDeviceId(), is_auto_enrollment,
           GetDeviceRequisition(), allowed_device_modes,
           base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,

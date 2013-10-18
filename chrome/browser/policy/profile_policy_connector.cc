@@ -44,9 +44,7 @@ ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
-void ProfilePolicyConnector::Init(
-    bool force_immediate_load,
-    base::SequencedTaskRunner* sequenced_task_runner) {
+void ProfilePolicyConnector::Init(bool force_immediate_load) {
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
   // |providers| contains a list of the policy providers available for the

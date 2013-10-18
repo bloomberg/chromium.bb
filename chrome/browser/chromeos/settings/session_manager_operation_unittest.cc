@@ -252,7 +252,8 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
       policy_response->ParseFromString(
           device_settings_test_helper_.policy_blob()));
   policy::DeviceCloudPolicyValidator* validator =
-      policy::DeviceCloudPolicyValidator::Create(policy_response.Pass());
+      policy::DeviceCloudPolicyValidator::Create(
+          policy_response.Pass(), message_loop_.message_loop_proxy());
   validator->ValidateUsername(policy_.policy_data().username());
   validator->ValidateTimestamp(
       before,

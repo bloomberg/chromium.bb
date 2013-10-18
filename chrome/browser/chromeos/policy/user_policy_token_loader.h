@@ -12,6 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace policy {
 
 // Handles disk access and threading details for loading and storing tokens.
@@ -29,8 +33,10 @@ class UserPolicyTokenLoader
                                const std::string& device_id) = 0;
   };
 
-  UserPolicyTokenLoader(const base::WeakPtr<Delegate>& delegate,
-                        const base::FilePath& cache_file);
+  UserPolicyTokenLoader(
+      const base::WeakPtr<Delegate>& delegate,
+      const base::FilePath& cache_file,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
   // Starts loading the disk cache. After the load is finished, the result is
   // reported through the delegate.
@@ -40,12 +46,14 @@ class UserPolicyTokenLoader
   friend class base::RefCountedThreadSafe<UserPolicyTokenLoader>;
   ~UserPolicyTokenLoader();
 
-  void LoadOnFileThread();
-  void NotifyOnUIThread(const std::string& token,
+  void LoadOnBackgroundThread();
+  void NotifyOnOriginThread(const std::string& token,
                         const std::string& device_id);
 
   const base::WeakPtr<Delegate> delegate_;
   const base::FilePath cache_file_;
+  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyTokenLoader);
 };

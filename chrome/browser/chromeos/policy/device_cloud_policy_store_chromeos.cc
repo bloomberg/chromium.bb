@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 
 #include "base/bind.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
@@ -16,9 +17,11 @@ namespace policy {
 
 DeviceCloudPolicyStoreChromeOS::DeviceCloudPolicyStoreChromeOS(
     chromeos::DeviceSettingsService* device_settings_service,
-    EnterpriseInstallAttributes* install_attributes)
+    EnterpriseInstallAttributes* install_attributes,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : device_settings_service_(device_settings_service),
       install_attributes_(install_attributes),
+      background_task_runner_(background_task_runner),
       weak_factory_(this) {
   device_settings_service_->AddObserver(this);
 }
@@ -92,7 +95,8 @@ scoped_ptr<DeviceCloudPolicyValidator>
   scoped_ptr<DeviceCloudPolicyValidator> validator(
       DeviceCloudPolicyValidator::Create(
           scoped_ptr<em::PolicyFetchResponse>(
-              new em::PolicyFetchResponse(policy))));
+              new em::PolicyFetchResponse(policy)),
+          background_task_runner_));
   validator->ValidateDomain(install_attributes_->GetDomain());
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();

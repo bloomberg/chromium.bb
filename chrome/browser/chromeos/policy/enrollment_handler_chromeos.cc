@@ -33,6 +33,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     DeviceCloudPolicyStoreChromeOS* store,
     EnterpriseInstallAttributes* install_attributes,
     scoped_ptr<CloudPolicyClient> client,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& auth_token,
     const std::string& client_id,
     bool is_auto_enrollment,
@@ -42,6 +43,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     : store_(store),
       install_attributes_(install_attributes),
       client_(client.Pass()),
+      background_task_runner_(background_task_runner),
       auth_token_(auth_token),
       client_id_(client_id),
       is_auto_enrollment_(is_auto_enrollment),
@@ -94,7 +96,8 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   scoped_ptr<DeviceCloudPolicyValidator> validator(
       DeviceCloudPolicyValidator::Create(
           scoped_ptr<em::PolicyFetchResponse>(
-              new em::PolicyFetchResponse(*policy))));
+              new em::PolicyFetchResponse(*policy)),
+          background_task_runner_));
 
   validator->ValidateTimestamp(base::Time(), base::Time::NowFromSystemTime(),
                                CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);

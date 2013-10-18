@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "policy/proto/cloud_policy.pb.h"
@@ -35,7 +36,7 @@ class PolicyFetchResponse;
 namespace policy {
 
 // Helper class that implements the gory details of validating a policy blob.
-// Since signature checks are expensive, validation can happen on the FILE
+// Since signature checks are expensive, validation can happen on a background
 // thread. The pattern is to create a validator, configure its behavior through
 // the ValidateXYZ() functions, and then call StartValidation(). Alternatively,
 // RunValidation() can be used to perform validation on the current thread.
@@ -171,7 +172,8 @@ class CloudPolicyValidatorBase {
   // valid for the lifetime of the validator.
   CloudPolicyValidatorBase(
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
-      google::protobuf::MessageLite* payload);
+      google::protobuf::MessageLite* payload,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
   // Posts an asynchronous calls to PerformValidation, which will eventually
   // report its result via |completion_callback|.
@@ -237,6 +239,7 @@ class CloudPolicyValidatorBase {
   std::string settings_entity_id_;
   std::string key_;
   bool allow_key_rotation_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyValidatorBase);
 };
@@ -252,11 +255,15 @@ class CloudPolicyValidator : public CloudPolicyValidatorBase {
   virtual ~CloudPolicyValidator() {}
 
   // Creates a new validator.
+  // |background_task_runner| is optional; if RunValidation() is used directly
+  // and StartValidation() is not used then it can be NULL.
   static CloudPolicyValidator<PayloadProto>* Create(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
     return new CloudPolicyValidator(
         policy_response.Pass(),
-        scoped_ptr<PayloadProto>(new PayloadProto()));
+        scoped_ptr<PayloadProto>(new PayloadProto()),
+        background_task_runner);
   }
 
   scoped_ptr<PayloadProto>& payload() {
@@ -274,8 +281,11 @@ class CloudPolicyValidator : public CloudPolicyValidatorBase {
  private:
   CloudPolicyValidator(
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response,
-      scoped_ptr<PayloadProto> payload)
-      : CloudPolicyValidatorBase(policy_response.Pass(), payload.get()),
+      scoped_ptr<PayloadProto> payload,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner)
+      : CloudPolicyValidatorBase(policy_response.Pass(),
+                                 payload.get(),
+                                 background_task_runner),
         payload_(payload.Pass()) {}
 
   scoped_ptr<PayloadProto> payload_;

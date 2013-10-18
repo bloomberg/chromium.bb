@@ -7,11 +7,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace enterprise_management {
 class PolicyFetchResponse;
@@ -29,7 +34,8 @@ class DeviceCloudPolicyStoreChromeOS
  public:
   DeviceCloudPolicyStoreChromeOS(
       chromeos::DeviceSettingsService* device_settings_service,
-      EnterpriseInstallAttributes* install_attributes);
+      EnterpriseInstallAttributes* install_attributes,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   virtual ~DeviceCloudPolicyStoreChromeOS();
 
   // CloudPolicyStore:
@@ -67,6 +73,8 @@ class DeviceCloudPolicyStoreChromeOS
 
   chromeos::DeviceSettingsService* device_settings_service_;
   EnterpriseInstallAttributes* install_attributes_;
+
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   base::WeakPtrFactory<DeviceCloudPolicyStoreChromeOS> weak_factory_;
 
