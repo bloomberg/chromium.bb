@@ -362,7 +362,7 @@ message AttestationSettingsProto {
   // this is enabled a machine key will be generated and certified by the Chrome
   // OS CA.  If this setting is disabled, even users with attestation settings
   // enabled will not be able to use those features on the device.
-  optional bool attestation_enabled = 1;
+  optional bool attestation_enabled = 1 [default = false];
 
   // Chrome OS devices can use remote attestation (Verified Access) to get a
   // certificate issued by the Chrome OS CA that asserts the device is eligible
@@ -370,7 +370,7 @@ message AttestationSettingsProto {
   // endorsement information to the Chrome OS CA which uniquely identifies the
   // device.  This setting allows this feature to be disabled for the device
   // regardless of any user-specific settings.
-  optional bool content_protection_enabled = 2;
+  optional bool content_protection_enabled = 2 [default = true];
 }
 
 message AccessibilitySettingsProto {
