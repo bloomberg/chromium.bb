@@ -24,3 +24,5 @@ TraceEventTestFixture.DataCapturedManyThreads
 
 # Fails and times out occasionally. http://crbug.com/308273
 TraceEventTestFixture.TraceContinuousSampling
+TraceEventTestFixture.TraceSampling
+TraceEventTestFixture.TraceSamplingScope
