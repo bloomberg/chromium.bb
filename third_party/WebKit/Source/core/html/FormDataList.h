@@ -22,6 +22,7 @@
 #define FormDataList_h
 
 #include "core/fileapi/Blob.h"
+#include "core/platform/network/FormData.h"
 #include "wtf/Forward.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
@@ -72,7 +73,12 @@ public:
     const Vector<Item>& items() const { return m_items; }
     const WTF::TextEncoding& encoding() const { return m_encoding; }
 
+    PassRefPtr<FormData> createFormData(const WTF::TextEncoding&, FormData::EncodingType = FormData::FormURLEncoded);
+    PassRefPtr<FormData> createMultiPartFormData(const WTF::TextEncoding&);
+
 private:
+    void appendKeyValuePairItemsTo(FormData*, const WTF::TextEncoding&, bool isMultiPartForm, FormData::EncodingType = FormData::FormURLEncoded);
+
     void appendString(const CString&);
     void appendString(const String&);
     void appendBlob(PassRefPtr<Blob>, const String& filename);

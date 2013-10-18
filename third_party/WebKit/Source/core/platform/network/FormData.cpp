@@ -22,9 +22,7 @@
 #include "config.h"
 #include "core/platform/network/FormData.h"
 
-#include "core/fileapi/File.h"
 #include "core/platform/network/FormDataBuilder.h"
-#include "core/platform/network/FormDataList.h"
 #include "platform/FileMetadata.h"
 #include "platform/blob/BlobData.h"
 #include "wtf/text/TextEncoding.h"
@@ -74,20 +72,6 @@ PassRefPtr<FormData> FormData::create(const Vector<char>& vector)
 {
     RefPtr<FormData> result = create();
     result->appendData(vector.data(), vector.size());
-    return result.release();
-}
-
-PassRefPtr<FormData> FormData::create(const FormDataList& list, const WTF::TextEncoding& encoding, EncodingType encodingType)
-{
-    RefPtr<FormData> result = create();
-    result->appendKeyValuePairItems(list, encoding, false, encodingType);
-    return result.release();
-}
-
-PassRefPtr<FormData> FormData::createMultiPart(const FormDataList& list, const WTF::TextEncoding& encoding)
-{
-    RefPtr<FormData> result = create();
-    result->appendKeyValuePairItems(list, encoding, true);
     return result.release();
 }
 
@@ -157,88 +141,6 @@ void FormData::appendFileSystemURL(const KURL& url)
 void FormData::appendFileSystemURLRange(const KURL& url, long long start, long long length, double expectedModificationTime)
 {
     m_elements.append(FormDataElement(url, start, length, expectedModificationTime));
-}
-
-void FormData::appendKeyValuePairItems(const FormDataList& list, const WTF::TextEncoding& encoding, bool isMultiPartForm, EncodingType encodingType)
-{
-    if (isMultiPartForm)
-        m_boundary = FormDataBuilder::generateUniqueBoundaryString();
-
-    Vector<char> encodedData;
-
-    const Vector<FormDataList::Item>& items = list.items();
-    size_t formDataListSize = items.size();
-    ASSERT(!(formDataListSize % 2));
-    for (size_t i = 0; i < formDataListSize; i += 2) {
-        const FormDataList::Item& key = items[i];
-        const FormDataList::Item& value = items[i + 1];
-        if (isMultiPartForm) {
-            Vector<char> header;
-            FormDataBuilder::beginMultiPartHeader(header, m_boundary.data(), key.data());
-
-            // If the current type is blob, then we also need to include the filename
-            if (value.blob()) {
-                String name;
-                if (value.blob()->isFile()) {
-                    File* file = toFile(value.blob());
-                    // For file blob, use the filename (or relative path if it is present) as the name.
-                    name = file->webkitRelativePath().isEmpty() ? file->name() : file->webkitRelativePath();
-
-                    // If a filename is passed in FormData.append(), use it instead of the file blob's name.
-                    if (!value.filename().isNull())
-                        name = value.filename();
-                } else {
-                    // For non-file blob, use the filename if it is passed in FormData.append().
-                    if (!value.filename().isNull())
-                        name = value.filename();
-                    else
-                        name = "blob";
-                }
-
-                // We have to include the filename=".." part in the header, even if the filename is empty
-                FormDataBuilder::addFilenameToMultiPartHeader(header, encoding, name);
-
-                // Add the content type if available, or "application/octet-stream" otherwise (RFC 1867).
-                String contentType;
-                if (value.blob()->type().isEmpty())
-                    contentType = "application/octet-stream";
-                else
-                    contentType = value.blob()->type();
-                FormDataBuilder::addContentTypeToMultiPartHeader(header, contentType.latin1());
-            }
-
-            FormDataBuilder::finishMultiPartHeader(header);
-
-            // Append body
-            appendData(header.data(), header.size());
-            if (value.blob()) {
-                if (value.blob()->isFile()) {
-                    File* file = toFile(value.blob());
-                    // Do not add the file if the path is empty.
-                    if (!file->path().isEmpty())
-                        appendFile(file->path());
-                    if (!file->fileSystemURL().isEmpty())
-                        appendFileSystemURL(file->fileSystemURL());
-                } else {
-                    appendBlob(value.blob()->uuid(), value.blob()->blobDataHandle());
-                }
-            } else
-                appendData(value.data().data(), value.data().length());
-            appendData("\r\n", 2);
-        } else {
-            // Omit the name "isindex" if it's the first form data element.
-            // FIXME: Why is this a good rule? Is this obsolete now?
-            if (encodedData.isEmpty() && key.data() == "isindex")
-                FormDataBuilder::encodeStringAsFormData(encodedData, value.data());
-            else
-                FormDataBuilder::addKeyValuePairAsFormData(encodedData, key.data(), value.data(), encodingType);
-        }
-    }
-
-    if (isMultiPartForm)
-        FormDataBuilder::addBoundaryToMultiPartHeader(encodedData, m_boundary.data(), true);
-
-    appendData(encodedData.data(), encodedData.size());
 }
 
 void FormData::flatten(Vector<char>& data) const

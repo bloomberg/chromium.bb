@@ -34,7 +34,6 @@ class TextEncoding;
 namespace WebCore {
 
 class BlobDataHandle;
-class FormDataList;
 
 class FormDataElement {
 public:
@@ -97,8 +96,6 @@ public:
     static PassRefPtr<FormData> create(const void*, size_t);
     static PassRefPtr<FormData> create(const CString&);
     static PassRefPtr<FormData> create(const Vector<char>&);
-    static PassRefPtr<FormData> create(const FormDataList&, const WTF::TextEncoding&, EncodingType = FormURLEncoded);
-    static PassRefPtr<FormData> createMultiPart(const FormDataList&, const WTF::TextEncoding&);
     PassRefPtr<FormData> copy() const;
     PassRefPtr<FormData> deepCopy() const;
     ~FormData();
@@ -115,7 +112,9 @@ public:
 
     bool isEmpty() const { return m_elements.isEmpty(); }
     const Vector<FormDataElement>& elements() const { return m_elements; }
+
     const Vector<char>& boundary() const { return m_boundary; }
+    void setBoundary(Vector<char> boundary) { m_boundary = boundary; }
 
     bool alwaysStream() const { return m_alwaysStream; }
     void setAlwaysStream(bool alwaysStream) { m_alwaysStream = alwaysStream; }
@@ -140,8 +139,6 @@ public:
 private:
     FormData();
     FormData(const FormData&);
-
-    void appendKeyValuePairItems(const FormDataList&, const WTF::TextEncoding&, bool isMultiPartForm, EncodingType = FormURLEncoded);
 
     Vector<FormDataElement> m_elements;
 

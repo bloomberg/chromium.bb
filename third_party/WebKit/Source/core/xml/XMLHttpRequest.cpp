@@ -701,7 +701,7 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionState& es)
         return;
 
     if (areMethodAndURLValidForSend()) {
-        m_requestEntityBody = FormData::createMultiPart(*(static_cast<FormDataList*>(body)), body->encoding());
+        m_requestEntityBody = body->createMultiPartFormData(body->encoding());
 
         String contentType = getRequestHeader("Content-Type");
         if (contentType.isEmpty()) {

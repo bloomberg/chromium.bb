@@ -30,9 +30,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/html/FormDataList.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/platform/network/FormDataList.h"
 #include "platform/SSLKeyGenerator.h"
 #include "wtf/StdLibExtras.h"
 

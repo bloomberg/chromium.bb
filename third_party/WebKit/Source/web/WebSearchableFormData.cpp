@@ -35,6 +35,7 @@
 #include "WebFormElement.h"
 #include "WebInputElement.h"
 #include "core/dom/Document.h"
+#include "core/html/FormDataList.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -42,7 +43,6 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/platform/network/FormDataBuilder.h"
-#include "core/platform/network/FormDataList.h"
 #include "wtf/text/TextEncoding.h"
 
 using namespace WebCore;
