@@ -551,7 +551,7 @@ class RenderWidgetHostViewGtkWidget {
 RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
       about_to_validate_and_paint_(false),
-      is_hidden_(false),
+      is_hidden_(host_->is_hidden()),
       is_loading_(false),
       parent_(NULL),
       is_popup_first_mouse_release_(true),
@@ -566,8 +566,6 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       compositing_surface_(gfx::kNullPluginWindow),
       last_mouse_down_(NULL) {
   host_->SetView(this);
-  if (host_->is_hidden())
-    WasHidden();
 }
 
 RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {

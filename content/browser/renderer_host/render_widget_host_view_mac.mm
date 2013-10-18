@@ -423,7 +423,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       allow_overlapping_views_(false),
       use_core_animation_(false),
       is_loading_(false),
-      is_hidden_(false),
+      is_hidden_(render_widget_host_->is_hidden()),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
       pending_swap_buffers_acks_weak_factory_(this),

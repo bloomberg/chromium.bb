@@ -393,7 +393,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       imm32_manager_(new ui::IMM32Manager),
       ime_notification_(false),
       capture_enter_key_(false),
-      is_hidden_(false),
+      is_hidden_(render_widget_host_->is_hidden()),
       about_to_validate_and_paint_(false),
       close_on_deactivate_(false),
       being_destroyed_(false),

@@ -51,7 +51,7 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHostView* platform_view)
     : host_(RenderWidgetHostImpl::From(widget_host)),
       guest_(guest),
-      is_hidden_(false),
+      is_hidden_(host_->is_hidden()),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
 #if defined(OS_WIN) || defined(USE_AURA)
   gesture_recognizer_.reset(ui::GestureRecognizer::Create(this));
