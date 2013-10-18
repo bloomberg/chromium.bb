@@ -41,6 +41,7 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   if (chrome::GetHostDesktopTypeForNativeWindow(window) ==
       chrome::HOST_DESKTOP_TYPE_ASH)
     ShowAndFocusNativeWindowAura(window);
+  window->Show();
   // Always make sure the window hosting ash is visible and focused.
   HWND hwnd = window->GetRootWindow()->GetAcceleratedWidget();
 #else
