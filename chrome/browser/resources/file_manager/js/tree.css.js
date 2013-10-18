@@ -54,6 +54,6 @@
   }
 
   prepareTriangle(
-      'tree-triangle', 'rgba(122, 122, 122, 0.6)', 'rgba(0, 0, 0, 0.6)');
+      'tree-triangle', 'rgba(122, 122, 122, 0.6)', 'rgba(0, 0, 0, 0)');
   prepareTriangle('tree-triangle-inverted', '#ffffff', '#ffffff');
 })();
