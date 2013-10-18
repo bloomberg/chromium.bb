@@ -112,7 +112,7 @@ void FontCache::getTraitsInFamily(const AtomicString& familyName,
     notImplemented();
 }
 
-SkTypeface* FontCache::createTypeface(const FontDescription& fontDescription, const AtomicString& family, CString& name)
+PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const AtomicString& family, CString& name)
 {
     name = "";
 
@@ -151,17 +151,17 @@ SkTypeface* FontCache::createTypeface(const FontDescription& fontDescription, co
     // FIXME: Use SkFontStyle and matchFamilyStyle instead of legacyCreateTypeface.
 #if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
     if (m_fontManager)
-        return m_fontManager->legacyCreateTypeface(name.data(), style);
+        return adoptRef(m_fontManager->legacyCreateTypeface(name.data(), style));
 #endif
 
-    return SkTypeface::CreateFromName(name.data(), static_cast<SkTypeface::Style>(style));
+    return adoptRef(SkTypeface::CreateFromName(name.data(), static_cast<SkTypeface::Style>(style)));
 }
 
 #if !OS(WIN)
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
 {
     CString name;
-    SkTypeface* tf = createTypeface(fontDescription, family, name);
+    RefPtr<SkTypeface> tf(createTypeface(fontDescription, family, name));
     if (!tf)
         return 0;
 
@@ -171,7 +171,6 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         fontDescription.weight() >= FontWeightBold && !tf->isBold(),
         fontDescription.italic() && !tf->isItalic(),
         fontDescription.orientation());
-    tf->unref();
     return result;
 }
 #endif // !OS(WINDOWNS)

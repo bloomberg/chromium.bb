@@ -66,7 +66,7 @@ public:
     FontPlatformData();
     FontPlatformData(float textSize, bool fakeBold, bool fakeItalic);
     FontPlatformData(const FontPlatformData&);
-    FontPlatformData(SkTypeface*, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal);
+    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal);
     FontPlatformData(const FontPlatformData& src, float textSize);
     ~FontPlatformData();
 

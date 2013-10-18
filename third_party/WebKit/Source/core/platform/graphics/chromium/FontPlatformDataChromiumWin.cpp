@@ -250,7 +250,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
 {
 }
 
-FontPlatformData::FontPlatformData(SkTypeface* tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation)
+FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation)
     : m_font(0)
     , m_textSize(textSize)
     , m_fakeBold(fakeBold)
@@ -263,7 +263,7 @@ FontPlatformData::FontPlatformData(SkTypeface* tf, const char* family, float tex
     // FIXME: This can be removed together with m_font once the last few
     // uses of hfont() has been eliminated.
     LOGFONT logFont;
-    SkLOGFONTFromTypeface(tf, &logFont);
+    SkLOGFONTFromTypeface(m_typeface.get(), &logFont);
     logFont.lfHeight = -textSize;
     HFONT hFont = CreateFontIndirect(&logFont);
     if (hFont)

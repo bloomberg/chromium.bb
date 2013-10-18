@@ -55,12 +55,12 @@ public:
 
 class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
 public:
-    static PassRefPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode)
+    static PassRefPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, OpacityMode opacityMode)
     {
         return adoptRef(static_cast<Canvas2DLayerBridge*>(new FakeCanvas2DLayerBridge(context, canvas, opacityMode)));
     }
 protected:
-    FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode) :
+    FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas, OpacityMode opacityMode) :
         Canvas2DLayerBridge(context, canvas, opacityMode)
     { }
 };
@@ -75,11 +75,11 @@ protected:
 
         MockCanvasContext& mainMock = *static_cast<MockCanvasContext*>(mainContext->webContext());
 
-        SkAutoTUnref<SkDeferredCanvas> canvas(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
+        RefPtr<SkDeferredCanvas> canvas = adoptRef(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        Canvas2DLayerBridgePtr bridge = FakeCanvas2DLayerBridge::create(mainContext.release(), canvas.get(), Canvas2DLayerBridge::NonOpaque);
+        Canvas2DLayerBridgePtr bridge = FakeCanvas2DLayerBridge::create(mainContext.release(), canvas.release(), Canvas2DLayerBridge::NonOpaque);
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 

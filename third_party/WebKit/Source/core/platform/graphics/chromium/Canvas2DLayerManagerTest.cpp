@@ -44,7 +44,7 @@ using testing::Test;
 
 class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
 public:
-    FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas)
+    FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, PassRefPtr<SkDeferredCanvas> canvas)
         : Canvas2DLayerBridge(context, canvas, NonOpaque)
         , m_freeableBytes(0)
         , m_freeMemoryIfPossibleCount(0)
@@ -89,9 +89,9 @@ public:
     int m_flushCount;
 };
 
-static PassOwnPtr<SkDeferredCanvas> createCanvas(GraphicsContext3D* context)
+static PassRefPtr<SkDeferredCanvas> createCanvas(GraphicsContext3D* context)
 {
-    return adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(1, 1)));
+    return adoptRef(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(1, 1)));
 }
 
 FakeCanvas2DLayerBridge* fake(const Canvas2DLayerBridgePtr& layer)
@@ -107,8 +107,8 @@ protected:
         manager.init(10, 10);
         {
             RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
-            OwnPtr<SkDeferredCanvas> canvas1 = createCanvas(context.get());
-            Canvas2DLayerBridgePtr layer1(adoptRef(new FakeCanvas2DLayerBridge(context, canvas1.get())));
+            RefPtr<SkDeferredCanvas> canvas1(createCanvas(context.get()));
+            Canvas2DLayerBridgePtr layer1(adoptRef(new FakeCanvas2DLayerBridge(context, canvas1.release())));
             EXPECT_EQ((size_t)0, manager.m_bytesAllocated);
             layer1->storageAllocatedForRecordingChanged(1);
             EXPECT_EQ((size_t)1, manager.m_bytesAllocated);
@@ -119,8 +119,8 @@ protected:
             layer1->storageAllocatedForRecordingChanged(1);
             EXPECT_EQ((size_t)1, manager.m_bytesAllocated);
             {
-                OwnPtr<SkDeferredCanvas> canvas2 = createCanvas(context.get());
-                Canvas2DLayerBridgePtr layer2(adoptRef(new FakeCanvas2DLayerBridge(context, canvas2.get())));
+                RefPtr<SkDeferredCanvas> canvas2(createCanvas(context.get()));
+                Canvas2DLayerBridgePtr layer2(adoptRef(new FakeCanvas2DLayerBridge(context, canvas2.release())));
                 EXPECT_EQ((size_t)1, manager.m_bytesAllocated);
                 // verify multi-layer allocation tracking
                 layer2->storageAllocatedForRecordingChanged(2);
@@ -136,8 +136,8 @@ protected:
         RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 5);
-        OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
-        Canvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.get())));
+        RefPtr<SkDeferredCanvas> canvas(createCanvas(context.get()));
+        Canvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.release())));
         fake(layer)->fakeFreeableBytes(10);
         layer->storageAllocatedForRecordingChanged(8); // under the max
         EXPECT_EQ(0, fake(layer)->m_freeMemoryIfPossibleCount);
@@ -153,8 +153,8 @@ protected:
         RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 5);
-        OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
-        Canvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.get())));
+        RefPtr<SkDeferredCanvas> canvas(createCanvas(context.get()));
+        Canvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.release())));
         fake(layer)->fakeFreeableBytes(1); // Not enough freeable bytes, will cause aggressive eviction by flushing
         layer->storageAllocatedForRecordingChanged(8); // under the max
         EXPECT_EQ(0, fake(layer)->m_freeMemoryIfPossibleCount);
@@ -203,8 +203,8 @@ protected:
     {
         RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager::get().init(10, 10);
-        OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
-        Canvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.get())));
+        RefPtr<SkDeferredCanvas> canvas(createCanvas(context.get()));
+        Canvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.release())));
         WebKit::Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, fake(layer), true));
         WebKit::Platform::current()->currentThread()->enterRunLoop();
         // Verify that didProcessTask was called upon completion
