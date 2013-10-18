@@ -150,10 +150,8 @@ deps = {
   "src/third_party/bidichecker":
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
-  # When roll to another webgl conformance tests revision, please goto
-  # chrome/test/gpu and run generate_webgl_conformance_test_list.py.
   "src/third_party/webgl_conformance":
-    "/trunk/deps/third_party/webgl/sdk/tests@226612",
+    "/trunk/deps/third_party/webgl/sdk/tests@229432",
 
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
