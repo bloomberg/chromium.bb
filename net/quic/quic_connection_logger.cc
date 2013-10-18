@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/net_log.h"
@@ -233,6 +234,8 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
                      frame.congestion_feedback_frame));
       break;
     case RST_STREAM_FRAME:
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.RstStreamErrorCodeClient",
+                                  frame.rst_stream_frame->error_code);
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_RST_STREAM_FRAME_SENT,
           base::Bind(&NetLogQuicRstStreamFrameCallback,
@@ -365,6 +368,8 @@ void QuicConnectionLogger::OnCongestionFeedbackFrame(
 }
 
 void QuicConnectionLogger::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.RstStreamErrorCodeServer",
+                              frame.error_code);
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_RST_STREAM_FRAME_RECEIVED,
       base::Bind(&NetLogQuicRstStreamFrameCallback, &frame));

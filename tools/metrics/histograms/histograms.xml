@@ -8418,6 +8418,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.RstStreamErrorCodeClient"
+    enum="QuicRstStreamErrorCodes">
+  <summary>
+    The QUIC error code which resulted in a stream being reset by the client.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.RstStreamErrorCodeServer"
+    enum="QuicRstStreamErrorCodes">
+  <summary>
+    The QUIC error code which resulted in a stream being reset by the server.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.WriteError" enum="NetErrorCodes">
   <summary>
     The network error code returned when attempting to write to a QUIC
@@ -26027,6 +26041,16 @@ other types of suffix sets.
   <int value="9" label="pps"/>
   <int value="10" label="ppsx"/>
   <int value="11" label="ppsm"/>
+</enum>
+
+<enum name="QuicRstStreamErrorCodes" type="int">
+  <int value="0" label="NO_ERROR"/>
+  <int value="1" label="ERROR_PROCESSING_STREAM"/>
+  <int value="2" label="MULTIPLE_TERMINATION_OFFSETS"/>
+  <int value="3" label="BAD_APPLICATION_PAYLOAD"/>
+  <int value="4" label="CONNECTION_ERROR"/>
+  <int value="5" label="PEER_GOING_AWAY"/>
+  <int value="6" label="CANCELLED"/>
 </enum>
 
 <enum name="RecentTabsAction" type="int">
