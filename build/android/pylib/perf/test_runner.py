@@ -37,16 +37,14 @@ be ignored:
 ]
 
 Note that script_to_execute necessarily have to take at least the following
-options:
+option:
   --device: the serial number to be passed to all adb commands.
-  --keep_test_server_ports: indicates it's being run as a shard, and shouldn't
-  reset test server port allocation.
 """
 
 import datetime
 import logging
-import pickle
 import os
+import pickle
 import sys
 
 from pylib import constants
@@ -110,7 +108,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       A tuple containing (Output, base_test_result.ResultType)
     """
-    cmd = ('%s --device %s --keep_test_server_ports' %
+    cmd = ('%s --device %s' %
            (self._tests[test_name], self.device))
     logging.info('%s : %s', test_name, cmd)
     start_time = datetime.datetime.now()
