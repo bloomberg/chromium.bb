@@ -46,6 +46,16 @@ def _interface(tag):
     return 'HTML%sElement' % name
 
 
+def _js_interface(tag):
+    if tag['JSInterfaceName']:
+        return tag['JSInterfaceName']
+    return _interface(tag)
+
+
+def _has_js_interface(tag):
+    return not tag['mapToTagName'] and not tag['noConstructor'] and _js_interface(tag) != 'HTMLElement'
+
+
 class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     defaults = dict(MakeQualifiedNamesWriter.default_parameters, **{
         'JSInterfaceName': None,
@@ -63,6 +73,8 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     })
     filters = dict(MakeQualifiedNamesWriter.filters, **{
         'interface': _interface,
+        'js_interface': _js_interface,
+        'has_js_interface': _has_js_interface,
     })
 
     def __init__(self, in_file_paths, enabled_conditions):
@@ -74,10 +86,15 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         self._outputs = {
             (self.namespace + 'ElementFactory.h'): self.generate_factory_header,
             (self.namespace + 'ElementFactory.cpp'): self.generate_factory_implementation,
+            ('V8' + self.namespace + 'ElementWrapperFactory.h'): self.generate_wrapper_factory_header,
+            ('V8' + self.namespace + 'ElementWrapperFactory.cpp'): self.generate_wrapper_factory_implementation,
         }
 
+        for tag in self._template_context['tags']:
+            tag['js_interface'] = _js_interface(tag) if _has_js_interface(tag) else None
+
         self._template_context.update({
-            'fallback_interface': self.tags_in_file.parameters['fallbackInterfaceName'].strip('"')
+            'fallback_interface': self.tags_in_file.parameters['fallbackInterfaceName'].strip('"'),
         })
 
     @template_expander.use_jinja('ElementFactory.h.tmpl', filters=filters)
@@ -86,6 +103,14 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
 
     @template_expander.use_jinja('ElementFactory.cpp.tmpl', filters=filters)
     def generate_factory_implementation(self):
+        return self._template_context
+
+    @template_expander.use_jinja('ElementWrapperFactory.h.tmpl', filters=filters)
+    def generate_wrapper_factory_header(self):
+        return self._template_context
+
+    @template_expander.use_jinja('ElementWrapperFactory.cpp.tmpl', filters=filters)
+    def generate_wrapper_factory_implementation(self):
         return self._template_context
 
 

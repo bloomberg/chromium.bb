@@ -121,10 +121,10 @@ printNamesCppFile("$namesBasePath.cpp");
 if ($printFactory) {
     printFactoryCppFile("$factoryBasePath.cpp");
     printFactoryHeaderFile("$factoryBasePath.h");
-}
 
-printWrapperFactoryCppFile($outputDir, $wrapperFactoryFileName);
-printWrapperFactoryHeaderFile($outputDir, $wrapperFactoryFileName);
+    printWrapperFactoryCppFile($outputDir, $wrapperFactoryFileName);
+    printWrapperFactoryHeaderFile($outputDir, $wrapperFactoryFileName);
+}
 
 ### Hash initialization
 

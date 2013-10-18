@@ -3640,6 +3640,8 @@
             '../build/scripts/make_element_factory.py',
             '../build/scripts/templates/ElementFactory.cpp.tmpl',
             '../build/scripts/templates/ElementFactory.h.tmpl',
+            '../build/scripts/templates/ElementWrapperFactory.cpp.tmpl',
+            '../build/scripts/templates/ElementWrapperFactory.h.tmpl',
         ],
         'conditions': [
             ['OS=="win"', {

@@ -299,8 +299,6 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.h',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.h',
           ],
           'action': [
             'python',
@@ -323,6 +321,8 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.h',
           ],
           'action': [
             'python',
