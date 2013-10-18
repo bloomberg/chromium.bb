@@ -645,7 +645,10 @@ int SpdySession::TryCreateStream(
 
   stalled_streams_++;
   net_log().AddEvent(NetLog::TYPE_SPDY_SESSION_STALLED_MAX_STREAMS);
-  pending_create_stream_queues_[request->priority()].push_back(request);
+  RequestPriority priority = request->priority();
+  CHECK_GE(priority, MINIMUM_PRIORITY);
+  CHECK_LT(priority, NUM_PRIORITIES);
+  pending_create_stream_queues_[priority].push_back(request);
   return ERR_IO_PENDING;
 }
 
@@ -701,11 +704,14 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
 void SpdySession::CancelStreamRequest(
     const base::WeakPtr<SpdyStreamRequest>& request) {
   DCHECK(request);
+  RequestPriority priority = request->priority();
+  CHECK_GE(priority, MINIMUM_PRIORITY);
+  CHECK_LT(priority, NUM_PRIORITIES);
 
   if (DCHECK_IS_ON()) {
     // |request| should not be in a queue not matching its priority.
     for (int i = 0; i < NUM_PRIORITIES; ++i) {
-      if (request->priority() == i)
+      if (priority == i)
         continue;
       PendingStreamRequestQueue* queue = &pending_create_stream_queues_[i];
       DCHECK(std::find_if(queue->begin(),
@@ -715,7 +721,7 @@ void SpdySession::CancelStreamRequest(
   }
 
   PendingStreamRequestQueue* queue =
-      &pending_create_stream_queues_[request->priority()];
+      &pending_create_stream_queues_[priority];
   // Remove |request| from |queue| while preserving the order of the
   // other elements.
   PendingStreamRequestQueue::iterator it =
@@ -2926,7 +2932,10 @@ void SpdySession::DecreaseRecvWindowSize(int32 delta_window_size) {
 
 void SpdySession::QueueSendStalledStream(const SpdyStream& stream) {
   DCHECK(stream.send_stalled_by_flow_control());
-  stream_send_unstall_queue_[stream.priority()].push_back(stream.stream_id());
+  RequestPriority priority = stream.priority();
+  CHECK_GE(priority, MINIMUM_PRIORITY);
+  CHECK_LT(priority, NUM_PRIORITIES);
+  stream_send_unstall_queue_[priority].push_back(stream.stream_id());
 }
 
 void SpdySession::ResumeSendStalledStreams() {

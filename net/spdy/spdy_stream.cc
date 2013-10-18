@@ -113,6 +113,8 @@ SpdyStream::SpdyStream(SpdyStreamType type,
   CHECK(type_ == SPDY_BIDIRECTIONAL_STREAM ||
         type_ == SPDY_REQUEST_RESPONSE_STREAM ||
         type_ == SPDY_PUSH_STREAM);
+  CHECK_GE(priority_, MINIMUM_PRIORITY);
+  CHECK_LT(priority_, NUM_PRIORITIES);
 }
 
 SpdyStream::~SpdyStream() {

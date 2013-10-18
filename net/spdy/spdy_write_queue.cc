@@ -44,6 +44,8 @@ void SpdyWriteQueue::Enqueue(RequestPriority priority,
                              SpdyFrameType frame_type,
                              scoped_ptr<SpdyBufferProducer> frame_producer,
                              const base::WeakPtr<SpdyStream>& stream) {
+  CHECK_GE(priority, MINIMUM_PRIORITY);
+  CHECK_LT(priority, NUM_PRIORITIES);
   if (stream.get())
     DCHECK_EQ(stream->priority(), priority);
   queue_[priority].push_back(
@@ -70,12 +72,16 @@ bool SpdyWriteQueue::Dequeue(SpdyFrameType* frame_type,
 
 void SpdyWriteQueue::RemovePendingWritesForStream(
     const base::WeakPtr<SpdyStream>& stream) {
+  RequestPriority priority = stream->priority();
+  CHECK_GE(priority, MINIMUM_PRIORITY);
+  CHECK_LT(priority, NUM_PRIORITIES);
+
   DCHECK(stream.get());
   if (DCHECK_IS_ON()) {
     // |stream| should not have pending writes in a queue not matching
     // its priority.
     for (int i = 0; i < NUM_PRIORITIES; ++i) {
-      if (stream->priority() == i)
+      if (priority == i)
         continue;
       for (std::deque<PendingWrite>::const_iterator it = queue_[i].begin();
            it != queue_[i].end(); ++it) {
@@ -85,7 +91,7 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
   }
 
   // Do the actual deletion and removal, preserving FIFO-ness.
-  std::deque<PendingWrite>* queue = &queue_[stream->priority()];
+  std::deque<PendingWrite>* queue = &queue_[priority];
   std::deque<PendingWrite>::iterator out_it = queue->begin();
   for (std::deque<PendingWrite>::const_iterator it = queue->begin();
        it != queue->end(); ++it) {
