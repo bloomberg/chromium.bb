@@ -203,8 +203,8 @@ void StyleResolver::finishAppendAuthorStyleSheets()
 {
     collectFeatures();
 
-    if (document().renderer() && document().renderer()->style())
-        document().renderer()->style()->font().update(fontSelector());
+    if (document().isActive())
+        document().renderView()->style()->font().update(fontSelector());
 
     collectViewportRules();
 }

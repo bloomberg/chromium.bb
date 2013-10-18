@@ -193,14 +193,10 @@ PassRefPtr<Element> Element::create(const QualifiedName& tagName, Document* docu
 
 Element::~Element()
 {
-#ifndef NDEBUG
-    if (document().renderer()) {
-        // When the document is not destroyed, an element that was part of a named flow
-        // content nodes should have been removed from the content nodes collection
-        // and the inNamedFlow flag reset.
-        ASSERT(!inNamedFlow());
-    }
-#endif
+    // When the document is not destroyed, an element that was part of a named flow
+    // content nodes should have been removed from the content nodes collection
+    // and the inNamedFlow flag reset.
+    ASSERT(document().renderView() || !inNamedFlow());
 
     if (PropertySetCSSStyleDeclaration* cssomWrapper = inlineStyleCSSOMWrapper())
         cssomWrapper->clearParentElement();

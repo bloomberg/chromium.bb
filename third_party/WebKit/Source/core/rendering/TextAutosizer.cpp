@@ -143,7 +143,7 @@ TextAutosizer::~TextAutosizer()
 
 void TextAutosizer::recalculateMultipliers()
 {
-    RenderObject* renderer = m_document->renderer();
+    RenderObject* renderer = m_document->renderView();
     while (renderer) {
         if (renderer->style() && renderer->style()->textAutosizingMultiplier() != 1)
             setMultiplier(renderer, 1);

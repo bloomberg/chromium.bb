@@ -702,7 +702,7 @@ void AXObjectCache::postNotification(AXObject* object, Document* document, AXNot
         object = object->observableObject();
 
     if (!object && document)
-        object = get(document->renderer());
+        object = get(document->renderView());
 
     if (!object)
         return;
@@ -931,7 +931,7 @@ void AXObjectCache::postPlatformNotification(AXObject* obj, AXNotification notif
         Document* document = toFrameView(scrollBar->parent())->frame().document();
         if (document != document->topDocument())
             return;
-        obj = get(document->renderer());
+        obj = get(document->renderView());
     }
 
     if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame().page())

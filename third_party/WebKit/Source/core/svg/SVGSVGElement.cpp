@@ -35,11 +35,12 @@
 #include "core/events/EventListener.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"
+#include "core/page/FrameTree.h"
 #include "core/page/UseCounter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderPart.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
@@ -224,8 +225,8 @@ void SVGSVGElement::updateCurrentTranslate()
     if (RenderObject* object = renderer())
         object->setNeedsLayout();
 
-    if (parentNode() == document() && document().renderer())
-        document().renderer()->repaint();
+    if (parentNode() == document() && document().isActive())
+        document().renderView()->repaint();
 }
 
 void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

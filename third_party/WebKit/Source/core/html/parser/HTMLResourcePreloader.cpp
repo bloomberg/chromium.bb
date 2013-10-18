@@ -33,7 +33,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/platform/HistogramSupport.h"
-#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 
@@ -87,9 +87,8 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
     Document* loadingDocument = m_document;
 
     ASSERT(executingDocument->frame());
-    ASSERT(executingDocument->renderer());
-    ASSERT(executingDocument->renderer()->style());
-    if (!preload->media().isEmpty() && !mediaAttributeMatches(executingDocument->frame(), executingDocument->renderer()->style(), preload->media()))
+    ASSERT(executingDocument->isActive());
+    if (!preload->media().isEmpty() && !mediaAttributeMatches(executingDocument->frame(), executingDocument->renderView()->style(), preload->media()))
         return;
 
     FetchRequest request = preload->resourceRequest(m_document);

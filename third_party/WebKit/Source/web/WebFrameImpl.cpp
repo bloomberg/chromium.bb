@@ -341,7 +341,7 @@ public:
 
     void spoolAllPagesWithBoundaries(GraphicsContext& graphicsContext, const FloatSize& pageSizeInPixels)
     {
-        if (!frame()->document() || !frame()->view() || !frame()->document()->renderer())
+        if (!frame()->document() || !frame()->view() || !frame()->document()->isActive())
             return;
 
         frame()->document()->updateLayout();

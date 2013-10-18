@@ -46,6 +46,7 @@
 #include "core/dom/TouchList.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/rendering/RenderView.h"
 
 using namespace WebKit;
 using namespace WebCore;
@@ -109,7 +110,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     FrameView* view = webViewImpl->page()->mainFrame()->view();
     RefPtr<Document> document = webViewImpl->page()->mainFrame()->document();
     DOMWindow* domWindow = webViewImpl->page()->mainFrame()->document()->domWindow();
-    RenderObject* docRenderer = webViewImpl->page()->mainFrame()->document()->renderer();
+    RenderView* docRenderer = webViewImpl->page()->mainFrame()->document()->renderView();
 
     {
         WebMouseEvent webMouseEvent;

@@ -1013,7 +1013,7 @@ void FrameView::layout(bool allowSubtree)
 
     Document* document = m_frame->document();
     bool inSubtreeLayout = m_layoutRoot;
-    RenderObject* rootForThisLayout = inSubtreeLayout ? m_layoutRoot : document->renderer();
+    RenderObject* rootForThisLayout = inSubtreeLayout ? m_layoutRoot : renderView();
     if (!rootForThisLayout) {
         // FIXME: Do we need to set m_size here?
         ASSERT_NOT_REACHED();
@@ -1139,7 +1139,7 @@ void FrameView::layout(bool allowSubtree)
 
 #ifndef NDEBUG
     // Post-layout assert that nobody was re-marked as needing layout during layout.
-    document->renderer()->assertSubtreeIsLaidOut();
+    document->renderView()->assertSubtreeIsLaidOut();
 #endif
 
     // FIXME: It should be not possible to remove the FrameView from the frame/page during layout

@@ -899,8 +899,6 @@ public:
 
     void finishedParsing();
 
-    void documentWillBecomeInactive();
-
     void setDecoder(PassRefPtr<TextResourceDecoder>);
     TextResourceDecoder* decoder() const { return m_decoder.get(); }
 
@@ -1083,6 +1081,9 @@ protected:
 private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
+
+    // Not implemented, callers should use renderView instead().
+    RenderObject* renderer() const;
 
     ScriptedAnimationController& ensureScriptedAnimationController();
     virtual EventQueue* eventQueue() const FINAL;
