@@ -315,6 +315,7 @@ static const char* const common_media_codecs[] = {
 // List of proprietary codecs only supported by Google Chrome.
 static const char* const proprietary_media_codecs[] = {
   "avc1",
+  "avc3",
   "mp4a"
 };
 

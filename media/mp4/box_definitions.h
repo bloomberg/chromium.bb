@@ -183,6 +183,8 @@ struct MEDIA_EXPORT VideoSampleEntry : Box {
 
   // Currently expected to be present regardless of format.
   AVCDecoderConfigurationRecord avcc;
+
+  bool IsFormatValid() const;
 };
 
 struct MEDIA_EXPORT ElementaryStreamDescriptor : Box {

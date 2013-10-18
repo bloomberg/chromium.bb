@@ -36,7 +36,7 @@ const char kVorbisVP8[] = "vorbis,vp8,vp8.0";
 const char kAudioMp4[] = "audio/mp4";
 const char kVideoMp4[] = "video/mp4";
 const char kMp4a[] = "mp4a";
-const char kMp4aAvc1[] = "mp4a,avc1";
+const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
@@ -46,7 +46,7 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
 #if defined(USE_PROPRIETARY_CODECS)
   info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
-  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
+  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1Avc3));
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
   info.use_aes_decryptor = true;

@@ -36,8 +36,8 @@ const char kVorbisVP8[] = "vorbis,vp8,vp8.0";
 const char kAudioMp4[] = "audio/mp4";
 const char kVideoMp4[] = "video/mp4";
 const char kMp4a[] = "mp4a";
-const char kAvc1[] = "avc1";
-const char kMp4aAvc1[] = "mp4a,avc1";
+const char kAvc1Avc3[] = "avc1,avc3";
+const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -67,7 +67,7 @@ static void AddExternalClearKey(
   info.supported_types.push_back(std::make_pair(kVideoWebM, kVorbisVP8));
 #if defined(USE_PROPRIETARY_CODECS)
   info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
-  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1));
+  info.supported_types.push_back(std::make_pair(kVideoMp4, kMp4aAvc1Avc3));
 #endif  // defined(USE_PROPRIETARY_CODECS)
   info.pepper_type = kExternalClearKeyPepperType;
 
@@ -163,7 +163,8 @@ static void AddWidevineWithCodecs(
     info.supported_types.push_back(std::make_pair(kAudioMp4, kMp4a));
 
   if (supported_codecs & MP4_AVC1) {
-    const char* video_codecs = (supported_codecs & MP4_AAC) ? kMp4aAvc1 : kAvc1;
+    const char* video_codecs =
+        (supported_codecs & MP4_AAC) ? kMp4aAvc1Avc3 : kAvc1Avc3;
     info.supported_types.push_back(std::make_pair(kVideoMp4, video_codecs));
   }
 #endif  // defined(USE_PROPRIETARY_CODECS)

@@ -130,8 +130,10 @@ bool ValidateMP4ACodecID(const std::string& codec_id, const LogCB& log_cb) {
   return false;
 }
 
-static const CodecInfo kH264CodecInfo = { "avc1.*", CodecInfo::VIDEO, NULL,
-                                          CodecInfo::HISTOGRAM_H264 };
+static const CodecInfo kH264AVC1CodecInfo = { "avc1.*", CodecInfo::VIDEO, NULL,
+                                              CodecInfo::HISTOGRAM_H264 };
+static const CodecInfo kH264AVC3CodecInfo = { "avc3.*", CodecInfo::VIDEO, NULL,
+                                              CodecInfo::HISTOGRAM_H264 };
 static const CodecInfo kMPEG4AACCodecInfo = { "mp4a.40.*", CodecInfo::AUDIO,
                                               &ValidateMP4ACodecID,
                                               CodecInfo::HISTOGRAM_MPEG4AAC };
@@ -145,7 +147,8 @@ static const CodecInfo kEAC3CodecInfo = { "mp4a.a6", CodecInfo::AUDIO, NULL,
 #endif
 
 static const CodecInfo* kVideoMP4Codecs[] = {
-  &kH264CodecInfo,
+  &kH264AVC1CodecInfo,
+  &kH264AVC3CodecInfo,
   &kMPEG4AACCodecInfo,
   &kMPEG2AACLCCodecInfo,
   NULL

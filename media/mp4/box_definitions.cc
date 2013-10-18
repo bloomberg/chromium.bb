@@ -399,11 +399,16 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
     }
   }
 
-  if (format == FOURCC_AVC1 ||
-      (format == FOURCC_ENCV && sinf.format.format == FOURCC_AVC1)) {
+  if (IsFormatValid())
     RCHECK(reader->ReadChild(&avcc));
-  }
+
   return true;
+}
+
+bool VideoSampleEntry::IsFormatValid() const {
+  return format == FOURCC_AVC1 || format == FOURCC_AVC3 ||
+      (format == FOURCC_ENCV && (sinf.format.format == FOURCC_AVC1 ||
+                                 sinf.format.format == FOURCC_AVC3));
 }
 
 ElementaryStreamDescriptor::ElementaryStreamDescriptor()

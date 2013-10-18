@@ -34,6 +34,7 @@ const char kMP4AudioType[] = "audio/mp4";
 #if defined(USE_PROPRIETARY_CODECS)
 const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
 const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
+const char kMP4VideoAVC3[] = "video/mp4; codecs=\"avc3.64001f\"";
 const char kMP4Audio[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 const char kMP3[] = "audio/mpeg";
 #endif  // defined(USE_PROPRIETARY_CODECS)
@@ -69,6 +70,7 @@ const char kBenchmarkAudioFile[] = "benchmark-audio-file";
 const int k640IsoFileDurationMs = 2737;
 const int k640IsoCencFileDurationMs = 2736;
 const int k1280IsoFileDurationMs = 2736;
+const int k1280IsoAVC3FileDurationMs = 2735;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Note: Tests using this class only exercise the DecryptingDemuxerStream path.
@@ -963,6 +965,25 @@ TEST_F(PipelineIntegrationTest,
   source.Abort();
   Stop();
 }
+
+TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VideoOnly_MP4_AVC3) {
+  MockMediaSource source("bear-1280x720-v_frag-avc3.mp4", kMP4VideoAVC3,
+                         kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(k1280IsoAVC3FileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Abort();
+  Stop();
+}
+
 #endif
 
 // TODO(acolwell): Fix flakiness http://crbug.com/117921

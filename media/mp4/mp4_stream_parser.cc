@@ -268,9 +268,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         desc_idx = 0;
       const VideoSampleEntry& entry = samp_descr.video_entries[desc_idx];
 
-      if (!(entry.format == FOURCC_AVC1 ||
-            (entry.format == FOURCC_ENCV &&
-             entry.sinf.format.format == FOURCC_AVC1))) {
+      if (!entry.IsFormatValid()) {
         MEDIA_LOG(log_cb_) << "Unsupported video format 0x"
                            << std::hex << entry.format << " in stsd box.";
         return false;
