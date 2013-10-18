@@ -852,3 +852,20 @@
    fun:chromeos::KeyboardDrivenEventRewriterTest::GetRewrittenEventAsString
    fun:chromeos::KeyboardDrivenEventRewriterTest_PassThrough_Test::TestBody
 }
+{
+   bug_308770_a
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   fun:mozilla_security_manager::SetCertTrust
+   fun:mozilla_security_manager::ImportCACerts
+   fun:net::NSSCertDatabase::ImportCACerts
+   fun:chromeos::onc::CertificateImporterImpl::ParseServerOrCaCertificate
+}
+{
+   bug_308770_b
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   fun:mozilla_security_manager::ImportCACerts
+   fun:net::NSSCertDatabase::ImportCACerts
+   fun:chromeos::ClientCertResolverTest::SetupTestCerts
+}
