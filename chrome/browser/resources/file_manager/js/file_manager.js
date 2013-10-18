@@ -1108,8 +1108,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     for (var i = 0; i < cm.totalSize; i++) {
       prefs.columns.push(cm.getWidth(i));
     }
-    if (DialogType.isModal(this.dialogType))
-      prefs.listType = this.listType;
     // Save the global default.
     util.platform.setPreference(this.startupPrefName_, JSON.stringify(prefs));
 
