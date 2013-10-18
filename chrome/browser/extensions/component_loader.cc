@@ -440,7 +440,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 #if defined(OS_CHROMEOS)
-  if (!skip_session_components) {
+  if (!skip_session_components &&
+      !command_line->HasSwitch(chromeos::switches::kGuestSession)) {
     Add(IDR_WALLPAPERMANAGER_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
 
