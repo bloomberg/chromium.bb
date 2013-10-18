@@ -3638,6 +3638,12 @@
             '../build/scripts/templates/MakeQualifiedNames.cpp.tmpl',
             '../build/scripts/templates/MakeQualifiedNames.h.tmpl',
         ],
+        'make_element_factory_files': [
+            '<@(scripts_for_in_files)',
+            '../build/scripts/make_element_factory.py',
+            '../build/scripts/templates/ElementFactory.cpp.tmpl',
+            '../build/scripts/templates/ElementFactory.h.tmpl',
+        ],
         'conditions': [
             ['OS=="win"', {
                 # Using native perl rather than cygwin perl cuts execution time

@@ -1,0 +1,26 @@
+{% from "macros.tmpl" import license -%}
+{{ license() }}
+
+#ifndef {{namespace}}ElementFactory_h
+#define {{namespace}}ElementFactory_h
+
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+
+namespace WebCore {
+
+class Element;
+class Document;
+class QualifiedName;
+class HTMLFormElement;
+
+class {{namespace}}Element;
+
+class {{namespace}}ElementFactory {
+public:
+    static PassRefPtr<{{namespace}}Element> create{{namespace}}Element(const QualifiedName&, Document*, HTMLFormElement* = 0, bool createdByParser = true);
+};
+
+} // WebCore
+
+#endif
