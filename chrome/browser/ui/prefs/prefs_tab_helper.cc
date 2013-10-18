@@ -138,12 +138,16 @@ const char* kPrefsToObserve[] = {
 
 const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
 
+#if !defined(OS_ANDROID)
 // Registers a preference under the path |pref_name| for each script used for
 // per-script font prefs.
 // For example, for WEBKIT_WEBPREFS_FONTS_SERIF ("fonts.serif"):
 // "fonts.serif.Arab", "fonts.serif.Hang", etc. are registered.
 // |fonts_with_defaults| contains all |pref_names| already registered since they
 // have a specified default value.
+// On Android there are no default values for these properties and there is no
+// way to set them (because extensions are not supported so the Font Settings
+// API cannot be used), so we can avoid registering them altogether.
 void RegisterFontFamilyPrefs(user_prefs::PrefRegistrySyncable* registry,
                              const std::set<std::string>& fonts_with_defaults) {
 
@@ -177,7 +181,6 @@ ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_STANDARD)
   }
 }
 
-#if !defined(OS_ANDROID)
 // Registers |obs| to observe per-script font prefs under the path |map_name|.
 // On android, there's no exposed way to change these prefs, so we can save
 // ~715KB of heap and some startup cycles by avoiding observing these prefs
@@ -612,8 +615,10 @@ void PrefsTabHelper::RegisterProfilePrefs(
     }
   }
 
-  // Register font prefs that don't have defaults.
+  // Register per-script font prefs that don't have defaults.
+#if !defined(OS_ANDROID)
   RegisterFontFamilyPrefs(registry, fonts_with_defaults);
+#endif
 
   registry->RegisterLocalizedIntegerPref(
       prefs::kWebKitDefaultFontSize,

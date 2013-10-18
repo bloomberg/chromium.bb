@@ -481,6 +481,8 @@ bool CertMatchesFilter(const net::X509Certificate& cert,
 void FillFontFamilyMap(const PrefService* prefs,
                        const char* map_name,
                        webkit_glue::ScriptFontFamilyMap* map) {
+  // TODO: Get rid of the brute-force scan over possible (font family / script)
+  // combinations - see http://crbug.com/308095.
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
@@ -2091,6 +2093,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       rvh->GetProcess()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
 
+  // Fill per-script font preferences. These are not registered on Android
+  // - http://crbug.com/308033.
+#if !defined(OS_ANDROID)
   FillFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap,
                     &web_prefs->standard_font_family_map);
   FillFontFamilyMap(prefs, prefs::kWebKitFixedFontFamilyMap,
@@ -2105,6 +2110,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
                     &web_prefs->fantasy_font_family_map);
   FillFontFamilyMap(prefs, prefs::kWebKitPictographFontFamilyMap,
                     &web_prefs->pictograph_font_family_map);
+#endif
 
   web_prefs->default_font_size =
       prefs->GetInteger(prefs::kWebKitDefaultFontSize);
