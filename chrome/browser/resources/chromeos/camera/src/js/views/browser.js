@@ -43,7 +43,8 @@ camera.views.Browser = function(context) {
    * @private
    */
   this.scroller_ = new camera.util.SmoothScroller(
-      document.querySelector('#browser'));
+      document.querySelector('#browser'),
+      document.querySelector('#browser .padder'));
 
   /**
    * Monitores when scrolling is ended.
@@ -51,7 +52,7 @@ camera.views.Browser = function(context) {
    * @private
    */
   this.scrollTracker_ = new camera.util.ScrollTracker(
-      document.querySelector('#browser'),
+      this.scroller_,
       function() {},  // onScrollStarted
       this.onScrollEnded_.bind(this));
 
@@ -118,7 +119,8 @@ camera.views.Browser.prototype.onLeave = function() {
 camera.views.Browser.prototype.onResize = function() {
   if (this.currentPicture_()) {
     camera.util.scrollToCenter(this.currentPicture_().element,
-                               this.scroller_, true);
+                               this.scroller_,
+                               camera.util.SmoothScroller.Mode.INSTANT);
   }
 };
 

@@ -43,7 +43,8 @@ camera.views.Gallery = function(context) {
    * @private
    */
   this.scroller_ = new camera.util.SmoothScroller(
-      document.querySelector('#gallery'));
+      document.querySelector('#gallery'),
+      document.querySelector('#gallery .padder'));
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -178,8 +179,9 @@ camera.views.Gallery.prototype.onLeave = function() {
  */
 camera.views.Gallery.prototype.onResize = function() {
   if (this.currentPicture_()) {
-    camera.util.scrollToCenter(this.currentPicture_().element,
-                               this.scroller_, true);
+    camera.util.ensureVisible(this.currentPicture_().element,
+                              this.scroller_,
+                              camera.util.SmoothScroller.Mode.INSTANT);
   }
 };
 

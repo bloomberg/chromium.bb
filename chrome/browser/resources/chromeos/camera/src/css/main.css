@@ -202,10 +202,13 @@ canvas {
 }
 
 #effects {
+  overflow: auto;
+}
+
+#effects .padder {
   display: -webkit-box;
   list-style-type: none;
   margin: 0;
-  overflow: auto;
   padding: 0 0 5px;
 }
 
