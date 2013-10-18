@@ -83,13 +83,18 @@ scoped_ptr<Address> GetTestMinimalAddress() {
 }
 
 scoped_ptr<FullWallet> GetTestFullWallet() {
+  return GetTestFullWalletWithRequiredActions(std::vector<RequiredAction>());
+}
+
+scoped_ptr<FullWallet> GetTestFullWalletWithRequiredActions(
+    const std::vector<RequiredAction>& actions) {
   scoped_ptr<FullWallet> wallet(new FullWallet(FutureYear(),
                                                12,
                                                "528512",
                                                "5ec4feecf9d6",
                                                GetTestAddress(),
                                                GetTestShippingAddress(),
-                                               std::vector<RequiredAction>()));
+                                               actions));
   std::vector<uint8> one_time_pad;
   base::HexStringToBytes("5F04A8704183", &one_time_pad);
   wallet->set_one_time_pad(one_time_pad);

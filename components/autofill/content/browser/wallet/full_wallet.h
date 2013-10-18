@@ -83,7 +83,8 @@ class FullWallet {
 
  private:
   friend class FullWalletTest;
-  friend scoped_ptr<FullWallet> GetTestFullWallet();
+  friend scoped_ptr<FullWallet> GetTestFullWalletWithRequiredActions(
+      const std::vector<RequiredAction>& action);
   friend scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly();
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWallet);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWalletWithRequiredActions);

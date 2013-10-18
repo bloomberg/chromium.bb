@@ -2052,8 +2052,13 @@ bool AutofillDialogControllerImpl::OnAccept() {
 
   // This must come before SetIsSubmitting().
   if (IsPayingWithWallet()) {
-    submitted_cardholder_name_ =
-        GetValueFromSection(SECTION_CC_BILLING, NAME_FULL);
+    // In the VERIFY_CVV case, hold onto the previously submitted cardholder
+    // name.
+    if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
+      submitted_cardholder_name_ =
+          GetValueFromSection(SECTION_CC_BILLING, NAME_BILLING_FULL);
+    }
+    DCHECK(!submitted_cardholder_name_.empty());
   }
 
   SetIsSubmitting(true);

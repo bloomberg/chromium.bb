@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_TEST_UTIL_H_
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_TEST_UTIL_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 
@@ -18,6 +20,8 @@ class Instrument;
 scoped_ptr<Address> GetTestAddress();
 scoped_ptr<Address> GetTestMinimalAddress();
 scoped_ptr<FullWallet> GetTestFullWallet();
+scoped_ptr<FullWallet> GetTestFullWalletWithRequiredActions(
+    const std::vector<RequiredAction>& action);
 scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly();
 scoped_ptr<Instrument> GetTestInstrument();
 scoped_ptr<Instrument> GetTestAddressUpgradeInstrument();
