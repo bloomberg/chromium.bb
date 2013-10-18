@@ -96,7 +96,12 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
   [label_ setFont:message.font.GetNativeFont()];
   [label_ setStringValue:base::SysUTF16ToNSString(message.text)];
   [label_ setTextColor:gfx::SkColorToCalibratedNSColor(message.text_color)];
-  [label_ sizeToFit];
+
+  // Resize only height, preserve width. This guarantees text stays centered in
+  // the dialog.
+  NSSize labelSize = [label_ frame].size;
+  labelSize.height = [[label_ cell] cellSize].height;
+  [label_ setFrameSize:labelSize];
 
   [self setHidden:message.text.empty()];
 }
