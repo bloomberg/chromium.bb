@@ -51,6 +51,7 @@ const base::FilePath::CharType* const kExtraSupportedExtensions[] = {
   FILE_PATH_LITERAL("3gpp"),
   FILE_PATH_LITERAL("avi"),
   FILE_PATH_LITERAL("flv"),
+  FILE_PATH_LITERAL("mkv"),
   FILE_PATH_LITERAL("mov"),
   FILE_PATH_LITERAL("mpeg"),
   FILE_PATH_LITERAL("mpeg4"),
