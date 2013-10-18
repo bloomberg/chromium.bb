@@ -355,14 +355,32 @@ function Download(download) {
   this.danger_ = createElementWithClassName('div', 'show-dangerous');
   this.node.appendChild(this.danger_);
 
+  this.dangerNodeImg_ = createElementWithClassName('img', 'icon');
+  this.danger_.appendChild(this.dangerNodeImg_);
+
   this.dangerDesc_ = document.createElement('div');
   this.danger_.appendChild(this.dangerDesc_);
 
-  this.dangerSave_ = createButton(this.saveDangerous_.bind(this),
+  // Buttons for the malicious case.
+  this.malwareNodeControls_ = createElementWithClassName('div', 'controls');
+  this.malwareSave_ = createLink(
+      this.saveDangerous_.bind(this),
+      loadTimeData.getString('danger_restore'));
+  this.malwareNodeControls_.appendChild(this.malwareSave_);
+  this.malwareDiscard_ = createLink(
+      this.discardDangerous_.bind(this),
+      loadTimeData.getString('control_removefromlist'));
+  this.malwareNodeControls_.appendChild(this.malwareDiscard_);
+  this.danger_.appendChild(this.malwareNodeControls_);
+
+  // Buttons for the dangerous but not malicious case.
+  this.dangerSave_ = createButton(
+      this.saveDangerous_.bind(this),
       loadTimeData.getString('danger_save'));
   this.danger_.appendChild(this.dangerSave_);
 
-  this.dangerDiscard_ = createButton(this.discardDangerous_.bind(this),
+  this.dangerDiscard_ = createButton(
+      this.discardDangerous_.bind(this),
       loadTimeData.getString('danger_discard'));
   this.danger_.appendChild(this.dangerDiscard_);
 
@@ -439,24 +457,7 @@ Download.prototype.update = function(download) {
   this.received_ = download.received;
 
   if (this.state_ == Download.States.DANGEROUS) {
-    if (this.dangerType_ == Download.DangerType.DANGEROUS_FILE) {
-      this.dangerDesc_.textContent = loadTimeData.getStringF('danger_file_desc',
-                                                             this.fileName_);
-    } else if (this.dangerType_ == Download.DangerType.DANGEROUS_URL) {
-      this.dangerDesc_.textContent = loadTimeData.getString('danger_url_desc');
-    } else if (this.dangerType_ == Download.DangerType.DANGEROUS_CONTENT ||
-               this.dangerType_ == Download.DangerType.DANGEROUS_HOST) {
-      this.dangerDesc_.textContent = loadTimeData.getStringF(
-          'danger_content_desc', this.fileName_);
-    } else if (this.dangerType_ == Download.DangerType.UNCOMMON_CONTENT) {
-      this.dangerDesc_.textContent = loadTimeData.getStringF(
-          'danger_uncommon_desc', this.fileName_);
-    } else if (this.dangerType_ == Download.DangerType.POTENTIALLY_UNWANTED) {
-      this.dangerDesc_.textContent = loadTimeData.getStringF(
-          'danger_potentially_unwanted_desc', this.fileName_);
-    }
-    this.danger_.style.display = 'block';
-    this.safe_.style.display = 'none';
+    this.updateDangerousFile();
   } else {
     downloads.scheduleIconLoad(this.nodeImg_,
                                'chrome://fileicon/' +
@@ -562,6 +563,67 @@ Download.prototype.update = function(download) {
 };
 
 /**
+ * Decorates the icons, strings, and buttons for a download to reflect the
+ * danger level of a file. Dangerous & malicious files are treated differently.
+ */
+Download.prototype.updateDangerousFile = function() {
+  switch (this.dangerType_) {
+    case Download.DangerType.DANGEROUS_FILE: {
+      this.dangerDesc_.textContent = loadTimeData.getStringF(
+          'danger_file_desc', this.fileName_);
+      break;
+    }
+    case Download.DangerType.DANGEROUS_URL: {
+      this.dangerDesc_.textContent = loadTimeData.getString('danger_url_desc');
+      break;
+    }
+    case Download.DangerType.DANGEROUS_CONTENT:  // Fall through.
+    case Download.DangerType.DANGEROUS_HOST: {
+      this.dangerDesc_.textContent = loadTimeData.getStringF(
+          'danger_content_desc', this.fileName_);
+      break;
+    }
+    case Download.DangerType.UNCOMMON_CONTENT: {
+      this.dangerDesc_.textContent = loadTimeData.getStringF(
+          'danger_uncommon_desc', this.fileName_);
+      break;
+    }
+    case Download.DangerType.POTENTIALLY_UNWANTED: {
+      this.dangerDesc_.textContent = loadTimeData.getStringF(
+          'danger_potentially_unwanted_desc', this.fileName_);
+      break;
+    }
+  }
+
+  if (this.dangerType_ == Download.DangerType.DANGEROUS_FILE) {
+    downloads.scheduleIconLoad(
+        this.dangerNodeImg_,
+        'chrome://theme/IDR_WARNING?scale=' + window.devicePixelRatio + 'x');
+  } else {
+    downloads.scheduleIconLoad(
+        this.dangerNodeImg_,
+        'chrome://theme/IDR_SAFEBROWSING_WARNING?scale=' +
+            window.devicePixelRatio + 'x');
+    this.dangerDesc_.className = 'malware-description';
+  }
+
+  if (this.dangerType_ == Download.DangerType.DANGEROUS_CONTENT ||
+      this.dangerType_ == Download.DangerType.DANGEROUS_HOST ||
+      this.dangerType_ == Download.DangerType.DANGEROUS_URL) {
+    this.malwareNodeControls_.style.display = 'block';
+    this.dangerDiscard_.style.display = 'none';
+    this.dangerSave_.style.display = 'none';
+  } else {
+    this.malwareNodeControls_.style.display = 'none';
+    this.dangerDiscard_.style.display = 'inline';
+    this.dangerSave_.style.display = 'inline';
+  }
+
+  this.danger_.style.display = 'block';
+  this.safe_.style.display = 'none';
+};
+
+/**
  * Removes applicable bits from the DOM in preparation for deletion.
  */
 Download.prototype.clear = function() {
@@ -574,6 +636,9 @@ Download.prototype.clear = function() {
   this.controlPause_.onclick = null;
   this.controlResume_.onclick = null;
   this.dangerDiscard_.onclick = null;
+  this.dangerSave_.onclick = null;
+  this.malwareDiscard_.onclick = null;
+  this.malwareSave_.onclick = null;
 
   this.node.innerHTML = '';
 };

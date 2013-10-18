@@ -126,6 +126,10 @@ html[dir=rtl] .download.otr > .show-dangerous {
   opacity: 1;
 }
 
+.malware-description {
+  color: rgb(196, 42, 23);
+}
+
 .progress {
   height: 48px;
   left: 0;

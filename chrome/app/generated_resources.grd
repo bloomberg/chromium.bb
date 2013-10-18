@@ -1859,6 +1859,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Text for the button used to validate the downloading of a dangerous download.">
         Keep
       </message>
+      <message name="IDS_CONFIRM_DOWNLOAD_RESTORE"
+               desc="Text for the button used to validate the downloading of a dangerous download.">
+        Recover malicious file
+      </message>
       <message name="IDS_CONTINUE_EXTENSION_DOWNLOAD"
                desc="Text for the button used to validate the installation of an extension.">
         Continue
