@@ -4228,7 +4228,7 @@ Make sure you do not expose any sensitive information.
         Manipulate privacy-related settings
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SIGNED_IN_DEVICES" desc="Permission string for access to privacy settings.">
-        Access signed in devices
+        Access the list of your signed-in devices
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB" desc="Permission string for access to USB devices.">
         Access USB devices
