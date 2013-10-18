@@ -77,7 +77,8 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
     const unsigned char* data = static_cast<const unsigned char*>(dataBuffer->baseAddress());
     unsigned dataSize = dataBuffer->byteLength();
 
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
 
     switch (operationType) {
     case Encrypt:
@@ -100,7 +101,7 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
         return ScriptPromise();
     }
 
-    return result->promise();
+    return promise;
 }
 
 } // namespace
@@ -145,9 +146,10 @@ ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool ext
     if (!normalizeAlgorithm(rawAlgorithm, GenerateKey, algorithm, es))
         return ScriptPromise();
 
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
     WebKit::Platform::current()->crypto()->generateKey(algorithm, extractable, keyUsages, result->result());
-    return result->promise();
+    return promise;
 }
 
 ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* keyData, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& es)
@@ -171,9 +173,10 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* 
 
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());
 
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
     WebKit::Platform::current()->crypto()->importKey(format, keyDataBytes, keyData->byteLength(), algorithm, extractable, keyUsages, result->result());
-    return result->promise();
+    return promise;
 }
 
 ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, ExceptionState& es)
@@ -192,9 +195,10 @@ ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, Excepti
         return ScriptPromise();
     }
 
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
     WebKit::Platform::current()->crypto()->exportKey(format, key->key(), result->result());
-    return result->promise();
+    return promise;
 }
 
 } // namespace WebCore
