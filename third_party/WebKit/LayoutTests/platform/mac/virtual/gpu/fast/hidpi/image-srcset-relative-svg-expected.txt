@@ -1,0 +1,75 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x567
+  RenderBlock {HTML} at (0,0) size 800x567.25
+    RenderBody {BODY} at (8,19.91) size 784x531.34
+      RenderBlock {H2} at (0,0) size 784x28
+        RenderInline {A} at (0,0) size 59x28 [color=#0000EE]
+          RenderText {#text} at (0,0) size 59x28
+            text run at (0,0) width 59: "srcset"
+        RenderText {#text} at (59,0) size 186x28
+          text run at (59,0) width 186: " testcases for SVG"
+      RenderBlock {DIV} at (0,47.91) size 784x226.22 [border: (1px solid #808080)]
+        RenderBlock {H3} at (17,35.72) size 750x22
+          RenderText {#text} at (0,0) size 347x22
+            text run at (0,0) width 347: "Relative SVG with explicit dimensions - 1x"
+        RenderBlock (floating) {DIV} at (650.22,76.44) size 116.78x88.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 56x18
+            text run at (7,7) width 56: "expected"
+          RenderBR {BR} at (63,7) size 0x18
+          RenderImage {IMG} at (7,25.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (517.44,76.44) size 116.78x88.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 37x18
+            text run at (7,7) width 37: "actual"
+          RenderBR {BR} at (44,7) size 0x18
+          RenderImage {IMG} at (7,25.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (anonymous) at (17,76.44) size 750x132.78
+          RenderText {#text} at (0,0) size 474x54
+            text run at (0,0) width 464: "This test should show an SVG image of size 100x50, and intrinsic/natural"
+            text run at (0,18) width 474: "size 100x50.The left half of the image should be pink and there should be a"
+            text run at (0,36) width 163: "purple circle in the center."
+          RenderBR {BR} at (163,36) size 0x18
+          RenderBlock {CODE} at (0,101.78) size 696x30
+            RenderText {#text} at (0,0) size 368x15
+              text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+            RenderBR {BR} at (368,0) size 0x15
+            RenderText {#text} at (0,15) size 696x15
+              text run at (0,15) width 696: "image codes: <img id=\"svg5\" src=\"resources/relativesrcset.svg\" width=\"100\" height=\"50\">"
+          RenderText {#text} at (696,114) size 4x19
+            text run at (696,114) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderBR {BR} at (700,114) size 0x19
+      RenderBlock {DIV} at (0,290.13) size 784x241.22 [border: (1px solid #808080)]
+        RenderBlock {H3} at (17,35.72) size 750x22
+          RenderText {#text} at (0,0) size 347x22
+            text run at (0,0) width 347: "Relative SVG with explicit dimensions - 4x"
+        RenderBlock (floating) {DIV} at (650.22,76.44) size 116.78x88.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 56x18
+            text run at (7,7) width 56: "expected"
+          RenderBR {BR} at (63,7) size 0x18
+          RenderImage {IMG} at (7,25.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (517.44,76.44) size 116.78x88.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 37x18
+            text run at (7,7) width 37: "actual"
+          RenderBR {BR} at (44,7) size 0x18
+          RenderImage {IMG} at (7,25.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (anonymous) at (17,76.44) size 750x147.78
+          RenderText {#text} at (0,0) size 470x54
+            text run at (0,0) width 464: "This test should show an SVG image of size 100x50, and intrinsic/natural"
+            text run at (0,18) width 470: "size 50x25. The left half of the image should be pink and there should be a"
+            text run at (0,36) width 163: "purple circle in the center."
+          RenderBR {BR} at (163,36) size 0x18
+          RenderBlock {CODE} at (0,101.78) size 750x45
+            RenderText {#text} at (0,0) size 368x15
+              text run at (0,0) width 368: "image stats: size(100,50), naturalSize(100,50)"
+            RenderBR {BR} at (368,0) size 0x15
+            RenderText {#text} at (0,15) size 696x30
+              text run at (0,15) width 696: "image codes: <img id=\"svg6\" src=\"\" srcset=\"resources/relativesrcset.svg 4x\" width=\"100\""
+              text run at (0,30) width 96: "height=\"50\">"
+          RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderBR {BR} at (0,0) size 0x0
