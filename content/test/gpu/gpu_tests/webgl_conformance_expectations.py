@@ -121,6 +121,22 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Skip('conformance/rendering/line-loop-tri-fan.html',
         ['lion', 'intel'])
 
+    # Mac/ATI failures
+    self.Skip('conformance/extensions/oes-texture-float-with-image-data.html',
+        ['mac', 'amd'], bug=308328)
+    self.Skip('conformance/rendering/gl-clear.html',
+        ['mac', 'amd'], bug=308328)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-array-buffer-view.html',
+        ['mac', 'amd'], bug=308328)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data.html',
+        ['mac', 'amd'], bug=308328)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgb565.html',
+        ['mac', 'amd'], bug=308328)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba4444.html',
+        ['mac', 'amd'], bug=308328)
+    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba5551.html',
+        ['mac', 'amd'], bug=308328)
+
     # Android failures
     self.Fail('conformance/textures/texture-npot-video.html',
         ['android'], bug=306485)
