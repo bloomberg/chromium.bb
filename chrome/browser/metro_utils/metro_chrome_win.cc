@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/win/metro.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/installer/util/browser_distribution.h"
