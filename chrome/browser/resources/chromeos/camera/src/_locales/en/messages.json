@@ -86,6 +86,14 @@
   "errorMsgGalleryExportFailed": {
     "message": "Unable to save the selected picture.",
     "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Hardware acceleration is not available.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Your computer may have an incompatible graphics card, or old drivers.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
   }
 }
 

@@ -264,6 +264,15 @@ body.browser #toolbar {
   width: 90px;
 }
 
+#error #error-msg,
+#error #error-msg-hint {
+  text-align: center;
+}
+
+#error #error-msg-hint {
+  font-size: 16px;
+}
+
 body.has-error #error {
   display: -webkit-box;
 }
