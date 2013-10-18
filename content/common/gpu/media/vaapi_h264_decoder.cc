@@ -1333,7 +1333,8 @@ bool VaapiH264Decoder::FinishPicture() {
   for (; output_candidate != not_outputted.end() &&
       (*output_candidate)->pic_order_cnt <= last_output_poc_ + 2;
       ++output_candidate) {
-    DCHECK_GE((*output_candidate)->pic_order_cnt, last_output_poc_);
+    int poc = (*output_candidate)->pic_order_cnt;
+    DCHECK_GE(poc, last_output_poc_);
     if (!OutputPic(*output_candidate))
       return false;
 
@@ -1341,9 +1342,9 @@ bool VaapiH264Decoder::FinishPicture() {
       // Current picture hasn't been inserted into DPB yet, so don't remove it
       // if we managed to output it immediately.
       if (*output_candidate != pic)
-        dpb_.DeleteByPOC((*output_candidate)->pic_order_cnt);
+        dpb_.DeleteByPOC(poc);
       // Mark as unused.
-      UnassignSurfaceFromPoC((*output_candidate)->pic_order_cnt);
+      UnassignSurfaceFromPoC(poc);
     }
   }
 
