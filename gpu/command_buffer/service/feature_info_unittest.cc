@@ -341,6 +341,8 @@ TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GLES2) {
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->GetTextureFormatValidator(GL_BGRA_EXT).IsValid(
       GL_UNSIGNED_BYTE));
+  EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
+      GL_BGRA8_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
@@ -349,6 +351,8 @@ TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
               HasSubstr("GL_EXT_texture_format_BGRA8888"));
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_read_format_bgra"));
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888"));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
@@ -357,6 +361,8 @@ TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->GetTextureFormatValidator(GL_BGRA_EXT).IsValid(
       GL_UNSIGNED_BYTE));
+  EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(
+      GL_BGRA8_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888Apple) {
@@ -369,6 +375,8 @@ TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888Apple) {
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->GetTextureFormatValidator(GL_BGRA_EXT).IsValid(
       GL_UNSIGNED_BYTE));
+  EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
+      GL_BGRA8_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_read_format_bgra) {
@@ -381,6 +389,8 @@ TEST_F(FeatureInfoTest, InitializeEXT_read_format_bgra) {
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(
       GL_BGRA_EXT));
+  EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
+      GL_BGRA8_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeOES_texture_floatGLES2) {

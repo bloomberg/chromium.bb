@@ -26,7 +26,7 @@ static TraceGLApi* g_trace_gl;
 
 namespace {
 
-static inline GLenum GetTexInternalFormat(GLenum internal_format) {
+static inline GLenum GetInternalFormat(GLenum internal_format) {
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
     if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
       return GL_RGBA8;
@@ -38,7 +38,7 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format) {
 static inline GLenum GetTexInternalFormat(GLenum internal_format,
                                           GLenum format,
                                           GLenum type) {
-  GLenum gl_internal_format = GetTexInternalFormat(internal_format);
+  GLenum gl_internal_format = GetInternalFormat(internal_format);
 
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
     return gl_internal_format;
@@ -120,9 +120,28 @@ static void GL_BINDING_CALL CustomTexSubImage2D(
 static void GL_BINDING_CALL CustomTexStorage2DEXT(
     GLenum target, GLsizei levels, GLenum internalformat, GLsizei width,
     GLsizei height) {
-  GLenum gl_internal_format = GetTexInternalFormat(internalformat);
+  GLenum gl_internal_format = GetInternalFormat(internalformat);
   return g_driver_gl.orig_fn.glTexStorage2DEXTFn(
       target, levels, gl_internal_format, width, height);
+}
+
+static void GL_BINDING_CALL CustomRenderbufferStorageEXT(
+    GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
+  GLenum gl_internal_format = GetInternalFormat(internalformat);
+  return g_driver_gl.orig_fn.glRenderbufferStorageEXTFn(
+      target, gl_internal_format, width, height);
+}
+
+// The ANGLE and IMG variants of glRenderbufferStorageMultisample currently do
+// not support BGRA render buffers so only the EXT one is customized. If
+// GL_CHROMIUM_renderbuffer_format_BGRA8888 support is added to ANGLE then the
+// ANGLE version should also be customized.
+static void GL_BINDING_CALL CustomRenderbufferStorageMultisampleEXT(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+    GLsizei height) {
+  GLenum gl_internal_format = GetInternalFormat(internalformat);
+  return g_driver_gl.orig_fn.glRenderbufferStorageMultisampleEXTFn(
+      target, samples, gl_internal_format, width, height);
 }
 
 }  // anonymous namespace
@@ -140,6 +159,12 @@ void DriverGL::InitializeExtensions(GLContext* context) {
       reinterpret_cast<glTexSubImage2DProc>(CustomTexSubImage2D);
   fn.glTexStorage2DEXTFn =
       reinterpret_cast<glTexStorage2DEXTProc>(CustomTexStorage2DEXT);
+  fn.glRenderbufferStorageEXTFn =
+      reinterpret_cast<glRenderbufferStorageEXTProc>(
+      CustomRenderbufferStorageEXT);
+  fn.glRenderbufferStorageMultisampleEXTFn =
+      reinterpret_cast<glRenderbufferStorageMultisampleEXTProc>(
+      CustomRenderbufferStorageMultisampleEXT);
 }
 
 void InitializeGLBindingsGL() {

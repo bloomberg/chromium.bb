@@ -360,6 +360,8 @@ void FeatureInfo::InitializeFeatures() {
 
   bool enable_texture_format_bgra8888 = false;
   bool enable_read_format_bgra = false;
+  bool enable_render_buffer_bgra = false;
+
   // Check if we should allow GL_EXT_texture_format_BGRA8888
   if (extensions.Contains("GL_EXT_texture_format_BGRA8888") ||
       extensions.Contains("GL_APPLE_texture_format_BGRA8888") ||
@@ -368,8 +370,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (extensions.Contains("GL_EXT_bgra")) {
-    enable_texture_format_bgra8888 = true;
-    enable_read_format_bgra = true;
+    enable_render_buffer_bgra = true;
   }
 
   if (extensions.Contains("GL_EXT_read_format_bgra") ||
@@ -387,6 +388,11 @@ void FeatureInfo::InitializeFeatures() {
   if (enable_read_format_bgra) {
     AddExtensionString("GL_EXT_read_format_bgra");
     validators_.read_pixel_format.AddValue(GL_BGRA_EXT);
+  }
+
+  if (enable_render_buffer_bgra) {
+    AddExtensionString("GL_CHROMIUM_renderbuffer_format_BGRA8888");
+    validators_.render_buffer_format.AddValue(GL_BGRA8_EXT);
   }
 
   if (extensions.Contains("GL_OES_rgb8_rgba8") || gfx::HasDesktopGLFeatures()) {
