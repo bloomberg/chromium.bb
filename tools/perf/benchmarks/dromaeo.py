@@ -20,8 +20,7 @@ class DromaeoBenchmark(test.Test):
     # Subclasses are expected to define a class member called query_param.
     if not hasattr(self, 'query_param'):
       raise NotImplementedError('query_param not in Dromaeo benchmark.')
-    url = ('file://../../../../chrome/test/data/dromaeo/index.html'
-           '?%s&automated' % self.query_param)
+    url = 'file://index.html?%s&automated' % self.query_param
     # The docstring of benchmark classes may also be used as a description
     # when 'run_benchmarks list' is run.
     description = self.__doc__ or 'Dromaeo JavaScript Benchmark'
@@ -29,7 +28,6 @@ class DromaeoBenchmark(test.Test):
         'description': description,
         'pages': [{'url': url}],
     }
-    # A value for the file_path attribute of the page set.
     dromaeo_dir = os.path.join(util.GetChromiumSrcDir(),
                                'chrome', 'test', 'data', 'dromaeo')
     return page_set.PageSet.FromDict(page_set_dict, dromaeo_dir)
