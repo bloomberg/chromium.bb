@@ -27,7 +27,7 @@ by "!".
 Note that for .java files, there is currently no difference between
 "+" and "!", even in the presubmit step.
 
-  include_rules = {
+  include_rules = [
     # Code should be able to use base (it's specified in the module-level
     # deps above), but nothing in "base/evil" because it's evil.
     "-base/evil",
@@ -42,7 +42,7 @@ Note that for .java files, there is currently no difference between
     # This dependency is allowed for now but work is ongoing to remove it,
     # so you shouldn't add further dependencies on it.
     "!base/evil/ok_for_now.h",
-  }
+  ]
 
 If you have certain include rules that should only be applied for some
 files within this directory and subdirectories, you can write a
