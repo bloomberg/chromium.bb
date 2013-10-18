@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher_view.h"
+#include "ash/shelf/shelf_view.h"
 
 #include <algorithm>
 #include <vector>
@@ -22,7 +22,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
-#include "ash/test/launcher_view_test_api.h"
+#include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/test/test_launcher_item_delegate.h"
@@ -78,19 +78,19 @@ class TestLauncherIconObserver : public LauncherIconObserver {
   DISALLOW_COPY_AND_ASSIGN(TestLauncherIconObserver);
 };
 
-class LauncherViewIconObserverTest : public ash::test::AshTestBase {
+class ShelfViewIconObserverTest : public ash::test::AshTestBase {
  public:
-  LauncherViewIconObserverTest() {}
-  virtual ~LauncherViewIconObserverTest() {}
+  ShelfViewIconObserverTest() {}
+  virtual ~ShelfViewIconObserverTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     Launcher* launcher = Launcher::ForPrimaryDisplay();
     observer_.reset(new TestLauncherIconObserver(launcher));
 
-    launcher_view_test_.reset(new LauncherViewTestAPI(
-        LauncherTestAPI(launcher).launcher_view()));
-    launcher_view_test_->SetAnimationDuration(1);
+    shelf_view_test_.reset(new ShelfViewTestAPI(
+        LauncherTestAPI(launcher).shelf_view()));
+    shelf_view_test_->SetAnimationDuration(1);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -100,8 +100,8 @@ class LauncherViewIconObserverTest : public ash::test::AshTestBase {
 
   TestLauncherIconObserver* observer() { return observer_.get(); }
 
-  LauncherViewTestAPI* launcher_view_test() {
-    return launcher_view_test_.get();
+  ShelfViewTestAPI* shelf_view_test() {
+    return shelf_view_test_.get();
   }
 
   Launcher* LauncherForSecondaryDisplay() {
@@ -110,12 +110,12 @@ class LauncherViewIconObserverTest : public ash::test::AshTestBase {
 
  private:
   scoped_ptr<TestLauncherIconObserver> observer_;
-  scoped_ptr<LauncherViewTestAPI> launcher_view_test_;
+  scoped_ptr<ShelfViewTestAPI> shelf_view_test_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherViewIconObserverTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewIconObserverTest);
 };
 
-TEST_F(LauncherViewIconObserverTest, AddRemove) {
+TEST_F(ShelfViewIconObserverTest, AddRemove) {
   ash::test::TestLauncherDelegate* launcher_delegate =
       ash::test::TestLauncherDelegate::instance();
   ASSERT_TRUE(launcher_delegate);
@@ -128,13 +128,13 @@ TEST_F(LauncherViewIconObserverTest, AddRemove) {
   scoped_ptr<views::Widget> widget(new views::Widget());
   widget->Init(params);
   launcher_delegate->AddLauncherItem(widget->GetNativeWindow());
-  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
 
   widget->Show();
   widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
-  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
 }
@@ -149,7 +149,7 @@ TEST_F(LauncherViewIconObserverTest, AddRemove) {
 #endif
 // Make sure creating/deleting an window on one displays notifies a
 // launcher on external display as well as one on primary.
-TEST_F(LauncherViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
+TEST_F(ShelfViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
   UpdateDisplay("400x400,400x400");
   TestLauncherIconObserver second_observer(LauncherForSecondaryDisplay());
 
@@ -165,14 +165,14 @@ TEST_F(LauncherViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
   scoped_ptr<views::Widget> widget(new views::Widget());
   widget->Init(params);
   launcher_delegate->AddLauncherItem(widget->GetNativeWindow());
-  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   EXPECT_TRUE(second_observer.change_notified());
   observer()->Reset();
   second_observer.Reset();
 
   widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
-  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   EXPECT_TRUE(second_observer.change_notified());
 
@@ -180,39 +180,39 @@ TEST_F(LauncherViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
   second_observer.Reset();
 }
 
-TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
+TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
   ash::ShelfWidget* shelf = Shell::GetPrimaryRootWindowController()->shelf();
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   gfx::Size shelf_size =
       shelf->GetWindowBoundsInScreen().size();
   shelf_size.set_width(shelf_size.width() / 2);
   ASSERT_GT(shelf_size.width(), 0);
-  launcher->SetLauncherViewBounds(gfx::Rect(shelf_size));
-  // No animation happens for LauncherView bounds change.
+  launcher->SetShelfViewBounds(gfx::Rect(shelf_size));
+  // No animation happens for ShelfView bounds change.
   EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LauncherView tests.
+// ShelfView tests.
 
-class LauncherViewTest : public AshTestBase {
+class ShelfViewTest : public AshTestBase {
  public:
-  LauncherViewTest() : model_(NULL), launcher_view_(NULL), browser_index_(1) {}
-  virtual ~LauncherViewTest() {}
+  ShelfViewTest() : model_(NULL), shelf_view_(NULL), browser_index_(1) {}
+  virtual ~ShelfViewTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     test::ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.launcher_model();
     Launcher* launcher = Launcher::ForPrimaryDisplay();
-    launcher_view_ = test::LauncherTestAPI(launcher).launcher_view();
+    shelf_view_ = test::LauncherTestAPI(launcher).shelf_view();
 
     // The bounds should be big enough for 4 buttons + overflow chevron.
-    launcher_view_->SetBounds(0, 0, 500,
+    shelf_view_->SetBounds(0, 0, 500,
         internal::ShelfLayoutManager::GetPreferredShelfSize());
 
-    test_api_.reset(new LauncherViewTestAPI(launcher_view_));
+    test_api_.reset(new ShelfViewTestAPI(shelf_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
 
     item_manager_ =
@@ -325,12 +325,12 @@ class LauncherViewTest : public AshTestBase {
   void VerifyLauncherItemBoundsAreValid() {
     for (int i=0;i <= test_api_->GetLastVisibleIndex(); ++i) {
       if (test_api_->GetButton(i)) {
-        gfx::Rect launcher_view_bounds = launcher_view_->GetLocalBounds();
+        gfx::Rect shelf_view_bounds = shelf_view_->GetLocalBounds();
         gfx::Rect item_bounds = test_api_->GetBoundsByIndex(i);
         EXPECT_TRUE(item_bounds.x() >= 0);
         EXPECT_TRUE(item_bounds.y() >= 0);
-        EXPECT_TRUE(item_bounds.right() <= launcher_view_bounds.width());
-        EXPECT_TRUE(item_bounds.bottom() <= launcher_view_bounds.height());
+        EXPECT_TRUE(item_bounds.right() <= shelf_view_bounds.width());
+        EXPECT_TRUE(item_bounds.bottom() <= shelf_view_bounds.height());
       }
     }
   }
@@ -338,7 +338,7 @@ class LauncherViewTest : public AshTestBase {
   views::View* SimulateButtonPressed(
       internal::LauncherButtonHost::Pointer pointer,
       int button_index) {
-    internal::LauncherButtonHost* button_host = launcher_view_;
+    internal::LauncherButtonHost* button_host = shelf_view_;
     views::View* button = test_api_->GetButton(button_index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
                                button->bounds().origin(),
@@ -349,7 +349,7 @@ class LauncherViewTest : public AshTestBase {
 
   views::View* SimulateClick(internal::LauncherButtonHost::Pointer pointer,
                              int button_index) {
-    internal::LauncherButtonHost* button_host = launcher_view_;
+    internal::LauncherButtonHost* button_host = shelf_view_;
     views::View* button = SimulateButtonPressed(pointer, button_index);
     button_host->PointerReleasedOnButton(button,
                                          internal::LauncherButtonHost::MOUSE,
@@ -360,7 +360,7 @@ class LauncherViewTest : public AshTestBase {
   views::View* SimulateDrag(internal::LauncherButtonHost::Pointer pointer,
                             int button_index,
                             int destination_index) {
-    internal::LauncherButtonHost* button_host = launcher_view_;
+    internal::LauncherButtonHost* button_host = shelf_view_;
     views::View* button = SimulateButtonPressed(pointer, button_index);
 
     // Drag.
@@ -393,40 +393,40 @@ class LauncherViewTest : public AshTestBase {
   }
 
   views::View* GetTooltipAnchorView() {
-    return launcher_view_->tooltip_manager()->anchor_;
+    return shelf_view_->tooltip_manager()->anchor_;
   }
 
   void ShowTooltip() {
-    launcher_view_->tooltip_manager()->ShowInternal();
+    shelf_view_->tooltip_manager()->ShowInternal();
   }
 
   LauncherModel* model_;
-  internal::LauncherView* launcher_view_;
+  internal::ShelfView* shelf_view_;
   int browser_index_;
   LauncherItemDelegateManager* item_manager_;
 
-  scoped_ptr<LauncherViewTestAPI> test_api_;
+  scoped_ptr<ShelfViewTestAPI> test_api_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LauncherViewTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewTest);
 };
 
-class LauncherViewLegacyShelfLayoutTest : public LauncherViewTest {
+class ShelfViewLegacyShelfLayoutTest : public ShelfViewTest {
  public:
-  LauncherViewLegacyShelfLayoutTest() : LauncherViewTest() {
+  ShelfViewLegacyShelfLayoutTest() : ShelfViewTest() {
     browser_index_ = 0;
   }
 
-  virtual ~LauncherViewLegacyShelfLayoutTest() {}
+  virtual ~ShelfViewLegacyShelfLayoutTest() {}
 
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshDisableAlternateShelfLayout);
-    LauncherViewTest::SetUp();
+    ShelfViewTest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LauncherViewLegacyShelfLayoutTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewLegacyShelfLayoutTest);
 };
 
 class ScopedTextDirectionChange {
@@ -453,45 +453,45 @@ class ScopedTextDirectionChange {
   std::string original_locale_;
 };
 
-class LauncherViewTextDirectionTest
-    : public LauncherViewTest,
+class ShelfViewTextDirectionTest
+    : public ShelfViewTest,
       public testing::WithParamInterface<bool> {
  public:
-  LauncherViewTextDirectionTest() : text_direction_change_(GetParam()) {}
-  virtual ~LauncherViewTextDirectionTest() {}
+  ShelfViewTextDirectionTest() : text_direction_change_(GetParam()) {}
+  virtual ~ShelfViewTextDirectionTest() {}
 
   virtual void SetUp() OVERRIDE {
-    LauncherViewTest::SetUp();
+    ShelfViewTest::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
-    LauncherViewTest::TearDown();
+    ShelfViewTest::TearDown();
   }
 
  private:
   ScopedTextDirectionChange text_direction_change_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherViewTextDirectionTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewTextDirectionTest);
 };
 
 // Checks that the ideal item icon bounds match the view's bounds in the screen
 // in both LTR and RTL.
-TEST_P(LauncherViewTextDirectionTest, IdealBoundsOfItemIcon) {
+TEST_P(ShelfViewTextDirectionTest, IdealBoundsOfItemIcon) {
   LauncherID id = AddPlatformApp();
   internal::LauncherButton* button = GetButtonByID(id);
   gfx::Rect item_bounds = button->GetBoundsInScreen();
   gfx::Point icon_offset = button->GetIconBounds().origin();
   item_bounds.Offset(icon_offset.OffsetFromOrigin());
-  gfx::Rect ideal_bounds = launcher_view_->GetIdealBoundsOfItemIcon(id);
+  gfx::Rect ideal_bounds = shelf_view_->GetIdealBoundsOfItemIcon(id);
   gfx::Point screen_origin;
-  views::View::ConvertPointToScreen(launcher_view_, &screen_origin);
+  views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
   ideal_bounds.Offset(screen_origin.x(), screen_origin.y());
   EXPECT_EQ(item_bounds.x(), ideal_bounds.x());
   EXPECT_EQ(item_bounds.y(), ideal_bounds.y());
 }
 
-// Checks that launcher view contents are considered in the correct drag group.
-TEST_F(LauncherViewTest, EnforceDragType) {
+// Checks that shelf view contents are considered in the correct drag group.
+TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_PLATFORM_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_APP_SHORTCUT));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP,
@@ -527,7 +527,7 @@ TEST_F(LauncherViewTest, EnforceDragType) {
 
 // Adds platform app button until overflow and verifies that the last added
 // platform app button is hidden.
-TEST_F(LauncherViewTest, AddBrowserUntilOverflow) {
+TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
@@ -551,7 +551,7 @@ TEST_F(LauncherViewTest, AddBrowserUntilOverflow) {
 // Adds one platform app button then adds app shortcut until overflow. Verifies
 // that the browser button gets hidden on overflow and last added app shortcut
 // is still visible.
-TEST_F(LauncherViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
+TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
@@ -574,7 +574,7 @@ TEST_F(LauncherViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
 }
 
-TEST_F(LauncherViewLegacyShelfLayoutTest,
+TEST_F(ShelfViewLegacyShelfLayoutTest,
        AddAppShortcutWithBrowserButtonUntilOverflow) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
@@ -600,7 +600,7 @@ TEST_F(LauncherViewLegacyShelfLayoutTest,
   EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
 }
 
-TEST_F(LauncherViewTest, AddPanelHidesPlatformAppButton) {
+TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -627,7 +627,7 @@ TEST_F(LauncherViewTest, AddPanelHidesPlatformAppButton) {
   EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
 }
 
-TEST_F(LauncherViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
+TEST_F(ShelfViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -658,7 +658,7 @@ TEST_F(LauncherViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
 
 // When there are more panels then platform app buttons we should hide panels
 // rather than platform apps.
-TEST_F(LauncherViewTest, PlatformAppHidesExcessPanels) {
+TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -700,7 +700,7 @@ TEST_F(LauncherViewTest, PlatformAppHidesExcessPanels) {
 // Adds button until overflow then removes first added one. Verifies that
 // the last added one changes from invisible to visible and overflow
 // chevron is gone.
-TEST_F(LauncherViewTest, RemoveButtonRevealsOverflowed) {
+TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
@@ -730,7 +730,7 @@ TEST_F(LauncherViewTest, RemoveButtonRevealsOverflowed) {
 }
 
 // Verifies that remove last overflowed button should hide overflow chevron.
-TEST_F(LauncherViewTest, RemoveLastOverflowed) {
+TEST_F(ShelfViewTest, RemoveLastOverflowed) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
@@ -750,7 +750,7 @@ TEST_F(LauncherViewTest, RemoveLastOverflowed) {
 
 // Adds platform app button without waiting for animation to finish and verifies
 // that all added buttons are visible.
-TEST_F(LauncherViewTest, AddButtonQuickly) {
+TEST_F(ShelfViewTest, AddButtonQuickly) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
@@ -763,7 +763,7 @@ TEST_F(LauncherViewTest, AddButtonQuickly) {
     ASSERT_LT(added_count, 10000);
   }
 
-  // LauncherView should be big enough to hold at least 3 new buttons.
+  // ShelfView should be big enough to hold at least 3 new buttons.
   ASSERT_GE(added_count, 3);
 
   // Wait for the last animation to finish.
@@ -781,8 +781,8 @@ TEST_F(LauncherViewTest, AddButtonQuickly) {
 
 // Check that model changes are handled correctly while a launcher icon is being
 // dragged.
-TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
-  internal::LauncherButtonHost* button_host = launcher_view_;
+TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
+  internal::LauncherButtonHost* button_host = shelf_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
@@ -848,8 +848,8 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
                                        false);
 }
 
-TEST_F(LauncherViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
-  internal::LauncherButtonHost* button_host = launcher_view_;
+TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
+  internal::LauncherButtonHost* button_host = shelf_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
@@ -916,8 +916,8 @@ TEST_F(LauncherViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
 }
 
 // Check that 2nd drag from the other pointer would be ignored.
-TEST_F(LauncherViewTest, SimultaneousDrag) {
-  internal::LauncherButtonHost* button_host = launcher_view_;
+TEST_F(ShelfViewTest, SimultaneousDrag) {
+  internal::LauncherButtonHost* button_host = shelf_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
@@ -965,8 +965,8 @@ TEST_F(LauncherViewTest, SimultaneousDrag) {
 
 // Check that clicking first on one item and then dragging another works as
 // expected.
-TEST_F(LauncherViewTest, ClickOneDragAnother) {
-  internal::LauncherButtonHost* button_host = launcher_view_;
+TEST_F(ShelfViewTest, ClickOneDragAnother) {
+  internal::LauncherButtonHost* button_host = shelf_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
@@ -989,7 +989,7 @@ TEST_F(LauncherViewTest, ClickOneDragAnother) {
 }
 
 // Confirm that item status changes are reflected in the buttons.
-TEST_F(LauncherViewTest, LauncherItemStatus) {
+TEST_F(ShelfViewTest, LauncherItemStatus) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -1007,7 +1007,7 @@ TEST_F(LauncherViewTest, LauncherItemStatus) {
   ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
 }
 
-TEST_F(LauncherViewLegacyShelfLayoutTest,
+TEST_F(ShelfViewLegacyShelfLayoutTest,
        LauncherItemPositionReflectedOnStateChanged) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
@@ -1042,7 +1042,7 @@ TEST_F(LauncherViewLegacyShelfLayoutTest,
 
 // Confirm that item status changes are reflected in the buttons
 // for platform apps.
-TEST_F(LauncherViewTest, LauncherItemStatusPlatformApp) {
+TEST_F(ShelfViewTest, LauncherItemStatusPlatformApp) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -1061,7 +1061,7 @@ TEST_F(LauncherViewTest, LauncherItemStatusPlatformApp) {
 }
 
 // Confirm that launcher item bounds are correctly updated on shelf changes.
-TEST_F(LauncherViewTest, LauncherItemBoundsCheck) {
+TEST_F(ShelfViewTest, LauncherItemBoundsCheck) {
   internal::ShelfLayoutManager* shelf_layout_manager =
       Shell::GetPrimaryRootWindowController()->shelf()->shelf_layout_manager();
   VerifyLauncherItemBoundsAreValid();
@@ -1073,7 +1073,7 @@ TEST_F(LauncherViewTest, LauncherItemBoundsCheck) {
   VerifyLauncherItemBoundsAreValid();
 }
 
-TEST_F(LauncherViewTest, ShelfTooltipTest) {
+TEST_F(ShelfViewTest, ShelfTooltipTest) {
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
 
@@ -1084,9 +1084,9 @@ TEST_F(LauncherViewTest, ShelfTooltipTest) {
   internal::LauncherButton* app_button = GetButtonByID(app_button_id);
   internal::LauncherButton* platform_button = GetButtonByID(platform_button_id);
 
-  internal::LauncherButtonHost* button_host = launcher_view_;
+  internal::LauncherButtonHost* button_host = shelf_view_;
   internal::ShelfTooltipManager* tooltip_manager =
-      launcher_view_->tooltip_manager();
+      shelf_view_->tooltip_manager();
 
   button_host->MouseEnteredButton(app_button);
   // There's a delay to show the tooltip, so it's not visible yet.
@@ -1121,10 +1121,10 @@ TEST_F(LauncherViewTest, ShelfTooltipTest) {
 
 // Verify a fix for crash caused by a tooltip update for a deleted launcher
 // button, see crbug.com/288838.
-TEST_F(LauncherViewTest, RemovingItemClosesTooltip) {
-  internal::LauncherButtonHost* button_host = launcher_view_;
+TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
+  internal::LauncherButtonHost* button_host = shelf_view_;
   internal::ShelfTooltipManager* tooltip_manager =
-      launcher_view_->tooltip_manager();
+      shelf_view_->tooltip_manager();
 
   // Add an item to the launcher.
   LauncherID app_button_id = AddAppShortcut();
@@ -1147,10 +1147,10 @@ TEST_F(LauncherViewTest, RemovingItemClosesTooltip) {
 }
 
 // Changing the shelf alignment closes any open tooltip.
-TEST_F(LauncherViewTest, ShelfAlignmentClosesTooltip) {
-  internal::LauncherButtonHost* button_host = launcher_view_;
+TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
+  internal::LauncherButtonHost* button_host = shelf_view_;
   internal::ShelfTooltipManager* tooltip_manager =
-      launcher_view_->tooltip_manager();
+      shelf_view_->tooltip_manager();
 
   // Add an item to the launcher.
   LauncherID app_button_id = AddAppShortcut();
@@ -1168,7 +1168,7 @@ TEST_F(LauncherViewTest, ShelfAlignmentClosesTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
-TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
+TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
   LauncherID app_button_id = AddAppShortcut();
   LauncherID platform_button_id = AddPlatformApp();
 
@@ -1178,14 +1178,14 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
     if (!button)
       continue;
 
-    EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+    EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
         button->GetMirroredBounds().CenterPoint()))
-        << "LauncherView tries to hide on button " << i;
+        << "ShelfView tries to hide on button " << i;
   }
 
   // The tooltip should not hide on the app-list button.
-  views::View* app_list_button = launcher_view_->GetAppListButtonView();
-  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+  views::View* app_list_button = shelf_view_->GetAppListButtonView();
+  EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
 
   // The tooltip shouldn't hide if the mouse is in the gap between two buttons.
@@ -1193,7 +1193,7 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
   gfx::Rect platform_button_rect =
       GetButtonByID(platform_button_id)->GetMirroredBounds();
   ASSERT_FALSE(app_button_rect.Intersects(platform_button_rect));
-  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+  EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
       gfx::UnionRects(app_button_rect, platform_button_rect).CenterPoint()));
 
   // The tooltip should hide if it's outside of all buttons.
@@ -1205,21 +1205,21 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
 
     all_area.Union(button->GetMirroredBounds());
   }
-  all_area.Union(launcher_view_->GetAppListButtonView()->GetMirroredBounds());
-  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(all_area.origin()));
-  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+  all_area.Union(shelf_view_->GetAppListButtonView()->GetMirroredBounds());
+  EXPECT_FALSE(shelf_view_->ShouldHideTooltip(all_area.origin()));
+  EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
       gfx::Point(all_area.right() - 1, all_area.bottom() - 1)));
-  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
       gfx::Point(all_area.right(), all_area.y())));
-  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
       gfx::Point(all_area.x() - 1, all_area.y())));
-  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
       gfx::Point(all_area.x(), all_area.y() - 1)));
-  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
       gfx::Point(all_area.x(), all_area.bottom())));
 }
 
-TEST_F(LauncherViewTest, ShouldHideTooltipWithAppListWindowTest) {
+TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
   Shell::GetInstance()->ToggleAppList(NULL);
   ASSERT_TRUE(Shell::GetInstance()->GetAppListWindow());
 
@@ -1229,22 +1229,22 @@ TEST_F(LauncherViewTest, ShouldHideTooltipWithAppListWindowTest) {
     if (!button)
       continue;
 
-    EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+    EXPECT_FALSE(shelf_view_->ShouldHideTooltip(
         button->GetMirroredBounds().CenterPoint()))
-        << "LauncherView tries to hide on button " << i;
+        << "ShelfView tries to hide on button " << i;
   }
 
   // The tooltip should hide on the app-list button.
-  views::View* app_list_button = launcher_view_->GetAppListButtonView();
-  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+  views::View* app_list_button = shelf_view_->GetAppListButtonView();
+  EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
 }
 
 // Test that by moving the mouse cursor off the button onto the bubble it closes
 // the bubble.
-TEST_F(LauncherViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
+TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   internal::ShelfTooltipManager* tooltip_manager =
-      launcher_view_->tooltip_manager();
+      shelf_view_->tooltip_manager();
   tooltip_manager->CreateZeroDelayTimerForTest();
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
@@ -1253,7 +1253,7 @@ TEST_F(LauncherViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Move the mouse over the button and check that it is visible.
-  views::View* app_list_button = launcher_view_->GetAppListButtonView();
+  views::View* app_list_button = shelf_view_->GetAppListButtonView();
   gfx::Rect bounds = app_list_button->GetBoundsInScreen();
   generator.MoveMouseTo(bounds.CenterPoint());
   // Wait for the timer to go off.
@@ -1281,10 +1281,10 @@ TEST_F(LauncherViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
-// Resizing launcher view while an add animation without fade-in is running,
+// Resizing shelf view while an add animation without fade-in is running,
 // which happens when overflow happens. App list button should end up in its
 // new ideal bounds.
-TEST_F(LauncherViewTest, ResizeDuringOverflowAddAnimation) {
+TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
@@ -1300,10 +1300,10 @@ TEST_F(LauncherViewTest, ResizeDuringOverflowAddAnimation) {
     ASSERT_LT(items_added, 10000);
   }
 
-  // Resize launcher view with that animation running and stay overflown.
-  gfx::Rect bounds = launcher_view_->bounds();
+  // Resize shelf view with that animation running and stay overflown.
+  gfx::Rect bounds = shelf_view_->bounds();
   bounds.set_width(bounds.width() - kLauncherPreferredSize);
-  launcher_view_->SetBoundsRect(bounds);
+  shelf_view_->SetBoundsRect(bounds);
   ASSERT_TRUE(test_api_->IsOverflowButtonVisible());
 
   // Finish the animation.
@@ -1320,7 +1320,7 @@ TEST_F(LauncherViewTest, ResizeDuringOverflowAddAnimation) {
 
 // Check that the first item in the list follows Fitt's law by including the
 // first pixel and being therefore bigger then the others.
-TEST_F(LauncherViewLegacyShelfLayoutTest, CheckFittsLaw) {
+TEST_F(ShelfViewLegacyShelfLayoutTest, CheckFittsLaw) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
             test_api_->GetButtonCount());
@@ -1329,14 +1329,14 @@ TEST_F(LauncherViewLegacyShelfLayoutTest, CheckFittsLaw) {
   EXPECT_GT(ideal_bounds_0.width(), ideal_bounds_1.width());
 }
 
-class LauncherViewVisibleBoundsTest : public LauncherViewTest,
+class ShelfViewVisibleBoundsTest : public ShelfViewTest,
                                       public testing::WithParamInterface<bool> {
  public:
-  LauncherViewVisibleBoundsTest() : text_direction_change_(GetParam()) {}
+  ShelfViewVisibleBoundsTest() : text_direction_change_(GetParam()) {}
 
   void CheckAllItemsAreInBounds() {
-    gfx::Rect visible_bounds = launcher_view_->GetVisibleItemsBoundsInScreen();
-    gfx::Rect launcher_bounds = launcher_view_->GetBoundsInScreen();
+    gfx::Rect visible_bounds = shelf_view_->GetVisibleItemsBoundsInScreen();
+    gfx::Rect launcher_bounds = shelf_view_->GetBoundsInScreen();
     EXPECT_TRUE(launcher_bounds.Contains(visible_bounds));
     for (int i = 0; i < test_api_->GetButtonCount(); ++i)
       if (internal::LauncherButton* button = test_api_->GetButton(i))
@@ -1345,8 +1345,8 @@ class LauncherViewVisibleBoundsTest : public LauncherViewTest,
   }
 
   void CheckAppListButtonIsInBounds() {
-    gfx::Rect visible_bounds = launcher_view_->GetVisibleItemsBoundsInScreen();
-    gfx::Rect app_list_button_bounds = launcher_view_->GetAppListButtonView()->
+    gfx::Rect visible_bounds = shelf_view_->GetVisibleItemsBoundsInScreen();
+    gfx::Rect app_list_button_bounds = shelf_view_->GetAppListButtonView()->
        GetBoundsInScreen();
     EXPECT_TRUE(visible_bounds.Contains(app_list_button_bounds));
   }
@@ -1354,10 +1354,10 @@ class LauncherViewVisibleBoundsTest : public LauncherViewTest,
  private:
   ScopedTextDirectionChange text_direction_change_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherViewVisibleBoundsTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewVisibleBoundsTest);
 };
 
-TEST_P(LauncherViewVisibleBoundsTest, ItemsAreInBounds) {
+TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
   // Adding elements leaving some empty space.
   for (int i = 0; i < 3; i++) {
     AddAppShortcut();
@@ -1373,8 +1373,8 @@ TEST_P(LauncherViewVisibleBoundsTest, ItemsAreInBounds) {
   CheckAllItemsAreInBounds();
 }
 
-INSTANTIATE_TEST_CASE_P(LtrRtl, LauncherViewTextDirectionTest, testing::Bool());
-INSTANTIATE_TEST_CASE_P(VisibleBounds, LauncherViewVisibleBoundsTest,
+INSTANTIATE_TEST_CASE_P(LtrRtl, ShelfViewTextDirectionTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(VisibleBounds, ShelfViewVisibleBoundsTest,
     testing::Bool());
 
 }  // namespace test

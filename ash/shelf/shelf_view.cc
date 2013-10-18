@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher_view.h"
+#include "ash/shelf/shelf_view.h"
 
 #include <algorithm>
 
@@ -338,11 +338,11 @@ gfx::Point GetPositionInScreen(const gfx::Point& root_location,
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
 // opacity of the layer as the animation progress.
-class LauncherView::FadeOutAnimationDelegate
+class ShelfView::FadeOutAnimationDelegate
     : public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
-  FadeOutAnimationDelegate(LauncherView* host, views::View* view)
-      : launcher_view_(host),
+  FadeOutAnimationDelegate(ShelfView* host, views::View* view)
+      : shelf_view_(host),
         view_(view) {}
   virtual ~FadeOutAnimationDelegate() {}
 
@@ -352,13 +352,13 @@ class LauncherView::FadeOutAnimationDelegate
     view_->layer()->ScheduleDraw();
   }
   virtual void AnimationEnded(const Animation* animation) OVERRIDE {
-    launcher_view_->OnFadeOutAnimationEnded();
+    shelf_view_->OnFadeOutAnimationEnded();
   }
   virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
   }
 
  private:
-  LauncherView* launcher_view_;
+  ShelfView* shelf_view_;
   scoped_ptr<views::View> view_;
 
   DISALLOW_COPY_AND_ASSIGN(FadeOutAnimationDelegate);
@@ -367,33 +367,33 @@ class LauncherView::FadeOutAnimationDelegate
 // AnimationDelegate used to trigger fading an element in. When an item is
 // inserted this delegate is attached to the animation that expands the size of
 // the item.  When done it kicks off another animation to fade the item in.
-class LauncherView::StartFadeAnimationDelegate
+class ShelfView::StartFadeAnimationDelegate
     : public views::BoundsAnimator::OwnedAnimationDelegate {
  public:
-  StartFadeAnimationDelegate(LauncherView* host,
+  StartFadeAnimationDelegate(ShelfView* host,
                              views::View* view)
-      : launcher_view_(host),
+      : shelf_view_(host),
         view_(view) {}
   virtual ~StartFadeAnimationDelegate() {}
 
   // AnimationDelegate overrides:
   virtual void AnimationEnded(const Animation* animation) OVERRIDE {
-    launcher_view_->FadeIn(view_);
+    shelf_view_->FadeIn(view_);
   }
   virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
     view_->layer()->SetOpacity(1.0f);
   }
 
  private:
-  LauncherView* launcher_view_;
+  ShelfView* shelf_view_;
   views::View* view_;
 
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
-LauncherView::LauncherView(LauncherModel* model,
-                           LauncherDelegate* delegate,
-                           ShelfLayoutManager* shelf_layout_manager)
+ShelfView::ShelfView(LauncherModel* model,
+                     LauncherDelegate* delegate,
+                     ShelfLayoutManager* shelf_layout_manager)
     : model_(model),
       delegate_(delegate),
       view_model_(new views::ViewModel),
@@ -424,7 +424,7 @@ LauncherView::LauncherView(LauncherModel* model,
   tooltip_.reset(new ShelfTooltipManager(shelf_layout_manager, this));
 }
 
-LauncherView::~LauncherView() {
+ShelfView::~ShelfView() {
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
   // If we are inside the MenuRunner, we need to know if we were getting
@@ -433,7 +433,7 @@ LauncherView::~LauncherView() {
     *got_deleted_ = true;
 }
 
-void LauncherView::Init() {
+void ShelfView::Init() {
   model_->AddObserver(this);
 
   const LauncherItems& items(model_->items());
@@ -453,7 +453,7 @@ void LauncherView::Init() {
   // We'll layout when our bounds change.
 }
 
-void LauncherView::OnShelfAlignmentChanged() {
+void ShelfView::OnShelfAlignmentChanged() {
   UpdateFirstButtonPadding();
   overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
@@ -482,7 +482,7 @@ void LauncherView::OnShelfAlignmentChanged() {
     overflow_bubble_->Hide();
 }
 
-void LauncherView::SchedulePaintForAllButtons() {
+void ShelfView::SchedulePaintForAllButtons() {
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i >= first_visible_index_ && i <= last_visible_index_)
       view_model_->view_at(i)->SchedulePaint();
@@ -491,7 +491,7 @@ void LauncherView::SchedulePaintForAllButtons() {
     overflow_button_->SchedulePaint();
 }
 
-gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
+gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(LauncherID id) {
   int index = model_->ItemIndexByID(id);
   if (index == -1 || (index > last_visible_index_ &&
                       index < model_->FirstPanelIndex()))
@@ -508,8 +508,8 @@ gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
                    icon_bounds.height());
 }
 
-void LauncherView::UpdatePanelIconPosition(LauncherID id,
-                                           const gfx::Point& midpoint) {
+void ShelfView::UpdatePanelIconPosition(LauncherID id,
+                                        const gfx::Point& midpoint) {
   int current_index = model_->ItemIndexByID(id);
   int first_panel_index = model_->FirstPanelIndex();
   if (current_index < first_panel_index)
@@ -536,16 +536,16 @@ void LauncherView::UpdatePanelIconPosition(LauncherID id,
     model_->Move(current_index, target_index);
 }
 
-bool LauncherView::IsShowingMenu() const {
+bool ShelfView::IsShowingMenu() const {
   return (launcher_menu_runner_.get() &&
        launcher_menu_runner_->IsRunning());
 }
 
-bool LauncherView::IsShowingOverflowBubble() const {
+bool ShelfView::IsShowingOverflowBubble() const {
   return overflow_bubble_.get() && overflow_bubble_->IsShowing();
 }
 
-views::View* LauncherView::GetAppListButtonView() const {
+views::View* ShelfView::GetAppListButtonView() const {
   for (int i = 0; i < model_->item_count(); ++i) {
     if (model_->items()[i].type == TYPE_APP_LIST)
       return view_model_->view_at(i);
@@ -556,21 +556,21 @@ views::View* LauncherView::GetAppListButtonView() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LauncherView, FocusTraversable implementation:
+// ShelfView, FocusTraversable implementation:
 
-views::FocusSearch* LauncherView::GetFocusSearch() {
+views::FocusSearch* ShelfView::GetFocusSearch() {
   return focus_search_.get();
 }
 
-views::FocusTraversable* LauncherView::GetFocusTraversableParent() {
+views::FocusTraversable* ShelfView::GetFocusTraversableParent() {
   return parent()->GetFocusTraversable();
 }
 
-View* LauncherView::GetFocusTraversableParentView() {
+View* ShelfView::GetFocusTraversableParentView() {
   return this;
 }
 
-void LauncherView::CreateDragIconProxy(
+void ShelfView::CreateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates,
     const gfx::ImageSkia& icon,
     views::View* replaced_view,
@@ -593,20 +593,20 @@ void LauncherView::CreateDragIconProxy(
   drag_image_->SetWidgetVisible(true);
 }
 
-void LauncherView::UpdateDragIconProxy(
+void ShelfView::UpdateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates) {
   drag_image_->SetScreenPosition(
       GetPositionInScreen(location_in_screen_coordinates,
                           drag_replaced_view_) - drag_image_offset_);
 }
 
-void LauncherView::DestroyDragIconProxy() {
+void ShelfView::DestroyDragIconProxy() {
   drag_image_.reset();
   drag_image_offset_ = gfx::Vector2d(0, 0);
 }
 
-bool LauncherView::StartDrag(const std::string& app_id,
-                             const gfx::Point& location_in_screen_coordinates) {
+bool ShelfView::StartDrag(const std::string& app_id,
+                          const gfx::Point& location_in_screen_coordinates) {
   // Bail if an operation is already going on - or the cursor is not inside.
   // This could happen if mouse / touch operations overlap.
   if (drag_and_drop_launcher_id_ ||
@@ -614,7 +614,7 @@ bool LauncherView::StartDrag(const std::string& app_id,
     return false;
 
   // If the AppsGridView (which was dispatching this event) was opened by our
-  // button, LauncherView dragging operations are locked and we have to unlock.
+  // button, ShelfView dragging operations are locked and we have to unlock.
   CancelDrag(-1);
   drag_and_drop_item_pinned_ = false;
   drag_and_drop_app_id_ = app_id;
@@ -654,7 +654,7 @@ bool LauncherView::StartDrag(const std::string& app_id,
   return true;
 }
 
-bool LauncherView::Drag(const gfx::Point& location_in_screen_coordinates) {
+bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
   if (!drag_and_drop_launcher_id_ ||
       !GetBoundsInScreen().Contains(location_in_screen_coordinates))
     return false;
@@ -670,7 +670,7 @@ bool LauncherView::Drag(const gfx::Point& location_in_screen_coordinates) {
   return true;
 }
 
-void LauncherView::EndDrag(bool cancel) {
+void ShelfView::EndDrag(bool cancel) {
   if (!drag_and_drop_launcher_id_)
     return;
 
@@ -696,7 +696,7 @@ void LauncherView::EndDrag(bool cancel) {
   drag_and_drop_launcher_id_ = 0;
 }
 
-void LauncherView::LayoutToIdealBounds() {
+void ShelfView::LayoutToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
 
@@ -708,7 +708,7 @@ void LauncherView::LayoutToIdealBounds() {
   overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
 
-void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
+void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
 
   int available_size = shelf->PrimaryAxisValue(width(), height());
@@ -864,14 +864,14 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
       view_model_->set_ideal_bounds(last_button_index, app_list_bounds);
     }
     if (overflow_bubble_.get() && overflow_bubble_->IsShowing())
-      UpdateOverflowRange(overflow_bubble_->launcher_view());
+      UpdateOverflowRange(overflow_bubble_->shelf_view());
   } else {
     if (overflow_bubble_)
       overflow_bubble_->Hide();
   }
 }
 
-int LauncherView::DetermineLastVisibleIndex(int max_value) const {
+int ShelfView::DetermineLastVisibleIndex(int max_value) const {
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
 
   int index = model_->FirstPanelIndex() - 1;
@@ -884,7 +884,7 @@ int LauncherView::DetermineLastVisibleIndex(int max_value) const {
   return index;
 }
 
-int LauncherView::DetermineFirstVisiblePanelIndex(int min_value) const {
+int ShelfView::DetermineFirstVisiblePanelIndex(int min_value) const {
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
 
   int index = model_->FirstPanelIndex();
@@ -897,15 +897,15 @@ int LauncherView::DetermineFirstVisiblePanelIndex(int min_value) const {
   return index;
 }
 
-void LauncherView::AddIconObserver(LauncherIconObserver* observer) {
+void ShelfView::AddIconObserver(LauncherIconObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void LauncherView::RemoveIconObserver(LauncherIconObserver* observer) {
+void ShelfView::RemoveIconObserver(LauncherIconObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void LauncherView::AnimateToIdealBounds() {
+void ShelfView::AnimateToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
   for (int i = 0; i < view_model_->view_size(); ++i) {
@@ -921,7 +921,7 @@ void LauncherView::AnimateToIdealBounds() {
   overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
 
-views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
+views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
   views::View* view = NULL;
   switch (item.type) {
     case TYPE_BROWSER_SHORTCUT:
@@ -972,7 +972,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
   return view;
 }
 
-void LauncherView::FadeIn(views::View* view) {
+void ShelfView::FadeIn(views::View* view) {
   view->SetVisible(true);
   view->layer()->SetOpacity(0);
   AnimateToIdealBounds();
@@ -980,8 +980,7 @@ void LauncherView::FadeIn(views::View* view) {
       view, new FadeInAnimationDelegate(view), true);
 }
 
-void LauncherView::PrepareForDrag(Pointer pointer,
-                                  const ui::LocatedEvent& event) {
+void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   DCHECK(!dragging());
   DCHECK(drag_view_);
   drag_pointer_ = pointer;
@@ -1005,7 +1004,7 @@ void LauncherView::PrepareForDrag(Pointer pointer,
   bounds_animator_->StopAnimatingView(drag_view_);
 }
 
-void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
+void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   // Due to a syncing operation the application might have been removed.
   // Bail if it is gone.
   int current_index = view_model_->GetIndexOfView(drag_view_);
@@ -1081,7 +1080,7 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
   bounds_animator_->StopAnimatingView(drag_view_);
 }
 
-bool LauncherView::HandleRipOffDrag(const ui::LocatedEvent& event) {
+bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   // Determine the distance to the shelf.
   int delta = CalculateShelfDistance(event.root_location());
   int current_index = view_model_->GetIndexOfView(drag_view_);
@@ -1129,7 +1128,7 @@ bool LauncherView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   return false;
 }
 
-void LauncherView::FinalizeRipOffDrag(bool cancel) {
+void ShelfView::FinalizeRipOffDrag(bool cancel) {
   if (!dragged_off_shelf_)
     return;
   // Make sure we do not come in here again.
@@ -1188,7 +1187,7 @@ void LauncherView::FinalizeRipOffDrag(bool cancel) {
   DestroyDragIconProxy();
 }
 
-LauncherView::RemovableState LauncherView::RemovableByRipOff(int index) {
+ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) {
   LauncherItemType type = model_->items()[index].type;
   if (type == TYPE_APP_LIST || !delegate_->CanPin())
     return NOT_REMOVABLE;
@@ -1199,8 +1198,8 @@ LauncherView::RemovableState LauncherView::RemovableByRipOff(int index) {
       REMOVABLE : DRAGGABLE;
 }
 
-bool LauncherView::SameDragType(LauncherItemType typea,
-                                LauncherItemType typeb) const {
+bool ShelfView::SameDragType(LauncherItemType typea,
+                             LauncherItemType typeb) const {
   switch (typea) {
     case TYPE_APP_SHORTCUT:
     case TYPE_BROWSER_SHORTCUT:
@@ -1218,7 +1217,7 @@ bool LauncherView::SameDragType(LauncherItemType typea,
   return false;
 }
 
-std::pair<int, int> LauncherView::GetDragRange(int index) {
+std::pair<int, int> ShelfView::GetDragRange(int index) {
   int min_index = -1;
   int max_index = -1;
   LauncherItemType type = model_->items()[index].type;
@@ -1232,12 +1231,12 @@ std::pair<int, int> LauncherView::GetDragRange(int index) {
   return std::pair<int, int>(min_index, max_index);
 }
 
-void LauncherView::ConfigureChildView(views::View* view) {
+void ShelfView::ConfigureChildView(views::View* view) {
   view->SetPaintToLayer(true);
   view->layer()->SetFillsBoundsOpaquely(false);
 }
 
-void LauncherView::ToggleOverflowBubble() {
+void ShelfView::ToggleOverflowBubble() {
   if (IsShowingOverflowBubble()) {
     overflow_bubble_->Hide();
     return;
@@ -1246,8 +1245,8 @@ void LauncherView::ToggleOverflowBubble() {
   if (!overflow_bubble_)
     overflow_bubble_.reset(new OverflowBubble());
 
-  LauncherView* overflow_view = new LauncherView(
-      model_, delegate_, tooltip_->shelf_layout_manager());
+  ShelfView* overflow_view =
+      new ShelfView(model_, delegate_, tooltip_->shelf_layout_manager());
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
   overflow_view->OnShelfAlignmentChanged();
@@ -1258,7 +1257,7 @@ void LauncherView::ToggleOverflowBubble() {
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
-void LauncherView::UpdateFirstButtonPadding() {
+void ShelfView::UpdateFirstButtonPadding() {
   if (ash::switches::UseAlternateShelfLayout())
     return;
 
@@ -1276,7 +1275,7 @@ void LauncherView::UpdateFirstButtonPadding() {
   }
 }
 
-void LauncherView::OnFadeOutAnimationEnded() {
+void ShelfView::OnFadeOutAnimationEnded() {
   AnimateToIdealBounds();
 
   // If overflow button is visible and there is a valid new last item, fading
@@ -1286,12 +1285,12 @@ void LauncherView::OnFadeOutAnimationEnded() {
     last_visible_view->layer()->SetOpacity(0);
     bounds_animator_->SetAnimationDelegate(
         last_visible_view,
-        new LauncherView::StartFadeAnimationDelegate(this, last_visible_view),
+        new ShelfView::StartFadeAnimationDelegate(this, last_visible_view),
         true);
   }
 }
 
-void LauncherView::UpdateOverflowRange(LauncherView* overflow_view) {
+void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) {
   const int first_overflow_index = last_visible_index_ + 1;
   const int last_overflow_index = last_hidden_index_;
   DCHECK_LE(first_overflow_index, last_overflow_index);
@@ -1301,7 +1300,7 @@ void LauncherView::UpdateOverflowRange(LauncherView* overflow_view) {
   overflow_view->last_visible_index_ = last_overflow_index;
 }
 
-bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
+bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) {
   gfx::Rect active_bounds;
 
   for (int i = 0; i < child_count(); ++i) {
@@ -1318,14 +1317,14 @@ bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
   return !active_bounds.Contains(cursor_location);
 }
 
-gfx::Rect LauncherView::GetVisibleItemsBoundsInScreen() {
+gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
   gfx::Size preferred_size = GetPreferredSize();
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
   ConvertPointToScreen(this, &origin);
   return gfx::Rect(origin, preferred_size);
 }
 
-int LauncherView::CancelDrag(int modified_index) {
+int ShelfView::CancelDrag(int modified_index) {
   FinalizeRipOffDrag(true);
   if (!drag_view_)
     return modified_index;
@@ -1354,7 +1353,7 @@ int LauncherView::CancelDrag(int modified_index) {
   return modified_view ? view_model_->GetIndexOfView(modified_view) : -1;
 }
 
-gfx::Size LauncherView::GetPreferredSize() {
+gfx::Size ShelfView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
 
@@ -1378,7 +1377,7 @@ gfx::Size LauncherView::GetPreferredSize() {
                    last_button_bounds.bottom() + leading_inset());
 }
 
-void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   LayoutToIdealBounds();
   FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
                     OnLauncherIconPositionsChanged());
@@ -1387,21 +1386,21 @@ void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     overflow_bubble_->Hide();
 }
 
-views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
+views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
   return this;
 }
 
-void LauncherView::GetAccessibleState(ui::AccessibleViewState* state) {
+void ShelfView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_TOOLBAR;
   state->name = l10n_util::GetStringUTF16(IDS_ASH_SHELF_ACCESSIBLE_NAME);
 }
 
-void LauncherView::OnGestureEvent(ui::GestureEvent* event) {
+void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
   if (gesture_handler_.ProcessGestureEvent(*event))
     event->StopPropagation();
 }
 
-void LauncherView::LauncherItemAdded(int model_index) {
+void ShelfView::LauncherItemAdded(int model_index) {
   {
     base::AutoReset<bool> cancelling_drag(
         &cancelling_drag_model_changed_, true);
@@ -1437,7 +1436,7 @@ void LauncherView::LauncherItemAdded(int model_index) {
   }
 }
 
-void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
+void ShelfView::LauncherItemRemoved(int model_index, LauncherID id) {
   if (id == context_menu_id_)
     launcher_menu_runner_.reset();
   {
@@ -1457,12 +1456,12 @@ void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
   // above animation finishes, CalculateIdealBounds will be called to get
   // correct overflow range. CalculateIdealBounds could hide overflow bubble
   // and triggers LauncherItemChanged. And since we are still in the middle
-  // of LauncherItemRemoved, LauncherView in overflow bubble is not synced
+  // of LauncherItemRemoved, ShelfView in overflow bubble is not synced
   // with LauncherModel and will crash.
   if (overflow_bubble_ && overflow_bubble_->IsShowing()) {
     last_hidden_index_ = std::min(last_hidden_index_,
                                   view_model_->view_size() - 1);
-    UpdateOverflowRange(overflow_bubble_->launcher_view());
+    UpdateOverflowRange(overflow_bubble_->shelf_view());
   }
 
   // Close the tooltip because it isn't needed any longer and its anchor view
@@ -1471,8 +1470,8 @@ void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
     tooltip_->Close();
 }
 
-void LauncherView::LauncherItemChanged(int model_index,
-                                       const ash::LauncherItem& old_item) {
+void ShelfView::LauncherItemChanged(int model_index,
+                                    const ash::LauncherItem& old_item) {
   const LauncherItem& item(model_->items()[model_index]);
   if (old_item.type != item.type) {
     // Type changed, swap the views.
@@ -1516,7 +1515,7 @@ void LauncherView::LauncherItemChanged(int model_index,
   }
 }
 
-void LauncherView::LauncherItemMoved(int start_index, int target_index) {
+void ShelfView::LauncherItemMoved(int start_index, int target_index) {
   view_model_->Move(start_index, target_index);
   // When cancelling a drag due to a launcher item being added, the currently
   // dragged item is moved back to its initial position. AnimateToIdealBounds
@@ -1526,7 +1525,7 @@ void LauncherView::LauncherItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
-void LauncherView::LauncherStatusChanged() {
+void ShelfView::LauncherStatusChanged() {
   if (ash::switches::UseAlternateShelfLayout())
     return;
   AppListButton* app_list_button =
@@ -1537,9 +1536,9 @@ void LauncherView::LauncherStatusChanged() {
     app_list_button->StopLoadingAnimation();
 }
 
-void LauncherView::PointerPressedOnButton(views::View* view,
-                                          Pointer pointer,
-                                          const ui::LocatedEvent& event) {
+void ShelfView::PointerPressedOnButton(views::View* view,
+                                       Pointer pointer,
+                                       const ui::LocatedEvent& event) {
   if (drag_view_)
     return;
 
@@ -1558,9 +1557,9 @@ void LauncherView::PointerPressedOnButton(views::View* view,
   drag_offset_ = shelf->PrimaryAxisValue(event.x(), event.y());
 }
 
-void LauncherView::PointerDraggedOnButton(views::View* view,
-                                          Pointer pointer,
-                                          const ui::LocatedEvent& event) {
+void ShelfView::PointerDraggedOnButton(views::View* view,
+                                       Pointer pointer,
+                                       const ui::LocatedEvent& event) {
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
   if (!dragging() && drag_view_ &&
       shelf->PrimaryAxisValue(abs(event.x() - drag_offset_),
@@ -1572,9 +1571,9 @@ void LauncherView::PointerDraggedOnButton(views::View* view,
     ContinueDrag(event);
 }
 
-void LauncherView::PointerReleasedOnButton(views::View* view,
-                                           Pointer pointer,
-                                           bool canceled) {
+void ShelfView::PointerReleasedOnButton(views::View* view,
+                                        Pointer pointer,
+                                        bool canceled) {
   if (canceled) {
     CancelDrag(-1);
   } else if (drag_pointer_ == pointer) {
@@ -1588,7 +1587,7 @@ void LauncherView::PointerReleasedOnButton(views::View* view,
     drag_view_ = NULL;
 }
 
-void LauncherView::MouseMovedOverButton(views::View* view) {
+void ShelfView::MouseMovedOverButton(views::View* view) {
   if (!ShouldShowTooltipForView(view))
     return;
 
@@ -1596,7 +1595,7 @@ void LauncherView::MouseMovedOverButton(views::View* view) {
     tooltip_->ResetTimer();
 }
 
-void LauncherView::MouseEnteredButton(views::View* view) {
+void ShelfView::MouseEnteredButton(views::View* view) {
   if (!ShouldShowTooltipForView(view))
     return;
 
@@ -1607,12 +1606,12 @@ void LauncherView::MouseEnteredButton(views::View* view) {
   }
 }
 
-void LauncherView::MouseExitedButton(views::View* view) {
+void ShelfView::MouseExitedButton(views::View* view) {
   if (!tooltip_->IsVisible())
     tooltip_->StopTimer();
 }
 
-base::string16 LauncherView::GetAccessibleName(const views::View* view) {
+base::string16 ShelfView::GetAccessibleName(const views::View* view) {
   int view_index = view_model_->GetIndexOfView(view);
   // May be -1 while in the process of animating closed.
   if (view_index == -1)
@@ -1623,8 +1622,7 @@ base::string16 LauncherView::GetAccessibleName(const views::View* view) {
   return item_delegate->GetTitle();
 }
 
-void LauncherView::ButtonPressed(views::Button* sender,
-                                 const ui::Event& event) {
+void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   // Do not handle mouse release during drag.
   if (dragging())
     return;
@@ -1686,9 +1684,9 @@ void LauncherView::ButtonPressed(views::Button* sender,
   }
 }
 
-bool LauncherView::ShowListMenuForView(const LauncherItem& item,
-                                       views::View* source,
-                                       const ui::Event& event) {
+bool ShelfView::ShowListMenuForView(const LauncherItem& item,
+                                    views::View* source,
+                                    const ui::Event& event) {
   scoped_ptr<ash::LauncherMenuModel> menu_model;
   LauncherItemDelegate* item_delegate =
       item_manager_->GetLauncherItemDelegate(item.id);
@@ -1708,9 +1706,9 @@ bool LauncherView::ShowListMenuForView(const LauncherItem& item,
   return true;
 }
 
-void LauncherView::ShowContextMenuForView(views::View* source,
-                                          const gfx::Point& point,
-                                          ui:: MenuSourceType source_type) {
+void ShelfView::ShowContextMenuForView(views::View* source,
+                                       const gfx::Point& point,
+                                       ui::MenuSourceType source_type) {
   int view_index = view_model_->GetIndexOfView(source);
   // TODO(simon.hong81): Create LauncherContextMenu for applist in its
   // LauncherItemDelegate.
@@ -1743,12 +1741,11 @@ void LauncherView::ShowContextMenuForView(views::View* source,
            source_type);
 }
 
-void LauncherView::ShowMenu(
-    scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
-    views::View* source,
-    const gfx::Point& click_point,
-    bool context_menu,
-    ui::MenuSourceType source_type) {
+void ShelfView::ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
+                         views::View* source,
+                         const gfx::Point& click_point,
+                         bool context_menu,
+                         ui::MenuSourceType source_type) {
   closing_event_time_ = base::TimeDelta();
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter->CreateMenu()));
@@ -1833,13 +1830,13 @@ void LauncherView::ShowMenu(
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
-void LauncherView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
+void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
   FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
                     OnLauncherIconPositionsChanged());
   PreferredSizeChanged();
 }
 
-void LauncherView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
+void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   if (snap_back_from_rip_off_view_ && animator == bounds_animator_) {
     if (!animator->IsAnimating(snap_back_from_rip_off_view_)) {
       // Coming here the animation of the LauncherButton is finished and the
@@ -1859,7 +1856,7 @@ void LauncherView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   }
 }
 
-bool LauncherView::IsUsableEvent(const ui::Event& event) {
+bool ShelfView::IsUsableEvent(const ui::Event& event) {
   if (closing_event_time_ == base::TimeDelta())
     return true;
 
@@ -1871,7 +1868,7 @@ bool LauncherView::IsUsableEvent(const ui::Event& event) {
   return (delta.InMilliseconds() < 0 || delta.InMilliseconds() > 130);
 }
 
-const LauncherItem* LauncherView::LauncherItemForView(
+const LauncherItem* ShelfView::LauncherItemForView(
     const views::View* view) const {
   int view_index = view_model_->GetIndexOfView(view);
   if (view_index == -1)
@@ -1879,7 +1876,7 @@ const LauncherItem* LauncherView::LauncherItemForView(
   return &(model_->items()[view_index]);
 }
 
-bool LauncherView::ShouldShowTooltipForView(const views::View* view) const {
+bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   if (view == GetAppListButtonView() &&
       Shell::GetInstance()->GetAppListWindow())
     return false;
@@ -1891,7 +1888,7 @@ bool LauncherView::ShouldShowTooltipForView(const views::View* view) const {
   return item_delegate->ShouldShowTooltip();
 }
 
-int LauncherView::CalculateShelfDistance(const gfx::Point& coordinate) const {
+int ShelfView::CalculateShelfDistance(const gfx::Point& coordinate) const {
   ShelfWidget* shelf = RootWindowController::ForLauncher(
       GetWidget()->GetNativeView())->shelf();
   ash::ShelfAlignment align = shelf->GetAlignment();

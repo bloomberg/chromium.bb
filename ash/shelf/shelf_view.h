@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_LAUNCHER_VIEW_H_
-#define ASH_LAUNCHER_LAUNCHER_VIEW_H_
+#ifndef ASH_SHELF_SHELF_VIEW_H_
+#define ASH_SHELF_SHELF_VIEW_H_
 
 #include <utility>
 #include <vector>
@@ -29,7 +29,7 @@ class ViewModel;
 namespace ash {
 
 namespace test {
-class LauncherViewTestAPI;
+class ShelfViewTestAPI;
 }
 
 class LauncherDelegate;
@@ -47,19 +47,19 @@ class OverflowButton;
 class ShelfLayoutManager;
 class ShelfTooltipManager;
 
-class ASH_EXPORT LauncherView : public views::View,
-                                public LauncherModelObserver,
-                                public views::ButtonListener,
-                                public LauncherButtonHost,
-                                public views::ContextMenuController,
-                                public views::FocusTraversable,
-                                public views::BoundsAnimatorObserver,
-                                public app_list::ApplicationDragAndDropHost {
+class ASH_EXPORT ShelfView : public views::View,
+                             public LauncherModelObserver,
+                             public views::ButtonListener,
+                             public LauncherButtonHost,
+                             public views::ContextMenuController,
+                             public views::FocusTraversable,
+                             public views::BoundsAnimatorObserver,
+                             public app_list::ApplicationDragAndDropHost {
  public:
-  LauncherView(LauncherModel* model,
-               LauncherDelegate* delegate,
-               ShelfLayoutManager* shelf_layout_manager);
-  virtual ~LauncherView();
+  ShelfView(LauncherModel* model,
+            LauncherDelegate* delegate,
+            ShelfLayoutManager* shelf_layout_manager);
+  virtual ~ShelfView();
 
   ShelfTooltipManager* tooltip_manager() { return tooltip_.get(); }
 
@@ -86,7 +86,7 @@ class ASH_EXPORT LauncherView : public views::View,
   // Returns true if overflow bubble is shown.
   bool IsShowingOverflowBubble() const;
 
-  // Sets owner overflow bubble instance from which this launcher view pops
+  // Sets owner overflow bubble instance from which this shelf view pops
   // out as overflow.
   void set_owner_overflow_bubble(OverflowBubble* owner) {
     owner_overflow_bubble_ = owner;
@@ -134,7 +134,7 @@ class ASH_EXPORT LauncherView : public views::View,
   }
 
  private:
-  friend class ash::test::LauncherViewTestAPI;
+  friend class ash::test::ShelfViewTestAPI;
 
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;
@@ -224,7 +224,7 @@ class ASH_EXPORT LauncherView : public views::View,
   void OnFadeOutAnimationEnded();
 
   // Updates the visible range of overflow items in |overflow_view|.
-  void UpdateOverflowRange(LauncherView* overflow_view);
+  void UpdateOverflowRange(ShelfView* overflow_view);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -318,7 +318,7 @@ class ASH_EXPORT LauncherView : public views::View,
   scoped_ptr<views::ViewModel> view_model_;
 
   // Index of first visible launcher item. When it it greater than 0,
-  // LauncherView is hosted in an overflow bubble. In this mode, it does not
+  // ShelfView is hosted in an overflow bubble. In this mode, it does not
   // show browser, app list and overflow button.
   int first_visible_index_;
 
@@ -412,10 +412,10 @@ class ASH_EXPORT LauncherView : public views::View,
   // Holds LauncherItemDelegateManager.
   LauncherItemDelegateManager* item_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherView);
+  DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_LAUNCHER_VIEW_H_
+#endif  // ASH_SHELF_SHELF_VIEW_H_

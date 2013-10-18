@@ -28,11 +28,11 @@ class Label;
 namespace ash {
 namespace test {
 class ShelfTooltipManagerTest;
-class LauncherViewTest;
+class ShelfViewTest;
 }
 
 namespace internal {
-class LauncherView;
+class ShelfView;
 class ShelfLayoutManager;
 
 // ShelfTooltipManager manages the tooltip balloon poping up on shelf items.
@@ -40,7 +40,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
                                        public ShelfLayoutManagerObserver {
  public:
   ShelfTooltipManager(ShelfLayoutManager* shelf_layout_manager,
-                      LauncherView* launcher_view);
+                      ShelfView* shelf_view);
   virtual ~ShelfTooltipManager();
 
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
@@ -92,7 +92,7 @@ protected:
 
  private:
   class ShelfTooltipBubble;
-  friend class test::LauncherViewTest;
+  friend class test::ShelfViewTest;
   friend class test::ShelfTooltipManagerTest;
 
   void CancelHidingAnimation();
@@ -108,7 +108,7 @@ protected:
   scoped_ptr<base::Timer> timer_;
 
   ShelfLayoutManager* shelf_layout_manager_;
-  LauncherView* launcher_view_;
+  ShelfView* shelf_view_;
 
   base::WeakPtrFactory<ShelfTooltipManager> weak_factory_;
 

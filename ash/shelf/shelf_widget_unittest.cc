@@ -7,13 +7,13 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_view.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
-#include "ash/test/launcher_view_test_api.h"
+#include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
@@ -141,7 +141,7 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
   // Test only makes sense if the status is > 0, which it better be.
   EXPECT_GT(status_width, 0);
   EXPECT_EQ(status_width, shelf_widget->GetContentsView()->width() -
-            test::LauncherTestAPI(launcher).launcher_view()->width());
+            test::LauncherTestAPI(launcher).shelf_view()->width());
 }
 
 // Verifies when the shell is deleted with a full screen window we don't crash.
@@ -187,7 +187,7 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySizedAfterLogin) {
   EXPECT_GT(status_width, 0);
   EXPECT_EQ(status_width,
             shelf->GetContentsView()->width() -
-                test::LauncherTestAPI(launcher).launcher_view()->width());
+                test::LauncherTestAPI(launcher).shelf_view()->width());
 }
 #endif
 

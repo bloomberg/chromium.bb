@@ -14,7 +14,7 @@ namespace ash {
 
 class LauncherModelObserver;
 
-// Model used by LauncherView.
+// Model used by ShelfView.
 class ASH_EXPORT LauncherModel {
  public:
   enum Status {

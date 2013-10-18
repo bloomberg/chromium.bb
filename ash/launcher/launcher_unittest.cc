@@ -6,12 +6,12 @@
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_view.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
-#include "ash/test/launcher_view_test_api.h"
+#include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_launcher_item_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/root_window.h"
@@ -26,7 +26,7 @@
 #endif
 
 typedef ash::test::AshTestBase LauncherTest;
-using ash::internal::LauncherView;
+using ash::internal::ShelfView;
 using ash::internal::LauncherButton;
 
 namespace ash {
@@ -34,7 +34,7 @@ namespace ash {
 class LauncherTest : public ash::test::AshTestBase {
  public:
   LauncherTest() : launcher_(NULL),
-                   launcher_view_(NULL),
+                   shelf_view_(NULL),
                    launcher_model_(NULL),
                    item_delegate_manager_(NULL) {
   }
@@ -48,12 +48,12 @@ class LauncherTest : public ash::test::AshTestBase {
     ASSERT_TRUE(launcher_);
 
     ash::test::LauncherTestAPI test(launcher_);
-    launcher_view_ = test.launcher_view();
-    launcher_model_ = launcher_view_->model();
+    shelf_view_ = test.shelf_view();
+    launcher_model_ = shelf_view_->model();
     item_delegate_manager_ =
         Shell::GetInstance()->launcher_item_delegate_manager();
 
-    test_.reset(new ash::test::LauncherViewTestAPI(launcher_view_));
+    test_.reset(new ash::test::ShelfViewTestAPI(shelf_view_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -64,8 +64,8 @@ class LauncherTest : public ash::test::AshTestBase {
     return launcher_;
   }
 
-  LauncherView* launcher_view() {
-    return launcher_view_;
+  ShelfView* shelf_view() {
+    return shelf_view_;
   }
 
   LauncherModel* launcher_model() {
@@ -76,16 +76,16 @@ class LauncherTest : public ash::test::AshTestBase {
     return item_delegate_manager_;
   }
 
-  ash::test::LauncherViewTestAPI* test_api() {
+  ash::test::ShelfViewTestAPI* test_api() {
     return test_.get();
   }
 
  private:
   Launcher* launcher_;
-  LauncherView* launcher_view_;
+  ShelfView* shelf_view_;
   LauncherModel* launcher_model_;
   LauncherItemDelegateManager* item_delegate_manager_;
-  scoped_ptr<ash::test::LauncherViewTestAPI> test_;
+  scoped_ptr<ash::test::ShelfViewTestAPI> test_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherTest);
 };
@@ -155,7 +155,7 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
   test_api()->ShowOverflowBubble();
   EXPECT_TRUE(launcher()->IsShowingOverflowBubble());
 
-  // Removes the first item in main launcher view.
+  // Removes the first item in main shelf view.
   launcher_model()->RemoveItemAt(
       launcher_model()->ItemIndexByID(first_item_id));
 

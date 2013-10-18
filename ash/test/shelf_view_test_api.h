@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_LAUNCHER_VIEW_TEST_API_H_
-#define ASH_TEST_LAUNCHER_VIEW_TEST_API_H_
+#ifndef ASH_TEST_SHELF_VIEW_TEST_API_H_
+#define ASH_TEST_SHELF_VIEW_TEST_API_H_
 
 #include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
@@ -16,16 +16,16 @@ namespace ash {
 
 namespace internal {
 class LauncherButton;
-class LauncherView;
+class ShelfView;
 }
 
 namespace test {
 
-// Use the api in this class to test LauncherView.
-class LauncherViewTestAPI {
+// Use the api in this class to test ShelfView.
+class ShelfViewTestAPI {
  public:
-  explicit LauncherViewTestAPI(internal::LauncherView* launcher_view);
-  ~LauncherViewTestAPI();
+  explicit ShelfViewTestAPI(internal::ShelfView* shelf_view);
+  ~ShelfViewTestAPI();
 
   // Number of icons displayed.
   int GetButtonCount();
@@ -43,7 +43,7 @@ class LauncherViewTestAPI {
   // Returns true if overflow button is visible.
   bool IsOverflowButtonVisible();
 
-  // Makes launcher view show its overflow bubble.
+  // Makes shelf view show its overflow bubble.
   void ShowOverflowBubble();
 
   // Sets animation duration in milliseconds for test.
@@ -52,19 +52,19 @@ class LauncherViewTestAPI {
   // Runs message loop and waits until all add/remove animations are done.
   void RunMessageLoopUntilAnimationsDone();
 
-  // An accessor for |launcher_view|.
-  internal::LauncherView* launcher_view() { return launcher_view_; }
+  // An accessor for |shelf_view|.
+  internal::ShelfView* shelf_view() { return shelf_view_; }
 
-  // Wrapper for LauncherView::SameDragType.
+  // Wrapper for ShelfView::SameDragType.
   bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
 
  private:
-  internal::LauncherView* launcher_view_;
+  internal::ShelfView* shelf_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherViewTestAPI);
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewTestAPI);
 };
 
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_LAUNCHER_VIEW_TEST_API_H_
+#endif  // ASH_TEST_SHELF_VIEW_TEST_API_H_

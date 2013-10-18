@@ -10,11 +10,11 @@
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_view.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -784,7 +784,7 @@ TEST_F(ShelfLayoutManagerTest, LauncherUpdatedWhenStatusAreaChangesSize) {
   shelf_widget->status_area_widget()->SetBounds(
       gfx::Rect(0, 0, 200, 200));
   EXPECT_EQ(200, shelf_widget->GetContentsView()->width() -
-            test::LauncherTestAPI(launcher).launcher_view()->width());
+            test::LauncherTestAPI(launcher).shelf_view()->width());
 }
 
 

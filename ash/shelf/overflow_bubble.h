@@ -25,7 +25,7 @@ class LauncherModel;
 
 namespace internal {
 
-class LauncherView;
+class ShelfView;
 
 // OverflowBubble displays the overflown launcher items in a bubble.
 class OverflowBubble : public ui::EventHandler,
@@ -34,8 +34,8 @@ class OverflowBubble : public ui::EventHandler,
   OverflowBubble();
   virtual ~OverflowBubble();
 
-  // Shows an bubble pointing to |anchor| with |launcher_view| as its content.
-  void Show(views::View* anchor, LauncherView* launcher_view);
+  // Shows an bubble pointing to |anchor| with |shelf_view| as its content.
+  void Show(views::View* anchor, ShelfView* shelf_view);
 
   void Hide();
 
@@ -44,7 +44,7 @@ class OverflowBubble : public ui::EventHandler,
   void HideBubbleAndRefreshButton();
 
   bool IsShowing() const { return !!bubble_; }
-  LauncherView* launcher_view() { return launcher_view_; }
+  ShelfView* shelf_view() { return shelf_view_; }
 
  private:
   void ProcessPressedEvent(ui::LocatedEvent* event);
@@ -57,8 +57,8 @@ class OverflowBubble : public ui::EventHandler,
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
   views::View* bubble_;  // Owned by views hierarchy.
-  views::View* anchor_;  // Owned by LauncherView.
-  LauncherView* launcher_view_;  // Owned by |bubble_|.
+  views::View* anchor_;  // Owned by ShelfView.
+  ShelfView* shelf_view_;  // Owned by |bubble_|.
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubble);
 };

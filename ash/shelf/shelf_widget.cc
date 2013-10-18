@@ -8,11 +8,11 @@
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_view.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigator.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -233,7 +233,7 @@ void DimmerView::DimmerEventFilter::OnTouchEvent(ui::TouchEvent* event) {
 
 namespace ash {
 
-// The contents view of the Shelf. This view contains LauncherView and
+// The contents view of the Shelf. This view contains ShelfView and
 // sizes it to the width of the shelf minus the size of the status area.
 class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public views::AccessiblePaneView,

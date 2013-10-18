@@ -281,7 +281,7 @@ class ASH_EXPORT Shell
   // Initializes |launcher_|.  Does nothing if it's already initialized.
   void CreateLauncher();
 
-  // Show launcher view if it was created hidden (before session has started).
+  // Show shelf view if it was created hidden (before session has started).
   void ShowLauncher();
 
   // Adds/removes observer.

@@ -16,7 +16,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
-#include "ash/test/launcher_view_test_api.h"
+#include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -54,9 +54,9 @@ class DockedWindowLayoutManagerTest
     UpdateDisplay("600x600");
     ASSERT_TRUE(test::TestLauncherDelegate::instance());
 
-    launcher_view_test_.reset(new test::LauncherViewTestAPI(
-        test::LauncherTestAPI(Launcher::ForPrimaryDisplay()).launcher_view()));
-    launcher_view_test_->SetAnimationDuration(1);
+    shelf_view_test_.reset(new test::ShelfViewTestAPI(
+        test::LauncherTestAPI(Launcher::ForPrimaryDisplay()).shelf_view()));
+    shelf_view_test_->SetAnimationDuration(1);
   }
 
  protected:
@@ -217,7 +217,7 @@ class DockedWindowLayoutManagerTest
 
  private:
   scoped_ptr<WindowResizer> resizer_;
-  scoped_ptr<test::LauncherViewTestAPI> launcher_view_test_;
+  scoped_ptr<test::ShelfViewTestAPI> shelf_view_test_;
   aura::client::WindowType window_type_;
 
   // Location at start of the drag in |window->parent()|'s coordinates.

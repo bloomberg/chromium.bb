@@ -45,7 +45,7 @@ class ShelfTooltipManagerTest : public AshTestBase {
         Shell::GetPrimaryRootWindowController();
     tooltip_manager_.reset(new internal::ShelfTooltipManager(
         controller->GetShelfLayoutManager(),
-        LauncherTestAPI(controller->shelf()->launcher()).launcher_view()));
+        LauncherTestAPI(controller->shelf()->launcher()).shelf_view()));
   }
 
   virtual void TearDown() OVERRIDE {

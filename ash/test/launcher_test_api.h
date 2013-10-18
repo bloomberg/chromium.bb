@@ -12,7 +12,7 @@ namespace ash {
 class Launcher;
 
 namespace internal {
-class LauncherView;
+class ShelfView;
 }
 
 namespace test {
@@ -24,8 +24,8 @@ class LauncherTestAPI {
 
   ~LauncherTestAPI();
 
-  // An accessor for |launcher_view|.
-  internal::LauncherView* launcher_view();
+  // An accessor for |shelf_view|.
+  internal::ShelfView* shelf_view();
 
  private:
   Launcher* launcher_;
@@ -36,4 +36,4 @@ class LauncherTestAPI {
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_LAUNCHER_VIEW_TEST_API_H_
+#endif  // ASH_TEST_LAUNCHER_TEST_API_H_

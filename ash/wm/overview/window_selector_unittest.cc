@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
-#include "ash/test/launcher_view_test_api.h"
+#include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -58,9 +58,9 @@ class WindowSelectorTest : public test::AshTestBase {
     test::AshTestBase::SetUp();
     ASSERT_TRUE(test::TestLauncherDelegate::instance());
 
-    launcher_view_test_.reset(new test::LauncherViewTestAPI(
-        test::LauncherTestAPI(Launcher::ForPrimaryDisplay()).launcher_view()));
-    launcher_view_test_->SetAnimationDuration(1);
+    shelf_view_test_.reset(new test::ShelfViewTestAPI(
+        test::LauncherTestAPI(Launcher::ForPrimaryDisplay()).shelf_view()));
+    shelf_view_test_->SetAnimationDuration(1);
   }
 
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
@@ -79,7 +79,7 @@ class WindowSelectorTest : public test::AshTestBase {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, aura::client::WINDOW_TYPE_PANEL, 0, bounds);
     test::TestLauncherDelegate::instance()->AddLauncherItem(window);
-    launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+    shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
   }
 
@@ -155,14 +155,14 @@ class WindowSelectorTest : public test::AshTestBase {
         Shell::GetPrimaryRootWindow())->GetFocusedWindow();
   }
 
-  test::LauncherViewTestAPI* launcher_view_test() {
-    return launcher_view_test_.get();
+  test::ShelfViewTestAPI* shelf_view_test() {
+    return shelf_view_test_.get();
   }
 
  private:
   aura::test::TestWindowDelegate delegate_;
   NonActivatableActivationDelegate non_activatable_activation_delegate_;
-  scoped_ptr<test::LauncherViewTestAPI> launcher_view_test_;
+  scoped_ptr<test::ShelfViewTestAPI> shelf_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };

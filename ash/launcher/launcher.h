@@ -33,8 +33,8 @@ namespace ash {
 
 namespace internal {
 class FocusCycler;
-class LauncherView;
 class ShelfLayoutManager;
+class ShelfView;
 }
 
 namespace test {
@@ -103,9 +103,9 @@ class ASH_EXPORT Launcher {
 
   ShelfWidget* shelf_widget() { return shelf_widget_; }
 
-  // Set the bounds of the launcher view.
-  void SetLauncherViewBounds(gfx::Rect bounds);
-  gfx::Rect GetLauncherViewBounds() const;
+  // Set the bounds of the shelf view.
+  void SetShelfViewBounds(gfx::Rect bounds);
+  gfx::Rect GetShelfViewBounds() const;
 
   // Returns rectangle bounding all visible launcher items. Used screen
   // coordinate system.
@@ -117,8 +117,8 @@ class ASH_EXPORT Launcher {
  private:
   friend class ash::test::LauncherTestAPI;
 
-  // LauncherView used to display icons.
-  internal::LauncherView* launcher_view_;
+  // ShelfView used to display icons.
+  internal::ShelfView* shelf_view_;
 
   ShelfAlignment alignment_;
 

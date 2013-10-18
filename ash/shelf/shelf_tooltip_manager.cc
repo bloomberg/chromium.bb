@@ -4,8 +4,8 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
-#include "ash/launcher/launcher_view.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
@@ -138,12 +138,12 @@ gfx::Size ShelfTooltipManager::ShelfTooltipBubble::GetPreferredSize() {
 
 ShelfTooltipManager::ShelfTooltipManager(
     ShelfLayoutManager* shelf_layout_manager,
-    LauncherView* launcher_view)
+    ShelfView* shelf_view)
     : view_(NULL),
       widget_(NULL),
       anchor_(NULL),
       shelf_layout_manager_(shelf_layout_manager),
-      launcher_view_(launcher_view),
+      shelf_view_(shelf_view),
       weak_factory_(this) {
   if (shelf_layout_manager)
     shelf_layout_manager->AddObserver(this);
@@ -253,7 +253,7 @@ void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
     return;
 
   DCHECK(view_);
-  DCHECK(launcher_view_);
+  DCHECK(shelf_view_);
 
   // Pressing the mouse button anywhere should close the tooltip.
   if (event->type() == ui::ET_MOUSE_PRESSED) {
@@ -267,12 +267,12 @@ void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
 
-  gfx::Point location_in_launcher_view = event->location();
+  gfx::Point location_in_shelf_view = event->location();
   aura::Window::ConvertPointToTarget(
-      target, launcher_view_->GetWidget()->GetNativeWindow(),
-      &location_in_launcher_view);
+      target, shelf_view_->GetWidget()->GetNativeWindow(),
+      &location_in_shelf_view);
 
-  if (launcher_view_->ShouldHideTooltip(location_in_launcher_view)) {
+  if (shelf_view_->ShouldHideTooltip(location_in_shelf_view)) {
     // Because this mouse event may arrive to |view_|, here we just schedule
     // the closing event rather than directly calling Close().
     CloseSoon();

@@ -16,8 +16,8 @@ LauncherTestAPI::LauncherTestAPI(Launcher* launcher)
 LauncherTestAPI::~LauncherTestAPI() {
 }
 
-internal::LauncherView* LauncherTestAPI::launcher_view() {
-  return launcher_->launcher_view_;
+internal::ShelfView* LauncherTestAPI::shelf_view() {
+  return launcher_->shelf_view_;
 }
 
 }  // namespace test
