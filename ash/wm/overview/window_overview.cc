@@ -295,9 +295,10 @@ void WindowOverview::HideAndTrackNonOverviewWindows() {
     for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
       aura::Window* container = Shell::GetContainer(*root_iter,
           kSwitchableWindowContainerIds[i]);
-      for (aura::Window::Windows::const_iterator iter =
-           container->children().begin(); iter != container->children().end();
-           ++iter) {
+      // Copy the children list as it can change during iteration.
+      aura::Window::Windows children(container->children());
+      for (aura::Window::Windows::const_iterator iter = children.begin();
+           iter != children.end(); ++iter) {
         if (GetTargetedWindow(*iter) || !(*iter)->IsVisible())
           continue;
         ui::ScopedLayerAnimationSettings settings(

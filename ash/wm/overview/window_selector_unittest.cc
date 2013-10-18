@@ -351,6 +351,20 @@ TEST_F(WindowSelectorTest, CyclePanels) {
   EXPECT_TRUE(wm::IsActiveWindow(panel1.get()));
 }
 
+// Tests the visibility of panel windows during cycling.
+TEST_F(WindowSelectorTest, CyclePanelVisibility) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
+  wm::ActivateWindow(panel1.get());
+  wm::ActivateWindow(window1.get());
+
+  Cycle(WindowSelector::FORWARD);
+  FireOverviewStartTimer();
+  EXPECT_EQ(1.0f, panel1->layer()->GetTargetOpacity());
+  StopCycling();
+}
+
 // Tests cycles between panel and normal windows.
 TEST_F(WindowSelectorTest, CyclePanelsDestroyed) {
   gfx::Rect bounds(0, 0, 400, 400);
