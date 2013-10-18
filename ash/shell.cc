@@ -850,22 +850,21 @@ void Shell::Init() {
   system_tray_delegate_.reset(delegate()->CreateSystemTrayDelegate());
   DCHECK(system_tray_delegate_.get());
 
-  internal::RootWindowController::CreateForPrimaryDisplay(root_window);
-  internal::RootWindowController* root_window_controller =
-      internal::GetRootWindowController(root_window);
-
   locale_notification_controller_.reset(
       new internal::LocaleNotificationController);
 
   // Initialize system_tray_delegate_ after StatusAreaWidget is created.
   system_tray_delegate_->Initialize();
 
+  // TODO(oshima): Initialize all RootWindowControllers once, and
+  // initialize controller/delegates above when initializing the
+  // primary root window controller.
+  internal::RootWindowController::CreateForPrimaryDisplay(root_window);
+
   display_controller_->InitSecondaryDisplays();
 
-  // Force Layout
-  root_window_controller->root_window_layout()->OnWindowResized();
-
-  // It needs to be created after OnWindowResized has been called, otherwise the
+  // It needs to be created after RootWindowController has been created
+  // (which calls OnWindowResized has been called, otherwise the
   // widget will not paint when restoring after a browser crash.  Also it needs
   // to be created after InitSecondaryDisplays() to initialize the wallpapers in
   // the correct size.

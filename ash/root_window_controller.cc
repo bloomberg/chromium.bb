@@ -588,6 +588,7 @@ void RootWindowController::Init(bool is_primary, bool first_run_after_boot) {
   shell->AddShellObserver(this);
 
   if (is_primary) {
+    root_window_layout()->OnWindowResized();
     shell->InitKeyboard(this);
   } else {
     root_window_layout()->OnWindowResized();
