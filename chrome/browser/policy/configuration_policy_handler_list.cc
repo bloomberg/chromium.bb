@@ -10,6 +10,7 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chrome/browser/net/proxy_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -461,7 +462,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       new IncognitoModePolicyHandler(prefs::kIncognitoModeAvailability));
   handlers_.push_back(
       new JavascriptPolicyHandler(prefs::kManagedDefaultJavaScriptSetting));
-  handlers_.push_back(new ProxyPolicyHandler(prefs::kProxy));
+  handlers_.push_back(new ProxyPolicyHandler());
   handlers_.push_back(new RestoreOnStartupPolicyHandler(
       prefs::kRestoreOnStartup, prefs::kURLsToRestoreOnStartup));
   handlers_.push_back(new SyncPolicyHandler(prefs::kSyncManaged));

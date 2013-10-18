@@ -1239,6 +1239,8 @@
         'browser/net/pref_proxy_config_tracker_impl.h',
         'browser/net/probe_message.cc',
         'browser/net/probe_message.h',
+        'browser/net/proxy_policy_handler.cc',
+        'browser/net/proxy_policy_handler.h',
         'browser/net/proxy_service_factory.cc',
         'browser/net/proxy_service_factory.h',
         'browser/net/referrer.cc',
