@@ -23,7 +23,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/corewm/capture_controller.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/input_method_event_filter.h"
@@ -36,6 +35,7 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_bridge.h"
+#include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -218,8 +218,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   // Make sure we don't still have capture. Otherwise CaptureController and
   // RootWindow are left referencing a deleted Window.
   {
-    aura::Window* capture_window =
-        capture_client_->capture_client()->GetCaptureWindow();
+    aura::Window* capture_window = capture_client_->GetCaptureWindow();
     if (capture_window && root_window_->Contains(capture_window))
       capture_window->ReleaseCapture();
   }
@@ -235,6 +234,8 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
 
   stacking_client_.reset();  // Uses root_window_ at destruction.
+
+  capture_client_.reset();  // Uses root_window_ at destruction.
 
   root_window_->RemoveRootWindowObserver(this);
   root_window_.reset();  // Uses input_method_event_filter_ at destruction.
@@ -267,7 +268,7 @@ void DesktopNativeWidgetAura::InstallInputMethodEventFilter(
 
 void DesktopNativeWidgetAura::CreateCaptureClient(aura::RootWindow* root) {
   DCHECK(!capture_client_.get());
-  capture_client_.reset(new corewm::ScopedCaptureClient(root));
+  capture_client_.reset(new DesktopCaptureClient(root));
 }
 
 void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
@@ -465,10 +466,6 @@ void DesktopNativeWidgetAura::SetCapture() {
     return;
 
   window_->SetCapture();
-  // aura::Window doesn't implicitly update capture on the RootWindowHost, so
-  // we have to do that manually.
-  if (!desktop_root_window_host_->HasCapture())
-    window_->GetRootWindow()->SetNativeCapture();
 }
 
 void DesktopNativeWidgetAura::ReleaseCapture() {
@@ -476,10 +473,6 @@ void DesktopNativeWidgetAura::ReleaseCapture() {
     return;
 
   window_->ReleaseCapture();
-  // aura::Window doesn't implicitly update capture on the RootWindowHost, so
-  // we have to do that manually.
-  if (desktop_root_window_host_->HasCapture())
-    window_->GetRootWindow()->ReleaseNativeCapture();
 }
 
 bool DesktopNativeWidgetAura::HasCapture() const {

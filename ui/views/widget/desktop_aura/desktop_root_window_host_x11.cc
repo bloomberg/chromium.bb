@@ -1041,8 +1041,9 @@ bool DesktopRootWindowHostX11::HasWMSpecProperty(const char* property) const {
 }
 
 void DesktopRootWindowHostX11::OnCaptureReleased() {
-  native_widget_delegate_->OnMouseCaptureLost();
   g_current_capture = NULL;
+  root_window_host_delegate_->OnHostLostWindowCapture();
+  native_widget_delegate_->OnMouseCaptureLost();
 }
 
 void DesktopRootWindowHostX11::DispatchMouseEvent(ui::MouseEvent* event) {

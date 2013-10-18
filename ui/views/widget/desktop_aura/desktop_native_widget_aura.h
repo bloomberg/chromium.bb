@@ -28,13 +28,13 @@ namespace views {
 namespace corewm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
-class ScopedCaptureClient;
 class ShadowController;
 class TooltipController;
 class VisibilityController;
 class WindowModalityController;
 }
 
+class DesktopCaptureClient;
 class DesktopRootWindowHost;
 class DropHelper;
 class NativeWidgetAuraWindowObserver;
@@ -234,7 +234,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
 
-  scoped_ptr<corewm::ScopedCaptureClient> capture_client_;
+  scoped_ptr<DesktopCaptureClient> capture_client_;
 
   // The NativeWidget owns the RootWindow. Required because the RootWindow owns
   // its RootWindowHost, so DesktopRootWindowHost can't own it.

@@ -579,8 +579,7 @@ bool RootWindow::CanReceiveEvents() const {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, overridden from aura::client::CaptureDelegate:
 
-void RootWindow::UpdateCapture(Window* old_capture,
-                               Window* new_capture) {
+void RootWindow::UpdateCapture(Window* old_capture, Window* new_capture) {
   if (!new_capture && old_capture && old_capture->GetRootWindow() != this) {
     // If we no longer contain the window that had capture make sure we clean
     // state in the GestureRecognizer. Since we don't contain the window we'll
