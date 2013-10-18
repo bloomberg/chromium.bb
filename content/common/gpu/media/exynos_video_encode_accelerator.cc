@@ -384,13 +384,13 @@ ExynosVideoEncodeAccelerator::GetSupportedProfiles() {
     profile.max_framerate.numerator = 30;
     profile.max_framerate.denominator = 1;
     profiles.push_back(profile);
+  } else {
+    profile.profile = media::H264PROFILE_MAIN;
+    profile.max_resolution.SetSize(1920, 1088);
+    profile.max_framerate.numerator = 30;
+    profile.max_framerate.denominator = 1;
+    profiles.push_back(profile);
   }
-
-  profile.profile = media::H264PROFILE_MAIN;
-  profile.max_resolution.SetSize(1920, 1088);
-  profile.max_framerate.numerator = 30;
-  profile.max_framerate.denominator = 1;
-  profiles.push_back(profile);
 
   return profiles;
 }
