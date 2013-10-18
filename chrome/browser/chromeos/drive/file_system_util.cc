@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_platform_file_closer.h"
 #include "base/i18n/icu_string_conversions.h"
@@ -99,19 +98,6 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
   }
 
   return result;
-}
-
-// Moves all files under |directory_from| to |directory_to|.
-void MoveAllFilesFromDirectory(const base::FilePath& directory_from,
-                               const base::FilePath& directory_to) {
-  base::FileEnumerator enumerator(directory_from, false,  // not recursive
-                                  base::FileEnumerator::FILES);
-  for (base::FilePath file_from = enumerator.Next(); !file_from.empty();
-       file_from = enumerator.Next()) {
-    const base::FilePath file_to = directory_to.Append(file_from.BaseName());
-    if (!base::PathExists(file_to))  // Do not overwrite existing files.
-      base::Move(file_from, file_to);
-  }
 }
 
 // Returns DriveIntegrationService instance, if Drive is enabled.
@@ -321,27 +307,6 @@ std::string NormalizeFileName(const std::string& input) {
     output = input;
   ReplaceChars(output, kSlash, std::string(kEscapedSlash), &output);
   return output;
-}
-
-void MigrateCacheFilesFromOldDirectories(
-    const base::FilePath& cache_root_directory,
-    const base::FilePath::StringType& cache_file_directory_name) {
-  const base::FilePath persistent_directory =
-      cache_root_directory.AppendASCII("persistent");
-  const base::FilePath tmp_directory =
-      cache_root_directory.AppendASCII("tmp");
-  if (!base::PathExists(persistent_directory))
-    return;
-
-  const base::FilePath cache_file_directory =
-      cache_root_directory.Append(cache_file_directory_name);
-
-  // Move all files inside "persistent" to "files".
-  MoveAllFilesFromDirectory(persistent_directory, cache_file_directory);
-  base::DeleteFile(persistent_directory,  true /* recursive */);
-
-  // Move all files inside "tmp" to "files".
-  MoveAllFilesFromDirectory(tmp_directory, cache_file_directory);
 }
 
 void PrepareWritableFileAndRun(Profile* profile,

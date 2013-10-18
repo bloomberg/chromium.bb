@@ -115,9 +115,6 @@ FileError InitializeMetadata(
       file_util::FILE_PERMISSION_EXECUTE_BY_GROUP |
       file_util::FILE_PERMISSION_EXECUTE_BY_OTHERS);
 
-  util::MigrateCacheFilesFromOldDirectories(cache_root_directory,
-                                            kCacheFileDirectory);
-
   if (!metadata_storage->Initialize()) {
     LOG(WARNING) << "Failed to initialize the metadata storage.";
     return FILE_ERROR_FAILED;

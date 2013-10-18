@@ -141,13 +141,6 @@ std::string NormalizeFileName(const std::string& input);
 // profile.
 base::FilePath GetCacheRootPath(Profile* profile);
 
-// Migrates cache files from old "persistent" and "tmp" directories to the new
-// "files" directory (see crbug.com/248905).
-// TODO(hashimoto): Remove this function at some point.
-void MigrateCacheFilesFromOldDirectories(
-    const base::FilePath& cache_root_directory,
-    const base::FilePath::StringType& cache_file_directory_name);
-
 // Callback type for PrepareWritableFileAndRun.
 typedef base::Callback<void (FileError, const base::FilePath& path)>
     PrepareWritableFileCallback;
