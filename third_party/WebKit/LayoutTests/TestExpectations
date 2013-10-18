@@ -183,9 +183,6 @@ webkit.org/b/80517 svg/dynamic-updates/SVGFESpecularLightingElement-remove-light
 
 webkit.org/b/81243 svg/repaint/repainting-after-animation-element-removal.svg [ ImageOnlyFailure Pass ]
 
-# Flaky on Linux after http://trac.webkit.org/changeset/112022
-webkit.org/b/82217 [ Linux ] svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
-
 # Flaky since at least r111670
 webkit.org/b/82258 [ Debug ] svg/custom/circular-marker-reference-4.svg [ Failure Pass ]
 
@@ -195,13 +192,6 @@ webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/animate-elem-77-t.svg [ Ima
 webkit.org/b/82954 [ Debug Mac Win ] svg/W3C-SVG-1.1/text-text-05-t.svg [ ImageOnlyFailure Pass ]
 
 webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg [ ImageOnlyFailure ]
-
-# Many WIN and Linux SVG tests containing text are flaky. It seems different fonts are used at different times.
-# fmalita: re-enable after https://codereview.chromium.org/26428003/
-# webkit.org/b/83303 [ Linux ] svg/transforms/text-with-mask-with-svg-transform.svg [ ImageOnlyFailure Pass ]
-webkit.org/b/83303 [ Linux ] svg/transforms/text-with-pattern-with-svg-transform.svg [ NeedsRebaseline ]
-
-webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ NeedsRebaseline ]
 
 webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
 
@@ -1201,9 +1191,6 @@ crbug.com/307570 fast/images/image-zoom-to-25.html [ Pass Failure ]
 crbug.com/307570 virtual/deferred/fast/images/image-zoom-to-25.html [ Pass Failure ]
 
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
-
-crbug.com/306193 [ Win ] svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
-crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ NeedsRebaseline ]
 
 crbug.com/303922 fast/borders/border-radius-with-empty-inner-border.html [ NeedsRebaseline ]
 crbug.com/303383 fast/borders/empty-border-radius.html [ NeedsRebaseline ]
