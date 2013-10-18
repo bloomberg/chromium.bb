@@ -1177,9 +1177,7 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
             cros_build_lib.RunCommandCaptureOutput(cmd,
                                                    debug_level=logging.DEBUG)
     except cros_build_lib.TimeoutError:
-      cros_build_lib.Error('Timed out uploading %s', filename, exc_info=True)
-      cros_build_lib.PrintBuildbotStepWarnings()
-      cros_build_lib.PrintBuildbotLink('Upload timeout: %s' % filename, '#')
+      raise cros_build_lib.TimeoutError('Timed out uploading %s' % filename)
     else:
       # Update the list of uploaded files.
       if update_list:

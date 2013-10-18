@@ -266,7 +266,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
     try:
       commands.UploadArchivedFile(self.archive_path, self.upload_url, filename,
                                   self.debug, update_list=True, acl=self.acl)
-    except cros_build_lib.RunCommandError as e:
+    except (cros_build_lib.RunCommandError, cros_build_lib.TimeoutError) as e:
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
         raise
@@ -2256,7 +2256,7 @@ class BuildImageStage(BuildPackagesStage):
 
   def _BuildAutotestTarballs(self):
     with osutils.TempDir(prefix='cbuildbot-autotest') as tempdir:
-      with self.ArtifactUploader() as queue:
+      with self.ArtifactUploader(strict=True) as queue:
         cwd = os.path.abspath(
             os.path.join(self._build_root, 'chroot', 'build',
                          self._current_board, constants.AUTOTEST_BUILD_PATH,
