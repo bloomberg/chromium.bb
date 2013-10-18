@@ -1704,7 +1704,6 @@
         'win_debug_disable_iterator_debugging': '1',
         'win_debug_Optimization': '1',
         'win_debug_InlineFunctionExpansion': '0',
-        'win_release_disable_iterator_debugging': '1',
         'win_release_InlineFunctionExpansion': '0',
         'win_release_OmitFramePointers': '0',
 
@@ -1722,9 +1721,8 @@
         # These runtime checks force initialization of stack vars which blocks
         # DrMemory's uninit detection.
         'win_debug_RuntimeChecks': '0',
-        # Iterator debugging is slow. Disable in both Debug and Release
+        # Iterator debugging is slow.
         'win_debug_disable_iterator_debugging': '1',
-        'win_release_disable_iterator_debugging': '1',
         # Try to disable optimizations that mess up stacks in a release build.
         # DrM-i#1054 (http://code.google.com/p/drmemory/issues/detail?id=1054)
         # /O2 and /Ob0 (disable inline) cannot be used together because of a
@@ -1847,11 +1845,6 @@
       # tools like ThreadSanitizer so we want it to be disablable.
       # See http://msdn.microsoft.com/en-us/library/aa985982(v=VS.80).aspx
       'win_debug_disable_iterator_debugging%': '0',
-
-      # We now enable partial iterator debugging on Release builds but
-      # we want to make it disablable for release tsan and drmemory builds
-      # see http://crbug.com/289691
-      'win_release_disable_iterator_debugging%': '0',
 
       # An application manifest fragment to declare compatibility settings for
       # 'executable' targets. Ignored in other target type.
@@ -2674,13 +2667,6 @@
                 # We still want the false setting above to avoid having
                 # "/Oy /Oy-" and warnings about overriding.
                 'AdditionalOptions': ['/Oy-'],
-              }],
-              ['win_release_disable_iterator_debugging!=1', {
-                # VS2010 changed default _ITERATOR_DEBUG_LEVEL to 0
-                # on Release builds so we change it back to 1 to restore these
-                # checks, except if explicitly disabled
-                # See http://crbug.com/289691
-                'PreprocessorDefinitions': ['_ITERATOR_DEBUG_LEVEL=1'],
               }],
             ],
             'AdditionalOptions': [ '<@(win_release_extra_cflags)', ],
