@@ -101,6 +101,10 @@ void UpdateModalDialogPosition(
     views::Widget* widget,
     web_modal::ModalDialogHost* dialog_host,
     const gfx::Size& size) {
+  // Do not forcibly update the dialog widget position if it is being dragged.
+  if (widget->HasCapture())
+    return;
+
   gfx::Point position = dialog_host->GetDialogPosition(size);
   views::Border* border =
       widget->non_client_view()->frame_view()->border();
