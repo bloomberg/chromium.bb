@@ -13,9 +13,19 @@
 #include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_message_util.h"
 #include "net/base/address_list.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/cert/cert_verifier.h"
+#include "net/cert/x509_certificate.h"
+#include "net/http/transport_security_state.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/socket/client_socket_handle.h"
+#include "net/socket/ssl_client_socket.h"
+#include "net/socket/stream_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_info.h"
 
 namespace {
 
@@ -56,10 +66,18 @@ const uint32 kMaxMessageSize = 65536;
 CastSocket::CastSocket(const std::string& owner_extension_id,
                        const GURL& url, CastSocket::Delegate* delegate,
                        net::NetLog* net_log) :
-    ApiResource(owner_extension_id), channel_id_(0), url_(url),
-    delegate_(delegate), error_state_(CHANNEL_ERROR_NONE),
-    ready_state_(READY_STATE_NONE), write_callback_pending_(false),
-    read_callback_pending_(false), current_message_size_(0), net_log_(net_log) {
+    ApiResource(owner_extension_id),
+    channel_id_(0),
+    url_(url),
+    delegate_(delegate),
+    is_secure_(false),
+    error_state_(CHANNEL_ERROR_NONE),
+    ready_state_(READY_STATE_NONE),
+    write_callback_pending_(false),
+    read_callback_pending_(false),
+    current_message_size_(0),
+    net_log_(net_log),
+    connection_state_(CONN_STATE_NONE) {
   DCHECK(net_log_);
   net_log_source_.type = net::NetLog::SOURCE_SOCKET;
   net_log_source_.id = net_log_->NextID();
@@ -78,12 +96,137 @@ const GURL& CastSocket::url() const {
   return url_;
 }
 
-net::TCPClientSocket* CastSocket::CreateSocket(
-    const net::AddressList& addresses,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source) {
-  // TODO(mfoltz,munjal): Create a TLS socket.
-  return new net::TCPClientSocket(addresses, net_log, source);
+bool CastSocket::ExtractPeerCert(std::string* cert) {
+  CHECK(peer_cert_.empty());
+  net::SSLInfo ssl_info;
+  if (!socket_->GetSSLInfo(&ssl_info) || !ssl_info.cert.get())
+    return false;
+  bool result = net::X509Certificate::GetDEREncoded(
+     ssl_info.cert->os_cert_handle(), cert);
+  if (result)
+    DVLOG(1) << "Successfully extracted peer certificate: " << *cert;
+  return result;
+}
+
+scoped_ptr<net::TCPClientSocket> CastSocket::CreateTCPSocket() {
+  net::AddressList addresses(ip_endpoint_);
+  scoped_ptr<net::TCPClientSocket> tcp_socket(
+      new net::TCPClientSocket(addresses, net_log_, net_log_source_));
+  // Enable keepalive
+  tcp_socket->SetKeepAlive(true, kTcpKeepAliveDelaySecs);
+  return tcp_socket.Pass();
+}
+
+scoped_ptr<net::SSLClientSocket> CastSocket::CreateSSLSocket() {
+  net::SSLConfig ssl_config;
+  // If a peer cert was extracted in a previous attempt to connect, then
+  // whitelist that cert.
+  if (!peer_cert_.empty()) {
+    net::SSLConfig::CertAndStatus cert_and_status;
+    cert_and_status.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
+    cert_and_status.der_cert = peer_cert_;
+    ssl_config.allowed_bad_certs.push_back(cert_and_status);
+  }
+
+  cert_verifier_.reset(net::CertVerifier::CreateDefault());
+  transport_security_state_.reset(new net::TransportSecurityState);
+  net::SSLClientSocketContext context;
+  // CertVerifier and TransportSecurityState are owned by us, not the
+  // context object.
+  context.cert_verifier = cert_verifier_.get();
+  context.transport_security_state = transport_security_state_.get();
+
+  scoped_ptr<net::ClientSocketHandle> connection(new net::ClientSocketHandle);
+  connection->SetSocket(tcp_socket_.PassAs<net::StreamSocket>());
+  net::HostPortPair host_and_port = net::HostPortPair::FromIPEndPoint(
+      ip_endpoint_);
+
+  return net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
+      connection.Pass(), host_and_port, ssl_config, context);
+}
+
+void CastSocket::DoCreateAndConnectTCP() {
+  DCHECK_EQ(CONN_STATE_NONE, connection_state_);
+  connection_state_ = CONN_STATE_TCP_CONNECT_START;
+  tcp_socket_ = CreateTCPSocket();
+  int result = tcp_socket_->Connect(
+      base::Bind(&CastSocket::OnTCPConnectComplete, AsWeakPtr()));
+  if (result != net::ERR_IO_PENDING)
+    OnTCPConnectComplete(result);
+}
+
+void CastSocket::OnTCPConnectComplete(int result) {
+  DCHECK(CalledOnValidThread());
+  DVLOG(1) << "OnTCPConnectComplete result = " << result;
+  DCHECK_EQ(CONN_STATE_TCP_CONNECT_START, connection_state_);
+  if (result == net::OK)
+    connection_state_ = CONN_STATE_TCP_CONNECT_DONE;
+  else
+    connection_state_ = CONN_STATE_ERROR;
+  DoConnectFlow();
+}
+
+void CastSocket::DoCreateAndConnectSSL() {
+  DCHECK_EQ(CONN_STATE_TCP_CONNECT_DONE, connection_state_);
+  connection_state_ = CONN_STATE_SSL_CONNECT_START;
+
+  socket_ = CreateSSLSocket();
+  int result = socket_->Connect(
+      base::Bind(&CastSocket::OnSSLConnectComplete, AsWeakPtr()));
+  if (result != net::ERR_IO_PENDING)
+    OnSSLConnectComplete(result);
+}
+
+void CastSocket::OnSSLConnectComplete(int result) {
+  DCHECK(CalledOnValidThread());
+  DVLOG(1) << "OnSSLConnectComplete result = " << result;
+  DCHECK_EQ(CONN_STATE_SSL_CONNECT_START, connection_state_);
+  if (result == net::OK) {
+    connection_state_ = CONN_STATE_SSL_CONNECT_DONE;
+  } else if (result == net::ERR_CERT_AUTHORITY_INVALID &&
+             peer_cert_.empty() &&
+             ExtractPeerCert(&peer_cert_)) {
+    connection_state_ = CONN_STATE_NONE;
+  } else {
+    connection_state_ = CONN_STATE_ERROR;
+  }
+  DoConnectFlow();
+}
+
+void CastSocket::DoConnectFlow() {
+  switch (connection_state_) {
+    case CONN_STATE_NONE:
+      ready_state_ = READY_STATE_CONNECTING;
+      DoCreateAndConnectTCP();
+      break;
+    case CONN_STATE_TCP_CONNECT_DONE:
+      ready_state_ = READY_STATE_CONNECTING;
+      DoCreateAndConnectSSL();
+      break;
+    case CONN_STATE_SSL_CONNECT_DONE:
+      ready_state_ = READY_STATE_OPEN;
+      break;
+    case CONN_STATE_ERROR:
+      error_state_ = CHANNEL_ERROR_CONNECT_ERROR;
+      ready_state_ = READY_STATE_CLOSED;
+      break;
+    default:
+      NOTREACHED() << "BUG in CastSocket state machine code";
+      break;
+  }
+  // TODO(mfoltz,munjal): Authenticate the channel if is_secure_ == true.
+
+  if (ready_state_ == READY_STATE_OPEN) {
+    RunConnectCallback(net::OK);
+    ReadData();
+  } else if (ready_state_ == READY_STATE_CLOSED) {
+    RunConnectCallback(net::ERR_FAILED);
+  }
+}
+
+void CastSocket::RunConnectCallback(int result) {
+  connect_callback_.Run(result);
+  connect_callback_.Reset();
 }
 
 void CastSocket::Connect(const net::CompletionCallback& callback) {
@@ -100,34 +243,17 @@ void CastSocket::Connect(const net::CompletionCallback& callback) {
     callback.Run(result);
     return;
   }
-  ready_state_ = READY_STATE_CONNECTING;
-  net::AddressList address_list(ip_endpoint_);
-  socket_.reset(CreateSocket(address_list, net_log_, net_log_source_));
-
-  // Enable TCP_NODELAY, as we want to minimize message latency.
-  socket_->SetNoDelay(true);
-  // Enable keepalive
-  socket_->SetKeepAlive(true, kTcpKeepAliveDelaySecs);
   connect_callback_ = callback;
-  socket_->Connect(base::Bind(&CastSocket::OnConnectComplete,
-                              AsWeakPtr()));
-}
-
-void CastSocket::OnConnectComplete(int result) {
-  DCHECK(CalledOnValidThread());
-  DVLOG(1) << "OnConnectComplete result = " << result;
-  ready_state_ = (result == net::OK) ?
-    READY_STATE_OPEN : READY_STATE_CLOSED;
-  connect_callback_.Run(result);
-  connect_callback_.Reset();
-  // TODO(mfoltz,munjal): Authenticate the channel if is_secure_ == true.
-  ReadData();
+  DoConnectFlow();
 }
 
 void CastSocket::Close(const net::CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Close ReadyState = " << ready_state_;
+  tcp_socket_.reset(NULL);
   socket_.reset(NULL);
+  cert_verifier_.reset(NULL);
+  transport_security_state_.reset(NULL);
   ready_state_ = READY_STATE_CLOSED;
   callback.Run(net::OK);
 }

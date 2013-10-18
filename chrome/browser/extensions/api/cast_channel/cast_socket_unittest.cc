@@ -10,7 +10,11 @@
 #include "net/base/capturing_net_log.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
+#include "net/socket/socket_test_util.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/ssl/ssl_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,8 +37,8 @@ class MockCastSocketDelegate : public CastSocket::Delegate {
 
 class MockTCPClientSocket : public net::TCPClientSocket {
  public:
-  explicit MockTCPClientSocket(const net::AddressList& addresses) :
-    TCPClientSocket(addresses, NULL, net::NetLog::Source()) { }
+  explicit MockTCPClientSocket() :
+      TCPClientSocket(net::AddressList(), NULL, net::NetLog::Source()) { }
   virtual ~MockTCPClientSocket() { }
 
   MOCK_METHOD1(Connect, int(const net::CompletionCallback& callback));
@@ -45,6 +49,23 @@ class MockTCPClientSocket : public net::TCPClientSocket {
   MOCK_METHOD3(Write, int(net::IOBuffer* buf, int buf_len,
                           const net::CompletionCallback& callback));
   MOCK_METHOD0(Disconnect, void());
+};
+
+class MockSSLClientSocket : public net::MockClientSocket {
+ public:
+  MockSSLClientSocket() : MockClientSocket(net::BoundNetLog()) { }
+  virtual ~MockSSLClientSocket() { }
+
+  MOCK_METHOD1(Connect, int(const net::CompletionCallback& callback));
+  MOCK_METHOD3(Read, int(net::IOBuffer* buf, int buf_len,
+                         const net::CompletionCallback& callback));
+  MOCK_METHOD3(Write, int(net::IOBuffer* buf, int buf_len,
+                          const net::CompletionCallback& callback));
+  MOCK_METHOD0(Disconnect, void());
+  MOCK_CONST_METHOD0(WasEverUsed, bool());
+  MOCK_CONST_METHOD0(UsingTCPFastOpen, bool());
+  MOCK_CONST_METHOD0(WasNpnNegotiated, bool());
+  MOCK_METHOD1(GetSSLInfo, bool(net::SSLInfo*));
 };
 
 class CompleteHandler {
@@ -61,43 +82,72 @@ class TestCastSocket : public CastSocket {
  public:
   explicit TestCastSocket(MockCastSocketDelegate* delegate) :
     CastSocket("abcdefg", GURL("cast://192.0.0.1:8009"), delegate,
-               &capturing_net_log_), owns_socket_(true) {
-    net::AddressList addresses;
-    mock_tcp_socket_ = new MockTCPClientSocket(addresses);
+               &capturing_net_log_),
+    mock_tcp_socket_(new MockTCPClientSocket()),
+    mock_ssl_socket_(new MockSSLClientSocket()),
+    owns_tcp_socket_(true),
+    owns_ssl_socket_(true),
+    extract_cert_result_(true) {
   }
 
   virtual ~TestCastSocket() {
-    if (owns_socket_) {
+    if (owns_tcp_socket_) {
       DCHECK(mock_tcp_socket_);
       delete mock_tcp_socket_;
+    }
+    if (owns_ssl_socket_) {
+      DCHECK(mock_ssl_socket_);
+      delete mock_ssl_socket_;
     }
   }
 
   virtual void Close(const net::CompletionCallback& callback) OVERRIDE {
-    if (!owns_socket_)
+    if (!owns_tcp_socket_)
       mock_tcp_socket_ = NULL;
+    if (!owns_ssl_socket_)
+      mock_ssl_socket_ = NULL;
     CastSocket::Close(callback);
   }
 
-  // Ptr to the mock socket.  Ownership is transferred to CastSocket when it is
-  // returned from CreateSocket().  CastSocket will destroy it on Close(),
-  // so don't refer to |mock_tcp_socket_| afterwards.
+  void CreateNewSockets() {
+    owns_tcp_socket_ = true;
+    mock_tcp_socket_ = new MockTCPClientSocket();
+    owns_ssl_socket_ = true;
+    mock_ssl_socket_ = new MockSSLClientSocket();
+  }
+
+  void SetExtractCertResult(bool value) {
+    extract_cert_result_ = value;
+  }
+
   MockTCPClientSocket* mock_tcp_socket_;
+  MockSSLClientSocket* mock_ssl_socket_;
 
  protected:
-  // Transfers ownership of |mock_tcp_socket_| to CastSocket.
-  virtual net::TCPClientSocket* CreateSocket(
-      const net::AddressList& addresses,
-      net::NetLog* net_log,
-      const net::NetLog::Source& source) OVERRIDE {
-    owns_socket_ = false;
-    return mock_tcp_socket_;
+  virtual scoped_ptr<net::TCPClientSocket> CreateTCPSocket() OVERRIDE {
+    owns_tcp_socket_ = false;
+    return scoped_ptr<net::TCPClientSocket>(mock_tcp_socket_);
+  }
+
+  virtual scoped_ptr<net::SSLClientSocket> CreateSSLSocket() OVERRIDE {
+    owns_ssl_socket_ = false;
+    return scoped_ptr<net::SSLClientSocket>(mock_ssl_socket_);
+  }
+
+  virtual bool ExtractPeerCert(std::string* cert) OVERRIDE {
+    if (extract_cert_result_)
+      cert->assign("dummy_test_cert");
+    return extract_cert_result_;
   }
 
  private:
   net::CapturingNetLog capturing_net_log_;
   // Whether this object or the parent owns |mock_tcp_socket_|.
-  bool owns_socket_;
+  bool owns_tcp_socket_;
+  // Whether this object or the parent owns |mock_ssl_socket_|.
+  bool owns_ssl_socket_;
+  // Simulated result of peer cert extraction.
+  bool extract_cert_result_;
 };
 
 class CastSocketTest : public testing::Test {
@@ -120,30 +170,51 @@ class CastSocketTest : public testing::Test {
                               base::Unretained(&handler_)));
   }
 
-  // Sets expectations when the socket is connected.  Connecting the socket also
+  // Sets an expectation on the TCP socket Connect method. Connect method is
+  // setup to return net::ERR_IO_PENDING and store the callback passed to it
+  // in |callback|.
+  void ExpectTCPConnect(net::CompletionCallback* callback) {
+    EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
+        .Times(1)
+        .WillOnce(DoAll(SaveArg<0>(callback), Return(net::ERR_IO_PENDING)));
+  }
+
+  // Sets an expectation on the SSL socket Connect method. Connect method is
+  // setup to return net::ERR_IO_PENDING and store the callback passed to it
+  // in |callback|.
+  void ExpectSSLConnect(net::CompletionCallback* callback) {
+    EXPECT_CALL(mock_ssl_socket(), Connect(A<const net::CompletionCallback&>()))
+        .Times(1)
+        .WillOnce(DoAll(SaveArg<0>(callback), Return(net::ERR_IO_PENDING)));
+  }
+
+  // Sets an expectation on the SSL socket Read method. Read method is setup
+  // to return net::ERR_IO_PENDING and to be called |times| number of times.
+  void ExpectSSLRead(int times) {
+    EXPECT_CALL(mock_ssl_socket(), Read(A<net::IOBuffer*>(),
+                                        A<int>(),
+                                        A<const net::CompletionCallback&>()))
+        .Times(times)
+        .WillOnce(Return(net::ERR_IO_PENDING));
+  }
+
+  // Sets expectations when the socket is connected. Connecting the socket also
   // starts the read loop; we expect the call to Read(), but never fire the read
   // callback.
   void ConnectHelper() {
-    net::CompletionCallback connect_callback;
-    EXPECT_CALL(mock_tcp_socket(), SetNoDelay(true))
-      .Times(1)
-      .WillOnce(Return(true));
-    EXPECT_CALL(mock_tcp_socket(), SetKeepAlive(true, A<int>()))
-      .Times(1)
-      .WillOnce(Return(true));
-    EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
-      .Times(1)
-      .WillOnce(DoAll(SaveArg<0>(&connect_callback), Return(net::OK)));
+    net::CompletionCallback connect_callback1;
+    net::CompletionCallback connect_callback2;
+
+    ExpectTCPConnect(&connect_callback1);
+    ExpectSSLConnect(&connect_callback2);
     EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-    EXPECT_CALL(mock_tcp_socket(), Read(A<net::IOBuffer*>(),
-                                        A<int>(),
-                                        A<const net::CompletionCallback&>()))
-      .Times(1)
-      .WillOnce(Return(net::ERR_IO_PENDING));
+    ExpectSSLRead(1);
 
     socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
                                 base::Unretained(&handler_)));
-    connect_callback.Run(net::OK);
+    connect_callback1.Run(net::OK);
+    connect_callback2.Run(net::OK);
+
     EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
     EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
   }
@@ -151,6 +222,12 @@ class CastSocketTest : public testing::Test {
  protected:
   MockTCPClientSocket& mock_tcp_socket() {
     MockTCPClientSocket* mock_socket = socket_->mock_tcp_socket_;
+    DCHECK(mock_socket);
+    return *mock_socket;
+  }
+
+  MockSSLClientSocket& mock_ssl_socket() {
+    MockSSLClientSocket* mock_socket = socket_->mock_ssl_socket_;
     DCHECK(mock_socket);
     return *mock_socket;
   }
@@ -198,12 +275,106 @@ TEST_F(CastSocketTest, TestConnectAndClose) {
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 }
 
-// Tests writing a single message where the completion is signaled via callback.
+// Test that when first connection attempt fails with certificate authority
+// invalid error, a second connection attempt is made with peer cert
+// whitelisted.
+TEST_F(CastSocketTest, TestTwoStepConnect) {
+  // Expectations for the initial connect call
+  net::CompletionCallback tcp_connect_callback1;
+  net::CompletionCallback ssl_connect_callback1;
+
+  ExpectTCPConnect(&tcp_connect_callback1);
+  ExpectSSLConnect(&ssl_connect_callback1);
+
+  // Start connect flow
+  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  tcp_connect_callback1.Run(net::OK);
+
+  // Expectations for the second connect call
+  socket_->CreateNewSockets();
+  net::CompletionCallback tcp_connect_callback2;
+  net::CompletionCallback ssl_connect_callback2;
+  ExpectTCPConnect(&tcp_connect_callback2);
+  ExpectSSLConnect(&ssl_connect_callback2);
+  EXPECT_CALL(handler_, OnConnectComplete(net::OK));
+  ExpectSSLRead(1);
+
+  // Trigger callbacks for the first connect
+  ssl_connect_callback1.Run(net::ERR_CERT_AUTHORITY_INVALID);
+
+  // Trigger callbacks for the second connect
+  tcp_connect_callback2.Run(net::OK);
+  ssl_connect_callback2.Run(net::OK);
+
+  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+}
+
+// Test that connection will be attempted a maximum of 2 times even if the
+// second attempt also returns certificate authority invalid error.
+TEST_F(CastSocketTest, TestMaxTwoConnectAttempts) {
+  net::CompletionCallback tcp_connect_callback1;
+  net::CompletionCallback ssl_connect_callback1;
+
+  // Expectations for the initial connect call
+  ExpectTCPConnect(&tcp_connect_callback1);
+  ExpectSSLConnect(&ssl_connect_callback1);
+
+  // Start connect flow
+  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  tcp_connect_callback1.Run(net::OK);
+
+  socket_->CreateNewSockets();
+  net::CompletionCallback tcp_connect_callback2;
+  net::CompletionCallback ssl_connect_callback2;
+
+  // Expectations for the second connect call
+  ExpectTCPConnect(&tcp_connect_callback2);
+  ExpectSSLConnect(&ssl_connect_callback2);
+  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_FAILED));
+
+  // Trigger callbacks for the first connect
+  ssl_connect_callback1.Run(net::ERR_CERT_AUTHORITY_INVALID);
+
+  // Trigger callbacks for the second connect
+  tcp_connect_callback2.Run(net::OK);
+  ssl_connect_callback2.Run(net::ERR_CERT_AUTHORITY_INVALID);
+
+  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+}
+
+TEST_F(CastSocketTest, TestCertExtractionFailure) {
+  net::CompletionCallback connect_callback1;
+  net::CompletionCallback connect_callback2;
+
+  ExpectTCPConnect(&connect_callback1);
+  ExpectSSLConnect(&connect_callback2);
+
+  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  connect_callback1.Run(net::OK);
+
+  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_FAILED));
+
+  // Set cert extraction to fail
+  socket_->SetExtractCertResult(false);
+  // Attempt to connect results in ERR_CERT_AUTHORTY_INVALID
+  connect_callback2.Run(net::ERR_CERT_AUTHORITY_INVALID);
+
+  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+}
+
+// Tests writing a single message where the completion is signaled via
+// callback.
 TEST_F(CastSocketTest, TestWriteViaCallback) {
   ConnectHelper();
   net::CompletionCallback write_callback;
 
-  EXPECT_CALL(mock_tcp_socket(),
+  EXPECT_CALL(mock_ssl_socket(),
               Write(A<net::IOBuffer*>(),
                     39,
                     A<const net::CompletionCallback&>()))
@@ -223,7 +394,7 @@ TEST_F(CastSocketTest, TestWriteViaCallback) {
 TEST_F(CastSocketTest, TestWrite) {
   ConnectHelper();
 
-  EXPECT_CALL(mock_tcp_socket(),
+  EXPECT_CALL(mock_ssl_socket(),
               Write(A<net::IOBuffer*>(),
                     39,
                     A<const net::CompletionCallback&>()))
@@ -250,7 +421,7 @@ TEST_F(CastSocketTest, TestWriteMany) {
   net::CompletionCallback write_callback;
 
   for (int i = 0; i < 4; i++) {
-    EXPECT_CALL(mock_tcp_socket(),
+    EXPECT_CALL(mock_ssl_socket(),
                 Write(A<net::IOBuffer*>(),
                       sizes[i],
                       A<const net::CompletionCallback&>()))
@@ -280,7 +451,7 @@ TEST_F(CastSocketTest, TestWriteError) {
   ConnectHelper();
   net::CompletionCallback write_callback;
 
-  EXPECT_CALL(mock_tcp_socket(),
+  EXPECT_CALL(mock_ssl_socket(),
               Write(A<net::IOBuffer*>(),
                     39,
                     A<const net::CompletionCallback&>()))
@@ -299,28 +470,28 @@ TEST_F(CastSocketTest, TestWriteError) {
 
 // Tests reading a single message.
 TEST_F(CastSocketTest, TestRead) {
-  net::CompletionCallback connect_callback;
+  net::CompletionCallback connect_callback1;
+  net::CompletionCallback connect_callback2;
   net::CompletionCallback read_callback;
 
   std::string message_data;
   ASSERT_TRUE(CastSocket::Serialize(test_proto_, &message_data));
 
-  EXPECT_CALL(mock_tcp_socket(), SetNoDelay(true))
-    .Times(1)
-    .WillOnce(Return(true));
-  EXPECT_CALL(mock_tcp_socket(), SetKeepAlive(true, A<int>()))
-    .Times(1)
-    .WillOnce(Return(true));
   EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
-    .Times(1)
-    .WillOnce(DoAll(SaveArg<0>(&connect_callback), Return(net::OK)));
+      .Times(1)
+      .WillOnce(DoAll(SaveArg<0>(&connect_callback1),
+                      Return(net::ERR_IO_PENDING)));
+  EXPECT_CALL(mock_ssl_socket(), Connect(A<const net::CompletionCallback&>()))
+      .Times(1)
+      .WillOnce(DoAll(SaveArg<0>(&connect_callback2),
+                        Return(net::ERR_IO_PENDING)));
   EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  EXPECT_CALL(mock_tcp_socket(), Read(A<net::IOBuffer*>(),
+  EXPECT_CALL(mock_ssl_socket(), Read(A<net::IOBuffer*>(),
                                       A<int>(),
                                       A<const net::CompletionCallback&>()))
-    .Times(3)
-    .WillRepeatedly(DoAll(SaveArg<2>(&read_callback),
-                          Return(net::ERR_IO_PENDING)));
+      .Times(3)
+      .WillRepeatedly(DoAll(SaveArg<2>(&read_callback),
+                            Return(net::ERR_IO_PENDING)));
 
   // Expect the test message to be read and invoke the delegate.
   EXPECT_CALL(mock_delegate_,
@@ -329,7 +500,8 @@ TEST_F(CastSocketTest, TestRead) {
   // Connect the socket.
   socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
-  connect_callback.Run(net::OK);
+  connect_callback1.Run(net::OK);
+  connect_callback2.Run(net::OK);
 
   // Put the test header and message into the io_buffers and invoke the read
   // callbacks.
@@ -346,8 +518,10 @@ TEST_F(CastSocketTest, TestRead) {
 
 // Tests reading multiple messages.
 TEST_F(CastSocketTest, TestReadMany) {
-  net::CompletionCallback connect_callback;
+  net::CompletionCallback connect_callback1;
+  net::CompletionCallback connect_callback2;
   net::CompletionCallback read_callback;
+
   std::string messages[4];
   messages[0] = "Hello, World!";
   messages[1] = "Goodbye, World!";
@@ -362,17 +536,16 @@ TEST_F(CastSocketTest, TestReadMany) {
     ASSERT_TRUE(CastSocket::Serialize(test_proto_, &message_data[i]));
   }
 
-  EXPECT_CALL(mock_tcp_socket(), SetNoDelay(true))
-    .Times(1)
-    .WillOnce(Return(true));
-  EXPECT_CALL(mock_tcp_socket(), SetKeepAlive(true, A<int>()))
-    .Times(1)
-    .WillOnce(Return(true));
   EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
-    .Times(1)
-    .WillOnce(DoAll(SaveArg<0>(&connect_callback), Return(net::OK)));
+      .Times(1)
+      .WillOnce(DoAll(SaveArg<0>(&connect_callback1),
+                      Return(net::ERR_IO_PENDING)));
+  EXPECT_CALL(mock_ssl_socket(), Connect(A<const net::CompletionCallback&>()))
+      .Times(1)
+      .WillOnce(DoAll(SaveArg<0>(&connect_callback2),
+                        Return(net::ERR_IO_PENDING)));
   EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  EXPECT_CALL(mock_tcp_socket(), Read(A<net::IOBuffer*>(),
+  EXPECT_CALL(mock_ssl_socket(), Read(A<net::IOBuffer*>(),
                                       A<int>(),
                                       A<const net::CompletionCallback&>()))
     .Times(9)
@@ -387,7 +560,8 @@ TEST_F(CastSocketTest, TestReadMany) {
   // Connect the socket.
   socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
-  connect_callback.Run(net::OK);
+  connect_callback1.Run(net::OK);
+  connect_callback2.Run(net::OK);
 
   // Put the test headers and messages into the io_buffer and invoke the read
   // callbacks.
@@ -406,20 +580,20 @@ TEST_F(CastSocketTest, TestReadMany) {
 
 // Tests error on reading.
 TEST_F(CastSocketTest, TestReadError) {
-  net::CompletionCallback connect_callback;
+  net::CompletionCallback connect_callback1;
+  net::CompletionCallback connect_callback2;
   net::CompletionCallback read_callback;
 
-  EXPECT_CALL(mock_tcp_socket(), SetNoDelay(true))
-    .Times(1)
-    .WillOnce(Return(true));
-  EXPECT_CALL(mock_tcp_socket(), SetKeepAlive(true, A<int>()))
-    .Times(1)
-    .WillOnce(Return(true));
   EXPECT_CALL(mock_tcp_socket(), Connect(A<const net::CompletionCallback&>()))
-    .Times(1)
-    .WillOnce(DoAll(SaveArg<0>(&connect_callback), Return(net::OK)));
+      .Times(1)
+      .WillOnce(DoAll(SaveArg<0>(&connect_callback1),
+                      Return(net::ERR_IO_PENDING)));
+  EXPECT_CALL(mock_ssl_socket(), Connect(A<const net::CompletionCallback&>()))
+      .Times(1)
+      .WillOnce(DoAll(SaveArg<0>(&connect_callback2),
+                        Return(net::ERR_IO_PENDING)));
   EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  EXPECT_CALL(mock_tcp_socket(), Read(A<net::IOBuffer*>(),
+  EXPECT_CALL(mock_ssl_socket(), Read(A<net::IOBuffer*>(),
                                       A<int>(),
                                       A<const net::CompletionCallback&>()))
     .WillOnce(DoAll(SaveArg<2>(&read_callback),
@@ -430,7 +604,8 @@ TEST_F(CastSocketTest, TestReadError) {
   // Connect the socket.
   socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
-  connect_callback.Run(net::OK);
+  connect_callback1.Run(net::OK);
+  connect_callback2.Run(net::OK);
 
   // Cause an error.
   read_callback.Run(net::ERR_SOCKET_NOT_CONNECTED);

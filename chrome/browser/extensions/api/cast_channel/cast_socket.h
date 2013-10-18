@@ -25,7 +25,10 @@
 
 namespace net {
 class AddressList;
+class CertVerifier;
+class SSLClientSocket;
 class TCPClientSocket;
+class TransportSecurityState;
 }
 
 namespace extensions {
@@ -104,10 +107,14 @@ class CastSocket : public ApiResource,
   void FillChannelInfo(ChannelInfo* channel_info) const;
 
  protected:
-  // Factory method for sockets.
-  virtual net::TCPClientSocket* CreateSocket(const net::AddressList& addresses,
-                                             net::NetLog* net_log,
-                                             const net::NetLog::Source& source);
+  // Creates an instance of TCPClientSocket.
+  virtual scoped_ptr<net::TCPClientSocket> CreateTCPSocket();
+  // Creates an instance of SSLClientSocket.
+  virtual scoped_ptr<net::SSLClientSocket> CreateSSLSocket();
+  // Extracts peer certificate from SSLClientSocket instance when the socket
+  // is in cert error state.
+  // Returns whether certificate is successfully extracted.
+  virtual bool ExtractPeerCert(std::string* cert);
 
  private:
   friend class ApiResourceManager<CastSocket>;
@@ -115,12 +122,42 @@ class CastSocket : public ApiResource,
     return "CastSocketManager";
   }
 
+  // Internal connection states.
+  enum ConnectionState {
+    CONN_STATE_NONE,
+    CONN_STATE_TCP_CONNECT_START,
+    CONN_STATE_TCP_CONNECT_DONE,
+    CONN_STATE_SSL_CONNECT_START,
+    CONN_STATE_SSL_CONNECT_DONE,
+    CONN_STATE_ERROR,
+  };
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Following methods work together to implement the following flow:
+  // 1. Create a new TCP socket and connect to it
+  // 2. Create a new SSL socket and try connecting to it
+  // 3. If connection fails due to invalid cert authority, then extract the
+  //    peer certificate from the error.
+  // 4. Whitelist the peer certificate and try #1 and #2 again.
+
+  // Ties the connection flow together - proceeds to the next connection step.
+  void DoConnectFlow();
+  // Creates an instance of TCPClientSocket and connects to it.
+  void DoCreateAndConnectTCP();
+  // Called when the underlying TCP socket is connected.
+  void OnTCPConnectComplete(int result);
+  // Creates an instance of SSLClientSocket and connects to it.
+  void DoCreateAndConnectSSL();
+  // Called when the underlying SSL socket is connected.
+  void OnSSLConnectComplete(int result);
+  /////////////////////////////////////////////////////////////////////////////
+
   // Verifies that the URL is a valid cast:// or casts:// URL and sets url_ to
   // the result.
   bool ParseChannelUrl(const GURL& url);
 
-  // Called when the socket is connected.
-  void OnConnectComplete(int result);
+  // Runs the external connection callback and resets it.
+  void RunConnectCallback(int result);
 
   // Writes data to the socket from the WriteRequest at the head of the queue.
   // Calls OnWriteData() on completion.
@@ -183,11 +220,17 @@ class CastSocket : public ApiResource,
   // The NetLog source for this service.
   net::NetLog::Source net_log_source_;
 
-  // Owned ptr to the underlying socket.
-  //
-  // NOTE(mfoltz): We'll have to refactor this to allow substitution of an
-  // SSLClientSocket, since the APIs are different.
-  scoped_ptr<net::TCPClientSocket> socket_;
+  // Connection flow state.
+  ConnectionState connection_state_;
+  // Owned ptr to the underlying TCP socket.
+  scoped_ptr<net::TCPClientSocket> tcp_socket_;
+  // Owned ptr to the underlying SSL socket.
+  scoped_ptr<net::SSLClientSocket> socket_;
+  // Certificate of the peer. This field may be empty if the peer
+  // certificate is not yet fetched.
+  std::string peer_cert_;
+  scoped_ptr<net::CertVerifier> cert_verifier_;
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
 
   // Callback invoked when the socket is connected.
   net::CompletionCallback connect_callback_;
