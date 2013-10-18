@@ -114,7 +114,7 @@ int CountFilesWithExtension(const base::FilePath& dir,
                             const base::FilePath::StringType& extension) {
   int matching_files = 0;
   base::FileEnumerator dir_reader(
-      dir, false, base::FileEnumerator::FileType::FILES);
+      dir, false, base::FileEnumerator::FILES);
   for (base::FilePath fname = dir_reader.Next(); !fname.empty();
        fname = dir_reader.Next()) {
     if (fname.MatchesExtension(extension))
@@ -125,7 +125,7 @@ int CountFilesWithExtension(const base::FilePath& dir,
 
 bool GetFirstLDBFile(const base::FilePath& dir, base::FilePath* ldb_file) {
   base::FileEnumerator dir_reader(
-      dir, false, base::FileEnumerator::FileType::FILES);
+      dir, false, base::FileEnumerator::FILES);
   for (base::FilePath fname = dir_reader.Next(); !fname.empty();
        fname = dir_reader.Next()) {
     if (fname.MatchesExtension(FPL(".ldb"))) {
