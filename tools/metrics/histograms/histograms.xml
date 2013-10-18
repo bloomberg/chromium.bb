@@ -13895,6 +13895,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer.unloadEventsDurationMS" units="milliseconds">
+  <summary>
+    This measures how long all unload event handlers required to run whenever an
+    unload event is processed.
+  </summary>
+</histogram>
+
 <histogram name="Renderer2.FinishDocToFinish">
   <summary>
     The time from when a document finished loading to when all it's resources
