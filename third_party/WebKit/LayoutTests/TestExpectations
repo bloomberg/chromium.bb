@@ -138,7 +138,7 @@ crbug.com/258991 [ XP ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textLayout.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/smallFonts.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textOnPath.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textFeatures.svg [ Failure Pass ]
+crbug.com/258991 [ XP ] svg/batik/text/textFeatures.svg [ Failure Pass ImageOnlyFailure ]
 crbug.com/258991 [ XP ] svg/batik/text/textPosition2.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textLayout2.svg [ Failure Pass ]
 crbug.com/258991 [ XP ] svg/batik/text/textEffect.svg [ Failure Pass ]
@@ -1207,3 +1207,5 @@ crbug.com/306193 [ Win ] svg/zoom/page/zoom-foreignObject.svg [ NeedsRebaseline 
 
 crbug.com/303922 fast/borders/border-radius-with-empty-inner-border.html [ NeedsRebaseline ]
 crbug.com/303383 fast/borders/empty-border-radius.html [ NeedsRebaseline ]
+
+crbug.com/308952 [ Win ] inspector/editor/text-editor-reveal-line.html [ Failure ]
