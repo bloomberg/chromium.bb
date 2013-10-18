@@ -37,20 +37,6 @@ specific_include_rules = {
   ],
 
   # TODO(joaodasilva): remove these exceptions.
-  r"cloud_external_data_manager_base_unittest\.cc": [
-    "+content/public/test/test_browser_thread_bundle.h",
-  ],
-
-  r"cloud_policy_client_registration_helper\.cc": [
-    "+chrome/browser/signin/android_profile_oauth2_token_service.h",
-    "+chrome/browser/signin/oauth2_token_service.h",
-  ],
-
-  r"cloud_policy_core_unittest\.cc": [
-    "+chrome/browser/prefs/browser_prefs.h",
-    "+chrome/common/pref_names.h",
-  ],
-
   r"cloud_policy_invalidator\.cc": [
     "+chrome/browser/invalidation/invalidation_service.h",
   ],
@@ -66,10 +52,6 @@ specific_include_rules = {
   r"cloud_policy_refresh_scheduler\.cc": [
     "+chrome/browser/chrome_notification_types.h",
     "+content/public/browser/notification_details.h",
-  ],
-
-  r"cloud_policy_refresh_scheduler_unittest\.cc": [
-    "+chrome/browser/prefs/browser_prefs.h",
   ],
 
   r"cloud_policy_validator\.cc": [
@@ -107,10 +89,6 @@ specific_include_rules = {
   r"user_cloud_policy_invalidator\.h": [
     "+content/public/browser/notification_observer.h",
     "+content/public/browser/notification_registrar.h",
-  ],
-
-  r"user_cloud_policy_manager\.cc": [
-    "+chrome/common/pref_names.h",
   ],
 
   r"user_cloud_policy_manager_factory\.cc": [

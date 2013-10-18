@@ -62,7 +62,8 @@ class PolicyStatisticsCollectorTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    prefs_.registry()->RegisterInt64Pref(prefs::kLastPolicyStatisticsUpdate, 0);
+    prefs_.registry()->RegisterInt64Pref(
+        policy_prefs::kLastPolicyStatisticsUpdate, 0);
 
     // Find ids for kTestPolicy1 and kTestPolicy2.
     const policy::PolicyDefinitionList* policy_list =
@@ -123,7 +124,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 TEST_F(PolicyStatisticsCollectorTest, CollectPending) {
   SetPolicy(kTestPolicy1);
 
-  prefs_.SetInt64(prefs::kLastPolicyStatisticsUpdate,
+  prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                   (base::Time::Now() - update_delay_).ToInternalValue());
 
   EXPECT_CALL(*policy_statistics_collector_.get(),
@@ -138,7 +139,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPendingVeryOld) {
   SetPolicy(kTestPolicy1);
 
   // Must not be 0.0 (read comment for Time::FromDoubleT).
-  prefs_.SetInt64(prefs::kLastPolicyStatisticsUpdate,
+  prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                   base::Time::FromDoubleT(1.0).ToInternalValue());
 
   EXPECT_CALL(*policy_statistics_collector_.get(),
@@ -152,7 +153,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPendingVeryOld) {
 TEST_F(PolicyStatisticsCollectorTest, CollectLater) {
   SetPolicy(kTestPolicy1);
 
-  prefs_.SetInt64(prefs::kLastPolicyStatisticsUpdate,
+  prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                   (base::Time::Now() - update_delay_ / 2).ToInternalValue());
 
   policy_statistics_collector_->Initialize();
@@ -164,7 +165,7 @@ TEST_F(PolicyStatisticsCollectorTest, MultiplePolicies) {
   SetPolicy(kTestPolicy1);
   SetPolicy(kTestPolicy2);
 
-  prefs_.SetInt64(prefs::kLastPolicyStatisticsUpdate,
+  prefs_.SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                   (base::Time::Now() - update_delay_).ToInternalValue());
 
   EXPECT_CALL(*policy_statistics_collector_.get(),

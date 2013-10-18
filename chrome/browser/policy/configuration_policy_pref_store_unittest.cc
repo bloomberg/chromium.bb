@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -354,7 +355,7 @@ INSTANTIATE_TEST_CASE_P(
         PolicyAndPref(key::kMediaCacheSize,
                       prefs::kMediaCacheSize),
         PolicyAndPref(key::kPolicyRefreshRate,
-                      prefs::kUserPolicyRefreshRate),
+                      policy_prefs::kUserPolicyRefreshRate),
         PolicyAndPref(key::kMaxConnectionsPerProxy,
                       prefs::kMaxConnectionsPerProxy)));
 

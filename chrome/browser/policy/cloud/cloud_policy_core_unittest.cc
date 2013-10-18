@@ -6,13 +6,13 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
-#include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -29,7 +29,9 @@ class CloudPolicyCoreTest : public testing::Test,
         refresh_scheduler_started_callback_count_(0),
         core_disconnecting_callback_count_(0),
         bad_callback_count_(0) {
-    chrome::RegisterLocalState(prefs_.registry());
+    prefs_.registry()->RegisterIntegerPref(
+        policy_prefs::kUserPolicyRefreshRate,
+        CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
     core_.AddObserver(this);
   }
 
@@ -120,11 +122,11 @@ TEST_F(CloudPolicyCoreTest, RefreshScheduler) {
   int default_refresh_delay = core_.refresh_scheduler()->refresh_delay();
 
   const int kRefreshRate = 1000 * 60 * 60;
-  prefs_.SetInteger(prefs::kUserPolicyRefreshRate, kRefreshRate);
-  core_.TrackRefreshDelayPref(&prefs_, prefs::kUserPolicyRefreshRate);
+  prefs_.SetInteger(policy_prefs::kUserPolicyRefreshRate, kRefreshRate);
+  core_.TrackRefreshDelayPref(&prefs_, policy_prefs::kUserPolicyRefreshRate);
   EXPECT_EQ(kRefreshRate, core_.refresh_scheduler()->refresh_delay());
 
-  prefs_.ClearPref(prefs::kUserPolicyRefreshRate);
+  prefs_.ClearPref(policy_prefs::kUserPolicyRefreshRate);
   EXPECT_EQ(default_refresh_delay, core_.refresh_scheduler()->refresh_delay());
 
   EXPECT_EQ(1, core_connected_callback_count_);

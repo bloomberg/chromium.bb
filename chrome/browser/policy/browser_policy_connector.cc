@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -502,7 +503,7 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
 // static
 void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
-      prefs::kUserPolicyRefreshRate,
+      policy_prefs::kUserPolicyRefreshRate,
       CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
 #if defined(OS_CHROMEOS)
   registry->RegisterIntegerPref(

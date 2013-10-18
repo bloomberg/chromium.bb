@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "extensions/common/manifest.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
@@ -225,7 +226,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kMediaCacheSize,
     Value::TYPE_INTEGER },
   { key::kPolicyRefreshRate,
-    prefs::kUserPolicyRefreshRate,
+    policy_prefs::kUserPolicyRefreshRate,
     Value::TYPE_INTEGER },
   { key::kDevicePolicyRefreshRate,
     prefs::kDevicePolicyRefreshRate,

@@ -2347,11 +2347,10 @@ const char kIgnoredProtocolHandlers[] =
 // specified.
 const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
 
-// Integers that specify the policy refresh rate for device- and user-policy in
+// Integer that specifies the policy refresh rate for device-policy in
 // milliseconds. Not all values are meaningful, so it is clamped to a sane range
 // by the cloud policy subsystem.
 const char kDevicePolicyRefreshRate[] = "policy.device_refresh_rate";
-const char kUserPolicyRefreshRate[] = "policy.user_refresh_rate";
 
 // String that represents the recovery component last downloaded version. This
 // takes the usual 'a.b.c.d' notation.

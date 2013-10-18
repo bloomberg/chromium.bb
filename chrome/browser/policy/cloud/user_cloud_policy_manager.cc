@@ -13,7 +13,7 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
 #include "chrome/browser/policy/policy_types.h"
-#include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
@@ -52,7 +52,8 @@ void UserCloudPolicyManager::Connect(
     scoped_ptr<CloudPolicyClient> client) {
   core()->Connect(client.Pass());
   core()->StartRefreshScheduler();
-  core()->TrackRefreshDelayPref(local_state, prefs::kUserPolicyRefreshRate);
+  core()->TrackRefreshDelayPref(local_state,
+                                policy_prefs::kUserPolicyRefreshRate);
   if (external_data_manager_)
     external_data_manager_->Connect(request_context);
 }

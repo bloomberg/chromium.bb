@@ -20,7 +20,7 @@
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
-#include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -351,7 +351,8 @@ void UserCloudPolicyManagerChromeOS::StartRefreshSchedulerIfReady() {
   }
 
   core()->StartRefreshScheduler();
-  core()->TrackRefreshDelayPref(local_state_, prefs::kUserPolicyRefreshRate);
+  core()->TrackRefreshDelayPref(local_state_,
+                                policy_prefs::kUserPolicyRefreshRate);
 }
 
 }  // namespace policy

@@ -41,7 +41,7 @@ void PolicyStatisticsCollector::Initialize() {
 
   TimeDelta update_rate = TimeDelta::FromMilliseconds(kStatisticsUpdateRate);
   Time last_update = Time::FromInternalValue(
-      prefs_->GetInt64(prefs::kLastPolicyStatisticsUpdate));
+      prefs_->GetInt64(policy_prefs::kLastPolicyStatisticsUpdate));
   TimeDelta delay = std::max(Time::Now() - last_update, TimeDelta::FromDays(0));
   if (delay >= update_rate)
     CollectStatistics();
@@ -51,7 +51,7 @@ void PolicyStatisticsCollector::Initialize() {
 
 // static
 void PolicyStatisticsCollector::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kLastPolicyStatisticsUpdate, 0);
+  registry->RegisterInt64Pref(policy_prefs::kLastPolicyStatisticsUpdate, 0);
 }
 
 void PolicyStatisticsCollector::RecordPolicyUse(int id) {
@@ -86,7 +86,7 @@ void PolicyStatisticsCollector::CollectStatistics() {
   }
 
   // Take care of next update.
-  prefs_->SetInt64(prefs::kLastPolicyStatisticsUpdate,
+  prefs_->SetInt64(policy_prefs::kLastPolicyStatisticsUpdate,
                    base::Time::Now().ToInternalValue());
   ScheduleUpdate(base::TimeDelta::FromMilliseconds(kStatisticsUpdateRate));
 }
