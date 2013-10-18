@@ -49,7 +49,7 @@ _PRINT_INTERVAL = 1
 _VM_TEST_ERROR_MSG = """
 !!!VMTests failed!!!
 
-Logs are uploaded in the corresponding vm_test_results.tgz. This can be found
+Logs are uploaded in the corresponding %(vm_test_results)s. This can be found
 by clicking on the artifacts link in the "Report" Stage. Specifically look
 for the test_harness/failed for the failing tests. For more
 particulars, please refer to which test failed i.e. above see the
@@ -76,11 +76,52 @@ class ForgivingBuilderStage(bs.BuilderStage):
     return self._HandleExceptionAsWarning(exception)
 
 
+class RetryStage(object):
+  """Retry a given stage multiple times to see if it passes."""
+
+  def __init__(self, options, build_config, max_retry, stage, *args, **kwargs):
+    """Create a RetryStage object.
+
+    Args:
+      options, build_config: See arguments to bs.BuilderStage.__init__()
+      max_retry: The number of times to try the given stage.
+      stage: The stage class to create.
+      *args: A list of arguments to pass to the stage constructor.
+      **kwargs: A list of keyword arguments to pass to the stage constructor.
+    """
+    self.max_retry = max_retry
+    self.stage = stage
+    self.args = (options, build_config) + args
+    self.kwargs = kwargs
+    self.names = []
+    self.attempt = None
+
+  def GetStageNames(self):
+    """Get a list of the places where this stage has recorded results."""
+    return self.names[:]
+
+  def _PerformStage(self):
+    """Run the stage once, incrementing the attempt number as needed."""
+    suffix = ' (attempt %d)' % (self.attempt,)
+    stage_obj = self.stage(
+        *self.args, attempt=self.attempt, max_retry=self.max_retry,
+        suffix=suffix, **self.kwargs)
+    self.names.extend(stage_obj.GetStageNames())
+    self.attempt += 1
+    stage_obj.Run()
+
+  def Run(self):
+    """Retry the given stage multiple times to see if it passes."""
+    self.attempt = 1
+    cros_build_lib.RetryException(
+        results_lib.RetriableStepFailure, self.max_retry, self._PerformStage)
+
+
 class BoardSpecificBuilderStage(bs.BuilderStage):
 
-  def __init__(self, options, build_config, board, suffix=None):
+  def __init__(self, options, build_config, board, **kwargs):
     super(BoardSpecificBuilderStage, self).__init__(options, build_config,
-                                                    suffix)
+                                                    **kwargs)
     self._current_board = board
 
     if not isinstance(board, basestring):
@@ -152,9 +193,9 @@ class ArchivingStage(BoardSpecificBuilderStage):
       return None
     return 'public-read'
 
-  def __init__(self, options, build_config, board, archive_stage, suffix=None):
+  def __init__(self, options, build_config, board, archive_stage, **kwargs):
     super(ArchivingStage, self).__init__(options, build_config, board,
-                                         suffix=suffix)
+                                         **kwargs)
     self.acl = self.GetUploadACL(build_config)
     self.archive_stage = archive_stage
 
@@ -2304,13 +2345,15 @@ class VMTestStage(ArchivingStage):
   option_name = 'tests'
   config_name = 'vm_tests'
 
-  def _ArchiveTestResults(self, test_results_dir):
+  def _ArchiveTestResults(self, test_results_dir, test_basename):
     """Archives test results to Google Storage."""
     test_tarball = commands.ArchiveTestResults(
-        self._build_root, test_results_dir, prefix='')
+        self._build_root, test_results_dir, test_basename)
 
     # Wait for breakpad symbols.
-    got_symbols = self.archive_stage.WaitForBreakpadSymbols()
+    got_symbols = False
+    if self._options.archive:
+      got_symbols = self.archive_stage.WaitForBreakpadSymbols()
     filenames = commands.GenerateStackTraces(
         self._build_root, self._current_board, test_tarball, self.archive_path,
         got_symbols)
@@ -2326,6 +2369,7 @@ class VMTestStage(ArchivingStage):
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
     test_results_dir = commands.CreateTestRoot(self._build_root)
+    test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
     try:
       test_type = self._build_config['vm_tests']
       commands.RunTestSuite(self._build_root,
@@ -2342,10 +2386,11 @@ class VMTestStage(ArchivingStage):
             self._build_root, self._current_board, self.GetImageDirSymlink())
 
     except Exception:
-      cros_build_lib.Error(_VM_TEST_ERROR_MSG)
+      cros_build_lib.Error(_VM_TEST_ERROR_MSG %
+                           dict(vm_test_results=test_basename))
       raise
     finally:
-      self._ArchiveTestResults(test_results_dir)
+      self._ArchiveTestResults(test_results_dir, test_basename)
 
 
 class TestTimeoutException(Exception):

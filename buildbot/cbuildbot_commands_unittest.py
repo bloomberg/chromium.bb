@@ -419,7 +419,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     abs_results_dir = os.path.join(self.tempdir, 'chroot', test_results_dir)
     os.makedirs(abs_results_dir)
     osutils.Touch(os.path.join(abs_results_dir, 'foo.txt'))
-    res = commands.ArchiveTestResults(self.tempdir, test_results_dir, '')
+    res = commands.ArchiveTestResults(self.tempdir, test_results_dir, 'foo.tgz')
     cros_test_lib.VerifyTarball(res, ['./', 'foo.txt'])
 
   def testBuildFirmwareArchive(self):

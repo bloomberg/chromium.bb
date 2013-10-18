@@ -47,6 +47,10 @@ class StepFailure(Exception):
   """
 
 
+class RetriableStepFailure(StepFailure):
+  """This exception is thrown when a step failed, but should be retried."""
+
+
 class BuildScriptFailure(StepFailure):
   """This exception is thrown when a build command failed.
 

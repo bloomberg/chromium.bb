@@ -508,13 +508,14 @@ def RunDevModeTest(buildroot, board, image_dir):
   cros_build_lib.RunCommand(cmd)
 
 
-def ArchiveTestResults(buildroot, test_results_dir, prefix):
+def ArchiveTestResults(buildroot, test_results_dir, test_basename):
   """Archives the test results into a tarball.
 
   Arguments:
     buildroot: Root directory where build occurs.
     test_results_dir: Path from buildroot/chroot to find test results.
       This must a subdir of /tmp.
+    test_basename: The basename of the tarball.
 
   Returns the path to the tarball.
   """
@@ -524,7 +525,7 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
   cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
                                 print_cmd=False)
 
-  test_tarball = os.path.join(buildroot, '%svm_test_results.tgz' % prefix)
+  test_tarball = os.path.join(buildroot, test_basename)
   if os.path.exists(test_tarball):
     os.remove(test_tarball)
 

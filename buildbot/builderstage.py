@@ -69,10 +69,28 @@ class BuilderStage(object):
   def StageNamePrefix(cls):
     return cls.name_stage_re.match(cls.__name__).group(1)
 
-  def __init__(self, options, build_config, suffix=None):
+  def __init__(self, options, build_config, suffix=None, attempt=None,
+               max_retry=None):
+    """Create a builder stage.
+
+    Args:
+      options: Command-line options, from cbuildbot.py
+      build_config: The configuration dictionary, from cbuildbot_config.py
+      suffix: The suffix to append to the buildbot name. Defaults to None.
+      attempt: If this build is to be retried, the current attempt number
+        (starting from 1). Defaults to None. Is only valid if |max_retry| is
+        also specified.
+      max_retry: The maximum number of retries. Defaults to None. Is only valid
+        if |attempt| is also specified.
+    """
     self._options = options
     self._bot_id = self.GetBotId(build_config['name'], options.remote_trybot)
 
+    if bool(attempt) != bool(max_retry):
+      raise AssertionError('max_retry and attempt must be specified together.')
+
+    self._attempt = attempt
+    self._max_retry = max_retry
     self._build_config = copy.deepcopy(build_config)
     self.name = self.StageNamePrefix()
     if suffix:
@@ -87,6 +105,10 @@ class BuilderStage(object):
     self._chrome_rev = self._build_config['chrome_rev']
     if self._options.chrome_rev:
       self._chrome_rev = self._options.chrome_rev
+
+  def GetStageNames(self):
+    """Get a list of the places where this stage has recorded results."""
+    return [self.name]
 
   def ConstructDashboardURL(self, stage=None):
     """Return the dashboard URL
@@ -225,15 +247,16 @@ class BuilderStage(object):
     else:
       return traceback.format_exc()
 
-  def _HandleExceptionAsWarning(self, exception):
+  def _HandleExceptionAsWarning(self, exception, retrying=False):
     """Use instead of HandleStageException to treat an exception as a warning.
 
     This is used by the ForgivingBuilderStage's to treat any exceptions as
     warnings instead of stage failures.
     """
+    description = self._StringifyException(exception)
     cros_build_lib.PrintBuildbotStepWarnings()
-    cros_build_lib.Warning(self._StringifyException(exception))
-    return results_lib.Results.FORGIVEN, None
+    cros_build_lib.Warning(description)
+    return results_lib.Results.FORGIVEN, description, retrying
 
   def _HandleStageException(self, exception):
     """Called when PerformStage throws an exception.  Can be overriden.
@@ -241,11 +264,15 @@ class BuilderStage(object):
     Should return result, description.  Description should be None if result
     is not an exception.
     """
-    # Tell the user about the exception, and record it
-    description = self._StringifyException(exception)
-    cros_build_lib.PrintBuildbotStepFailure()
-    cros_build_lib.Error(description)
-    return exception, description
+    if self._attempt and self._max_retry and self._attempt <= self._max_retry:
+      return self._HandleExceptionAsWarning(exception, retrying=True)
+    else:
+      # Tell the user about the exception, and record it
+      retrying = False
+      description = self._StringifyException(exception)
+      cros_build_lib.PrintBuildbotStepFailure()
+      cros_build_lib.Error(description)
+      return exception, description, retrying
 
   def HandleSkip(self):
     """Run if the stage is skipped."""
@@ -286,7 +313,7 @@ class BuilderStage(object):
       self.PerformStage()
     except SystemExit as e:
       if e.code != 0:
-        result, description = self._HandleStageException(e)
+        result, description, retrying = self._HandleStageException(e)
 
       raise
     except Exception as e:
@@ -294,12 +321,14 @@ class BuilderStage(object):
         raise
 
       # Tell the build bot this step failed for the waterfall.
-      result, description = self._HandleStageException(e)
+      result, description, retrying = self._HandleStageException(e)
       if result not in (results_lib.Results.FORGIVEN,
                         results_lib.Results.SUCCESS):
         raise results_lib.StepFailure()
+      elif retrying:
+        raise results_lib.RetriableStepFailure()
     except BaseException as e:
-      result, description = self._HandleStageException(e)
+      result, description, retrying = self._HandleStageException(e)
       raise
     finally:
       elapsed_time = time.time() - start_time

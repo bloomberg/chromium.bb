@@ -361,6 +361,7 @@ BASE_IMAGE_TAR = '%s.tar.xz' % BASE_IMAGE_NAME
 BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME
 IMAGE_SCRIPTS_NAME = 'image_scripts'
 IMAGE_SCRIPTS_TAR = '%s.tar.xz' % IMAGE_SCRIPTS_NAME
+VM_TEST_RESULTS = 'vm_test_results_%(attempt)s.tgz'
 
 METADATA_JSON = 'metadata.json'
 METADATA_STAGE_JSON = 'metadata_%(stage)s.json'

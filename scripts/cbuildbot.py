@@ -403,8 +403,9 @@ class SimpleBuilder(Builder):
       # results.) In this case, attribute the exception to any stages that
       # didn't report back correctly (if any).
       for stage in stage_objs:
-        if not results_lib.Results.StageHasResults(stage.name):
-          results_lib.Results.Record(stage.name, ex, str(ex))
+        for name in stage.GetStageNames():
+          if not results_lib.Results.StageHasResults(name):
+            results_lib.Results.Record(name, ex, str(ex))
 
       raise
 
@@ -430,11 +431,13 @@ class SimpleBuilder(Builder):
     stage_list = []
     if self.options.chrome_sdk and self.build_config['chrome_sdk']:
       stage_list.append([stages.ChromeSDKStage, board, archive_stage])
-    stage_list += [[stages.VMTestStage, board, archive_stage],
-                   [stages.SignerTestStage, board, archive_stage],
-                   [stages.UnitTestStage, board],
-                   [stages.UploadPrebuiltsStage, board, archive_stage],
-                   [stages.DevInstallerPrebuiltsStage, board, archive_stage]]
+    stage_list += [
+        [stages.RetryStage, 1, stages.VMTestStage, board, archive_stage],
+        [stages.SignerTestStage, board, archive_stage],
+        [stages.UnitTestStage, board],
+        [stages.UploadPrebuiltsStage, board, archive_stage],
+        [stages.DevInstallerPrebuiltsStage, board, archive_stage]
+    ]
 
     # We can not run hw tests without archiving the payloads.
     if self.options.archive:
