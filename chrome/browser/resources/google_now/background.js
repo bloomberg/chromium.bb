@@ -81,9 +81,16 @@ var DISMISS_CARD_TASK_NAME = 'dismiss-card';
 var RETRY_DISMISS_TASK_NAME = 'retry-dismiss';
 var STATE_CHANGED_TASK_NAME = 'state-changed';
 var SHOW_ON_START_TASK_NAME = 'show-cards-on-start';
+var ON_PUSH_MESSAGE_START_TASK_NAME = 'on-push-message';
 
 var LOCATION_WATCH_NAME = 'location-watch';
 
+/**
+ * Chrome push messaging subchannel for messages causing an immediate poll.
+ */
+var SUBCHANNEL_ID_POLL_NOW = 0;
+
+/**
 /**
  * Notification as it's sent by the server.
  *
@@ -160,6 +167,7 @@ wrapper.instrumentChromeApiFunction(
     'preferencesPrivate.googleGeolocationAccessEnabled.onChange.addListener',
     0);
 wrapper.instrumentChromeApiFunction('permissions.contains', 1);
+wrapper.instrumentChromeApiFunction('pushMessaging.onMessage.addListener', 0);
 wrapper.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
 wrapper.instrumentChromeApiFunction('runtime.onStartup.addListener', 0);
 wrapper.instrumentChromeApiFunction('tabs.create', 1);
@@ -515,25 +523,56 @@ function parseAndShowNotificationCards(response) {
 }
 
 /**
- * Requests notification cards from the server.
- * @param {Location} position Location of this computer.
+ * Requests notification cards from the server for specified groups.
+ * @param {Array.<string>} groupNames Names of groups that need to be refreshed.
  */
-function requestNotificationCards(position) {
-  console.log('requestNotificationCards ' + JSON.stringify(position) +
-      ' from ' + NOTIFICATION_CARDS_URL);
+function requestNotificationGroups(groupNames) {
+  console.log('requestNotificationGroups from ' + NOTIFICATION_CARDS_URL +
+      ', groupNames=' + JSON.stringify(groupNames));
 
   if (!NOTIFICATION_CARDS_URL)
     return;
 
   recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
 
+  var requestParameters = '?timeZoneOffsetMs=' +
+      (-new Date().getTimezoneOffset() * MS_IN_MINUTE);
+
+  groupNames.forEach(function(groupName) {
+    requestParameters += ('&requestTypes=' + groupName);
+  });
+
+  console.log('requestNotificationGroups: request=' + requestParameters);
+
+  var request = buildServerRequest('GET', 'notifications' + requestParameters);
+
+  request.onloadend = function(event) {
+    console.log('requestNotificationGroups-onloadend ' + request.status);
+    if (request.status == HTTP_OK) {
+      recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
+      parseAndShowNotificationCards(request.response);
+    }
+  };
+
+  setAuthorization(request, function(success) {
+    if (success)
+      request.send();
+  });
+}
+
+/**
+ * Requests notification cards from the server.
+ * @param {Location} position Location of this computer.
+ */
+function requestNotificationCards(position) {
+  console.log('requestNotificationCards ' + JSON.stringify(position));
+
   instrumented.storage.local.get('notificationGroups', function(items) {
     console.log('requestNotificationCards-storage-get ' +
                 JSON.stringify(items));
     items = items || {};
 
-    var requestParameters = '?timeZoneOffsetMs=' +
-        (-new Date().getTimezoneOffset() * MS_IN_MINUTE);
+    var groupsToRequest = [];
 
     if (items.notificationGroups) {
       var now = Date.now();
@@ -541,27 +580,11 @@ function requestNotificationCards(position) {
       for (var groupName in items.notificationGroups) {
         var group = items.notificationGroups[groupName];
         if (group.nextPollTime <= now)
-          requestParameters += ('&requestTypes=' + groupName);
+          groupsToRequest.push(groupName);
       }
     }
 
-    console.log('requestNotificationCards: request=' + requestParameters);
-
-    var request = buildServerRequest('GET',
-                                     'notifications' + requestParameters);
-
-    request.onloadend = function(event) {
-      console.log('requestNotificationCards-onloadend ' + request.status);
-      if (request.status == HTTP_OK) {
-        recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
-        parseAndShowNotificationCards(request.response);
-      }
-    };
-
-    setAuthorization(request, function(success) {
-      if (success)
-        request.send();
-    });
+    requestNotificationGroups(groupsToRequest);
   });
 }
 
@@ -1033,4 +1056,26 @@ instrumented.location.onLocationUpdate.addListener(function(position) {
 instrumented.omnibox.onInputEntered.addListener(function(text) {
   localStorage['server_url'] = NOTIFICATION_CARDS_URL = text;
   initialize();
+});
+
+instrumented.pushMessaging.onMessage.addListener(function(message) {
+  // message.payload will be '' when the extension first starts.
+  // Each time after signing in, we'll get latest payload for all channels.
+  // So, we need to poll the server only when the payload is non-empty and has
+  // changed.
+  console.log('pushMessaging.onMessage ' + JSON.stringify(message));
+  if (message.subchannelId == SUBCHANNEL_ID_POLL_NOW && message.payload) {
+    tasks.add(ON_PUSH_MESSAGE_START_TASK_NAME, function() {
+      instrumented.storage.local.get('lastPollNowPayload', function(items) {
+        if (items && items.lastPollNowPayload != message.payload) {
+          chrome.storage.local.set({lastPollNowPayload: message.payload});
+
+          updateCardsAttempts.isRunning(function(running) {
+            if (running)
+              requestNotificationGroups([]);
+          });
+        }
+      });
+    });
+  }
 });

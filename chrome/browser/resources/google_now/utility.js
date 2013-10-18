@@ -89,8 +89,8 @@ function sendErrorReport(error) {
   if (topFrame) {
     // Examples of a frame:
     // 1. '\n    at someFunction (chrome-extension://
-    //     pmofbkohncoogjjhahejjfbppikbjigm/background.js:915:15)\n'
-    // 2. '\n    at chrome-extension://pmofbkohncoogjjhahejjfbppikbjigm/
+    //     pafkbggdmjlpgkdkcbjmhmfcdpncadgh/background.js:915:15)\n'
+    // 2. '\n    at chrome-extension://pafkbggdmjlpgkdkcbjmhmfcdpncadgh/
     //     utility.js:269:18\n'
     // 3. '\n    at Function.target.(anonymous function) (extensions::
     //     SafeBuiltins:19:14)\n'
@@ -107,7 +107,7 @@ function sendErrorReport(error) {
 
     var topFrameElements = errorLocation.split(':');
     // topFrameElements is an array that ends like:
-    // [N-3] //pmofbkohncoogjjhahejjfbppikbjigm/utility.js
+    // [N-3] //pafkbggdmjlpgkdkcbjmhmfcdpncadgh/utility.js
     // [N-2] 308
     // [N-1] 19
     if (topFrameElements.length >= 3) {

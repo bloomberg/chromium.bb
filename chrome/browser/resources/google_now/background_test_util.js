@@ -25,5 +25,6 @@ mockChromeEvent(instrumented, 'notifications.onClosed');
 mockChromeEvent(instrumented, 'omnibox.onInputEntered');
 mockChromeEvent(
     instrumented, 'preferencesPrivate.googleGeolocationAccessEnabled.onChange');
+mockChromeEvent(instrumented, 'pushMessaging.onMessage');
 mockChromeEvent(instrumented, 'runtime.onInstalled');
 mockChromeEvent(instrumented, 'runtime.onStartup');
