@@ -667,11 +667,6 @@ class Host_2 {
                             MediaKeyError error_code,
                             uint32_t system_code) = 0;
 
-  // Check if the underlying host platform can be challenged; i.e., verified as
-  // a trusted platform. Returns false if the platform has no support or will
-  // always fail challenge requests (known untrusted).
-  virtual bool CanChallengePlatform() = 0;
-
   // Sends a platform challenge for the given |service_id|. |challenge| is at
   // most 256 bits of data to be signed. Once the challenge has been completed,
   // the host will call ContentDecryptionModule::OnPlatformChallengeResponse()
