@@ -7,3 +7,6 @@ ExtensionAlarmsTest.*
 
 # SEGV_MAPERR. http://crbug.com/245797
 ClientSideDetectionHostTest.NavigationCancelsShouldClassifyUrl
+
+# Hangs every once in a while. http://crbug.com/309149
+ExtensionUpdaterTest.TestMultipleManifestDownloading

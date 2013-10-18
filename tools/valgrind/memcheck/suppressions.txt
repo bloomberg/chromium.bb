@@ -7002,7 +7002,6 @@
    fun:_ZN7WebCore12AudioContext21handlePostRenderTasksEv
    fun:_ZN7WebCore20AudioDestinationNode6renderEPNS_8AudioBusES2_m
    fun:_ZN7WebCore27OfflineAudioDestinationNode13offlineRenderEv
-   fun:_ZN7WebCore27OfflineAudioDestinationNode18offlineRenderEntryEPv
 }
 {
    bug_290440
