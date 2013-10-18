@@ -18,7 +18,7 @@ namespace {{namespace}}Names {
 
 using namespace WebCore;
 
-DEFINE_GLOBAL(AtomicString, {{namespace|lower}}NamespaceURI)
+DEFINE_GLOBAL(AtomicString, {{namespace_prefix}}NamespaceURI)
 
 {%- if tags %}
 
@@ -58,30 +58,24 @@ WebCore::QualifiedName** get{{namespace}}Attrs()
 void init()
 {
     // Use placement new to initialize the globals.
-    AtomicString {{namespace|lower}}NS("{{namespace_uri}}", AtomicString::ConstructFromLiteral);
+    AtomicString {{namespace_prefix}}NS("{{namespace_uri}}", AtomicString::ConstructFromLiteral);
 
     // Namespace
-    new ((void*)&{{namespace|lower}}NamespaceURI) AtomicString({{namespace|lower}}NS);
+    new ((void*)&{{namespace_prefix}}NamespaceURI) AtomicString({{namespace_prefix}}NS);
 
-    // Tags
-{%- for tag in tags|sort %}
-    StringImpl* {{tag|symbol}}Impl = StringImpl::createStatic("{{tag.name}}", {{tag.name|length}}, {{tag.name|hash}});
-{%- endfor %}
-
-    // Attrs
-{%- for attr in attrs|sort %}
-    StringImpl* {{attr|symbol}}Impl = StringImpl::createStatic("{{attr.name}}", {{attr.name|length}}, {{attr.name|hash}});
+{%- for name, tag_list in (tags + attrs)|groupby('name')|sort %}
+    StringImpl* {{tag_list[0]|symbol}}Impl = StringImpl::createStatic("{{name}}", {{name|length}}, {{name|hash}});
 {%- endfor %}
 
     // Tags
 {%- for tag in tags|sort %}
-    createQualifiedName((void*)&{{tag|symbol}}Tag, {{tag|symbol}}Impl, {{namespace|lower}}NS);
+    createQualifiedName((void*)&{{tag|symbol}}Tag, {{tag|symbol}}Impl, {{namespace_prefix}}NS);
 {%- endfor %}
 
     // Attrs
 {%- for attr in attrs|sort %}
 {%- if use_namespace_for_attrs %}
-    createQualifiedName((void*)&{{attr|symbol}}Attr, {{attr|symbol}}Impl, {{namespace|lower}}NS);
+    createQualifiedName((void*)&{{attr|symbol}}Attr, {{attr|symbol}}Impl, {{namespace_prefix}}NS);
 {%- else %}
     createQualifiedName((void*)&{{attr|symbol}}Attr, {{attr|symbol}}Impl);
 {%- endif %}

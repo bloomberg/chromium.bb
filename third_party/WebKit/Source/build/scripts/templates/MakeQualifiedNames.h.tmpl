@@ -11,7 +11,7 @@ namespace {{namespace}}Names {
 
 #ifndef {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS
 // Namespace
-extern const WTF::AtomicString {{namespace|lower}}NamespaceURI;
+extern const WTF::AtomicString {{namespace_prefix}}NamespaceURI;
 
 // Tags
 {%- for tag in tags|sort %}

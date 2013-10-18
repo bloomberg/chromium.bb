@@ -69,7 +69,6 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     })
     default_parameters = dict(MakeQualifiedNamesWriter.default_parameters, **{
         'fallbackInterfaceName': None,
-        'namespacePrefix': None,
     })
     filters = dict(MakeQualifiedNamesWriter.filters, **{
         'interface': _interface,
@@ -83,12 +82,12 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         # FIXME: When we start using these element factories, we'll want to
         # remove the "new" prefix and also have our base class generate
         # *Names.h and *Names.cpp.
-        self._outputs = {
+        self._outputs.update({
             (self.namespace + 'ElementFactory.h'): self.generate_factory_header,
             (self.namespace + 'ElementFactory.cpp'): self.generate_factory_implementation,
             ('V8' + self.namespace + 'ElementWrapperFactory.h'): self.generate_wrapper_factory_header,
             ('V8' + self.namespace + 'ElementWrapperFactory.cpp'): self.generate_wrapper_factory_implementation,
-        }
+        })
 
         for tag in self._template_context['tags']:
             tag['js_interface'] = _js_interface(tag) if _has_js_interface(tag) else None

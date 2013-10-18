@@ -288,30 +288,6 @@
           'msvs_cygwin_shell': 1,
         },
         {
-          'action_name': 'HTMLNames',
-          'inputs': [
-            '../build/scripts/Hasher.pm',
-            '../build/scripts/StaticString.pm',
-            '../build/scripts/make_names.pl',
-            'html/HTMLTagNames.in',
-            'html/HTMLAttributeNames.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.h',
-          ],
-          'action': [
-            'python',
-            '../build/scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--extraDefines', '<(feature_defines)'
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
           'action_name': 'HTMLElementFactory',
           'inputs': [
             '<@(make_element_factory_files)',
@@ -321,6 +297,8 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementFactory.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.h',
             '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.h',
           ],
