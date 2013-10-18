@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/auth_sync_observer.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -58,7 +59,7 @@ void AuthSyncObserver::OnStateChanged() {
       std::string sync_id =
           profile_->GetPrefs()->GetString(prefs::kManagedUserId);
       const User* user =
-          UserManager::Get()->FindLocallyManagedUserBySyncId(sync_id);
+          UserManager::Get()->GetSupervisedUserManager()->FindBySyncId(sync_id);
       if (user)
         email = user->email();
     }

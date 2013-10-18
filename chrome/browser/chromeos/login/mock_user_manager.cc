@@ -4,10 +4,14 @@
 
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 
+#include "chrome/browser/chromeos/login/fake_supervised_user_manager.h"
+
 namespace chromeos {
 
-MockUserManager::MockUserManager() : user_(NULL),
-                                     user_flow_(new DefaultUserFlow()) {}
+MockUserManager::MockUserManager()
+    : user_(NULL),
+      user_flow_(new DefaultUserFlow()),
+      supervised_user_manager_(new FakeSupervisedUserManager()) {}
 
 MockUserManager::~MockUserManager() {
   delete user_;
@@ -51,6 +55,10 @@ User* MockUserManager::GetUserByProfile(Profile* profile) const {
 
 UserImageManager* MockUserManager::GetUserImageManager() {
   return user_image_manager_.get();
+}
+
+SupervisedUserManager* MockUserManager::GetSupervisedUserManager() {
+  return supervised_user_manager_.get();
 }
 
 // Creates a new User instance.

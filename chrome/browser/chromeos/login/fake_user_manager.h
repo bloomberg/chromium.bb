@@ -7,12 +7,15 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 
 namespace chromeos {
+
+class FakeSupervisedUserManager;
 
 // Fake user manager with a barebones implementation. Users can be added
 // and set as logged in, and those users can be returned.
@@ -50,27 +53,18 @@ class FakeUserManager : public UserManager {
   // Not implemented.
   virtual void Shutdown() OVERRIDE {}
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
+  virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
   virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
   virtual UserList GetUnlockUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() OVERRIDE;
   virtual void SwitchActiveUser(const std::string& email) OVERRIDE {}
   virtual void SessionStarted() OVERRIDE {}
   virtual void RestoreActiveSessions() OVERRIDE {}
-  virtual const User* CreateLocallyManagedUserRecord(
-      const std::string& manager_id,
-      const std::string& local_user_id,
-      const std::string& sync_user_id,
-      const string16& display_name) OVERRIDE;
-  virtual std::string GenerateUniqueLocallyManagedUserId() OVERRIDE;
   virtual void RemoveUser(const std::string& email,
       RemoveUserDelegate* delegate) OVERRIDE {}
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE {}
   virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
   virtual const User* FindUser(const std::string& email) const OVERRIDE;
-  virtual const User* FindLocallyManagedUser(
-      const string16& display_name) const OVERRIDE;
-  virtual const User* FindLocallyManagedUserBySyncId(
-      const std::string& sync_id) const OVERRIDE;
   virtual const User* GetLoggedInUser() const OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual const User* GetPrimaryUser() const OVERRIDE;
@@ -84,14 +78,6 @@ class FakeUserManager : public UserManager {
       const std::string& display_email) OVERRIDE {}
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const OVERRIDE;
-  virtual std::string GetManagedUserSyncId(
-      const std::string& managed_user_id) const OVERRIDE;
-  virtual string16 GetManagerDisplayNameForManagedUser(
-      const std::string& managed_user_id) const OVERRIDE;
-  virtual std::string GetManagerUserIdForManagedUser(
-      const std::string& managed_user_id) const OVERRIDE;
-  virtual std::string GetManagerDisplayEmailForManagedUser(
-      const std::string& managed_user_id) const OVERRIDE;
   virtual bool IsCurrentUserOwner() const OVERRIDE;
   virtual bool IsCurrentUserNew() const OVERRIDE;
   virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const OVERRIDE;
@@ -109,11 +95,6 @@ class FakeUserManager : public UserManager {
   virtual bool HasBrowserRestarted() const OVERRIDE;
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& email) const OVERRIDE;
-  virtual void StartLocallyManagedUserCreationTransaction(
-      const string16& display_name) OVERRIDE {}
-  virtual void SetLocallyManagedUserCreationTransactionUserId(
-      const std::string& email) OVERRIDE {}
-  virtual void CommitLocallyManagedUserCreationTransaction() OVERRIDE {}
   virtual void SetUserFlow(const std::string& email, UserFlow* flow) OVERRIDE {}
   virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
   virtual UserFlow* GetUserFlow(const std::string& email) const OVERRIDE;
@@ -145,6 +126,7 @@ class FakeUserManager : public UserManager {
   // We use this internal function for const-correctness.
   User* GetActiveUserInternal() const;
 
+  scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;
   UserList user_list_;
   UserList logged_in_users_;
   std::string owner_email_;

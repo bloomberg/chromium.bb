@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 
+#include "chrome/browser/chromeos/login/fake_supervised_user_manager.h"
+
 namespace {
 
 // As defined in /chromeos/dbus/cryptohome_client.cc.
@@ -13,7 +15,9 @@ static const char kUserIdHashSuffix[] = "-hash";
 
 namespace chromeos {
 
-FakeUserManager::FakeUserManager() : primary_user_(NULL) {}
+FakeUserManager::FakeUserManager()
+    : supervised_user_manager_(new FakeSupervisedUserManager),
+      primary_user_(NULL) {}
 
 FakeUserManager::~FakeUserManager() {
   // Can't use STLDeleteElements because of the private destructor of User.
@@ -107,6 +111,10 @@ void FakeUserManager::UpdateUserAccountData(const std::string&, const string16&,
   // Not implemented
 }
 
+SupervisedUserManager* FakeUserManager::GetSupervisedUserManager() {
+  return supervised_user_manager_.get();
+}
+
 UserImageManager* FakeUserManager::GetUserImageManager() {
   return NULL;
 }
@@ -123,33 +131,11 @@ const std::string& FakeUserManager::GetOwnerEmail() {
   return owner_email_;
 }
 
-const User* FakeUserManager::CreateLocallyManagedUserRecord(
-    const std::string& manager_id,
-    const std::string& local_user_id,
-    const std::string& sync_user_id,
-    const string16& display_name) {
-  return NULL;
-}
-
-std::string FakeUserManager::GenerateUniqueLocallyManagedUserId() {
-  return std::string();
-}
-
 bool FakeUserManager::IsKnownUser(const std::string& email) const {
   return true;
 }
 
 const User* FakeUserManager::FindUser(const std::string& email) const {
-  return NULL;
-}
-
-const User* FakeUserManager::FindLocallyManagedUser(
-    const string16& display_name) const {
-  return NULL;
-}
-
-const User* FakeUserManager::FindLocallyManagedUserBySyncId(
-    const std::string& sync_id) const {
   return NULL;
 }
 
@@ -176,26 +162,6 @@ string16 FakeUserManager::GetUserDisplayName(
 
 std::string FakeUserManager::GetUserDisplayEmail(
     const std::string& username) const {
-  return std::string();
-}
-
-std::string FakeUserManager::GetManagedUserSyncId(
-    const std::string& managed_user_id) const {
-  return std::string();
-}
-
-string16 FakeUserManager::GetManagerDisplayNameForManagedUser(
-    const std::string& managed_user_id) const {
-  return string16();
-}
-
-std::string FakeUserManager::GetManagerUserIdForManagedUser(
-    const std::string& managed_user_id) const {
-  return std::string();
-}
-
-std::string FakeUserManager::GetManagerDisplayEmailForManagedUser(
-    const std::string& managed_user_id) const {
   return std::string();
 }
 

@@ -57,6 +57,7 @@
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -426,15 +427,17 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual const std::string GetLocallyManagedUserManager() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
       return std::string();
-    return UserManager::Get()->GetManagerDisplayEmailForManagedUser(
-        chromeos::UserManager::Get()->GetActiveUser()->email());
+    return UserManager::Get()->GetSupervisedUserManager()->
+        GetManagerDisplayEmail(
+            chromeos::UserManager::Get()->GetActiveUser()->email());
   }
 
   virtual const string16 GetLocallyManagedUserManagerName() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
       return string16();
-    return UserManager::Get()->GetManagerDisplayNameForManagedUser(
-        chromeos::UserManager::Get()->GetActiveUser()->email());
+    return UserManager::Get()->GetSupervisedUserManager()->
+        GetManagerDisplayName(
+            chromeos::UserManager::Get()->GetActiveUser()->email());
   }
 
   virtual const string16 GetLocallyManagedUserMessage() const OVERRIDE {

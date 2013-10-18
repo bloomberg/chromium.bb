@@ -39,6 +39,7 @@ namespace chromeos {
 class MultiProfileFirstRunNotification;
 class MultiProfileUserController;
 class RemoveUserDelegate;
+class SupervisedUserManagerImpl;
 class SessionLengthLimiter;
 
 struct UpdateUserAccountDataCallbackData;
@@ -56,27 +57,24 @@ class UserManagerImpl
   // UserManager implementation:
   virtual void Shutdown() OVERRIDE;
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
+  virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual UserList GetUsersAdmittedForMultiProfile() const OVERRIDE;
   virtual const UserList& GetLoggedInUsers() const OVERRIDE;
   virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
   virtual UserList GetUnlockUsers() const OVERRIDE;
   virtual const std::string& GetOwnerEmail() OVERRIDE;
-  virtual void UserLoggedIn(const std::string& email,
-                            const std::string& username_hash,
+  virtual void UserLoggedIn(const std::string& user_id,
+                            const std::string& user_id_hash,
                             bool browser_restart) OVERRIDE;
-  virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
   virtual void RestoreActiveSessions() OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
-  virtual void RemoveUser(const std::string& email,
+  virtual void RemoveUser(const std::string& user_id,
                           RemoveUserDelegate* delegate) OVERRIDE;
-  virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
-  virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
-  virtual const User* FindUser(const std::string& email) const OVERRIDE;
-  virtual const User* FindLocallyManagedUser(
-      const string16& display_name) const OVERRIDE;
-  virtual const User* FindLocallyManagedUserBySyncId(
-      const std::string& sync_id) const OVERRIDE;
+  virtual void RemoveUserFromList(const std::string& user_id) OVERRIDE;
+  virtual bool IsKnownUser(const std::string& user_id) const OVERRIDE;
+  virtual const User* FindUser(const std::string& user_id) const OVERRIDE;
   virtual const User* GetLoggedInUser() const OVERRIDE;
   virtual User* GetLoggedInUser() OVERRIDE;
   virtual const User* GetActiveUser() const OVERRIDE;
@@ -84,27 +82,19 @@ class UserManagerImpl
   virtual const User* GetPrimaryUser() const OVERRIDE;
   virtual User* GetUserByProfile(Profile* profile) const OVERRIDE;
   virtual void SaveUserOAuthStatus(
-      const std::string& username,
+      const std::string& user_id,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
-  virtual void SaveUserDisplayName(const std::string& username,
+  virtual void SaveUserDisplayName(const std::string& user_id,
                                    const string16& display_name) OVERRIDE;
-  virtual void UpdateUserAccountData(const std::string& username,
+  virtual void UpdateUserAccountData(const std::string& user_id,
                                      const string16& display_name,
                                      const std::string& locale) OVERRIDE;
   virtual string16 GetUserDisplayName(
-      const std::string& username) const OVERRIDE;
-  virtual void SaveUserDisplayEmail(const std::string& username,
+      const std::string& user_id) const OVERRIDE;
+  virtual void SaveUserDisplayEmail(const std::string& user_id,
                                     const std::string& display_email) OVERRIDE;
   virtual std::string GetUserDisplayEmail(
-      const std::string& username) const OVERRIDE;
-  virtual std::string GetManagedUserSyncId(
-      const std::string& managed_user_id) const OVERRIDE;
-  virtual string16 GetManagerDisplayNameForManagedUser(
-      const std::string& managed_user_id) const OVERRIDE;
-  virtual std::string GetManagerUserIdForManagedUser(
-      const std::string& managed_user_id) const OVERRIDE;
-  virtual std::string GetManagerDisplayEmailForManagedUser(
-      const std::string& managed_user_id) const OVERRIDE;
+      const std::string& user_id) const OVERRIDE;
   virtual bool IsCurrentUserOwner() const OVERRIDE;
   virtual bool IsCurrentUserNew() const OVERRIDE;
   virtual bool IsCurrentUserNonCryptohomeDataEphemeral() const OVERRIDE;
@@ -121,7 +111,7 @@ class UserManagerImpl
   virtual bool UserSessionsRestored() const OVERRIDE;
   virtual bool HasBrowserRestarted() const OVERRIDE;
   virtual bool IsUserNonCryptohomeDataEphemeral(
-      const std::string& email) const OVERRIDE;
+      const std::string& user_id) const OVERRIDE;
   virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void RemoveObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void AddSessionStateObserver(
@@ -129,22 +119,11 @@ class UserManagerImpl
   virtual void RemoveSessionStateObserver(
       UserManager::UserSessionStateObserver* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
-  virtual const User* CreateLocallyManagedUserRecord(
-      const std::string& manager_id,
-      const std::string& local_user_id,
-      const std::string& sync_user_id,
-      const string16& display_name) OVERRIDE;
-  virtual std::string GenerateUniqueLocallyManagedUserId() OVERRIDE;
-  virtual void StartLocallyManagedUserCreationTransaction(
-      const string16& display_name) OVERRIDE;
-  virtual void SetLocallyManagedUserCreationTransactionUserId(
-      const std::string& email) OVERRIDE;
-  virtual void CommitLocallyManagedUserCreationTransaction() OVERRIDE;
 
   virtual UserFlow* GetCurrentUserFlow() const OVERRIDE;
-  virtual UserFlow* GetUserFlow(const std::string& email) const OVERRIDE;
-  virtual void SetUserFlow(const std::string& email, UserFlow* flow) OVERRIDE;
-  virtual void ResetUserFlow(const std::string& email) OVERRIDE;
+  virtual UserFlow* GetUserFlow(const std::string& user_id) const OVERRIDE;
+  virtual void SetUserFlow(const std::string& user_id, UserFlow* flow) OVERRIDE;
+  virtual void ResetUserFlow(const std::string& user_id) OVERRIDE;
   virtual bool GetAppModeChromeClientOAuthInfo(
       std::string* chrome_client_id,
       std::string* chrome_client_secret) OVERRIDE;
@@ -153,7 +132,7 @@ class UserManagerImpl
       const std::string& chrome_client_secret) OVERRIDE;
   virtual bool AreLocallyManagedUsersAllowed() const OVERRIDE;
   virtual base::FilePath GetUserProfileDir(
-      const std::string& email) const OVERRIDE;
+      const std::string& user_id) const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -168,6 +147,7 @@ class UserManagerImpl
       OVERRIDE;
 
  private:
+  friend class SupervisedUserManagerImpl;
   friend class UserManager;
   friend class WallpaperManager;
   friend class UserManagerTest;
@@ -199,26 +179,26 @@ class UserManagerImpl
   // Returns the user with the given email address if found in the persistent
   // list or currently logged in as ephemeral. Returns |NULL| otherwise.
   // Same as FindUser but returns non-const pointer to User object.
-  User* FindUserAndModify(const std::string& email);
+  User* FindUserAndModify(const std::string& user_id);
 
   // Returns the user with the given email address if found in the persistent
   // list. Returns |NULL| otherwise.
-  const User* FindUserInList(const std::string& email) const;
+  const User* FindUserInList(const std::string& user_id) const;
 
   // Same as FindUserInList but returns non-const pointer to User object.
-  User* FindUserInListAndModify(const std::string& email);
+  User* FindUserInListAndModify(const std::string& user_id);
 
   // Indicates that a user just logged in as guest.
   void GuestUserLoggedIn();
 
   // Indicates that a regular user just logged in.
-  void RegularUserLoggedIn(const std::string& email);
+  void RegularUserLoggedIn(const std::string& user_id);
 
   // Indicates that a regular user just logged in as ephemeral.
-  void RegularUserLoggedInAsEphemeral(const std::string& email);
+  void RegularUserLoggedInAsEphemeral(const std::string& user_id);
 
   // Indicates that a locally managed user just logged in.
-  void LocallyManagedUserLoggedIn(const std::string& username);
+  void LocallyManagedUserLoggedIn(const std::string& user_id);
 
   // Indicates that a user just logged into a public session.
   void PublicAccountUserLoggedIn(User* user);
@@ -234,7 +214,7 @@ class UserManagerImpl
   void NotifyOnLogin();
 
   // Reads user's oauth token status from local state preferences.
-  User::OAuthTokenStatus LoadUserOAuthStatus(const std::string& username) const;
+  User::OAuthTokenStatus LoadUserOAuthStatus(const std::string& user_id) const;
 
   void SetCurrentUserIsOwner(bool is_current_user_owner);
 
@@ -243,12 +223,12 @@ class UserManagerImpl
 
   // Removes data stored or cached outside the user's cryptohome (wallpaper,
   // avatar, OAuth token status, display name, display email).
-  void RemoveNonCryptohomeData(const std::string& email);
+  void RemoveNonCryptohomeData(const std::string& user_id);
 
   // Removes a regular or locally managed user from the user list.
   // Returns the user if found or NULL otherwise.
   // Also removes the user from the persistent user list.
-  User* RemoveRegularOrLocallyManagedUserFromList(const std::string& username);
+  User* RemoveRegularOrLocallyManagedUserFromList(const std::string& user_id);
 
   // If data for a public account is marked as pending removal and the user is
   // no longer logged into that account, removes the data.
@@ -271,7 +251,7 @@ class UserManagerImpl
 
   // Updates the display name for public account |username| from policy settings
   // associated with that username.
-  void UpdatePublicAccountDisplayName(const std::string& username);
+  void UpdatePublicAccountDisplayName(const std::string& user_id);
 
   // Notifies the UI about a change to the user list.
   void NotifyUserListChanged();
@@ -291,12 +271,6 @@ class UserManagerImpl
   // Notifies observers that user pending sessions restore has finished.
   void NotifyPendingUserSessionsRestoreFinished();
 
-  // Returns true if there is non-committed user creation transaction.
-  bool HasFailedLocallyManagedUserCreationTransaction();
-
-  // Attempts to clean up data that could be left from failed user creation.
-  void RollbackLocallyManagedUserCreationTransaction();
-
   // Lazily creates default user flow.
   UserFlow* GetDefaultUserFlow() const;
 
@@ -305,6 +279,10 @@ class UserManagerImpl
 
   // Insert |user| at the front of the LRU user list..
   void SetLRUUser(User* user);
+
+  // Adds |user| to users list, and adds it to front of LRU list. It is assumed
+  // that there is no user with same id.
+  void AddUserRecord(User* user);
 
   // Callback to process RetrieveActiveSessions() request results.
   void OnRestoreActiveSessions(
@@ -318,17 +296,17 @@ class UserManagerImpl
   void RestorePendingUserSessions();
 
   // Sends metrics in response to a regular user logging in.
-  void SendRegularUserLoginMetrics(const std::string& email);
+  void SendRegularUserLoginMetrics(const std::string& user_id);
 
   // UpdateUserAccountData() + SaveUserDisplayName() .
-  void UpdateUserAccountDataImpl(const std::string& username,
+  void UpdateUserAccountDataImpl(const std::string& user_id,
                                  const string16& display_name,
                                  const std::string* locale);
 
   // Account locale needs to be translated to device locale.
   // This might be called as callback after FILE thread translates locale.
   void UpdateUserAccountDataImplCallback(
-      const std::string& username,
+      const std::string& user_id,
       const string16& display_name,
       const std::string* resolved_account_locale);
 
@@ -423,6 +401,9 @@ class UserManagerImpl
 
   // User avatar manager.
   scoped_ptr<UserImageManagerImpl> user_image_manager_;
+
+  // Supervised user manager.
+  scoped_ptr<SupervisedUserManagerImpl> supervised_user_manager_;
 
   // Session length limiter.
   scoped_ptr<SessionLengthLimiter> session_length_limiter_;

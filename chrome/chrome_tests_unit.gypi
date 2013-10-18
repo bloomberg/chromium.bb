@@ -72,6 +72,8 @@
         'browser/chromeos/input_method/mock_input_method_manager.h',
         'browser/chromeos/login/fake_login_utils.cc',
         'browser/chromeos/login/fake_login_utils.h',
+        'browser/chromeos/login/fake_supervised_user_manager.cc',
+        'browser/chromeos/login/fake_supervised_user_manager.h',
         'browser/chromeos/login/fake_user_manager.cc',
         'browser/chromeos/login/fake_user_manager.h',
         'browser/chromeos/login/mock_authenticator.cc',

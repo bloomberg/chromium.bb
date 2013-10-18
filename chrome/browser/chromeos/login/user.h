@@ -163,6 +163,7 @@ class User {
   virtual bool is_active() const;
 
  protected:
+  friend class SupervisedUserManagerImpl;
   friend class UserManagerImpl;
   friend class UserImageManagerImpl;
   // For testing:

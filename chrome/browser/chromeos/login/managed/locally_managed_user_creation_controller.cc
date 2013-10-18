@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/mount_manager.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -130,26 +131,24 @@ void LocallyManagedUserCreationController::StartCreation() {
       FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
       this,
       &LocallyManagedUserCreationController::CreationTimedOut);
+  SupervisedUserManager* manager =
+      UserManager::Get()->GetSupervisedUserManager();
+  manager->StartCreationTransaction(creation_context_->display_name);
 
-  UserManager::Get()->StartLocallyManagedUserCreationTransaction(
-      creation_context_->display_name);
-
-  creation_context_->local_user_id =
-        UserManager::Get()->GenerateUniqueLocallyManagedUserId();
+  creation_context_->local_user_id = manager->GenerateUserId();
 
   if (creation_context_->creation_type == NEW_USER) {
     creation_context_->sync_user_id =
         ManagedUserRegistrationUtility::GenerateNewManagedUserId();
   }
 
-  UserManager::Get()->CreateLocallyManagedUserRecord(
+  manager->CreateUserRecord(
       creation_context_->manager_id,
       creation_context_->local_user_id,
       creation_context_->sync_user_id,
       creation_context_->display_name);
 
-  UserManager::Get()->SetLocallyManagedUserCreationTransactionUserId(
-      creation_context_->local_user_id);
+  manager->SetCreationTransactionUserId(creation_context_->local_user_id);
   VLOG(1) << "Creating cryptohome";
   authenticator_ = new ManagedUserAuthenticator(this);
   authenticator_->AuthenticateToCreate(creation_context_->local_user_id,
@@ -281,7 +280,8 @@ void LocallyManagedUserCreationController::OnManagedUserFilesStored(
   // sync service fails to use it.
   UserManager::Get()->SaveUserOAuthStatus(creation_context_->local_user_id,
                                           User::OAUTH2_TOKEN_STATUS_VALID);
-  UserManager::Get()->CommitLocallyManagedUserCreationTransaction();
+  UserManager::Get()->GetSupervisedUserManager()->
+      CommitCreationTransaction();
   if (consumer_)
     consumer_->OnCreationSuccess();
 }

@@ -16,6 +16,7 @@ namespace chromeos {
 
 class RemoveUserDelegate;
 class UserImageManager;
+class SupervisedUserManager;
 
 // Base class for UserManagerImpl - provides a mechanism for discovering users
 // who have logged into this Chrome OS device before and updating that list.
@@ -102,6 +103,7 @@ class UserManager {
   virtual ~UserManager();
 
   virtual UserImageManager* GetUserImageManager() = 0;
+  virtual SupervisedUserManager* GetSupervisedUserManager() = 0;
 
   // Returns a list of users who have logged into this device previously. This
   // is sorted by last login date with the most recent user at the beginning.
@@ -125,17 +127,17 @@ class UserManager {
   // no owner for the device.
   virtual const std::string& GetOwnerEmail() = 0;
 
-  // Indicates that a user with the given |email| has just logged in. The
+  // Indicates that a user with the given |user_id| has just logged in. The
   // persistent list is updated accordingly if the user is not ephemeral.
   // |browser_restart| is true when reloading Chrome after crash to distinguish
   // from normal sign in flow.
   // |username_hash| is used to identify homedir mount point.
-  virtual void UserLoggedIn(const std::string& email,
+  virtual void UserLoggedIn(const std::string& user_id,
                             const std::string& username_hash,
                             bool browser_restart) = 0;
 
-  // Switches to active user identified by |email|. User has to be logged in.
-  virtual void SwitchActiveUser(const std::string& email) = 0;
+  // Switches to active user identified by |user_id|. User has to be logged in.
+  virtual void SwitchActiveUser(const std::string& user_id) = 0;
 
   // Called when browser session is started i.e. after
   // browser_creator.LaunchBrowser(...) was called after user sign in.
@@ -153,48 +155,23 @@ class UserManager {
   // and notifies observers.
   virtual void RestoreActiveSessions() = 0;
 
-  // Creates locally managed user with given |display_name| and|local_user_id|
-  // and persists that to user list. Also links this user identified by
-  // |sync_user_id| to manager with a |manager_id|.
-  // Returns created user, or existing user if there already
-  // was locally managed user with such display name.
-  // TODO(antrim): Refactor into a single struct to have only 1 getter.
-  virtual const User* CreateLocallyManagedUserRecord(
-      const std::string& manager_id,
-      const std::string& local_user_id,
-      const std::string& sync_user_id,
-      const string16& display_name) = 0;
-
-  // Generates unique username for locally managed user.
-  virtual std::string GenerateUniqueLocallyManagedUserId() = 0;
-
   // Removes the user from the device. Note, it will verify that the given user
   // isn't the owner, so calling this method for the owner will take no effect.
   // Note, |delegate| can be NULL.
-  virtual void RemoveUser(const std::string& email,
+  virtual void RemoveUser(const std::string& user_id,
                           RemoveUserDelegate* delegate) = 0;
 
   // Removes the user from the persistent list only. Also removes the user's
   // picture.
-  virtual void RemoveUserFromList(const std::string& email) = 0;
+  virtual void RemoveUserFromList(const std::string& user_id) = 0;
 
-  // Returns true if a user with the given email address is found in the
-  // persistent list or currently logged in as ephemeral.
-  virtual bool IsKnownUser(const std::string& email) const = 0;
+  // Returns true if a user with the given user id is found in the persistent
+  // list or currently logged in as ephemeral.
+  virtual bool IsKnownUser(const std::string& user_id) const = 0;
 
-  // Returns the user with the given email address if found in the persistent
+  // Returns the user with the given user id if found in the persistent
   // list or currently logged in as ephemeral. Returns |NULL| otherwise.
-  virtual const User* FindUser(const std::string& email) const = 0;
-
-  // Returns the locally managed user with the given |display_name| if found in
-  // the persistent list. Returns |NULL| otherwise.
-  virtual const User* FindLocallyManagedUser(
-      const string16& display_name) const = 0;
-
-  // Returns the locally managed user with the given |sync_id| if found in
-  // the persistent list. Returns |NULL| otherwise.
-  virtual const User* FindLocallyManagedUserBySyncId(
-      const std::string& sync_id) const = 0;
+  virtual const User* FindUser(const std::string& user_id) const = 0;
 
   // Returns the logged-in user.
   // TODO(nkostylev): Deprecate this call, move clients to GetActiveUser().
@@ -217,59 +194,35 @@ class UserManager {
 
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
-      const std::string& username,
+      const std::string& user_id,
       User::OAuthTokenStatus oauth_token_status) = 0;
 
   // Saves user's displayed name in local state preferences.
   // Ignored If there is no such user.
-  virtual void SaveUserDisplayName(const std::string& username,
+  virtual void SaveUserDisplayName(const std::string& user_id,
                                    const string16& display_name) = 0;
 
   // Updates data upon User Account download.
-  virtual void UpdateUserAccountData(const std::string& username,
+  virtual void UpdateUserAccountData(const std::string& user_id,
                                      const string16& display_name,
                                      const std::string& locale) = 0;
 
-  // Returns the display name for user |username| if it is known (was
+  // Returns the display name for user |user_id| if it is known (was
   // previously set by a |SaveUserDisplayName| call).
   // Otherwise, returns an empty string.
   virtual string16 GetUserDisplayName(
-      const std::string& username) const = 0;
+      const std::string& user_id) const = 0;
 
   // Saves user's displayed (non-canonical) email in local state preferences.
   // Ignored If there is no such user.
-  virtual void SaveUserDisplayEmail(const std::string& username,
+  virtual void SaveUserDisplayEmail(const std::string& user_id,
                                     const std::string& display_email) = 0;
 
-  // Returns the display email for user |username| if it is known (was
+  // Returns the display email for user |user_id| if it is known (was
   // previously set by a |SaveUserDisplayEmail| call).
-  // Otherwise, returns |username| itself.
+  // Otherwise, returns |user_id| itself.
   virtual std::string GetUserDisplayEmail(
-      const std::string& username) const = 0;
-
-  // Returns sync_user_id for locally managed user with |managed_user_id| or
-  // empty string if such user is not found or it doesn't have
-  // sync_user_id defined.
-  virtual std::string GetManagedUserSyncId(
-        const std::string& managed_user_id) const = 0;
-
-  // Returns the display name for manager of user |managed_user_id| if it is
-  // known (was previously set by a |SaveUserDisplayName| call).
-  // Otherwise, returns a manager id.
-  virtual string16 GetManagerDisplayNameForManagedUser(
-      const std::string& managed_user_id) const = 0;
-
-  // Returns the user id for manager of user |managed_user_id| if it is known
-  // (user is actually a managed user).
-  // Otherwise, returns an empty string.
-  virtual std::string GetManagerUserIdForManagedUser(
-      const std::string& managed_user_id) const = 0;
-
-  // Returns the display email for manager of user |managed_user_id| if it is
-  // known (user is actually a managed user).
-  // Otherwise, returns an empty string.
-  virtual std::string GetManagerDisplayEmailForManagedUser(
-      const std::string& managed_user_id) const = 0;
+      const std::string& user_id) const = 0;
 
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;
@@ -323,41 +276,30 @@ class UserManager {
   // user's session.
   virtual bool HasBrowserRestarted() const = 0;
 
-  // Returns true if data stored or cached for the user with the given email
+  // Returns true if data stored or cached for the user with the given user id
   // address outside that user's cryptohome (wallpaper, avatar, OAuth token
   // status, display name, display email) is to be treated as ephemeral.
   virtual bool IsUserNonCryptohomeDataEphemeral(
-      const std::string& email) const = 0;
+      const std::string& user_id) const = 0;
 
-  // Create a record about starting locally managed user creation transaction.
-  virtual void StartLocallyManagedUserCreationTransaction(
-      const string16& display_name) = 0;
-
-  // Add user id to locally managed user creation transaction record.
-  virtual void SetLocallyManagedUserCreationTransactionUserId(
-      const std::string& email) = 0;
-
-  // Remove locally managed user creation transaction record.
-  virtual void CommitLocallyManagedUserCreationTransaction() = 0;
-
-  // Method that allows to set |flow| for user identified by |email|.
+  // Method that allows to set |flow| for user identified by |user_id|.
   // Flow should be set before login attempt.
   // Takes ownership of the |flow|, |flow| will be deleted in case of login
   // failure.
-  virtual void SetUserFlow(const std::string& email, UserFlow* flow) = 0;
+  virtual void SetUserFlow(const std::string& user_id, UserFlow* flow) = 0;
 
   // Return user flow for current user. Returns instance of DefaultUserFlow if
   // no flow was defined for current user, or user is not logged in.
   // Returned value should not be cached.
   virtual UserFlow* GetCurrentUserFlow() const = 0;
 
-  // Return user flow for user identified by |email|. Returns instance of
+  // Return user flow for user identified by |user_id|. Returns instance of
   // DefaultUserFlow if no flow was defined for user.
   // Returned value should not be cached.
-  virtual UserFlow* GetUserFlow(const std::string& email) const = 0;
+  virtual UserFlow* GetUserFlow(const std::string& user_id) const = 0;
 
-  // Resets user flow for user identified by |email|.
-  virtual void ResetUserFlow(const std::string& email) = 0;
+  // Resets user flow for user identified by |user_id|.
+  virtual void ResetUserFlow(const std::string& user_id) = 0;
 
   // Gets/sets chrome oauth client id and secret for kiosk app mode. The default
   // values can be overridden with kiosk auth file.
@@ -379,8 +321,9 @@ class UserManager {
   // Returns true if locally managed users allowed.
   virtual bool AreLocallyManagedUsersAllowed() const = 0;
 
-  // Returns profile dir for the user identified by |email|.
-  virtual base::FilePath GetUserProfileDir(const std::string& email) const = 0;
+  // Returns profile dir for the user identified by |user_id|.
+  virtual base::FilePath GetUserProfileDir(const std::string& user_id)
+      const = 0;
 
   // Changes browser locale (selects best suitable locale from different
   // user settings).

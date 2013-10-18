@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -374,7 +375,8 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile,
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
     User* active_user = UserManager::Get()->GetActiveUser();
     std::string managed_user_sync_id =
-        UserManager::Get()->GetManagedUserSyncId(active_user->email());
+        UserManager::Get()->GetSupervisedUserManager()->
+            GetUserSyncId(active_user->email());
 
     // TODO(ibraaaa): Remove that when 97% of our users are using M31.
     // http://crbug.com/276163

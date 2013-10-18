@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -76,7 +77,8 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
     User* active_user = UserManager::Get()->GetActiveUser();
     std::string managed_user_sync_id =
-        UserManager::Get()->GetManagedUserSyncId(active_user->email());
+        UserManager::Get()->GetSupervisedUserManager()->
+            GetUserSyncId(active_user->email());
     if (managed_user_sync_id.empty())
       managed_user_sync_id = "DUMMY ID";
     profile->GetPrefs()->SetString(prefs::kManagedUserId,

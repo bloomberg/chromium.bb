@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -270,8 +271,8 @@ void LocallyManagedUserCreationScreenHandler::HandleImportUserSelected(
 
 void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
     const string16& name) {
-  if (NULL != UserManager::Get()->
-          FindLocallyManagedUser(CollapseWhitespace(name, true))) {
+  if (NULL != UserManager::Get()->GetSupervisedUserManager()->
+          FindByDisplayName(CollapseWhitespace(name, true))) {
     CallJS("managedUserNameError", name,
            l10n_util::GetStringUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS));
@@ -290,7 +291,8 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
   if (!delegate_)
     return;
   const string16 new_user_name = CollapseWhitespace(new_raw_user_name, true);
-  if (NULL != UserManager::Get()->FindLocallyManagedUser(new_user_name)) {
+  if (NULL != UserManager::Get()->GetSupervisedUserManager()->
+          FindByDisplayName(new_user_name)) {
     CallJS("managedUserNameError", new_user_name,
            l10n_util::GetStringFUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
