@@ -475,7 +475,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
 const wchar_t kNavigateSimpleObjectFocus[] = L"simple_object_focus.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_ObjectFocus) {
+// Failed in [229275:229286]
+// crbug.com/308847
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_ObjectFocus) {
   SimpleBrowserTest(IE, kNavigateSimpleObjectFocus);
 }
 
