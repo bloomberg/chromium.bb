@@ -28,7 +28,6 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "content/public/browser/notification_service.h"
@@ -214,17 +213,9 @@ void MessageService::OpenChannelToExtension(
   if (profile->IsOffTheRecord() &&
       !extension_util::IsIncognitoEnabled(target_extension_id,
                                           extension_service)) {
-    // Allow the security token apps (normal, dev) to be connectable from
-    // incognito profiles. See http://crbug.com/295845.
-    std::set<std::string> incognito_whitelist;
-    incognito_whitelist.insert("E4FCC42F7C7776C0985996DAED74F630C4F0A785");
-    incognito_whitelist.insert("D3D12919F7F00FE553E8A573AAA7147C51DD65C9");
-    if (!extensions::SimpleFeature::IsIdInWhitelist(target_extension_id,
-                                                    incognito_whitelist)) {
-      DispatchOnDisconnect(
-          source, receiver_port_id, kReceivingEndDoesntExistError);
-      return;
-    }
+    DispatchOnDisconnect(
+        source, receiver_port_id, kReceivingEndDoesntExistError);
+    return;
   }
 
   if (source_extension_id != target_extension_id) {
