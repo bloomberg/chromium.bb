@@ -55,7 +55,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/focus_manager.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/layer.h"
 #endif

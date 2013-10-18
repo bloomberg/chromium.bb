@@ -22,7 +22,7 @@
 #include "base/command_line.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/focus_manager.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
