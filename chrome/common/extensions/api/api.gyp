@@ -94,6 +94,7 @@
               'signed_in_devices.idl',
               'socket.idl',
               'sockets_tcp.idl',
+              'sockets_tcp_server.idl',
               'sockets_udp.idl',
               'storage.json',
               'sync_file_system.idl',

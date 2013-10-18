@@ -1,0 +1,18 @@
+{
+  "name": "chrome.sockets.tcpServer extension",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.sockets.tcpServer API",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "sockets": {
+    "tcp": {
+      "connect": ""
+    },
+    "tcpServer": {
+      "listen": ""
+    }
+  }
+}

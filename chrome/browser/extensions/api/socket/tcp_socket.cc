@@ -28,6 +28,17 @@ ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance() {
   return &g_factory.Get();
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<
+      ApiResourceManager<ResumableTCPServerSocket> > >
+          g_server_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+template <>
+ProfileKeyedAPIFactory<ApiResourceManager<ResumableTCPServerSocket> >*
+ApiResourceManager<ResumableTCPServerSocket>::GetFactoryInstance() {
+  return &g_server_factory.Get();
+}
+
 TCPSocket::TCPSocket(const std::string& owner_extension_id)
     : Socket(owner_extension_id),
       socket_mode_(UNKNOWN) {
@@ -304,7 +315,27 @@ ResumableTCPSocket::ResumableTCPSocket(const std::string& owner_extension_id)
       paused_(false) {
 }
 
+ResumableTCPSocket::ResumableTCPSocket(net::TCPClientSocket* tcp_client_socket,
+                                       const std::string& owner_extension_id,
+                                       bool is_connected)
+    : TCPSocket(tcp_client_socket, owner_extension_id, is_connected),
+      persistent_(false),
+      buffer_size_(0),
+      paused_(false) {
+}
+
 bool ResumableTCPSocket::persistent() const {
+  return persistent_;
+}
+
+ResumableTCPServerSocket::ResumableTCPServerSocket(
+    const std::string& owner_extension_id)
+    : TCPSocket(owner_extension_id),
+      persistent_(false),
+      paused_(false) {
+}
+
+bool ResumableTCPServerSocket::persistent() const {
   return persistent_;
 }
 

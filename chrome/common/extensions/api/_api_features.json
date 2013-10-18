@@ -525,6 +525,11 @@
     "channel": "dev",
     "contexts": ["blessed_extension"]
   },
+  "sockets.tcpServer": {
+    "dependencies": ["manifest:sockets"],
+    "channel": "dev",
+    "contexts": ["blessed_extension"]
+  },
   "sockets.udp": {
     "dependencies": ["manifest:sockets"],
     "channel": "dev",

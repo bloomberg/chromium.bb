@@ -102,10 +102,14 @@ class TCPSocket : public Socket {
 class ResumableTCPSocket : public TCPSocket {
  public:
   explicit ResumableTCPSocket(const std::string& owner_extension_id);
+  explicit ResumableTCPSocket(net::TCPClientSocket* tcp_client_socket,
+                              const std::string& owner_extension_id,
+                              bool is_connected);
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
+  // Overriden from ApiResource
   virtual bool persistent() const OVERRIDE;
   void set_persistent(bool persistent) { persistent_ = persistent; }
 
@@ -130,6 +134,38 @@ class ResumableTCPSocket : public TCPSocket {
   int buffer_size_;
   // Flag indicating whether a connected socket blocks its peer from sending
   // more data - see sockets_tcp.idl.
+  bool paused_;
+};
+
+// TCP Socket instances from the "sockets.tcpServer" namespace. These are
+// regular socket objects with additional properties related to the behavior
+// defined in the "sockets.tcpServer" namespace.
+class ResumableTCPServerSocket : public TCPSocket {
+ public:
+  explicit ResumableTCPServerSocket(const std::string& owner_extension_id);
+
+  const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { name_ = name; }
+
+  virtual bool persistent() const OVERRIDE;
+  void set_persistent(bool persistent) { persistent_ = persistent; }
+
+  bool paused() const { return paused_; }
+  void set_paused(bool paused) { paused_ = paused; }
+
+ private:
+  friend class ApiResourceManager<ResumableTCPServerSocket>;
+  static const char* service_name() {
+    return "ResumableTCPServerSocketManager";
+  }
+
+  // Application-defined string - see sockets_tcp_server.idl.
+  std::string name_;
+  // Flag indicating whether the socket is left open when the application is
+  // suspended - see sockets_tcp_server.idl.
+  bool persistent_;
+  // Flag indicating whether a connected socket blocks its peer from sending
+  // more data - see sockets_tcp_server.idl.
   bool paused_;
 };
 

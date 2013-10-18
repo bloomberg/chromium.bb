@@ -76,6 +76,18 @@
                 "type": "string"
               }
             }
+          },
+          "tcpServer": {
+            "description": "The <code>tcpServer</code> manifest property declares which sockets.tcpServer operations an app can issue.",
+            "optional": true,
+            "type": "object",
+            "properties": {
+              "listen": {
+                "description": "<p>The host:port pattern for <code>listen</code> operations.</p>",
+                "optional": true,
+                "type": "string"
+              }
+            }
           }
         }
       }
