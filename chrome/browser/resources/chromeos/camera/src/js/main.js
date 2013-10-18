@@ -208,7 +208,8 @@ camera.Camera.prototype.onWindowResize_ = function() {
     this.context_.resizing = false;
   }.bind(this), 100);
 
-  this.currentView_.onResize();
+  if (this.currentView_)
+    this.currentView_.onResize();
 };
 
 /**
