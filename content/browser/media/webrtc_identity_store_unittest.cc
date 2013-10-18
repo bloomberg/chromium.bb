@@ -15,10 +15,6 @@
 
 namespace content {
 
-// TODO(jiayl): the tests fail on Android since the openssl version of
-// CreateSelfSignedCert is not implemented.
-#if !defined(OS_ANDROID)
-
 static const char* kFakeOrigin = "http://foo.com";
 static const char* kFakeIdentityName1 = "name1";
 static const char* kFakeIdentityName2 = "name2";
@@ -347,5 +343,4 @@ TEST_F(WebRTCIdentityStoreTest, IdentityPersistentAcrossRestart) {
   EXPECT_EQ(key_1, key_2);
 }
 
-#endif
 }  // namespace content

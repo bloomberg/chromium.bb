@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "crypto/openssl_util.h"
+#include "crypto/rsa_private_key.h"
 #include "net/cert/x509_cert_types.h"
 
 namespace net {
@@ -65,8 +67,97 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                           base::Time not_valid_before,
                           base::Time not_valid_after,
                           std::string* der_encoded) {
-  NOTIMPLEMENTED();
-  return false;
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  static const char kCommonNamePrefix[] = "CN=";
+  const size_t kCommonNamePrefixLen = sizeof(kCommonNamePrefix) - 1;
+
+  // Put the serial number into an OpenSSL-friendly object.
+  crypto::ScopedOpenSSL<ASN1_INTEGER, ASN1_INTEGER_free> asn1_serial(
+      ASN1_INTEGER_new());
+  if (!asn1_serial.get() ||
+      !ASN1_INTEGER_set(asn1_serial.get(), static_cast<long>(serial_number))) {
+    LOG(ERROR) << "Invalid serial number " << serial_number;
+    return false;
+  }
+
+  // Do the same for the time stamps.
+  crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free> asn1_not_before_time(
+      ASN1_TIME_set(NULL, not_valid_before.ToTimeT()));
+  if (!asn1_not_before_time.get()) {
+    LOG(ERROR) << "Invalid not_valid_before time: "
+               << not_valid_before.ToTimeT();
+    return false;
+  }
+
+  crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free> asn1_not_after_time(
+      ASN1_TIME_set(NULL, not_valid_after.ToTimeT()));
+  if (!asn1_not_after_time.get()) {
+    LOG(ERROR) << "Invalid not_valid_after time: " << not_valid_after.ToTimeT();
+    return false;
+  }
+
+  // Because |common_name| only contains a common name and starts with 'CN=',
+  // there is no need for a full RFC 2253 parser here. Do some sanity checks
+  // though.
+  if (common_name.size() < kCommonNamePrefixLen ||
+      strncmp(common_name.c_str(), kCommonNamePrefix, kCommonNamePrefixLen)) {
+    LOG(ERROR) << "Common name must begin with " << kCommonNamePrefix;
+    return false;
+  }
+  if (common_name.size() > INT_MAX) {
+    LOG(ERROR) << "Common name too long";
+    return false;
+  }
+  unsigned char* common_name_str =
+      reinterpret_cast<unsigned char*>(const_cast<char*>(common_name.data())) +
+      kCommonNamePrefixLen;
+  int common_name_len =
+      static_cast<int>(common_name.size()) - kCommonNamePrefixLen;
+
+  crypto::ScopedOpenSSL<X509_NAME, X509_NAME_free> name(X509_NAME_new());
+  if (!name.get() || !X509_NAME_add_entry_by_NID(name.get(),
+                                                 NID_commonName,
+                                                 MBSTRING_ASC,
+                                                 common_name_str,
+                                                 common_name_len,
+                                                 -1,
+                                                 0)) {
+    LOG(ERROR) << "Can't parse common name: " << common_name.c_str();
+    return false;
+  }
+
+  // Now create certificate and populate it.
+  crypto::ScopedOpenSSL<X509, X509_free> cert(X509_new());
+  if (!cert.get() || !X509_set_version(cert.get(), 2L) /* i.e. version 3 */ ||
+      !X509_set_pubkey(cert.get(), key->key()) ||
+      !X509_set_serialNumber(cert.get(), asn1_serial.get()) ||
+      !X509_set_notBefore(cert.get(), asn1_not_before_time.get()) ||
+      !X509_set_notAfter(cert.get(), asn1_not_after_time.get()) ||
+      !X509_set_subject_name(cert.get(), name.get()) ||
+      !X509_set_issuer_name(cert.get(), name.get())) {
+    LOG(ERROR) << "Could not create certificate";
+    return false;
+  }
+
+  // Sign it with the private key.
+  if (!X509_sign(cert.get(), key->key(), EVP_sha1())) {
+    LOG(ERROR) << "Could not sign certificate with key.";
+    return false;
+  }
+
+  // Convert it into a DER-encoded string copied to |der_encoded|.
+  int der_data_length = i2d_X509(cert.get(), NULL);
+  if (der_data_length < 0)
+    return false;
+
+  der_encoded->resize(static_cast<size_t>(der_data_length));
+  unsigned char* der_data =
+      reinterpret_cast<unsigned char*>(&(*der_encoded)[0]);
+
+  if (i2d_X509(cert.get(), &der_data) < 0)
+    return false;
+
+  return true;
 }
 
 bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,

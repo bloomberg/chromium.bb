@@ -50,10 +50,9 @@ NET_EXPORT_PRIVATE bool CreateDomainBoundCertEC(
 // The certificate is signed by the private key in |key|. The hashing
 // algorithm for the signature is SHA-1.
 //
-// |subject| is a distinguished name defined in RFC4514.
-//
-// An example:
-// CN=Michael Wong,O=FooBar Corporation,DC=foobar,DC=com
+// |subject| is a distinguished name defined in RFC4514 with _only_ a CN
+// component, as in:
+//   CN=Michael Wong
 //
 // SECURITY WARNING
 //

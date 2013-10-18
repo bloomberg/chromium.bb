@@ -246,6 +246,7 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                           base::Time not_valid_after,
                           std::string* der_cert) {
   DCHECK(key);
+  DCHECK(!strncmp(subject.c_str(), "CN=", 3U));
   CERTCertificate* cert = CreateCertificate(key->public_key(),
                                             subject,
                                             serial_number,

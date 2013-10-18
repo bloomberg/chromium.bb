@@ -52,7 +52,6 @@ TEST(X509UtilTest, SortClientCertificates) {
   ASSERT_FALSE(certs[5].get());
 }
 
-#if defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
 // This test creates a self-signed cert from a private key and then verify the
 // content of the certificate.
 TEST(X509UtilTest, CreateSelfSigned) {
@@ -183,7 +182,6 @@ TEST(X509UtilTest, CreateSelfSigned) {
   EXPECT_EQ("subject", cert->subject().GetDisplayName());
   EXPECT_FALSE(cert->HasExpired());
 }
-#endif
 
 }  // namespace x509_util
 
