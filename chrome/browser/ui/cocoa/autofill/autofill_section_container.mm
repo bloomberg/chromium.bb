@@ -125,6 +125,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 // Create a view with all inputs requested by |delegate_|. Autoreleased.
 - (LayoutView*)makeInputControls;
 
+// Refresh all field icons based on |delegate_| status.
+- (void)updateFieldIcons;
+
 @end
 
 @implementation AutofillSectionContainer
@@ -413,11 +416,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
       [self validateFor:autofill::VALIDATE_EDIT];
   }
 
-  // Update the icon for the textfield.
-  gfx::Image icon = delegate_->IconForField(type, fieldValue);
-  if (!icon.IsEmpty()) {
-    [[textfield cell] setIcon:icon.ToNSImage()];
-  }
+  // Update the icon if necessary.
+  if (delegate_->FieldControlsIcons(type))
+    [self updateFieldIcons];
 }
 
 - (autofill::ServerFieldType)fieldTypeForControl:(NSControl*)control {
@@ -476,19 +477,11 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
     if (shouldClobber || [field isDefault]) {
       [field setFieldValue:base::SysUTF16ToNSString(iter->initial_value)];
-      AutofillTextField* textField =
-          base::mac::ObjCCast<AutofillTextField>(field);
-      if (textField) {
-        gfx::Image icon =
-            delegate_->IconForField(iter->type, iter->initial_value);
-        if (!icon.IsEmpty()) {
-          [[textField cell] setIcon:icon.ToNSImage()];
-        }
-      }
     }
     if (shouldClobber)
       [field setValidityMessage:@""];
   }
+  [self updateFieldIcons];
   [self modelChanged];
 }
 
@@ -573,9 +566,6 @@ bool CompareInputRows(const autofill::DetailInput* input1,
           [[AutofillTextField alloc] init]);
       [[field cell] setPlaceholderString:
           l10n_util::GetNSStringWithFixup(input.placeholder_text_rid)];
-      [[field cell] setIcon:
-          delegate_->IconForField(
-              input.type, input.initial_value).AsNSImage()];
       [field setDefaultValue:@""];
       control.reset(field.release());
     }
@@ -591,7 +581,27 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     layout->AddView(control);
   }
 
+  [self updateFieldIcons];
   return view.autorelease();
+}
+
+- (void)updateFieldIcons {
+  autofill::FieldValueMap fieldValues;
+  for (NSControl<AutofillInputField>* input in [inputs_ subviews]) {
+    DCHECK([input isKindOfClass:[NSControl class]]);
+    DCHECK([input conformsToProtocol:@protocol(AutofillInputField)]);
+    autofill::ServerFieldType fieldType = [self fieldTypeForControl:input];
+    NSString* value = [input fieldValue];
+    fieldValues[fieldType] = base::SysNSStringToUTF16(value);
+  }
+
+  autofill::FieldIconMap fieldIcons = delegate_->IconsForFields(fieldValues);
+  for (autofill::FieldIconMap::const_iterator iter = fieldIcons.begin();
+       iter!= fieldIcons.end(); ++iter) {
+    AutofillTextField* textfield = base::mac::ObjCCastStrict<AutofillTextField>(
+        [inputs_ viewWithTag:iter->first]);
+    [[textfield cell] setIcon:iter->second.ToNSImage()];
+  }
 }
 
 @end

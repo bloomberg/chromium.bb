@@ -79,7 +79,6 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
 - (void)setValidityMessage:(NSString*)validityMessage {
   validityMessage_.reset([validityMessage copy]);
   [[self cell] setInvalid:[self invalid]];
-  [self setNeedsDisplay:YES];
 }
 
 - (BOOL)invalid {
@@ -93,12 +92,18 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
 @synthesize invalid = invalid_;
 @synthesize defaultValue = defaultValue_;
 
+- (void)setInvalid:(BOOL)invalid {
+  invalid_ = invalid;
+  [[self controlView] setNeedsDisplay:YES];
+}
+
 - (NSImage*) icon{
   return icon_;
 }
 
 - (void)setIcon:(NSImage*) icon {
   icon_.reset([icon retain]);
+  [[self controlView] setNeedsDisplay:YES];
 }
 
 - (NSString*)fieldValue {

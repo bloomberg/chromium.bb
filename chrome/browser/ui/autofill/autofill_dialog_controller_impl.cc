@@ -1561,31 +1561,6 @@ gfx::Image AutofillDialogControllerImpl::ExtraSuggestionIconForSection(
       model->GetInfo(AutofillType(CREDIT_CARD_TYPE)));
 }
 
-// TODO(groby): Remove this deprecated method after Mac starts using
-// IconsForFields. http://crbug.com/292876
-gfx::Image AutofillDialogControllerImpl::IconForField(
-    ServerFieldType type, const string16& user_input) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (type == CREDIT_CARD_VERIFICATION_CODE)
-    return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT);
-
-  if (type == CREDIT_CARD_NUMBER) {
-    const int input_card_idr = CreditCard::IconResourceId(
-        CreditCard::GetCreditCardType(user_input));
-    if (input_card_idr != IDR_AUTOFILL_CC_GENERIC)
-      return rb.GetImageNamed(input_card_idr);
-
-    // When the credit card type is unknown, no image should be shown. However,
-    // to simplify the view code on Mac, save space for the credit card image by
-    // returning a transparent image of the appropriate size.
-    gfx::ImageSkia image = *rb.GetImageSkiaNamed(input_card_idr);
-    return
-        gfx::Image(gfx::ImageSkiaOperations::CreateTransparentImage(image, 0));
-  }
-
-  return gfx::Image();
-}
-
 FieldIconMap AutofillDialogControllerImpl::IconsForFields(
     const FieldValueMap& user_inputs) const {
   FieldIconMap result;

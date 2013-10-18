@@ -131,10 +131,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual SuggestionState SuggestionStateForSection(
       DialogSection section) OVERRIDE;
-  // TODO(groby): Remove this deprecated method after Mac starts using
-  // IconsForFields. http://crbug.com/292876
-  virtual gfx::Image IconForField(ServerFieldType type,
-                                  const string16& user_input) const OVERRIDE;
   virtual FieldIconMap IconsForFields(const FieldValueMap& user_inputs)
       const OVERRIDE;
   virtual bool FieldControlsIcons(ServerFieldType type) const OVERRIDE;
