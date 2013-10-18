@@ -2160,7 +2160,7 @@ class BisectPerformanceMetrics(object):
                                   key = lambda x: x[1]['sort'])
 
     if self.opts.output_buildbot_annotations:
-      bisect_utils.OutputAnnotationStepStart('Results')
+      bisect_utils.OutputAnnotationStepStart('Build Status Per Revision')
 
     print
     print 'Full results of bisection:'
@@ -2176,6 +2176,10 @@ class BisectPerformanceMetrics(object):
       print '  %20s  %40s  %s' % (current_data['depot'],
                                  current_id, build_status)
     print
+
+    if self.opts.output_buildbot_annotations:
+      bisect_utils.OutputAnnotationStepClosed()
+      bisect_utils.OutputAnnotationStepStart('Results')
 
     # Find range where it possibly broke.
     first_working_revision = None
