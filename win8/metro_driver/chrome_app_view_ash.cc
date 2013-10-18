@@ -80,7 +80,8 @@ void MetroExit() {
 class ChromeChannelListener : public IPC::Listener {
  public:
   ChromeChannelListener(base::MessageLoop* ui_loop, ChromeAppViewAsh* app_view)
-      : ui_proxy_(ui_loop->message_loop_proxy()), app_view_(app_view) {}
+      : ui_proxy_(ui_loop->message_loop_proxy()),
+        app_view_(app_view) {}
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
@@ -177,13 +178,13 @@ bool WaitForChromeIPCConnection(const std::string& channel_name) {
 // This class helps decoding the pointer properties of an event.
 class PointerInfoHandler {
  public:
-  PointerInfoHandler() :
-      x_(0),
-      y_(0),
-      wheel_delta_(0),
-      update_kind_(winui::Input::PointerUpdateKind_Other),
-      timestamp_(0),
-      pointer_id_(0) {}
+  PointerInfoHandler()
+      : x_(0),
+        y_(0),
+        wheel_delta_(0),
+        update_kind_(winui::Input::PointerUpdateKind_Other),
+        timestamp_(0),
+        pointer_id_(0) {}
 
   HRESULT Init(winui::Core::IPointerEventArgs* args) {
     HRESULT hr = args->get_CurrentPoint(&pointer_point_);
@@ -712,6 +713,7 @@ HRESULT ChromeAppViewAsh::OnPointerPressed(
     return hr;
 
   if (pointer.IsMouse()) {
+    // TODO: this is wrong, more than one pointer may be down at a time.
     mouse_down_flags_ = pointer.flags();
     ui_channel_->Send(new MetroViewerHostMsg_MouseButton(
         pointer.x(),
@@ -739,6 +741,7 @@ HRESULT ChromeAppViewAsh::OnPointerReleased(
     return hr;
 
   if (pointer.IsMouse()) {
+    // TODO: this is wrong, more than one pointer may be down at a time.
     mouse_down_flags_ = ui::EF_NONE;
     ui_channel_->Send(new MetroViewerHostMsg_MouseButton(
         pointer.x(),

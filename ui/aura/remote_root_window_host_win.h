@@ -205,6 +205,22 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
                                uint32 flags,
                                bool is_character);
 
+  // Sets the event flags. |flags| is a bitmask of EventFlags. If there is a
+  // change the system virtual key state is updated as well. This way if chrome
+  // queries for key state it matches that of event being dispatched.
+  void SetEventFlags(uint32 flags);
+
+  uint32 mouse_event_flags() const {
+    return event_flags_ & (ui::EF_LEFT_MOUSE_BUTTON |
+                           ui::EF_MIDDLE_MOUSE_BUTTON |
+                           ui::EF_RIGHT_MOUSE_BUTTON);
+  }
+
+  uint32 key_event_flags() const {
+    return event_flags_ & (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                           ui::EF_ALT_DOWN | ui::EF_CAPS_LOCK_DOWN);
+  }
+
   HWND remote_window_;
   RootWindowHostDelegate* delegate_;
   IPC::Sender* host_;
@@ -224,6 +240,10 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
 
   // Tracking last click event for synthetically generated mouse events.
   scoped_ptr<ui::MouseEvent> last_mouse_click_event_;
+
+  // State of the keyboard/mouse at the time of the last input event. See
+  // description of SetEventFlags().
+  uint32 event_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteRootWindowHostWin);
 };
