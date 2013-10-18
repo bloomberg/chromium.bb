@@ -83,6 +83,9 @@ FieldTypeGroup AutofillType::group() const {
     case ADDRESS_HOME_STATE:
     case ADDRESS_HOME_ZIP:
     case ADDRESS_HOME_COUNTRY:
+    case ADDRESS_HOME_STREET_ADDRESS:
+    case ADDRESS_HOME_SORTING_CODE:
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
       return ADDRESS_HOME;
 
     case ADDRESS_BILLING_LINE1:
@@ -92,6 +95,9 @@ FieldTypeGroup AutofillType::group() const {
     case ADDRESS_BILLING_STATE:
     case ADDRESS_BILLING_ZIP:
     case ADDRESS_BILLING_COUNTRY:
+    case ADDRESS_BILLING_STREET_ADDRESS:
+    case ADDRESS_BILLING_SORTING_CODE:
+    case ADDRESS_BILLING_DEPENDENT_LOCALITY:
       return ADDRESS_BILLING;
 
     case CREDIT_CARD_NAME:
@@ -246,6 +252,15 @@ ServerFieldType AutofillType::GetStorableType() const {
     case NAME_BILLING_SUFFIX:
       return NAME_SUFFIX;
 
+    case ADDRESS_BILLING_STREET_ADDRESS:
+      return ADDRESS_HOME_STREET_ADDRESS;
+
+    case ADDRESS_BILLING_SORTING_CODE:
+      return ADDRESS_HOME_SORTING_CODE;
+
+    case ADDRESS_BILLING_DEPENDENT_LOCALITY:
+      return ADDRESS_HOME_DEPENDENT_LOCALITY;
+
     case UNKNOWN_TYPE:
       break;  // Try to parse HTML types instead.
 
@@ -273,7 +288,7 @@ ServerFieldType AutofillType::GetStorableType() const {
       return COMPANY_NAME;
 
     case HTML_TYPE_STREET_ADDRESS:
-      return ADDRESS_HOME_LINE1;
+      return ADDRESS_HOME_STREET_ADDRESS;
 
     case HTML_TYPE_ADDRESS_LINE1:
       return ADDRESS_HOME_LINE1;
@@ -379,6 +394,15 @@ ServerFieldType AutofillType::GetEquivalentBillingFieldType(
 
     case ADDRESS_HOME_COUNTRY:
       return ADDRESS_BILLING_COUNTRY;
+
+    case ADDRESS_HOME_STREET_ADDRESS:
+      return ADDRESS_BILLING_STREET_ADDRESS;
+
+    case ADDRESS_HOME_SORTING_CODE:
+      return ADDRESS_BILLING_SORTING_CODE;
+
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return ADDRESS_BILLING_DEPENDENT_LOCALITY;
 
     case PHONE_HOME_WHOLE_NUMBER:
       return PHONE_BILLING_WHOLE_NUMBER;
@@ -543,6 +567,19 @@ std::string AutofillType::ToString() const {
       return "PASSWORD";
     case ACCOUNT_CREATION_PASSWORD:
       return "ACCOUNT_CREATION_PASSWORD";
+    case ADDRESS_HOME_STREET_ADDRESS:
+      return "ADDRESS_HOME_STREET_ADDRESS";
+    case ADDRESS_BILLING_STREET_ADDRESS:
+      return "ADDRESS_BILLING_STREET_ADDRESS";
+    case ADDRESS_HOME_SORTING_CODE:
+      return "ADDRESS_HOME_SORTING_CODE";
+    case ADDRESS_BILLING_SORTING_CODE:
+      return "ADDRESS_BILLING_SORTING_CODE";
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return "ADDRESS_HOME_DEPENDENT_LOCALITY";
+    case ADDRESS_BILLING_DEPENDENT_LOCALITY:
+      return "ADDRESS_BILLING_DEPENDENT_LOCALITY";
+
     case MAX_VALID_FIELD_TYPE:
       return std::string();
   }

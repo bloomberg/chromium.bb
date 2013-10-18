@@ -12,10 +12,11 @@
 
 namespace autofill {
 
-// NOTE: This list MUST not be modified.  The server aggregates and stores these
-// types over several versions, so we must remain fully compatible with the
-// Autofill server, which is itself backward-compatible.  The list must be kept
-// up to date with the Autofill server list.
+// NOTE: This list MUST not be modified except to keep it synchronized with the
+// Autofill server's version.  The server aggregates and stores these types over
+// several versions, so we must remain fully compatible with the Autofill
+// server, which is itself backward-compatible.  The list must be kept up to
+// date with the Autofill server list.
 //
 // The list of all field types natively understood by the Autofill server.  A
 // subset of these types is used to store Autofill data in the user's profile.
@@ -111,10 +112,30 @@ enum ServerFieldType {
   PASSWORD = 75,
   ACCOUNT_CREATION_PASSWORD = 76,
 
+  // Includes all of the lines of a street address, including newlines, e.g.
+  //   123 Main Street,
+  //   Apt. #42
+  ADDRESS_HOME_STREET_ADDRESS = 77,
+  ADDRESS_BILLING_STREET_ADDRESS = 78,
+
+  // A sorting code is similar to a postal code. However, whereas a postal code
+  // normally refers to a single geographical location, a sorting code often
+  // does not. Instead, a sorting code is assigned to an organization, which
+  // might be geographically distributed. The most prominent example of a
+  // sorting code system is CEDEX in France.
+  ADDRESS_HOME_SORTING_CODE = 79,
+  ADDRESS_BILLING_SORTING_CODE = 80,
+
+  // A dependent locality is a subunit of a locality, where a "locality" is
+  // roughly equivalent to a city. Examples of dependent localities include
+  // inner-city districts and suburbs.
+  ADDRESS_HOME_DEPENDENT_LOCALITY = 81,
+  ADDRESS_BILLING_DEPENDENT_LOCALITY = 82,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
 
-  MAX_VALID_FIELD_TYPE = 77,
+  MAX_VALID_FIELD_TYPE = 83,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.

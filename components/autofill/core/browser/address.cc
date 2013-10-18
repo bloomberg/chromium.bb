@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -58,7 +59,20 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
     case ADDRESS_HOME_COUNTRY:
       return ASCIIToUTF16(country_code_);
 
+    case ADDRESS_HOME_STREET_ADDRESS: {
+      base::string16 address = line1_;
+      if (!line2_.empty())
+        address += ASCIIToUTF16("\n") + line2_;
+      return address;
+    }
+
+    // TODO(isherman): Add support for these field types in support of i18n.
+    case ADDRESS_HOME_SORTING_CODE:
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return base::string16();
+
     default:
+      NOTREACHED();
       return base::string16();
   }
 }
@@ -92,6 +106,27 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
       zip_code_ = value;
       break;
 
+    case ADDRESS_HOME_STREET_ADDRESS: {
+      // Clear any stale values, which might or might not get overwritten below.
+      line1_.clear();
+      line2_.clear();
+
+      std::vector<base::string16> lines;
+      base::SplitString(value, char16('\n'), &lines);
+      if (lines.size() > 0)
+        line1_ = lines[0];
+      if (lines.size() > 1)
+        line2_ = lines[1];
+
+      // TODO(isherman): Add support for additional address lines.
+      break;
+    }
+
+    // TODO(isherman): Add support for these field types in support of i18n.
+    case ADDRESS_HOME_SORTING_CODE:
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      break;
+
     default:
       NOTREACHED();
   }
@@ -99,18 +134,20 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
 
 base::string16 Address::GetInfo(const AutofillType& type,
                                 const std::string& app_locale) const {
-  if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
+  if (type.html_type() == HTML_TYPE_COUNTRY_CODE)
     return ASCIIToUTF16(country_code_);
-  } else if (type.html_type() == HTML_TYPE_STREET_ADDRESS) {
+
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
+    return AutofillCountry(country_code_, app_locale).name();
+
+  if (storable_type == ADDRESS_HOME_STREET_ADDRESS) {
+    // TODO(isherman): Remove this special-case.
     base::string16 address = line1_;
     if (!line2_.empty())
       address += ASCIIToUTF16(", ") + line2_;
     return address;
   }
-
-  ServerFieldType storable_type = type.GetStorableType();
-  if (storable_type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
-    return AutofillCountry(country_code_, app_locale).name();
 
   return GetRawInfo(storable_type);
 }
@@ -126,19 +163,22 @@ bool Address::SetInfo(const AutofillType& type,
 
     country_code_ = StringToUpperASCII(UTF16ToASCII(value));
     return true;
-  } else if (type.html_type() == HTML_TYPE_STREET_ADDRESS) {
-    // Don't attempt to parse the address into lines, since this is potentially
-    // a user-entered address in the user's own format, so the code would have
-    // to rely on iffy heuristics at best.  Instead, just give up when importing
-    // addresses like this.
-    line1_ = line2_ = base::string16();
-    return false;
   }
 
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == ADDRESS_HOME_COUNTRY && !value.empty()) {
     country_code_ = AutofillCountry::GetCountryCode(value, app_locale);
     return !country_code_.empty();
+  }
+
+  // If the address doesn't have any newlines, don't attempt to parse it into
+  // lines, since this is potentially a user-entered address in the user's own
+  // format, so the code would have to rely on iffy heuristics at best.
+  // Instead, just give up when importing addresses like this.
+  if (storable_type == ADDRESS_HOME_STREET_ADDRESS && !value.empty() &&
+      value.find(char16('\n')) == base::string16::npos) {
+    line1_ = line2_ = base::string16();
+    return false;
   }
 
   SetRawInfo(storable_type, value);

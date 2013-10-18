@@ -149,50 +149,105 @@ TEST(AddressTest, IsCountry) {
   EXPECT_EQ(0U, matching_types.size());
 }
 
-// Verifies that Address::GetInfo() can correctly return a concatenated full
-// street address.
+// Verifies that Address::GetInfo() correctly combines address lines.
 TEST(AddressTest, GetStreetAddress) {
+  const AutofillType type = AutofillType(ADDRESS_HOME_STREET_ADDRESS);
+
   // Address has no address lines.
   Address address;
   EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
-
-  AutofillType type = AutofillType(HTML_TYPE_STREET_ADDRESS, HTML_MODE_NONE);
   EXPECT_EQ(base::string16(), address.GetInfo(type, "en-US"));
 
   // Address has only line 1.
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
-
-  EXPECT_EQ(ASCIIToUTF16("123 Example Ave."),
-            address.GetInfo(type, "en-US"));
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave."), address.GetInfo(type, "en-US"));
 
   // Address has lines 1 and 2.
   address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
-
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave.\n"
+                         "Apt. 42"),
+            address.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
   EXPECT_EQ(ASCIIToUTF16("123 Example Ave., Apt. 42"),
             address.GetInfo(type, "en-US"));
 }
 
+// Verifies that Address::SetRawInfo() is able to split address lines correctly.
+TEST(AddressTest, SetRawStreetAddress) {
+  const base::string16 empty_street_address;
+  const base::string16 short_street_address = ASCIIToUTF16("456 Nowhere Ln.");
+  const base::string16 long_street_address =
+      ASCIIToUTF16("123 Example Ave.\n"
+                   "Apt. 42\n"
+                   "(The one with the blue door)");
+
+  Address address;
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+
+  // Address lines beyond the first two are simply dropped.
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, long_street_address);
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave."),
+            address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(ASCIIToUTF16("Apt. 42"), address.GetRawInfo(ADDRESS_HOME_LINE2));
+
+  // A short address should clear out unused address lines.
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, short_street_address);
+  EXPECT_EQ(ASCIIToUTF16("456 Nowhere Ln."),
+            address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+
+  // An empty address should clear out all address lines.
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, long_street_address);
+  address.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, empty_street_address);
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+}
+
 // Verifies that Address::SetInfo() rejects setting data for
-// HTML_TYPE_STREET_ADDRESS, as there is no good general way to parse that data
-// into the consituent address lines.
+// ADDRESS_HOME_STREET_ADDRESS without newlines, as there is no good general way
+// to parse that data into the consituent address lines. Addresses without
+// newlines should be set properly.
 TEST(AddressTest, SetStreetAddress) {
-  // Address has no address lines.
+  const base::string16 empty_street_address;
+  const base::string16 one_line_street_address =
+      ASCIIToUTF16("456 New St., Apt. 17");
+  const base::string16 multi_line_street_address =
+      ASCIIToUTF16("789 Fancy Pkwy.\n"
+                   "Unit 3.14");
+  const AutofillType type = AutofillType(ADDRESS_HOME_STREET_ADDRESS);
+
+  // Start with a non-empty address.
   Address address;
   address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
   address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
   EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
 
-  AutofillType type = AutofillType(HTML_TYPE_STREET_ADDRESS, HTML_MODE_NONE);
-  base::string16 street_address = ASCIIToUTF16("456 New St., Apt. 17");
-  EXPECT_FALSE(address.SetInfo(type, street_address, "en-US"));
-  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
-  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  // Attempting to set a one-line address should fail, as the single line might
+  // actually represent multiple logical lines, combined into one due to the
+  // user having to work around constraints imposed by the website.
+  EXPECT_FALSE(address.SetInfo(type, one_line_street_address, "en-US"));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
+
+  // Attempting to set a multi-line address should succeed.
+  EXPECT_TRUE(address.SetInfo(type, multi_line_street_address, "en-US"));
+  EXPECT_EQ(ASCIIToUTF16("789 Fancy Pkwy."),
+            address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(ASCIIToUTF16("Unit 3.14"), address.GetRawInfo(ADDRESS_HOME_LINE2));
+
+  // Attempting to set an empty address should also succeed, and clear out the
+  // previously stored data.
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+  EXPECT_TRUE(address.SetInfo(type, empty_street_address, "en-US"));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_LINE2));
 }
 
 }  // namespace autofill
