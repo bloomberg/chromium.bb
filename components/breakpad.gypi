@@ -50,6 +50,23 @@
     },
   ],
   'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'breakpad_crash_service',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../breakpad/breakpad.gyp:breakpad_handler',
+            '../breakpad/breakpad.gyp:breakpad_sender',
+          ],
+          'sources': [
+            'breakpad/tools/crash_service.cc',
+            'breakpad/tools/crash_service.h',
+          ],
+        },
+      ],
+    }],
     ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
@@ -63,6 +80,24 @@
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
             '../sandbox/sandbox.gyp:sandbox_win64',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+        {
+          'target_name': 'breakpad_crash_service_win64',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base_nacl_win64',
+            '../breakpad/breakpad.gyp:breakpad_handler_win64',
+            '../breakpad/breakpad.gyp:breakpad_sender_win64',
+          ],
+          'sources': [
+            'breakpad/tools/crash_service.cc',
+            'breakpad/tools/crash_service.h',
           ],
           'configurations': {
             'Common_Base': {

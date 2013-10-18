@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/tools/crash_service/crash_service.h"
+#include "components/breakpad/tools/crash_service.h"
 
 #include <windows.h>
 
@@ -13,13 +13,12 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
 #include "breakpad/src/client/windows/sender/crash_report_sender.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
+
+namespace breakpad {
 
 namespace {
 
@@ -152,15 +151,13 @@ const char CrashService::kReporterTag[]       = "reporter";
 const char CrashService::kDumpsDir[]          = "dumps-dir";
 const char CrashService::kPipeName[]          = "pipe-name";
 
-CrashService::CrashService(const std::wstring& report_dir)
-    : report_path_(report_dir),
-      sender_(NULL),
+CrashService::CrashService()
+    : sender_(NULL),
       dumper_(NULL),
       requests_handled_(0),
       requests_sent_(0),
       clients_connected_(0),
       clients_terminated_(0) {
-  chrome::RegisterPathProvider();
 }
 
 CrashService::~CrashService() {
@@ -169,8 +166,8 @@ CrashService::~CrashService() {
   delete sender_;
 }
 
-
-bool CrashService::Initialize(const std::wstring& command_line) {
+bool CrashService::Initialize(const base::FilePath& operating_dir,
+                              const base::FilePath& dumps_path) {
   using google_breakpad::CrashReportSender;
   using google_breakpad::CrashGenerationServer;
 
@@ -179,28 +176,15 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 
   // The checkpoint file allows CrashReportSender to enforce the the maximum
   // reports per day quota. Does not seem to serve any other purpose.
-  base::FilePath checkpoint_path = report_path_.Append(kCheckPointFile);
+  base::FilePath checkpoint_path = operating_dir.Append(kCheckPointFile);
 
-  // The dumps path is typically : '<user profile>\Local settings\
-  // Application data\Goggle\Chrome\Crash Reports' and the report path is
-  // Application data\Google\Chrome\Reported Crashes.txt
-  base::FilePath user_data_dir;
-  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    LOG(ERROR) << "could not get DIR_USER_DATA";
-    return false;
-  }
-  report_path_ = user_data_dir.Append(chrome::kCrashReportLog);
+  CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
 
-  CommandLine cmd_line = CommandLine::FromString(command_line);
+  base::FilePath dumps_path_to_use = dumps_path;
 
-  base::FilePath dumps_path;
   if (cmd_line.HasSwitch(kDumpsDir)) {
-    dumps_path = base::FilePath(cmd_line.GetSwitchValueNative(kDumpsDir));
-  } else {
-    if (!PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
-      LOG(ERROR) << "could not get DIR_CRASH_DUMPS";
-      return false;
-    }
+    dumps_path_to_use =
+        base::FilePath(cmd_line.GetSwitchValueNative(kDumpsDir));
   }
 
   // We can override the send reports quota with a command line switch.
@@ -243,7 +227,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
                                       &CrashService::OnClientDumpRequest, this,
                                       &CrashService::OnClientExited, this,
                                       NULL, NULL,
-                                      true, &dumps_path.value());
+                                      true, &dumps_path_to_use.value());
 
   if (!dumper_) {
     LOG(ERROR) << "could not create dumper";
@@ -266,8 +250,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 
   // Log basic information.
   VLOG(1) << "pipe name is " << pipe_name
-          << "\ndumps at " << dumps_path.value()
-          << "\nreports at " << report_path_.value();
+          << "\ndumps at " << dumps_path_to_use.value();
 
   if (sender_) {
     VLOG(1) << "checkpoint is " << checkpoint_path.value()
@@ -501,3 +484,5 @@ PSECURITY_DESCRIPTOR CrashService::GetSecurityDescriptorForLowIntegrity() {
 
   return NULL;
 }
+
+}  // namespace breakpad

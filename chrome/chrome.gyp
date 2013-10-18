@@ -958,16 +958,13 @@
           'dependencies': [
             'installer_util',
             '../base/base.gyp:base',
-            '../breakpad/breakpad.gyp:breakpad_handler',
-            '../breakpad/breakpad.gyp:breakpad_sender',
             '../chrome/common_constants.gyp:common_constants',
+            '../components/components.gyp:breakpad_crash_service',
           ],
           'include_dirs': [
             '..',
           ],
           'sources': [
-            'tools/crash_service/crash_service.cc',
-            'tools/crash_service/crash_service.h',
             'tools/crash_service/main.cc',
           ],
           'msvs_settings': {
@@ -1025,16 +1022,13 @@
           'dependencies': [
             'installer_util_nacl_win64',
             '../base/base.gyp:base_static_win64',
-            '../breakpad/breakpad.gyp:breakpad_handler_win64',
-            '../breakpad/breakpad.gyp:breakpad_sender_win64',
             '../chrome/common_constants.gyp:common_constants_win64',
+            '../components/components.gyp:breakpad_crash_service_win64',
           ],
           'include_dirs': [
             '..',
           ],
           'sources': [
-            'tools/crash_service/crash_service.cc',
-            'tools/crash_service/crash_service.h',
             'tools/crash_service/main.cc',
             '../content/public/common/content_switches.cc',
           ],

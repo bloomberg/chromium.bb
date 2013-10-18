@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TOOLS_CRASH_SERVICE_CRASH_SERVICE_H_
-#define CHROME_TOOLS_CRASH_SERVICE_CRASH_SERVICE_H_
+#ifndef COMPONENTS_BREAKPAD_TOOLS_CRASH_SERVICE_H_
+#define COMPONENTS_BREAKPAD_TOOLS_CRASH_SERVICE_H_
 
 #include <string>
 
@@ -19,6 +19,8 @@ class ClientInfo;
 
 }
 
+namespace breakpad {
+
 // This class implements an out-of-process crash server. It uses breakpad's
 // CrashGenerationServer and CrashReportSender to generate and then send the
 // crash dumps. Internally, it uses OS specific pipe to allow applications to
@@ -28,15 +30,15 @@ class ClientInfo;
 // possibly sent to the crash2 servers.
 class CrashService {
  public:
-  // The ctor takes a directory that needs to be writable and will create
-  // a subdirectory inside to keep logs, crashes and checkpoint files.
-  explicit CrashService(const std::wstring& report_dir);
+  CrashService();
   ~CrashService();
 
-  // Starts servicing crash dumps. The command_line specifies various behaviors,
-  // see below for more information. Returns false if it failed. Do not use
-  // other members in that case.
-  bool Initialize(const std::wstring& command_line);
+  // Starts servicing crash dumps. Returns false if it failed. Do not use
+  // other members in that case. |operating_dir| is where the CrashService
+  // should store breakpad's checkpoint file. |dumps_path| is the directory
+  // where the crash dumps should be stored.
+  bool Initialize(const base::FilePath& operating_dir,
+                  const base::FilePath& dumps_path);
 
   // Command line switches:
   //
@@ -105,8 +107,6 @@ class CrashService {
   google_breakpad::CrashGenerationServer* dumper_;
   google_breakpad::CrashReportSender* sender_;
 
-  // the path to dumps and logs directory.
-  base::FilePath report_path_;
   // the extra tag sent to the server with each dump.
   std::wstring reporter_tag_;
 
@@ -120,4 +120,6 @@ class CrashService {
   DISALLOW_COPY_AND_ASSIGN(CrashService);
 };
 
-#endif  // CHROME_TOOLS_CRASH_SERVICE_CRASH_SERVICE_H_
+}  // namespace breakpad
+
+#endif  // COMPONENTS_BREAKPAD_TOOLS_CRASH_SERVICE_H_
