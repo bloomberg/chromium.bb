@@ -1520,9 +1520,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   base::FilePath test_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
 
-  TestRequestInterceptor interceptor(
-      "update.extension",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  TestRequestInterceptor interceptor("update.extension");
   interceptor.PushJobCallback(
       TestRequestInterceptor::FileJob(
           test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));

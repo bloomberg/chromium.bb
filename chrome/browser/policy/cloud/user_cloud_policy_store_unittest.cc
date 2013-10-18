@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/policy/cloud/mock_cloud_external_data_manager.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,6 +42,8 @@ class UserCloudPolicyStoreTest : public testing::Test {
  public:
   UserCloudPolicyStoreTest()
       : loop_(base::MessageLoop::TYPE_UI),
+        ui_thread_(content::BrowserThread::UI, &loop_),
+        file_thread_(content::BrowserThread::FILE, &loop_),
         profile_(new TestingProfile()) {}
 
   virtual void SetUp() OVERRIDE {
@@ -52,8 +54,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
     profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                     PolicyBuilder::kFakeUsername);
     signin->Initialize(profile_.get(), NULL);
-    store_.reset(new UserCloudPolicyStore(
-        profile_.get(), policy_file(), loop_.message_loop_proxy()));
+    store_.reset(new UserCloudPolicyStore(profile_.get(), policy_file()));
     external_data_manager_.reset(new MockCloudExternalDataManager);
     external_data_manager_->SetPolicyStore(store_.get());
     store_->AddObserver(&observer_);
@@ -103,6 +104,8 @@ class UserCloudPolicyStoreTest : public testing::Test {
   // |ui_thread_| and |file_thread_| share the same MessageLoop |loop_| so
   // callers can use RunLoop to manage both virtual threads.
   base::MessageLoop loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   base::ScopedTempDir tmp_dir_;
@@ -277,8 +280,8 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
   RunUntilIdle();
 
   // Now, make sure the policy can be read back in from a second store.
-  scoped_ptr<UserCloudPolicyStore> store2(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(profile_.get(), policy_file()));
   store2->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
   store2->Load();
@@ -302,8 +305,8 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoadImmediately) {
   RunUntilIdle();
 
   // Now, make sure the policy can be read back in from a second store.
-  scoped_ptr<UserCloudPolicyStore> store2(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(profile_.get(), policy_file()));
   store2->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
   store2->LoadImmediately();  // Should load without running the message loop.
@@ -342,8 +345,8 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
       "foobar@foobar.com");
 
-  scoped_ptr<UserCloudPolicyStore> store2(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(profile_.get(), policy_file()));
   store2->AddObserver(&observer_);
   ExpectError(store2.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
   store2->Load();
@@ -355,8 +358,8 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
   // Sign out - we should be able to load the policy (don't check usernames
   // when signed out).
   SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
-  scoped_ptr<UserCloudPolicyStore> store3(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store3(
+      new UserCloudPolicyStore(profile_.get(), policy_file()));
   store3->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store3.get()));
   store3->Load();
@@ -370,8 +373,8 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
       SigninManagerFactory::GetForProfile(profile_.get()));
   signin->set_auth_in_progress("foobar@foobar.com");
 
-  scoped_ptr<UserCloudPolicyStore> store4(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store4(
+      new UserCloudPolicyStore(profile_.get(), policy_file()));
   store4->AddObserver(&observer_);
   ExpectError(store4.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
   store4->Load();

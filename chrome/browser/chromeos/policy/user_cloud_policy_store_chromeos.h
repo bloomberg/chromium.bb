@@ -11,16 +11,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store_base.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace chromeos {
 class CryptohomeClient;
@@ -43,7 +38,6 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   UserCloudPolicyStoreChromeOS(
       chromeos::CryptohomeClient* cryptohome_client,
       chromeos::SessionManagerClient* session_manager_client,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& username,
       const base::FilePath& user_policy_key_dir,
       const base::FilePath& legacy_token_cache_file,

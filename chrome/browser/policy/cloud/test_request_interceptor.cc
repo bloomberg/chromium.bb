@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -28,6 +28,12 @@ namespace em = enterprise_management;
 namespace policy {
 
 namespace {
+
+// Helper to execute a |task| on IO, and return only after it has completed.
+void PostToIOAndWait(const base::Closure& task) {
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, task);
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+}
 
 // Helper callback for jobs that should fail with a network |error|.
 net::URLRequestJob* ErrorJobCallback(int error,
@@ -148,8 +154,7 @@ net::URLRequestJob* RegisterJobCallback(
 class TestRequestInterceptor::Delegate
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  Delegate(const std::string& hostname,
-           scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  explicit Delegate(const std::string& hostname);
   virtual ~Delegate();
 
   // ProtocolHandler implementation:
@@ -162,7 +167,6 @@ class TestRequestInterceptor::Delegate
 
  private:
   const std::string hostname_;
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // The queue of pending callbacks. 'mutable' because MaybeCreateJob() is a
   // const method; it can't reenter though, because it runs exclusively on
@@ -170,17 +174,15 @@ class TestRequestInterceptor::Delegate
   mutable std::queue<JobCallback> pending_job_callbacks_;
 };
 
-TestRequestInterceptor::Delegate::Delegate(
-    const std::string& hostname,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : hostname_(hostname), io_task_runner_(io_task_runner) {}
+TestRequestInterceptor::Delegate::Delegate(const std::string& hostname)
+    : hostname_(hostname) {}
 
 TestRequestInterceptor::Delegate::~Delegate() {}
 
 net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   if (request->url().host() != hostname_) {
     // Reject requests to other servers.
@@ -200,21 +202,19 @@ net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeCreateJob(
 
 void TestRequestInterceptor::Delegate::GetPendingSize(
     size_t* pending_size) const {
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   *pending_size = pending_job_callbacks_.size();
 }
 
 void TestRequestInterceptor::Delegate::PushJobCallback(
     const JobCallback& callback) {
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   pending_job_callbacks_.push(callback);
 }
 
-TestRequestInterceptor::TestRequestInterceptor(const std::string& hostname,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : hostname_(hostname),
-      io_task_runner_(io_task_runner) {
-  delegate_ = new Delegate(hostname_, io_task_runner_);
+TestRequestInterceptor::TestRequestInterceptor(const std::string& hostname)
+    : hostname_(hostname) {
+  delegate_ = new Delegate(hostname_);
   scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> handler(delegate_);
   PostToIOAndWait(
       base::Bind(&net::URLRequestFilter::AddHostnameProtocolHandler,
@@ -232,7 +232,7 @@ TestRequestInterceptor::~TestRequestInterceptor() {
                  "http", hostname_));
 }
 
-size_t TestRequestInterceptor::GetPendingSize() {
+size_t TestRequestInterceptor::GetPendingSize() const {
   size_t pending_size = std::numeric_limits<size_t>::max();
   PostToIOAndWait(base::Bind(&Delegate::GetPendingSize,
                              base::Unretained(delegate_),
@@ -268,19 +268,6 @@ TestRequestInterceptor::JobCallback TestRequestInterceptor::RegisterJob(
 TestRequestInterceptor::JobCallback TestRequestInterceptor::FileJob(
     const base::FilePath& file_path) {
   return base::Bind(&FileJobCallback, file_path);
-}
-
-void TestRequestInterceptor::PostToIOAndWait(const base::Closure& task) {
-  io_task_runner_->PostTask(FROM_HERE, task);
-  base::RunLoop run_loop;
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&base::MessageLoopProxy::PostTask),
-          base::MessageLoopProxy::current(),
-          FROM_HERE,
-          run_loop.QuitClosure()));
-  run_loop.Run();
 }
 
 }  // namespace policy

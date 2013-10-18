@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,7 +31,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #endif
 
-using content::BrowserThread;
 using testing::AnyNumber;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
@@ -59,9 +57,7 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
     ASSERT_TRUE(PolicyServiceIsEmpty(g_browser_process->policy_service()))
         << "Pre-existing policies in this machine will make this test fail.";
 
-    interceptor_.reset(new TestRequestInterceptor(
-        "localhost",
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+    interceptor_.reset(new TestRequestInterceptor("localhost"));
 
     BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();

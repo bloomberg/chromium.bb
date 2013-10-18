@@ -21,6 +21,10 @@
 
 class Profile;
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace net {
 class CertTrustAnchorProvider;
 }
@@ -45,7 +49,8 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   virtual ~ProfilePolicyConnector();
 
   // If |force_immediate_load| then disk caches will be loaded synchronously.
-  void Init(bool force_immediate_load);
+  void Init(bool force_immediate_load,
+            base::SequencedTaskRunner* sequenced_task_runner);
 
   void InitForTesting(scoped_ptr<PolicyService> service);
 

@@ -37,8 +37,10 @@ ProfilePolicyConnector* ProfilePolicyConnectorFactory::GetForProfile(
 scoped_ptr<ProfilePolicyConnector>
     ProfilePolicyConnectorFactory::CreateForProfile(
         Profile* profile,
-        bool force_immediate_load) {
-  return GetInstance()->CreateForProfileInternal(profile, force_immediate_load);
+        bool force_immediate_load,
+        base::SequencedTaskRunner* sequenced_task_runner) {
+  return GetInstance()->CreateForProfileInternal(
+      profile, force_immediate_load, sequenced_task_runner);
 }
 
 void ProfilePolicyConnectorFactory::SetServiceForTesting(
@@ -79,10 +81,11 @@ ProfilePolicyConnector*
 scoped_ptr<ProfilePolicyConnector>
     ProfilePolicyConnectorFactory::CreateForProfileInternal(
         Profile* profile,
-        bool force_immediate_load) {
+        bool force_immediate_load,
+        base::SequencedTaskRunner* sequenced_task_runner) {
   DCHECK(connectors_.find(profile) == connectors_.end());
   ProfilePolicyConnector* connector = new ProfilePolicyConnector(profile);
-  connector->Init(force_immediate_load);
+  connector->Init(force_immediate_load, sequenced_task_runner);
   connectors_[profile] = connector;
   return scoped_ptr<ProfilePolicyConnector>(connector);
 }

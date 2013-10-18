@@ -22,7 +22,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/async_policy_provider.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
@@ -100,14 +99,6 @@ const char kDefaultDeviceManagementServerUrl[] =
 // Used in BrowserPolicyConnector::SetPolicyProviderForTesting.
 ConfigurationPolicyProvider* g_testing_provider = NULL;
 
-// Helper that returns a new SequencedTaskRunner backed by the blocking pool.
-// Each SequencedTaskRunner returned is independent from the others.
-scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  CHECK(pool);
-  return pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      pool->GetSequenceToken(), base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-}
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 base::FilePath GetManagedPolicyPath() {
@@ -226,13 +217,11 @@ BrowserPolicyConnector::BrowserPolicyConnector()
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store(
         new DeviceCloudPolicyStoreChromeOS(
             chromeos::DeviceSettingsService::Get(),
-            install_attributes_.get(),
-            GetBackgroundTaskRunner()));
+            install_attributes_.get()));
     device_cloud_policy_manager_.reset(
         new DeviceCloudPolicyManagerChromeOS(
             device_cloud_policy_store.Pass(),
             base::MessageLoopProxy::current(),
-            GetBackgroundTaskRunner(),
             install_attributes_.get()));
   }
 #endif
@@ -293,8 +282,7 @@ void BrowserPolicyConnector::Init(
         new DeviceLocalAccountPolicyService(
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
             chromeos::DeviceSettingsService::Get(),
-            chromeos::CrosSettings::Get(),
-            GetBackgroundTaskRunner()));
+            chromeos::CrosSettings::Get()));
     device_local_account_policy_service_->Connect(
         device_management_service_.get());
   }

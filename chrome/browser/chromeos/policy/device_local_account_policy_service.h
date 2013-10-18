@@ -92,8 +92,7 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
   DeviceLocalAccountPolicyService(
       chromeos::SessionManagerClient* session_manager_client,
       chromeos::DeviceSettingsService* device_settings_service,
-      chromeos::CrosSettings* cros_settings,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+      chromeos::CrosSettings* cros_settings);
   virtual ~DeviceLocalAccountPolicyService();
 
   // Initializes the cloud policy service connection.
@@ -138,7 +137,6 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
     std::string account_id;
     DeviceLocalAccountPolicyService* parent;
     DeviceLocalAccountPolicyBroker* broker;
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner;
   };
 
   typedef std::map<std::string, PolicyBrokerWrapper> PolicyBrokerMap;
@@ -169,8 +167,6 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
 
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       local_accounts_subscription_;
-
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // Weak pointer factory for cros_settings_->PrepareTrustedValues() callbacks.
   base::WeakPtrFactory<DeviceLocalAccountPolicyService>

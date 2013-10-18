@@ -23,10 +23,8 @@ namespace policy {
 DeviceLocalAccountPolicyStore::DeviceLocalAccountPolicyStore(
     const std::string& account_id,
     chromeos::SessionManagerClient* session_manager_client,
-    chromeos::DeviceSettingsService* device_settings_service,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : UserCloudPolicyStoreBase(background_task_runner),
-      account_id_(account_id),
+    chromeos::DeviceSettingsService* device_settings_service)
+    : account_id_(account_id),
       session_manager_client_(session_manager_client),
       device_settings_service_(device_settings_service),
       weak_factory_(this) {}
@@ -171,8 +169,7 @@ void DeviceLocalAccountPolicyStore::Validate(
   }
 
   scoped_ptr<UserCloudPolicyValidator> validator(
-      UserCloudPolicyValidator::Create(policy_response.Pass(),
-                                       background_task_runner()));
+      UserCloudPolicyValidator::Create(policy_response.Pass()));
   validator->ValidateUsername(account_id_);
   validator->ValidatePolicyType(dm_protocol::kChromePublicAccountPolicyType);
   validator->ValidateAgainstCurrentPolicy(

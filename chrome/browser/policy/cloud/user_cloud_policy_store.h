@@ -15,10 +15,6 @@
 
 class Profile;
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace policy {
 
 // Implements a cloud policy store that is stored in a simple file in the user's
@@ -28,16 +24,11 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
  public:
   // Creates a policy store associated with the user signed in to this
   // |profile|.
-  UserCloudPolicyStore(
-      Profile* profile,
-      const base::FilePath& policy_file,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+  UserCloudPolicyStore(Profile* profile, const base::FilePath& policy_file);
   virtual ~UserCloudPolicyStore();
 
   // Factory method for creating a UserCloudPolicyStore for |profile|.
-  static scoped_ptr<UserCloudPolicyStore> Create(
-      Profile* profile,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+  static scoped_ptr<UserCloudPolicyStore> Create(Profile* profile);
 
   // Loads policy immediately on the current thread. Virtual for mocks.
   virtual void LoadImmediately();

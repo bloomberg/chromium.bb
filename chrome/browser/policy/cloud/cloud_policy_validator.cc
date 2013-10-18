@@ -6,10 +6,10 @@
 
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
-#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/signature_verifier.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -114,8 +114,7 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
 
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
     scoped_ptr<em::PolicyFetchResponse> policy_response,
-    google::protobuf::MessageLite* payload,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
+    google::protobuf::MessageLite* payload)
     : status_(VALIDATION_OK),
       policy_(policy_response.Pass()),
       payload_(payload),
@@ -124,13 +123,12 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       timestamp_not_after_(0),
       timestamp_option_(TIMESTAMP_REQUIRED),
       dm_token_option_(DM_TOKEN_REQUIRED),
-      allow_key_rotation_(false),
-      background_task_runner_(background_task_runner) {}
+      allow_key_rotation_(false) {}
 
 void CloudPolicyValidatorBase::PostValidationTask(
     const base::Closure& completion_callback) {
-  background_task_runner_->PostTask(
-      FROM_HERE,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&CloudPolicyValidatorBase::PerformValidation,
                  base::Passed(scoped_ptr<CloudPolicyValidatorBase>(this)),
                  base::MessageLoop::current()->message_loop_proxy(),

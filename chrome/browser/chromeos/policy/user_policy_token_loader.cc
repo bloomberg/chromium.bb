@@ -6,12 +6,30 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/cloud/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
+
+namespace {
+
+// Other places can sample on the same UMA counter, so make sure they all do
+// it on the same thread (UI).
+void SampleUMAOnUIThread(policy::MetricToken sample) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricToken, sample,
+                            policy::kMetricTokenSize);
+}
+
+void SampleUMA(policy::MetricToken sample) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&SampleUMAOnUIThread, sample));
+}
+
+}  // namespace
 
 namespace policy {
 
@@ -21,25 +39,22 @@ UserPolicyTokenLoader::Delegate::~Delegate() {}
 
 UserPolicyTokenLoader::UserPolicyTokenLoader(
     const base::WeakPtr<Delegate>& delegate,
-    const base::FilePath& cache_file,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
+    const base::FilePath& cache_file)
     : delegate_(delegate),
-      cache_file_(cache_file),
-      origin_task_runner_(base::MessageLoopProxy::current()),
-      background_task_runner_(background_task_runner) {}
+      cache_file_(cache_file) {}
 
 void UserPolicyTokenLoader::Load() {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
-  background_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&UserPolicyTokenLoader::LoadOnBackgroundThread, this));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&UserPolicyTokenLoader::LoadOnFileThread, this));
 }
 
 UserPolicyTokenLoader::~UserPolicyTokenLoader() {
 }
 
-void UserPolicyTokenLoader::LoadOnBackgroundThread() {
-  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+void UserPolicyTokenLoader::LoadOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::string device_token;
   std::string device_id;
 
@@ -50,27 +65,23 @@ void UserPolicyTokenLoader::LoadOnBackgroundThread() {
         device_credentials.ParseFromArray(data.c_str(), data.size())) {
       device_token = device_credentials.device_token();
       device_id = device_credentials.device_id();
-      UMA_HISTOGRAM_ENUMERATION(policy::kMetricToken,
-                                kMetricTokenLoadSucceeded,
-                                policy::kMetricTokenSize);
+      SampleUMA(kMetricTokenLoadSucceeded);
     } else {
-      UMA_HISTOGRAM_ENUMERATION(policy::kMetricToken,
-                                kMetricTokenLoadFailed,
-                                policy::kMetricTokenSize);
+      SampleUMA(kMetricTokenLoadFailed);
     }
   }
 
-  origin_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&UserPolicyTokenLoader::NotifyOnOriginThread,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&UserPolicyTokenLoader::NotifyOnUIThread,
                  this,
                  device_token,
                  device_id));
 }
 
-void UserPolicyTokenLoader::NotifyOnOriginThread(const std::string& token,
-                                                 const std::string& device_id) {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+void UserPolicyTokenLoader::NotifyOnUIThread(const std::string& token,
+                                             const std::string& device_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (delegate_.get())
     delegate_->OnTokenLoaded(token, device_id);
 }

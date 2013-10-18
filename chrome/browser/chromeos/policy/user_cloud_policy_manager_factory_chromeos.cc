@@ -78,10 +78,8 @@ UserCloudPolicyManagerChromeOS*
 scoped_ptr<UserCloudPolicyManagerChromeOS>
     UserCloudPolicyManagerFactoryChromeOS::CreateForProfile(
         Profile* profile,
-        bool force_immediate_load,
-        scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  return GetInstance()->CreateManagerForProfile(
-      profile, force_immediate_load, background_task_runner);
+        bool force_immediate_load) {
+  return GetInstance()->CreateManagerForProfile(profile, force_immediate_load);
 }
 
 UserCloudPolicyManagerFactoryChromeOS::UserCloudPolicyManagerFactoryChromeOS()
@@ -104,8 +102,7 @@ UserCloudPolicyManagerChromeOS*
 scoped_ptr<UserCloudPolicyManagerChromeOS>
     UserCloudPolicyManagerFactoryChromeOS::CreateManagerForProfile(
         Profile* profile,
-        bool force_immediate_load,
-        scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
+        bool force_immediate_load) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Don't initialize cloud policy for the signin profile.
   if (chromeos::ProfileHelper::IsSigninProfile(profile))
@@ -159,7 +156,6 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
       new UserCloudPolicyStoreChromeOS(
           chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-          background_task_runner,
           username, policy_key_dir, token_cache_file, policy_cache_file));
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =

@@ -6,13 +6,12 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/location.h"
-#include "base/task_runner_util.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "content/public/browser/browser_thread.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 
@@ -69,11 +68,11 @@ policy::PolicyLoadResult LoadPolicyFromDisk(const base::FilePath& path) {
 }
 
 // Stores policy to the backing file (must be called via a task on
-// the background thread).
-void StorePolicyToDiskOnBackgroundThread(
-    const base::FilePath& path,
-    const em::PolicyFetchResponse& policy) {
+// the FILE thread).
+void StorePolicyToDiskOnFileThread(const base::FilePath& path,
+                                   const em::PolicyFetchResponse& policy) {
   DVLOG(1) << "Storing policy to " << path.value();
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   std::string data;
   if (!policy.SerializeToString(&data)) {
     DLOG(WARNING) << "Failed to serialize policy data";
@@ -93,25 +92,21 @@ void StorePolicyToDiskOnBackgroundThread(
 
 }  // namespace
 
-UserCloudPolicyStore::UserCloudPolicyStore(
-    Profile* profile,
-    const base::FilePath& path,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : UserCloudPolicyStoreBase(background_task_runner),
-      weak_factory_(this),
+UserCloudPolicyStore::UserCloudPolicyStore(Profile* profile,
+                                           const base::FilePath& path)
+    : weak_factory_(this),
       profile_(profile),
-      backing_file_path_(path) {}
+      backing_file_path_(path) {
+}
 
 UserCloudPolicyStore::~UserCloudPolicyStore() {}
 
 // static
 scoped_ptr<UserCloudPolicyStore> UserCloudPolicyStore::Create(
-    Profile* profile,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
+    Profile* profile) {
   base::FilePath path =
       profile->GetPath().Append(kPolicyDir).Append(kPolicyCacheFile);
-  return make_scoped_ptr(
-      new UserCloudPolicyStore(profile, path, background_task_runner));
+  return make_scoped_ptr(new UserCloudPolicyStore(profile, path));
 }
 
 void UserCloudPolicyStore::LoadImmediately() {
@@ -125,10 +120,11 @@ void UserCloudPolicyStore::LoadImmediately() {
 }
 
 void UserCloudPolicyStore::Clear() {
-  background_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&base::DeleteFile), backing_file_path_, false));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(base::IgnoreResult(&base::DeleteFile),
+                 backing_file_path_,
+                 false));
   policy_.reset();
   policy_map_.Clear();
   NotifyStoreLoaded();
@@ -141,9 +137,8 @@ void UserCloudPolicyStore::Load() {
 
   // Start a new Load operation and have us get called back when it is
   // complete.
-  base::PostTaskAndReplyWithResult(
-      background_task_runner(),
-      FROM_HERE,
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&LoadPolicyFromDisk, backing_file_path_),
       base::Bind(&UserCloudPolicyStore::PolicyLoaded,
                  weak_factory_.GetWeakPtr(), true));
@@ -151,6 +146,7 @@ void UserCloudPolicyStore::Load() {
 
 void UserCloudPolicyStore::PolicyLoaded(bool validate_in_background,
                                         PolicyLoadResult result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   switch (result.status) {
     case LOAD_RESULT_LOAD_ERROR:
       status_ = STATUS_LOAD_ERROR;
@@ -252,9 +248,9 @@ void UserCloudPolicyStore::StorePolicyAfterValidation(
 
   // Persist the validated policy (just fire a task - don't bother getting a
   // reply because we can't do anything if it fails).
-  background_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&StorePolicyToDiskOnBackgroundThread,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&StorePolicyToDiskOnFileThread,
                  backing_file_path_, *validator->policy()));
   InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
   status_ = STATUS_OK;

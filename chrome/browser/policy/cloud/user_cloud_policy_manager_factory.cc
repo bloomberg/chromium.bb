@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
@@ -28,12 +27,9 @@ UserCloudPolicyManager* UserCloudPolicyManagerFactory::GetForProfile(
 
 // static
 scoped_ptr<UserCloudPolicyManager>
-UserCloudPolicyManagerFactory::CreateForProfile(
-    Profile* profile,
-    bool force_immediate_load,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  return GetInstance()->CreateManagerForProfile(
-      profile, force_immediate_load, background_task_runner);
+    UserCloudPolicyManagerFactory::CreateForProfile(Profile* profile,
+                                                    bool force_immediate_load) {
+  return GetInstance()->CreateManagerForProfile(profile, force_immediate_load);
 }
 
 UserCloudPolicyManagerFactory::UserCloudPolicyManagerFactory()
@@ -54,10 +50,8 @@ UserCloudPolicyManager* UserCloudPolicyManagerFactory::GetManagerForProfile(
 scoped_ptr<UserCloudPolicyManager>
     UserCloudPolicyManagerFactory::CreateManagerForProfile(
         Profile* profile,
-        bool force_immediate_load,
-        scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  scoped_ptr<UserCloudPolicyStore> store(
-      UserCloudPolicyStore::Create(profile, background_task_runner));
+        bool force_immediate_load) {
+  scoped_ptr<UserCloudPolicyStore> store(UserCloudPolicyStore::Create(profile));
   if (force_immediate_load)
     store->LoadImmediately();
   scoped_ptr<UserCloudPolicyManager> manager(

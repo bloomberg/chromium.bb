@@ -19,6 +19,7 @@
 #include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
+#include "content/public/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,7 +53,9 @@ ACTION_P2(SendSanitizedUsername, call_status, sanitized_username) {
 class UserCloudPolicyStoreChromeOSTest : public testing::Test {
  protected:
   UserCloudPolicyStoreChromeOSTest()
-      : loop_(base::MessageLoop::TYPE_UI) {}
+      : loop_(base::MessageLoop::TYPE_UI),
+        ui_thread_(content::BrowserThread::UI, &loop_),
+        file_thread_(content::BrowserThread::FILE, &loop_) {}
 
   virtual void SetUp() OVERRIDE {
     EXPECT_CALL(cryptohome_client_,
@@ -65,7 +68,6 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     store_.reset(new UserCloudPolicyStoreChromeOS(&cryptohome_client_,
                                                   &session_manager_client_,
-                                                  loop_.message_loop_proxy(),
                                                   PolicyBuilder::kFakeUsername,
                                                   user_policy_dir(),
                                                   token_file(),
@@ -200,6 +202,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
 
   void RunUntilIdle() {
     loop_.RunUntilIdle();
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
     loop_.RunUntilIdle();
   }
 
@@ -228,6 +231,8 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   scoped_ptr<UserCloudPolicyStoreChromeOS> store_;
 
  private:
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   base::ScopedTempDir tmp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreChromeOSTest);

@@ -9,12 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 
 namespace base {
 class FilePath;
-class SequencedTaskRunner;
 }
 
 namespace net {
@@ -36,13 +34,11 @@ class TestRequestInterceptor {
       net::URLRequestJob*(net::URLRequest*, net::NetworkDelegate*)> JobCallback;
 
   // Will intercept request to |hostname| made over HTTP.
-  TestRequestInterceptor(
-      const std::string& hostname,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  explicit TestRequestInterceptor(const std::string& hostname);
   virtual ~TestRequestInterceptor();
 
   // Returns the number of pending callback jobs that haven't been used yet.
-  size_t GetPendingSize();
+  size_t GetPendingSize() const;
 
   // Queues |callback| to handle a request to |hostname_|. Each callback is
   // used only once, and in the order that they're pushed.
@@ -70,12 +66,7 @@ class TestRequestInterceptor {
  private:
   class Delegate;
 
-  // Helper to execute a |task| on IO, and return only after it has completed.
-  void PostToIOAndWait(const base::Closure& task);
-
   const std::string hostname_;
-
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // Owned by URLRequestFilter. This handle is valid on IO and only while the
   // interceptor is valid.

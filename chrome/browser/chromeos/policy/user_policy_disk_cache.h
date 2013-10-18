@@ -10,10 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace enterprise_management {
 class CachedCloudPolicyResponse;
 }
@@ -47,10 +43,8 @@ class UserPolicyDiskCache
         const enterprise_management::CachedCloudPolicyResponse& policy) = 0;
   };
 
-  UserPolicyDiskCache(
-      const base::WeakPtr<Delegate>& delegate,
-      const base::FilePath& backing_file_path,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+  UserPolicyDiskCache(const base::WeakPtr<Delegate>& delegate,
+                      const base::FilePath& backing_file_path);
 
   // Starts reading the policy cache from disk. Passes the read policy
   // information back to the hosting UserPolicyCache after a successful cache
@@ -82,8 +76,6 @@ class UserPolicyDiskCache
 
   base::WeakPtr<Delegate> delegate_;
   const base::FilePath backing_file_path_;
-  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyDiskCache);
 };

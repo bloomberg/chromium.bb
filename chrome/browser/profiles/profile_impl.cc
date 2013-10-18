@@ -408,16 +408,16 @@ ProfileImpl::ProfileImpl(
 #if defined(OS_CHROMEOS)
   cloud_policy_manager_ =
       policy::UserCloudPolicyManagerFactoryChromeOS::CreateForProfile(
-          this, force_immediate_policy_load, sequenced_task_runner);
+          this, force_immediate_policy_load);
 #else
   cloud_policy_manager_ =
       policy::UserCloudPolicyManagerFactory::CreateForProfile(
-          this, force_immediate_policy_load, sequenced_task_runner);
+          this, force_immediate_policy_load);
 #endif
 #endif
   profile_policy_connector_ =
       policy::ProfilePolicyConnectorFactory::CreateForProfile(
-          this, force_immediate_policy_load);
+          this, force_immediate_policy_load, sequenced_task_runner);
 
   DCHECK(create_mode == CREATE_MODE_ASYNCHRONOUS ||
          create_mode == CREATE_MODE_SYNCHRONOUS);
