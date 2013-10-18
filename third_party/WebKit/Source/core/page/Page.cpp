@@ -223,9 +223,6 @@ ScrollingCoordinator* Page::scrollingCoordinator()
 
 String Page::mainThreadScrollingReasonsAsText()
 {
-    if (Document* document = m_mainFrame->document())
-        document->updateLayout();
-
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         return scrollingCoordinator->mainThreadScrollingReasonsAsText();
 

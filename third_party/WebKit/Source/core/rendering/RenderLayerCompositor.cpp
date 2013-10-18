@@ -224,7 +224,8 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_compositingTriggers(static_cast<ChromeClient::CompositingTriggerFlags>(ChromeClient::AllTriggers))
     , m_compositedLayerCount(0)
     , m_showRepaintCounter(false)
-    , m_reevaluateCompositingAfterLayout(false)
+    , m_needsToRecomputeCompositingRequirements(false)
+    , m_needsToUpdateLayerTreeGeometry(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
     , m_forceCompositingMode(false)
@@ -366,51 +367,78 @@ static RenderVideo* findFullscreenVideoRenderer(Document* document)
     return toRenderVideo(renderer);
 }
 
+void RenderLayerCompositor::finishCompositingUpdateForFrameTree(Frame* frame)
+{
+    for (Frame* child = frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
+        finishCompositingUpdateForFrameTree(child);
+
+    // Update compositing for current frame after all descendant frames are updated.
+    if (frame && frame->contentRenderer()) {
+        RenderLayerCompositor* frameCompositor = frame->contentRenderer()->compositor();
+        if (frameCompositor && !frameCompositor->isMainFrame())
+            frame->contentRenderer()->compositor()->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+    }
+}
+
 void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType, RenderLayer* updateRoot)
 {
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     if (m_renderView->needsLayout())
         return;
 
+    if (updateType == CompositingUpdateFinishAllDeferredWork && isMainFrame() && m_renderView->frameView())
+        finishCompositingUpdateForFrameTree(&m_renderView->frameView()->frame());
+
     if (m_forceCompositingMode && !m_compositing)
         enableCompositingMode(true);
 
-    if (!m_reevaluateCompositingAfterLayout && !m_compositing)
+    if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
         return;
 
     AnimationUpdateBlock animationUpdateBlock(m_renderView->frameView()->frame().animation());
 
     TemporaryChange<bool> postLayoutChange(m_inPostLayoutUpdate, true);
 
-    bool checkForHierarchyUpdate = m_reevaluateCompositingAfterLayout;
+    bool needCompositingRequirementsUpdate = false;
+    bool needHierarchyAndGeometryUpdate = false;
     bool needGeometryUpdate = false;
 
+    // CompositingUpdateFinishAllDeferredWork is the only updateType that will actually do any work in this
+    // function. All other updateTypes will simply mark that something needed updating, and defer the actual
+    // update. This way we only need to compute all compositing state once for every frame drawn (if needed).
     switch (updateType) {
     case CompositingUpdateAfterStyleChange:
     case CompositingUpdateAfterLayout:
-        checkForHierarchyUpdate = true;
+        m_needsToRecomputeCompositingRequirements = true;
         break;
     case CompositingUpdateOnScroll:
-        checkForHierarchyUpdate = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
-        needGeometryUpdate = true;
+        m_needsToRecomputeCompositingRequirements = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
+        m_needsToUpdateLayerTreeGeometry = true;
         break;
     case CompositingUpdateOnCompositedScroll:
-        needGeometryUpdate = true;
+        m_needsToUpdateLayerTreeGeometry = true;
+        break;
+    case CompositingUpdateFinishAllDeferredWork:
+        needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
+        needHierarchyAndGeometryUpdate = m_compositingLayersNeedRebuild;
+        needGeometryUpdate = m_needsToUpdateLayerTreeGeometry;
         break;
     }
 
-    if (!checkForHierarchyUpdate && !needGeometryUpdate)
+    if (!needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needGeometryUpdate)
         return;
 
-    bool needHierarchyUpdate = m_compositingLayersNeedRebuild;
+    ASSERT(updateType == CompositingUpdateFinishAllDeferredWork);
+
     bool isFullUpdate = !updateRoot;
 
-    // Only clear the flag if we're updating the entire hierarchy.
+    // Only clear the flags if we're updating the entire hierarchy.
     m_compositingLayersNeedRebuild = false;
+    m_needsToUpdateLayerTreeGeometry = false;
     updateRoot = rootRenderLayer();
 
-    if (isFullUpdate && updateType == CompositingUpdateAfterLayout)
-        m_reevaluateCompositingAfterLayout = false;
+    if (isFullUpdate)
+        m_needsToRecomputeCompositingRequirements = false;
 
 #if !LOG_DISABLED
     double startTime = 0;
@@ -420,7 +448,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     }
 #endif
 
-    if (checkForHierarchyUpdate) {
+    if (needCompositingRequirementsUpdate) {
         // Go through the layers in presentation order, so that we can compute which RenderLayers need compositing layers.
         // FIXME: we could maybe do this and the hierarchy udpate in one pass, but the parenting logic would be more complex.
         CompositingRecursionData recursionData(updateRoot, true);
@@ -437,11 +465,11 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
             Vector<RenderLayer*> unclippedDescendants;
             computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, recursionData, layersChanged, saw3DTransform, unclippedDescendants);
         }
-        needHierarchyUpdate |= layersChanged;
+        needHierarchyAndGeometryUpdate |= layersChanged;
     }
 
 #if !LOG_DISABLED
-    if (compositingLogEnabled() && isFullUpdate && (needHierarchyUpdate || needGeometryUpdate)) {
+    if (compositingLogEnabled() && isFullUpdate && (needHierarchyAndGeometryUpdate || needGeometryUpdate)) {
         m_obligateCompositedLayerCount = 0;
         m_secondaryCompositedLayerCount = 0;
         m_obligatoryBackingStoreBytes = 0;
@@ -452,7 +480,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     }
 #endif
 
-    if (needHierarchyUpdate) {
+    if (needHierarchyAndGeometryUpdate) {
         // Update the hierarchy of the compositing layers.
         Vector<GraphicsLayer*> childList;
         {
@@ -486,7 +514,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     }
 
 #if !LOG_DISABLED
-    if (compositingLogEnabled() && isFullUpdate && (needHierarchyUpdate || needGeometryUpdate)) {
+    if (compositingLogEnabled() && isFullUpdate && (needHierarchyAndGeometryUpdate || needGeometryUpdate)) {
         double endTime = currentTime();
         LOG(Compositing, "Total layers   primary   secondary   obligatory backing (KB)   secondary backing(KB)   total backing (KB)  update time (ms)\n");
 
@@ -1128,7 +1156,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
         UNUSED_PARAM(depth);
 #endif
         if (currentCompositedLayerMapping->hasUnpositionedOverflowControlsLayers())
-            layer->positionNewlyCreatedOverflowControls();
+            layer->positionOverflowControls();
 
         pixelsWithoutPromotingAllTransitions += layer->size().height() * layer->size().width();
     } else {
@@ -1324,7 +1352,8 @@ bool RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 
 String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 {
-    updateCompositingLayers(CompositingUpdateAfterLayout);
+    // Before dumping the layer tree, finish any pending compositing update.
+    updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
 
     if (!m_rootContentLayer)
         return String();
@@ -1922,7 +1951,8 @@ bool RenderLayerCompositor::requiresCompositingForPlugin(RenderObject* renderer)
     if (!composite)
         return false;
 
-    m_reevaluateCompositingAfterLayout = true;
+    // FIXME: this seems bogus. If we don't know the layout position/size of the plugin yet, would't that be handled elsewhere?
+    m_needsToRecomputeCompositingRequirements = true;
 
     RenderWidget* pluginRenderer = toRenderWidget(renderer);
     // If we can't reliably know the size of the plugin yet, don't change compositing state.
@@ -1944,7 +1974,8 @@ bool RenderLayerCompositor::requiresCompositingForFrame(RenderObject* renderer) 
     if (!frameRenderer->requiresAcceleratedCompositing())
         return false;
 
-    m_reevaluateCompositingAfterLayout = true;
+    // FIXME: this seems bogus. If we don't know the layout position/size of the frame yet, wouldn't that be handled elsehwere?
+    m_needsToRecomputeCompositingRequirements = true;
 
     RenderLayerCompositor* innerCompositor = frameContentsCompositor(frameRenderer);
     if (!innerCompositor)
@@ -2081,7 +2112,7 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
     RenderObject* container = renderer->container();
     // If the renderer is not hooked up yet then we have to wait until it is.
     if (!container) {
-        m_reevaluateCompositingAfterLayout = true;
+        m_needsToRecomputeCompositingRequirements = true;
         return false;
     }
 
@@ -2121,7 +2152,7 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
 
     // Subsequent tests depend on layout. If we can't tell now, just keep things the way they are until layout is done.
     if (!m_inPostLayoutUpdate) {
-        m_reevaluateCompositingAfterLayout = true;
+        m_needsToRecomputeCompositingRequirements = true;
         return layer->compositedLayerMapping();
     }
 
@@ -2140,7 +2171,7 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
         if (!viewBounds.intersects(enclosingIntRect(layerBounds))) {
             if (viewportConstrainedNotCompositedReason) {
                 *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForBoundsOutOfView;
-                m_reevaluateCompositingAfterLayout = true;
+                m_needsToRecomputeCompositingRequirements = true;
             }
             return false;
         }
@@ -2267,6 +2298,7 @@ void RenderLayerCompositor::resetTrackedRepaintRects()
 
 void RenderLayerCompositor::setTracksRepaints(bool tracksRepaints)
 {
+    updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
     m_isTrackingRepaints = tracksRepaints;
 }
 

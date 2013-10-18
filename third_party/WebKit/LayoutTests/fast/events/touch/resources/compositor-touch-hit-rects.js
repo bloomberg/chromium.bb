@@ -130,6 +130,9 @@ if (window.internals) {
 }
 
 window.onload = function() {
+    if (window.internals)
+        window.internals.forceCompositingUpdate(document);
+
     // Run each general test case.
     var tests = document.querySelectorAll('.testcase');
     for ( var i = 0; i < tests.length; i++)

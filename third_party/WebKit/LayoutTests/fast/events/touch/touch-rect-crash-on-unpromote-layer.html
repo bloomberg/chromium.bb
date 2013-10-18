@@ -25,8 +25,12 @@
     var layer = document.getElementById('layer');
     layer.addEventListener('touchstart', function() {});
 
-    // Ensure we've done a layout and we have a hit rect on this composited layer.
+    // Ensure we've done a layout, updated compositing, and we have a hit rect on this composited layer.
     var x = layer.offsetTop;
+
+    if (window.internals)
+        window.internals.forceCompositingUpdate(document);
+
     var rects;
     if (window.internals) {
       rects = window.internals.touchEventTargetLayerRects(document);

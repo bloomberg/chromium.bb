@@ -10,6 +10,10 @@
       function runTest() {
         var targetDiv = document.getElementById('targetDiv');
         var resultDiv = document.getElementById('result');
+
+        if (window.internals)
+          window.internals.forceCompositingUpdate(document);
+
         if (!window.internals || !didOptIn(targetDiv))
           resultDiv.innerHTML = "Error: target scrollable overflow div did not opt-in.";
         var clientRect = document.getElementById('targetLink').getBoundingClientRect();
