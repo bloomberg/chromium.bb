@@ -9,8 +9,8 @@
 //
 // NOTE:
 //
-// Calling CancellableCallback::Cancel() brings the object back to its natural,
-// default-constructed state, i.e., CancellableCallback::callback() will return
+// Calling CancelableCallback::Cancel() brings the object back to its natural,
+// default-constructed state, i.e., CancelableCallback::callback() will return
 // a null callback.
 //
 // THREAD-SAFETY:
