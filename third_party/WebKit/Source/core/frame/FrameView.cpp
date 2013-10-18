@@ -1595,9 +1595,6 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
     if (page && RuntimeEnabledFeatures::programmaticScrollNotificationsEnabled())
         page->chrome().client().didProgrammaticallyScroll(m_frame.get(), newScrollPosition);
 
-    if (requestScrollPositionUpdate(newScrollPosition))
-        return;
-
     ScrollView::setScrollPosition(newScrollPosition);
 }
 
@@ -1685,11 +1682,6 @@ bool FrameView::isRubberBandInProgress() const
     if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
         return scrollAnimator->isRubberBandInProgress();
 
-    return false;
-}
-
-bool FrameView::requestScrollPositionUpdate(const IntPoint& position)
-{
     return false;
 }
 
