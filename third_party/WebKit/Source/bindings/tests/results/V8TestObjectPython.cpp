@@ -186,17 +186,17 @@ static void booleanAttributeAttributeGetterCallback(v8::Local<v8::String> name, 
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void booleanAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void booleanAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(bool, v, value->BooleanValue());
-    imp->setBooleanAttribute(v);
+    V8TRYCATCH_VOID(bool, cppValue, jsValue->BooleanValue());
+    imp->setBooleanAttribute(cppValue);
 }
 
-static void booleanAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void booleanAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::booleanAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::booleanAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -213,17 +213,17 @@ static void byteAttributeAttributeGetterCallback(v8::Local<v8::String> name, con
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void byteAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void byteAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, v, toInt8(value));
-    imp->setByteAttribute(v);
+    V8TRYCATCH_VOID(int, cppValue, toInt8(jsValue));
+    imp->setByteAttribute(cppValue);
 }
 
-static void byteAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void byteAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::byteAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::byteAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -240,17 +240,17 @@ static void doubleAttributeAttributeGetterCallback(v8::Local<v8::String> name, c
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void doubleAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void doubleAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(double, v, static_cast<double>(value->NumberValue()));
-    imp->setDoubleAttribute(v);
+    V8TRYCATCH_VOID(double, cppValue, static_cast<double>(jsValue->NumberValue()));
+    imp->setDoubleAttribute(cppValue);
 }
 
-static void doubleAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void doubleAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::doubleAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::doubleAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -267,17 +267,17 @@ static void floatAttributeAttributeGetterCallback(v8::Local<v8::String> name, co
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void floatAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void floatAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(float, v, static_cast<float>(value->NumberValue()));
-    imp->setFloatAttribute(v);
+    V8TRYCATCH_VOID(float, cppValue, static_cast<float>(jsValue->NumberValue()));
+    imp->setFloatAttribute(cppValue);
 }
 
-static void floatAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void floatAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::floatAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::floatAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -294,17 +294,17 @@ static void longAttributeAttributeGetterCallback(v8::Local<v8::String> name, con
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void longAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void longAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, v, toInt32(value));
-    imp->setLongAttribute(v);
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setLongAttribute(cppValue);
 }
 
-static void longAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void longAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::longAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::longAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -321,17 +321,17 @@ static void longLongAttributeAttributeGetterCallback(v8::Local<v8::String> name,
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void longLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void longLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(long long, v, toInt64(value));
-    imp->setLongLongAttribute(v);
+    V8TRYCATCH_VOID(long long, cppValue, toInt64(jsValue));
+    imp->setLongLongAttribute(cppValue);
 }
 
-static void longLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void longLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::longLongAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::longLongAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -348,17 +348,17 @@ static void octetAttributeAttributeGetterCallback(v8::Local<v8::String> name, co
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void octetAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void octetAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, v, toUInt8(value));
-    imp->setOctetAttribute(v);
+    V8TRYCATCH_VOID(unsigned, cppValue, toUInt8(jsValue));
+    imp->setOctetAttribute(cppValue);
 }
 
-static void octetAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void octetAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::octetAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::octetAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -375,17 +375,17 @@ static void shortAttributeAttributeGetterCallback(v8::Local<v8::String> name, co
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void shortAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void shortAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, v, toInt32(value));
-    imp->setShortAttribute(v);
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setShortAttribute(cppValue);
 }
 
-static void shortAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void shortAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::shortAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::shortAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -402,17 +402,17 @@ static void unsignedLongAttributeAttributeGetterCallback(v8::Local<v8::String> n
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void unsignedLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void unsignedLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, v, toUInt32(value));
-    imp->setUnsignedLongAttribute(v);
+    V8TRYCATCH_VOID(unsigned, cppValue, toUInt32(jsValue));
+    imp->setUnsignedLongAttribute(cppValue);
 }
 
-static void unsignedLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void unsignedLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::unsignedLongAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::unsignedLongAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -429,17 +429,17 @@ static void unsignedLongLongAttributeAttributeGetterCallback(v8::Local<v8::Strin
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void unsignedLongLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void unsignedLongLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned long long, v, toUInt64(value));
-    imp->setUnsignedLongLongAttribute(v);
+    V8TRYCATCH_VOID(unsigned long long, cppValue, toUInt64(jsValue));
+    imp->setUnsignedLongLongAttribute(cppValue);
 }
 
-static void unsignedLongLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void unsignedLongLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::unsignedLongLongAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::unsignedLongLongAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -456,17 +456,17 @@ static void unsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String> 
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void unsignedShortAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void unsignedShortAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, v, toUInt32(value));
-    imp->setUnsignedShortAttribute(v);
+    V8TRYCATCH_VOID(unsigned, cppValue, toUInt32(jsValue));
+    imp->setUnsignedShortAttribute(cppValue);
 }
 
-static void unsignedShortAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void unsignedShortAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::unsignedShortAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::unsignedShortAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -509,17 +509,17 @@ static void anyAttributeAttributeGetterCallback(v8::Local<v8::String> name, cons
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void anyAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void anyAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value, info.GetIsolate()));
-    imp->setAnyAttribute(v);
+    V8TRYCATCH_VOID(ScriptValue, cppValue, ScriptValue(jsValue, info.GetIsolate()));
+    imp->setAnyAttribute(cppValue);
 }
 
-static void anyAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+static void anyAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::anyAttributeAttributeSetter(name, value, info);
+    TestObjectPythonV8Internal::anyAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

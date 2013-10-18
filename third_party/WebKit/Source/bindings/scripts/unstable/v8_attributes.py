@@ -149,8 +149,8 @@ def generate_attribute_and_includes(interface, attribute):
         return contents, includes
 
     contents.update({
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'value', 'v', includes, 'info.GetIsolate()'),
-        'cpp_setter': 'imp->set%s(v)' % capitalize(cpp_name(attribute)),
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
+        'cpp_setter': 'imp->set%s(cppValue)' % capitalize(cpp_name(attribute)),
     })
 
     return contents, includes
