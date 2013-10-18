@@ -157,8 +157,8 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyDown, OnKeyDown)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyUp, OnKeyUp)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_Character, OnChar)
-    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_VisibilityChanged,
-                        OnVisibilityChanged)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowActivated,
+                        OnWindowActivated)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_TouchDown,
                         OnTouchDown)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_TouchUp,
@@ -471,9 +471,8 @@ void RemoteRootWindowHostWin::OnChar(uint32 key_code,
                           scan_code, flags, true);
 }
 
-void RemoteRootWindowHostWin::OnVisibilityChanged(bool visible) {
-  if (visible)
-    delegate_->OnHostActivated();
+void RemoteRootWindowHostWin::OnWindowActivated() {
+  delegate_->OnHostActivated();
 }
 
 void RemoteRootWindowHostWin::OnTouchDown(int32 x,

@@ -110,9 +110,6 @@ class ChromeAppViewAsh
   HRESULT OnCharacterReceived(winui::Core::ICoreWindow* sender,
                               winui::Core::ICharacterReceivedEventArgs* args);
 
-  HRESULT OnVisibilityChanged(winui::Core::ICoreWindow* sender,
-                              winui::Core::IVisibilityChangedEventArgs* args);
-
   HRESULT OnWindowActivated(winui::Core::ICoreWindow* sender,
                             winui::Core::IWindowActivatedEventArgs* args);
 
@@ -139,7 +136,6 @@ class ChromeAppViewAsh
   EventRegistrationToken keydown_token_;
   EventRegistrationToken keyup_token_;
   EventRegistrationToken character_received_token_;
-  EventRegistrationToken visibility_changed_token_;
   EventRegistrationToken accel_keydown_token_;
   EventRegistrationToken accel_keyup_token_;
   EventRegistrationToken window_activated_token_;

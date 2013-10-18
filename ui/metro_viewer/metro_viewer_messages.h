@@ -50,9 +50,8 @@ IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_Character,
                      uint32,       /* repeat count */
                      uint32,       /* scan code */
                      uint32        /* key state */);
-// Informs the browser that the visibiliy of the viewer has changed.
-IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_VisibilityChanged,
-                     bool          /* visible */);
+// Informs the browser that the Metro window has been activated.
+IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_WindowActivated);
 
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_TouchDown,
                      int32,           /* x-coordinate */
