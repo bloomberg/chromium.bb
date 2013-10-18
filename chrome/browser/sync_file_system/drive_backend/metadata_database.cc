@@ -23,6 +23,8 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_entry_kinds.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
@@ -33,12 +35,6 @@
 
 namespace sync_file_system {
 namespace drive_backend {
-
-const char kDatabaseVersionKey[] = "VERSION";
-const int64 kCurrentDatabaseVersion = 3;
-const char kServiceMetadataKey[] = "SERVICE";
-const char kFileMetadataKeyPrefix[] = "FILE: ";
-const char kFileTrackerKeyPrefix[] = "TRACKER: ";
 
 struct DatabaseContents {
   scoped_ptr<ServiceMetadata> service_metadata;
@@ -205,29 +201,6 @@ void CreateInitialAppRootTracker(
 void AdaptLevelDBStatusToSyncStatusCode(const SyncStatusCallback& callback,
                                         const leveldb::Status& status) {
   callback.Run(LevelDBStatusToSyncStatusCode(status));
-}
-
-void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
-                               leveldb::WriteBatch* batch) {
-  std::string value;
-  bool success = service_metadata.SerializeToString(&value);
-  DCHECK(success);
-  batch->Put(kServiceMetadataKey, value);
-}
-
-void PutFileToBatch(const FileMetadata& file, leveldb::WriteBatch* batch) {
-  std::string value;
-  bool success = file.SerializeToString(&value);
-  DCHECK(success);
-  batch->Put(kFileMetadataKeyPrefix + file.file_id(), value);
-}
-
-void PutTrackerToBatch(const FileTracker& tracker, leveldb::WriteBatch* batch) {
-  std::string value;
-  bool success = tracker.SerializeToString(&value);
-  DCHECK(success);
-  batch->Put(kFileTrackerKeyPrefix + base::Int64ToString(tracker.tracker_id()),
-             value);
 }
 
 void PutFileDeletionToBatch(const std::string& file_id,

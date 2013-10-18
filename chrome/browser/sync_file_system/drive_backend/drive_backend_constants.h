@@ -13,6 +13,12 @@ namespace drive_backend {
 extern const char kSyncRootFolderTitle[];
 extern const base::FilePath::CharType kDatabaseName[];
 
+extern const char kDatabaseVersionKey[];
+extern const int64 kCurrentDatabaseVersion;
+extern const char kServiceMetadataKey[];
+extern const char kFileMetadataKeyPrefix[];
+extern const char kFileTrackerKeyPrefix[];
+
 extern const int kMaxRetry;
 
 }  // namespace drive_backend

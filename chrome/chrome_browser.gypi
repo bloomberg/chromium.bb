@@ -2301,6 +2301,8 @@
         'browser/sync_file_system/conflict_resolution_resolver.h',
         'browser/sync_file_system/drive_backend/drive_backend_constants.cc',
         'browser/sync_file_system/drive_backend/drive_backend_constants.h',
+        'browser/sync_file_system/drive_backend/drive_backend_util.cc',
+        'browser/sync_file_system/drive_backend/drive_backend_util.h',
         'browser/sync_file_system/drive_backend/local_to_remote_syncer.cc',
         'browser/sync_file_system/drive_backend/local_to_remote_syncer.h',
         'browser/sync_file_system/drive_backend/metadata_database.cc',
