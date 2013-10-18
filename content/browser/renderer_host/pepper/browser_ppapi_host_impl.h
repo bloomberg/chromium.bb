@@ -56,7 +56,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     plugin_process_handle_ = handle;
   }
 
-  bool external_plugin() { return external_plugin_; }
+  bool external_plugin() const { return external_plugin_; }
 
   // These two functions are notifications that an instance has been created
   // or destroyed. They allow us to maintain a mapping of PP_Instance to data
