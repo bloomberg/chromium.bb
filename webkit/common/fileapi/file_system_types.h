@@ -111,6 +111,11 @@ enum FileSystemType {
   // file which must go away when the blob's last reference is dropped.
   kFileSystemTypeForTransientFile,
 
+  // Sandboxed private filesystem. This filesystem cannot be opened
+  // via regular OpenFileSystem, and provides private filesystem space for
+  // given identifier in each origin.
+  kFileSystemTypePluginPrivate,
+
   // --------------------------------------------------------------------
   // Marks the end of internal type enum. (This is not the actual fs type)
   // New internal filesystem types must be added above this line.

@@ -250,6 +250,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "NativeForPlatformApp";
     case kFileSystemTypeForTransientFile:
       return "TransientFile";
+    case kFileSystemTypePluginPrivate:
+      return "PluginPrivate";
     case kFileSystemInternalTypeEnumStart:
     case kFileSystemInternalTypeEnumEnd:
       NOTREACHED();

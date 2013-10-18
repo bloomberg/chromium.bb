@@ -83,6 +83,7 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     case kFileSystemTypeItunes:
     case kFileSystemTypeNativeMedia:
     case kFileSystemTypePicasa:
+    case kFileSystemTypePluginPrivate:
       return FILE_PERMISSION_ALWAYS_DENY;
 
     // Following types only appear as mount_type, and will not be
