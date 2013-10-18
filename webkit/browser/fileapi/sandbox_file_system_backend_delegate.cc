@@ -153,56 +153,6 @@ SandboxFileSystemBackendDelegate::~SandboxFileSystemBackendDelegate() {
   }
 }
 
-bool SandboxFileSystemBackendDelegate::IsAccessValid(
-    const FileSystemURL& url) const {
-  if (!IsAllowedScheme(url.origin()))
-    return false;
-
-  if (url.path().ReferencesParent())
-    return false;
-
-  // Return earlier if the path is '/', because VirtualPath::BaseName()
-  // returns '/' for '/' and we fail the "basename != '/'" check below.
-  // (We exclude '.' because it's disallowed by spec.)
-  if (VirtualPath::IsRootPath(url.path()) &&
-      url.path() != base::FilePath(base::FilePath::kCurrentDirectory))
-    return true;
-
-  // Restricted names specified in
-  // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
-  base::FilePath filename = VirtualPath::BaseName(url.path());
-  // See if the name is allowed to create.
-  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
-    if (filename.value() == kRestrictedNames[i])
-      return false;
-  }
-  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
-    if (filename.value().find(kRestrictedChars[i]) !=
-        base::FilePath::StringType::npos)
-      return false;
-  }
-
-  return true;
-}
-
-bool SandboxFileSystemBackendDelegate::IsAllowedScheme(const GURL& url) const {
-  // Basically we only accept http or https. We allow file:// URLs
-  // only if --allow-file-access-from-files flag is given.
-  if (url.SchemeIsHTTPOrHTTPS())
-    return true;
-  if (url.SchemeIsFileSystem())
-    return url.inner_url() && IsAllowedScheme(*url.inner_url());
-
-  for (size_t i = 0;
-       i < file_system_options_.additional_allowed_schemes().size();
-       ++i) {
-    if (url.SchemeIs(
-            file_system_options_.additional_allowed_schemes()[i].c_str()))
-      return true;
-  }
-  return false;
-}
-
 SandboxFileSystemBackendDelegate::OriginEnumerator*
 SandboxFileSystemBackendDelegate::CreateOriginEnumerator() {
   return new ObfuscatedOriginEnumerator(obfuscated_file_util());
@@ -449,6 +399,11 @@ const AccessObserverList* SandboxFileSystemBackendDelegate::GetAccessObservers(
   return &iter->second;
 }
 
+void SandboxFileSystemBackendDelegate::RegisterQuotaUpdateObserver(
+    FileSystemType type) {
+  AddFileUpdateObserver(type, quota_observer_.get(), file_task_runner_.get());
+}
+
 void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
     const GURL& origin,
     FileSystemType type) {
@@ -470,6 +425,56 @@ void SandboxFileSystemBackendDelegate::StickyInvalidateUsageCache(
 
 FileSystemFileUtil* SandboxFileSystemBackendDelegate::sync_file_util() {
   return static_cast<AsyncFileUtilAdapter*>(file_util())->sync_file_util();
+}
+
+bool SandboxFileSystemBackendDelegate::IsAccessValid(
+    const FileSystemURL& url) const {
+  if (!IsAllowedScheme(url.origin()))
+    return false;
+
+  if (url.path().ReferencesParent())
+    return false;
+
+  // Return earlier if the path is '/', because VirtualPath::BaseName()
+  // returns '/' for '/' and we fail the "basename != '/'" check below.
+  // (We exclude '.' because it's disallowed by spec.)
+  if (VirtualPath::IsRootPath(url.path()) &&
+      url.path() != base::FilePath(base::FilePath::kCurrentDirectory))
+    return true;
+
+  // Restricted names specified in
+  // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
+  base::FilePath filename = VirtualPath::BaseName(url.path());
+  // See if the name is allowed to create.
+  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
+    if (filename.value() == kRestrictedNames[i])
+      return false;
+  }
+  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
+    if (filename.value().find(kRestrictedChars[i]) !=
+        base::FilePath::StringType::npos)
+      return false;
+  }
+
+  return true;
+}
+
+bool SandboxFileSystemBackendDelegate::IsAllowedScheme(const GURL& url) const {
+  // Basically we only accept http or https. We allow file:// URLs
+  // only if --allow-file-access-from-files flag is given.
+  if (url.SchemeIsHTTPOrHTTPS())
+    return true;
+  if (url.SchemeIsFileSystem())
+    return url.inner_url() && IsAllowedScheme(*url.inner_url());
+
+  for (size_t i = 0;
+       i < file_system_options_.additional_allowed_schemes().size();
+       ++i) {
+    if (url.SchemeIs(
+            file_system_options_.additional_allowed_schemes()[i].c_str()))
+      return true;
+  }
+  return false;
 }
 
 base::FilePath

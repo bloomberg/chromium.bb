@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -78,14 +79,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
       const FileSystemOptions& file_system_options);
 
   virtual ~SandboxFileSystemBackendDelegate();
-
-  // Performs API-specific validity checks on the given path |url|.
-  // Returns true if access to |url| is valid in this filesystem.
-  bool IsAccessValid(const FileSystemURL& url) const;
-
-  // Returns true if the given |url|'s scheme is allowed to access
-  // filesystem.
-  bool IsAllowedScheme(const GURL& url) const;
 
   // Returns an origin enumerator of sandbox filesystem.
   // This method can only be called on the file thread.
@@ -160,6 +153,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   virtual const AccessObserverList* GetAccessObservers(
       FileSystemType type) const OVERRIDE;
 
+  // Registers quota observer for file updates on filesystem of |type|.
+  void RegisterQuotaUpdateObserver(FileSystemType type);
+
   void InvalidateUsageCache(const GURL& origin_url,
                             FileSystemType type);
   void StickyInvalidateUsageCache(const GURL& origin_url,
@@ -188,6 +184,15 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
  private:
   friend class SandboxQuotaObserver;
   friend class SandboxFileSystemTestHelper;
+  FRIEND_TEST_ALL_PREFIXES(SandboxFileSystemBackendDelegateTest, IsAccessValid);
+
+  // Performs API-specific validity checks on the given path |url|.
+  // Returns true if access to |url| is valid in this filesystem.
+  bool IsAccessValid(const FileSystemURL& url) const;
+
+  // Returns true if the given |url|'s scheme is allowed to access
+  // filesystem.
+  bool IsAllowedScheme(const GURL& url) const;
 
   // Returns a path to the usage cache file.
   base::FilePath GetUsageCachePathForOriginAndType(

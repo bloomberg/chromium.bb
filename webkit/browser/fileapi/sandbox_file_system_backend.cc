@@ -49,18 +49,12 @@ void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
   DCHECK(delegate_);
 
   // Set quota observers.
-  delegate_->AddFileUpdateObserver(
-      fileapi::kFileSystemTypeTemporary,
-      delegate_->quota_observer(),
-      delegate_->file_task_runner());
+  delegate_->RegisterQuotaUpdateObserver(fileapi::kFileSystemTypeTemporary);
   delegate_->AddFileAccessObserver(
       fileapi::kFileSystemTypeTemporary,
       delegate_->quota_observer(), NULL);
 
-  delegate_->AddFileUpdateObserver(
-      fileapi::kFileSystemTypePersistent,
-      delegate_->quota_observer(),
-      delegate_->file_task_runner());
+  delegate_->RegisterQuotaUpdateObserver(fileapi::kFileSystemTypePersistent);
   delegate_->AddFileAccessObserver(
       fileapi::kFileSystemTypePersistent,
       delegate_->quota_observer(), NULL);
