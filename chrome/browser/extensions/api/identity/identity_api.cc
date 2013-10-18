@@ -655,12 +655,18 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
 
 IdentityAPI::IdentityAPI(Profile* profile)
     : profile_(profile),
-      error_(GoogleServiceAuthError::NONE) {
-  SigninGlobalError::GetForProfile(profile_)->AddProvider(this);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->AddObserver(this);
+      error_(GoogleServiceAuthError::NONE),
+      initialized_(false) {
 }
 
 IdentityAPI::~IdentityAPI() {
+}
+
+void IdentityAPI::Initialize() {
+  SigninGlobalError::GetForProfile(profile_)->AddProvider(this);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->AddObserver(this);
+
+  initialized_ = true;
 }
 
 IdentityMintRequestQueue* IdentityAPI::mint_queue() {
@@ -714,9 +720,14 @@ void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
 }
 
 void IdentityAPI::Shutdown() {
+  if (!initialized_)
+    return;
+
   SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
       RemoveObserver(this);
+
+  initialized_ = false;
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<IdentityAPI> >

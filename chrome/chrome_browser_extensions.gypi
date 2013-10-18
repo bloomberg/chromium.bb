@@ -284,6 +284,8 @@
         'browser/extensions/api/identity/gaia_web_auth_flow.h',
         'browser/extensions/api/identity/identity_api.cc',
         'browser/extensions/api/identity/identity_api.h',
+        'browser/extensions/api/identity/identity_event_router.cc',
+        'browser/extensions/api/identity/identity_event_router.h',
         'browser/extensions/api/identity/identity_mint_queue.cc',
         'browser/extensions/api/identity/identity_mint_queue.h',
         'browser/extensions/api/identity/identity_signin_flow.cc',

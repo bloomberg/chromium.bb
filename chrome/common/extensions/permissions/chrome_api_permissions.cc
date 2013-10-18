@@ -64,6 +64,10 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       PermissionMessage::kDownloadsOpen },
     { APIPermission::kDownloadsShelf, "downloads.shelf" },
     { APIPermission::kIdentity, "identity" },
+    { APIPermission::kIdentityEmail, "identity.email",
+      APIPermissionInfo::kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_IDENTITY_EMAIL,
+      PermissionMessage::kIdentityEmail },
     { APIPermission::kExperimental, "experimental",
       APIPermissionInfo::kFlagCannotBeOptional },
       // NOTE(kalman): this is provided by a manifest property but needs to

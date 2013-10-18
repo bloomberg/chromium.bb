@@ -39,6 +39,11 @@ namespace identity {
     boolean? interactive;
   };
 
+  dictionary AccountInfo {
+    DOMString id;
+    DOMString? email;
+  };
+
   callback GetAuthTokenCallback = void (optional DOMString token);
   callback InvalidateAuthTokenCallback = void ();
   callback LaunchWebAuthFlowCallback = void (optional DOMString responseUrl);
@@ -85,6 +90,10 @@ namespace identity {
     // |callback| : Called with the URL redirected back to your application.
     static void launchWebAuthFlow(WebAuthFlowDetails details,
                                   LaunchWebAuthFlowCallback callback);
-  }
-  ;
+  };
+
+  interface Events {
+    // Fired when signin state changes for an account on the user's profile.
+    static void onSignInChanged(AccountInfo account, boolean signedIn);
+  };
 };
