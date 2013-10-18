@@ -78,13 +78,15 @@ public class TestWebServer {
         final byte[] mResponseData;
         final List<Pair<String, String>> mResponseHeaders;
         final boolean mIsRedirect;
+        final Runnable mResponseAction;
 
         Response(byte[] resposneData, List<Pair<String, String>> responseHeaders,
-                boolean isRedirect) {
+                boolean isRedirect, Runnable responseAction) {
             mIsRedirect = isRedirect;
             mResponseData = resposneData;
             mResponseHeaders = responseHeaders == null ?
                     new ArrayList<Pair<String, String>>() : responseHeaders;
+            mResponseAction = responseAction;
         }
     }
 
@@ -161,12 +163,13 @@ public class TestWebServer {
 
     private String setResponseInternal(
             String requestPath, byte[] responseData,
-            List<Pair<String, String>> responseHeaders,
+            List<Pair<String, String>> responseHeaders, Runnable responseAction,
             int status) {
         final boolean isRedirect = (status == RESPONSE_STATUS_MOVED_TEMPORARILY);
 
         synchronized (mLock) {
-            mResponseMap.put(requestPath, new Response(responseData, responseHeaders, isRedirect));
+            mResponseMap.put(requestPath, new Response(
+                    responseData, responseHeaders, isRedirect, responseAction));
             mResponseCountMap.put(requestPath, Integer.valueOf(0));
             mLastRequestMap.put(requestPath, null);
         }
@@ -199,7 +202,30 @@ public class TestWebServer {
     public String setResponse(
             String requestPath, String responseString,
             List<Pair<String, String>> responseHeaders) {
-        return setResponseInternal(requestPath, responseString.getBytes(), responseHeaders,
+        return setResponseInternal(requestPath, responseString.getBytes(), responseHeaders, null,
+                RESPONSE_STATUS_NORMAL);
+    }
+
+    /**
+     * Sets a response to be returned when a particular request path is passed
+     * in with the option to specify additional headers as well as an arbitrary action to be
+     * executed on each request.
+     *
+     * @param requestPath The path to respond to.
+     * @param responseString The response body that will be returned.
+     * @param responseHeaders Any additional headers that should be returned along with the
+     *                        response (null is acceptable).
+     * @param responseAction The action to be performed when fetching the response.  This action
+     *                       will be executed for each request and will be handled on a background
+     *                       thread.
+     * @return The full URL including the path that should be requested to get the expected
+     *         response.
+     */
+    public String setResponseWithRunnableAction(
+            String requestPath, String responseString, List<Pair<String, String>> responseHeaders,
+            Runnable responseAction) {
+        return setResponseInternal(
+                requestPath, responseString.getBytes(), responseHeaders, responseAction,
                 RESPONSE_STATUS_NORMAL);
     }
 
@@ -216,7 +242,7 @@ public class TestWebServer {
         List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
         responseHeaders.add(Pair.create("Location", targetPath));
 
-        return setResponseInternal(requestPath, targetPath.getBytes(), responseHeaders,
+        return setResponseInternal(requestPath, targetPath.getBytes(), responseHeaders, null,
                 RESPONSE_STATUS_MOVED_TEMPORARILY);
     }
 
@@ -235,10 +261,9 @@ public class TestWebServer {
     public String setResponseBase64(
             String requestPath, String base64EncodedResponse,
             List<Pair<String, String>> responseHeaders) {
-        return setResponseInternal(requestPath,
-                                   Base64.decode(base64EncodedResponse, Base64.DEFAULT),
-                                   responseHeaders,
-                                   RESPONSE_STATUS_NORMAL);
+        return setResponseInternal(
+                requestPath, Base64.decode(base64EncodedResponse, Base64.DEFAULT),
+                responseHeaders, null, RESPONSE_STATUS_NORMAL);
     }
 
     /**
@@ -334,9 +359,18 @@ public class TestWebServer {
 
     /**
      * Generate a response to the given request.
+     *
+     * <p>Always executed on the background server thread.
+     *
+     * <p>If there is an action associated with the response, it will be executed inside of
+     * this function.
+     *
      * @throws InterruptedException
      */
     private HttpResponse getResponse(HttpRequest request) throws InterruptedException {
+        assert Thread.currentThread() == mServerThread
+                : "getResponse called from non-server thread";
+
         RequestLine requestLine = request.getRequestLine();
         HttpResponse httpResponse = null;
         Log.i(TAG, requestLine.getMethod() + ": " + requestLine.getUri());
@@ -346,7 +380,7 @@ public class TestWebServer {
 
         Response response = null;
         synchronized (mLock) {
-          response = mResponseMap.get(path);
+            response = mResponseMap.get(path);
         }
         if (path.equals(SHUTDOWN_PREFIX)) {
             httpResponse = createResponse(HttpStatus.SC_OK);
@@ -359,6 +393,8 @@ public class TestWebServer {
             }
             servedResponseFor(path, request);
         } else {
+            if (response.mResponseAction != null) response.mResponseAction.run();
+
             httpResponse = createResponse(HttpStatus.SC_OK);
             httpResponse.setEntity(createEntity(response.mResponseData));
             for (Pair<String, String> header : response.mResponseHeaders) {
