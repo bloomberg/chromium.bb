@@ -56,7 +56,7 @@ class TestFailure(results_lib.StepFailure):
 
 
 def _RunBuildScript(buildroot, cmd, capture_output=False, chromite_cmd=False,
-                    **kwargs):
+                    possibly_flaky=False, **kwargs):
   """Run a build script, wrapping exceptions as needed.
 
   This wraps RunCommand(cmd, cwd=buildroot, **kwargs), adding extra logic to
@@ -74,6 +74,10 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, chromite_cmd=False,
     buildroot: The root of the build directory.
     cmd: The command to run.
     capture_output: Whether or not to capture all output.
+    chromite_cmd: Whether the command should be evaluated relative to the
+      chromite/bin subdir of the |buildroot|.
+    possibly_flaky: Whether this failure is likely to fail occasionally due
+      to flakiness (e.g. network flakiness).
     kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
   """
   assert not kwargs.get('shell', False), 'Cannot execute shell commands'
@@ -108,8 +112,9 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, chromite_cmd=False,
       # Print the original exception.
       cros_build_lib.Error('\n%s', ex)
 
-      # Check whether a specific package failed. If so, wrap the
-      # exception appropriately.
+      # Check whether a specific package failed. If so, wrap the exception
+      # appropriately. These failures are usually caused by a recent CL, so we
+      # don't ever treat these failures as flaky.
       if status_file is not None:
         status_file.seek(0)
         failed_packages = status_file.read().split()
@@ -117,7 +122,8 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, chromite_cmd=False,
           raise results_lib.PackageBuildFailure(ex, cmd[0], failed_packages)
 
       # Looks like a generic failure. Raise a BuildScriptFailure.
-      raise results_lib.BuildScriptFailure(ex, cmd[0])
+      raise results_lib.BuildScriptFailure(ex, cmd[0],
+                                           possibly_flaky=possibly_flaky)
 
 
 def GetInput(prompt):
@@ -494,8 +500,10 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
       error = '%s exited with code %d' % (' '.join(cmd), result.returncode)
       with open(results_dir_in_chroot + '/failed_test_command', 'w') as failed:
         failed.write(error)
+    # We already retry VMTest inline, so we can assume that failures in VMTest
+    # are not flaky.
     raise TestFailure('** VMTests failed with code %d **'
-                      % result.returncode)
+                      % result.returncode, possibly_flaky=False)
 
 
 def RunDevModeTest(buildroot, board, image_dir):
@@ -568,7 +576,10 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
     cros_build_lib.Info('RunHWTestSuite would run: %s',
                         ' '.join(map(repr, cmd)))
   else:
-    cros_build_lib.RunCommand(cmd)
+    result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+    if result.returncode:
+      raise TestFailure('** HWTests failed with code %d **'
+                        % result.returncode, possibly_flaky=True)
 
 
 def _GetAbortHWTestsURL(substr, suite):
@@ -1001,7 +1012,7 @@ def _UploadPrebuilts(buildroot, board, extra_args):
     cmd.extend(['--board', board])
 
   cmd.extend(extra_args)
-  _RunBuildScript(buildroot, cmd, cwd=cwd)
+  _RunBuildScript(buildroot, cmd, cwd=cwd, possibly_flaky=True)
 
 
 def GenerateBreakpadSymbols(buildroot, board, debug):
@@ -1122,10 +1133,12 @@ def AppendToFile(file_path, string):
   osutils.WriteFile(file_path, string, mode='a')
 
 
-def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
+def UpdateUploadedList(buildroot, last_uploaded, archive_path, upload_url,
+                       debug):
   """Updates the list of files uploaded to Google Storage.
 
   Args:
+     buildroot: The root directory where the build occurs.
      last_uploaded: Filename of the last uploaded file.
      archive_path: Path to archive_dir.
      upload_url: Location where tarball should be uploaded.
@@ -1137,15 +1150,16 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
   AppendToFile(os.path.join(archive_path, filename), last_uploaded + '\n')
 
   # Upload the updated list to Google Storage.
-  UploadArchivedFile(archive_path, upload_url, filename, debug,
+  UploadArchivedFile(buildroot, archive_path, upload_url, filename, debug,
                      update_list=False)
 
 
-def UploadArchivedFile(archive_path, upload_url, filename, debug,
+def UploadArchivedFile(buildroot, archive_path, upload_url, filename, debug,
                        update_list=False, timeout=60 * 60, acl=None):
   """Upload the specified tarball from the archive dir to Google Storage.
 
   Args:
+    buildroot: The root directory where the build occurs.
     archive_path: Path to archive dir.
     upload_url: Location where tarball should be uploaded.
     debug: Whether we are in debug mode.
@@ -1174,14 +1188,14 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
           cros_build_lib.Info('UploadArchivedFile would run: %s', ' '.join(cmd))
         else:
           with cros_build_lib.SubCommandTimeout(timeout):
-            cros_build_lib.RunCommandCaptureOutput(cmd,
-                                                   debug_level=logging.DEBUG)
+            _RunBuildScript(buildroot, cmd, debug_level=logging.DEBUG,
+                            possibly_flaky=True)
     except cros_build_lib.TimeoutError:
       raise cros_build_lib.TimeoutError('Timed out uploading %s' % filename)
     else:
       # Update the list of uploaded files.
       if update_list:
-        UpdateUploadedList(filename, archive_path, upload_url, debug)
+        UpdateUploadedList(buildroot, filename, archive_path, upload_url, debug)
 
 
 def UploadSymbols(buildroot, board, official, cnt):

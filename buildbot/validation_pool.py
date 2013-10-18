@@ -908,6 +908,139 @@ class ValidationFailedMessage(object):
   def __str__(self):
     return self.message
 
+  def MightBeFlakyFailure(self):
+    """Check if there is a good chance this is a flaky failure."""
+    # We only consider a failed build to be flaky if there is only one failure,
+    # and that failure is a flaky failure.
+    flaky = False
+    if len(self.tracebacks) == 1:
+      # TimeoutErrors are often flaky.
+      exc = self.tracebacks[0].exception
+      if (isinstance(exc, results_lib.StepFailure) and exc.possibly_flaky or
+          isinstance(exc, cros_build_lib.TimeoutError)):
+        flaky = True
+    return flaky
+
+  def _MatchesFailureType(self, cls):
+    """Check if all of the tracebacks match the specified failure type."""
+    for traceback in self.tracebacks:
+      if not isinstance(traceback.exception, cls):
+        return False
+    return True
+
+  def IsPackageBuildFailure(self):
+    """Check if all of the failures are package build failures."""
+    return self._MatchesFailureType(results_lib.PackageBuildFailure)
+
+  def FindPackageBuildFailureSuspects(self, changes):
+    """Figure out what changes probably caused our failures.
+
+    We use a fairly simplistic algorithm to calculate breakage: If you changed
+    a package, and that package broke, you probably broke the build. If there
+    were multiple changes to a broken package, we fail them all.
+
+    Some safeguards are implemented to ensure that bad changes are kicked out:
+      1) Changes to overlays (e.g. ebuilds, eclasses, etc.) are always kicked
+         out if the build fails.
+      2) If a package fails that nobody changed, we kick out all of the
+         changes.
+      3) If any failures occur that we can't explain, we kick out all of the
+         changes.
+
+    It is certainly possible to trick this algorithm: If one developer submits
+    a change to libchromeos that breaks the power_manager, and another developer
+    submits a change to the power_manager at the same time, only the
+    power_manager change will be kicked out. That said, in that situation, the
+    libchromeos change will likely be kicked out on the next run, thanks to
+    safeguard #2 above.
+
+    Args:
+      changes: List of changes to examine.
+    Returns:
+      Set of changes that likely caused the failure.
+    """
+    blame_everything = False
+    suspects = set()
+    for traceback in self.tracebacks:
+      for package in traceback.exception.failed_packages:
+        failed_projects = portage_utilities.FindWorkonProjects([package])
+        blame_assigned = False
+        for change in changes:
+          if change.project in failed_projects:
+            blame_assigned = True
+            suspects.add(change)
+        if not blame_assigned:
+          blame_everything = True
+
+    if blame_everything or not suspects:
+      suspects = changes[:]
+    else:
+      # Never treat changes to overlays as innocent.
+      suspects.update(change for change in changes
+                      if '/overlays/' in change.project)
+    return suspects
+
+
+class CalculateSuspects(object):
+  """Diagnose the cause for a given set of failures."""
+
+  @classmethod
+  def _FindPackageBuildFailureSuspects(cls, changes, messages):
+    """Figure out what CLs are at fault for a set of build failures."""
+    suspects = set()
+    for message in messages:
+      suspects.update(message.FindPackageBuildFailureSuspects(changes))
+    return suspects
+
+  @classmethod
+  def _MightBeFlakyFailure(cls, messages):
+    """Check if there is a good chance this is a flaky failure."""
+    # We consider a failed commit queue run to be flaky if only one builder
+    # failed, and that failure is flaky.
+    return len(messages) == 1 and messages[0].MightBeFlakyFailure()
+
+  @classmethod
+  def _FindPreviouslyFailedChanges(cls, candidates):
+    """Find what changes that have previously failed the CQ.
+
+    The first time a change is included in a build that fails due to a
+    flaky (or apparently unrelated) failure, we assume that it is innocent. If
+    this happens more than once, we kick out the CL.
+    """
+    suspects = set()
+    for change in candidates:
+      if ValidationPool.GetCLStatusCount(
+          CQ, change, ValidationPool.STATUS_FAILED):
+        suspects.add(change)
+    return suspects
+
+  @classmethod
+  def FindSuspects(cls, changes, messages):
+    """Find out what changes probably caused our failure.
+
+    In cases where there were no internal failures, we can assume that the
+    external failures are at fault. Otherwise, this function just defers to
+    _FindPackagedBuildFailureSuspects and FindPreviouslyFailedChanges as needed.
+    If the failures don't match either case, just fail everything.
+    """
+
+    suspects = set()
+
+    # If there were no internal failures, only kick out external changes.
+    if any(message.internal for message in messages):
+      candidates = changes
+    else:
+      candidates = [change for change in changes if not change.internal]
+
+    if all(message.IsPackageBuildFailure() for message in messages):
+      suspects = cls._FindPackageBuildFailureSuspects(candidates, messages)
+    elif cls._MightBeFlakyFailure(messages):
+      suspects = cls._FindPreviouslyFailedChanges(changes)
+    else:
+      suspects.update(candidates)
+
+    return suspects
+
 
 class ValidationPool(object):
   """Class that handles interactions with a validation pool.
@@ -1658,70 +1791,6 @@ class ValidationPool(object):
     self.RemoveCommitReady(change)
 
   @staticmethod
-  def _FindSuspects(changes, messages):
-    """Figure out what changes probably caused our failures.
-
-    We use a fairly simplistic algorithm to calculate breakage: If you changed
-    a package, and that package broke, you probably broke the build. If there
-    were multiple changes to a broken package, we fail them all.
-
-    Some safeguards are implemented to ensure that bad changes are kicked out:
-      1) Changes to overlays (e.g. ebuilds, eclasses, etc.) are always kicked
-         out if the build fails.
-      2) If a package fails that nobody changed, we kick out all of the
-         changes.
-      3) If any failures occur that we can't explain, we kick out all of the
-         changes.
-
-    It is certainly possible to trick this algorithm: If one developer submits
-    a change to libchromeos that breaks the power_manager, and another developer
-    submits a change to the power_manager at the same time, only the
-    power_manager change will be kicked out. That said, in that situation, the
-    libchromeos change will likely be kicked out on the next run, thanks to
-    safeguard #2 above.
-
-    This function is intentionally static, and should be kept simple. If it
-    starts getting complicated, we should move it to a different file.
-
-    Args:
-      changes: List of changes to examine.
-      messages: A list of build failure messages from supporting builders.
-    Returns:
-      suspects: Set of changes that likely caused the failure.
-    """
-    suspects = set()
-    blame_everything = False
-
-    # If there were no internal failures, only kick out external changes.
-    if any(message.internal for message in messages):
-      candidates = changes
-    else:
-      candidates = [change for change in changes if not change.internal]
-
-    for message in messages:
-      for recorded_traceback in message.tracebacks:
-        exception = recorded_traceback.exception
-        blame_assigned = False
-        if isinstance(exception, results_lib.PackageBuildFailure):
-          for package in exception.failed_packages:
-            failed_projects = portage_utilities.FindWorkonProjects([package])
-            for change in candidates:
-              if change.project in failed_projects:
-                blame_assigned = True
-                suspects.add(change)
-        if not blame_assigned:
-          blame_everything = True
-
-    if blame_everything or not suspects:
-      suspects = set(candidates)
-    else:
-      # Never treat changes to overlays as innocent.
-      suspects.update(change for change in candidates
-                      if '/overlays/' in change.project)
-
-    return suspects
-
-  @staticmethod
   def _CreateValidationFailureMessage(pre_cq, change, suspects, messages):
     """Create a message explaining why a validation failure occurred.
 
@@ -1796,7 +1865,7 @@ class ValidationPool(object):
       changes.append(change)
 
     # First, calculate which changes are likely at fault for the failure.
-    suspects = self._FindSuspects(changes, messages)
+    suspects = CalculateSuspects.FindSuspects(changes, messages)
 
     # Send out failure notifications for each change.
     for change in changes:

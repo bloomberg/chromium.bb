@@ -297,8 +297,9 @@ class ArchivingStage(BoardSpecificBuilderStage):
     if archive:
       filename = commands.ArchiveFile(path, self.archive_path)
     try:
-      commands.UploadArchivedFile(self.archive_path, self.upload_url, filename,
-                                  self.debug, update_list=True, acl=self.acl)
+      commands.UploadArchivedFile(
+          self._build_root, self.archive_path, self.upload_url, filename,
+          self.debug, update_list=True, acl=self.acl)
     except (cros_build_lib.RunCommandError, cros_build_lib.TimeoutError) as e:
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
@@ -3037,8 +3038,8 @@ class ArchiveStage(ArchivingStage):
         latest_path = os.path.join(self.bot_archive_root, filename)
         osutils.WriteFile(latest_path, self.version, mode='w')
         commands.UploadArchivedFile(
-            self.bot_archive_root, upload_url, filename, debug,
-            acl=self.acl)
+            self._build_root, self.bot_archive_root, upload_url, filename,
+            debug, acl=self.acl)
 
     try:
       if not self._build_config['pgo_generate']:
@@ -3287,8 +3288,9 @@ class ReportStage(bs.BuilderStage):
       ]
       index = os.path.join(path, 'index.html')
       commands.GenerateHtmlIndex(index, files, url_base=url, head=head)
-      commands.UploadArchivedFile(path, upload_url, os.path.basename(index),
-                                  debug=archive_stage.debug, acl=acl)
+      commands.UploadArchivedFile(
+          self._build_root, path, upload_url, os.path.basename(index),
+          debug=archive_stage.debug, acl=acl)
 
       archive_urls[board] = archive_stage.download_url + '/index.html'
 

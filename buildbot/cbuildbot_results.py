@@ -45,6 +45,20 @@ class StepFailure(Exception):
     3) __str__() should be brief enough to include in a Commit Queue
        failure message.
   """
+  def __init__(self, message='', possibly_flaky=False):
+    """Constructor.
+
+    Args:
+      message: An error message.
+      possibly_flaky: Whether this failure might be flaky.
+    """
+    Exception.__init__(self, message)
+    self.possibly_flaky = possibly_flaky
+    self.args = (message, possibly_flaky)
+
+  def __str__(self):
+    """Stringify the message."""
+    return self.message
 
 
 class RetriableStepFailure(StepFailure):
@@ -60,18 +74,19 @@ class BuildScriptFailure(StepFailure):
   commands (e.g. build_packages) fail.
   """
 
-  def __init__(self, exception, shortname):
+  def __init__(self, exception, shortname, possibly_flaky=False):
     """Construct a BuildScriptFailure object.
 
     Args:
       exception: A RunCommandError object.
       shortname: Short name for the command we're running.
+      possibly_flaky: Whether this failure might be flaky.
     """
-    StepFailure.__init__(self)
+    StepFailure.__init__(self, possibly_flaky=possibly_flaky)
     assert isinstance(exception, cros_build_lib.RunCommandError)
     self.exception = exception
     self.shortname = shortname
-    self.args = (exception, shortname)
+    self.args = (exception, shortname, possibly_flaky)
 
   def __str__(self):
     """Summarize a build command failure briefly."""

@@ -1064,7 +1064,7 @@ class ArchiveStageTest(AbstractStageTest):
     self.RunStage()
     filenames = ('LATEST-%s' % self.TARGET_MANIFEST_BRANCH,
                  'LATEST-%s' % ArchiveStageMock.VERSION)
-    calls = [mock.call(mock.ANY, mock.ANY, filename, False,
+    calls = [mock.call(mock.ANY, mock.ANY, mock.ANY, filename, False,
                        acl=mock.ANY) for filename in filenames]
     # pylint: disable=E1101
     self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)

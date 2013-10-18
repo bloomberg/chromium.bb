@@ -273,8 +273,6 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
     """Strict staging fails when there are no files."""
     options, _ = _ParseCommandLine(
         self.common_flags + ['--gyp-defines', 'chromeos=1', '--strict'])
-    chrome_util.MissingPathError(deploy_chrome._PrepareStagingDir,
-        options, self.tempdir, self.staging_dir)
 
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,

@@ -962,7 +962,7 @@ class TestFindSuspects(MoxBase):
       tracebacks.append(results_lib.RecordedTraceback('Build', ex, str(ex)))
     message = validation_pool.ValidationFailedMessage(
         'foo bar %r' % tracebacks, tracebacks, internal)
-    results = validation_pool.ValidationPool._FindSuspects(patches, [message])
+    results = validation_pool.CalculateSuspects.FindSuspects(patches, [message])
     self.assertEquals(set(suspects), results)
 
   def testFailSameProject(self):
