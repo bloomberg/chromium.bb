@@ -36,7 +36,9 @@ const char kVorbisVP8[] = "vorbis,vp8,vp8.0";
 const char kAudioMp4[] = "audio/mp4";
 const char kVideoMp4[] = "video/mp4";
 const char kMp4a[] = "mp4a";
+#if defined(WIDEVINE_CDM_AVAILABLE)
 const char kAvc1Avc3[] = "avc1,avc3";
+#endif  // WIDEVINE_CDM_AVAILABLE
 const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
