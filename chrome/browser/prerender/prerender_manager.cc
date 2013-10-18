@@ -242,7 +242,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
   // the same thread that it was created on.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (IsLocalPredictorEnabled(profile))
+  if (IsLocalPredictorEnabled())
     local_predictor_.reset(new PrerenderLocalPredictor(this));
 
   if (IsLoggedInPredictorEnabled() && !profile_->IsOffTheRecord()) {

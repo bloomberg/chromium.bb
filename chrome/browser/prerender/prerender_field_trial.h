@@ -22,7 +22,11 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line);
 bool IsOmniboxEnabled(Profile* profile);
 
 // Returns true iff the Prerender Local Predictor is enabled.
-bool IsLocalPredictorEnabled(Profile* profile);
+bool IsLocalPredictorEnabled();
+
+// Indicates whether to disable the local predictor due to unencrypted sync
+// settings and configuration.
+bool DisableLocalPredictorBasedOnSyncAndConfiguration(Profile* profile);
 
 // Returns true iff the LoggedIn Predictor is enabled.
 bool IsLoggedInPredictorEnabled();

@@ -326,7 +326,7 @@ bool IsUnencryptedSyncEnabled(Profile* profile) {
 
 // Indicates whether the Local Predictor is enabled based on field trial
 // selection.
-bool IsLocalPredictorEnabledBasedOnSelection() {
+bool IsLocalPredictorEnabled() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   return false;
 #endif
@@ -337,27 +337,19 @@ bool IsLocalPredictorEnabledBasedOnSelection() {
   return GetLocalPredictorSpecValue(kLocalPredictorKeyName) == kEnabledGroup;
 }
 
-// Usually, we enable the Local Predictor based on field trial selection
-// (see above), so we can just return that setting.
-// However, via Finch, we can specify to not create a LocalPredictor if
-// UnencryptedSync is not enabled. Therefore, we have to perform this additional
-// check to determine whether or not we actually want to enable the
-// LocalPredictor.
-bool IsLocalPredictorEnabled(Profile* profile) {
-  if (GetLocalPredictorSpecValue(kLocalPredictorUnencryptedSyncOnlyKeyName) ==
+bool DisableLocalPredictorBasedOnSyncAndConfiguration(Profile* profile) {
+  return
+      GetLocalPredictorSpecValue(kLocalPredictorUnencryptedSyncOnlyKeyName) ==
       kEnabledGroup &&
-      !IsUnencryptedSyncEnabled(profile)) {
-    return false;
-  }
-  return IsLocalPredictorEnabledBasedOnSelection();
+      !IsUnencryptedSyncEnabled(profile);
 }
 
 bool IsLoggedInPredictorEnabled() {
-  return IsLocalPredictorEnabledBasedOnSelection();
+  return IsLocalPredictorEnabled();
 }
 
 bool IsSideEffectFreeWhitelistEnabled() {
-  return IsLocalPredictorEnabledBasedOnSelection() &&
+  return IsLocalPredictorEnabled() &&
       GetLocalPredictorSpecValue(kSideEffectFreeWhitelistKeyName) !=
       kDisabledGroup;
 }

@@ -16,6 +16,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 #if defined(OS_CHROMEOS)
@@ -48,6 +49,7 @@ PrerenderManagerFactory::PrerenderManagerFactory()
   // PrerenderLocalPredictor observers the history visit DB.
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(predictors::PredictorDatabaseFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 PrerenderManagerFactory::~PrerenderManagerFactory() {

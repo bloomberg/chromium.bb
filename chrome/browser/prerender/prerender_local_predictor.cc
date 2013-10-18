@@ -970,6 +970,11 @@ HistoryService* PrerenderLocalPredictor::GetHistoryIfExists() const {
 void PrerenderLocalPredictor::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RecordEvent(EVENT_INIT_STARTED);
+  Profile* profile = prerender_manager_->profile();
+  if (!profile || DisableLocalPredictorBasedOnSyncAndConfiguration(profile)) {
+    RecordEvent(EVENT_INIT_FAILED_UNENCRYPTED_SYNC_NOT_ENABLED);
+    return;
+  }
   HistoryService* history = GetHistoryIfExists();
   if (history) {
     CHECK(!is_visit_database_observer_);
