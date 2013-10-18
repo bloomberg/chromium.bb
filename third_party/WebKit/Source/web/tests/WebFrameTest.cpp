@@ -456,7 +456,7 @@ TEST_F(WebFrameCSSCallbackTest, SharedRenderStyle)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
 }
 
-TEST_F(WebFrameCSSCallbackTest, CatchesAttributeChange)
+TEST_F(WebFrameCSSCallbackTest, DISABLED_CatchesAttributeChange)
 {
     loadHTML("<span></span>");
 
