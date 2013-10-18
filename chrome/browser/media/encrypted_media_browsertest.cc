@@ -47,8 +47,8 @@ const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 // EME-specific test results and errors.
-const char kEmeGkrException[] = "GENERATE_KEY_REQUEST_EXCEPTION";
 const char kEmeKeyError[] = "KEYERROR";
+const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
 
 // The type of video src used to load media.
 enum SrcType {
@@ -165,7 +165,7 @@ class EncryptedMediaTest : public MediaBrowserTest,
   // We want to fail quickly when a test fails because an error is encountered.
   virtual void AddWaitForTitles(content::TitleWatcher* title_watcher) OVERRIDE {
     MediaBrowserTest::AddWaitForTitles(title_watcher);
-    title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeGkrException));
+    title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeNotSupportedError));
     title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeKeyError));
   }
 
@@ -302,8 +302,12 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // The parent key system cannot be used in generateKeyRequest.
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, WVParentThrowsException) {
-  RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
-                        kWebMAudioOnly, "com.widevine", SRC, kEmeGkrException);
+  RunEncryptedMediaTest("encrypted_media_player.html",
+                        "bear-a-enc_a.webm",
+                        kWebMAudioOnly,
+                        "com.widevine",
+                        SRC,
+                        kEmeNotSupportedError);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 

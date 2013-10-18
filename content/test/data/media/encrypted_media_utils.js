@@ -57,7 +57,7 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
       video.webkitGenerateKeyRequest(keySystem, e.initData);
     }
     catch(error) {
-      setResultInTitle("Generate_Key_Request_Exception");
+      setResultInTitle(error.name);
     }
   }
 

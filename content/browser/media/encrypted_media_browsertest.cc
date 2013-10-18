@@ -20,8 +20,8 @@ static const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 static const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 
 // EME-specific test results and errors.
-static const char kEmeGkrException[] = "GENERATE_KEY_REQUEST_EXCEPTION";
 static const char kEmeKeyError[] = "KEYERROR";
+static const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
 
 // The type of video src used to load media.
 enum SrcType {
@@ -92,7 +92,7 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
   // We want to fail quickly when a test fails because an error is encountered.
   virtual void AddWaitForTitles(content::TitleWatcher* title_watcher) OVERRIDE {
     MediaBrowserTest::AddWaitForTitles(title_watcher);
-    title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeGkrException));
+    title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeNotSupportedError));
     title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeKeyError));
   }
 
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
   RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
                         kWebMAudioOnly, "com.example.foo", MSE,
-                        kEmeGkrException);
+                        kEmeNotSupportedError);
 }
 
 }  // namespace content
