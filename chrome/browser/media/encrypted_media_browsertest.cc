@@ -56,20 +56,13 @@ enum SrcType {
   MSE
 };
 
-// Tests encrypted media playback with a combination of parameters:
-// - char*: Key system name.
-// - bool: True to load media using MSE, otherwise use src.
-class EncryptedMediaTest : public MediaBrowserTest,
-  public testing::WithParamInterface<std::tr1::tuple<const char*, SrcType> > {
+// Base class for encrypted media tests.
+class EncryptedMediaTestBase : public MediaBrowserTest {
  public:
-  // Can only be used in parameterized (*_P) tests.
-  const char* CurrentKeySystem() {
-    return std::tr1::get<0>(GetParam());
-  }
+  EncryptedMediaTestBase() : is_pepper_cdm_registered_(false) {}
 
-  // Can only be used in parameterized (*_P) tests.
-  SrcType CurrentSourceType() {
-    return std::tr1::get<1>(GetParam());
+  bool IsExternalClearKey(const char* key_system) {
+    return (strcmp(key_system, kExternalClearKeyKeySystem) == 0);
   }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
@@ -77,36 +70,6 @@ class EncryptedMediaTest : public MediaBrowserTest,
     return (strcmp(key_system, kWidevineKeySystem) == 0);
   }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-
-  void TestSimplePlayback(const char* encrypted_media, const char* media_type) {
-    RunSimpleEncryptedMediaTest(
-        encrypted_media, media_type, CurrentKeySystem(), CurrentSourceType());
-  }
-
-  void TestFrameSizeChange() {
-#if defined(WIDEVINE_CDM_AVAILABLE)
-    if (IsWidevine(CurrentKeySystem())) {
-      LOG(INFO) << "FrameSizeChange test cannot run with Widevine.";
-      return;
-    }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
-    RunEncryptedMediaTest("encrypted_frame_size_change.html",
-                          "frame_size_change-av-enc-v.webm", kWebMAudioVideo,
-                          CurrentKeySystem(), CurrentSourceType(), kEnded);
-  }
-
-  void TestConfigChange() {
-#if defined(WIDEVINE_CDM_AVAILABLE)
-    if (IsWidevine(CurrentKeySystem())) {
-      LOG(INFO) << "ConfigChange test cannot run with Widevine.";
-      return;
-    }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
-    std::vector<StringPair> query_params;
-    query_params.push_back(std::make_pair("keysystem", CurrentKeySystem()));
-    query_params.push_back(std::make_pair("runencrypted", "1"));
-    RunMediaTestPage("mse_config_change.html", &query_params, kEnded, true);
-  }
 
   void RunEncryptedMediaTest(const char* html_page,
                              const char* media_file,
@@ -170,15 +133,6 @@ class EncryptedMediaTest : public MediaBrowserTest,
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-#if defined(ENABLE_PEPPER_CDMS)
-    RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
-                      kExternalClearKeyKeySystem);
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-    RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName,
-                      kWidevineKeySystem);
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-#endif  // defined(ENABLE_PEPPER_CDMS)  }
-
 #if defined(OS_ANDROID)
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
@@ -191,10 +145,31 @@ class EncryptedMediaTest : public MediaBrowserTest,
 #endif  // defined(OS_CHROMEOS)
   }
 
+  void SetUpCommandLineForKeySystem(const char* key_system,
+                                    CommandLine* command_line) {
+#if defined(ENABLE_PEPPER_CDMS)
+    if (IsExternalClearKey(key_system)) {
+      RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
+                        kExternalClearKeyKeySystem);
+    }
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
+    else if (IsWidevine(key_system)) {
+      RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName,
+                        kWidevineKeySystem);
+    }
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
+#endif  // defined(ENABLE_PEPPER_CDMS)
+  }
+
+ private:
 #if defined(ENABLE_PEPPER_CDMS)
   void RegisterPepperCdm(CommandLine* command_line,
                          const std::string& adapter_name,
                          const std::string& key_system) {
+    DCHECK(!is_pepper_cdm_registered_)
+        << "RegisterPepperCdm() can only be called once.";
+    is_pepper_cdm_registered_ = true;
+
     // Append the switch to register the Clear Key CDM Adapter.
     base::FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
@@ -224,6 +199,85 @@ class EncryptedMediaTest : public MediaBrowserTest,
     return "";
   }
 #endif  // defined(ENABLE_PEPPER_CDMS)
+
+  bool is_pepper_cdm_registered_;
+};
+
+#if defined(ENABLE_PEPPER_CDMS)
+// Tests encrypted media playback using ExternalClearKey key system.
+class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    EncryptedMediaTestBase::SetUpCommandLine(command_line);
+    SetUpCommandLineForKeySystem(kExternalClearKeyKeySystem, command_line);
+  }
+};
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+// Tests encrypted media playback using Widevine key system.
+class WVEncryptedMediaTest : public EncryptedMediaTestBase {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    EncryptedMediaTestBase::SetUpCommandLine(command_line);
+    SetUpCommandLineForKeySystem(kWidevineKeySystem, command_line);
+  }
+};
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+// Tests encrypted media playback with a combination of parameters:
+// - char*: Key system name.
+// - bool: True to load media using MSE, otherwise use src.
+//
+// Note: Only parameterized (*_P) tests can be used. Non-parameterized (*_F)
+// tests will crash at GetParam(). To add non-parameterized tests, use
+// EncryptedMediaTestBase or one of its subclasses (e.g. WVEncryptedMediaTest).
+class EncryptedMediaTest : public EncryptedMediaTestBase,
+  public testing::WithParamInterface<std::tr1::tuple<const char*, SrcType> > {
+ public:
+  const char* CurrentKeySystem() {
+    return std::tr1::get<0>(GetParam());
+  }
+
+  SrcType CurrentSourceType() {
+    return std::tr1::get<1>(GetParam());
+  }
+
+  void TestSimplePlayback(const char* encrypted_media, const char* media_type) {
+    RunSimpleEncryptedMediaTest(
+        encrypted_media, media_type, CurrentKeySystem(), CurrentSourceType());
+  }
+
+  void TestFrameSizeChange() {
+#if defined(WIDEVINE_CDM_AVAILABLE)
+    if (IsWidevine(CurrentKeySystem())) {
+      LOG(INFO) << "FrameSizeChange test cannot run with Widevine.";
+      return;
+    }
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+    RunEncryptedMediaTest("encrypted_frame_size_change.html",
+                          "frame_size_change-av-enc-v.webm", kWebMAudioVideo,
+                          CurrentKeySystem(), CurrentSourceType(), kEnded);
+  }
+
+  void TestConfigChange() {
+#if defined(WIDEVINE_CDM_AVAILABLE)
+    if (IsWidevine(CurrentKeySystem())) {
+      LOG(INFO) << "ConfigChange test cannot run with Widevine.";
+      return;
+    }
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+    std::vector<StringPair> query_params;
+    query_params.push_back(std::make_pair("keysystem", CurrentKeySystem()));
+    query_params.push_back(std::make_pair("runencrypted", "1"));
+    RunMediaTestPage("mse_config_change.html", &query_params, kEnded, true);
+  }
+
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    EncryptedMediaTestBase::SetUpCommandLine(command_line);
+    SetUpCommandLineForKeySystem(CurrentKeySystem(), command_line);
+  }
 };
 
 INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
@@ -301,18 +355,19 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // The parent key system cannot be used in generateKeyRequest.
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, WVParentThrowsException) {
+IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
   RunEncryptedMediaTest("encrypted_media_player.html",
                         "bear-a-enc_a.webm",
                         kWebMAudioOnly,
                         "com.widevine",
-                        SRC,
+                        MSE,
                         kEmeNotSupportedError);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 #if defined(ENABLE_PEPPER_CDMS)
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ExternalClearKeyInitializeCDMFail) {
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest,
+                       ExternalClearKeyInitializeCDMFail) {
   RunEncryptedMediaTest("encrypted_media_player.html",
                         "bear-a-enc_a.webm",
                         kWebMAudioOnly,
