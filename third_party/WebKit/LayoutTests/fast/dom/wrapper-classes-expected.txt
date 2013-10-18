@@ -394,10 +394,10 @@ PASS tagClassString('iframe') is "HTMLIFrameElement"
 FAIL tagPrototypeClassString('iframe') should be HTMLIFrameElementPrototype. Was Object.
 PASS tagConstructorClassString('iframe') is "Function"
 PASS tagConstructorName('iframe') is "HTMLIFrameElement"
-PASS tagClassString('image') is "HTMLImageElement"
-FAIL tagPrototypeClassString('image') should be HTMLImageElementPrototype. Was Object.
+PASS tagClassString('image') is "HTMLElement"
+FAIL tagPrototypeClassString('image') should be HTMLElementPrototype. Was Object.
 PASS tagConstructorClassString('image') is "Function"
-PASS tagConstructorName('image') is "HTMLImageElement"
+PASS tagConstructorName('image') is "HTMLElement"
 PASS tagClassString('img') is "HTMLImageElement"
 FAIL tagPrototypeClassString('img') should be HTMLImageElementPrototype. Was Object.
 PASS tagConstructorClassString('img') is "Function"
