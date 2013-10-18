@@ -1969,6 +1969,8 @@
         'browser/sessions/session_backend.h',
         'browser/sessions/session_command.cc',
         'browser/sessions/session_command.h',
+        'browser/sessions/session_data_deleter.cc',
+        'browser/sessions/session_data_deleter.h',
         'browser/sessions/session_id.cc',
         'browser/sessions/session_id.h',
         'browser/sessions/session_restore.cc',

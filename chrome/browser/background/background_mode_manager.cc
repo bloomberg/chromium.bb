@@ -262,7 +262,7 @@ void BackgroundModeManager::LaunchBackgroundApplication(
   OpenApplication(AppLaunchParams(profile, extension, NEW_FOREGROUND_TAB));
 }
 
-bool BackgroundModeManager::IsBackgroundModeActiveForTest() {
+bool BackgroundModeManager::IsBackgroundModeActive() {
   return in_background_mode_;
 }
 

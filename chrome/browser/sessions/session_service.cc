@@ -16,12 +16,16 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_command.h"
+#include "chrome/browser/sessions/session_data_deleter.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -337,6 +341,14 @@ void SessionService::WindowClosed(const SessionID& window_id) {
       pending_window_close_ids_.insert(window_id.id());
     else
       ScheduleCommand(CreateWindowClosedCommand(window_id.id()));
+  }
+  // Clear session data if the last window for a profile has been closed and
+  // closing the last window would normally close Chrome, unless background mode
+  // is active.
+  if (!has_open_trackable_browsers_ &&
+      !browser_defaults::kBrowserAliveWithNoWindows &&
+      !g_browser_process->background_mode_manager()->IsBackgroundModeActive()) {
+    DeleteSessionOnlyData(profile());
   }
 }
 

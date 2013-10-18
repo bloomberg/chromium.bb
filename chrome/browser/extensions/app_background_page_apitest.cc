@@ -69,7 +69,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
       DLOG(WARNING) << "Skipping check - background mode disabled";
       return true;
     }
-    if (manager->IsBackgroundModeActiveForTest() == expected_background_mode)
+    if (manager->IsBackgroundModeActive() == expected_background_mode)
       return true;
 
     // We are not currently in the expected state - wait for the state to
@@ -78,7 +78,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
         chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
         content::NotificationService::AllSources());
     watcher.Wait();
-    return manager->IsBackgroundModeActiveForTest() == expected_background_mode;
+    return manager->IsBackgroundModeActive() == expected_background_mode;
 #endif
   }
 

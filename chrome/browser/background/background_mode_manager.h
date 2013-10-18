@@ -60,6 +60,9 @@ class BackgroundModeManager
   static void LaunchBackgroundApplication(Profile* profile,
       const extensions::Extension* extension);
 
+  // Returns true if background mode is active.
+  virtual bool IsBackgroundModeActive();
+
   // For testing purposes.
   int NumberOfBackgroundModeData();
 
@@ -245,9 +248,6 @@ class BackgroundModeManager
   // Returns true if the "Let chrome run in the background" pref is checked.
   // (virtual to allow overriding in tests).
   virtual bool IsBackgroundModePrefEnabled() const;
-
-  // Returns true if background mode is active. Used only by tests.
-  bool IsBackgroundModeActiveForTest();
 
   // Turns off background mode if it's currently enabled.
   void DisableBackgroundMode();
