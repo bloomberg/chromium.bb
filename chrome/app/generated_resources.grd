@@ -4284,9 +4284,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ" desc="Permission string for access to read all of the user's media galleries.">
         Access photos, music, and other media from your computer.
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_WRITE" desc="Permission string for access to write to all of the user's media galleries.">
-        Change photos, music, and other media from your computer.
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Use serial devices attached to your computer
       </message>

@@ -7,5 +7,5 @@
       "scripts": ["common_injected.js", "test.js"]
     }
   },
-  "permissions": [{"mediaGalleries": ["copyTo", "allAutoDetected"]}]
+  "permissions": [{"mediaGalleries": ["copyTo", "read", "allAutoDetected"]}]
 }

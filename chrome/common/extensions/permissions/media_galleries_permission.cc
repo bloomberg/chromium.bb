@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "grit/generated_resources.h"
@@ -36,11 +35,19 @@ bool MediaGalleriesPermission::FromValue(const base::Value* value) {
     return false;
   }
 
+  bool has_read = false;
+  bool has_copy_to = false;
   for (std::set<MediaGalleriesPermissionData>::const_iterator it =
       data_set_.begin(); it != data_set_.end(); ++it) {
-    if ((it->permission() == kAllAutoDetectedPermission) ||
-        (it->permission() == kReadPermission) ||
-        (it->permission() == kCopyToPermission)) {
+    if (it->permission() == kAllAutoDetectedPermission) {
+      continue;
+    }
+    if (it->permission() == kReadPermission) {
+      has_read = true;
+      continue;
+    }
+    if (it->permission() == kCopyToPermission) {
+      has_copy_to = true;
       continue;
     }
 
@@ -51,7 +58,7 @@ bool MediaGalleriesPermission::FromValue(const base::Value* value) {
     return false;
   }
 
-  return true;
+  return has_read || !has_copy_to;
 }
 
 PermissionMessages MediaGalleriesPermission::GetMessages() const {
@@ -72,6 +79,11 @@ PermissionMessages MediaGalleriesPermission::GetMessages() const {
       has_copy_to = true;
   }
 
+  if (has_copy_to && !has_read) {
+    NOTREACHED();
+    return result;
+  }
+
   // If |has_all_auto_detected| is false, then Chrome will prompt the user at
   // runtime when the extension call the getMediaGalleries API.
   if (!has_all_auto_detected || !(has_read || has_copy_to))
@@ -84,12 +96,12 @@ PermissionMessages MediaGalleriesPermission::GetMessages() const {
         PermissionMessage::kMediaGalleriesAllGalleriesRead,
         l10n_util::GetStringUTF16(
             IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ)));
-  }
-  if (has_copy_to) {
-    result.push_back(PermissionMessage(
-        PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
-        l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_WRITE)));
+    if (has_copy_to) {
+      result.push_back(PermissionMessage(
+          PermissionMessage::kMediaGalleriesAllGalleriesCopyTo,
+          l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE)));
+    }
   }
   return result;
 }

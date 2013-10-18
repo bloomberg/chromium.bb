@@ -196,11 +196,10 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     if (filesystems[i].path.empty())
       continue;
 
-    if (has_read_permission || has_copy_to_permission) {
+    if (has_read_permission) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
-      if (has_read_permission)
-        policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
+      policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
       if (has_copy_to_permission)
         policy->GrantCopyIntoFileSystem(child_id, filesystems[i].fsid);
     }

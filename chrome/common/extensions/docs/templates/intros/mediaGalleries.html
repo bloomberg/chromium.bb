@@ -54,7 +54,9 @@ in the table below:</p>
         Grants your app the right to copy files into media galleries.
         Only valid media files that Chrome is capable of playing or displaying
         are permitted; files that Chrome is not able to validate will result
-        in a security error.
+        in a security error. "read" permission is a prerequisite for "copyTo".
+        Specify both "read" and "copyTo" to obtain both types of permissions to
+        media galleries.
       </td>
     </tr>
 </table>
@@ -70,9 +72,6 @@ in the table below:</p>
   file validation requirement. However, you can write files to
   a different file system like the temporary file system, and then copy
   the files into the desired media gallery.</li>
-
-  <li>You can specify "read" and "copyTo" to obtain both types of permissions
-  to media galleries.</li>
 
   <li>Access type permissions do not trigger an install-time prompt
   by themselves. However, the type of access will be reflected in the

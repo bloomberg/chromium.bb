@@ -15,7 +15,9 @@ namespace extensions {
 // Media Galleries permissions are as follows:
 //   <media-galleries-permission-pattern>
 //             := <access> | <access> 'allAutoDetected' | 'allAutoDetected'
-//   <access>  := 'read' <access> | 'copyTo' <access>
+//   <access>  := 'read' | 'read' <access> | 'read' <secondary-access>
+//   <secondary-access>
+//             := 'copyTo' | 'copyTo' <secondary-access>
 class MediaGalleriesPermission
   : public SetDisjunctionPermission<MediaGalleriesPermissionData,
                                     MediaGalleriesPermission> {

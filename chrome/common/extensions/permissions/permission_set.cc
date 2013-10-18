@@ -188,8 +188,6 @@ std::vector<string16> PermissionSet::GetWarningMessages(
 
   bool audio_capture = false;
   bool video_capture = false;
-  bool media_galleries_read = false;
-  bool media_galleries_copy_to = false;
   for (PermissionMessages::const_iterator i = permissions.begin();
        i != permissions.end(); ++i) {
     switch (i->id()) {
@@ -198,12 +196,6 @@ std::vector<string16> PermissionSet::GetWarningMessages(
         break;
       case PermissionMessage::kVideoCapture:
         video_capture = true;
-        break;
-      case PermissionMessage::kMediaGalleriesAllGalleriesRead:
-        media_galleries_read = true;
-        break;
-      case PermissionMessage::kMediaGalleriesAllGalleriesCopyTo:
-        media_galleries_copy_to = true;
         break;
       default:
         break;
@@ -219,16 +211,6 @@ std::vector<string16> PermissionSet::GetWarningMessages(
             IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE));
         continue;
       } else if (id == PermissionMessage::kVideoCapture) {
-        // The combined message will be pushed above.
-        continue;
-      }
-    }
-    if (media_galleries_read && media_galleries_copy_to) {
-      if (id == PermissionMessage::kMediaGalleriesAllGalleriesRead) {
-        messages.push_back(l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE));
-        continue;
-      } else if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
         // The combined message will be pushed above.
         continue;
       }
