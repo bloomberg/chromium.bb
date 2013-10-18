@@ -36,6 +36,7 @@ Contents:
    devguide/coding/url-loading.rst
    devguide/coding/view-focus-input-events.rst
    devguide/distributing.rst
+   community/index.rst
    community/application-gallery.rst
    community/middleware.rst
    community/security-contest/index.rst
