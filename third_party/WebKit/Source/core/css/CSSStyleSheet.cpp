@@ -149,15 +149,19 @@ void CSSStyleSheet::didMutateRules()
     ASSERT(m_contents->isMutable());
     ASSERT(m_contents->hasOneClient());
 
-    didMutate();
+    didMutate(PartialRuleUpdate);
 }
 
-void CSSStyleSheet::didMutate()
+void CSSStyleSheet::didMutate(StyleSheetUpdateType updateType)
 {
     Document* owner = ownerDocument();
     if (!owner)
         return;
-    owner->modifiedStyleSheet(this);
+
+    // Need FullStyleUpdate when insertRule or deleteRule,
+    // because StyleSheetCollection::analyzeStyleSheetChange cannot detect partial rule update.
+    StyleResolverUpdateMode updateMode = updateType != PartialRuleUpdate ? AnalyzedStyleUpdate : FullStyleUpdate;
+    owner->modifiedStyleSheet(this, RecalcStyleDeferred, updateMode);
 }
 
 void CSSStyleSheet::reattachChildRuleCSSOMWrappers()

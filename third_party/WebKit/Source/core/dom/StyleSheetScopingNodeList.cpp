@@ -51,10 +51,11 @@ void StyleSheetScopingNodeList::remove(ContainerNode* node)
     if (isTreeScopeRoot(node) || !m_scopingNodes)
         return;
 
-    m_scopingNodes->remove(node);
+    // If the node is still working as a scoping node, we cannot remove.
     if (node->inDocument() && node->numberOfScopedHTMLStyleChildren())
         return;
 
+    m_scopingNodes->remove(node);
     if (!m_scopingNodesRemoved)
         m_scopingNodesRemoved = adoptPtr(new ListHashSet<Node*, 4>());
     m_scopingNodesRemoved->add(node);

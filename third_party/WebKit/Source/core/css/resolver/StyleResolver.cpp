@@ -211,7 +211,9 @@ void StyleResolver::finishAppendAuthorStyleSheets()
 
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
 {
-    ScopedStyleResolver* resolver = scopingNode ? m_styleTree.scopedStyleResolverFor(*scopingNode) : m_styleTree.scopedStyleResolverForDocument();
+    // FIXME: When chanking scoped attribute, scopingNode's hasScopedHTMLStyleChild has been already modified.
+    // So we cannot use hasScopedHTMLStyleChild flag here.
+    ScopedStyleResolver* resolver = scopingNode ? m_styleTree.lookupScopedStyleResolverFor(scopingNode) : m_styleTree.scopedStyleResolverForDocument();
     if (!resolver)
         return;
 

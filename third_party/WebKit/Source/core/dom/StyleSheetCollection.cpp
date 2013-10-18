@@ -77,11 +77,9 @@ void StyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNo
 
 StyleSheetCollection::StyleResolverUpdateType StyleSheetCollection::compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, Vector<StyleSheetContents*>& addedSheets)
 {
-    // Find out which stylesheets are new.
     unsigned newStylesheetCount = newStylesheets.size();
     unsigned oldStylesheetCount = oldStyleSheets.size();
-    if (newStylesheetCount < oldStylesheetCount)
-        return Reconstruct;
+    ASSERT(newStylesheetCount >= oldStylesheetCount);
 
     unsigned newIndex = 0;
     for (unsigned oldIndex = 0; oldIndex < oldStylesheetCount; ++oldIndex) {
@@ -137,7 +135,12 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
 
     // Find out which stylesheets are new.
     Vector<StyleSheetContents*> addedSheets;
-    styleResolverUpdateType = compareStyleSheets(oldStyleSheets, newStyleSheets, addedSheets);
+    if (oldStyleSheets.size() <= newStyleSheets.size()) {
+        styleResolverUpdateType = compareStyleSheets(oldStyleSheets, newStyleSheets, addedSheets);
+    } else {
+        StyleResolverUpdateType updateType = compareStyleSheets(newStyleSheets, oldStyleSheets, addedSheets);
+        styleResolverUpdateType = updateType != Additive ? updateType : Reset;
+    }
 
     // FIXME: If styleResolverUpdateType is still Reconstruct, we could return early here
     // as destroying the StyleResolver will recalc the whole document anyway?

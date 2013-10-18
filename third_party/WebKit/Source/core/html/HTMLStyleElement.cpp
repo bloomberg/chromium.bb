@@ -124,6 +124,9 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
         registerWithScopingNode(false);
 
     document().styleEngine()->addStyleSheetCandidateNode(this, false);
+    // FIXME: currently need to use FullStyleUpdate here.
+    // Because ShadowTreeStyleSheetCollection doesn't know old scoping node.
+    // So setNeedsStyleRecalc for old scoping node is not invoked.
     document().modifiedStyleSheet(sheet());
 }
 

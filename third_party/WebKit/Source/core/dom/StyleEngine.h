@@ -63,6 +63,7 @@ public:
     const Vector<RefPtr<CSSStyleSheet> >& documentAuthorStyleSheets() const { return m_authorStyleSheets; }
     const Vector<RefPtr<CSSStyleSheet> >& injectedAuthorStyleSheets() const;
 
+    void modifiedStyleSheet(StyleSheet*);
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode = 0);
     void modifiedStyleSheetCandidateNode(Node*);

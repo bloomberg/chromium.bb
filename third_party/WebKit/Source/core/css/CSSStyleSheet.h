@@ -41,6 +41,11 @@ class MediaQuerySet;
 class SecurityOrigin;
 class StyleSheetContents;
 
+enum StyleSheetUpdateType {
+    PartialRuleUpdate,
+    EntireStyleSheetUpdate
+};
+
 class CSSStyleSheet : public StyleSheet {
 public:
     static PassRefPtr<CSSStyleSheet> create(PassRefPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
@@ -71,7 +76,7 @@ public:
     unsigned length() const;
     CSSRule* item(unsigned index);
 
-    virtual void clearOwnerNode() OVERRIDE { didMutate(); m_ownerNode = 0; }
+    virtual void clearOwnerNode() OVERRIDE { didMutate(EntireStyleSheetUpdate); m_ownerNode = 0; }
     virtual CSSRule* ownerRule() const OVERRIDE { return m_ownerRule; }
     virtual KURL baseURL() const OVERRIDE;
     virtual bool isLoading() const OVERRIDE;
@@ -95,7 +100,7 @@ public:
 
     void willMutateRules();
     void didMutateRules();
-    void didMutate();
+    void didMutate(StyleSheetUpdateType = PartialRuleUpdate);
 
     void clearChildRuleCSSOMWrappers();
     void reattachChildRuleCSSOMWrappers();

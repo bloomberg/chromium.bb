@@ -54,12 +54,11 @@ ScopedStyleResolver* ScopedStyleTree::ensureScopedStyleResolver(const ContainerN
 ScopedStyleResolver* ScopedStyleTree::scopedStyleResolverFor(const ContainerNode& scopingNode)
 {
     if (!scopingNode.hasScopedHTMLStyleChild()
-        && !(scopingNode.isElementNode() && toElement(scopingNode).shadow())
+        && !isShadowHost(&scopingNode)
         && !scopingNode.isDocumentNode()
         && !scopingNode.isShadowRoot())
         return 0;
-    HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.find(&scopingNode);
-    return it != m_authorStyles.end() ? it->value.get() : 0;
+    return lookupScopedStyleResolverFor(&scopingNode);
 }
 
 ScopedStyleResolver* ScopedStyleTree::addScopedStyleResolver(const ContainerNode& scopingNode, bool& isNewEntry)

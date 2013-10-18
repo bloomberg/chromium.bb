@@ -288,6 +288,25 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendin
     m_document.didRemoveAllPendingStylesheet();
 }
 
+void StyleEngine::modifiedStyleSheet(StyleSheet* sheet)
+{
+    if (!sheet)
+        return;
+
+    Node* node = sheet->ownerNode();
+    if (!node || !node->inDocument())
+        return;
+
+    TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+
+    if (treeScope == m_document) {
+        m_needsDocumentStyleSheetsUpdate = true;
+        return;
+    }
+    m_dirtyTreeScopes.add(&treeScope);
+}
+
 void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 {
     if (!node->inDocument())

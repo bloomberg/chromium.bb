@@ -5327,4 +5327,22 @@ DocumentLifecycleNotifier* Document::lifecycleNotifier()
     return static_cast<DocumentLifecycleNotifier*>(ExecutionContext::lifecycleNotifier());
 }
 
+void Document::removedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, StyleResolverUpdateMode updateMode)
+{
+    if (!isActive())
+        return;
+
+    styleEngine()->modifiedStyleSheet(sheet);
+    styleResolverChanged(when, updateMode);
+}
+
+void Document::modifiedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, StyleResolverUpdateMode updateMode)
+{
+    if (!isActive())
+        return;
+
+    styleEngine()->modifiedStyleSheet(sheet);
+    styleResolverChanged(when, updateMode);
+}
+
 } // namespace WebCore
