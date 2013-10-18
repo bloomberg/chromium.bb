@@ -168,6 +168,7 @@ Profiler.prototype.accumulate_ = function(
   var remainderUnits = localUnits.slice(0);
   var model = {
     name: name || worldName + '-' + breakdownName,
+    time: snapshot.time,
     children: []
   };
 
