@@ -135,14 +135,25 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
         'mojo_system',
       ],
       'sources': [
+        'loader/job.cc',
+        'loader/job.h',
+        'loader/loader.cc',
+        'loader/loader.h',
+        'loader/url_request_context_getter.cc',
+        'loader/url_request_context_getter.h',
         'shell/app_container.cc',
         'shell/app_container.h',
         'shell/shell.cc',
+        'shell/storage.cc',
+        'shell/storage.h',
         'shell/switches.cc',
         'shell/switches.h',
+        'shell/task_runners.cc',
+        'shell/task_runners.h',
       ],
       'conditions': [
         ['OS == "win"', {

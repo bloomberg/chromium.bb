@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/shell/app_container.h"
+#include "mojo/shell/storage.h"
 #include "mojo/shell/switches.h"
+#include "mojo/shell/task_runners.h"
 #include "mojo/system/core_impl.h"
 
 int main(int argc, char** argv) {
@@ -18,6 +20,10 @@ int main(int argc, char** argv) {
   mojo::system::CoreImpl::Init();
 
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+
+  // TODO(abarth): Group these objects into a "context" object.
+  mojo::shell::TaskRunners task_runners(message_loop.message_loop_proxy());
+  mojo::shell::Storage storage;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kApp)) {
