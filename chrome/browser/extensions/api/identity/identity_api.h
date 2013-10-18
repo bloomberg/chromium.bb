@@ -128,6 +128,12 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   // Starts a login access token request.
   virtual void StartLoginAccessTokenRequest();
 
+#if defined(OS_CHROMEOS)
+  // Starts a login access token request for device robot account. This method
+  // will be called only in enterprise kiosk mode in ChromeOS.
+  virtual void StartDeviceLoginAccessTokenRequest();
+#endif
+
   // Starts a mint token request to GAIA.
   void StartGaiaRequest(const std::string& login_access_token);
 
@@ -159,7 +165,6 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   IssueAdviceInfo issue_advice_;
   scoped_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
   scoped_ptr<IdentitySigninFlow> signin_flow_;
-  scoped_ptr<OAuth2TokenService::Request> device_token_request_;
   scoped_ptr<OAuth2TokenService::Request> login_token_request_;
 };
 
