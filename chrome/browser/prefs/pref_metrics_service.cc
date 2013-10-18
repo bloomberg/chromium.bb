@@ -37,12 +37,14 @@ namespace {
 
 const int kSessionStartupPrefValueMax = SessionStartupPref::kPrefValueMax;
 
+#if defined(OS_ANDROID)
 // An unregistered preference to fill in indices in kTrackedPrefs below for
 // preferences that aren't defined on every platform. This is fine as the code
 // below (e.g. CheckTrackedPreferences()) skips unregistered preferences and
 // should thus never report any data about that index on the platforms where
 // that preference is unimplemented.
 const char kUnregisteredPreference[] = "_";
+#endif
 
 // These preferences must be kept in sync with the TrackedPreference enum in
 // tools/metrics/histograms/histograms.xml. To add a new preference, append it

@@ -36,8 +36,11 @@ using sync_pb::ManagedUserSpecifics;
 
 namespace {
 
-const char kChromeAvatarPrefix[] = "chrome-avatar-index:";
+#if defined(OS_CHROMEOS)
 const char kChromeOSAvatarPrefix[] = "chromeos-avatar-index:";
+#else
+const char kChromeAvatarPrefix[] = "chrome-avatar-index:";
+#endif
 
 SyncData CreateLocalSyncData(const std::string& id,
                              const std::string& name,

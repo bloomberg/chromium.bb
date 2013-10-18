@@ -77,11 +77,13 @@ const char kChromeExtensionUrlScheme[] = "chrome-extension";
 const int kMaxCursorWidth = 32;
 const int kMaxCursorHeight = 32;
 
+#if defined(USE_OPENSSL)
 // Size of the random seed blob used to initialize RNG in libjingle. Libjingle
 // uses the seed only for OpenSSL builds. OpenSSL needs at least 32 bytes of
 // entropy (see http://wiki.openssl.org/index.php/Random_Numbers), but stores
 // 1039 bytes of state, so we initialize it with 1k or random data.
 const int kRandomSeedSize = 1024;
+#endif  // defined(USE_OPENSSL)
 
 std::string ConnectionStateToString(protocol::ConnectionToHost::State state) {
   // Values returned by this function must match the
