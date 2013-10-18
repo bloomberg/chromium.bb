@@ -134,7 +134,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   if (!context3d_->makeContextCurrent())
     return false;
 
-  InitializeCapabilities();
+  if (!InitializeCapabilities())
+    return false;
 
   std::string unique_context_name =
       base::StringPrintf("%s-%p", debug_name_.c_str(), context3d_.get());
@@ -228,7 +229,7 @@ void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
       policy, discard_backbuffer_when_not_visible);
 }
 
-void ContextProviderCommandBuffer::InitializeCapabilities() {
+bool ContextProviderCommandBuffer::InitializeCapabilities() {
   // The command buffer provides the following capabilities always.
   // TODO(jamesr): This information is duplicated with
   // gpu::gles2::FeatureInfo::AddFeatures().
@@ -246,8 +247,11 @@ void ContextProviderCommandBuffer::InitializeCapabilities() {
   // command buffer implementations.
   caps.swapbuffers_complete_callback = true;
 
-  std::string extensions = reinterpret_cast<const char*>(
-      context3d_->GetImplementation()->GetString(0x1F03 /* GL_EXTENSIONS */));
+  const GLubyte* extensions_cstr =
+      context3d_->GetImplementation()->GetString(0x1F03 /* GL_EXTENSIONS */);
+  if (!extensions_cstr)
+    return false;
+  std::string extensions = reinterpret_cast<const char*>(extensions_cstr);
   std::vector<std::string> extension_list;
   base::SplitString(extensions, ' ', &extension_list);
   std::set<std::string> extension_set(extension_list.begin(),
@@ -288,6 +292,7 @@ void ContextProviderCommandBuffer::InitializeCapabilities() {
       ? std::numeric_limits<size_t>::max() : mapped_memory_limit;
 
   capabilities_ = caps;
+  return true;
 }
 
 

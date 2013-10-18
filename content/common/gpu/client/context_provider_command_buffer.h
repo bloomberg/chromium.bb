@@ -62,7 +62,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       const WebKit::WebGraphicsMemoryAllocation& allocation);
 
  private:
-  void InitializeCapabilities();
+  bool InitializeCapabilities();
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
