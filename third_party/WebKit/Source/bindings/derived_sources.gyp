@@ -153,9 +153,9 @@
       'inputs': [
         'scripts/compute_dependencies.py',
         '<(main_idl_files_list)',
-        '<!@(cat <(main_idl_files_list))',
+        '<@(main_idl_files)',
         '<(support_idl_files_list)',
-        '<!@(cat <(support_idl_files_list))',
+        '<@(support_idl_files)',
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
