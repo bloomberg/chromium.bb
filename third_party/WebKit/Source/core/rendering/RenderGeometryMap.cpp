@@ -155,12 +155,21 @@ FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const RenderL
     }
 
 #if !ASSERT_DISABLED
-    FloatRect rendererMappedResult = m_mapping.last().m_renderer->localToContainerQuad(rect, container, m_mapCoordinatesFlags).boundingBox();
-    // Inspector creates renderers with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.
-    // Taking FloatQuad bounds avoids spurious assertions because of that.
-    ASSERT(enclosingIntRect(rendererMappedResult) == enclosingIntRect(FloatQuad(result).boundingBox()));
-//    if (enclosingIntRect(rendererMappedResult) != enclosingIntRect(FloatQuad(result).boundingBox()))
-//        fprintf(stderr, "Mismatched rects\n");
+    const RenderObject* lastRenderer = m_mapping.last().m_renderer;
+    const RenderLayer* layer = lastRenderer->enclosingLayer();
+
+    // Bounds for invisible layers are intentionally not calculated, and are
+    // therefore not necessarily expected to be correct here. This is ok,
+    // because they will be recomputed if the layer becomes visible.
+    if (!layer || !layer->subtreeIsInvisible()) {
+        FloatRect rendererMappedResult = lastRenderer->localToContainerQuad(rect, container, m_mapCoordinatesFlags).boundingBox();
+
+        // Inspector creates renderers with negative width <https://bugs.webkit.org/show_bug.cgi?id=87194>.
+        // Taking FloatQuad bounds avoids spurious assertions because of that.
+        ASSERT(enclosingIntRect(rendererMappedResult) == enclosingIntRect(FloatQuad(result).boundingBox()));
+//        if (enclosingIntRect(rendererMappedResult) != enclosingIntRect(FloatQuad(result).boundingBox()))
+//            fprintf(stderr, "Mismatched rects\n");
+    }
 #endif
 
     return result;

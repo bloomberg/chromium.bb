@@ -660,7 +660,7 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
     // If we have no visible content and no visible descendants, there is no point recomputing
     // our rectangles as they will be empty. If our visibility changes, we are expected to
     // recompute all our positions anyway.
-    if (!m_hasVisibleDescendant && !m_hasVisibleContent)
+    if (subtreeIsInvisible())
         return;
 
     bool positionChanged = updateLayerPosition();

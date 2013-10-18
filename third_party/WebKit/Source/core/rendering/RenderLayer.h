@@ -249,6 +249,8 @@ public:
     // Update our normal and z-index lists.
     void updateLayerListsIfNeeded();
 
+    bool subtreeIsInvisible() const { return !hasVisibleContent() && !hasVisibleDescendant(); }
+
     // FIXME: We should ASSERT(!m_visibleContentStatusDirty) here, but see https://bugs.webkit.org/show_bug.cgi?id=71044
     // ditto for hasVisibleDescendant(), see https://bugs.webkit.org/show_bug.cgi?id=71277
     bool hasVisibleContent() const { return m_hasVisibleContent; }
