@@ -29,7 +29,7 @@
 #define ViewportDescription_h
 
 #include "core/page/PageScaleConstraints.h"
-#include "core/platform/Length.h"
+#include "platform/Length.h"
 #include "platform/geometry/FloatSize.h"
 #include "wtf/Forward.h"
 

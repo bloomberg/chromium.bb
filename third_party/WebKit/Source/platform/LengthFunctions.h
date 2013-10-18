@@ -1,6 +1,9 @@
 /*
     Copyright (C) 1999 Lars Knoll (knoll@kde.org)
     Copyright (C) 2006, 2008 Apple Inc. All rights reserved.
+    Copyright (C) 2011 Rik Cabanier (cabanier@adobe.com)
+    Copyright (C) 2011 Adobe Systems Incorporated. All rights reserved.
+    Copyright (C) 2012 Motorola Mobility, Inc. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -18,41 +21,18 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef LengthSize_h
-#define LengthSize_h
+#ifndef LengthFunctions_h
+#define LengthFunctions_h
 
-#include "core/platform/Length.h"
+#include "platform/PlatformExport.h"
 
 namespace WebCore {
 
-struct LengthSize {
-public:
-    LengthSize()
-    {
-    }
+class LayoutUnit;
+class Length;
 
-    LengthSize(Length width, Length height)
-        : m_width(width)
-        , m_height(height)
-    {
-    }
-
-    bool operator==(const LengthSize& o) const
-    {
-        return m_width == o.m_width && m_height == o.m_height;
-    }
-
-    void setWidth(Length width) { m_width = width; }
-    Length width() const { return m_width; }
-
-    void setHeight(Length height) { m_height = height; }
-    Length height() const { return m_height; }
-
-private:
-    Length m_width;
-    Length m_height;
-};
+PLATFORM_EXPORT float floatValueForLength(const Length&, float maximumValue);
 
 } // namespace WebCore
 
-#endif // LengthSize_h
+#endif // LengthFunctions_h

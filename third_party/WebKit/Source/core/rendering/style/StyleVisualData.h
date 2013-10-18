@@ -25,8 +25,8 @@
 #ifndef StyleVisualData_h
 #define StyleVisualData_h
 
-#include "core/platform/LengthBox.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "platform/LengthBox.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

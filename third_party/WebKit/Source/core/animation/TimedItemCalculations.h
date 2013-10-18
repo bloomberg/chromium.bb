@@ -33,7 +33,7 @@
 
 #include "core/animation/TimedItem.h"
 #include "core/animation/Timing.h"
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

@@ -26,12 +26,9 @@
 #define RenderStyle_h
 
 #include "CSSPropertyNames.h"
+#include "core/css/CSSLengthFunctions.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/LengthFunctions.h"
-#include "core/platform/Length.h"
-#include "core/platform/LengthBox.h"
-#include "core/platform/LengthSize.h"
 #include "core/platform/ThemeTypes.h"
 #include "core/platform/animation/CSSAnimationDataList.h"
 #include "core/platform/graphics/Color.h"
@@ -64,6 +61,9 @@
 #include "core/rendering/style/StyleTransformData.h"
 #include "core/rendering/style/StyleVisualData.h"
 #include "core/svg/SVGPaint.h"
+#include "platform/Length.h"
+#include "platform/LengthBox.h"
+#include "platform/LengthSize.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/geometry/LayoutBoxExtent.h"
 #include "platform/geometry/RoundedRect.h"

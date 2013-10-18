@@ -2173,7 +2173,7 @@ void RenderBox::computeLogicalWidthInRegion(LogicalExtentComputedValues& compute
         computedValues.m_margins.m_start = minimumValueForLength(styleToUse->marginStart(), containerLogicalWidth, renderView);
         computedValues.m_margins.m_end = minimumValueForLength(styleToUse->marginEnd(), containerLogicalWidth, renderView);
         if (treatAsReplaced)
-            computedValues.m_extent = max<LayoutUnit>(floatValueForLength(logicalWidthLength, 0) + borderAndPaddingLogicalWidth(), minPreferredLogicalWidth());
+            computedValues.m_extent = max<LayoutUnit>(floatValueForLength(logicalWidthLength, 0, 0) + borderAndPaddingLogicalWidth(), minPreferredLogicalWidth());
         return;
     }
 

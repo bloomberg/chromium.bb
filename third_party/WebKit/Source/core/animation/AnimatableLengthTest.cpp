@@ -35,9 +35,9 @@
 #include "core/animation/AnimatableValueTestHelper.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/platform/CalculationValue.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "platform/CalculationValue.h"
 #include "wtf/MathExtras.h"
 
 #include <gtest/gtest.h>

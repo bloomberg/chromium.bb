@@ -27,7 +27,7 @@
 
 #include "core/platform/graphics/filters/FilterOperation.h"
 
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/animation/AnimationUtilities.h"
 
 namespace WebCore {
 

@@ -34,7 +34,7 @@
 #include "core/css/CSSParserValues.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
-#include "core/platform/CalculationValue.h"
+#include "platform/CalculationValue.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -45,8 +45,8 @@ class CSSParserValueList;
 class CSSValueList;
 class CalculationValue;
 class CalcExpressionNode;
+class Length;
 class RenderStyle;
-struct Length;
 
 enum CalculationCategory {
     CalcNumber = 0,

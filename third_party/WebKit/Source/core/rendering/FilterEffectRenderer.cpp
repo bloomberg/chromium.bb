@@ -47,6 +47,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/FloatConversion.h"
+#include "platform/LengthFunctions.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 

@@ -26,7 +26,7 @@
 #ifndef StyleFlexibleBoxData_h
 #define StyleFlexibleBoxData_h
 
-#include "core/platform/Length.h"
+#include "platform/Length.h"
 
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

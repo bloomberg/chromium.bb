@@ -81,9 +81,9 @@ void RenderSVGRoot::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, d
     //   resolving both values to user units.
     if (intrinsicWidthAttribute.isFixed() || intrinsicHeightAttribute.isFixed()) {
         if (intrinsicWidthAttribute.isFixed())
-            intrinsicSize.setWidth(floatValueForLength(intrinsicWidthAttribute, 0));
+            intrinsicSize.setWidth(floatValueForLength(intrinsicWidthAttribute, 0, 0));
         if (intrinsicHeightAttribute.isFixed())
-            intrinsicSize.setHeight(floatValueForLength(intrinsicHeightAttribute, 0));
+            intrinsicSize.setHeight(floatValueForLength(intrinsicHeightAttribute, 0, 0));
         if (!intrinsicSize.isEmpty())
             intrinsicRatio = intrinsicSize.width() / static_cast<double>(intrinsicSize.height());
         return;

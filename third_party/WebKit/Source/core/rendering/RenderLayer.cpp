@@ -88,6 +88,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "platform/LengthFunctions.h"
 #include "platform/Partitions.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatPoint3D.h"

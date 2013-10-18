@@ -31,7 +31,7 @@
 #ifndef GridLength_h
 #define GridLength_h
 
-#include "core/platform/Length.h"
+#include "platform/Length.h"
 
 namespace WebCore {
 

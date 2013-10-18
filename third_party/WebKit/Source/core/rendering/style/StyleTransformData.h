@@ -25,8 +25,8 @@
 #ifndef StyleTransformData_h
 #define StyleTransformData_h
 
-#include "core/platform/Length.h"
 #include "core/platform/graphics/transforms/TransformOperations.h"
+#include "platform/Length.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

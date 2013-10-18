@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/AnimatableColor.h"
 
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

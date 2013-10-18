@@ -22,9 +22,9 @@
 #include "config.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
 
-#include <algorithm>
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
+#include <algorithm>
 
 using namespace std;
 

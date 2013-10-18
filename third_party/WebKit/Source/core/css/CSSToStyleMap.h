@@ -24,7 +24,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/css/resolver/ElementStyleResources.h"
-#include "core/platform/LengthBox.h"
+#include "platform/LengthBox.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {

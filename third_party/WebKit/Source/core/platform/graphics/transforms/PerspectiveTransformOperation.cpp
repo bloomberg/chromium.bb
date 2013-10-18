@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/graphics/transforms/PerspectiveTransformOperation.h"
 
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
 
 using namespace std;

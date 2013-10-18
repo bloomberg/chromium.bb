@@ -30,7 +30,7 @@
 #ifndef LengthPoint_h
 #define LengthPoint_h
 
-#include "core/platform/Length.h"
+#include "platform/Length.h"
 
 namespace WebCore {
 

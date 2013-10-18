@@ -46,6 +46,7 @@
 #include "core/svg/SVGImageElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
+#include "platform/LengthFunctions.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/PassRefPtr.h"
 

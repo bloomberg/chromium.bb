@@ -31,9 +31,9 @@
 
 #include "core/frame/animation/AnimationControllerPrivate.h"
 #include "core/frame/animation/CompositeAnimation.h"
-#include "core/platform/animation/AnimationUtilities.h"
 #include "core/platform/animation/TimingFunction.h"
 #include "core/rendering/RenderBox.h"
+#include "platform/animation/AnimationUtilities.h"
 #include <algorithm>
 
 using namespace std;

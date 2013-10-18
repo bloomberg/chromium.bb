@@ -25,7 +25,6 @@
 #ifndef StyleRareNonInheritedData_h
 #define StyleRareNonInheritedData_h
 
-#include "core/platform/LengthPoint.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/CounterDirectives.h"
@@ -35,12 +34,14 @@
 #include "core/rendering/style/LineClampValue.h"
 #include "core/rendering/style/NinePieceImage.h"
 #include "core/rendering/style/ShapeValue.h"
+#include "platform/LengthPoint.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+class ContentData;
 class CSSAnimationDataList;
 class ShadowData;
 class StyleDeprecatedFlexibleBoxData;
@@ -54,7 +55,6 @@ class StyleReflection;
 class StyleResolver;
 class StyleTransformData;
 
-class ContentData;
 struct LengthSize;
 
 // Page size type.

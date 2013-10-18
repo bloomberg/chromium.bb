@@ -54,6 +54,7 @@
 #include "core/svg/SVGViewSpec.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "platform/FloatConversion.h"
+#include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/StdLibExtras.h"
@@ -575,7 +576,7 @@ SVGRect SVGSVGElement::currentViewBoxRect() const
 
     // If no viewBox is specified but non-relative width/height values, then we
     // should always synthesize a viewBox if we're embedded through a SVGImage.
-    return SVGRect(FloatPoint(), FloatSize(floatValueForLength(intrinsicWidth, 0), floatValueForLength(intrinsicHeight, 0)));
+    return SVGRect(FloatPoint(), FloatSize(floatValueForLength(intrinsicWidth, 0, 0), floatValueForLength(intrinsicHeight, 0, 0)));
 }
 
 FloatSize SVGSVGElement::currentViewportSize() const

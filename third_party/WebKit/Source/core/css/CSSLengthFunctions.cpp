@@ -4,6 +4,7 @@
     Copyright (C) 2011 Rik Cabanier (cabanier@adobe.com)
     Copyright (C) 2011 Adobe Systems Incorporated. All rights reserved.
     Copyright (C) 2012 Motorola Mobility, Inc. All rights reserved.
+    Copyright (C) 2013 Google, Inc. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -22,11 +23,12 @@
 */
 
 #include "config.h"
-#include "core/css/LengthFunctions.h"
+#include "core/css/CSSLengthFunctions.h"
 
-#include "core/platform/Length.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LayoutUnit.h"
+#include "platform/Length.h"
+#include "platform/LengthFunctions.h"
 
 namespace WebCore {
 
@@ -107,8 +109,13 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue, RenderV
     return 0;
 }
 
+// This method has code duplicated in platform/LengthFunctions.cpp.
+// Any changes here most likely also need to be applied there.
 float floatValueForLength(const Length& length, float maximumValue, RenderView* renderView)
 {
+    if (!renderView)
+        return floatValueForLength(length, maximumValue);
+
     switch (length.type()) {
     case Fixed:
         return length.getFloatValue();
@@ -120,13 +127,13 @@ float floatValueForLength(const Length& length, float maximumValue, RenderView* 
     case Calculated:
         return length.nonNanCalculatedValue(maximumValue);
     case ViewportPercentageWidth:
-        return renderView ? static_cast<int>(renderView->viewportPercentageWidth(length.viewportPercentageLength())) : 0;
+        return static_cast<int>(renderView->viewportPercentageWidth(length.viewportPercentageLength()));
     case ViewportPercentageHeight:
-        return renderView ? static_cast<int>(renderView->viewportPercentageHeight(length.viewportPercentageLength())) : 0;
+        return static_cast<int>(renderView->viewportPercentageHeight(length.viewportPercentageLength()));
     case ViewportPercentageMin:
-        return renderView ? static_cast<int>(renderView->viewportPercentageMin(length.viewportPercentageLength())) : 0;
+        return static_cast<int>(renderView->viewportPercentageMin(length.viewportPercentageLength()));
     case ViewportPercentageMax:
-        return renderView ? static_cast<int>(renderView->viewportPercentageMax(length.viewportPercentageLength())) : 0;
+        return static_cast<int>(renderView->viewportPercentageMax(length.viewportPercentageLength()));
     case Relative:
     case Intrinsic:
     case MinIntrinsic:

@@ -27,12 +27,12 @@
 #include "config.h"
 #include "core/platform/graphics/Image.h"
 
-#include "core/platform/Length.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/GraphicsTypes.h"
+#include "platform/Length.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatPoint.h"

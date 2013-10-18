@@ -33,7 +33,7 @@
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePool.h"
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/animation/AnimationUtilities.h"
 
 namespace WebCore {
 

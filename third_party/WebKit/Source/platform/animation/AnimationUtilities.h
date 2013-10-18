@@ -27,6 +27,7 @@
 #define AnimationUtilities_h
 
 #include "platform/LayoutUnit.h"
+#include "platform/PlatformExport.h"
 #include "platform/geometry/IntPoint.h"
 #include "wtf/MathExtras.h"
 #include "wtf/TypeTraits.h"

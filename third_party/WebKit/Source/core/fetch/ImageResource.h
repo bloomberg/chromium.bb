@@ -36,9 +36,9 @@ namespace WebCore {
 class ImageResourceClient;
 class ResourceFetcher;
 class FloatSize;
+class Length;
 class MemoryCache;
 class RenderObject;
-struct Length;
 
 class ImageResource : public Resource, public ImageObserver {
     friend class MemoryCache;

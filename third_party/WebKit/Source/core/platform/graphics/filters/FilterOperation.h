@@ -27,10 +27,10 @@
 #define FilterOperation_h
 
 #include "core/fetch/DocumentResourceReference.h"
-#include "core/platform/Length.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/ReferenceFilter.h"
+#include "platform/Length.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

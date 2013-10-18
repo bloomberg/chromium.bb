@@ -26,7 +26,7 @@
 #ifndef Color_h
 #define Color_h
 
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/unicode/Unicode.h"

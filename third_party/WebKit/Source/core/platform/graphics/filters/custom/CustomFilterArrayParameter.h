@@ -30,8 +30,8 @@
 #ifndef CustomFilterArrayParameter_h
 #define CustomFilterArrayParameter_h
 
-#include "core/platform/animation/AnimationUtilities.h"
 #include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

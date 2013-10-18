@@ -57,6 +57,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/animation/WebAnimationProvider.h"
 #include "core/rendering/style/KeyframeList.h"
+#include "platform/LengthFunctions.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 

@@ -894,9 +894,9 @@ void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRec
     float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
 
     if (applyTransformOrigin) {
-        transform.translate3d(floatValueForLength(transformOriginX(), boundingBox.width()) + offsetX,
-                              floatValueForLength(transformOriginY(), boundingBox.height()) + offsetY,
-                              transformOriginZ());
+        transform.translate3d(floatValueForLength(transformOriginX(), boundingBox.width(), 0) + offsetX,
+            floatValueForLength(transformOriginY(), boundingBox.height(), 0) + offsetY,
+            transformOriginZ());
     }
 
     unsigned size = transformOperations.size();
@@ -904,9 +904,9 @@ void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRec
         transformOperations[i]->apply(transform, boundingBox.size());
 
     if (applyTransformOrigin) {
-        transform.translate3d(-floatValueForLength(transformOriginX(), boundingBox.width()) - offsetX,
-                              -floatValueForLength(transformOriginY(), boundingBox.height()) - offsetY,
-                              -transformOriginZ());
+        transform.translate3d(-floatValueForLength(transformOriginX(), boundingBox.width(), 0) - offsetX,
+            -floatValueForLength(transformOriginY(), boundingBox.height(), 0) - offsetY,
+            -transformOriginZ());
     }
 }
 

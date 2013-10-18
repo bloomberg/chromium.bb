@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/platform/graphics/transforms/SkewTransformOperation.h"
 
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/animation/AnimationUtilities.h"
 
 namespace WebCore {
 

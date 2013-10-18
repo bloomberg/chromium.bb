@@ -26,9 +26,9 @@
 #ifndef PopupMenuStyle_h
 #define PopupMenuStyle_h
 
-#include "core/platform/Length.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
+#include "platform/Length.h"
 #include "platform/text/TextDirection.h"
 
 namespace WebCore {

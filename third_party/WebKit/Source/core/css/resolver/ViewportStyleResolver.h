@@ -32,7 +32,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/css/RuleSet.h"
-#include "core/platform/Length.h"
+#include "platform/Length.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 

@@ -31,8 +31,8 @@
 #ifndef CalculationValue_h
 #define CalculationValue_h
 
-#include "core/css/LengthFunctions.h"
-#include "core/platform/Length.h"
+#include "platform/Length.h"
+#include "platform/LengthFunctions.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -40,14 +40,14 @@
 
 namespace WebCore {
 
-enum CalcOperator {
+enum PLATFORM_EXPORT CalcOperator {
     CalcAdd = '+',
     CalcSubtract = '-',
     CalcMultiply = '*',
     CalcDivide = '/'
 };
 
-enum CalcExpressionNodeType {
+enum PLATFORM_EXPORT CalcExpressionNodeType {
     CalcExpressionNodeUndefined,
     CalcExpressionNodeNumber,
     CalcExpressionNodeLength,
@@ -55,7 +55,7 @@ enum CalcExpressionNodeType {
     CalcExpressionNodeBlendLength,
 };
 
-class CalcExpressionNode {
+class PLATFORM_EXPORT CalcExpressionNode {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     CalcExpressionNode()
@@ -76,7 +76,7 @@ protected:
     CalcExpressionNodeType m_type;
 };
 
-class CalculationValue : public RefCounted<CalculationValue> {
+class PLATFORM_EXPORT CalculationValue : public RefCounted<CalculationValue> {
 public:
     static PassRefPtr<CalculationValue> create(PassOwnPtr<CalcExpressionNode> value, ValueRange);
     float evaluate(float maxValue) const;
@@ -100,7 +100,7 @@ private:
     bool m_isNonNegative;
 };
 
-class CalcExpressionNumber : public CalcExpressionNode {
+class PLATFORM_EXPORT CalcExpressionNumber : public CalcExpressionNode {
 public:
     explicit CalcExpressionNumber(float value)
         : m_value(value)
@@ -129,13 +129,13 @@ private:
     float m_value;
 };
 
-inline const CalcExpressionNumber* toCalcExpressionNumber(const CalcExpressionNode* value)
+PLATFORM_EXPORT inline const CalcExpressionNumber* toCalcExpressionNumber(const CalcExpressionNode* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeNumber);
     return static_cast<const CalcExpressionNumber*>(value);
 }
 
-class CalcExpressionLength : public CalcExpressionNode {
+class PLATFORM_EXPORT CalcExpressionLength : public CalcExpressionNode {
 public:
     explicit CalcExpressionLength(Length length)
         : m_length(length)
@@ -164,13 +164,13 @@ private:
     Length m_length;
 };
 
-inline const CalcExpressionLength* toCalcExpressionLength(const CalcExpressionNode* value)
+PLATFORM_EXPORT inline const CalcExpressionLength* toCalcExpressionLength(const CalcExpressionNode* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeLength);
     return static_cast<const CalcExpressionLength*>(value);
 }
 
-class CalcExpressionBinaryOperation : public CalcExpressionNode {
+class PLATFORM_EXPORT CalcExpressionBinaryOperation : public CalcExpressionNode {
 public:
     CalcExpressionBinaryOperation(PassOwnPtr<CalcExpressionNode> leftSide, PassOwnPtr<CalcExpressionNode> rightSide, CalcOperator op)
         : m_leftSide(leftSide)
@@ -197,18 +197,21 @@ public:
     CalcOperator getOperator() const { return m_operator; }
 
 private:
+    // Disallow the copy constructor. Resolves Windows link errors.
+    CalcExpressionBinaryOperation(const CalcExpressionBinaryOperation&);
+
     OwnPtr<CalcExpressionNode> m_leftSide;
     OwnPtr<CalcExpressionNode> m_rightSide;
     CalcOperator m_operator;
 };
 
-inline const CalcExpressionBinaryOperation* toCalcExpressionBinaryOperation(const CalcExpressionNode* value)
+PLATFORM_EXPORT inline const CalcExpressionBinaryOperation* toCalcExpressionBinaryOperation(const CalcExpressionNode* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeBinaryOperation);
     return static_cast<const CalcExpressionBinaryOperation*>(value);
 }
 
-class CalcExpressionBlendLength : public CalcExpressionNode {
+class PLATFORM_EXPORT CalcExpressionBlendLength : public CalcExpressionNode {
 public:
     CalcExpressionBlendLength(Length from, Length to, float progress)
         : m_from(from)
@@ -243,7 +246,7 @@ private:
     float m_progress;
 };
 
-inline const CalcExpressionBlendLength* toCalcExpressionBlendLength(const CalcExpressionNode* value)
+PLATFORM_EXPORT inline const CalcExpressionBlendLength* toCalcExpressionBlendLength(const CalcExpressionNode* value)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!value || value->type() == CalcExpressionNodeBlendLength);
     return static_cast<const CalcExpressionBlendLength*>(value);

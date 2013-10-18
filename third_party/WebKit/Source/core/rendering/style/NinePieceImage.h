@@ -24,10 +24,10 @@
 #ifndef NinePieceImage_h
 #define NinePieceImage_h
 
-#include "core/platform/LengthBox.h"
 #include "core/rendering/style/DataRef.h"
 #include "core/rendering/style/StyleImage.h"
 #include "platform/LayoutUnit.h"
+#include "platform/LengthBox.h"
 
 namespace WebCore {
 

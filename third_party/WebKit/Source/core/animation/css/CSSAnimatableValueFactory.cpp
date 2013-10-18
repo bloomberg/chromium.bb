@@ -52,9 +52,9 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/platform/Length.h"
-#include "core/platform/LengthBox.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "platform/Length.h"
+#include "platform/LengthBox.h"
 
 namespace WebCore {
 

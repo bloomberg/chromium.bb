@@ -23,14 +23,15 @@
 #ifndef Length_h
 #define Length_h
 
-#include <cstring>
-#include "core/platform/animation/AnimationUtilities.h"
+#include "platform/PlatformExport.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "wtf/Assertions.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
+#include <cstring>
 
 namespace WebCore {
 
@@ -51,7 +52,7 @@ enum ValueRange {
 
 class CalculationValue;
 
-struct Length {
+class PLATFORM_EXPORT Length {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     Length()
@@ -131,8 +132,8 @@ public:
         return getFloatValue();
     }
 
-     int intValue() const
-     {
+    int intValue() const
+    {
         if (isCalculated()) {
             ASSERT_NOT_REACHED();
             return 0;
@@ -318,7 +319,7 @@ private:
     bool m_isFloat;
 };
 
-Vector<Length> parseHTMLAreaElementCoords(const String&);
+PLATFORM_EXPORT Vector<Length> parseHTMLAreaElementCoords(const String&);
 
 } // namespace WebCore
 

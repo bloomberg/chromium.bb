@@ -34,7 +34,7 @@
 #include "core/animation/AnimatableValue.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/platform/Length.h"
+#include "platform/Length.h"
 
 namespace WebCore {
 

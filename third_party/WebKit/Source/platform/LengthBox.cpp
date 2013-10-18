@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/LengthBox.h"
+#include "platform/LengthBox.h"
 
 namespace WebCore {
 

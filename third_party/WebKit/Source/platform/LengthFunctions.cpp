@@ -21,21 +21,46 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef LengthFunctions_h
-#define LengthFunctions_h
+#include "config.h"
+#include "platform/LengthFunctions.h"
+
+#include "platform/LayoutUnit.h"
+#include "platform/Length.h"
 
 namespace WebCore {
 
-class LayoutUnit;
-class RenderView;
-struct Length;
-
-int minimumIntValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-int intValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-LayoutUnit minimumValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-LayoutUnit valueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-float floatValueForLength(const Length&, float maximumValue, RenderView* = 0);
+// This method is over-ridden in core/css/CSSLengthFunctions.cpp.
+// Any changes here most likely also need to be applied there.
+float floatValueForLength(const Length& length, float maximumValue)
+{
+    switch (length.type()) {
+    case Fixed:
+        return length.getFloatValue();
+    case Percent:
+        return static_cast<float>(maximumValue * length.percent() / 100.0f);
+    case FillAvailable:
+    case Auto:
+        return static_cast<float>(maximumValue);
+    case Calculated:
+        return length.nonNanCalculatedValue(maximumValue);
+    case ViewportPercentageWidth:
+    case ViewportPercentageHeight:
+    case ViewportPercentageMin:
+    case ViewportPercentageMax:
+        return 0;
+    case Relative:
+    case Intrinsic:
+    case MinIntrinsic:
+    case MinContent:
+    case MaxContent:
+    case FitContent:
+    case ExtendToZoom:
+    case Undefined:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
 
 } // namespace WebCore
-
-#endif // LengthFunctions_h

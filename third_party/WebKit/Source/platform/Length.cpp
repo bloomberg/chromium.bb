@@ -23,9 +23,9 @@
  */
 
 #include "config.h"
-#include "core/platform/Length.h"
+#include "platform/Length.h"
 
-#include "core/platform/CalculationValue.h"
+#include "platform/CalculationValue.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringBuffer.h"

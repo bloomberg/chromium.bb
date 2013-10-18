@@ -1,6 +1,8 @@
 {
   'variables': {
     'platform_files': [
+      'CalculationValue.cpp',
+      'CalculationValue.h',
       'Clock.cpp',
       'Clock.h',
       'ContentType.cpp',
@@ -25,6 +27,14 @@
       'LayoutTestSupport.cpp',
       'LayoutTestSupport.h',
       'LayoutUnit.h',
+      'Length.cpp',
+      'Length.h',
+      'LengthBox.cpp',
+      'LengthBox.h',
+      'LengthFunctions.cpp',
+      'LengthFunctions.h',
+      'LengthPoint.h',
+      'LengthSize.h',
       'LinkHash.cpp',
       'LinkHash.h',
       'Logging.cpp',
@@ -79,6 +89,7 @@
       'UUID.h',
       'Widget.cpp',
       'Widget.h',
+      'animation/AnimationUtilities.h',
       'animation/UnitBezier.h',
       'audio/AudioArray.h',
       'audio/AudioBus.cpp',

@@ -26,11 +26,11 @@
 #ifndef Theme_h
 #define Theme_h
 
-#include "core/platform/LengthBox.h"
-#include "core/platform/LengthSize.h"
 #include "core/platform/ThemeTypes.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
+#include "platform/LengthBox.h"
+#include "platform/LengthSize.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/Forward.h"
 

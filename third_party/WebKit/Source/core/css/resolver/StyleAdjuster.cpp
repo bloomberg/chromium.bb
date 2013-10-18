@@ -41,12 +41,12 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Settings.h"
-#include "core/platform/Length.h"
 #include "core/rendering/Pagination.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/GridPosition.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "platform/Length.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {

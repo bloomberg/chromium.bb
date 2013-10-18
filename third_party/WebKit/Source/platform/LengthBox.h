@@ -22,7 +22,8 @@
 #ifndef LengthBox_h
 #define LengthBox_h
 
-#include "core/platform/Length.h"
+#include "platform/Length.h"
+#include "platform/PlatformExport.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 
@@ -30,7 +31,8 @@ namespace WebCore {
 
 class RenderStyle;
 
-struct LengthBox {
+class PLATFORM_EXPORT LengthBox {
+public:
     LengthBox()
     {
     }
@@ -95,6 +97,7 @@ struct LengthBox {
         return !(m_left.isZero() && m_right.isZero() && m_top.isZero() && m_bottom.isZero());
     }
 
+    // Must be public for SET_VAR in RenderStyle.h
     Length m_left;
     Length m_right;
     Length m_top;

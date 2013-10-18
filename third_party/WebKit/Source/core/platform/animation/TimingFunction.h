@@ -26,7 +26,7 @@
 #define TimingFunction_h
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/animation/AnimationUtilities.h" // For blend()
+#include "platform/animation/AnimationUtilities.h" // For blend()
 #include "platform/animation/UnitBezier.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
