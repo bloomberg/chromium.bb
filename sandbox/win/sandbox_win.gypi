@@ -336,7 +336,6 @@
             'target_arch': 'x64',
           },
           'dependencies': [
-            '../testing/gtest.gyp:gtest',
             '../base/base.gyp:base_nacl_win64',
             '../base/base.gyp:base_static_win64',
           ],
