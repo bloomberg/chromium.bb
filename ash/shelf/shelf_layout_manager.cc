@@ -830,16 +830,16 @@ void ShelfLayoutManager::CalculateTargetBounds(
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
   target_bounds->launcher_bounds_in_shelf = SelectValueForShelfAlignment(
-      gfx::Rect(base::i18n::IsRTL() ? status_size.width() : 0, 0,
-                    shelf_width - status_size.width(),
-                    target_bounds->shelf_bounds_in_root.height()),
+      gfx::Rect(0, 0,
+                shelf_width - status_size.width(),
+                target_bounds->shelf_bounds_in_root.height()),
       gfx::Rect(0, 0, target_bounds->shelf_bounds_in_root.width(),
                 shelf_height - status_size.height()),
       gfx::Rect(0, 0, target_bounds->shelf_bounds_in_root.width(),
                 shelf_height - status_size.height()),
-      gfx::Rect(base::i18n::IsRTL() ? status_size.width() : 0, 0,
-                    shelf_width - status_size.width(),
-                    target_bounds->shelf_bounds_in_root.height()));
+      gfx::Rect(0, 0,
+                shelf_width - status_size.width(),
+                target_bounds->shelf_bounds_in_root.height()));
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
