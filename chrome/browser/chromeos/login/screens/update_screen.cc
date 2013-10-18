@@ -122,6 +122,8 @@ UpdateScreen::UpdateScreen(
 
 UpdateScreen::~UpdateScreen() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
+  if (NetworkPortalDetector::GetInstance())
+    NetworkPortalDetector::GetInstance()->RemoveObserver(this);
   GetInstanceSet().erase(this);
   if (actor_)
     actor_->SetDelegate(NULL);
