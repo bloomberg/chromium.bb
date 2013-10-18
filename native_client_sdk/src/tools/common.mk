@@ -485,6 +485,7 @@ run: check_for_chrome all $(PAGE)
 
 .PHONY: run_package
 run_package: check_for_chrome all
+	@echo "$(TOOLCHAIN) $(CONFIG)" > $(CURDIR)/run_package_config
 	$(CHROME_PATH) --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
 
 GDB_ARGS += -D $(TC_PATH)/$(OSNAME)_x86_newlib/bin/$(SYSARCH)-nacl-gdb

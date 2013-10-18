@@ -221,10 +221,6 @@ apps, by using the ``make run_package`` command::
 You can use ``TOOLCHAIN`` and ``CONFIG`` parameters as above to run with a
 different toolchain or configuration.
 
-.. **TODO(jvoung)**: That doesn't seem to work in pepper_canary.
-.. It just picks newlib.
-.. https://code.google.com/p/chromium/issues/detail?id=307724
-
 
 .. _debugging_the_sdk_examples:
 
