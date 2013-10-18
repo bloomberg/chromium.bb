@@ -397,7 +397,7 @@ void TimelineTraceEventProcessor::onDrawLazyPixelRef(const TraceEvent& event)
     const RenderImage* renderImage = timelineAgent->imageBeingPainted();
     if (!renderImage)
         return;
-    int nodeId = timelineAgent->idForNode(renderImage->generatingNode());
+    int nodeId = timelineAgent->nodeId(renderImage->generatingNode());
     String url;
     if (const ImageResource* resource = renderImage->cachedImage())
         url = resource->url().string();

@@ -90,6 +90,8 @@ namespace WebCore {
 
         static PassRefPtr<JSONObject> createAnimationFrameData(int callbackId);
 
+        static PassRefPtr<JSONObject> createNodeData(long long nodeId);
+
         static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
 
         static PassRefPtr<JSONObject> createPaintData(const FloatQuad&, long long layerRootNodeId);

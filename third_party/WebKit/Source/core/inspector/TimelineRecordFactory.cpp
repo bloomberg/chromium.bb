@@ -234,12 +234,17 @@ static PassRefPtr<JSONArray> createQuad(const FloatQuad& quad)
     return array.release();
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createLayerData(long long layerRootNodeId)
+PassRefPtr<JSONObject> TimelineRecordFactory::createNodeData(long long nodeId)
 {
     RefPtr<JSONObject> data = JSONObject::create();
-    if (layerRootNodeId)
-        data->setNumber("layerRootNode", layerRootNodeId);
+    if (nodeId)
+        data->setNumber("rootNode", nodeId);
     return data.release();
+}
+
+PassRefPtr<JSONObject> TimelineRecordFactory::createLayerData(long long rootNodeId)
+{
+    return createNodeData(rootNodeId);
 }
 
 PassRefPtr<JSONObject> TimelineRecordFactory::createPaintData(const FloatQuad& quad, long long layerRootNodeId)

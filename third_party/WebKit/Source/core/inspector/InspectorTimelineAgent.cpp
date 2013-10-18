@@ -80,6 +80,7 @@ static const char ScheduleStyleRecalculation[] = "ScheduleStyleRecalculation";
 static const char RecalculateStyles[] = "RecalculateStyles";
 static const char InvalidateLayout[] = "InvalidateLayout";
 static const char Layout[] = "Layout";
+static const char AutosizeText[] = "AutosizeText";
 static const char Paint[] = "Paint";
 static const char ScrollLayer[] = "ScrollLayer";
 static const char ResizeImage[] = "ResizeImage";
@@ -389,10 +390,20 @@ void InspectorTimelineAgent::didLayout(RenderObject* root)
     Vector<FloatQuad> quads;
     root->absoluteQuads(quads);
     if (quads.size() >= 1)
-        TimelineRecordFactory::appendLayoutRoot(entry.data.get(), quads[0], idForNode(root->generatingNode()));
+        TimelineRecordFactory::appendLayoutRoot(entry.data.get(), quads[0], nodeId(root));
     else
         ASSERT_NOT_REACHED();
     didCompleteCurrentRecord(TimelineRecordType::Layout);
+}
+
+void InspectorTimelineAgent::willAutosizeText(RenderObject* renderer)
+{
+    pushCurrentRecord(TimelineRecordFactory::createNodeData(nodeId(renderer)), TimelineRecordType::AutosizeText, false, renderer->frame());
+}
+
+void InspectorTimelineAgent::didAutosizeText()
+{
+    didCompleteCurrentRecord(TimelineRecordType::AutosizeText);
 }
 
 void InspectorTimelineAgent::didScheduleStyleRecalculation(Document* document)
@@ -428,7 +439,7 @@ void InspectorTimelineAgent::willPaint(RenderObject* renderer)
     Frame* frame = renderer->frame();
     TRACE_EVENT_INSTANT2(InternalEventCategory, InstrumentationEvents::Paint,
         InstrumentationEventArguments::PageId, reinterpret_cast<unsigned long long>(frame->page()),
-        InstrumentationEventArguments::NodeId, idForNode(renderer->generatingNode()));
+        InstrumentationEventArguments::NodeId, nodeId(renderer));
 
     pushCurrentRecord(JSONObject::create(), TimelineRecordType::Paint, true, frame, true);
 }
@@ -439,7 +450,7 @@ void InspectorTimelineAgent::didPaint(RenderObject* renderer, GraphicsContext*, 
     ASSERT(entry.type == TimelineRecordType::Paint);
     FloatQuad quad;
     localToPageQuad(*renderer, clipRect, &quad);
-    entry.data = TimelineRecordFactory::createPaintData(quad, idForNode(renderer->generatingNode()));
+    entry.data = TimelineRecordFactory::createPaintData(quad, nodeId(renderer));
     didCompleteCurrentRecord(TimelineRecordType::Paint);
 }
 
@@ -456,7 +467,7 @@ void InspectorTimelineAgent::didPaintImage()
 
 void InspectorTimelineAgent::willScrollLayer(RenderObject* renderer)
 {
-    pushCurrentRecord(TimelineRecordFactory::createLayerData(idForNode(renderer->generatingNode())), TimelineRecordType::ScrollLayer, false, renderer->frame());
+    pushCurrentRecord(TimelineRecordFactory::createLayerData(nodeId(renderer)), TimelineRecordType::ScrollLayer, false, renderer->frame());
 }
 
 void InspectorTimelineAgent::didScrollLayer()
@@ -807,7 +818,7 @@ void InspectorTimelineAgent::setFrameIdentifier(JSONObject* record, Frame* frame
 void InspectorTimelineAgent::populateImageDetails(JSONObject* data, const RenderImage& renderImage)
 {
     const ImageResource* resource = renderImage.cachedImage();
-    TimelineRecordFactory::appendImageDetails(data, idForNode(renderImage.generatingNode()), resource ? resource->url().string() : "");
+    TimelineRecordFactory::appendImageDetails(data, nodeId(renderImage.generatingNode()), resource ? resource->url().string() : "");
 }
 
 void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
@@ -916,9 +927,14 @@ void InspectorTimelineAgent::localToPageQuad(const RenderObject& renderer, const
     quad->setP4(view->contentsToRootView(roundedIntPoint(absolute.p4())));
 }
 
-long long InspectorTimelineAgent::idForNode(Node* node)
+long long InspectorTimelineAgent::nodeId(Node* node)
 {
     return m_domAgent && node ? m_domAgent->backendNodeIdForNode(node, BackendNodeIdGroup) : 0;
+}
+
+long long InspectorTimelineAgent::nodeId(RenderObject* renderer)
+{
+    return nodeId(renderer->generatingNode());
 }
 
 void InspectorTimelineAgent::releaseNodeIds()

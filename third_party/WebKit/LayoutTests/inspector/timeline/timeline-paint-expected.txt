@@ -7,7 +7,7 @@ Paint Properties:
     counters : <object>
     data : {
         clip : <object>
-        layerRootNode : <number>
+        rootNode : <number>
     }
     endTime : <number>
     frameId : <string>

@@ -145,6 +145,9 @@ public:
     bool willLayout(Frame*);
     void didLayout(RenderObject*);
 
+    void willAutosizeText(RenderObject*);
+    void didAutosizeText();
+
     void didScheduleStyleRecalculation(Document*);
     bool willRecalculateStyle(Document*);
     void didRecalculateStyle();
@@ -259,7 +262,8 @@ private:
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
     const TimelineTimeConverter& timeConverter() const { return m_timeConverter; }
     const RenderImage* imageBeingPainted() const { return m_imageBeingPainted; }
-    long long idForNode(Node*);
+    long long nodeId(Node*);
+    long long nodeId(RenderObject*);
     void releaseNodeIds();
 
     double timestamp();

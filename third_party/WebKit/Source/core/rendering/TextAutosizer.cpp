@@ -171,6 +171,7 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     if (!m_document->settings() || !m_document->settings()->textAutosizingEnabled() || layoutRoot->view()->document().printing() || !m_document->page())
         return false;
 
+    InspectorInstrumentation::willAutosizeText(layoutRoot);
     if (m_contentType == Unknown && m_document->body())
         m_contentType = detectContentType();
 
@@ -200,6 +201,7 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 
     TextAutosizingClusterInfo clusterInfo(cluster);
     processCluster(clusterInfo, container, layoutRoot, windowInfo);
+    InspectorInstrumentation::didAutosizeText(layoutRoot);
     return true;
 }
 
