@@ -231,6 +231,7 @@
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h',
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp',
+            '../third_party/skia/src/opts/SkXfermode_opts_arm_neon.cpp',
           ],
           'conditions': [
             ['arm_neon == 1', {
