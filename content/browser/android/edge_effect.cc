@@ -36,8 +36,9 @@ const float kMaxGlowHeight = 4.f;
 const float kPullGlowBegin = 1.f;
 const float kPullEdgeBegin = 0.6f;
 
-// Minimum velocity that will be absorbed
+// Min/max velocity that will be absorbed
 const float kMinVelocity = 100.f;
+const float kMaxVelocity = 10000.f;
 
 const float kEpsilon = 0.001f;
 
@@ -51,7 +52,7 @@ const int kPullDistanceGlowFactor = 7;
 const float kPullDistanceAlphaGlowFactor = 1.1f;
 
 const int kVelocityEdgeFactor = 8;
-const int kVelocityGlowFactor = 16;
+const int kVelocityGlowFactor = 12;
 
 template <typename T>
 T Lerp(T a, T b, T t) {
@@ -220,11 +221,11 @@ void EdgeEffect::Release(base::TimeTicks current_time) {
 void EdgeEffect::Absorb(base::TimeTicks current_time, float velocity) {
   state_ = STATE_ABSORB;
   float scaled_velocity =
-      dpi_scale_ * std::max(kMinVelocity, std::abs(velocity));
+      dpi_scale_ * Clamp(std::abs(velocity), kMinVelocity, kMaxVelocity);
 
   start_time_ = current_time;
   // This should never be less than 1 millisecond.
-  duration_ = base::TimeDelta::FromMilliseconds(0.1f + (velocity * 0.03f));
+  duration_ = base::TimeDelta::FromMilliseconds(0.15f + (velocity * 0.02f));
 
   // The edge should always be at least partially visible, regardless
   // of velocity.
@@ -232,7 +233,7 @@ void EdgeEffect::Absorb(base::TimeTicks current_time, float velocity) {
   edge_scale_y_ = edge_scale_y_start_ = 0.f;
   // The glow depends more on the velocity, and therefore starts out
   // nearly invisible.
-  glow_alpha_start_ = 0.5f;
+  glow_alpha_start_ = 0.3f;
   glow_scale_y_start_ = 0.f;
 
   // Factor the velocity by 8. Testing on device shows this works best to
