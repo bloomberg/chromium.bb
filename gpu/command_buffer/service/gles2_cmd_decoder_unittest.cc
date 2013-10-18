@@ -2530,31 +2530,6 @@ TEST_F(GLES2DecoderTest, BindAttribLocationInvalidArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
-TEST_F(GLES2DecoderTest, BindAttribLocationImmediate) {
-  const GLint kLocation = 2;
-  const char* kName = "testing";
-  const uint32 kNameSize = strlen(kName);
-  EXPECT_CALL(
-      *gl_, BindAttribLocation(kServiceProgramId, kLocation, StrEq(kName)))
-      .Times(1);
-  BindAttribLocationImmediate& cmd =
-      *GetImmediateAs<BindAttribLocationImmediate>();
-  cmd.Init(client_program_id_, kLocation, kName, kNameSize);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-}
-
-TEST_F(GLES2DecoderTest, BindAttribLocationImmediateInvalidArgs) {
-  const GLint kLocation = 2;
-  const char* kName = "testing";
-  const uint32 kNameSize = strlen(kName);
-  EXPECT_CALL(*gl_, BindAttribLocation(_, _, _)).Times(0);
-  BindAttribLocationImmediate& cmd =
-      *GetImmediateAs<BindAttribLocationImmediate>();
-  cmd.Init(kInvalidClientId, kLocation, kName, kNameSize);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kNameSize));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest, BindAttribLocationBucket) {
   const uint32 kBucketId = 123;
   const GLint kLocation = 2;

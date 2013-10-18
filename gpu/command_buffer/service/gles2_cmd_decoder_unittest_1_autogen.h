@@ -22,8 +22,6 @@ TEST_F(GLES2DecoderTest1, AttachShaderValidArgs) {
 }
 // TODO(gman): BindAttribLocation
 
-// TODO(gman): BindAttribLocationImmediate
-
 // TODO(gman): BindAttribLocationBucket
 
 TEST_F(GLES2DecoderTest1, BindBufferValidArgs) {
@@ -267,8 +265,6 @@ TEST_F(GLES2DecoderTest1, BlendFuncSeparateValidArgs) {
 
 // TODO(gman): BufferSubData
 
-// TODO(gman): BufferSubDataImmediate
-
 
 TEST_F(GLES2DecoderTest1, CheckFramebufferStatusValidArgs) {
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER));
@@ -355,8 +351,6 @@ TEST_F(GLES2DecoderTest1, ColorMaskValidArgs) {
 
 // TODO(gman): CompressedTexImage2DBucket
 // TODO(gman): CompressedTexSubImage2D
-
-// TODO(gman): CompressedTexSubImage2DImmediate
 
 // TODO(gman): CompressedTexSubImage2DBucket
 // TODO(gman): CopyTexImage2D
@@ -1934,6 +1928,77 @@ TEST_F(GLES2DecoderTest1, IsBufferInvalidArgsBadSharedMemoryId) {
   cmd.Init(client_buffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   cmd.Init(client_buffer_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest1, IsEnabledValidArgs) {
+  SpecializedSetup<cmds::IsEnabled, 0>(true);
+  cmds::IsEnabled cmd;
+  cmd.Init(GL_BLEND, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, IsEnabledInvalidArgs0_0) {
+  EXPECT_CALL(*gl_, IsEnabled(_)).Times(0);
+  SpecializedSetup<cmds::IsEnabled, 0>(false);
+  cmds::IsEnabled cmd;
+  cmd.Init(GL_CLIP_PLANE0, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, IsEnabledInvalidArgs0_1) {
+  EXPECT_CALL(*gl_, IsEnabled(_)).Times(0);
+  SpecializedSetup<cmds::IsEnabled, 0>(false);
+  cmds::IsEnabled cmd;
+  cmd.Init(GL_POINT_SPRITE, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, IsEnabledInvalidArgsBadSharedMemoryId) {
+  SpecializedSetup<cmds::IsEnabled, 0>(false);
+  cmds::IsEnabled cmd;
+  cmd.Init(GL_BLEND, kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(GL_BLEND, shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest1, IsFramebufferValidArgs) {
+  SpecializedSetup<cmds::IsFramebuffer, 0>(true);
+  cmds::IsFramebuffer cmd;
+  cmd.Init(client_framebuffer_id_, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, IsFramebufferInvalidArgsBadSharedMemoryId) {
+  SpecializedSetup<cmds::IsFramebuffer, 0>(false);
+  cmds::IsFramebuffer cmd;
+  cmd.Init(
+      client_framebuffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(
+      client_framebuffer_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest1, IsProgramValidArgs) {
+  SpecializedSetup<cmds::IsProgram, 0>(true);
+  cmds::IsProgram cmd;
+  cmd.Init(client_program_id_, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, IsProgramInvalidArgsBadSharedMemoryId) {
+  SpecializedSetup<cmds::IsProgram, 0>(false);
+  cmds::IsProgram cmd;
+  cmd.Init(client_program_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(client_program_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_

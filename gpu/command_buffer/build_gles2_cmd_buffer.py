@@ -1230,7 +1230,12 @@ _FUNCTION_INFO = {
     'client_test': False,
   },
   'AttachShader': {'decoder_func': 'DoAttachShader'},
-  'BindAttribLocation': {'type': 'GLchar', 'bucket': True, 'needs_size': True},
+  'BindAttribLocation': {
+    'type': 'GLchar',
+    'bucket': True,
+    'needs_size': True,
+    'immediate': False,
+  },
   'BindBuffer': {
     'type': 'Bind',
     'decoder_func': 'DoBindBuffer',
@@ -1272,6 +1277,7 @@ _FUNCTION_INFO = {
     'type': 'Data',
     'client_test': False,
     'decoder_func': 'DoBufferSubData',
+    'immediate': False,
   },
   'CheckFramebufferStatus': {
     'type': 'Is',
@@ -1337,6 +1343,7 @@ _FUNCTION_INFO = {
     'type': 'Data',
     'bucket': True,
     'decoder_func': 'DoCompressedTexSubImage2D',
+    'immediate': False,
   },
   'CopyTexImage2D': {
     'decoder_func': 'DoCopyTexImage2D',
@@ -2315,6 +2322,7 @@ _FUNCTION_INFO = {
     'bucket': True,
     'needs_size': True,
     'gl_test_func': 'DoBindUniformLocationCHROMIUM',
+    'immediate': False,
   },
   'InsertEventMarkerEXT': {
     'type': 'GLcharN',
@@ -3640,18 +3648,10 @@ class DataHandler(TypeHandler):
 
   def WriteImmediateCmdGetTotalSize(self, func, file):
     """Overrriden from TypeHandler."""
-    # TODO(gman): Move this data to _FUNCTION_INFO?
-    if func.name == 'BufferSubDataImmediate':
-        file.Write("    uint32 total_size = ComputeSize(_size);\n")
-    elif func.name == 'CompressedTexSubImage2DImmediate':
-        file.Write("    uint32 total_size = ComputeSize(_imageSize);\n")
+    pass
 
   def WriteImmediateCmdSizeTest(self, func, file):
     """Overrriden from TypeHandler."""
-    if func.name == 'BufferSubDataImmediate':
-        file.Write("    uint32 total_size = cmd.ComputeSize(cmd.size);\n")
-    elif func.name == 'CompressedTexSubImage2DImmediate':
-        file.Write("    uint32 total_size = cmd.ComputeSize(cmd.imageSize);\n")
     file.Write("  EXPECT_EQ(sizeof(cmd), total_size);\n")
 
   def WriteImmediateCmdInit(self, func, file):

@@ -61,35 +61,6 @@ TEST_F(GLES2FormatTest, BindAttribLocation) {
       next_cmd, sizeof(cmd));
 }
 
-
-TEST_F(GLES2FormatTest, BindAttribLocationImmediate) {
-  cmds::BindAttribLocationImmediate& cmd =
-      *GetBufferAs<cmds::BindAttribLocationImmediate>();
-  static const char* const test_str = "test string";
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11),
-      static_cast<GLuint>(12),
-      test_str,
-      strlen(test_str));
-  EXPECT_EQ(static_cast<uint32>(cmds::BindAttribLocationImmediate::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd) +
-            RoundSizeToMultipleOfEntries(strlen(test_str)),
-            cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<char*>(next_cmd),
-            reinterpret_cast<char*>(&cmd) + sizeof(cmd) +
-                RoundSizeToMultipleOfEntries(strlen(test_str)));
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.index);
-  EXPECT_EQ(static_cast<uint32>(strlen(test_str)), cmd.data_size);
-  EXPECT_EQ(0, memcmp(test_str, ImmediateDataAddress(&cmd), strlen(test_str)));
-  CheckBytesWritten(
-      next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(strlen(test_str)),
-      sizeof(cmd) + strlen(test_str));
-}
-
 TEST_F(GLES2FormatTest, BindAttribLocationBucket) {
   cmds::BindAttribLocationBucket& cmd =
       *GetBufferAs<cmds::BindAttribLocationBucket>();
@@ -292,7 +263,6 @@ TEST_F(GLES2FormatTest, BufferSubData) {
       next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Implement test for BufferSubDataImmediate
 TEST_F(GLES2FormatTest, CheckFramebufferStatus) {
   cmds::CheckFramebufferStatus& cmd =
       *GetBufferAs<cmds::CheckFramebufferStatus>();
@@ -488,7 +458,6 @@ TEST_F(GLES2FormatTest, CompressedTexSubImage2D) {
       next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Implement test for CompressedTexSubImage2DImmediate
 TEST_F(GLES2FormatTest, CompressedTexSubImage2DBucket) {
   cmds::CompressedTexSubImage2DBucket& cmd =
       *GetBufferAs<cmds::CompressedTexSubImage2DBucket>();
@@ -4207,36 +4176,6 @@ TEST_F(GLES2FormatTest, BindUniformLocationCHROMIUM) {
   EXPECT_EQ(static_cast<uint32>(15), cmd.data_size);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
-}
-
-
-TEST_F(GLES2FormatTest, BindUniformLocationCHROMIUMImmediate) {
-  cmds::BindUniformLocationCHROMIUMImmediate& cmd =
-      *GetBufferAs<cmds::BindUniformLocationCHROMIUMImmediate>();
-  static const char* const test_str = "test string";
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11),
-      static_cast<GLint>(12),
-      test_str,
-      strlen(test_str));
-  EXPECT_EQ(
-      static_cast<uint32>(cmds::BindUniformLocationCHROMIUMImmediate::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd) +
-            RoundSizeToMultipleOfEntries(strlen(test_str)),
-            cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<char*>(next_cmd),
-            reinterpret_cast<char*>(&cmd) + sizeof(cmd) +
-                RoundSizeToMultipleOfEntries(strlen(test_str)));
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
-  EXPECT_EQ(static_cast<GLint>(12), cmd.location);
-  EXPECT_EQ(static_cast<uint32>(strlen(test_str)), cmd.data_size);
-  EXPECT_EQ(0, memcmp(test_str, ImmediateDataAddress(&cmd), strlen(test_str)));
-  CheckBytesWritten(
-      next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(strlen(test_str)),
-      sizeof(cmd) + strlen(test_str));
 }
 
 TEST_F(GLES2FormatTest, BindUniformLocationCHROMIUMBucket) {

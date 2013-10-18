@@ -216,29 +216,6 @@ error::Error GLES2DecoderImpl::HandleBufferSubData(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleBufferSubDataImmediate(
-    uint32 immediate_data_size, const gles2::cmds::BufferSubDataImmediate& c) {
-  GLenum target = static_cast<GLenum>(c.target);
-  GLintptr offset = static_cast<GLintptr>(c.offset);
-  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  uint32 data_size = size;
-  const void* data = GetImmediateDataAs<const void*>(
-      c, data_size, immediate_data_size);
-  if (!validators_->buffer_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glBufferSubData", target, "target");
-    return error::kNoError;
-  }
-  if (size < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBufferSubData", "size < 0");
-    return error::kNoError;
-  }
-  if (data == NULL) {
-    return error::kOutOfBounds;
-  }
-  DoBufferSubData(target, offset, size, data);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleCheckFramebufferStatus(
     uint32 immediate_data_size, const gles2::cmds::CheckFramebufferStatus& c) {
   GLenum target = static_cast<GLenum>(c.target);
@@ -345,53 +322,6 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
   uint32 data_size = imageSize;
   const void* data = GetSharedMemoryAs<const void*>(
       c.data_shm_id, c.data_shm_offset, data_size);
-  if (!validators_->texture_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glCompressedTexSubImage2D", target,
-    "target");
-    return error::kNoError;
-  }
-  if (width < 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCompressedTexSubImage2D", "width < 0");
-    return error::kNoError;
-  }
-  if (height < 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCompressedTexSubImage2D", "height < 0");
-    return error::kNoError;
-  }
-  if (!validators_->compressed_texture_format.IsValid(format)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glCompressedTexSubImage2D", format,
-    "format");
-    return error::kNoError;
-  }
-  if (imageSize < 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCompressedTexSubImage2D", "imageSize < 0");
-    return error::kNoError;
-  }
-  if (data == NULL) {
-    return error::kOutOfBounds;
-  }
-  DoCompressedTexSubImage2D(
-      target, level, xoffset, yoffset, width, height, format, imageSize, data);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DImmediate(
-    uint32 immediate_data_size,
-    const gles2::cmds::CompressedTexSubImage2DImmediate& c) {
-  GLenum target = static_cast<GLenum>(c.target);
-  GLint level = static_cast<GLint>(c.level);
-  GLint xoffset = static_cast<GLint>(c.xoffset);
-  GLint yoffset = static_cast<GLint>(c.yoffset);
-  GLsizei width = static_cast<GLsizei>(c.width);
-  GLsizei height = static_cast<GLsizei>(c.height);
-  GLenum format = static_cast<GLenum>(c.format);
-  GLsizei imageSize = static_cast<GLsizei>(c.imageSize);
-  uint32 data_size = imageSize;
-  const void* data = GetImmediateDataAs<const void*>(
-      c, data_size, immediate_data_size);
   if (!validators_->texture_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glCompressedTexSubImage2D", target,
     "target");

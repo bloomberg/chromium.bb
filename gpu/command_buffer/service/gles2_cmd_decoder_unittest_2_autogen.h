@@ -11,77 +11,6 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
 
-TEST_F(GLES2DecoderTest2, IsEnabledValidArgs) {
-  SpecializedSetup<cmds::IsEnabled, 0>(true);
-  cmds::IsEnabled cmd;
-  cmd.Init(GL_BLEND, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_F(GLES2DecoderTest2, IsEnabledInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, IsEnabled(_)).Times(0);
-  SpecializedSetup<cmds::IsEnabled, 0>(false);
-  cmds::IsEnabled cmd;
-  cmd.Init(GL_CLIP_PLANE0, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_F(GLES2DecoderTest2, IsEnabledInvalidArgs0_1) {
-  EXPECT_CALL(*gl_, IsEnabled(_)).Times(0);
-  SpecializedSetup<cmds::IsEnabled, 0>(false);
-  cmds::IsEnabled cmd;
-  cmd.Init(GL_POINT_SPRITE, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_F(GLES2DecoderTest2, IsEnabledInvalidArgsBadSharedMemoryId) {
-  SpecializedSetup<cmds::IsEnabled, 0>(false);
-  cmds::IsEnabled cmd;
-  cmd.Init(GL_BLEND, kInvalidSharedMemoryId, shared_memory_offset_);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(GL_BLEND, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-}
-
-TEST_F(GLES2DecoderTest2, IsFramebufferValidArgs) {
-  SpecializedSetup<cmds::IsFramebuffer, 0>(true);
-  cmds::IsFramebuffer cmd;
-  cmd.Init(client_framebuffer_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_F(GLES2DecoderTest2, IsFramebufferInvalidArgsBadSharedMemoryId) {
-  SpecializedSetup<cmds::IsFramebuffer, 0>(false);
-  cmds::IsFramebuffer cmd;
-  cmd.Init(
-      client_framebuffer_id_, kInvalidSharedMemoryId, shared_memory_offset_);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(
-      client_framebuffer_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-}
-
-TEST_F(GLES2DecoderTest2, IsProgramValidArgs) {
-  SpecializedSetup<cmds::IsProgram, 0>(true);
-  cmds::IsProgram cmd;
-  cmd.Init(client_program_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_F(GLES2DecoderTest2, IsProgramInvalidArgsBadSharedMemoryId) {
-  SpecializedSetup<cmds::IsProgram, 0>(false);
-  cmds::IsProgram cmd;
-  cmd.Init(client_program_id_, kInvalidSharedMemoryId, shared_memory_offset_);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(client_program_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-}
-
 TEST_F(GLES2DecoderTest2, IsRenderbufferValidArgs) {
   SpecializedSetup<cmds::IsRenderbuffer, 0>(true);
   cmds::IsRenderbuffer cmd;
@@ -1685,5 +1614,10 @@ TEST_F(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): IsVertexArrayOES
 // TODO(gman): BindVertexArrayOES
 // TODO(gman): SwapBuffers
+// TODO(gman): GetMaxValueInBufferCHROMIUM
+// TODO(gman): GenSharedIdsCHROMIUM
+
+// TODO(gman): DeleteSharedIdsCHROMIUM
+
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

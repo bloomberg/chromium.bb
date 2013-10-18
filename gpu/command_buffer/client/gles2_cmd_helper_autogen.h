@@ -33,17 +33,6 @@
     }
   }
 
-  void BindAttribLocationImmediate(
-      GLuint program, GLuint index, const char* name) {
-    const uint32 data_size = strlen(name);
-    gles2::cmds::BindAttribLocationImmediate* c =
-        GetImmediateCmdSpace<gles2::cmds::BindAttribLocationImmediate>(
-            data_size);
-    if (c) {
-      c->Init(program, index, name, data_size);
-    }
-  }
-
   void BindAttribLocationBucket(
       GLuint program, GLuint index, uint32 name_bucket_id) {
     gles2::cmds::BindAttribLocationBucket* c =
@@ -140,16 +129,6 @@
     }
   }
 
-  void BufferSubDataImmediate(
-      GLenum target, GLintptr offset, GLsizeiptr size) {
-    const uint32 s = 0;  // TODO(gman): compute correct size
-    gles2::cmds::BufferSubDataImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::BufferSubDataImmediate>(s);
-    if (c) {
-      c->Init(target, offset, size);
-    }
-  }
-
   void CheckFramebufferStatus(
       GLenum target, uint32 result_shm_id, uint32 result_shm_offset) {
     gles2::cmds::CheckFramebufferStatus* c =
@@ -236,18 +215,6 @@
       c->Init(
           target, level, xoffset, yoffset, width, height, format, imageSize,
           data_shm_id, data_shm_offset);
-    }
-  }
-
-  void CompressedTexSubImage2DImmediate(
-      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-      GLsizei height, GLenum format, GLsizei imageSize) {
-    const uint32 s = 0;  // TODO(gman): compute correct size
-    gles2::cmds::CompressedTexSubImage2DImmediate* c =
-        GetImmediateCmdSpaceTotalSize<gles2::cmds::CompressedTexSubImage2DImmediate>(s);  // NOLINT
-    if (c) {
-      c->Init(
-          target, level, xoffset, yoffset, width, height, format, imageSize);
     }
   }
 
@@ -1902,17 +1869,6 @@
         GetCmdSpace<gles2::cmds::BindUniformLocationCHROMIUM>();
     if (c) {
       c->Init(program, location, name_shm_id, name_shm_offset, data_size);
-    }
-  }
-
-  void BindUniformLocationCHROMIUMImmediate(
-      GLuint program, GLint location, const char* name) {
-    const uint32 data_size = strlen(name);
-    gles2::cmds::BindUniformLocationCHROMIUMImmediate* c =
-        GetImmediateCmdSpace<gles2::cmds::BindUniformLocationCHROMIUMImmediate>(
-            data_size);
-    if (c) {
-      c->Init(program, location, name, data_size);
     }
   }
 
