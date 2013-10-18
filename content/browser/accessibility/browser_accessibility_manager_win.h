@@ -7,11 +7,14 @@
 
 #include <oleacc.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 namespace content {
 class BrowserAccessibilityWin;
+
+class AccessibleHWND;
 
 // Manages a tree of BrowserAccessibilityWin objects.
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
@@ -73,6 +76,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // A mapping from the Windows-specific unique IDs (unique within the
   // browser process) to renderer ids within this page.
   base::hash_map<long, int32> unique_id_to_renderer_id_map_;
+
+  bool is_chrome_frame_;
+
+  scoped_ptr<AccessibleHWND> accessible_hwnd_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };
