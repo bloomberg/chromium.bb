@@ -451,6 +451,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   [titleTextField_ setFrame:titleRect];
 
   [accountChooser_ setFrame:headerRect];
+  [accountChooser_ performLayout];
   if ([[signInContainer_ view] isHidden]) {
     [[mainContainer_ view] setFrame:mainRect];
     [mainContainer_ performLayout];

@@ -26,6 +26,7 @@ namespace autofill {
 - (id)initWithFrame:(NSRect)frame
          delegate:(autofill::AutofillDialogViewDelegate*)delegate;
 - (void)update;
+- (void)performLayout;
 
 @end
 
