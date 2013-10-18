@@ -14,6 +14,7 @@ namespace local_discovery {
 
 namespace {
 const char kXPrivetTokenHeaderPrefix[] = "X-Privet-Token: ";
+const char kXPrivetEmptyToken[] = "\"\"";
 }
 
 PrivetURLFetcher::PrivetURLFetcher(
@@ -23,6 +24,8 @@ PrivetURLFetcher::PrivetURLFetcher(
     net::URLRequestContextGetter* request_context,
     PrivetURLFetcher::Delegate* delegate)
     : privet_access_token_(token), delegate_(delegate) {
+  if (privet_access_token_.empty())
+    privet_access_token_ = kXPrivetEmptyToken;
   url_fetcher_.reset(net::URLFetcher::Create(url, request_type, this));
   url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->AddExtraRequestHeader(std::string(kXPrivetTokenHeaderPrefix) +
