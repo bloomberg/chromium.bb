@@ -386,6 +386,8 @@ bool ParsePpdCapabilities(
                            (cm_black != UNKNOWN_COLOR_MODEL) &&
                            (cm_color != cm_black));
   caps.color_default = is_color;
+  caps.color_model = cm_color;
+  caps.bw_model = cm_black;
 
   ppdClose(ppd);
   base::DeleteFile(ppd_file_path, false);

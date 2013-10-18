@@ -67,6 +67,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void ShowSystemDialog();
 
  private:
+  class AccessTokenService;
+  struct CUPSPrinterColorModels;
+
   content::WebContents* preview_web_contents() const;
 
   // Gets the list of printers. |args| is unused.
@@ -191,6 +194,13 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   bool GetPreviewDataAndTitle(scoped_refptr<base::RefCountedBytes>* data,
                               string16* title) const;
 
+#if defined(USE_CUPS)
+  void SaveCUPSColorSetting(const base::DictionaryValue* settings);
+
+  void ConvertColorSettingToCUPSColorModel(
+      base::DictionaryValue* settings) const;
+#endif
+
   // Pointer to current print system.
   scoped_refptr<printing::PrintBackend> print_backend_;
 
@@ -216,8 +226,12 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   scoped_ptr<base::FilePath> print_to_pdf_path_;
 
   // Holds token service to get OAuth2 access tokens.
-  class AccessTokenService;
   scoped_ptr<AccessTokenService> token_service_;
+
+#if defined(USE_CUPS)
+  // The color capabilities from the last printer queried.
+  scoped_ptr<CUPSPrinterColorModels> cups_printer_color_models_;
+#endif
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 

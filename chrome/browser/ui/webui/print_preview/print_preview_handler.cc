@@ -173,6 +173,10 @@ const char kPrinterId[] = "printerId";
 const char kDisableColorOption[] = "disableColorOption";
 const char kSetDuplexAsDefault[] = "setDuplexAsDefault";
 const char kPrinterDefaultDuplexValue[] = "printerDefaultDuplexValue";
+#if defined(USE_CUPS)
+const char kCUPSsColorModel[] = "cupsColorModel";
+const char kCUPSsBWModel[] = "cupsBWModel";
+#endif
 
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
@@ -328,6 +332,11 @@ void GetPrinterCapabilitiesOnFileThread(
   settings_info->SetBoolean(kDisableColorOption, !info.color_changeable);
   settings_info->SetBoolean(printing::kSettingSetColorAsDefault,
                             info.color_default);
+#if defined(USE_CUPS)
+  settings_info->SetInteger(kCUPSsColorModel, info.color_model);
+  settings_info->SetInteger(kCUPSsBWModel, info.bw_model);
+#endif
+
   // TODO(gene): Make new capabilities format for Print Preview
   // that will suit semantic capabiltities better.
   // Refactor pld API code below
@@ -351,6 +360,14 @@ printing::StickySettings* GetStickySettings() {
 }
 
 }  // namespace
+
+#if defined(USE_CUPS)
+struct PrintPreviewHandler::CUPSPrinterColorModels {
+  std::string printer_name;
+  printing::ColorModel color_model;
+  printing::ColorModel bw_model;
+};
+#endif
 
 class PrintPreviewHandler::AccessTokenService
     : public OAuth2TokenService::Consumer {
@@ -657,6 +674,10 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     settings->Remove(printing::kSettingPageRange, NULL);
     // Remove selection only flag for the same reason.
     settings->Remove(printing::kSettingShouldPrintSelectionOnly, NULL);
+
+#if defined(USE_CUPS)
+    ConvertColorSettingToCUPSColorModel(settings.get());
+#endif
 
     // Set ID to know whether printing is for preview.
     settings->SetInteger(printing::kPreviewUIID,
@@ -992,6 +1013,11 @@ void PrintPreviewHandler::SendAccessToken(const std::string& type,
 void PrintPreviewHandler::SendPrinterCapabilities(
     const DictionaryValue* settings_info) {
   VLOG(1) << "Get printer capabilities finished";
+
+#if defined(USE_CUPS)
+  SaveCUPSColorSetting(settings_info);
+#endif
+
   web_ui()->CallJavascriptFunction("updateWithPrinterCapabilities",
                                    *settings_info);
 }
@@ -1171,3 +1197,45 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
   *title = print_preview_ui->initiator_title();
   return true;
 }
+
+#if defined(USE_CUPS)
+void PrintPreviewHandler::SaveCUPSColorSetting(
+    const base::DictionaryValue* settings) {
+  cups_printer_color_models_.reset(new CUPSPrinterColorModels);
+  settings->GetString(kPrinterId, &cups_printer_color_models_->printer_name);
+  settings->GetInteger(
+      kCUPSsColorModel,
+      reinterpret_cast<int*>(&cups_printer_color_models_->color_model));
+  settings->GetInteger(
+      kCUPSsBWModel,
+      reinterpret_cast<int*>(&cups_printer_color_models_->bw_model));
+}
+
+void PrintPreviewHandler::ConvertColorSettingToCUPSColorModel(
+    base::DictionaryValue* settings) const {
+  // Sanity check the printer name.
+  std::string printer_name;
+  if (!settings->GetString(printing::kSettingDeviceName, &printer_name) ||
+      printer_name != cups_printer_color_models_->printer_name) {
+    NOTREACHED();
+    return;
+  }
+
+  int color;
+  if (!settings->GetInteger(printing::kSettingColor, &color)) {
+    NOTREACHED();
+    return;
+  }
+
+  printing::ColorModel bw_model = cups_printer_color_models_->bw_model;
+  if (color == printing::GRAY && bw_model != printing::UNKNOWN_COLOR_MODEL) {
+    settings->SetInteger(printing::kSettingColor, bw_model);
+    return;
+  }
+  DCHECK_EQ(printing::COLOR, color);
+  printing::ColorModel color_model = cups_printer_color_models_->color_model;
+  if (color_model != printing::UNKNOWN_COLOR_MODEL)
+    settings->SetInteger(printing::kSettingColor, color_model);
+}
+
+#endif

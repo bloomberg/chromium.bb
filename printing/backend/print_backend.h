@@ -42,6 +42,11 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   bool color_changeable;
   bool duplex_capable;
 
+#if defined(USE_CUPS)
+  ColorModel color_model;
+  ColorModel bw_model;
+#endif
+
   // Current defaults.
   bool color_default;
   DuplexMode duplex_default;
