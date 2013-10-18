@@ -417,7 +417,7 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
         Animation::WaitingForTargetAvailability;
     double start_time = 0;
     scoped_ptr<Animation> to_add(active_animations_[i]->CloneAndInitialize(
-        Animation::ControllingInstance, initial_run_state, start_time));
+        initial_run_state, start_time));
     DCHECK(!to_add->needs_synchronized_start_time());
     controller_impl->AddAnimation(to_add.Pass());
   }
@@ -675,11 +675,9 @@ void LayerAnimationController::ReplaceImplThreadAnimations(
           Animation::WaitingForTargetAvailability;
       double start_time = 0;
       to_add = active_animations_[i]->CloneAndInitialize(
-          Animation::ControllingInstance,
           initial_run_state, start_time).Pass();
     } else {
-      to_add = active_animations_[i]->Clone(
-          Animation::ControllingInstance).Pass();
+      to_add = active_animations_[i]->Clone().Pass();
     }
 
     controller_impl->AddAnimation(to_add.Pass());
