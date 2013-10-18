@@ -266,7 +266,7 @@ public:
 
     StyleSharingList& styleSharingList() { return m_styleSharingList; }
 
-    bool supportsStyleSharing(Element*);
+    bool hasRulesForId(const AtomicString&) const;
 
     void addToStyleSharingList(Element*);
     void clearStyleSharingList();

@@ -316,7 +316,7 @@ RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& c
 {
     STYLE_STATS_ADD_SEARCH();
 
-    if (!m_styleResolver->supportsStyleSharing(context.element()))
+    if (!context.element()->supportsStyleSharing())
         return 0;
 
     STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING();

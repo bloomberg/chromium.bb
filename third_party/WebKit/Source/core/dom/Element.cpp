@@ -1654,7 +1654,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
             if (shouldRecalcStyle(change, element)) {
                 parentPusher.push();
                 element->recalcStyle(change);
-            } else if (document().styleResolver()->supportsStyleSharing(element)) {
+            } else if (element->supportsStyleSharing()) {
                 document().styleResolver()->addToStyleSharingList(element);
             }
         }
@@ -3541,6 +3541,41 @@ void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* s
 {
     ASSERT(isStyledElement());
     style->setProperty(propertyID, value, false);
+}
+
+bool Element::supportsStyleSharing() const
+{
+    if (!isStyledElement() || !parentElement())
+        return false;
+    // If the element has inline style it is probably unique.
+    if (inlineStyle())
+        return false;
+    if (isSVGElement() && toSVGElement(this)->animatedSMILStyleProperties())
+        return false;
+    // Ids stop style sharing if they show up in the stylesheets.
+    if (hasID() && document().styleResolver()->hasRulesForId(idForStyleResolution()))
+        return false;
+    // Active and hovered elements always make a chain towards the document node
+    // and no siblings or cousins will have the same state.
+    if (hovered())
+        return false;
+    if (active())
+        return false;
+    if (focused())
+        return false;
+    if (parentElement()->hasFlagsSetDuringStylingOfChildren())
+        return false;
+    if (hasScopedHTMLStyleChild())
+        return false;
+    if (this == document().cssTarget())
+        return false;
+    if (isHTMLElement() && toHTMLElement(this)->hasDirectionAuto())
+        return false;
+    if (hasActiveAnimations())
+        return false;
+    if (shadow() && shadow()->containsActiveStyles())
+        return false;
+    return true;
 }
 
 void ElementData::deref()

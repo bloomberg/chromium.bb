@@ -462,6 +462,8 @@ public:
     bool recalcStyle(StyleRecalcChange);
     void didAffectSelector(AffectedSelectorMask);
 
+    bool supportsStyleSharing() const;
+
     ElementShadow* shadow() const;
     ElementShadow& ensureShadow();
     PassRefPtr<ShadowRoot> createShadowRoot(ExceptionState&);
