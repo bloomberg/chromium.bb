@@ -55,7 +55,7 @@
 
 namespace WebCore {
 
-WorkerScriptController::WorkerScriptController(WorkerGlobalScope* workerGlobalScope)
+WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope)
     : m_workerGlobalScope(workerGlobalScope)
     , m_isolate(v8::Isolate::New())
     , m_executionForbidden(false)
@@ -77,7 +77,7 @@ WorkerScriptController::~WorkerScriptController()
     // The corresponding call to didStartWorkerRunLoop is in
     // WorkerThread::workerThread().
     // See http://webkit.org/b/83104#c14 for why this is here.
-    WebKit::Platform::current()->didStopWorkerRunLoop(WebKit::WebWorkerRunLoop(&m_workerGlobalScope->thread()->runLoop()));
+    WebKit::Platform::current()->didStopWorkerRunLoop(WebKit::WebWorkerRunLoop(&m_workerGlobalScope.thread()->runLoop()));
 
     disposeContext();
     V8PerIsolateData::dispose(m_isolate);
@@ -116,7 +116,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     WrapperTypeInfo* contextType = &V8DedicatedWorkerGlobalScope::info;
-    if (!m_workerGlobalScope->isDedicatedWorkerGlobalScope())
+    if (!m_workerGlobalScope.isDedicatedWorkerGlobalScope())
         contextType = &V8SharedWorkerGlobalScope::info;
     v8::Handle<v8::Function> workerGlobalScopeConstructor = m_perContextData->constructorForType(contextType);
     v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(workerGlobalScopeConstructor);
@@ -154,10 +154,10 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     v8::Handle<v8::String> scriptString = v8String(script, m_isolate);
     v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, 0, m_isolate);
-    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(compiledScript, m_workerGlobalScope, m_isolate);
+    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(compiledScript, &m_workerGlobalScope, m_isolate);
 
     if (!block.CanContinue()) {
-        m_workerGlobalScope->script()->forbidExecution();
+        m_workerGlobalScope.script()->forbidExecution();
         return ScriptValue();
     }
 
@@ -188,13 +188,13 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
     evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition(), &state);
     if (state.hadException) {
         if (errorEvent) {
-            *errorEvent = m_workerGlobalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin) ?
+            *errorEvent = m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin) ?
                 ErrorEvent::createSanitizedError(0) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, 0);
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), m_isolate);
         } else {
-            ASSERT(!m_workerGlobalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
+            ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RefPtr<ErrorEvent> event = m_errorEventFromImportedScript ? m_errorEventFromImportedScript.release() : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, 0);
-            m_workerGlobalScope->reportException(event, 0, NotSharableCrossOrigin);
+            m_workerGlobalScope.reportException(event, 0, NotSharableCrossOrigin);
         }
     }
 }
@@ -220,13 +220,13 @@ bool WorkerScriptController::isExecutionTerminating() const
 
 void WorkerScriptController::forbidExecution()
 {
-    ASSERT(m_workerGlobalScope->isContextThread());
+    ASSERT(m_workerGlobalScope.isContextThread());
     m_executionForbidden = true;
 }
 
 bool WorkerScriptController::isExecutionForbidden() const
 {
-    ASSERT(m_workerGlobalScope->isContextThread());
+    ASSERT(m_workerGlobalScope.isContextThread());
     return m_executionForbidden;
 }
 

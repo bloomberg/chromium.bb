@@ -80,7 +80,7 @@ public:
 WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<WorkerClients> workerClients)
     : m_url(url)
     , m_userAgent(userAgent)
-    , m_script(adoptPtr(new WorkerScriptController(this)))
+    , m_script(adoptPtr(new WorkerScriptController(*this)))
     , m_thread(thread)
     , m_workerInspectorController(adoptPtr(new WorkerInspectorController(this)))
     , m_closing(false)

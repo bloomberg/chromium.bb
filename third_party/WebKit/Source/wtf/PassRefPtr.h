@@ -60,6 +60,7 @@ namespace WTF {
     public:
         PassRefPtr() : m_ptr(0) { }
         PassRefPtr(T* ptr) : m_ptr(ptr) { refIfNotNull(ptr); }
+        explicit PassRefPtr(T& ptr) : m_ptr(&ptr) { m_ptr->ref(); }
         // It somewhat breaks the type system to allow transfer of ownership out of
         // a const PassRefPtr. However, it makes it much easier to work with PassRefPtr
         // temporaries, and we don't have a need to use real const PassRefPtrs anyway.

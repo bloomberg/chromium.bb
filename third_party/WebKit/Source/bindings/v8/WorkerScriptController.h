@@ -63,10 +63,10 @@ namespace WebCore {
 
     class WorkerScriptController {
     public:
-        WorkerScriptController(WorkerGlobalScope*);
+        explicit WorkerScriptController(WorkerGlobalScope&);
         ~WorkerScriptController();
 
-        WorkerGlobalScope* workerGlobalScope() { return m_workerGlobalScope; }
+        WorkerGlobalScope& workerGlobalScope() { return m_workerGlobalScope; }
 
         void evaluate(const ScriptSourceCode&, RefPtr<ErrorEvent>* = 0);
 
@@ -107,7 +107,7 @@ namespace WebCore {
         bool initializeContextIfNeeded();
         void disposeContext();
 
-        WorkerGlobalScope* m_workerGlobalScope;
+        WorkerGlobalScope& m_workerGlobalScope;
         v8::Isolate* m_isolate;
         ScopedPersistent<v8::Context> m_context;
         OwnPtr<V8PerContextData> m_perContextData;

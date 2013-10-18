@@ -156,7 +156,7 @@ void transferHiddenDependency(v8::Handle<v8::Object> object, EventListener* oldV
 ExecutionContext* getExecutionContext()
 {
     if (WorkerScriptController* controller = WorkerScriptController::controllerForContext())
-        return controller->workerGlobalScope();
+        return &controller->workerGlobalScope();
 
     return currentDocument();
 }

@@ -62,7 +62,7 @@ static const char allowDatabaseMode[] = "allowDatabaseMode";
 // call back to the worker context.
 class AllowDatabaseMainThreadBridge : public WorkerAllowMainThreadBridgeBase {
 public:
-    static PassRefPtr<AllowDatabaseMainThreadBridge> create(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode, WebFrame* frame, const String& name, const String& displayName, unsigned long estimatedSize)
+    static PassRefPtr<AllowDatabaseMainThreadBridge> create(WebCore::WorkerGlobalScope& workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode, WebFrame* frame, const String& name, const String& displayName, unsigned long estimatedSize)
     {
         return adoptRef(new AllowDatabaseMainThreadBridge(workerGlobalScope, webWorkerBase, mode, frame, name, displayName, estimatedSize));
     }
@@ -85,8 +85,8 @@ private:
         unsigned long m_estimatedSize;
     };
 
-    AllowDatabaseMainThreadBridge(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode, WebFrame* frame, const String& name, const String& displayName, unsigned long estimatedSize)
-        : WorkerAllowMainThreadBridgeBase(workerGlobalScope, webWorkerBase)
+    AllowDatabaseMainThreadBridge(WebCore::WorkerGlobalScope& workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode, WebFrame* frame, const String& name, const String& displayName, unsigned long estimatedSize)
+        : WorkerAllowMainThreadBridgeBase(&workerGlobalScope, webWorkerBase)
     {
         postTaskToMainThread(
             adoptPtr(new AllowDatabaseParams(mode, frame, name, displayName, estimatedSize)));
@@ -104,8 +104,8 @@ private:
 bool allowDatabaseForWorker(WebFrame* frame, const WebString& name, const WebString& displayName, unsigned long estimatedSize)
 {
     WebCore::WorkerScriptController* controller = WebCore::WorkerScriptController::controllerForContext();
-    WebCore::WorkerGlobalScope* workerGlobalScope = controller->workerGlobalScope();
-    WebCore::WorkerThread* workerThread = workerGlobalScope->thread();
+    WebCore::WorkerGlobalScope& workerGlobalScope = controller->workerGlobalScope();
+    WebCore::WorkerThread* workerThread = workerGlobalScope.thread();
     WebCore::WorkerRunLoop& runLoop = workerThread->runLoop();
     WebCore::WorkerLoaderProxy* workerLoaderProxy = &workerThread->workerLoaderProxy();
 
@@ -116,7 +116,7 @@ bool allowDatabaseForWorker(WebFrame* frame, const WebString& name, const WebStr
     RefPtr<AllowDatabaseMainThreadBridge> bridge = AllowDatabaseMainThreadBridge::create(workerGlobalScope, workerLoaderProxy->toWebWorkerBase(), mode, frame, name, displayName, estimatedSize);
 
     // Either the bridge returns, or the queue gets terminated.
-    if (runLoop.runInMode(workerGlobalScope, mode) == MessageQueueTerminated) {
+    if (runLoop.runInMode(&workerGlobalScope, mode) == MessageQueueTerminated) {
         bridge->cancel();
         return false;
     }
