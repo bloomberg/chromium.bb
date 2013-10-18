@@ -17,6 +17,7 @@ img {
   height: 16px;
   padding-left: 2px;
   padding-right: 5px;
+  position: absolute;
   width: 16px;
 }
 
@@ -151,6 +152,10 @@ img {
 
 .subrow > div {
   margin-right: 0.5em;
+}
+
+.subrow.main {
+  margin-left: 21px;
 }
 
 .webview-thumbnail {

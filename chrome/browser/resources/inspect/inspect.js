@@ -313,11 +313,13 @@ function addToPagesList(data) {
 }
 
 function addToExtensionsList(data) {
-  addTargetToList(data, $('extensions-list'), ['name', 'url']);
+  var row = addTargetToList(data, $('extensions-list'), ['name', 'url']);
+  addFavicon(row, data);
 }
 
 function addToAppsList(data) {
   var row = addTargetToList(data, $('apps-list'), ['name', 'url']);
+  addFavicon(row, data);
   if (data.guests) {
     Array.prototype.forEach.call(data.guests, function(guest) {
       var guestRow = addTargetToList(guest, row, ['name', 'url']);

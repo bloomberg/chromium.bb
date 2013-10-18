@@ -20,7 +20,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -181,6 +183,9 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
         else
           target_type = kExtensionTargetType;
         title = extension->name();
+        favicon_url = extensions::ExtensionIconSource::GetIconURL(
+            extension, extension_misc::EXTENSION_ICON_SMALLISH,
+            ExtensionIconSet::MATCH_BIGGER, false, NULL);
       }
     }
   }
