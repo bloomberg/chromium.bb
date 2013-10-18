@@ -180,6 +180,14 @@ camera.views.Camera = function(context) {
   this.ribbonInitialization_ = true;
 
   /**
+   * Scroll bar for the ribbon with effects.
+   * @type {camera.HorizontalScrollBar}
+   * @private
+   */
+  this.scrollBar_ = new camera.HorizontalScrollBar(
+      document.querySelector('#effects'));
+
+  /**
    * Scroller for the ribbon with effects.
    * @type {camera.util.SmoothScroller}
    * @private
@@ -242,9 +250,7 @@ camera.views.Camera = function(context) {
   // Select the default effect.
   this.setCurrentEffect_(0);
 
-  // Make the preview ribbon possible to scroll by dragging with mouse.
-  document.querySelector('#effects').addEventListener(
-      'mousemove', this.onRibbonMouseMove_.bind(this));
+  // TODO(mtomasz): Make the ribbon scrollable by dragging.
 
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(

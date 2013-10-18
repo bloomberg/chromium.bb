@@ -39,6 +39,13 @@ camera.views.Browser = function(context) {
   this.pictures_ = [];
 
   /**
+   * @type {camera.HorizontalScrollBar}
+   * @private
+   */
+  this.scrollBar_ = new camera.HorizontalScrollBar(
+      document.querySelector('#browser'));
+
+  /**
    * @type {camera.util.SmoothScroller}
    * @private
    */
