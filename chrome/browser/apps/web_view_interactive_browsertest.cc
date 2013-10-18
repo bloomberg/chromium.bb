@@ -370,8 +370,11 @@ class WebViewInteractiveTest
   void DragTestStep1() {
     // Move mouse to start of text.
     MoveMouseInsideWindow(gfx::Point(45, 8));
+    MoveMouseInsideWindow(gfx::Point(45, 9));
     SendMouseEvent(ui_controls::LEFT, ui_controls::DOWN);
-    MoveMouseInsideWindow(gfx::Point(76, 12));
+
+    MoveMouseInsideWindow(gfx::Point(74, 12));
+    MoveMouseInsideWindow(gfx::Point(78, 12));
 
     // Now wait a bit before moving mouse to initiate drag/drop.
     base::MessageLoop::current()->PostDelayedTask(
@@ -400,18 +403,20 @@ class WebViewInteractiveTest
     // This is because of the nature of drag and drop code (esp. the
     // MessageLoop) in it.
 
-    // Now verify we got a drop and correct drop data.
+    // Now check if we got a drop and read the drop data.
+    embedder_web_contents_ = GetFirstShellWindowWebContents();
     ExtensionTestMessageListener drop_listener("guest-got-drop", false);
-    EXPECT_TRUE(content::ExecuteScript(guest_web_contents_,
-                                       "window.pingEmbedder()"));
+    EXPECT_TRUE(content::ExecuteScript(embedder_web_contents_,
+                                       "window.checkIfGuestGotDrop()"));
     EXPECT_TRUE(drop_listener.WaitUntilSatisfied());
 
     std::string last_drop_data;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        embedder_web_contents_,
-        "window.domAutomationController.send(getLastDropData())",
-        &last_drop_data));
-    EXPECT_EQ(last_drop_data, "Drop me");
+                    embedder_web_contents_,
+                    "window.domAutomationController.send(getLastDropData())",
+                    &last_drop_data));
+
+    last_drop_data_ = last_drop_data;
   }
 
  protected:
@@ -422,6 +427,7 @@ class WebViewInteractiveTest
   bool first_click_;
   // Only used in drag/drop test.
   base::Closure quit_closure_;
+  std::string last_drop_data_;
 };
 
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
@@ -678,24 +684,47 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
 // Drag and drop inside a webview is currently only enabled for linux and mac,
 // but the tests don't work on anything except chromeos for now. This is because
 // of simulating mouse drag code's dependency on platforms.
-//
-// Disabled because of flake on CrOS: http://crbug.com/161112
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_DragDropWithinWebView) {
-  SetupTest(
-      "web_view/dnd_within_webview",
-      "/extensions/platform_apps/web_view/dnd_within_webview/guest.html");
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DragDropWithinWebView) {
+  ExtensionTestMessageListener guest_connected_listener("connected", false);
+  LoadAndLaunchPlatformApp("web_view/dnd_within_webview");
+  ASSERT_TRUE(guest_connected_listener.WaitUntilSatisfied());
+
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
+
+  gfx::Rect offset;
+  embedder_web_contents_ = GetFirstShellWindowWebContents();
+  embedder_web_contents_->GetView()->GetContainerBounds(&offset);
+  corner_ = gfx::Point(offset.x(), offset.y());
+
+  // In the drag drop test we add 20px padding to the page body because on
+  // windows if we get too close to the edge of the window the resize cursor
+  // appears and we start dragging the window edge.
+  corner_.Offset(20, 20);
 
   // Flush any pending events to make sure we start with a clean slate.
   content::RunAllPendingInMessageLoop();
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&WebViewInteractiveTest::DragTestStep1,
-                 base::Unretained(this)));
-  run_loop.Run();
+  for (;;) {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebViewInteractiveTest::DragTestStep1,
+                   base::Unretained(this)));
+    run_loop.Run();
+
+    if (last_drop_data_ == "Drop me")
+      break;
+
+    LOG(INFO) << "Drag was cancelled in interactive_test, restarting drag";
+
+    // Reset state for next try.
+    ExtensionTestMessageListener reset_listener("resetStateReply", false);
+    EXPECT_TRUE(content::ExecuteScript(embedder_web_contents_,
+                                       "window.resetState()"));
+    ASSERT_TRUE(reset_listener.WaitUntilSatisfied());
+  }
+  ASSERT_EQ("Drop me", last_drop_data_);
 }
 #endif  // (defined(OS_CHROMEOS))
 
