@@ -404,7 +404,7 @@ gears_create(struct display *display)
 	gears = zalloc(sizeof *gears);
 	gears->d = display;
 	gears->window = window_create(display);
-	gears->widget = frame_create(gears->window, gears);
+	gears->widget = window_frame_create(gears->window, gears);
 	window_set_title(gears->window, "Wayland Gears");
 
 	gears->display = display_get_egl_display(gears->d);

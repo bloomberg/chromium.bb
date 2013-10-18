@@ -251,7 +251,7 @@ view_create(struct display *display,
         }
 
 	view->window = window_create(display);
-	view->widget = frame_create(view->window, view);
+	view->widget = window_frame_create(view->window, view);
 	window_set_title(view->window, title);
 	g_free(title);
 	view->display = display;

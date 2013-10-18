@@ -200,7 +200,7 @@ create_wscreensaver_instance(struct wscreensaver *screensaver,
 					window_get_wl_surface(mi->window),
 					output);
 	} else {
-		mi->widget = frame_create(mi->window, mi);
+		mi->widget = window_frame_create(mi->window, mi);
 	}
 	widget_set_redraw_handler(mi->widget, redraw_handler);
 
