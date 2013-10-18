@@ -98,3 +98,16 @@ and let the app read from all auto-detected media galleries on the
 user's computer. The user may add or remove galleries using the
 media gallery permission dialog, after which the app will be able
 to read all the media files from galleries that the user selected.</p>
+
+<h2 id="iTunes">iTunes</h2>
+
+<p>If present, the user's iTunes library can be accessed as a media gallery.
+In addition to the media files in the library, the "iTunes Music Library.xml"
+file is also presented. Regardless of where the music files are actually on the
+disk (and where the xml file says they are), they are mapping into an
+Artist/Album/Track hierarchy like iTunes does by default.  This mapping doesn't
+always work perfectly, so there are two things to note for Apps trying to match
+the xml file with files in the gallery. If the filenames for tracks within an
+album are not unique, they will be uniquified by adding the track id in
+parentheses before the extension, and if there is a colon or a slash in the
+artist, album, or track name, they are turned into underscore characters.</p>
