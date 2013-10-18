@@ -202,6 +202,30 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(CaptureWindowDelegateImpl);
 };
 
+// aura::WindowDelegate that tracks the window that was reported as having the
+// focus before us.
+class FocusDelegate : public TestWindowDelegate,
+  public aura::client::FocusChangeObserver {
+ public:
+  FocusDelegate() : previous_focused_window_(NULL) {
+  }
+
+  aura::Window* previous_focused_window() const {
+    return previous_focused_window_;
+  }
+
+  // Overridden from client::FocusChangeObserver:
+  virtual void OnWindowFocused(Window* gained_focus,
+                               Window* lost_focus) OVERRIDE {
+    previous_focused_window_ = lost_focus;
+  }
+
+ private:
+  aura::Window* previous_focused_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusDelegate);
+};
+
 // Keeps track of the location of the gesture.
 class GestureTrackPositionDelegate : public TestWindowDelegate {
  public:
@@ -1756,6 +1780,44 @@ TEST_F(WindowTest, TransientChildrenGroupBelow) {
   parent->StackChildBelow(w213, w11);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
+}
+
+// Tests that when a focused window is closed, its parent inherits the focus.
+TEST_F(WindowTest, FocusedWindowTest) {
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
+  scoped_ptr<Window> child(CreateTestWindowWithId(1, parent.get()));
+
+  parent->Show();
+
+  child->Focus();
+  EXPECT_TRUE(child->HasFocus());
+  EXPECT_FALSE(parent->HasFocus());
+
+  child.reset();
+  EXPECT_TRUE(parent->HasFocus());
+}
+
+// Tests that the previously-focused window is passed to OnWindowFocused.
+// TODO(beng): Remove once the FocusController lands.
+TEST_F(WindowTest, OldFocusedWindowTest) {
+  const gfx::Rect kBounds(0, 0, 100, 100);
+
+  FocusDelegate delegate1;
+  scoped_ptr<Window> window1(
+      CreateTestWindowWithDelegate(&delegate1, 0, kBounds, root_window()));
+  client::SetFocusChangeObserver(window1.get(), &delegate1);
+  window1->Focus();
+  ASSERT_TRUE(window1->HasFocus());
+  EXPECT_TRUE(delegate1.previous_focused_window() == NULL);
+
+  FocusDelegate delegate2;
+  scoped_ptr<Window> window2(
+      CreateTestWindowWithDelegate(&delegate2, 1, kBounds, root_window()));
+  client::SetFocusChangeObserver(window2.get(), &delegate2);
+  window2->Focus();
+  ASSERT_TRUE(window2->HasFocus());
+  EXPECT_FALSE(window1->HasFocus());
+  EXPECT_EQ(window1.get(), delegate2.previous_focused_window());
 }
 
 namespace {

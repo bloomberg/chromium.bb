@@ -17,6 +17,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"

@@ -11,10 +11,10 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/env_test_helper.h"
-#include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/base/ime/dummy_input_method.h"
@@ -77,7 +77,7 @@ void AuraTestHelper::SetUp() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   root_window_.reset(test_screen_->CreateRootWindowForPrimaryDisplay());
 
-  focus_client_.reset(new TestFocusClient);
+  focus_client_.reset(new FocusManager);
   client::SetFocusClient(root_window_.get(), focus_client_.get());
   stacking_client_.reset(new TestStackingClient(root_window_.get()));
   activation_client_.reset(

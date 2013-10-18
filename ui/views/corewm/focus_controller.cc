@@ -179,6 +179,15 @@ aura::Window* FocusController::GetFocusedWindow() {
   return focused_window_;
 }
 
+void FocusController::OnWindowHiddenInRootWindow(
+    aura::Window* window,
+    aura::RootWindow* root_window,
+    bool destroyed) {
+  //NOTREACHED();
+  // This method is only for compat with aura::FocusManager. It should not be
+  // needed in the new FocusController.
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FocusController, ui::EventHandler implementation:
 void FocusController::OnKeyEvent(ui::KeyEvent* event) {

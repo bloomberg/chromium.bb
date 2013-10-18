@@ -8,8 +8,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/event_client.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"

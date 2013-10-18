@@ -24,7 +24,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/client/focus_client.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

@@ -11,6 +11,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"
@@ -705,6 +706,12 @@ void RootWindow::OnWindowRemovedFromRootWindow(Window* detached,
 }
 
 void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
+  // TODO(beng): This should be removed once FocusController is turned on.
+  if (client::GetFocusClient(this)) {
+    client::GetFocusClient(this)->OnWindowHiddenInRootWindow(
+        invisible, this, reason == WINDOW_DESTROYED);
+  }
+
   // Do not clear the capture, and the |event_dispatch_target_| if the
   // window is moving across root windows, because the target itself
   // is actually still visible and clearing them stops further event

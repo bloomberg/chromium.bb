@@ -83,6 +83,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

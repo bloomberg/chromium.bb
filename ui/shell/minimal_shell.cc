@@ -7,8 +7,8 @@
 #include "ui/aura/client/default_activation_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/test_focus_client.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 
@@ -22,7 +22,7 @@ MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
   root_window_->Init();
   aura::client::SetStackingClient(root_window_.get(), this);
 
-  focus_client_.reset(new aura::test::TestFocusClient);
+  focus_client_.reset(new aura::FocusManager);
   aura::client::SetFocusClient(root_window_.get(), focus_client_.get());
 
   root_window_event_filter_ = new views::corewm::CompoundEventFilter;

@@ -27,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
