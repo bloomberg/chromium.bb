@@ -349,7 +349,10 @@ html[oobe=old] .pod.focused .action-box-area {
 .pod.public-account .name,
 .side-pane-name {
   -webkit-padding-end: 16px;
+  height: 42px;
   outline: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .learn-more,
