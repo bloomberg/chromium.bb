@@ -73,12 +73,6 @@ class ResourceMetadata {
   FileError RemoveEntry(const std::string& id);
 
   // Finds an entry (a file or a directory) by |id|.
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void GetResourceEntryByIdOnUIThread(const std::string& id,
-                                      const GetResourceEntryCallback& callback);
-
-  // Synchronous version of GetResourceEntryByIdOnUIThread().
   FileError GetResourceEntryById(const std::string& id,
                                  ResourceEntry* out_entry);
 

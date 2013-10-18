@@ -195,56 +195,6 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
       resource_metadata_;
 };
 
-TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById_RootDirectory) {
-  // Look up the root directory by its resource ID.
-  FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
-      util::kDriveGrandRootSpecialResourceId,
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("drive", entry->base_name());
-}
-
-TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById) {
-  // Get file4 by path.
-  FileError error = FILE_ERROR_FAILED;
-  std::string local_id;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::GetIdByPath,
-                 base::Unretained(resource_metadata_.get()),
-                 base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"),
-                 &local_id),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // Confirm that an existing file is found.
-  error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
-      local_id,
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(entry.get());
-  EXPECT_EQ("file4", entry->base_name());
-
-  // Confirm that a non existing file is not found.
-  error = FILE_ERROR_FAILED;
-  entry.reset();
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
-      "file:non_existing",
-      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  EXPECT_FALSE(entry.get());
-}
-
 TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryByPath) {
   // Confirm that an existing file is found.
   FileError error = FILE_ERROR_FAILED;
@@ -610,6 +560,31 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
   // Try removing root. This should fail.
   EXPECT_EQ(FILE_ERROR_ACCESS_DENIED, resource_metadata_->RemoveEntry(
       util::kDriveGrandRootSpecialResourceId));
+}
+
+TEST_F(ResourceMetadataTest, GetResourceEntryById_RootDirectory) {
+  // Look up the root directory by its ID.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      util::kDriveGrandRootSpecialResourceId, &entry));
+  EXPECT_EQ("drive", entry.base_name());
+}
+
+TEST_F(ResourceMetadataTest, GetResourceEntryById) {
+  // Get file4 by path.
+  std::string local_id;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetIdByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1/file4"), &local_id));
+
+  // Confirm that an existing file is found.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
+      local_id, &entry));
+  EXPECT_EQ("file4", entry.base_name());
+
+  // Confirm that a non existing file is not found.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, resource_metadata_->GetResourceEntryById(
+      "file:non_existing", &entry));
 }
 
 TEST_F(ResourceMetadataTest, Iterate) {

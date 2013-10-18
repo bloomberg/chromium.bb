@@ -215,24 +215,6 @@ FileError ResourceMetadata::RemoveEntry(const std::string& id) {
   return FILE_ERROR_OK;
 }
 
-void ResourceMetadata::GetResourceEntryByIdOnUIThread(
-    const std::string& id,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  ResourceEntry* entry_ptr = entry.get();
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::GetResourceEntryById,
-                 base::Unretained(this),
-                 id,
-                 entry_ptr),
-      base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
-}
-
 FileError ResourceMetadata::GetResourceEntryById(const std::string& id,
                                                  ResourceEntry* out_entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
