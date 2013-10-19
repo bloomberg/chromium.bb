@@ -103,6 +103,12 @@ void TooltipWin::SetText(aura::Window* window,
   // See comment in header for details on why |location_| is needed.
   location_ = location;
 
+  // Without this we get a flicker of the tooltip appearing at 0x0. Not sure
+  // why.
+  SetWindowPos(tooltip_hwnd_, NULL, 0, 0, 0, 0,
+               SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
+               SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
+
   base::string16 adjusted_text(tooltip_text);
   base::i18n::AdjustStringForLocaleDirection(&adjusted_text);
   toolinfo_.lpszText = const_cast<WCHAR*>(adjusted_text.c_str());
