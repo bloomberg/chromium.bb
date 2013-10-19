@@ -8,10 +8,15 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
 
 class Profile;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
@@ -47,7 +52,8 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   // UserCloudPolicyStore at startup.
   static scoped_ptr<UserCloudPolicyManager> CreateForProfile(
       Profile* profile,
-      bool force_immediate_load);
+      bool force_immediate_load,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
  private:
   friend class UserCloudPolicyManager;
@@ -60,7 +66,8 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   UserCloudPolicyManager* GetManagerForProfile(Profile* profile);
   scoped_ptr<UserCloudPolicyManager> CreateManagerForProfile(
       Profile* profile,
-      bool force_immediate_load);
+      bool force_immediate_load,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
   // BrowserContextKeyedBaseFactory:
   virtual void BrowserContextShutdown(

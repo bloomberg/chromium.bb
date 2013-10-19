@@ -101,13 +101,16 @@ std::string DeviceLocalAccountPolicyBroker::GetDisplayName() const {
 DeviceLocalAccountPolicyService::PolicyBrokerWrapper::PolicyBrokerWrapper()
     : parent(NULL), broker(NULL) {}
 
+DeviceLocalAccountPolicyService::PolicyBrokerWrapper::~PolicyBrokerWrapper() {}
+
 DeviceLocalAccountPolicyBroker*
     DeviceLocalAccountPolicyService::PolicyBrokerWrapper::GetBroker() {
   if (!broker) {
     scoped_ptr<DeviceLocalAccountPolicyStore> store(
         new DeviceLocalAccountPolicyStore(account_id,
                                           parent->session_manager_client_,
-                                          parent->device_settings_service_));
+                                          parent->device_settings_service_,
+                                          parent->background_task_runner_));
     broker = new DeviceLocalAccountPolicyBroker(
         user_id, store.Pass(), base::MessageLoopProxy::current());
     broker->core()->store()->AddObserver(parent);
@@ -142,11 +145,13 @@ void DeviceLocalAccountPolicyService::PolicyBrokerWrapper::DeleteBroker() {
 DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
     chromeos::SessionManagerClient* session_manager_client,
     chromeos::DeviceSettingsService* device_settings_service,
-    chromeos::CrosSettings* cros_settings)
+    chromeos::CrosSettings* cros_settings,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : session_manager_client_(session_manager_client),
       device_settings_service_(device_settings_service),
       cros_settings_(cros_settings),
       device_management_service_(NULL),
+      background_task_runner_(background_task_runner),
       cros_settings_callback_factory_(this) {
   local_accounts_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kAccountsPrefDeviceLocalAccounts,

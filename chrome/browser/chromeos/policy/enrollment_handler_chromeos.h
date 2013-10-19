@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -17,6 +18,10 @@
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace enterprise_management {
 class PolicyFetchResponse;
@@ -49,15 +54,17 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // are acceptable. If the mode specified by the server is not acceptable,
   // enrollment will fail with an EnrollmentStatus indicating
   // STATUS_REGISTRATION_BAD_MODE.
-  EnrollmentHandlerChromeOS(DeviceCloudPolicyStoreChromeOS* store,
-                            EnterpriseInstallAttributes* install_attributes,
-                            scoped_ptr<CloudPolicyClient> client,
-                            const std::string& auth_token,
-                            const std::string& client_id,
-                            bool is_auto_enrollment,
-                            const std::string& requisition,
-                            const AllowedDeviceModes& allowed_device_modes,
-                            const EnrollmentCallback& completion_callback);
+  EnrollmentHandlerChromeOS(
+      DeviceCloudPolicyStoreChromeOS* store,
+      EnterpriseInstallAttributes* install_attributes,
+      scoped_ptr<CloudPolicyClient> client,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+      const std::string& auth_token,
+      const std::string& client_id,
+      bool is_auto_enrollment,
+      const std::string& requisition,
+      const AllowedDeviceModes& allowed_device_modes,
+      const EnrollmentCallback& completion_callback);
   virtual ~EnrollmentHandlerChromeOS();
 
   // Starts the enrollment process and reports the result to
@@ -138,6 +145,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   DeviceCloudPolicyStoreChromeOS* store_;
   EnterpriseInstallAttributes* install_attributes_;
   scoped_ptr<CloudPolicyClient> client_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 
   std::string auth_token_;

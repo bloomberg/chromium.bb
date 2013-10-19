@@ -8,9 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/policy/user_policy_disk_cache.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "policy/proto/cloud_policy.pb.h"
 
@@ -59,8 +59,10 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
                               CloudPolicyStore::Status,
                               scoped_ptr<em::PolicyFetchResponse>)> Callback;
 
-  LegacyPolicyCacheLoader(const base::FilePath& token_cache_file,
-                          const base::FilePath& policy_cache_file);
+  LegacyPolicyCacheLoader(
+      const base::FilePath& token_cache_file,
+      const base::FilePath& policy_cache_file,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   virtual ~LegacyPolicyCacheLoader();
 
   // Starts loading, and reports the result to |callback| when done.
@@ -102,14 +104,17 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
 
 LegacyPolicyCacheLoader::LegacyPolicyCacheLoader(
     const base::FilePath& token_cache_file,
-    const base::FilePath& policy_cache_file)
+    const base::FilePath& policy_cache_file,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : weak_factory_(this),
       has_policy_(false),
       status_(CloudPolicyStore::STATUS_OK) {
   token_loader_ = new UserPolicyTokenLoader(weak_factory_.GetWeakPtr(),
-                                            token_cache_file);
+                                            token_cache_file,
+                                            background_task_runner);
   policy_cache_ = new UserPolicyDiskCache(weak_factory_.GetWeakPtr(),
-                                          policy_cache_file);
+                                          policy_cache_file,
+                                          background_task_runner);
 }
 
 LegacyPolicyCacheLoader::~LegacyPolicyCacheLoader() {}
@@ -165,18 +170,21 @@ CloudPolicyStore::Status LegacyPolicyCacheLoader::TranslateLoadResult(
 UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
     chromeos::CryptohomeClient* cryptohome_client,
     chromeos::SessionManagerClient* session_manager_client,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& username,
     const base::FilePath& user_policy_key_dir,
     const base::FilePath& legacy_token_cache_file,
     const base::FilePath& legacy_policy_cache_file)
-    : cryptohome_client_(cryptohome_client),
+    : UserCloudPolicyStoreBase(background_task_runner),
+      cryptohome_client_(cryptohome_client),
       session_manager_client_(session_manager_client),
       username_(username),
       user_policy_key_dir_(user_policy_key_dir),
       weak_factory_(this),
       legacy_cache_dir_(legacy_token_cache_file.DirName()),
       legacy_loader_(new LegacyPolicyCacheLoader(legacy_token_cache_file,
-                                                 legacy_policy_cache_file)),
+                                                 legacy_policy_cache_file,
+                                                 background_task_runner)),
       legacy_caches_loaded_(false),
       policy_key_loaded_(false) {}
 
@@ -388,7 +396,7 @@ void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
   // Policy has been loaded successfully. This indicates that new-style policy
   // is working, so the legacy cache directory can be removed.
   if (!legacy_cache_dir_.empty()) {
-    content::BrowserThread::PostBlockingPoolTask(
+    background_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir,
                    legacy_cache_dir_));
@@ -468,7 +476,7 @@ void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(
 void UserCloudPolicyStoreChromeOS::ReloadPolicyKey(
     const base::Closure& callback) {
   std::vector<uint8>* key = new std::vector<uint8>();
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
+  background_task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&UserCloudPolicyStoreChromeOS::LoadPolicyKey,
                  policy_key_path_,

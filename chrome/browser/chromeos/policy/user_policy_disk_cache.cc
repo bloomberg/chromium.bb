@@ -7,32 +7,14 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/cloud/enterprise_metrics.h"
 #include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
-
 namespace em = enterprise_management;
-
-namespace {
-
-// Other places can sample on the same UMA counter, so make sure they all do
-// it on the same thread (UI).
-void SampleUMAOnUIThread(policy::MetricPolicy sample) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy, sample,
-                            policy::kMetricPolicySize);
-}
-
-void SampleUMA(policy::MetricPolicy sample) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&SampleUMAOnUIThread, sample));
-}
-
-}  // namespace
 
 namespace policy {
 
@@ -40,30 +22,32 @@ UserPolicyDiskCache::Delegate::~Delegate() {}
 
 UserPolicyDiskCache::UserPolicyDiskCache(
     const base::WeakPtr<Delegate>& delegate,
-    const base::FilePath& backing_file_path)
+    const base::FilePath& backing_file_path,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : delegate_(delegate),
-      backing_file_path_(backing_file_path) {}
+      backing_file_path_(backing_file_path),
+      origin_task_runner_(base::MessageLoopProxy::current()),
+      background_task_runner_(background_task_runner) {}
 
 void UserPolicyDiskCache::Load() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool ret = BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&UserPolicyDiskCache::LoadOnFileThread, this));
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  bool ret = background_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&UserPolicyDiskCache::LoadOnFileThread, this));
   DCHECK(ret);
 }
 
 void UserPolicyDiskCache::Store(
     const em::CachedCloudPolicyResponse& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
+  background_task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(&UserPolicyDiskCache::StoreOnFileThread, this, policy));
 }
 
 UserPolicyDiskCache::~UserPolicyDiskCache() {}
 
 void UserPolicyDiskCache::LoadOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   em::CachedCloudPolicyResponse cached_response;
   if (!base::PathExists(backing_file_path_)) {
@@ -94,26 +78,31 @@ void UserPolicyDiskCache::LoadOnFileThread() {
 void UserPolicyDiskCache::LoadDone(
     LoadResult result,
     const em::CachedCloudPolicyResponse& policy) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&UserPolicyDiskCache::ReportResultOnUIThread, this,
-                 result, policy));
+  origin_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &UserPolicyDiskCache::ReportResultOnUIThread, this, result, policy));
 }
 
 void UserPolicyDiskCache::ReportResultOnUIThread(
     LoadResult result,
     const em::CachedCloudPolicyResponse& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
 
   switch (result) {
     case LOAD_RESULT_NOT_FOUND:
       break;
     case LOAD_RESULT_READ_ERROR:
     case LOAD_RESULT_PARSE_ERROR:
-      SampleUMAOnUIThread(kMetricPolicyLoadFailed);
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy,
+                                kMetricPolicyLoadFailed,
+                                policy::kMetricPolicySize);
       break;
     case LOAD_RESULT_SUCCESS:
-      SampleUMAOnUIThread(kMetricPolicyLoadSucceeded);
+      UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy,
+                                kMetricPolicyLoadSucceeded,
+                                policy::kMetricPolicySize);
+      break;
   }
 
   if (delegate_.get())
@@ -122,28 +111,36 @@ void UserPolicyDiskCache::ReportResultOnUIThread(
 
 void UserPolicyDiskCache::StoreOnFileThread(
     const em::CachedCloudPolicyResponse& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
   std::string data;
   if (!policy.SerializeToString(&data)) {
     LOG(WARNING) << "Failed to serialize policy data";
-    SampleUMA(kMetricPolicyStoreFailed);
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy,
+                              kMetricPolicyStoreFailed,
+                              policy::kMetricPolicySize);
     return;
   }
 
   if (!file_util::CreateDirectory(backing_file_path_.DirName())) {
     LOG(WARNING) << "Failed to create directory "
                  << backing_file_path_.DirName().value();
-    SampleUMA(kMetricPolicyStoreFailed);
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy,
+                              kMetricPolicyStoreFailed,
+                              policy::kMetricPolicySize);
     return;
   }
 
   int size = data.size();
   if (file_util::WriteFile(backing_file_path_, data.c_str(), size) != size) {
     LOG(WARNING) << "Failed to write " << backing_file_path_.value();
-    SampleUMA(kMetricPolicyStoreFailed);
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy,
+                              kMetricPolicyStoreFailed,
+                              policy::kMetricPolicySize);
     return;
   }
-  SampleUMA(kMetricPolicyStoreSucceeded);
+  UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy,
+                            kMetricPolicyStoreSucceeded,
+                            policy::kMetricPolicySize);
 }
 
 }  // namespace policy

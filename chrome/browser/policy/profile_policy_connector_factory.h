@@ -46,8 +46,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   // startup.
   static scoped_ptr<ProfilePolicyConnector> CreateForProfile(
       Profile* profile,
-      bool force_immediate_load,
-      base::SequencedTaskRunner* sequenced_task_runner);
+      bool force_immediate_load);
 
   // Overrides the |connector| for the given |profile|; use only in tests.
   // Once this class becomes a proper PKS then it can reuse the testing
@@ -65,8 +64,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
 
   scoped_ptr<ProfilePolicyConnector> CreateForProfileInternal(
       Profile* profile,
-      bool force_immediate_load,
-      base::SequencedTaskRunner* sequenced_task_runner);
+      bool force_immediate_load);
 
   // BrowserContextKeyedBaseFactory:
   virtual void BrowserContextShutdown(

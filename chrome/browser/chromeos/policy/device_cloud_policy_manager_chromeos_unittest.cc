@@ -84,9 +84,11 @@ class DeviceCloudPolicyManagerChromeOSTest
     install_attributes_.reset(new EnterpriseInstallAttributes(
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient()));
     store_ = new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
-                                                install_attributes_.get());
+                                                install_attributes_.get(),
+                                                loop_.message_loop_proxy());
     manager_.reset(new DeviceCloudPolicyManagerChromeOS(
         make_scoped_ptr(store_),
+        loop_.message_loop_proxy(),
         loop_.message_loop_proxy(),
         install_attributes_.get()));
 

@@ -37,7 +37,7 @@ class CloudPolicyRefreshScheduler
   static const int64 kRefreshDelayMinMs;
   static const int64 kRefreshDelayMaxMs;
 
-  // |client|, |store| and |prefs| pointers must stay valid throughout the
+  // |client| and |store| pointers must stay valid throughout the
   // lifetime of CloudPolicyRefreshScheduler.
   CloudPolicyRefreshScheduler(
       CloudPolicyClient* client,

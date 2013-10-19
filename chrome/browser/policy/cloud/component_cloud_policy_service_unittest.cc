@@ -25,8 +25,6 @@
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "components/policy/core/common/schema.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -99,9 +97,7 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
 
 class ComponentCloudPolicyServiceTest : public testing::Test {
  protected:
-  ComponentCloudPolicyServiceTest()
-      : ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(content::BrowserThread::FILE, &loop_) {}
+  ComponentCloudPolicyServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -200,8 +196,6 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   }
 
   base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<TestURLRequestContextGetter> request_context_;
   net::TestURLFetcherFactory fetcher_factory_;

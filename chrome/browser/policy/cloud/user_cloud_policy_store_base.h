@@ -8,10 +8,15 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
@@ -19,7 +24,8 @@ namespace policy {
 // functionality.
 class UserCloudPolicyStoreBase : public CloudPolicyStore {
  public:
-  UserCloudPolicyStoreBase();
+  explicit UserCloudPolicyStoreBase(
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   virtual ~UserCloudPolicyStoreBase();
 
  protected:
@@ -34,7 +40,14 @@ class UserCloudPolicyStoreBase : public CloudPolicyStore {
       scoped_ptr<enterprise_management::PolicyData> policy_data,
       scoped_ptr<enterprise_management::CloudPolicySettings> payload);
 
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner() const {
+    return background_task_runner_;
+  }
+
  private:
+  // Task runner for background file operations.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreBase);
 };
 

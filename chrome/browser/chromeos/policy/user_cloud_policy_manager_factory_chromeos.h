@@ -8,10 +8,15 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
 
 class Profile;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace content {
 class BrowserContext;
@@ -53,7 +58,8 @@ class UserCloudPolicyManagerFactoryChromeOS
   // UserCloudPolicyStore at startup.
   static scoped_ptr<UserCloudPolicyManagerChromeOS> CreateForProfile(
       Profile* profile,
-      bool force_immediate_load);
+      bool force_immediate_load,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
  private:
   friend struct DefaultSingletonTraits<UserCloudPolicyManagerFactoryChromeOS>;
@@ -65,7 +71,8 @@ class UserCloudPolicyManagerFactoryChromeOS
   UserCloudPolicyManagerChromeOS* GetManagerForProfile(Profile* profile);
   scoped_ptr<UserCloudPolicyManagerChromeOS> CreateManagerForProfile(
       Profile* profile,
-      bool force_immediate_load);
+      bool force_immediate_load,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
   // BrowserContextKeyedBaseFactory:
   virtual void BrowserContextShutdown(

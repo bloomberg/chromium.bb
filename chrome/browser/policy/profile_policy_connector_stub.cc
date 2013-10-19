@@ -12,9 +12,7 @@ ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile) {}
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
-void ProfilePolicyConnector::Init(
-    bool force_immediate_load,
-    base::SequencedTaskRunner* sequenced_task_runner) {
+void ProfilePolicyConnector::Init(bool force_immediate_load) {
   policy_service_.reset(new PolicyServiceStub());
 }
 
