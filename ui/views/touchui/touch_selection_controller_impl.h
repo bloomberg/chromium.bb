@@ -45,6 +45,11 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // system to that of the client view.
   void ConvertPointToClientView(EditingHandleView* source, gfx::Point* point);
 
+  // Convenience method to set a handle's selection rect and hide it if it is
+  // located out of client view.
+  void SetHandleSelectionRect(EditingHandleView* handle, const gfx::Rect& rect,
+                              const gfx::Rect& rect_in_screen);
+
   // Overridden from TouchEditingMenuController.
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
@@ -92,8 +97,13 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // Pointer to the SelectionHandleView being dragged during a drag session.
   EditingHandleView* dragging_handle_;
 
-  gfx::Rect selection_end_point_1;
-  gfx::Rect selection_end_point_2;
+  // Selection end points. In cursor mode, the two end points are the same and
+  // correspond to |cursor_handle_|; otherwise, they correspond to
+  // |selection_handle_1_| and |selection_handle_2_|, respectively. These
+  // values should be used when selection end points are needed rather than
+  // position of handles which might be invalid when handles are hidden.
+  gfx::Rect selection_end_point_1_;
+  gfx::Rect selection_end_point_2_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImpl);
 };

@@ -54,11 +54,6 @@ const int kSelectionHandleVerticalDragOffset = 5;
 const int kSelectionHandleHorizPadding = 10;
 const int kSelectionHandleVertPadding = 20;
 
-// The minimum selection size to trigger selection controller.
-// TODO(varunjain): Figure out if this is really required and get rid of it if
-// it isnt.
-const int kMinSelectionSize = 1;
-
 const int kContextMenuTimoutMs = 200;
 
 // Creates a widget to host SelectionHandleView.
@@ -90,15 +85,6 @@ gfx::Image* GetHandleImage() {
 
 gfx::Size GetHandleImageSize() {
   return GetHandleImage()->Size();
-}
-
-// The points may not match exactly, since the selection range computation may
-// introduce some floating point errors. So check for a minimum size to decide
-// whether or not there is any selection.
-bool IsEmptySelection(const gfx::Point& p1, const gfx::Point& p2) {
-  int delta_x = p2.x() - p1.x();
-  int delta_y = p2.y() - p1.y();
-  return (abs(delta_x) < kMinSelectionSize && abs(delta_y) < kMinSelectionSize);
 }
 
 // Cannot use gfx::UnionRect since it does not work for empty rects.
@@ -146,11 +132,6 @@ class TouchSelectionControllerImpl::EditingHandleView
   virtual ~EditingHandleView() {
   }
 
-  int cursor_height() const { return selection_rect_.height(); }
-
-  // Current selection end point that this handle marks in screen coordinates.
-  const gfx::Rect selection_rect() const { return selection_rect_; }
-
   // Overridden from views::WidgetDelegateView:
   virtual bool WidgetHasHitTestMask() const OVERRIDE {
     return true;
@@ -158,9 +139,9 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE {
     gfx::Size image_size = GetHandleImageSize();
-    mask->addRect(SkIntToScalar(0), SkIntToScalar(cursor_height()),
+    mask->addRect(SkIntToScalar(0), SkIntToScalar(selection_rect_.height()),
         SkIntToScalar(image_size.width()) + 2 * kSelectionHandleHorizPadding,
-        SkIntToScalar(cursor_height() + image_size.height() +
+        SkIntToScalar(selection_rect_.height() + image_size.height() +
             kSelectionHandleVertPadding));
   }
 
@@ -179,12 +160,12 @@ class TouchSelectionControllerImpl::EditingHandleView
     // Draw the cursor line.
     canvas->FillRect(
         gfx::Rect(cursor_pos_x, 0,
-                  2 * kSelectionHandleLineWidth + 1, cursor_height()),
+                  2 * kSelectionHandleLineWidth + 1, selection_rect_.height()),
         kSelectionHandleLineColor);
 
     // Draw the handle image.
     canvas->DrawImageInt(*GetHandleImage()->ToImageSkia(),
-        kSelectionHandleHorizPadding, cursor_height());
+        kSelectionHandleHorizPadding, selection_rect_.height());
   }
 
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
@@ -193,7 +174,7 @@ class TouchSelectionControllerImpl::EditingHandleView
       case ui::ET_GESTURE_SCROLL_BEGIN:
         widget_->SetCapture(this);
         controller_->SetDraggingHandle(this);
-        drag_offset_ = event->y() - cursor_height() +
+        drag_offset_ = event->y() - selection_rect_.height() +
             kSelectionHandleVerticalDragOffset;
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE: {
@@ -212,25 +193,24 @@ class TouchSelectionControllerImpl::EditingHandleView
     }
   }
 
-  virtual void SetVisible(bool visible) OVERRIDE {
-    // We simply show/hide the container widget.
-    if (visible != widget_->IsVisible()) {
-      if (visible)
-        widget_->Show();
-      else
-        widget_->Hide();
-    }
-    View::SetVisible(visible);
-  }
-
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size image_size = GetHandleImageSize();
     return gfx::Size(image_size.width() + 2 * kSelectionHandleHorizPadding,
-        image_size.height() + cursor_height() + kSelectionHandleVertPadding);
+                     image_size.height() + selection_rect_.height() +
+                         kSelectionHandleVertPadding);
   }
 
   bool IsWidgetVisible() const {
     return widget_->IsVisible();
+  }
+
+  void SetWidgetVisible(bool visible) {
+    if (widget_->IsVisible() == visible)
+      return;
+    if (visible)
+      widget_->Show();
+    else
+      widget_->Hide();
   }
 
   void SetSelectionRectInScreen(const gfx::Rect& rect) {
@@ -307,12 +287,12 @@ void TouchSelectionControllerImpl::SelectionChanged() {
   client_view_->ConvertPointToScreen(&screen_pos_2);
   gfx::Rect screen_rect_1(screen_pos_1, r1.size());
   gfx::Rect screen_rect_2(screen_pos_2, r2.size());
-  if (screen_rect_1 == selection_end_point_1 &&
-      screen_rect_2 == selection_end_point_2)
+  if (screen_rect_1 == selection_end_point_1_ &&
+      screen_rect_2 == selection_end_point_2_)
     return;
 
-  selection_end_point_1 = screen_rect_1;
-  selection_end_point_2 = screen_rect_2;
+  selection_end_point_1_ = screen_rect_1;
+  selection_end_point_2_ = screen_rect_2;
 
   if (client_view_->DrawsHandles()) {
     UpdateContextMenu(r1.origin(), r2.origin());
@@ -323,6 +303,9 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     // The other handle stays the same. Also, the selection handle being dragged
     // will always be at the end of selection, while the other handle will be at
     // the start.
+    // If the new location of this handle is out of client view, its widget
+    // should not get hidden, since it should still receive touch events.
+    // Hence, we are not using |SetHandleSelectionRect()| method here.
     dragging_handle_->SetSelectionRectInScreen(screen_rect_2);
 
     // Temporary fix for selection handle going outside a window. On a webpage,
@@ -334,30 +317,30 @@ void TouchSelectionControllerImpl::SelectionChanged() {
 
     if (dragging_handle_ != cursor_handle_.get()) {
       // The non-dragging-handle might have recently become visible.
-      EditingHandleView* non_dragging_handle =
-          dragging_handle_ == selection_handle_1_.get()?
-              selection_handle_2_.get() : selection_handle_1_.get();
-      non_dragging_handle->SetSelectionRectInScreen(screen_rect_1);
-      non_dragging_handle->SetVisible(client_view_->GetBounds().Contains(r1));
+      EditingHandleView* non_dragging_handle = selection_handle_1_.get();
+      if (dragging_handle_ == selection_handle_1_) {
+        non_dragging_handle = selection_handle_2_.get();
+        // if handle 1 is being dragged, it is corresponding to the end of
+        // selection and the other handle to the start of selection.
+        selection_end_point_1_ = screen_rect_2;
+        selection_end_point_2_ = screen_rect_1;
+      }
+      SetHandleSelectionRect(non_dragging_handle, r1, screen_rect_1);
     }
   } else {
     UpdateContextMenu(r1.origin(), r2.origin());
 
     // Check if there is any selection at all.
-    if (IsEmptySelection(screen_pos_2, screen_pos_1)) {
-      selection_handle_1_->SetVisible(false);
-      selection_handle_2_->SetVisible(false);
-      cursor_handle_->SetSelectionRectInScreen(screen_rect_1);
-      cursor_handle_->SetVisible(true);
+    if (screen_pos_1 == screen_pos_2) {
+      selection_handle_1_->SetWidgetVisible(false);
+      selection_handle_2_->SetWidgetVisible(false);
+      SetHandleSelectionRect(cursor_handle_.get(), r1, screen_rect_1);
       return;
     }
 
-    cursor_handle_->SetVisible(false);
-    selection_handle_1_->SetSelectionRectInScreen(screen_rect_1);
-    selection_handle_1_->SetVisible(client_view_->GetBounds().Contains(r1));
-
-    selection_handle_2_->SetSelectionRectInScreen(screen_rect_2);
-    selection_handle_2_->SetVisible(client_view_->GetBounds().Contains(r2));
+    cursor_handle_->SetWidgetVisible(false);
+    SetHandleSelectionRect(selection_handle_1_.get(), r1, screen_rect_1);
+    SetHandleSelectionRect(selection_handle_2_.get(), r2, screen_rect_2);
   }
 }
 
@@ -389,13 +372,13 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
   }
 
   // Find the stationary selection handle.
-  EditingHandleView* fixed_handle = selection_handle_1_.get();
-  if (fixed_handle == dragging_handle_)
-    fixed_handle = selection_handle_2_.get();
+  gfx::Rect fixed_handle_rect = selection_end_point_1_;
+  if (selection_handle_1_ == dragging_handle_)
+    fixed_handle_rect = selection_end_point_2_;
 
   // Find selection end points in client_view's coordinate system.
-  gfx::Point p2 = fixed_handle->selection_rect().origin();
-  p2.Offset(0, fixed_handle->cursor_height() / 2);
+  gfx::Point p2 = fixed_handle_rect.origin();
+  p2.Offset(0, fixed_handle_rect.height() / 2);
   client_view_->ConvertPointFromScreen(&p2);
 
   // Instruct client_view to select the region between p1 and p2. The position
@@ -408,6 +391,15 @@ void TouchSelectionControllerImpl::ConvertPointToClientView(
     EditingHandleView* source, gfx::Point* point) {
   View::ConvertPointToScreen(source, point);
   client_view_->ConvertPointFromScreen(point);
+}
+
+void TouchSelectionControllerImpl::SetHandleSelectionRect(
+    EditingHandleView* handle,
+    const gfx::Rect& rect,
+    const gfx::Rect& rect_in_screen) {
+  handle->SetWidgetVisible(client_view_->GetBounds().Contains(rect));
+  if (handle->IsWidgetVisible())
+    handle->SetSelectionRectInScreen(rect_in_screen);
 }
 
 bool TouchSelectionControllerImpl::IsCommandIdEnabled(int command_id) const {
@@ -451,11 +443,11 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   gfx::Rect end_rect_1_in_screen;
   gfx::Rect end_rect_2_in_screen;
   if (cursor_handle_->IsWidgetVisible()) {
-    end_rect_1_in_screen = cursor_handle_->selection_rect();
+    end_rect_1_in_screen = selection_end_point_1_;
     end_rect_2_in_screen = end_rect_1_in_screen;
   } else {
-    end_rect_1_in_screen = selection_handle_1_->selection_rect();
-    end_rect_2_in_screen = selection_handle_2_->selection_rect();
+    end_rect_1_in_screen = selection_end_point_1_;
+    end_rect_2_in_screen = selection_end_point_2_;
   }
 
   // Convert from screen to client.
@@ -519,15 +511,15 @@ gfx::Point TouchSelectionControllerImpl::GetCursorHandlePosition() {
 }
 
 bool TouchSelectionControllerImpl::IsSelectionHandle1Visible() {
-  return selection_handle_1_->visible();
+  return selection_handle_1_->IsWidgetVisible();
 }
 
 bool TouchSelectionControllerImpl::IsSelectionHandle2Visible() {
-  return selection_handle_2_->visible();
+  return selection_handle_2_->IsWidgetVisible();
 }
 
 bool TouchSelectionControllerImpl::IsCursorHandleVisible() {
-  return cursor_handle_->visible();
+  return cursor_handle_->IsWidgetVisible();
 }
 
 ViewsTouchSelectionControllerFactory::ViewsTouchSelectionControllerFactory() {
