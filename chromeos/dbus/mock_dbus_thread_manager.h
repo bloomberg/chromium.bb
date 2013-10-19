@@ -25,13 +25,13 @@ class FakeBluetoothAgentManagerClient;
 class FakeBluetoothDeviceClient;
 class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
+class FakeGsmSMSClient;
 class MockCryptohomeClient;
 class MockShillDeviceClient;
 class MockShillIPConfigClient;
 class MockShillManagerClient;
 class MockShillProfileClient;
 class MockShillServiceClient;
-class MockGsmSMSClient;
 class MockPowerManagerClient;
 class MockSessionManagerClient;
 
@@ -100,6 +100,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client() {
     return fake_bluetooth_profile_manager_client_.get();
   }
+  FakeGsmSMSClient* fake_gsm_sms_client() {
+    return fake_gsm_sms_client_.get();
+  }
   MockCryptohomeClient* mock_cryptohome_client() {
     return mock_cryptohome_client_.get();
   }
@@ -118,9 +121,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockShillServiceClient* mock_shill_service_client() {
     return mock_shill_service_client_.get();
   }
-  MockGsmSMSClient* mock_gsm_sms_client() {
-    return mock_gsm_sms_client_.get();
-  }
   MockSessionManagerClient* mock_session_manager_client() {
     return mock_session_manager_client_.get();
   }
@@ -137,13 +137,13 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeBluetoothInputClient> fake_bluetooth_input_client_;
   scoped_ptr<FakeBluetoothProfileManagerClient>
       fake_bluetooth_profile_manager_client_;
+  scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
   scoped_ptr<MockShillDeviceClient> mock_shill_device_client_;
   scoped_ptr<MockShillIPConfigClient> mock_shill_ipconfig_client_;
   scoped_ptr<MockShillManagerClient> mock_shill_manager_client_;
   scoped_ptr<MockShillProfileClient> mock_shill_profile_client_;
   scoped_ptr<MockShillServiceClient> mock_shill_service_client_;
-  scoped_ptr<MockGsmSMSClient> mock_gsm_sms_client_;
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManager);

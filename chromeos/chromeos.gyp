@@ -369,8 +369,6 @@
         'dbus/mock_cryptohome_client.h',
         'dbus/mock_dbus_thread_manager.cc',
         'dbus/mock_dbus_thread_manager.h',
-        'dbus/mock_gsm_sms_client.cc',
-        'dbus/mock_gsm_sms_client.h',
         'dbus/mock_session_manager_client.cc',
         'dbus/mock_session_manager_client.h',
         'dbus/mock_shill_device_client.cc',
