@@ -4,6 +4,7 @@ examples/api/audio/*
 examples/api/core/*
 examples/api/file_io/*
 examples/api/gamepad/*
+examples/api/graphics_2d/*
 examples/api/graphics_3d/*
 examples/api/input_event/*
 [win]examples/api/make.bat
