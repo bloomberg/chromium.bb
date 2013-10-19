@@ -55,10 +55,10 @@
       # compilation lines, getting the command close to what they
       # would be if gyp were to really build properly for the host.
       # TODO(bradnelson): Clean up with proper cross support.
-      'cflags/': [['exclude', '-m.*'],
-                  ['exclude', '--sysroot=.*']],
-      'ldflags/': [['exclude', '-m.*'],
-                   ['exclude', '--sysroot=.*']],
+      'cflags/': [['exclude', '^-m.*'],
+                  ['exclude', '^--sysroot=.*']],
+      'ldflags/': [['exclude', '^-m.*'],
+                   ['exclude', '^--sysroot=.*']],
     },
     {
       'target_name': 'nacl_bootstrap_lib',
