@@ -113,6 +113,7 @@ void CacheCreator::DoCallback(int result) {
 #endif
   } else {
     LOG(ERROR) << "Unable to create cache";
+    created_cache_.reset();
   }
   callback_.Run(result);
   delete this;

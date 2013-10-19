@@ -3081,7 +3081,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     net::HttpResponseInfo* http_info = new net::HttpResponseInfo();
     http_info->headers = new net::HttpResponseHeaders(raw_headers);
     scoped_refptr<AppCacheResponseInfo> info(
-        new AppCacheResponseInfo(service_.get(), manifest_url,
+        new AppCacheResponseInfo(service_->storage(), manifest_url,
                                  response_id, http_info, 0));
     response_infos_.push_back(info);
     return info.get();

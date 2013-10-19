@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "webkit/browser/appcache/appcache_storage.h"
@@ -50,11 +51,38 @@ struct WEBKIT_STORAGE_BROWSER_EXPORT AppCacheInfoCollection
   virtual ~AppCacheInfoCollection();
 };
 
+// Refcounted container to manage the lifetime of the old storage instance
+// during Reinitialization.
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorageReference :
+    public base::RefCounted<AppCacheStorageReference> {
+ public:
+  AppCacheStorage* storage() const { return storage_.get(); }
+ private:
+  friend class AppCacheService;
+  friend class base::RefCounted<AppCacheStorageReference>;
+  AppCacheStorageReference(scoped_ptr<AppCacheStorage> storage);
+  ~AppCacheStorageReference();
+
+  scoped_ptr<AppCacheStorage> storage_;
+};
+
 // Class that manages the application cache service. Sends notifications
 // to many frontends.  One instance per user-profile. Each instance has
 // exclusive access to its cache_directory on disk.
 class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
  public:
+
+  class WEBKIT_STORAGE_BROWSER_EXPORT Observer {
+   public:
+    // An observer method to inform consumers of reinitialzation. Managing
+    // the lifetime of the old storage instance is a delicate process.
+    // Consumers can keep the old disabled instance alive by hanging on to the
+    // ref provided.
+    virtual void OnServiceReinitialized(
+        AppCacheStorageReference* old_storage_ref) = 0;
+    virtual ~Observer() {}
+  };
+
   // If not using quota management, the proxy may be NULL.
   explicit AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy);
   virtual ~AppCacheService();
@@ -62,6 +90,18 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
   void Initialize(const base::FilePath& cache_directory,
                   base::MessageLoopProxy* db_thread,
                   base::MessageLoopProxy* cache_thread);
+
+  void AddObserver(Observer* observer) {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
+  }
+
+  // For use in a very specific failure mode to reboot the appcache system
+  // without relaunching the browser.
+  void Reinitialize();
 
   // Purges any memory not needed.
   void PurgeMemory() {
@@ -172,6 +212,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
   typedef std::set<AsyncHelper*> PendingAsyncHelpers;
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;
 
+  base::FilePath cache_directory_;
+  scoped_refptr<base::MessageLoopProxy> db_thread_;
+  scoped_refptr<base::MessageLoopProxy> cache_thread_;
   AppCachePolicy* appcache_policy_;
   AppCacheQuotaClient* quota_client_;
   AppCacheExecutableHandlerFactory* handler_factory_;
@@ -184,6 +227,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
   net::URLRequestContext* request_context_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
+  bool was_reinitialized_;
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheService);
 };

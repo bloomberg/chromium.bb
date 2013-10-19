@@ -34,7 +34,8 @@ typedef base::Callback<void(bool, void*)> SwapCacheCallback;
 // Server-side representation of an application cache host.
 class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
     : public AppCacheStorage::Delegate,
-      public AppCacheGroup::UpdateObserver {
+      public AppCacheGroup::UpdateObserver,
+      public AppCacheService::Observer {
  public:
 
   class WEBKIT_STORAGE_BROWSER_EXPORT Observer {
@@ -140,6 +141,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
 
   int host_id() const { return host_id_; }
   AppCacheService* service() const { return service_; }
+  AppCacheStorage* storage() const { return storage_; }
   AppCacheFrontend* frontend() const { return frontend_; }
   AppCache* associated_cache() const { return associated_cache_.get(); }
 
@@ -162,6 +164,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) OVERRIDE;
   virtual void OnGroupLoaded(AppCacheGroup* group,
                              const GURL& manifest_url) OVERRIDE;
+  // AppCacheService::Observer impl
+  virtual void OnServiceReinitialized(
+      AppCacheStorageReference* old_storage_ref) OVERRIDE;
 
   void FinishCacheSelection(AppCache* cache, AppCacheGroup* group);
   void DoPendingGetStatus();
@@ -237,6 +242,15 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   // Our central service object.
   AppCacheService* service_;
 
+  // And the equally central storage object, with a twist. In some error
+  // conditions the storage object gets recreated and reinitialized. The
+  // disabled_reference_ allows for cleanup of an instance that got disabled
+  // after we had latched onto it. In normal circumstances,
+  // disabled_reference_ is expected to be NULL. When non-NULL both
+  // storage_ and disabled_reference_ refer to the same instance.
+  AppCacheStorage* storage_;
+  scoped_refptr<AppCacheStorageReference> disabled_storage_reference_;
+
   // Since these are synchronous scriptable API calls in the client, there can
   // only be one type of callback pending. Also, we have to wait until we have a
   // cache selection prior to responding to these calls, as cache selection
@@ -268,6 +282,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   // First party url to be used in policy checks.
   GURL first_party_url_;
 
+  friend class AppCacheStorageImplTest;
   friend class AppCacheRequestHandlerTest;
   friend class AppCacheUpdateJobTest;
   FRIEND_TEST_ALL_PREFIXES(AppCacheTest, CleanupUnusedCache);

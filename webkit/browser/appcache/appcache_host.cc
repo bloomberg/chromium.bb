@@ -50,19 +50,22 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
       pending_main_resource_cache_id_(kNoCacheId),
       pending_selected_cache_id_(kNoCacheId),
       frontend_(frontend), service_(service),
+      storage_(service->storage()),
       pending_callback_param_(NULL),
       main_resource_was_namespace_entry_(false),
       main_resource_blocked_(false),
       associated_cache_info_pending_(false) {
+  service_->AddObserver(this);
 }
 
 AppCacheHost::~AppCacheHost() {
+  service_->RemoveObserver(this);
   FOR_EACH_OBSERVER(Observer, observers_, OnDestructionImminent(this));
   if (associated_cache_.get())
     associated_cache_->UnassociateHost(this);
   if (group_being_updated_.get())
     group_being_updated_->RemoveUpdateObserver(this);
-  service_->storage()->CancelDelegateCallbacks(this);
+  storage()->CancelDelegateCallbacks(this);
   if (service()->quota_manager_proxy() && !origin_in_use_.is_empty())
     service()->quota_manager_proxy()->NotifyOriginNoLongerInUse(origin_in_use_);
 }
@@ -161,7 +164,7 @@ void AppCacheHost::SelectCacheForSharedWorker(int64 appcache_id) {
 void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64 cache_document_was_loaded_from) {
   // The document url is not the resource url in the fallback case.
-  service_->storage()->MarkEntryAsForeign(
+  storage()->MarkEntryAsForeign(
       main_resource_was_namespace_entry_ ? namespace_entry_url_ : document_url,
       cache_document_was_loaded_from);
   SelectCache(document_url, kNoCacheId, GURL());
@@ -329,7 +332,7 @@ Status AppCacheHost::GetStatus() {
 void AppCacheHost::LoadOrCreateGroup(const GURL& manifest_url) {
   DCHECK(manifest_url.is_valid());
   pending_selected_manifest_url_ = manifest_url;
-  service_->storage()->LoadOrCreateGroup(manifest_url, this);
+  storage()->LoadOrCreateGroup(manifest_url, this);
 }
 
 void AppCacheHost::OnGroupLoaded(AppCacheGroup* group,
@@ -342,7 +345,7 @@ void AppCacheHost::OnGroupLoaded(AppCacheGroup* group,
 void AppCacheHost::LoadSelectedCache(int64 cache_id) {
   DCHECK(cache_id != kNoCacheId);
   pending_selected_cache_id_ = cache_id;
-  service_->storage()->LoadCache(cache_id, this);
+  storage()->LoadCache(cache_id, this);
 }
 
 void AppCacheHost::OnCacheLoaded(AppCache* cache, int64 cache_id) {
@@ -417,6 +420,14 @@ void AppCacheHost::FinishCacheSelection(
   FOR_EACH_OBSERVER(Observer, observers_, OnCacheSelectionComplete(this));
 }
 
+void AppCacheHost::OnServiceReinitialized(
+    AppCacheStorageReference* old_storage_ref) {
+  // We continue to use the disabled instance, but arrange for its
+  // deletion when its no longer needed.
+  if (old_storage_ref->storage() == storage())
+    disabled_storage_reference_ = old_storage_ref;
+}
+
 void AppCacheHost::ObserveGroupBeingUpdated(AppCacheGroup* group) {
   DCHECK(!group_being_updated_.get());
   group_being_updated_ = group;
@@ -464,7 +475,7 @@ void AppCacheHost::LoadMainResourceCache(int64 cache_id) {
     return;
   }
   pending_main_resource_cache_id_ = cache_id;
-  service_->storage()->LoadCache(cache_id, this);
+  storage()->LoadCache(cache_id, this);
 }
 
 void AppCacheHost::NotifyMainResourceIsNamespaceEntry(

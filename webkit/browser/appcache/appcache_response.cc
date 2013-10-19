@@ -14,7 +14,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_storage.h"
 
 namespace appcache {
 
@@ -48,19 +48,19 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
 // AppCacheResponseInfo ----------------------------------------------
 
 AppCacheResponseInfo::AppCacheResponseInfo(
-    AppCacheService* service, const GURL& manifest_url,
+    AppCacheStorage* storage, const GURL& manifest_url,
     int64 response_id,  net::HttpResponseInfo* http_info,
     int64 response_data_size)
     : manifest_url_(manifest_url), response_id_(response_id),
       http_response_info_(http_info), response_data_size_(response_data_size),
-      service_(service) {
+      storage_(storage) {
   DCHECK(http_info);
   DCHECK(response_id != kNoResponseId);
-  service_->storage()->working_set()->AddResponseInfo(this);
+  storage_->working_set()->AddResponseInfo(this);
 }
 
 AppCacheResponseInfo::~AppCacheResponseInfo() {
-  service_->storage()->working_set()->RemoveResponseInfo(this);
+  storage_->working_set()->RemoveResponseInfo(this);
 }
 
 // HttpResponseInfoIOBuffer ------------------------------------------
