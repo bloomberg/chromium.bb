@@ -811,7 +811,7 @@
           ],
         }, { # use_default_render_theme==0
           'sources/': [
-            ['exclude', 'platform/ScrollbarThemeAuraOrGtk\\.(cpp|h)'],
+            ['exclude', 'platform/ScrollbarThemeGtkOrAura\\.(cpp|h)'],
             ['exclude', 'platform/chromium/PlatformThemeChromiumDefault\\.(cpp|h)'],
           ],
         }],

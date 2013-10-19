@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/ScrollbarThemeAuraOrGtk.h"
+#include "core/platform/ScrollbarThemeGtkOrAura.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/ScrollbarThemeOverlay.h"
@@ -49,18 +49,18 @@ ScrollbarTheme* ScrollbarTheme::nativeTheme()
         return &theme;
     }
 
-    DEFINE_STATIC_LOCAL(ScrollbarThemeAuraOrGtk, theme, ());
+    DEFINE_STATIC_LOCAL(ScrollbarThemeGtkOrAura, theme, ());
     return &theme;
 }
 
-int ScrollbarThemeAuraOrGtk::scrollbarThickness(ScrollbarControlSize controlSize)
+int ScrollbarThemeGtkOrAura::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     // Horiz and Vert scrollbars are the same thickness.
     IntSize scrollbarSize = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarVerticalTrack);
     return scrollbarSize.width();
 }
 
-void ScrollbarThemeAuraOrGtk::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
+void ScrollbarThemeGtkOrAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
     WebKit::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? WebKit::WebThemeEngine::StateHover : WebKit::WebThemeEngine::StateNormal;
     IntRect alignRect = trackRect(scrollbar, false);
@@ -73,7 +73,7 @@ void ScrollbarThemeAuraOrGtk::paintTrackPiece(GraphicsContext* gc, ScrollbarThem
     WebKit::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebKit::WebThemeEngine::PartScrollbarHorizontalTrack : WebKit::WebThemeEngine::PartScrollbarVerticalTrack, state, WebKit::WebRect(rect), &extraParams);
 }
 
-void ScrollbarThemeAuraOrGtk::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
+void ScrollbarThemeGtkOrAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     WebKit::WebThemeEngine::Part paintPart;
     WebKit::WebThemeEngine::State state = WebKit::WebThemeEngine::StateNormal;
@@ -109,7 +109,7 @@ void ScrollbarThemeAuraOrGtk::paintButton(GraphicsContext* gc, ScrollbarThemeCli
     WebKit::Platform::current()->themeEngine()->paint(canvas, paintPart, state, WebKit::WebRect(rect), 0);
 }
 
-void ScrollbarThemeAuraOrGtk::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeGtkOrAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     WebKit::WebThemeEngine::State state;
     WebKit::WebCanvas* canvas = gc->canvas();
@@ -122,12 +122,12 @@ void ScrollbarThemeAuraOrGtk::paintThumb(GraphicsContext* gc, ScrollbarThemeClie
     WebKit::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebKit::WebThemeEngine::PartScrollbarHorizontalThumb : WebKit::WebThemeEngine::PartScrollbarVerticalThumb, state, WebKit::WebRect(rect), 0);
 }
 
-bool ScrollbarThemeAuraOrGtk::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
+bool ScrollbarThemeGtkOrAura::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
 {
     return (evt.shiftKey() && evt.button() == LeftButton) || (evt.button() == MiddleButton);
 }
 
-IntSize ScrollbarThemeAuraOrGtk::buttonSize(ScrollbarThemeClient* scrollbar)
+IntSize ScrollbarThemeGtkOrAura::buttonSize(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
         IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarUpArrow);
@@ -139,7 +139,7 @@ IntSize ScrollbarThemeAuraOrGtk::buttonSize(ScrollbarThemeClient* scrollbar)
     return IntSize(scrollbar->width() < 2 * size.width() ? scrollbar->width() / 2 : size.width(), size.height());
 }
 
-int ScrollbarThemeAuraOrGtk::minimumThumbLength(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeGtkOrAura::minimumThumbLength(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
         IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarVerticalThumb);

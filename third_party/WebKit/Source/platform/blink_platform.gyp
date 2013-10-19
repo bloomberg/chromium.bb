@@ -112,12 +112,10 @@
       }, { # OS!="mac"
         'sources/': [
           ['exclude', 'mac/'],
-          ['exclude', 'Mac\\.mm$'],
         ],
       }],
       ['OS=="win"', {
         'sources/': [
-          ['exclude', 'Posix\\.cpp$'],
           # We use LocaleWin.cpp instead of LocaleICU.cpp
           ['exclude', 'LocaleICU\\.(cpp|h)$'],
         ],
