@@ -82,69 +82,6 @@ base::FilePath ReverseConcatPathComponents(
   return base::FilePath(result).NormalizePathSeparators();
 }
 
-void PopulateFileDetailsByFileResource(
-    const google_apis::FileResource& file_resource,
-    FileDetails* details) {
-  details->clear_parent_folder_ids();
-  for (ScopedVector<google_apis::ParentReference>::const_iterator itr =
-           file_resource.parents().begin();
-       itr != file_resource.parents().end();
-       ++itr) {
-    details->add_parent_folder_ids((*itr)->file_id());
-  }
-  details->set_title(file_resource.title());
-
-  google_apis::DriveEntryKind kind = drive::util::GetKind(file_resource);
-  if (kind == google_apis::ENTRY_KIND_FILE)
-    details->set_file_kind(FILE_KIND_FILE);
-  else if (kind == google_apis::ENTRY_KIND_FOLDER)
-    details->set_file_kind(FILE_KIND_FOLDER);
-  else
-    details->set_file_kind(FILE_KIND_UNSUPPORTED);
-
-  details->set_md5(file_resource.md5_checksum());
-  details->set_etag(file_resource.etag());
-  details->set_creation_time(file_resource.created_date().ToInternalValue());
-  details->set_modification_time(
-      file_resource.modified_date().ToInternalValue());
-  details->set_deleted(false);
-}
-
-scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
-    int64 change_id,
-    const google_apis::FileResource& resource) {
-  scoped_ptr<FileMetadata> file(new FileMetadata);
-  file->set_file_id(resource.file_id());
-
-  FileDetails* details = file->mutable_details();
-  details->set_change_id(change_id);
-
-  if (resource.labels().is_trashed()) {
-    details->set_deleted(true);
-    return file.Pass();
-  }
-
-  PopulateFileDetailsByFileResource(resource, details);
-  return file.Pass();
-}
-
-scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
-    const google_apis::ChangeResource& change) {
-  scoped_ptr<FileMetadata> file(new FileMetadata);
-  file->set_file_id(change.file_id());
-
-  FileDetails* details = file->mutable_details();
-  details->set_change_id(change.change_id());
-
-  if (change.is_deleted()) {
-    details->set_deleted(true);
-    return file.Pass();
-  }
-
-  PopulateFileDetailsByFileResource(*change.file(), details);
-  return file.Pass();
-}
-
 void CreateInitialSyncRootTracker(
     int64 tracker_id,
     const google_apis::FileResource& file_resource,
