@@ -203,7 +203,8 @@ public:
     const RenderLayerStackingNode* stackingNode() const { return m_stackingNode.get(); }
 
     RenderLayer* ancestorStackingContainerLayer() const;
-    RenderLayer* ancestorStackingContextLayer() const;
+    RenderLayerStackingNode* ancestorStackingContainerNode() const;
+    RenderLayerStackingNode* ancestorStackingNode() const;
 
     // Gets the enclosing stacking container for this layer, possibly the layer
     // itself, if it is a stacking container.

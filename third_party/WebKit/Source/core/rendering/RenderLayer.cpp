@@ -1081,12 +1081,22 @@ RenderLayer* RenderLayer::ancestorStackingContainerLayer() const
     return ancestor;
 }
 
-RenderLayer* RenderLayer::ancestorStackingContextLayer() const
+RenderLayerStackingNode* RenderLayer::ancestorStackingContainerNode() const
+{
+    RenderLayer* ancestor = ancestorStackingContainerLayer();
+    if (ancestor)
+        return ancestor->stackingNode();
+    return 0;
+}
+
+RenderLayerStackingNode* RenderLayer::ancestorStackingNode() const
 {
     RenderLayer* ancestor = parent();
     while (ancestor && !ancestor->stackingNode()->isStackingContext())
         ancestor = ancestor->parent();
-    return ancestor;
+    if (ancestor)
+        return ancestor->stackingNode();
+    return 0;
 }
 
 static inline bool isFixedPositionedContainer(RenderLayer* layer)

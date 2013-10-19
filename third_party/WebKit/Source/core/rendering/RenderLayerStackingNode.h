@@ -155,9 +155,9 @@ private:
 
     void dirtySiblingStackingNodeCanBePromotedToStackingContainer();
 
-    void collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContextLayer,
+    void collectBeforePromotionZOrderList(RenderLayerStackingNode*,
         OwnPtr<Vector<RenderLayer*> >& posZOrderList, OwnPtr<Vector<RenderLayer*> >& negZOrderList);
-    void collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContextLayer,
+    void collectAfterPromotionZOrderList(RenderLayerStackingNode*,
         OwnPtr<Vector<RenderLayer*> >& posZOrderList, OwnPtr<Vector<RenderLayer*> >& negZOrderList);
 
     bool isDirtyStackingContainer() const { return m_zOrderListsDirty && isStackingContainer(); }

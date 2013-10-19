@@ -103,11 +103,10 @@ void RenderLayerStackingNode::dirtyNormalFlowListCanBePromotedToStackingContaine
 
 void RenderLayerStackingNode::dirtySiblingStackingNodeCanBePromotedToStackingContainer()
 {
-    RenderLayer* ancestorStackingLayer = layer()->ancestorStackingContextLayer();
-    if (!ancestorStackingLayer)
+    RenderLayerStackingNode* ancestorStackingNode = layer()->ancestorStackingNode();
+    if (!ancestorStackingNode)
         return;
 
-    RenderLayerStackingNode* ancestorStackingNode = ancestorStackingLayer->stackingNode();
     if (!ancestorStackingNode->zOrderListsDirty() && ancestorStackingNode->posZOrderList()) {
         for (size_t index = 0; index < ancestorStackingNode->posZOrderList()->size(); ++index)
             ancestorStackingNode->posZOrderList()->at(index)->stackingNode()->setDescendantsAreContiguousInStackingOrderDirty(true);
@@ -150,18 +149,18 @@ void RenderLayerStackingNode::dirtyStackingContainerZOrderLists()
     // m_descendantsAreContiguousInStackingOrder for that sibling.
     dirtySiblingStackingNodeCanBePromotedToStackingContainer();
 
-    RenderLayer* stackingContainerLayer = layer()->ancestorStackingContainerLayer();
-    if (stackingContainerLayer)
-        stackingContainerLayer->stackingNode()->dirtyZOrderLists();
+    RenderLayerStackingNode* stackingContainerNode = layer()->ancestorStackingContainerNode();
+    if (stackingContainerNode)
+        stackingContainerNode->dirtyZOrderLists();
 
     // Any change that could affect our stacking container's z-order list could
     // cause other RenderLayers in our stacking context to either opt in or out
     // of composited scrolling. It is important that we make our stacking
     // context aware of these z-order changes so the appropriate updating can
     // happen.
-    RenderLayer* stackingLayer = layer()->ancestorStackingContextLayer();
-    if (stackingLayer && stackingLayer != stackingContainerLayer)
-        stackingLayer->stackingNode()->dirtyZOrderLists();
+    RenderLayerStackingNode* stackingNode = layer()->ancestorStackingNode();
+    if (stackingNode && stackingNode != stackingContainerNode)
+        stackingNode->dirtyZOrderLists();
 }
 
 void RenderLayerStackingNode::dirtyNormalFlowList()
@@ -390,8 +389,8 @@ void RenderLayerStackingNode::updateDescendantsAreContiguousInStackingOrder()
     if (!currentLayer->scrollsOverflow())
         return;
 
-    RenderLayer* ancestorStackingContextLayer = currentLayer->ancestorStackingContextLayer();
-    if (!ancestorStackingContextLayer)
+    RenderLayerStackingNode* ancestorStackingNode = currentLayer->ancestorStackingNode();
+    if (!ancestorStackingNode)
         return;
 
     OwnPtr<Vector<RenderLayer*> > posZOrderListBeforePromote = adoptPtr(new Vector<RenderLayer*>);
@@ -399,8 +398,8 @@ void RenderLayerStackingNode::updateDescendantsAreContiguousInStackingOrder()
     OwnPtr<Vector<RenderLayer*> > posZOrderListAfterPromote = adoptPtr(new Vector<RenderLayer*>);
     OwnPtr<Vector<RenderLayer*> > negZOrderListAfterPromote = adoptPtr(new Vector<RenderLayer*>);
 
-    collectBeforePromotionZOrderList(ancestorStackingContextLayer, posZOrderListBeforePromote, negZOrderListBeforePromote);
-    collectAfterPromotionZOrderList(ancestorStackingContextLayer, posZOrderListAfterPromote, negZOrderListAfterPromote);
+    collectBeforePromotionZOrderList(ancestorStackingNode, posZOrderListBeforePromote, negZOrderListBeforePromote);
+    collectAfterPromotionZOrderList(ancestorStackingNode, posZOrderListAfterPromote, negZOrderListAfterPromote);
 
     size_t maxIndex = std::min(posZOrderListAfterPromote->size() + negZOrderListAfterPromote->size(), posZOrderListBeforePromote->size() + negZOrderListBeforePromote->size());
 
@@ -436,10 +435,10 @@ void RenderLayerStackingNode::updateDescendantsAreContiguousInStackingOrder()
     m_descendantsAreContiguousInStackingOrder = true;
 }
 
-void RenderLayerStackingNode::collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContainer,
+void RenderLayerStackingNode::collectBeforePromotionZOrderList(RenderLayerStackingNode* ancestorStackingNode,
     OwnPtr<Vector<RenderLayer*> >& posZOrderList, OwnPtr<Vector<RenderLayer*> >& negZOrderList)
 {
-    ancestorStackingContainer->stackingNode()->rebuildZOrderLists(posZOrderList, negZOrderList, layer(), OnlyStackingContextsCanBeStackingContainers);
+    ancestorStackingNode->rebuildZOrderLists(posZOrderList, negZOrderList, layer(), OnlyStackingContextsCanBeStackingContainers);
 
     const RenderLayer* currentLayer = layer();
     const RenderLayer* positionedAncestor = currentLayer->parent();
@@ -469,10 +468,10 @@ void RenderLayerStackingNode::collectBeforePromotionZOrderList(RenderLayer* ance
     }
 }
 
-void RenderLayerStackingNode::collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContainer,
+void RenderLayerStackingNode::collectAfterPromotionZOrderList(RenderLayerStackingNode* ancestorStackingNode,
     OwnPtr<Vector<RenderLayer*> >& posZOrderList, OwnPtr<Vector<RenderLayer*> >& negZOrderList)
 {
-    ancestorStackingContainer->stackingNode()->rebuildZOrderLists(posZOrderList, negZOrderList, layer(), ForceLayerToStackingContainer);
+    ancestorStackingNode->rebuildZOrderLists(posZOrderList, negZOrderList, layer(), ForceLayerToStackingContainer);
 }
 
 // Compute what positive and negative z-order lists would look like before and
@@ -508,17 +507,16 @@ void RenderLayerStackingNode::computePaintOrderList(PaintOrderListType type, Vec
     OwnPtr<Vector<RenderLayer*> > posZOrderList;
     OwnPtr<Vector<RenderLayer*> > negZOrderList;
 
-    RenderLayer* stackingContextLayer = layer()->ancestorStackingContextLayer();
-
-    if (!stackingContextLayer)
+    RenderLayerStackingNode* stackingNode = layer()->ancestorStackingNode();
+    if (!stackingNode)
         return;
 
     switch (type) {
     case BeforePromote:
-        collectBeforePromotionZOrderList(stackingContextLayer, posZOrderList, negZOrderList);
+        collectBeforePromotionZOrderList(stackingNode, posZOrderList, negZOrderList);
         break;
     case AfterPromote:
-        collectAfterPromotionZOrderList(stackingContextLayer, posZOrderList, negZOrderList);
+        collectAfterPromotionZOrderList(stackingNode, posZOrderList, negZOrderList);
         break;
     }
 
