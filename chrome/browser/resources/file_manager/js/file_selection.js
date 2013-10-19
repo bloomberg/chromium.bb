@@ -164,6 +164,29 @@ function FileSelectionHandler(fileManager) {
 }
 
 /**
+ * Create the temporary disabled action menu item.
+ * @return {Object} Created disabled item.
+ * @private
+ */
+FileSelectionHandler.createTemporaryDisabledActionMenuItem_ = function() {
+  if (!FileSelectionHandler.cachedDisabledActionMenuItem_) {
+    FileSelectionHandler.cachedDisabledActionMenuItem_ = {
+      label: str('ACTION_OPEN'),
+      disabled: true
+    };
+  }
+
+  return FileSelectionHandler.cachedDisabledActionMenuItem_;
+};
+
+/**
+ * Cached the temporary disabled action menu item. Used inside
+ * FileSelectionHandler.createTemporaryDisabledActionMenuItem_().
+ * @private
+ */
+FileSelectionHandler.cachedDisabledActionMenuItem_ = null;
+
+/**
  * FileSelectionHandler extends cr.EventTarget.
  */
 FileSelectionHandler.prototype.__proto__ = cr.EventTarget.prototype;
@@ -225,6 +248,17 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function(event) {
     updateDelay = 0;
   }
   this.lastFileSelectionTime_ = now;
+
+  if (this.fileManager_.dialogType === DialogType.FULL_PAGE &&
+      selection.directoryCount === 0 && selection.fileCount > 0) {
+    // Show disabled items for position calculation of the menu. They will be
+    // overridden in this.updateFileSelectionAsync().
+    this.fileManager_.updateContextMenuActionItems(
+        FileSelectionHandler.createTemporaryDisabledActionMenuItem_(), true);
+  } else {
+    // Update context menu.
+    this.fileManager_.updateContextMenuActionItems(null, false);
+  }
 
   this.selectionUpdateTimer_ = setTimeout(function() {
     this.selectionUpdateTimer_ = null;
@@ -296,8 +330,8 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   if (this.selection != selection) return;
 
   // Update the file tasks.
-  if (this.fileManager_.dialogType == DialogType.FULL_PAGE &&
-      selection.directoryCount == 0 && selection.fileCount > 0) {
+  if (this.fileManager_.dialogType === DialogType.FULL_PAGE &&
+      selection.directoryCount === 0 && selection.fileCount > 0) {
     selection.createTasks(function() {
       if (this.selection != selection)
         return;
@@ -324,9 +358,6 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   // Sync the commands availability.
   if (this.fileManager_.commandHandler)
     this.fileManager_.commandHandler.updateAvailability();
-
-  // Update context menu.
-  this.fileManager_.updateContextMenuActionItems(null, false);
 
   // Inform tests it's OK to click buttons now.
   if (selection.totalCount > 0) {

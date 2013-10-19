@@ -3615,6 +3615,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
 
       this.defaultActionMenuItem_.label = defaultItem.title;
+      this.defaultActionMenuItem_.disabled = !!defaultItem.disabled;
       this.defaultActionMenuItem_.taskId = defaultItem.taskId;
     }
 
@@ -3623,6 +3624,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.openWithCommand_.canExecuteChange();
     this.openWithCommand_.setHidden(!(defaultItem && isMultiple));
+    this.openWithCommand_.disabled = defaultItem && !!defaultItem.disabled;
+
     this.defaultActionMenuItem_.hidden = !defaultItem;
     defaultActionSeparator.hidden = !defaultItem;
   };
