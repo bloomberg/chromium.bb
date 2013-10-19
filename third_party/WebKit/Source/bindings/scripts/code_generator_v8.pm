@@ -5232,12 +5232,6 @@ sub GetNativeType
     return "ScriptValue" if $type eq "any" or IsCallbackFunctionType($type);
     return "Dictionary" if $type eq "Dictionary";
 
-    return "RefPtr<DOMStringList>" if $type eq "DOMStringList";
-    return "RefPtr<MediaQueryListListener>" if $type eq "MediaQueryListListener";
-    return "RefPtr<NodeFilter>" if $type eq "NodeFilter";
-    return "RefPtr<SerializedScriptValue>" if $type eq "SerializedScriptValue";
-    return "RefPtr<XPathNSResolver>" if $type eq "XPathNSResolver";
-
     die "UnionType is not supported" if IsUnionType($type);
 
     if (IsTypedArrayType($type)) {
@@ -5245,12 +5239,13 @@ sub GetNativeType
     }
 
     # We need to check [ImplementedAs] extended attribute for wrapper types.
+    return "RefPtr<$type>" if $type eq "DOMStringList" or $type eq "XPathNSResolver";  # FIXME: can these be put in nonWrapperTypes instead?
     if (IsWrapperType($type)) {
         my $interface = ParseInterface($type);
         my $implClassName = GetImplName($interface);
         return $isParameter ? "${implClassName}*" : "RefPtr<${implClassName}>";
     }
-    return "RefPtr<${type}>" if IsRefPtrType($type) and not $isParameter;
+    return "RefPtr<$type>" if IsRefPtrType($type) and (not $isParameter or $nonWrapperTypes{$type});
 
     my $arrayOrSequenceType = GetArrayOrSequenceType($type);
 
