@@ -17,9 +17,6 @@
 namespace chromeos {
 namespace {
 
-// The opacity for the grey out borders.
-const float kBorderOpacity = 0.5;
-
 // The opacity for the arrows of the overscan calibration.
 const float kArrowOpacity = 0.8;
 

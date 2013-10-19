@@ -23,9 +23,6 @@
 namespace {
 
 // Not exposed/exported:
-const char kSmscKey[] = "smsc";
-const char kValidityKey[] = "validity";
-const char kClassKey[] = "class";
 const char kIndexKey[] = "index";
 
 // Keys from ModemManager1

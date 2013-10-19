@@ -84,19 +84,10 @@ using ::testing::SetArgPointee;
 using ::testing::_;
 using content::BrowserThread;
 
-const char kTrue[] = "true";
-const char kFalse[] = "false";
 const char kDomain[] = "domain.com";
 const char kUsername[] = "user@domain.com";
-const char kMode[] = "enterprise";
 const char kDeviceId[] = "100200300";
 const char kUsernameOtherDomain[] = "user@other.com";
-const char kAttributeOwned[] = "enterprise.owned";
-const char kAttributeOwner[] = "enterprise.user";
-const char kAttributeConsumerKiosk[] = "consumer.app_kiosk_enabled";
-const char kAttrEnterpriseDomain[] = "enterprise.domain";
-const char kAttrEnterpriseMode[] = "enterprise.mode";
-const char kAttrEnterpriseDeviceId[] = "enterprise.device_id";
 
 const char kOAuthTokenCookie[] = "oauth_token=1234";
 

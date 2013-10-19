@@ -30,7 +30,6 @@ const char kRequestNetworkInfoCallback[] = "requestNetworkInfo";
 const char kNetworkEventLogTag[] = "networkEventLog";
 const char kNetworkStateTag[] = "networkState";
 const char kOnNetworkInfoReceivedFunction[] = "NetworkUI.onNetworkInfoReceived";
-const char kLevelDebugTag[] = "Debug";
 
 class NetworkMessageHandler : public content::WebUIMessageHandler {
  public:

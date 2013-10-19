@@ -40,17 +40,15 @@ namespace message_center {
 
 namespace {
 
-const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
-const SkColor kButtonTextHighlightColor = SkColorSetRGB(0x2a, 0x2a, 0x2a);
-const SkColor kButtonTextHoverColor = SkColorSetRGB(0x2a, 0x2a, 0x2a);
 const SkColor kNoNotificationsTextColor = SkColorSetRGB(0xb4, 0xb4, 0xb4);
+#if defined(OS_LINUX) && defined(OS_CHROMEOS)
 const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
+#endif
 const int kAnimateClearingNextNotificationDelayMS = 40;
-const int kButtonBarBorderThickness = 1;
 const int kMinScrollViewHeight = 100;
 
-static const int kDefaultAnimationDurationMs = 120;
-static const int kDefaultFrameRateHz = 60;
+const int kDefaultAnimationDurationMs = 120;
+const int kDefaultFrameRateHz = 60;
 
 }  // namespace
 

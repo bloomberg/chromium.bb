@@ -21,15 +21,10 @@
 using content::WebContents;
 
 // How long to spend moving downwards and fading out after waiting.
-static const int kMoveTimeMs = 600;
+const int kMoveTimeMs = 600;
 
 // The animation framerate.
-static const int kFrameRateHz = 60;
-
-// What fraction of the frame height to move downward from the frame center.
-// Note that setting this greater than 0.5 will mean moving past the bottom of
-// the frame.
-static const double kMoveFraction = 1.0 / 3.0;
+const int kFrameRateHz = 60;
 
 namespace {
 

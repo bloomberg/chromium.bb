@@ -29,7 +29,6 @@ namespace ash {
 namespace internal {
 
 namespace {
-const int kPaddingAroundBottomRow = 5;
 
 enum AccessibilityState {
   A11Y_NONE             = 0,

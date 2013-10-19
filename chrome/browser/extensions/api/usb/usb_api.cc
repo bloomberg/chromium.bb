@@ -65,7 +65,9 @@ const char kErrorOpen[] = "Failed to open device.";
 const char kErrorCancelled[] = "Transfer was cancelled.";
 const char kErrorDisconnect[] = "Device disconnected.";
 const char kErrorGeneric[] = "Transfer failed.";
+#if !defined(OS_CHROMEOS)
 const char kErrorNotSupported[] = "Not supported on this platform.";
+#endif
 const char kErrorOverflow[] = "Inbound transfer overflow.";
 const char kErrorStalled[] = "Transfer stalled.";
 const char kErrorTimeout[] = "Transfer timed out.";

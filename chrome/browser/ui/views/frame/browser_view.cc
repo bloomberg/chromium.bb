@@ -165,19 +165,12 @@ using views::GridLayout;
 using web_modal::WebContentsModalDialogHost;
 
 namespace {
-// The height of the status bubble.
-const int kStatusBubbleHeight = 20;
 // The name of a key to store on the window handle so that other code can
 // locate this object using just the handle.
 const char* const kBrowserViewKey = "__BROWSER_VIEW__";
 
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
-// The amount of space we expect the window border to take up.
-const int kWindowBorderWidth = 5;
-
-// How round the 'new tab' style bookmarks bar is.
-const int kNewtabBarRoundness = 5;
 
 // TODO(kuan): These functions are temporarily for the bookmark bar while its
 // detached state is at the top of the page;  it'll be moved to float on the

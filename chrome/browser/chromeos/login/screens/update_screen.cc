@@ -41,18 +41,11 @@ const int kProgressComplete = 100;
 // Defines what part of update progress does download part takes.
 const int kDownloadProgressIncrement = 60;
 
-// Considering 10px shadow from each side.
-const int kUpdateScreenWidth = 580;
-const int kUpdateScreenHeight = 305;
-
 const char kUpdateDeadlineFile[] = "/tmp/update-check-response-deadline";
 
 // Minimum timestep between two consecutive measurements for the
 // download rate.
 const base::TimeDelta kMinTimeStep = base::TimeDelta::FromSeconds(1);
-
-// Minimum allowed progress between two consecutive ETAs.
-const double kMinProgressStep = 1e-3;
 
 // Smooth factor that is used for the average downloading speed
 // estimation.

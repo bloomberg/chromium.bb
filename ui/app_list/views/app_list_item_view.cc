@@ -32,12 +32,9 @@ namespace app_list {
 
 namespace {
 
-const int kTopBottomPadding = 10;
 const int kTopPadding = 20;
 const int kIconTitleSpacing = 7;
 const int kProgressBarHorizontalPadding = 12;
-const int kProgressBarVerticalPadding = 4;
-const int kProgressBarHeight = 4;
 
 const int kLeftRightPaddingChars = 1;
 

@@ -30,15 +30,8 @@
 
 using namespace ash;
 
-namespace {
-
 const char kTestUser1[] = "test-user@example.com";
 const char kTestUser1Hash[] = "test-user@example.com-hash";
-
-const int kLargeWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_LARGE;
-const int kSmallWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_SMALL;
-
-}  // namespace
 
 namespace chromeos {
 

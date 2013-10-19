@@ -34,7 +34,6 @@ namespace SetComposition = extensions::api::input_ime::SetComposition;
 namespace {
 
 const char kErrorEngineNotAvailable[] = "Engine is not available";
-const char kErrorBadCandidateList[] = "Invalid candidate list provided";
 const char kErrorSetMenuItemsFail[] = "Could not create menu Items";
 const char kErrorUpdateMenuItemsFail[] = "Could not update menu Items";
 

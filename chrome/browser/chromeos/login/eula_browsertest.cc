@@ -22,7 +22,9 @@ namespace {
 const char kEULAURL[] =
     "https://www.google.com/intl/en-US/chrome/eula_text.html";
 const char kFakeOnlineEULA[] = "No obligations at all";
+#if defined(GOOGLE_CHROME_BUILD)
 const char kOfflineEULAWarning[] = "A copy of the Google Terms of Service";
+#endif
 
 class TermsOfServiceProcessBrowserTest : public InProcessBrowserTest {
 };

@@ -96,8 +96,10 @@ static const int kMaxStackedCount = 4;
 static const int kStackedPadding = 6;
 
 // See UpdateLayoutTypeFromMouseEvent() for a description of these.
+#if !defined(USE_ASH)
 const int kMouseMoveTimeMS = 200;
 const int kMouseMoveCountBeforeConsiderReal = 3;
+#endif
 
 // Amount of time we delay before resizing after a close from a touch.
 const int kTouchResizeLayoutTimeMS = 2000;

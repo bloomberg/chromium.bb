@@ -28,16 +28,12 @@
 
 namespace ui {
 namespace {
-const int kCreateInputContextMaxTrialCount = 10;
 const uint32 kTestIBusKeyVal1 = 97;
 const uint32 kTestIBusKeyVal2 = 30;
-const uint32 kTestIBusKeyVal3 = 0;
 const uint32 kTestIBusKeyCode1 = 98;
 const uint32 kTestIBusKeyCode2 = 48;
-const uint32 kTestIBusKeyCode3 = 1;
 const uint32 kTestIBusState1 = 99;
 const uint32 kTestIBusState2 = 46;
-const uint32 kTestIBusState3 = 8;
 
 typedef chromeos::IBusEngineHandlerInterface::KeyEventDoneCallback
     KeyEventCallback;

@@ -20,9 +20,6 @@
 namespace ash {
 namespace test {
 
-// This many test windows will get created.
-const int kNumberOfTestWindows = 5;
-
 // A test class for preparing the chrome::MultiUserWindowManager. It creates
 // various windows and instantiates the chrome::MultiUserWindowManager.
 class MultiUserWindowManagerTest : public AshTestBase {

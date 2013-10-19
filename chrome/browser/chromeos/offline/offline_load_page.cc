@@ -50,9 +50,6 @@ using content::WebContents;
 
 namespace {
 
-// Maximum time to show a blank page.
-const int kMaxBlankPeriod = 3000;
-
 // A utility function to set the dictionary's value given by |resource_id|.
 void SetString(DictionaryValue* strings, const char* name, int resource_id) {
   strings->SetString(name, l10n_util::GetStringUTF16(resource_id));

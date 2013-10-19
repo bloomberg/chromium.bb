@@ -25,7 +25,9 @@ const int kPadding = 14;
 const int kIconDimension = 32;
 const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
+#if !defined(OS_CHROMEOS)
 const int kMenuButtonDimension = 29;
+#endif
 
 const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 

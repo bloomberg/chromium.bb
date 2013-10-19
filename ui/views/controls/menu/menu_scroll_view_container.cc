@@ -22,10 +22,6 @@
 
 using ui::NativeTheme;
 
-// Height of the scroll arrow.
-// This goes up to 4 with large fonts, but this is close enough for now.
-static const int scroll_arrow_height = 3;
-
 namespace views {
 
 namespace {

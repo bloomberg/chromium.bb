@@ -59,7 +59,6 @@ namespace {
 
 // Menu commands
 const int kToggleQuietMode = 0;
-const int kEnableQuietModeHour = 1;
 const int kEnableQuietModeDay = 2;
 
 }

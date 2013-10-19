@@ -51,9 +51,6 @@ const char kDriveAppTaskType[] = "drive";
 // Drive apps always use the action ID.
 const char kDriveAppActionID[] = "open-with";
 
-// Default icon path for drive docs.
-const char kDefaultIcon[] = "images/filetype_generic.png";
-
 // Converts a TaskType to a string.
 std::string TaskTypeToString(TaskType task_type) {
   switch (task_type) {

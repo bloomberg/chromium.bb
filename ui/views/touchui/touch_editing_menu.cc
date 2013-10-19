@@ -29,8 +29,6 @@ const int kButtonSeparatorColor = SkColorSetARGB(13, 0, 0, 0);
 const int kMenuButtonHeight = 38;
 const int kMenuButtonWidth = 63;
 const int kMenuMargin = 1;
-const SkColor kMenuButtonColorNormal = SkColorSetARGB(102, 255, 255, 255);
-const SkColor kMenuButtonColorHover = SkColorSetARGB(13, 0, 0, 0);
 
 const char* kEllipsesButtonText = "...";
 const int kEllipsesButtonTag = -1;

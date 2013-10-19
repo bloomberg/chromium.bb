@@ -37,8 +37,6 @@ const char kGaiaExtStartPage[] =
 
 // Enrollment step names.
 const char kEnrollmentStepSignin[] = "signin";
-const char kEnrollmentStepWorking[] = "working";
-const char kEnrollmentStepError[] = "error";
 const char kEnrollmentStepSuccess[] = "success";
 
 }  // namespace

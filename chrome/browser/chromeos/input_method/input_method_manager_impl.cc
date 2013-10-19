@@ -32,8 +32,6 @@ namespace input_method {
 
 namespace {
 
-const char nacl_mozc_us_id[] =
-    "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us";
 const char nacl_mozc_jp_id[] =
     "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp";
 

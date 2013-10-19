@@ -31,6 +31,13 @@ namespace {
 // A simple web page.
 const char kHelloWorldHTML[] = "<body><p>Hello World!</p></body>";
 
+// A simple webpage with a button to print itself with.
+const char kPrintOnUserAction[] =
+    "<body>"
+    "  <button id=\"print\" onclick=\"window.print();\">Hello World!</button>"
+    "</body>";
+
+#if !defined(OS_CHROMEOS)
 // HTML with 3 pages.
 const char kMultipageHTML[] =
   "<html><head><style>"
@@ -66,12 +73,6 @@ const char kHTMLWithLandscapePageCss[] =
     "<body>Lorem Ipsum:"
     "</body></html>";
 
-// A simple webpage with a button to print itself with.
-const char kPrintOnUserAction[] =
-    "<body>"
-    "  <button id=\"print\" onclick=\"window.print();\">Hello World!</button>"
-    "</body>";
-
 // A longer web page.
 const char kLongPageHTML[] =
     "<body><img src=\"\" width=10 height=10000 /></body>";
@@ -79,6 +80,7 @@ const char kLongPageHTML[] =
 // A web page to simulate the print preview page.
 const char kPrintPreviewHTML[] =
     "<body><p id=\"pdf-viewer\">Hello World!</p></body>";
+#endif  // !defined(OS_CHROMEOS)
 
 void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingLandscape, false);

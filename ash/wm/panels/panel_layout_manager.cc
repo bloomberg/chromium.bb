@@ -38,8 +38,6 @@ namespace ash {
 namespace internal {
 
 namespace {
-const int kPanelMarginEdge = 4;
-const int kPanelMarginMiddle = 8;
 const int kPanelIdealSpacing = 4;
 
 const float kMaxHeightFactor = .80f;

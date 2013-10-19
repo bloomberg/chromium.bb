@@ -3198,10 +3198,6 @@
               # http://crbug.com/255186
               '-Wno-deprecated-register',
 
-              # TODO(hans): Remove once we've cleaned up the warnings.
-              # http://crbug.com/307668
-              '-Wno-unused-const-variable',
-
               # This warns about auto_ptr<>, used in third-party code.
               '-Wno-deprecated-declarations',
             ],
@@ -3223,6 +3219,11 @@
             # via -isystem instead.
             'cflags_cc': [
               '-Wno-implicit-exception-spec-mismatch',
+            ],
+            'cflags': [
+              # TODO(hans): Remove once we've cleaned up the warnings.
+              # http://crbug.com/307668
+              '-Wno-unused-const-variable',
             ],
           }],
           ['clang==1 and clang_use_chrome_plugins==1', {

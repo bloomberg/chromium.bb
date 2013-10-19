@@ -29,8 +29,10 @@ namespace ash {
 namespace internal {
 namespace {
 
+#if defined(OS_WIN)
 DEFINE_WINDOW_PROPERTY_KEY(gfx::Display::Rotation, kRotationPropertyKey,
                            gfx::Display::ROTATE_0);
+#endif
 
 // Round near zero value to zero.
 void RoundNearZero(gfx::Transform* transform) {

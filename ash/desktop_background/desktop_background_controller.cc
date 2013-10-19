@@ -43,8 +43,6 @@ namespace {
 // changed?
 const int kWallpaperReloadDelayMs = 2000;
 
-const SkColor kTransparentColor = SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
-
 internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
     aura::RootWindow* root_window) {
   return static_cast<internal::RootWindowLayoutManager*>(

@@ -9,20 +9,15 @@
 #include "ui/views/shadow_border.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-const int kBorderWidth = 1;
-const int kShadowBlur = 8;
-
-}  // namepspace
-
 namespace message_center {
 
 MessageCenterFrameView::MessageCenterFrameView() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  const int kBorderWidth = 1;
   set_border(views::Border::CreateSolidBorder(
       kBorderWidth, message_center::kMessageCenterBorderColor));
 #else
+  const int kShadowBlur = 8;
   set_border(new views::ShadowBorder(kShadowBlur,
                                      message_center::kMessageCenterShadowColor,
                                      0,    // Vertical offset

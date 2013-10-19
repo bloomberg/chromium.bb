@@ -31,8 +31,6 @@ using content::BrowserThread;
 namespace contacts {
 namespace {
 
-const char kTestGDataAuthToken[] = "testtoken";
-
 // Filename of JSON feed containing contact groups.
 const char kGroupsFeedFilename[] = "/groups.json";
 

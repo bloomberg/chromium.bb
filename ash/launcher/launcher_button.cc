@@ -29,7 +29,6 @@ namespace {
 // Size of the bar. This is along the opposite axis of the shelf. For example,
 // if the shelf is aligned horizontally then this is the height of the bar.
 const int kBarSize = 3;
-const int kBarSpacing = 5;
 const int kIconSize = 32;
 const int kHopSpacing = 2;
 const int kIconPad = 8;

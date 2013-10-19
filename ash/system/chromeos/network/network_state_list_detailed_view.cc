@@ -56,9 +56,6 @@ namespace tray {
 
 namespace {
 
-// Height of the list of networks in the popup.
-const int kNetworkListHeight = 203;
-
 // Delay between scan requests.
 const int kRequestScanDelaySeconds = 10;
 

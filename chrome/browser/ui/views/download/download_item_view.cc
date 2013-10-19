@@ -51,9 +51,7 @@
 //              different screen resolutions.
 static const int kTextWidth = 140;            // Pixels
 static const int kDangerousTextWidth = 200;   // Pixels
-static const int kHorizontalTextPadding = 2;  // Pixels
 static const int kVerticalPadding = 3;        // Pixels
-static const int kVerticalTextSpacer = 2;     // Pixels
 static const int kVerticalTextPadding = 2;    // Pixels
 static const int kTooltipMaxWidth = 800;      // Pixels
 

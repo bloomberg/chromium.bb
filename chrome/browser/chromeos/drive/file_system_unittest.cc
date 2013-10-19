@@ -33,8 +33,6 @@
 namespace drive {
 namespace {
 
-const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
-
 // Counts the number of invocation, and if it increased up to |expected_counter|
 // quits the current message loop by calling |quit|.
 void AsyncInitializationCallback(

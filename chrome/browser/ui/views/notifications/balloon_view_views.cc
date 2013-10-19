@@ -74,9 +74,6 @@ const int kBottomShadowWidth = 6;
 // Optional animation.
 const bool kAnimateEnabled = true;
 
-// Menu commands
-const int kRevokePermissionCommand = 0;
-
 // Colors
 const SkColor kControlBarBackgroundColor = SkColorSetRGB(245, 245, 245);
 const SkColor kControlBarTextColor = SkColorSetRGB(125, 125, 125);

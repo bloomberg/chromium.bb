@@ -19,7 +19,6 @@ namespace test {
 
 const char kHostedAppId[] = "dceacbkfkmllgmjmbhgkpjegnodmildf";
 const char kPackagedApp1Id[] = "emfkafnhnpcmabnnkckkchdilgeoekbo";
-const char kPackagedApp2Id[] = "jlklkagmeajbjiobondfhiekepofmljl";
 
 class AppSearchProviderTest : public ExtensionServiceTestBase {
  public:

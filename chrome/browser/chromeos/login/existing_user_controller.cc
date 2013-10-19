@@ -66,9 +66,6 @@ namespace chromeos {
 
 namespace {
 
-// Major version where we still show GSG as "Release Notes" after the update.
-const long int kReleaseNotesTargetRelease = 19;
-
 // URL for account creation.
 const char kCreateAccountURL[] =
     "https://accounts.google.com/NewAccount?service=mail";
@@ -83,9 +80,6 @@ const long int kAuthCacheTransferDelayMs = 2000;
 
 // Delay for restarting the ui if safe-mode login has failed.
 const long int kSafeModeRestartUiDelayMs = 30000;
-
-// Delay for rebooting machine if TPM critical error was encountered.
-const long int kCriticalErrorRebootDelayMs = 3500;
 
 // Makes a call to the policy subsystem to reload the policy when we detect
 // authentication change.

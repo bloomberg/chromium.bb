@@ -30,7 +30,6 @@ const size_t kMaxLines = 10;
 // when running the same binary on a Linux workstation; presumably there's a
 // difference in font metrics.  Rationalize this.
 const int kTooltipVerticalPadding = 2;
-const int kTooltipTimeoutMs = 500;
 
 // FIXME: get cursor offset from actual cursor size.
 const int kCursorOffsetX = 10;

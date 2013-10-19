@@ -57,9 +57,6 @@ const int kDefaultEncodingQuality = 90;
 // Deprecated. Will remove this const char after done migration.
 const char kUserWallpapers[] = "UserWallpapers";
 
-const int kThumbnailWidth = 128;
-const int kThumbnailHeight = 80;
-
 const int kCacheWallpaperDelayMs = 500;
 
 // A dictionary pref that maps usernames to wallpaper properties.

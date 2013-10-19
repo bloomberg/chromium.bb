@@ -33,9 +33,6 @@ Display* GetXDisplay() {
   return base::MessagePumpForUI::GetDefaultXDisplay();
 }
 
-// The default keyboard layout name in the xorg config file.
-const char kDefaultLayoutName[] = "us";
-
 // The command we use to set the current XKB layout and modifier key mapping.
 // TODO(yusukes): Use libxkbfile.so instead of the command (crosbug.com/13105)
 const char kSetxkbmapCommand[] = "/usr/bin/setxkbmap";

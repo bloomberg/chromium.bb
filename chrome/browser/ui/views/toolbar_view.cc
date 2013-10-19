@@ -93,10 +93,6 @@ const int kContentShadowHeightAsh = 2;
 // Non-ash uses a rounded content area with no shadow in the assets.
 const int kContentShadowHeight = 0;
 
-// Top margin for the wrench menu badges (badge is placed in the upper right
-// corner of the wrench menu).
-const int kBadgeTopMargin = 2;
-
 int GetButtonSpacing() {
   return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
       ToolbarView::kStandardSpacing : 0;

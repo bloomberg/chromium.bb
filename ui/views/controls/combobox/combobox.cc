@@ -32,7 +32,6 @@ namespace {
 const int kMenuBorderWidthLeft = 1;
 const int kMenuBorderWidthTop = 1;
 const int kMenuBorderWidthRight = 1;
-const int kMenuBorderWidthBottom = 2;
 
 // Limit how small a combobox can be.
 const int kMinComboboxWidth = 25;

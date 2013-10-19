@@ -23,19 +23,9 @@
 #include "ui/views/corewm/window_animations.h"
 #endif
 
-namespace {
-
-// This is the number of pixels in the border image used to draw the bottom
-// border + drop shadow interior to the "visual" border. We lay out assuming
-// that this many pixels inside the border is "in the popup."
-const SkAlpha kGlassPopupAlpha = 240;
-const SkAlpha kOpaquePopupAlpha = 255;
-
 // This is the number of pixels in the border image interior to the actual
 // border.
 const int kBorderInterior = 6;
-
-}  // namespace
 
 class OmniboxPopupContentsView::AutocompletePopupWidget
     : public views::Widget,

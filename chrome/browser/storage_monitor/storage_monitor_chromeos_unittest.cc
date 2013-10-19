@@ -30,13 +30,10 @@ using content::BrowserThread;
 using disks::DiskMountManager;
 using testing::_;
 
-const char kDeviceNameWithManufacturerDetails[] = "110 KB (CompanyA, Z101)";
 const char kDevice1[] = "/dev/d1";
 const char kDevice1Name[] = "d1";
-const char kDevice1NameWithSizeInfo[] = "110 KB d1";
 const char kDevice2[] = "/dev/disk/d2";
 const char kDevice2Name[] = "d2";
-const char kDevice2NameWithSizeInfo[] = "207 KB d2";
 const char kEmptyDeviceLabel[] = "";
 const char kMountPointA[] = "mnt_a";
 const char kMountPointB[] = "mnt_b";

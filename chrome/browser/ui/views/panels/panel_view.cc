@@ -38,10 +38,12 @@
 
 namespace {
 
+#if defined(OS_WIN)
 // If the height of a stacked panel shrinks below this threshold during the
 // user resizing, it will be treated as minimized.
 const int kStackedPanelHeightShrinkThresholdToBecomeMinimized =
     panel::kTitlebarHeight + 20;
+#endif
 
 // Supported accelerators.
 // Note: We can't use the acclerator table defined in chrome/browser/ui/views

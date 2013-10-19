@@ -680,7 +680,7 @@ class MouseEventTrackingWidget : public Widget {
   }
 
   // Widget:
-  virtual void OnMouseEvent(ui::MouseEvent* event) {
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     got_mouse_event_ = true;
     Widget::OnMouseEvent(event);
   }

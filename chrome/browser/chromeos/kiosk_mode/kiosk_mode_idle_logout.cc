@@ -22,8 +22,6 @@ namespace chromeos {
 
 namespace {
 
-const int64 kLoginIdleTimeout = 100; // seconds
-
 static base::LazyInstance<KioskModeIdleLogout>
     g_kiosk_mode_idle_logout = LAZY_INSTANCE_INITIALIZER;
 

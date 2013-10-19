@@ -18,7 +18,6 @@
 #endif
 
 static const int kTransparentAlpha = 200;
-static const int kOpaqueAlpha = 255;
 static const int kDragFrameBorderSize = 2;
 static const int kTwiceDragFrameBorderSize = 2 * kDragFrameBorderSize;
 static const float kScalingFactor = 0.5;

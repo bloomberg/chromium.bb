@@ -44,9 +44,9 @@ namespace {
 // Maximum filters per policy. Filters over this index are ignored.
 const size_t kMaxFiltersPerPolicy = 1000;
 
-const char kServiceLoginAuth[] = "/ServiceLoginAuth";
-
 #if !defined(OS_CHROMEOS)
+
+const char kServiceLoginAuth[] = "/ServiceLoginAuth";
 
 bool IsSigninFlowURL(const GURL& url) {
   // Whitelist all the signin flow URLs flagged by the SigninManager.

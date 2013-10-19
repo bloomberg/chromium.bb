@@ -27,8 +27,6 @@
 
 namespace {
 
-const char kEnterpriseMachineKey[] = "attest-ent-machine";
-
 // The number of days before a certificate expires during which it is
 // considered 'expiring soon' and replacement is initiated.  The Chrome OS CA
 // issues certificates with an expiry of at least two years.  This value has

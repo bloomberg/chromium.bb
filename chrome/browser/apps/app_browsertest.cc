@@ -187,7 +187,9 @@ bool CopyTestDataAndSetCommandLineArg(
   return true;
 }
 
+#if !defined(OS_CHROMEOS)
 const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
+#endif
 
 }  // namespace
 

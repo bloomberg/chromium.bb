@@ -59,7 +59,6 @@ const int kRegistrationAnnouncementTimeoutSeconds = 5;
 
 const int kInitialRequeryTimeSeconds = 1;
 const int kMaxRequeryTimeSeconds = 2; // Time for last requery
-const int kRequeryExpontentialGrowthBase = 2;
 
 int g_num_visible = 0;
 

@@ -18,8 +18,6 @@ namespace chromeos {
 
 namespace {
 
-const char kDevicePath[] = "devicePath";
-
 // TODO(armansito): Add bindings for these to service_constants.h
 // (crbug.com/256889)
 const char kShillErrorFailure[] = "org.chromium.flimflam.Error.Failure";

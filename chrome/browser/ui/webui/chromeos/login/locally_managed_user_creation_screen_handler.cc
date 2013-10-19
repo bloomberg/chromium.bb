@@ -20,15 +20,7 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
 const char kJsScreenPath[] = "login.LocallyManagedUserCreationScreen";
-
-// Locally managed user creation screen id.
-const char kLocallyManagedUserCreationScreen[] =
-    "locally-managed-user-creation";
-
-}  // namespace
 
 namespace chromeos {
 

@@ -40,10 +40,6 @@ namespace chromeos {
 
 namespace {
 
-// Time in milliseconds to delay showing of promo
-// notification when Chrome window is not on screen.
-const int kPromoShowDelayMs = 10000;
-
 const int kNotificationCountPrefDefault = -1;
 
 bool GetBooleanPref(const char* pref_name) {

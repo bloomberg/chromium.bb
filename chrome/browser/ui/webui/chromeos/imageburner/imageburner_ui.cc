@@ -31,7 +31,6 @@ namespace {
 const char kPropertyDevicePath[] = "devicePath";
 const char kPropertyFilePath[] = "filePath";
 const char kPropertyLabel[] = "label";
-const char kPropertyPath[] = "path";
 const char kPropertyDeviceType[] = "type";
 
 // Link displayed on imageburner ui.

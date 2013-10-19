@@ -24,9 +24,6 @@ namespace chromeos {
 
 namespace {
 
-// Milliseconds until we timeout our attempt to hit ClientLogin.
-const int kClientLoginTimeoutMs = 10000;
-
 // Records status and calls resolver->Resolve().
 void TriggerResolve(ManagedUserAuthenticator::AuthAttempt* attempt,
                     scoped_refptr<ManagedUserAuthenticator> resolver,

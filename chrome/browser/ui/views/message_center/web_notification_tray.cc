@@ -32,10 +32,6 @@ namespace {
 // Tray constants
 const int kScreenEdgePadding = 2;
 
-const int kSystemTrayWidth = 16;
-const int kSystemTrayHeight = 16;
-const int kNumberOfSystemTraySprites = 10;
-
 // Number of pixels the message center is offset from the mouse.
 const int kMouseOffset = 5;
 

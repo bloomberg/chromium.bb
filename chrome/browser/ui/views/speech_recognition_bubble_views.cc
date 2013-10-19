@@ -35,8 +35,6 @@ namespace {
 const int kBubbleHorizMargin = 6;
 const int kBubbleVertMargin = 4;
 const int kBubbleHeadingVertMargin = 6;
-const int kIconHorizontalOffset = 27;
-const int kIconVerticalOffset = -7;
 
 // This is the SpeechRecognitionBubble content and views bubble delegate.
 class SpeechRecognitionBubbleView : public views::BubbleDelegateView,

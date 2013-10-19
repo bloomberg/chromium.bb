@@ -6,13 +6,6 @@
 
 #include <string>
 
-namespace {
-
-// As defined in /chromeos/dbus/cryptohome_client.cc.
-static const char kUserIdHashSuffix[] = "-hash";
-
-}  // namespace
-
 namespace chromeos {
 
 FakeSupervisedUserManager::FakeSupervisedUserManager()  {}

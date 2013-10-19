@@ -22,7 +22,6 @@ using content::BrowserThread;
 namespace {
 
 // Config attributes names.
-const char kVersionAttr[] = "version";
 const char kAcceptedConfigVersion[] = "1.0";
 const char kDefaultAttr[] = "default";
 
@@ -42,7 +41,6 @@ const char kInfoURLAttr[] = "info_url";
 const char kNotificationCountAttr[] = "notification_count";
 const char kDealExpireDateAttr[] = "expire_date";
 const char kLocalizedContentAttr[] = "localized_content";
-const char kNotificationTextAttr[] = "notification_text";
 
 // Initial locale carrier config attributes.
 const char kInitialLocalesAttr[] = "initial_locales";

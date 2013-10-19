@@ -21,12 +21,8 @@
 namespace ash {
 namespace internal {
 
-namespace {
-
 const int kAnimationDurationInMs = 600;
 const float kAnimationOpacity[] = { 1.0f, 0.4f, 1.0f };
-const int kBorderSize = 9;
-}  // namespace
 
 AppListButton::AppListButton(views::ButtonListener* listener,
                              LauncherButtonHost* host)

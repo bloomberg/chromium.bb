@@ -74,7 +74,9 @@ using google_breakpad::MinidumpDescriptor;
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
 const char kUploadURL[] = "https://clients2.google.com/cr/report";
+#endif
 
 bool g_is_crash_reporter_enabled = false;
 uint64_t g_process_start_time = 0;

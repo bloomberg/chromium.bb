@@ -13,13 +13,6 @@
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace {
-
-// Amount of time to wait after a command before performing it.
-const int kCommandEffectsTimeMs = 500;
-
-}
-
 namespace chromeos {
 
 const char FakeBluetoothAdapterClient::kAdapterPath[] =

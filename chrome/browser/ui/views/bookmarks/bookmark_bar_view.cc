@@ -110,10 +110,6 @@ static gfx::ImageSkia* kDefaultFavicon = NULL;
 // Icon used for folders.
 static gfx::ImageSkia* kFolderIcon = NULL;
 
-// Offset for where the menu is shown relative to the bottom of the
-// BookmarkBarView.
-static const int kMenuOffset = 3;
-
 // Color of the drop indicator.
 static const SkColor kDropIndicatorColor = SK_ColorBLACK;
 

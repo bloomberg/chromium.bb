@@ -19,7 +19,6 @@ namespace ash {
 namespace {
 const int kMessageTopBottomMargin = 10;
 const int kMessageLeftRightMargin = 10;
-const int kMessageAppearanceDelayMs = 200;
 const int kMessageMinHeight = 29 - 2 * kMessageTopBottomMargin;
 const SkColor kMessageTextColor = SkColorSetRGB(0x22, 0x22, 0x22);
 

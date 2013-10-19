@@ -82,9 +82,6 @@ const char* kKnownSettings[] = {
   kVariationsRestrictParameter,
 };
 
-// Legacy policy file location. Used to detect migration from pre v12 ChromeOS.
-const char kLegacyPolicyFile[] = "/var/lib/whitelist/preferences";
-
 bool HasOldMetricsFile() {
   // TODO(pastarmovj): Remove this once migration is not needed anymore.
   // If the value is not set we should try to migrate legacy consent file.

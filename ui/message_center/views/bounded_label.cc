@@ -15,7 +15,6 @@
 namespace {
 
 const size_t kPreferredLinesCacheSize = 10;
-const size_t kPreferredSizeCacheSize = 10;
 
 }  // namespace
 

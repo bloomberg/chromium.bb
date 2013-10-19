@@ -238,9 +238,6 @@ const char kURLRegisterComplete[] =
 const char kURLGaiaToken[] =
     "https://accounts.google.com/o/oauth2/token";
 
-const char kSampleServiceName[] = "myService._privet._tcp.local";
-const char kSampleDeviceID[] = "MyFakeID";
-const char kSampleDeviceHost[] = "myservice.local";
 const char kSampleUser[] = "user@host.com";
 
 class TestMessageLoopCondition {

@@ -64,7 +64,6 @@ const char kTriesLeft[] = "tries";
 
 // Error constants, passed to the page.
 const char kErrorPin[] = "incorrectPin";
-const char kErrorPuk[] = "incorrectPuk";
 const char kErrorOk[] = "ok";
 
 chromeos::NetworkDeviceHandler* GetNetworkDeviceHandler() {

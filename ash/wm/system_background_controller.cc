@@ -11,15 +11,6 @@
 namespace ash {
 namespace internal {
 
-namespace {
-
-#if defined(OS_CHROMEOS)
-// Background color used for the Chrome OS boot splash screen.
-const SkColor kChromeOsBootColor = SkColorSetARGB(0xff, 0xfe, 0xfe, 0xfe);
-#endif
-
-}  // namespace
-
 SystemBackgroundController::SystemBackgroundController(
     aura::RootWindow* root_window,
     SkColor color)

@@ -34,7 +34,6 @@ namespace {
 const char kAutoLoginAccountId[] = "public_session_user@localhost";
 // These values are only used to test the configuration.  They don't
 // delay the test.
-const int kAutoLoginNoDelay = 0;
 const int kAutoLoginDelay1 = 60000;
 const int kAutoLoginDelay2 = 180000;
 

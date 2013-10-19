@@ -19,10 +19,6 @@
 
 using content::UserMetricsAction;
 
-// Default size of the dialog window.
-static const int kDefaultWindowWidth = 320;
-static const int kDefaultWindowHeight = 100;
-
 namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,

@@ -38,15 +38,6 @@ namespace {
 // The frame border is only visible in restored mode and is hardcoded to 4 px on
 // each side regardless of the system window border size.
 const int kFrameBorderThickness = 4;
-// Various edges of the frame border have a 1 px shadow along their edges; in a
-// few cases we shift elements based on this amount for visual appeal.
-const int kFrameShadowThickness = 1;
-// While resize areas on Windows are normally the same size as the window
-// borders, our top area is shrunk by 1 px to make it easier to move the window
-// around with our thinner top grabbable strip.  (Incidentally, our side and
-// bottom resize areas don't match the frame border thickness either -- they
-// span the whole nonclient area, so there's no "dead zone" for the mouse.)
-const int kTopResizeAdjust = 1;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;

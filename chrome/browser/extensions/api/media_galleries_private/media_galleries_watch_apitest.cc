@@ -26,6 +26,7 @@ namespace {
 const char kTestExtensionId[] = "gceegfkgibmgpfopknlcgleimclbknie";
 const char kTestExtensionPath[] = "media_galleries_private/gallerywatch";
 
+#if !defined(OS_CHROMEOS)
 // JS commands.
 const char kGetAllWatchedGalleryIdsCmd[] = "getAllWatchedGalleryIds()";
 const char kGetMediaFileSystemsCmd[] = "getMediaFileSystems()";
@@ -62,6 +63,7 @@ const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
 const char kGetAllGalleryWatchResultB[] =
     "watchers_for_galleries_{1, 2, 3}_found";
 #endif  // defined(OS_WIN)
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
 

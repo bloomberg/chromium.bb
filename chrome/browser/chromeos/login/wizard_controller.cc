@@ -64,25 +64,11 @@
 
 using content::BrowserThread;
 
-namespace {
-
-// A string pref with initial locale set in VPD or manifest.
-const char kInitialLocale[] = "intl.initial_locale";
-
-// A boolean pref of the OOBE complete flag (first OOBE part before login).
-const char kOobeComplete[] = "OobeComplete";
-
-// A boolean pref of the device registered flag (second part after first login).
-const char kDeviceRegistered[] = "DeviceRegistered";
-
-// Time in seconds that we wait for the device to reboot.
 // If reboot didn't happen, ask user to reboot device manually.
 const int kWaitForRebootTimeSec = 3;
 
 // Interval in ms which is used for smooth screen showing.
 static int kShowDelayMs = 400;
-
-}  // namespace
 
 namespace chromeos {
 

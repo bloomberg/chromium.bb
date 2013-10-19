@@ -30,10 +30,6 @@ const char kOobeComplete[] = "OobeComplete";
 // A boolean pref of the device registered flag (second part after first login).
 const char kDeviceRegistered[] = "DeviceRegistered";
 
-// Time in seconds that we wait for the device to reboot.
-// If reboot didn't happen, ask user to reboot device manually.
-const int kWaitForRebootTimeSec = 3;
-
 // Saves boolean "Local State" preference and forces its persistence to disk.
 void SaveBoolPreferenceForced(const char* pref_name, bool value) {
   PrefService* prefs = g_browser_process->local_state();

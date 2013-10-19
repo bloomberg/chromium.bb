@@ -46,8 +46,6 @@ const size_t kPerfCommandStartIntervalLowerBoundMinutes = 10;
 
 const size_t kPerfCommandStartIntervalUpperBoundMinutes = 20;
 
-const size_t kNumberOfSecondsInAMinute = 60;
-
 // Default time in seconds perf is run for.
 const size_t kPerfCommandDurationDefaultSeconds = 2;
 

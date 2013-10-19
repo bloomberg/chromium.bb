@@ -39,9 +39,6 @@ namespace {
 // The visible height of the shadow above the tabs. Clicks in this area are
 // treated as clicks to the frame, rather than clicks to the tab.
 const int kTabShadowSize = 2;
-// The number of pixels the bookmark bar should overlap the spacer by if the
-// spacer is visible.
-const int kSpacerBookmarkBarOverlap = 1;
 // The number of pixels the metro switcher is offset from the right edge.
 const int kWindowSwitcherOffsetX = 7;
 // The number of pixels the constrained window should overlap the bottom
