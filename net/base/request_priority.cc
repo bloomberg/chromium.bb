@@ -20,8 +20,6 @@ const char* RequestPriorityToString(RequestPriority priority) {
       return "MEDIUM";
     case HIGHEST:
       return "HIGHEST";
-    case NUM_PRIORITIES:
-      return "NUM_PRIORITIES";
   }
   NOTREACHED();
   return "UNKNOWN_PRIORITY";

@@ -407,7 +407,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   size_t num_created_streams() const { return created_streams_.size(); }
 
   size_t pending_create_stream_queue_size(RequestPriority priority) const {
-    DCHECK_LT(priority, NUM_PRIORITIES);
+    DCHECK_GE(priority, MINIMUM_PRIORITY);
+    DCHECK_LE(priority, MAXIMUM_PRIORITY);
     return pending_create_stream_queues_[priority].size();
   }
 

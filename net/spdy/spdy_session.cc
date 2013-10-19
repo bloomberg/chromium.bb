@@ -647,7 +647,7 @@ int SpdySession::TryCreateStream(
   net_log().AddEvent(NetLog::TYPE_SPDY_SESSION_STALLED_MAX_STREAMS);
   RequestPriority priority = request->priority();
   CHECK_GE(priority, MINIMUM_PRIORITY);
-  CHECK_LT(priority, NUM_PRIORITIES);
+  CHECK_LE(priority, MAXIMUM_PRIORITY);
   pending_create_stream_queues_[priority].push_back(request);
   return ERR_IO_PENDING;
 }
@@ -655,7 +655,7 @@ int SpdySession::TryCreateStream(
 int SpdySession::CreateStream(const SpdyStreamRequest& request,
                               base::WeakPtr<SpdyStream>* stream) {
   DCHECK_GE(request.priority(), MINIMUM_PRIORITY);
-  DCHECK_LT(request.priority(), NUM_PRIORITIES);
+  DCHECK_LE(request.priority(), MAXIMUM_PRIORITY);
 
   if (availability_state_ == STATE_GOING_AWAY)
     return ERR_FAILED;
@@ -706,11 +706,11 @@ void SpdySession::CancelStreamRequest(
   DCHECK(request);
   RequestPriority priority = request->priority();
   CHECK_GE(priority, MINIMUM_PRIORITY);
-  CHECK_LT(priority, NUM_PRIORITIES);
+  CHECK_LE(priority, MAXIMUM_PRIORITY);
 
   if (DCHECK_IS_ON()) {
     // |request| should not be in a queue not matching its priority.
-    for (int i = 0; i < NUM_PRIORITIES; ++i) {
+    for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
       if (priority == i)
         continue;
       PendingStreamRequestQueue* queue = &pending_create_stream_queues_[i];
@@ -738,7 +738,7 @@ void SpdySession::CancelStreamRequest(
 }
 
 base::WeakPtr<SpdyStreamRequest> SpdySession::GetNextPendingStreamRequest() {
-  for (int j = NUM_PRIORITIES - 1; j >= MINIMUM_PRIORITY; --j) {
+  for (int j = MAXIMUM_PRIORITY; j >= MINIMUM_PRIORITY; --j) {
     if (pending_create_stream_queues_[j].empty())
       continue;
 
@@ -1458,7 +1458,7 @@ int SpdySession::DoWriteComplete(int result) {
 void SpdySession::DcheckGoingAway() const {
   DCHECK_GE(availability_state_, STATE_GOING_AWAY);
   if (DCHECK_IS_ON()) {
-    for (int i = 0; i < NUM_PRIORITIES; ++i) {
+    for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
       DCHECK(pending_create_stream_queues_[i].empty());
     }
   }
@@ -2934,7 +2934,7 @@ void SpdySession::QueueSendStalledStream(const SpdyStream& stream) {
   DCHECK(stream.send_stalled_by_flow_control());
   RequestPriority priority = stream.priority();
   CHECK_GE(priority, MINIMUM_PRIORITY);
-  CHECK_LT(priority, NUM_PRIORITIES);
+  CHECK_LE(priority, MAXIMUM_PRIORITY);
   stream_send_unstall_queue_[priority].push_back(stream.stream_id());
 }
 
@@ -2968,7 +2968,7 @@ void SpdySession::ResumeSendStalledStreams() {
 }
 
 SpdyStreamId SpdySession::PopStreamToPossiblyResume() {
-  for (int i = NUM_PRIORITIES - 1; i >= 0; --i) {
+  for (int i = MAXIMUM_PRIORITY; i >= MINIMUM_PRIORITY; --i) {
     std::deque<SpdyStreamId>* queue = &stream_send_unstall_queue_[i];
     if (!queue->empty()) {
       SpdyStreamId stream_id = queue->front();

@@ -131,7 +131,7 @@ SpdyPriority ConvertRequestPriorityToSpdyPriority(
     const RequestPriority priority,
     int protocol_version) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
-  DCHECK_LT(priority, NUM_PRIORITIES);
+  DCHECK_LE(priority, MAXIMUM_PRIORITY);
   if (protocol_version == 2) {
     // SPDY 2 only has 2 bits of priority, but we have 5 RequestPriorities.
     // Map IDLE => 3, LOWEST => 2, LOW => 2, MEDIUM => 1, HIGHEST => 0.

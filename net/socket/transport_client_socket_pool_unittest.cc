@@ -579,7 +579,7 @@ TEST_F(TransportClientSocketPoolTest, Basic) {
 // Make sure that TransportConnectJob passes on its priority to its
 // HostResolver request on Init.
 TEST_F(TransportClientSocketPoolTest, SetResolvePriorityOnInit) {
-  for (int i = MINIMUM_PRIORITY; i < NUM_PRIORITIES; ++i) {
+  for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
     RequestPriority priority = static_cast<RequestPriority>(i);
     TestCompletionCallback callback;
     ClientSocketHandle handle;

@@ -143,7 +143,7 @@ TEST_F(SOCKSClientSocketPoolTest, Simple) {
 // Make sure that SOCKSConnectJob passes on its priority to its
 // socket request on Init.
 TEST_F(SOCKSClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
-  for (int i = MINIMUM_PRIORITY; i < NUM_PRIORITIES; ++i) {
+  for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
     RequestPriority priority = static_cast<RequestPriority>(i);
     SOCKS5MockData data(SYNCHRONOUS);
     data.data_provider()->set_connect_data(MockConnect(SYNCHRONOUS, OK));
@@ -162,7 +162,7 @@ TEST_F(SOCKSClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
 // Make sure that SOCKSConnectJob passes on its priority to its
 // HostResolver request (for non-SOCKS5) on Init.
 TEST_F(SOCKSClientSocketPoolTest, SetResolvePriorityOnInit) {
-  for (int i = MINIMUM_PRIORITY; i < NUM_PRIORITIES; ++i) {
+  for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
     RequestPriority priority = static_cast<RequestPriority>(i);
     SOCKS5MockData data(SYNCHRONOUS);
     data.data_provider()->set_connect_data(MockConnect(SYNCHRONOUS, OK));

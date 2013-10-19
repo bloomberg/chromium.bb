@@ -951,8 +951,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   int child_id = filter_->child_id();
 
   // Reject invalid priority.
-  int priority = static_cast<int>(request_data.priority);
-  if (priority < net::MINIMUM_PRIORITY || priority >= net::NUM_PRIORITIES) {
+  if (request_data.priority < net::MINIMUM_PRIORITY ||
+      request_data.priority > net::MAXIMUM_PRIORITY) {
     RecordAction(UserMetricsAction("BadMessageTerminate_RDH"));
     filter_->BadMessageReceived();
     return;

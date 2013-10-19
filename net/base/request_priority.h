@@ -17,7 +17,14 @@ enum RequestPriority {
   LOW,
   MEDIUM,
   HIGHEST,
-  NUM_PRIORITIES,
+  MAXIMUM_PRIORITY = HIGHEST,
+};
+
+// For simplicity, one can assume that one can index into array of
+// NUM_PRIORITIES elements with a RequestPriority (i.e.,
+// MINIMUM_PRIORITY == 0).
+enum RequestPrioritySize {
+  NUM_PRIORITIES = MAXIMUM_PRIORITY + 1,
 };
 
 const char* RequestPriorityToString(RequestPriority priority);

@@ -114,7 +114,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
         type_ == SPDY_REQUEST_RESPONSE_STREAM ||
         type_ == SPDY_PUSH_STREAM);
   CHECK_GE(priority_, MINIMUM_PRIORITY);
-  CHECK_LT(priority_, NUM_PRIORITIES);
+  CHECK_LE(priority_, MAXIMUM_PRIORITY);
 }
 
 SpdyStream::~SpdyStream() {

@@ -905,7 +905,7 @@ int64 URLRequest::GetExpectedContentSize() const {
 
 void URLRequest::SetPriority(RequestPriority priority) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
-  DCHECK_LT(priority, NUM_PRIORITIES);
+  DCHECK_LE(priority, MAXIMUM_PRIORITY);
   if (priority_ == priority)
     return;
 

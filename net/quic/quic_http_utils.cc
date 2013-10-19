@@ -9,7 +9,7 @@ namespace net {
 QuicPriority ConvertRequestPriorityToQuicPriority(
     const RequestPriority priority) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
-  DCHECK_LT(priority, NUM_PRIORITIES);
+  DCHECK_LE(priority, MAXIMUM_PRIORITY);
   return static_cast<QuicPriority>(HIGHEST - priority);
 }
 

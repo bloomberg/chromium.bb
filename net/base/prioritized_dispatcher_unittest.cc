@@ -23,7 +23,7 @@ COMPILE_ASSERT(MINIMUM_PRIORITY == 0u &&
                MINIMUM_PRIORITY == IDLE &&
                IDLE < LOWEST &&
                LOWEST < HIGHEST &&
-               HIGHEST < NUM_PRIORITIES,
+               HIGHEST <= MAXIMUM_PRIORITY,
                priority_indexes_incompatible);
 
 class PrioritizedDispatcherTest : public testing::Test {
@@ -178,7 +178,8 @@ TEST_F(PrioritizedDispatcherTest, GetLimits) {
   PrioritizedDispatcher::Limits retrieved_limits = dispatcher_->GetLimits();
   ASSERT_EQ(original_limits.total_jobs, retrieved_limits.total_jobs);
   ASSERT_EQ(NUM_PRIORITIES, retrieved_limits.reserved_slots.size());
-  for (size_t priority = 0; priority < NUM_PRIORITIES; ++priority) {
+  for (size_t priority = MINIMUM_PRIORITY; priority <= MAXIMUM_PRIORITY;
+       ++priority) {
     EXPECT_EQ(original_limits.reserved_slots[priority],
               retrieved_limits.reserved_slots[priority]);
   }
@@ -193,7 +194,8 @@ TEST_F(PrioritizedDispatcherTest, GetLimits) {
   retrieved_limits = dispatcher_->GetLimits();
   ASSERT_EQ(new_limits.total_jobs, retrieved_limits.total_jobs);
   ASSERT_EQ(NUM_PRIORITIES, retrieved_limits.reserved_slots.size());
-  for (size_t priority = 0; priority < NUM_PRIORITIES; ++priority) {
+  for (size_t priority = MINIMUM_PRIORITY; priority <= MAXIMUM_PRIORITY;
+       ++priority) {
     EXPECT_EQ(new_limits.reserved_slots[priority],
               retrieved_limits.reserved_slots[priority]);
   }

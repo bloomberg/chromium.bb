@@ -298,7 +298,7 @@ TEST_P(SSLClientSocketPoolTest, SetSocketRequestPriorityOnInitDirect) {
   scoped_refptr<SSLSocketParams> params =
       SSLParams(ProxyServer::SCHEME_DIRECT, false);
 
-  for (int i = MINIMUM_PRIORITY; i < NUM_PRIORITIES; ++i) {
+  for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
     RequestPriority priority = static_cast<RequestPriority>(i);
     StaticSocketDataProvider data;
     data.set_connect_data(MockConnect(SYNCHRONOUS, OK));

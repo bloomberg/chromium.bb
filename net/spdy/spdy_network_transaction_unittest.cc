@@ -705,7 +705,7 @@ TEST_P(SpdyNetworkTransactionTest, Get) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
-  for (RequestPriority p = MINIMUM_PRIORITY; p < NUM_PRIORITIES;
+  for (RequestPriority p = MINIMUM_PRIORITY; p <= MAXIMUM_PRIORITY;
        p = RequestPriority(p + 1)) {
     // Construct the request.
     scoped_ptr<SpdyFrame> req(
