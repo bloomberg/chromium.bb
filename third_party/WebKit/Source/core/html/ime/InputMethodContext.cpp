@@ -82,11 +82,6 @@ void InputMethodContext::setCaretRectangle(Node* anchor, int x, int y, int w, in
     // FIXME: Implement this.
 }
 
-void InputMethodContext::setExclusionRectangle(Node* anchor, int x, int y, int w, int h)
-{
-    // FIXME: Implement this.
-}
-
 bool InputMethodContext::hasFocus() const
 {
     Frame* frame = m_element->document().frame();

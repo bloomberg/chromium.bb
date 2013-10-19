@@ -60,7 +60,6 @@ public:
     HTMLElement* target() const;
     void confirmComposition();
     void setCaretRectangle(Node* anchor, int x, int y, int w, int h);
-    void setExclusionRectangle(Node* anchor, int x, int y, int w, int h);
 
     String compositionText() const;
     int selectionStart() const;
