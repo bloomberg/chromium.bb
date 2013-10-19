@@ -1645,12 +1645,13 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
 
 void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   DCHECK(connections_.has(connection));
+  DCHECK(connection->IsConnected());
+  DCHECK(connection->database() == this);
 
-  // Close outstanding transactions from the closing connection. This
+  // Abort outstanding transactions from the closing connection. This
   // can not happen if the close is requested by the connection itself
   // as the front-end defers the close until all transactions are
-  // complete, so something unusual has happened e.g. unexpected
-  // process termination.
+  // complete, but can occur on process termination or forced close.
   {
     TransactionMap transactions(transactions_);
     for (TransactionMap::const_iterator it = transactions.begin(),

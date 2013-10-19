@@ -340,6 +340,7 @@ void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
     while (it != connections.end()) {
       // Remove before closing so callbacks don't double-erase
       IndexedDBConnection* connection = *it;
+      DCHECK(connection->IsConnected());
       connections.erase(it++);
       connection->ForceClose();
     }

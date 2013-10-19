@@ -358,7 +358,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
     int32 ipc_database_id = iter->second;
     ++iter;
     IndexedDBConnection* connection = map_.Lookup(ipc_database_id);
-    if (connection) {
+    if (connection && connection->IsConnected()) {
       connection->database()->Abort(
           transaction_id,
           IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError));
@@ -370,7 +370,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
        iter != database_url_map_.end();
        iter++) {
     IndexedDBConnection* connection = map_.Lookup(iter->first);
-    if (connection) {
+    if (connection && connection->IsConnected()) {
       connection->Close();
       parent_->Context()->ConnectionClosed(iter->second, connection);
     }
@@ -422,7 +422,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
@@ -447,7 +447,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   connection->database()->DeleteObjectStore(
@@ -460,7 +460,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
@@ -484,7 +484,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
   connection->Close();
 }
@@ -506,7 +506,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
@@ -527,7 +527,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
 
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
   scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
@@ -557,7 +557,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
@@ -587,7 +587,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexesReady(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   connection->database()->SetIndexesReady(
@@ -600,7 +600,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpenCursor(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
@@ -622,7 +622,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCount(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
@@ -641,7 +641,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteRange(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
@@ -663,7 +663,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   scoped_refptr<IndexedDBCallbacks> callbacks(
@@ -680,7 +680,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnAbort(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   connection->database()->Abort(parent_->HostTransactionId(transaction_id));
@@ -693,7 +693,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
@@ -716,7 +716,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
@@ -744,7 +744,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteIndex(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   IndexedDBConnection* connection =
       parent_->GetOrTerminateProcess(&map_, ipc_database_id);
-  if (!connection)
+  if (!connection || !connection->IsConnected())
     return;
 
   connection->database()->DeleteIndex(

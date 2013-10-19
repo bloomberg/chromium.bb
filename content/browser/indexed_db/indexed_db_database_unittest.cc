@@ -102,11 +102,14 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and connection
 
-  db->Close(request1->connection(), true /* forced */);
+  request1->connection()->ForceClose();
+  EXPECT_FALSE(request1->connection()->IsConnected());
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and connection
 
-  db->Close(request2->connection(), true /* forced */);
+  request2->connection()->ForceClose();
+  EXPECT_FALSE(request2->connection()->IsConnected());
+
   EXPECT_TRUE(backing_store->HasOneRef());
   EXPECT_FALSE(db->BackingStore());
 

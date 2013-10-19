@@ -128,6 +128,10 @@ class MockConnection : public IndexedDBConnection {
     force_close_called_ = true;
   }
 
+  virtual bool IsConnected() OVERRIDE {
+    return !force_close_called_;
+  }
+
  private:
   bool expect_force_close_;
   bool force_close_called_;
