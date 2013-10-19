@@ -100,6 +100,7 @@ void AuraTestHelper::TearDown() {
   activation_client_.reset();
   capture_client_.reset();
   focus_client_.reset();
+  client::SetFocusClient(root_window_.get(), NULL);
   root_window_.reset();
   test_screen_.reset();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);

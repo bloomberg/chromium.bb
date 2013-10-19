@@ -69,20 +69,7 @@ Window::~Window() {
     root_window->OnWindowDestroying(this);
 
   // Then destroy the children.
-  while (!children_.empty()) {
-    Window* child = children_[0];
-    if (child->owned_by_parent_) {
-      delete child;
-      // Deleting the child so remove it from out children_ list.
-      DCHECK(std::find(children_.begin(), children_.end(), child) ==
-             children_.end());
-    } else {
-      // Even if we can't delete the child, we still need to remove it from the
-      // parent so that relevant bookkeeping (parent_ back-pointers etc) are
-      // updated.
-      RemoveChild(child);
-    }
-  }
+  RemoveOrDestroyChildren();
 
   // Removes ourselves from our transient parent (if it hasn't been done by the
   // RootWindow).
@@ -640,6 +627,23 @@ void Window::PrintWindowHierarchy(int depth) const {
   }
 }
 #endif
+
+void Window::RemoveOrDestroyChildren() {
+  while (!children_.empty()) {
+    Window* child = children_[0];
+    if (child->owned_by_parent_) {
+      delete child;
+      // Deleting the child so remove it from out children_ list.
+      DCHECK(std::find(children_.begin(), children_.end(), child) ==
+             children_.end());
+    } else {
+      // Even if we can't delete the child, we still need to remove it from the
+      // parent so that relevant bookkeeping (parent_ back-pointers etc) are
+      // updated.
+      RemoveChild(child);
+    }
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Window, private:

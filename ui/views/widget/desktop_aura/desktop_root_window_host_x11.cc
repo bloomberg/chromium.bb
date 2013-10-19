@@ -133,6 +133,11 @@ DesktopRootWindowHostX11::~DesktopRootWindowHostX11() {
   root_window_->ClearProperty(kHostForRootWindow);
   aura::client::SetFocusClient(root_window_, NULL);
   aura::client::SetActivationClient(root_window_, NULL);
+  aura::client::SetScreenPositionClient(root_window_, NULL);
+  aura::client::SetDispatcherClient(root_window_, NULL);
+  aura::client::SetCursorClient(root_window_, NULL);
+  aura::client::SetDragDropClient(root_window_, NULL);
+  aura::client::SetWindowMoveClient(root_window_, NULL);
 }
 
 // static

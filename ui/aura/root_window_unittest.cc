@@ -1134,4 +1134,50 @@ TEST_F(RootWindowTest, DeleteWindowDuringMouseMovedDispatch) {
             EventTypesToString(w1_filter->events()));
 }
 
+namespace {
+
+// Used to track if OnWindowDestroying() is invoked and if there is a valid
+// RootWindow at such time.
+class ValidRootDuringDestructionWindowObserver : public aura::WindowObserver {
+ public:
+  ValidRootDuringDestructionWindowObserver(bool* got_destroying,
+                                           bool* has_valid_root)
+      : got_destroying_(got_destroying),
+        has_valid_root_(has_valid_root) {
+  }
+
+  // WindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+    *got_destroying_ = true;
+    *has_valid_root_ = (window->GetRootWindow() != NULL);
+  }
+
+ private:
+  bool* got_destroying_;
+  bool* has_valid_root_;
+
+  DISALLOW_COPY_AND_ASSIGN(ValidRootDuringDestructionWindowObserver);
+};
+
+}  // namespace
+
+// Verifies GetRootWindow() from ~Window returns a valid root.
+TEST_F(RootWindowTest, ValidRootDuringDestruction) {
+  bool got_destroying = false;
+  bool has_valid_root = false;
+  ValidRootDuringDestructionWindowObserver observer(&got_destroying,
+                                                    &has_valid_root);
+  {
+    scoped_ptr<RootWindow> root_window(
+        new RootWindow(RootWindow::CreateParams(gfx::Rect(0, 0, 100, 100))));
+    root_window->Init();
+    // Owned by RootWindow.
+    Window* w1 = CreateNormalWindow(1, root_window.get(), NULL);
+    w1->AddObserver(&observer);
+  }
+  EXPECT_TRUE(got_destroying);
+  EXPECT_TRUE(has_valid_root);
+}
+
 }  // namespace aura
+

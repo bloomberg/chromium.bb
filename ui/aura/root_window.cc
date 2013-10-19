@@ -168,11 +168,18 @@ RootWindow::~RootWindow() {
   // cleared and we don't hit asserts.
   compositor_.reset();
 
-  // Tear down in reverse.  Frees any references held by the host.
-  host_.reset(NULL);
-
   // An observer may have been added by an animation on the RootWindow.
   layer()->GetAnimator()->RemoveObserver(this);
+
+  // Destroy child windows while we're still valid. This is also done by
+  // ~Window, but by that time any calls to virtual methods overriden here (such
+  // as GetRootWindow()) result in Window's implementation. By destroying here
+  // we ensure GetRootWindow() still returns this.
+  RemoveOrDestroyChildren();
+
+  // Destroying/removing child windows may try to access |host_| (eg.
+  // GetAcceleratedWidget())
+  host_.reset(NULL);
 }
 
 // static

@@ -69,8 +69,13 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
 }
 
 DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
+  // WARNING: |content_window_| has been destroyed by the time we get here.
   aura::client::SetFocusClient(root_window_, NULL);
   aura::client::SetActivationClient(root_window_, NULL);
+  aura::client::SetScreenPositionClient(root_window_, NULL);
+  aura::client::SetDispatcherClient(root_window_, NULL);
+  aura::client::SetCursorClient(root_window_, NULL);
+  aura::client::SetDragDropClient(root_window_, NULL);
 }
 
 // static

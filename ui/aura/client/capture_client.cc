@@ -26,8 +26,10 @@ CaptureClient* GetCaptureClient(RootWindow* root_window) {
 
 Window* GetCaptureWindow(Window* window) {
   RootWindow* root_window = window->GetRootWindow();
-  return root_window ?
-      GetCaptureClient(root_window)->GetCaptureWindow() : NULL;
+  if (!root_window)
+    return NULL;
+  CaptureClient* capture_client = GetCaptureClient(root_window);
+  return capture_client ? capture_client->GetCaptureWindow() : NULL;
 }
 
 }  // namespace client

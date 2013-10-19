@@ -229,6 +229,7 @@ void MirrorWindowController::Close() {
     reflector_ = NULL;
     NoneCaptureClient* capture_client = static_cast<NoneCaptureClient*>(
         aura::client::GetCaptureClient(root_window_.get()));
+    aura::client::SetCaptureClient(root_window_.get(), NULL);
     delete capture_client;
 
     root_window_->RemoveRootWindowObserver(

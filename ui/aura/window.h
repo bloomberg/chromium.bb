@@ -353,6 +353,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void PrintWindowHierarchy(int depth) const;
 #endif
 
+ protected:
+  // Deletes (or removes if not owned by parent) all child windows. Intended for
+  // use from the destructor.
+  void RemoveOrDestroyChildren();
+
  private:
   friend class test::WindowTestApi;
   friend class LayoutManager;
