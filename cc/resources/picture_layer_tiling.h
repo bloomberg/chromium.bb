@@ -163,10 +163,21 @@ class CC_EXPORT PictureLayerTiling {
   scoped_ptr<base::Value> AsValue() const;
   size_t GPUMemoryUsageInBytes() const;
 
-  static gfx::Rect ExpandRectEquallyToAreaBoundedBy(
+  struct RectExpansionCache {
+    RectExpansionCache();
+
+    gfx::Rect previous_start;
+    gfx::Rect previous_bounds;
+    gfx::Rect previous_result;
+    int64 previous_target;
+  };
+
+  static
+  gfx::Rect ExpandRectEquallyToAreaBoundedBy(
       gfx::Rect starting_rect,
       int64 target_area,
-      gfx::Rect bounding_rect);
+      gfx::Rect bounding_rect,
+      RectExpansionCache* cache);
 
   bool has_ever_been_updated() const {
     return last_impl_frame_time_in_seconds_ != 0.0;
@@ -201,6 +212,8 @@ class CC_EXPORT PictureLayerTiling {
 
  private:
   DISALLOW_ASSIGN(PictureLayerTiling);
+
+  RectExpansionCache expansion_cache_;
 };
 
 }  // namespace cc

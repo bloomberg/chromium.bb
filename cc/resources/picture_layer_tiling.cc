@@ -406,7 +406,8 @@ void PictureLayerTiling::UpdateTilePriorities(
   gfx::Rect interest_rect = ExpandRectEquallyToAreaBoundedBy(
       starting_rect,
       interest_rect_area,
-      ContentRect());
+      ContentRect(),
+      &expansion_cache_);
   DCHECK(interest_rect.IsEmpty() ||
          ContentRect().Contains(interest_rect));
 
@@ -669,6 +670,10 @@ size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {
   return amount;
 }
 
+PictureLayerTiling::RectExpansionCache::RectExpansionCache()
+  : previous_target(0) {
+}
+
 namespace {
 
 // This struct represents an event at which the expending rect intersects
@@ -700,9 +705,22 @@ int ComputeExpansionDelta(int num_x_edges, int num_y_edges,
 gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
     gfx::Rect starting_rect,
     int64 target_area,
-    gfx::Rect bounding_rect) {
+    gfx::Rect bounding_rect,
+    RectExpansionCache* cache) {
   if (starting_rect.IsEmpty())
     return starting_rect;
+
+  if (cache &&
+      cache->previous_start == starting_rect &&
+      cache->previous_bounds == bounding_rect &&
+      cache->previous_target == target_area)
+    return cache->previous_result;
+
+  if (cache) {
+    cache->previous_start = starting_rect;
+    cache->previous_bounds = bounding_rect;
+    cache->previous_target = target_area;
+  }
 
   DCHECK(!bounding_rect.IsEmpty());
   DCHECK_GT(target_area, 0);
@@ -717,11 +735,15 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
   gfx::Rect rect = IntersectRects(expanded_starting_rect, bounding_rect);
   if (rect.IsEmpty()) {
     // The starting_rect and bounding_rect are far away.
+    if (cache)
+      cache->previous_result = rect;
     return rect;
   }
   if (delta >= 0 && rect == expanded_starting_rect) {
     // The starting rect already covers the entire bounding_rect and isn't too
     // large for the target_area.
+    if (cache)
+      cache->previous_result = rect;
     return rect;
   }
 
@@ -791,7 +813,10 @@ gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
       break;
   }
 
-  return gfx::Rect(origin_x, origin_y, width, height);
+  gfx::Rect result(origin_x, origin_y, width, height);
+  if (cache)
+    cache->previous_result = result;
+  return result;
 }
 
 }  // namespace cc
