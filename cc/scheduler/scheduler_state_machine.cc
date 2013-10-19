@@ -15,7 +15,7 @@ namespace cc {
 SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
     : settings_(settings),
       output_surface_state_(OUTPUT_SURFACE_LOST),
-      begin_frame_state_(BEGIN_FRAME_STATE_IDLE),
+      begin_impl_frame_state_(BEGIN_IMPL_FRAME_STATE_IDLE),
       commit_state_(COMMIT_STATE_IDLE),
       texture_state_(LAYER_TEXTURE_STATE_UNLOCKED),
       forced_redraw_state_(FORCED_REDRAW_STATE_IDLE),
@@ -23,7 +23,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       commit_count_(0),
       current_frame_number_(0),
       last_frame_number_swap_performed_(-1),
-      last_frame_number_begin_frame_sent_to_main_thread_(-1),
+      last_frame_number_begin_main_frame_sent_(-1),
       last_frame_number_update_visible_tiles_was_called_(-1),
       consecutive_failed_draws_(0),
       needs_redraw_(false),
@@ -59,17 +59,17 @@ const char* SchedulerStateMachine::OutputSurfaceStateToString(
   return "???";
 }
 
-const char* SchedulerStateMachine::BeginFrameStateToString(
-    BeginFrameState state) {
+const char* SchedulerStateMachine::BeginImplFrameStateToString(
+    BeginImplFrameState state) {
   switch (state) {
-    case BEGIN_FRAME_STATE_IDLE:
-      return "BEGIN_FRAME_STATE_IDLE";
-    case BEGIN_FRAME_STATE_BEGIN_FRAME_STARTING:
-      return "BEGIN_FRAME_STATE_BEGIN_FRAME_STARTING";
-    case BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME:
-      return "BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME";
-    case BEGIN_FRAME_STATE_INSIDE_DEADLINE:
-      return "BEGIN_FRAME_STATE_INSIDE_DEADLINE";
+    case BEGIN_IMPL_FRAME_STATE_IDLE:
+      return "BEGIN_IMPL_FRAME_STATE_IDLE";
+    case BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING:
+      return "BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING";
+    case BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME:
+      return "BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME";
+    case BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE:
+      return "BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE";
   }
   NOTREACHED();
   return "???";
@@ -108,8 +108,8 @@ const char* SchedulerStateMachine::SynchronousReadbackStateToString(
   switch (state) {
     case READBACK_STATE_IDLE:
       return "READBACK_STATE_IDLE";
-    case READBACK_STATE_NEEDS_BEGIN_FRAME:
-      return "READBACK_STATE_NEEDS_BEGIN_FRAME";
+    case READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME:
+      return "READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME";
     case READBACK_STATE_WAITING_FOR_COMMIT:
       return "READBACK_STATE_WAITING_FOR_COMMIT";
     case READBACK_STATE_WAITING_FOR_ACTIVATION:
@@ -145,8 +145,8 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
   switch (action) {
     case ACTION_NONE:
       return "ACTION_NONE";
-    case ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD:
-      return "ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD";
+    case ACTION_SEND_BEGIN_MAIN_FRAME:
+      return "ACTION_SEND_BEGIN_MAIN_FRAME";
     case ACTION_COMMIT:
       return "ACTION_COMMIT";
     case ACTION_UPDATE_VISIBLE_TILES:
@@ -177,8 +177,8 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
 
   scoped_ptr<base::DictionaryValue> major_state(new base::DictionaryValue);
   major_state->SetString("next_action", ActionToString(NextAction()));
-  major_state->SetString("begin_frame_state",
-                         BeginFrameStateToString(begin_frame_state_));
+  major_state->SetString("begin_impl_frame_state",
+                         BeginImplFrameStateToString(begin_impl_frame_state_));
   major_state->SetString("commit_state", CommitStateToString(commit_state_));
   major_state->SetString("texture_state_",
                          TextureStateToString(texture_state_));
@@ -194,27 +194,31 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   scoped_ptr<base::DictionaryValue> timestamps_state(new base::DictionaryValue);
   base::TimeTicks now = base::TimeTicks::Now();
   timestamps_state->SetDouble(
-      "0_interval", last_begin_frame_args_.interval.InMicroseconds() / 1000.0L);
+      "0_interval",
+      last_begin_impl_frame_args_.interval.InMicroseconds() / 1000.0L);
   timestamps_state->SetDouble(
       "1_now_to_deadline",
-      (last_begin_frame_args_.deadline - now).InMicroseconds() / 1000.0L);
+      (last_begin_impl_frame_args_.deadline - now).InMicroseconds() / 1000.0L);
   timestamps_state->SetDouble(
       "2_frame_time_to_now",
-      (now - last_begin_frame_args_.frame_time).InMicroseconds() / 1000.0L);
+      (now - last_begin_impl_frame_args_.frame_time).InMicroseconds() /
+          1000.0L);
   timestamps_state->SetDouble(
       "3_frame_time_to_deadline",
-      (last_begin_frame_args_.deadline - last_begin_frame_args_.frame_time)
-              .InMicroseconds() /
+      (last_begin_impl_frame_args_.deadline -
+              last_begin_impl_frame_args_.frame_time).InMicroseconds() /
           1000.0L);
   timestamps_state->SetDouble(
       "4_now", (now - base::TimeTicks()).InMicroseconds() / 1000.0L);
   timestamps_state->SetDouble(
       "5_frame_time",
-      (last_begin_frame_args_.frame_time - base::TimeTicks()).InMicroseconds() /
+      (last_begin_impl_frame_args_.frame_time - base::TimeTicks())
+              .InMicroseconds() /
           1000.0L);
   timestamps_state->SetDouble(
       "6_deadline",
-      (last_begin_frame_args_.deadline - base::TimeTicks()).InMicroseconds() /
+      (last_begin_impl_frame_args_.deadline - base::TimeTicks())
+              .InMicroseconds() /
           1000.0L);
   state->Set("major_timestamps_in_ms", timestamps_state.release());
 
@@ -225,8 +229,8 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   minor_state->SetInteger("last_frame_number_swap_performed",
                           last_frame_number_swap_performed_);
   minor_state->SetInteger(
-      "last_frame_number_begin_frame_sent_to_main_thread",
-      last_frame_number_begin_frame_sent_to_main_thread_);
+      "last_frame_number_begin_main_frame_sent",
+      last_frame_number_begin_main_frame_sent_);
   minor_state->SetInteger(
       "last_frame_number_update_visible_tiles_was_called",
       last_frame_number_update_visible_tiles_was_called_);
@@ -256,9 +260,9 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   return state.PassAs<base::Value>();
 }
 
-bool SchedulerStateMachine::HasSentBeginFrameToMainThreadThisFrame() const {
+bool SchedulerStateMachine::HasSentBeginMainFrameThisFrame() const {
   return current_frame_number_ ==
-         last_frame_number_begin_frame_sent_to_main_thread_;
+         last_frame_number_begin_main_frame_sent_;
 }
 
 bool SchedulerStateMachine::HasUpdatedVisibleTilesThisFrame() const {
@@ -354,8 +358,9 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (HasSwappedThisFrame())
     return false;
 
-  // Except for the cases above, do not draw outside of the BeginFrame deadline.
-  if (begin_frame_state_ != BEGIN_FRAME_STATE_INSIDE_DEADLINE)
+  // Except for the cases above, do not draw outside of the BeginImplFrame
+  // deadline.
+  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
     return false;
 
   // Only handle forced redraws due to timeouts on the regular deadline.
@@ -407,7 +412,7 @@ bool SchedulerStateMachine::ShouldUpdateVisibleTiles() const {
 
   // We should not check for visible tiles until we've entered the deadline so
   // we check as late as possible and give the tiles more time to initialize.
-  if (begin_frame_state_ != BEGIN_FRAME_STATE_INSIDE_DEADLINE)
+  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
     return false;
 
   // If the last swap drew with checkerboard or missing tiles, we should
@@ -419,12 +424,11 @@ bool SchedulerStateMachine::ShouldUpdateVisibleTiles() const {
   return false;
 }
 
-bool SchedulerStateMachine::ShouldSendBeginFrameToMainThread() const {
+bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!needs_commit_)
     return false;
 
-  // Only send BeginFrame to the main thread when there isn't another commit
-  // pending already.
+  // Only send BeginMainFrame when there isn't another commit pending already.
   if (commit_state_ != COMMIT_STATE_IDLE)
     return false;
 
@@ -433,10 +437,10 @@ bool SchedulerStateMachine::ShouldSendBeginFrameToMainThread() const {
     return false;
 
   // We want to handle readback commits immediately to unblock the main thread.
-  // Note: This BeginFrame will correspond to the replacement commit that comes
-  // after the readback commit itself, so we only send the BeginFrame if a
-  // commit isn't already pending behind the readback.
-  if (readback_state_ == READBACK_STATE_NEEDS_BEGIN_FRAME)
+  // Note: This BeginMainFrame will correspond to the replacement commit that
+  // comes after the readback commit itself, so we only send the BeginMainFrame
+  // if a commit isn't already pending behind the readback.
+  if (readback_state_ == READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME)
     return !CommitPending();
 
   // We do not need commits if we are not visible, unless there's a
@@ -448,21 +452,20 @@ bool SchedulerStateMachine::ShouldSendBeginFrameToMainThread() const {
   if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT)
     return true;
 
-  // With deadline scheduling enabled, we should not send BeginFrame to the
-  // main thread while we are in BEGIN_FRAME_STATE_IDLE, since we might have
-  // new user input coming in soon.
-  // However, if we are not expecting a BeginFrame on the Impl thread to take
-  // us out of idle, we should not early out here to avoid blocking commits
-  // forever.
+  // With deadline scheduling enabled, we should not send BeginMainFrame while
+  // we are in BEGIN_IMPL_FRAME_STATE_IDLE, since we might have new user input
+  // coming in soon.
+  // However, if we are not expecting a BeginImplFrame to take us out of idle,
+  // we should not early out here to avoid blocking commits forever.
   // This only works well when deadline scheduling is enabled because there is
   // an interval over which to accept the commit and draw. Without deadline
   // scheduling, delaying the commit could prevent us from having something
-  // to draw on the next BeginFrame.
-  // TODO(brianderson): Allow sending BeginFrame to main thread while idle
-  // when the main thread isn't consuming user input.
+  // to draw on the next BeginImplFrame.
+  // TODO(brianderson): Allow sending BeginMainFrame while idle when the main
+  // thread isn't consuming user input.
   if (settings_.deadline_scheduling_enabled &&
-      begin_frame_state_ == BEGIN_FRAME_STATE_IDLE &&
-      BeginFrameNeededByImplThread())
+      begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_IDLE &&
+      BeginImplFrameNeeded())
     return false;
 
   // We need a new commit for the forced redraw. This honors the
@@ -471,7 +474,7 @@ bool SchedulerStateMachine::ShouldSendBeginFrameToMainThread() const {
     return true;
 
   // After this point, we only start a commit once per frame.
-  if (HasSentBeginFrameToMainThreadThisFrame())
+  if (HasSentBeginMainFrameThisFrame())
     return false;
 
   // We shouldn't normally accept commits if there isn't an OutputSurface.
@@ -489,7 +492,7 @@ bool SchedulerStateMachine::ShouldManageTiles() const {
   // Limiting to once per-frame is not enough, since we only want to
   // manage tiles _after_ draws. Polling for draw triggers and
   // begin-frame are mutually exclusive, so we limit to these two cases.
-  if (begin_frame_state_ != BEGIN_FRAME_STATE_INSIDE_DEADLINE &&
+  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
       !inside_poll_for_anticipated_draw_triggers_)
     return false;
   return needs_manage_tiles_;
@@ -516,8 +519,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
   }
   if (ShouldManageTiles())
     return ACTION_MANAGE_TILES;
-  if (ShouldSendBeginFrameToMainThread())
-    return ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD;
+  if (ShouldSendBeginMainFrame())
+    return ACTION_SEND_BEGIN_MAIN_FRAME;
   if (ShouldBeginOutputSurfaceCreation())
     return ACTION_BEGIN_OUTPUT_SURFACE_CREATION;
   return ACTION_NONE;
@@ -544,14 +547,15 @@ void SchedulerStateMachine::UpdateState(Action action) {
       UpdateStateOnActivation();
       return;
 
-    case ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD:
+    case ACTION_SEND_BEGIN_MAIN_FRAME:
       DCHECK(!has_pending_tree_);
-      DCHECK(visible_ || readback_state_ == READBACK_STATE_NEEDS_BEGIN_FRAME);
+      DCHECK(visible_ ||
+             readback_state_ == READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME);
       commit_state_ = COMMIT_STATE_FRAME_IN_PROGRESS;
       needs_commit_ = false;
-      if (readback_state_ == READBACK_STATE_NEEDS_BEGIN_FRAME)
+      if (readback_state_ == READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME)
         readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
-      last_frame_number_begin_frame_sent_to_main_thread_ =
+      last_frame_number_begin_main_frame_sent_ =
           current_frame_number_;
       return;
 
@@ -715,7 +719,7 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_swap) {
     // we should not have a pending tree.
     DCHECK(!has_pending_tree_);
     // We transition to COMMIT_STATE_FRAME_IN_PROGRESS because there is a
-    // pending BeginFrame on the main thread behind the readback request.
+    // pending BeginMainFrame behind the readback request.
     commit_state_ = COMMIT_STATE_FRAME_IN_PROGRESS;
     readback_state_ = READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT;
   } else if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW) {
@@ -748,36 +752,36 @@ void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
   main_thread_needs_layer_textures_ = true;
 }
 
-bool SchedulerStateMachine::BeginFrameNeededByImplThread() const {
-  // Proactive BeginFrames are bad for the synchronous compositor because we
-  // have to draw when we get the BeginFrame and could end up drawing many
+bool SchedulerStateMachine::BeginImplFrameNeeded() const {
+  // Proactive BeginImplFrames are bad for the synchronous compositor because we
+  // have to draw when we get the BeginImplFrame and could end up drawing many
   // duplicate frames if our new frame isn't ready in time.
   // To poll for state with the synchronous compositor without having to draw,
   // we rely on ShouldPollForAnticipatedDrawTriggers instead.
-  if (!SupportsProactiveBeginFrame())
-    return BeginFrameNeededToDrawByImplThread();
+  if (!SupportsProactiveBeginImplFrame())
+    return BeginImplFrameNeededToDraw();
 
-  return BeginFrameNeededToDrawByImplThread() ||
-         ProactiveBeginFrameWantedByImplThread();
+  return BeginImplFrameNeededToDraw() ||
+         ProactiveBeginImplFrameWanted();
 }
 
 bool SchedulerStateMachine::ShouldPollForAnticipatedDrawTriggers() const {
   // ShouldPollForAnticipatedDrawTriggers is what we use in place of
-  // ProactiveBeginFrameWantedByImplThread when we are using the synchronous
+  // ProactiveBeginImplFrameWanted when we are using the synchronous
   // compositor.
-  if (!SupportsProactiveBeginFrame()) {
-    return !BeginFrameNeededToDrawByImplThread() &&
-           ProactiveBeginFrameWantedByImplThread();
+  if (!SupportsProactiveBeginImplFrame()) {
+    return !BeginImplFrameNeededToDraw() &&
+           ProactiveBeginImplFrameWanted();
   }
 
   // Non synchronous compositors should rely on
-  // ProactiveBeginFrameWantedByImplThread to poll for state instead.
+  // ProactiveBeginImplFrameWanted to poll for state instead.
   return false;
 }
 
-bool SchedulerStateMachine::SupportsProactiveBeginFrame() const {
+bool SchedulerStateMachine::SupportsProactiveBeginImplFrame() const {
   // Both the synchronous compositor and disabled vsync settings
-  // make it undesirable to proactively request begin frames.
+  // make it undesirable to proactively request BeginImplFrames.
   // If this is true, the scheduler should poll.
   return !settings_.using_synchronous_renderer_compositor &&
          settings_.throttle_frame_production;
@@ -785,9 +789,9 @@ bool SchedulerStateMachine::SupportsProactiveBeginFrame() const {
 
 // These are the cases where we definitely (or almost definitely) have a
 // new frame to draw and can draw.
-bool SchedulerStateMachine::BeginFrameNeededToDrawByImplThread() const {
-  // The output surface is the provider of BeginFrames for the impl thread,
-  // so we are not going to get them even if we ask for them.
+bool SchedulerStateMachine::BeginImplFrameNeededToDraw() const {
+  // The output surface is the provider of BeginImplFrames, so we are not going
+  // to get them even if we ask for them.
   if (!HasInitializedOutputSurface())
     return false;
 
@@ -796,7 +800,7 @@ bool SchedulerStateMachine::BeginFrameNeededToDrawByImplThread() const {
     return false;
 
   // The forced draw respects our normal draw scheduling, so we need to
-  // request a BeginFrame on the impl thread for it.
+  // request a BeginImplFrame for it.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
 
@@ -804,8 +808,8 @@ bool SchedulerStateMachine::BeginFrameNeededToDrawByImplThread() const {
   if (!visible_)
     return false;
 
-  // We need to draw a more complete frame than we did the last BeginFrame,
-  // so request another BeginFrame in anticipation that we will have
+  // We need to draw a more complete frame than we did the last BeginImplFrame,
+  // so request another BeginImplFrame in anticipation that we will have
   // additional visible tiles.
   if (swap_used_incomplete_tile_)
     return true;
@@ -814,11 +818,11 @@ bool SchedulerStateMachine::BeginFrameNeededToDrawByImplThread() const {
 }
 
 // These are cases where we are very likely to draw soon, but might not
-// actually have a new frame to draw when we receive the next BeginFrame.
-// Proactively requesting the BeginFrame helps hide the round trip latency of
-// the SetNeedsBeginFrame request that has to go to the Browser.
-bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
-  // The output surface is the provider of BeginFrames for the impl thread,
+// actually have a new frame to draw when we receive the next BeginImplFrame.
+// Proactively requesting the BeginImplFrame helps hide the round trip latency
+// of the SetNeedsBeginFrame request that has to go to the Browser.
+bool SchedulerStateMachine::ProactiveBeginImplFrameWanted() const {
+  // The output surface is the provider of BeginImplFrames,
   // so we are not going to get them even if we ask for them.
   if (!HasInitializedOutputSurface())
     return false;
@@ -827,12 +831,12 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
   if (!visible_)
     return false;
 
-  // We should proactively request a BeginFrame if a commit is pending
+  // We should proactively request a BeginImplFrame if a commit is pending
   // because we will want to draw if the commit completes quickly.
   if (needs_commit_ || commit_state_ != COMMIT_STATE_IDLE)
     return true;
 
-  // If the pending tree activates quickly, we'll want a BeginFrame soon
+  // If the pending tree activates quickly, we'll want a BeginImplFrame soon
   // to draw the new active tree.
   if (has_pending_tree_)
     return true;
@@ -844,40 +848,41 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
 
   // If we just swapped, it's likely that we are going to produce another
   // frame soon. This helps avoid negative glitches in our SetNeedsBeginFrame
-  // requests, which may propagate to the BeginFrame provider and get sampled
-  // at an inopportune time, delaying the next BeginFrame.
+  // requests, which may propagate to the BeginImplFrame provider and get
+  // sampled at an inopportune time, delaying the next BeginImplFrame.
   if (last_frame_number_swap_performed_ == current_frame_number_)
     return true;
 
   return false;
 }
 
-void SchedulerStateMachine::OnBeginFrame(const BeginFrameArgs& args) {
+void SchedulerStateMachine::OnBeginImplFrame(const BeginFrameArgs& args) {
   current_frame_number_++;
-  last_begin_frame_args_ = args;
-  DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_IDLE) << *AsValue();
-  begin_frame_state_ = BEGIN_FRAME_STATE_BEGIN_FRAME_STARTING;
+  last_begin_impl_frame_args_ = args;
+  DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_IDLE) << *AsValue();
+  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING;
 }
 
-void SchedulerStateMachine::OnBeginFrameDeadlinePending() {
-  DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_BEGIN_FRAME_STARTING)
+void SchedulerStateMachine::OnBeginImplFrameDeadlinePending() {
+  DCHECK_EQ(begin_impl_frame_state_,
+            BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING)
       << *AsValue();
-  begin_frame_state_ = BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME;
+  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME;
 }
 
-void SchedulerStateMachine::OnBeginFrameDeadline() {
-  DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME)
+void SchedulerStateMachine::OnBeginImplFrameDeadline() {
+  DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
       << *AsValue();
-  begin_frame_state_ = BEGIN_FRAME_STATE_INSIDE_DEADLINE;
+  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE;
 }
 
-void SchedulerStateMachine::OnBeginFrameIdle() {
-  DCHECK_EQ(begin_frame_state_, BEGIN_FRAME_STATE_INSIDE_DEADLINE)
+void SchedulerStateMachine::OnBeginImplFrameIdle() {
+  DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
       << *AsValue();
-  begin_frame_state_ = BEGIN_FRAME_STATE_IDLE;
+  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
 }
 
-bool SchedulerStateMachine::ShouldTriggerBeginFrameDeadlineEarly() const {
+bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineEarly() const {
   // TODO(brianderson): This should take into account multiple commit sources.
 
   // If we are in the middle of the readback, we won't swap, so there is
@@ -885,7 +890,7 @@ bool SchedulerStateMachine::ShouldTriggerBeginFrameDeadlineEarly() const {
   if (readback_state_ != READBACK_STATE_IDLE)
     return false;
 
-  if (begin_frame_state_ != BEGIN_FRAME_STATE_INSIDE_BEGIN_FRAME)
+  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
     return false;
 
   if (active_tree_needs_first_draw_)
@@ -969,14 +974,14 @@ void SchedulerStateMachine::SetNeedsForcedCommitForReadback() {
 
   // If there is already a commit in progress when we get the readback request
   // (we are in COMMIT_STATE_FRAME_IN_PROGRESS), then we don't need to send a
-  // BeginFrame for the replacement commit, since there's already a BeginFrame
-  // behind the readback request. In that case, we can skip
-  // READBACK_STATE_NEEDS_BEGIN_FRAME and go directly to
+  // BeginMainFrame for the replacement commit, since there's already a
+  // BeginMainFrame behind the readback request. In that case, we can skip
+  // READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME and go directly to
   // READBACK_STATE_WAITING_FOR_COMMIT
   if (commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS)
     readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
   else
-    readback_state_ = READBACK_STATE_NEEDS_BEGIN_FRAME;
+    readback_state_ = READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME;
 }
 
 void SchedulerStateMachine::FinishCommit() {
@@ -984,7 +989,7 @@ void SchedulerStateMachine::FinishCommit() {
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
 }
 
-void SchedulerStateMachine::BeginFrameAbortedByMainThread(bool did_handle) {
+void SchedulerStateMachine::BeginMainFrameAborted(bool did_handle) {
   DCHECK_EQ(commit_state_, COMMIT_STATE_FRAME_IN_PROGRESS);
   if (did_handle) {
     bool commit_was_aborted = true;
@@ -1002,7 +1007,7 @@ void SchedulerStateMachine::DidLoseOutputSurface() {
     return;
   output_surface_state_ = OUTPUT_SURFACE_LOST;
   needs_redraw_ = false;
-  begin_frame_state_ = BEGIN_FRAME_STATE_IDLE;
+  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
 }
 
 void SchedulerStateMachine::NotifyReadyToActivate() {

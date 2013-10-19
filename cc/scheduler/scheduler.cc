@@ -22,7 +22,7 @@ Scheduler::Scheduler(SchedulerClient* client,
       inside_action_(SchedulerStateMachine::ACTION_NONE),
       weak_factory_(this) {
   DCHECK(client_);
-  DCHECK(!state_machine_.BeginFrameNeededByImplThread());
+  DCHECK(!state_machine_.BeginImplFrameNeeded());
 }
 
 Scheduler::~Scheduler() {}
@@ -91,7 +91,7 @@ void Scheduler::FinishCommit() {
 
 void Scheduler::BeginFrameAbortedByMainThread(bool did_handle) {
   TRACE_EVENT0("cc", "Scheduler::BeginFrameAbortedByMainThread");
-  state_machine_.BeginFrameAbortedByMainThread(did_handle);
+  state_machine_.BeginMainFrameAborted(did_handle);
   ProcessScheduledActions();
 }
 
@@ -131,11 +131,11 @@ base::TimeTicks Scheduler::LastBeginFrameOnImplThreadTime() {
 
 void Scheduler::SetupNextBeginFrameIfNeeded() {
   bool needs_begin_frame =
-      state_machine_.BeginFrameNeededByImplThread();
+      state_machine_.BeginImplFrameNeeded();
 
   bool at_end_of_deadline =
-      state_machine_.begin_frame_state() ==
-          SchedulerStateMachine::BEGIN_FRAME_STATE_INSIDE_DEADLINE;
+      state_machine_.begin_impl_frame_state() ==
+          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE;
 
   bool should_call_set_needs_begin_frame =
       // Always request the BeginFrame immediately if it wasn't needed before.
@@ -152,7 +152,7 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   // aren't expecting any more BeginFrames. This should only be needed by the
   // synchronous compositor when BeginFrameNeededByImplThread is false.
   if (state_machine_.ShouldPollForAnticipatedDrawTriggers()) {
-    DCHECK(!state_machine_.SupportsProactiveBeginFrame());
+    DCHECK(!state_machine_.SupportsProactiveBeginImplFrame());
     DCHECK(!needs_begin_frame);
     if (poll_for_draw_triggers_closure_.IsCancelled()) {
       poll_for_draw_triggers_closure_.Reset(
@@ -170,18 +170,18 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
 
 void Scheduler::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT0("cc", "Scheduler::BeginFrame");
-  DCHECK(state_machine_.begin_frame_state() ==
-         SchedulerStateMachine::BEGIN_FRAME_STATE_IDLE);
+  DCHECK(state_machine_.begin_impl_frame_state() ==
+         SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(state_machine_.HasInitializedOutputSurface());
   last_begin_frame_args_ = args;
   last_begin_frame_args_.deadline -= client_->DrawDurationEstimate();
-  state_machine_.OnBeginFrame(last_begin_frame_args_);
+  state_machine_.OnBeginImplFrame(last_begin_frame_args_);
   ProcessScheduledActions();
 
   if (!state_machine_.HasInitializedOutputSurface())
     return;
 
-  state_machine_.OnBeginFrameDeadlinePending();
+  state_machine_.OnBeginImplFrameDeadlinePending();
 
   if (settings_.using_synchronous_renderer_compositor) {
     // The synchronous renderer compositor has to make its GL calls
@@ -194,7 +194,7 @@ void Scheduler::BeginFrame(const BeginFrameArgs& args) {
     // We emulate the old non-deadline scheduler here by posting the
     // deadline task without any delay.
     PostBeginFrameDeadline(base::TimeTicks());
-  } else if (state_machine_.ShouldTriggerBeginFrameDeadlineEarly()) {
+  } else if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
     // We are ready to draw a new active tree immediately.
     PostBeginFrameDeadline(base::TimeTicks());
   } else if (state_machine_.needs_redraw()) {
@@ -225,16 +225,16 @@ void Scheduler::OnBeginFrameDeadline() {
   TRACE_EVENT0("cc", "Scheduler::OnBeginFrameDeadline");
   DCHECK(state_machine_.HasInitializedOutputSurface());
   begin_frame_deadline_closure_.Cancel();
-  state_machine_.OnBeginFrameDeadline();
+  state_machine_.OnBeginImplFrameDeadline();
   ProcessScheduledActions();
 
   if (state_machine_.HasInitializedOutputSurface()) {
-    // We only transition out of BEGIN_FRAME_STATE_INSIDE_DEADLINE when all
+    // We only transition out of BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE when all
     // actions that occur back-to-back in response to entering
-    // BEGIN_FRAME_STATE_INSIDE_DEADLINE have completed. This is important
+    // BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE have completed. This is important
     // because sending the BeginFrame to the main thread will not occur if
-    // we transition to BEGIN_FRAME_STATE_IDLE too early.
-    state_machine_.OnBeginFrameIdle();
+    // we transition to BEGIN_IMPL_FRAME_STATE_IDLE too early.
+    state_machine_.OnBeginImplFrameIdle();
   }
 
   client_->DidBeginFrameDeadlineOnImplThread();
@@ -286,7 +286,7 @@ void Scheduler::ProcessScheduledActions() {
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
         break;
-      case SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD:
+      case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
         client_->ScheduledActionSendBeginFrameToMainThread();
         break;
       case SchedulerStateMachine::ACTION_COMMIT:
@@ -326,7 +326,7 @@ void Scheduler::ProcessScheduledActions() {
   SetupNextBeginFrameIfNeeded();
   client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());
 
-  if (state_machine_.ShouldTriggerBeginFrameDeadlineEarly())
+  if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly())
     PostBeginFrameDeadline(base::TimeTicks());
 }
 
