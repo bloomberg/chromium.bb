@@ -453,6 +453,7 @@ TEST_F(ProfileSyncServicePreferenceTest,
   ASSERT_TRUE(value.get());
   EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
               Equals(expected_urls.get()));
+  STLDeleteValues(&cloud_data);
 }
 
 TEST_F(ProfileSyncServicePreferenceTest,
@@ -507,6 +508,7 @@ TEST_F(ProfileSyncServicePreferenceTest,
   ASSERT_FALSE(value.get());
   EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
               Equals(expected_urls.get()));
+  STLDeleteValues(&cloud_data);
 }
 
 TEST_F(ProfileSyncServicePreferenceTest,
@@ -557,6 +559,7 @@ TEST_F(ProfileSyncServicePreferenceTest,
   ASSERT_FALSE(value.get());
   EXPECT_FALSE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
                Equals(expected_urls.get()));
+  STLDeleteValues(&cloud_data);
 }
 
 TEST_F(ProfileSyncServicePreferenceTest, FailModelAssociation) {
