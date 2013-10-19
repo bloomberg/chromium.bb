@@ -17,9 +17,6 @@ namespace cast {
 
 const int64 kMinSchedulingDelayMs = 1;
 
-// Minimum time before a frame is due to be rendered before we pull it for
-// decode.
-static const int64 kMinFramePullMs = 20;
 static const int64 kMinTimeBetweenOffsetUpdatesMs = 2000;
 static const int kTimeOffsetFilter = 8;
 static const int64_t kMinProcessIntervalMs = 5;
@@ -112,6 +109,10 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
       : cast_environment_(cast_environment),
         codec_(video_config.codec),
         incoming_ssrc_(video_config.incoming_ssrc),
+        target_delay_delta_(
+            base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
+        frame_delay_(base::TimeDelta::FromMilliseconds(
+            1000 / video_config.max_frame_rate)),
         incoming_payload_callback_(
             new LocalRtpVideoData(cast_environment_->Clock(), this)),
         incoming_payload_feedback_(new LocalRtpVideoFeedback(this)),
@@ -120,8 +121,6 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
         rtp_video_receiver_statistics_(
             new LocalRtpReceiverStatistics(&rtp_receiver_)),
         weak_factory_(this) {
-  target_delay_delta_ = base::TimeDelta::FromMilliseconds(
-      video_config.rtp_max_delay_ms);
   int max_unacked_frames = video_config.rtp_max_delay_ms *
       video_config.max_frame_rate / 1000;
   DCHECK(max_unacked_frames) << "Invalid argument";
@@ -188,6 +187,7 @@ void VideoReceiver::DecodeVideoFrameThread(
       render_time, video_frame.get());
 
   if (success) {
+    VLOG(1) << "Decoded frame " << static_cast<int>(encoded_frame->frame_id);
     // Frame decoded - return frame to the user via callback.
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
           base::Bind(frame_decoded_callback,
@@ -236,8 +236,9 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   *render_time = GetRenderTime(now, rtp_timestamp);
 
-  base::TimeDelta min_wait_delta =
-      base::TimeDelta::FromMilliseconds(kMinFramePullMs);
+  // Minimum time before a frame is due to be rendered before we pull it for
+  // decode.
+  base::TimeDelta min_wait_delta = frame_delay_;
   base::TimeDelta time_until_render = *render_time - now;
   if (!next_frame && (time_until_render > min_wait_delta)) {
     // Example:
@@ -262,6 +263,10 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
     VLOG(0) << "Don't show frame "
             << static_cast<int>((*encoded_frame)->frame_id)
             << " time_until_render:" << time_until_render.InMilliseconds();
+  } else {
+    VLOG(1) << "Show frame "
+            << static_cast<int>((*encoded_frame)->frame_id)
+            << " time_until_render:" << time_until_render.InMilliseconds();
   }
   // We have a copy of the frame, release this one.
   framer_->ReleaseFrame((*encoded_frame)->frame_id);
@@ -279,9 +284,10 @@ void VideoReceiver::PlayoutTimeout() {
   if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &rtp_timestamp,
                                      &next_frame)) {
     // We have no video frames. Wait for new packet(s).
-    // A timer should not be set unless we have a video frame; and if that frame
-    // was pulled early the callback should have been removed.
-    DCHECK(false);
+    // Since the application can post multiple VideoFrameEncodedCallback and
+    // we only check the next frame to play out we might have multiple timeout
+    // events firing after each other; however this should be a rare event.
+    VLOG(1) << "Failed to retrieved a complete frame at this point in time";
     return;
   }
   VLOG(1) << "PlayoutTimeout retrieved frame "

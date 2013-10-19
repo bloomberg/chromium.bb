@@ -11,6 +11,19 @@
 namespace media {
 namespace cast {
 
+// static
+void FrameInput::DeleteAudioFrame(const PcmAudioFrame* frame) {
+  delete frame;
+}
+
+// static
+void FrameInput::DeleteVideoFrame(const I420VideoFrame* video_frame) {
+  delete [] video_frame->y_plane.data;
+  delete [] video_frame->u_plane.data;
+  delete [] video_frame->v_plane.data;
+  delete video_frame;
+}
+
 // The LocalFrameInput class posts all incoming frames; audio and video to the
 // main cast thread for processing.
 // This make the cast sender interface thread safe.

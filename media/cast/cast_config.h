@@ -194,6 +194,8 @@ class PacketReceiver : public base::RefCountedThreadSafe<PacketReceiver> {
   virtual void ReceivedPacket(const uint8* packet, int length,
                               const base::Closure callback) = 0;
 
+  static void DeletePacket(const uint8* packet);
+
  protected:
   virtual ~PacketReceiver() {}
 

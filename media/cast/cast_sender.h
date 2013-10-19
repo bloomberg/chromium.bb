@@ -57,6 +57,10 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
                                      const base::TimeTicks& recorded_time,
                                      const base::Closure callback) = 0;
 
+  static void DeleteAudioFrame(const PcmAudioFrame* frame);
+
+  static void DeleteVideoFrame(const I420VideoFrame* video_frame);
+
  protected:
   virtual ~FrameInput() {}
 

@@ -41,7 +41,7 @@ bool PacedSender::SendPacketsToTransport(const PacketList& packets,
 
   if (!packets_not_sent->empty()) {
     packets_not_sent->insert(packets_not_sent->end(),
-                           packets.begin(), packets.end());
+                             packets.begin(), packets.end());
     return true;
   }
   PacketList packets_to_send;

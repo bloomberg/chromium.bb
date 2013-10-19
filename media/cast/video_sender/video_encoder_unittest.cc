@@ -155,7 +155,10 @@ TEST_F(VideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
   }
 }
 
-TEST_F(VideoEncoderTest, EncodePattern60fpsRunningOutOfAck) {
+// TODO(pwestin): Re-enabled after redesign the encoder to control number of
+// frames in flight.
+TEST_F(VideoEncoderTest,DISABLED_EncodePattern60fpsRunningOutOfAck) {
+  video_config_.max_number_of_video_buffers_used = 1;
   Configure(6);
 
   base::TimeTicks capture_time;
@@ -194,7 +197,9 @@ TEST_F(VideoEncoderTest, EncodePattern60fpsRunningOutOfAck) {
   }
 }
 
-TEST_F(VideoEncoderTest, EncodePattern60fps200msDelayRunningOutOfAck) {
+// TODO(pwestin): Re-enabled after redesign the encoder to control number of
+// frames in flight.
+TEST_F(VideoEncoderTest, DISABLED_EncodePattern60fps200msDelayRunningOutOfAck) {
   Configure(12);
 
   base::TimeTicks capture_time;

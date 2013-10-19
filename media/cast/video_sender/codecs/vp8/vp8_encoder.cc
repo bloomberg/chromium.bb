@@ -38,6 +38,12 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
       timestamp_(0),
       last_encoded_frame_id_(kStartFrameId),
       number_of_repeated_buffers_(0) {
+  // TODO(pwestin): we need to figure out how to synchronize the acking with the
+  // internal state of the encoder, ideally the encoder will tell if we can
+  // send another frame.
+  DCHECK(!use_multiple_video_buffers_ ||
+         max_number_of_repeated_buffers_in_a_row_ == 0) <<  "Invalid config";
+
   // VP8 have 3 buffers available for prediction, with
   // max_number_of_video_buffers_used set to 1 we maximize the coding efficiency
   // however in this mode we can not skip frames in the receiver to catch up
@@ -270,12 +276,15 @@ Vp8Encoder::Vp8Buffers Vp8Encoder::GetNextBufferToUpdate() {
     switch (last_used_vp8_buffer_) {
       case kAltRefBuffer:
         buffer_to_update = kLastBuffer;
+        VLOG(1) << "VP8 update last buffer";
         break;
       case kLastBuffer:
         buffer_to_update = kGoldenBuffer;
+        VLOG(1) << "VP8 update golden buffer";
         break;
       case kGoldenBuffer:
         buffer_to_update = kAltRefBuffer;
+        VLOG(1) << "VP8 update alt-ref buffer";
         break;
       case kNoBuffer:
         DCHECK(false) << "Invalid state";
@@ -327,6 +336,7 @@ void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
 void Vp8Encoder::LatestFrameIdToReference(uint8 frame_id) {
   if (!use_multiple_video_buffers_) return;
 
+  VLOG(1) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);
   for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
     if (frame_id == used_buffers_frame_id_[i]) {
       acked_frame_buffers_[i] = true;

@@ -70,7 +70,7 @@ class VideoSenderTest : public ::testing::Test {
     video_config.max_qp = 56;
     video_config.min_qp = 0;
     video_config.max_frame_rate = 30;
-    video_config.max_number_of_video_buffers_used = 3;
+    video_config.max_number_of_video_buffers_used = 1;
     video_config.codec = kVp8;
 
     if (external) {

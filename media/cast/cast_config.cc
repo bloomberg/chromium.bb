@@ -45,5 +45,10 @@ EncodedAudioFrame::~EncodedAudioFrame() {}
 PcmAudioFrame::PcmAudioFrame() {}
 PcmAudioFrame::~PcmAudioFrame() {}
 
+// static
+void PacketReceiver::DeletePacket(const uint8* packet) {
+  delete [] packet;
+}
+
 }  // namespace cast
 }  // namespace media

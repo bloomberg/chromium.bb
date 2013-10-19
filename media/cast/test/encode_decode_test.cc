@@ -19,7 +19,7 @@ namespace cast {
 namespace {
 const int kWidth = 1280;
 const int kHeight = 720;
-const int kStartbitrate = 1000;
+const int kStartbitrate = 4000000;
 const int kMaxQp = 54;
 const int kMinQp = 4;
 const int kMaxFrameRate = 30;
@@ -63,7 +63,7 @@ class EncodeDecodeTest : public ::testing::Test {
     EXPECT_EQ(original_image.width, decoded_image.width);
     EXPECT_EQ(original_image.height, decoded_image.height);
     // Compare data.
-    EXPECT_GT(I420PSNR(original_image, decoded_image), 48.0);
+    EXPECT_GT(I420PSNR(original_image, decoded_image), 40.0);
   }
 
   VideoSenderConfig encoder_config_;

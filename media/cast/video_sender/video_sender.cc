@@ -94,7 +94,8 @@ VideoSender::VideoSender(
                           video_config.start_bitrate),
       weak_factory_(this) {
   max_unacked_frames_ = static_cast<uint8>(video_config.rtp_max_delay_ms *
-      video_config.max_frame_rate / 1000);
+      video_config.max_frame_rate / 1000) + 1;
+  VLOG(1) << "max_unacked_frames " << static_cast<int>(max_unacked_frames_);
   DCHECK(max_unacked_frames_ > 0) << "Invalid argument";
 
   rtp_video_sender_statistics_.reset(
@@ -137,7 +138,8 @@ void VideoSender::InsertRawVideoFrame(
   if (!video_encoder_->EncodeVideoFrame(video_frame, capture_time,
       base::Bind(&VideoSender::SendEncodedVideoFrameMainThread,
           weak_factory_.GetWeakPtr()), callback)) {
-    VLOG(1) << "Failed to InsertRawVideoFrame";
+    VLOG(0) << "Failed to InsertRawVideoFrame";
+    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
   }
 }
 
@@ -148,7 +150,7 @@ void VideoSender::InsertCodedVideoFrame(const EncodedVideoFrame* encoded_frame,
   DCHECK(encoded_frame) << "Invalid argument";
 
   SendEncodedVideoFrame(encoded_frame, capture_time);
-  callback.Run();
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
 }
 
 void VideoSender::SendEncodedVideoFrameMainThread(
@@ -162,6 +164,8 @@ void VideoSender::SendEncodedVideoFrame(const EncodedVideoFrame* encoded_frame,
   last_send_time_ = cast_environment_->Clock()->NowTicks();
   rtp_sender_->IncomingEncodedVideoFrame(encoded_frame, capture_time);
   if (encoded_frame->key_frame) {
+    VLOG(1) << "Send encoded key frame; frame_id:"
+            << static_cast<int>(encoded_frame->frame_id);
     last_sent_key_frame_id_ = encoded_frame->frame_id;
   }
   last_sent_frame_id_ = encoded_frame->frame_id;
@@ -334,6 +338,8 @@ void VideoSender::UpdateFramesInFlight() {
   if (last_sent_frame_id_ != -1) {
     uint8 frames_in_flight = static_cast<uint8>(last_sent_frame_id_) -
                              static_cast<uint8>(last_acked_frame_id_);
+    VLOG(1) << "Frames in flight; last sent: " << last_sent_frame_id_
+            << " last acked:" << last_acked_frame_id_;
     if (frames_in_flight >= max_unacked_frames_) {
       video_encoder_controller_->SkipNextFrame(true);
       return;

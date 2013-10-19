@@ -89,8 +89,10 @@ class VideoReceiver : public base::NonThreadSafe,
 
   // Schedule timing for the next RTCP report.
   void ScheduleNextRtcpReport();
+
   // Actually send the next cast message.
   void SendNextCastMessage();
+
   // Actually send the next RTCP report.
   void SendNextRtcpReport();
 
@@ -100,6 +102,7 @@ class VideoReceiver : public base::NonThreadSafe,
   const VideoCodec codec_;
   const uint32 incoming_ssrc_;
   base::TimeDelta target_delay_delta_;
+  base::TimeDelta frame_delay_;
   scoped_ptr<LocalRtpVideoData> incoming_payload_callback_;
   scoped_ptr<LocalRtpVideoFeedback> incoming_payload_feedback_;
   RtpReceiver rtp_receiver_;

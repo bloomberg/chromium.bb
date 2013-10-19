@@ -45,6 +45,7 @@ bool Framer::InsertPacket(const uint8* payload_data,
 
   if (complete) {
     // ACK as soon as possible.
+    VLOG(1) << "Complete frame " << static_cast<int>(rtp_header.frame_id);
     cast_msg_builder_->CompleteFrameReceived(rtp_header.frame_id,
                                              rtp_header.is_key_frame);
   }
@@ -111,13 +112,18 @@ void Framer::ReleaseFrame(uint8 frame_id) {
   frames_.erase(frame_id);
 
   // We have a frame - remove all frames with lower frame id.
+  bool skipped_old_frame = false;
   FrameList::iterator it;
   for (it = frames_.begin(); it != frames_.end(); ) {
     if (IsOlderFrameId(it->first, frame_id)) {
       frames_.erase(it++);
+      skipped_old_frame = true;
     } else {
       ++it;
     }
+  }
+  if (skipped_old_frame) {
+    cast_msg_builder_->UpdateCastMessage();
   }
 }
 
