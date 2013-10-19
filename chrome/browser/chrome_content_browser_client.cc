@@ -93,6 +93,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_process_policy.h"
@@ -173,6 +174,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
+#include "base/debug/leak_annotations.h"
 #include "base/linux_util.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/crash_handler_host_linux.h"
@@ -493,27 +495,56 @@ void FillFontFamilyMap(const PrefService* prefs,
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
+CrashHandlerHostLinux* CreateCrashHandlerHost(const std::string& process_type) {
+  base::FilePath dumps_path;
+  PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
+  {
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+    CrashHandlerHostLinux* crash_handler = new CrashHandlerHostLinux(
+        process_type, dumps_path, getenv(env_vars::kHeadless) == NULL);
+    crash_handler->StartUploaderThread();
+    return crash_handler;
+  }
+}
+
 int GetCrashSignalFD(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kExtensionProcess)) {
-    ExtensionCrashHandlerHostLinux* crash_handler =
-        ExtensionCrashHandlerHostLinux::GetInstance();
+    static CrashHandlerHostLinux* crash_handler = NULL;
+    if (!crash_handler)
+      crash_handler = CreateCrashHandlerHost("extension");
     return crash_handler->GetDeathSignalSocket();
   }
 
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-  if (process_type == switches::kRendererProcess)
-    return RendererCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+  if (process_type == switches::kRendererProcess) {
+    static CrashHandlerHostLinux* crash_handler = NULL;
+    if (!crash_handler)
+      crash_handler = CreateCrashHandlerHost(process_type);
+    return crash_handler->GetDeathSignalSocket();
+  }
 
-  if (process_type == switches::kPluginProcess)
-    return PluginCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+  if (process_type == switches::kPluginProcess) {
+    static CrashHandlerHostLinux* crash_handler = NULL;
+    if (!crash_handler)
+      crash_handler = CreateCrashHandlerHost(process_type);
+    return crash_handler->GetDeathSignalSocket();
+  }
 
-  if (process_type == switches::kPpapiPluginProcess)
-    return PpapiCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+  if (process_type == switches::kPpapiPluginProcess) {
+    static CrashHandlerHostLinux* crash_handler = NULL;
+    if (!crash_handler)
+      crash_handler = CreateCrashHandlerHost(process_type);
+    return crash_handler->GetDeathSignalSocket();
+  }
 
-  if (process_type == switches::kGpuProcess)
-    return GpuCrashHandlerHostLinux::GetInstance()->GetDeathSignalSocket();
+  if (process_type == switches::kGpuProcess) {
+    static CrashHandlerHostLinux* crash_handler = NULL;
+    if (!crash_handler)
+      crash_handler = CreateCrashHandlerHost(process_type);
+    return crash_handler->GetDeathSignalSocket();
+  }
 
   return -1;
 }

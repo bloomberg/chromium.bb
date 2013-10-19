@@ -28,8 +28,6 @@
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
 #include "chrome/app/breakpad_linux_impl.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID)
@@ -64,13 +62,18 @@ void CrashDumpTask(CrashHandlerHostLinux* handler, BreakpadInfo* info) {
 
 }  // namespace
 
-// Since classes derived from CrashHandlerHostLinux are singletons, it's only
-// destroyed at the end of the processes lifetime, which is greater in span than
-// the lifetime of the IO message loop. Thus, all calls to base::Bind() use
+// Since instances of CrashHandlerHostLinux are leaked, they are only destroyed
+// at the end of the processes lifetime, which is greater in span than the
+// lifetime of the IO message loop. Thus, all calls to base::Bind() use
 // non-refcounted pointers.
 
-CrashHandlerHostLinux::CrashHandlerHostLinux()
-    : shutting_down_(false),
+CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
+                                             const base::FilePath& dumps_path,
+                                             bool upload)
+    : process_type_(process_type),
+      dumps_path_(dumps_path),
+      upload_(upload),
+      shutting_down_(false),
       worker_pool_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()) {
   int fds[2];
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the process from
@@ -98,6 +101,12 @@ CrashHandlerHostLinux::~CrashHandlerHostLinux() {
   (void) HANDLE_EINTR(close(browser_socket_));
 }
 
+void CrashHandlerHostLinux::StartUploaderThread() {
+  uploader_thread_.reset(
+      new base::Thread(std::string(process_type_ + "_crash_uploader").c_str()));
+  uploader_thread_->Start();
+}
+
 void CrashHandlerHostLinux::Init() {
   base::MessageLoopForIO* ml = base::MessageLoopForIO::current();
   CHECK(ml->WatchFileDescriptor(
@@ -105,13 +114,6 @@ void CrashHandlerHostLinux::Init() {
       base::MessageLoopForIO::WATCH_READ,
       &file_descriptor_watcher_, this));
   ml->AddDestructionObserver(this);
-}
-
-void CrashHandlerHostLinux::InitCrashUploaderThread() {
-  SetProcessType();
-  uploader_thread_.reset(
-      new base::Thread(std::string(process_type_ + "_crash_uploader").c_str()));
-  uploader_thread_->Start();
 }
 
 void CrashHandlerHostLinux::OnFileCanWriteWithoutBlocking(int fd) {
@@ -330,7 +332,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // Nothing gets uploaded in android.
   info->upload = false;
 #else
-  info->upload = (getenv(env_vars::kHeadless) == NULL);
+  info->upload = upload_;
 #endif
 
   info->crash_keys = crash_keys;
@@ -363,7 +365,7 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
   base::FilePath dumps_path("/tmp");
   PathService::Get(base::DIR_TEMP, &dumps_path);
   if (!info->upload)
-    PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
+    dumps_path = dumps_path_;
   const uint64 rand = base::RandUint64();
   const std::string minidump_filename =
       base::StringPrintf("%s/chromium-%s-minidump-%016" PRIx64 ".dmp",
@@ -447,84 +449,4 @@ void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
 
 bool CrashHandlerHostLinux::IsShuttingDown() const {
   return shutting_down_;
-}
-
-ExtensionCrashHandlerHostLinux::ExtensionCrashHandlerHostLinux() {
-  InitCrashUploaderThread();
-}
-
-ExtensionCrashHandlerHostLinux::~ExtensionCrashHandlerHostLinux() {
-}
-
-void ExtensionCrashHandlerHostLinux::SetProcessType() {
-  process_type_ = "extension";
-}
-
-// static
-ExtensionCrashHandlerHostLinux* ExtensionCrashHandlerHostLinux::GetInstance() {
-  return Singleton<ExtensionCrashHandlerHostLinux>::get();
-}
-
-GpuCrashHandlerHostLinux::GpuCrashHandlerHostLinux() {
-  InitCrashUploaderThread();
-}
-
-GpuCrashHandlerHostLinux::~GpuCrashHandlerHostLinux() {
-}
-
-void GpuCrashHandlerHostLinux::SetProcessType() {
-  process_type_ = "gpu-process";
-}
-
-// static
-GpuCrashHandlerHostLinux* GpuCrashHandlerHostLinux::GetInstance() {
-  return Singleton<GpuCrashHandlerHostLinux>::get();
-}
-
-PluginCrashHandlerHostLinux::PluginCrashHandlerHostLinux() {
-  InitCrashUploaderThread();
-}
-
-PluginCrashHandlerHostLinux::~PluginCrashHandlerHostLinux() {
-}
-
-void PluginCrashHandlerHostLinux::SetProcessType() {
-  process_type_ = "plugin";
-}
-
-// static
-PluginCrashHandlerHostLinux* PluginCrashHandlerHostLinux::GetInstance() {
-  return Singleton<PluginCrashHandlerHostLinux>::get();
-}
-
-PpapiCrashHandlerHostLinux::PpapiCrashHandlerHostLinux() {
-  InitCrashUploaderThread();
-}
-
-PpapiCrashHandlerHostLinux::~PpapiCrashHandlerHostLinux() {
-}
-
-void PpapiCrashHandlerHostLinux::SetProcessType() {
-  process_type_ = "ppapi";
-}
-
-// static
-PpapiCrashHandlerHostLinux* PpapiCrashHandlerHostLinux::GetInstance() {
-  return Singleton<PpapiCrashHandlerHostLinux>::get();
-}
-
-RendererCrashHandlerHostLinux::RendererCrashHandlerHostLinux() {
-  InitCrashUploaderThread();
-}
-
-RendererCrashHandlerHostLinux::~RendererCrashHandlerHostLinux() {
-}
-
-void RendererCrashHandlerHostLinux::SetProcessType() {
-  process_type_ = "renderer";
-}
-
-// static
-RendererCrashHandlerHostLinux* RendererCrashHandlerHostLinux::GetInstance() {
-  return Singleton<RendererCrashHandlerHostLinux>::get();
 }

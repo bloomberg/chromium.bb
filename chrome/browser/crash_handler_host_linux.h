@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -20,14 +21,9 @@ namespace base {
 class Thread;
 }
 
-template <typename T> struct DefaultSingletonTraits;
-
-// This is the base class for singleton objects which crash dump renderers and
-// plugins on Linux or Android. We perform the crash dump from the browser
-// because it allows us to be outside the sandbox.
-//
-// PluginCrashHandlerHostLinux and RendererCrashHandlerHostLinux are
-// singletons that handle plugin and renderer crashes, respectively.
+// This is the host for processes which run breakpad inside the sandbox on
+// Linux or Android. We perform the crash dump from the browser because it
+// allows us to be outside the sandbox.
 //
 // Processes signal that they need to be dumped by sending a datagram over a
 // UNIX domain socket. All processes of the same type share the client end of
@@ -35,6 +31,15 @@ template <typename T> struct DefaultSingletonTraits;
 class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
                               public base::MessageLoop::DestructionObserver {
  public:
+  CrashHandlerHostLinux(const std::string& process_type,
+                        const base::FilePath& dumps_path,
+                        bool upload);
+  virtual ~CrashHandlerHostLinux();
+
+  // Starts the uploader thread. Must be called immediately after creating the
+  // class.
+  void StartUploaderThread();
+
   // Get the file descriptor which processes should be given in order to signal
   // crashes to the browser.
   int GetDeathSignalSocket() const {
@@ -51,20 +56,8 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   // Whether we are shutting down or not.
   bool IsShuttingDown() const;
 
- protected:
-  CrashHandlerHostLinux();
-  virtual ~CrashHandlerHostLinux();
-
-  // Only called in concrete subclasses.
-  void InitCrashUploaderThread();
-
-  std::string process_type_;
-
  private:
   void Init();
-
-  // This is here on purpose to make CrashHandlerHostLinux abstract.
-  virtual void SetProcessType() = 0;
 
   // Do work on the FILE thread for OnFileCanReadWithoutBlocking().
   void WriteDumpFile(BreakpadInfo* info,
@@ -74,6 +67,10 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
 
   // Continue OnFileCanReadWithoutBlocking()'s work on the IO thread.
   void QueueCrashDumpTask(BreakpadInfo* info, int signal_fd);
+
+  std::string process_type_;
+  base::FilePath dumps_path_;
+  bool upload_;
 
   int process_socket_;
   int browser_socket_;
@@ -91,81 +88,6 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
-};
-
-class ExtensionCrashHandlerHostLinux : public CrashHandlerHostLinux {
- public:
-  // Returns the singleton instance.
-  static ExtensionCrashHandlerHostLinux* GetInstance();
-
- private:
-  friend struct DefaultSingletonTraits<ExtensionCrashHandlerHostLinux>;
-  ExtensionCrashHandlerHostLinux();
-  virtual ~ExtensionCrashHandlerHostLinux();
-
-  virtual void SetProcessType() OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionCrashHandlerHostLinux);
-};
-
-class GpuCrashHandlerHostLinux : public CrashHandlerHostLinux {
- public:
-  // Returns the singleton instance.
-  static GpuCrashHandlerHostLinux* GetInstance();
-
- private:
-  friend struct DefaultSingletonTraits<GpuCrashHandlerHostLinux>;
-  GpuCrashHandlerHostLinux();
-  virtual ~GpuCrashHandlerHostLinux();
-
-  virtual void SetProcessType() OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuCrashHandlerHostLinux);
-};
-
-class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
- public:
-  // Returns the singleton instance.
-  static PluginCrashHandlerHostLinux* GetInstance();
-
- private:
-  friend struct DefaultSingletonTraits<PluginCrashHandlerHostLinux>;
-  PluginCrashHandlerHostLinux();
-  virtual ~PluginCrashHandlerHostLinux();
-
-  virtual void SetProcessType() OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginCrashHandlerHostLinux);
-};
-
-class PpapiCrashHandlerHostLinux : public CrashHandlerHostLinux {
- public:
-  // Returns the singleton instance.
-  static PpapiCrashHandlerHostLinux* GetInstance();
-
- private:
-  friend struct DefaultSingletonTraits<PpapiCrashHandlerHostLinux>;
-  PpapiCrashHandlerHostLinux();
-  virtual ~PpapiCrashHandlerHostLinux();
-
-  virtual void SetProcessType() OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(PpapiCrashHandlerHostLinux);
-};
-
-class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
- public:
-  // Returns the singleton instance.
-  static RendererCrashHandlerHostLinux* GetInstance();
-
- private:
-  friend struct DefaultSingletonTraits<RendererCrashHandlerHostLinux>;
-  RendererCrashHandlerHostLinux();
-  virtual ~RendererCrashHandlerHostLinux();
-
-  virtual void SetProcessType() OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(RendererCrashHandlerHostLinux);
 };
 
 #endif  // CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
