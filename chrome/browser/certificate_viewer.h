@@ -12,10 +12,8 @@ class WebContents;
 }
 
 namespace net {
-
 class X509Certificate;
-
-}  // namespace net
+}
 
 // Opens a certificate viewer under |parent| to display the certificate from
 // the |CertStore| with id |cert_id|.
