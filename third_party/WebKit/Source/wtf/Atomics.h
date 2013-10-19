@@ -30,17 +30,17 @@
 #ifndef Atomics_h
 #define Atomics_h
 
+#include "wtf/Assertions.h"
+
 #include <stdint.h>
 
-#if OS(WIN)
+#if COMPILER(MSVC)
 #include <windows.h>
-#elif OS(ANDROID)
-#include <sys/atomics.h>
 #endif
 
 namespace WTF {
 
-#if OS(WIN)
+#if COMPILER(MSVC)
 
 ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return InterlockedIncrement(reinterpret_cast<long volatile*>(addend)); }
 ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return InterlockedDecrement(reinterpret_cast<long volatile*>(addend)); }
@@ -48,11 +48,18 @@ ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return InterlockedDecr
 ALWAYS_INLINE int64_t atomicIncrement(int64_t volatile* addend) { return InterlockedIncrement64(reinterpret_cast<long long volatile*>(addend)); }
 ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) { return InterlockedDecrement64(reinterpret_cast<long long volatile*>(addend)); }
 
-#elif OS(ANDROID)
+ALWAYS_INLINE int atomicTestAndSetToOne(int volatile* ptr)
+{
+    int ret = InterlockedExchange(reinterpret_cast<long volatile*>(ptr), 1);
+    ASSERT(!ret || ret == 1);
+    return ret;
+}
 
-// Note, __atomic_{inc, dec}() return the previous value of addend's content.
-ALWAYS_INLINE int atomicIncrement(int volatile* addend) { return __atomic_inc(addend) + 1; }
-ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return __atomic_dec(addend) - 1; }
+ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr)
+{
+    ASSERT(*ptr == 1);
+    InterlockedExchange(reinterpret_cast<long volatile*>(ptr), 0);
+}
 
 #else
 
@@ -62,11 +69,26 @@ ALWAYS_INLINE int atomicDecrement(int volatile* addend) { return __sync_sub_and_
 ALWAYS_INLINE int64_t atomicIncrement(int64_t volatile* addend) { return __sync_add_and_fetch(addend, 1); }
 ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) { return __sync_sub_and_fetch(addend, 1); }
 
+ALWAYS_INLINE int atomicTestAndSetToOne(int volatile* ptr)
+{
+    int ret = __sync_lock_test_and_set(ptr, 1);
+    ASSERT(!ret || ret == 1);
+    return ret;
+}
+
+ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr)
+{
+    ASSERT(*ptr == 1);
+    __sync_lock_release(ptr);
+}
+
 #endif
 
 } // namespace WTF
 
 using WTF::atomicDecrement;
 using WTF::atomicIncrement;
+using WTF::atomicTestAndSetToOne;
+using WTF::atomicSetOneToZero;
 
 #endif // Atomics_h
