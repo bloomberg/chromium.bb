@@ -1297,7 +1297,12 @@ function generatePage()
         '<a href="javascript:void()" onclick="expandAllExpectations()">expand all</a> ' +
         '<a href="javascript:void()" onclick="collapseAllExpectations()">collapse all</a> ' +
         '<label><input id="toggle-images" type=checkbox checked onchange="handleToggleImagesChange()">Toggle images</label>' +
-        '</div>';
+        '<div id=container>Show: '+
+        '<label><input id="show-expected-failures" type=checkbox onchange="handleUnexpectedResultsChange()">expected failures</label>' +
+        '<label><input id="show-flaky-failures" type=checkbox onchange="handleFlakyFailuresChange()">flaky failures</label>' +
+        '<label><input id="show-unexpected-passes" type=checkbox onchange="handleUnexpectedPassesChange()">unexpected passes</label>' +
+        '<label><input id="show-stderr" type=checkbox onchange="handleStderrChange()">stderr</label>' +
+        '</div></div>';
 
     if (globalState().results.interrupted)
         html += "<p class='stopped-running-early-message'>Testing exited early.</p>"
@@ -1328,12 +1333,7 @@ function generatePage()
             '<p>httpd error log: <a href="error_log.txt">error_log.txt</a></p>';
     }
 
-    html += '</div><div>' +
-        '<label><input id="show-expected-failures" type=checkbox onchange="handleUnexpectedResultsChange()">Show expected failures</label>' +
-        '<label><input id="show-flaky-failures" type=checkbox onchange="handleFlakyFailuresChange()">Show flaky failures</label>' +
-        '<label><input id="show-unexpected-passes" type=checkbox onchange="handleUnexpectedPassesChange()">Show unexpected passes</label>' +
-        '<label><input id="show-stderr" type=checkbox onchange="handleStderrChange()">Show stderr</label>' +
-    '</div>';
+    html += '</div>';
 
     document.body.innerHTML = html;
 
