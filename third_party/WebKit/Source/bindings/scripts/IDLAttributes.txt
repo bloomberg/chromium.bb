@@ -92,7 +92,6 @@ Replaceable
 # Valid values for [RuntimeEnabled] are the Runtime Enabled Features, listed in
 # Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
-SetReference=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SetterRaisesException
 SpecialWrapFor=*

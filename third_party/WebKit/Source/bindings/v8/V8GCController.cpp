@@ -284,8 +284,8 @@ public:
                 m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == v8DOMObjectClassId) {
             ASSERT(!value->IsIndependent());
-            v8::Persistent<v8::Object>* wrapperPersistent = reinterpret_cast<v8::Persistent<v8::Object>*>(value);
-            type->resolveWrapperReachability(object, *wrapperPersistent, m_isolate);
+            void* root = type->opaqueRootForGC(object, m_isolate);
+            m_isolate->SetObjectGroupId(*value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
         } else {
             ASSERT_NOT_REACHED();
         }

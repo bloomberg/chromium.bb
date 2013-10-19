@@ -101,20 +101,6 @@ public:
     }
 
     template<typename V8T, typename T>
-    static void setWrapperReference(const v8::Persistent<v8::Object>& parent, T* child, v8::Isolate* isolate)
-    {
-        if (ScriptWrappable::wrapperCanBeStoredInObject(child) && !canExistInWorker(child)) {
-            if (LIKELY(!DOMWrapperWorld::isolatedWorldsExist())) {
-                UnsafePersistent<v8::Object> unsafePersistent = ScriptWrappable::getUnsafeWrapperFromObject(child);
-                // Security: always guard against malicious tampering.
-                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(unsafePersistent.isEmpty() || unsafePersistent.value()->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(child));
-                unsafePersistent.setReferenceFrom(parent, isolate);
-            }
-        }
-        current(isolate)->template setReference<V8T>(parent, child, isolate);
-    }
-
-    template<typename V8T, typename T>
     static void setWrapper(T* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperConfiguration& configuration)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && !canExistInWorker(object)) {
@@ -138,16 +124,6 @@ public:
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_type == MainWorld)
             return ScriptWrappable::getUnsafeWrapperFromObject(object).newLocal(isolate);
         return m_wrapperMap.newLocal(V8T::toInternalPointer(object), isolate);
-    }
-
-    template<typename V8T, typename T>
-    inline void setReference(const v8::Persistent<v8::Object>& parent, T* child, v8::Isolate* isolate)
-    {
-        if (ScriptWrappable::wrapperCanBeStoredInObject(child) && m_type == MainWorld) {
-            ScriptWrappable::getUnsafeWrapperFromObject(child).setReferenceFrom(parent, isolate);
-            return;
-        }
-        m_wrapperMap.setReference(parent, V8T::toInternalPointer(child), isolate);
     }
 
     template<typename V8T, typename T>

@@ -25,7 +25,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
 #include "V8NodeList.h"
-#include "V8ReferencedType.h"
 #include "V8TestObject.h"
 #include "bindings/tests/idls/TestImplements.h"
 #include "bindings/tests/idls/TestPartialInterface.h"
@@ -65,7 +64,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterface* object
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestInterface::info = { V8TestInterface::GetTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, V8TestInterface::resolveWrapperReachability, V8TestInterface::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestInterface::info = { V8TestInterface::GetTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, 0, V8TestInterface::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestInterfaceV8Internal {
 
@@ -758,19 +757,6 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 }
 
 } // namespace TestInterfaceV8Internal
-
-void V8TestInterface::resolveWrapperReachability(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
-{
-    TestInterface* impl = fromInternalPointer(object);
-    v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
-    ReferencedType* referencedName = impl->referencedName();
-    if (referencedName) {
-        if(!DOMDataStore::containsWrapper<V8ReferencedType>(referencedName, isolate))
-            wrap(referencedName, creationContext, isolate);
-        DOMDataStore::setWrapperReference<V8ReferencedType>(wrapper, referencedName, isolate);
-    }
-    setObjectGroup(object, wrapper, isolate);
-}
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {
     {"implementsStr1", TestInterfaceV8Internal::implementsStr1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
