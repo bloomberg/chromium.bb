@@ -1287,6 +1287,19 @@ SECStatus SSLClientSocketNSS::Core::OwnAuthCertHandler(
       // Start with it.
       SSL_OptionSet(socket, SSL_ENABLE_FALSE_START, PR_FALSE);
     }
+  } else {
+    // Disallow the server certificate to change in a renegotiation.
+    CERTCertificate* old_cert = core->nss_handshake_state_.server_cert_chain[0];
+    CERTCertificate* new_cert = SSL_PeerCertificate(socket);
+    if (new_cert->derCert.len != old_cert->derCert.len ||
+        memcmp(new_cert->derCert.data, old_cert->derCert.data,
+               new_cert->derCert.len) != 0) {
+      // NSS doesn't have an error code that indicates the server certificate
+      // changed. Borrow SSL_ERROR_WRONG_CERTIFICATE (which NSS isn't using)
+      // for this purpose.
+      PORT_SetError(SSL_ERROR_WRONG_CERTIFICATE);
+      return SECFailure;
+    }
   }
 
   // Tell NSS to not verify the certificate.

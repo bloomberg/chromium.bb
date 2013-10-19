@@ -300,6 +300,9 @@ NET_ERROR(WS_THROTTLE_QUEUE_TOO_LARGE, -154)
 // was rejected.
 NET_ERROR(TOO_MANY_SOCKET_STREAMS, -155)
 
+// The SSL server certificate changed in a renegotiation.
+NET_ERROR(SSL_SERVER_CERT_CHANGED, -156)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

@@ -233,6 +233,10 @@ int MapNSSError(PRErrorCode err) {
     case SEC_ERROR_BAD_DER:
     case SEC_ERROR_EXTRA_INPUT:
       return ERR_SSL_BAD_PEER_PUBLIC_KEY;
+    // During renegotiation, the server presented a different certificate than
+    // was used earlier.
+    case SSL_ERROR_WRONG_CERTIFICATE:
+      return ERR_SSL_SERVER_CERT_CHANGED;
 
     default: {
       if (IS_SSL_ERROR(err)) {
