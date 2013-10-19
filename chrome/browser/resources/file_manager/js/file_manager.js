@@ -481,10 +481,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   FileManager.prototype.onMaximize = function() {
-    // Do not maximize when running via chrome://files in a browser.
-    if (util.platform.runningInBrowser())
-      return;
-
     var appWindow = chrome.app.window.current();
     if (appWindow.isMaximized())
       appWindow.restore();
@@ -493,10 +489,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   FileManager.prototype.onClose = function() {
-    // Do not close when running via chrome://files in a browser.
-    if (util.platform.runningInBrowser())
-      return;
-
     window.close();
   };
 

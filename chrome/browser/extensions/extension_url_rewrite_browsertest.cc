@@ -111,14 +111,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, MAYBE_BookmarksURL) {
   EXPECT_TRUE(navigation->GetURL().SchemeIs(extensions::kExtensionScheme));
 }
 
-#if defined(FILE_MANAGER_EXTENSION)
-IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, FileManagerURL) {
-  // Navigate to chrome://files and check that the location bar URL is
-  // what was entered and the internal URL uses the chrome-extension:// scheme.
-  TestExtensionURLOverride(GURL(chrome::kChromeUIFileManagerURL));
-}
-#endif
-
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURLWithRef) {
   // Navigate to chrome://bookmarks/#1 and check that the location bar URL is
   // what was entered and the internal URL uses the chrome-extension:// scheme.

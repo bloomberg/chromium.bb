@@ -113,8 +113,6 @@ GURL GetFileManagerMainPageUrlWithParams(
   std::string json_args;
   base::JSONWriter::Write(&arg_value, &json_args);
 
-  // kChromeUIFileManagerURL could not be used since query parameters are not
-  // supported for it.
   std::string url = GetFileManagerMainPageUrl().spec() + '?' +
       net::EscapeUrlEncodedData(json_args,
                                 false);  // Space to %20 instead of +.

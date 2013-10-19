@@ -281,11 +281,6 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
     is_override = (is_override &&
                    page != chrome::kChromeUIActivationMessageHost);
 #endif
-#if defined(FILE_MANAGER_EXTENSION)
-    is_override = (is_override &&
-                   !(extension->location() == Manifest::COMPONENT &&
-                     page == chrome::kChromeUIFileManagerHost));
-#endif
 #if defined(OS_CHROMEOS)
     is_override = (is_override && page != keyboard::kKeyboardWebUIHost);
 #endif

@@ -213,9 +213,6 @@
       "file_filters": []
     }
   ],
-  "chrome_url_overrides": {
-    "files": "main.html"
-  },
   // Required to import scripts in a web worker. Note, that in Apps v2, it is
   // enough that anything is passed to web_accessible_resources. If there is
   // at least any file, then all files are allowed. http://crbug.com/179127.

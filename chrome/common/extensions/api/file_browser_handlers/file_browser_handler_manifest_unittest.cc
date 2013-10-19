@@ -149,29 +149,4 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerWithCreate) {
   EXPECT_FALSE(action->CanWrite());
 }
 
-TEST_F(FileBrowserHandlerManifestTest, FileManagerURLOverride) {
-  scoped_ptr<DictionaryValue> manifest_value =
-      DictionaryBuilder()
-          .Set("name", "override_files")
-          .Set("version", "1.0.0")
-          .Set("manifest_version", 2)
-          .Set("chrome_url_overrides", DictionaryBuilder()
-              .Set("files", "main.html"))
-      .Build();
-
-  // Non component extensions can't override chrome://files/ URL.
-  LoadAndExpectError(Manifest(manifest_value.get(), "override_files"),
-                     errors::kInvalidChromeURLOverrides);
-
-  // A component extension can override chrome://files/ URL.
-  std::string error;
-  LoadExtension(Manifest(manifest_value.get(), "override_files"),
-                &error, extensions::Manifest::COMPONENT, Extension::NO_FLAGS);
-#if defined(FILE_MANAGER_EXTENSION)
-  EXPECT_EQ("", error);
-#else
-  EXPECT_EQ(std::string(errors::kInvalidChromeURLOverrides), error);
-#endif
-}
-
 }  // namespace

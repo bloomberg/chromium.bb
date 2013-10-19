@@ -725,8 +725,8 @@ function strf(id, var_args) {
  */
 util.platform = {
   /**
-   * @return {boolean} True if Files.app is running via "chrome://files", open
-   * files or select folder dialog. False otherwise.
+   * @return {boolean} True if Files.app is running as an open files or a select
+   *     folder dialog. False otherwise.
    */
   runningInBrowser: function() {
     return !window.appID;
