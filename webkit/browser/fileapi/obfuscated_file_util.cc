@@ -96,13 +96,6 @@ void TouchDirectory(SandboxDirectoryDatabase* db, FileId dir_id) {
     NOTREACHED();
 }
 
-const base::FilePath::CharType kTemporaryDirectoryName[] =
-    FILE_PATH_LITERAL("t");
-const base::FilePath::CharType kPersistentDirectoryName[] =
-    FILE_PATH_LITERAL("p");
-const base::FilePath::CharType kSyncableDirectoryName[] =
-    FILE_PATH_LITERAL("s");
-
 enum IsolatedOriginStatus {
   kIsolatedOriginMatch,
   kIsolatedOriginDontMatch,
@@ -240,17 +233,15 @@ class ObfuscatedOriginEnumerator
   }
 
   // Returns the current origin's information.
-  virtual bool HasFileSystemType(FileSystemType type) const OVERRIDE {
+  virtual bool HasTypeDirectory(const std::string& type_string) const OVERRIDE {
     if (current_.path.empty())
       return false;
-    base::FilePath::StringType type_string =
-        ObfuscatedFileUtil::GetDirectoryNameForType(type);
     if (type_string.empty()) {
       NOTREACHED();
       return false;
     }
     base::FilePath path =
-        base_file_path_.Append(current_.path).Append(type_string);
+        base_file_path_.Append(current_.path).AppendASCII(type_string);
     return base::DirectoryExists(path);
   }
 
@@ -263,11 +254,15 @@ class ObfuscatedOriginEnumerator
 ObfuscatedFileUtil::ObfuscatedFileUtil(
     quota::SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
-    base::SequencedTaskRunner* file_task_runner)
+    base::SequencedTaskRunner* file_task_runner,
+    const GetTypeStringForURLCallback& get_type_string_for_url,
+    const std::set<std::string>& known_type_strings)
     : special_storage_policy_(special_storage_policy),
       file_system_directory_(file_system_directory),
       db_flush_delay_seconds_(10 * 60),  // 10 mins.
-      file_task_runner_(file_task_runner) {
+      file_task_runner_(file_task_runner),
+      get_type_string_for_url_(get_type_string_for_url),
+      known_type_strings_(known_type_strings) {
 }
 
 ObfuscatedFileUtil::~ObfuscatedFileUtil() {
@@ -841,24 +836,15 @@ bool ObfuscatedFileUtil::IsDirectoryEmpty(
 
 base::FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
     const GURL& origin,
-    FileSystemType type,
+    const std::string& type_string,
     bool create,
     base::PlatformFileError* error_code) {
-  // TODO(nhiroki): Add special handling for plugin-private filesystem
-  // (http://crbug.com/286240).
-
   base::FilePath origin_dir = GetDirectoryForOrigin(origin, create, error_code);
   if (origin_dir.empty())
     return base::FilePath();
-  base::FilePath::StringType type_string = GetDirectoryNameForType(type);
-  if (type_string.empty()) {
-    LOG(WARNING) << "Unknown filesystem type requested:" << type;
-
-    if (error_code)
-      *error_code = base::PLATFORM_FILE_ERROR_INVALID_URL;
-    return base::FilePath();
-  }
-  base::FilePath path = origin_dir.Append(type_string);
+  if (type_string.empty())
+    return origin_dir;
+  base::FilePath path = origin_dir.AppendASCII(type_string);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   if (!base::DirectoryExists(path) &&
       (!create || !file_util::CreateDirectory(path))) {
@@ -873,20 +859,21 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
 }
 
 bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
-    const GURL& origin, FileSystemType type) {
+    const GURL& origin,
+    const std::string& type_string) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath origin_type_path = GetDirectoryForOriginAndType(
-      origin, type, false, &error);
+      origin, type_string, false, &error);
   if (origin_type_path.empty())
     return true;
-
   if (error != base::PLATFORM_FILE_ERROR_NOT_FOUND) {
     // TODO(dmikurube): Consider the return value of DestroyDirectoryDatabase.
     // We ignore its error now since 1) it doesn't matter the final result, and
     // 2) it always returns false in Windows because of LevelDB's
     // implementation.
     // Information about failure would be useful for debugging.
-    DestroyDirectoryDatabase(origin, type);
+    if (!type_string.empty())
+      DestroyDirectoryDatabase(origin, type_string);
     if (!base::DeleteFile(origin_type_path, true /* recursive */))
       return false;
   }
@@ -895,23 +882,19 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   DCHECK_EQ(origin_path.value(),
             GetDirectoryForOrigin(origin, false, NULL).value());
 
-  // At this point we are sure we had successfully deleted the origin/type
-  // directory (i.e. we're ready to just return true).
-  // See if we have other directories in this origin directory.
-  std::vector<FileSystemType> other_types;
-  if (type != kFileSystemTypeTemporary)
-    other_types.push_back(kFileSystemTypeTemporary);
-  if (type != kFileSystemTypePersistent)
-    other_types.push_back(kFileSystemTypePersistent);
-  if (type != kFileSystemTypeSyncable)
-    other_types.push_back(kFileSystemTypeSyncable);
-  DCHECK(type != kFileSystemTypeSyncableForInternalSync);
-
-  for (size_t i = 0; i < other_types.size(); ++i) {
-    if (base::DirectoryExists(
-            origin_path.Append(GetDirectoryNameForType(other_types[i])))) {
-      // Other type's directory exists; just return true here.
-      return true;
+  if (!type_string.empty()) {
+    // At this point we are sure we had successfully deleted the origin/type
+    // directory (i.e. we're ready to just return true).
+    // See if we have other directories in this origin directory.
+    for (std::set<std::string>::iterator iter = known_type_strings_.begin();
+         iter != known_type_strings_.end();
+         ++iter) {
+      if (*iter == type_string)
+        continue;
+      if (base::DirectoryExists(origin_path.AppendASCII(*iter))) {
+        // Other type's directory exists; just return true here.
+        return true;
+      }
     }
   }
 
@@ -927,23 +910,6 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   return true;
 }
 
-// static
-base::FilePath::StringType ObfuscatedFileUtil::GetDirectoryNameForType(
-    FileSystemType type) {
-  switch (type) {
-    case kFileSystemTypeTemporary:
-      return kTemporaryDirectoryName;
-    case kFileSystemTypePersistent:
-      return kPersistentDirectoryName;
-    case kFileSystemTypeSyncable:
-    case kFileSystemTypeSyncableForInternalSync:
-      return kSyncableDirectoryName;
-    case kFileSystemTypeUnknown:
-    default:
-      return base::FilePath::StringType();
-  }
-}
-
 ObfuscatedFileUtil::AbstractOriginEnumerator*
 ObfuscatedFileUtil::CreateOriginEnumerator() {
   std::vector<SandboxOriginDatabase::OriginRecord> origins;
@@ -954,8 +920,9 @@ ObfuscatedFileUtil::CreateOriginEnumerator() {
 }
 
 bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
-    const GURL& origin, FileSystemType type) {
-  std::string key = GetDirectoryDatabaseKey(origin, type);
+    const GURL& origin,
+    const std::string& type_string) {
+  std::string key = GetDirectoryDatabaseKey(origin, type_string);
   if (key.empty())
     return true;
   DirectoryMap::iterator iter = directories_.find(key);
@@ -967,7 +934,7 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
 
   PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath path = GetDirectoryForOriginAndType(
-      origin, type, false, &error);
+      origin, type_string, false, &error);
   if (path.empty() || error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
     return true;
   return SandboxDirectoryDatabase::DestroyDatabase(path);
@@ -978,47 +945,18 @@ int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
   return UsageForPath(VirtualPath::BaseName(path).value().size());
 }
 
-void ObfuscatedFileUtil::MaybePrepopulateDatabase() {
-  // Always disable this for now. crbug.com/264429
-  return;
-
-  base::FilePath isolated_origin_dir = file_system_directory_.Append(
-      SandboxIsolatedOriginDatabase::kOriginDirectory);
-  if (!base::DirectoryExists(isolated_origin_dir))
-    return;
-
-  const FileSystemType kPrepopulateTypes[] = {
-    kFileSystemTypePersistent, kFileSystemTypeTemporary
-  };
-
-  // Prepulate the directory database(s) if and only if this instance is
-  // initialized for isolated storage dedicated for a single origin.
-  for (size_t i = 0; i < arraysize(kPrepopulateTypes); ++i) {
-    const FileSystemType type = kPrepopulateTypes[i];
-    base::FilePath::StringType type_string = GetDirectoryNameForType(type);
-    DCHECK(!type_string.empty());
-    base::FilePath path = isolated_origin_dir.Append(type_string);
-    if (!base::DirectoryExists(path))
-      continue;
-    scoped_ptr<SandboxDirectoryDatabase> db(new SandboxDirectoryDatabase(path));
-    if (db->Init(SandboxDirectoryDatabase::FAIL_ON_CORRUPTION)) {
-      directories_[GetFileSystemTypeString(type)] = db.release();
-      MarkUsed();
-      // Don't populate more than one database, as it may rather hurt
-      // performance.
-      break;
-    }
-  }
-}
-
 base::FilePath ObfuscatedFileUtil::GetDirectoryForURL(
     const FileSystemURL& url,
     bool create,
     base::PlatformFileError* error_code) {
-  // TODO(nhiroki): Add special handling for plugin-private filesystem
-  // (http://crbug.com/286240).
   return GetDirectoryForOriginAndType(
-      url.origin(), url.type(), create, error_code);
+      url.origin(), CallGetTypeStringForURL(url), create, error_code);
+}
+
+std::string ObfuscatedFileUtil::CallGetTypeStringForURL(
+    const FileSystemURL& url) {
+  DCHECK(!get_type_string_for_url_.is_null());
+  return get_type_string_for_url_.Run(url);
 }
 
 PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
@@ -1160,10 +1098,9 @@ base::FilePath ObfuscatedFileUtil::DataPathToLocalPath(
 }
 
 std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
-    const GURL& origin, FileSystemType type) {
-  std::string type_string = GetFileSystemTypeString(type);
+    const GURL& origin, const std::string& type_string) {
   if (type_string.empty()) {
-    LOG(WARNING) << "Unknown filesystem type requested:" << type;
+    LOG(WARNING) << "Unknown filesystem type requested:" << type_string;
     return std::string();
   }
   // For isolated origin we just use a type string as a key.
@@ -1181,10 +1118,8 @@ std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
 // Still doesn't answer the quota issue, though.
 SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     const FileSystemURL& url, bool create) {
-  // TODO(nhiroki): Add special handling for plugin-private filesystem
-  // (http://crbug.com/286240).
-
-  std::string key = GetDirectoryDatabaseKey(url.origin(), url.type());
+  std::string key = GetDirectoryDatabaseKey(
+      url.origin(), CallGetTypeStringForURL(url));
   if (key.empty())
     return NULL;
 

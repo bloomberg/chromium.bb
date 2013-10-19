@@ -71,6 +71,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
     virtual bool HasFileSystemType(FileSystemType type) const = 0;
   };
 
+  // Returns the type directory name in sandbox directory for given |type|.
+  static std::string GetTypeString(FileSystemType type);
+
   SandboxFileSystemBackendDelegate(
       quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* file_task_runner,

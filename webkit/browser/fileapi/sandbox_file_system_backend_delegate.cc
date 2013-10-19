@@ -36,6 +36,13 @@ const char kOpenFileSystemDetailNonThrottledLabel[] =
     "FileSystem.OpenFileSystemDetailNonthrottled";
 int64 kMinimumStatsCollectionIntervalHours = 1;
 
+// For type directory names in ObfuscatedFileUtil.
+// TODO(kinuko,nhiroki): Each type string registration should be done
+// via its own backend.
+const char kTemporaryDirectoryName[] = "t";
+const char kPersistentDirectoryName[] = "p";
+const char kSyncableDirectoryName[] = "s";
+
 enum FileSystemError {
   kOK = 0,
   kIncognito,
@@ -57,6 +64,18 @@ const base::FilePath::CharType kRestrictedChars[] = {
   FILE_PATH_LITERAL('/'), FILE_PATH_LITERAL('\\'),
 };
 
+std::string GetTypeStringForURL(const FileSystemURL& url) {
+  return SandboxFileSystemBackendDelegate::GetTypeString(url.type());
+}
+
+std::set<std::string> GetKnownTypeStrings() {
+  std::set<std::string> known_type_strings;
+  known_type_strings.insert(kTemporaryDirectoryName);
+  known_type_strings.insert(kPersistentDirectoryName);
+  known_type_strings.insert(kSyncableDirectoryName);
+  return known_type_strings;
+}
+
 class ObfuscatedOriginEnumerator
     : public SandboxFileSystemBackendDelegate::OriginEnumerator {
  public:
@@ -70,7 +89,8 @@ class ObfuscatedOriginEnumerator
   }
 
   virtual bool HasFileSystemType(FileSystemType type) const OVERRIDE {
-    return enum_->HasFileSystemType(type);
+    return enum_->HasTypeDirectory(
+        SandboxFileSystemBackendDelegate::GetTypeString(type));
   }
 
  private:
@@ -85,7 +105,9 @@ void OpenFileSystemOnFileThread(
     base::PlatformFileError* error_ptr) {
   DCHECK(error_ptr);
   const bool create = (mode == OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
-  file_util->GetDirectoryForOriginAndType(origin_url, type, create, error_ptr);
+  file_util->GetDirectoryForOriginAndType(
+      origin_url, SandboxFileSystemBackendDelegate::GetTypeString(type),
+      create, error_ptr);
   if (*error_ptr != base::PLATFORM_FILE_OK) {
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kCreateDirectoryError,
@@ -113,6 +135,24 @@ const base::FilePath::CharType
 SandboxFileSystemBackendDelegate::kFileSystemDirectory[] =
     FILE_PATH_LITERAL("File System");
 
+// static
+std::string SandboxFileSystemBackendDelegate::GetTypeString(
+    FileSystemType type) {
+  switch (type) {
+    case kFileSystemTypeTemporary:
+      return kTemporaryDirectoryName;
+    case kFileSystemTypePersistent:
+      return kPersistentDirectoryName;
+    case kFileSystemTypeSyncable:
+    case kFileSystemTypeSyncableForInternalSync:
+      return kSyncableDirectoryName;
+    case kFileSystemTypeUnknown:
+    default:
+      NOTREACHED() << "Unknown filesystem type requested:" << type;
+      return std::string();
+  }
+}
+
 SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* file_task_runner,
@@ -124,7 +164,9 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
           new ObfuscatedFileUtil(
               special_storage_policy,
               profile_path.Append(kFileSystemDirectory),
-              file_task_runner))),
+              file_task_runner,
+              base::Bind(&GetTypeStringForURL),
+              GetKnownTypeStrings()))),
       file_system_usage_cache_(new FileSystemUsageCache(file_task_runner)),
       quota_observer_(new SandboxQuotaObserver(
           quota_manager_proxy,
@@ -165,7 +207,7 @@ SandboxFileSystemBackendDelegate::GetBaseDirectoryForOriginAndType(
     bool create) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath path = obfuscated_file_util()->GetDirectoryForOriginAndType(
-      origin_url, type, create, &error);
+      origin_url, GetTypeString(type), create, &error);
   if (error != base::PLATFORM_FILE_OK)
     return base::FilePath();
   return path;
@@ -259,7 +301,7 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileThread(
       file_system_context, origin_url, type);
   usage_cache()->CloseCacheFiles();
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
-      origin_url, type);
+      origin_url, GetTypeString(type));
   if (result && proxy) {
     proxy->NotifyStorageModified(
         quota::QuotaClient::kFileSystem,
@@ -499,7 +541,7 @@ SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
   DCHECK(error_out);
   *error_out = base::PLATFORM_FILE_OK;
   base::FilePath base_path = sandbox_file_util->GetDirectoryForOriginAndType(
-      origin_url, type, false /* create */, error_out);
+      origin_url, GetTypeString(type), false /* create */, error_out);
   if (*error_out != base::PLATFORM_FILE_OK)
     return base::FilePath();
   return base_path.Append(FileSystemUsageCache::kUsageFileName);
@@ -566,6 +608,19 @@ void SandboxFileSystemBackendDelegate::CollectOpenFileSystemMetrics(
 
 ObfuscatedFileUtil* SandboxFileSystemBackendDelegate::obfuscated_file_util() {
   return static_cast<ObfuscatedFileUtil*>(sync_file_util());
+}
+
+// Declared in obfuscated_file_util.h.
+// static
+ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
+    quota::SpecialStoragePolicy* special_storage_policy,
+    const base::FilePath& file_system_directory,
+    base::SequencedTaskRunner* file_task_runner) {
+  return new ObfuscatedFileUtil(special_storage_policy,
+                                file_system_directory,
+                                file_task_runner,
+                                base::Bind(&GetTypeStringForURL),
+                                GetKnownTypeStrings());
 }
 
 }  // namespace fileapi
