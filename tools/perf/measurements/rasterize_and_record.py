@@ -4,9 +4,9 @@
 
 import time
 
-from metrics import smoothness
-from metrics.rendering_stats import RenderingStats
+from metrics import rendering_stats
 from telemetry.page import page_measurement
+
 
 class RasterizeAndRecord(page_measurement.PageMeasurement):
   def __init__(self):
@@ -29,11 +29,11 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
                       '(must be long enough to render one frame)')
 
   def CustomizeBrowserOptions(self, options):
-    smoothness.SmoothnessMetrics.CustomizeBrowserOptions(options)
     # Run each raster task N times. This allows us to report the time for the
     # best run, effectively excluding cache effects and time when the thread is
     # de-scheduled.
     options.AppendExtraBrowserArgs([
+        '--enable-gpu-benchmarking',
         '--slow-down-raster-scale-factor=%d' % int(
             options.raster_record_repeat),
         # Enable impl-side-painting. Current version of benchmark only works for
@@ -44,8 +44,6 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     ])
 
   def MeasurePage(self, page, tab, results):
-    self._metrics = smoothness.SmoothnessMetrics(tab)
-
     # Rasterize only what's visible.
     tab.ExecuteJavaScript(
         'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')
@@ -57,48 +55,41 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     # Render one frame before we start gathering a trace. On some pages, the
     # first frame requested has more variance in the number of pixels
     # rasterized.
-    tab.ExecuteJavaScript("""
-        window.__rafFired = false;
-        window.webkitRequestAnimationFrame(function() {
-          chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers();
-          window.__rafFired  = true;
-        });
-    """)
+    tab.ExecuteJavaScript(
+        'window.__rafFired = false;'
+        'window.webkitRequestAnimationFrame(function() {'
+          'chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers();'
+          'window.__rafFired  = true;'
+        '});')
 
     time.sleep(float(self.options.stop_wait_time))
     tab.browser.StartTracing('webkit.console,benchmark', 60)
-    self._metrics.Start()
 
-    tab.ExecuteJavaScript("""
-        window.__rafFired = false;
-        window.webkitRequestAnimationFrame(function() {
-          chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers();
-          console.time("measureNextFrame");
-          window.__rafFired  = true;
-        });
-    """)
+    tab.ExecuteJavaScript(
+        'window.__rafFired = false;'
+        'window.webkitRequestAnimationFrame(function() {'
+          'chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers();'
+          'console.time("' + rendering_stats.RENDER_PROCESS_MARKER + '");'
+          'window.__rafFired  = true;'
+        '});')
     # Wait until the frame was drawn.
     # Needs to be adjusted for every device and for different
     # raster_record_repeat counts.
     # TODO(ernstm): replace by call-back.
     time.sleep(float(self.options.stop_wait_time))
-    tab.ExecuteJavaScript('console.timeEnd("measureNextFrame")')
+    tab.ExecuteJavaScript(
+        'console.timeEnd("' + rendering_stats.RENDER_PROCESS_MARKER + '")')
 
-    self._metrics.Stop()
-    rendering_stats_deltas = self._metrics.deltas
     timeline = tab.browser.StopTracing().AsTimelineModel()
-    timeline_markers = smoothness.FindTimelineMarkers(timeline,
-                                                     'measureNextFrame')
-    benchmark_stats = RenderingStats(timeline_markers,
-                                     timeline_markers,
-                                     rendering_stats_deltas,
-                                     self._metrics.is_using_gpu_benchmarking)
+    timeline_markers = timeline.FindTimelineMarkers(
+        rendering_stats.RENDER_PROCESS_MARKER)
+    stats = rendering_stats.RenderingStats(timeline_markers, timeline_markers)
 
     results.Add('rasterize_time', 'ms',
-                max(benchmark_stats.rasterize_time))
+                max(stats.rasterize_time))
     results.Add('record_time', 'ms',
-                max(benchmark_stats.record_time))
+                max(stats.record_time))
     results.Add('rasterized_pixels', 'pixels',
-                max(benchmark_stats.rasterized_pixel_count))
+                max(stats.rasterized_pixel_count))
     results.Add('recorded_pixels', 'pixels',
-                max(benchmark_stats.recorded_pixel_count))
+                max(stats.recorded_pixel_count))
