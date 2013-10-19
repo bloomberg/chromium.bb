@@ -107,7 +107,9 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    {% if not attribute.is_static %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
+    {% endif %}
     {{attribute.v8_value_to_local_cpp_value}};
     {% if attribute.is_call_with_script_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();

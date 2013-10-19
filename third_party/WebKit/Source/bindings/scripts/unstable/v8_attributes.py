@@ -150,7 +150,7 @@ def generate_attribute_and_includes(interface, attribute):
 
     contents.update({
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
-        'cpp_setter': setter_expression(attribute, contents),
+        'cpp_setter': setter_expression(interface, attribute, contents),
     })
 
     return contents, includes
@@ -163,10 +163,7 @@ def getter_expression(interface, attribute, contents, includes):
     else:
         getter_base_name = uncapitalize(cpp_name(attribute))
 
-    if attribute.is_static:
-        getter_name = '%s::%s' % (interface.name, getter_base_name)
-    else:
-        getter_name = 'imp->%s' % getter_base_name
+    getter_name = scoped_name(interface, attribute, getter_base_name)
 
     arguments.extend(v8_utilities.call_with_arguments(attribute, contents))
     if attribute.is_nullable:
@@ -205,13 +202,14 @@ def content_attribute_getter_base_name(attribute, includes, arguments):
     return 'fastGetAttribute'
 
 
-def setter_expression(attribute, contents):
+def setter_expression(interface, attribute, contents):
     arguments = v8_utilities.call_with_arguments(attribute, contents)
     idl_type = attribute.data_type
     # FIXME: should be able to eliminate WTF::getPtr in most or all cases
     cpp_value = 'WTF::getPtr(cppValue)' if v8_types.interface_type(idl_type) and not v8_types.array_type(idl_type) else 'cppValue'
     arguments.append(cpp_value)
-    return 'imp->set%s(%s)' % (capitalize(cpp_name(attribute)), ', '.join(arguments))
+    setter_name = scoped_name(interface, attribute, 'set%s' % capitalize(cpp_name(attribute)))
+    return '%s(%s)' % (setter_name, ', '.join(arguments))
 
 
 def is_keep_alive_for_gc(attribute):
@@ -233,6 +231,12 @@ def is_keep_alive_for_gc(attribute):
              # FIXME: Remove these hard-coded hacks.
              idl_type in ['EventHandler', 'Promise', 'Window'] or
              idl_type.startswith('HTML'))))
+
+
+def scoped_name(interface, attribute, base_name):
+    if attribute.is_static:
+        return '%s::%s' % (interface.name, base_name)
+    return 'imp->%s' % base_name
 
 
 def getter_callback_name(interface, attribute):
