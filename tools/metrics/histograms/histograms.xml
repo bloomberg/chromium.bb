@@ -8376,6 +8376,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.NumTotalStreams">
+  <summary>
+    The total number of streams created by the client when the session is
+    closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.OutOfOrderGapReceived">
   <summary>
     The number of missing packets between the current received packet and the

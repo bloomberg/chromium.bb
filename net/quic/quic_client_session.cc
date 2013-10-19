@@ -140,6 +140,8 @@ QuicClientSession::~QuicClientSession() {
     UMA_HISTOGRAM_COUNTS("Net.QuicNumSentClientHellosCryptoHandshakeConfirmed",
                          crypto_stream_->num_sent_client_hellos());
   }
+
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumTotalStreams", num_total_streams_);
 }
 
 bool QuicClientSession::OnStreamFrames(
