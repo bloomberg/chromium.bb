@@ -29,12 +29,12 @@ class AppContainer {
  private:
   void AppCompleted();
 
-  base::WeakPtrFactory<AppContainer> weak_factory_;
-
   scoped_ptr<base::Thread> thread_;
 
   // Following members are valid only on app thread.
   Handle shell_handle_;
+
+  base::WeakPtrFactory<AppContainer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContainer);
 };
