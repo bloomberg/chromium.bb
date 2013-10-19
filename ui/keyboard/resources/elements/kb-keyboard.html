@@ -529,9 +529,7 @@
           default:
             break;
         }
-        if (char.length == 1)
-          this.keyTyped(detail);
-        else
+        if(!this.keyTyped(detail))
           insertText(char);
         this.lastPressedKey = null;
       },
@@ -641,11 +639,17 @@
        * Generates fabricated key events to simulate typing on a
        * physical keyboard.
        * @param {Object} detail Attributes of the key being typed.
+       * @return {boolean} Whether the key type succeeded.
        */
       keyTyped: function(detail) {
         var builder = this.$.keyCodeMetadata;
-        sendKeyEvent(builder.createVirtualKeyEvent(detail, "keydown"));
-        sendKeyEvent(builder.createVirtualKeyEvent(detail, "keyup"));
+        var downEvent = builder.createVirtualKeyEvent(detail, "keydown");
+        if (downEvent) {
+          sendKeyEvent(downEvent);
+          sendKeyEvent(builder.createVirtualKeyEvent(detail, "keyup"));
+          return true;
+        }
+        return false;
       },
 
       /**

@@ -19,11 +19,13 @@
     // indices in this table in order to emulate a physical keyboard with an
     // alternate layout.  Not all keys on a virtual keyboard are required to
     // have keyCodes.
-    // TODO(rsadam@): Add keycodes for system keys.
+    // TODO(rsadam): Correctly propagate shutdown keycode. This is currently
+    // ignored due to chromoting (crbug/146609)
     var keyCodes = {
       '\b': {keyCode: 0x08, shiftModifier: false},
       '\t': {keyCode: 0x09, shiftModifier: false},
       '\n': {keyCode: 0x0D, shiftModifier: false},
+      'Esc': {keyCode: 0x1B, shiftModifier: false},
       ' ': {keyCode: 0x20, shiftModifier: false},
       '0': {keyCode: 0x30, shiftModifier: false},
       ')': {keyCode: 0x30, shiftModifier: true},
@@ -97,6 +99,15 @@
       'Y': {keyCode: 0x59, shiftModifier: true},
       'z': {keyCode: 0x5A, shiftModifier: false},
       'Z': {keyCode: 0x5A, shiftModifier: true},
+      'Fullscreen': {keyCode: 0x7A, shiftModifier: false},
+      'Shutdown': {keyCode: 0x98, shiftModifier: false},
+      'Back': {keyCode: 0xA6, shiftModifier: false},
+      'Forward': {keyCode: 0xA7, shiftModifier: false},
+      'Reload': {keyCode: 0xA8, shiftModifier: false},
+      'Mute': {keyCode: 0xAD, shiftModifier: false},
+      'Volume-Down': {keyCode: 0xAE, shiftModifier: false},
+      'Volume-Up': {keyCode: 0xAF, shiftModifier: false},
+      'Change-Window': {keyCode: 0xB6, shiftModifier: false},
       ';': {keyCode: 0xBA, shiftModifier: false},
       ':': {keyCode: 0xBA, shiftModifier: true},
       '=': {keyCode: 0xBB, shiftModifier: false},
@@ -105,16 +116,18 @@
       '<': {keyCode: 0xBC, shiftModifier: true},
       '-': {keyCode: 0xBD, shiftModifier: false},
       '_': {keyCode: 0xBD, shiftModifier: true},
-      '.': {keyCode: 0xBE, shiftModifier: false}, 
-      '>': {keyCode: 0xBE, shiftModifier: true}, 
+      '.': {keyCode: 0xBE, shiftModifier: false},
+      '>': {keyCode: 0xBE, shiftModifier: true},
       '/': {keyCode: 0xBF, shiftModifier: false},
-      '?': {keyCode: 0xBF, shiftModifier: true}, 
+      '?': {keyCode: 0xBF, shiftModifier: true},
       '`': {keyCode: 0xC0, shiftModifier: false},
       '~': {keyCode: 0xC0, shiftModifier: true},
+      'Brightness-Down': {keyCode: 0xD8, shiftModifier: false},
+      'Brightness-Up': {keyCode: 0xD9, shiftModifier: false},
       '[': {keyCode: 0xDB, shiftModifier: false},
       '{': {keyCode: 0xDB, shiftModifier: true},
       '\\': {keyCode: 0xDC, shiftModifier: false},
-      '|': {keyCode: 0xDC, shiftModifier: true}, 
+      '|': {keyCode: 0xDC, shiftModifier: true},
       ']': {keyCode: 0xDD, shiftModifier: false},
       '}': {keyCode: 0xDD, shiftModifier: true},
       '\'': {keyCode: 0xDE, shiftModifier: false},
@@ -135,6 +148,9 @@
             shiftModifier: entry.shiftModifier
           };
         }
+        if (id.length != 1)
+          return;
+        // Special case of accented characters.
         return {
           keyCode: 0,
           shiftModifier: false
@@ -152,10 +168,6 @@
       */
      createVirtualKeyEvent: function(detail, type) {
        var char = detail.char;
-       if (!char || char.length != 1) {
-         console.error('Invalid key. Expected single character.');
-         return;
-       }
        var keyCode = detail.keyCode;
        var shiftModifier = detail.shiftModifier;
        if (keyCode == undefined) {
@@ -164,8 +176,8 @@
            keyCode = state.keyCode;
            shiftModifier = state.shiftModifier;
          } else {
-           keyCode = 0;
-           shiftModifier = false;
+           // Keycode not defined.
+           return;
          }
        }
        return {
