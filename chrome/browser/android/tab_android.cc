@@ -135,7 +135,6 @@ TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
 TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
     : weak_java_tab_(env, obj),
       session_tab_id_(),
-      android_tab_id_(-1),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
   Java_TabBase_setNativePtr(env, obj, reinterpret_cast<jint>(this));
 }
@@ -147,6 +146,14 @@ TabAndroid::~TabAndroid() {
     return;
 
   Java_TabBase_clearNativePtr(env, obj.obj());
+}
+
+int TabAndroid::GetAndroidId() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
+  if (obj.is_null())
+    return -1;
+  return Java_TabBase_getId(env, obj.obj());
 }
 
 content::ContentViewCore* TabAndroid::GetContentViewCore() const {
@@ -228,8 +235,15 @@ void TabAndroid::InitWebContents(JNIEnv* env,
                                  jboolean incognito,
                                  jobject jcontent_view_core,
                                  jobject jweb_contents_delegate) {
-  android_tab_id_ = tab_id;
+  InitWebContents(
+      env, obj, incognito, jcontent_view_core, jweb_contents_delegate);
+}
 
+void TabAndroid::InitWebContents(JNIEnv* env,
+                                 jobject obj,
+                                 jboolean incognito,
+                                 jobject jcontent_view_core,
+                                 jobject jweb_contents_delegate) {
   content::ContentViewCore* content_view_core =
       content::ContentViewCore::GetNativeContentViewCore(env,
                                                          jcontent_view_core);

@@ -333,6 +333,7 @@ public abstract class TabBase implements NavigationClient {
     /**
      * @return The id representing this tab.
      */
+    @CalledByNative
     public int getId() {
         return mId;
     }
