@@ -60,6 +60,10 @@ struct AnimationEvent;
 class CC_EXPORT Layer : public base::RefCounted<Layer>,
                         public LayerAnimationValueObserver {
  public:
+  typedef RenderSurfaceLayerList RenderSurfaceListType;
+  typedef LayerList LayerListType;
+  typedef RenderSurface RenderSurfaceType;
+
   enum LayerIdLabels {
     INVALID_ID = -1,
   };
@@ -185,10 +189,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return clip_children_.get();
   }
 
-  DrawProperties<Layer, RenderSurface>& draw_properties() {
-    return draw_properties_;
-  }
-  const DrawProperties<Layer, RenderSurface>& draw_properties() const {
+  DrawProperties<Layer>& draw_properties() { return draw_properties_; }
+  const DrawProperties<Layer>& draw_properties() const {
     return draw_properties_;
   }
 
@@ -579,7 +581,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   base::Closure did_scroll_callback_;
 
-  DrawProperties<Layer, RenderSurface> draw_properties_;
+  DrawProperties<Layer> draw_properties_;
 
   PaintProperties paint_properties_;
 

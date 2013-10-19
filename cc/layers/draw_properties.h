@@ -13,7 +13,7 @@ namespace cc {
 
 // Container for properties that layers need to compute before they can be
 // drawn.
-template <typename LayerType, typename RenderSurfaceType>
+template <typename LayerType>
 struct CC_EXPORT DrawProperties {
   DrawProperties()
       : opacity(0.f),
@@ -70,7 +70,7 @@ struct CC_EXPORT DrawProperties {
   LayerType* render_target;
 
   // The surface that this layer and its subtree would contribute to.
-  scoped_ptr<RenderSurfaceType> render_surface;
+  scoped_ptr<typename LayerType::RenderSurfaceType> render_surface;
 
   // This rect is in the layer's content space.
   gfx::Rect visible_content_rect;

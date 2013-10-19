@@ -9264,7 +9264,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
 
 TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   // Ensures that even if we visit layers out of order, we still produce a
-  // correctly order render surface layer list.
+  // correctly ordered render surface layer list.
   // + root
   //   + scroll_child
   //   + scroll_parent_border
@@ -9276,7 +9276,8 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   //       + scroll_grandparent
   //         + render_surface2
   //
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> root =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
 
   scoped_refptr<Layer> scroll_parent_border = Layer::Create();
   scoped_refptr<Layer> scroll_parent_clip = Layer::Create();
@@ -9412,6 +9413,9 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   EXPECT_EQ(root.get(), render_surface_layer_list.at(0));
   EXPECT_EQ(render_surface2.get(), render_surface_layer_list.at(1));
   EXPECT_EQ(render_surface1.get(), render_surface_layer_list.at(2));
+  EXPECT_TRUE(render_surface_layer_list.at(0)->render_surface());
+  EXPECT_TRUE(render_surface_layer_list.at(1)->render_surface());
+  EXPECT_TRUE(render_surface_layer_list.at(2)->render_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotClobberSorting) {

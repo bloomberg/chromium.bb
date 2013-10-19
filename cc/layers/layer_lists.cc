@@ -35,6 +35,13 @@ size_t RenderSurfaceLayerList::size() const {
   return list_.size();
 }
 
+scoped_refptr<Layer>& RenderSurfaceLayerList::operator[](size_t i) {
+  return list_[i];
+}
+const scoped_refptr<Layer>& RenderSurfaceLayerList::operator[](size_t i) const {
+  return list_[i];
+}
+
 LayerList::iterator RenderSurfaceLayerList::begin() {
   return list_.begin();
 }

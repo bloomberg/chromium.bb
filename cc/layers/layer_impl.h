@@ -59,6 +59,10 @@ enum DrawMode {
 
 class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
  public:
+  typedef LayerImplList RenderSurfaceListType;
+  typedef LayerImplList LayerListType;
+  typedef RenderSurfaceImpl RenderSurfaceType;
+
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new LayerImpl(tree_impl, id));
   }
@@ -267,10 +271,10 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void CreateRenderSurface();
   void ClearRenderSurface();
 
-  DrawProperties<LayerImpl, RenderSurfaceImpl>& draw_properties() {
+  DrawProperties<LayerImpl>& draw_properties() {
     return draw_properties_;
   }
-  const DrawProperties<LayerImpl, RenderSurfaceImpl>& draw_properties() const {
+  const DrawProperties<LayerImpl>& draw_properties() const {
     return draw_properties_;
   }
 
@@ -613,7 +617,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   // Group of properties that need to be computed based on the layer tree
   // hierarchy before layers can be drawn.
-  DrawProperties<LayerImpl, RenderSurfaceImpl> draw_properties_;
+  DrawProperties<LayerImpl> draw_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };
