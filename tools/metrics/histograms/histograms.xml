@@ -8383,6 +8383,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.NumOpenStreams">
+  <summary>
+    The number of QUIC streams opened when a new QUIC stream is created.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.OutOfOrderGapReceived">
   <summary>
     The number of missing packets between the current received packet and the

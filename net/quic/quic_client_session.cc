@@ -236,6 +236,7 @@ QuicClientSession::CreateOutgoingReliableStreamImpl() {
       new QuicReliableClientStream(GetNextStreamId(), this, net_log_);
   ActivateStream(stream);
   ++num_total_streams_;
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumOpenStreams", GetNumOpenStreams());
   return stream;
 }
 
