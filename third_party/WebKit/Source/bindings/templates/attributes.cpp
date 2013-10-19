@@ -108,6 +108,9 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
 {
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {{attribute.v8_value_to_local_cpp_value}};
+    {% if attribute.is_call_with_script_execution_context %}
+    ExecutionContext* scriptContext = getExecutionContext();
+    {% endif %}
     {{attribute.cpp_setter}};
     {% if attribute.cached_attribute_validation_method %}
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("{{attribute.name}}")); // Invalidate the cached value.

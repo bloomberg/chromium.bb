@@ -148,13 +148,9 @@ def generate_attribute_and_includes(interface, attribute):
     if not has_setter:
         return contents, includes
 
-    if v8_types.interface_type(idl_type) and not v8_types.array_type(idl_type):
-        cpp_value = 'WTF::getPtr(cppValue)'
-    else:
-        cpp_value = 'cppValue'
     contents.update({
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
-        'cpp_setter': 'imp->set%s(%s)' % (capitalize(cpp_name(attribute)), cpp_value),
+        'cpp_setter': setter_expression(attribute, contents),
     })
 
     return contents, includes
@@ -207,6 +203,15 @@ def content_attribute_getter_base_name(attribute, includes, arguments):
     if 'URL' in attribute.extended_attributes:
         return 'getURLAttribute'
     return 'fastGetAttribute'
+
+
+def setter_expression(attribute, contents):
+    arguments = v8_utilities.call_with_arguments(attribute, contents)
+    idl_type = attribute.data_type
+    # FIXME: should be able to eliminate WTF::getPtr in most or all cases
+    cpp_value = 'WTF::getPtr(cppValue)' if v8_types.interface_type(idl_type) and not v8_types.array_type(idl_type) else 'cppValue'
+    arguments.append(cpp_value)
+    return 'imp->set%s(%s)' % (capitalize(cpp_name(attribute)), ', '.join(arguments))
 
 
 def is_keep_alive_for_gc(attribute):
