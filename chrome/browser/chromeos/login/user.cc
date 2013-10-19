@@ -104,7 +104,7 @@ class PublicAccountUser : public User {
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);
 };
 
-UserContext::UserContext() {
+UserContext::UserContext() : using_oauth(true) {
 }
 
 UserContext::UserContext(const std::string& username,
@@ -112,7 +112,8 @@ UserContext::UserContext(const std::string& username,
                          const std::string& auth_code)
     : username(username),
       password(password),
-      auth_code(auth_code) {
+      auth_code(auth_code),
+      using_oauth(true) {
 }
 
 UserContext::UserContext(const std::string& username,
@@ -122,7 +123,20 @@ UserContext::UserContext(const std::string& username,
     : username(username),
       password(password),
       auth_code(auth_code),
-      username_hash(username_hash) {
+      username_hash(username_hash),
+      using_oauth(true) {
+}
+
+UserContext::UserContext(const std::string& username,
+                         const std::string& password,
+                         const std::string& auth_code,
+                         const std::string& username_hash,
+                         bool using_oauth)
+    :  username(username),
+       password(password),
+       auth_code(auth_code),
+       username_hash(username_hash),
+       using_oauth(using_oauth) {
 }
 
 UserContext::~UserContext() {
@@ -132,7 +146,8 @@ bool UserContext::operator==(const UserContext& context) const {
   return context.username == username &&
          context.password == password &&
          context.auth_code == auth_code &&
-         context.username_hash == username_hash;
+         context.username_hash == username_hash &&
+         context.using_oauth == using_oauth;
 }
 
 string16 User::GetDisplayName() const {

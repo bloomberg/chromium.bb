@@ -70,7 +70,6 @@ class LoginUtils {
   virtual void PrepareProfile(
       const UserContext& user_context,
       const std::string& display_email,
-      bool using_oauth,
       bool has_cookies,
       bool has_active_session,
       Delegate* delegate) = 0;

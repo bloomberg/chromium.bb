@@ -684,7 +684,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
   // and the first wizard screen, if any, is being shown.
   base::RunLoop login_wait_run_loop;
   chromeos::MockConsumer login_status_consumer;
-  EXPECT_CALL(login_status_consumer, OnLoginSuccess(_, false, false))
+  EXPECT_CALL(login_status_consumer, OnLoginSuccess(_))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
 

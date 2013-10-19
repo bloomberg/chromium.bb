@@ -19,11 +19,10 @@ namespace chromeos {
 struct UserContext;
 
 // An interface for objects that will authenticate a Chromium OS user.
-// When authentication successfully completes, will call
-// consumer_->OnLoginSuccess() on the UI thread.
-// On failure, will call consumer_->OnLoginFailure() on the UI thread.
-// On password change detected, will call
-// consumer_->OnPasswordChangeDetected() on the UI thread.
+// Callbacks will be called on the UI thread:
+// 1. On successful authentication, will call consumer_->OnLoginSuccess().
+// 2. On failure, will call consumer_->OnLoginFailure().
+// 3. On password change, will call consumer_->OnPasswordChangeDetected().
 class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
  public:
   explicit Authenticator(LoginStatusConsumer* consumer);
@@ -42,8 +41,7 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Given a user credentials in |user_context|, this method attempts to
   // authenticate to unlock the computer.
   // Must be called on the UI thread.
-  virtual void AuthenticateToUnlock(
-      const UserContext& user_context) = 0;
+  virtual void AuthenticateToUnlock(const UserContext& user_context) = 0;
 
   // Initiates locally managed user login.
   virtual void LoginAsLocallyManagedUser(
@@ -65,11 +63,8 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Completes retail mode login.
   virtual void OnRetailModeLoginSuccess() = 0;
 
-  // Notifies caller that login was successful.
-  // |request_pending| is true if we still plan to call consumer_ with the
-  // results of more requests.
-  // Must be called on the UI thread.
-  virtual void OnLoginSuccess(bool request_pending) = 0;
+  // Notifies caller that login was successful. Must be called on the UI thread.
+  virtual void OnLoginSuccess() = 0;
 
   // Must be called on the UI thread.
   virtual void OnLoginFailure(const LoginFailure& error) = 0;

@@ -52,9 +52,7 @@ class ScreenLocker : public LoginStatusConsumer {
 
   // LoginStatusConsumer implements:
   virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
-  virtual void OnLoginSuccess(const UserContext& user_context,
-                              bool pending_requests,
-                              bool using_oauth) OVERRIDE;
+  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE;
 
   // Does actual unlocking once authentication is successful and all blocking
   // animations are done.
@@ -120,9 +118,7 @@ class ScreenLocker : public LoginStatusConsumer {
   friend class ScreenLockerDelegate;
 
   struct AuthenticationParametersCapture {
-    std::string username;
-    bool pending_requests;
-    bool using_oauth;
+    UserContext user_context;
   };
 
   virtual ~ScreenLocker();

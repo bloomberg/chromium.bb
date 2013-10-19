@@ -43,14 +43,6 @@ using ::testing::_;
 
 namespace chromeos {
 
-class TestOnlineAttempt : public OnlineAttempt {
- public:
-  TestOnlineAttempt(AuthAttemptState* state,
-                    AuthAttemptStateResolver* resolver)
-      : OnlineAttempt(state, resolver) {
-  }
-};
-
 class ParallelAuthenticatorTest : public testing::Test {
  public:
   ParallelAuthenticatorTest()
@@ -124,7 +116,7 @@ class ParallelAuthenticatorTest : public testing::Test {
   // Allow test to fail and exit gracefully, even if OnLoginSuccess()
   // wasn't supposed to happen.
   void FailOnLoginSuccess() {
-    ON_CALL(consumer_, OnLoginSuccess(_, _, _))
+    ON_CALL(consumer_, OnLoginSuccess(_))
         .WillByDefault(Invoke(MockConsumer::OnSuccessQuitAndFail));
   }
 
@@ -154,9 +146,8 @@ class ParallelAuthenticatorTest : public testing::Test {
     EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(username,
                                                       password,
                                                       std::string(),
-                                                      username_hash_),
-                                          pending,
-                                          true /* using_oauth */))
+                                                      username_hash_,
+                                                      true /* using_oauth */)))
         .WillOnce(Invoke(MockConsumer::OnSuccessQuit))
         .RetiresOnSaturation();
   }
@@ -192,10 +183,6 @@ class ParallelAuthenticatorTest : public testing::Test {
     auth_->SetOwnerState(owner_check_finished, check_result);
   }
 
-  void FakeOnlineAttempt() {
-    auth_->set_online_attempt(new TestOnlineAttempt(state_.get(), auth_.get()));
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
 
   std::string username_;
@@ -220,13 +207,13 @@ TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
   EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(username_,
                                                     password_,
                                                     std::string(),
-                                                    username_hash_),
-                                        false, true /* using oauth */))
+                                                    username_hash_,
+                                                    true /* using oauth */)))
       .Times(1)
       .RetiresOnSaturation();
 
   SetAttemptState(auth_.get(), state_.release());
-  auth_->OnLoginSuccess(false);
+  auth_->OnLoginSuccess();
 }
 
 TEST_F(ParallelAuthenticatorTest, OnPasswordChangeDetected) {
@@ -242,17 +229,6 @@ TEST_F(ParallelAuthenticatorTest, ResolveNothingDone) {
             SetAndResolveState(auth_.get(), state_.release()));
 }
 
-TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChange) {
-  // Set a fake online attempt so that we return intermediate cryptohome state.
-  FakeOnlineAttempt();
-
-  // Set up state as though a cryptohome mount attempt has occurred
-  // and been rejected.
-  state_->PresetCryptohomeStatus(false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
-
-  EXPECT_EQ(ParallelAuthenticator::POSSIBLE_PW_CHANGE,
-            SetAndResolveState(auth_.get(), state_.release()));
-}
 
 TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChangeToFailedMount) {
   // Set up state as though a cryptohome mount attempt has occurred
@@ -537,19 +513,6 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
 
   auth_->RecoverEncryptedData(std::string());
   base::MessageLoop::current()->Run();
-}
-
-TEST_F(ParallelAuthenticatorTest, ResolveNoMount) {
-  // Set a fake online attempt so that we return intermediate cryptohome state.
-  FakeOnlineAttempt();
-
-  // Set up state as though a cryptohome mount attempt has occurred
-  // and been rejected because the user doesn't exist.
-  state_->PresetCryptohomeStatus(false,
-                                 cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST);
-
-  EXPECT_EQ(ParallelAuthenticator::NO_MOUNT,
-            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveNoMountToFailedMount) {

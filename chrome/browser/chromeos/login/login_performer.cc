@@ -90,32 +90,14 @@ void LoginPerformer::OnRetailModeLoginSuccess(
   LoginStatusConsumer::OnRetailModeLoginSuccess(user_context);
 }
 
-void LoginPerformer::OnLoginSuccess(
-    const UserContext& user_context,
-    bool pending_requests,
-    bool using_oauth) {
+void LoginPerformer::OnLoginSuccess(const UserContext& user_context) {
   content::RecordAction(UserMetricsAction("Login_Success"));
-  // The value of |pending_requests| indicates:
-  // 0 - New regular user, login success offline and online.
-  //     - or -
-  //     Existing regular user, login success offline and online, offline
-  //     authentication took longer than online authentication.
-  //     - or -
-  //     Public account user, login successful.
-  // 1 - Existing regular user, login success offline only.
-  UMA_HISTOGRAM_ENUMERATION("Login.SuccessReason", pending_requests, 2);
-
-  VLOG(1) << "LoginSuccess hash: " << user_context.username_hash
-          << ", pending_requests " << pending_requests;
+  VLOG(1) << "LoginSuccess hash: " << user_context.username_hash;
   DCHECK(delegate_);
   // After delegate_->OnLoginSuccess(...) is called, delegate_ releases
   // LoginPerformer ownership. LP now manages it's lifetime on its own.
-  DCHECK(!pending_requests);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-
-  delegate_->OnLoginSuccess(user_context,
-                            pending_requests,
-                            using_oauth);
+  delegate_->OnLoginSuccess(user_context);
 }
 
 void LoginPerformer::OnOffTheRecordLoginSuccess() {

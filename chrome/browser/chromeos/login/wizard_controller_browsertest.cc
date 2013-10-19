@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
       WizardController::default_controller()->GetEnrollmentScreen();
   EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
   // This is the main expectation: after auto-enrollment, login is resumed.
-  EXPECT_CALL(mock_consumer, OnLoginSuccess(_, _, _)).Times(1);
+  EXPECT_CALL(mock_consumer, OnLoginSuccess(_)).Times(1);
   OnExit(ScreenObserver::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
   // Prevent browser launch when the profile is prepared:
   browser_shutdown::SetTryingToQuit(true);

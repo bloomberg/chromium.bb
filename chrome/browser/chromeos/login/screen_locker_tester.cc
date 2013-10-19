@@ -44,9 +44,7 @@ class LoginAttemptObserver : public chromeos::LoginStatusConsumer {
   }
 
   virtual void OnLoginSuccess(
-      const chromeos::UserContext& credentials,
-      bool pending_requests,
-      bool using_oauth) OVERRIDE {
+      const chromeos::UserContext& credentials) OVERRIDE {
     LoginAttempted();
   }
 

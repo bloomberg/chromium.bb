@@ -671,10 +671,7 @@ class LoginObserver : public chromeos::LoginStatusConsumer {
 
   virtual void OnLoginFailure(const chromeos::LoginFailure& error);
 
-  virtual void OnLoginSuccess(
-      const chromeos::UserContext& user_context,
-      bool pending_requests,
-      bool using_oauth);
+  virtual void OnLoginSuccess(const chromeos::UserContext& user_context);
 
  private:
   chromeos::ExistingUserController* controller_;
@@ -760,10 +757,7 @@ class ScreenUnlockObserver : public ScreenLockUnlockObserver,
 
   virtual void OnLoginFailure(const chromeos::LoginFailure& error);
 
-  virtual void OnLoginSuccess(
-      const chromeos::UserContext& user_context,
-      bool pending_requests,
-      bool using_oauth) {}
+  virtual void OnLoginSuccess(const chromeos::UserContext& user_context) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenUnlockObserver);

@@ -31,9 +31,9 @@ class MockLoginUtils : public LoginUtils {
   virtual ~MockLoginUtils();
 
   MOCK_METHOD2(DoBrowserLaunch, void(Profile*, LoginDisplayHost*));
-  MOCK_METHOD6(PrepareProfile,
+  MOCK_METHOD5(PrepareProfile,
                void(const UserContext&, const std::string&,
-                    bool, bool, bool, LoginUtils::Delegate*));
+                    bool, bool, LoginUtils::Delegate*));
   MOCK_METHOD1(DelegateDeleted, void(LoginUtils::Delegate*));
   MOCK_METHOD1(CompleteOffTheRecordLogin, void(const GURL&));
   MOCK_METHOD1(SetFirstLoginPrefs, void(PrefService*));

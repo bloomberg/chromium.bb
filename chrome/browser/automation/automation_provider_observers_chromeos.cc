@@ -73,10 +73,7 @@ void LoginObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
   delete this;
 }
 
-void LoginObserver::OnLoginSuccess(
-    const chromeos::UserContext& user_context,
-    bool pending_requests,
-    bool using_oauth) {
+void LoginObserver::OnLoginSuccess(const chromeos::UserContext& user_context) {
   controller_->set_login_status_consumer(NULL);
   AutomationJSONReply(automation_.get(), reply_message_.release())
       .SendSuccess(NULL);

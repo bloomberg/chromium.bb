@@ -180,17 +180,13 @@ void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {
   }
 }
 
-void KioskProfileLoader::OnLoginSuccess(
-    const UserContext& user_context,
-    bool pending_requests,
-    bool using_oauth)  {
+void KioskProfileLoader::OnLoginSuccess(const UserContext& user_context)  {
   // LoginPerformer will delete itself.
   login_performer_->set_delegate(NULL);
   ignore_result(login_performer_.release());
 
   LoginUtils::Get()->PrepareProfile(user_context,
                                     std::string(),  // display email
-                                    false,  // using_oauth
                                     false,  // has_cookies
                                     false,  // has_active_session
                                     this);

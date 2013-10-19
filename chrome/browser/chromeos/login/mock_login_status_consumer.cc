@@ -39,18 +39,12 @@ void MockConsumer::OnGuestSuccessQuitAndFail() {
 }
 
 // static
-void MockConsumer::OnSuccessQuit(
-    const UserContext& user_context,
-    bool pending_requests,
-    bool using_oauth) {
+void MockConsumer::OnSuccessQuit(const UserContext& user_context) {
   base::MessageLoop::current()->Quit();
 }
 
 // static
-void MockConsumer::OnSuccessQuitAndFail(
-    const UserContext& user_context,
-    bool pending_requests,
-    bool using_oauth) {
+void MockConsumer::OnSuccessQuitAndFail(const UserContext& user_context) {
   ADD_FAILURE() << "Login should NOT have succeeded!";
   base::MessageLoop::current()->Quit();
 }

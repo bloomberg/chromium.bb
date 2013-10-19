@@ -32,12 +32,18 @@ struct UserContext {
               const std::string& password,
               const std::string& auth_code,
               const std::string& username_hash);
+  UserContext(const std::string& username,
+              const std::string& password,
+              const std::string& auth_code,
+              const std::string& username_hash,
+              bool using_oauth);
   virtual ~UserContext();
   bool operator==(const UserContext& context) const;
   std::string username;
   std::string password;
   std::string auth_code;
   std::string username_hash;
+  bool using_oauth;
 };
 
 // A class representing information about a previously logged in user.

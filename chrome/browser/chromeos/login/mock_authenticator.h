@@ -43,7 +43,7 @@ class MockAuthenticator : public Authenticator {
 
   virtual void OnRetailModeLoginSuccess() OVERRIDE;
 
-  virtual void OnLoginSuccess(bool request_pending) OVERRIDE;
+  virtual void OnLoginSuccess() OVERRIDE;
 
   virtual void OnLoginFailure(const LoginFailure& failure) OVERRIDE;
 

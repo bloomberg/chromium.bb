@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest, ExistingUserLogin) {
       .WillOnce(WithArg<0>(CreateAuthenticator(kUsername, kPassword)));
   EXPECT_CALL(*mock_login_utils_,
               PrepareProfile(UserContext(kUsername, kPassword, "", kUsername),
-                             _, _, _, _, _))
+                             _, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest,
                                          kPassword,
                                          std::string(),
                                          kNewUsername),
-                             _, _, _, _, _))
+                             _, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
@@ -433,7 +433,7 @@ class ExistingUserControllerPublicSessionTest
         .WillOnce(WithArg<0>(CreateAuthenticator(username, password)));
     EXPECT_CALL(*mock_login_utils_,
                 PrepareProfile(UserContext(username, password, "", username),
-                               _, _, _, _, _))
+                               _, _, _, _))
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                     &base::Callback<void(void)>::Run));

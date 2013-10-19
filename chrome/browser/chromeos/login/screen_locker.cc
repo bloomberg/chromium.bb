@@ -186,10 +186,7 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
     login_status_consumer_->OnLoginFailure(error);
 }
 
-void ScreenLocker::OnLoginSuccess(
-    const UserContext& user_context,
-    bool pending_requests,
-    bool using_oauth) {
+void ScreenLocker::OnLoginSuccess(const UserContext& user_context) {
   incorrect_passwords_count_ = 0;
   if (authentication_start_time_.is_null()) {
     if (!user_context.username.empty())
@@ -227,9 +224,7 @@ void ScreenLocker::OnLoginSuccess(
   }
 
   authentication_capture_.reset(new AuthenticationParametersCapture());
-  authentication_capture_->username = user_context.username;
-  authentication_capture_->pending_requests = pending_requests;
-  authentication_capture_->using_oauth = using_oauth;
+  authentication_capture_->user_context = user_context;
 
   // Add guard for case when something get broken in call chain to unlock
   // for sure.
@@ -251,11 +246,11 @@ void ScreenLocker::UnlockOnLoginSuccess() {
 
   if (login_status_consumer_) {
     login_status_consumer_->OnLoginSuccess(
-        UserContext(authentication_capture_->username,
-                    std::string(),   // password
-                    std::string()),  // auth_code
-        authentication_capture_->pending_requests,
-        authentication_capture_->using_oauth);
+        UserContext(authentication_capture_->user_context.username,
+                    authentication_capture_->user_context.password,
+                    authentication_capture_->user_context.auth_code,
+                    authentication_capture_->user_context.username_hash,
+                    authentication_capture_->user_context.using_oauth));
   }
   authentication_capture_.reset();
   weak_factory_.InvalidateWeakPtrs();

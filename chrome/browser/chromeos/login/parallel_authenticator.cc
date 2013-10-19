@@ -201,7 +201,6 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
       already_reported_success_(false),
       owner_is_verified_(false),
       user_can_login_(false),
-      using_oauth_(true),
       remove_user_data_on_failure_(false),
       delayed_login_failure_(NULL) {
 }
@@ -228,14 +227,6 @@ void ParallelAuthenticator::AuthenticateToLogin(
                  current_state_.get(),
                  scoped_refptr<ParallelAuthenticator>(this),
                  cryptohome::MOUNT_FLAGS_NONE));
-  // ClientLogin authentication check should happen immediately here.
-  // We should not try OAuthLogin check until the profile loads.
-  if (!using_oauth_) {
-    // Initiate ClientLogin-based post authentication.
-    current_online_.reset(new OnlineAttempt(current_state_.get(),
-                                            this));
-    current_online_->Initiate(profile);
-  }
 }
 
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
@@ -258,23 +249,12 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
                  scoped_refptr<ParallelAuthenticator>(this),
                  cryptohome::MOUNT_FLAGS_NONE));
 
-  if (!using_oauth_) {
-    // Test automation needs to disable oauth, but that leads to other
-    // services not being able to fetch a token, leading to browser crashes.
-    // So initiate ClientLogin-based post authentication.
-    // TODO(xiyuan): This should not be required.
-    // Context: http://crbug.com/201374
-    current_online_.reset(new OnlineAttempt(current_state_.get(),
-                                            this));
-    current_online_->Initiate(profile);
-  } else {
-    // For login completion from extension, we just need to resolve the current
-    // auth attempt state, the rest of OAuth related tasks will be done in
-    // parallel.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ParallelAuthenticator::ResolveLoginCompletionStatus, this));
-  }
+  // For login completion from extension, we just need to resolve the current
+  // auth attempt state, the rest of OAuth related tasks will be done in
+  // parallel.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ParallelAuthenticator::ResolveLoginCompletionStatus, this));
 }
 
 void ParallelAuthenticator::AuthenticateToUnlock(
@@ -392,7 +372,7 @@ void ParallelAuthenticator::OnRetailModeLoginSuccess() {
     consumer_->OnRetailModeLoginSuccess(current_state_->user_context);
 }
 
-void ParallelAuthenticator::OnLoginSuccess(bool request_pending) {
+void ParallelAuthenticator::OnLoginSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Login success";
   // Send notification of success
@@ -406,9 +386,7 @@ void ParallelAuthenticator::OnLoginSuccess(bool request_pending) {
     already_reported_success_ = true;
   }
   if (consumer_)
-    consumer_->OnLoginSuccess(current_state_->user_context,
-                              request_pending,
-                              using_oauth_);
+    consumer_->OnLoginSuccess(current_state_->user_context);
 }
 
 void ParallelAuthenticator::OnOffTheRecordLoginSuccess() {
@@ -518,7 +496,6 @@ void ParallelAuthenticator::OnOwnershipChecked(bool is_owner) {
 
 void ParallelAuthenticator::Resolve() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool request_pending = false;
   int mount_flags = cryptohome::MOUNT_FLAGS_NONE;
   ParallelAuthenticator::AuthState state = ResolveState();
   VLOG(1) << "Resolved state to: " << state;
@@ -600,14 +577,6 @@ void ParallelAuthenticator::Resolve() {
       break;
     case OFFLINE_LOGIN:
       VLOG(2) << "Offline login";
-      // Marking request_pending to false when using OAuth because OAuth related
-      // tasks are performed after user profile is mounted and are not performed
-      // by ParallelAuthenticator.
-      // TODO(xiyuan): Revert this when we support Gaia in lock screen and
-      // start to use ParallelAuthenticator's VerifyOAuth1AccessToken again.
-      request_pending = using_oauth_ ?
-          false :
-          !current_state_->online_complete();
       // Fall through.
     case UNLOCK:
       VLOG(2) << "Unlock";
@@ -616,12 +585,11 @@ void ParallelAuthenticator::Resolve() {
       VLOG(2) << "Online login";
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this,
-                     request_pending));
+          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this));
       break;
     case DEMO_LOGIN:
       VLOG(2) << "Retail mode login";
-      using_oauth_ = false;
+      current_state_->user_context.using_oauth = false;
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnRetailModeLoginSuccess, this));
@@ -633,18 +601,16 @@ void ParallelAuthenticator::Resolve() {
       break;
     case KIOSK_ACCOUNT_LOGIN:
     case PUBLIC_ACCOUNT_LOGIN:
-      using_oauth_ = false;
+      current_state_->user_context.using_oauth = false;
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this, false));
+          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this));
       break;
     case LOCALLY_MANAGED_USER_LOGIN:
-      using_oauth_ = false;
-      // TODO(nkostylev): Figure out whether there's need to call
-      // a separate success method here.
+      current_state_->user_context.using_oauth = false;
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this, false));
+          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this));
       break;
     case LOGIN_FAILED:
       current_state_->ResetCryptohomeStatus();
@@ -761,12 +727,10 @@ ParallelAuthenticator::ResolveCryptohomeFailureState() {
     return FAILED_TPM;
   }
 
-  // Return intermediate states in the following cases:
-  // 1. When there is a parallel online attempt to resolve them later;
-  //    This is the case with legacy ClientLogin flow;
-  // 2. When there is an online result to use;
-  //    This is the case after user finishes Gaia login;
-  if (current_online_.get() || current_state_->online_complete()) {
+  // Return intermediate states in the following case:
+  // when there is an online result to use;
+  // This is the case after user finishes Gaia login;
+  if (current_state_->online_complete()) {
     if (current_state_->cryptohome_code() ==
         cryptohome::MOUNT_ERROR_KEY_FAILURE) {
       // If we tried a mount but they used the wrong key, we may need to

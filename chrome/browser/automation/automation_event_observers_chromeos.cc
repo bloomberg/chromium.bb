@@ -27,9 +27,7 @@ void LoginEventObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
 }
 
 void LoginEventObserver::OnLoginSuccess(
-    const chromeos::UserContext& user_context,
-    bool pending_requests,
-    bool using_oauth) {
+    const chromeos::UserContext& user_context) {
   // Profile changes after login. Ensure AutomationProvider refers to
   // the correct one.
   if (automation_) {

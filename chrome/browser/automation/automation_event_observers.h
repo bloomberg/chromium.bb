@@ -89,8 +89,8 @@ class LoginEventObserver
 
   // chromeos::LoginStatusConsumer:
   virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
-  virtual void OnLoginSuccess(const chromeos::UserContext& user_context,
-                              bool pending_requests, bool using_oauth) OVERRIDE;
+  virtual void OnLoginSuccess(
+      const chromeos::UserContext& user_context) OVERRIDE;
 
  private:
   base::WeakPtr<AutomationProvider> automation_;

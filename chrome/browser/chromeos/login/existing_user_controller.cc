@@ -743,10 +743,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   display_email_.clear();
 }
 
-void ExistingUserController::OnLoginSuccess(
-    const UserContext& user_context,
-    bool pending_requests,
-    bool using_oauth) {
+void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
   is_login_in_progress_ = false;
   offline_failed_ = false;
   login_display_->set_signin_completed(true);
@@ -772,7 +769,6 @@ void ExistingUserController::OnLoginSuccess(
   // Will call OnProfilePrepared() in the end.
   LoginUtils::Get()->PrepareProfile(user_context,
                                     display_email_,
-                                    using_oauth,
                                     has_cookies,
                                     false,          // Start session for user.
                                     this);
@@ -818,13 +814,9 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     LoginUtils::Get()->DoBrowserLaunch(profile, host_);
     host_ = NULL;
   }
-  // Inform |login_status_consumer_| about successful login. Set most
-  // parameters to empty since they're not needed.
-  if (login_status_consumer_) {
-    login_status_consumer_->OnLoginSuccess(UserContext(),
-                                           false,    // pending_requests
-                                           false);   // using_oauth
-  }
+  // Inform |login_status_consumer_| about successful login.
+  if (login_status_consumer_)
+    login_status_consumer_->OnLoginSuccess(UserContext());
   login_display_->OnFadeOut();
 }
 

@@ -119,12 +119,7 @@ class LoginStatusConsumer {
   // OnLoginSuccess with the magic |kRetailModeUserEMail| constant.
   virtual void OnRetailModeLoginSuccess(const UserContext& user_context);
   // The current login attempt has succeeded for |user_context|.
-  // If |pending_requests| is false, we're totally done.
-  // If it's true, we will still have some more results to report later.
-  virtual void OnLoginSuccess(
-      const UserContext& user_context,
-      bool pending_requests,
-      bool using_oauth) = 0;
+  virtual void OnLoginSuccess(const UserContext& user_context) = 0;
   // The current guest login attempt has succeeded.
   virtual void OnOffTheRecordLoginSuccess() {}
   // The same password didn't work both online and offline.

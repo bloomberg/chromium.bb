@@ -1776,9 +1776,9 @@ void UserManagerImpl::RestorePendingUserSessions() {
     LoginUtils::Get()->PrepareProfile(UserContext(user_id,
                                                   std::string(),  // password
                                                   std::string(),  // auth_code
-                                                  user_id_hash),
+                                                  user_id_hash,
+                                                  false),         // using_oauth
                                       std::string(),  // display_email
-                                      false,          // using_oauth
                                       false,          // has_cookies
                                       true,           // has_active_session
                                       this);

@@ -54,10 +54,7 @@ class LoginPerformer : public LoginStatusConsumer,
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void OnRetailModeLoginSuccess(
       const UserContext& user_context) OVERRIDE;
-  virtual void OnLoginSuccess(
-      const UserContext& user_context,
-      bool pending_requests,
-      bool using_oauth) OVERRIDE;
+  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE;
   virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected() OVERRIDE;
 

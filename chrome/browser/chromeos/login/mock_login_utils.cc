@@ -19,7 +19,7 @@ void MockLoginUtils::DelegateToFake() {
   FakeLoginUtils* fake = fake_login_utils_.get();
   ON_CALL(*this, DoBrowserLaunch(_, _))
       .WillByDefault(Invoke(fake, &FakeLoginUtils::DoBrowserLaunch));
-  ON_CALL(*this, PrepareProfile(_, _, _, _, _, _))
+  ON_CALL(*this, PrepareProfile(_, _, _, _, _))
       .WillByDefault(Invoke(fake, &FakeLoginUtils::PrepareProfile));
   ON_CALL(*this, CreateAuthenticator(_))
       .WillByDefault(Invoke(fake, &FakeLoginUtils::CreateAuthenticator));

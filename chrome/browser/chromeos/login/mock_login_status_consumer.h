@@ -19,10 +19,7 @@ class MockConsumer : public LoginStatusConsumer {
   MOCK_METHOD1(OnLoginFailure, void(const LoginFailure& error));
   MOCK_METHOD1(OnRetailModeLoginSuccess, void(
       const UserContext& user_context));
-  MOCK_METHOD3(OnLoginSuccess, void(
-      const UserContext& user_context,
-      bool pending_requests,
-      bool using_oauth));
+  MOCK_METHOD1(OnLoginSuccess, void(const UserContext& user_context));
   MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
   MOCK_METHOD0(OnPasswordChangeDetected, void(void));
 
@@ -38,14 +35,8 @@ class MockConsumer : public LoginStatusConsumer {
   static void OnGuestSuccessQuitAndFail();
 
   // Compatible with LoginStatusConsumer::OnLoginSuccess()
-  static void OnSuccessQuit(
-      const UserContext& user_context,
-      bool pending_requests,
-      bool using_oauth);
-  static void OnSuccessQuitAndFail(
-      const UserContext& user_context,
-      bool pending_requests,
-      bool using_oauth);
+  static void OnSuccessQuit(const UserContext& user_context);
+  static void OnSuccessQuitAndFail(const UserContext& user_context);
 
   // Compatible with LoginStatusConsumer::OnLoginFailure()
   static void OnFailQuit(const LoginFailure& error);

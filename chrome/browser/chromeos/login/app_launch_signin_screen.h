@@ -84,9 +84,7 @@ class AppLaunchSigninScreen
 
   // LoginStatusConsumer implementation:
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
-  virtual void OnLoginSuccess(const UserContext& user_context,
-                              bool pending_requests,
-                              bool using_oauth) OVERRIDE;
+  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE;
 
   OobeUI* oobe_ui_;
   Delegate* delegate_;

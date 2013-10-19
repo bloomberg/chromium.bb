@@ -138,8 +138,7 @@ class StubLogin : public LoginStatusConsumer,
                   public LoginUtils::Delegate {
  public:
   StubLogin(std::string username, std::string password)
-      : pending_requests_(false),
-        profile_prepared_(false) {
+      : profile_prepared_(false) {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
     authenticator_.get()->AuthenticateToLogin(
         g_browser_process->profile_manager()->GetDefaultProfile(),
@@ -157,19 +156,15 @@ class StubLogin : public LoginStatusConsumer,
     delete this;
   }
 
-  virtual void OnLoginSuccess(const UserContext& user_context,
-                              bool pending_requests,
-                              bool using_oauth) OVERRIDE {
-    pending_requests_ = pending_requests;
+  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE {
     if (!profile_prepared_) {
       // Will call OnProfilePrepared in the end.
       LoginUtils::Get()->PrepareProfile(user_context,
                                         std::string(),  // display_email
-                                        using_oauth,
                                         false,          // has_cookies
                                         true,           // has_active_session
                                         this);
-    } else if (!pending_requests) {
+    } else {
       delete this;
     }
   }
@@ -178,12 +173,10 @@ class StubLogin : public LoginStatusConsumer,
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
     profile_prepared_ = true;
     LoginUtils::Get()->DoBrowserLaunch(profile, NULL);
-    if (!pending_requests_)
-      delete this;
+    delete this;
   }
 
   scoped_refptr<Authenticator> authenticator_;
-  bool pending_requests_;
   bool profile_prepared_;
 };
 

@@ -9,9 +9,7 @@ namespace chromeos {
 
 void LoginStatusConsumer::OnRetailModeLoginSuccess(
     const UserContext& user_context) {
-  OnLoginSuccess(user_context,
-                 false,   // pending_requests
-                 false);  // using_oauth
+  OnLoginSuccess(user_context);
 }
 
 void LoginStatusConsumer::OnPasswordChangeDetected() {

@@ -17,7 +17,7 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
   if (expected_username_ == user_context.username &&
       expected_password_ == user_context.password) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&MockAuthenticator::OnLoginSuccess, this, false));
+        base::Bind(&MockAuthenticator::OnLoginSuccess, this));
     return;
   }
   GoogleServiceAuthError error(
@@ -31,7 +31,7 @@ void MockAuthenticator::CompleteLogin(Profile* profile,
                                       const UserContext& user_context) {
   CHECK_EQ(expected_username_, user_context.username);
   CHECK_EQ(expected_password_, user_context.password);
-  OnLoginSuccess(false);
+  OnLoginSuccess();
 }
 
 void MockAuthenticator::AuthenticateToUnlock(
@@ -44,9 +44,7 @@ void MockAuthenticator::LoginAsLocallyManagedUser(
   consumer_->OnLoginSuccess(UserContext(expected_username_,
                                         std::string(),
                                         std::string(),
-                                        user_context.username), // username_hash
-                            false,
-                            false);
+                                        user_context.username)); // hash
 }
 
 void MockAuthenticator::LoginRetailMode() {
@@ -60,9 +58,7 @@ void MockAuthenticator::LoginAsPublicAccount(const std::string& username) {
   consumer_->OnLoginSuccess(UserContext(expected_username_,
                                         std::string(),
                                         std::string(),
-                                        expected_username_),
-                            false,
-                            false);
+                                        expected_username_));
 }
 
 void MockAuthenticator::LoginAsKioskAccount(
@@ -70,9 +66,7 @@ void MockAuthenticator::LoginAsKioskAccount(
   consumer_->OnLoginSuccess(UserContext(expected_username_,
                                         std::string(),
                                         std::string(),
-                                        expected_username_),
-                            false,
-                            false);
+                                        expected_username_));
 }
 
 void MockAuthenticator::LoginOffTheRecord() {
@@ -86,15 +80,13 @@ void MockAuthenticator::OnRetailModeLoginSuccess() {
                                                   expected_username_));
 }
 
-void MockAuthenticator::OnLoginSuccess(bool request_pending) {
+void MockAuthenticator::OnLoginSuccess() {
   // If we want to be more like the real thing, we could save username
   // in AuthenticateToLogin, but there's not much of a point.
   consumer_->OnLoginSuccess(UserContext(expected_username_,
                                         expected_password_,
                                         std::string(),
-                                        expected_username_),
-                            request_pending,
-                            false);
+                                        expected_username_));
 }
 
 void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {

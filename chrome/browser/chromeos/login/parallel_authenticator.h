@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
-#include "chrome/browser/chromeos/login/online_attempt.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -111,8 +110,7 @@ class ParallelAuthenticator : public Authenticator,
   // user_context. This will never contact the server even if it's online.
   // The auth result is sent to LoginStatusConsumer in a same way as
   // AuthenticateToLogin does.
-  virtual void AuthenticateToUnlock(
-      const UserContext& user_context) OVERRIDE;
+  virtual void AuthenticateToUnlock(const UserContext& user_context) OVERRIDE;
 
   // Initiates locally managed user login.
   // Creates cryptohome if missing or mounts existing one and
@@ -141,7 +139,7 @@ class ParallelAuthenticator : public Authenticator,
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   virtual void OnRetailModeLoginSuccess() OVERRIDE;
-  virtual void OnLoginSuccess(bool request_pending) OVERRIDE;
+  virtual void OnLoginSuccess() OVERRIDE;
   virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void RecoverEncryptedData(
       const std::string& old_password) OVERRIDE;
@@ -200,19 +198,9 @@ class ParallelAuthenticator : public Authenticator,
   // Must be called on the IO thread.
   AuthState ResolveOnlineSuccessState(AuthState offline_state);
 
-  // Used to disable oauth, used for testing.
-  void set_using_oauth(bool value) {
-    using_oauth_ = value;
-  }
-
   // Used for testing.
   void set_attempt_state(TestAttemptState* new_state) {  // takes ownership.
     current_state_.reset(new_state);
-  }
-
-  // Sets an online attempt for testing.
-  void set_online_attempt(OnlineAttempt* attempt) {
-    current_online_.reset(attempt);
   }
 
   // Used for testing to set the expected state of an owner check.
@@ -231,7 +219,6 @@ class ParallelAuthenticator : public Authenticator,
   void ResolveLoginCompletionStatus();
 
   scoped_ptr<AuthAttemptState> current_state_;
-  scoped_ptr<OnlineAttempt> current_online_;
   bool migrate_attempted_;
   bool remove_attempted_;
   bool resync_attempted_;
@@ -249,9 +236,6 @@ class ParallelAuthenticator : public Authenticator,
   // of it.
   bool owner_is_verified_;
   bool user_can_login_;
-
-  // True if we use OAuth-based authentication flow.
-  bool using_oauth_;
 
   // Flag indicating to delete the user's cryptohome the login fails.
   bool remove_user_data_on_failure_;

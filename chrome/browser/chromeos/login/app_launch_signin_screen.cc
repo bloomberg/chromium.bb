@@ -196,9 +196,7 @@ void AppLaunchSigninScreen::OnLoginFailure(const LoginFailure& error) {
      HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE);
 }
 
-void AppLaunchSigninScreen::OnLoginSuccess(const UserContext& user_context,
-                                           bool pending_requests,
-                                           bool using_oauth) {
+void AppLaunchSigninScreen::OnLoginSuccess(const UserContext& user_context) {
   delegate_->OnOwnerSigninSuccess();
 }
 

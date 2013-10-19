@@ -347,9 +347,7 @@ class LoginUtilsTest : public testing::Test,
     FAIL() << "OnLoginFailure not expected";
   }
 
-  virtual void OnLoginSuccess(const UserContext& user_context,
-                              bool pending_requests,
-                              bool using_oauth) OVERRIDE {
+  virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE {
     FAIL() << "OnLoginSuccess not expected";
   }
 
@@ -394,8 +392,8 @@ class LoginUtilsTest : public testing::Test,
     const bool kHasCookies = false;
     const bool kHasActiveSession = false;
     LoginUtils::Get()->PrepareProfile(
-        UserContext(username, "password", std::string(), username),
-        std::string(), kUsingOAuth, kHasCookies, kHasActiveSession, this);
+        UserContext(username, "password", std::string(), username, kUsingOAuth),
+        std::string(), kHasCookies, kHasActiveSession, this);
     device_settings_test_helper.Flush();
     RunUntilIdle();
 
