@@ -112,9 +112,9 @@ void LocaleNotificationController::OnLocaleChanged(
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kLocaleChangeNotificationId,
+      base::string16()  /* title */,
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE, from, to),
-      base::string16()  /* message */,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_LOCALE),
       base::string16()  /* display_source */,
       message_center::NotifierId(system_notifier::NOTIFIER_LOCALE),
