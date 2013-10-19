@@ -116,6 +116,12 @@ fileapi::FileSystemURL PepperFileRefHost::GetFileSystemURL() const {
   return fileapi::FileSystemURL();
 }
 
+base::FilePath PepperFileRefHost::GetExternalFilePath() const {
+  if (backend_)
+    return backend_->GetExternalFilePath();
+  return base::FilePath();
+}
+
 int32_t PepperFileRefHost::CanRead() const {
   if (backend_)
     return backend_->CanRead();

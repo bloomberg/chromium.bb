@@ -100,6 +100,10 @@ fileapi::FileSystemURL PepperExternalFileRefBackend::GetFileSystemURL() const {
   return fileapi::FileSystemURL();
 }
 
+base::FilePath PepperExternalFileRefBackend::GetExternalFilePath() const {
+  return path_;
+}
+
 int32_t PepperExternalFileRefBackend::CanRead() const {
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           CanReadFile(render_process_id_, path_)) {

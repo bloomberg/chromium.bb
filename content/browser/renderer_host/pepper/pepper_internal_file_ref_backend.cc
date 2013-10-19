@@ -71,6 +71,10 @@ fileapi::FileSystemURL PepperInternalFileRefBackend::GetFileSystemURL() const {
   return fs_url_;
 }
 
+base::FilePath PepperInternalFileRefBackend::GetExternalFilePath() const {
+  return base::FilePath();
+}
+
 scoped_refptr<fileapi::FileSystemContext>
 PepperInternalFileRefBackend::GetFileSystemContext() const {
   if (!fs_host_.get())
