@@ -939,42 +939,84 @@ static void readonlyHTMLElementAttributeAttributeGetterCallback(v8::Local<v8::St
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readonlyStringArrayAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void stringArrayAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, v8Array(imp->readonlyStringArrayAttribute(), info.GetIsolate()));
+    v8SetReturnValue(info, v8Array(imp->stringArrayAttribute(), info.GetIsolate()));
 }
 
-static void readonlyStringArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void stringArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readonlyStringArrayAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::stringArrayAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readonlyTestInterfaceEmptyArrayAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void stringArrayAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, v8Array(imp->readonlyTestInterfaceEmptyArrayAttribute(), info.GetIsolate()));
+    V8TRYCATCH_VOID(Vector<String>, cppValue, toNativeArray<String>(jsValue, info.GetIsolate()));
+    imp->setStringArrayAttribute(cppValue);
 }
 
-static void readonlyTestInterfaceEmptyArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void stringArrayAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readonlyTestInterfaceEmptyArrayAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::stringArrayAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readonlyFloatArrayAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void testInterfaceEmptyArrayAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, v8Array(imp->readonlyFloatArrayAttribute(), info.GetIsolate()));
+    v8SetReturnValue(info, v8Array(imp->testInterfaceEmptyArrayAttribute(), info.GetIsolate()));
 }
 
-static void readonlyFloatArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void testInterfaceEmptyArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readonlyFloatArrayAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::testInterfaceEmptyArrayAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(Vector<RefPtr<TestInterfaceEmpty> >, cppValue, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(jsValue, info.GetIsolate())));
+    imp->setTestInterfaceEmptyArrayAttribute(cppValue);
+}
+
+static void testInterfaceEmptyArrayAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::testInterfaceEmptyArrayAttributeAttributeSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void floatArrayAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValue(info, v8Array(imp->floatArrayAttribute(), info.GetIsolate()));
+}
+
+static void floatArrayAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::floatArrayAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void floatArrayAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(Vector<float>, cppValue, toNativeArray<float>(jsValue, info.GetIsolate()));
+    imp->setFloatArrayAttribute(cppValue);
+}
+
+static void floatArrayAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::floatArrayAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -2151,9 +2193,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"readonlyWindowAttribute", TestObjectPythonV8Internal::readonlyWindowAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyHTMLCollectionAttribute", TestObjectPythonV8Internal::readonlyHTMLCollectionAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyHTMLElementAttribute", TestObjectPythonV8Internal::readonlyHTMLElementAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readonlyStringArrayAttribute", TestObjectPythonV8Internal::readonlyStringArrayAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readonlyTestInterfaceEmptyArrayAttribute", TestObjectPythonV8Internal::readonlyTestInterfaceEmptyArrayAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readonlyFloatArrayAttribute", TestObjectPythonV8Internal::readonlyFloatArrayAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"stringArrayAttribute", TestObjectPythonV8Internal::stringArrayAttributeAttributeGetterCallback, TestObjectPythonV8Internal::stringArrayAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"testInterfaceEmptyArrayAttribute", TestObjectPythonV8Internal::testInterfaceEmptyArrayAttributeAttributeGetterCallback, TestObjectPythonV8Internal::testInterfaceEmptyArrayAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"floatArrayAttribute", TestObjectPythonV8Internal::floatArrayAttributeAttributeGetterCallback, TestObjectPythonV8Internal::floatArrayAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nullableStringAttribute", TestObjectPythonV8Internal::nullableStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::nullableStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nullableLongAttribute", TestObjectPythonV8Internal::nullableLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::nullableLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testEnumAttribute", TestObjectPythonV8Internal::testEnumAttributeAttributeGetterCallback, TestObjectPythonV8Internal::testEnumAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

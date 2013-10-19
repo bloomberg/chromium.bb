@@ -252,6 +252,9 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         return 'ScriptValue'
     if is_union_type(idl_type):
         raise Exception('UnionType is not supported')
+    this_array_or_sequence_type = array_or_sequence_type(idl_type)
+    if this_array_or_sequence_type:
+        return cpp_template_type('Vector', cpp_type(this_array_or_sequence_type))
 
     # Special cases
     if idl_type == 'EventHandler':

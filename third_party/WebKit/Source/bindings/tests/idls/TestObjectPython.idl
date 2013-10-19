@@ -83,9 +83,9 @@ interface TestObjectPython {
     readonly attribute HTMLCollection readonlyHTMLCollectionAttribute;
     readonly attribute HTMLElement readonlyHTMLElementAttribute;
     // arrays
-    readonly attribute DOMString[] readonlyStringArrayAttribute;
-    readonly attribute TestInterfaceEmpty[] readonlyTestInterfaceEmptyArrayAttribute;
-    readonly attribute float[] readonlyFloatArrayAttribute;
+    attribute DOMString[] stringArrayAttribute;
+    attribute TestInterfaceEmpty[] testInterfaceEmptyArrayAttribute;
+    attribute float[] floatArrayAttribute;
     // Nullable attributes
     attribute DOMString? nullableStringAttribute;
     attribute long? nullableLongAttribute;
