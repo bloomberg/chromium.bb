@@ -329,7 +329,6 @@ webkitPerspectiveOriginY
 webkitPrintColorAdjust
 webkitRtlOrdering
 webkitRubyPosition
-webkitShapeImageThreshold
 webkitTapHighlightColor
 webkitTextCombine
 webkitTextDecorationsInEffect

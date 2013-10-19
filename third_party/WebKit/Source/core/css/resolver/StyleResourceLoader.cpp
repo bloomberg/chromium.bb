@@ -194,10 +194,10 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
             }
             break;
         }
-        case CSSPropertyWebkitShapeInside:
+        case CSSPropertyShapeInside:
             loadPendingShapeImage(style, style->shapeInside());
             break;
-        case CSSPropertyWebkitShapeOutside:
+        case CSSPropertyShapeOutside:
             loadPendingShapeImage(style, style->shapeOutside());
             break;
         default:

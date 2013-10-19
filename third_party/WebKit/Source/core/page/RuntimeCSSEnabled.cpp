@@ -60,10 +60,11 @@ static void setPropertySwitchesFromRuntimeFeatures()
     };
     setCSSPropertiesEnabled(exclusionProperties, WTF_ARRAY_LENGTH(exclusionProperties), RuntimeEnabledFeatures::cssExclusionsEnabled());
     CSSPropertyID shapeProperties[] = {
-        CSSPropertyWebkitShapeMargin,
-        CSSPropertyWebkitShapePadding,
-        CSSPropertyWebkitShapeInside,
-        CSSPropertyWebkitShapeOutside,
+        CSSPropertyShapeMargin,
+        CSSPropertyShapePadding,
+        CSSPropertyShapeImageThreshold,
+        CSSPropertyShapeInside,
+        CSSPropertyShapeOutside,
     };
     setCSSPropertiesEnabled(shapeProperties, WTF_ARRAY_LENGTH(shapeProperties), RuntimeEnabledFeatures::cssShapesEnabled());
     CSSPropertyID css3TextDecorationProperties[] = {

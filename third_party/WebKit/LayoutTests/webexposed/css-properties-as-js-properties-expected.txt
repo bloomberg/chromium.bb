@@ -186,6 +186,11 @@ position
 quotes
 resize
 right
+shapeImageThreshold
+shapeInside
+shapeMargin
+shapeOutside
+shapePadding
 shapeRendering
 size
 speak
@@ -371,11 +376,6 @@ webkitRegionBreakInside
 webkitRegionFragment
 webkitRtlOrdering
 webkitRubyPosition
-webkitShapeImageThreshold
-webkitShapeInside
-webkitShapeMargin
-webkitShapeOutside
-webkitShapePadding
 webkitTapHighlightColor
 webkitTextCombine
 webkitTextDecorationsInEffect

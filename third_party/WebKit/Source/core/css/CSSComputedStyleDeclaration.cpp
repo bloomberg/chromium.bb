@@ -309,8 +309,11 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
     CSSPropertyWebkitRtlOrdering,
-    CSSPropertyWebkitShapeInside,
-    CSSPropertyWebkitShapeOutside,
+    CSSPropertyShapeInside,
+    CSSPropertyShapeOutside,
+    CSSPropertyShapePadding,
+    CSSPropertyShapeImageThreshold,
+    CSSPropertyShapeMargin,
     CSSPropertyWebkitTapHighlightColor,
     CSSPropertyWebkitTextCombine,
     CSSPropertyWebkitTextDecorationsInEffect,
@@ -341,9 +344,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitRegionFragment,
     CSSPropertyWebkitAppRegion,
     CSSPropertyWebkitWrapFlow,
-    CSSPropertyWebkitShapeMargin,
-    CSSPropertyWebkitShapePadding,
-    CSSPropertyWebkitShapeImageThreshold,
     CSSPropertyWebkitWrapThrough,
     CSSPropertyBufferedRendering,
     CSSPropertyClipPath,
@@ -2742,13 +2742,13 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->regionFragment());
         case CSSPropertyWebkitWrapFlow:
             return cssValuePool().createValue(style->wrapFlow());
-        case CSSPropertyWebkitShapeMargin:
+        case CSSPropertyShapeMargin:
             return cssValuePool().createValue(style->shapeMargin());
-        case CSSPropertyWebkitShapePadding:
+        case CSSPropertyShapePadding:
             return cssValuePool().createValue(style->shapePadding());
-        case CSSPropertyWebkitShapeImageThreshold:
+        case CSSPropertyShapeImageThreshold:
             return cssValuePool().createValue(style->shapeImageThreshold(), CSSPrimitiveValue::CSS_NUMBER);
-        case CSSPropertyWebkitShapeInside:
+        case CSSPropertyShapeInside:
             if (!style->shapeInside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
             if (style->shapeInside()->type() == ShapeValue::Outside)
@@ -2760,7 +2760,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
             ASSERT(style->shapeInside()->type() == ShapeValue::Shape);
             return valueForBasicShape(style.get(), style->shapeInside()->shape());
-        case CSSPropertyWebkitShapeOutside:
+        case CSSPropertyShapeOutside:
             if (!style->shapeOutside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
             if (style->shapeOutside()->type() == ShapeValue::Image) {

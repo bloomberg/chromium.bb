@@ -477,10 +477,10 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitPerspectiveOriginY:
         style->setPerspectiveOriginY(animatableValueToLength(value, state));
         return;
-    case CSSPropertyWebkitShapeInside:
+    case CSSPropertyShapeInside:
         style->setShapeInside(toAnimatableShapeValue(value)->shapeValue());
         return;
-    case CSSPropertyWebkitShapeOutside:
+    case CSSPropertyShapeOutside:
         style->setShapeOutside(toAnimatableShapeValue(value)->shapeValue());
         return;
     case CSSPropertyWebkitTextEmphasisColor:

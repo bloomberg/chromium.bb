@@ -490,8 +490,8 @@ static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acce
     case CSSPropertyWebkitPaddingStart:
         acceptsNegativeNumbers = false;
         return true;
-    case CSSPropertyWebkitShapeMargin:
-    case CSSPropertyWebkitShapePadding:
+    case CSSPropertyShapeMargin:
+    case CSSPropertyShapePadding:
         acceptsNegativeNumbers = false;
         return RuntimeEnabledFeatures::cssShapesEnabled();
     case CSSPropertyBottom:
@@ -2788,13 +2788,13 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return true;
         }
         break;
-    case CSSPropertyWebkitShapeInside:
-    case CSSPropertyWebkitShapeOutside:
+    case CSSPropertyShapeInside:
+    case CSSPropertyShapeOutside:
         if (!RuntimeEnabledFeatures::cssShapesEnabled())
             return false;
         if (id == CSSValueAuto)
             validPrimitive = true;
-        else if (propId == CSSPropertyWebkitShapeInside && id == CSSValueOutsideShape)
+        else if (propId == CSSPropertyShapeInside && id == CSSValueOutsideShape)
             validPrimitive = true;
         else if (value->unit == CSSParserValue::Function)
             return parseBasicShape(propId, important);
@@ -2803,11 +2803,11 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             m_valueList->next();
         }
         break;
-    case CSSPropertyWebkitShapeMargin:
-    case CSSPropertyWebkitShapePadding:
+    case CSSPropertyShapeMargin:
+    case CSSPropertyShapePadding:
         validPrimitive = (RuntimeEnabledFeatures::cssShapesEnabled() && !id && validUnit(value, FLength | FNonNeg));
         break;
-    case CSSPropertyWebkitShapeImageThreshold:
+    case CSSPropertyShapeImageThreshold:
         validPrimitive = (RuntimeEnabledFeatures::cssShapesEnabled() && !id && validUnit(value, FNumber));
         break;
     case CSSPropertyBorderBottomStyle:

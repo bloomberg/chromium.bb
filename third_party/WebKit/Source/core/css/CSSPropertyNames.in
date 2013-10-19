@@ -411,11 +411,16 @@ order
 -webkit-region-break-after
 -webkit-region-break-before
 -webkit-region-break-inside
--webkit-shape-inside
--webkit-shape-outside
--webkit-shape-margin
--webkit-shape-padding
--webkit-shape-image-threshold
+-webkit-shape-inside alias_for=shape-inside
+-webkit-shape-outside alias_for=shape-outside
+-webkit-shape-margin alias_for=shape-margin
+-webkit-shape-padding alias_for=shape-padding
+-webkit-shape-image-threshold alias_for=shape-image-threshold
+shape-inside
+shape-outside
+shape-margin
+shape-padding
+shape-image-threshold
 -webkit-wrap-flow
 -webkit-wrap-through
 max-zoom

@@ -551,8 +551,8 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyWebkitPerspective:
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitPerspectiveOriginY:
-    case CSSPropertyWebkitShapeInside:
-    case CSSPropertyWebkitShapeOutside:
+    case CSSPropertyShapeInside:
+    case CSSPropertyShapeOutside:
     case CSSPropertyWebkitTextStrokeColor:
     case CSSPropertyWebkitTransform:
     case CSSPropertyWebkitTransformOriginX:

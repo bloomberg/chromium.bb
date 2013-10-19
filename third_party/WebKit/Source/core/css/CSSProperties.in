@@ -105,6 +105,11 @@ pointer-events
 position
 resize custom_value
 right type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
+shape-image-threshold type_name=float
+shape-inside type_name=ShapeValue*, custom_value
+shape-margin type_name=Length, converter=convertLength
+shape-outside type_name=ShapeValue*, custom_value
+shape-padding type_name=Length, converter=convertLength
 size custom_all
 speak
 table-layout
@@ -224,11 +229,6 @@ column-fill type_name=ColumnFill
 -webkit-region-fragment type_name=RegionFragment
 -webkit-rtl-ordering type_name=Order, getter=rtlOrdering, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position type_name=RubyPosition
--webkit-shape-inside type_name=ShapeValue*, custom_value
--webkit-shape-margin type_name=Length, converter=convertLength
--webkit-shape-outside type_name=ShapeValue*, custom_value
--webkit-shape-padding type_name=Length, converter=convertLength
--webkit-shape-image-threshold type_name=float
 -webkit-text-combine type_name=TextCombine
 -webkit-text-emphasis-color custom_all
 -webkit-text-emphasis-position type_name=TextEmphasisPosition

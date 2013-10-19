@@ -909,8 +909,8 @@ off
 optimizeQuality
 -webkit-optimize-contrast
 
-// -webkit-shape-inside
-// -webkit-shape-outside
+// shape-inside
+// shape-outside
 nonzero
 evenodd
 outside-shape
