@@ -593,21 +593,18 @@ webkit.org/b/95506 http/tests/notifications [ Skip ]
 #webkit.org/b/96441 [ Win Debug ] fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
 #crbug.com/248155 [ Win Debug ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
 
-# This commented test needs to be uncommented once rebaselined
-#crbug.com/245611 [ Win ] fast/hidpi/image-set-as-background.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Win ] fast/hidpi/image-set-as-background.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win ] fast/hidpi/image-set-background-repeat-without-size.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win7 Release ] virtual/gpu/fast/hidpi/image-set-background-repeat.html [ ImageOnlyFailure Pass ]
-# These commented tests need to be uncommented once rebaselined
-#crbug.com/245611 [ Win ] fast/hidpi/image-set-border-image-simple.html [ ImageOnlyFailure Pass ]
-#crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-simple.html [ ImageOnlyFailure Pass ]
-#crbug.com/245611 [ Win ] fast/hidpi/image-set-simple.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Win ] fast/hidpi/image-set-border-image-simple.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-simple.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Win ] fast/hidpi/image-set-simple.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
 # The two commented tests below need to be uncommented once bug 305466 is resolved, and related skips deleted
 #crbug.com/245611 [ Win ] fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Pass ]
 #crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Pass ]
-# These commented tests need to be uncommented once rebaselined
-#crbug.com/245611 [ Win ] fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
-#crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Win ] fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
 crbug.com/305466 fast/hidpi/image-set-without-specified-width.html [ Skip ]
 crbug.com/305466 virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
