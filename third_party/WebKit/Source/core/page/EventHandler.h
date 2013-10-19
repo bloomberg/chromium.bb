@@ -208,6 +208,7 @@ private:
     bool shouldApplyTouchAdjustment(const PlatformGestureEvent&) const;
 
     OptionalCursor selectCursor(const HitTestResult&, bool shiftKey);
+    OptionalCursor selectAutoCursor(const HitTestResult&, Node*, const Cursor& iBeam, bool shiftKey);
 
     void hoverTimerFired(Timer<EventHandler>*);
     void cursorUpdateTimerFired(Timer<EventHandler>*);

@@ -1133,12 +1133,10 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shif
 
     Node* node = result.targetNode();
     if (!node)
-        return NoCursorChange;
+        return selectAutoCursor(result, node, iBeamCursor(), shiftKey);
 
     RenderObject* renderer = node->renderer();
     RenderStyle* style = renderer ? renderer->style() : 0;
-    bool horizontalText = !style || style->isHorizontalWritingMode();
-    const Cursor& iBeam = horizontalText ? iBeamCursor() : verticalTextCursor();
 
     if (renderer) {
         Cursor overrideCursor;
@@ -1184,31 +1182,9 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shif
 
     switch (style ? style->cursor() : CURSOR_AUTO) {
     case CURSOR_AUTO: {
-        bool editable = node->rendererIsEditable();
-
-        if (useHandCursor(node, result.isOverLink(), shiftKey))
-            return handCursor();
-
-        bool inResizer = false;
-        if (renderer) {
-            if (RenderLayer* layer = renderer->enclosingLayer()) {
-                if (FrameView* view = m_frame->view())
-                    inResizer = layer->isPointInResizeControl(view->windowToContents(roundedIntPoint(result.localPoint())), ResizerForPointer);
-            }
-        }
-
-        // During selection, use an I-beam no matter what we're over.
-        // If a drag may be starting or we're capturing mouse events for a particular node, don't treat this as a selection.
-        if (m_mousePressed && m_mouseDownMayStartSelect
-            && !m_mouseDownMayStartDrag
-            && m_frame->selection().isCaretOrRange()
-            && !m_capturingMouseEventsNode) {
-            return iBeam;
-        }
-
-        if ((editable || (renderer && renderer->isText() && node->canStartSelection())) && !inResizer && !result.scrollbar())
-            return iBeam;
-        return pointerCursor();
+        bool horizontalText = !style || style->isHorizontalWritingMode();
+        const Cursor& iBeam = horizontalText ? iBeamCursor() : verticalTextCursor();
+        return selectAutoCursor(result, node, iBeam, shiftKey);
     }
     case CURSOR_CROSS:
         return crossCursor();
@@ -1281,6 +1257,36 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result, bool shif
     case CURSOR_WEBKIT_GRABBING:
         return grabbingCursor();
     }
+    return pointerCursor();
+}
+
+OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node* node, const Cursor& iBeam, bool shiftKey)
+{
+    bool editable = (node && node->rendererIsEditable());
+
+    if (useHandCursor(node, result.isOverLink(), shiftKey))
+        return handCursor();
+
+    bool inResizer = false;
+    RenderObject* renderer = node ? node->renderer() : 0;
+    if (renderer) {
+        if (RenderLayer* layer = renderer->enclosingLayer()) {
+            if (FrameView* view = m_frame->view())
+                inResizer = layer->isPointInResizeControl(view->windowToContents(roundedIntPoint(result.localPoint())), ResizerForPointer);
+        }
+    }
+
+    // During selection, use an I-beam no matter what we're over.
+    // If a drag may be starting or we're capturing mouse events for a particular node, don't treat this as a selection.
+    if (m_mousePressed && m_mouseDownMayStartSelect
+        && !m_mouseDownMayStartDrag
+        && m_frame->selection().isCaretOrRange()
+        && !m_capturingMouseEventsNode) {
+        return iBeam;
+    }
+
+    if ((editable || (renderer && renderer->isText() && node->canStartSelection())) && !inResizer && !result.scrollbar())
+        return iBeam;
     return pointerCursor();
 }
 
