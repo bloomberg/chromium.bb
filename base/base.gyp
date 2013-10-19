@@ -604,6 +604,7 @@
         'strings/sys_string_conversions_unittest.cc',
         'strings/utf_offset_string_conversions_unittest.cc',
         'strings/utf_string_conversions_unittest.cc',
+        'sync_socket_unittest.cc',
         'synchronization/cancellation_flag_unittest.cc',
         'synchronization/condition_variable_unittest.cc',
         'synchronization/lock_unittest.cc',

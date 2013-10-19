@@ -18,6 +18,7 @@
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time/time.h"
 
 namespace base {
 
@@ -57,6 +58,13 @@ class BASE_EXPORT SyncSocket {
   // length is the number of bytes of data to receive (must be non-zero).
   // Returns the number of bytes received, or 0 upon failure.
   virtual size_t Receive(void* buffer, size_t length);
+
+  // Same as Receive() but only blocks for data until |timeout| has elapsed or
+  // |buffer| |length| is exhausted.  Currently only timeouts less than one
+  // second are allowed.  Return the amount of data read.
+  virtual size_t ReceiveWithTimeout(void* buffer,
+                                    size_t length,
+                                    TimeDelta timeout);
 
   // Returns the number of bytes available. If non-zero, Receive() will not
   // not block when called. NOTE: Some implementations cannot reliably
@@ -102,6 +110,9 @@ class BASE_EXPORT CancelableSyncSocket : public SyncSocket {
   // SyncSocket methods in order to support shutting down the 'socket'.
   virtual bool Close() OVERRIDE;
   virtual size_t Receive(void* buffer, size_t length) OVERRIDE;
+  virtual size_t ReceiveWithTimeout(void* buffer,
+                                    size_t length,
+                                    TimeDelta timeout) OVERRIDE;
 #endif
 
   // Send() is overridden to catch cases where the remote end is not responding

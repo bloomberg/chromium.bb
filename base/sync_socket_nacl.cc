@@ -45,6 +45,11 @@ size_t SyncSocket::Receive(void* buffer, size_t length) {
   return read(handle_, buffer, length);
 }
 
+size_t SyncSocket::ReceiveWithTimeout(void* buffer, size_t length, TimeDelta) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 size_t SyncSocket::Peek() {
   return -1;
 }

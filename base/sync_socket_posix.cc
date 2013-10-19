@@ -5,8 +5,8 @@
 #include "base/sync_socket.h"
 
 #include <errno.h>
-#include <limits.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -18,7 +18,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-
+#include "base/threading/thread_restrictions.h"
 
 namespace base {
 
@@ -26,6 +26,19 @@ namespace {
 // To avoid users sending negative message lengths to Send/Receive
 // we clamp message lengths, which are size_t, to no more than INT_MAX.
 const size_t kMaxMessageLength = static_cast<size_t>(INT_MAX);
+
+// Writes |length| of |buffer| into |handle|.  Returns the number of bytes
+// written or zero on error.  |length| must be greater than 0.
+size_t SendHelper(SyncSocket::Handle handle,
+                  const void* buffer,
+                  size_t length) {
+  DCHECK_GT(length, 0u);
+  DCHECK_LE(length, kMaxMessageLength);
+  DCHECK_NE(handle, SyncSocket::kInvalidHandle);
+  const char* charbuffer = static_cast<const char*>(buffer);
+  const int len = file_util::WriteFileDescriptor(handle, charbuffer, length);
+  return len < 0 ? 0 : static_cast<size_t>(len);
+}
 
 }  // namespace
 
@@ -39,9 +52,9 @@ SyncSocket::~SyncSocket() {
 
 // static
 bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
-  DCHECK(socket_a != socket_b);
-  DCHECK(socket_a->handle_ == kInvalidHandle);
-  DCHECK(socket_b->handle_ == kInvalidHandle);
+  DCHECK_NE(socket_a, socket_b);
+  DCHECK_EQ(socket_a->handle_, kInvalidHandle);
+  DCHECK_EQ(socket_b->handle_, kInvalidHandle);
 
 #if defined(OS_MACOSX)
   int nosigpipe = 1;
@@ -82,39 +95,95 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
 }
 
 bool SyncSocket::Close() {
-  if (handle_ == kInvalidHandle) {
-    return false;
-  }
-  int retval = HANDLE_EINTR(close(handle_));
-  if (retval < 0)
-    DPLOG(ERROR) << "close";
+  if (handle_ == kInvalidHandle)
+    return true;
+  const int retval = HANDLE_EINTR(close(handle_));
+  DPLOG_IF(ERROR, retval < 0) << "close";
   handle_ = kInvalidHandle;
-  return (retval == 0);
+  return retval == 0;
 }
 
 size_t SyncSocket::Send(const void* buffer, size_t length) {
-  DCHECK_LE(length, kMaxMessageLength);
-  const char* charbuffer = static_cast<const char*>(buffer);
-  int len = file_util::WriteFileDescriptor(handle_, charbuffer, length);
-
-  return (len == -1) ? 0 : static_cast<size_t>(len);
+  ThreadRestrictions::AssertIOAllowed();
+  return SendHelper(handle_, buffer, length);
 }
 
 size_t SyncSocket::Receive(void* buffer, size_t length) {
+  ThreadRestrictions::AssertIOAllowed();
+  DCHECK_GT(length, 0u);
   DCHECK_LE(length, kMaxMessageLength);
+  DCHECK_NE(handle_, kInvalidHandle);
   char* charbuffer = static_cast<char*>(buffer);
   if (file_util::ReadFromFD(handle_, charbuffer, length))
     return length;
   return 0;
 }
 
+size_t SyncSocket::ReceiveWithTimeout(void* buffer,
+                                      size_t length,
+                                      TimeDelta timeout) {
+  ThreadRestrictions::AssertIOAllowed();
+  DCHECK_GT(length, 0u);
+  DCHECK_LE(length, kMaxMessageLength);
+  DCHECK_NE(handle_, kInvalidHandle);
+  DCHECK_LT(handle_, FD_SETSIZE);
+
+  // Only timeouts greater than zero and less than one second are allowed.
+  DCHECK_GT(timeout.InMicroseconds(), 0);
+  DCHECK_LT(timeout.InMicroseconds(),
+            base::TimeDelta::FromSeconds(1).InMicroseconds());
+
+  // Track the start time so we can reduce the timeout as data is read.
+  TimeTicks start_time = TimeTicks::Now();
+  const TimeTicks finish_time = start_time + timeout;
+
+  fd_set read_fds;
+  size_t bytes_read_total;
+  for (bytes_read_total = 0;
+       bytes_read_total < length && timeout.InMicroseconds() > 0;
+       timeout = finish_time - base::TimeTicks::Now()) {
+    FD_ZERO(&read_fds);
+    FD_SET(handle_, &read_fds);
+
+    // Wait for data to become available.
+    struct timeval timeout_struct =
+        { 0, static_cast<suseconds_t>(timeout.InMicroseconds()) };
+    const int select_result =
+        select(handle_ + 1, &read_fds, NULL, NULL, &timeout_struct);
+    // Handle EINTR manually since we need to update the timeout value.
+    if (select_result == -1 && errno == EINTR)
+      continue;
+    if (select_result <= 0)
+      return bytes_read_total;
+
+    // select() only tells us that data is ready for reading, not how much.  We
+    // must Peek() for the amount ready for reading to avoid blocking.
+    DCHECK(FD_ISSET(handle_, &read_fds));
+    const size_t bytes_to_read = std::min(Peek(), length - bytes_read_total);
+
+    // There may be zero bytes to read if the socket at the other end closed.
+    if (!bytes_to_read)
+      return bytes_read_total;
+
+    const size_t bytes_received =
+        Receive(static_cast<char*>(buffer) + bytes_read_total, bytes_to_read);
+    bytes_read_total += bytes_received;
+    if (bytes_received != bytes_to_read)
+      return bytes_read_total;
+  }
+
+  return bytes_read_total;
+}
+
 size_t SyncSocket::Peek() {
-  int number_chars;
-  if (-1 == ioctl(handle_, FIONREAD, &number_chars)) {
+  DCHECK_NE(handle_, kInvalidHandle);
+  int number_chars = 0;
+  if (ioctl(handle_, FIONREAD, &number_chars) == -1) {
     // If there is an error in ioctl, signal that the channel would block.
     return 0;
   }
-  return (size_t) number_chars;
+  DCHECK_GE(number_chars, 0);
+  return number_chars;
 }
 
 CancelableSyncSocket::CancelableSyncSocket() {}
@@ -123,19 +192,23 @@ CancelableSyncSocket::CancelableSyncSocket(Handle handle)
 }
 
 bool CancelableSyncSocket::Shutdown() {
-  return HANDLE_EINTR(shutdown(handle(), SHUT_RDWR)) >= 0;
+  DCHECK_NE(handle_, kInvalidHandle);
+  return HANDLE_EINTR(shutdown(handle_, SHUT_RDWR)) >= 0;
 }
 
 size_t CancelableSyncSocket::Send(const void* buffer, size_t length) {
-  long flags = 0;
-  flags = fcntl(handle_, F_GETFL, NULL);
+  DCHECK_GT(length, 0u);
+  DCHECK_LE(length, kMaxMessageLength);
+  DCHECK_NE(handle_, kInvalidHandle);
+
+  const long flags = fcntl(handle_, F_GETFL, NULL);
   if (flags != -1 && (flags & O_NONBLOCK) == 0) {
     // Set the socket to non-blocking mode for sending if its original mode
     // is blocking.
     fcntl(handle_, F_SETFL, flags | O_NONBLOCK);
   }
 
-  size_t len = SyncSocket::Send(buffer, length);
+  const size_t len = SendHelper(handle_, buffer, length);
 
   if (flags != -1 && (flags & O_NONBLOCK) == 0) {
     // Restore the original flags.
