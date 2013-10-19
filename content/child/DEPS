@@ -1,4 +1,5 @@
 include_rules = [
   "+components/tracing",
   "+content/public/child",
+  "+media/base/android",
 ]

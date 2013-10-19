@@ -10,18 +10,21 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 // Available key systems.
-static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 
 // Supported media types.
-static const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
-static const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
-static const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
+const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
+const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
+const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 
 // EME-specific test results and errors.
-static const char kEmeKeyError[] = "KEYERROR";
-static const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
+const char kEmeKeyError[] = "KEYERROR";
+const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
 
 // The type of video src used to load media.
 enum SrcType {
@@ -30,6 +33,17 @@ enum SrcType {
 };
 
 namespace content {
+
+// MSE is available on all desktop platforms and on Android 4.1 and later.
+static bool IsMSESupported() {
+#if defined(OS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
+    LOG(INFO) << "MSE is only supported in Android 4.1 and later.";
+    return false;
+  }
+#endif  // defined(OS_ANDROID)
+  return true;
+}
 
 // Tests encrypted media playback with a combination of parameters:
 // - char*: Key system name.
@@ -59,6 +73,11 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
   }
 
   void TestConfigChange() {
+    if (CurrentSourceType() != MSE || !IsMSESupported()) {
+      LOG(INFO) << "Skipping test - config change test requires MSE.";
+      return;
+    }
+
     std::vector<StringPair> query_params;
     query_params.push_back(std::make_pair("keysystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runencrypted", "1"));
@@ -71,6 +90,11 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
                              const char* key_system,
                              SrcType src_type,
                              const char* expectation) {
+    if (src_type == MSE && !IsMSESupported()) {
+      LOG(INFO) << "Skipping test - MSE not supported.";
+      return;
+    }
+
     std::vector<StringPair> query_params;
     query_params.push_back(std::make_pair("mediafile", media_file));
     query_params.push_back(std::make_pair("mediatype", media_type));
@@ -111,7 +135,7 @@ using ::testing::Values;
 // Encrypted media playback with SRC is not supported on Android.
 INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(SRC)));
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));

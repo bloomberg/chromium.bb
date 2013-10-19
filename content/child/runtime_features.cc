@@ -10,7 +10,7 @@
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
-#include "base/android/build_info.h"
+#include "media/base/android/media_codec_bridge.h"
 #endif
 
 using WebKit::WebRuntimeFeatures;
@@ -20,9 +20,8 @@ namespace content {
 static void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID)
 #if !defined(GOOGLE_TV)
-  // MSE/EME implementation needs Android MediaCodec API that was introduced
-  // in JellyBrean.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
+  // MSE/EME implementation needs Android MediaCodec API.
+  if (!media::MediaCodecBridge::IsAvailable()) {
     WebRuntimeFeatures::enableWebKitMediaSource(false);
     WebRuntimeFeatures::enableMediaSource(false);
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
@@ -30,10 +29,10 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #endif  // !defined(GOOGLE_TV)
   bool enable_webaudio = false;
 #if defined(ARCH_CPU_ARMEL)
-  // WebAudio needs Android MediaCodec API that was introduced in
-  // JellyBean, and also currently needs NEON support for the FFT.
+  // WebAudio needs Android MediaCodec API, and also currently needs NEON
+  // support for the FFT.
   enable_webaudio =
-      (base::android::BuildInfo::GetInstance()->sdk_int() >= 16) &&
+      (media::MediaCodecBridge::IsAvailable()) &&
       ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0);
 #endif  // defined(ARCH_CPU_ARMEL)
   WebRuntimeFeatures::enableWebAudio(enable_webaudio);

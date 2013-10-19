@@ -11,6 +11,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -56,6 +59,17 @@ enum SrcType {
   MSE
 };
 
+// MSE is available on all desktop platforms and on Android 4.1 and later.
+static bool IsMSESupported() {
+#if defined(OS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
+    LOG(INFO) << "MSE is only supported in Android 4.1 and later.";
+    return false;
+  }
+#endif  // defined(OS_ANDROID)
+  return true;
+}
+
 // Base class for encrypted media tests.
 class EncryptedMediaTestBase : public MediaBrowserTest {
  public:
@@ -77,6 +91,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                              const char* key_system,
                              SrcType src_type,
                              const char* expectation) {
+    if (src_type == MSE && !IsMSESupported()) {
+      LOG(INFO) << "Skipping test - MSE not supported.";
+      return;
+    }
+
     std::vector<StringPair> query_params;
     query_params.push_back(std::make_pair("mediafile", media_file));
     query_params.push_back(std::make_pair("mediatype", media_type));
@@ -261,6 +280,10 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
   }
 
   void TestConfigChange() {
+    if (CurrentSourceType() != MSE || !IsMSESupported()) {
+      LOG(INFO) << "Skipping test - config change test requires MSE.";
+      return;
+    }
 #if defined(WIDEVINE_CDM_AVAILABLE)
     if (IsWidevine(CurrentKeySystem())) {
       LOG(INFO) << "ConfigChange test cannot run with Widevine.";
@@ -280,25 +303,32 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
-    ::testing::Combine(
-        ::testing::Values(kClearKeyKeySystem), ::testing::Values(SRC, MSE)));
+using ::testing::Combine;
+using ::testing::Values;
+
+#if !defined(OS_ANDROID)
+INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
+    Combine(Values(kClearKeyKeySystem), Values(SRC)));
+#endif  // !defined(OS_ANDROID)
+
+INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
+    Combine(Values(kClearKeyKeySystem), Values(MSE)));
 
 // External Clear Key is currently only used on platforms that use Pepper CDMs.
 #if defined(ENABLE_PEPPER_CDMS)
-INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
-    ::testing::Combine(
-        ::testing::Values(kExternalClearKeyKeySystem),
-        ::testing::Values(SRC, MSE)));
+INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey, EncryptedMediaTest,
+    Combine(Values(kExternalClearKeyKeySystem), Values(SRC)));
+INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey, EncryptedMediaTest,
+    Combine(Values(kExternalClearKeyKeySystem), Values(MSE)));
+#endif // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // This test doesn't fully test playback with Widevine. So we only run Widevine
-// test with MSE (no SRC) to reduce test time.
-INSTANTIATE_TEST_CASE_P(Widevine, EncryptedMediaTest,
-    ::testing::Combine(
-        ::testing::Values(kWidevineKeySystem), ::testing::Values(MSE)));
+// test with MSE (no SRC) to reduce test time. Also, on Android EME only works
+// with MSE and we cannot run this test with SRC.
+INSTANTIATE_TEST_CASE_P(MSE_Widevine, EncryptedMediaTest,
+    Combine(Values(kWidevineKeySystem), Values(MSE)));
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
-#endif // defined(ENABLE_PEPPER_CDMS)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly);
