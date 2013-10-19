@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_data_provider.h"
-#include "chrome/browser/media_galleries/fileapi/safe_itunes_library_parser.h"
+#include "chrome/browser/media_galleries/fileapi/safe_iapps_library_parser.h"
 
 namespace itunes {
 
@@ -79,7 +79,7 @@ class ITunesDataProvider : public iapps::IAppsDataProvider {
   // The parsed and uniquified data.
   Library library_;
 
-  scoped_refptr<SafeITunesLibraryParser> xml_parser_;
+  scoped_refptr<iapps::SafeIAppsLibraryParser> xml_parser_;
 
   // Hides parent class member, but it is private, and there's no way to get a
   // WeakPtr<Derived> from a WeakPtr<Base> without using SupportsWeakPtr.

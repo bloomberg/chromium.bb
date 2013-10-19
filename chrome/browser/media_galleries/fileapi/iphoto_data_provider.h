@@ -15,6 +15,8 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_data_provider.h"
+#include "chrome/browser/media_galleries/fileapi/safe_iapps_library_parser.h"
+#include "chrome/common/media_galleries/iphoto_library.h"
 
 namespace iphoto {
 
@@ -32,6 +34,17 @@ class IPhotoDataProvider : public iapps::IAppsDataProvider {
                               const ReadyCallback& ready_callback) OVERRIDE;
 
  private:
+  void OnLibraryParsed(const ReadyCallback& ready_callback,
+                       bool result,
+                       const parser::Library& library);
+
+  // The parsed and uniquified data.
+  parser::Library library_;
+
+  scoped_refptr<iapps::SafeIAppsLibraryParser> xml_parser_;
+
+  base::WeakPtrFactory<IPhotoDataProvider> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(IPhotoDataProvider);
 };
 

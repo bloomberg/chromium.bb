@@ -187,12 +187,12 @@ ITunesDataProvider::~ITunesDataProvider() {}
 void ITunesDataProvider::DoParseLibrary(
     const base::FilePath& library_path,
     const ReadyCallback& ready_callback) {
-  xml_parser_ = new SafeITunesLibraryParser(
+  xml_parser_ = new iapps::SafeIAppsLibraryParser;
+  xml_parser_->ParseITunesLibrary(
       library_path,
       base::Bind(&ITunesDataProvider::OnLibraryParsed,
                  weak_factory_.GetWeakPtr(),
                  ready_callback));
-  xml_parser_->Start();
 }
 
 const base::FilePath& ITunesDataProvider::auto_add_path() const {
