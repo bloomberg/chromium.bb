@@ -6,10 +6,12 @@
 #define MOJO_SHELL_APP_CONTAINER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/system/core.h"
 
 namespace base {
+class FilePath;
 class Thread;
 }
 
