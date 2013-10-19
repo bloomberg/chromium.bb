@@ -48,7 +48,9 @@ namespace {
 //
 // It's OK to call this function with both |create_if_necessary| and
 // |promote| false, in which case we'll do nothing.
-void CreateOrPromoteMatch(const history::URLRow& info,
+//
+// Returns whether the match exists regardless if it was promoted/created.
+bool CreateOrPromoteMatch(const history::URLRow& info,
                           size_t input_location,
                           bool match_in_scheme,
                           history::HistoryMatches* matches,
@@ -61,12 +63,12 @@ void CreateOrPromoteMatch(const history::URLRow& info,
       // Rotate it to the front if the caller wishes.
       if (promote)
         std::rotate(matches->begin(), i, i + 1);
-      return;
+      return true;
     }
   }
 
   if (!create_if_necessary)
-    return;
+    return false;
 
   // No entry, so create one.
   history::HistoryMatch match(info, input_location, match_in_scheme, true);
@@ -74,6 +76,8 @@ void CreateOrPromoteMatch(const history::URLRow& info,
     matches->push_front(match);
   else
     matches->push_back(match);
+
+  return true;
 }
 
 // Given the user's |input| and a |match| created from it, reduce the match's
@@ -105,6 +109,10 @@ GURL ConvertToHostOnly(const history::HistoryMatch& match,
 // Acts like the > operator for URLInfo classes.
 bool CompareHistoryMatch(const history::HistoryMatch& a,
                          const history::HistoryMatch& b) {
+  // A promoted match is better than non-promoted.
+  if (a.promoted != b.promoted)
+    return a.promoted;
+
   // A URL that has been typed at all is better than one that has never been
   // typed.  (Note "!"s on each side)
   if (!a.url_info.typed_count() != !b.url_info.typed_count())
@@ -130,6 +138,41 @@ bool CompareHistoryMatch(const history::HistoryMatch& a,
 
   // URLs that have been visited more recently are better.
   return a.url_info.last_visit() > b.url_info.last_visit();
+}
+
+// Sorts and dedups the given list of matches.
+void SortAndDedupMatches(history::HistoryMatches* matches) {
+  // Sort by quality, best first.
+  std::sort(matches->begin(), matches->end(), &CompareHistoryMatch);
+
+  // Remove duplicate matches (caused by the search string appearing in one of
+  // the prefixes as well as after it).  Consider the following scenario:
+  //
+  // User has visited "http://http.com" once and "http://htaccess.com" twice.
+  // User types "http".  The autocomplete search with prefix "http://" returns
+  // the first host, while the search with prefix "" returns both hosts.  Now
+  // we sort them into rank order:
+  //   http://http.com     (innermost_match)
+  //   http://htaccess.com (!innermost_match, url_info.visit_count == 2)
+  //   http://http.com     (!innermost_match, url_info.visit_count == 1)
+  //
+  // The above scenario tells us we can't use std::unique(), since our
+  // duplicates are not always sequential.  It also tells us we should remove
+  // the lower-quality duplicate(s), since otherwise the returned results won't
+  // be ordered correctly.  This is easy to do: we just always remove the later
+  // element of a duplicate pair.
+  // Be careful!  Because the vector contents may change as we remove elements,
+  // we use an index instead of an iterator in the outer loop, and don't
+  // precalculate the ending position.
+  for (size_t i = 0; i < matches->size(); ++i) {
+    for (history::HistoryMatches::iterator j(matches->begin() + i + 1);
+         j != matches->end(); ) {
+      if ((*matches)[i].url_info.url() == j->url_info.url())
+        j = matches->erase(j);
+      else
+        ++j;
+    }
+  }
 }
 
 // Extracts typed_count, visit_count, and last_visited time from the
@@ -490,8 +533,8 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   }
 
   // Create sorted list of suggestions.
-  CullPoorMatches(&history_matches, params);
-  SortMatches(&history_matches);
+  CullPoorMatches(*params, &history_matches);
+  SortAndDedupMatches(&history_matches);
   PromoteOrCreateShorterSuggestion(db, *params, have_what_you_typed_match,
                                    what_you_typed_match, &history_matches);
 
@@ -512,7 +555,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     params->matches.push_back(what_you_typed_match);
   } else if (params->prevent_inline_autocomplete ||
       history_matches.empty() ||
-      !PromoteMatchForInlineAutocomplete(params, history_matches.front())) {
+      !PromoteMatchForInlineAutocomplete(history_matches.front(), params)) {
     // Failed to promote any URLs for inline autocompletion.  Use the What You
     // Typed match, if we have it.
     first_match = 0;
@@ -555,7 +598,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     // less than the previous match.
     relevance = (relevance > 0) ? (relevance - 1) :
        CalculateRelevance(NORMAL, history_matches.size() - 1 - i);
-    AutocompleteMatch ac_match = HistoryMatchToACMatch(params, match,
+    AutocompleteMatch ac_match = HistoryMatchToACMatch(*params, match,
         NORMAL, relevance);
     params->matches.push_back(ac_match);
   }
@@ -809,17 +852,19 @@ bool HistoryURLProvider::CanFindIntranetURL(
 }
 
 bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
-    HistoryURLProviderParams* params,
-    const history::HistoryMatch& match) {
-  // Promote the first match if it's been typed at least n times, where n == 1
-  // for "simple" (host-only) URLs and n == 2 for others.  We set a higher bar
-  // for these long URLs because it's less likely that users will want to visit
-  // them again.  Even though we don't increment the typed_count for pasted-in
-  // URLs, if the user manually edits the URL or types some long thing in by
-  // hand, we wouldn't want to immediately start autocompleting it.
-  if (!match.url_info.typed_count() ||
-      ((match.url_info.typed_count() == 1) &&
-       !match.IsHostOnly()))
+    const history::HistoryMatch& match,
+    HistoryURLProviderParams* params) {
+  // Promote the first match if it's been marked for promotion or typed at least
+  // n times, where n == 1 for "simple" (host-only) URLs and n == 2 for others.
+  // We set a higher bar for these long URLs because it's less likely that users
+  // will want to visit them again.  Even though we don't increment the
+  // typed_count for pasted-in URLs, if the user manually edits the URL or types
+  // some long thing in by hand, we wouldn't want to immediately start
+  // autocompleting it.
+  if (!match.promoted &&
+      (!match.url_info.typed_count() ||
+       ((match.url_info.typed_count() == 1) &&
+        !match.IsHostOnly())))
     return false;
 
   // In the case where the user has typed "foo.com" and visited (but not typed)
@@ -830,7 +875,7 @@ bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
   // future pass from suggesting the exact input as a better match.
   if (params) {
     params->dont_suggest_exact_input = true;
-    params->matches.push_back(HistoryMatchToACMatch(params, match,
+    params->matches.push_back(HistoryMatchToACMatch(*params, match,
         INLINE_AUTOCOMPLETE, CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
   }
   return true;
@@ -907,69 +952,23 @@ void HistoryURLProvider::PromoteOrCreateShorterSuggestion(
 
   // Promote or add the desired URL to the list of matches.
   bool ensure_can_inline =
-      promote && PromoteMatchForInlineAutocomplete(NULL, match);
-  CreateOrPromoteMatch(info, match.input_location, match.match_in_scheme,
-                       matches, create_shorter_match_, promote);
-  if (ensure_can_inline) {
-    // If |match| was inline-autocompletable and we're promoting something to
-    // replace it, make sure the promoted item is also inline-autocompletable.
-    // Setting the typed_count to 2 is sufficient to guarantee this (and is safe
-    // because by this point all sorting has already happened and the only thing
-    // checking the typed_count will be PromoteMatchForInlineAutocomplete()).
-    //
-    // We have to do this here rather than changing |info| before calling
-    // EnsureMatchPresent() because if EnsureMatchPresent() merely moves an
-    // existing match to the front, it will ignore the typed_count in |info|.
-    // But we set |ensure_can_inline| above because |match| is a reference and
-    // thus checking it here would examine the wrong match.
-    matches->front().url_info.set_typed_count(2);
-  }
-}
-
-void HistoryURLProvider::SortMatches(history::HistoryMatches* matches) const {
-  // Sort by quality, best first.
-  std::sort(matches->begin(), matches->end(), &CompareHistoryMatch);
-
-  // Remove duplicate matches (caused by the search string appearing in one of
-  // the prefixes as well as after it).  Consider the following scenario:
-  //
-  // User has visited "http://http.com" once and "http://htaccess.com" twice.
-  // User types "http".  The autocomplete search with prefix "http://" returns
-  // the first host, while the search with prefix "" returns both hosts.  Now
-  // we sort them into rank order:
-  //   http://http.com     (innermost_match)
-  //   http://htaccess.com (!innermost_match, url_info.visit_count == 2)
-  //   http://http.com     (!innermost_match, url_info.visit_count == 1)
-  //
-  // The above scenario tells us we can't use std::unique(), since our
-  // duplicates are not always sequential.  It also tells us we should remove
-  // the lower-quality duplicate(s), since otherwise the returned results won't
-  // be ordered correctly.  This is easy to do: we just always remove the later
-  // element of a duplicate pair.
-  // Be careful!  Because the vector contents may change as we remove elements,
-  // we use an index instead of an iterator in the outer loop, and don't
-  // precalculate the ending position.
-  for (size_t i = 0; i < matches->size(); ++i) {
-    for (history::HistoryMatches::iterator j(matches->begin() + i + 1);
-         j != matches->end(); ) {
-      if ((*matches)[i].url_info.url() == j->url_info.url())
-        j = matches->erase(j);
-      else
-        ++j;
-    }
-  }
+      promote && PromoteMatchForInlineAutocomplete(match, NULL);
+  ensure_can_inline &= CreateOrPromoteMatch(info, match.input_location,
+      match.match_in_scheme, matches, create_shorter_match_, promote);
+  if (ensure_can_inline)
+    matches->front().promoted = true;
 }
 
 void HistoryURLProvider::CullPoorMatches(
-    history::HistoryMatches* matches,
-    HistoryURLProviderParams* params) const {
+    const HistoryURLProviderParams& params,
+    history::HistoryMatches* matches) const {
   const base::Time& threshold(history::AutocompleteAgeThreshold());
   for (history::HistoryMatches::iterator i(matches->begin());
        i != matches->end(); ) {
     if (RowQualifiesAsSignificant(i->url_info, threshold) &&
-        !(params->default_search_provider &&
-            params->default_search_provider->IsSearchURLUsingTermsData(
-                i->url_info.url(), *params->search_terms_data.get()))) {
+        !(params.default_search_provider &&
+            params.default_search_provider->IsSearchURLUsingTermsData(
+                i->url_info.url(), *params.search_terms_data.get()))) {
       ++i;
     } else {
       i = matches->erase(i);
@@ -1038,7 +1037,7 @@ size_t HistoryURLProvider::RemoveSubsequentMatchesOf(
 }
 
 AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
-    HistoryURLProviderParams* params,
+    const HistoryURLProviderParams& params,
     const history::HistoryMatch& history_match,
     MatchType match_type,
     int relevance) {
@@ -1049,18 +1048,18 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());
   size_t inline_autocomplete_offset =
-      history_match.input_location + params->input.text().length();
+      history_match.input_location + params.input.text().length();
   std::string languages = (match_type == WHAT_YOU_TYPED) ?
-      std::string() : params->languages;
+      std::string() : params.languages;
   const net::FormatUrlTypes format_types = net::kFormatUrlOmitAll &
-      ~((params->trim_http && !history_match.match_in_scheme) ?
+      ~((params.trim_http && !history_match.match_in_scheme) ?
           0 : net::kFormatUrlOmitHTTP);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(info.url(),
           net::FormatUrl(info.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset));
-  if (!params->prevent_inline_autocomplete &&
+  if (!params.prevent_inline_autocomplete &&
       (inline_autocomplete_offset != string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
     match.inline_autocompletion =
@@ -1068,7 +1067,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   }
   // The latter part of the test effectively asks "is the inline completion
   // empty?" (i.e., is this match effectively the what-you-typed match?).
-  match.allowed_to_be_default_match = !params->prevent_inline_autocomplete ||
+  match.allowed_to_be_default_match = !params.prevent_inline_autocomplete ||
       ((inline_autocomplete_offset != string16::npos) &&
        (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
@@ -1088,7 +1087,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
         &match.contents_class);
   }
   match.description = info.title();
-  AutocompleteMatch::ClassifyMatchInString(params->input.text(),
+  AutocompleteMatch::ClassifyMatchInString(params.input.text(),
                                            info.title(),
                                            ACMatchClassification::NONE,
                                            &match.description_class);

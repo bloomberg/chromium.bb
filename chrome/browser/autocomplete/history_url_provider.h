@@ -254,8 +254,8 @@ class HistoryURLProvider : public HistoryProvider {
   // Determines if |match| is suitable for inline autocomplete.  If so, and if
   // |params| is non-NULL, promotes the match.  Returns whether |match| is
   // suitable for inline autocomplete.
-  bool PromoteMatchForInlineAutocomplete(HistoryURLProviderParams* params,
-                                         const history::HistoryMatch& match);
+  bool PromoteMatchForInlineAutocomplete(const history::HistoryMatch& match,
+                                         HistoryURLProviderParams* params);
 
   // Sees if a shorter version of the best match should be created, and if so
   // places it at the front of |matches|.  This can suggest history URLs that
@@ -270,17 +270,14 @@ class HistoryURLProvider : public HistoryProvider {
       const AutocompleteMatch& what_you_typed_match,
       history::HistoryMatches* matches);
 
-  // Sorts the given list of matches.
-  void SortMatches(history::HistoryMatches* matches) const;
-
   // Removes results that have been rarely typed or visited, and not any time
   // recently.  The exact parameters for this heuristic can be found in the
   // function body. Also culls results corresponding to queries from the default
   // search engine. These are low-quality, difficult-to-understand matches for
   // users, and the SearchProvider should surface past queries in a better way
   // anyway.
-  void CullPoorMatches(history::HistoryMatches* matches,
-                       HistoryURLProviderParams* params) const;
+  void CullPoorMatches(const HistoryURLProviderParams& params,
+                       history::HistoryMatches* matches) const;
 
   // Removes results that redirect to each other, leaving at most |max_results|
   // results.
@@ -302,7 +299,7 @@ class HistoryURLProvider : public HistoryProvider {
 
   // Converts a line from the database into an autocomplete match for display.
   AutocompleteMatch HistoryMatchToACMatch(
-      HistoryURLProviderParams* params,
+      const HistoryURLProviderParams& params,
       const history::HistoryMatch& history_match,
       MatchType match_type,
       int relevance);

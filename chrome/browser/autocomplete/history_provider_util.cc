@@ -12,7 +12,8 @@ HistoryMatch::HistoryMatch()
     : url_info(),
       input_location(string16::npos),
       match_in_scheme(false),
-      innermost_match(true) {
+      innermost_match(true),
+      promoted(false) {
 }
 
 HistoryMatch::HistoryMatch(const URLRow& url_info,
@@ -22,7 +23,8 @@ HistoryMatch::HistoryMatch(const URLRow& url_info,
     : url_info(url_info),
       input_location(input_location),
       match_in_scheme(match_in_scheme),
-      innermost_match(innermost_match) {
+      innermost_match(innermost_match),
+      promoted(false) {
 }
 
 bool HistoryMatch::EqualsGURL(const HistoryMatch& h, const GURL& url) {
