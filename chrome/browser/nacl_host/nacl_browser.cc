@@ -176,11 +176,14 @@ void NaClBrowser::SetDelegate(NaClBrowserDelegate* delegate) {
 }
 
 NaClBrowserDelegate* NaClBrowser::GetDelegate() {
+  // The delegate is not owned by the IO thread.  This accessor method can be
+  // called from other threads.
   DCHECK(GetInstance()->browser_delegate_.get() != NULL);
   return GetInstance()->browser_delegate_.get();
 }
 
 void NaClBrowser::EarlyStartup() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   InitIrtFilePath();
   InitValidationCacheFilePath();
 }
@@ -239,18 +242,21 @@ bool NaClBrowser::IsOk() const {
 }
 
 base::PlatformFile NaClBrowser::IrtFile() const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   CHECK_EQ(irt_state_, NaClResourceReady);
   CHECK_NE(irt_platform_file_, base::kInvalidPlatformFileValue);
   return irt_platform_file_;
 }
 
 void NaClBrowser::EnsureAllResourcesAvailable() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   EnsureIrtAvailable();
   EnsureValidationCacheAvailable();
 }
 
 // Load the IRT async.
 void NaClBrowser::EnsureIrtAvailable() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (IsOk() && irt_state_ == NaClResourceUninitialized) {
     irt_state_ = NaClResourceRequested;
     // TODO(ncbray) use blocking pool.
@@ -271,6 +277,7 @@ void NaClBrowser::EnsureIrtAvailable() {
 void NaClBrowser::OnIrtOpened(base::PlatformFileError error_code,
                               base::PassPlatformFile file,
                               bool created) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK_EQ(irt_state_, NaClResourceRequested);
   DCHECK(!created);
   if (error_code == base::PLATFORM_FILE_OK) {
@@ -369,6 +376,7 @@ void NaClBrowser::InitValidationCacheFilePath() {
 }
 
 void NaClBrowser::EnsureValidationCacheAvailable() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (IsOk() && validation_cache_state_ == NaClResourceUninitialized) {
     if (ValidationCacheIsEnabled()) {
       validation_cache_state_ = NaClResourceRequested;
@@ -393,6 +401,7 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
 }
 
 void NaClBrowser::OnValidationCacheLoaded(const std::string *data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   // Did the cache get cleared before the load completed?  If so, ignore the
   // incoming data.
   if (validation_cache_state_ == NaClResourceReady)
@@ -418,6 +427,7 @@ void NaClBrowser::RunWithoutValidationCache() {
 }
 
 void NaClBrowser::CheckWaiting() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (!IsOk() || IsReady()) {
     // Queue the waiting tasks into the message loop.  This helps avoid
     // re-entrancy problems that could occur if the closure was invoked
@@ -448,6 +458,7 @@ const base::FilePath& NaClBrowser::GetIrtFilePath() {
 
 void NaClBrowser::PutFilePath(const base::FilePath& path, uint64* file_token_lo,
                               uint64* file_token_hi) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   while (true) {
     uint64 file_token[2] = {base::RandUint64(), base::RandUint64()};
     // A zero file_token indicates there is no file_token, if we get zero, ask
@@ -468,6 +479,7 @@ void NaClBrowser::PutFilePath(const base::FilePath& path, uint64* file_token_lo,
 
 bool NaClBrowser::GetFilePath(uint64 file_token_lo, uint64 file_token_hi,
                               base::FilePath* path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   uint64 file_token[2] = {file_token_lo, file_token_hi};
   std::string key(reinterpret_cast<char*>(file_token), sizeof(file_token));
   PathCacheType::iterator iter = path_cache_.Peek(key);
@@ -483,6 +495,7 @@ bool NaClBrowser::GetFilePath(uint64 file_token_lo, uint64 file_token_hi,
 
 bool NaClBrowser::QueryKnownToValidate(const std::string& signature,
                                        bool off_the_record) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (off_the_record) {
     // If we're off the record, don't reorder the main cache.
     return validation_cache_.QueryKnownToValidate(signature, false) ||
@@ -498,6 +511,7 @@ bool NaClBrowser::QueryKnownToValidate(const std::string& signature,
 
 void NaClBrowser::SetKnownToValidate(const std::string& signature,
                                      bool off_the_record) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (off_the_record) {
     off_the_record_validation_cache_.SetKnownToValidate(signature);
   } else {
@@ -510,6 +524,7 @@ void NaClBrowser::SetKnownToValidate(const std::string& signature,
 }
 
 void NaClBrowser::ClearValidationCache(const base::Closure& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   // Note: this method may be called before EnsureValidationCacheAvailable has
   // been invoked.  In other words, this method may be called before any NaCl
   // processes have been created.  This method must succeed and invoke the
@@ -561,6 +576,7 @@ void NaClBrowser::MarkValidationCacheAsModified() {
 }
 
 void NaClBrowser::PersistValidationCache() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   // validation_cache_is_modified_ may be false if the cache was cleared while
   // this delayed task was pending.
   // validation_cache_file_path_ may be empty if something went wrong during
