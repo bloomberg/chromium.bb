@@ -229,10 +229,12 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   ShowTrayMenu(&generator);
 
-  // Switch to a new user.
+  // Switch to a new user - which has a capitalized name.
   ClickUserItem(&generator, 1);
-
-  EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserEmail(1));
+  EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserID(1));
+  // Since the name is capitalized, the email should be different then the
+  // user_id.
+  EXPECT_NE(delegate()->get_activated_user(), delegate()->GetUserEmail(1));
   tray()->CloseSystemBubble();
 }
 
@@ -285,7 +287,7 @@ TEST_F(TrayUserTest, CheckTrayUserItems) {
 
   generator.MoveMouseTo(point.x(), point.y());
   generator.ClickLeftButton();
-  EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserEmail(2));
+  EXPECT_EQ(delegate()->get_activated_user(), delegate()->GetUserID(2));
 }
 
 #endif

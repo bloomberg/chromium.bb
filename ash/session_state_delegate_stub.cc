@@ -66,6 +66,11 @@ const std::string SessionStateDelegateStub::GetUserEmail(
   return "stub-user@domain.com";
 }
 
+const std::string SessionStateDelegateStub::GetUserID(
+    MultiProfileIndex index) const {
+  return GetUserEmail(index);
+}
+
 const gfx::ImageSkia& SessionStateDelegateStub::GetUserImage(
     MultiProfileIndex index) const {
   return null_image_;

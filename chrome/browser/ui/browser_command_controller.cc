@@ -55,6 +55,12 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ash/session_state_delegate.h"
+#include "ash/shell.h"
+#include "chrome/browser/ui/ash/multi_user_window_manager.h"
+#endif
+
 using content::NavigationEntry;
 using content::NavigationController;
 using content::WebContents;
@@ -452,6 +458,21 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     // mechanism to pass accelerators back into Ash. http://crbug.com/285308
 #endif
 
+#if defined(OS_CHROMEOS)
+    case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
+    case IDC_VISIT_DESKTOP_OF_LRU_USER_3: {
+        // When running the multi user mode on Chrome OS, windows can "visit"
+        // another user's desktop.
+        const std::string& user_id =
+            ash::Shell::GetInstance()->session_state_delegate()->GetUserID(
+                IDC_VISIT_DESKTOP_OF_LRU_USER_2 == id ? 1 : 2);
+        chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+            browser_->window()->GetNativeWindow(),
+            user_id);
+        break;
+      }
+#endif
+
 #if defined(OS_WIN)
     // Windows 8 specific commands.
     case IDC_METRO_SNAP_ENABLE:
@@ -844,6 +865,10 @@ void BrowserCommandController::InitCommandState() {
 #endif
 #if defined(USE_ASH)
   command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
+#endif
+#if defined(OS_CHROMEOS)
+  command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_2, true);
+  command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_3, true);
 #endif
 
   // Page-related commands

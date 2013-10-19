@@ -102,6 +102,7 @@ class BrowserFrame
   NewAvatarButton* GetNewAvatarMenuButton();
 
   // Returns the menu model. BrowserFrame owns the returned model.
+  // Note that in multi user mode this will upon each call create a new model.
   ui::MenuModel* GetSystemMenuModel();
 
  private:

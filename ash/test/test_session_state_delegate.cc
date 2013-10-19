@@ -4,10 +4,25 @@
 
 #include "ash/test/test_session_state_delegate.h"
 
+#include <algorithm>
+#include <string>
+
 #include "ash/shell.h"
 #include "ash/system/user/login_status.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+// The the "canonicalized" user ID from a given |email| address.
+std::string GetUserIDFromEmail(const std::string& email) {
+  std::string user_id = email;
+  std::transform(user_id.begin(), user_id.end(), user_id.begin(), ::tolower);
+  return user_id;
+}
+
+}  // namespace
 
 namespace ash {
 namespace test {
@@ -99,11 +114,16 @@ const base::string16 TestSessionStateDelegate::GetUserDisplayName(
 const std::string TestSessionStateDelegate::GetUserEmail(
     MultiProfileIndex index) const {
   switch (index) {
-    case 0: return "first@tray";
-    case 1: return "second@tray";
+    case 0: return "First@tray";  // This is intended to be capitalized.
+    case 1: return "Second@tray";  // This is intended to be capitalized.
     case 2: return "third@tray";
     default: return "someone@tray";
   }
+}
+
+const std::string TestSessionStateDelegate::GetUserID(
+    MultiProfileIndex index) const {
+  return GetUserIDFromEmail(GetUserEmail(index));
 }
 
 const gfx::ImageSkia& TestSessionStateDelegate::GetUserImage(
@@ -114,8 +134,10 @@ const gfx::ImageSkia& TestSessionStateDelegate::GetUserImage(
 void TestSessionStateDelegate::GetLoggedInUsers(UserIdList* users) {
 }
 
-void TestSessionStateDelegate::SwitchActiveUser(const std::string& email) {
-  activated_user_ = email;
+void TestSessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
+  // Make sure this is a user id and not an email address.
+  EXPECT_EQ(user_id, GetUserIDFromEmail(user_id));
+  activated_user_ = user_id;
 }
 
 void TestSessionStateDelegate::SwitchActiveUserToNext() {

@@ -33,10 +33,12 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual const std::string GetUserEmail(
       ash::MultiProfileIndex index) const OVERRIDE;
+  virtual const std::string GetUserID(
+      ash::MultiProfileIndex index) const OVERRIDE;
   virtual const gfx::ImageSkia& GetUserImage(
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual void GetLoggedInUsers(ash::UserIdList* users) OVERRIDE;
-  virtual void SwitchActiveUser(const std::string& user_email) OVERRIDE;
+  virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
   virtual void SwitchActiveUserToNext() OVERRIDE;
   virtual void AddSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;

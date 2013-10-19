@@ -45,6 +45,10 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ash/session_state_delegate.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, public:
 
@@ -240,6 +244,17 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
 }
 
 ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
+#if defined(OS_CHROMEOS)
+  ash::SessionStateDelegate* delegate =
+      ash::Shell::GetInstance()->session_state_delegate();
+  if (delegate && delegate->NumberOfLoggedInUsers() > 1) {
+    // In Multi user mode, the number of users as well as the order of users
+    // can change. Coming here we have more then one user and since the menu
+    // model contains the user information, it must get updated to show any
+    // changes happened since the last invocation.
+    menu_model_builder_.reset();
+  }
+#endif
   if (!menu_model_builder_.get()) {
     menu_model_builder_.reset(
         new SystemMenuModelBuilder(browser_view_, browser_view_->browser()));

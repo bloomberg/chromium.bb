@@ -66,6 +66,12 @@ const std::string SessionStateDelegate::GetUserEmail(
   return "";
 }
 
+const std::string SessionStateDelegate::GetUserID(
+    ash::MultiProfileIndex index) const {
+  NOTIMPLEMENTED();
+  return "";
+}
+
 const gfx::ImageSkia& SessionStateDelegate::GetUserImage(
     ash::MultiProfileIndex index) const {
   NOTIMPLEMENTED();
@@ -77,7 +83,7 @@ void SessionStateDelegate::GetLoggedInUsers(ash::UserIdList* users) {
   NOTIMPLEMENTED();
 }
 
-void SessionStateDelegate::SwitchActiveUser(const std::string& user_email) {
+void SessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
   NOTIMPLEMENTED();
 }
 

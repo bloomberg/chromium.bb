@@ -74,9 +74,16 @@ class ASH_EXPORT SessionStateDelegate {
   virtual const base::string16 GetUserDisplayName(
       MultiProfileIndex index) const = 0;
 
-  // Gets the email address for the user with the given |index|.
+  // Gets the display email address for the user with the given |index|.
+  // The display email address might contains some periods in the email name
+  // as well as capitalized letters. For example: "Foo.Bar@mock.com".
   // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
   virtual const std::string GetUserEmail(MultiProfileIndex index) const = 0;
+
+  // Gets the user id (sanitized email address) for the user with the given
+  // |index|. The function would return something like "foobar@mock.com".
+  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
+  virtual const std::string GetUserID(MultiProfileIndex index) const = 0;
 
   // Gets the avatar image for the user with the given |index|.
   // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
@@ -85,9 +92,9 @@ class ASH_EXPORT SessionStateDelegate {
   // Returns a list of all logged in users.
   virtual void GetLoggedInUsers(UserIdList* users) = 0;
 
-  // Switches to another active user using the |user_email|
+  // Switches to another active user with |user_id|
   // (if that user has already signed in).
-  virtual void SwitchActiveUser(const std::string& user_email) = 0;
+  virtual void SwitchActiveUser(const std::string& user_id) = 0;
 
   // Switches the active user to the next user, with the same ordering as
   // GetLoggedInUsers.

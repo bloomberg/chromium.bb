@@ -42,6 +42,9 @@ class SystemMenuModelBuilder {
   // Adds items for toggling the frame type (if necessary).
   void AddFrameToggleItems(ui::SimpleMenuModel* model);
 
+  // Add the items to allow the window to visit the desktop of another user.
+  void AppendTeleportMenu(ui::SimpleMenuModel* model);
+
   SystemMenuModelDelegate menu_delegate_;
   scoped_ptr<ui::MenuModel> menu_model_;
   scoped_ptr<ZoomMenuModel> zoom_menu_contents_;

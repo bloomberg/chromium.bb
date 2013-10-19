@@ -28,13 +28,6 @@
 
 namespace {
 chrome::MultiUserWindowManager* g_instance = NULL;
-
-// Get the user id from a given profile.
-std::string GetUserIDFromProfile(Profile* profile) {
-  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(
-      profile->GetOriginalProfile()->GetProfileName()));
-}
-
 }  // namespace
 
 namespace chrome {
@@ -82,6 +75,12 @@ void MultiUserWindowManager::DeleteInstance() {
   if (g_instance)
     delete g_instance;
   g_instance = NULL;
+}
+
+// static
+std::string MultiUserWindowManager::GetUserIDFromProfile(Profile* profile) {
+  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(
+      profile->GetOriginalProfile()->GetProfileName()));
 }
 
 void MultiUserWindowManager::SetWindowOwner(aura::Window* window,

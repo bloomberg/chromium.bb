@@ -62,6 +62,9 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
   // Removes the instance.
   static void DeleteInstance();
 
+  // Get the user id from a given profile.
+  static std::string GetUserIDFromProfile(Profile* profile);
+
   // Assigns an owner to a passed window. Note that this window's parent should
   // be a direct child of the root window.
   // A user switch will automatically change the visibility - and - if the

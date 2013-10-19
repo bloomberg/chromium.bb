@@ -90,6 +90,14 @@ const std::string SessionStateDelegateChromeos::GetUserEmail(
              GetLRULoggedInUsers()[index]->display_email();
 }
 
+const std::string SessionStateDelegateChromeos::GetUserID(
+    ash::MultiProfileIndex index) const {
+  DCHECK_LT(index, NumberOfLoggedInUsers());
+  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(
+      chromeos::UserManager::Get()->
+             GetLRULoggedInUsers()[index]->email()));
+}
+
 const gfx::ImageSkia& SessionStateDelegateChromeos::GetUserImage(
     ash::MultiProfileIndex index) const {
   DCHECK_LT(index, NumberOfLoggedInUsers());
@@ -107,11 +115,11 @@ void SessionStateDelegateChromeos::GetLoggedInUsers(ash::UserIdList* users) {
 }
 
 void SessionStateDelegateChromeos::SwitchActiveUser(
-    const std::string& user_email) {
+    const std::string& user_id) {
   // Disallow switching to an already active user since that might crash.
-  // Transform the |user_email| into a |user_id| for comparison & switching.
-  std::string user_id =
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_email));
+  // Also check that we got a user id and not an email address.
+  DCHECK_EQ(user_id,
+            gaia::CanonicalizeEmail(gaia::SanitizeEmail(user_id)));
   if (user_id == chromeos::UserManager::Get()->GetActiveUser()->email())
     return;
   chromeos::UserManager::Get()->SwitchActiveUser(user_id);
