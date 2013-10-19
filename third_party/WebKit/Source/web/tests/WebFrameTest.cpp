@@ -313,6 +313,31 @@ TEST_F(WebFrameTest, LocationSetHostWithMissingPort)
     EXPECT_EQ("http://www.test.com:0/" + fileName, content);
 }
 
+TEST_F(WebFrameTest, LocationSetEmptyPort)
+{
+    std::string fileName = "print-location-href.html";
+    registerMockedHttpURLLoad(fileName);
+    URLTestHelpers::registerMockedURLLoad(toKURL("http://www.test.com:0/" + fileName), WebString::fromUTF8(fileName));
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+
+    /// Pass true to enable JavaScript.
+    webViewHelper.initializeAndLoad(m_baseURL + fileName, true);
+
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:location.port = ''; void 0;");
+
+    runPendingTasks();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.body.textContent = location.href; void 0;");
+    // Required to see any updates in contentAsText.
+    runPendingTasks();
+    webViewHelper.webView()->layout();
+
+    std::string content = webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
+    EXPECT_EQ("http://www.test.com:0/" + fileName, content);
+}
+
 class CSSCallbackWebFrameClient : public WebFrameClient {
 public:
     CSSCallbackWebFrameClient() : m_updateCount(0) { }

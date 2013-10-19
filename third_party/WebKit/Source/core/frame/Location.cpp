@@ -176,11 +176,7 @@ void Location::setPort(DOMWindow* activeWindow, DOMWindow* firstWindow, const St
     if (!m_frame)
         return;
     KURL url = m_frame->document()->url();
-    int port = portString.toInt();
-    if (port < 0 || port > 0xFFFF || portString.isEmpty())
-        url.removePort();
-    else
-        url.setPort(port);
+    url.setPort(portString);
     setLocation(url.string(), activeWindow, firstWindow);
 }
 

@@ -103,15 +103,7 @@ void DOMURLUtils::setPort(DOMURLUtils* impl, const String& value)
     if (!url.canSetHostOrPort())
         return;
 
-    // http://dev.w3.org/html5/spec/infrastructure.html#url-decomposition-idl-attributes
-    // specifically goes against RFC 3986 (p3.2) and
-    // requires setting the port to "0" if it is set to empty string.
-    unsigned port = value.toUInt();
-    if (isDefaultPortForProtocol(port, url.protocol()))
-        url.removePort();
-    else
-        url.setPort(port);
-
+    url.setPort(value);
     impl->setURL(url);
 }
 

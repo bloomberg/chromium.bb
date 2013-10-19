@@ -22,6 +22,12 @@ test(function() {
 
     url.port = 0;
     assert_equals(url.port, '0');
+
+    url.port = '8080junk';
+    assert_equals(url.port, '8080');
+
+    url.port = 'junk8080';
+    assert_equals(url.port, '0');
 }, 'Basic port');
 
 test(function() {

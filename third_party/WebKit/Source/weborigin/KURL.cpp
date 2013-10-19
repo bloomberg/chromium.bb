@@ -28,6 +28,7 @@
 #include "config.h"
 #include "weborigin/KURL.h"
 
+#include "weborigin/KnownPorts.h"
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
@@ -496,9 +497,20 @@ void KURL::removePort()
     replaceComponents(replacements);
 }
 
-void KURL::setPort(unsigned short i)
+void KURL::setPort(const String& port)
 {
-    String portString = String::number(i);
+    String parsedPort = parsePortFromStringPosition(port, 0);
+    setPort(parsedPort.toUInt());
+}
+
+void KURL::setPort(unsigned short port)
+{
+    if (isDefaultPortForProtocol(port, protocol())) {
+        removePort();
+        return;
+    }
+
+    String portString = String::number(port);
     ASSERT(portString.is8Bit());
 
     url_canon::Replacements<char> replacements;

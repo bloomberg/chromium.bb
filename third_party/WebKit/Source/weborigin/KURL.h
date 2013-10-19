@@ -139,6 +139,7 @@ public:
 
     void removePort();
     void setPort(unsigned short);
+    void setPort(const String&);
 
     // Input is like "foo.com" or "foo.com:8000".
     void setHostAndPort(const String&);
