@@ -28,6 +28,7 @@
 #include "ppapi/c/dev/ppb_trace_event_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
+#include "ppapi/c/dev/ppb_var_resource_dev.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/dev/ppb_view_dev.h"
@@ -191,6 +192,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_92;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarResource_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
@@ -2284,6 +2286,20 @@ static void Pnacl_M31_PPB_URLUtil_Dev_GetPluginReferrerURL(struct PP_Var* _struc
 }
 
 /* End wrapper methods for PPB_URLUtil_Dev_0_7 */
+
+/* Begin wrapper methods for PPB_VarResource_Dev_0_1 */
+
+static PP_Resource Pnacl_M32_PPB_VarResource_Dev_VarToResource(struct PP_Var* var) {
+  const struct PPB_VarResource_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarResource_Dev_0_1.real_iface;
+  return iface->VarToResource(*var);
+}
+
+static void Pnacl_M32_PPB_VarResource_Dev_VarFromResource(struct PP_Var* _struct_result, PP_Resource resource) {
+  const struct PPB_VarResource_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarResource_Dev_0_1.real_iface;
+  *_struct_result = iface->VarFromResource(resource);
+}
+
+/* End wrapper methods for PPB_VarResource_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_VideoCapture_Dev_0_2 */
 
@@ -4707,6 +4723,11 @@ struct PPB_URLUtil_Dev_0_7 Pnacl_Wrappers_PPB_URLUtil_Dev_0_7 = {
     .GetPluginReferrerURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M31_PPB_URLUtil_Dev_GetPluginReferrerURL
 };
 
+struct PPB_VarResource_Dev_0_1 Pnacl_Wrappers_PPB_VarResource_Dev_0_1 = {
+    .VarToResource = (PP_Resource (*)(struct PP_Var var))&Pnacl_M32_PPB_VarResource_Dev_VarToResource,
+    .VarFromResource = (struct PP_Var (*)(PP_Resource resource))&Pnacl_M32_PPB_VarResource_Dev_VarFromResource
+};
+
 struct PPB_VideoCapture_Dev_0_2 Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_VideoCapture_Dev_Create,
     .IsVideoCapture = (PP_Bool (*)(PP_Resource video_capture))&Pnacl_M19_PPB_VideoCapture_Dev_IsVideoCapture,
@@ -5539,6 +5560,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarResource_Dev_0_1 = {
+  .iface_macro = PPB_VAR_RESOURCE_DEV_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VarResource_Dev_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2 = {
   .iface_macro = PPB_VIDEOCAPTURE_DEV_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2,
@@ -5865,6 +5892,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7,
+  &Pnacl_WrapperInfo_PPB_VarResource_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,

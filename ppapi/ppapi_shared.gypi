@@ -250,6 +250,7 @@
           'thunk/ppb_url_util_thunk.cc',
           'thunk/ppb_var_array_thunk.cc',
           'thunk/ppb_var_dictionary_thunk.cc',
+          'thunk/ppb_var_resource_dev_thunk.cc',
           'thunk/ppb_video_capture_api.h',
           'thunk/ppb_video_capture_thunk.cc',
           'thunk/ppb_video_decoder_api.h',

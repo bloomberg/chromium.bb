@@ -111,6 +111,7 @@
         'ppb_truetype_font_dev.h',
         'ppb_url_util_dev.h',
         'ppb_var_deprecated.h',
+        'ppb_var_resource_dev.h',
         'ppb_video_capture_dev.h',
         'ppb_video_decoder_dev.h',
         'ppb_view_dev.h',

@@ -683,6 +683,10 @@ TEST_PPAPI_IN_PROCESS(Var)
 TEST_PPAPI_OUT_OF_PROCESS(Var)
 TEST_PPAPI_NACL(Var)
 
+TEST_PPAPI_IN_PROCESS(VarResource)
+TEST_PPAPI_OUT_OF_PROCESS(VarResource)
+TEST_PPAPI_NACL(VarResource)
+
 // Flaky on mac, http://crbug.com/121107
 #if defined(OS_MACOSX)
 #define MAYBE_VarDeprecated DISABLED_VarDeprecated
