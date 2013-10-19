@@ -7,6 +7,8 @@
 #include <time.h>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -540,6 +542,28 @@ TEST_F(TimeTest, TimeTOverflow) {
   EXPECT_EQ(std::numeric_limits<time_t>::max(), t.ToTimeT());
 }
 #endif
+
+#if defined(OS_ANDROID)
+TEST_F(TimeTest, FromLocalExplodedCrashOnAndroid) {
+  // This crashed inside Time:: FromLocalExploded() on Android 4.1.2.
+  // See http://crbug.com/287821
+  Time::Exploded midnight = {2013,  // year
+                             10,    // month
+                             0,     // day_of_week
+                             13,    // day_of_month
+                             0,     // hour
+                             0,     // minute
+                             0,     // second
+  };
+  // The string passed to putenv() must be a char* and the documentation states
+  // that it 'becomes part of the environment', so use a static buffer.
+  static char buffer[] = "TZ=America/Santiago";
+  putenv(buffer);
+  tzset();
+  Time t = Time::FromLocalExploded(midnight);
+  EXPECT_EQ(1381633200, t.ToTimeT());
+}
+#endif  // OS_ANDROID
 
 TEST(TimeTicks, Deltas) {
   for (int index = 0; index < 50; index++) {
