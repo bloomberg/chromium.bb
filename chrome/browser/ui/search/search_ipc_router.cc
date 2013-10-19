@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/search/search_ipc_router.h"
 
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/web_contents.h"
 
@@ -106,8 +105,11 @@ void SearchIPCRouter::OnInstantSupportDetermined(int page_id,
 void SearchIPCRouter::OnVoiceSearchSupportDetermined(
     int page_id,
     bool supports_voice_search) const {
-  if (!web_contents()->IsActiveEntry(page_id) ||
-      !policy_->ShouldProcessSetVoiceSearchSupport())
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  delegate_->OnInstantSupportDetermined(true);
+  if (!policy_->ShouldProcessSetVoiceSearchSupport())
     return;
 
   delegate_->OnSetVoiceSearchSupport(supports_voice_search);
@@ -118,7 +120,7 @@ void SearchIPCRouter::OnFocusOmnibox(int page_id,
   if (!web_contents()->IsActiveEntry(page_id))
     return;
 
-  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
+  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessFocusOmnibox())
     return;
 
@@ -130,7 +132,7 @@ void SearchIPCRouter::OnDeleteMostVisitedItem(int page_id,
   if (!web_contents()->IsActiveEntry(page_id))
     return;
 
-  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
+  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessDeleteMostVisitedItem())
     return;
 
@@ -142,7 +144,7 @@ void SearchIPCRouter::OnUndoMostVisitedDeletion(int page_id,
   if (!web_contents()->IsActiveEntry(page_id))
     return;
 
-  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
+  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessUndoMostVisitedDeletion())
     return;
 
@@ -153,7 +155,7 @@ void SearchIPCRouter::OnUndoAllMostVisitedDeletions(int page_id) const {
   if (!web_contents()->IsActiveEntry(page_id))
     return;
 
-  SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
+  delegate_->OnInstantSupportDetermined(true);
   if (!policy_->ShouldProcessUndoAllMostVisitedDeletions())
     return;
 
@@ -161,8 +163,11 @@ void SearchIPCRouter::OnUndoAllMostVisitedDeletions(int page_id) const {
 }
 
 void SearchIPCRouter::OnLogEvent(int page_id, NTPLoggingEventType event) const {
-  if (!web_contents()->IsActiveEntry(page_id) ||
-      !policy_->ShouldProcessLogEvent())
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  delegate_->OnInstantSupportDetermined(true);
+  if (!policy_->ShouldProcessLogEvent())
     return;
 
   delegate_->OnLogEvent(event);
