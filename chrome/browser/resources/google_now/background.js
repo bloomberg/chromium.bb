@@ -159,7 +159,6 @@ wrapper.instrumentChromeApiFunction(
     'notifications.onButtonClicked.addListener', 0);
 wrapper.instrumentChromeApiFunction('notifications.onClicked.addListener', 0);
 wrapper.instrumentChromeApiFunction('notifications.onClosed.addListener', 0);
-wrapper.instrumentChromeApiFunction('omnibox.onInputEntered.addListener', 0);
 wrapper.instrumentChromeApiFunction(
     'preferencesPrivate.googleGeolocationAccessEnabled.get',
     1);
@@ -529,9 +528,6 @@ function parseAndShowNotificationCards(response) {
 function requestNotificationGroups(groupNames) {
   console.log('requestNotificationGroups from ' + NOTIFICATION_CARDS_URL +
       ', groupNames=' + JSON.stringify(groupNames));
-
-  if (!NOTIFICATION_CARDS_URL)
-    return;
 
   recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
 
@@ -965,7 +961,7 @@ function updateRunningState(
 function onStateChange() {
   tasks.add(STATE_CHANGED_TASK_NAME, function() {
     authenticationManager.isSignedIn(function(token) {
-      var signedIn = !!token && !!NOTIFICATION_CARDS_URL;
+      var signedIn = !!token;
       instrumented.metricsPrivate.getVariationParams(
           'GoogleNow',
           function(response) {
@@ -1051,11 +1047,6 @@ instrumented.notifications.onClosed.addListener(onNotificationClosed);
 instrumented.location.onLocationUpdate.addListener(function(position) {
   recordEvent(GoogleNowEvent.LOCATION_UPDATE);
   updateNotificationsCards(position);
-});
-
-instrumented.omnibox.onInputEntered.addListener(function(text) {
-  localStorage['server_url'] = NOTIFICATION_CARDS_URL = text;
-  initialize();
 });
 
 instrumented.pushMessaging.onMessage.addListener(function(message) {

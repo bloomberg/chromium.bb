@@ -22,16 +22,26 @@
  *     when a task completes.
  */
 
-// TODO(vadimt): Figure out the server name. Use it in the manifest and for
-// NOTIFICATION_CARDS_URL. Meanwhile, to use the feature, you need to manually
-// set the server name via local storage.
+// TODO(vadimt): Use server name in the manifest.
 
 /**
  * Notification server URL.
  */
-var NOTIFICATION_CARDS_URL = localStorage['server_url'];
+var NOTIFICATION_CARDS_URL = 'https://www.googleapis.com/chromenow/v1beta1';
 
 var DEBUG_MODE = localStorage['debug_mode'];
+
+/**
+ * Initializes for debug or release modes of operation.
+ */
+function initializeDebug() {
+  if (DEBUG_MODE) {
+    NOTIFICATION_CARDS_URL =
+        localStorage['server_url'] || NOTIFICATION_CARDS_URL;
+  }
+}
+
+initializeDebug();
 
 /**
  * Builds an error object with a message that may be sent to the server.

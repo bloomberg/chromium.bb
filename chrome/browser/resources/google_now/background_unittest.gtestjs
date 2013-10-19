@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(robliao,vadimt): Determine the granularity of testing to perform.
+
 /**
  * Test fixture for background.js.
  * @constructor
@@ -413,50 +415,13 @@ function expectInitialization(mockApisObj) {
 
 TEST_F(
     'GoogleNowBackgroundUnitTest',
-    'Initialize_ToastStateEmpty1',
+    'Initialize_ToastStateEmpty',
     function() {
-      // Tests the case when the user isn't signed in and NOTIFICATION_CARDS_URL
-      // is not set. Since NOTIFICATION_CARDS_URL is empty,
-      // nothing should start.
+      // Tests the case when getAuthToken fails most likely because the user is
+      // not signed in. In this case, the function should quietly exit after
+      // finding out that getAuthToken fails.
 
       // Setup and expectations.
-      NOTIFICATION_CARDS_URL = undefined;
-      var testIdentityToken = undefined;
-      var testGeolocationPref = false;
-      var testExperimentVariationParams = {};
-
-      mockInitializeDependencies(this);
-
-      this.mockGlobals.expects(once()).recordEvent(
-          GoogleNowEvent.EXTENSION_START);
-
-      this.mockGlobals.expects(once()).recordEvent(
-          GoogleNowEvent.STOPPED);
-
-      expectInitialization(this.mockApis);
-
-      expectStateMachineCalls(
-          this,
-          testIdentityToken,
-          testGeolocationPref,
-          testExperimentVariationParams);
-
-      // TODO(robliao,vadimt): Determine the granularity of testing to perform.
-
-      // Invoking the tested function.
-      initialize();
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'Initialize_ToastStateEmpty2',
-    function() {
-      // Tests the case when NOTIFICATION_CARDS_URL is but getAuthToken fails
-      // most likely because the user is not signed in. In this case, the
-      // function should quietly exit after finding out that getAuthToken fails.
-
-      // Setup and expectations.
-      NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
       var testIdentityToken = undefined;
       var testGeolocationPref = false;
       var testExperimentVariationParams = {};
@@ -483,14 +448,13 @@ TEST_F(
 
 TEST_F(
     'GoogleNowBackgroundUnitTest',
-    'DISABLED_Initialize_ToastStateEmpty3',
+    'DISABLED_Initialize_ToastStateEmpty2',
     function() {
-      // Tests the case when NOTIFICATION_CARDS_URL is set, getAuthToken
-      // succeeds, and the user has never responded to the toast.
+      // Tests the case when getAuthToken succeeds, and the user has never
+      // responded to the toast.
       // In this case, the function should invoke showWelcomeToast().
 
       // Setup and expectations.
-      NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
       var testIdentityToken = 'some identity token';
       var testGeolocationPref = false;
       var testExperimentVariationParams = {};
@@ -525,7 +489,6 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
   // of the required state is fulfilled.
 
   // Setup and expectations.
-  NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
   var testIdentityToken = 'some identity token';
   var testGeolocationPref = true;
   var testExperimentVariationParams = {};
@@ -557,7 +520,6 @@ TEST_F(
   // Geolocation Preference after the user responded to the toast.
 
   // Setup and expectations.
-  NOTIFICATION_CARDS_URL = 'https://some.server.url.com';
   var testIdentityToken = 'some identity token';
   var testGeolocationPref = false;
   var testExperimentVariationParams = {};

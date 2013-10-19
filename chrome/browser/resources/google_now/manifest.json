@@ -24,8 +24,6 @@
     "scripts": ["utility.js", "cards.js", "background.js"],
     "persistent": false
   },
-  // TODO(vadimt): Remove using chrome.omnibox.
-  "omnibox": { "keyword" : "gn_url" },
   "oauth2": {
     "auto_approve": true,
     "scopes": ["https://www.googleapis.com/auth/googlenow"]
