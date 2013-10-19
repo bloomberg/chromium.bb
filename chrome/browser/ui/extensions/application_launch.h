@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
 
 #include "base/files/file_path.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
@@ -38,13 +37,10 @@ struct AppLaunchParams {
                   WindowOpenDisposition disposition);
 
   // Helper to create AppLaunchParams using event flags that allows user to
-  // override the user-configured container using modifier keys, falling back to
-  // ExtensionPrefs::GetLaunchContainer() with no modifiers. |desktop_type|
-  // indicates the desktop upon which to launch (Ash or Native).
+  // override the user-configured container using modifier keys.
   AppLaunchParams(Profile* profile,
                   const extensions::Extension* extension,
-                  int event_flags,
-                  chrome::HostDesktopType desktop_type);
+                  int event_flags);
 
   // The profile to load the application from.
   Profile* profile;
@@ -57,9 +53,6 @@ struct AppLaunchParams {
 
   // If container is TAB, this field controls how the tab is opened.
   WindowOpenDisposition disposition;
-
-  // The desktop type to launch on. Uses GetActiveDesktop() if unspecified.
-  chrome::HostDesktopType desktop_type;
 
   // If non-empty, use override_url in place of the application's launch url.
   GURL override_url;
