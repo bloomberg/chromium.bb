@@ -3153,17 +3153,13 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink.get();
   }
 
-  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
-      RenderThreadImpl::current()->GetGpuFactories(
-          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy());
-
   WebMediaPlayerParams params(
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderView*>(this)),
       sink,
-      gpu_factories,
+      RenderThreadImpl::current()->GetGpuFactories(),
       new RenderMediaLog());
   return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
 }

@@ -165,6 +165,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   pipeline_.reset(new media::Pipeline(media_loop_, media_log_.get()));
 
+  // |gpu_factories_| requires that its entry points be called on its
+  // |GetMessageLoop()|.  Since |pipeline_| will own decoders created from the
+  // factories, require that their message loops are identical.
+  DCHECK(!gpu_factories_ || (gpu_factories_->GetMessageLoop() == media_loop_));
+
   // Let V8 know we started new thread if we did not do it yet.
   // Made separate task to avoid deletion of player currently being created.
   // Also, delaying GC until after player starts gets rid of starting lag --

@@ -12,6 +12,7 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
@@ -20,9 +21,9 @@ namespace content {
 RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider)
-    : message_loop_(message_loop),
+    : message_loop_(
+          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy()),
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
       thread_safe_sender_(ChildThread::current()->thread_safe_sender()),

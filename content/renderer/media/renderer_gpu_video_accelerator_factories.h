@@ -33,8 +33,8 @@ class WebGraphicsContext3DCommandBufferImpl;
 // implementation from render_view_impl.cc which is already far too large.
 //
 // The public methods of the class can be called from any thread, and are
-// internally trampolined to the appropriate thread.  GPU/GL-related calls go to
-// the constructor-argument loop (the media thread).
+// internally trampolined to the appropriate thread.  GPU/GL-related calls must
+// be made on the media thread.
 class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
     : public media::GpuVideoAcceleratorFactories {
  public:
@@ -42,7 +42,6 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // use.
   RendererGpuVideoAcceleratorFactories(
       GpuChannelHost* gpu_channel_host,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
 
   // media::GpuVideoAcceleratorFactories implementation.

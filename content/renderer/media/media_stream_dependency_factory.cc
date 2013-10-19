@@ -520,10 +520,8 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
 
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-    scoped_refptr<base::MessageLoopProxy> media_loop_proxy =
-        RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy();
     scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
-        RenderThreadImpl::current()->GetGpuFactories(media_loop_proxy);
+        RenderThreadImpl::current()->GetGpuFactories();
 #if !defined(GOOGLE_TV)
     if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding)) {
       if (gpu_factories)
