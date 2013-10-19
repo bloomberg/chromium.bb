@@ -35,6 +35,12 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
+
 namespace chrome {
 
 namespace {
@@ -257,6 +263,20 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
   return GetSearchTermsFromURL(profile, entry->GetVirtualURL());
 }
 
+bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
+#if defined(ENABLE_MANAGED_USERS)
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  ManagedModeURLFilter* url_filter =
+      managed_user_service->GetURLFilterForUIThread();
+  if (url_filter->GetFilteringBehaviorForURL(url) ==
+          ManagedModeURLFilter::BLOCK) {
+    return false;
+  }
+#endif
+  return true;
+}
+
 }  // namespace
 
 // Negative start-margin values prevent the "es_sm" parameter from being used.
@@ -419,13 +439,18 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
   // Extended mode requires HTTPS.  Force it unless the base URL was overridden
   // on the command line, in which case we allow HTTP (see comments on
   // IsSuitableURLForInstant()).
-  if (instant_url.SchemeIsSecure() ||
-      google_util::StartsWithCommandLineGoogleBaseURL(instant_url))
-    return instant_url;
-  GURL::Replacements replacements;
-  const std::string secure_scheme(content::kHttpsScheme);
-  replacements.SetSchemeStr(secure_scheme);
-  return instant_url.ReplaceComponents(replacements);
+  if (!instant_url.SchemeIsSecure() &&
+      !google_util::StartsWithCommandLineGoogleBaseURL(instant_url)) {
+    GURL::Replacements replacements;
+    const std::string secure_scheme(content::kHttpsScheme);
+    replacements.SetSchemeStr(secure_scheme);
+    instant_url = instant_url.ReplaceComponents(replacements);
+  }
+
+  if (!IsURLAllowedForSupervisedUser(instant_url, profile))
+    return GURL();
+
+  return instant_url;
 }
 
 // Returns URLs associated with the default search engine for |profile|.
@@ -458,6 +483,9 @@ GURL GetNewTabPageURL(Profile* profile) {
   GURL url(TemplateURLRefToGURL(template_url->new_tab_url_ref(),
                                 kDisableStartMargin, false));
   if (!url.is_valid() || !url.SchemeIsSecure())
+    return GURL(chrome::kChromeSearchLocalNtpUrl);
+
+  if (!IsURLAllowedForSupervisedUser(url, profile))
     return GURL(chrome::kChromeSearchLocalNtpUrl);
 
   return url;

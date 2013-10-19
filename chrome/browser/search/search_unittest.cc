@@ -8,6 +8,9 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -741,6 +744,25 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsNotSet) {
   SetSearchProvider(false, true);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             chrome::GetNewTabPageURL(profile()));
+}
+
+TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
+  EnableInstantExtendedAPIForTesting();
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+      "Group1 use_cacheable_ntp:1"));
+
+  // Block access to foo.com in the URL filter.
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile());
+  ManagedModeURLFilter* url_filter =
+      managed_user_service->GetURLFilterForUIThread();
+  std::map<std::string, bool> hosts;
+  hosts["foo.com"] = false;
+  url_filter->SetManualHosts(&hosts);
+
+  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+            chrome::GetNewTabPageURL(profile()));
+  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 }
 
 TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
