@@ -53,11 +53,6 @@ enum ResizerHitTestType {
     ResizerForTouch
 };
 
-enum ScrollOffsetClamping {
-    ScrollOffsetUnclamped,
-    ScrollOffsetClamped
-};
-
 class PlatformEvent;
 class RenderBox;
 class RenderLayer;

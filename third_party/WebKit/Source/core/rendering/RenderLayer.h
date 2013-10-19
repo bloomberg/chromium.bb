@@ -134,10 +134,7 @@ public:
 
     LayoutRect rect() const { return LayoutRect(location(), size()); }
 
-    void panScrollFromPoint(const IntPoint&);
-
     // Scrolling methods for layers that can scroll their overflow.
-    void scrollByRecursively(const IntSize&, ScrollOffsetClamping = ScrollOffsetUnclamped);
     void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
     LayoutRect getRectToExpose(const LayoutRect& visibleRect, const LayoutRect& exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY);

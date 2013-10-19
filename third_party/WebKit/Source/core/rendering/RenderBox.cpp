@@ -37,6 +37,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
@@ -833,10 +834,82 @@ RenderBox* RenderBox::findAutoscrollable(RenderObject* renderer)
     return renderer && renderer->isBox() ? toRenderBox(renderer) : 0;
 }
 
-void RenderBox::panScroll(const IntPoint& source)
+static inline int adjustedScrollDelta(int beginningDelta)
 {
-    if (layer())
-        layer()->panScrollFromPoint(source);
+    // This implemention matches Firefox's.
+    // http://mxr.mozilla.org/firefox/source/toolkit/content/widgets/browser.xml#856.
+    const int speedReducer = 12;
+
+    int adjustedDelta = beginningDelta / speedReducer;
+    if (adjustedDelta > 1)
+        adjustedDelta = static_cast<int>(adjustedDelta * sqrt(static_cast<double>(adjustedDelta))) - 1;
+    else if (adjustedDelta < -1)
+        adjustedDelta = static_cast<int>(adjustedDelta * sqrt(static_cast<double>(-adjustedDelta))) + 1;
+
+    return adjustedDelta;
+}
+
+static inline IntSize adjustedScrollDelta(const IntSize& delta)
+{
+    return IntSize(adjustedScrollDelta(delta.width()), adjustedScrollDelta(delta.height()));
+}
+
+void RenderBox::panScroll(const IntPoint& sourcePoint)
+{
+    Frame* frame = this->frame();
+    if (!frame)
+        return;
+
+    IntPoint lastKnownMousePosition = frame->eventHandler()->lastKnownMousePosition();
+
+    // We need to check if the last known mouse position is out of the window. When the mouse is out of the window, the position is incoherent
+    static IntPoint previousMousePosition;
+    if (lastKnownMousePosition.x() < 0 || lastKnownMousePosition.y() < 0)
+        lastKnownMousePosition = previousMousePosition;
+    else
+        previousMousePosition = lastKnownMousePosition;
+
+    IntSize delta = lastKnownMousePosition - sourcePoint;
+
+    if (abs(delta.width()) <= ScrollView::noPanScrollRadius) // at the center we let the space for the icon
+        delta.setWidth(0);
+    if (abs(delta.height()) <= ScrollView::noPanScrollRadius)
+        delta.setHeight(0);
+
+    scrollByRecursively(adjustedScrollDelta(delta), ScrollOffsetClamped);
+}
+
+void RenderBox::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping clamp)
+{
+    if (delta.isZero())
+        return;
+
+    bool restrictedByLineClamp = false;
+    if (parent())
+        restrictedByLineClamp = !parent()->style()->lineClamp().isNone();
+
+    if (hasOverflowClip() && !restrictedByLineClamp) {
+        IntSize newScrollOffset = layer()->scrollableArea()->adjustedScrollOffset() + delta;
+        layer()->scrollableArea()->scrollToOffset(newScrollOffset, clamp);
+
+        // If this layer can't do the scroll we ask the next layer up that can scroll to try
+        IntSize remainingScrollOffset = newScrollOffset - layer()->scrollableArea()->adjustedScrollOffset();
+        if (!remainingScrollOffset.isZero() && parent()) {
+            if (RenderBox* scrollableBox = enclosingScrollableBox())
+                scrollableBox->scrollByRecursively(remainingScrollOffset, clamp);
+
+            Frame* frame = this->frame();
+            if (frame && frame->page())
+                frame->page()->updateAutoscrollRenderer();
+        }
+    } else if (view()->frameView()) {
+        // If we are here, we were called on a renderer that can be programmatically scrolled, but doesn't
+        // have an overflow clip. Which means that it is a document node that can be scrolled.
+        view()->frameView()->scrollBy(delta);
+
+        // FIXME: If we didn't scroll the whole way, do we want to try looking at the frames ownerElement?
+        // https://bugs.webkit.org/show_bug.cgi?id=28237
+    }
 }
 
 bool RenderBox::needsPreferredWidthsRecalculation() const

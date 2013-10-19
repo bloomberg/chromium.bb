@@ -396,7 +396,7 @@ bool scrollInDirection(Node* container, FocusDirection direction)
             return false;
         }
 
-        container->renderBox()->enclosingLayer()->scrollByRecursively(IntSize(dx, dy));
+        container->renderBox()->scrollByRecursively(IntSize(dx, dy));
         return true;
     }
 

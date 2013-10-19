@@ -42,6 +42,11 @@ enum ShouldComputePreferred { ComputeActual, ComputePreferred };
 
 enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
+enum ScrollOffsetClamping {
+    ScrollOffsetUnclamped,
+    ScrollOffsetClamped
+};
+
 class RenderBox : public RenderBoxModelObject {
 public:
     RenderBox(ContainerNode*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
@@ -248,6 +253,7 @@ public:
     virtual void setScrollTop(int);
 
     void scrollToOffset(const IntSize&);
+    void scrollByRecursively(const IntSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
 
     virtual LayoutUnit marginTop() const OVERRIDE { return m_marginBox.top(); }
     virtual LayoutUnit marginBottom() const OVERRIDE { return m_marginBox.bottom(); }
