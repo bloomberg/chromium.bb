@@ -63,7 +63,8 @@ class TestComboboxModel : public ui::ComboboxModel {
     return 10;
   }
   virtual string16 GetItemAt(int index) OVERRIDE {
-    return string16();
+    DCHECK(!IsItemSeparatorAt(index));
+    return ASCIIToUTF16(IsItemSeparatorAt(index) ? "SEPARATOR" : "ITEM");
   }
   virtual bool IsItemSeparatorAt(int index) OVERRIDE {
     return separators_.find(index) != separators_.end();
@@ -305,6 +306,21 @@ TEST_F(ComboboxTest, SkipMultipleSeparatorsAtEnd) {
   EXPECT_EQ(0, combobox_->selected_index());
   SendKeyEvent(ui::VKEY_END);
   EXPECT_EQ(6, combobox_->selected_index());
+}
+
+TEST_F(ComboboxTest, GetTextForRowTest) {
+  InitCombobox();
+  std::set<int> separators;
+  separators.insert(0);
+  separators.insert(1);
+  separators.insert(9);
+  model_->SetSeparators(separators);
+  for (int i = 0; i < combobox_->GetRowCount(); ++i) {
+    if (separators.count(i) != 0)
+      EXPECT_TRUE(combobox_->GetTextForRow(i).empty()) << i;
+    else
+      EXPECT_EQ(ASCIIToUTF16("ITEM"), combobox_->GetTextForRow(i)) << i;
+  }
 }
 
 }  // namespace views
