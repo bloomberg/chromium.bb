@@ -101,11 +101,11 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 112
-TOTAL_SKIPS = 28
+TOTAL_TESTS = 114
+TOTAL_SKIPS = 29
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_FAILURES = 24
+UNEXPECTED_FAILURES = 25
 
 def unit_test_list():
     tests = TestList()
@@ -147,6 +147,7 @@ def unit_test_list():
               actual_image=None, expected_image=None,
               actual_checksum=None)
     tests.add('failures/expected/text.html', actual_text='text_fail-png')
+    tests.add('failures/expected/crash_then_text.html')
     tests.add('failures/expected/skip_text.html', actual_text='text diff')
     tests.add('failures/flaky/text.html')
     tests.add('failures/unexpected/missing_text.html', expected_text=None)
@@ -283,6 +284,7 @@ def add_unit_tests_to_mock_filesystem(filesystem):
     if not filesystem.exists('/mock-checkout/LayoutTests/TestExpectations'):
         filesystem.write_text_file('/mock-checkout/LayoutTests/TestExpectations', """
 Bug(test) failures/expected/crash.html [ Crash ]
+Bug(test) failures/expected/crash_then_text.html [ Failure ]
 Bug(test) failures/expected/image.html [ ImageOnlyFailure ]
 Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
 Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
@@ -600,20 +602,30 @@ class TestDriver(Driver):
 
         audio = None
         actual_text = test.actual_text
+        crash = test.crash
+        web_process_crash = test.web_process_crash
 
         if 'flaky/text.html' in test_name and not test_name in self._port._flakes:
             self._port._flakes.add(test_name)
             actual_text = 'flaky text failure'
 
+        if 'crash_then_text.html' in test_name:
+            if test_name in self._port._flakes:
+                actual_text = 'text failure'
+            else:
+                self._port._flakes.add(test_name)
+                crashed_process_name = self._port.driver_name()
+                crashed_pid = 1
+                crash = True
+
         if 'text_then_crash.html' in test_name:
             if test_name in self._port._flakes:
                 crashed_process_name = self._port.driver_name()
                 crashed_pid = 1
-                test.crash = True
+                crash = True
             else:
                 self._port._flakes.add(test_name)
                 actual_text = 'text failure'
-
 
         if actual_text and test_args and test_name == 'passes/args.html':
             actual_text = actual_text + ' ' + ' '.join(test_args)
@@ -622,10 +634,10 @@ class TestDriver(Driver):
             audio = base64.b64decode(test.actual_audio)
         crashed_process_name = None
         crashed_pid = None
-        if test.crash:
+        if crash:
             crashed_process_name = self._port.driver_name()
             crashed_pid = 1
-        elif test.web_process_crash:
+        elif web_process_crash:
             crashed_process_name = 'WebProcess'
             crashed_pid = 2
 
@@ -642,7 +654,7 @@ class TestDriver(Driver):
         else:
             image = test.actual_image
         return DriverOutput(actual_text, image, test.actual_checksum, audio,
-            crash=test.crash or test.web_process_crash, crashed_process_name=crashed_process_name,
+            crash=(crash or web_process_crash), crashed_process_name=crashed_process_name,
             crashed_pid=crashed_pid, crash_log=crash_log,
             test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid,
             device_offline=test.device_offline)
