@@ -45,7 +45,6 @@ namespace get_thumbnail = wallpaper_private::GetThumbnail;
 namespace save_thumbnail = wallpaper_private::SaveThumbnail;
 namespace get_offline_wallpaper_list =
     wallpaper_private::GetOfflineWallpaperList;
-typedef extensions::api::wallpaper_private::WallpaperSource WallpaperSource;
 
 namespace {
 
@@ -227,31 +226,16 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunImpl() {
   ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
       desktop_background_controller()->GetAppropriateResolution();
 
-  if (params->source == wallpaper_private::WALLPAPER_SOURCE_ONLINE) {
-    type_ = chromeos::User::ONLINE;
-    std::string file_name = GURL(params->url).ExtractFileName();
-    CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
-                           &wallpaper_path));
-    fallback_path = wallpaper_path.Append(file_name);
-    if (params->layout != wallpaper_private::WALLPAPER_LAYOUT_STRETCH &&
-        resolution == ash::WALLPAPER_RESOLUTION_SMALL) {
-      file_name = base::FilePath(file_name).InsertBeforeExtension(
-          chromeos::kSmallWallpaperSuffix).value();
-    }
-    wallpaper_path = wallpaper_path.Append(file_name);
-  } else {
-    type_ = chromeos::User::CUSTOMIZED;
-    std::string file_name = params->url;
-    std::string username_hash =
-      chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
-    const char* sub_dir = (resolution == ash::WALLPAPER_RESOLUTION_SMALL) ?
-        chromeos::kSmallWallpaperSubDir : chromeos::kLargeWallpaperSubDir;
-    wallpaper_path = chromeos::WallpaperManager::Get()->GetCustomWallpaperPath(
-        sub_dir, username_hash, file_name);
-
-    fallback_path = chromeos::WallpaperManager::Get()->GetCustomWallpaperPath(
-        chromeos::kOriginalWallpaperSubDir, username_hash, file_name);
+  std::string file_name = GURL(params->url).ExtractFileName();
+  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
+                         &wallpaper_path));
+  fallback_path = wallpaper_path.Append(file_name);
+  if (params->layout != wallpaper_private::WALLPAPER_LAYOUT_STRETCH &&
+      resolution == ash::WALLPAPER_RESOLUTION_SMALL) {
+    file_name = base::FilePath(file_name).InsertBeforeExtension(
+        chromeos::kSmallWallpaperSuffix).value();
   }
+  wallpaper_path = wallpaper_path.Append(file_name);
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
@@ -311,7 +295,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
   chromeos::WallpaperInfo info = {
       params->url,
       layout,
-      type_,
+      chromeos::User::ONLINE,
       base::Time::Now().LocalMidnight()
   };
   std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
@@ -613,7 +597,7 @@ bool WallpaperPrivateGetThumbnailFunction::RunImpl() {
 
   base::FilePath thumbnail_path;
   std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
-  if (params->source == wallpaper_private::WALLPAPER_SOURCE_ONLINE) {
+  if (params->source == get_thumbnail::Params::SOURCE_ONLINE) {
     std::string file_name = GURL(params->url_or_file).ExtractFileName();
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS,
                            &thumbnail_path));
@@ -743,12 +727,6 @@ WallpaperPrivateGetOfflineWallpaperListFunction::
 }
 
 bool WallpaperPrivateGetOfflineWallpaperListFunction::RunImpl() {
-  scoped_ptr<get_offline_wallpaper_list::Params> params(
-      get_offline_wallpaper_list::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
-
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -758,31 +736,25 @@ bool WallpaperPrivateGetOfflineWallpaperListFunction::RunImpl() {
 
   task_runner->PostTask(FROM_HERE,
       base::Bind(&WallpaperPrivateGetOfflineWallpaperListFunction::GetList,
-                 this, email, params->source));
+                 this));
   return true;
 }
 
-void WallpaperPrivateGetOfflineWallpaperListFunction::GetList(
-    const std::string& email,
-    WallpaperSource source) {
+void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
   std::vector<std::string> file_list;
-  // TODO(bshe): This api function is only used for ONLINE wallpapers. Remove
-  // source.
-  if (source == wallpaper_private::WALLPAPER_SOURCE_ONLINE) {
-    base::FilePath wallpaper_dir;
-    CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
-    if (base::DirectoryExists(wallpaper_dir)) {
-      base::FileEnumerator files(wallpaper_dir, false,
-                                 base::FileEnumerator::FILES);
-      for (base::FilePath current = files.Next(); !current.empty();
-           current = files.Next()) {
-        std::string file_name = current.BaseName().RemoveExtension().value();
-        // Do not add file name of small resolution wallpaper to the list.
-        if (!EndsWith(file_name, chromeos::kSmallWallpaperSuffix, true))
-          file_list.push_back(current.BaseName().value());
-      }
+  base::FilePath wallpaper_dir;
+  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
+  if (base::DirectoryExists(wallpaper_dir)) {
+    base::FileEnumerator files(wallpaper_dir, false,
+                               base::FileEnumerator::FILES);
+    for (base::FilePath current = files.Next(); !current.empty();
+         current = files.Next()) {
+      std::string file_name = current.BaseName().RemoveExtension().value();
+      // Do not add file name of small resolution wallpaper to the list.
+      if (!EndsWith(file_name, chromeos::kSmallWallpaperSuffix, true))
+        file_list.push_back(current.BaseName().value());
     }
   }
   BrowserThread::PostTask(

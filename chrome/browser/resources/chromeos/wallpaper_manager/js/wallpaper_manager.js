@@ -243,8 +243,7 @@ function WallpaperManager(dialogDom) {
       });
 
       window.addEventListener('offline', function() {
-        chrome.wallpaperPrivate.getOfflineWallpaperList(
-            Constants.WallpaperSourceEnum.Online, function(lists) {
+        chrome.wallpaperPrivate.getOfflineWallpaperList(function(lists) {
           if (!self.downloadedListMap_)
             self.downloadedListMap_ = {};
           for (var i = 0; i < lists.length; i++) {
@@ -395,8 +394,7 @@ function WallpaperManager(dialogDom) {
       // If device is offline, gets the available offline wallpaper list first.
       // Wallpapers which are not in the list will display a grayscaled
       // thumbnail.
-      chrome.wallpaperPrivate.getOfflineWallpaperList(
-          Constants.WallpaperSourceEnum.Online, function(lists) {
+      chrome.wallpaperPrivate.getOfflineWallpaperList(function(lists) {
         if (!self.downloadedListMap_)
           self.downloadedListMap_ = {};
         for (var i = 0; i < lists.length; i++)
@@ -490,7 +488,6 @@ function WallpaperManager(dialogDom) {
 
         chrome.wallpaperPrivate.setWallpaperIfExists(wallpaperURL,
                                                      selectedItem.layout,
-                                                     selectedItem.source,
                                                      function(exists) {
           if (exists) {
             self.currentWallpaper_ = wallpaperURL;

@@ -7,7 +7,6 @@
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
-#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -55,9 +54,6 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
 
   scoped_ptr<extensions::api::wallpaper_private::SetWallpaperIfExists::Params>
       params;
-
-  // Type of the loaded wallpaper.
-  chromeos::User::WallpaperType type_;
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
@@ -274,9 +270,8 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Enumerates the list of files in wallpaper directory of given |source|.
-  void GetList(const std::string& email,
-               extensions::api::wallpaper_private::WallpaperSource source);
+  // Enumerates the list of files in online wallpaper directory.
+  void GetList();
 
   // Sends the list of files to extension api caller. If no files or no
   // directory, sends empty list.

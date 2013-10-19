@@ -106,11 +106,10 @@ chrome.test.getConfig(function(config) {
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
       chrome.wallpaperPrivate.setWallpaperIfExists(url, 'CENTER_CROPPED',
-                                                   'ONLINE',
                                                    pass(function(exists) {
         chrome.test.assertTrue(exists);
         chrome.wallpaperPrivate.setWallpaperIfExists(
-            'http://dummyurl/test1.jpg', 'CENTER_CROPPED', 'ONLINE',
+            'http://dummyurl/test1.jpg', 'CENTER_CROPPED',
             fail('Failed to set wallpaper test1.jpg from file system.'));
       }));
     },
@@ -137,8 +136,7 @@ chrome.test.getConfig(function(config) {
       }));
     },
     function getOfflineWallpaperList() {
-      chrome.wallpaperPrivate.getOfflineWallpaperList('ONLINE',
-                                                      pass(function(list) {
+      chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
         // We have previously saved test.jpg in wallpaper directory.
         chrome.test.assertEq('test.jpg', list[0]);
         // Saves the same wallpaper to wallpaper directory but name it as
@@ -147,8 +145,7 @@ chrome.test.getConfig(function(config) {
                                              'CENTER_CROPPED',
                                              'http://dummyurl/test1.jpg',
                                              pass(function() {
-          chrome.wallpaperPrivate.getOfflineWallpaperList('ONLINE',
-                                                          pass(function(list) {
+          chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
             chrome.test.assertEq('test.jpg', list[0]);
             chrome.test.assertEq('test1.jpg', list[1]);
           }));

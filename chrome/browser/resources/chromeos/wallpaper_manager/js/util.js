@@ -86,8 +86,7 @@ WallpaperUtil.fetchURL = function(url, type, onSuccess, onFailure, opt_xhr) {
  */
 WallpaperUtil.setOnlineWallpaper = function(url, layout, onSuccess, onFailure) {
   var self = this;
-  chrome.wallpaperPrivate.setWallpaperIfExists(url, layout,
-      Constants.WallpaperSourceEnum.Online, function(exists) {
+  chrome.wallpaperPrivate.setWallpaperIfExists(url, layout, function(exists) {
     if (exists) {
       onSuccess();
       return;

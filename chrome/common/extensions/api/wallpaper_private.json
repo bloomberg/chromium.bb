@@ -15,11 +15,6 @@
         "id": "WallpaperLayout",
         "type": "string",
         "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
-      },
-      {
-        "id": "WallpaperSource",
-        "type": "string",
-        "enum": [ "ONLINE", "CUSTOM" ]
       }
     ],
     "functions": [
@@ -55,10 +50,6 @@
           {
             "name": "layout",
             "$ref": "WallpaperLayout"
-          },
-          {
-            "name": "source",
-            "$ref": "WallpaperSource"
           },
           {
             "type": "function",
@@ -184,7 +175,8 @@
           },
           {
             "name": "source",
-            "$ref": "WallpaperSource"
+            "type": "string",
+            "enum": [ "ONLINE", "CUSTOM" ]
           },
           {
             "type": "function",
@@ -232,10 +224,6 @@
         "description": "Get the list of file names of downloaded wallpapers.",
         "nodoc": "true",
         "parameters": [
-          {
-            "name": "source",
-            "$ref": "WallpaperSource"
-          },
           {
             "type": "function",
             "name": "callback",
