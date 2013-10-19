@@ -5,11 +5,6 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
-#if !defined(__native_client__) || defined(__GLIBC__)
-// GLIBC-only entry point.
-// TODO(sbc): remove once this bug gets fixed:
-// https://code.google.com/p/nativeclient/issues/detail?id=3709
-int fsync(int fd) {
-  return ki_fsync(fd);
+int rename(const char* path, const char* newpath) {
+  return ki_rename(path, newpath);
 }
-#endif

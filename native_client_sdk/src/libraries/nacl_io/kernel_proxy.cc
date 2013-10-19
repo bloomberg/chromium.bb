@@ -487,6 +487,11 @@ int KernelProxy::getdents(int fd, void* buf, unsigned int count) {
   return cnt;
 }
 
+int KernelProxy::fchdir(int fd) {
+  errno = ENOSYS;
+  return -1;
+}
+
 int KernelProxy::ftruncate(int fd, off_t length) {
   ScopedKernelHandle handle;
   Error error = AcquireHandle(fd, &handle);
@@ -519,6 +524,11 @@ int KernelProxy::fsync(int fd) {
   }
 
   return 0;
+}
+
+int KernelProxy::fdatasync(int fd) {
+  errno = ENOSYS;
+  return -1;
 }
 
 int KernelProxy::isatty(int fd) {
@@ -592,6 +602,21 @@ int KernelProxy::unlink(const char* path) {
   return 0;
 }
 
+int KernelProxy::truncate(const char* path, off_t len) {
+  errno = ENOSYS;
+  return -1;
+}
+
+int KernelProxy::lstat(const char* path, struct stat* buf) {
+  errno = ENOSYS;
+  return -1;
+}
+
+int KernelProxy::rename(const char* path, const char* newpath) {
+  errno = ENOSYS;
+  return -1;
+}
+
 int KernelProxy::remove(const char* path) {
   ScopedMount mnt;
   Path rel;
@@ -657,6 +682,16 @@ int KernelProxy::access(const char* path, int amode) {
     return -1;
   }
   return 0;
+}
+
+int KernelProxy::readlink(const char *path, char *buf, size_t count) {
+  errno = EINVAL;
+  return -1;
+}
+
+int KernelProxy::utimes(const char *filename, const struct timeval times[2]) {
+  errno = EINVAL;
+  return -1;
 }
 
 // TODO(noelallen): Needs implementation.

@@ -6,6 +6,7 @@
 #define LIBRARIES_NACL_IO_KERNEL_INTERCEPT_H_
 
 #include <stdarg.h>
+#include <sys/time.h>
 
 #include <ppapi/c/ppb.h>
 #include <ppapi/c/pp_instance.h>
@@ -39,6 +40,7 @@ char* ki_getwd(char* buf);
 int ki_dup(int oldfd);
 int ki_dup2(int oldfd, int newfd);
 int ki_chmod(const char* path, mode_t mode);
+int ki_fchdir(int fd);
 int ki_fchmod(int fd, mode_t mode);
 int ki_stat(const char* path, struct stat* buf);
 int ki_mkdir(const char* path, mode_t mode);
@@ -52,16 +54,22 @@ ssize_t ki_read(int fd, void* buf, size_t nbyte);
 ssize_t ki_write(int fd, const void* buf, size_t nbyte);
 int ki_fstat(int fd, struct stat *buf);
 int ki_getdents(int fd, void* buf, unsigned int count);
-int ki_ftruncate(int fd, off_t length);
 int ki_fsync(int fd);
+int ki_fdatasync(int fd);
+int ki_ftruncate(int fd, off_t length);
 int ki_isatty(int fd);
 int ki_close(int fd);
 off_t ki_lseek(int fd, off_t offset, int whence);
 int ki_remove(const char* path);
 int ki_unlink(const char* path);
-int ki_access(const char* path, int amode);
+int ki_truncate(const char* path, off_t length);
+int ki_lstat(const char* path, struct stat* buf);
 int ki_link(const char* oldpath, const char* newpath);
+int ki_rename(const char* oldpath, const char* newpath);
 int ki_symlink(const char* oldpath, const char* newpath);
+int ki_access(const char* path, int amode);
+int ki_readlink(const char *path, char *buf, size_t count);
+int ki_utimes(const char *path, const struct timeval times[2]);
 void* ki_mmap(void* addr, size_t length, int prot, int flags, int fd,
               off_t offset);
 int ki_munmap(void* addr, size_t length);

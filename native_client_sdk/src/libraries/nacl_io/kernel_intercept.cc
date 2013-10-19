@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "nacl_io/kernel_intercept.h"
+
 #include <errno.h>
 
-#include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_wrap.h"
 #include "nacl_io/osmman.h"
@@ -100,6 +101,11 @@ int ki_chmod(const char *path, mode_t mode) {
   return s_kp->chmod(path, mode);
 }
 
+int ki_fchdir(int fd) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->fchdir(fd);
+}
+
 int ki_fchmod(int fd, mode_t mode) {
   ON_NOSYS_RETURN(-1);
   return s_kp->fchmod(fd, mode);
@@ -171,6 +177,11 @@ int ki_fsync(int fd) {
   return s_kp->fsync(fd);
 }
 
+int ki_fdatasync(int fd) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->fdatasync(fd);
+}
+
 int ki_isatty(int fd) {
   ON_NOSYS_RETURN(0);
   return s_kp->isatty(fd);
@@ -196,9 +207,14 @@ int ki_unlink(const char* path) {
   return s_kp->unlink(path);
 }
 
-int ki_access(const char* path, int amode) {
+int ki_truncate(const char* path, off_t length) {
   ON_NOSYS_RETURN(-1);
-  return s_kp->access(path, amode);
+  return s_kp->truncate(path, length);
+}
+
+int ki_lstat(const char* path, struct stat* buf) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->lstat(path, buf);
 }
 
 int ki_link(const char* oldpath, const char* newpath) {
@@ -206,9 +222,29 @@ int ki_link(const char* oldpath, const char* newpath) {
   return s_kp->link(oldpath, newpath);
 }
 
+int ki_rename(const char* path, const char* newpath) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->rename(path, newpath);
+}
+
 int ki_symlink(const char* oldpath, const char* newpath) {
   ON_NOSYS_RETURN(-1);
   return s_kp->symlink(oldpath, newpath);
+}
+
+int ki_access(const char* path, int amode) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->access(path, amode);
+}
+
+int ki_readlink(const char *path, char *buf, size_t count) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->readlink(path, buf, count);
+}
+
+int ki_utimes(const char *path, const struct timeval times[2]) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->utimes(path, times);
 }
 
 void* ki_mmap(void* addr, size_t length, int prot, int flags, int fd,

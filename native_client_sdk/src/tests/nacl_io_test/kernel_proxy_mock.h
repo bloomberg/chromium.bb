@@ -26,12 +26,14 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD1(close, int(int));
   MOCK_METHOD1(dup, int(int));
   MOCK_METHOD2(dup2, int(int, int));
+  MOCK_METHOD1(fchdir, int(int));
   MOCK_METHOD2(fchmod, int(int, int));
   MOCK_METHOD3(fchown, int(int, uid_t, gid_t));
   MOCK_METHOD3(fcntl, int(int, int, va_list));
   MOCK_METHOD2(ftruncate, int(int, off_t));
   MOCK_METHOD2(fstat, int(int, struct stat*));
   MOCK_METHOD1(fsync, int(int));
+  MOCK_METHOD1(fdatasync, int(int));
   MOCK_METHOD2(getcwd, char*(char*, size_t));
   MOCK_METHOD3(getdents, int(int, void*, unsigned int));
   MOCK_METHOD1(getwd, char*(char*));
@@ -41,6 +43,7 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD3(lchown, int(const char*, uid_t, gid_t));
   MOCK_METHOD2(link, int(const char*, const char*));
   MOCK_METHOD3(lseek, off_t(int, off_t, int));
+  MOCK_METHOD2(lstat, int(const char*, struct stat*));
   MOCK_METHOD2(mkdir, int(const char*, mode_t));
   MOCK_METHOD6(mmap, void*(void*, size_t, int, int, int, size_t));
   MOCK_METHOD5(mount, int(const char*, const char*, const char*, unsigned long,
@@ -49,7 +52,9 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD2(open, int(const char*, int));
   MOCK_METHOD1(pipe, int(int[2]));
   MOCK_METHOD3(read, ssize_t(int, void*, size_t));
+  MOCK_METHOD3(readlink, int(const char*, char*, size_t count));
   MOCK_METHOD1(remove, int(const char*));
+  MOCK_METHOD2(rename, int(const char*, const char*));
   MOCK_METHOD1(rmdir, int(const char*));
   MOCK_METHOD2(sigset, sighandler_t(int, sighandler_t));
   MOCK_METHOD2(stat, int(const char*, struct stat*));
@@ -58,8 +63,10 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD2(tcgetattr, int(int, struct termios*));
   MOCK_METHOD3(tcsetattr, int(int, int, const struct termios*));
   MOCK_METHOD1(umount, int(const char*));
+  MOCK_METHOD2(truncate, int(const char*, off_t));
   MOCK_METHOD1(unlink, int(const char*));
   MOCK_METHOD2(utime, int(const char*, const struct utimbuf*));
+  MOCK_METHOD2(utimes, int(const char*, const struct timeval[2]));
   MOCK_METHOD3(write, ssize_t(int, const void*, size_t));
   MOCK_METHOD1(open_resource, int(const char*));
 

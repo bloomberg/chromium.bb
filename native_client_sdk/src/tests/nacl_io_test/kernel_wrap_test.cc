@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <unistd.h>
+
 #include <string>
 #include <vector>
 
@@ -12,6 +14,14 @@
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostermios.h"
+
+#if defined(__native_client__) && !defined(__GLIBC__)
+extern "C" {
+// TODO(sbc): remove once these get added to the newlib toolchain headers.
+int fchdir(int fd);
+int utimes(const char *filename, const struct timeval times[2]);
+}
+#endif
 
 using namespace nacl_io;
 
@@ -115,14 +125,19 @@ class KernelWrapTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(KernelWrapTest, access) {
-  EXPECT_CALL(mock, access(kDummyConstChar, kDummyInt))
-      .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, access(kDummyConstChar, kDummyInt));
+  EXPECT_CALL(mock, access(kDummyConstChar, kDummyInt)) .WillOnce(Return(-1));
+  EXPECT_EQ(-1, access(kDummyConstChar, kDummyInt));
+
+  EXPECT_CALL(mock, access(kDummyConstChar, kDummyInt)) .WillOnce(Return(0));
+  EXPECT_EQ(0, access(kDummyConstChar, kDummyInt));
 }
 
 TEST_F(KernelWrapTest, chdir) {
-  EXPECT_CALL(mock, chdir(kDummyConstChar)).WillOnce(Return(kDummyInt));
-  EXPECT_EQ(kDummyInt, chdir(kDummyConstChar));
+  EXPECT_CALL(mock, chdir(kDummyConstChar)).WillOnce(Return(-1));
+  EXPECT_EQ(-1, chdir(kDummyConstChar));
+
+  EXPECT_CALL(mock, chdir(kDummyConstChar)).WillOnce(Return(0));
+  EXPECT_EQ(0, chdir(kDummyConstChar));
 }
 
 TEST_F(KernelWrapTest, chmod) {
@@ -163,10 +178,18 @@ TEST_F(KernelWrapTest, dup2) {
   EXPECT_EQ(-1, dup2(kDummyInt, kDummyInt2));
 }
 
+TEST_F(KernelWrapTest, fchdir) {
+  EXPECT_CALL(mock, fchdir(kDummyInt))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(-1, fchdir(kDummyInt));
+}
+
 TEST_F(KernelWrapTest, fchmod) {
-  EXPECT_CALL(mock, fchmod(kDummyInt, kDummyInt2))
-      .WillOnce(Return(kDummyInt3));
-  EXPECT_EQ(kDummyInt3, fchmod(kDummyInt, kDummyInt2));
+  EXPECT_CALL(mock, fchmod(kDummyInt, kDummyInt2)) .WillOnce(Return(-1));
+  EXPECT_EQ(-1, fchmod(kDummyInt, kDummyInt2));
+
+  EXPECT_CALL(mock, fchmod(kDummyInt, kDummyInt2)) .WillOnce(Return(0));
+  EXPECT_EQ(0, fchmod(kDummyInt, kDummyInt2));
 }
 
 TEST_F(KernelWrapTest, fchown) {
@@ -180,6 +203,14 @@ TEST_F(KernelWrapTest, fcntl) {
   EXPECT_CALL(mock, fcntl(kDummyInt, kDummyInt2, _))
       .WillOnce(Return(kDummyInt3));
   EXPECT_EQ(kDummyInt3, fcntl(kDummyInt, kDummyInt2, buffer));
+}
+
+TEST_F(KernelWrapTest, fdatasync) {
+  EXPECT_CALL(mock, fdatasync(kDummyInt)).WillOnce(Return(-1));
+  EXPECT_EQ(-1, fdatasync(kDummyInt));
+
+  EXPECT_CALL(mock, fdatasync(kDummyInt)).WillOnce(Return(0));
+  EXPECT_EQ(0, fdatasync(kDummyInt));
 }
 
 TEST_F(KernelWrapTest, fstat) {
@@ -203,8 +234,8 @@ TEST_F(KernelWrapTest, ftruncate) {
 }
 
 TEST_F(KernelWrapTest, fsync) {
-  EXPECT_CALL(mock, fsync(kDummyInt)).WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, fsync(kDummyInt));
+  EXPECT_CALL(mock, fsync(kDummyInt)).WillOnce(Return(-1));
+  EXPECT_EQ(-1, fsync(kDummyInt));
 }
 
 TEST_F(KernelWrapTest, getcwd) {
@@ -343,6 +374,10 @@ TEST_F(KernelWrapTest, open) {
   EXPECT_CALL(mock, open(kDummyConstChar, kDummyInt))
       .WillOnce(Return(kDummyInt2));
   EXPECT_EQ(kDummyInt2, open(kDummyConstChar, kDummyInt));
+
+  EXPECT_CALL(mock, open(kDummyConstChar, kDummyInt))
+      .WillOnce(Return(kDummyInt2));
+  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, kDummyInt));
 }
 
 TEST_F(KernelWrapTest, pipe) {
@@ -359,12 +394,36 @@ TEST_F(KernelWrapTest, read) {
   EXPECT_EQ(kDummyInt3, read(kDummyInt, dummy_void_ptr, kDummyInt2));
 }
 
+TEST_F(KernelWrapTest, readlink) {
+  char buf[10];
+
+  EXPECT_CALL(mock, readlink(kDummyConstChar, buf, 10))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(-1, readlink(kDummyConstChar, buf, 10));
+
+  EXPECT_CALL(mock, readlink(kDummyConstChar, buf, 10))
+      .WillOnce(Return(kDummyInt));
+  EXPECT_EQ(kDummyInt, readlink(kDummyConstChar, buf, 10));
+}
+
 #ifdef __GLIBC__
+// Under newlib there is no remove syscall.  Instead it is implemented
+// in terms of unlink()/rmdir().
 TEST_F(KernelWrapTest, remove) {
-  EXPECT_CALL(mock, remove(kDummyConstChar)).WillOnce(Return(kDummyInt));
-  EXPECT_EQ(kDummyInt, remove(kDummyConstChar));
+  EXPECT_CALL(mock, remove(kDummyConstChar)).WillOnce(Return(-1));
+  EXPECT_EQ(-1, remove(kDummyConstChar));
 }
 #endif
+
+TEST_F(KernelWrapTest, rename) {
+  EXPECT_CALL(mock, rename(kDummyConstChar, kDummyConstChar2))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(-1, rename(kDummyConstChar, kDummyConstChar2));
+
+  EXPECT_CALL(mock, rename(kDummyConstChar, kDummyConstChar2))
+      .WillOnce(Return(0));
+  EXPECT_EQ(0, rename(kDummyConstChar, kDummyConstChar2));
+}
 
 TEST_F(KernelWrapTest, rmdir) {
   EXPECT_CALL(mock, rmdir(kDummyConstChar)).WillOnce(Return(kDummyInt));
@@ -431,6 +490,23 @@ TEST_F(KernelWrapTest, umount) {
   EXPECT_EQ(kDummyInt, umount(kDummyConstChar));
 }
 
+TEST_F(KernelWrapTest, truncate) {
+  EXPECT_CALL(mock, truncate(kDummyConstChar, kDummyInt3)).WillOnce(Return(-1));
+  EXPECT_EQ(-1, truncate(kDummyConstChar, kDummyInt3));
+
+  EXPECT_CALL(mock, truncate(kDummyConstChar, kDummyInt3)).WillOnce(Return(0));
+  EXPECT_EQ(0, truncate(kDummyConstChar, kDummyInt3));
+}
+
+TEST_F(KernelWrapTest, lstat) {
+  struct stat buf;
+  EXPECT_CALL(mock, lstat(kDummyConstChar, &buf)).WillOnce(Return(-1));
+  EXPECT_EQ(-1, lstat(kDummyConstChar, &buf));
+
+  EXPECT_CALL(mock, lstat(kDummyConstChar, &buf)).WillOnce(Return(0));
+  EXPECT_EQ(0, lstat(kDummyConstChar, &buf));
+}
+
 TEST_F(KernelWrapTest, unlink) {
   EXPECT_CALL(mock, unlink(kDummyConstChar)).WillOnce(Return(kDummyInt));
   EXPECT_EQ(kDummyInt, unlink(kDummyConstChar));
@@ -440,6 +516,12 @@ TEST_F(KernelWrapTest, utime) {
   const struct utimbuf* times = NULL;
   EXPECT_CALL(mock, utime(kDummyConstChar, times)).WillOnce(Return(kDummyInt));
   EXPECT_EQ(kDummyInt, utime(kDummyConstChar, times));
+}
+
+TEST_F(KernelWrapTest, utimes) {
+  struct timeval* times = NULL;
+  EXPECT_CALL(mock, utimes(kDummyConstChar, times)).WillOnce(Return(-1));
+  EXPECT_EQ(-1, utimes(kDummyConstChar, times));
 }
 
 TEST_F(KernelWrapTest, write) {

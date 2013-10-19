@@ -9,7 +9,10 @@
 // GLIBC-only entry point.
 // TODO(sbc): remove once this bug gets fixed:
 // https://code.google.com/p/nativeclient/issues/detail?id=3709
-int access(const char* path, int amode) {
-  return ki_access(path, amode);
+
+// In release builds glibc will inline calls to lstat to the
+// lower level __lxstat, so we intercept that call instead.
+int __lxstat(int ver, const char* pathname, struct stat* buf) {
+  return ki_lstat(pathname, buf);
 }
 #endif

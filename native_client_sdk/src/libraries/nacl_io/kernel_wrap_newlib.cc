@@ -48,6 +48,7 @@ EXTERN_C_BEGIN
 extern void __libnacl_irt_dev_filename_init(void);
 
 extern struct nacl_irt_fdio __libnacl_irt_fdio;
+extern struct nacl_irt_dev_fdio __libnacl_irt_dev_fdio;
 extern struct nacl_irt_dev_filename __libnacl_irt_dev_filename;
 extern struct nacl_irt_memory __libnacl_irt_memory;
 
@@ -56,13 +57,32 @@ extern struct nacl_irt_memory __libnacl_irt_memory;
   OP(fdio, close); \
   OP(fdio, dup); \
   OP(fdio, dup2); \
+  OP(fdio, read); \
+  OP(fdio, write); \
+  OP(fdio, seek); \
   OP(fdio, fstat); \
   OP(fdio, getdents); \
-  OP(fdio, read); \
-  OP(fdio, seek); \
-  OP(fdio, write); \
+  OP(dev_fdio, fchdir); \
+  OP(dev_fdio, fchmod); \
+  OP(dev_fdio, fsync); \
+  OP(dev_fdio, fdatasync); \
+  OP(dev_fdio, ftruncate); \
   OP(dev_filename, open); \
   OP(dev_filename, stat); \
+  OP(dev_filename, mkdir); \
+  OP(dev_filename, rmdir); \
+  OP(dev_filename, chdir); \
+  OP(dev_filename, getcwd); \
+  OP(dev_filename, unlink); \
+  OP(dev_filename, truncate); \
+  OP(dev_filename, lstat); \
+  OP(dev_filename, link); \
+  OP(dev_filename, rename); \
+  OP(dev_filename, symlink); \
+  OP(dev_filename, chmod); \
+  OP(dev_filename, access); \
+  OP(dev_filename, readlink); \
+  OP(dev_filename, utimes); \
   OP(memory, mmap); \
   OP(memory, munmap);
 
@@ -83,6 +103,23 @@ int WRAP(dup2)(int fd, int newfd) {
   return (newfd < 0) ? errno : 0;
 }
 
+int WRAP(read)(int fd, void* buf, size_t count, size_t* nread) {
+  ssize_t signed_nread = ki_read(fd, buf, count);
+  *nread = static_cast<size_t>(signed_nread);
+  return (signed_nread < 0) ? errno : 0;
+}
+
+int WRAP(write)(int fd, const void* buf, size_t count, size_t* nwrote) {
+  ssize_t signed_nwrote = ki_write(fd, buf, count);
+  *nwrote = static_cast<size_t>(signed_nwrote);
+  return (signed_nwrote < 0) ? errno : 0;
+}
+
+int WRAP(seek)(int fd, off_t offset, int whence, off_t* new_offset) {
+  *new_offset = ki_lseek(fd, offset, whence);
+  return (*new_offset < 0) ? errno : 0;
+}
+
 int WRAP(fstat)(int fd, struct stat* buf) {
   return (ki_fstat(fd, buf) < 0) ? errno : 0;
 }
@@ -93,6 +130,26 @@ int WRAP(getdents)(int fd, dirent* buf, size_t count, size_t* nread) {
     return errno;
   *nread = rtn;
   return 0;
+}
+
+int WRAP(fchdir)(int fd) {
+  return (ki_fchdir(fd) < 0) ? errno : 0;
+}
+
+int WRAP(fchmod)(int fd, mode_t mode) {
+  return (ki_fchmod(fd, mode) < 0) ? errno : 0;
+}
+
+int WRAP(fsync)(int fd) {
+  return (ki_fsync(fd) < 0) ? errno : 0;
+}
+
+int WRAP(fdatasync)(int fd) {
+  return (ki_fdatasync(fd) < 0) ? errno : 0;
+}
+
+int WRAP(ftruncate)(int fd, off_t length) {
+  return (ki_ftruncate(fd, length) < 0) ? errno : 0;
 }
 
 int WRAP(mmap)(void** addr, size_t length, int prot, int flags, int fd,
@@ -116,25 +173,72 @@ int WRAP(open)(const char* pathname, int oflag, mode_t cmode, int* newfd) {
   return (*newfd < 0) ? errno : 0;
 }
 
-int WRAP(read)(int fd, void* buf, size_t count, size_t* nread) {
-  ssize_t signed_nread = ki_read(fd, buf, count);
-  *nread = static_cast<size_t>(signed_nread);
-  return (signed_nread < 0) ? errno : 0;
-}
-
-int WRAP(seek)(int fd, off_t offset, int whence, off_t* new_offset) {
-  *new_offset = ki_lseek(fd, offset, whence);
-  return (*new_offset < 0) ? errno : 0;
-}
-
 int WRAP(stat)(const char* pathname, struct stat* buf) {
   return (ki_stat(pathname, buf) < 0) ? errno : 0;
 }
 
-int WRAP(write)(int fd, const void* buf, size_t count, size_t* nwrote) {
-  ssize_t signed_nwrote = ki_write(fd, buf, count);
-  *nwrote = static_cast<size_t>(signed_nwrote);
-  return (signed_nwrote < 0) ? errno : 0;
+int WRAP(mkdir)(const char* pathname, mode_t mode) {
+  return (ki_mkdir(pathname, mode) < 0) ? errno : 0;
+}
+
+int WRAP(rmdir)(const char* pathname) {
+  return (ki_rmdir(pathname) < 0) ? errno : 0;
+}
+
+int WRAP(chdir)(const char* pathname) {
+  return (ki_chdir(pathname) < 0) ? errno : 0;
+}
+
+int WRAP(getcwd)(char* pathname, size_t len) {
+  char* rtn = ki_getcwd(pathname, len);
+  if (NULL == rtn)
+    return errno;
+  return 0;
+}
+
+int WRAP(unlink)(const char* pathname) {
+  return (ki_unlink(pathname) < 0) ? errno : 0;
+}
+
+int WRAP(truncate)(const char* pathname, off_t length) {
+  return (ki_truncate(pathname, length) < 0) ? errno : 0;
+}
+
+int WRAP(lstat)(const char* pathname, struct stat* buf) {
+  return (ki_lstat(pathname, buf) < 0) ? errno : 0;
+}
+
+int WRAP(link)(const char* pathname, const char* newpath) {
+  return (ki_link(pathname, newpath) < 0) ? errno : 0;
+}
+
+int WRAP(rename)(const char* pathname, const char* newpath) {
+  return (ki_rename(pathname, newpath) < 0) ? errno : 0;
+}
+
+int WRAP(symlink)(const char* pathname, const char* newpath) {
+  return (ki_symlink(pathname, newpath) < 0) ? errno : 0;
+}
+
+int WRAP(chmod)(const char* pathname, mode_t mode) {
+  return (ki_chmod(pathname, mode) < 0) ? errno : 0;
+}
+
+int WRAP(access)(const char* pathname, int amode) {
+  return (ki_access(pathname, amode) < 0) ? errno : 0;
+}
+
+int WRAP(readlink)(const char* pathname, char *buf,
+                   size_t count, size_t *nread) {
+  int rtn = ki_readlink(pathname, buf, count);
+  if (rtn < 0)
+    return errno;
+  *nread = rtn;
+  return 0;
+}
+
+int WRAP(utimes)(const char* pathname, const struct timeval times[2]) {
+  return (ki_utimes(pathname, times) < 0) ? errno : 0;
 }
 
 static void assign_real_pointers() {

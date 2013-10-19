@@ -9,7 +9,7 @@
 // GLIBC-only entry point.
 // TODO(sbc): remove once this bug gets fixed:
 // https://code.google.com/p/nativeclient/issues/detail?id=3709
-int access(const char* path, int amode) {
-  return ki_access(path, amode);
+int fchdir(int fd) {
+  return ki_fchdir(fd);
 }
 #endif
