@@ -3438,7 +3438,7 @@ WebAXObject WebViewImpl::accessibilityObject()
 
     Document* document = mainFrameImpl()->frame()->document();
     return WebAXObject(
-        document->axObjectCache()->getOrCreate(document->renderView()));
+        document->axObjectCache()->getOrCreate(document->renderer()));
 }
 
 void WebViewImpl::applyAutofillSuggestions(

@@ -60,7 +60,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/rendering/RenderView.h"
+#include "core/rendering/RenderObject.h"
 #include "public/platform/WebURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/PassRefPtr.h"
@@ -262,7 +262,7 @@ WebElement WebDocument::createElement(const WebString& tagName)
 WebAXObject WebDocument::accessibilityObject() const
 {
     const Document* document = constUnwrap<Document>();
-    return WebAXObject(document->axObjectCache()->getOrCreate(document->renderView()));
+    return WebAXObject(document->axObjectCache()->getOrCreate(document->renderer()));
 }
 
 WebAXObject WebDocument::accessibilityObjectFromID(int axID) const

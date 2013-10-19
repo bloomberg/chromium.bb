@@ -651,9 +651,9 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
     for (TouchEventTargetSet::const_iterator iter = targets->begin(); iter != targets->end(); ++iter) {
         Node* target = iter->key;
         if (target == document || target == document->documentElement() || target == document->body()) {
-            // FIXME: How can we end up in here without a RenderView?
-            if (RenderView* renderView = document->renderView())
-                renderView->computeLayerHitTestRects(rects);
+            if (RenderObject* renderer = document->renderer()) {
+                renderer->computeLayerHitTestRects(rects);
+            }
             return;
         }
     }

@@ -1225,7 +1225,7 @@ private:
 
 inline bool RenderObject::documentBeingDestroyed() const
 {
-    return !document().renderView();
+    return !document().renderer();
 }
 
 inline bool RenderObject::isBeforeContent() const

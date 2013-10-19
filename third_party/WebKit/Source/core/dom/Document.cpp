@@ -508,7 +508,7 @@ static bool isAttributeOnAllOwners(const WebCore::QualifiedName& attribute, cons
 
 Document::~Document()
 {
-    ASSERT(!renderView());
+    ASSERT(!renderer());
     ASSERT(m_ranges.isEmpty());
     ASSERT(!m_parentTreeScope);
     ASSERT(!hasGuardRefCount());
@@ -1030,7 +1030,7 @@ bool Document::cssCompositingEnabled() const
 
 PassRefPtr<DOMNamedFlowCollection> Document::webkitGetNamedFlows()
 {
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !isActive())
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderer())
         return 0;
 
     updateStyleIfNeeded();
@@ -1200,7 +1200,7 @@ String Document::suggestedMIMEType() const
 
 Element* Document::elementFromPoint(int x, int y) const
 {
-    if (!isActive())
+    if (!renderer())
         return 0;
 
     return TreeScope::elementFromPoint(x, y);
@@ -1208,7 +1208,7 @@ Element* Document::elementFromPoint(int x, int y) const
 
 PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
 {
-    if (!isActive())
+    if (!renderer())
         return 0;
     LayoutPoint localPoint;
     RenderObject* renderer = rendererFromPoint(this, x, y, &localPoint);
@@ -1666,7 +1666,7 @@ void Document::recalcStyle(StyleRecalcChange change)
     RELEASE_ASSERT(!view() || !view()->isPainting());
 
     // FIXME: We should never enter here without a FrameView or a RenderView.
-    if (!renderView() || !view())
+    if (!renderer() || !view())
         return;
 
     if (m_inStyleRecalc)
@@ -1709,9 +1709,9 @@ void Document::recalcStyle(StyleRecalcChange change)
         if (change == Force || (change >= Inherit && shouldDisplaySeamlesslyWithParent())) {
             m_hasNodesWithPlaceholderStyle = false;
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
-            StyleRecalcChange localChange = RenderStyle::compare(documentStyle.get(), renderView()->style());
+            StyleRecalcChange localChange = RenderStyle::compare(documentStyle.get(), renderer()->style());
             if (localChange != NoChange)
-                renderView()->setStyle(documentStyle.release());
+                renderer()->setStyle(documentStyle.release());
         }
 
         inheritHtmlAndBodyElementStyles(change);
@@ -1792,7 +1792,7 @@ void Document::updateLayout()
     updateStyleIfNeeded();
 
     // Only do a layout if changes have occurred that make it necessary.
-    if (frameView && renderView() && (frameView->layoutPending() || renderView()->needsLayout()))
+    if (frameView && renderer() && (frameView->layoutPending() || renderer()->needsLayout()))
         frameView->layout();
 
     if (frameView)
@@ -2001,9 +2001,9 @@ void Document::detach(const AttachContext& context)
     if (svgExtensions())
         accessSVGExtensions()->pauseAnimations();
 
-    RenderView* renderView = this->renderView();
-    if (renderView)
-        renderView->setIsInWindow(false);
+    RenderView* renderView = m_renderView;
+
+    documentWillBecomeInactive();
 
     SharedWorkerRepository::documentDetached(this);
 
@@ -2029,7 +2029,6 @@ void Document::detach(const AttachContext& context)
 
     clearStyleResolver();
 
-    // FIXME: How could renderView ever be null in here?
     if (renderView)
         renderView->destroy();
 
@@ -2089,7 +2088,7 @@ AXObjectCache* Document::existingAXObjectCache() const
 
     // If the renderer is gone then we are in the process of destruction.
     // This method will be called before m_frame = 0.
-    if (!topDocument()->renderView())
+    if (!topDocument()->renderer())
         return 0;
 
     return topDocument()->m_axObjectCache.get();
@@ -2107,7 +2106,7 @@ AXObjectCache* Document::axObjectCache() const
     Document* topDocument = this->topDocument();
 
     // If the document has already been detached, do not make a new axObjectCache.
-    if (!topDocument->isActive())
+    if (!topDocument->renderer())
         return 0;
 
     ASSERT(topDocument == this || !m_axObjectCache);
@@ -2120,8 +2119,8 @@ void Document::setVisuallyOrdered()
 {
     m_visuallyOrdered = true;
     // FIXME: How is possible to not have a renderer here?
-    if (renderView())
-        renderView()->style()->setRTLOrdering(VisualOrder);
+    if (renderer())
+        renderer()->style()->setRTLOrdering(VisualOrder);
     setNeedsStyleRecalc();
 }
 
@@ -2377,6 +2376,8 @@ void Document::implicitClose()
         return;
     }
 
+    RenderObject* renderObject = renderer();
+
     // We used to force a synchronous display and flush here.  This really isn't
     // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
     // (if your platform is syncing flushes and limiting them to 60fps).
@@ -2385,25 +2386,25 @@ void Document::implicitClose()
         updateStyleIfNeeded();
 
         // Always do a layout after loading if needed.
-        if (view() && renderView() && (!renderView()->firstChild() || renderView()->needsLayout()))
+        if (view() && renderObject && (!renderObject->firstChild() || renderObject->needsLayout()))
             view()->layout();
     }
 
     m_loadEventProgress = LoadEventCompleted;
 
-    if (f && renderView() && AXObjectCache::accessibilityEnabled()) {
+    if (f && renderObject && AXObjectCache::accessibilityEnabled()) {
         // The AX cache may have been cleared at this point, but we need to make sure it contains an
         // AX object to send the notification to. getOrCreate will make sure that an valid AX object
         // exists in the cache (we ignore the return value because we don't need it here). This is
         // only safe to call when a layout is not in progress, so it can not be used in postNotification.
         if (AXObjectCache* cache = axObjectCache()) {
-            cache->getOrCreate(renderView());
+            cache->getOrCreate(renderObject);
             if (this == topDocument()) {
-                cache->postNotification(renderView(), AXObjectCache::AXLoadComplete, true);
+                cache->postNotification(renderObject, AXObjectCache::AXLoadComplete, true);
             } else {
                 // AXLoadComplete can only be posted on the top document, so if it's a document
                 // in an iframe that just finished loading, post AXLayoutComplete instead.
-                cache->postNotification(renderView(), AXObjectCache::AXLayoutComplete, true);
+                cache->postNotification(renderObject, AXObjectCache::AXLayoutComplete, true);
             }
         }
     }
@@ -2989,13 +2990,15 @@ void Document::processReferrerPolicy(const String& policy)
 
 MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& request, const LayoutPoint& documentPoint, const PlatformMouseEvent& event)
 {
+    ASSERT(!renderer() || renderer()->isRenderView());
+
     // RenderView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't
     // have intentionally clicked on something belonging to this page. Furthermore,
     // mousemove events before the first layout should not lead to a premature layout()
     // happening, which could show a flash of white.
     // See also the similar code in EventHandler::hitTestResultAtPoint.
-    if (!renderView() || !view() || !view()->didFirstLayout())
+    if (!renderer() || !view() || !view()->didFirstLayout())
         return MouseEventWithHitTestResults(event, HitTestResult(LayoutPoint()));
 
     HitTestResult result(documentPoint);
@@ -4059,6 +4062,12 @@ KURL Document::completeURL(const String& url, const KURL& baseURLOverride) const
 KURL Document::completeURL(const String& url) const
 {
     return completeURL(url, m_baseURL);
+}
+
+void Document::documentWillBecomeInactive()
+{
+    if (renderer())
+        renderView()->setIsInWindow(false);
 }
 
 // Support for Javascript execCommand, and related methods

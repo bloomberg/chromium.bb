@@ -362,7 +362,7 @@ int PrintContext::numberOfPages(Frame* frame, const FloatSize& pageSizeInPixels)
 
 void PrintContext::spoolAllPagesWithBoundaries(Frame* frame, GraphicsContext& graphicsContext, const FloatSize& pageSizeInPixels)
 {
-    if (!frame->document() || !frame->view() || !frame->document()->isActive())
+    if (!frame->document() || !frame->view() || !frame->document()->renderer())
         return;
 
     frame->document()->updateLayout();

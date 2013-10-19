@@ -684,7 +684,7 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
     webViewHelper.webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
     webViewHelper.webViewImpl()->layout();
 
-    WebCore::RenderObject* renderer = document->renderView();
+    WebCore::RenderObject* renderer = document->renderer();
     bool multiplierSetAtLeastOnce = false;
     while (renderer) {
         if (renderer->style()) {
@@ -703,7 +703,7 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
     webViewHelper.webViewImpl()->updatePageDefinedViewportConstraints(description);
 
     bool multiplierCheckedAtLeastOnce = false;
-    renderer = document->renderView();
+    renderer = document->renderer();
     while (renderer) {
         if (renderer->style()) {
             EXPECT_EQ(1, renderer->style()->textAutosizingMultiplier());
