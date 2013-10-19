@@ -166,7 +166,6 @@
 #include "wtf/Uint8ClampedArray.h"
 
 #if USE(DEFAULT_RENDER_THEME)
-#include "core/platform/chromium/PlatformThemeChromiumDefault.h"
 #include "core/rendering/RenderThemeChromiumDefault.h"
 #endif
 
@@ -3581,12 +3580,10 @@ void WebViewImpl::setWindowFeatures(const WebWindowFeatures& features)
     m_page->chrome().setWindowFeatures(features);
 }
 
+// FIXME: remove this api. See: https://codereview.chromium.org/17279002/.
 void WebViewImpl::setScrollbarColors(unsigned inactiveColor,
                                      unsigned activeColor,
                                      unsigned trackColor) {
-#if USE(DEFAULT_RENDER_THEME)
-    PlatformThemeChromiumDefault::setScrollbarColors(inactiveColor, activeColor, trackColor);
-#endif
 }
 
 void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
