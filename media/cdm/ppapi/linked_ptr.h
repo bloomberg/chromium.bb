@@ -115,6 +115,7 @@ class linked_ptr {
     capture(ptr);
   }
   T* get() const { return value_; }
+  operator T*() const { return value_; }
   T* operator->() const { return value_; }
   T& operator*() const { return *value_; }
   // Release ownership of the pointed object and returns it.

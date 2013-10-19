@@ -212,18 +212,12 @@ CdmAdapter::CdmAdapter(PP_Instance instance, pp::Module* module)
   callback_factory_.Initialize(this);
 }
 
-CdmAdapter::~CdmAdapter() {
-  if (cdm_)
-    cdm_->Destroy();
-}
+CdmAdapter::~CdmAdapter() {}
 
 bool CdmAdapter::CreateCdmInstance(const std::string& key_system) {
   PP_DCHECK(!cdm_);
-  cdm_ = static_cast<cdm::ContentDecryptionModule*>(
-      ::CreateCdmInstance(cdm::kCdmInterfaceVersion,
-                          key_system.data(), key_system.size(),
-                          GetCdmHost, this));
-
+  cdm_ = make_linked_ptr(CdmWrapper::Create(
+      key_system.data(), key_system.size(), GetCdmHost, this));
   return (cdm_ != NULL);
 }
 

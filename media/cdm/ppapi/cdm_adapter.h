@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "media/cdm/ppapi/api/content_decryption_module.h"
 #include "media/cdm/ppapi/cdm_helpers.h"
+#include "media/cdm/ppapi/cdm_wrapper.h"
 #include "media/cdm/ppapi/linked_ptr.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
@@ -154,7 +155,7 @@ class CdmAdapter : public pp::Instance,
 
   PpbBufferAllocator allocator_;
   pp::CompletionCallbackFactory<CdmAdapter> callback_factory_;
-  cdm::ContentDecryptionModule* cdm_;
+  linked_ptr<CdmWrapper> cdm_;
   std::string key_system_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmAdapter);

@@ -102,6 +102,7 @@
         'cdm/ppapi/cdm_adapter.h',
         'cdm/ppapi/cdm_helpers.cc',
         'cdm/ppapi/cdm_helpers.h',
+        'cdm/ppapi/cdm_wrapper.h',
         'cdm/ppapi/linked_ptr.h',
       ],
       'conditions': [

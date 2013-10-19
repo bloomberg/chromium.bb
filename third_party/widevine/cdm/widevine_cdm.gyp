@@ -65,6 +65,7 @@
             '<(DEPTH)/media/cdm/ppapi/cdm_adapter.h',
             '<(DEPTH)/media/cdm/ppapi/cdm_helpers.cc',
             '<(DEPTH)/media/cdm/ppapi/cdm_helpers.h',
+            '<(DEPTH)/media/cdm/ppapi/cdm_wrapper.h',
             '<(DEPTH)/media/cdm/ppapi/linked_ptr.h',
           ],
           'conditions': [
