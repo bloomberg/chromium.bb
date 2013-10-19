@@ -46,7 +46,7 @@ namespace {
 #if defined(OS_MACOSX)
 // U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8
 const char kAdvancedPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) || defined(OS_CHROMEOS)
 const char kAdvancedPrintShortcut[] = "(Ctrl+Shift+P)";
 #else
 const char kAdvancedPrintShortcut[] = "(Shift+Ctrl+P)";
