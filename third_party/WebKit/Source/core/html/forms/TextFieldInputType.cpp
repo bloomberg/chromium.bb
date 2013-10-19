@@ -405,7 +405,9 @@ void TextFieldInputType::updatePlaceholderText()
         placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         Element* container = containerElement();
-        element()->userAgentShadowRoot()->insertBefore(placeholder, container ? container->nextSibling() : innerTextElement()->nextSibling());
+        Node* previous = container ? container : innerTextElement();
+        previous->parentNode()->insertBefore(placeholder, previous->nextSibling());
+        ASSERT_WITH_SECURITY_IMPLICATION(placeholder->parentNode() == previous->parentNode());
     }
     placeholder->setTextContent(placeholderText, ASSERT_NO_EXCEPTION);
 }
