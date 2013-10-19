@@ -1148,3 +1148,6 @@ crbug.com/307570 virtual/deferred/fast/images/image-zoom-to-25.html [ Pass Failu
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 
 crbug.com/308952 [ Win ] inspector/editor/text-editor-reveal-line.html [ Failure ]
+
+crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
+crbug.com/309370 [ Mac ] fast/css/font-face-html-as-svg.html [ Timeout ]
