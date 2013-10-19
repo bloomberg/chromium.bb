@@ -17,8 +17,8 @@ ViewModel::~ViewModel() {
 }
 
 void ViewModel::Add(View* view, int index) {
-  CHECK_LE(index, static_cast<int>(entries_.size()));
-  CHECK_GE(index, 0);
+  DCHECK_LE(index, static_cast<int>(entries_.size()));
+  DCHECK_GE(index, 0);
   Entry entry;
   entry.view = view;
   entries_.insert(entries_.begin() + index, entry);
