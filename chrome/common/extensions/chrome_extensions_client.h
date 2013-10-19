@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
+#include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "extensions/common/extensions_client.h"
-#include "extensions/common/permissions/permissions_provider.h"
 
 namespace extensions {
 
@@ -21,8 +21,11 @@ class ChromeExtensionsClient : public ExtensionsClient {
   ChromeExtensionsClient();
   virtual ~ChromeExtensionsClient();
 
+  virtual void Initialize() OVERRIDE;
+
   virtual const PermissionsProvider& GetPermissionsProvider() const OVERRIDE;
-  virtual void RegisterManifestHandlers() const OVERRIDE;
+  virtual const PermissionMessageProvider& GetPermissionMessageProvider() const
+      OVERRIDE;
   virtual FeatureProvider* GetFeatureProviderByName(const std::string& name)
       const OVERRIDE;
   virtual void FilterHostPermissions(
@@ -35,6 +38,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
 
  private:
   const ChromeAPIPermissions chrome_api_permissions_;
+  const ChromePermissionMessageProvider permission_message_provider_;
 
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsClient>;
 

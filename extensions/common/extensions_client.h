@@ -12,6 +12,7 @@ namespace extensions {
 
 class FeatureProvider;
 class PermissionMessage;
+class PermissionMessageProvider;
 class PermissionsProvider;
 class URLPatternSet;
 
@@ -19,15 +20,22 @@ class URLPatternSet;
 // process. This should be implemented by the client of the extensions system.
 class ExtensionsClient {
  public:
+  // Initializes global state. Not done in the constructor because unit tests
+  // can create additional ExtensionsClients because the utility thread runs
+  // in-process.
+  virtual void Initialize() = 0;
+
   // Returns a PermissionsProvider to initialize the permissions system.
   virtual const PermissionsProvider& GetPermissionsProvider() const = 0;
+
+  // Returns the global PermissionMessageProvider to use to provide permission
+  // warning strings.
+  virtual const PermissionMessageProvider& GetPermissionMessageProvider()
+      const = 0;
 
   // Gets a feature provider for a specific feature type.
   virtual FeatureProvider* GetFeatureProviderByName(const std::string& name)
       const = 0;
-
-  // Called at startup. Registers the handlers for parsing manifests.
-  virtual void RegisterManifestHandlers() const = 0;
 
   // Takes the list of all hosts and filters out those with special
   // permission strings. Adds the regular hosts to |new_hosts|,

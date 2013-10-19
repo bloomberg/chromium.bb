@@ -10,6 +10,8 @@
 
 namespace extensions {
 class PermissionMessage;
+class PermissionSet;
+class URLPatternSet;
 }
 
 namespace permission_message_util {
@@ -18,6 +20,11 @@ namespace permission_message_util {
 // The messages change depending on what hosts are present.
 extensions::PermissionMessage CreateFromHostList(
     const std::set<std::string>& hosts);
+
+std::set<std::string> GetDistinctHosts(
+    const extensions::URLPatternSet& host_patterns,
+    bool include_rcd,
+    bool exclude_file_scheme);
 
 }  // namespace permission_message_util
 

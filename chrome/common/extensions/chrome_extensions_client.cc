@@ -26,18 +26,23 @@ ChromeExtensionsClient::ChromeExtensionsClient()
 ChromeExtensionsClient::~ChromeExtensionsClient() {
 }
 
+void ChromeExtensionsClient::Initialize() {
+  RegisterChromeManifestHandlers();
+}
+
 const PermissionsProvider&
 ChromeExtensionsClient::GetPermissionsProvider() const {
   return chrome_api_permissions_;
 }
 
+const PermissionMessageProvider&
+ChromeExtensionsClient::GetPermissionMessageProvider() const {
+  return permission_message_provider_;
+}
+
 FeatureProvider* ChromeExtensionsClient::GetFeatureProviderByName(
     const std::string& name) const {
   return BaseFeatureProvider::GetByName(name);
-}
-
-void ChromeExtensionsClient::RegisterManifestHandlers() const {
-  RegisterChromeManifestHandlers();
 }
 
 void ChromeExtensionsClient::FilterHostPermissions(

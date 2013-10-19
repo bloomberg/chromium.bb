@@ -251,6 +251,8 @@
         'common/extensions/permissions/chrome_api_permissions.h',
         'common/extensions/permissions/chrome_scheme_hosts.cc',
         'common/extensions/permissions/chrome_scheme_hosts.h',
+        'common/extensions/permissions/chrome_permission_message_provider.cc',
+        'common/extensions/permissions/chrome_permission_message_provider.h',
         'common/extensions/permissions/media_galleries_permission.cc',
         'common/extensions/permissions/media_galleries_permission.h',
         'common/extensions/permissions/media_galleries_permission_data.cc',

@@ -99,6 +99,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
@@ -2214,8 +2215,11 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // that requires the user's approval. This could occur because the browser
     // upgraded and recognized additional privileges, or an extension upgrades
     // to a version that requires additional privileges.
-    is_privilege_increase = granted_permissions->HasLessPrivilegesThan(
-        extension->GetActivePermissions().get(), extension->GetType());
+    is_privilege_increase =
+        extensions::PermissionMessageProvider::Get()->IsPrivilegeIncrease(
+                granted_permissions,
+                extension->GetActivePermissions().get(),
+                extension->GetType());
   }
 
   if (is_extension_installed) {

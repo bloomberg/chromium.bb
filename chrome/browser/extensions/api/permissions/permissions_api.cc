@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
@@ -205,8 +206,9 @@ bool PermissionsRequestFunction::RunImpl() {
   // We don't need to show the prompt if there are no new warnings, or if
   // we're skipping the confirmation UI. All extension types but INTERNAL
   // are allowed to silently increase their permission level.
-  bool has_no_warnings = requested_permissions_->GetWarningMessages(
-      GetExtension()->GetType()).empty();
+  bool has_no_warnings =
+      PermissionMessageProvider::Get()->GetWarningMessages(
+          requested_permissions_, GetExtension()->GetType()).empty();
   if (auto_confirm_for_tests == PROCEED || has_no_warnings ||
       extension_->location() == Manifest::COMPONENT) {
     InstallUIProceed();

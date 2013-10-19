@@ -36,6 +36,7 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/url_pattern.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -801,9 +802,11 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     Manifest::Type extension_type = extension_ ?
         extension_->GetType() : Manifest::TYPE_UNKNOWN;
     prompt_.SetPermissions(
-        permissions_->GetWarningMessages(extension_type));
+        extensions::PermissionMessageProvider::Get()->
+            GetWarningMessages(permissions_, extension_type));
     prompt_.SetPermissionsDetails(
-        permissions_->GetWarningMessagesDetails(extension_type));
+        extensions::PermissionMessageProvider::Get()->
+            GetWarningMessagesDetails(permissions_, extension_type));
   }
 
   switch (prompt_.type()) {

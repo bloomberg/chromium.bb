@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -265,8 +266,8 @@ std::vector<string16> ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   messages.push_back(l10n_util::GetStringUTF16(
       IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO));
   std::vector<string16> permission_warnings =
-      extension_->GetActivePermissions()->GetWarningMessages(
-          extension_->GetType());
+      extensions::PermissionMessageProvider::Get()->GetWarningMessages(
+          extension_->GetActivePermissions(), extension_->GetType());
   for (size_t i = 0; i < permission_warnings.size(); ++i) {
     messages.push_back(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PERMISSION_LINE, permission_warnings[i]));

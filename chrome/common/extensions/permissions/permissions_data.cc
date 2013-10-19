@@ -23,6 +23,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
@@ -422,8 +423,8 @@ PermissionMessages PermissionsData::GetPermissionMessages(
   if (ShouldSkipPermissionWarnings(extension)) {
     return PermissionMessages();
   } else {
-    return GetActivePermissions(extension)->GetPermissionMessages(
-        extension->GetType());
+    return PermissionMessageProvider::Get()->GetPermissionMessages(
+        GetActivePermissions(extension), extension->GetType());
   }
 }
 
@@ -434,8 +435,8 @@ std::vector<string16> PermissionsData::GetPermissionMessageStrings(
   if (ShouldSkipPermissionWarnings(extension)) {
     return std::vector<string16>();
   } else {
-    return GetActivePermissions(extension)->GetWarningMessages(
-        extension->GetType());
+    return PermissionMessageProvider::Get()->GetWarningMessages(
+        GetActivePermissions(extension), extension->GetType());
   }
 }
 
@@ -446,8 +447,8 @@ std::vector<string16> PermissionsData::GetPermissionMessageDetailsStrings(
   if (ShouldSkipPermissionWarnings(extension)) {
     return std::vector<string16>();
   } else {
-    return GetActivePermissions(extension)->GetWarningMessagesDetails(
-        extension->GetType());
+    return PermissionMessageProvider::Get()->GetWarningMessagesDetails(
+        GetActivePermissions(extension), extension->GetType());
   }
 }
 

@@ -48,6 +48,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/user_script.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -300,9 +301,10 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
         if (error.empty()) {
           scoped_refptr<const PermissionSet> expected_permissions =
               PermissionsData::GetActivePermissions(dummy_extension.get());
-          valid = !(expected_permissions->HasLessPrivilegesThan(
-              PermissionsData::GetActivePermissions(extension),
-              extension->GetType()));
+          valid = !(PermissionMessageProvider::Get()->IsPrivilegeIncrease(
+                        expected_permissions,
+                        PermissionsData::GetActivePermissions(extension),
+                        extension->GetType()));
         }
       }
     }

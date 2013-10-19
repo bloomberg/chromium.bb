@@ -6,11 +6,34 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/url_pattern_set.h"
 #include "grit/generated_resources.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using extensions::PermissionMessage;
+using extensions::PermissionSet;
+using extensions::URLPatternSet;
+
+namespace {
+
+// Helper for GetDistinctHosts(): com > net > org > everything else.
+bool RcdBetterThan(const std::string& a, const std::string& b) {
+  if (a == b)
+    return false;
+  if (a == "com")
+    return true;
+  if (a == "net")
+    return b != "com";
+  if (a == "org")
+    return b != "com" && b != "net";
+  return false;
+}
+
+}  // namespace
 
 namespace permission_message_util {
 
@@ -67,6 +90,61 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
   }
 
   return PermissionMessage(message_id, message, details);
+}
+
+std::set<std::string> GetDistinctHosts(
+    const URLPatternSet& host_patterns,
+    bool include_rcd,
+    bool exclude_file_scheme) {
+  // Use a vector to preserve order (also faster than a map on small sets).
+  // Each item is a host split into two parts: host without RCDs and
+  // current best RCD.
+  typedef std::vector<std::pair<std::string, std::string> > HostVector;
+  HostVector hosts_best_rcd;
+  for (URLPatternSet::const_iterator i = host_patterns.begin();
+       i != host_patterns.end(); ++i) {
+    if (exclude_file_scheme && i->scheme() == chrome::kFileScheme)
+      continue;
+
+    std::string host = i->host();
+
+    // Add the subdomain wildcard back to the host, if necessary.
+    if (i->match_subdomains())
+      host = "*." + host;
+
+    // If the host has an RCD, split it off so we can detect duplicates.
+    std::string rcd;
+    size_t reg_len = net::registry_controlled_domains::GetRegistryLength(
+        host,
+        net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+        net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+    if (reg_len && reg_len != std::string::npos) {
+      if (include_rcd)  // else leave rcd empty
+        rcd = host.substr(host.size() - reg_len);
+      host = host.substr(0, host.size() - reg_len);
+    }
+
+    // Check if we've already seen this host.
+    HostVector::iterator it = hosts_best_rcd.begin();
+    for (; it != hosts_best_rcd.end(); ++it) {
+      if (it->first == host)
+        break;
+    }
+    // If this host was found, replace the RCD if this one is better.
+    if (it != hosts_best_rcd.end()) {
+      if (include_rcd && RcdBetterThan(rcd, it->second))
+        it->second = rcd;
+    } else {  // Previously unseen host, append it.
+      hosts_best_rcd.push_back(std::make_pair(host, rcd));
+    }
+  }
+
+  // Build up the final vector by concatenating hosts and RCDs.
+  std::set<std::string> distinct_hosts;
+  for (HostVector::iterator it = hosts_best_rcd.begin();
+       it != hosts_best_rcd.end(); ++it)
+    distinct_hosts.insert(it->first + it->second);
+  return distinct_hosts;
 }
 
 }  // namespace permission_message_util

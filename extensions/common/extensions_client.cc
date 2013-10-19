@@ -11,10 +11,6 @@ namespace {
 
 ExtensionsClient* g_client = NULL;
 
-void Initialize(ExtensionsClient* client) {
-  client->RegisterManifestHandlers();
-}
-
 }  // namespace
 
 ExtensionsClient* ExtensionsClient::Get() {
@@ -26,7 +22,7 @@ void ExtensionsClient::Set(ExtensionsClient* client) {
   if (g_client)
     return;
   g_client = client;
-  Initialize(g_client);
+  g_client->Initialize();
 }
 
 }  // namespace extensions

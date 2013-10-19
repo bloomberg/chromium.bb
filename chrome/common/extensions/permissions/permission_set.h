@@ -17,7 +17,6 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/url_pattern_set.h"
 
 namespace extensions {
@@ -65,20 +64,6 @@ class PermissionSet
   // Gets the API permissions in this set as a set of strings.
   std::set<std::string> GetAPIsAsStrings() const;
 
-  // Gets the localized permission messages that represent this set.
-  // The set of permission messages shown varies by extension type.
-  PermissionMessages GetPermissionMessages(Manifest::Type extension_type) const;
-
-  // Gets the localized permission messages that represent this set (represented
-  // as strings). The set of permission messages shown varies by extension type.
-  std::vector<string16> GetWarningMessages(Manifest::Type extension_type) const;
-
-  // Gets the localized permission details for messages that represent this set
-  // (represented as strings). The set of permission messages shown varies by
-  // extension type.
-  std::vector<string16> GetWarningMessagesDetails(
-      Manifest::Type extension_type) const;
-
   // Returns true if this is an empty set (e.g., the default permission set).
   bool IsEmpty() const;
 
@@ -115,12 +100,6 @@ class PermissionSet
   // (e.g. native code).
   bool HasEffectiveFullAccess() const;
 
-  // Returns true if |permissions| has a greater privilege level than this
-  // permission set (e.g., this permission set has less permissions).
-  // Whether certain permissions are considered varies by extension type.
-  bool HasLessPrivilegesThan(const PermissionSet* permissions,
-                             Manifest::Type extension_type) const;
-
   const APIPermissionSet& apis() const { return apis_; }
 
   const URLPatternSet& effective_hosts() const { return effective_hosts_; }
@@ -130,49 +109,18 @@ class PermissionSet
   const URLPatternSet& scriptable_hosts() const { return scriptable_hosts_; }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PermissionsTest, HasLessHostPrivilegesThan);
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetWarningMessages_AudioVideo);
-  FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetDistinctHosts);
-  FRIEND_TEST_ALL_PREFIXES(PermissionsTest,
-                           GetDistinctHosts_ComIsBestRcd);
-  FRIEND_TEST_ALL_PREFIXES(PermissionsTest,
-                           GetDistinctHosts_NetIs2ndBestRcd);
-  FRIEND_TEST_ALL_PREFIXES(PermissionsTest,
-                           GetDistinctHosts_OrgIs3rdBestRcd);
-  FRIEND_TEST_ALL_PREFIXES(PermissionsTest,
-                           GetDistinctHosts_FirstInListIs4thBestRcd);
   friend class base::RefCountedThreadSafe<PermissionSet>;
 
   ~PermissionSet();
 
   void AddAPIPermission(APIPermission::ID id);
 
-  static std::set<std::string> GetDistinctHosts(
-      const URLPatternSet& host_patterns,
-      bool include_rcd,
-      bool exclude_file_scheme);
-
   // Adds permissions implied independently of other context.
   void InitImplicitPermissions();
 
   // Initializes the effective host permission based on the data in this set.
   void InitEffectiveHosts();
-
-  // Gets the permission messages for the API permissions.
-  std::set<PermissionMessage> GetAPIPermissionMessages() const;
-
-  // Gets the permission messages for the host permissions.
-  std::set<PermissionMessage> GetHostPermissionMessages(
-      Manifest::Type extension_type) const;
-
-  // Returns true if |permissions| has an elevated API privilege level than
-  // this set.
-  bool HasLessAPIPrivilegesThan(const PermissionSet* permissions) const;
-
-  // Returns true if |permissions| has more host permissions compared to this
-  // set.
-  bool HasLessHostPrivilegesThan(const PermissionSet* permissions,
-                                 Manifest::Type extension_type) const;
 
   // The api list is used when deciding if an extension can access certain
   // extension APIs and features.
