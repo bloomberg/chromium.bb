@@ -41,7 +41,7 @@ var ProgressCenterPanel = function(element, cancelCallback) {
  * @type {boolean}
  * @private
  */
-ProgressCenterPanel.ENABLED_ = false;
+ProgressCenterPanel.ENABLED_ = true;
 
 /**
  * Update item element.
