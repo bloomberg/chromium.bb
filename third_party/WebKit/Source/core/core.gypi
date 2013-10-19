@@ -1420,6 +1420,7 @@
             'rendering/RenderLayerFilterInfo.cpp',
             'rendering/RenderLayerFilterInfo.h',
             'rendering/RenderLayerScrollableArea.cpp',
+            'rendering/RenderLayerStackingNode.cpp',
             'rendering/RenderLayerRepainter.cpp',
             'rendering/RenderLayerModelObject.cpp',
             'rendering/RenderLineBoxList.cpp',
