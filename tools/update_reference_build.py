@@ -6,6 +6,9 @@
 
 """Updates the Chrome reference builds.
 
+Use -r option to update a Chromium reference build, or -b option for Chrome
+official builds.
+
 Usage:
   $ cd /tmp
   $ /path/to/update_reference_build.py -r <revision>
@@ -15,7 +18,6 @@ Usage:
   $ gcl commit <change>
 """
 
-import errno
 import logging
 import optparse
 import os
@@ -27,38 +29,68 @@ import urllib
 import urllib2
 import zipfile
 
+# Example chromium build location:
+# gs://chromium-browser-snapshots/Linux/228977/chrome-linux.zip
+CHROMIUM_URL_FMT = ('http://commondatastorage.googleapis.com/'
+                    'chromium-browser-snapshots/%s/%s/%s')
+
+# Example Chrome build location (no public wed URL's):
+# gs://chrome-archive/30/30.0.1595.0/precise32bit/chrome-precise32bit.zip
+CHROME_URL_FMT = ('gs://chrome-archive/%s/%s/%s/%s')
+
 
 class BuildUpdater(object):
   _PLATFORM_FILES_MAP = {
-    'Win': [
-        'chrome-win32.zip',
-        'chrome-win32-syms.zip',
-        'chrome-win32.test/_pyautolib.pyd',
-        'chrome-win32.test/pyautolib.py',
-    ],
-    'Mac': [
-      'chrome-mac.zip',
-      'chrome-mac.test/_pyautolib.so',
-      'chrome-mac.test/pyautolib.py',
-    ],
-    'Linux': [
-        'chrome-linux.zip',
-    ],
-    'Linux_x64': [
-        'chrome-linux.zip',
-    ],
+      'Win': [
+          'chrome-win32.zip',
+          'chrome-win32-syms.zip',
+      ],
+      'Mac': [
+          'chrome-mac.zip',
+      ],
+      'Linux': [
+          'chrome-linux.zip',
+      ],
+      'Linux_x64': [
+          'chrome-linux.zip',
+      ],
+  }
+
+  _CHROME_PLATFORM_FILES_MAP = {
+      'Win': [
+          'chrome-win32.zip',
+          'chrome-win32-syms.zip',
+      ],
+      'Mac': [
+          'chrome-mac.zip',
+      ],
+      'Linux': [
+          'chrome-precise32bit.zip',
+      ],
+      'Linux_x64': [
+          'chrome-precise64bit.zip',
+      ],
+  }
+
+  # Map of platform names to gs:// Chrome build names.
+  _BUILD_PLATFORM_MAP = {
+      'Linux': 'precise32bit',
+      'Linux_x64': 'precise64bit',
+      'Win': 'win',
+      'Mac': 'mac',
   }
 
   _PLATFORM_DEST_MAP = {
-    'Linux': 'chrome_linux',
-    'Linux_x64': 'chrome_linux64',
-    'Win': 'chrome_win',
-    'Mac': 'chrome_mac',
-   }
+      'Linux': 'chrome_linux',
+      'Linux_x64': 'chrome_linux64',
+      'Win': 'chrome_win',
+      'Mac': 'chrome_mac',
+  }
 
   def __init__(self, options):
     self._platforms = options.platforms.split(',')
-    self._revision = int(options.revision)
+    self._revision = options.build_number or int(options.revision)
+    self._use_build_number = bool(options.build_number)
 
   @staticmethod
   def _GetCmdStatusAndOutput(args, cwd=None, shell=False):
@@ -84,27 +116,58 @@ class BuildUpdater(object):
     return (exit_code, stdout)
 
   def _GetBuildUrl(self, platform, revision, filename):
-    URL_FMT = ('http://commondatastorage.googleapis.com/'
-               'chromium-browser-snapshots/%s/%s/%s')
-    return URL_FMT % (urllib.quote_plus(platform), revision, filename)
+    if self._use_build_number:
+      release = revision[:revision.find('.')]
+      return (CHROME_URL_FMT %
+              (release, revision, self._BUILD_PLATFORM_MAP[platform], filename))
+    return CHROMIUM_URL_FMT % (urllib.quote_plus(platform), revision, filename)
 
   def _FindBuildRevision(self, platform, revision, filename):
+    # TODO(shadi): Iterate over build numbers to find a valid one.
+    if self._use_build_number:
+      return (revision
+              if self._DoesChromeBuildExist(platform, revision, filename) else
+              None)
+
     MAX_REVISIONS_PER_BUILD = 100
     for revision_guess in xrange(revision, revision + MAX_REVISIONS_PER_BUILD):
-      r = urllib2.Request(self._GetBuildUrl(platform, revision_guess, filename))
-      r.get_method = lambda: 'HEAD'
-      try:
-        response = urllib2.urlopen(r)
+      if self._DoesChromiumBuildExist(platform, revision_guess, filename):
         return revision_guess
-      except urllib2.HTTPError, err:
-        if err.code == 404:
-          time.sleep(.1)
-          continue
+      else:
+        time.sleep(.1)
     return None
+
+  def _DoesChromiumBuildExist(self, platform, build_number, filename):
+    url = self._GetBuildUrl(platform, build_number, filename)
+    r = urllib2.Request(url)
+    r.get_method = lambda: 'HEAD'
+    try:
+      urllib2.urlopen(r)
+      return True
+    except urllib2.HTTPError, err:
+      if err.code == 404:
+        return False
+
+  def _DoesChromeBuildExist(self, platform, build_number, filename):
+    release = build_number[:build_number.find('.')]
+    gs_file = (CHROME_URL_FMT %
+               (release,
+                build_number,
+                self._BUILD_PLATFORM_MAP[platform],
+                filename))
+    (exit_code, stdout) = BuildUpdater._GetCmdStatusAndOutput(
+        ['gsutil', 'ls', gs_file])
+
+    return not exit_code
+
+  def _GetPlatformFiles(self, platform):
+    if self._use_build_number:
+      return BuildUpdater._CHROME_PLATFORM_FILES_MAP[platform]
+    return BuildUpdater._PLATFORM_FILES_MAP[platform]
 
   def _DownloadBuilds(self):
     for platform in self._platforms:
-      for f in BuildUpdater._PLATFORM_FILES_MAP[platform]:
+      for f in self._GetPlatformFiles(platform):
         output = os.path.join('dl', platform,
                               '%s_%s_%s' % (platform, self._revision, f))
         if os.path.exists(output):
@@ -119,10 +182,16 @@ class BuildUpdater(object):
         if dirname and not os.path.exists(dirname):
           os.makedirs(dirname)
         url = self._GetBuildUrl(platform, build_revision, f)
-        logging.info('Downloading %s, saving to %s' % (url, output))
-        r = urllib2.urlopen(url)
-        with file(output, 'wb') as f:
-          f.write(r.read())
+        self._DownloadFile(url, output)
+
+  def _DownloadFile(self, url, output):
+    logging.info('Downloading %s, saving to %s' % (url, output))
+    if self._use_build_number:
+      BuildUpdater._GetCmdStatusAndOutput(['gsutil', 'cp', url, output])
+    else:
+      r = urllib2.urlopen(url)
+      with file(output, 'wb') as f:
+        f.write(r.read())
 
   def _FetchSvnRepos(self):
     if not os.path.exists('reference_builds'):
@@ -141,9 +210,11 @@ class BuildUpdater(object):
     with zipfile.ZipFile(dl_file, 'r') as z:
       for content in z.namelist():
         dest = os.path.join(dest_dir, content[content.find('/')+1:])
+        # Create dest parent dir if it does not exist.
+        if not os.path.isdir(os.path.dirname(dest)):
+          os.makedirs(os.path.dirname(dest))
+        # If dest is just a dir listing, do nothing.
         if not os.path.basename(dest):
-          if not os.path.isdir(dest):
-            os.makedirs(dest)
           continue
         with z.open(content) as unzipped_content:
           logging.info('Extracting %s to %s (%s)' % (content, dest, dl_file))
@@ -205,15 +276,20 @@ def ParseOptions(argv):
   parser = optparse.OptionParser()
   usage = 'usage: %prog <options>'
   parser.set_usage(usage)
+  parser.add_option('-b', dest='build_number',
+                    help='Chrome official build number to pick up.')
   parser.add_option('-r', dest='revision',
-                    help='Revision to pickup')
+                    help='Revision to pick up.')
   parser.add_option('-p', dest='platforms',
                     default='Win,Mac,Linux,Linux_x64',
                     help='Comma separated list of platforms to download '
                          '(as defined by the chromium builders).')
   (options, _) = parser.parse_args(argv)
-  if not options.revision:
-    logging.critical('Must specify -r\n')
+  if not options.revision and not options.build_number:
+    logging.critical('Must specify either -r or -b.\n')
+    sys.exit(1)
+  if options.revision and options.build_number:
+    logging.critical('Must specify either -r or -b but not both.\n')
     sys.exit(1)
 
   return options
