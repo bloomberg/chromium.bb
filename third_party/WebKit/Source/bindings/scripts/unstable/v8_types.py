@@ -262,11 +262,7 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     if is_typed_array_type and used_as_argument:
         return idl_type + '*'
 
-    # FIXME: fix Perl code reading:
-    # return "RefPtr<${type}>" if IsRefPtrType($type) and not $isParameter;
-    if is_interface_type(idl_type):
-        if used_as_argument:
-            return cpp_template_type('PassRefPtr', idl_type)
+    if is_interface_type(idl_type) and not used_as_argument:
         return cpp_template_type('RefPtr', idl_type)
     # Default, assume native type is a pointer with same type name as idl type
     return idl_type + '*'
@@ -485,7 +481,7 @@ def v8_conversion_type(idl_type, extended_attributes, includes):
         return 'SerializedScriptValue'
 
     # Pointer type
-    includes.add('wtf/GetPtr.h')  # FIXME: Is this necessary?
+    includes.add('wtf/GetPtr.h')  # FIXME: remove if can eliminate WTF::getPtr
     includes.add('wtf/RefPtr.h')
     return 'DOMWrapper'
 

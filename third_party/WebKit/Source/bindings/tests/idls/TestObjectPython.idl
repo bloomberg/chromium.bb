@@ -64,24 +64,24 @@ interface TestObjectPython {
     // Special V8 -> C++ types (RefPtr exceptions, special conversion)
     attribute DOMStringList domStringListAttribute;
     // DOM Node types
-    readonly attribute Document readonlyDocumentAttribute;
-    readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
-    readonly attribute DocumentType readonlyDocumentTypeAttribute;
-    readonly attribute Element readonlyElementAttribute;
-    readonly attribute Entity readonlyEntityAttribute;
-    readonly attribute Node readonlyNodeAttribute;
-    readonly attribute ShadowRoot readonlyShadowRootAttribute;
+    attribute Document documentAttribute;
+    attribute DocumentFragment documentFragmentAttribute;
+    attribute DocumentType documentTypeAttribute;
+    attribute Element elementAttribute;
+    attribute Entity entityAttribute;
+    attribute Node nodeAttribute;
+    attribute ShadowRoot shadowRootAttribute;
     // Typed arrays
     attribute ArrayBuffer arrayBufferAttribute;
     attribute Float32Array float32ArrayAttribute;
     attribute Uint8Array uint8ArrayAttribute;
     // Usual case for is_keep_alive_for_gc
-    readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
+    attribute TestInterfaceEmpty testInterfaceEmptyAttribute;
     // Exceptions for is_keep_alive_for_gc
-    readonly attribute TestInterfaceEmpty self;
-    readonly attribute Window readonlyWindowAttribute;
-    readonly attribute HTMLCollection readonlyHTMLCollectionAttribute;
-    readonly attribute HTMLElement readonlyHTMLElementAttribute;
+    attribute TestInterfaceEmpty self;
+    readonly attribute Window readonlyWindowAttribute;  // FIXME: support [ImplementedAs] on interface
+    attribute HTMLCollection htmlCollectionAttribute;
+    attribute HTMLElement htmlElementAttribute;
     // arrays
     attribute DOMString[] stringArrayAttribute;
     attribute TestInterfaceEmpty[] testInterfaceEmptyArrayAttribute;

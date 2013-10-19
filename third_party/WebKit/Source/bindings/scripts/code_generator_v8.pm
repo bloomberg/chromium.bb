@@ -5983,6 +5983,7 @@ sub FirstLetterToUpperCase
     # Capitalize initial acronym, e.g., xml -> setXML
     $ret =~ s/Xml/XML/ if $ret =~ /^Xml/;
     $ret =~ s/Css/CSS/ if $ret =~ /^Css/;
+    $ret =~ s/Html/HTML/ if $ret =~ /^Html/;
     $ret =~ s/Ime/IME/ if $ret =~ /^Ime/;
     $ret =~ s/Svg/SVG/ if $ret =~ /^Svg/;
     return $ret;
