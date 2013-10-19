@@ -305,11 +305,11 @@ class ScopedGLErrorSuppressor {
 // unit zero in case the client has changed that to something invalid.
 class ScopedTexture2DBinder {
  public:
-  ScopedTexture2DBinder(ContextState* state, GLuint id);
+  ScopedTexture2DBinder(GLES2DecoderImpl* decoder, GLuint id);
   ~ScopedTexture2DBinder();
 
  private:
-  ContextState* state_;
+  GLES2DecoderImpl* decoder_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTexture2DBinder);
 };
 
@@ -357,7 +357,7 @@ class ScopedResolvedFrameBufferBinder {
 // Encapsulates an OpenGL texture.
 class BackTexture {
  public:
-  explicit BackTexture(MemoryTracker* memory_tracker, ContextState* state);
+  explicit BackTexture(GLES2DecoderImpl* decoder);
   ~BackTexture();
 
   // Create a new render texture.
@@ -390,8 +390,8 @@ class BackTexture {
   }
 
  private:
+  GLES2DecoderImpl* decoder_;
   MemoryTypeTracker memory_tracker_;
-  ContextState* state_;
   size_t bytes_allocated_;
   GLuint id_;
   gfx::Size size_;
@@ -628,6 +628,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
+  void RestoreCurrentTexture2DBindings();
 
   // Sets DEPTH_TEST, STENCIL_TEST and color mask for the current framebuffer.
   void ApplyDirtyState();
@@ -649,6 +650,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
  private:
   friend class ScopedFrameBufferBinder;
   friend class ScopedResolvedFrameBufferBinder;
+  friend class BackTexture;
   friend class BackFramebuffer;
 
   // Initialize or re-initialize the shader translator.
@@ -1703,24 +1705,11 @@ ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
   ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_, function_name_);
 }
 
-static void RestoreCurrentTexture2DBindings(ContextState* state) {
-  TextureUnit& info = state->texture_units[0];
-  GLuint last_id;
-  if (info.bound_texture_2d.get()) {
-    last_id = info.bound_texture_2d->service_id();
-  } else {
-    last_id = 0;
-  }
-
-  glBindTexture(GL_TEXTURE_2D, last_id);
-  glActiveTexture(GL_TEXTURE0 + state->active_texture_unit);
-}
-
-ScopedTexture2DBinder::ScopedTexture2DBinder(ContextState* state,
+ScopedTexture2DBinder::ScopedTexture2DBinder(GLES2DecoderImpl* decoder,
                                              GLuint id)
-    : state_(state) {
+    : decoder_(decoder) {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedTexture2DBinder::ctor", state_->GetErrorState());
+      "ScopedTexture2DBinder::ctor", decoder_->GetErrorState());
 
   // TODO(apatrick): Check if there are any other states that need to be reset
   // before binding a new texture.
@@ -1730,8 +1719,8 @@ ScopedTexture2DBinder::ScopedTexture2DBinder(ContextState* state,
 
 ScopedTexture2DBinder::~ScopedTexture2DBinder() {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedTexture2DBinder::dtor", state_->GetErrorState());
-  RestoreCurrentTexture2DBindings(state_);
+      "ScopedTexture2DBinder::dtor", decoder_->GetErrorState());
+  decoder_->RestoreCurrentTexture2DBindings();
 }
 
 ScopedRenderBufferBinder::ScopedRenderBufferBinder(ContextState* state,
@@ -1785,7 +1774,7 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
           new BackFramebuffer(decoder_));
       decoder_->offscreen_resolved_frame_buffer_->Create();
       decoder_->offscreen_resolved_color_texture_.reset(
-          new BackTexture(decoder->memory_tracker(), &decoder->state_));
+          new BackTexture(decoder_));
       decoder_->offscreen_resolved_color_texture_->Create();
 
       DCHECK(decoder_->offscreen_saved_color_format_);
@@ -1831,11 +1820,9 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
   }
 }
 
-BackTexture::BackTexture(
-    MemoryTracker* memory_tracker,
-    ContextState* state)
-    : memory_tracker_(memory_tracker, MemoryTracker::kUnmanaged),
-      state_(state),
+BackTexture::BackTexture(GLES2DecoderImpl* decoder)
+    : decoder_(decoder),
+      memory_tracker_(decoder->memory_tracker(), MemoryTracker::kUnmanaged),
       bytes_allocated_(0),
       id_(0) {
 }
@@ -1849,10 +1836,10 @@ BackTexture::~BackTexture() {
 
 void BackTexture::Create() {
   ScopedGLErrorSuppressor suppressor("BackTexture::Create",
-                                     state_->GetErrorState());
+                                     decoder_->GetErrorState());
   Destroy();
   glGenTextures(1, &id_);
-  ScopedTexture2DBinder binder(state_, id_);
+  ScopedTexture2DBinder binder(decoder_, id_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1875,8 +1862,8 @@ bool BackTexture::AllocateStorage(
     const gfx::Size& size, GLenum format, bool zero) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::AllocateStorage",
-                                     state_->GetErrorState());
-  ScopedTexture2DBinder binder(state_, id_);
+                                     decoder_->GetErrorState());
+  ScopedTexture2DBinder binder(decoder_, id_);
   uint32 image_size = 0;
   GLES2Util::ComputeImageDataSizes(
       size.width(), size.height(), format, GL_UNSIGNED_BYTE, 8, &image_size,
@@ -1916,8 +1903,8 @@ bool BackTexture::AllocateStorage(
 void BackTexture::Copy(const gfx::Size& size, GLenum format) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::Copy",
-                                     state_->GetErrorState());
-  ScopedTexture2DBinder binder(state_, id_);
+                                     decoder_->GetErrorState());
+  ScopedTexture2DBinder binder(decoder_, id_);
   glCopyTexImage2D(GL_TEXTURE_2D,
                    0,  // level
                    format,
@@ -1930,7 +1917,7 @@ void BackTexture::Copy(const gfx::Size& size, GLenum format) {
 void BackTexture::Destroy() {
   if (id_ != 0) {
     ScopedGLErrorSuppressor suppressor("BackTexture::Destroy",
-                                       state_->GetErrorState());
+                                       decoder_->GetErrorState());
     glDeleteTextures(1, &id_);
     id_ = 0;
   }
@@ -2357,8 +2344,7 @@ bool GLES2DecoderImpl::Initialize(
           renderbuffer_manager(), memory_tracker(), &state_));
       offscreen_target_color_render_buffer_->Create();
     } else {
-      offscreen_target_color_texture_.reset(new BackTexture(
-          memory_tracker(), &state_));
+      offscreen_target_color_texture_.reset(new BackTexture(this));
       offscreen_target_color_texture_->Create();
     }
     offscreen_target_depth_render_buffer_.reset(new BackRenderbuffer(
@@ -2373,8 +2359,7 @@ bool GLES2DecoderImpl::Initialize(
     offscreen_saved_frame_buffer_.reset(new BackFramebuffer(this));
     offscreen_saved_frame_buffer_->Create();
     //
-    offscreen_saved_color_texture_.reset(new BackTexture(
-        memory_tracker(), &state_));
+    offscreen_saved_color_texture_.reset(new BackTexture(this));
     offscreen_saved_color_texture_->Create();
 
     // Allocate the render buffers at their initial size and check the status
@@ -2862,6 +2847,19 @@ void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
         GetBackbufferServiceId());
   }
   OnFboChanged();
+}
+
+void GLES2DecoderImpl::RestoreCurrentTexture2DBindings() {
+  TextureUnit& info = state_.texture_units[0];
+  GLuint last_id;
+  if (info.bound_texture_2d.get()) {
+    last_id = info.bound_texture_2d->service_id();
+  } else {
+    last_id = 0;
+  }
+
+  glBindTexture(GL_TEXTURE_2D, last_id);
+  glActiveTexture(GL_TEXTURE0 + state_.active_texture_unit);
 }
 
 bool GLES2DecoderImpl::CheckFramebufferValid(
@@ -9664,7 +9662,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
         0, internal_format, dest_type, NULL);
     GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTextureCHROMIUM");
     if (error != GL_NO_ERROR) {
-      RestoreCurrentTexture2DBindings(&state_);
+      RestoreCurrentTexture2DBindings();
       return;
     }
 
