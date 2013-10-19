@@ -25,7 +25,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "shell_aura\.cc": [
+  "shell_views\.cc": [
     "+ui/shell"
   ],
 }
