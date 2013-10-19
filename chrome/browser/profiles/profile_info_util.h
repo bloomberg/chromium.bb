@@ -11,7 +11,7 @@ namespace profiles {
 
 extern const int kAvatarIconWidth;
 extern const int kAvatarIconHeight;
-extern const int kAvatarIconBorder;
+extern const int kAvatarIconPadding;
 
 // Returns a version of |image| of a specific size and with a grey border.
 // Note that no checks are done on the width/height so make sure they're

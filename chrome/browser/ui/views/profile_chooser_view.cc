@@ -56,8 +56,8 @@ views::View* CreateProfileImageView(const gfx::Image& icon) {
 
   gfx::Image image = profiles::GetSizedAvatarIconWithBorder(
       icon, true,
-      kLargeImageSide + profiles::kAvatarIconBorder,
-      kLargeImageSide + profiles::kAvatarIconBorder);
+      kLargeImageSide + profiles::kAvatarIconPadding,
+      kLargeImageSide + profiles::kAvatarIconPadding);
   view->SetImage(image.ToImageSkia());
 
   return view;
@@ -509,8 +509,8 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
 
     gfx::Image image = profiles::GetSizedAvatarIconWithBorder(
         item.icon, true,
-        kSmallImageSide + profiles::kAvatarIconBorder,
-        kSmallImageSide + profiles::kAvatarIconBorder);
+        kSmallImageSide + profiles::kAvatarIconPadding,
+        kSmallImageSide + profiles::kAvatarIconPadding);
 
     views::TextButton* button = new views::TextButton(this, item.name);
     open_other_profile_indexes_map_[button] = index;
