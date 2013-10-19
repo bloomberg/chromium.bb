@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
-#define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
+#ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H_
+#define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,7 +13,8 @@
 #include "printing/print_destination_interface.h"
 #include "printing/printing_context.h"
 #include "printing/print_job_constants.h"
-#include "ui/gfx/native_widget_types.h"
+
+class PrintingUIWebContentsObserver;
 
 namespace base {
 class DictionaryValue;
@@ -45,11 +46,12 @@ class PrintJobWorker : public base::Thread {
 
   // Initializes the print settings. If |ask_user_for_settings| is true, a
   // Print... dialog box will be shown to ask the user his preference.
-  void GetSettings(bool ask_user_for_settings,
-                   gfx::NativeView parent_view,
-                   int document_page_count,
-                   bool has_selection,
-                   MarginType margin_type);
+  void GetSettings(
+      bool ask_user_for_settings,
+      scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer,
+      int document_page_count,
+      bool has_selection,
+      MarginType margin_type);
 
   // Set the new print settings. This function takes ownership of
   // |new_settings|.
@@ -95,9 +97,10 @@ class PrintJobWorker : public base::Thread {
   // Asks the user for print settings. Must be called on the UI thread.
   // Required on Mac and Linux. Windows can display UI from non-main threads,
   // but sticks with this for consistency.
-  void GetSettingsWithUI(gfx::NativeView parent_view,
-                         int document_page_count,
-                         bool has_selection);
+  void GetSettingsWithUI(
+      scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer,
+      int document_page_count,
+      bool has_selection);
 
   // The callback used by PrintingContext::GetSettingsWithUI() to notify this
   // object that the print settings are set.  This is needed in order to bounce
@@ -140,4 +143,4 @@ class PrintJobWorker : public base::Thread {
 
 }  // namespace printing
 
-#endif  // CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
+#endif  // CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H_

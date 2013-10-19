@@ -1695,6 +1695,8 @@
         'browser/printing/printer_query.h',
         'browser/printing/printing_message_filter.cc',
         'browser/printing/printing_message_filter.h',
+        'browser/printing/printing_ui_web_contents_observer.cc',
+        'browser/printing/printing_ui_web_contents_observer.h',
         'browser/process_info_snapshot.h',
         'browser/process_info_snapshot_mac.cc',
         'browser/process_singleton.h',
