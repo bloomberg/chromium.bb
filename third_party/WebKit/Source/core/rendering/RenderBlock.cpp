@@ -144,8 +144,8 @@ private:
     bool m_hadVerticalLayoutOverflow;
 };
 
-RenderBlock::RenderBlock(ContainerNode* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderBox(node, renderObjectType, renderBaseObjectTypes | RenderBlockBaseObjectType)
+RenderBlock::RenderBlock(ContainerNode* node)
+    : RenderBox(node)
     , m_lineHeight(-1)
     , m_hasMarginBeforeQuirk(false)
     , m_hasMarginAfterQuirk(false)

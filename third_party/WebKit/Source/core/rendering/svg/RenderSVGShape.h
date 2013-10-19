@@ -44,7 +44,8 @@ class SVGGraphicsElement;
 
 class RenderSVGShape : public RenderSVGModelObject {
 public:
-    RenderSVGShape(SVGGraphicsElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderSVGShape(SVGGraphicsElement*);
+    RenderSVGShape(SVGGraphicsElement*, Path*, bool);
     virtual ~RenderSVGShape();
 
     void setNeedsShapeUpdate() { m_needsShapeUpdate = true; }
@@ -85,6 +86,7 @@ private:
     virtual const AffineTransform& localToParentTransform() const OVERRIDE FINAL { return m_localTransform; }
     virtual AffineTransform localTransform() const OVERRIDE FINAL { return m_localTransform; }
 
+    virtual bool isSVGShape() const OVERRIDE FINAL { return true; }
     virtual const char* renderName() const { return "RenderSVGShape"; }
 
     virtual void layout() OVERRIDE FINAL;

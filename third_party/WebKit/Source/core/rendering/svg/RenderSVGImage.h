@@ -49,6 +49,7 @@ public:
 
 private:
     virtual const char* renderName() const { return "RenderSVGImage"; }
+    virtual bool isSVGImage() const OVERRIDE { return true; }
 
     virtual const AffineTransform& localToParentTransform() const { return m_localTransform; }
 

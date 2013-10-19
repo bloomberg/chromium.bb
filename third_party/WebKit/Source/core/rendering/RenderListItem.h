@@ -56,6 +56,8 @@ public:
 private:
     virtual const char* renderName() const { return "RenderListItem"; }
 
+    virtual bool isListItem() const { return true; }
+
     virtual void willBeDestroyed();
 
     virtual void insertedIntoTree() OVERRIDE;

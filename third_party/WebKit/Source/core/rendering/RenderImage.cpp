@@ -54,8 +54,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RenderImage::RenderImage(Element* element, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderReplaced(element, IntSize(), renderObjectType, renderBaseObjectTypes | RenderImageBaseObjectType | RenderRenderImageBaseObjectType)
+RenderImage::RenderImage(Element* element)
+    : RenderReplaced(element, IntSize())
     , m_needsToSetSizeForAltText(false)
     , m_didIncrementVisuallyNonEmptyPixelCount(false)
     , m_isGeneratedContent(false)

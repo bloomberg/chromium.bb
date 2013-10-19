@@ -33,17 +33,15 @@
 
 namespace WebCore {
 
-RenderMedia::RenderMedia(HTMLMediaElement* video, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderImage(video, renderObjectType, renderBaseObjectTypes | RenderMediaBaseObjectType)
+RenderMedia::RenderMedia(HTMLMediaElement* video)
+    : RenderImage(video)
 {
-    setRenderBaseObjectTypes(getRenderBaseObjectTypes() & ~RenderImageBaseObjectType);
     setImageResource(RenderImageResource::create());
 }
 
-RenderMedia::RenderMedia(HTMLMediaElement* video, const IntSize& intrinsicSize, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderImage(video, renderObjectType, renderBaseObjectTypes | RenderMediaBaseObjectType)
+RenderMedia::RenderMedia(HTMLMediaElement* video, const IntSize& intrinsicSize)
+    : RenderImage(video)
 {
-    setRenderBaseObjectTypes(getRenderBaseObjectTypes() & ~RenderImageBaseObjectType);
     setImageResource(RenderImageResource::create());
     setIntrinsicSize(intrinsicSize);
 }

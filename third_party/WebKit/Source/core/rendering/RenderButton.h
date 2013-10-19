@@ -37,6 +37,7 @@ public:
     virtual ~RenderButton();
 
     virtual const char* renderName() const { return "RenderButton"; }
+    virtual bool isRenderButton() const { return true; }
 
     virtual bool canBeSelectionLeaf() const OVERRIDE { return node() && node()->rendererIsEditable(); }
 

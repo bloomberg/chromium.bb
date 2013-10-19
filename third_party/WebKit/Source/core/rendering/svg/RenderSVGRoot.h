@@ -67,6 +67,7 @@ private:
     virtual RenderObjectChildList* virtualChildren() { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const { return children(); }
 
+    virtual bool isSVGRoot() const { return true; }
     virtual const char* renderName() const { return "RenderSVGRoot"; }
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const OVERRIDE;

@@ -35,7 +35,7 @@
 namespace WebCore {
 
 RenderSVGPath::RenderSVGPath(SVGGraphicsElement* node)
-    : RenderSVGShape(node, RenderSVGPathObjectType)
+    : RenderSVGShape(node)
 {
 }
 

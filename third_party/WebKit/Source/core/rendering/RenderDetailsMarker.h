@@ -36,6 +36,7 @@ public:
 private:
     virtual const char* renderName() const { return "RenderDetailsMarker"; }
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+    virtual bool isDetailsMarker() const { return true; }
     virtual void paint(PaintInfo&, const LayoutPoint&);
 
     bool isOpen() const;

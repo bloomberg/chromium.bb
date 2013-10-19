@@ -31,8 +31,8 @@
 
 namespace WebCore {
 
-RenderSVGResourceGradient::RenderSVGResourceGradient(SVGGradientElement* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderSVGResourceContainer(node, renderObjectType, renderBaseObjectTypes | RenderSVGResourceGradientBaseObjectType)
+RenderSVGResourceGradient::RenderSVGResourceGradient(SVGGradientElement* node)
+    : RenderSVGResourceContainer(node)
     , m_shouldCollectGradientAttributes(true)
 {
 }

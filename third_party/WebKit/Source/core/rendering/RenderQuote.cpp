@@ -32,7 +32,7 @@
 namespace WebCore {
 
 RenderQuote::RenderQuote(Document* node, QuoteType quote)
-    : RenderInline(0, RenderQuoteObjectType)
+    : RenderInline(0)
     , m_type(quote)
     , m_depth(0)
     , m_next(0)

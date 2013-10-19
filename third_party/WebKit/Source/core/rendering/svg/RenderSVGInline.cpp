@@ -38,8 +38,8 @@ bool RenderSVGInline::isChildAllowed(RenderObject* child, RenderStyle* style) co
     return RenderInline::isChildAllowed(child, style);
 }
 
-RenderSVGInline::RenderSVGInline(Element* element, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderInline(element, renderObjectType, renderBaseObjectTypes | RenderSVGInlineBaseObjectType)
+RenderSVGInline::RenderSVGInline(Element* element)
+    : RenderInline(element)
 {
     setAlwaysCreateLineBoxes();
 }

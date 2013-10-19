@@ -130,8 +130,8 @@ static void makeCapitalized(String* string, UChar previous)
     *string = result.toString();
 }
 
-RenderText::RenderText(Node* node, PassRefPtr<StringImpl> str, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderObject(!node || node->isDocumentNode() ? 0 : node, renderObjectType, renderBaseObjectTypes | RenderTextBaseObjectType)
+RenderText::RenderText(Node* node, PassRefPtr<StringImpl> str)
+    : RenderObject(!node || node->isDocumentNode() ? 0 : node)
     , m_hasTab(false)
     , m_linesDirty(false)
     , m_containsReversedText(false)

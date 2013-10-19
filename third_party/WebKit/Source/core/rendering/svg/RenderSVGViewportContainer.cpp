@@ -33,7 +33,7 @@
 namespace WebCore {
 
 RenderSVGViewportContainer::RenderSVGViewportContainer(SVGElement* node)
-    : RenderSVGContainer(node, RenderSVGViewportContainerObjectType)
+    : RenderSVGContainer(node)
     , m_didTransformToRootUpdate(false)
     , m_isLayoutSizeChanged(false)
     , m_needsTransformUpdate(true)

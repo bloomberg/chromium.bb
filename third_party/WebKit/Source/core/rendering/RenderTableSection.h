@@ -226,6 +226,8 @@ private:
 
     virtual const char* renderName() const { return (isAnonymous() || isPseudoElement()) ? "RenderTableSection (anonymous)" : "RenderTableSection"; }
 
+    virtual bool isTableSection() const { return true; }
+
     virtual void willBeRemovedFromTree() OVERRIDE;
 
     virtual void layout();

@@ -36,6 +36,7 @@ public:
     virtual ~RenderSVGPath();
 
 private:
+    virtual bool isSVGPath() const OVERRIDE { return true; }
     virtual const char* renderName() const { return "RenderSVGPath"; }
 
     virtual void updateShapeFromElement() OVERRIDE;

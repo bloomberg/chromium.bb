@@ -82,6 +82,8 @@ public:
 private:
     virtual const char* renderName() const OVERRIDE FINAL;
 
+    virtual bool isMarquee() const OVERRIDE FINAL { return true; }
+
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
 
     virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE FINAL;

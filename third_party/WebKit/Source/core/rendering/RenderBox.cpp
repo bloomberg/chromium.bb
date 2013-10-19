@@ -92,8 +92,8 @@ static bool skipBodyBackground(const RenderBox* bodyElementRenderer)
         && (documentElementRenderer == bodyElementRenderer->parent());
 }
 
-RenderBox::RenderBox(ContainerNode* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderBoxModelObject(node, renderObjectType, renderBaseObjectTypes | RenderBoxBaseObjectType)
+RenderBox::RenderBox(ContainerNode* node)
+    : RenderBoxModelObject(node)
     , m_minPreferredLogicalWidth(-1)
     , m_maxPreferredLogicalWidth(-1)
     , m_intrinsicContentLogicalHeight(-1)

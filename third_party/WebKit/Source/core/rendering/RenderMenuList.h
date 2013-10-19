@@ -54,6 +54,8 @@ public:
 private:
     HTMLSelectElement* selectElement() const;
 
+    virtual bool isMenuList() const { return true; }
+
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0);
     virtual void removeChild(RenderObject*);
     virtual bool createsAnonymousWrapper() const { return true; }

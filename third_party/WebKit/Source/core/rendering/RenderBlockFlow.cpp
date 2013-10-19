@@ -141,8 +141,8 @@ static bool inNormalFlow(RenderBox* child)
     return true;
 }
 
-RenderBlockFlow::RenderBlockFlow(ContainerNode* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderBlock(node, renderObjectType, renderBaseObjectTypes | RenderBlockFlowBaseObjectType)
+RenderBlockFlow::RenderBlockFlow(ContainerNode* node)
+    : RenderBlock(node)
 {
     COMPILE_ASSERT(sizeof(MarginInfo) == sizeof(SameSizeAsMarginInfo), MarginInfo_should_stay_small);
 }

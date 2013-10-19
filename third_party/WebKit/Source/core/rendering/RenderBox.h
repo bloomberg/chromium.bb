@@ -49,7 +49,7 @@ enum ScrollOffsetClamping {
 
 class RenderBox : public RenderBoxModelObject {
 public:
-    RenderBox(ContainerNode*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderBox(ContainerNode*);
     virtual ~RenderBox();
 
     // hasAutoZIndex only returns true if the element is positioned or a flex-item since

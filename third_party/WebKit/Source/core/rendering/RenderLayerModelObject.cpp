@@ -38,8 +38,8 @@ bool RenderLayerModelObject::s_hadLayer = false;
 bool RenderLayerModelObject::s_hadTransform = false;
 bool RenderLayerModelObject::s_layerWasSelfPainting = false;
 
-RenderLayerModelObject::RenderLayerModelObject(ContainerNode* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderObject(node, renderObjectType, renderBaseObjectTypes | RenderLayerModelBaseObjectType)
+RenderLayerModelObject::RenderLayerModelObject(ContainerNode* node)
+    : RenderObject(node)
     , m_layer(0)
 {
 }

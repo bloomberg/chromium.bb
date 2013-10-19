@@ -53,8 +53,7 @@ RenderNamedFlowThread* RenderNamedFlowThread::createAnonymous(Document* document
 }
 
 RenderNamedFlowThread::RenderNamedFlowThread(PassRefPtr<NamedFlow> namedFlow)
-    : RenderFlowThread(RenderNamedFlowThreadObjectType)
-    , m_overset(true)
+    : m_overset(true)
     , m_namedFlow(namedFlow)
     , m_regionLayoutUpdateEventTimer(this, &RenderNamedFlowThread::regionLayoutUpdateEventTimerFired)
     , m_regionOversetChangeEventTimer(this, &RenderNamedFlowThread::regionOversetChangeEventTimerFired)

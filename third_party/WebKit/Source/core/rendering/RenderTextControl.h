@@ -37,7 +37,7 @@ public:
     virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const = 0;
 
 protected:
-    RenderTextControl(HTMLTextFormControlElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    RenderTextControl(HTMLTextFormControlElement*);
 
     // This convenience function should not be made public because innerTextElement may outlive the render tree.
     HTMLElement* innerTextElement() const;
@@ -71,6 +71,7 @@ protected:
 
 private:
     virtual const char* renderName() const { return "RenderTextControl"; }
+    virtual bool isTextControl() const { return true; }
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
@@ -110,7 +111,7 @@ void toRenderTextControl(const RenderTextControl*);
 class RenderTextControlInnerContainer FINAL : public RenderFlexibleBox {
 public:
     explicit RenderTextControlInnerContainer(Element* element)
-        : RenderFlexibleBox(element, RenderTextControlInnerContainerObjectType)
+        : RenderFlexibleBox(element)
     { }
     virtual ~RenderTextControlInnerContainer() { }
 

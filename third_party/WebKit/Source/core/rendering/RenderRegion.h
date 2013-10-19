@@ -44,7 +44,9 @@ class RenderNamedFlowThread;
 
 class RenderRegion : public RenderBlockFlow {
 public:
-    RenderRegion(Element*, RenderFlowThread*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderRegion(Element*, RenderFlowThread*);
+
+    virtual bool isRenderRegion() const { return true; }
 
     bool hitTestFlowThreadContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 

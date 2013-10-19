@@ -58,6 +58,7 @@ public:
 
 private:
     virtual const char* renderName() const { return "RenderSVGText"; }
+    virtual bool isSVGText() const { return true; }
 
     virtual void paint(PaintInfo&, const LayoutPoint&);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;

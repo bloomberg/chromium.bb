@@ -36,13 +36,14 @@ class FilterEffect;
 class RenderSVGResourceFilterPrimitive FINAL : public RenderSVGHiddenContainer {
 public:
     explicit RenderSVGResourceFilterPrimitive(SVGElement* filterPrimitiveElement)
-        : RenderSVGHiddenContainer(filterPrimitiveElement, RenderSVGResourceFilterPrimitiveObjectType)
+        : RenderSVGHiddenContainer(filterPrimitiveElement)
     {
     }
 
     virtual void styleDidChange(StyleDifference, const RenderStyle*);
 
     virtual const char* renderName() const { return "RenderSVGResourceFilterPrimitive"; }
+    virtual bool isSVGResourceFilterPrimitive() const { return true; }
 
     // They depend on the RenderObject argument of RenderSVGResourceFilter::applyResource.
     static FloatRect determineFilterPrimitiveSubregion(FilterEffect*);

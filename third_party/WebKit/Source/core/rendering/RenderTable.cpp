@@ -52,7 +52,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderTable::RenderTable(Element* element)
-    : RenderBlock(element, RenderTableObjectType)
+    : RenderBlock(element)
     , m_head(0)
     , m_foot(0)
     , m_firstBody(0)

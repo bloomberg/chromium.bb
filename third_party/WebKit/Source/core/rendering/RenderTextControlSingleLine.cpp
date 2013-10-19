@@ -41,8 +41,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RenderTextControlSingleLine::RenderTextControlSingleLine(HTMLInputElement* element, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderTextControl(element, renderObjectType, renderBaseObjectTypes | RenderTextControlSingleLineBaseObjectType)
+RenderTextControlSingleLine::RenderTextControlSingleLine(HTMLInputElement* element)
+    : RenderTextControl(element)
     , m_shouldDrawCapsLockIndicator(false)
     , m_desiredInnerTextLogicalHeight(-1)
 {

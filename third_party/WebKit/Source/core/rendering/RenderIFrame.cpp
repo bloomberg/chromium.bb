@@ -37,7 +37,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderIFrame::RenderIFrame(Element* element)
-    : RenderPart(element, RenderIFrameObjectType)
+    : RenderPart(element)
 {
 }
 

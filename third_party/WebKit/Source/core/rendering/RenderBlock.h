@@ -81,7 +81,7 @@ public:
     friend class LineLayoutState;
 
 protected:
-    RenderBlock(ContainerNode*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderBlock(ContainerNode*);
     virtual ~RenderBlock();
 
 public:
@@ -548,6 +548,8 @@ private:
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
 
     virtual const char* renderName() const;
+
+    virtual bool isRenderBlock() const OVERRIDE FINAL { return true; }
 
     void makeChildrenNonInline(RenderObject* insertionPoint = 0);
     virtual void removeLeftoverAnonymousBlock(RenderBlock* child);

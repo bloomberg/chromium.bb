@@ -52,6 +52,8 @@ private:
     virtual const char* renderName() const { return "RenderListMarker"; }
     virtual void computePreferredLogicalWidths() OVERRIDE;
 
+    virtual bool isListMarker() const { return true; }
+
     virtual void paint(PaintInfo&, const LayoutPoint&);
 
     virtual void layout();

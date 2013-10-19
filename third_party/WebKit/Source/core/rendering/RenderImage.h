@@ -35,7 +35,7 @@ class HTMLMapElement;
 
 class RenderImage : public RenderReplaced {
 public:
-    RenderImage(Element*, RenderObjectType = RenderNoneObjectType, unsigned renderObjectBaseTypes = RenderNoneBaseObjectType);
+    RenderImage(Element*);
     virtual ~RenderImage();
 
     static RenderImage* createAnonymous(Document*);
@@ -85,6 +85,9 @@ protected:
 
 private:
     virtual const char* renderName() const { return "RenderImage"; }
+
+    virtual bool isImage() const { return true; }
+    virtual bool isRenderImage() const OVERRIDE FINAL { return true; }
 
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&);
 

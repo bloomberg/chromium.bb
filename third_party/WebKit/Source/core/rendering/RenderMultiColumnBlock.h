@@ -47,6 +47,8 @@ public:
     bool requiresBalancing() const { return !m_columnHeightAvailable || style()->columnFill() == ColumnFillBalance; }
 
 private:
+    virtual bool isRenderMultiColumnBlock() const { return true; }
+
     virtual const char* renderName() const;
 
     virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) OVERRIDE;

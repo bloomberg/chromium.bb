@@ -40,6 +40,7 @@ public:
 
 private:
     virtual const char* renderName() const { return "RenderSlider"; }
+    virtual bool isSlider() const { return true; }
     virtual bool canBeReplacedWithInlineRunIn() const OVERRIDE;
 
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const;

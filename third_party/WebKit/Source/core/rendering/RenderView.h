@@ -53,6 +53,8 @@ public:
 
     virtual const char* renderName() const OVERRIDE { return "RenderView"; }
 
+    virtual bool isRenderView() const OVERRIDE { return true; }
+
     virtual bool requiresLayer() const OVERRIDE { return true; }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;

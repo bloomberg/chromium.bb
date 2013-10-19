@@ -41,8 +41,8 @@ using namespace std;
 
 namespace WebCore {
 
-RenderRegion::RenderRegion(Element* element, RenderFlowThread* flowThread, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderBlockFlow(element, renderObjectType, renderBaseObjectTypes | RenderRegionBaseObjectType)
+RenderRegion::RenderRegion(Element* element, RenderFlowThread* flowThread)
+    : RenderBlockFlow(element)
     , m_flowThread(flowThread)
     , m_parentNamedFlowThread(0)
     , m_computedAutoHeight(-1)

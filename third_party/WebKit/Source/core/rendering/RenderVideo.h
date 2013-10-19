@@ -59,6 +59,7 @@ private:
     virtual const char* renderName() const { return "RenderVideo"; }
 
     virtual bool requiresLayer() const { return true; }
+    virtual bool isVideo() const { return true; }
 
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&);
 

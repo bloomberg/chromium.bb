@@ -52,7 +52,7 @@ COMPILE_ASSERT(sizeof(RenderTableCell) == sizeof(SameSizeAsRenderTableCell), Ren
 COMPILE_ASSERT(sizeof(CollapsedBorderValue) == 8, CollapsedBorderValue_should_stay_small);
 
 RenderTableCell::RenderTableCell(Element* element)
-    : RenderBlockFlow(element, RenderTableCellObjectType)
+    : RenderBlockFlow(element)
     , m_column(unsetColumnIndex)
     , m_cellWidthChanged(false)
     , m_intrinsicPaddingBefore(0)

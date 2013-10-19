@@ -47,6 +47,7 @@ protected:
 
 private:
     virtual const char* renderName() const;
+    virtual bool isCounter() const;
     virtual PassRefPtr<StringImpl> originalText() const;
 
     // Removes the reference to the CounterNode associated with this renderer.

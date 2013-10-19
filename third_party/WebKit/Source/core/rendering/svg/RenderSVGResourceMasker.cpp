@@ -39,7 +39,7 @@ namespace WebCore {
 RenderSVGResourceType RenderSVGResourceMasker::s_resourceType = MaskerResourceType;
 
 RenderSVGResourceMasker::RenderSVGResourceMasker(SVGMaskElement* node)
-    : RenderSVGResourceContainer(node, RenderSVGResourceMaskerObjectType)
+    : RenderSVGResourceContainer(node)
 {
 }
 

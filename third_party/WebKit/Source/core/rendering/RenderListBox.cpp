@@ -79,7 +79,7 @@ const int defaultSize = 4;
 const int baselineAdjustment = 7;
 
 RenderListBox::RenderListBox(Element* element)
-    : RenderBlockFlow(element, RenderListBoxObjectType)
+    : RenderBlockFlow(element)
     , m_optionsChanged(true)
     , m_scrollToRevealSelectionAfterLayout(true)
     , m_inAutoscroll(false)

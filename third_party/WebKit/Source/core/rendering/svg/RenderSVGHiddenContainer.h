@@ -30,7 +30,7 @@ class SVGElement;
 // <defs>, <linearGradient>, <radialGradient> are all good examples
 class RenderSVGHiddenContainer : public RenderSVGContainer {
 public:
-    RenderSVGHiddenContainer(SVGElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderSVGHiddenContainer(SVGElement*);
 
     virtual const char* renderName() const { return "RenderSVGHiddenContainer"; }
 
@@ -38,6 +38,8 @@ protected:
     virtual void layout();
 
 private:
+    virtual bool isSVGHiddenContainer() const OVERRIDE FINAL { return true; }
+
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject*) const OVERRIDE FINAL { return LayoutRect(); }

@@ -34,7 +34,6 @@
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"
-#include "core/rendering/RenderObjectTypes.h"
 #include "core/rendering/RenderingNodeProxy.h"
 #include "core/rendering/ScrollBehavior.h"
 #include "core/rendering/SubtreeLayoutScope.h"
@@ -147,7 +146,7 @@ class RenderObject : public ImageResourceClient {
 public:
     // Anonymous objects should pass the document as their node, and they will then automatically be
     // marked as anonymous in the constructor.
-    RenderObject(Node*, RenderObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderObject(Node*);
     virtual ~RenderObject();
 
     virtual const char* renderName() const = 0;
@@ -323,80 +322,73 @@ public:
 public:
     bool isPseudoElement() const { return node() && node()->isPseudoElement(); }
 
-    bool isBR() const { return m_bitfields.isRenderType(RenderBRObjectType); }
-    bool isBoxModelObject() const { return m_bitfields.isRenderBaseType(RenderBoxModelBaseObjectType); }
-    bool isCounter() const { return m_bitfields.isRenderType(RenderCounterObjectType); }
-    bool isQuote() const { return m_bitfields.isRenderType(RenderQuoteObjectType); }
+    virtual bool isBR() const { return false; }
+    virtual bool isBoxModelObject() const { return false; }
+    virtual bool isCounter() const { return false; }
+    virtual bool isQuote() const { return false; }
 
-    bool isDetailsMarker() const { return m_bitfields.isRenderType(RenderDetailsMarkerObjectType); }
-    bool isEmbeddedObject() const { return m_bitfields.isRenderBaseType(RenderEmbeddedBaseObjectType); }
-    bool isFieldset() const { return m_bitfields.isRenderType(RenderFieldsetObjectType); }
-    bool isFileUploadControl() const { return m_bitfields.isRenderType(RenderFileUploadControlObjectType); }
-    bool isFrame() const { return m_bitfields.isRenderType(RenderFrameObjectType); }
-    bool isFrameSet() const { return m_bitfields.isRenderType(RenderFrameSetObjectType); }
-    bool isImage() const { return m_bitfields.isRenderBaseType(RenderImageBaseObjectType); }
-    bool isLayerModelObject() const { return m_bitfields.isRenderBaseType(RenderLayerModelBaseObjectType); }
-    bool isListBox() const { return m_bitfields.isRenderType(RenderListBoxObjectType); }
-    bool isListItem() const { return m_bitfields.isRenderType(RenderListItemObjectType); }
-    bool isListMarker() const { return m_bitfields.isRenderType(RenderListMarkerObjectType); }
-    bool isMarquee() const { return m_bitfields.isRenderType(RenderMarqueeObjectType); }
-    bool isMedia() const { return m_bitfields.isRenderBaseType(RenderMediaBaseObjectType); }
-    bool isMenuList() const { return m_bitfields.isRenderType(RenderMenuListObjectType); }
-    bool isMeter() const { return m_bitfields.isRenderType(RenderMeterObjectType); }
-    bool isProgress() const { return m_bitfields.isRenderType(RenderProgressObjectType); }
-    bool isRenderBlock() const { return m_bitfields.isRenderBaseType(RenderBlockBaseObjectType); }
-    bool isRenderBlockFlow() const { return m_bitfields.isRenderBaseType(RenderBlockFlowBaseObjectType); }
-    bool isRenderSVGBlock() const { return m_bitfields.isRenderBaseType(RenderSVGBlockBaseObjectType); };
-    bool isRenderButton() const { return m_bitfields.isRenderType(RenderButtonObjectType); }
-    bool isRenderIFrame() const { return m_bitfields.isRenderType(RenderIFrameObjectType); }
-    bool isRenderImage() const { return m_bitfields.isRenderBaseType(RenderRenderImageBaseObjectType); }
-    bool isRenderInline() const { return m_bitfields.isRenderBaseType(RenderInlineBaseObjectType); }
-    bool isRenderPart() const { return m_bitfields.isRenderBaseType(RenderPartBaseObjectType); }
-    bool isRenderRegion() const { return m_bitfields.isRenderBaseType(RenderRegionBaseObjectType); }
-    bool isRenderView() const { return m_bitfields.isRenderType(RenderViewObjectType); }
-    bool isReplica() const { return m_bitfields.isRenderType(RenderReplicaObjectType); }
+    virtual bool isDetailsMarker() const { return false; }
+    virtual bool isEmbeddedObject() const { return false; }
+    virtual bool isFieldset() const { return false; }
+    virtual bool isFileUploadControl() const { return false; }
+    virtual bool isFrame() const { return false; }
+    virtual bool isFrameSet() const { return false; }
+    virtual bool isImage() const { return false; }
+    virtual bool isInlineBlockOrInlineTable() const { return false; }
+    virtual bool isLayerModelObject() const { return false; }
+    virtual bool isListBox() const { return false; }
+    virtual bool isListItem() const { return false; }
+    virtual bool isListMarker() const { return false; }
+    virtual bool isMarquee() const { return false; }
+    virtual bool isMedia() const { return false; }
+    virtual bool isMenuList() const { return false; }
+    virtual bool isMeter() const { return false; }
+    virtual bool isProgress() const { return false; }
+    virtual bool isRenderBlock() const { return false; }
+    virtual bool isRenderBlockFlow() const { return false; }
+    virtual bool isRenderSVGBlock() const { return false; };
+    virtual bool isRenderButton() const { return false; }
+    virtual bool isRenderIFrame() const { return false; }
+    virtual bool isRenderImage() const { return false; }
+    virtual bool isRenderInline() const { return false; }
+    virtual bool isRenderPart() const { return false; }
+    virtual bool isRenderRegion() const { return false; }
+    virtual bool isRenderView() const { return false; }
+    virtual bool isReplica() const { return false; }
 
-    bool isRuby() const { return m_bitfields.isRenderType(RenderRubyObjectType); }
-    bool isRubyBase() const { return m_bitfields.isRenderType(RenderRubyBaseObjectType); }
-    bool isRubyRun() const { return m_bitfields.isRenderType(RenderRubyRunObjectType); }
-    bool isRubyText() const { return m_bitfields.isRenderType(RenderRubyTextObjectType); }
+    virtual bool isRuby() const { return false; }
+    virtual bool isRubyBase() const { return false; }
+    virtual bool isRubyRun() const { return false; }
+    virtual bool isRubyText() const { return false; }
 
-    bool isSlider() const { return m_bitfields.isRenderType(RenderSliderObjectType); }
-    bool isSliderThumb() const { return m_bitfields.isRenderType(RenderSliderThumbObjectType); }
-    bool isTable() const { return m_bitfields.isRenderType(RenderTableObjectType); }
-    bool isTableCell() const { return m_bitfields.isRenderType(RenderTableCellObjectType); }
-    bool isRenderTableCol() const { return m_bitfields.isRenderType(RenderTableColObjectType); }
-    bool isTableCaption() const { return m_bitfields.isRenderType(RenderTableCaptionObjectType); }
-    bool isTableRow() const { return m_bitfields.isRenderType(RenderTableRowObjectType); }
-    bool isTableSection() const { return m_bitfields.isRenderType(RenderTableSectionObjectType); }
-    bool isTextControl() const { return m_bitfields.isRenderBaseType(RenderTextControlBaseObjectType); }
-    bool isTextArea() const { return m_bitfields.isRenderType(RenderTextAreaObjectType); }
-    bool isTextField() const { return m_bitfields.isRenderBaseType(RenderTextControlSingleLineBaseObjectType); }
-    bool isVideo() const { return m_bitfields.isRenderType(RenderVideoObjectType); }
-    bool isWidget() const { return m_bitfields.isRenderBaseType(RenderWidgetBaseObjectType); }
-    bool isCanvas() const { return m_bitfields.isRenderType(RenderCanvasObjectType); }
-    bool isRenderFullScreen() const { return m_bitfields.isRenderType(RenderFullScreenObjectType); }
-    bool isRenderFullScreenPlaceholder() const { return m_bitfields.isRenderType(RenderFullScreenPlaceholderObjectType); }
+    virtual bool isSlider() const { return false; }
+    virtual bool isSliderThumb() const { return false; }
+    virtual bool isTable() const { return false; }
+    virtual bool isTableCell() const { return false; }
+    virtual bool isRenderTableCol() const { return false; }
+    virtual bool isTableCaption() const { return false; }
+    virtual bool isTableRow() const { return false; }
+    virtual bool isTableSection() const { return false; }
+    virtual bool isTextControl() const { return false; }
+    virtual bool isTextArea() const { return false; }
+    virtual bool isTextField() const { return false; }
+    virtual bool isVideo() const { return false; }
+    virtual bool isWidget() const { return false; }
+    virtual bool isCanvas() const { return false; }
+    virtual bool isRenderFullScreen() const { return false; }
+    virtual bool isRenderFullScreenPlaceholder() const { return false; }
 
-    bool isRenderGrid() const { return m_bitfields.isRenderType(RenderGridObjectType); }
+    virtual bool isRenderGrid() const { return false; }
 
-    bool isRenderFlowThread() const { return m_bitfields.isRenderBaseType(RenderFlowThreadBaseObjectType); }
-    bool isRenderNamedFlowThread() const { return m_bitfields.isRenderType(RenderNamedFlowThreadObjectType); }
-
-    bool isRenderMultiColumnBlock() const { return m_bitfields.isRenderType(RenderMultiColumnBlockObjectType); }
-    bool isRenderMultiColumnSet() const { return m_bitfields.isRenderType(RenderMultiColumnSetObjectType); }
-
-    bool isRenderScrollbarPart() const { return m_bitfields.isRenderType(RenderScrollbarPartObjectType); }
-
+    virtual bool isRenderFlowThread() const { return false; }
+    virtual bool isRenderNamedFlowThread() const { return false; }
     bool isInFlowRenderFlowThread() const { return isRenderFlowThread() && !isOutOfFlowPositioned(); }
     bool isOutOfFlowRenderFlowThread() const { return isRenderFlowThread() && isOutOfFlowPositioned(); }
 
-    bool isDeprecatedFlexibleBox() const { return m_bitfields.isRenderType(RenderDeprecatedFlexibleBoxObjectType); }
-    bool isFlexibleBox() const { return m_bitfields.isRenderBaseType(RenderFlexibleBoxBaseObjectType); }
+    virtual bool isRenderMultiColumnBlock() const { return false; }
+    virtual bool isRenderMultiColumnSet() const { return false; }
 
-    bool isCombineText() const { return m_bitfields.isRenderType(RenderCombineTextObjectType); }
-
-    virtual bool isInlineBlockOrInlineTable() const { return false; }
+    virtual bool isRenderScrollbarPart() const { return false; }
 
     bool isRoot() const { return document().documentElement() == m_nodeProxy.unsafeNode(); }
     bool isBody() const;
@@ -451,23 +443,25 @@ public:
 
     virtual bool requiresForcedStyleRecalcPropagation() const { return false; }
 
-    bool isSVGRoot() const { return m_bitfields.isRenderType(RenderSVGRootObjectType); }
-    bool isSVGContainer() const { return m_bitfields.isRenderBaseType(RenderSVGContainerBaseObjectType); }
-    bool isSVGTransformableContainer() const { return m_bitfields.isRenderType(RenderSVGTransformableContainerObjectType); }
-    bool isSVGViewportContainer() const { return m_bitfields.isRenderType(RenderSVGViewportContainerObjectType); }
-    bool isSVGGradientStop() const { return m_bitfields.isRenderType(RenderSVGGradientStopObjectType); }
-    bool isSVGHiddenContainer() const { return m_bitfields.isRenderBaseType(RenderSVGHiddenContainerBaseObjectType); }
-    bool isSVGPath() const { return m_bitfields.isRenderType(RenderSVGPathObjectType); }
-    bool isSVGShape() const { return m_bitfields.isRenderBaseType(RenderSVGShapeBaseObjectType); }
-    bool isSVGText() const { return m_bitfields.isRenderType(RenderSVGTextObjectType); }
-    bool isSVGTextPath() const { return m_bitfields.isRenderType(RenderSVGTextPathObjectType); }
-    bool isSVGInline() const { return m_bitfields.isRenderBaseType(RenderSVGInlineBaseObjectType); }
-    bool isSVGInlineText() const { return m_bitfields.isRenderType(RenderSVGInlineTextObjectType); }
-    bool isSVGImage() const { return m_bitfields.isRenderType(RenderSVGImageObjectType); }
-    bool isSVGForeignObject() const { return m_bitfields.isRenderType(RenderSVGForeignObjectType); }
-    bool isSVGResourceContainer() const { return m_bitfields.isRenderBaseType(RenderSVGResourceContainerBaseObjectType); }
-    bool isSVGResourceFilter() const { return m_bitfields.isRenderType(RenderSVGResourceFilterObjectType); }
-    bool isSVGResourceFilterPrimitive() const { return m_bitfields.isRenderType(RenderSVGResourceFilterPrimitiveObjectType); }
+    // FIXME: Until all SVG renders can be subclasses of RenderSVGModelObject we have
+    // to add SVG renderer methods to RenderObject with an ASSERT_NOT_REACHED() default implementation.
+    virtual bool isSVGRoot() const { return false; }
+    virtual bool isSVGContainer() const { return false; }
+    virtual bool isSVGTransformableContainer() const { return false; }
+    virtual bool isSVGViewportContainer() const { return false; }
+    virtual bool isSVGGradientStop() const { return false; }
+    virtual bool isSVGHiddenContainer() const { return false; }
+    virtual bool isSVGPath() const { return false; }
+    virtual bool isSVGShape() const { return false; }
+    virtual bool isSVGText() const { return false; }
+    virtual bool isSVGTextPath() const { return false; }
+    virtual bool isSVGInline() const { return false; }
+    virtual bool isSVGInlineText() const { return false; }
+    virtual bool isSVGImage() const { return false; }
+    virtual bool isSVGForeignObject() const { return false; }
+    virtual bool isSVGResourceContainer() const { return false; }
+    virtual bool isSVGResourceFilter() const { return false; }
+    virtual bool isSVGResourceFilterPrimitive() const { return false; }
 
     virtual RenderSVGResourceContainer* toRenderSVGResourceContainer();
 
@@ -934,12 +928,18 @@ public:
     virtual void destroy();
 
     // Virtual function helpers for the deprecated Flexible Box Layout (display: -webkit-box).
+    virtual bool isDeprecatedFlexibleBox() const { return false; }
     virtual bool isStretchingChildren() const { return false; }
+
+    // Virtual function helper for the new FlexibleBox Layout (display: -webkit-flex).
+    virtual bool isFlexibleBox() const { return false; }
 
     bool isFlexibleBoxIncludingDeprecated() const
     {
         return isFlexibleBox() || isDeprecatedFlexibleBox();
     }
+
+    virtual bool isCombineText() const { return false; }
 
     virtual int caretMinOffset() const;
     virtual int caretMaxOffset() const;
@@ -1098,7 +1098,7 @@ private:
         };
 
     public:
-        RenderObjectBitfields(Node* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
+        RenderObjectBitfields(Node* node)
             : m_selfNeedsLayout(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
@@ -1125,8 +1125,6 @@ private:
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
             , m_boxDecorationState(NoBoxDecorations)
-            , m_renderBaseObjectTypes(renderBaseObjectTypes)
-            , m_renderObjectType(renderObjectType)
         {
         }
 
@@ -1165,12 +1163,6 @@ private:
         unsigned m_flowThreadState : 2; // FlowThreadState
         unsigned m_boxDecorationState : 2; // BoxDecorationState
 
-        // FIXME: This should be const, but we need to make RenderMedia not need to
-        // remove the RenderImage type from the ancestor chain. http://crbug.com/306524
-        unsigned m_renderBaseObjectTypes : 28; // RenderBaseObjectTypes
-
-        const unsigned m_renderObjectType : 7;
-
     public:
         bool isOutOfFlowPositioned() const { return m_positionedState == IsOutOfFlowPositioned; }
         bool isRelPositioned() const { return m_positionedState == IsRelativelyPositioned; }
@@ -1192,13 +1184,6 @@ private:
 
         ALWAYS_INLINE BoxDecorationState boxDecorationState() const { return static_cast<BoxDecorationState>(m_boxDecorationState); }
         ALWAYS_INLINE void setBoxDecorationState(BoxDecorationState boxDecorationState) { m_boxDecorationState = boxDecorationState; }
-
-        // FIXME: The get and set should be removed when http://crbug.com/306524 is fixed.
-        unsigned getRenderBaseObjectTypes() const { return m_renderBaseObjectTypes; }
-        void setRenderBaseObjectTypes(unsigned types) { m_renderBaseObjectTypes = types; }
-        bool isRenderBaseType(RenderBaseObjectType type) const { return m_renderBaseObjectTypes & type; }
-
-        bool isRenderType(RenderObjectType type) const { return m_renderObjectType == type; }
     };
 
 #undef ADD_BOOLEAN_BITFIELD
@@ -1212,11 +1197,6 @@ private:
     void setNeedsSimplifiedNormalFlowLayout(bool b) { m_bitfields.setNeedsSimplifiedNormalFlowLayout(b); }
     void setIsDragging(bool b) { m_bitfields.setIsDragging(b); }
     void setEverHadLayout(bool b) { m_bitfields.setEverHadLayout(b); }
-
-protected:
-    // FIXME: The get and set should be removed when http://crbug.com/306524 is fixed.
-    unsigned getRenderBaseObjectTypes() const { return m_bitfields.getRenderBaseObjectTypes(); }
-    void setRenderBaseObjectTypes(unsigned types) { m_bitfields.setRenderBaseObjectTypes(types); }
 
 private:
     // Store state between styleWillChange and styleDidChange

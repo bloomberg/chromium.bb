@@ -54,7 +54,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderMenuList::RenderMenuList(Element* element)
-    : RenderFlexibleBox(element, RenderMenuListObjectType)
+    : RenderFlexibleBox(element)
     , m_buttonText(0)
     , m_innerBlock(0)
     , m_optionsChanged(true)

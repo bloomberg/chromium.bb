@@ -31,7 +31,7 @@ class SVGElement;
 
 class RenderSVGContainer : public RenderSVGModelObject {
 public:
-    RenderSVGContainer(SVGElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderSVGContainer(SVGElement*);
     virtual ~RenderSVGContainer();
 
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
@@ -50,6 +50,7 @@ protected:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
 
+    virtual bool isSVGContainer() const OVERRIDE FINAL { return true; }
     virtual const char* renderName() const { return "RenderSVGContainer"; }
 
     virtual void layout();

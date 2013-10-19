@@ -33,6 +33,8 @@ public:
     virtual LayoutUnit containingBlockLogicalWidthForContent() const OVERRIDE;
 
 private:
+    virtual bool isTableCaption() const OVERRIDE { return true; }
+
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     virtual void insertedIntoTree() OVERRIDE;

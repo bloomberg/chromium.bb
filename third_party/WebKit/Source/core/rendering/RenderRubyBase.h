@@ -45,6 +45,8 @@ public:
 
     virtual const char* renderName() const { return "RenderRubyBase (anonymous)"; }
 
+    virtual bool isRubyBase() const { return true; }
+
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
 
 private:

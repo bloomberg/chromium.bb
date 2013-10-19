@@ -34,6 +34,8 @@ public:
     virtual ~RenderTextControlMultiLine();
 
 private:
+    virtual bool isTextArea() const { return true; }
+
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
     virtual float getAvgCharWidth(AtomicString family);

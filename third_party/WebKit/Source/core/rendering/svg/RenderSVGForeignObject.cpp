@@ -35,7 +35,7 @@
 namespace WebCore {
 
 RenderSVGForeignObject::RenderSVGForeignObject(SVGForeignObjectElement* node)
-    : RenderSVGBlock(node, RenderSVGForeignObjectType)
+    : RenderSVGBlock(node)
     , m_needsTransformUpdate(true)
 {
 }

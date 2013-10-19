@@ -34,7 +34,7 @@
 namespace WebCore {
 
 RenderTextTrackContainerElement::RenderTextTrackContainerElement(Element* element)
-    : RenderBlockFlow(element, RenderTextTrackContainerElementObjectType)
+    : RenderBlockFlow(element)
 {
 }
 

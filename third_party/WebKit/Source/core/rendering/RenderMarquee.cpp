@@ -60,7 +60,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderMarquee::RenderMarquee(Element* element)
-    : RenderBlockFlow(element, RenderMarqueeObjectType)
+    : RenderBlockFlow(element)
     , m_currentLoop(0)
     , m_totalLoops(0)
     , m_timer(this, &RenderMarquee::timerFired)

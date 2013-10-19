@@ -224,6 +224,8 @@ protected:
 private:
     virtual const char* renderName() const { return (isAnonymous() || isPseudoElement()) ? "RenderTableCell (anonymous)" : "RenderTableCell"; }
 
+    virtual bool isTableCell() const { return true; }
+
     virtual void willBeRemovedFromTree() OVERRIDE;
 
     virtual void updateLogicalWidth() OVERRIDE;

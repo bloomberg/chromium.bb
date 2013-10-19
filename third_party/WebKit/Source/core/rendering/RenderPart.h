@@ -30,7 +30,7 @@ namespace WebCore {
 // Renderer for frames via RenderFrame and RenderIFrame, and plug-ins via RenderEmbeddedObject.
 class RenderPart : public RenderWidget {
 public:
-    RenderPart(Element*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderPart(Element*);
     virtual ~RenderPart();
 
     virtual void setWidget(PassRefPtr<Widget>) OVERRIDE FINAL;
@@ -47,6 +47,7 @@ protected:
     virtual bool requiresLayer() const;
 
 private:
+    virtual bool isRenderPart() const OVERRIDE FINAL { return true; }
     virtual const char* renderName() const { return "RenderPart"; }
 };
 

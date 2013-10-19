@@ -34,6 +34,7 @@ class RenderFullScreen FINAL : public RenderFlexibleBox {
 public:
     static RenderFullScreen* createAnonymous(Document*);
 
+    virtual bool isRenderFullScreen() const { return true; }
     virtual const char* renderName() const { return "RenderFullScreen"; }
 
     void setPlaceholder(RenderBlock*);

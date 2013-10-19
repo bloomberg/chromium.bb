@@ -347,7 +347,7 @@ static CounterNode* makeCounterNode(RenderObject* object, const AtomicString& id
 }
 
 RenderCounter::RenderCounter(Document* node, const CounterContent& counter)
-    : RenderText(node, StringImpl::empty(), RenderCounterObjectType)
+    : RenderText(node, StringImpl::empty())
     , m_counter(counter)
     , m_counterNode(0)
     , m_nextForSameCounter(0)
@@ -373,6 +373,11 @@ void RenderCounter::willBeDestroyed()
 const char* RenderCounter::renderName() const
 {
     return "RenderCounter";
+}
+
+bool RenderCounter::isCounter() const
+{
+    return true;
 }
 
 PassRefPtr<StringImpl> RenderCounter::originalText() const

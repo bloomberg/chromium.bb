@@ -39,8 +39,8 @@
 
 namespace WebCore {
 
-RenderSVGModelObject::RenderSVGModelObject(SVGElement* node, RenderObjectType renderObjectType, unsigned renderBaseObjectTypes)
-    : RenderObject(node, renderObjectType, renderBaseObjectTypes | RenderSVGModelBaseObjectType)
+RenderSVGModelObject::RenderSVGModelObject(SVGElement* node)
+    : RenderObject(node)
 {
 }
 

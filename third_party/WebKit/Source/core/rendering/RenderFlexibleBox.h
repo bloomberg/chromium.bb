@@ -38,13 +38,14 @@ namespace WebCore {
 
 class RenderFlexibleBox : public RenderBlock {
 public:
-    RenderFlexibleBox(Element*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    RenderFlexibleBox(Element*);
     virtual ~RenderFlexibleBox();
 
     static RenderFlexibleBox* createAnonymous(Document*);
 
     virtual const char* renderName() const OVERRIDE;
 
+    virtual bool isFlexibleBox() const OVERRIDE FINAL { return true; }
     virtual bool avoidsFloats() const OVERRIDE FINAL { return true; }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE FINAL { return false; }
     virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE FINAL;

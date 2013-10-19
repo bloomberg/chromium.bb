@@ -28,7 +28,7 @@ class SVGElement;
 
 class RenderSVGBlock : public RenderBlockFlow {
 public:
-    RenderSVGBlock(SVGElement*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    explicit RenderSVGBlock(SVGElement*);
 
     virtual LayoutRect visualOverflowRect() const OVERRIDE FINAL;
 
@@ -38,6 +38,8 @@ protected:
 private:
     virtual void setStyle(PassRefPtr<RenderStyle>) OVERRIDE FINAL;
     virtual void updateFromStyle() OVERRIDE FINAL;
+
+    virtual bool isRenderSVGBlock() const OVERRIDE FINAL { return true; };
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 

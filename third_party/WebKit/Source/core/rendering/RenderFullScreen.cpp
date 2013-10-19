@@ -33,7 +33,7 @@ using namespace WebCore;
 class RenderFullScreenPlaceholder FINAL : public RenderBlockFlow {
 public:
     RenderFullScreenPlaceholder(RenderFullScreen* owner)
-        : RenderBlockFlow(0, RenderFullScreenPlaceholderObjectType)
+        : RenderBlockFlow(0)
         , m_owner(owner)
     {
         setDocumentForAnonymous(&owner->document());
@@ -52,7 +52,7 @@ void RenderFullScreenPlaceholder::willBeDestroyed()
 }
 
 RenderFullScreen::RenderFullScreen()
-    : RenderFlexibleBox(0, RenderFullScreenObjectType)
+    : RenderFlexibleBox(0)
     , m_placeholder(0)
 {
     setReplaced(false);

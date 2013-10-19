@@ -28,7 +28,7 @@
 namespace WebCore {
 
 RenderTextControlMultiLine::RenderTextControlMultiLine(HTMLTextAreaElement* element)
-    : RenderTextControl(element, RenderTextAreaObjectType)
+    : RenderTextControl(element)
 {
     ASSERT(element);
 }

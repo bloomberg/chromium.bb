@@ -81,6 +81,7 @@ private:
     virtual const RenderObjectChildList* virtualChildren() const { return children(); }
 
     virtual const char* renderName() const { return "RenderTableCol"; }
+    virtual bool isRenderTableCol() const OVERRIDE { return true; }
     virtual void updateFromElement();
     virtual void computePreferredLogicalWidths() OVERRIDE { ASSERT_NOT_REACHED(); }
 

@@ -34,7 +34,7 @@ static PassRefPtr<StringImpl> newlineString()
 }
 
 RenderBR::RenderBR(Node* node)
-    : RenderText(node, newlineString(), RenderBRObjectType)
+    : RenderText(node, newlineString())
     , m_lineHeight(-1)
 {
 }

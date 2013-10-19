@@ -36,6 +36,8 @@ public:
     RenderFileUploadControl(HTMLInputElement*);
     virtual ~RenderFileUploadControl();
 
+    virtual bool isFileUploadControl() const { return true; }
+
     String buttonValue();
     String fileTextValue() const;
 

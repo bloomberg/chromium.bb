@@ -34,7 +34,7 @@ class TextRun;
 // For example, <embed src="foo.html"> does not invoke a plug-in.
 class RenderEmbeddedObject : public RenderPart {
 public:
-    RenderEmbeddedObject(Element*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    RenderEmbeddedObject(Element*);
     virtual ~RenderEmbeddedObject();
 
     enum PluginUnavailabilityReason {
@@ -62,6 +62,7 @@ protected:
 
 private:
     virtual const char* renderName() const { return "RenderEmbeddedObject"; }
+    virtual bool isEmbeddedObject() const OVERRIDE FINAL { return true; }
 
     void paintSnapshotImage(PaintInfo&, const LayoutPoint&, Image*);
     virtual void paintContents(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;

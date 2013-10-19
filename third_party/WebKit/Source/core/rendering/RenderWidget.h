@@ -50,7 +50,7 @@ public:
     };
 
 protected:
-    RenderWidget(Element*, RenderObjectType = RenderNoneObjectType, unsigned renderBaseObjectTypes = RenderNoneBaseObjectType);
+    RenderWidget(Element*);
 
     FrameView* frameView() const { return m_frameView; }
 
@@ -65,6 +65,8 @@ protected:
     virtual void paintContents(PaintInfo&, const LayoutPoint&);
 
 private:
+    virtual bool isWidget() const OVERRIDE FINAL { return true; }
+
     virtual void willBeDestroyed() OVERRIDE FINAL;
     virtual void destroy() OVERRIDE FINAL;
 
