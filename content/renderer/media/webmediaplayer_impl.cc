@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -523,9 +524,10 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
   scoped_refptr<media::VideoFrame> video_frame;
   {
     base::AutoLock auto_lock(lock_);
-    current_frame_painted_ = true;
+    DoneWaitingForPaint(true);
     video_frame = current_frame_;
   }
+  TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
   gfx::Rect gfx_rect(rect);
   skcanvas_video_renderer_.Paint(video_frame.get(), canvas, gfx_rect, alpha);
 }
@@ -590,7 +592,9 @@ void WebMediaPlayerImpl::SetVideoFrameProviderClient(
 
 scoped_refptr<media::VideoFrame> WebMediaPlayerImpl::GetCurrentFrame() {
   base::AutoLock auto_lock(lock_);
-  current_frame_painted_ = true;
+  DoneWaitingForPaint(true);
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "media", "WebMediaPlayerImpl:compositing", this);
   return current_frame_;
 }
 
@@ -601,6 +605,7 @@ void WebMediaPlayerImpl::PutCurrentFrame(
     DCHECK(frame_->view()->isAcceleratedCompositingActive());
     UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", true);
   }
+  TRACE_EVENT_ASYNC_END0("media", "WebMediaPlayerImpl:compositing", this);
 }
 
 bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
@@ -617,7 +622,9 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     video_frame = current_frame_;
   }
 
-  if (!video_frame.get())
+  TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
+
+  if (!video_frame)
     return false;
   if (video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;
@@ -834,17 +841,25 @@ void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {
 
 void WebMediaPlayerImpl::Repaint() {
   DCHECK(main_loop_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "WebMediaPlayerImpl:repaint");
 
   bool size_changed = false;
   {
     base::AutoLock auto_lock(lock_);
     std::swap(pending_size_change_, size_changed);
-    pending_repaint_ = false;
+    if (pending_repaint_) {
+      TRACE_EVENT_ASYNC_END0(
+          "media", "WebMediaPlayerImpl:repaintPending", this);
+      pending_repaint_ = false;
+    }
   }
 
-  if (size_changed)
+  if (size_changed) {
+    TRACE_EVENT0("media", "WebMediaPlayerImpl:clientSizeChanged");
     GetClient()->sizeChanged();
+  }
 
+  TRACE_EVENT0("media", "WebMediaPlayerImpl:clientRepaint");
   GetClient()->repaint();
 }
 
@@ -1242,30 +1257,51 @@ void WebMediaPlayerImpl::FrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
   base::AutoLock auto_lock(lock_);
 
-  if (current_frame_.get() &&
+  if (current_frame_ &&
       current_frame_->natural_size() != frame->natural_size() &&
       !pending_size_change_) {
     pending_size_change_ = true;
   }
 
-  // If |current_frame_| is set, hasn't been painted, and we haven't even
-  // gotten the chance to request a repaint for it yet, then mark it as dropped.
-  if (current_frame_ && !current_frame_painted_ && pending_repaint_) {
-    DVLOG(1) << "Frame dropped before being painted: "
-             << current_frame_->GetTimestamp().InSecondsF();
-    if (frames_dropped_before_paint_ < kuint32max)
-      frames_dropped_before_paint_++;
-  }
+  DoneWaitingForPaint(false);
 
   current_frame_ = frame;
   current_frame_painted_ = false;
+  TRACE_EVENT_FLOW_BEGIN0("media", "WebMediaPlayerImpl:waitingForPaint", this);
 
   if (pending_repaint_)
     return;
 
+  TRACE_EVENT_ASYNC_BEGIN0("media", "WebMediaPlayerImpl:repaintPending", this);
   pending_repaint_ = true;
   main_loop_->PostTask(FROM_HERE, base::Bind(
       &WebMediaPlayerImpl::Repaint, AsWeakPtr()));
+}
+
+void WebMediaPlayerImpl::DoneWaitingForPaint(bool painting_frame) {
+  lock_.AssertAcquired();
+  if (!current_frame_ || current_frame_painted_)
+    return;
+
+  TRACE_EVENT_FLOW_END0("media", "WebMediaPlayerImpl:waitingForPaint", this);
+
+  if (painting_frame) {
+    current_frame_painted_ = true;
+    return;
+  }
+
+  // The frame wasn't painted, but we aren't waiting for a Repaint() call so
+  // assume that the frame wasn't painted because the video wasn't visible.
+  if (!pending_repaint_)
+    return;
+
+  // The |current_frame_| wasn't painted, it is being replaced, and we haven't
+  // even gotten the chance to request a repaint for it yet. Mark it as dropped.
+  TRACE_EVENT0("media", "WebMediaPlayerImpl:frameDropped");
+  DVLOG(1) << "Frame dropped before being painted: "
+           << current_frame_->GetTimestamp().InSecondsF();
+  if (frames_dropped_before_paint_ < kuint32max)
+    frames_dropped_before_paint_++;
 }
 
 }  // namespace content

@@ -257,6 +257,12 @@ class WebMediaPlayerImpl
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 
+  // Called when a paint or a new frame arrives to indicate that we are
+  // no longer waiting for |current_frame_| to be painted.
+  // |painting_frame| is set to true if |current_frame_| is being painted.
+  // False indicates |current_frame_| is being replaced with a new frame.
+  void DoneWaitingForPaint(bool painting_frame);
+
   WebKit::WebFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
