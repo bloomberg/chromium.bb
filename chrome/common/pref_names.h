@@ -45,30 +45,6 @@ extern const char kApplicationLocaleAccepted[];
 extern const char kOwnerLocale[];
 #endif
 
-// Obselete keys, kept only for migration code to the new keys. See
-// http://crbug.com/123812
-extern const char kGlobalDefaultCharset[];
-extern const char kWebKitGlobalDefaultFontSize[];
-extern const char kWebKitGlobalDefaultFixedFontSize[];
-extern const char kWebKitGlobalMinimumFontSize[];
-extern const char kWebKitGlobalMinimumLogicalFontSize[];
-extern const char kWebKitGlobalJavascriptEnabled[];
-extern const char kWebKitGlobalJavascriptCanOpenWindowsAutomatically[];
-extern const char kWebKitGlobalLoadsImagesAutomatically[];
-extern const char kWebKitGlobalPluginsEnabled[];
-extern const char kWebKitGlobalStandardFontFamily[];
-extern const char kWebKitGlobalFixedFontFamily[];
-extern const char kWebKitGlobalSerifFontFamily[];
-extern const char kWebKitGlobalSansSerifFontFamily[];
-extern const char kWebKitGlobalCursiveFontFamily[];
-extern const char kWebKitGlobalFantasyFontFamily[];
-extern const char kWebKitOldStandardFontFamily[];
-extern const char kWebKitOldFixedFontFamily[];
-extern const char kWebKitOldSerifFontFamily[];
-extern const char kWebKitOldSansSerifFontFamily[];
-extern const char kWebKitOldCursiveFontFamily[];
-extern const char kWebKitOldFantasyFontFamily[];
-
 extern const char kDefaultCharset[];
 extern const char kAcceptLanguages[];
 extern const char kStaticEncodings[];

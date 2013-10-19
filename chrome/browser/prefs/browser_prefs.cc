@@ -486,7 +486,6 @@ void MigrateUserPrefs(Profile* profile) {
   prefs->ClearPref(kSyncPromoErrorMessage);
 #endif
 
-  PrefsTabHelper::MigrateUserPrefs(prefs);
   PromoResourceService::MigrateUserPrefs(prefs);
   TranslatePrefs::MigrateUserPrefs(prefs);
 

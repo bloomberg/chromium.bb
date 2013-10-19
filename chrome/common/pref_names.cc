@@ -150,47 +150,6 @@ const char kAcceptLanguages[] = "intl.accept_languages";
 // stored in non-translatable part of the resource bundle.
 const char kStaticEncodings[] = "intl.static_encodings";
 
-// Obselete WebKit prefs for migration.
-const char kGlobalDefaultCharset[] = "intl.global.charset_default";
-const char kWebKitGlobalDefaultFontSize[] =
-    "webkit.webprefs.global.default_font_size";
-const char kWebKitGlobalDefaultFixedFontSize[] =
-    "webkit.webprefs.global.default_fixed_font_size";
-const char kWebKitGlobalMinimumFontSize[] =
-    "webkit.webprefs.global.minimum_font_size";
-const char kWebKitGlobalMinimumLogicalFontSize[] =
-    "webkit.webprefs.global.minimum_logical_font_size";
-const char kWebKitGlobalJavascriptCanOpenWindowsAutomatically[] =
-    "webkit.webprefs.global.javascript_can_open_windows_automatically";
-const char kWebKitGlobalJavascriptEnabled[] =
-    "webkit.webprefs.global.javascript_enabled";
-const char kWebKitGlobalLoadsImagesAutomatically[] =
-    "webkit.webprefs.global.loads_images_automatically";
-const char kWebKitGlobalPluginsEnabled[] =
-    "webkit.webprefs.global.plugins_enabled";
-const char kWebKitGlobalStandardFontFamily[] =
-    "webkit.webprefs.global.standard_font_family";
-const char kWebKitGlobalFixedFontFamily[] =
-    "webkit.webprefs.global.fixed_font_family";
-const char kWebKitGlobalSerifFontFamily[] =
-    "webkit.webprefs.global.serif_font_family";
-const char kWebKitGlobalSansSerifFontFamily[] =
-    "webkit.webprefs.global.sansserif_font_family";
-const char kWebKitGlobalCursiveFontFamily[] =
-    "webkit.webprefs.global.cursive_font_family";
-const char kWebKitGlobalFantasyFontFamily[] =
-    "webkit.webprefs.global.fantasy_font_family";
-const char kWebKitOldStandardFontFamily[] =
-    "webkit.webprefs.standard_font_family";
-const char kWebKitOldFixedFontFamily[] = "webkit.webprefs.fixed_font_family";
-const char kWebKitOldSerifFontFamily[] = "webkit.webprefs.serif_font_family";
-const char kWebKitOldSansSerifFontFamily[] =
-    "webkit.webprefs.sansserif_font_family";
-const char kWebKitOldCursiveFontFamily[] =
-    "webkit.webprefs.cursive_font_family";
-const char kWebKitOldFantasyFontFamily[] =
-    "webkit.webprefs.fantasy_font_family";
-
 // If these change, the corresponding enums in the extension API
 // experimental.fontSettings.json must also change.
 const char* const kWebKitScriptsForFontFamilyMaps[] = {

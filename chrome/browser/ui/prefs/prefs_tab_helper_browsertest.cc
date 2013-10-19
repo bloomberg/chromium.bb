@@ -20,7 +20,7 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
     return test_data_directory
         .AppendASCII("profiles")
-        .AppendASCII("webkit_global_migration")
+        .AppendASCII("web_prefs")
         .AppendASCII("Default")
         .Append(chrome::kPreferencesFilename);
   }
@@ -34,15 +34,15 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
       LOG(ERROR) << "Can't create " << default_profile.MaybeAsASCII();
       return false;
     }
-    base::FilePath non_global_pref_file = GetPreferencesFilePath();
-    if (!base::PathExists(non_global_pref_file)) {
-      LOG(ERROR) << "Doesn't exist " << non_global_pref_file.MaybeAsASCII();
+    base::FilePath pref_file = GetPreferencesFilePath();
+    if (!base::PathExists(pref_file)) {
+      LOG(ERROR) << "Doesn't exist " << pref_file.MaybeAsASCII();
       return false;
     }
     base::FilePath default_pref_file =
         default_profile.Append(chrome::kPreferencesFilename);
-    if (!base::CopyFile(non_global_pref_file, default_pref_file)) {
-      LOG(ERROR) << "Copy error from " << non_global_pref_file.MaybeAsASCII()
+    if (!base::CopyFile(pref_file, default_pref_file)) {
+      LOG(ERROR) << "Copy error from " << pref_file.MaybeAsASCII()
                  << " to " << default_pref_file.MaybeAsASCII();
       return false;
     }
@@ -57,132 +57,24 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// This tests migration like:
-// webkit.webprefs.standard_font_family -> webkit.webprefs.fonts.standard.Zyyy
-// This migration moves the formerly "non-per-script" font prefs into the
-// per-script font maps, as the entry for "Common" script (Zyyy is the ISO 15924
-// script code for the Common script).
-//
-// In addition, it tests that the former migration of
-// webkit.webprefs.blahblah -> webkit.webprefs.global.blahblah
-// no longer occurs.
-IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, PrefsAreMigratedToFontMap) {
+// Tests that a sampling of web prefs are registered and ones with values in the
+// test user preferences file take on those values.
+IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, WebPrefs) {
   PrefService* prefs = browser()->profile()->GetPrefs();
 
   EXPECT_TRUE(prefs->FindPreference(
-      prefs::kGlobalDefaultCharset)->IsDefaultValue());
+      prefs::kWebKitCursiveFontFamily)->IsDefaultValue());
   EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalDefaultFontSize)->IsDefaultValue());
+      prefs::kWebKitSerifFontFamily)->IsDefaultValue());
   EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalDefaultFixedFontSize)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalMinimumFontSize)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalMinimumLogicalFontSize)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitOldCursiveFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitOldFantasyFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitOldFixedFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitOldSansSerifFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitOldSerifFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitOldStandardFontFamily)->IsDefaultValue());
+      prefs::kWebKitSerifFontFamilyJapanese)->IsDefaultValue());
 
   EXPECT_EQ("ISO-8859-1", prefs->GetString(prefs::kDefaultCharset));
-  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitDefaultFontSize));
-  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitDefaultFixedFontSize));
-  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitMinimumFontSize));
-  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitMinimumLogicalFontSize));
-  EXPECT_EQ("CursiveFontFamily",
-            prefs->GetString(prefs::kWebKitCursiveFontFamily));
-  EXPECT_EQ("FantasyFontFamily",
-            prefs->GetString(prefs::kWebKitFantasyFontFamily));
-  // PictographFontFamily was added after the migration, so it never exists
-  // in the old format (and consequently isn't in the test Preferences file).
-  // So it doesn't need to be tested here.
-  EXPECT_EQ("FixedFontFamily",
-            prefs->GetString(prefs::kWebKitFixedFontFamily));
-  EXPECT_EQ("SansSerifFontFamily",
-            prefs->GetString(prefs::kWebKitSansSerifFontFamily));
-  EXPECT_EQ("SerifFontFamily",
-            prefs->GetString(prefs::kWebKitSerifFontFamily));
-  EXPECT_EQ("StandardFontFamily",
-            prefs->GetString(prefs::kWebKitStandardFontFamily));
+  EXPECT_EQ(16, prefs->GetInteger(prefs::kWebKitDefaultFontSize));
+  EXPECT_EQ("Nanum Gothic",
+            prefs->GetString(prefs::kWebKitStandardFontFamilyKorean));
+  EXPECT_EQ("Tinos", prefs->GetString(prefs::kWebKitStandardFontFamily));
+  EXPECT_EQ("DejaVu Sans", prefs->GetString(prefs::kWebKitSansSerifFontFamily));
 };
 
-class PrefsTabHelperBrowserTest2 : public PrefsTabHelperBrowserTest {
- protected:
-  virtual base::FilePath GetPreferencesFilePath() OVERRIDE {
-    base::FilePath test_data_directory;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
-    return test_data_directory
-        .AppendASCII("profiles")
-        .AppendASCII("webkit_global_reverse_migration")
-        .AppendASCII("Default")
-        .Append(chrome::kPreferencesFilename);
-  }
-};
 
-// This tests migration like:
-// webkit.webprefs.global.blahblah -> webkit.webprefs.blahblah
-// This undoes the migration to "global" names (originally done for the per-tab
-// pref mechanism, which has since been removed).
-//
-// In addition it tests the migration for font families:
-// webkit.webprefs.global.standard_font_family ->
-// webkit.webprefs.fonts.standard.Zyyy
-// This moves the formerly "non-per-script" font prefs into the per-script font
-// maps, as described in the comment for PrefsAreMigratedToFontMap.
-IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest2, GlobalPrefsAreMigrated) {
-  PrefService* prefs = browser()->profile()->GetPrefs();
-
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kGlobalDefaultCharset)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalDefaultFontSize)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalDefaultFixedFontSize)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalMinimumFontSize)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalMinimumLogicalFontSize)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalCursiveFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalFantasyFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalFixedFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalSansSerifFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalSerifFontFamily)->IsDefaultValue());
-  EXPECT_TRUE(prefs->FindPreference(
-      prefs::kWebKitGlobalStandardFontFamily)->IsDefaultValue());
-
-  EXPECT_EQ("ISO-8859-1", prefs->GetString(prefs::kDefaultCharset));
-  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitDefaultFontSize));
-  EXPECT_EQ(42,
-            prefs->GetInteger(prefs::kWebKitDefaultFixedFontSize));
-  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitMinimumFontSize));
-  EXPECT_EQ(42,
-            prefs->GetInteger(prefs::kWebKitMinimumLogicalFontSize));
-  EXPECT_EQ("CursiveFontFamily",
-            prefs->GetString(prefs::kWebKitCursiveFontFamily));
-  EXPECT_EQ("FantasyFontFamily",
-            prefs->GetString(prefs::kWebKitFantasyFontFamily));
-  // PictographFontFamily was added after the migration, so it never exists
-  // in the old format (and consequently isn't in the test Preferences file).
-  // So it doesn't need to be tested here.
-  EXPECT_EQ("FixedFontFamily",
-            prefs->GetString(prefs::kWebKitFixedFontFamily));
-  EXPECT_EQ("SansSerifFontFamily",
-            prefs->GetString(prefs::kWebKitSansSerifFontFamily));
-  EXPECT_EQ("SerifFontFamily",
-            prefs->GetString(prefs::kWebKitSerifFontFamily));
-  EXPECT_EQ("StandardFontFamily",
-            prefs->GetString(prefs::kWebKitStandardFontFamily));
-};
