@@ -272,7 +272,7 @@ hookNames = ['onclick', 'ondblclick', 'ondrag', 'ondragend', 'ondragenter',
              'onmouseover', 'onmouseup', 'onmousewheel'];
 
 for (var i = 0; i < hookNames.length; i++) {
-  domExpectedActivity.push('Element.' + hookNames[i]);
+  domExpectedActivity.push('HTMLElement.' + hookNames[i]);
   domExpectedActivity.push('Document.' + hookNames[i]);
   domExpectedActivity.push('Window.' + hookNames[i]);
 }
