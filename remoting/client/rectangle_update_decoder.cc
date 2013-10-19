@@ -11,10 +11,10 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/base/util.h"
+#include "remoting/client/frame_consumer.h"
 #include "remoting/codec/video_decoder.h"
 #include "remoting/codec/video_decoder_verbatim.h"
-#include "remoting/codec/video_decoder_vp8.h"
-#include "remoting/client/frame_consumer.h"
+#include "remoting/codec/video_decoder_vpx.h"
 #include "remoting/protocol/session_config.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -101,7 +101,7 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
   if (codec == ChannelConfig::CODEC_VERBATIM) {
     decoder_.reset(new VideoDecoderVerbatim());
   } else if (codec == ChannelConfig::CODEC_VP8) {
-    decoder_.reset(new VideoDecoderVp8());
+    decoder_ = VideoDecoderVpx::CreateForVP8();
   } else {
     NOTREACHED() << "Invalid Encoding found: " << codec;
   }

@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CODEC_VIDEO_ENCODER_VP8_H_
-#define REMOTING_CODEC_VIDEO_ENCODER_VP8_H_
+#ifndef REMOTING_CODEC_VIDEO_ENCODER_VPX_H_
+#define REMOTING_CODEC_VIDEO_ENCODER_VPX_H_
 
-#include "base/gtest_prod_util.h"
+#include "base/callback.h"
+#include "remoting/codec/scoped_vpx_codec.h"
 #include "remoting/codec/video_encoder.h"
 
-typedef struct vpx_codec_ctx vpx_codec_ctx_t;
 typedef struct vpx_image vpx_image_t;
 
 namespace webrtc {
@@ -19,39 +19,38 @@ class DesktopSize;
 namespace remoting {
 
 // A class that uses VP8 to perform encoding.
-class VideoEncoderVp8 : public VideoEncoder {
+class VideoEncoderVpx : public VideoEncoder {
  public:
-  VideoEncoderVp8();
-  virtual ~VideoEncoderVp8();
+  // Creates a encoder for VP8.
+  static scoped_ptr<VideoEncoderVpx> CreateForVP8();
+
+  virtual ~VideoEncoderVpx();
 
   // VideoEncoder interface.
   virtual scoped_ptr<VideoPacket> Encode(
       const webrtc::DesktopFrame& frame) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(VideoEncoderVp8Test, AlignAndClipRect);
+  typedef base::Callback<ScopedVpxCodec(const webrtc::DesktopSize&)>
+      InitializeCodecCallback;
 
-  // Initialize the encoder. Returns true if successful.
-  bool Init(const webrtc::DesktopSize& size);
+  VideoEncoderVpx(const InitializeCodecCallback& init_codec);
 
-  // Destroy the encoder.
-  void Destroy();
+  // Initializes the codec for frames of |size|. Returns true if successful.
+  bool Initialize(const webrtc::DesktopSize& size);
 
-  // Prepare |image_| for encoding. Write updated rectangles into
+  // Prepares |image_| for encoding. Writes updated rectangles into
   // |updated_region|.
-  //
-  // TODO(sergeyu): Update this code to use webrtc::DesktopRegion.
   void PrepareImage(const webrtc::DesktopFrame& frame,
                     webrtc::DesktopRegion* updated_region);
 
-  // Update the active map according to |updated_region|. Active map is then
+  // Updates the active map according to |updated_region|. Active map is then
   // given to the encoder to speed up encoding.
   void PrepareActiveMap(const webrtc::DesktopRegion& updated_region);
 
-  // True if the encoder is initialized.
-  bool initialized_;
+  InitializeCodecCallback init_codec_;
 
-  scoped_ptr<vpx_codec_ctx_t> codec_;
+  ScopedVpxCodec codec_;
   scoped_ptr<vpx_image_t> image_;
   scoped_ptr<uint8[]> active_map_;
   int active_map_width_;
@@ -61,7 +60,7 @@ class VideoEncoderVp8 : public VideoEncoder {
   // Buffer for storing the yuv image.
   scoped_ptr<uint8[]> yuv_image_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoEncoderVp8);
+  DISALLOW_COPY_AND_ASSIGN(VideoEncoderVpx);
 };
 
 }  // namespace remoting

@@ -13,7 +13,7 @@
 #include "remoting/codec/audio_encoder_verbatim.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
-#include "remoting/codec/video_encoder_vp8.h"
+#include "remoting/codec/video_encoder_vpx.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/desktop_environment.h"
@@ -427,7 +427,7 @@ scoped_ptr<VideoEncoder> ClientSession::CreateVideoEncoder(
   const protocol::ChannelConfig& video_config = config.video_config();
 
   if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
-    return scoped_ptr<VideoEncoder>(new remoting::VideoEncoderVp8());
+    return remoting::VideoEncoderVpx::CreateForVP8().PassAs<VideoEncoder>();
   }
 
   NOTREACHED();
