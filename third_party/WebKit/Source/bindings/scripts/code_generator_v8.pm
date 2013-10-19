@@ -1788,7 +1788,7 @@ sub GenerateNormalAttributeSetterCallback
 
     my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
-    $code .= "#if ${conditionalString}\n\n" if $conditionalString;
+    $code .= "#if ${conditionalString}\n" if $conditionalString;
 
     $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
@@ -1805,8 +1805,9 @@ sub GenerateNormalAttributeSetterCallback
         $code .= "    ${implClassName}V8Internal::${attrName}AttributeSetter${forMainWorldSuffix}(name, jsValue, info);\n";
     }
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
-    $code .= "}\n\n";
-    $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+    $code .= "}\n";
+    $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+    $code .= "\n";
     $implementation{nameSpaceInternal}->add($code);
 }
 
@@ -1842,7 +1843,7 @@ sub GenerateNormalAttributeSetter
 
     my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
-    $code .= "#if ${conditionalString}\n\n" if $conditionalString;
+    $code .= "#if ${conditionalString}\n" if $conditionalString;
     $code .= "static void ${attrName}AttributeSetter${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
 
@@ -1912,8 +1913,9 @@ END
             $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<$mode>, stringResource, jsValue);\n";
             # Attr (not Attribute) used in content attributes
             $code .= "    imp->setAttribute(${namespace}::${contentAttributeName}Attr, stringResource);\n";
-            $code .= "}\n\n";
-            $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+            $code .= "}\n";
+            $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+            $code .= "\n";
             $implementation{nameSpaceInternal}->add($code);
             return;
             # Skip the rest of the function!
@@ -2040,8 +2042,9 @@ END
 END
     }
 
-    $code .= "}\n\n";  # end of setter
-    $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+    $code .= "}\n";  # end of setter
+    $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+    $code .= "\n";
     $implementation{nameSpaceInternal}->add($code);
 }
 

@@ -104,6 +104,7 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
 
 {##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
+{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
@@ -116,15 +117,18 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("{{attribute.name}}")); // Invalidate the cached value.
     {% endif %}
 }
+{% endfilter %}
 {% endmacro %}
 
 
 {##############################################################################}
 {% macro attribute_setter_callback(attribute, world_suffix) %}
+{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
+{% endfilter %}
 {% endmacro %}
