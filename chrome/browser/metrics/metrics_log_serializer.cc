@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 
+#include <string>
+
 #include "base/base64.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
@@ -52,8 +54,9 @@ MetricsLogSerializer::MetricsLogSerializer() {}
 
 MetricsLogSerializer::~MetricsLogSerializer() {}
 
-void MetricsLogSerializer::SerializeLogs(const std::vector<std::string>& logs,
-                                         MetricsLogManager::LogType log_type) {
+void MetricsLogSerializer::SerializeLogs(
+    const std::vector<MetricsLogManager::SerializedLog>& logs,
+    MetricsLogManager::LogType log_type) {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
   const char* pref = NULL;
@@ -77,8 +80,9 @@ void MetricsLogSerializer::SerializeLogs(const std::vector<std::string>& logs,
                       update.Get());
 }
 
-void MetricsLogSerializer::DeserializeLogs(MetricsLogManager::LogType log_type,
-                                           std::vector<std::string>* logs) {
+void MetricsLogSerializer::DeserializeLogs(
+    MetricsLogManager::LogType log_type,
+    std::vector<MetricsLogManager::SerializedLog>* logs) {
   DCHECK(logs);
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
@@ -95,7 +99,7 @@ void MetricsLogSerializer::DeserializeLogs(MetricsLogManager::LogType log_type,
 
 // static
 void MetricsLogSerializer::WriteLogsToPrefList(
-    const std::vector<std::string>& local_list,
+    const std::vector<MetricsLogManager::SerializedLog>& local_list,
     size_t list_length_limit,
     size_t byte_limit,
     base::ListValue* list) {
@@ -112,9 +116,9 @@ void MetricsLogSerializer::WriteLogsToPrefList(
   if (local_list.size() > list_length_limit) {
     start = local_list.size();
     size_t bytes_used = 0;
-    for (std::vector<std::string>::const_reverse_iterator
+    for (std::vector<MetricsLogManager::SerializedLog>::const_reverse_iterator
          it = local_list.rbegin(); it != local_list.rend(); ++it) {
-      size_t log_size = it->length();
+      size_t log_size = it->log_text().length();
       if (bytes_used >= byte_limit &&
           (local_list.size() - start) >= list_length_limit)
         break;
@@ -132,11 +136,12 @@ void MetricsLogSerializer::WriteLogsToPrefList(
   base::MD5Context ctx;
   base::MD5Init(&ctx);
   std::string encoded_log;
-  for (std::vector<std::string>::const_iterator it = local_list.begin() + start;
+  for (std::vector<MetricsLogManager::SerializedLog>::const_iterator it =
+           local_list.begin() + start;
        it != local_list.end(); ++it) {
     // We encode the compressed log as Value::CreateStringValue() expects to
     // take a valid UTF8 string.
-    if (!base::Base64Encode(*it, &encoded_log)) {
+    if (!base::Base64Encode(it->log_text(), &encoded_log)) {
       list->Clear();
       return;
     }
@@ -154,7 +159,7 @@ void MetricsLogSerializer::WriteLogsToPrefList(
 // static
 MetricsLogSerializer::LogReadStatus MetricsLogSerializer::ReadLogsFromPrefList(
     const ListValue& list,
-    std::vector<std::string>* local_list) {
+    std::vector<MetricsLogManager::SerializedLog>* local_list) {
   if (list.GetSize() == 0)
     return MakeRecallStatusHistogram(LIST_EMPTY);
   if (list.GetSize() < 3)
@@ -193,12 +198,14 @@ MetricsLogSerializer::LogReadStatus MetricsLogSerializer::ReadLogsFromPrefList(
 
     base::MD5Update(&ctx, encoded_log);
 
-    DCHECK_LT(local_index, local_list->size());
-    std::string& decoded_log = (*local_list)[local_index];
-    if (!base::Base64Decode(encoded_log, &decoded_log)) {
+    std::string log_text;
+    if (!base::Base64Decode(encoded_log, &log_text)) {
       local_list->clear();
       return MakeRecallStatusHistogram(DECODE_FAIL);
     }
+
+    DCHECK_LT(local_index, local_list->size());
+    (*local_list)[local_index].SwapLogText(&log_text);
   }
 
   // Verify checksum.

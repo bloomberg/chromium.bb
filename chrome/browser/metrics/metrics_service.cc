@@ -1463,6 +1463,11 @@ void MetricsService::PrepareFetchWithStagedLog() {
       current_fetch_->SetUploadData(kMimeType, compressed_log_text);
       // Tell the server that we're uploading gzipped protobufs.
       current_fetch_->SetExtraRequestHeaders("content-encoding: gzip");
+      const std::string hash =
+          base::HexEncode(log_manager_.staged_log_hash().data(),
+                          log_manager_.staged_log_hash().size());
+      DCHECK(!hash.empty());
+      current_fetch_->AddExtraRequestHeader("X-Chrome-UMA-Log-SHA1: " + hash);
       UMA_HISTOGRAM_PERCENTAGE(
           "UMA.ProtoCompressionRatio",
           100 * compressed_log_text.size() / log_text.size());

@@ -2,29 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/metrics/metrics_log_manager.h"
+
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/sha1.h"
 #include "chrome/common/metrics/metrics_log_base.h"
-#include "chrome/common/metrics/metrics_log_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class MetricsLogManagerTest : public testing::Test {
-};
-
 // Dummy serializer that just stores logs in memory.
 class DummyLogSerializer : public MetricsLogManager::LogSerializer {
  public:
-  virtual void SerializeLogs(const std::vector<std::string>& logs,
-                             MetricsLogManager::LogType log_type) OVERRIDE {
+  virtual void SerializeLogs(
+      const std::vector<MetricsLogManager::SerializedLog>& logs,
+      MetricsLogManager::LogType log_type) OVERRIDE {
     persisted_logs_[log_type] = logs;
   }
 
-  virtual void DeserializeLogs(MetricsLogManager::LogType log_type,
-                               std::vector<std::string>* logs) OVERRIDE {
+  virtual void DeserializeLogs(
+      MetricsLogManager::LogType log_type,
+      std::vector<MetricsLogManager::SerializedLog>* logs) OVERRIDE {
     ASSERT_NE(static_cast<void*>(NULL), logs);
     *logs = persisted_logs_[log_type];
   }
@@ -35,7 +36,7 @@ class DummyLogSerializer : public MetricsLogManager::LogSerializer {
   }
 
   // In-memory "persitent storage".
-  std::vector<std::string> persisted_logs_[2];
+  std::vector<MetricsLogManager::SerializedLog> persisted_logs_[2];
 };
 
 }  // namespace
@@ -139,8 +140,8 @@ TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
 }
 
 TEST(MetricsLogManagerTest, StoreAndLoad) {
-  std::vector<std::string> initial_logs;
-  std::vector<std::string> ongoing_logs;
+  std::vector<MetricsLogManager::SerializedLog> initial_logs;
+  std::vector<MetricsLogManager::SerializedLog> ongoing_logs;
 
   // Set up some in-progress logging in a scoped log manager simulating the
   // leadup to quitting, then persist as would be done on quit.
@@ -149,7 +150,9 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     DummyLogSerializer* serializer = new DummyLogSerializer;
     log_manager.set_log_serializer(serializer);
     // Simulate a log having already been unsent from a previous session.
-    std::string log = "proto";
+    MetricsLogManager::SerializedLog log;
+    std::string text = "proto";
+    log.SwapLogText(&text);
     serializer->persisted_logs_[MetricsLogManager::ONGOING_LOG].push_back(log);
     EXPECT_FALSE(log_manager.has_unsent_logs());
     log_manager.LoadPersistedUnsentLogs();
@@ -342,4 +345,45 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     log_manager.PersistUnsentLogs();
     EXPECT_EQ(1U, serializer->TypeCount(MetricsLogManager::ONGOING_LOG));
   }
+}
+
+TEST(MetricsLogManagerTest, SerializedLog) {
+  const char kFooText[] = "foo";
+  const std::string foo_hash = base::SHA1HashString(kFooText);
+  const char kBarText[] = "bar";
+  const std::string bar_hash = base::SHA1HashString(kBarText);
+
+  MetricsLogManager::SerializedLog log;
+  EXPECT_TRUE(log.log_text().empty());
+  EXPECT_TRUE(log.log_hash().empty());
+
+  std::string foo = kFooText;
+  log.SwapLogText(&foo);
+  EXPECT_TRUE(foo.empty());
+  EXPECT_FALSE(log.IsEmpty());
+  EXPECT_EQ(kFooText, log.log_text());
+  EXPECT_EQ(foo_hash, log.log_hash());
+
+  std::string bar = kBarText;
+  log.SwapLogText(&bar);
+  EXPECT_EQ(kFooText, bar);
+  EXPECT_FALSE(log.IsEmpty());
+  EXPECT_EQ(kBarText, log.log_text());
+  EXPECT_EQ(bar_hash, log.log_hash());
+
+  log.Clear();
+  EXPECT_TRUE(log.IsEmpty());
+  EXPECT_TRUE(log.log_text().empty());
+  EXPECT_TRUE(log.log_hash().empty());
+
+  MetricsLogManager::SerializedLog log2;
+  foo = kFooText;
+  log2.SwapLogText(&foo);
+  log.Swap(&log2);
+  EXPECT_FALSE(log.IsEmpty());
+  EXPECT_EQ(kFooText, log.log_text());
+  EXPECT_EQ(foo_hash, log.log_hash());
+  EXPECT_TRUE(log2.IsEmpty());
+  EXPECT_TRUE(log2.log_text().empty());
+  EXPECT_TRUE(log2.log_hash().empty());
 }
