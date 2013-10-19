@@ -1028,6 +1028,8 @@
         'browser/net/pref_proxy_config_tracker_impl_unittest.cc',
         'browser/net/probe_message_unittest.cc',
         'browser/net/proxy_policy_handler_unittest.cc',
+        'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.cc',
+        'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.h',
         'browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc',
         'browser/net/spdyproxy/http_auth_handler_spdyproxy_unittest.cc',
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
@@ -2256,7 +2258,7 @@
         }],
         ['chromeos==1', {
           'sources': [
-            'browser/ui/ash/multi_user_window_manager_unittest.cc',      
+            'browser/ui/ash/multi_user_window_manager_unittest.cc',
           ],
           'sources!': [
             'browser/password_manager/native_backend_gnome_x_unittest.cc',
@@ -2499,6 +2501,8 @@
             'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
           ],
           'sources!': [
+            'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.cc',
+            'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.h',
             'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
           ],
         }],
