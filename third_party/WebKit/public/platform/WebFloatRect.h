@@ -36,6 +36,7 @@
 #if BLINK_IMPLEMENTATION
 #include "platform/geometry/FloatRect.h"
 #else
+#include <algorithm>
 #include <cmath>
 #include <ui/gfx/rect_f.h>
 #endif
