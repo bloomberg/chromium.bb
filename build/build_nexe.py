@@ -697,9 +697,6 @@ def Main(argv):
                     help='Set the path for of the toolchains.')
   parser.add_option('--config-name', dest='build_config',
                     help='GYP build configuration name (Release/Debug)')
-  parser.add_option('-j', '--concurrency', dest='build_concurrency',
-                    help='Set the nubmer of compile processes to run ' +
-                    'concurrently.', default=4)
   options, files = parser.parse_args(argv[1:])
 
   if not argv:
@@ -734,25 +731,18 @@ def Main(argv):
       build.Translate(list(files)[0])
       return 0
 
-    # Since goma does not build locally, it uses very high concurrence.
-    if build.gomacc:
-      options.build_concurrency = 100
-    if options.build_concurrency > 0: # Use concurrent build.
+    if build.gomacc:  # use goma build.
       returns = Queue.Queue()
-      # Limit the number of concurrent builds by acquiring a semaphore
-      concur_limit = threading.Semaphore(options.build_concurrency)
-      def CompileThread(filename):
+      def CompileThread(filename, queue):
         try:
-          concur_limit.acquire()
-          returns.put(build.Compile(filename))
-          concur_limit.release()
+          queue.put(build.Compile(filename))
         except Exception:
           # Put current exception info to the queue.
           queue.put(sys.exc_info())
       build_threads = []
       # Start parallel build.
       for filename in files:
-        thr = threading.Thread(target=CompileThread, args=(filename,))
+        thr = threading.Thread(target=CompileThread, args=(filename, returns))
         thr.start()
         build_threads.append(thr)
       for thr in build_threads:
