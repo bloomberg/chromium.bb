@@ -41,6 +41,7 @@ enum MethodID {
   kGetTestDirectory,
   kNewLogger,
   kSyncParent,
+  kGetChildren,
   kNumEntries
 };
 

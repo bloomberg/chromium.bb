@@ -37,6 +37,7 @@
 #endif
 
 #if defined(OS_POSIX)
+#include <dirent.h>
 #include <fcntl.h>
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -315,6 +316,8 @@ const char* MethodIDToString(MethodID method) {
       return "NewLogger";
     case kSyncParent:
       return "SyncParent";
+    case kGetChildren:
+      return "GetChildren";
     case kNumEntries:
       NOTREACHED();
       return "kNumEntries";
@@ -668,21 +671,64 @@ void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
   }
 }
 
-Status ChromiumEnv::GetChildren(const std::string& dir,
-                                std::vector<std::string>* result) {
-  result->clear();
-  // TODO(jorlow): Unfortunately, the FileEnumerator swallows errors, so
-  //               we'll always return OK. Maybe manually check for error
-  //               conditions like the file not existing?
-  base::FileEnumerator iter(
-      CreateFilePath(dir), false, base::FileEnumerator::FILES);
+namespace {
+#if defined(OS_WIN)
+static base::PlatformFileError GetDirectoryEntries(
+    const base::FilePath& dir_filepath,
+    std::vector<base::FilePath>* result) {
+  // TODO(dgrogan): Replace with FindFirstFile / FindNextFile. Note that until
+  // that happens this is filtering out directories whereas the Posix version
+  // below is not. There shouldn't be any directories so this shouldn't be an
+  // issue.
+  base::FileEnumerator iter(dir_filepath, false, base::FileEnumerator::FILES);
   base::FilePath current = iter.Next();
   while (!current.empty()) {
-    result->push_back(FilePathToString(current.BaseName()));
+    result->push_back(current.BaseName());
     current = iter.Next();
   }
+  return base::PLATFORM_FILE_OK;
+}
+#else
+static base::PlatformFileError GetDirectoryEntries(
+    const base::FilePath& dir_filepath,
+    std::vector<base::FilePath>* result) {
+  const std::string dir_string = FilePathToString(dir_filepath);
+  result->clear();
+  DIR* dir = opendir(dir_string.c_str());
+  if (!dir)
+    return base::ErrnoToPlatformFileError(errno);
+  struct dirent dent_buf;
+  struct dirent* dent;
+  int readdir_result;
+  while ((readdir_result = readdir_r(dir, &dent_buf, &dent)) == 0 && dent)
+    result->push_back(CreateFilePath(dent->d_name));
+  int saved_errno = errno;
+  closedir(dir);
+  if (readdir_result != 0)
+    return base::ErrnoToPlatformFileError(saved_errno);
+  return base::PLATFORM_FILE_OK;
+}
+#endif
+}
+
+Status ChromiumEnv::GetChildren(const std::string& dir_string,
+                                std::vector<std::string>* result) {
+  std::vector<base::FilePath> entries;
+  base::PlatformFileError error =
+      GetDirectoryEntries(CreateFilePath(dir_string), &entries);
+  if (error != base::PLATFORM_FILE_OK) {
+    RecordOSError(kGetChildren, error);
+    return MakeIOError(
+        dir_string, "Could not open/read directory", kGetChildren, error);
+  }
+  for (std::vector<base::FilePath>::iterator it = entries.begin();
+       it != entries.end();
+       ++it) {
+    result->push_back(FilePathToString(*it));
+  }
+
   if (make_backup_)
-    RestoreIfNecessary(dir, result);
+    RestoreIfNecessary(dir_string, result);
   return Status::OK();
 }
 

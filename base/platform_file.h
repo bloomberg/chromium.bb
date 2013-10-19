@@ -55,6 +55,10 @@ enum PlatformFileFlags {
   PLATFORM_FILE_EXECUTE = 1 << 18,           // Used on Windows only
 };
 
+// This enum has been recorded in multiple histograms. If the order of the
+// fields needs to change, please ensure that those histograms are obsolete or
+// have been moved to a different enum.
+//
 // PLATFORM_FILE_ERROR_ACCESS_DENIED is returned when a call fails because of
 // a filesystem restriction. PLATFORM_FILE_ERROR_SECURITY is returned when a
 // browser policy doesn't allow the operation to be executed.
@@ -122,7 +126,7 @@ PlatformFileError LastErrorToPlatformFileError(DWORD saved_errno);
 #elif defined(OS_POSIX)
 typedef int PlatformFile;
 const PlatformFile kInvalidPlatformFileValue = -1;
-PlatformFileError ErrnoToPlatformFileError(int saved_errno);
+BASE_EXPORT PlatformFileError ErrnoToPlatformFileError(int saved_errno);
 #endif
 
 // Creates or opens the given file. If |created| is provided, it will be set to
