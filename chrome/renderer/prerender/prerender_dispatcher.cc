@@ -33,8 +33,9 @@ bool PrerenderDispatcher::IsPrerenderURL(const GURL& url) const {
 }
 
 void PrerenderDispatcher::OnPrerenderStart(int prerender_id) {
-  DCHECK_NE(0u, prerenders_.count(prerender_id));
   std::map<int, WebPrerender>::iterator it = prerenders_.find(prerender_id);
+  if (it == prerenders_.end())
+    return;
 
   WebPrerender& prerender = it->second;
 
@@ -46,8 +47,9 @@ void PrerenderDispatcher::OnPrerenderStart(int prerender_id) {
 }
 
 void PrerenderDispatcher::OnPrerenderStopLoading(int prerender_id) {
-  DCHECK_NE(0u, prerenders_.count(prerender_id));
   std::map<int, WebPrerender>::iterator it = prerenders_.find(prerender_id);
+  if (it == prerenders_.end())
+    return;
 
   WebPrerender& prerender = it->second;
   DCHECK(!prerender.isNull())
@@ -72,8 +74,10 @@ void PrerenderDispatcher::OnPrerenderRemoveAliases(
 }
 
 void PrerenderDispatcher::OnPrerenderStop(int prerender_id) {
-  DCHECK_NE(0u, prerenders_.count(prerender_id));
-  WebPrerender& prerender = prerenders_[prerender_id];
+  std::map<int, WebPrerender>::iterator it = prerenders_.find(prerender_id);
+  if (it == prerenders_.end())
+    return;
+  WebPrerender& prerender = it->second;
 
   // The prerender should only be null in unit tests.
   if (!prerender.isNull())
@@ -125,6 +129,11 @@ void PrerenderDispatcher::cancel(const WebPrerender& prerender) {
       PrerenderExtraData::FromPrerender(prerender);
   content::RenderThread::Get()->Send(
       new PrerenderHostMsg_CancelLinkRelPrerender(extra_data.prerender_id()));
+  // The browser will not send an OnPrerenderStop (the prerender may have even
+  // been canceled before it was started), so release it to avoid a
+  // leak. Moreover, if it did, the PrerenderClient in Blink will have been
+  // detached already.
+   prerenders_.erase(extra_data.prerender_id());
 }
 
 void PrerenderDispatcher::abandon(const WebPrerender& prerender) {
@@ -132,6 +141,11 @@ void PrerenderDispatcher::abandon(const WebPrerender& prerender) {
       PrerenderExtraData::FromPrerender(prerender);
   content::RenderThread::Get()->Send(
       new PrerenderHostMsg_AbandonLinkRelPrerender(extra_data.prerender_id()));
+  // The browser will not send an OnPrerenderStop (the prerender may have even
+  // been canceled before it was started), so release it to avoid a
+  // leak. Moreover, if it did, the PrerenderClient in Blink will have been
+  // detached already.
+  prerenders_.erase(extra_data.prerender_id());
 }
 
 }  // namespace prerender
