@@ -79,6 +79,10 @@ namespace notifications {
 
     // Current progress ranges from 0 to 100.
     long? progress;
+
+    // Whether to show UI indicating that the app will visibly respond to
+    // clicks on the body of a notification.
+    boolean? isClickable;
   };
 
   callback CreateCallback = void (DOMString notificationId);

@@ -66,6 +66,9 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   int GetMessageLines(int width, int limit);
   int GetMessageHeight(int width, int limit);
 
+  // Describes whether the view should display a hand pointer or not.
+  bool clickable_;
+
   // Weak references to NotificationView descendants owned by their parents.
   views::View* background_view_;
   views::View* top_view_;

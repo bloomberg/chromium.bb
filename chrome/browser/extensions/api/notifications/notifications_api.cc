@@ -323,6 +323,9 @@ bool NotificationsApiFunction::CreateNotification(
     }
   }
 
+  if (options->is_clickable.get())
+    optional_fields.clickable = *options->is_clickable;
+
   NotificationsApiDelegate* api_delegate(new NotificationsApiDelegate(
       this,
       profile(),
@@ -435,6 +438,10 @@ bool NotificationsApiFunction::UpdateNotification(
     }
   }
 
+  // Then override if it's already set.
+  if (options->is_clickable.get())
+    notification->set_clickable(*options->is_clickable);
+
   g_browser_process->notification_ui_manager()->Update(
       *notification, profile());
   return true;
@@ -531,11 +538,13 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
     return true;
   }
 
+  // Copy the existing notification to get a writable version of it.
+  Notification notification = *matched_notification;
+
   // If we have trouble updating the notification (could be improper use of API
   // or some other reason), mark the function as failed, calling the callback
   // with false.
   // TODO(dewittj): Add more human-readable error strings if this fails.
-  Notification notification = *matched_notification;
   bool could_update_notification = UpdateNotification(
       params_->notification_id, &params_->options, &notification);
   SetResult(new base::FundamentalValue(could_update_notification));

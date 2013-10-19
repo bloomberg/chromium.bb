@@ -49,6 +49,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   int progress;
   std::vector<ButtonInfo> buttons;
   bool should_make_spoken_feedback_for_popup_updates;
+  bool clickable;
 };
 
 class MESSAGE_CENTER_EXPORT Notification {
@@ -158,7 +159,14 @@ class MESSAGE_CENTER_EXPORT Notification {
   }
 
   bool never_timeout() const { return optional_fields_.never_timeout; }
+
+  bool clickable() const { return optional_fields_.clickable; }
+  void set_clickable(bool clickable) {
+    optional_fields_.clickable = clickable;
+  }
+
   NotificationDelegate* delegate() const { return delegate_.get(); }
+
   const RichNotificationData& rich_notification_data() const {
     return optional_fields_;
   }

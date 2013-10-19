@@ -455,7 +455,8 @@ NotificationView::NotificationView(const Notification& notification,
                                    MessageCenter* message_center,
                                    MessageCenterTray* tray,
                                    bool expanded)
-    : MessageView(notification, message_center, tray, expanded) {
+    : MessageView(notification, message_center, tray, expanded),
+      clickable_(notification.clickable()){
   std::vector<string16> accessible_lines;
 
   // Create the opaque background that's above the view's shadow.
@@ -712,7 +713,7 @@ views::View* NotificationView::GetEventHandlerForPoint(
 }
 
 gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
-  if (!message_center()->HasClickedListener(notification_id()))
+  if (!clickable_ || !message_center()->HasClickedListener(notification_id()))
     return views::View::GetCursor(event);
 
 #if defined(USE_AURA)
