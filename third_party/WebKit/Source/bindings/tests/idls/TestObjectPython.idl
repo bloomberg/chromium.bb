@@ -107,10 +107,10 @@ interface TestObjectPython {
     [Conditional=Condition] attribute long conditionalLongAttribute;
     [Conditional=Condition1&Condition2] attribute long conditionalAndLongAttribute;
     [Conditional=Condition1|Condition2] attribute long conditionalOrLongAttribute;
-    [Custom] readonly attribute long customReadonlyLongAttribute;
-    [CustomGetter] readonly attribute long customGetterReadonlyLongAttribute;
-    [Conditional=Condition, Custom] readonly attribute long customReadonlyLongAttribute;
-    [Conditional=Condition, CustomGetter] readonly attribute long customGetterReadonlyLongAttribute;
+    [Custom] attribute long customLongAttribute;
+    [CustomGetter] attribute long customGetterLongAttribute;
+    [CustomSetter] attribute long customSetterLongAttribute;
+    [Conditional=Condition, Custom] attribute long customLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [DeprecateAs=ReadonlyLongAttribute] readonly attribute long deprecatedReadonlyLongAttribute;
     // FIXME: move to TestActiveDOMObject.idl (=> TestCheckSecurity) once
@@ -121,6 +121,7 @@ interface TestObjectPython {
     [DoNotCheckSecurityOnSetter] readonly attribute long doNotCheckSecurityOnSetterReadonlyLongAttribute;
     [EnforceRange] readonly attribute long enforceRangeReadonlyLongAttribute;  // FIXME: properly MUST NOT appear on read only attribute; will correct when implement setters
     [GetterRaisesException] readonly attribute long getterRaisesExceptionReadonlyLongAttribute;
+    [CustomGetter, GetterRaisesException] readonly attribute long customGetterGetterRaisesExceptionReadonlyLongAttribute;
     [ImplementedAs=implementedAsName] readonly attribute long implementedAsReadonlyLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] readonly attribute long customImplementedAsReadonlyLongAttribute;
     [CustomGetter, ImplementedAs=implementedAsNameWithCustomGetter] readonly attribute long customGetterImplementedAsReadonlyLongAttribute;

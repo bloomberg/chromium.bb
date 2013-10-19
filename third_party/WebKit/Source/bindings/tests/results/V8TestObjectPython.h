@@ -39,14 +39,17 @@ public:
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
-    static void customReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
-    static void customGetterReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customLongAttributeAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
+    static void customGetterLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customSetterLongAttributeAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
 #if ENABLE(Condition)
-    static void customReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
 #endif // ENABLE(Condition)
 #if ENABLE(Condition)
-    static void customGetterReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customLongAttributeAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
 #endif // ENABLE(Condition)
+    static void customGetterGetterRaisesExceptionReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
     static void customImplementedAsReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
     static void customGetterImplementedAsReadonlyLongAttributeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
