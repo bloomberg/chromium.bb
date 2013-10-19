@@ -32,7 +32,7 @@
 #define FrameFetchContext_h
 
 #include "core/fetch/FetchContext.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

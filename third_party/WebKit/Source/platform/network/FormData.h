@@ -35,7 +35,7 @@ namespace WebCore {
 
 class BlobDataHandle;
 
-class FormDataElement {
+class PLATFORM_EXPORT FormDataElement {
 public:
     FormDataElement() : m_type(data) { }
     explicit FormDataElement(const Vector<char>& array) : m_type(data), m_data(array) { }
@@ -84,7 +84,7 @@ inline bool operator!=(const FormDataElement& a, const FormDataElement& b)
     return !(a == b);
 }
 
-class FormData : public RefCounted<FormData> {
+class PLATFORM_EXPORT FormData : public RefCounted<FormData> {
 public:
     enum EncodingType {
         FormURLEncoded, // for application/x-www-form-urlencoded

@@ -30,7 +30,7 @@
 
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 #include "weborigin/KURL.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PassRefPtr.h"

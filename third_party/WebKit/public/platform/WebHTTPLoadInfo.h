@@ -52,31 +52,31 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void initialize();
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebHTTPLoadInfo& r);
+    BLINK_PLATFORM_EXPORT void initialize();
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebHTTPLoadInfo& r);
 
-    BLINK_EXPORT int httpStatusCode() const;
-    BLINK_EXPORT void setHTTPStatusCode(int);
+    BLINK_PLATFORM_EXPORT int httpStatusCode() const;
+    BLINK_PLATFORM_EXPORT void setHTTPStatusCode(int);
 
-    BLINK_EXPORT WebString httpStatusText() const;
-    BLINK_EXPORT void setHTTPStatusText(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString httpStatusText() const;
+    BLINK_PLATFORM_EXPORT void setHTTPStatusText(const WebString&);
 
-    BLINK_EXPORT long long encodedDataLength() const;
-    BLINK_EXPORT void setEncodedDataLength(long long);
+    BLINK_PLATFORM_EXPORT long long encodedDataLength() const;
+    BLINK_PLATFORM_EXPORT void setEncodedDataLength(long long);
 
-    BLINK_EXPORT void addRequestHeader(const WebString& name, const WebString& value);
-    BLINK_EXPORT void addResponseHeader(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void addRequestHeader(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void addResponseHeader(const WebString& name, const WebString& value);
 
-    BLINK_EXPORT WebString requestHeadersText() const;
-    BLINK_EXPORT void setRequestHeadersText(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString requestHeadersText() const;
+    BLINK_PLATFORM_EXPORT void setRequestHeadersText(const WebString&);
 
-    BLINK_EXPORT WebString responseHeadersText() const;
-    BLINK_EXPORT void setResponseHeadersText(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString responseHeadersText() const;
+    BLINK_PLATFORM_EXPORT void setResponseHeadersText(const WebString&);
 
-#if BLINK_IMPLEMENTATION
-    WebHTTPLoadInfo(WTF::PassRefPtr<WebCore::ResourceLoadInfo>);
-    operator WTF::PassRefPtr<WebCore::ResourceLoadInfo>() const;
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(WTF::PassRefPtr<WebCore::ResourceLoadInfo>);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::ResourceLoadInfo>() const;
 #endif
 
 private:

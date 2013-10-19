@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebHTTPBody.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WebCore { class ResourceRequest; }
 #endif
 
@@ -105,81 +105,81 @@ public:
         setURL(url);
     }
 
-    BLINK_EXPORT void initialize();
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebURLRequest&);
+    BLINK_PLATFORM_EXPORT void initialize();
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebURLRequest&);
 
-    BLINK_EXPORT bool isNull() const;
+    BLINK_PLATFORM_EXPORT bool isNull() const;
 
-    BLINK_EXPORT WebURL url() const;
-    BLINK_EXPORT void setURL(const WebURL&);
+    BLINK_PLATFORM_EXPORT WebURL url() const;
+    BLINK_PLATFORM_EXPORT void setURL(const WebURL&);
 
     // Used to implement third-party cookie blocking.
-    BLINK_EXPORT WebURL firstPartyForCookies() const;
-    BLINK_EXPORT void setFirstPartyForCookies(const WebURL&);
+    BLINK_PLATFORM_EXPORT WebURL firstPartyForCookies() const;
+    BLINK_PLATFORM_EXPORT void setFirstPartyForCookies(const WebURL&);
 
-    BLINK_EXPORT bool allowCookies() const;
-    BLINK_EXPORT void setAllowCookies(bool);
+    BLINK_PLATFORM_EXPORT bool allowCookies() const;
+    BLINK_PLATFORM_EXPORT void setAllowCookies(bool);
 
     // Controls whether user name, password, and cookies may be sent with the
     // request. (If false, this overrides allowCookies.)
-    BLINK_EXPORT bool allowStoredCredentials() const;
-    BLINK_EXPORT void setAllowStoredCredentials(bool);
+    BLINK_PLATFORM_EXPORT bool allowStoredCredentials() const;
+    BLINK_PLATFORM_EXPORT void setAllowStoredCredentials(bool);
 
-    BLINK_EXPORT CachePolicy cachePolicy() const;
-    BLINK_EXPORT void setCachePolicy(CachePolicy);
+    BLINK_PLATFORM_EXPORT CachePolicy cachePolicy() const;
+    BLINK_PLATFORM_EXPORT void setCachePolicy(CachePolicy);
 
-    BLINK_EXPORT WebString httpMethod() const;
-    BLINK_EXPORT void setHTTPMethod(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString httpMethod() const;
+    BLINK_PLATFORM_EXPORT void setHTTPMethod(const WebString&);
 
-    BLINK_EXPORT WebString httpHeaderField(const WebString& name) const;
-    BLINK_EXPORT void setHTTPHeaderField(const WebString& name, const WebString& value);
-    BLINK_EXPORT void addHTTPHeaderField(const WebString& name, const WebString& value);
-    BLINK_EXPORT void clearHTTPHeaderField(const WebString& name);
-    BLINK_EXPORT void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+    BLINK_PLATFORM_EXPORT WebString httpHeaderField(const WebString& name) const;
+    BLINK_PLATFORM_EXPORT void setHTTPHeaderField(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void addHTTPHeaderField(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void clearHTTPHeaderField(const WebString& name);
+    BLINK_PLATFORM_EXPORT void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-    BLINK_EXPORT WebHTTPBody httpBody() const;
-    BLINK_EXPORT void setHTTPBody(const WebHTTPBody&);
+    BLINK_PLATFORM_EXPORT WebHTTPBody httpBody() const;
+    BLINK_PLATFORM_EXPORT void setHTTPBody(const WebHTTPBody&);
 
     // Controls whether upload progress events are generated when a request
     // has a body.
-    BLINK_EXPORT bool reportUploadProgress() const;
-    BLINK_EXPORT void setReportUploadProgress(bool);
+    BLINK_PLATFORM_EXPORT bool reportUploadProgress() const;
+    BLINK_PLATFORM_EXPORT void setReportUploadProgress(bool);
 
     // Controls whether load timing info is collected for the request.
-    BLINK_EXPORT bool reportLoadTiming() const;
-    BLINK_EXPORT void setReportLoadTiming(bool);
+    BLINK_PLATFORM_EXPORT bool reportLoadTiming() const;
+    BLINK_PLATFORM_EXPORT void setReportLoadTiming(bool);
 
     // Controls whether actual headers sent and received for request are
     // collected and reported.
-    BLINK_EXPORT bool reportRawHeaders() const;
-    BLINK_EXPORT void setReportRawHeaders(bool);
+    BLINK_PLATFORM_EXPORT bool reportRawHeaders() const;
+    BLINK_PLATFORM_EXPORT void setReportRawHeaders(bool);
 
-    BLINK_EXPORT TargetType targetType() const;
-    BLINK_EXPORT void setTargetType(TargetType);
+    BLINK_PLATFORM_EXPORT TargetType targetType() const;
+    BLINK_PLATFORM_EXPORT void setTargetType(TargetType);
 
     // True if the request was user initiated.
-    BLINK_EXPORT bool hasUserGesture() const;
-    BLINK_EXPORT void setHasUserGesture(bool);
+    BLINK_PLATFORM_EXPORT bool hasUserGesture() const;
+    BLINK_PLATFORM_EXPORT void setHasUserGesture(bool);
 
     // A consumer controlled value intended to be used to identify the
     // requestor.
-    BLINK_EXPORT int requestorID() const;
-    BLINK_EXPORT void setRequestorID(int);
+    BLINK_PLATFORM_EXPORT int requestorID() const;
+    BLINK_PLATFORM_EXPORT void setRequestorID(int);
 
     // A consumer controlled value intended to be used to identify the
     // process of the requestor.
-    BLINK_EXPORT int requestorProcessID() const;
-    BLINK_EXPORT void setRequestorProcessID(int);
+    BLINK_PLATFORM_EXPORT int requestorProcessID() const;
+    BLINK_PLATFORM_EXPORT void setRequestorProcessID(int);
 
     // Allows the request to be matched up with its app cache host.
-    BLINK_EXPORT int appCacheHostID() const;
-    BLINK_EXPORT void setAppCacheHostID(int);
+    BLINK_PLATFORM_EXPORT int appCacheHostID() const;
+    BLINK_PLATFORM_EXPORT void setAppCacheHostID(int);
 
     // If true, the response body will be downloaded to a file managed by the
     // WebURLLoader. See WebURLResponse::downloadedFilePath.
-    BLINK_EXPORT bool downloadToFile() const;
-    BLINK_EXPORT void setDownloadToFile(bool);
+    BLINK_PLATFORM_EXPORT bool downloadToFile() const;
+    BLINK_PLATFORM_EXPORT void setDownloadToFile(bool);
 
     // Extra data associated with the underlying resource request. Resource
     // requests can be copied. If non-null, each copy of a resource requests
@@ -187,18 +187,18 @@ public:
     // deleted when the last resource request is destroyed. Setting the extra
     // data pointer will cause the underlying resource request to be
     // dissociated from any existing non-null extra data pointer.
-    BLINK_EXPORT ExtraData* extraData() const;
-    BLINK_EXPORT void setExtraData(ExtraData*);
+    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
-    BLINK_EXPORT Priority priority() const;
+    BLINK_PLATFORM_EXPORT Priority priority() const;
 
-#if BLINK_IMPLEMENTATION
-    WebCore::ResourceRequest& toMutableResourceRequest();
-    const WebCore::ResourceRequest& toResourceRequest() const;
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebCore::ResourceRequest& toMutableResourceRequest();
+    BLINK_PLATFORM_EXPORT const WebCore::ResourceRequest& toResourceRequest() const;
 #endif
 
 protected:
-    void assign(WebURLRequestPrivate*);
+    BLINK_PLATFORM_EXPORT void assign(WebURLRequestPrivate*);
 
 private:
     WebURLRequestPrivate* m_private;

@@ -23,13 +23,13 @@
  */
 
 #include "config.h"
-#include "core/platform/network/FormDataBuilder.h"
+#include "platform/network/FormDataBuilder.h"
 
+#include <limits>
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/HexNumber.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
-#include <limits>
 
 namespace WebCore {
 

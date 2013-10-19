@@ -29,7 +29,8 @@
 namespace WebCore {
 
 enum ResourceLoadPriority {
-    // The unresolved priority is here for the convenience of the clients. It should not be passed to the ResourceLoadScheduler.
+    // The unresolved priority is here for the convenience of the clients. It
+    // should not be passed to the ResourceLoadScheduler.
     ResourceLoadPriorityUnresolved = -1,
     ResourceLoadPriorityVeryLow = 0,
     ResourceLoadPriorityLow,

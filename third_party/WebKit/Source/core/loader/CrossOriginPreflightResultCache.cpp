@@ -28,7 +28,7 @@
 #include "core/loader/CrossOriginPreflightResultCache.h"
 
 #include "core/fetch/CrossOriginAccessControl.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"

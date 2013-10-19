@@ -42,7 +42,7 @@
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/OwnPtr.h"
 
 #include <gtest/gtest.h>

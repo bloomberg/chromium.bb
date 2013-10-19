@@ -42,7 +42,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/platform/network/FormDataBuilder.h"
+#include "platform/network/FormDataBuilder.h"
 #include "wtf/text/TextEncoding.h"
 
 using namespace WebCore;

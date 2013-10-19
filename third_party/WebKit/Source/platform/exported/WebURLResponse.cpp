@@ -31,9 +31,9 @@
 #include "config.h"
 #include "public/platform/WebURLResponse.h"
 
-#include "core/platform/chromium/support/WebURLResponsePrivate.h"
-#include "core/platform/network/ResourceLoadTiming.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/exported/WebURLResponsePrivate.h"
+#include "platform/network/ResourceLoadTiming.h"
+#include "platform/network/ResourceResponse.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebHTTPLoadInfo.h"
 #include "public/platform/WebString.h"

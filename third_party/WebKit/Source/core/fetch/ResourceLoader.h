@@ -30,7 +30,7 @@
 #define ResourceLoader_h
 
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "wtf/Forward.h"

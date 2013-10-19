@@ -43,8 +43,8 @@
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/platform/network/FormData.h"
-#include "core/platform/network/FormDataBuilder.h"
+#include "platform/network/FormData.h"
+#include "platform/network/FormDataBuilder.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/TextEncoding.h"
 

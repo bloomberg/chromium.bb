@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebPrivateOwnPtr.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WebCore { class ResourceResponse; }
 #endif
 
@@ -73,116 +73,116 @@ public:
         setURL(url);
     }
 
-    BLINK_EXPORT void initialize();
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebURLResponse&);
+    BLINK_PLATFORM_EXPORT void initialize();
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebURLResponse&);
 
-    BLINK_EXPORT bool isNull() const;
+    BLINK_PLATFORM_EXPORT bool isNull() const;
 
-    BLINK_EXPORT WebURL url() const;
-    BLINK_EXPORT void setURL(const WebURL&);
+    BLINK_PLATFORM_EXPORT WebURL url() const;
+    BLINK_PLATFORM_EXPORT void setURL(const WebURL&);
 
-    BLINK_EXPORT unsigned connectionID() const;
-    BLINK_EXPORT void setConnectionID(unsigned);
+    BLINK_PLATFORM_EXPORT unsigned connectionID() const;
+    BLINK_PLATFORM_EXPORT void setConnectionID(unsigned);
 
-    BLINK_EXPORT bool connectionReused() const;
-    BLINK_EXPORT void setConnectionReused(bool);
+    BLINK_PLATFORM_EXPORT bool connectionReused() const;
+    BLINK_PLATFORM_EXPORT void setConnectionReused(bool);
 
-    BLINK_EXPORT WebURLLoadTiming loadTiming();
-    BLINK_EXPORT void setLoadTiming(const WebURLLoadTiming&);
+    BLINK_PLATFORM_EXPORT WebURLLoadTiming loadTiming();
+    BLINK_PLATFORM_EXPORT void setLoadTiming(const WebURLLoadTiming&);
 
-    BLINK_EXPORT WebHTTPLoadInfo httpLoadInfo();
-    BLINK_EXPORT void setHTTPLoadInfo(const WebHTTPLoadInfo&);
+    BLINK_PLATFORM_EXPORT WebHTTPLoadInfo httpLoadInfo();
+    BLINK_PLATFORM_EXPORT void setHTTPLoadInfo(const WebHTTPLoadInfo&);
 
-    BLINK_EXPORT double responseTime() const;
-    BLINK_EXPORT void setResponseTime(double);
+    BLINK_PLATFORM_EXPORT double responseTime() const;
+    BLINK_PLATFORM_EXPORT void setResponseTime(double);
 
-    BLINK_EXPORT WebString mimeType() const;
-    BLINK_EXPORT void setMIMEType(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString mimeType() const;
+    BLINK_PLATFORM_EXPORT void setMIMEType(const WebString&);
 
-    BLINK_EXPORT long long expectedContentLength() const;
-    BLINK_EXPORT void setExpectedContentLength(long long);
+    BLINK_PLATFORM_EXPORT long long expectedContentLength() const;
+    BLINK_PLATFORM_EXPORT void setExpectedContentLength(long long);
 
-    BLINK_EXPORT WebString textEncodingName() const;
-    BLINK_EXPORT void setTextEncodingName(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString textEncodingName() const;
+    BLINK_PLATFORM_EXPORT void setTextEncodingName(const WebString&);
 
-    BLINK_EXPORT WebString suggestedFileName() const;
-    BLINK_EXPORT void setSuggestedFileName(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString suggestedFileName() const;
+    BLINK_PLATFORM_EXPORT void setSuggestedFileName(const WebString&);
 
-    BLINK_EXPORT HTTPVersion httpVersion() const;
-    BLINK_EXPORT void setHTTPVersion(HTTPVersion);
+    BLINK_PLATFORM_EXPORT HTTPVersion httpVersion() const;
+    BLINK_PLATFORM_EXPORT void setHTTPVersion(HTTPVersion);
 
-    BLINK_EXPORT int httpStatusCode() const;
-    BLINK_EXPORT void setHTTPStatusCode(int);
+    BLINK_PLATFORM_EXPORT int httpStatusCode() const;
+    BLINK_PLATFORM_EXPORT void setHTTPStatusCode(int);
 
-    BLINK_EXPORT WebString httpStatusText() const;
-    BLINK_EXPORT void setHTTPStatusText(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString httpStatusText() const;
+    BLINK_PLATFORM_EXPORT void setHTTPStatusText(const WebString&);
 
-    BLINK_EXPORT WebString httpHeaderField(const WebString& name) const;
-    BLINK_EXPORT void setHTTPHeaderField(const WebString& name, const WebString& value);
-    BLINK_EXPORT void addHTTPHeaderField(const WebString& name, const WebString& value);
-    BLINK_EXPORT void clearHTTPHeaderField(const WebString& name);
-    BLINK_EXPORT void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+    BLINK_PLATFORM_EXPORT WebString httpHeaderField(const WebString& name) const;
+    BLINK_PLATFORM_EXPORT void setHTTPHeaderField(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void addHTTPHeaderField(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void clearHTTPHeaderField(const WebString& name);
+    BLINK_PLATFORM_EXPORT void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-    BLINK_EXPORT double lastModifiedDate() const;
-    BLINK_EXPORT void setLastModifiedDate(double);
+    BLINK_PLATFORM_EXPORT double lastModifiedDate() const;
+    BLINK_PLATFORM_EXPORT void setLastModifiedDate(double);
 
-    BLINK_EXPORT long long appCacheID() const;
-    BLINK_EXPORT void setAppCacheID(long long);
+    BLINK_PLATFORM_EXPORT long long appCacheID() const;
+    BLINK_PLATFORM_EXPORT void setAppCacheID(long long);
 
-    BLINK_EXPORT WebURL appCacheManifestURL() const;
-    BLINK_EXPORT void setAppCacheManifestURL(const WebURL&);
+    BLINK_PLATFORM_EXPORT WebURL appCacheManifestURL() const;
+    BLINK_PLATFORM_EXPORT void setAppCacheManifestURL(const WebURL&);
 
     // A consumer controlled value intended to be used to record opaque
     // security info related to this request.
-    BLINK_EXPORT WebCString securityInfo() const;
-    BLINK_EXPORT void setSecurityInfo(const WebCString&);
+    BLINK_PLATFORM_EXPORT WebCString securityInfo() const;
+    BLINK_PLATFORM_EXPORT void setSecurityInfo(const WebCString&);
 
-#if BLINK_IMPLEMENTATION
-    WebCore::ResourceResponse& toMutableResourceResponse();
-    const WebCore::ResourceResponse& toResourceResponse() const;
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebCore::ResourceResponse& toMutableResourceResponse();
+    BLINK_PLATFORM_EXPORT const WebCore::ResourceResponse& toResourceResponse() const;
 #endif
 
     // Flag whether this request was served from the disk cache entry.
-    BLINK_EXPORT bool wasCached() const;
-    BLINK_EXPORT void setWasCached(bool);
+    BLINK_PLATFORM_EXPORT bool wasCached() const;
+    BLINK_PLATFORM_EXPORT void setWasCached(bool);
 
     // Flag whether this request was loaded via the SPDY protocol or not.
     // SPDY is an experimental web protocol, see http://dev.chromium.org/spdy
-    BLINK_EXPORT bool wasFetchedViaSPDY() const;
-    BLINK_EXPORT void setWasFetchedViaSPDY(bool);
+    BLINK_PLATFORM_EXPORT bool wasFetchedViaSPDY() const;
+    BLINK_PLATFORM_EXPORT void setWasFetchedViaSPDY(bool);
 
     // Flag whether this request was loaded after the TLS/Next-Protocol-Negotiation was used.
     // This is related to SPDY.
-    BLINK_EXPORT bool wasNpnNegotiated() const;
-    BLINK_EXPORT void setWasNpnNegotiated(bool);
+    BLINK_PLATFORM_EXPORT bool wasNpnNegotiated() const;
+    BLINK_PLATFORM_EXPORT void setWasNpnNegotiated(bool);
 
     // Flag whether this request was made when "Alternate-Protocol: xxx"
     // is present in server's response.
-    BLINK_EXPORT bool wasAlternateProtocolAvailable() const;
-    BLINK_EXPORT void setWasAlternateProtocolAvailable(bool);
+    BLINK_PLATFORM_EXPORT bool wasAlternateProtocolAvailable() const;
+    BLINK_PLATFORM_EXPORT void setWasAlternateProtocolAvailable(bool);
 
     // Flag whether this request was loaded via an explicit proxy (HTTP, SOCKS, etc).
-    BLINK_EXPORT bool wasFetchedViaProxy() const;
-    BLINK_EXPORT void setWasFetchedViaProxy(bool);
+    BLINK_PLATFORM_EXPORT bool wasFetchedViaProxy() const;
+    BLINK_PLATFORM_EXPORT void setWasFetchedViaProxy(bool);
 
     // Flag whether this request is part of a multipart response.
-    BLINK_EXPORT bool isMultipartPayload() const;
-    BLINK_EXPORT void setIsMultipartPayload(bool);
+    BLINK_PLATFORM_EXPORT bool isMultipartPayload() const;
+    BLINK_PLATFORM_EXPORT void setIsMultipartPayload(bool);
 
     // This indicates the location of a downloaded response if the
     // WebURLRequest had the downloadToFile flag set to true. This file path
     // remains valid for the lifetime of the WebURLLoader used to create it.
-    BLINK_EXPORT WebString downloadFilePath() const;
-    BLINK_EXPORT void setDownloadFilePath(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString downloadFilePath() const;
+    BLINK_PLATFORM_EXPORT void setDownloadFilePath(const WebString&);
 
     // Remote IP address of the socket which fetched this resource.
-    BLINK_EXPORT WebString remoteIPAddress() const;
-    BLINK_EXPORT void setRemoteIPAddress(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString remoteIPAddress() const;
+    BLINK_PLATFORM_EXPORT void setRemoteIPAddress(const WebString&);
 
     // Remote port number of the socket which fetched this resource.
-    BLINK_EXPORT unsigned short remotePort() const;
-    BLINK_EXPORT void setRemotePort(unsigned short);
+    BLINK_PLATFORM_EXPORT unsigned short remotePort() const;
+    BLINK_PLATFORM_EXPORT void setRemotePort(unsigned short);
 
     // Extra data associated with the underlying resource response. Resource
     // responses can be copied. If non-null, each copy of a resource response
@@ -190,11 +190,11 @@ public:
     // deleted when the last resource response is destroyed. Setting the extra
     // data pointer will cause the underlying resource response to be
     // dissociated from any existing non-null extra data pointer.
-    BLINK_EXPORT ExtraData* extraData() const;
-    BLINK_EXPORT void setExtraData(ExtraData*);
+    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 protected:
-    void assign(WebURLResponsePrivate*);
+    BLINK_PLATFORM_EXPORT void assign(WebURLResponsePrivate*);
 
 private:
     WebURLResponsePrivate* m_private;

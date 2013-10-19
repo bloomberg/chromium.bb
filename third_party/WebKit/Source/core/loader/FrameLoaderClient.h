@@ -33,7 +33,7 @@
 #include "core/dom/IconURL.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
-#include "core/platform/network/ResourceLoadPriority.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 

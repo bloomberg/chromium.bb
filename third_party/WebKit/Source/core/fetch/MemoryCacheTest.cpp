@@ -34,7 +34,7 @@
 #include "core/fetch/MockImageResourceClient.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 #include "public/platform/Platform.h"
 #include "wtf/OwnPtr.h"
 

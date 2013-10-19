@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 
-#include "core/platform/network/ResourceRequest.h"
-#include "core/platform/network/ResourceResponse.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/ResourceRequest.h"
+#include "platform/network/ResourceResponse.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"

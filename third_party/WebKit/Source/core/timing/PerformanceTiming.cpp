@@ -33,12 +33,12 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentTiming.h"
+#include "core/frame/Frame.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/frame/Frame.h"
-#include "core/platform/network/ResourceLoadTiming.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceLoadTiming.h"
+#include "platform/network/ResourceResponse.h"
 
 namespace WebCore {
 

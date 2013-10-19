@@ -31,7 +31,7 @@
 #ifndef WrappedResourceRequest_h
 #define WrappedResourceRequest_h
 
-#include "core/platform/chromium/support/WebURLRequestPrivate.h"
+#include "platform/exported/WebURLRequestPrivate.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace WebKit {

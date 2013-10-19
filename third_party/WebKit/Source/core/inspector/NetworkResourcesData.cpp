@@ -33,7 +33,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceResponse.h"
 
 namespace {
 // 100MB

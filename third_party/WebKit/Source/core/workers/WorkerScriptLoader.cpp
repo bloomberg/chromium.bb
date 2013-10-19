@@ -31,9 +31,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/loader/WorkerThreadableLoader.h"
-#include "core/platform/network/ResourceResponse.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
+#include "platform/network/ResourceResponse.h"
 
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"

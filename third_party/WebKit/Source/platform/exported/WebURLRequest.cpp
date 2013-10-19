@@ -31,8 +31,8 @@
 #include "config.h"
 #include "public/platform/WebURLRequest.h"
 
-#include "core/platform/chromium/support/WebURLRequestPrivate.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/exported/WebURLRequestPrivate.h"
+#include "platform/network/ResourceRequest.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebURL.h"

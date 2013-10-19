@@ -29,8 +29,8 @@
 #include "core/dom/Element.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/platform/network/ResourceLoadPriority.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceLoadPriority.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {

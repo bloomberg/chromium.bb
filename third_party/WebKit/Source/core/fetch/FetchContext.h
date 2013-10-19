@@ -34,7 +34,7 @@
 #include "core/fetch/CachePolicy.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/Resource.h"
-#include "core/platform/network/ResourceLoadPriority.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {

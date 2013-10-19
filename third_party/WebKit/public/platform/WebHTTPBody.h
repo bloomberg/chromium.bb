@@ -37,7 +37,7 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 namespace WebCore { class FormData; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -69,46 +69,47 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void initialize();
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebHTTPBody&);
+    BLINK_PLATFORM_EXPORT void initialize();
+    BLINK_PLATFORM_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void assign(const WebHTTPBody&);
 
     bool isNull() const { return !m_private; }
 
     // Returns the number of elements comprising the http body.
-    BLINK_EXPORT size_t elementCount() const;
+    BLINK_PLATFORM_EXPORT size_t elementCount() const;
 
     // Sets the values of the element at the given index. Returns false if
     // index is out of bounds.
-    BLINK_EXPORT bool elementAt(size_t index, Element&) const;
+    BLINK_PLATFORM_EXPORT bool elementAt(size_t index, Element&) const;
 
     // Append to the list of elements.
-    BLINK_EXPORT void appendData(const WebData&);
-    BLINK_EXPORT void appendFile(const WebString&);
+    BLINK_PLATFORM_EXPORT void appendData(const WebData&);
+    BLINK_PLATFORM_EXPORT void appendFile(const WebString&);
     // Passing -1 to fileLength means to the end of the file.
-    BLINK_EXPORT void appendFileRange(const WebString&, long long fileStart, long long fileLength, double modificationTime);
-    BLINK_EXPORT void appendBlob(const WebString& uuid);
+    BLINK_PLATFORM_EXPORT void appendFileRange(const WebString&, long long fileStart, long long fileLength, double modificationTime);
+    BLINK_PLATFORM_EXPORT void appendBlob(const WebString& uuid);
 
     // Append a resource which is identified by the FileSystem URL.
-    BLINK_EXPORT void appendFileSystemURLRange(const WebURL&, long long start, long long length, double modificationTime);
+    BLINK_PLATFORM_EXPORT void appendFileSystemURLRange(const WebURL&, long long start, long long length, double modificationTime);
 
     // Identifies a particular form submission instance. A value of 0 is
     // used to indicate an unspecified identifier.
-    BLINK_EXPORT long long identifier() const;
-    BLINK_EXPORT void setIdentifier(long long);
+    BLINK_PLATFORM_EXPORT long long identifier() const;
+    BLINK_PLATFORM_EXPORT void setIdentifier(long long);
 
-    BLINK_EXPORT bool containsPasswordData() const;
-    BLINK_EXPORT void setContainsPasswordData(bool);
+    BLINK_PLATFORM_EXPORT bool containsPasswordData() const;
+    BLINK_PLATFORM_EXPORT void setContainsPasswordData(bool);
 
-#if BLINK_IMPLEMENTATION
-    WebHTTPBody(const WTF::PassRefPtr<WebCore::FormData>&);
-    WebHTTPBody& operator=(const WTF::PassRefPtr<WebCore::FormData>&);
-    operator WTF::PassRefPtr<WebCore::FormData>() const;
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebHTTPBody(const WTF::PassRefPtr<WebCore::FormData>&);
+    BLINK_PLATFORM_EXPORT WebHTTPBody& operator=(const WTF::PassRefPtr<WebCore::FormData>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::FormData>() const;
 #endif
 
 private:
-    void assign(WebHTTPBodyPrivate*);
-    void ensureMutable();
+    BLINK_PLATFORM_EXPORT void assign(WebHTTPBodyPrivate*);
+    BLINK_PLATFORM_EXPORT void ensureMutable();
+
     WebHTTPBodyPrivate* m_private;
 };
 

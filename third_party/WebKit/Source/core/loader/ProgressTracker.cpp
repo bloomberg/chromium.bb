@@ -26,13 +26,13 @@
 #include "config.h"
 #include "core/loader/ProgressTracker.h"
 
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "platform/Logging.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
 

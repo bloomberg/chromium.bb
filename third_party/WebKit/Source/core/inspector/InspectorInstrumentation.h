@@ -38,16 +38,16 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventContext.h"
-#include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/Frame.h"
+#include "core/inspector/ConsoleAPITypes.h"
 #include "core/page/Page.h"
-#include "core/platform/network/FormData.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
 #include "core/storage/StorageArea.h"
 #include "modules/websockets/WebSocketFrame.h"
 #include "modules/websockets/WebSocketHandshakeRequest.h"
 #include "modules/websockets/WebSocketHandshakeResponse.h"
+#include "platform/network/FormData.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

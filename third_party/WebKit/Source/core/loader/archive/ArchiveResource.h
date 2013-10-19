@@ -30,7 +30,7 @@
 #define ArchiveResource_h
 
 #include "platform/SharedBuffer.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceResponse.h"
 #include "weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

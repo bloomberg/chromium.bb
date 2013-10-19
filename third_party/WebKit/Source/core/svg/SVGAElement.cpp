@@ -32,6 +32,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/frame/Frame.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -40,15 +41,14 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include "platform/PlatformMouseEvent.h"
+#include "platform/network/ResourceRequest.h"
 
 namespace WebCore {
 

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebHTTPLoadInfo.h"
 
-#include "core/platform/network/ResourceLoadInfo.h"
+#include "platform/network/ResourceLoadInfo.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
 

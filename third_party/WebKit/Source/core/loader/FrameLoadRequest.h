@@ -30,8 +30,8 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/SubstituteData.h"
+#include "platform/network/ResourceRequest.h"
 #include "weborigin/SecurityOrigin.h"
-#include "core/platform/network/ResourceRequest.h"
 
 namespace WebCore {
 class Frame;

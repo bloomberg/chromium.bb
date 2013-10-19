@@ -21,7 +21,7 @@
 #ifndef FormDataBuilder_h
 #define FormDataBuilder_h
 
-#include "core/platform/network/FormData.h"
+#include "platform/network/FormData.h"
 #include "wtf/Forward.h"
 
 namespace WTF{
@@ -30,7 +30,7 @@ class TextEncoding;
 
 namespace WebCore {
 
-class FormDataBuilder {
+class PLATFORM_EXPORT FormDataBuilder {
     WTF_MAKE_NONCOPYABLE(FormDataBuilder);
 public:
     static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, const String& inputEncoding, const String& defaultCharset);

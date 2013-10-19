@@ -31,14 +31,14 @@
 #include "config.h"
 #include "core/fetch/ResourceFetcher.h"
 
+#include <gtest/gtest.h>
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/platform/network/ResourceRequest.h"
-#include <gtest/gtest.h>
+#include "platform/network/ResourceRequest.h"
 
 using namespace WebCore;
 

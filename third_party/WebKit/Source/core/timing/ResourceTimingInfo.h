@@ -31,8 +31,8 @@
 #ifndef ResourceTimingInfo_h
 #define ResourceTimingInfo_h
 
-#include "core/platform/network/ResourceRequest.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceRequest.h"
+#include "platform/network/ResourceResponse.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {

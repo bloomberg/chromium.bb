@@ -32,7 +32,7 @@
 #include "core/events/Event.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 

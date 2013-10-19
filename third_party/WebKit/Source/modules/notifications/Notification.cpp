@@ -39,17 +39,17 @@
 #include "core/dom/Document.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/loader/ThreadableLoader.h"
 #include "core/frame/DOMWindow.h"
+#include "core/loader/ThreadableLoader.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
-#include "core/platform/network/ResourceRequest.h"
-#include "core/platform/network/ResourceResponse.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/notifications/DOMWindowNotifications.h"
 #include "modules/notifications/NotificationCenter.h"
 #include "modules/notifications/NotificationClient.h"
 #include "modules/notifications/NotificationController.h"
 #include "modules/notifications/NotificationPermissionCallback.h"
+#include "platform/network/ResourceRequest.h"
+#include "platform/network/ResourceResponse.h"
 
 namespace WebCore {
 

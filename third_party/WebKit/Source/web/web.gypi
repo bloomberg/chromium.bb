@@ -243,7 +243,6 @@
       'WebTextCheckingResult.cpp',
       'WebTextInputInfo.cpp',
       'WebTextRun.cpp',
-      'WebURLLoadTiming.cpp',
       'WebUserGestureIndicator.cpp',
       'WebUserGestureToken.cpp',
       'WebUserMediaRequest.cpp',

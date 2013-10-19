@@ -22,7 +22,7 @@
 #include "core/html/FormDataList.h"
 
 #include "core/fileapi/File.h"
-#include "core/platform/network/FormDataBuilder.h"
+#include "platform/network/FormDataBuilder.h"
 #include "platform/text/LineEnding.h"
 
 namespace WebCore {

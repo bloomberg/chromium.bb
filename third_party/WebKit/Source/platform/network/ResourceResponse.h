@@ -27,10 +27,11 @@
 #ifndef ResourceResponse_h
 #define ResourceResponse_h
 
-#include "core/platform/network/ResourceLoadInfo.h"
-#include "core/platform/network/ResourceLoadTiming.h"
+#include "platform/PlatformExport.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/HTTPHeaderMap.h"
+#include "platform/network/ResourceLoadInfo.h"
+#include "platform/network/ResourceLoadTiming.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -40,7 +41,7 @@ namespace WebCore {
 
 struct CrossThreadResourceResponseData;
 
-class ResourceResponse {
+class PLATFORM_EXPORT ResourceResponse {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     enum HTTPVersion { Unknown, HTTP_0_9, HTTP_1_0, HTTP_1_1 };

@@ -33,6 +33,9 @@
 
 #include "InspectorFrontend.h"
 #include "core/events/Event.h"
+#include "core/frame/DOMWindow.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/inspector/InspectorDOMAgent.h"
@@ -45,17 +48,14 @@
 #include "core/inspector/TimelineRecordFactory.h"
 #include "core/inspector/TimelineTraceEventProcessor.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/PageConsole.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
-#include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "platform/TraceEvent.h"
+#include "platform/network/ResourceRequest.h"
 
 #include "wtf/CurrentTime.h"
 

@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceResponse.h"
 
 #include "platform/network/HTTPParsers.h"
-#include "core/platform/network/ResourceResponse.h"
+#include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"

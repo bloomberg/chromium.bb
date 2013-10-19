@@ -25,9 +25,9 @@
  */
 
 #include "config.h"
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 
-#include "core/platform/network/ResourceRequest.h"
+#include "platform/network/ResourceRequest.h"
 
 namespace WebCore {
 
