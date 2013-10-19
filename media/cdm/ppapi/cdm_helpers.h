@@ -1,0 +1,218 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MEDIA_CDM_PPAPI_CDM_HELPERS_H_
+#define MEDIA_CDM_PPAPI_CDM_HELPERS_H_
+
+#include <map>
+#include <utility>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "build/build_config.h"
+#include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/cpp/dev/buffer_dev.h"
+#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/logging.h"
+
+namespace media {
+
+// cdm::Buffer implementation that provides access to memory owned by a
+// pp::Buffer_Dev.
+// This class holds a reference to the Buffer_Dev throughout its lifetime.
+// TODO(xhwang): Find a better name. It's confusing to have PpbBuffer,
+// pp::Buffer_Dev and PPB_Buffer_Dev.
+class PpbBuffer : public cdm::Buffer {
+ public:
+  static PpbBuffer* Create(const pp::Buffer_Dev& buffer, uint32_t buffer_id) {
+    PP_DCHECK(buffer.data());
+    PP_DCHECK(buffer.size());
+    PP_DCHECK(buffer_id);
+    return new PpbBuffer(buffer, buffer_id);
+  }
+
+  // cdm::Buffer implementation.
+  virtual void Destroy() OVERRIDE { delete this; }
+
+  virtual int32_t Capacity() const OVERRIDE { return buffer_.size(); }
+
+  virtual uint8_t* Data() OVERRIDE {
+    return static_cast<uint8_t*>(buffer_.data());
+  }
+
+  virtual void SetSize(int32_t size) OVERRIDE {
+    PP_DCHECK(size >= 0);
+    PP_DCHECK(size < Capacity());
+    if (size < 0 || size > Capacity()) {
+      size_ = 0;
+      return;
+    }
+
+    size_ = size;
+  }
+
+  virtual int32_t Size() const OVERRIDE { return size_; }
+
+  pp::Buffer_Dev buffer_dev() const { return buffer_; }
+
+  uint32_t buffer_id() const { return buffer_id_; }
+
+ private:
+  PpbBuffer(pp::Buffer_Dev buffer, uint32_t buffer_id)
+      : buffer_(buffer),
+        buffer_id_(buffer_id),
+        size_(0) {}
+  virtual ~PpbBuffer() {}
+
+  pp::Buffer_Dev buffer_;
+  uint32_t buffer_id_;
+  int32_t size_;
+
+  DISALLOW_COPY_AND_ASSIGN(PpbBuffer);
+};
+
+class PpbBufferAllocator {
+ public:
+  explicit PpbBufferAllocator(pp::Instance* instance)
+      : instance_(instance),
+        next_buffer_id_(1) {}
+  ~PpbBufferAllocator() {}
+
+  cdm::Buffer* Allocate(int32_t capacity);
+
+  // Releases the buffer with |buffer_id|. A buffer can be recycled after
+  // it is released.
+  void Release(uint32_t buffer_id);
+
+ private:
+  typedef std::map<uint32_t, pp::Buffer_Dev> AllocatedBufferMap;
+  typedef std::multimap<int, std::pair<uint32_t, pp::Buffer_Dev> >
+      FreeBufferMap;
+
+  pp::Buffer_Dev AllocateNewBuffer(int capacity);
+
+  pp::Instance* const instance_;
+  uint32_t next_buffer_id_;
+  AllocatedBufferMap allocated_buffers_;
+  FreeBufferMap free_buffers_;
+
+  DISALLOW_COPY_AND_ASSIGN(PpbBufferAllocator);
+};
+
+class DecryptedBlockImpl : public cdm::DecryptedBlock {
+ public:
+  DecryptedBlockImpl() : buffer_(NULL), timestamp_(0) {}
+  virtual ~DecryptedBlockImpl() { if (buffer_) buffer_->Destroy(); }
+
+  virtual void SetDecryptedBuffer(cdm::Buffer* buffer) OVERRIDE {
+    buffer_ = static_cast<PpbBuffer*>(buffer);
+  }
+  virtual cdm::Buffer* DecryptedBuffer() OVERRIDE { return buffer_; }
+
+  virtual void SetTimestamp(int64_t timestamp) OVERRIDE {
+    timestamp_ = timestamp;
+  }
+  virtual int64_t Timestamp() const OVERRIDE { return timestamp_; }
+
+ private:
+  PpbBuffer* buffer_;
+  int64_t timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(DecryptedBlockImpl);
+};
+
+class VideoFrameImpl : public cdm::VideoFrame {
+ public:
+  VideoFrameImpl();
+  virtual ~VideoFrameImpl();
+
+  virtual void SetFormat(cdm::VideoFormat format) OVERRIDE {
+    format_ = format;
+  }
+  virtual cdm::VideoFormat Format() const OVERRIDE { return format_; }
+
+  virtual void SetSize(cdm::Size size) OVERRIDE { size_ = size; }
+  virtual cdm::Size Size() const OVERRIDE { return size_; }
+
+  virtual void SetFrameBuffer(cdm::Buffer* frame_buffer) OVERRIDE {
+    frame_buffer_ = static_cast<PpbBuffer*>(frame_buffer);
+  }
+  virtual cdm::Buffer* FrameBuffer() OVERRIDE { return frame_buffer_; }
+
+  virtual void SetPlaneOffset(cdm::VideoFrame::VideoPlane plane,
+                              int32_t offset) OVERRIDE {
+    PP_DCHECK(0 <= plane && plane < kMaxPlanes);
+    PP_DCHECK(offset >= 0);
+    plane_offsets_[plane] = offset;
+  }
+  virtual int32_t PlaneOffset(VideoPlane plane) OVERRIDE {
+    PP_DCHECK(0 <= plane && plane < kMaxPlanes);
+    return plane_offsets_[plane];
+  }
+
+  virtual void SetStride(VideoPlane plane, int32_t stride) OVERRIDE {
+    PP_DCHECK(0 <= plane && plane < kMaxPlanes);
+    strides_[plane] = stride;
+  }
+  virtual int32_t Stride(VideoPlane plane) OVERRIDE {
+    PP_DCHECK(0 <= plane && plane < kMaxPlanes);
+    return strides_[plane];
+  }
+
+  virtual void SetTimestamp(int64_t timestamp) OVERRIDE {
+    timestamp_ = timestamp;
+  }
+  virtual int64_t Timestamp() const OVERRIDE { return timestamp_; }
+
+ private:
+  // The video buffer format.
+  cdm::VideoFormat format_;
+
+  // Width and height of the video frame.
+  cdm::Size size_;
+
+  // The video frame buffer.
+  PpbBuffer* frame_buffer_;
+
+  // Array of data pointers to each plane in the video frame buffer.
+  int32_t plane_offsets_[kMaxPlanes];
+
+  // Array of strides for each plane, typically greater or equal to the width
+  // of the surface divided by the horizontal sampling period.  Note that
+  // strides can be negative.
+  int32_t strides_[kMaxPlanes];
+
+  // Presentation timestamp in microseconds.
+  int64_t timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameImpl);
+};
+
+class AudioFramesImpl : public cdm::AudioFrames {
+ public:
+  AudioFramesImpl() : buffer_(NULL) {}
+  virtual ~AudioFramesImpl() {
+    if (buffer_)
+      buffer_->Destroy();
+  }
+
+  // AudioFrames implementation.
+  virtual void SetFrameBuffer(cdm::Buffer* buffer) OVERRIDE {
+    buffer_ = static_cast<PpbBuffer*>(buffer);
+  }
+  virtual cdm::Buffer* FrameBuffer() OVERRIDE {
+    return buffer_;
+  }
+
+ private:
+  PpbBuffer* buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioFramesImpl);
+};
+
+}  // namespace media
+
+#endif  // MEDIA_CDM_PPAPI_CDM_HELPERS_H_

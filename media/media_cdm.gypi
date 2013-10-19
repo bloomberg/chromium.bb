@@ -98,14 +98,17 @@
       ],
       'sources': [
         'cdm/ppapi/api/content_decryption_module.h',
-        'cdm/ppapi/cdm_wrapper.cc',
+        'cdm/ppapi/cdm_adapter.cc',
+        'cdm/ppapi/cdm_adapter.h',
+        'cdm/ppapi/cdm_helpers.cc',
+        'cdm/ppapi/cdm_helpers.h',
         'cdm/ppapi/linked_ptr.h',
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
           'cflags': ['-fvisibility=hidden'],
           'type': 'loadable_module',
-          # Allow the plugin wrapper to find the CDM in the same directory.
+          # Allow the plugin adapter to find the CDM in the same directory.
           'ldflags': ['-Wl,-rpath=\$$ORIGIN'],
           'libraries': [
             # Built by clearkeycdm.
