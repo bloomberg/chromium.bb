@@ -151,6 +151,7 @@ def generate_attribute_and_includes(interface, attribute):
     contents.update({
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
         'cpp_setter': setter_expression(interface, attribute, contents),
+        'enum_validation_expression': enum_validation_expression(idl_type),
     })
 
     return contents, includes
@@ -206,10 +207,17 @@ def setter_expression(interface, attribute, contents):
     arguments = v8_utilities.call_with_arguments(attribute, contents)
     idl_type = attribute.data_type
     # FIXME: should be able to eliminate WTF::getPtr in most or all cases
-    cpp_value = 'WTF::getPtr(cppValue)' if v8_types.interface_type(idl_type) and not v8_types.array_type(idl_type) else 'cppValue'
+    cpp_value = 'WTF::getPtr(cppValue)' if v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type) else 'cppValue'
     arguments.append(cpp_value)
     setter_name = scoped_name(interface, attribute, 'set%s' % capitalize(cpp_name(attribute)))
     return '%s(%s)' % (setter_name, ', '.join(arguments))
+
+
+def enum_validation_expression(idl_type):
+    if not v8_types.is_enum_type(idl_type):
+        return None
+    return ' || '.join(['string == "%s"' % enum_value
+                        for enum_value in v8_types.enum_values(idl_type)])
 
 
 def is_keep_alive_for_gc(attribute):
@@ -221,11 +229,11 @@ def is_keep_alive_for_gc(attribute):
         # wrapper alive while the owner wrapper is alive, because the attribute
         # never changes.
         (attribute.is_read_only and
-         v8_types.wrapper_type(idl_type) and
+         v8_types.is_wrapper_type(idl_type) and
          # There are some exceptions, however:
          not(
              # Node lifetime is managed by object grouping.
-             v8_types.dom_node_type(idl_type) or
+             v8_types.is_dom_node_type(idl_type) or
              # A self-reference is unnecessary.
              attribute.name == 'self' or
              # FIXME: Remove these hard-coded hacks.

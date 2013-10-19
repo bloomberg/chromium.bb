@@ -83,11 +83,11 @@ def array_type(idl_type):
     return matched and matched.group(1)
 
 
-def basic_type(idl_type):
+def is_basic_type(idl_type):
     return idl_type in BASIC_TYPES
 
 
-def callback_function_type(idl_type):
+def is_callback_function_type(idl_type):
     return idl_type in callback_function_types
 
 
@@ -95,15 +95,19 @@ def set_callback_function_types(callback_functions):
     callback_function_types.update(callback_functions.keys())
 
 
-def composite_type(idl_type):
+def is_composite_type(idl_type):
     return (idl_type == 'any' or
             array_type(idl_type) or
             sequence_type(idl_type) or
-            union_type(idl_type))
+            is_union_type(idl_type))
 
 
-def enum_type(idl_type):
+def is_enum_type(idl_type):
     return idl_type in enum_types
+
+
+def enum_values(idl_type):
+    return enum_types.get(idl_type)
 
 
 def set_enum_types(enumerations):
@@ -111,15 +115,15 @@ def set_enum_types(enumerations):
                        for enum in enumerations.values()])
 
 
-def interface_type(idl_type):
+def is_interface_type(idl_type):
     # Anything that is not another type is an interface type.
     # http://www.w3.org/TR/WebIDL/#idl-types
     # http://www.w3.org/TR/WebIDL/#idl-interface
     # In C++ these are RefPtr or PassRefPtr types.
-    return not(basic_type(idl_type) or
-               composite_type(idl_type) or
-               callback_function_type(idl_type) or
-               enum_type(idl_type) or
+    return not(is_basic_type(idl_type) or
+               is_composite_type(idl_type) or
+               is_callback_function_type(idl_type) or
+               is_enum_type(idl_type) or
                idl_type == 'object' or
                idl_type == 'Promise')  # Promise will be basic in future
 
@@ -129,7 +133,7 @@ def sequence_type(idl_type):
     return matched and matched.group(1)
 
 
-def union_type(idl_type):
+def is_union_type(idl_type):
     return isinstance(idl_type, idl_definitions.IdlUnionType)
 
 
@@ -175,18 +179,19 @@ TYPED_ARRAYS = {
     'Uint32Array': ('unsigned int', 'v8::kExternalUnsignedIntArray'),
 }
 
-def dom_node_type(idl_type):
+
+def is_dom_node_type(idl_type):
     return (idl_type in DOM_NODE_TYPES or
             (idl_type.startswith(('HTML', 'SVG')) and
              idl_type.endswith('Element')))
 
 
-def typed_array_type(idl_type):
+def is_typed_array_type(idl_type):
     return idl_type in TYPED_ARRAYS
 
 
-def wrapper_type(idl_type):
-    return (interface_type(idl_type) and
+def is_wrapper_type(idl_type):
+    return (is_interface_type(idl_type) and
             idl_type not in NON_WRAPPER_TYPES)
 
 
@@ -238,14 +243,14 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         return CPP_SPECIAL_CONVERSION_RULES[idl_type]
     if idl_type in CPP_REF_PTR_CONVERSION_TYPES:
         return 'RefPtr<%s>' % idl_type
-    if idl_type == 'DOMString' or enum_type(idl_type):
+    if idl_type == 'DOMString' or is_enum_type(idl_type):
         # enum is internally a string
         if used_as_argument:
             return 'V8StringResource<>'
         return 'String'
-    if callback_function_type(idl_type):
+    if is_callback_function_type(idl_type):
         return 'ScriptValue'
-    if union_type(idl_type):
+    if is_union_type(idl_type):
         raise Exception('UnionType is not supported')
 
     # Special cases
@@ -254,7 +259,7 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
 
     # FIXME: fix Perl code reading:
     # return "RefPtr<${type}>" if IsRefPtrType($type) and not $isParameter;
-    if interface_type(idl_type):
+    if is_interface_type(idl_type):
         if used_as_argument:
             return cpp_template_type('PassRefPtr', idl_type)
         return cpp_template_type('RefPtr', idl_type)
@@ -285,9 +290,9 @@ def includes_for_cpp_class(class_name, relative_dir_posix):
 
 
 def skip_includes(idl_type):
-    return (basic_type(idl_type) or
-            callback_function_type(idl_type) or
-            enum_type(idl_type))
+    return (is_basic_type(idl_type) or
+            is_callback_function_type(idl_type) or
+            is_enum_type(idl_type))
 
 INCLUDES_FOR_TYPE = {
     'Promise': set(['ScriptPromise.h']),
@@ -299,7 +304,7 @@ def includes_for_type(idl_type):
         return INCLUDES_FOR_TYPE[idl_type]
     if skip_includes(idl_type):
         return set()
-    if typed_array_type(idl_type):
+    if is_typed_array_type(idl_type):
         return set(['bindings/v8/custom/V8%sCustom.h' % idl_type])
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
@@ -349,9 +354,9 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, iso
     if this_array_or_sequence_type:
         return v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, includes, isolate)
 
-    if callback_function_type(idl_type):
+    if is_callback_function_type(idl_type):
         idl_type = 'any'
-    if enum_type(idl_type):
+    if is_enum_type(idl_type):
         idl_type = 'DOMString'
 
     if 'EnforceRange' in extended_attributes:
@@ -375,7 +380,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, iso
 
 
 def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, includes, isolate):
-    if interface_type(this_array_or_sequence_type):
+    if is_interface_type(this_array_or_sequence_type):
         this_cpp_type = None
         expression_format = '(toRefPtrNativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {isolate}))'
         includes.add('V8%s.h' % this_array_or_sequence_type)
@@ -390,7 +395,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
     this_cpp_type = cpp_type(idl_type, extended_attributes=extended_attributes, used_as_argument=True)
 
-    if idl_type == 'DOMString':
+    if idl_type == 'DOMString' or is_enum_type(idl_type):
         format_string = 'V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID({cpp_type}, {variable_name}, {cpp_value})'
     elif 'EnforceRange' in extended_attributes:
         format_string = 'V8TRYCATCH_WITH_TYPECHECK_VOID({cpp_type}, {variable_name}, {cpp_value}, {isolate})'
@@ -408,10 +413,10 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
 def preprocess_type_and_value(idl_type, cpp_value, extended_attributes):
     """Returns type and value, with preliminary type conversions applied."""
-    if enum_type(idl_type):
+    if is_enum_type(idl_type):
         # Enumerations are internally DOMStrings
         idl_type = 'DOMString'
-    if idl_type in ['Promise', 'any'] or callback_function_type(idl_type):
+    if idl_type in ['Promise', 'any'] or is_callback_function_type(idl_type):
         idl_type = 'ScriptValue'
     if idl_type in ['long long', 'unsigned long long']:
         # long long and unsigned long long are not representable in ECMAScript;
@@ -451,13 +456,13 @@ def v8_conversion_type(idl_type, extended_attributes, includes):
         if treat_returned_null_string_as == 'Undefined':
             return 'StringOrUndefined'
         raise 'Unrecognized TreatReturnNullStringAs value: "%s"' % treat_returned_null_string_as
-    if basic_type(idl_type) or idl_type == 'ScriptValue':
+    if is_basic_type(idl_type) or idl_type == 'ScriptValue':
         return idl_type
 
     # Data type with potential additional includes
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
-        if interface_type(this_array_or_sequence_type):
+        if is_interface_type(this_array_or_sequence_type):
             includes.update(includes_for_type(this_array_or_sequence_type))
         return 'array'
 

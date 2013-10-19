@@ -111,6 +111,12 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
     {{attribute.v8_value_to_local_cpp_value}};
+    {% if attribute.enum_validation_expression %}
+    {# Setter ignores invalid enum values #}
+    String string = cppValue;
+    if (!({{attribute.enum_validation_expression}}))
+        return;
+    {% endif %}
     {% if attribute.is_call_with_script_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();
     {% endif %}

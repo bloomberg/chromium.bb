@@ -90,7 +90,7 @@ interface TestObjectPython {
     attribute DOMString? nullableStringAttribute;
     attribute long? nullableLongAttribute;
     // Enumerations
-    readonly attribute TestEnum readonlyTestEnumAttribute;
+    attribute TestEnum testEnumAttribute;
     // Static attributes (Blink extension)
     static attribute DOMString staticStringAttribute;
     static attribute long staticLongAttribute;
