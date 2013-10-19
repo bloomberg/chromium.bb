@@ -385,6 +385,37 @@ void LayerTreeImpl::UpdateDrawProperties() {
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 
+  {
+    TRACE_EVENT2("cc",
+                 "LayerTreeImpl::UpdateTilePriorities",
+                 "IsActive",
+                 IsActiveTree(),
+                 "SourceFrameNumber",
+                 source_frame_number_);
+    // LayerIterator is used here instead of CallFunctionForSubtree to only
+    // UpdateTilePriorities on layers that will be visible (and thus have valid
+    // draw properties) and not because any ordering is required.
+    typedef LayerIterator<LayerImpl,
+                          LayerImplList,
+                          RenderSurfaceImpl,
+                          LayerIteratorActions::FrontToBack> LayerIteratorType;
+    LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
+    for (LayerIteratorType it =
+             LayerIteratorType::Begin(&render_surface_layer_list_);
+         it != end;
+         ++it) {
+      if (!it.represents_itself())
+        continue;
+      LayerImpl* layer = *it;
+
+      layer->UpdateTilePriorities();
+      if (layer->mask_layer())
+        layer->mask_layer()->UpdateTilePriorities();
+      if (layer->replica_layer() && layer->replica_layer()->mask_layer())
+        layer->replica_layer()->mask_layer()->UpdateTilePriorities();
+    }
+  }
+
   DCHECK(!needs_update_draw_properties_) <<
       "CalcDrawProperties should not set_needs_update_draw_properties()";
 }

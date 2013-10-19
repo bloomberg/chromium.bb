@@ -525,22 +525,6 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
          !layer->OpacityCanAnimateOnImplThread();
 }
 
-// Called on each layer that could be drawn after all information from
-// CalcDrawProperties has been updated on that layer.  May have some false
-// positives (e.g. layers get this called on them but don't actually get drawn).
-static inline void UpdateTilePrioritiesForLayer(LayerImpl* layer) {
-  layer->UpdateTilePriorities();
-
-  // Mask layers don't get this call, so explicitly update them so they can
-  // kick off tile rasterization.
-  if (layer->mask_layer())
-    layer->mask_layer()->UpdateTilePriorities();
-  if (layer->replica_layer() && layer->replica_layer()->mask_layer())
-    layer->replica_layer()->mask_layer()->UpdateTilePriorities();
-}
-
-static inline void UpdateTilePrioritiesForLayer(Layer* layer) {}
-
 static inline void SavePaintPropertiesLayer(LayerImpl* layer) {}
 
 static inline void SavePaintPropertiesLayer(Layer* layer) {
@@ -2092,7 +2076,6 @@ static void CalculateDrawPropertiesInternal(
     }
   }
 
-  UpdateTilePrioritiesForLayer(layer);
   SavePaintPropertiesLayer(layer);
 
   // If neither this layer nor any of its children were added, early out.
