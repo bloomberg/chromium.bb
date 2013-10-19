@@ -724,9 +724,9 @@
         # on android_clang, where we're hitting a weird linker error.
         # TODO(dpranke): http://crbug.com/266155 .
         ['OS=="android"', {
-          'v8_optimized_debug': 1,
+          'v8_optimized_debug%': 1,
         }, {
-          'v8_optimized_debug': 2,
+          'v8_optimized_debug%': 2,
         }],
       ],
 
@@ -885,7 +885,7 @@
     'data_reduction_proxy_probe_url%': '<(data_reduction_proxy_probe_url)',
     'enable_mdns%' : '<(enable_mdns)',
     'enable_enhanced_bookmarks%' : '<(enable_enhanced_bookmarks)',
-    'v8_optimized_debug': '<(v8_optimized_debug)',
+    'v8_optimized_debug%': '<(v8_optimized_debug)',
     'proprietary_codecs%': '<(proprietary_codecs)',
 
     # Use system nspr instead of the bundled one.
