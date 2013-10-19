@@ -45,6 +45,7 @@
 #include "core/rendering/RenderLayerRepainter.h"
 
 #include "core/rendering/CompositedLayerMapping.h"
+#include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 
@@ -150,6 +151,93 @@ LayoutRect RenderLayerRepainter::repaintRectIncludingNonCompositingDescendants()
         repaintRect.unite(child->repainter().repaintRectIncludingNonCompositingDescendants());
     }
     return repaintRect;
+}
+
+void RenderLayerRepainter::setBackingNeedsRepaint()
+{
+    ASSERT(m_renderer->compositedLayerMapping());
+    m_renderer->compositedLayerMapping()->setContentsNeedDisplay();
+}
+
+void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
+{
+    // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
+    // so assert but check that the layer is composited.
+    ASSERT(m_renderer->compositedLayerMapping());
+    if (!m_renderer->compositedLayerMapping()) {
+        // If we're trying to repaint the placeholder document layer, propagate the
+        // repaint to the native view system.
+        LayoutRect absRect(r);
+        LayoutPoint delta;
+        m_renderer->layer()->convertToLayerCoords(m_renderer->layer()->root(), delta);
+        absRect.moveBy(delta);
+
+        RenderView* view = m_renderer->view();
+        if (view)
+            view->repaintViewRectangle(absRect);
+    } else {
+        m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(pixelSnappedIntRect(r));
+    }
+}
+
+void RenderLayerRepainter::repaintIncludingDescendants()
+{
+    m_renderer->repaint();
+    for (RenderLayer* curr = m_renderer->layer()->firstChild(); curr; curr = curr->nextSibling())
+        curr->repainter().repaintIncludingDescendants();
+}
+
+void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRect& rect)
+{
+    if (rect.isEmpty())
+        return;
+
+    LayoutRect rectForRepaint = rect;
+    m_renderer->style()->filterOutsets().expandRect(rectForRepaint);
+
+    RenderLayerFilterInfo* filterInfo = m_renderer->layer()->filterInfo();
+    ASSERT(filterInfo);
+    filterInfo->expandDirtySourceRect(rectForRepaint);
+
+    ASSERT(filterInfo->renderer());
+    if (filterInfo->renderer()->hasCustomShaderFilter()) {
+        // If we have at least one custom shader, we need to update the whole bounding box of the layer, because the
+        // shader can address any ouput pixel.
+        // Note: This is only for output rect, so there's no need to expand the dirty source rect.
+        rectForRepaint.unite(m_renderer->layer()->calculateLayerBounds(m_renderer->layer()));
+    }
+
+    RenderLayer* parentLayer = enclosingFilterRepaintLayer();
+    ASSERT(parentLayer);
+    FloatQuad repaintQuad(rectForRepaint);
+    LayoutRect parentLayerRect = m_renderer->localToContainerQuad(repaintQuad, parentLayer->renderer()).enclosingBoundingBox();
+
+    if (parentLayer->compositedLayerMapping()) {
+        parentLayer->repainter().setBackingNeedsRepaintInRect(parentLayerRect);
+        return;
+    }
+
+    if (parentLayer->paintsWithFilters()) {
+        parentLayer->repainter().setFilterBackendNeedsRepaintingInRect(parentLayerRect);
+        return;
+    }
+
+    if (parentLayer->isRootLayer()) {
+        RenderView* view = toRenderView(parentLayer->renderer());
+        view->repaintViewRectangle(parentLayerRect);
+        return;
+    }
+
+    ASSERT_NOT_REACHED();
+}
+
+RenderLayer* RenderLayerRepainter::enclosingFilterRepaintLayer() const
+{
+    for (const RenderLayer* curr = m_renderer->layer(); curr; curr = curr->parent()) {
+        if ((curr != m_renderer->layer() && curr->requiresFullLayerImageForFilters()) || curr->compositingState() == PaintsIntoOwnBacking || curr->isRootLayer())
+            return const_cast<RenderLayer*>(curr);
+    }
+    return 0;
 }
 
 } // Namespace WebCore

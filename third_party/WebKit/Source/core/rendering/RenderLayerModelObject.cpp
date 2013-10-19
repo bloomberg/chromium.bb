@@ -109,7 +109,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
             // Do a repaint with the old style first, e.g., for example if we go from
             // having an outline to not having an outline.
             if (diff == StyleDifferenceRepaintLayer) {
-                layer()->repaintIncludingDescendants();
+                layer()->repainter().repaintIncludingDescendants();
                 if (!(oldStyle->clip() == newStyle->clip()))
                     layer()->clipper().clearClipRectsIncludingDescendants();
             } else if (diff == StyleDifferenceRepaint || newStyle->outlineSize() < oldStyle->outlineSize())
@@ -129,7 +129,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
                     || oldStyle->transform() != newStyle->transform()
                     || oldStyle->filter() != newStyle->filter()
                     )
-                layer()->repaintIncludingDescendants();
+                layer()->repainter().repaintIncludingDescendants();
             } else if (newStyle->hasTransform() || newStyle->opacity() < 1 || newStyle->hasFilter()) {
                 // If we don't have a layer yet, but we are going to get one because of transform or opacity,
                 //  then we need to repaint the old position of the object.

@@ -1404,7 +1404,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             IntRect previousRect = updateRect;
             previousRect.move(scrollDelta);
             updateRect.unite(previousRect);
-            enclosingCompositingLayer->setBackingNeedsRepaintInRect(updateRect);
+            enclosingCompositingLayer->repainter().setBackingNeedsRepaintInRect(updateRect);
         } else {
             // Coalesce the repaints that will be issued to the renderView.
             updateRect = contentsToRootView(updateRect);
@@ -1429,7 +1429,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         if (isCompositedContentLayer) {
             updateRect = rootViewToContents(updateRect);
             ASSERT(renderView());
-            renderView()->layer()->setBackingNeedsRepaintInRect(updateRect);
+            renderView()->layer()->repainter().setBackingNeedsRepaintInRect(updateRect);
             continue;
         }
         if (clipsRepaints())
@@ -1445,7 +1445,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     if (contentsInCompositedLayer()) {
         IntRect updateRect = visibleContentRect();
         ASSERT(renderView());
-        renderView()->layer()->setBackingNeedsRepaintInRect(updateRect);
+        renderView()->layer()->repainter().setBackingNeedsRepaintInRect(updateRect);
     }
     if (RenderPart* frameRenderer = m_frame->ownerRenderer()) {
         if (isEnclosedInCompositingLayer()) {

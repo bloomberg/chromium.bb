@@ -1398,8 +1398,8 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
         return;
     }
 
-    if (repaintContainer->hasFilter() && repaintContainer->layer() && repaintContainer->layer()->requiresFullLayerImageForFilters()) {
-        repaintContainer->layer()->setFilterBackendNeedsRepaintingInRect(r);
+    if (repaintContainer->hasFilter() && repaintContainer->layer()->requiresFullLayerImageForFilters()) {
+        repaintContainer->layer()->repainter().setFilterBackendNeedsRepaintingInRect(r);
         return;
     }
 
@@ -1418,7 +1418,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
 
     if (v->usesCompositing()) {
         ASSERT(repaintContainer->hasLayer() && repaintContainer->layer()->compositingState() == PaintsIntoOwnBacking);
-        repaintContainer->layer()->setBackingNeedsRepaintInRect(r);
+        repaintContainer->layer()->repainter().setBackingNeedsRepaintInRect(r);
     }
 }
 

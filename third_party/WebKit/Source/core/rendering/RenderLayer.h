@@ -102,13 +102,6 @@ public:
     void removeOnlyThisLayer();
     void insertOnlyThisLayer();
 
-    void repaintIncludingDescendants();
-
-    // Indicate that the layer contents need to be repainted. Only has an effect
-    // if layer compositing is being used,
-    void setBackingNeedsRepaint();
-    void setBackingNeedsRepaintInRect(const LayoutRect&); // r is in the coordinate space of the layer's render object
-
     void styleChanged(StyleDifference, const RenderStyle* oldStyle);
 
     bool isNormalFlowOnly() const { return m_isNormalFlowOnly; }
@@ -303,7 +296,6 @@ public:
 
     RenderLayer* enclosingFilterLayer(bool includeSelf = true) const;
     RenderLayer* enclosingFilterRepaintLayer() const;
-    void setFilterBackendNeedsRepaintingInRect(const LayoutRect&);
     bool hasAncestorWithFilterOutsets() const;
 
     bool canUseConvertToLayerCoords() const

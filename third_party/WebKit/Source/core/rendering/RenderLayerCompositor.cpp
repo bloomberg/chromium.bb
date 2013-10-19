@@ -702,7 +702,7 @@ void RenderLayerCompositor::repaintInCompositedAncestor(RenderLayer* layer, cons
         LayoutRect repaintRect = rect;
         repaintRect.moveBy(offset);
 
-        compositedAncestor->setBackingNeedsRepaintInRect(repaintRect);
+        compositedAncestor->repainter().setBackingNeedsRepaintInRect(repaintRect);
     }
 }
 
@@ -1523,9 +1523,9 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer, const IntR
     // FIXME: This method does not work correctly with transforms.
     if (layer->compositingState() == PaintsIntoOwnBacking) {
         if (rect)
-            layer->setBackingNeedsRepaintInRect(*rect);
+            layer->repainter().setBackingNeedsRepaintInRect(*rect);
         else
-            layer->setBackingNeedsRepaint();
+            layer->repainter().setBackingNeedsRepaint();
     }
 
 #if !ASSERT_DISABLED

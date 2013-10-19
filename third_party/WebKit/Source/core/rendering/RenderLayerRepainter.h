@@ -71,15 +71,26 @@ public:
 
     void repaintAfterLayout(RenderGeometryMap*, bool shouldCheckForRepaint);
     void repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer);
+    void repaintIncludingDescendants();
 
     void setRepaintStatus(RepaintStatus status) { m_repaintStatus = status; }
 
     void computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* = 0);
     void computeRepaintRectsIncludingDescendants();
+
+    // Indicate that the layer contents need to be repainted. Only has an effect
+    // if layer compositing is being used,
+    void setBackingNeedsRepaint();
+    void setBackingNeedsRepaintInRect(const LayoutRect&); // r is in the coordinate space of the layer's render object
+
+    void setFilterBackendNeedsRepaintingInRect(const LayoutRect&);
+
 private:
     bool shouldRepaintAfterLayout() const;
 
     void clearRepaintRects();
+
+    RenderLayer* enclosingFilterRepaintLayer() const;
 
     RenderLayerModelObject* m_renderer;
 
