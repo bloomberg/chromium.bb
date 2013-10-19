@@ -221,6 +221,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // Wait for the crx installer to be done. Returns true if it really is done.
   bool WaitForCrxInstallerDone();
 
+  // Wait for all extension views to load.
+  bool WaitForExtensionViewsToLoad();
+
   // Simulates a page calling window.open on an URL and waits for the
   // navigation.
   void OpenWindow(content::WebContents* contents,
@@ -304,8 +307,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // Wait for a notification of the specified type to be sent.
   // |notification_type| must be a type that this class handles in Observe().
   void WaitForNotification(int notification_type);
-
-  bool WaitForExtensionViewsToLoad();
 
   // Make the current channel "dev" for the duration of the test.
   extensions::ScopedCurrentChannel current_channel_;

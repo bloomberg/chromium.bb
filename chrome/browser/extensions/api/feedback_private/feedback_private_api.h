@@ -12,6 +12,8 @@
 
 namespace extensions {
 
+extern char kFeedbackExtensionId[];
+
 class FeedbackService;
 
 using extensions::api::feedback_private::SystemInformation;
@@ -49,11 +51,19 @@ class FeedbackPrivateGetStringsFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.getStrings",
                              FEEDBACKPRIVATE_GETSTRINGS)
 
+  // Invoke this callback when this function is called - used for testing.
+  static void set_test_callback(base::Closure* const callback) {
+    test_callback_ = callback;
+  }
+
  protected:
   virtual ~FeedbackPrivateGetStringsFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  static base::Closure* test_callback_;
 };
 
 class FeedbackPrivateGetUserEmailFunction : public SyncExtensionFunction {

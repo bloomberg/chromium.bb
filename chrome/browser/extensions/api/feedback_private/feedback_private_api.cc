@@ -18,18 +18,14 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "url/url_util.h"
 
-namespace {
-
-char kFeedbackExtensionId[] = "gfdkimpbcpahaombhbimeihdjnejgicl";
-
-}
-
 namespace extensions {
 
 namespace feedback_private = api::feedback_private;
 
 using feedback_private::SystemInformation;
 using feedback_private::FeedbackInfo;
+
+char kFeedbackExtensionId[] = "gfdkimpbcpahaombhbimeihdjnejgicl";
 
 static base::LazyInstance<ProfileKeyedAPIFactory<FeedbackPrivateAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
@@ -84,6 +80,9 @@ void FeedbackPrivateAPI::RequestFeedback(
   }
 }
 
+// static
+base::Closure* FeedbackPrivateGetStringsFunction::test_callback_ = NULL;
+
 bool FeedbackPrivateGetStringsFunction::RunImpl() {
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
@@ -108,6 +107,10 @@ bool FeedbackPrivateGetStringsFunction::RunImpl() {
 #undef SET_STRING
 
   webui::SetFontAndTextDirection(dict);
+
+  if (test_callback_ && !test_callback_->is_null())
+    test_callback_->Run();
+
   return true;
 }
 

@@ -41,6 +41,21 @@ void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitchASCII(::switches::kEventPageSuspendingTime, "1");
 }
 
+// static
+ShellWindow* PlatformAppBrowserTest::GetFirstShellWindowForBrowser(
+    Browser* browser) {
+  ShellWindowRegistry* app_registry =
+      ShellWindowRegistry::Get(browser->profile());
+  const ShellWindowRegistry::ShellWindowList& shell_windows =
+      app_registry->shell_windows();
+
+  ShellWindowRegistry::const_iterator iter = shell_windows.begin();
+  if (iter != shell_windows.end())
+    return *iter;
+
+  return NULL;
+}
+
 const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
     const char* name) {
   content::WindowedNotificationObserver app_loaded_observer(
@@ -97,16 +112,7 @@ WebContents* PlatformAppBrowserTest::GetFirstShellWindowWebContents() {
 }
 
 ShellWindow* PlatformAppBrowserTest::GetFirstShellWindow() {
-  ShellWindowRegistry* app_registry =
-      ShellWindowRegistry::Get(browser()->profile());
-  const ShellWindowRegistry::ShellWindowList& shell_windows =
-      app_registry->shell_windows();
-
-  ShellWindowRegistry::const_iterator iter = shell_windows.begin();
-  if (iter != shell_windows.end())
-    return *iter;
-
-  return NULL;
+  return GetFirstShellWindowForBrowser(browser());
 }
 
 size_t PlatformAppBrowserTest::RunGetWindowsFunctionForExtension(

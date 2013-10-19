@@ -14,6 +14,7 @@ namespace content {
 class WebContents;
 }
 
+class Browser;
 class CommandLine;
 
 namespace extensions {
@@ -24,6 +25,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   PlatformAppBrowserTest();
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+
+  // Gets the first shell window that is found for a given browser.
+  static apps::ShellWindow* GetFirstShellWindowForBrowser(Browser* browser);
 
  protected:
   // Runs the app named |name| out of the platform_apps subdirectory. Waits
