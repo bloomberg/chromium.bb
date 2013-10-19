@@ -80,6 +80,7 @@ TextureManager::~TextureManager() {
   DCHECK_EQ(0, num_unrenderable_textures_);
   DCHECK_EQ(0, num_unsafe_textures_);
   DCHECK_EQ(0, num_uncleared_mips_);
+  DCHECK_EQ(0, num_images_);
 }
 
 void TextureManager::Destroy(bool have_context) {
@@ -118,6 +119,7 @@ Texture::Texture(GLuint service_id)
       framebuffer_attachment_count_(0),
       stream_texture_(false),
       immutable_(false),
+      has_images_(false),
       estimated_size_(0),
       can_render_condition_(CAN_RENDER_ALWAYS) {
 }
@@ -431,6 +433,29 @@ void Texture::UpdateCanRenderCondition() {
   can_render_condition_ = can_render_condition;
 }
 
+void Texture::UpdateHasImages() {
+  if (level_infos_.empty())
+    return;
+
+  bool has_images = false;
+  for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
+    for (size_t jj = 0; jj < level_infos_[ii].size(); ++jj) {
+      const Texture::LevelInfo& info = level_infos_[ii][jj];
+      if (info.image.get() != NULL) {
+        has_images = true;
+        break;
+      }
+    }
+  }
+
+  if (has_images_ == has_images)
+    return;
+  has_images_ = has_images;
+  int delta = has_images ? +1 : -1;
+  for (RefSet::iterator it = refs_.begin(); it != refs_.end(); ++it)
+    (*it)->manager()->UpdateNumImages(delta);
+}
+
 void Texture::IncAllFramebufferStateChangeCount() {
   for (RefSet::iterator it = refs_.begin(); it != refs_.end(); ++it)
     (*it)->manager()->IncFramebufferStateChangeCount();
@@ -479,6 +504,7 @@ void Texture::SetLevelInfo(
   Update(feature_info);
   UpdateCleared();
   UpdateCanRenderCondition();
+  UpdateHasImages();
   if (IsAttachedToFramebuffer()) {
     // TODO(gman): If textures tracked which framebuffers they were attached to
     // we could just mark those framebuffers as not complete.
@@ -780,6 +806,7 @@ void Texture::SetLevelImage(
   DCHECK_EQ(info.level, level);
   info.image = image;
   UpdateCanRenderCondition();
+  UpdateHasImages();
 }
 
 gfx::GLImage* Texture::GetLevelImage(
@@ -845,6 +872,7 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
       num_unrenderable_textures_(0),
       num_unsafe_textures_(0),
       num_uncleared_mips_(0),
+      num_images_(0),
       texture_count_(0),
       have_context_(true) {
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
@@ -1130,6 +1158,8 @@ void TextureManager::StartTracking(TextureRef* ref) {
     ++num_unsafe_textures_;
   if (!texture->CanRender(feature_info_.get()))
     ++num_unrenderable_textures_;
+  if (texture->HasImages())
+    ++num_images_;
 }
 
 void TextureManager::StopTracking(TextureRef* ref) {
@@ -1144,6 +1174,10 @@ void TextureManager::StopTracking(TextureRef* ref) {
   }
 
   --texture_count_;
+  if (texture->HasImages()) {
+    DCHECK_NE(0, num_images_);
+    --num_images_;
+  }
   if (!texture->CanRender(feature_info_.get())) {
     DCHECK_NE(0, num_unrenderable_textures_);
     --num_unrenderable_textures_;
@@ -1237,10 +1271,14 @@ void TextureManager::UpdateCanRenderCondition(
     ++num_unrenderable_textures_;
 }
 
+void TextureManager::UpdateNumImages(int delta) {
+  num_images_ += delta;
+  DCHECK_GE(num_images_, 0);
+}
+
 void TextureManager::IncFramebufferStateChangeCount() {
   if (framebuffer_manager_)
     framebuffer_manager_->IncFramebufferStateChangeCount();
-
 }
 
 bool TextureManager::ValidateTextureParameters(

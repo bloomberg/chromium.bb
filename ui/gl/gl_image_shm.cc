@@ -40,6 +40,13 @@ bool GLImageShm::Initialize(gfx::GpuMemoryBufferHandle buffer) {
   return true;
 }
 
+void GLImageShm::Destroy() {
+}
+
+gfx::Size GLImageShm::GetSize() {
+  return size_;
+}
+
 bool GLImageShm::BindTexImage() {
   TRACE_EVENT0("gpu", "GLImageShm::BindTexImage");
   DCHECK(shared_memory_);
@@ -82,14 +89,13 @@ bool GLImageShm::BindTexImage() {
   return true;
 }
 
-gfx::Size GLImageShm::GetSize() {
-  return size_;
-}
-
-void GLImageShm::Destroy() {
-}
-
 void GLImageShm::ReleaseTexImage() {
+}
+
+void GLImageShm::WillUseTexImage() {
+}
+
+void GLImageShm::DidUseTexImage() {
 }
 
 }  // namespace gfx
