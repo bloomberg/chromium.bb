@@ -62,7 +62,7 @@
       "nickname": "not-signed-in"
    },
    "session": {
-      "urls_to_restore_on_startup": [  ]
+      "startup_urls": [  ]
    },
    "spellcheck": {
       "dictionary": "en-US"

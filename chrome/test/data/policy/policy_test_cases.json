@@ -690,7 +690,7 @@
     "can_be_recommended": true,
     "test_policy": { "RestoreOnStartupURLs": ["chromium.org"] },
     "pref_mappings": [
-      { "pref": "session.urls_to_restore_on_startup",
+      { "pref": "session.startup_urls",
         "indicator_tests": [
           { "policy": { "RestoreOnStartupURLs": ["chromium.org"] } }
         ]

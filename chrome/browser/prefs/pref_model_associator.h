@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prefs/synced_pref_observer.h"
@@ -110,6 +111,12 @@ class PrefModelAssociator
 
  protected:
   friend class ProfileSyncServicePreferenceTest;
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServicePreferenceTest,
+                           ModelAssociationCloudHasOldMigratedData);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServicePreferenceTest,
+                           ModelAssociationCloudHasNewMigratedData);
+  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServicePreferenceTest,
+                           ModelAssociationCloudAddsOldAndNewMigratedData);
 
   typedef std::map<std::string, syncer::SyncData> SyncDataMap;
 
@@ -118,17 +125,25 @@ class PrefModelAssociator
   // with ours and append a new UPDATE SyncChange to |sync_changes|. If
   // sync_pref is not set, we append an ADD SyncChange to |sync_changes| with
   // the current preference data.
+  // |migrated_preference_list| points to a vector that may be updated with a
+  // string containing the old name of the preference described by |pref_name|.
   // Note: We do not modify the sync data for preferences that are either
   // controlled by policy (are not user modifiable) or have their default value
   // (are not user controlled).
   void InitPrefAndAssociate(const syncer::SyncData& sync_pref,
                             const std::string& pref_name,
-                            syncer::SyncChangeList* sync_changes);
+                            syncer::SyncChangeList* sync_changes,
+                            SyncDataMap* migrated_preference_list);
 
   static base::Value* MergeListValues(
       const base::Value& from_value, const base::Value& to_value);
   static base::Value* MergeDictionaryValues(const base::Value& from_value,
                                             const base::Value& to_value);
+
+  // Returns whether a given preference name is a new name of a migrated
+  // preference. Exposed here for testing.
+  static bool IsMigratedPreference(const char* preference_name);
+  static bool IsOldMigratedPreference(const char* old_preference_name);
 
   // Do we have an active association between the preferences and sync models?
   // Set when start syncing, reset in StopSyncing. While this is not set, we

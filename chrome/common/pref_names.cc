@@ -82,7 +82,15 @@ const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
 
 // The URLs to restore on startup or when the home button is pressed. The URLs
 // are only restored on startup if kRestoreOnStartup is 4.
-const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
+const char kURLsToRestoreOnStartup[] = "session.startup_urls";
+
+// Old startup url pref name for kURLsToRestoreOnStartup.
+const char kURLsToRestoreOnStartupOld[] = "session.urls_to_restore_on_startup";
+
+// Serialized migration time of kURLsToRestoreOnStartup (see
+// base::Time::ToInternalValue for details on serialization format).
+const char kRestoreStartupURLsMigrationTime[] =
+    "session.startup_urls_migration_time";
 
 // If set to true profiles are created in ephemeral mode and do not store their
 // data in the profile folder on disk but only in memory.

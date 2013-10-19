@@ -106,7 +106,7 @@ cr.define('options', function() {
       Preferences.getInstance().addEventListener('session.restore_on_startup',
           this.onRestoreOnStartupChanged_.bind(this));
       Preferences.getInstance().addEventListener(
-          'session.urls_to_restore_on_startup',
+          'session.startup_urls',
           function(event) {
             $('startup-set-pages').disabled = event.value.disabled;
           });

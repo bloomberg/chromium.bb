@@ -34,7 +34,7 @@ cr.define('options', function() {
     autocompleteList_: null,
 
     startup_pages_pref_: {
-      'name': 'session.urls_to_restore_on_startup',
+      'name': 'session.startup_urls',
       'disabled': false
     },
 
@@ -108,7 +108,7 @@ cr.define('options', function() {
 
     /**
      * Handles change events of the preference
-     * 'session.urls_to_restore_on_startup'.
+     * 'session.startup_urls'.
      * @param {event} preference changed event.
      * @private
      */

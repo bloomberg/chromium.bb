@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -400,6 +401,162 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
   EXPECT_EQ(non_default_charset_value_,
             prefs_->GetString(prefs::kDefaultCharset));
   STLDeleteValues(&cloud_data);
+}
+
+TEST_F(ProfileSyncServicePreferenceTest,
+       ModelAssociationCloudHasOldMigratedData) {
+  ASSERT_TRUE(PrefModelAssociator::IsMigratedPreference(
+      prefs::kURLsToRestoreOnStartup));
+  ASSERT_TRUE(PrefModelAssociator::IsOldMigratedPreference(
+      prefs::kURLsToRestoreOnStartupOld));
+  prefs_->SetString(prefs::kHomePage, example_url0_);
+  {
+    ListPrefUpdate update(prefs_, prefs::kURLsToRestoreOnStartup);
+    ListValue* url_list = update.Get();
+    url_list->Append(Value::CreateStringValue(example_url0_));
+    url_list->Append(Value::CreateStringValue(example_url1_));
+  }
+
+  PreferenceValues cloud_data;
+  cloud_data[prefs::kHomePage] = Value::CreateStringValue(example_url1_);
+  ListValue* urls_to_restore = new ListValue;
+  urls_to_restore->Append(Value::CreateStringValue(example_url1_));
+  urls_to_restore->Append(Value::CreateStringValue(example_url2_));
+  cloud_data[prefs::kURLsToRestoreOnStartupOld] = urls_to_restore;
+
+  AddPreferenceEntriesHelper helper(this, cloud_data);
+  ASSERT_TRUE(StartSyncService(helper.callback(), false));
+  ASSERT_TRUE(helper.success());
+
+  scoped_ptr<const Value> value(GetSyncedValue(prefs::kHomePage));
+  ASSERT_TRUE(value.get());
+  std::string string_value;
+  EXPECT_TRUE(value->GetAsString(&string_value));
+  EXPECT_EQ(example_url1_, string_value);
+  EXPECT_EQ(example_url1_, prefs_->GetString(prefs::kHomePage));
+
+  // Expect that the new preference data contains the merged old prefs values.
+  scoped_ptr<ListValue> expected_urls(new ListValue);
+  expected_urls->Append(Value::CreateStringValue(example_url1_));
+  expected_urls->Append(Value::CreateStringValue(example_url2_));
+  expected_urls->Append(Value::CreateStringValue(example_url0_));
+
+  value.reset(GetSyncedValue(prefs::kURLsToRestoreOnStartup));
+  ASSERT_TRUE(value.get());
+  EXPECT_TRUE(value->Equals(expected_urls.get()));
+  EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartup).
+              Equals(expected_urls.get()));
+
+  // The old preference name should also contain the merged sync data.
+  expected_urls.reset(new ListValue);
+  value.reset(GetSyncedValue(prefs::kURLsToRestoreOnStartupOld));
+  ASSERT_TRUE(value.get());
+  EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
+              Equals(expected_urls.get()));
+}
+
+TEST_F(ProfileSyncServicePreferenceTest,
+       ModelAssociationCloudHasNewMigratedData) {
+  ASSERT_TRUE(PrefModelAssociator::IsMigratedPreference(
+      prefs::kURLsToRestoreOnStartup));
+  ASSERT_TRUE(PrefModelAssociator::IsOldMigratedPreference(
+      prefs::kURLsToRestoreOnStartupOld));
+  prefs_->SetString(prefs::kHomePage, example_url0_);
+  {
+    ListPrefUpdate update(prefs_, prefs::kURLsToRestoreOnStartupOld);
+    ListValue* url_list = update.Get();
+    url_list->Append(Value::CreateStringValue(example_url0_));
+    url_list->Append(Value::CreateStringValue(example_url1_));
+  }
+
+  PreferenceValues cloud_data;
+  cloud_data[prefs::kHomePage] = Value::CreateStringValue(example_url1_);
+  ListValue* urls_to_restore = new ListValue;
+  urls_to_restore->Append(Value::CreateStringValue(example_url1_));
+  urls_to_restore->Append(Value::CreateStringValue(example_url2_));
+  cloud_data[prefs::kURLsToRestoreOnStartup] = urls_to_restore;
+
+  AddPreferenceEntriesHelper helper(this, cloud_data);
+  ASSERT_TRUE(StartSyncService(helper.callback(), false));
+  ASSERT_TRUE(helper.success());
+
+  scoped_ptr<const Value> value(GetSyncedValue(prefs::kHomePage));
+  ASSERT_TRUE(value.get());
+  std::string string_value;
+  EXPECT_TRUE(value->GetAsString(&string_value));
+  EXPECT_EQ(example_url1_, string_value);
+  EXPECT_EQ(example_url1_, prefs_->GetString(prefs::kHomePage));
+
+  // Expect that the cloud data under the new migrated preference name sticks.
+  scoped_ptr<ListValue> expected_urls(new ListValue);
+  expected_urls->Append(Value::CreateStringValue(example_url1_));
+  expected_urls->Append(Value::CreateStringValue(example_url2_));
+
+  value.reset(GetSyncedValue(prefs::kURLsToRestoreOnStartup));
+  ASSERT_TRUE(value.get());
+  EXPECT_TRUE(value->Equals(expected_urls.get()));
+  EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartup).
+              Equals(expected_urls.get()));
+
+  // The old preference data should still be here, though not synced.
+  expected_urls.reset(new ListValue);
+  expected_urls->Append(Value::CreateStringValue(example_url0_));
+  expected_urls->Append(Value::CreateStringValue(example_url1_));
+
+  value.reset(GetSyncedValue(prefs::kURLsToRestoreOnStartupOld));
+  ASSERT_FALSE(value.get());
+  EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
+              Equals(expected_urls.get()));
+}
+
+TEST_F(ProfileSyncServicePreferenceTest,
+       ModelAssociationCloudAddsOldAndNewMigratedData) {
+  ASSERT_TRUE(PrefModelAssociator::IsMigratedPreference(
+      prefs::kURLsToRestoreOnStartup));
+  ASSERT_TRUE(PrefModelAssociator::IsOldMigratedPreference(
+      prefs::kURLsToRestoreOnStartupOld));
+  prefs_->SetString(prefs::kHomePage, example_url0_);
+  {
+    ListPrefUpdate update_old(prefs_, prefs::kURLsToRestoreOnStartupOld);
+    ListValue* url_list_old = update_old.Get();
+    url_list_old->Append(Value::CreateStringValue(example_url0_));
+    url_list_old->Append(Value::CreateStringValue(example_url1_));
+    ListPrefUpdate update(prefs_, prefs::kURLsToRestoreOnStartup);
+    ListValue* url_list = update.Get();
+    url_list->Append(Value::CreateStringValue(example_url1_));
+    url_list->Append(Value::CreateStringValue(example_url2_));
+  }
+
+  PreferenceValues cloud_data;
+  cloud_data[prefs::kHomePage] = Value::CreateStringValue(example_url1_);
+
+  AddPreferenceEntriesHelper helper(this, cloud_data);
+  ASSERT_TRUE(StartSyncService(helper.callback(), false));
+  ASSERT_TRUE(helper.success());
+
+  scoped_ptr<const Value> value(GetSyncedValue(prefs::kHomePage));
+  ASSERT_TRUE(value.get());
+  std::string string_value;
+  EXPECT_TRUE(value->GetAsString(&string_value));
+  EXPECT_EQ(example_url1_, string_value);
+  EXPECT_EQ(example_url1_, prefs_->GetString(prefs::kHomePage));
+
+  // Expect that the cloud data under the new migrated preference name sticks.
+  scoped_ptr<ListValue> expected_urls(new ListValue);
+  expected_urls->Append(Value::CreateStringValue(example_url1_));
+  expected_urls->Append(Value::CreateStringValue(example_url2_));
+
+  value.reset(GetSyncedValue(prefs::kURLsToRestoreOnStartup));
+  ASSERT_TRUE(value.get());
+  EXPECT_TRUE(value->Equals(expected_urls.get()));
+  EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartup).
+              Equals(expected_urls.get()));
+
+  // Should not have synced in the old startup url values.
+  value.reset(GetSyncedValue(prefs::kURLsToRestoreOnStartupOld));
+  ASSERT_FALSE(value.get());
+  EXPECT_FALSE(GetPreferenceValue(prefs::kURLsToRestoreOnStartupOld).
+               Equals(expected_urls.get()));
 }
 
 TEST_F(ProfileSyncServicePreferenceTest, FailModelAssociation) {

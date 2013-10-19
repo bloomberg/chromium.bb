@@ -10,6 +10,6 @@
       "nickname": ""
    },
    "session": {
-      "urls_to_restore_on_startup": [  ]
+      "startup_urls": [  ]
    }
 }
