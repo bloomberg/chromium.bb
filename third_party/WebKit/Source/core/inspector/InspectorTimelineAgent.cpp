@@ -150,7 +150,7 @@ static bool eventHasListeners(const AtomicString& eventType, DOMWindow* window, 
         return true;
 
     for (size_t i = 0; i < eventPath.size(); i++) {
-        if (eventPath[i]->node()->hasEventListeners(eventType))
+        if (eventPath[i].node()->hasEventListeners(eventType))
             return true;
     }
 

@@ -61,13 +61,13 @@ EventDispatcher::EventDispatcher(Node* node, PassRefPtr<Event> event)
     ASSERT(m_event.get());
     ASSERT(!m_event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
     m_view = node->document().view();
-    EventRetargeter::ensureEventPath(m_node.get(), m_event.get());
+    m_event->eventPath().resetWith(m_node.get());
 }
 
 void EventDispatcher::dispatchScopedEvent(Node* node, PassRefPtr<EventDispatchMediator> mediator)
 {
     // We need to set the target here because it can go away by the time we actually fire the event.
-    mediator->event()->setTarget(EventRetargeter::eventTargetRespectingTargetRules(node));
+    mediator->event()->setTarget(EventPath::eventTargetRespectingTargetRules(node));
     ScopedEventQueue::instance()->enqueueEventDispatchMediator(mediator);
 }
 
@@ -107,7 +107,7 @@ bool EventDispatcher::dispatch()
 #endif
     ChildNodesLazySnapshot::takeChildNodesLazySnapshot();
 
-    m_event->setTarget(EventRetargeter::eventTargetRespectingTargetRules(m_node.get()));
+    m_event->setTarget(EventPath::eventTargetRespectingTargetRules(m_node.get()));
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
     ASSERT(m_event->target());
     WindowEventContext windowEventContext(m_event.get(), m_node.get(), topEventContext());
@@ -145,7 +145,7 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing(Windo
         return DoneDispatching;
 
     for (size_t i = m_event->eventPath().size() - 1; i > 0; --i) {
-        const EventContext& eventContext = *m_event->eventPath()[i];
+        const EventContext& eventContext = m_event->eventPath()[i];
         if (eventContext.currentTargetSameAsTarget())
             continue;
         eventContext.handleLocalEvents(m_event.get());
@@ -159,7 +159,7 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing(Windo
 inline EventDispatchContinuation EventDispatcher::dispatchEventAtTarget()
 {
     m_event->setEventPhase(Event::AT_TARGET);
-    m_event->eventPath()[0]->handleLocalEvents(m_event.get());
+    m_event->eventPath()[0].handleLocalEvents(m_event.get());
     return m_event->propagationStopped() ? DoneDispatching : ContinueDispatching;
 }
 
@@ -168,7 +168,7 @@ inline void EventDispatcher::dispatchEventAtBubbling(WindowEventContext& windowC
     // Trigger bubbling event handlers, starting at the bottom and working our way up.
     size_t size = m_event->eventPath().size();
     for (size_t i = 1; i < size; ++i) {
-        const EventContext& eventContext = *m_event->eventPath()[i];
+        const EventContext& eventContext = m_event->eventPath()[i];
         if (eventContext.currentTargetSameAsTarget())
             m_event->setEventPhase(Event::AT_TARGET);
         else if (m_event->bubbles() && !m_event->cancelBubble())
@@ -187,7 +187,7 @@ inline void EventDispatcher::dispatchEventAtBubbling(WindowEventContext& windowC
 
 inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHandlerResult)
 {
-    m_event->setTarget(EventRetargeter::eventTargetRespectingTargetRules(m_node.get()));
+    m_event->setTarget(EventPath::eventTargetRespectingTargetRules(m_node.get()));
     m_event->setCurrentTarget(0);
     m_event->setEventPhase(0);
 
@@ -209,8 +209,8 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
         if (m_event->bubbles()) {
             size_t size = m_event->eventPath().size();
             for (size_t i = 1; i < size; ++i) {
-                m_event->eventPath()[i]->node()->willCallDefaultEventHandler(*m_event);
-                m_event->eventPath()[i]->node()->defaultEventHandler(m_event.get());
+                m_event->eventPath()[i].node()->willCallDefaultEventHandler(*m_event);
+                m_event->eventPath()[i].node()->defaultEventHandler(m_event.get());
                 ASSERT(!m_event->defaultPrevented());
                 if (m_event->defaultHandled())
                     return;
@@ -221,7 +221,7 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
 
 const EventContext* EventDispatcher::topEventContext()
 {
-    return m_event->eventPath().isEmpty() ? 0 : m_event->eventPath().last().get();
+    return m_event->eventPath().isEmpty() ? 0 : &m_event->eventPath().last();
 }
 
 }

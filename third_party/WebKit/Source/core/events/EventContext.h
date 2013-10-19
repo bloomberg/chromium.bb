@@ -46,7 +46,8 @@ public:
 
     Node* node() const { return m_node.get(); }
     EventTarget* target() const { return m_target.get(); }
-    PassRefPtr<NodeList> eventPath() { return m_eventPath; }
+    void setTarget(PassRefPtr<EventTarget> target) { m_target = target; }
+    PassRefPtr<NodeList> eventPath() const { return m_eventPath; }
     void adoptEventPath(Vector<RefPtr<Node> >&);
     void setEventPath(PassRefPtr<NodeList> nodeList) { m_eventPath = nodeList; }
 
@@ -64,8 +65,6 @@ protected:
     RefPtr<EventTarget> m_target;
     RefPtr<NodeList> m_eventPath;
 };
-
-typedef Vector<OwnPtr<EventContext>, 32> EventPath;
 
 class MouseOrFocusEventContext : public EventContext {
 public:
@@ -102,10 +101,10 @@ private:
 #endif
 };
 
-inline TouchEventContext* toTouchEventContext(EventContext* eventContext)
+inline TouchEventContext& toTouchEventContext(EventContext& eventContext)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!eventContext || eventContext->isTouchEventContext());
-    return static_cast<TouchEventContext*>(eventContext);
+    ASSERT_WITH_SECURITY_IMPLICATION(eventContext.isTouchEventContext());
+    return static_cast<TouchEventContext&>(eventContext);
 }
 
 #ifndef NDEBUG

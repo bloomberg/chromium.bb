@@ -24,50 +24,55 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EventPathWalker_h
-#define EventPathWalker_h
+#ifndef EventPath_h
+#define EventPath_h
 
+#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+class Event;
+class EventContext;
+class EventTarget;
 class Node;
 
-class EventPathWalker {
-public:
-    explicit EventPathWalker(const Node*);
-    static Node* parent(const Node*);
-    void moveToParent() { ++m_index; };
-    Node* node() const;
-    Node* adjustedTarget();
-
-private:
-    void calculateAdjustedTargets();
-    size_t m_index;
-    Vector<const Node*> m_path;
-    Vector<const Node*> m_adjustedTargets;
+enum EventDispatchBehavior {
+    RetargetEvent,
+    StayInsideShadowDOM
 };
 
-inline Node* EventPathWalker::node() const
-{
-    ASSERT(m_index <= m_path.size());
-    return m_index == m_path.size() ? 0 : const_cast<Node*>(m_path[m_index]);
-}
+class EventPath {
+public:
+    explicit EventPath(Event*);
+    explicit EventPath(Node*);
+    void resetWith(Node*);
 
-inline Node* EventPathWalker::adjustedTarget()
-{
-    if (m_adjustedTargets.isEmpty())
-        calculateAdjustedTargets();
-    ASSERT(m_index <= m_adjustedTargets.size());
-    return m_index == m_adjustedTargets.size() ? 0 : const_cast<Node*>(m_adjustedTargets[m_index]);
-}
+    EventContext& operator[](size_t index) { return *m_eventContexts[index]; }
+    const EventContext& operator[](size_t index) const { return *m_eventContexts[index]; }
+    EventContext& last() const { return *m_eventContexts[size() - 1]; }
 
-inline Node* EventPathWalker::parent(const Node* node)
-{
-    EventPathWalker walker(node);
-    walker.moveToParent();
-    return walker.node();
-}
+    bool isEmpty() const { return m_eventContexts.isEmpty(); }
+    size_t size() const { return m_eventContexts.size(); }
+
+    void shrink(size_t newSize) { m_eventContexts.shrink(newSize); }
+
+    static Node* parent(Node*);
+    static EventTarget* eventTargetRespectingTargetRules(Node*);
+
+private:
+    EventPath();
+
+    EventContext& at(size_t index) { return *m_eventContexts[index]; }
+
+    void calculatePath();
+    void calculateAdjustedTargets();
+    void calculateAdjustedEventPathForEachNode();
+
+    Vector<OwnPtr<EventContext>, 32> m_eventContexts;
+    Node* m_node;
+    Event* m_event;
+};
 
 } // namespace
 

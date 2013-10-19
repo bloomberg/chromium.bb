@@ -23,7 +23,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/ContainerNode.h"
 #include "core/events/EventContext.h"
-#include "core/events/EventPathWalker.h"
+#include "core/events/EventPath.h"
 #include "core/events/FocusEvent.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/events/MouseEvent.h"
@@ -37,92 +37,6 @@
 #include "wtf/Vector.h"
 
 namespace WebCore {
-
-static inline bool inTheSameScope(ShadowRoot* shadowRoot, EventTarget* target)
-{
-    return target->toNode() && target->toNode()->treeScope().rootNode() == shadowRoot;
-}
-
-static inline EventDispatchBehavior determineDispatchBehavior(Event* event, ShadowRoot* shadowRoot, EventTarget* target)
-{
-    // Video-only full screen is a mode where we use the shadow DOM as an implementation
-    // detail that should not be detectable by the web content.
-    if (Element* element = FullscreenElementStack::currentFullScreenElementFrom(&target->toNode()->document())) {
-        // FIXME: We assume that if the full screen element is a media element that it's
-        // the video-only full screen. Both here and elsewhere. But that is probably wrong.
-        if (element->isMediaElement() && shadowRoot && shadowRoot->host() == element)
-            return StayInsideShadowDOM;
-    }
-
-    // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
-    // Changing this breaks existing sites.
-    // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
-    const AtomicString eventType = event->type();
-    if (inTheSameScope(shadowRoot, target)
-        && (eventType == EventTypeNames::abort
-            || eventType == EventTypeNames::change
-            || eventType == EventTypeNames::error
-            || eventType == EventTypeNames::load
-            || eventType == EventTypeNames::reset
-            || eventType == EventTypeNames::resize
-            || eventType == EventTypeNames::scroll
-            || eventType == EventTypeNames::select
-            || eventType == EventTypeNames::selectstart))
-        return StayInsideShadowDOM;
-
-    return RetargetEvent;
-}
-
-void EventRetargeter::ensureEventPath(Node* node, Event* event)
-{
-    calculateEventPath(node, event);
-    calculateAdjustedEventPathForEachNode(event->eventPath());
-}
-
-void EventRetargeter::calculateEventPath(Node* node, Event* event)
-{
-    EventPath& eventPath = event->eventPath();
-    eventPath.clear();
-    bool inDocument = node->inDocument();
-    bool isMouseOrFocusEvent = event->isMouseEvent() || event->isFocusEvent();
-    bool isTouchEvent = event->isTouchEvent();
-    for (EventPathWalker walker(node); walker.node(); walker.moveToParent()) {
-        if (isMouseOrFocusEvent)
-            eventPath.append(adoptPtr(new MouseOrFocusEventContext(walker.node(), eventTargetRespectingTargetRules(walker.node()), eventTargetRespectingTargetRules(walker.adjustedTarget()))));
-        else if (isTouchEvent)
-            eventPath.append(adoptPtr(new TouchEventContext(walker.node(), eventTargetRespectingTargetRules(walker.node()), eventTargetRespectingTargetRules(walker.adjustedTarget()))));
-        else
-            eventPath.append(adoptPtr(new EventContext(walker.node(), eventTargetRespectingTargetRules(walker.node()), eventTargetRespectingTargetRules(walker.adjustedTarget()))));
-        if (!inDocument)
-            break;
-        if (walker.node()->isShadowRoot() && determineDispatchBehavior(event, toShadowRoot(walker.node()), node) == StayInsideShadowDOM)
-            break;
-    }
-}
-
-void EventRetargeter::calculateAdjustedEventPathForEachNode(EventPath& eventPath)
-{
-    if (!RuntimeEnabledFeatures::shadowDOMEnabled())
-        return;
-    TreeScope* lastScope = 0;
-    size_t eventPathSize = eventPath.size();
-    for (size_t i = 0; i < eventPathSize; ++i) {
-        TreeScope* currentScope = &eventPath[i]->node()->treeScope();
-        if (currentScope == lastScope) {
-            // Fast path.
-            eventPath[i]->setEventPath(eventPath[i - 1]->eventPath());
-            continue;
-        }
-        lastScope = currentScope;
-        Vector<RefPtr<Node> > nodes;
-        for (size_t j = 0; j < eventPathSize; ++j) {
-            Node* node = eventPath[j]->node();
-            if (node->treeScope().isInclusiveAncestorOf(*currentScope))
-                nodes.append(node);
-        }
-        eventPath[i]->adoptEventPath(nodes);
-    }
-}
 
 void EventRetargeter::adjustForMouseEvent(Node* node, MouseEvent& mouseEvent)
 {
@@ -144,11 +58,11 @@ void EventRetargeter::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
     EventPathTouchLists eventPathChangedTouches(eventPathSize);
 
     for (size_t i = 0; i < eventPathSize; ++i) {
-        ASSERT(eventPath[i]->isTouchEventContext());
-        TouchEventContext* touchEventContext = toTouchEventContext(eventPath[i].get());
-        eventPathTouches[i] = touchEventContext->touches();
-        eventPathTargetTouches[i] = touchEventContext->targetTouches();
-        eventPathChangedTouches[i] = touchEventContext->changedTouches();
+        ASSERT(eventPath[i].isTouchEventContext());
+        TouchEventContext& touchEventContext = toTouchEventContext(eventPath[i]);
+        eventPathTouches[i] = touchEventContext.touches();
+        eventPathTargetTouches[i] = touchEventContext.targetTouches();
+        eventPathChangedTouches[i] = touchEventContext.changedTouches();
     }
 
     adjustTouchList(node, touchEvent.touches(), eventPath, eventPathTouches);
@@ -164,7 +78,7 @@ void EventRetargeter::adjustTouchList(const Node* node, const TouchList* touchLi
     ASSERT(eventPathTouchLists.size() == eventPathSize);
     for (size_t i = 0; i < touchList->length(); ++i) {
         const Touch& touch = *touchList->item(i);
-        AdjustedNodes adjustedNodes;
+        AdjustedTargets adjustedNodes;
         calculateAdjustedNodes(node, touch.target()->toNode(), DoesNotStopAtBoundary, const_cast<EventPath&>(eventPath), adjustedNodes);
         ASSERT(adjustedNodes.size() == eventPathSize);
         for (size_t j = 0; j < eventPathSize; ++j)
@@ -181,77 +95,80 @@ void EventRetargeter::adjustForRelatedTarget(const Node* node, EventTarget* rela
     Node* relatedNode = relatedTarget->toNode();
     if (!relatedNode)
         return;
-    AdjustedNodes adjustedNodes;
+    AdjustedTargets adjustedNodes;
     calculateAdjustedNodes(node, relatedNode, StopAtBoundaryIfNeeded, eventPath, adjustedNodes);
     ASSERT(adjustedNodes.size() <= eventPath.size());
     for (size_t i = 0; i < adjustedNodes.size(); ++i) {
-        ASSERT(eventPath[i]->isMouseOrFocusEventContext());
-        MouseOrFocusEventContext* mouseOrFocusEventContext = static_cast<MouseOrFocusEventContext*>(eventPath[i].get());
-        mouseOrFocusEventContext->setRelatedTarget(adjustedNodes[i]);
+        ASSERT(eventPath[i].isMouseOrFocusEventContext());
+        MouseOrFocusEventContext& mouseOrFocusEventContext = static_cast<MouseOrFocusEventContext&>(eventPath[i]);
+        mouseOrFocusEventContext.setRelatedTarget(adjustedNodes[i]);
     }
 }
 
-void EventRetargeter::calculateAdjustedNodes(const Node* node, const Node* relatedNode, EventWithRelatedTargetDispatchBehavior eventWithRelatedTargetDispatchBehavior, EventPath& eventPath, AdjustedNodes& adjustedNodes)
+void EventRetargeter::calculateAdjustedNodes(const Node* node, const Node* relatedNode, EventWithRelatedTargetDispatchBehavior eventWithRelatedTargetDispatchBehavior, EventPath& eventPath, AdjustedTargets& adjustedTargets)
 {
-    RelatedNodeMap relatedNodeMap;
+    RelatedTargetMap relatedNodeMap;
     buildRelatedNodeMap(relatedNode, relatedNodeMap);
 
     // Synthetic mouse events can have a relatedTarget which is identical to the target.
     bool targetIsIdenticalToToRelatedTarget = (node == relatedNode);
 
     TreeScope* lastTreeScope = 0;
-    Node* adjustedNode = 0;
-    for (EventPath::const_iterator iter = eventPath.begin(); iter < eventPath.end(); ++iter) {
-        TreeScope* scope = &(*iter)->node()->treeScope();
+    EventTarget* adjustedTarget = 0;
+
+    for (size_t i = 0; i < eventPath.size(); ++i) {
+        TreeScope* scope = &eventPath[i].node()->treeScope();
         if (scope == lastTreeScope) {
             // Re-use the previous adjustedRelatedTarget if treeScope does not change. Just for the performance optimization.
-            adjustedNodes.append(adjustedNode);
+            adjustedTargets.append(adjustedTarget);
         } else {
-            adjustedNode = findRelatedNode(scope, relatedNodeMap);
-            adjustedNodes.append(adjustedNode);
+            adjustedTarget = findRelatedNode(scope, relatedNodeMap);
+            adjustedTargets.append(adjustedTarget);
         }
         lastTreeScope = scope;
         if (eventWithRelatedTargetDispatchBehavior == DoesNotStopAtBoundary)
             continue;
         if (targetIsIdenticalToToRelatedTarget) {
-            if (node->treeScope().rootNode() == (*iter)->node()) {
-                eventPath.shrink(iter + 1 - eventPath.begin());
+            if (node->treeScope().rootNode() == eventPath[i].node()) {
+                eventPath.shrink(i + 1);
                 break;
             }
-        } else if ((*iter)->target() == adjustedNode) {
+        } else if (eventPath[i].target() == adjustedTarget) {
             // Event dispatching should be stopped here.
-            eventPath.shrink(iter - eventPath.begin());
-            adjustedNodes.shrink(adjustedNodes.size() - 1);
+            eventPath.shrink(i);
+            adjustedTargets.shrink(adjustedTargets.size() - 1);
             break;
         }
     }
 }
 
-void EventRetargeter::buildRelatedNodeMap(const Node* relatedNode, RelatedNodeMap& relatedNodeMap)
+void EventRetargeter::buildRelatedNodeMap(const Node* relatedNode, RelatedTargetMap& relatedTargetMap)
 {
     TreeScope* lastTreeScope = 0;
-    for (EventPathWalker walker(relatedNode); walker.node(); walker.moveToParent()) {
-        if (walker.node()->treeScope() != lastTreeScope)
-            relatedNodeMap.add(&walker.node()->treeScope(), walker.adjustedTarget());
-        lastTreeScope = &walker.node()->treeScope();
+    EventPath eventPath(const_cast<Node*>(relatedNode));
+    for (size_t i = 0; i < eventPath.size(); ++i) {
+        TreeScope* treeScope = &eventPath[i].node()->treeScope();
+        if (treeScope != lastTreeScope)
+            relatedTargetMap.add(treeScope, eventPath[i].target());
+        lastTreeScope = treeScope;
     }
 }
 
-Node* EventRetargeter::findRelatedNode(TreeScope* scope, RelatedNodeMap& relatedNodeMap)
+EventTarget* EventRetargeter::findRelatedNode(TreeScope* scope, RelatedTargetMap& relatedTargetMap)
 {
     Vector<TreeScope*, 32> parentTreeScopes;
-    Node* relatedNode = 0;
+    EventTarget* relatedNode = 0;
     while (scope) {
         parentTreeScopes.append(scope);
-        RelatedNodeMap::const_iterator found = relatedNodeMap.find(scope);
-        if (found != relatedNodeMap.end()) {
+        RelatedTargetMap::const_iterator found = relatedTargetMap.find(scope);
+        if (found != relatedTargetMap.end()) {
             relatedNode = found->value;
             break;
         }
         scope = scope->parentTreeScope();
     }
     for (Vector<TreeScope*, 32>::iterator iter = parentTreeScopes.begin(); iter < parentTreeScopes.end(); ++iter)
-        relatedNodeMap.add(*iter, relatedNode);
+        relatedTargetMap.add(*iter, relatedNode);
     return relatedNode;
 }
 

@@ -43,7 +43,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
 #include "core/events/DocumentEventQueue.h"
-#include "core/events/EventPathWalker.h"
+#include "core/events/EventPath.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TextEvent.h"
@@ -690,7 +690,7 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
 
     RenderObject* renderer = targetNode->renderer();
     if (!renderer) {
-        Node* parent = EventPathWalker::parent(targetNode);
+        Node* parent = EventPath::parent(targetNode);
         if (!parent)
             return false;
 
@@ -1821,7 +1821,7 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
     // Drag events should never go to text nodes (following IE, and proper mouseover/out dispatch)
     RefPtr<Node> newTarget = mev.targetNode();
     if (newTarget && newTarget->isTextNode())
-        newTarget = EventPathWalker::parent(newTarget.get());
+        newTarget = EventPath::parent(newTarget.get());
 
     if (Page* page = m_frame->page())
         page->updateDragAndDrop(newTarget.get(), event.position(), event.timestamp());
@@ -1955,7 +1955,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
     else {
         // If the target node is a text node, dispatch on the parent node - rdar://4196646
         if (result && result->isTextNode())
-            result = EventPathWalker::parent(result);
+            result = EventPath::parent(result);
     }
     m_nodeUnderMouse = result;
     m_instanceUnderMouse = instanceAssociatedWithShadowTreeElement(result);
@@ -2165,7 +2165,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
     if (node && node->isTextNode())
-        node = EventPathWalker::parent(node);
+        node = EventPath::parent(node);
 
     bool isOverWidget;
     if (e.useLatchedEventNode()) {
@@ -3657,7 +3657,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
             // Touch events should not go to text nodes
             if (node->isTextNode())
-                node = EventPathWalker::parent(node);
+                node = EventPath::parent(node);
 
             Document& doc = node->document();
             // Record the originating touch document even if it does not have a touch listener.

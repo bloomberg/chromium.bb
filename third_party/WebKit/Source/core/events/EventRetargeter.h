@@ -20,12 +20,9 @@
 #ifndef EventRetargeter_h
 #define EventRetargeter_h
 
-#include "SVGNames.h"
 #include "core/dom/ContainerNode.h"
 #include "core/events/EventContext.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/svg/SVGElementInstance.h"
-#include "core/svg/SVGUseElement.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
 
@@ -38,23 +35,16 @@ class Node;
 class TouchEvent;
 class TreeScope;
 
-enum EventDispatchBehavior {
-    RetargetEvent,
-    StayInsideShadowDOM
-};
-
 class EventRetargeter {
 public:
-    static void ensureEventPath(Node*, Event*);
     static void adjustForMouseEvent(Node*, MouseEvent&);
     static void adjustForFocusEvent(Node*, FocusEvent&);
     typedef Vector<RefPtr<TouchList> > EventPathTouchLists;
     static void adjustForTouchEvent(Node*, TouchEvent&);
-    static EventTarget* eventTargetRespectingTargetRules(Node* referenceNode);
 
 private:
-    typedef Vector<RefPtr<Node> > AdjustedNodes;
-    typedef HashMap<TreeScope*, Node*> RelatedNodeMap;
+    typedef Vector<RefPtr<EventTarget> > AdjustedTargets;
+    typedef HashMap<TreeScope*, EventTarget*> RelatedTargetMap;
     enum EventWithRelatedTargetDispatchBehavior {
         StopAtBoundaryIfNeeded,
         DoesNotStopAtBoundary
@@ -63,35 +53,11 @@ private:
     static void calculateAdjustedEventPathForEachNode(EventPath&);
 
     static void adjustForRelatedTarget(const Node*, EventTarget* relatedTarget, EventPath&);
-    static void calculateAdjustedNodes(const Node*, const Node* relatedNode, EventWithRelatedTargetDispatchBehavior, EventPath&, AdjustedNodes&);
-    static void buildRelatedNodeMap(const Node*, RelatedNodeMap&);
-    static Node* findRelatedNode(TreeScope*, RelatedNodeMap&);
+    static void calculateAdjustedNodes(const Node*, const Node* relatedNode, EventWithRelatedTargetDispatchBehavior, EventPath&, AdjustedTargets&);
+    static void buildRelatedNodeMap(const Node*, RelatedTargetMap&);
+    static EventTarget* findRelatedNode(TreeScope*, RelatedTargetMap&);
     static void adjustTouchList(const Node*, const TouchList*, const EventPath&, EventPathTouchLists&);
 };
-
-inline EventTarget* EventRetargeter::eventTargetRespectingTargetRules(Node* referenceNode)
-{
-    ASSERT(referenceNode);
-
-    if (referenceNode->isPseudoElement())
-        return referenceNode->parentNode();
-
-    if (!referenceNode->isSVGElement() || !referenceNode->isInShadowTree())
-        return referenceNode;
-
-    // Spec: The event handling for the non-exposed tree works as if the referenced element had been textually included
-    // as a deeply cloned child of the 'use' element, except that events are dispatched to the SVGElementInstance objects.
-    Node* rootNode = referenceNode->treeScope().rootNode();
-    Element* shadowHostElement = rootNode->isShadowRoot() ? toShadowRoot(rootNode)->host() : 0;
-    // At this time, SVG nodes are not supported in non-<use> shadow trees.
-    if (!shadowHostElement || !shadowHostElement->hasTagName(SVGNames::useTag))
-        return referenceNode;
-    SVGUseElement* useElement = toSVGUseElement(shadowHostElement);
-    if (SVGElementInstance* instance = useElement->instanceForShadowTreeElement(referenceNode))
-        return instance;
-
-    return referenceNode;
-}
 
 }
 

@@ -36,7 +36,7 @@
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/events/EventPathWalker.h"
+#include "core/events/EventPath.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLLabelElement.h"
@@ -362,14 +362,15 @@ Element* TreeScope::adjustedFocusedElement()
     if (!element)
         return 0;
 
-    for (EventPathWalker walker(element); walker.node(); walker.moveToParent()) {
-        if (walker.node() == rootNode()) {
-            // walker.adjustedTarget() is one of the followings:
+    EventPath eventPath(element);
+    for (size_t i = 0; i < eventPath.size(); ++i) {
+        if (eventPath[i].node() == rootNode()) {
+            // eventPath.at(i).target() is one of the followings:
             // - InsertionPoint
             // - shadow host
             // - Document::focusedElement()
             // So, it's safe to do toElement().
-            return toElement(walker.adjustedTarget());
+            return toElement(eventPath[i].target()->toNode());
         }
     }
     return 0;
