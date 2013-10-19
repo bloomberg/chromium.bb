@@ -315,6 +315,6 @@ class Git(SCM):
         return True
 
     def ensure_cleanly_tracking_remote_master(self):
-        self.discard_working_directory_changes()
+        self._discard_working_directory_changes()
         self._run_git(['checkout', '-q', self._branch_tracking_remote_master()])
-        self.discard_local_commits()
+        self._discard_local_commits()
