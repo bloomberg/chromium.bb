@@ -9,11 +9,13 @@ import logging
 import optparse
 import os
 import smtplib
+import subprocess
 import sys
 import re
 import urllib
 
 import bb_annotations
+import bb_utils
 
 sys.path.append(os.path.join(os.path.dirname(__file__),
                              os.pardir, os.pardir, 'util', 'lib',
@@ -203,6 +205,42 @@ def SendDeviceStatusAlert(msg):
     print 'Failed to send alert email. Error: %s' % e
 
 
+def RestartUsb():
+  if not os.path.isfile('/usr/bin/restart_usb'):
+    print ('ERROR: Could not restart usb. /usr/bin/restart_usb not installed '
+           'on host (see BUG=305769).')
+    return 1
+
+  lsusb_proc = bb_utils.SpawnCmd(['lsusb'], stdout=subprocess.PIPE)
+  lsusb_output, _ = lsusb_proc.communicate()
+  if lsusb_proc.returncode:
+    print ('Error: Could not get list of USB ports (i.e. lsusb).')
+    return lsusb_proc.returncode
+
+  usb_devices = [re.findall('Bus (\d\d\d) Device (\d\d\d)', lsusb_line)[0]
+                 for lsusb_line in lsusb_output.strip().split('\n')]
+
+  failed_restart = False
+  # Walk USB devices from leaves up (i.e reverse sorted) restarting the
+  # connection. If a parent node (e.g. usb hub) is restarted before the
+  # devices connected to it, the (bus, dev) for the hub can change, making the
+  # output we have wrong. This way we restart the devices before the hub.
+  for (bus, dev) in reversed(sorted(usb_devices)):
+    # Can not restart root usb connections
+    if dev != '001':
+      return_code = bb_utils.RunCmd(['/usr/bin/restart_usb', bus, dev])
+      if return_code:
+        print 'Error restarting USB device /dev/bus/usb/%s/%s' % (bus, dev)
+        failed_restart = True
+      else:
+        print 'Restarted USB device /dev/bus/usb/%s/%s' % (bus, dev)
+
+  if failed_restart:
+    return 1
+
+  return 0
+
+
 def main():
   parser = optparse.OptionParser()
   parser.add_option('', '--out-dir',
@@ -212,9 +250,17 @@ def main():
                     help='Will not check if devices are provisioned properly.')
   parser.add_option('--device-status-dashboard', action='store_true',
                     help='Output device status data for dashboard.')
+  parser.add_option('--restart-usb', action='store_true',
+                    help='Restart USB ports before running device check.')
   options, args = parser.parse_args()
   if args:
     parser.error('Unknown options %s' % args)
+
+  if options.restart_usb:
+    rc = RestartUsb()
+    if rc:
+      return 1
+
   devices = android_commands.GetAttachedDevices()
   # TODO(navabi): Test to make sure this fails and then fix call
   offline_devices = android_commands.GetAttachedDevices(hardware=False,

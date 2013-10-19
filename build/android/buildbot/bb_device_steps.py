@@ -396,10 +396,12 @@ def ProvisionDevices(options):
   RunCmd(provision_cmd)
 
 
-def DeviceStatusCheck(_):
+def DeviceStatusCheck(options):
   bb_annotations.PrintNamedStep('device_status_check')
-  RunCmd(['build/android/buildbot/bb_device_status_check.py'],
-         halt_on_failure=True)
+  cmd = ['build/android/buildbot/bb_device_status_check.py']
+  if options.restart_usb:
+    cmd.append('--restart-usb')
+  RunCmd(cmd, halt_on_failure=True)
 
 
 def GetDeviceSetupStepCmds():
@@ -560,6 +562,8 @@ def GetDeviceStepsOptParser():
   parser.add_option('--coverage-bucket',
                     help=('Bucket name to store coverage results. Coverage is '
                           'only run if this is set.'))
+  parser.add_option('--restart-usb', action='store_true',
+                    help='Restart usb ports before device status check.')
   parser.add_option(
       '--flakiness-server',
       help=('The flakiness dashboard server to which the results should be '

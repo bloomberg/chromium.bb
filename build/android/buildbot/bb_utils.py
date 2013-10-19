@@ -45,6 +45,9 @@ def SpawnCmd(command, stdout=None, cwd=CHROME_SRC):
       @staticmethod
       def wait():
         return 0
+      @staticmethod
+      def communicate():
+        return '', ''
     return MockPopen()
   return subprocess.Popen(command, cwd=cwd, stdout=stdout)
 
