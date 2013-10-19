@@ -89,9 +89,9 @@ TEST(WebSocketPerMessageTest, TestDeflateHelloNoTakeOver)
 TEST(WebSocketPerMessageDeflateTest, TestDeflateInflateMultipleFrame)
 {
     WebSocketPerMessageDeflate c;
-    WebSocketFrame::OpCode opcode = WebSocketFrame::OpCodeText;
+    WebSocketFrame::OpCode text = WebSocketFrame::OpCodeText;
     c.enable(8, WebSocketDeflater::DoNotTakeOverContext);
-    size_t length = 1024;
+    size_t length = 64 * 1024;
     std::string payload;
     std::string expected;
     std::string actual;
@@ -103,12 +103,13 @@ TEST(WebSocketPerMessageDeflateTest, TestDeflateInflateMultipleFrame)
         r = (r * 12345 + 1103515245) % (static_cast<uint64_t>(1) << 31);
     }
 
-    WebSocketFrame frame(opcode, &payload[0], payload.size(), WebSocketFrame::Final);
+    WebSocketFrame frame(text, &payload[0], payload.size(), WebSocketFrame::Final);
     ASSERT_TRUE(c.deflate(frame));
     ASSERT_TRUE(frame.final);
     ASSERT_TRUE(frame.compress);
     expected = std::string(frame.payload, frame.payloadLength);
     for (size_t i = 0; i < length; ++i) {
+        WebSocketFrame::OpCode opcode = !i ? text : WebSocketFrame::OpCodeContinuation;
         c.resetDeflateBuffer();
         WebSocketFrame frame(opcode, &payload[i], 1);
         frame.final = (i == length - 1);
@@ -121,13 +122,14 @@ TEST(WebSocketPerMessageDeflateTest, TestDeflateInflateMultipleFrame)
     EXPECT_EQ(expected, actual);
 
     for (size_t i = 0; i < actual.size(); ++i) {
+        WebSocketFrame::OpCode opcode = !i ? text : WebSocketFrame::OpCodeContinuation;
         c.resetInflateBuffer();
         WebSocketFrame frame(opcode, &actual[i], 1);
-        frame.final = (i == length - 1);
+        frame.final = (i == actual.size() - 1);
         frame.compress = !i;
 
         ASSERT_TRUE(c.inflate(frame));
-        ASSERT_EQ(i == length - 1, frame.final);
+        ASSERT_EQ(i == actual.size() - 1, frame.final);
         ASSERT_FALSE(frame.compress);
         inflated += std::string(frame.payload, frame.payloadLength);
     }
@@ -153,9 +155,8 @@ TEST(WebSocketPerMessageDeflateTest, TestDeflateEmptyFrame)
 {
     WebSocketPerMessageDeflate c;
     c.enable(8, WebSocketDeflater::TakeOverContext);
-    WebSocketFrame::OpCode opcode = WebSocketFrame::OpCodeText;
-    WebSocketFrame f1(opcode, "Hello", 5);
-    WebSocketFrame f2(opcode, "", 0, WebSocketFrame::Final);
+    WebSocketFrame f1(WebSocketFrame::OpCodeText, "Hello", 5);
+    WebSocketFrame f2(WebSocketFrame::OpCodeContinuation, "", 0, WebSocketFrame::Final);
 
     ASSERT_TRUE(c.deflate(f1));
     EXPECT_EQ(0u, f1.payloadLength);
@@ -174,12 +175,11 @@ TEST(WebSocketPerMessageDeflateTest, TestDeflateEmptyMessages)
 {
     WebSocketPerMessageDeflate c;
     c.enable(8, WebSocketDeflater::TakeOverContext);
-    WebSocketFrame::OpCode opcode = WebSocketFrame::OpCodeText;
-    WebSocketFrame f1(opcode, "", 0);
-    WebSocketFrame f2(opcode, "", 0, WebSocketFrame::Final);
-    WebSocketFrame f3(opcode, "", 0, WebSocketFrame::Final);
-    WebSocketFrame f4(opcode, "", 0, WebSocketFrame::Final);
-    WebSocketFrame f5(opcode, "Hello", 5, WebSocketFrame::Final);
+    WebSocketFrame f1(WebSocketFrame::OpCodeText, "", 0);
+    WebSocketFrame f2(WebSocketFrame::OpCodeContinuation, "", 0, WebSocketFrame::Final);
+    WebSocketFrame f3(WebSocketFrame::OpCodeText, "", 0, WebSocketFrame::Final);
+    WebSocketFrame f4(WebSocketFrame::OpCodeText, "", 0, WebSocketFrame::Final);
+    WebSocketFrame f5(WebSocketFrame::OpCodeText, "Hello", 5, WebSocketFrame::Final);
 
     ASSERT_TRUE(c.deflate(f1));
     EXPECT_EQ(0u, f1.payloadLength);
@@ -195,17 +195,15 @@ TEST(WebSocketPerMessageDeflateTest, TestDeflateEmptyMessages)
 
     c.resetDeflateBuffer();
     ASSERT_TRUE(c.deflate(f3));
-    EXPECT_EQ(2u, f3.payloadLength);
-    EXPECT_EQ(0, memcmp("\x02\x00", f3.payload, f3.payloadLength));
+    EXPECT_EQ(0u, f3.payloadLength);
     EXPECT_TRUE(f3.final);
-    EXPECT_TRUE(f3.compress);
+    EXPECT_FALSE(f3.compress);
 
     c.resetDeflateBuffer();
     ASSERT_TRUE(c.deflate(f4));
-    EXPECT_EQ(2u, f4.payloadLength);
-    EXPECT_EQ(0, memcmp("\x02\x00", f4.payload, f4.payloadLength));
+    EXPECT_EQ(0u, f4.payloadLength);
     EXPECT_TRUE(f4.final);
-    EXPECT_TRUE(f4.compress);
+    EXPECT_FALSE(f4.compress);
 
     c.resetDeflateBuffer();
     ASSERT_TRUE(c.deflate(f5));
@@ -234,9 +232,10 @@ TEST(WebSocketPerMessageDeflateTest, TestDeflateControlMessageBetweenTextFrames)
     c.enable(8, WebSocketDeflater::TakeOverContext);
     WebSocketFrame::OpCode close = WebSocketFrame::OpCodeClose;
     WebSocketFrame::OpCode text = WebSocketFrame::OpCodeText;
+    WebSocketFrame::OpCode continuation = WebSocketFrame::OpCodeContinuation;
     WebSocketFrame f1(text, "Hello", 5);
     WebSocketFrame f2(close, "close", 5, WebSocketFrame::Final);
-    WebSocketFrame f3(text, "", 0, WebSocketFrame::Final);
+    WebSocketFrame f3(continuation, "", 0, WebSocketFrame::Final);
 
     std::vector<char> compressed;
     ASSERT_TRUE(c.deflate(f1));
@@ -265,10 +264,11 @@ TEST(WebSocketPerMessageDeflateTest, TestInflate)
     WebSocketPerMessageDeflate c;
     c.enable(8, WebSocketDeflater::TakeOverContext);
     WebSocketFrame::OpCode opcode = WebSocketFrame::OpCodeText;
+    WebSocketFrame::OpCode continuation = WebSocketFrame::OpCodeContinuation;
     std::string expected = "HelloHi!Hello";
     std::string actual;
     WebSocketFrame f1(opcode, "\xf2\x48\xcd\xc9\xc9\x07\x00", 7, WebSocketFrame::Final | WebSocketFrame::Compress);
-    WebSocketFrame f2(opcode, "Hi!", 3, WebSocketFrame::Final);
+    WebSocketFrame f2(continuation, "Hi!", 3, WebSocketFrame::Final);
     WebSocketFrame f3(opcode, "\xf2\x00\x11\x00\x00", 5, WebSocketFrame::Final | WebSocketFrame::Compress);
 
     ASSERT_TRUE(c.inflate(f1));
@@ -297,8 +297,9 @@ TEST(WebSocketPerMessageDeflateTest, TestInflateEmptyFrame)
     WebSocketPerMessageDeflate c;
     c.enable(8, WebSocketDeflater::TakeOverContext);
     WebSocketFrame::OpCode opcode = WebSocketFrame::OpCodeText;
+    WebSocketFrame::OpCode continuation = WebSocketFrame::OpCodeContinuation;
     WebSocketFrame f1(opcode, "", 0, WebSocketFrame::Compress);
-    WebSocketFrame f2(opcode, "\xf2\x48\xcd\xc9\xc9\x07\x00", 7, WebSocketFrame::Final);
+    WebSocketFrame f2(continuation, "\xf2\x48\xcd\xc9\xc9\x07\x00", 7, WebSocketFrame::Final);
 
     ASSERT_TRUE(c.inflate(f1));
     EXPECT_EQ(0u, f1.payloadLength);

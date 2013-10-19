@@ -180,6 +180,14 @@ bool WebSocketPerMessageDeflate::deflate(WebSocketFrame& frame)
     if (!WebSocketFrame::isNonControlOpCode(frame.opCode))
         return true;
 
+    if ((frame.opCode == WebSocketFrame::OpCodeText || frame.opCode == WebSocketFrame::OpCodeBinary)
+        && frame.final
+        && frame.payloadLength <= 2) {
+        // A trivial optimization: If a message consists of one frame and its
+        // payload length is very short, we don't compress it.
+        return true;
+    }
+
     if (frame.payloadLength > 0 && !m_deflater->addBytes(frame.payload, frame.payloadLength)) {
         m_failureReason = "Failed to inflate a frame";
         return false;
