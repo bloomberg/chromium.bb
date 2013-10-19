@@ -199,11 +199,11 @@ TEST_F(HardwareDisplayControllerOzoneTest,
 TEST_F(HardwareDisplayControllerOzoneTest, CheckStateAfterSurfaceIsBound) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
-  gfx::SoftwareSurfaceOzone* surface =
-      new MockSoftwareSurfaceOzone(controller_.get());
+  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
+      new MockSoftwareSurfaceOzone(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(2, drm_->get_add_framebuffer_call_count());
   EXPECT_EQ(gfx::HardwareDisplayControllerOzone::SURFACE_INITIALIZED,
@@ -215,29 +215,25 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfBindingFails) {
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
-  gfx::SoftwareSurfaceOzone* surface =
-      new MockSoftwareSurfaceOzone(controller_.get());
+  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
+      new MockSoftwareSurfaceOzone(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_FALSE(controller_->BindSurfaceToController(surface));
+  EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(1, drm_->get_add_framebuffer_call_count());
   EXPECT_EQ(gfx::HardwareDisplayControllerOzone::FAILED,
             controller_->get_state());
-
-  // Normally the controller would take ownership, but we failed to bind, so we
-  // need to clean up.
-  delete surface;
 }
 
 TEST_F(HardwareDisplayControllerOzoneTest, CheckStateAfterPageFlip) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
-  gfx::SoftwareSurfaceOzone* surface =
-      new MockSoftwareSurfaceOzone(controller_.get());
+  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
+      new MockSoftwareSurfaceOzone(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   controller_->SchedulePageFlip();
 
@@ -250,11 +246,11 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfModesetFails) {
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
-  gfx::SoftwareSurfaceOzone* surface =
-      new MockSoftwareSurfaceOzone(controller_.get());
+  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
+      new MockSoftwareSurfaceOzone(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   controller_->SchedulePageFlip();
 
@@ -267,11 +263,11 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfPageFlipFails) {
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
-  gfx::SoftwareSurfaceOzone* surface =
-      new MockSoftwareSurfaceOzone(controller_.get());
+  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
+      new MockSoftwareSurfaceOzone(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   controller_->SchedulePageFlip();
 
@@ -282,11 +278,11 @@ TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfPageFlipFails) {
 TEST_F(HardwareDisplayControllerOzoneTest, CheckProperDestruction) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDefaultMode);
-  gfx::SoftwareSurfaceOzone* surface =
-      new MockSoftwareSurfaceOzone(controller_.get());
+  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
+      new MockSoftwareSurfaceOzone(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface));
+  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(gfx::HardwareDisplayControllerOzone::SURFACE_INITIALIZED,
             controller_->get_state());

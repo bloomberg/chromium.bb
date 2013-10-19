@@ -56,7 +56,7 @@ HardwareDisplayControllerOzone::~HardwareDisplayControllerOzone() {
 
 bool
 HardwareDisplayControllerOzone::BindSurfaceToController(
-    SoftwareSurfaceOzone* surface) {
+    scoped_ptr<SoftwareSurfaceOzone> surface) {
   CHECK(state_ == UNINITIALIZED);
 
   // Register the buffers.
@@ -75,7 +75,7 @@ HardwareDisplayControllerOzone::BindSurfaceToController(
     surface->bitmaps_[i]->set_framebuffer(fb_id);
   }
 
-  surface_.reset(surface);
+  surface_.reset(surface.release());
   state_ = SURFACE_INITIALIZED;
   return true;
 }

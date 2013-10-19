@@ -149,7 +149,8 @@ TEST_F(SoftwareSurfaceOzoneTest, SuccessfulInitialization) {
 
 TEST_F(SoftwareSurfaceOzoneTest, CheckFBIDOnSwap) {
   EXPECT_TRUE(surface_->Initialize());
-  controller_->BindSurfaceToController(surface_.release());
+  controller_->BindSurfaceToController(
+      surface_.PassAs<gfx::SoftwareSurfaceOzone>());
 
   // Check that the framebuffer ID is correct.
   EXPECT_EQ(2u, controller_->get_surface()->GetFramebufferId());

@@ -17,6 +17,7 @@ class GFX_EXPORT SurfaceFactoryOzone {
  public:
   // Describes the state of the hardware after initialization.
   enum HardwareState {
+    UNINITIALIZED,
     INITIALIZED,
     FAILED,
   };

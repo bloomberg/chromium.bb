@@ -113,7 +113,7 @@ class HardwareDisplayControllerOzone {
                          drmModeModeInfo mode);
 
   // Associate the HDCO with a surface implementation and initialize it.
-  bool BindSurfaceToController(SoftwareSurfaceOzone* surface);
+  bool BindSurfaceToController(scoped_ptr<SoftwareSurfaceOzone> surface);
 
   // Schedules the |surface_|'s framebuffer to be displayed on the next vsync
   // event. The event will be posted on the graphics card file descriptor |fd_|
