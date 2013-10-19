@@ -567,8 +567,8 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
 
-  const Extension* extension = extension_service_->GetExtensionById(
-      extension_id, true);
+  const Extension* extension = extension_service_->GetInstalledExtension(
+      extension_id);
   if (!extension)
     return;
 
@@ -792,7 +792,7 @@ void AppLauncherHandler::ExtensionUninstallAccepted() {
   // The extension can be uninstalled in another window while the UI was
   // showing. Do nothing in that case.
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id_prompting_, true);
+      extension_service_->GetInstalledExtension(extension_id_prompting_);
   if (!extension)
     return;
 

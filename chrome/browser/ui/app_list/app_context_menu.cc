@@ -66,7 +66,7 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
   void Run() {
     const Extension* extension =
         extensions::ExtensionSystem::Get(profile_)->extension_service()->
-            GetExtensionById(app_id_, true);
+            GetInstalledExtension(app_id_);
     if (!extension) {
       CleanUp();
       return;
