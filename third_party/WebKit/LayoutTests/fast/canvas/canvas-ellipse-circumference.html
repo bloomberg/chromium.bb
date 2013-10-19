@@ -2,7 +2,7 @@
 <html>
 <head></head>
 <body>
-<canvas id="mycanvas" width="600" height="400"></canvas>
+<canvas id="mycanvas" width="600" height="480"></canvas>
 <script>
 if (window.testRunner)
     testRunner.dumpAsTextWithPixelResults();
@@ -29,28 +29,38 @@ for (var i = 0; i < startAngles.length; i++) {
     startAngles[i] = startAngles[i] * Math.PI;
 }
 
+var rotations = [
+    Math.PI / 4, 0
+]
+
 var startAngle = 0;
 var anticlockwise = false;
 var sign = 1;
-for (var i = 0; i < startAngles.length * 2; i++) {
-    if (i == startAngles.length) {
-        anticlockwise = true;
-        sign = -1;
-    }
-    startAngle = startAngles[i % startAngles.length] * sign;
+var height = 30;
+for (var r = 0; r < rotations.length; r++) {
     ctx.save();
-    for (var j = 0; j < sweepAngles.length; j++) {
+    for (var i = 0; i < startAngles.length * 2; i++) {
+        if (i == startAngles.length) {
+            anticlockwise = true;
+            sign = -1;
+        }
+        startAngle = startAngles[i % startAngles.length] * sign;
         ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(0, 2);
-        ctx.ellipse(18, 15, 8, 12, Math.PI / 4, startAngle, startAngle + (sweepAngles[j] * sign), anticlockwise);
-        ctx.lineTo(0, 28);
-        ctx.stroke();
+        for (var j = 0; j < sweepAngles.length; j++) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(0, 2);
+            ctx.ellipse(18, 15, 8, 12, rotations[r], startAngle, startAngle + (sweepAngles[j] * sign), anticlockwise);
+            ctx.lineTo(0, 28);
+            ctx.stroke();
+            ctx.restore();
+            ctx.translate(30, 0);
+        }
         ctx.restore();
-        ctx.translate(30, 0);
+        ctx.translate(0, height);
     }
     ctx.restore();
-    ctx.translate(0, 40);
+    ctx.translate(0, height * startAngles.length * 2);
 }
 
 </script>

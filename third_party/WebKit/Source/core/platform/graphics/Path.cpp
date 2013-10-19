@@ -333,19 +333,9 @@ void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float r
     ASSERT(startAngle >= 0 && startAngle < 2 * piFloat);
     ASSERT((anticlockwise && (startAngle - endAngle) >= 0) || (!anticlockwise && (endAngle - startAngle) >= 0));
 
-    // Optimize the common case of an entire ellipse.
-    SkScalar twoPiScalar = WebCoreFloatToSkScalar(2 * piFloat);
-    SkScalar endAngleScalar = WebCoreFloatToSkScalar(endAngle);
-    if (!rotation && !startAngle && SkScalarNearlyEqual(twoPiScalar, SkScalarAbs(endAngleScalar))) {
-        FloatRect boundingRect(p - FloatSize(radiusX, radiusY), FloatSize(2 * radiusX, 2 * radiusY));
-        if (anticlockwise && SkScalarNearlyEqual(twoPiScalar, -endAngleScalar)) {
-            m_path.addOval(boundingRect, SkPath::kCCW_Direction);
-            return;
-        }
-        if (!anticlockwise && SkScalarNearlyEqual(twoPiScalar, endAngleScalar)) {
-            m_path.addOval(boundingRect);
-            return;
-        }
+    if (!rotation) {
+        addEllipse(FloatPoint(p.x(), p.y()), radiusX, radiusY, startAngle, endAngle, anticlockwise);
+        return;
     }
 
     // Add an arc after the relevant transform.
