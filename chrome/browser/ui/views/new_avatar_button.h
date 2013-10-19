@@ -13,8 +13,7 @@ class NewAvatarButton : public views::MenuButton {
   // Different button styles that can be applied.
   enum AvatarButtonStyle {
     THEMED_BUTTON,   // Used in a themed browser window.
-    GLASS_BUTTON,    // Used in a native aero window.
-    METRO_BUTTON     // Used in a metro window.
+    NATIVE_BUTTON,    // Used in a native aero or metro window.
   };
 
   NewAvatarButton(views::ButtonListener* listener,

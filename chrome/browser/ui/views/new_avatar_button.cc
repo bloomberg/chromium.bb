@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/new_avatar_button.h"
 
+#include "base/win/windows_version.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,15 +47,12 @@ NewAvatarButton::NewAvatarButton(
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   SetFont(rb->GetFont(ui::ResourceBundle::BaseFont));
 
-  if (button_style == GLASS_BUTTON) {
-    const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_NORMAL);
-    const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_HOVER);
-    const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_PRESSED);
+  bool is_win8 = false;
+#if defined(OS_WIN)
+  is_win8 = base::win::GetVersion() >= base::win::VERSION_WIN8;
+#endif
 
-    set_border(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
-    set_menu_marker(
-        rb->GetImageNamed(IDR_AVATAR_GLASS_BUTTON_DROPARROW).ToImageSkia());
-  } else {
+  if (button_style == THEMED_BUTTON) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_HOVER);
     const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_PRESSED);
@@ -62,6 +60,22 @@ NewAvatarButton::NewAvatarButton(
     set_border(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
     set_menu_marker(
         rb->GetImageNamed(IDR_AVATAR_THEMED_BUTTON_DROPARROW).ToImageSkia());
+  } else if (is_win8) {
+    const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_NORMAL);
+    const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_HOVER);
+    const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_PRESSED);
+
+    set_border(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
+    set_menu_marker(
+        rb->GetImageNamed(IDR_AVATAR_METRO_BUTTON_DROPARROW).ToImageSkia());
+  } else {
+    const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_NORMAL);
+    const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_HOVER);
+    const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_PRESSED);
+
+    set_border(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
+    set_menu_marker(
+        rb->GetImageNamed(IDR_AVATAR_GLASS_BUTTON_DROPARROW).ToImageSkia());
   }
   SchedulePaint();
 }

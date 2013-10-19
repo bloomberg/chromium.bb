@@ -91,7 +91,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
 
   if (browser_view->IsRegularOrGuestSession() &&
       profiles::IsNewProfileManagementEnabled())
-    UpdateNewStyleAvatarInfo(this, NewAvatarButton::GLASS_BUTTON);
+    UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
   else
     UpdateAvatarInfo();
 
@@ -565,7 +565,7 @@ void GlassBrowserFrameView::Observe(
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
       if (browser_view()->IsRegularOrGuestSession() &&
           profiles::IsNewProfileManagementEnabled())
-        UpdateNewStyleAvatarInfo(this, NewAvatarButton::GLASS_BUTTON);
+        UpdateNewStyleAvatarInfo(this, NewAvatarButton::NATIVE_BUTTON);
       else
         UpdateAvatarInfo();
       break;
