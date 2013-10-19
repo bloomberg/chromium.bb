@@ -141,6 +141,33 @@ void InitializeTestMatrix2(Transform* transform) {
   EXPECT_ROW4_EQ(33.0f, 37.0f, 41.0f, 45.0f, (*transform));
 }
 
+const SkMScalar kApproxZero =
+    SkFloatToMScalar(std::numeric_limits<float>::epsilon());
+const SkMScalar kApproxOne = 1 - kApproxZero;
+
+void InitializeApproxIdentityMatrix(Transform* transform) {
+  SkMatrix44& matrix = transform->matrix();
+  matrix.set(0, 0, kApproxOne);
+  matrix.set(0, 1, kApproxZero);
+  matrix.set(0, 2, kApproxZero);
+  matrix.set(0, 3, kApproxZero);
+
+  matrix.set(1, 0, kApproxZero);
+  matrix.set(1, 1, kApproxOne);
+  matrix.set(1, 2, kApproxZero);
+  matrix.set(1, 3, kApproxZero);
+
+  matrix.set(2, 0, kApproxZero);
+  matrix.set(2, 1, kApproxZero);
+  matrix.set(2, 2, kApproxOne);
+  matrix.set(2, 3, kApproxZero);
+
+  matrix.set(3, 0, kApproxZero);
+  matrix.set(3, 1, kApproxZero);
+  matrix.set(3, 2, kApproxZero);
+  matrix.set(3, 3, kApproxOne);
+}
+
 #ifdef SK_MSCALAR_IS_DOUBLE
 #define ERROR_THRESHOLD 1e-14
 #else
@@ -2209,6 +2236,56 @@ TEST(XFormTest, verifyIsIdentityOrTranslation) {
   A.MakeIdentity();
   A.matrix().set(3, 3, 2.f);
   EXPECT_FALSE(A.IsIdentityOrTranslation());
+}
+
+TEST(XFormTest, verifyIsApproximatelyIdentityOrTranslation) {
+  Transform A;
+  SkMatrix44& matrix = A.matrix();
+
+  // Exact pure translation.
+  A.MakeIdentity();
+
+  // Set translate values to values other than 0 or 1.
+  matrix.set(0, 3, 3.4f);
+  matrix.set(1, 3, 4.4f);
+  matrix.set(2, 3, 5.6f);
+
+  EXPECT_TRUE(A.IsApproximatelyIdentityOrTranslation(0));
+  EXPECT_TRUE(A.IsApproximatelyIdentityOrTranslation(kApproxZero));
+
+  // Approximately pure translation.
+  InitializeApproxIdentityMatrix(&A);
+
+  // Some values must be exact.
+  matrix.set(3, 0, 0);
+  matrix.set(3, 1, 0);
+  matrix.set(3, 2, 0);
+  matrix.set(3, 3, 1);
+
+  // Set translate values to values other than 0 or 1.
+  matrix.set(0, 3, 3.4f);
+  matrix.set(1, 3, 4.4f);
+  matrix.set(2, 3, 5.6f);
+
+  EXPECT_FALSE(A.IsApproximatelyIdentityOrTranslation(0));
+  EXPECT_TRUE(A.IsApproximatelyIdentityOrTranslation(kApproxZero));
+
+  // Not approximately pure translation.
+  InitializeApproxIdentityMatrix(&A);
+
+  // Some values must be exact.
+  matrix.set(3, 0, 0);
+  matrix.set(3, 1, 0);
+  matrix.set(3, 2, 0);
+  matrix.set(3, 3, 1);
+
+  // Set some values (not translate values) to values other than 0 or 1.
+  matrix.set(0, 1, 3.4f);
+  matrix.set(3, 2, 4.4f);
+  matrix.set(2, 0, 5.6f);
+
+  EXPECT_FALSE(A.IsApproximatelyIdentityOrTranslation(0));
+  EXPECT_FALSE(A.IsApproximatelyIdentityOrTranslation(kApproxZero));
 }
 
 TEST(XFormTest, verifyIsScaleOrTranslation) {

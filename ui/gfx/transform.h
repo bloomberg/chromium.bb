@@ -120,6 +120,10 @@ class GFX_EXPORT Transform {
     return !(matrix_.getType() & ~SkMatrix44::kTranslate_Mask);
   }
 
+  // Returns true if the matrix is either identity or pure translation,
+  // allowing for an amount of inaccuracy as specified by the parameter.
+  bool IsApproximatelyIdentityOrTranslation(SkMScalar tolerance) const;
+
   // Returns true if the matrix is either a positive scale and/or a translation.
   bool IsPositiveScaleOrTranslation() const {
     if (!IsScaleOrTranslation())

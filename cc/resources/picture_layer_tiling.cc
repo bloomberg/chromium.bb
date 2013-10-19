@@ -339,35 +339,6 @@ void PictureLayerTiling::Reset() {
   tiles_.clear();
 }
 
-namespace {
-
-bool NearlyOne(SkMScalar lhs) {
-  return std::abs(lhs-1.0) < std::numeric_limits<float>::epsilon();
-}
-
-bool NearlyZero(SkMScalar lhs) {
-  return std::abs(lhs) < std::numeric_limits<float>::epsilon();
-}
-
-bool ApproximatelyTranslation(const SkMatrix44& matrix) {
-  return
-      NearlyOne(matrix.get(0, 0)) &&
-      NearlyZero(matrix.get(1, 0)) &&
-      NearlyZero(matrix.get(2, 0)) &&
-      matrix.get(3, 0) == 0 &&
-      NearlyZero(matrix.get(0, 1)) &&
-      NearlyOne(matrix.get(1, 1)) &&
-      NearlyZero(matrix.get(2, 1)) &&
-      matrix.get(3, 1) == 0 &&
-      NearlyZero(matrix.get(0, 2)) &&
-      NearlyZero(matrix.get(1, 2)) &&
-      NearlyOne(matrix.get(2, 2)) &&
-      matrix.get(3, 2) == 0 &&
-      matrix.get(3, 3) == 1;
-}
-
-}  // namespace
-
 void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
     gfx::Size device_viewport,
@@ -425,8 +396,10 @@ void PictureLayerTiling::UpdateTilePriorities(
   float last_scale = last_layer_contents_scale / contents_scale_;
 
   // Fast path tile priority calculation when both transforms are translations.
-  if (ApproximatelyTranslation(last_screen_transform.matrix()) &&
-      ApproximatelyTranslation(current_screen_transform.matrix())) {
+  if (last_screen_transform.IsApproximatelyIdentityOrTranslation(
+          std::numeric_limits<float>::epsilon()) &&
+      current_screen_transform.IsApproximatelyIdentityOrTranslation(
+          std::numeric_limits<float>::epsilon())) {
     gfx::Vector2dF current_offset(
         current_screen_transform.matrix().get(0, 3),
         current_screen_transform.matrix().get(1, 3));
