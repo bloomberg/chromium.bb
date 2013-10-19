@@ -6047,7 +6047,7 @@
    fun:_ZNK2v88internal13StandardFrame18IterateExpressionsEPNS0_13ObjectVisitorE
    ...
    fun:_ZN2v88internal4Heap8ScavengeEv
-   fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_16GarbageCollectorEPNS0_8GCTracerE.constprop.*
+   fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_16GarbageCollectorEPNS0_8GCTracer*
 }
 {
    bug_222887
@@ -7009,8 +7009,7 @@
    fun:_Znw*
    fun:_ZN7WebCore11ScriptState10forContextEN2v86HandleINS1_7ContextEEE
    fun:_ZN7WebCore32scriptStateFromWorkerGlobalScopeEPNS_17WorkerGlobalScopeE
-   fun:_ZN7WebCore12_GLOBAL__N_111PromiseTask11performTaskEPNS_22ScriptExecutionContextE
-   fun:_ZN7WebCore13WorkerRunLoop4Task11performTaskERKS0_PNS_22ScriptExecutionContextE
+   ...
    fun:_ZN7WebCore13WorkerRunLoop9runInModeEPNS_17WorkerGlobalScopeERKNS_13ModePredicateENS0_8WaitModeE
    fun:_ZN7WebCore13WorkerRunLoop3runEPNS_17WorkerGlobalScopeE
    fun:_ZN7WebCore12WorkerThread12runEventLoopEv
