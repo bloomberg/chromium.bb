@@ -137,7 +137,9 @@ struct TestVideoFile {
 };
 
 // Presumed minimal display size.
-const gfx::Size kThumbnailsDisplaySize(1366, 768);
+// We subtract one pixel from the width because some ARM chromebooks do not
+// support two fullscreen app running at the same time. See crbug.com/270064.
+const gfx::Size kThumbnailsDisplaySize(1366 - 1, 768);
 const gfx::Size kThumbnailsPageSize(1600, 1200);
 const gfx::Size kThumbnailSize(160, 120);
 const int kMD5StringLength = 32;
