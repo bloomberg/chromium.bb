@@ -346,6 +346,8 @@ void EventSender::reset()
     currentDragData.reset();
     currentDragEffect = WebKit::WebDragOperationNone;
     currentDragEffectsAllowed = WebKit::WebDragOperationNone;
+    if (webview() && pressedButton != WebMouseEvent::ButtonNone)
+        webview()->mouseCaptureLost();
     pressedButton = WebMouseEvent::ButtonNone;
     dragMode.set(true);
     forceLayoutOnEvents.set(true);
