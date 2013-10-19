@@ -9,23 +9,20 @@
 
 namespace {
 
-void RenameFile(const base::FilePath& downloaded_filename,
-                const base::FilePath& desired_filename,
-                base::PlatformFileError* result) {
+base::PlatformFileError RenameFile(const base::FilePath& downloaded_filename,
+                                   const base::FilePath& desired_filename) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   bool success = base::ReplaceFile(downloaded_filename, desired_filename, NULL);
-  *result = success ? base::PLATFORM_FILE_OK
-                    : base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  return success ? base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
 void ReturnRenameResultToListener(
     base::WeakPtr<ImageCaptureDeviceListener> listener,
     const std::string& name,
-    base::PlatformFileError* result) {
+    const base::PlatformFileError& result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  scoped_ptr<base::PlatformFileError> result_deleter(result);
   if (listener)
-    listener->DownloadedFile(name, *result);
+    listener->DownloadedFile(name, result);
 }
 
 base::Time NSDateToBaseTime(NSDate* date) {
@@ -214,12 +211,11 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   base::FilePath saveAsPath = saveDir.Append(saveAsFilename);
   base::FilePath savedPath = saveDir.Append(savedFilename);
   // Shared result value from file-copy closure to tell-listener closure.
-  base::PlatformFileError* copyResult = new base::PlatformFileError();
-  content::BrowserThread::PostTaskAndReply(
+  content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&RenameFile, savedPath, saveAsPath, copyResult),
-      base::Bind(&ReturnRenameResultToListener, listener_, name, copyResult));
+      base::Bind(&RenameFile, savedPath, saveAsPath),
+      base::Bind(&ReturnRenameResultToListener, listener_, name));
 }
 
 @end  // ImageCaptureDevice
