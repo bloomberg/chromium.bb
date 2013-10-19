@@ -140,6 +140,8 @@ private:
     void scrollToMakeVisibleCallback(const CppArgumentList&, CppVariant*);
     void scrollToMakeVisibleWithSubFocusCallback(const CppArgumentList&, CppVariant*);
     void scrollToGlobalPointCallback(const CppArgumentList&, CppVariant*);
+    void wordStartCallback(const CppArgumentList&, CppVariant*);
+    void wordEndCallback(const CppArgumentList&, CppVariant*);
 
     void fallbackCallback(const CppArgumentList&, CppVariant*);
 

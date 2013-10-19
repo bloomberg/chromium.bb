@@ -211,6 +211,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleImageMapLink, ImageMapLinkRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleImageMap, ImageMapRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleImage, ImageRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleIncrementor, IncrementorRole);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleInlineTextBox, InlineTextBoxRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleLabel, LabelRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleLegend, LegendRole);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleLink, LinkRole);
@@ -303,6 +304,11 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXStateSelectable, AXSelectableState);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXStateSelected, AXSelectedState);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXStateVertical, AXVerticalState);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXStateVisited, AXVisitedState);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebAXTextDirectionLR, AccessibilityTextDirectionLeftToRight);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXTextDirectionRL, AccessibilityTextDirectionRightToLeft);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXTextDirectionTB, AccessibilityTextDirectionTopToBottom);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXTextDirectionBT, AccessibilityTextDirectionBottomToTop);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Uncached, ApplicationCacheHost::UNCACHED);
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Idle, ApplicationCacheHost::IDLE);

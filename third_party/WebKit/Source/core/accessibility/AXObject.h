@@ -101,6 +101,7 @@ enum AccessibilityRole {
     ImageMapRole,
     ImageRole,
     IncrementorRole,
+    InlineTextBoxRole,
     LabelRole,
     LegendRole,
     LinkRole,
@@ -240,6 +241,13 @@ enum AccessibilityButtonState {
     ButtonStateOff = 0,
     ButtonStateOn,
     ButtonStateMixed,
+};
+
+enum AccessibilityTextDirection {
+    AccessibilityTextDirectionLeftToRight,
+    AccessibilityTextDirectionRightToLeft,
+    AccessibilityTextDirectionTopToBottom,
+    AccessibilityTextDirectionBottomToTop
 };
 
 struct VisiblePositionRange {
@@ -410,6 +418,13 @@ public:
     virtual int textLength() const { return 0; }
     virtual AXObject* titleUIElement() const { return 0; }
     virtual KURL url() const { return KURL(); }
+
+    // For an inline text box.
+    virtual AccessibilityTextDirection textDirection() const { return AccessibilityTextDirectionLeftToRight; }
+    // The integer horizontal pixel offset of each character in the string; negative values for RTL.
+    virtual void textCharacterOffsets(Vector<int>&) const { }
+    // The start and end character offset of each word in the inline text box.
+    virtual void wordBoundaries(Vector<PlainTextRange>& words) const { }
 
     // Properties of interactive elements.
     virtual String actionVerb() const;

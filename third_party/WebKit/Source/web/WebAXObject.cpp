@@ -84,6 +84,12 @@ bool WebAXObject::accessibilityEnabled()
     return AXObjectCache::accessibilityEnabled();
 }
 
+// static
+void WebAXObject::enableInlineTextBoxAccessibility()
+{
+    AXObjectCache::setInlineTextBoxAccessibility(true);
+}
+
 void WebAXObject::startCachingComputedObjectAttributesUntilTreeMutates()
 {
     m_private->axObjectCache()->startCachingComputedObjectAttributesUntilTreeMutates();
@@ -990,6 +996,47 @@ unsigned WebAXObject::cellRowSpan() const
     pair<unsigned, unsigned> rowRange;
     WebCore::toAXTableCell(m_private.get())->rowIndexRange(rowRange);
     return rowRange.second;
+}
+
+WebAXTextDirection WebAXObject::textDirection() const
+{
+    if (isDetached())
+        return WebAXTextDirectionLR;
+
+    return static_cast<WebAXTextDirection>(m_private->textDirection());
+}
+
+void WebAXObject::characterOffsets(WebVector<int>& offsets) const
+{
+    if (isDetached())
+        return;
+
+    Vector<int> offsetsVector;
+    m_private->textCharacterOffsets(offsetsVector);
+
+    size_t vectorSize = offsetsVector.size();
+    WebVector<int> offsetsWebVector(vectorSize);
+    for (size_t i = 0; i < vectorSize; i++)
+        offsetsWebVector[i] = offsetsVector[i];
+    offsets.swap(offsetsWebVector);
+}
+
+void WebAXObject::wordBoundaries(WebVector<int>& starts, WebVector<int>& ends) const
+{
+    if (isDetached())
+        return;
+
+    Vector<PlainTextRange> words;
+    m_private->wordBoundaries(words);
+
+    WebVector<int> startsWebVector(words.size());
+    WebVector<int> endsWebVector(words.size());
+    for (size_t i = 0; i < words.size(); i++) {
+        startsWebVector[i] = words[i].start;
+        endsWebVector[i] = words[i].start + words[i].length;
+    }
+    starts.swap(startsWebVector);
+    ends.swap(endsWebVector);
 }
 
 void WebAXObject::scrollToMakeVisible() const

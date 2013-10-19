@@ -61,6 +61,7 @@ AccessibilityController::AccessibilityController()
 void AccessibilityController::bindToJavascript(WebFrame* frame, const WebString& classname)
 {
     WebAXObject::enableAccessibility();
+    WebAXObject::enableInlineTextBoxAccessibility();
     CppBoundClass::bindToJavascript(frame, classname);
 }
 

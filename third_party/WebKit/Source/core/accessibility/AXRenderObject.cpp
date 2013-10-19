@@ -31,6 +31,7 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXImageMapLink.h"
+#include "core/accessibility/AXInlineTextBox.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AXSVGRoot.h"
 #include "core/accessibility/AXSpinButton.h"
@@ -52,6 +53,7 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderFieldset.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "core/rendering/RenderImage.h"
@@ -1472,6 +1474,7 @@ void AXRenderObject::addChildren()
     addTextFieldChildren();
     addCanvasChildren();
     addRemoteSVGChildren();
+    addInlineTextBoxChildren();
 }
 
 bool AXRenderObject::canHaveChildren() const
@@ -1735,6 +1738,19 @@ void AXRenderObject::handleAriaExpandedChanged()
         axObjectCache()->postNotification(this, document(), isExpanded() ? AXObjectCache::AXRowExpanded : AXObjectCache::AXRowCollapsed, true);
 }
 
+void AXRenderObject::textChanged()
+{
+    if (!m_renderer)
+        return;
+
+    if (AXObjectCache::inlineTextBoxAccessibility() && roleValue() == StaticTextRole)
+        childrenChanged();
+
+    // Do this last - AXNodeObject::textChanged posts live region announcements,
+    // and we should update the inline text boxes first.
+    AXNodeObject::textChanged();
+}
+
 //
 // Text metrics. Most of these should be deprecated, needs major cleanup.
 //
@@ -1800,6 +1816,25 @@ int AXRenderObject::indexForVisiblePosition(const VisiblePosition& pos) const
     range->setEnd(indexPosition, IGNORE_EXCEPTION);
 
     return TextIterator::rangeLength(range.get());
+}
+
+void AXRenderObject::addInlineTextBoxChildren()
+{
+    if (!axObjectCache()->inlineTextBoxAccessibility())
+        return;
+
+    if (!renderer() || !renderer()->isText())
+        return;
+
+    RenderText* renderText = toRenderText(renderer());
+    if (renderText->needsLayout())
+        renderText->document().updateLayoutIgnorePendingStylesheets();
+
+    for (RefPtr<AbstractInlineTextBox> box = renderText->firstAbstractInlineTextBox(); box.get(); box = box->nextInlineTextBox()) {
+        AXObject* axObject = axObjectCache()->getOrCreate(box.get());
+        if (!axObject->accessibilityIsIgnored())
+            m_children.append(axObject);
+    }
 }
 
 void AXRenderObject::lineBreaks(Vector<int>& lineBreaks) const

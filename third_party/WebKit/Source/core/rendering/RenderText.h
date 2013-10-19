@@ -25,9 +25,11 @@
 
 #include "core/rendering/RenderObject.h"
 #include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
+class AbstractInlineTextBox;
 class InlineTextBox;
 
 class RenderText : public RenderObject {
@@ -141,6 +143,8 @@ public:
     bool knownToHaveNoOverflowAndNoFallbackFonts() const { return m_knownToHaveNoOverflowAndNoFallbackFonts; }
 
     void removeAndDestroyTextBoxes();
+
+    PassRefPtr<AbstractInlineTextBox> firstAbstractInlineTextBox();
 
 protected:
     virtual void computePreferredLogicalWidths(float leadWidth);

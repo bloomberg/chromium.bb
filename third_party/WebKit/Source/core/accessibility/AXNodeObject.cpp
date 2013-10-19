@@ -1381,10 +1381,12 @@ bool AXNodeObject::canHaveChildren() const
     case RadioButtonRole:
     case TabRole:
     case ToggleButtonRole:
-    case StaticTextRole:
     case ListBoxOptionRole:
     case ScrollBarRole:
         return false;
+    case StaticTextRole:
+        if (!axObjectCache()->inlineTextBoxAccessibility())
+            return false;
     default:
         return true;
     }

@@ -132,6 +132,8 @@ string roleToString(WebAXRole role)
         return result.append("Image");
     case WebAXRoleIncrementor:
         return result.append("Incrementor");
+    case WebAXRoleInlineTextBox:
+        return result.append("InlineTextBox");
     case WebAXRoleLabel:
         return result.append("Label");
     case WebAXRoleLegend:
@@ -346,6 +348,108 @@ string getAttributes(const WebAXObject& object)
     return attributes;
 }
 
+WebRect boundsForCharacter(const WebAXObject& object, int characterIndex)
+{
+    BLINK_ASSERT(object.role() == WebAXRoleStaticText);
+    int end = 0;
+    for (unsigned i = 0; i < object.childCount(); i++) {
+        WebAXObject inlineTextBox = object.childAt(i);
+        BLINK_ASSERT(inlineTextBox.role() == WebAXRoleInlineTextBox);
+        int start = end;
+        end += inlineTextBox.stringValue().length();
+        if (end <= characterIndex)
+            continue;
+        WebRect inlineTextBoxRect = inlineTextBox.boundingBoxRect();
+        int localIndex = characterIndex - start;
+        WebVector<int> characterOffsets;
+        inlineTextBox.characterOffsets(characterOffsets);
+        BLINK_ASSERT(characterOffsets.size() > 0 && characterOffsets.size() == inlineTextBox.stringValue().length());
+        switch (inlineTextBox.textDirection()) {
+        case WebAXTextDirectionLR: {
+            if (localIndex) {
+                int left = inlineTextBoxRect.x + characterOffsets[localIndex - 1];
+                int width = characterOffsets[localIndex] - characterOffsets[localIndex - 1];
+                return WebRect(left, inlineTextBoxRect.y, width, inlineTextBoxRect.height);
+            }
+            return WebRect(inlineTextBoxRect.x, inlineTextBoxRect.y, characterOffsets[0], inlineTextBoxRect.height);
+        }
+        case WebAXTextDirectionRL: {
+            int right = inlineTextBoxRect.x + inlineTextBoxRect.width;
+
+            if (localIndex) {
+                int left = right - characterOffsets[localIndex];
+                int width = characterOffsets[localIndex] - characterOffsets[localIndex - 1];
+                return WebRect(left, inlineTextBoxRect.y, width, inlineTextBoxRect.height);
+            }
+            int left = right - characterOffsets[0];
+            return WebRect(left, inlineTextBoxRect.y, characterOffsets[0], inlineTextBoxRect.height);
+        }
+        case WebAXTextDirectionTB: {
+            if (localIndex) {
+                int top = inlineTextBoxRect.y + characterOffsets[localIndex - 1];
+                int height = characterOffsets[localIndex] - characterOffsets[localIndex - 1];
+                return WebRect(inlineTextBoxRect.x, top, inlineTextBoxRect.width, height);
+            }
+            return WebRect(inlineTextBoxRect.x, inlineTextBoxRect.y, inlineTextBoxRect.width, characterOffsets[0]);
+        }
+        case WebAXTextDirectionBT: {
+            int bottom = inlineTextBoxRect.y + inlineTextBoxRect.height;
+
+            if (localIndex) {
+                int top = bottom - characterOffsets[localIndex];
+                int height = characterOffsets[localIndex] - characterOffsets[localIndex - 1];
+                return WebRect(inlineTextBoxRect.x, top, inlineTextBoxRect.width, height);
+            }
+            int top = bottom - characterOffsets[0];
+            return WebRect(inlineTextBoxRect.x, top, inlineTextBoxRect.width, characterOffsets[0]);
+        }
+        }
+    }
+
+    BLINK_ASSERT(false);
+    return WebRect();
+}
+
+void getBoundariesForOneWord(const WebAXObject& object, int characterIndex, int& wordStart, int& wordEnd)
+{
+    int end = 0;
+    for (unsigned i = 0; i < object.childCount(); i++) {
+        WebAXObject inlineTextBox = object.childAt(i);
+        BLINK_ASSERT(inlineTextBox.role() == WebAXRoleInlineTextBox);
+        int start = end;
+        end += inlineTextBox.stringValue().length();
+        if (end <= characterIndex)
+            continue;
+        int localIndex = characterIndex - start;
+
+        WebVector<int> starts;
+        WebVector<int> ends;
+        inlineTextBox.wordBoundaries(starts, ends);
+        size_t wordCount = starts.size();
+        BLINK_ASSERT(ends.size() == wordCount);
+
+        // If there are no words, use the InlineTextBox boundaries.
+        if (!wordCount) {
+            wordStart = start;
+            wordEnd = end;
+            return;
+        }
+
+        // Look for a character within any word other than the last.
+        for (size_t j = 0; j < wordCount - 1; j++) {
+            if (localIndex <= ends[j]) {
+                wordStart = start + starts[j];
+                wordEnd = start + ends[j];
+                return;
+            }
+        }
+
+        // Return the last word by default.
+        wordStart = start + starts[wordCount - 1];
+        wordEnd = start + ends[wordCount - 1];
+        return;
+    }
+}
 
 // Collects attributes into a string, delimited by dashes. Used by all methods
 // that output lists of attributes: attributesOfLinkedUIElementsCallback,
@@ -459,6 +563,8 @@ WebAXObjectProxy::WebAXObjectProxy(const WebAXObject& object, Factory* factory)
     bindMethod("scrollToMakeVisible", &WebAXObjectProxy::scrollToMakeVisibleCallback);
     bindMethod("scrollToMakeVisibleWithSubFocus", &WebAXObjectProxy::scrollToMakeVisibleWithSubFocusCallback);
     bindMethod("scrollToGlobalPoint", &WebAXObjectProxy::scrollToGlobalPointCallback);
+    bindMethod("wordStart", &WebAXObjectProxy::wordStartCallback);
+    bindMethod("wordEnd", &WebAXObjectProxy::wordEndCallback);
 
     bindFallbackMethod(&WebAXObjectProxy::fallbackCallback);
 }
@@ -748,9 +854,36 @@ void WebAXObjectProxy::lineForIndexCallback(const CppArgumentList& arguments, Cp
     result->set(line);
 }
 
-void WebAXObjectProxy::boundsForRangeCallback(const CppArgumentList&, CppVariant* result)
+void WebAXObjectProxy::boundsForRangeCallback(const CppArgumentList& arguments, CppVariant* result)
 {
     result->setNull();
+
+    if (arguments.size() != 2 || !arguments[0].isNumber() || !arguments[1].isNumber())
+        return;
+
+    if (accessibilityObject().role() != WebAXRoleStaticText)
+        return;
+
+    int start = arguments[0].toInt32();
+    int end = arguments[1].toInt32();
+    int len = end - start;
+
+    // Get the bounds for each character and union them into one large rectangle.
+    // This is just for testing so it doesn't need to be efficient.
+    WebRect bounds = boundsForCharacter(accessibilityObject(), start);
+    for (int i = 1; i < len; i++) {
+        WebRect next = boundsForCharacter(accessibilityObject(), start + i);
+        int right = std::max(bounds.x + bounds.width, next.x + next.width);
+        int bottom = std::max(bounds.y + bounds.height, next.y + next.height);
+        bounds.x = std::min(bounds.x, next.x);
+        bounds.y = std::min(bounds.y, next.y);
+        bounds.width = right - bounds.x;
+        bounds.height = bottom - bounds.y;
+    }
+
+    char buffer[100];
+    snprintf(buffer, sizeof(buffer), "{x: %d, y: %d, width: %d, height: %d}", bounds.x, bounds.y, bounds.width, bounds.height);
+    result->set(string(buffer));
 }
 
 void WebAXObjectProxy::stringForRangeCallback(const CppArgumentList&, CppVariant* result)
@@ -1034,6 +1167,38 @@ void WebAXObjectProxy::scrollToGlobalPointCallback(const CppArgumentList& argume
 
     accessibilityObject().scrollToGlobalPoint(WebPoint(x, y));
     result->setNull();
+}
+
+void WebAXObjectProxy::wordStartCallback(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+
+    if (arguments.size() != 1 || !arguments[0].isNumber())
+        return;
+
+    if (accessibilityObject().role() != WebAXRoleStaticText)
+        return;
+
+    int characterIndex = arguments[0].toInt32();
+    int wordStart, wordEnd;
+    getBoundariesForOneWord(accessibilityObject(), characterIndex, wordStart, wordEnd);
+    result->set(wordStart);
+}
+
+void WebAXObjectProxy::wordEndCallback(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+
+    if (arguments.size() != 1 || !arguments[0].isNumber())
+        return;
+
+    if (accessibilityObject().role() != WebAXRoleStaticText)
+        return;
+
+    int characterIndex = arguments[0].toInt32();
+    int wordStart, wordEnd;
+    getBoundariesForOneWord(accessibilityObject(), characterIndex, wordStart, wordEnd);
+    result->set(wordEnd);
 }
 
 void WebAXObjectProxy::fallbackCallback(const CppArgumentList &, CppVariant* result)

@@ -159,6 +159,9 @@ public:
 
     bool containsCaretOffset(int offset) const; // false for offset after line break
 
+    // Fills a vector with the pixel width of each character.
+    void characterWidths(Vector<float>&) const;
+
 private:
     InlineTextBox* m_prevTextBox; // The previous box that also uses our RenderObject
     InlineTextBox* m_nextTextBox; // The next box that also uses our RenderObject

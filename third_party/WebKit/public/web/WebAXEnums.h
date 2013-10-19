@@ -111,6 +111,7 @@ enum WebAXRole {
     WebAXRoleImageMap,
     WebAXRoleImage,
     WebAXRoleIncrementor,
+    WebAXRoleInlineTextBox,
     WebAXRoleLabel,
     WebAXRoleLegend,
     WebAXRoleLink,
@@ -206,6 +207,14 @@ enum WebAXState {
     WebAXStateSelected,
     WebAXStateVertical,
     WebAXStateVisited,
+};
+
+// Text direction, only used for role=WebAXRoleInlineTextBox.
+enum WebAXTextDirection {
+    WebAXTextDirectionLR,
+    WebAXTextDirectionRL,
+    WebAXTextDirectionTB,
+    WebAXTextDirectionBT
 };
 
 } // namespace WebKit

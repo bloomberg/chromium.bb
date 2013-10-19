@@ -79,6 +79,9 @@ public:
     BLINK_EXPORT void startCachingComputedObjectAttributesUntilTreeMutates();
     BLINK_EXPORT void stopCachingComputedObjectAttributes();
 
+    // Temporary: this flag will only be toggleable until Chromium has it on by default.
+    BLINK_EXPORT static void enableInlineTextBoxAccessibility();
+
     BLINK_EXPORT int axID() const;
 
     // Update the underlying tree, and return true if this object is
@@ -194,6 +197,11 @@ public:
     BLINK_EXPORT unsigned cellColumnSpan() const;
     BLINK_EXPORT unsigned cellRowIndex() const;
     BLINK_EXPORT unsigned cellRowSpan() const;
+
+    // For an inline text box.
+    BLINK_EXPORT WebAXTextDirection textDirection() const;
+    BLINK_EXPORT void characterOffsets(WebVector<int>&) const;
+    BLINK_EXPORT void wordBoundaries(WebVector<int>& starts, WebVector<int>& ends) const;
 
     // Make this object visible by scrolling as many nested scrollable views as needed.
     BLINK_EXPORT void scrollToMakeVisible() const;

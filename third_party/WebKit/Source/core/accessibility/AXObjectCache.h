@@ -27,6 +27,7 @@
 #define AXObjectCache_h
 
 #include "core/accessibility/AXObject.h"
+#include "core/rendering/RenderText.h"
 #include "platform/Timer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -35,6 +36,7 @@
 
 namespace WebCore {
 
+class AbstractInlineTextBox;
 class Document;
 class HTMLAreaElement;
 class Node;
@@ -89,6 +91,7 @@ public:
     AXObject* getOrCreate(RenderObject*);
     AXObject* getOrCreate(Widget*);
     AXObject* getOrCreate(Node*);
+    AXObject* getOrCreate(AbstractInlineTextBox*);
 
     // used for objects without backing elements
     AXObject* getOrCreate(AccessibilityRole);
@@ -97,10 +100,12 @@ public:
     AXObject* get(RenderObject*);
     AXObject* get(Widget*);
     AXObject* get(Node*);
+    AXObject* get(AbstractInlineTextBox*);
 
     void remove(RenderObject*);
     void remove(Node*);
     void remove(Widget*);
+    void remove(AbstractInlineTextBox*);
     void remove(AXID);
 
     void detachWrapper(AXObject*);
@@ -131,9 +136,13 @@ public:
 #if HAVE(ACCESSIBILITY)
     static void enableAccessibility() { gAccessibilityEnabled = true; }
     static bool accessibilityEnabled() { return gAccessibilityEnabled; }
+    static void setInlineTextBoxAccessibility(bool flag) { gInlineTextBoxAccessibility = flag; }
+    static bool inlineTextBoxAccessibility() { return gInlineTextBoxAccessibility; }
 #else
     static void enableAccessibility() { }
+    static void setInlineTextBoxAccessibility(bool) { }
     static bool accessibilityEnabled() { return false; }
+    static bool inlineTextBoxAccessibility() { return false; }
 #endif
 
     void removeAXID(AXObject*);
@@ -207,9 +216,11 @@ private:
     HashMap<RenderObject*, AXID> m_renderObjectMapping;
     HashMap<Widget*, AXID> m_widgetObjectMapping;
     HashMap<Node*, AXID> m_nodeObjectMapping;
+    HashMap<AbstractInlineTextBox*, AXID> m_inlineTextBoxObjectMapping;
     HashSet<Node*> m_textMarkerNodes;
     OwnPtr<AXComputedObjectAttributeCache> m_computedObjectAttributeCache;
     static bool gAccessibilityEnabled;
+    static bool gInlineTextBoxAccessibility;
 
     HashSet<AXID> m_idsInUse;
 
@@ -235,10 +246,12 @@ inline AXObject* AXObjectCache::focusedUIElementForPage(const Page*) { return 0;
 inline AXObject* AXObjectCache::get(RenderObject*) { return 0; }
 inline AXObject* AXObjectCache::get(Node*) { return 0; }
 inline AXObject* AXObjectCache::get(Widget*) { return 0; }
+inline AXObject* AXObjectCache::get(AbstractInlineTextBox*) { return 0; }
 inline AXObject* AXObjectCache::getOrCreate(AccessibilityRole) { return 0; }
 inline AXObject* AXObjectCache::getOrCreate(RenderObject*) { return 0; }
 inline AXObject* AXObjectCache::getOrCreate(Node*) { return 0; }
 inline AXObject* AXObjectCache::getOrCreate(Widget*) { return 0; }
+inline AXObject* AXObjectCache::getOrCreate(AbstractInlineTextBox*) { return 0; }
 inline AXObject* AXObjectCache::rootObject() { return 0; }
 inline Element* AXObjectCache::rootAXEditableElement(Node*) { return 0; }
 inline bool nodeHasRole(Node*, const String&) { return false; }
@@ -274,6 +287,7 @@ inline void AXObjectCache::remove(AXID) { }
 inline void AXObjectCache::remove(RenderObject*) { }
 inline void AXObjectCache::remove(Node*) { }
 inline void AXObjectCache::remove(Widget*) { }
+inline void AXObjectCache::remove(AbstractInlineTextBox*) { }
 inline void AXObjectCache::selectedChildrenChanged(RenderObject*) { }
 inline void AXObjectCache::selectedChildrenChanged(Node*) { }
 #endif

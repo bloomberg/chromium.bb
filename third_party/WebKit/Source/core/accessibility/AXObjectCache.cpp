@@ -37,6 +37,7 @@
 #include "core/accessibility/AXARIAGridCell.h"
 #include "core/accessibility/AXARIAGridRow.h"
 #include "core/accessibility/AXImageMapLink.h"
+#include "core/accessibility/AXInlineTextBox.h"
 #include "core/accessibility/AXList.h"
 #include "core/accessibility/AXListBox.h"
 #include "core/accessibility/AXListBoxOption.h"
@@ -67,6 +68,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/platform/ScrollView.h"
+#include "core/rendering/AbstractInlineTextBox.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderProgress.h"
@@ -105,6 +107,7 @@ void AXComputedObjectAttributeCache::clear()
 }
 
 bool AXObjectCache::gAccessibilityEnabled = false;
+bool AXObjectCache::gInlineTextBoxAccessibility = false;
 
 AXObjectCache::AXObjectCache(const Document* doc)
     : m_notificationPostTimer(this, &AXObjectCache::notificationPostTimerFired)
@@ -239,6 +242,19 @@ AXObject* AXObjectCache::get(Node* node)
     return m_objects.get(nodeID);
 }
 
+AXObject* AXObjectCache::get(AbstractInlineTextBox* inlineTextBox)
+{
+    if (!inlineTextBox)
+        return 0;
+
+    AXID axID = m_inlineTextBoxObjectMapping.get(inlineTextBox);
+    ASSERT(!HashTraits<AXID>::isDeletedValue(axID));
+    if (!axID)
+        return 0;
+
+    return m_objects.get(axID);
+}
+
 // FIXME: This probably belongs on Node.
 // FIXME: This should take a const char*, but one caller passes nullAtom.
 bool nodeHasRole(Node* node, const String& role)
@@ -305,6 +321,11 @@ static PassRefPtr<AXObject> createFromRenderer(RenderObject* renderer)
 static PassRefPtr<AXObject> createFromNode(Node* node)
 {
     return AXNodeObject::create(node);
+}
+
+static PassRefPtr<AXObject> createFromInlineTextBox(AbstractInlineTextBox* inlineTextBox)
+{
+    return AXInlineTextBox::create(inlineTextBox);
 }
 
 AXObject* AXObjectCache::getOrCreate(Widget* widget)
@@ -386,6 +407,30 @@ AXObject* AXObjectCache::getOrCreate(RenderObject* renderer)
     getAXID(newObj.get());
 
     m_renderObjectMapping.set(renderer, newObj->axObjectID());
+    m_objects.set(newObj->axObjectID(), newObj);
+    newObj->init();
+    attachWrapper(newObj.get());
+    newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
+
+    return newObj.get();
+}
+
+AXObject* AXObjectCache::getOrCreate(AbstractInlineTextBox* inlineTextBox)
+{
+    if (!inlineTextBox)
+        return 0;
+
+    if (AXObject* obj = get(inlineTextBox))
+        return obj;
+
+    RefPtr<AXObject> newObj = createFromInlineTextBox(inlineTextBox);
+
+    // Will crash later if we have two objects for the same inlineTextBox.
+    ASSERT(!get(inlineTextBox));
+
+    getAXID(newObj.get());
+
+    m_inlineTextBoxObjectMapping.set(inlineTextBox, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
     attachWrapper(newObj.get());
@@ -509,6 +554,15 @@ void AXObjectCache::remove(Widget* view)
     m_widgetObjectMapping.remove(view);
 }
 
+void AXObjectCache::remove(AbstractInlineTextBox* inlineTextBox)
+{
+    if (!inlineTextBox)
+        return;
+
+    AXID axID = m_inlineTextBoxObjectMapping.get(inlineTextBox);
+    remove(axID);
+    m_inlineTextBoxObjectMapping.remove(inlineTextBox);
+}
 
 AXID AXObjectCache::platformGenerateAXID() const
 {

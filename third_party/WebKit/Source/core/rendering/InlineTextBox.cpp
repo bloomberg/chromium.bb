@@ -35,6 +35,8 @@
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
+#include "core/platform/graphics/WidthIterator.h"
+#include "core/rendering/AbstractInlineTextBox.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
@@ -69,6 +71,8 @@ static const int misspellingLineThickness = 3;
 
 void InlineTextBox::destroy()
 {
+    AbstractInlineTextBox::willDestroy(this);
+
     if (!knownToHaveNoOverflow() && gTextBoxesWithOverflow)
         gTextBoxesWithOverflow->remove(this);
     InlineBox::destroy();
@@ -1472,6 +1476,27 @@ bool InlineTextBox::containsCaretOffset(int offset) const
 
     // Offsets at the end are "in" for normal boxes (but the caller has to check affinity).
     return true;
+}
+
+void InlineTextBox::characterWidths(Vector<float>& widths) const
+{
+    FontCachePurgePreventer fontCachePurgePreventer;
+
+    RenderText* textObj = textRenderer();
+    RenderStyle* styleToUse = textObj->style(isFirstLineStyle());
+    const Font& font = styleToUse->font();
+
+    TextRun textRun = constructTextRun(styleToUse, font);
+
+    GlyphBuffer glyphBuffer;
+    WidthIterator it(&font, textRun);
+    float lastWidth = 0;
+    widths.resize(m_len);
+    for (unsigned i = 0; i < m_len; i++) {
+        it.advance(i + 1, &glyphBuffer);
+        widths[i] = it.m_runWidthSoFar - lastWidth;
+        lastWidth = it.m_runWidthSoFar;
+    }
 }
 
 TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, StringBuilder* charactersWithHyphen) const

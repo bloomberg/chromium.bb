@@ -30,6 +30,7 @@
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Settings.h"
+#include "core/rendering/AbstractInlineTextBox.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
@@ -1827,6 +1828,11 @@ void RenderText::momentarilyRevealLastTypedCharacter(unsigned lastTypedCharacter
         gSecureTextTimers->add(this, secureTextTimer);
     }
     secureTextTimer->restartWithNewText(lastTypedCharacterOffset);
+}
+
+PassRefPtr<AbstractInlineTextBox> RenderText::firstAbstractInlineTextBox()
+{
+    return AbstractInlineTextBox::getOrCreate(this, m_firstTextBox);
 }
 
 } // namespace WebCore
