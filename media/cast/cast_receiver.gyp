@@ -9,7 +9,7 @@
   ],
   'targets': [
     {
-      'target_name': 'cast_receiver_impl',
+      'target_name': 'cast_receiver',
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)/',
