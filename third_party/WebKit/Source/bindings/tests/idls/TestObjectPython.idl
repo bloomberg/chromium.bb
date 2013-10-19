@@ -72,9 +72,9 @@ interface TestObjectPython {
     readonly attribute Node readonlyNodeAttribute;
     readonly attribute ShadowRoot readonlyShadowRootAttribute;
     // Typed arrays
-    readonly attribute ArrayBuffer readonlyArrayBufferAttribute;
-    readonly attribute Float32Array readonlyFloat32ArrayAttribute;
-    readonly attribute Uint8Array readonlyUint8ArrayAttribute;
+    attribute ArrayBuffer arrayBufferAttribute;
+    attribute Float32Array float32ArrayAttribute;
+    attribute Uint8Array uint8ArrayAttribute;
     // Usual case for is_keep_alive_for_gc
     readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     // Exceptions for is_keep_alive_for_gc

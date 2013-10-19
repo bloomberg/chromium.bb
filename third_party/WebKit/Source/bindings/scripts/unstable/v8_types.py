@@ -259,6 +259,8 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     # Special cases
     if idl_type == 'EventHandler':
         return 'EventListener*'
+    if is_typed_array_type and used_as_argument:
+        return idl_type + '*'
 
     # FIXME: fix Perl code reading:
     # return "RefPtr<${type}>" if IsRefPtrType($type) and not $isParameter;
@@ -372,10 +374,15 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, iso
     elif idl_type in V8_VALUE_TO_CPP_VALUE_AND_INCLUDES:
         cpp_expression_format, new_includes = V8_VALUE_TO_CPP_VALUE_AND_INCLUDES[idl_type]
         includes.update(new_includes)
+    elif is_typed_array_type(idl_type):
+        cpp_expression_format = (
+            'jsValue->Is{idl_type}() ? '
+            'V8{idl_type}::toNative(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
+        includes.update(includes_for_type(idl_type))
     else:
         cpp_expression_format = (
-    'V8{idl_type}::HasInstance({v8_value}, {isolate}, worldType({isolate})) ? '
-    'V8{idl_type}::toNative(v8::Handle<v8::Object>::Cast({v8_value})) : 0')
+            'V8{idl_type}::HasInstance({v8_value}, {isolate}, worldType({isolate})) ? '
+            'V8{idl_type}::toNative(v8::Handle<v8::Object>::Cast({v8_value})) : 0')
         includes.update(includes_for_type(idl_type))
         includes.add('V8%s.h' % idl_type)
 
