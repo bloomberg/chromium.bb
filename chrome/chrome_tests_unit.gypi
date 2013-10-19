@@ -1688,6 +1688,7 @@
         'browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc',
         'browser/ui/views/tabs/tab_unittest.cc',
         'browser/ui/views/tabs/tab_strip_unittest.cc',
+        'browser/ui/views/translate/translate_bubble_view_unittest.cc',
         'browser/ui/views/validation_message_bubble_delegate_unittest.cc',
         'browser/ui/website_settings/website_settings_unittest.cc',
         'browser/ui/webui/fileicon_source_unittest.cc',

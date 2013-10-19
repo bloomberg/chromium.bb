@@ -13503,6 +13503,53 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       </if>
 
+      <!-- Translate Bubble -->
+      <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE" desc="Text to show for the translate bubble label when that page is in specified language and ask if should translate.">
+        Would you like to translate this page?
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_ADVANCED" desc="Text to show for the translate bubble link label to jump to the advanced panel.">
+        Advanced
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_ACCEPT" desc="Text to show for the translate bubble button to accept translation.">
+        Translate
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_DENY" desc="Text to show for the translate bubble menu item to deny translation.">
+        Nope
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG" desc="Text to show for the translate bubble menu item to never translate the specified language">
+        Never translate <ph name="language">$1<ex>French</ex></ph>
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE" desc="Text to show for the translate bubble menu item to never translate the current site">
+        Never translate this site
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_TRANSLATING" desc="Text to show for the translate bubble label when page is currently being translated by servers">
+        This page is being translated ...
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED" desc="Text to show for the translate bubble label when the page has been translated from one language to another">
+        This page has been translated.
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_REVERT" desc="Text to show for the translate bubble button to revert translation of translated page">
+        Show original
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_TRY_AGAIN" desc="Text to show for the translate bubble button to try to translate the page again">
+        Try again
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_ALWAYS" desc="Text to show for the translate bubble checkbox to always translate from one language to another">
+        Always translate <ph name="original_language">$1<ex>French</ex></ph> to <ph name="target_language">$2<ex>German</ex></ph>
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE" desc="Text to show for the translate bubble label when the page could not be translated.">
+        This page could not be translated.
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_PAGE_LANGUAGE" desc="Text to show for the translate bubble label next to the combobox of the page language">
+        Page language:
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_TRANSLATION_LANGUAGE" desc="Text to show for the translate bubble label next to the combobox of the target language for Translate">
+        Translation language:
+      </message>
+      <message name="IDS_TRANSLATE_BUBBLE_LEARN_MORE" desc="Text to show for the translate bubble link label next to jump to the help page.">
+        Learn more
+      </message>
+
       <!-- Desktop notifications -->
       <message name="IDS_NOTIFICATION_BALLOON_DISMISS_LABEL" desc="Text on the button which dismisses the balloon.">
         Dismiss
