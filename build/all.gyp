@@ -193,6 +193,11 @@
             '../ui/app_list/app_list.gyp:*',
           ],
         }],
+        ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            '../google_apis/gcm/gcm.gyp:*',
+          ],
+        }],
       ],
     }, # target_name: All
     {

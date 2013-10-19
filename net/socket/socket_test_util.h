@@ -231,7 +231,7 @@ class StaticSocketDataProvider : public SocketDataProvider {
   // SocketDataProvider implementation.
   virtual MockRead GetNextRead() OVERRIDE;
   virtual MockWriteResult OnWrite(const std::string& data) OVERRIDE;
-  ;  virtual void Reset() OVERRIDE;
+  virtual void Reset() OVERRIDE;
 
  private:
   MockRead* reads_;
@@ -716,7 +716,7 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   bool peer_closed_connection_;
 
   // While an asynchronous IO is pending, we save our user-buffer state.
-  IOBuffer* pending_buf_;
+  scoped_refptr<IOBuffer> pending_buf_;
   int pending_buf_len_;
   CompletionCallback pending_callback_;
   bool was_used_to_convey_data_;
@@ -955,7 +955,7 @@ class MockUDPClientSocket
   IPEndPoint peer_addr_;
 
   // While an asynchronous IO is pending, we save our user-buffer state.
-  IOBuffer* pending_buf_;
+  scoped_refptr<IOBuffer> pending_buf_;
   int pending_buf_len_;
   CompletionCallback pending_callback_;
 

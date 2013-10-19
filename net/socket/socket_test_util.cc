@@ -957,7 +957,7 @@ int MockTCPClientSocket::CompleteRead() {
   was_used_to_convey_data_ = true;
 
   // Save the pending async IO data and reset our |pending_| state.
-  IOBuffer* buf = pending_buf_;
+  scoped_refptr<IOBuffer> buf = pending_buf_;
   int buf_len = pending_buf_len_;
   CompletionCallback callback = pending_callback_;
   pending_buf_ = NULL;
@@ -1556,7 +1556,7 @@ int MockUDPClientSocket::CompleteRead() {
   DCHECK(pending_buf_len_ > 0);
 
   // Save the pending async IO data and reset our |pending_| state.
-  IOBuffer* buf = pending_buf_;
+  scoped_refptr<IOBuffer> buf = pending_buf_;
   int buf_len = pending_buf_len_;
   CompletionCallback callback = pending_callback_;
   pending_buf_ = NULL;
