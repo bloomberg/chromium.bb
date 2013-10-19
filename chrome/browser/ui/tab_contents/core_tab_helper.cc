@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
@@ -179,7 +182,6 @@ void CoreTabHelper::WebContentsDestroyed(WebContents* web_contents) {
       UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", now - unload_start_time);
     }
   }
-
 }
 
 void CoreTabHelper::BeforeUnloadFired(const base::TimeTicks& proceed_time) {
@@ -222,10 +224,13 @@ void CoreTabHelper::OnRequestThumbnailForContextNodeACK(
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (!template_url_service)
+    return;
   const TemplateURL* const default_provider =
-      TemplateURLServiceFactory::GetForProfile(profile)->
-          GetDefaultSearchProvider();
-  if (!!default_provider)
+      template_url_service->GetDefaultSearchProvider();
+  if (!default_provider)
     return;
 
   const int kDefaultQualityForImageSearch = 90;
