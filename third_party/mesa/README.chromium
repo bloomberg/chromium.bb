@@ -35,3 +35,6 @@ Modifications made:
 
 - Added an #include for <assert.h> at the top of
   src/gallium/auxiliary/util/u_debug.h
+
+- Fix a bug with Multiple Render Targets, see
+  https://code.google.com/p/chromium/issues/detail?id=308715
