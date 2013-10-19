@@ -28,6 +28,7 @@
 #define WebPrivateOwnPtr_h
 
 #include "WebCommon.h"
+#include "WebNonCopyable.h"
 
 #if INSIDE_BLINK
 #include "wtf/PassOwnPtr.h"
@@ -42,7 +43,7 @@ namespace WebKit {
 // Note: you must call reset(0) on the implementation side in order to delete
 // the WebCore pointer.
 template <typename T>
-class WebPrivateOwnPtr {
+class WebPrivateOwnPtr : public WebNonCopyable {
 public:
     WebPrivateOwnPtr() : m_ptr(0) {}
     ~WebPrivateOwnPtr() { BLINK_ASSERT(!m_ptr); }
@@ -84,9 +85,6 @@ public:
 
 private:
     T* m_ptr;
-
-    WebPrivateOwnPtr(const WebPrivateOwnPtr&);
-    void operator=(const WebPrivateOwnPtr&);
 };
 
 #if INSIDE_BLINK
