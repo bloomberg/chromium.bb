@@ -5,17 +5,12 @@
 #include "chrome/browser/google_apis/gdata_wapi_requests.h"
 
 #include "base/location.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/request_util.h"
-#include "chrome/browser/google_apis/time_util.h"
-#include "net/base/escape.h"
-#include "net/base/url_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
 using net::URLFetcher;
@@ -565,10 +560,7 @@ InitiateUploadNewFileRequest::InitiateUploadNewFileRequest(
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title)
-    : InitiateUploadRequestBase(sender,
-                                callback,
-                                content_type,
-                                content_length),
+    : InitiateUploadRequestBase(sender, callback, content_type, content_length),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
       title_(title) {
@@ -614,10 +606,7 @@ InitiateUploadExistingFileRequest::InitiateUploadExistingFileRequest(
     int64 content_length,
     const std::string& resource_id,
     const std::string& etag)
-    : InitiateUploadRequestBase(sender,
-                                callback,
-                                content_type,
-                                content_length),
+    : InitiateUploadRequestBase(sender, callback, content_type, content_length),
       url_generator_(url_generator),
       resource_id_(resource_id),
       etag_(etag) {
@@ -709,7 +698,6 @@ void GetUploadStatusRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
   callback_.Run(response, ParseResourceEntry(value.Pass()));
 }
-
 
 //========================== DownloadFileRequest ==========================
 

@@ -208,7 +208,6 @@ void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
     ClearRefreshToken();
   }
 
-  // TODO(zelidrag): Add retry, back-off logic when things go wrong here.
   callback.Run(error, access_token);
 }
 

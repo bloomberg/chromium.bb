@@ -287,12 +287,8 @@ void DriveUploader::OnUploadLocationReceived(
            << "] for [" << upload_file_info->file_path.value() << "]";
 
   if (code != HTTP_SUCCESS) {
-    // TODO(achuith): Handle error codes from Google Docs server.
-    if (code == HTTP_PRECONDITION) {
-      // ETag mismatch.
-      UploadFailed(upload_file_info.Pass(), HTTP_CONFLICT);
-      return;
-    }
+    if (code == HTTP_PRECONDITION)
+      code = HTTP_CONFLICT;  // ETag mismatch.
     UploadFailed(upload_file_info.Pass(), code);
     return;
   }

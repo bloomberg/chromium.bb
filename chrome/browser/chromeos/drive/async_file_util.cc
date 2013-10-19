@@ -282,8 +282,6 @@ void AsyncFileUtil::CopyFileLocal(
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // TODO(hidehiko): Support option.
-
   base::FilePath src_path = util::ExtractDrivePathFromFileSystemUrl(src_url);
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);
   if (src_path.empty() || dest_path.empty()) {
@@ -308,8 +306,6 @@ void AsyncFileUtil::MoveFileLocal(
     CopyOrMoveOption option,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // TODO(hidehiko): Support option.
 
   base::FilePath src_path = util::ExtractDrivePathFromFileSystemUrl(src_url);
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);

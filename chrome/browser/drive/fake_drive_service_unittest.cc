@@ -104,10 +104,6 @@ class FakeDriveServiceTest : public testing::Test {
   FakeDriveService fake_service_;
 };
 
-void AppendProgressCallbackResult(std::vector<int64>* values, int64 progress) {
-  values->push_back(progress);
-}
-
 TEST_F(FakeDriveServiceTest, GetAllResourceList) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));

@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"

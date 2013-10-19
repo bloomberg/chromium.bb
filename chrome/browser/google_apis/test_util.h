@@ -93,12 +93,6 @@ scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
     net::test_server::HttpRequest* out_request,
     const net::test_server::HttpRequest& request);
 
-// Returns true if |json_data| is not NULL and equals to the content in
-// |expected_json_file_path|. The failure reason will be logged into LOG(ERROR)
-// if necessary.
-bool VerifyJsonData(const base::FilePath& expected_json_file_path,
-                    const base::Value* json_data);
-
 // Parses a value of Content-Range header, which looks like
 // "bytes <start_position>-<end_position>/<length>".
 // Returns true on success.
@@ -129,8 +123,6 @@ bool ParseContentRangeHeader(const std::string& value,
 //                     :
 //
 // Note: The max arity of the supported function is 4 based on the usage.
-// TODO(hidehiko): Use replace CopyResultFromXxxCallback method defined above
-//   by this one. (crbug.com/180569).
 namespace internal {
 // Following helper templates are to support Chrome's move semantics.
 // Their goal is defining helper methods which are similar to:

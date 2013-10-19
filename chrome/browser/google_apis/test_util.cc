@@ -122,30 +122,6 @@ scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
       GetTestFilePath(remaining_path)).PassAs<net::test_server::HttpResponse>();
 }
 
-bool VerifyJsonData(const base::FilePath& expected_json_file_path,
-                    const base::Value* json_data) {
-  if (!json_data) {
-    LOG(ERROR) << "json_data is NULL";
-    return false;
-  }
-
-  std::string expected_content;
-  if (!base::ReadFileToString(expected_json_file_path, &expected_content)) {
-    LOG(ERROR) << "Failed to read file: " << expected_json_file_path.value();
-    return false;
-  }
-
-  scoped_ptr<base::Value> expected_json_data(
-      base::JSONReader::Read(expected_content));
-  if (!base::Value::Equals(expected_json_data.get(), json_data)) {
-    LOG(ERROR)
-        << "The value of json_data is different from the file's content.";
-    return false;
-  }
-
-  return true;
-}
-
 bool ParseContentRangeHeader(const std::string& value,
                              int64* start_position,
                              int64* end_position,
