@@ -59,7 +59,7 @@ TEST_F(AppCacheStorageTest, AddRemoveGroup) {
 TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
   MockAppCacheService service;
   scoped_refptr<AppCacheResponseInfo> info(
-      new AppCacheResponseInfo(service.storage(), GURL(),
+      new AppCacheResponseInfo(&service, GURL(),
                                111, new net::HttpResponseInfo,
                                kUnkownResponseDataSize));
 

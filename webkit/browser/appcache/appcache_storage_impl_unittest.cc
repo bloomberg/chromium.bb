@@ -7,26 +7,15 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_response_headers.h"
-#include "net/url_request/url_request_error_job.h"
-#include "net/url_request/url_request_job_factory_impl.h"
-#include "net/url_request/url_request_test_job.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
-#include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_database.h"
 #include "webkit/browser/appcache/appcache_entry.h"
 #include "webkit/browser/appcache/appcache_group.h"
-#include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/appcache_interceptor.h"
-#include "webkit/browser/appcache/appcache_request_handler.h"
 #include "webkit/browser/appcache/appcache_service.h"
 #include "webkit/browser/appcache/appcache_storage_impl.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -71,100 +60,7 @@ const int kDefaultEntryIdOffset = 12345;
 
 const int kMockQuota = 5000;
 
-// The Reinitialize test needs some http accessible resources to run,
-// we mock stuff inprocess for that.
-class MockHttpServer {
- public:
-  static GURL GetMockUrl(const std::string& path) {
-    return GURL("http://mockhost/" + path);
-  }
-
-  static net::URLRequestJob* CreateJob(
-      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
-    if (request->url().host() != "mockhost")
-      return new net::URLRequestErrorJob(request, network_delegate, -100);
-
-    std::string headers, body;
-    GetMockResponse(request->url().path(), &headers, &body);
-    return new net::URLRequestTestJob(
-        request, network_delegate, headers, body, true);
-  }
-
- private:
-  static void GetMockResponse(const std::string& path,
-                              std::string* headers,
-                              std::string* body) {
-    const char manifest_headers[] =
-        "HTTP/1.1 200 OK\0"
-        "Content-type: text/cache-manifest\0"
-        "\0";
-    const char page_headers[] =
-        "HTTP/1.1 200 OK\0"
-        "Content-type: text/html\0"
-        "\0";
-    const char not_found_headers[] =
-        "HTTP/1.1 404 NOT FOUND\0"
-        "\0";
-
-    if (path == "/manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
-      (*body) = "CACHE MANIFEST\n";
-    } else if (path == "/empty.html") {
-      (*headers) = std::string(page_headers, arraysize(page_headers));
-      (*body) = "";
-    } else {
-      (*headers) = std::string(not_found_headers,
-                               arraysize(not_found_headers));
-      (*body) = "";
-    }
-  }
-};
-
-class MockHttpServerJobFactory
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return MockHttpServer::CreateJob(request, network_delegate);
-  }
-};
-
-class IOThread : public base::Thread {
- public:
-  explicit IOThread(const char* name)
-      : base::Thread(name) {
-  }
-
-  virtual ~IOThread() {
-    Stop();
-  }
-
-  net::URLRequestContext* request_context() {
-    return request_context_.get();
-  }
-
-  virtual void Init() OVERRIDE {
-    scoped_ptr<net::URLRequestJobFactoryImpl> factory(
-        new net::URLRequestJobFactoryImpl());
-    factory->SetProtocolHandler("http", new MockHttpServerJobFactory);
-    job_factory_ = factory.Pass();
-    request_context_.reset(new net::TestURLRequestContext());
-    request_context_->set_job_factory(job_factory_.get());
-    AppCacheInterceptor::EnsureRegistered();
-  }
-
-  virtual void CleanUp() OVERRIDE {
-    request_context_.reset();
-    job_factory_.reset();
-  }
-
- private:
-  scoped_ptr<net::URLRequestJobFactory> job_factory_;
-  scoped_ptr<net::URLRequestContext> request_context_;
-};
-
-scoped_ptr<IOThread> io_thread;
+scoped_ptr<base::Thread> io_thread;
 scoped_ptr<base::Thread> db_thread;
 
 }  // namespace
@@ -355,13 +251,12 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   static void SetUpTestCase() {
-    // We start both threads as TYPE_IO because we also use the db_thead
-    // for the disk_cache which needs to be of TYPE_IO.
+    io_thread.reset(new base::Thread("AppCacheTest.IOThread"));
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
-    io_thread.reset(new IOThread("AppCacheTest.IOThread"));
     ASSERT_TRUE(io_thread->StartWithOptions(options));
+
     db_thread.reset(new base::Thread("AppCacheTest::DBThread"));
-    ASSERT_TRUE(db_thread->StartWithOptions(options));
+    ASSERT_TRUE(db_thread->Start());
   }
 
   static void TearDownTestCase() {
@@ -1560,181 +1455,6 @@ class AppCacheStorageImplTest : public testing::Test {
     TestFinished();
   }
 
-  // Reinitialize  -------------------------------
-  // This test is somewhat of a system integration test.
-  // It relies on running a mock http server on our IO thread,
-  // and involves other appcache classes to get some code
-  // coverage thruout when Reinitialize happens.
-
-  class MockServiceObserver : public AppCacheService::Observer {
-   public:
-    explicit MockServiceObserver(AppCacheStorageImplTest* test)
-        : test_(test) {}
-
-    virtual void OnServiceReinitialized(
-        AppCacheStorageReference* old_storage_ref) OVERRIDE {
-      observed_old_storage_ = old_storage_ref;
-      test_->ScheduleNextTask();
-    }
-
-    scoped_refptr<AppCacheStorageReference> observed_old_storage_;
-    AppCacheStorageImplTest* test_;
-  };
-
-  class MockAppCacheFrontend : public AppCacheFrontend {
-   public:
-    MockAppCacheFrontend() : error_event_was_raised_(false) {}
-
-    virtual void OnCacheSelected(
-        int host_id, const appcache::AppCacheInfo& info) OVERRIDE {}
-    virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                                 Status status) OVERRIDE {}
-    virtual void OnEventRaised(const std::vector<int>& host_ids,
-                               EventID event_id) OVERRIDE {}
-    virtual void OnProgressEventRaised(
-        const std::vector<int>& host_ids,
-        const GURL& url,
-        int num_total, int num_complete) OVERRIDE {}
-    virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const std::string& message) OVERRIDE {
-      error_event_was_raised_ = true;
-    }
-    virtual void OnLogMessage(int host_id, LogLevel log_level,
-                              const std::string& message) OVERRIDE {}
-    virtual void OnContentBlocked(
-        int host_id, const GURL& manifest_url) OVERRIDE {}
-
-    bool error_event_was_raised_;
-  };
-
-  void Reinitialize() {
-    // Unlike all of the other tests, this one actually read/write files.
-    ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
-
-    // Create a corrupt/unopenable disk_cache index file.
-    const std::string kCorruptData("deadbeef");
-    base::FilePath disk_cache_directory =
-        temp_directory_.path().AppendASCII("Cache");
-    ASSERT_TRUE(file_util::CreateDirectory(disk_cache_directory));
-    base::FilePath index_file = disk_cache_directory.AppendASCII("index");
-    EXPECT_EQ(static_cast<int>(kCorruptData.length()),
-              file_util::WriteFile(
-                  index_file, kCorruptData.data(), kCorruptData.length()));
-
-    // Create records for a degenerate cached manifest that only contains
-    // one entry for the manifest file resource.
-    {
-      AppCacheDatabase db(temp_directory_.path().AppendASCII("Index"));
-      GURL manifest_url = MockHttpServer::GetMockUrl("manifest");
-
-      AppCacheDatabase::GroupRecord group_record;
-      group_record.group_id = 1;
-      group_record.manifest_url = manifest_url;
-      group_record.origin = manifest_url.GetOrigin();
-      EXPECT_TRUE(db.InsertGroup(&group_record));
-      AppCacheDatabase::CacheRecord cache_record;
-      cache_record.cache_id = 1;
-      cache_record.group_id = 1;
-      cache_record.online_wildcard = false;
-      cache_record.update_time = kZeroTime;
-      cache_record.cache_size = kDefaultEntrySize;
-      EXPECT_TRUE(db.InsertCache(&cache_record));
-      AppCacheDatabase::EntryRecord entry_record;
-      entry_record.cache_id = 1;
-      entry_record.url = manifest_url;
-      entry_record.flags = AppCacheEntry::MANIFEST;
-      entry_record.response_id = 1;
-      entry_record.response_size = kDefaultEntrySize;
-      EXPECT_TRUE(db.InsertEntry(&entry_record));
-    }
-
-    // Recreate the service to point at the db and corruption on disk.
-    service_.reset(new AppCacheService(NULL));
-    service_->set_request_context(io_thread->request_context());
-    service_->Initialize(
-        temp_directory_.path(),
-        db_thread->message_loop_proxy().get(),
-        db_thread->message_loop_proxy().get());
-    mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
-    service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
-    delegate_.reset(new MockStorageDelegate(this));
-
-    // Additional setup to observe reinitailize happens.
-    observer_.reset(new MockServiceObserver(this));
-    service_->AddObserver(observer_.get());
-
-    // We continue after the init task is complete including the callback
-    // on the current thread.
-    FlushDbThreadTasks();
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppCacheStorageImplTest::Continue_Reinitialize,
-                   base::Unretained(this)));
-  }
-
-  void Continue_Reinitialize() {
-    const int kMockProcessId = 1;
-    backend_.reset(new AppCacheBackendImpl);
-    backend_->Initialize(service_.get(), &frontend_, kMockProcessId);
-
-    // Try to create a new appcache, the resulting update job will
-    // eventually fail when it gets to disk cache initialization.
-    backend_->RegisterHost(1);
-    AppCacheHost* host1 = backend_->GetHost(1);
-    const GURL kEmptyPageUrl(MockHttpServer::GetMockUrl("empty.html"));
-    host1->first_party_url_ = kEmptyPageUrl;
-    host1->SelectCache(kEmptyPageUrl,
-                       kNoCacheId,
-                       MockHttpServer::GetMockUrl("manifest"));
-
-    // Try to access the existing cache manifest, we do this in a seperate tab.
-    // The URLRequestJob  will eventually fail when it gets to disk
-    // cache initialization.
-    backend_->RegisterHost(2);
-    AppCacheHost* host2 = backend_->GetHost(2);
-    GURL manifest_url = MockHttpServer::GetMockUrl("manifest");
-    request_.reset(
-        service()->request_context()->CreateRequest(manifest_url, NULL));
-    AppCacheInterceptor::SetExtraRequestInfo(
-        request_.get(), service_.get(),
-        backend_->process_id(), host2->host_id(),
-        ResourceType::MAIN_FRAME);
-    request_->Start();
-
-    PushNextTask(base::Bind(
-        &AppCacheStorageImplTest::Verify_Reinitialized,
-        base::Unretained(this)));
-  }
-
-  void Verify_Reinitialized() {
-    // Verify we got notified of reinit and a new storage instance is created,
-    // and that the old data has been deleted.
-    EXPECT_TRUE(observer_->observed_old_storage_.get());
-    EXPECT_TRUE(observer_->observed_old_storage_->storage() != storage());
-    EXPECT_FALSE(PathExists(
-        temp_directory_.path().AppendASCII("Cache").AppendASCII("index")));
-    EXPECT_FALSE(PathExists(
-        temp_directory_.path().AppendASCII("Index")));
-
-    // Verify that the hosts saw appropriate events.
-    EXPECT_TRUE(frontend_.error_event_was_raised_);
-    AppCacheHost* host1 = backend_->GetHost(1);
-    EXPECT_FALSE(host1->associated_cache());
-    EXPECT_FALSE(host1->group_being_updated_);
-    EXPECT_TRUE(host1->disabled_storage_reference_.get());
-
-    AppCacheHost* host2 = backend_->GetHost(2);
-    EXPECT_EQ(1, host2->main_resource_cache_->cache_id());
-    EXPECT_TRUE(host2->disabled_storage_reference_.get());
-
-    // Cleanup and claim victory.
-    service_->RemoveObserver(observer_.get());
-    request_.reset();
-    backend_.reset();
-    observer_.reset();
-    TestFinished();
-  }
-
   // Test case helpers --------------------------------------------------
 
   AppCacheService* service() {
@@ -1800,13 +1520,6 @@ class AppCacheStorageImplTest : public testing::Test {
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> cache_;
   scoped_refptr<AppCache> cache2_;
-
-  // Specifically for the Reinitalize test.
-  base::ScopedTempDir temp_directory_;
-  scoped_ptr<MockServiceObserver> observer_;
-  MockAppCacheFrontend frontend_;
-  scoped_ptr<AppCacheBackendImpl> backend_;
-  scoped_ptr<net::URLRequest> request_;
 };
 
 
@@ -1926,10 +1639,6 @@ TEST_F(AppCacheStorageImplTest, FindFallbackPatternMatchInWorkingSet) {
 TEST_F(AppCacheStorageImplTest, FindFallbackPatternMatchInDatabase) {
   RunTestOnIOThread(
       &AppCacheStorageImplTest::FindFallbackPatternMatchInDatabase);
-}
-
-TEST_F(AppCacheStorageImplTest, Reinitalize) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::Reinitialize);
 }
 
 // That's all folks!

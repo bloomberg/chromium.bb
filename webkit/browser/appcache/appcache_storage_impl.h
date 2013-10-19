@@ -114,7 +114,6 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   void OnDeletedOneResponse(int rv);
   void OnDiskCacheInitialized(int rv);
-  void CallReinitialize();
 
   // Sometimes we can respond without having to query the database.
   bool FindResponseForMainRequestInGroup(

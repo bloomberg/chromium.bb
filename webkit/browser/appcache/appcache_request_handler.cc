@@ -31,7 +31,7 @@ AppCacheRequestHandler::~AppCacheRequestHandler() {
 
 AppCacheStorage* AppCacheRequestHandler::storage() const {
   DCHECK(host_);
-  return host_->storage();
+  return host_->service()->storage();
 }
 
 void AppCacheRequestHandler::GetExtraResponseInfo(

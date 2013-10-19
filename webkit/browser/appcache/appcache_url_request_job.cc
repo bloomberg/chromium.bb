@@ -279,15 +279,13 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
 
     NotifyHeadersComplete();
   } else {
-    if (storage_->service()->storage() == storage_) {
-      // A resource that is expected to be in the appcache is missing.
-      // See http://code.google.com/p/chromium/issues/detail?id=50657
-      // Instead of failing the request, we restart the request. The retry
-      // attempt will fallthru to the network instead of trying to load
-      // from the appcache.
-      storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
-                                                 entry_.response_id());
-    }
+    // A resource that is expected to be in the appcache is missing.
+    // See http://code.google.com/p/chromium/issues/detail?id=50657
+    // Instead of failing the request, we restart the request. The retry
+    // attempt will fallthru to the network instead of trying to load
+    // from the appcache.
+    storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
+                                               entry_.response_id());
     cache_entry_not_found_ = true;
     NotifyRestartRequired();
   }
@@ -345,10 +343,8 @@ void AppCacheURLRequestJob::OnReadComplete(int result) {
   if (result == 0) {
     NotifyDone(net::URLRequestStatus());
   } else if (result < 0) {
-    if (storage_->service()->storage() == storage_) {
-      storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
-                                                 entry_.response_id());
-    }
+    storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
+                                               entry_.response_id());
     NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
   } else {
     SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
@@ -375,10 +371,6 @@ void AppCacheURLRequestJob::Kill() {
       storage_ = NULL;
     }
     host_ = NULL;
-    info_ = NULL;
-    cache_ = NULL;
-    group_ = NULL;
-    range_response_info_.reset();
     net::URLRequestJob::Kill();
     weak_factory_.InvalidateWeakPtrs();
   }

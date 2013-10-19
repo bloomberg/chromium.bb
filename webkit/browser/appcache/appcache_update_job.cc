@@ -302,14 +302,10 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
       master_entries_completed_(0),
       url_fetches_completed_(0),
       manifest_fetcher_(NULL),
-      stored_state_(UNSTORED),
-      storage_(service->storage()) {
-    service_->AddObserver(this);
+      stored_state_(UNSTORED) {
 }
 
 AppCacheUpdateJob::~AppCacheUpdateJob() {
-  if (service_)
-    service_->RemoveObserver(this);
   if (internal_state_ != COMPLETED)
     Cancel();
 
@@ -387,7 +383,7 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
 
 AppCacheResponseWriter* AppCacheUpdateJob::CreateResponseWriter() {
   AppCacheResponseWriter* writer =
-      storage_->CreateResponseWriter(manifest_url_,
+      service_->storage()->CreateResponseWriter(manifest_url_,
                                                 group_->group_id());
   stored_response_ids_.push_back(writer->response_id());
   return writer;
@@ -420,8 +416,8 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
         group_->newest_complete_cache()->GetEntry(manifest_url_) : NULL;
     if (entry) {
       // Asynchronously load response info for manifest from newest cache.
-      storage_->LoadResponseInfo(manifest_url_, group_->group_id(),
-                                 entry->response_id(), this);
+      service_->storage()->LoadResponseInfo(manifest_url_, group_->group_id(),
+                                            entry->response_id(), this);
     } else {
       manifest_fetcher_->Start();
     }
@@ -461,7 +457,7 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(
     ContinueHandleManifestFetchCompleted(false);
   } else if ((response_code == 404 || response_code == 410) &&
              update_type_ == UPGRADE_ATTEMPT) {
-    storage_->MakeGroupObsolete(group_, this);  // async
+    service_->storage()->MakeGroupObsolete(group_, this);  // async
   } else {
     const char* kFormatString = "Manifest fetch failed (%d) %s";
     std::string message = base::StringPrintf(kFormatString, response_code,
@@ -512,7 +508,8 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
 
   // Proceed with update process. Section 6.9.4 steps 8-20.
   internal_state_ = DOWNLOADING;
-  inprogress_cache_ = new AppCache(storage_, storage_->NewCacheId());
+  inprogress_cache_ = new AppCache(service_->storage(),
+                                   service_->storage()->NewCacheId());
   BuildUrlFileList(manifest);
   inprogress_cache_->InitializeWithManifest(&manifest);
 
@@ -759,7 +756,8 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
 
   // TODO(michaeln): dcheck is fishing for clues to crbug/95101
   DCHECK_EQ(manifest_url_, group_->manifest_url());
-  storage_->StoreGroupAndNewestCache(group_, newest_cache.get(), this);
+  service_->storage()
+      ->StoreGroupAndNewestCache(group_, newest_cache.get(), this);  // async
 }
 
 void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
@@ -845,37 +843,24 @@ void AppCacheUpdateJob::OnDestructionImminent(AppCacheHost* host) {
   hosts.erase(it);
 }
 
-void AppCacheUpdateJob::OnServiceReinitialized(
-    AppCacheStorageReference* old_storage_ref) {
-  // We continue to use the disabled instance, but arrange for its
-  // deletion when its no longer needed.
-  if (old_storage_ref->storage() == storage_)
-    disabled_storage_reference_ = old_storage_ref;
-}
-
 void AppCacheUpdateJob::CheckIfManifestChanged() {
   DCHECK(update_type_ == UPGRADE_ATTEMPT);
-  AppCacheEntry* entry = NULL;
-  if (group_->newest_complete_cache())
-    entry = group_->newest_complete_cache()->GetEntry(manifest_url_);
+  AppCacheEntry* entry =
+      group_->newest_complete_cache()->GetEntry(manifest_url_);
   if (!entry) {
     // TODO(michaeln): This is just a bandaid to avoid a crash.
     // http://code.google.com/p/chromium/issues/detail?id=95101
-    if (service_->storage() == storage_) {
-      // Use a local variable because service_ is reset in HandleCacheFailure.
-      AppCacheService* service = service_;
-      HandleCacheFailure("Manifest entry not found in existing cache");
-      AppCacheHistograms::AddMissingManifestEntrySample();
-      service->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
-    }
+    HandleCacheFailure("Manifest entry not found in existing cache");
+    AppCacheHistograms::AddMissingManifestEntrySample();
+    service_->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
     return;
   }
 
   // Load manifest data from storage to compare against fetched manifest.
   manifest_response_reader_.reset(
-      storage_->CreateResponseReader(manifest_url_,
-                                     group_->group_id(),
-                                     entry->response_id()));
+      service_->storage()->CreateResponseReader(manifest_url_,
+                                                group_->group_id(),
+                                                entry->response_id()));
   read_manifest_buffer_ = new net::IOBuffer(kBufferSize);
   manifest_response_reader_->ReadData(
       read_manifest_buffer_.get(),
@@ -1157,9 +1142,9 @@ bool AppCacheUpdateJob::MaybeLoadFromNewestCache(const GURL& url,
   // Load HTTP headers for entry from newest cache.
   loading_responses_.insert(
       LoadingResponses::value_type(copy_me->response_id(), url));
-  storage_->LoadResponseInfo(manifest_url_, group_->group_id(),
-                             copy_me->response_id(),
-                             this);
+  service_->storage()->LoadResponseInfo(manifest_url_, group_->group_id(),
+                                        copy_me->response_id(),
+                                        this);
   // Async: wait for OnResponseInfoLoaded to complete.
   return true;
 }
@@ -1315,7 +1300,7 @@ void AppCacheUpdateJob::Cancel() {
   if (manifest_response_writer_)
     manifest_response_writer_.reset();
 
-  storage_->CancelDelegateCallbacks(this);
+  service_->storage()->CancelDelegateCallbacks(this);
 }
 
 void AppCacheUpdateJob::ClearPendingMasterEntries() {
@@ -1332,7 +1317,7 @@ void AppCacheUpdateJob::ClearPendingMasterEntries() {
 }
 
 void AppCacheUpdateJob::DiscardInprogressCache() {
-  storage_->DoomResponses(manifest_url_, stored_response_ids_);
+  service_->storage()->DoomResponses(manifest_url_, stored_response_ids_);
 
   if (!inprogress_cache_.get()) {
     // We have to undo the changes we made, if any, to the existing cache.
@@ -1352,15 +1337,13 @@ void AppCacheUpdateJob::DiscardInprogressCache() {
 }
 
 void AppCacheUpdateJob::DiscardDuplicateResponses() {
-  storage_->DoomResponses(manifest_url_, duplicate_response_ids_);
+  service_->storage()->DoomResponses(manifest_url_, duplicate_response_ids_);
 }
 
 void AppCacheUpdateJob::DeleteSoon() {
   ClearPendingMasterEntries();
   manifest_response_writer_.reset();
-  storage_->CancelDelegateCallbacks(this);
-  service_->RemoveObserver(this);
-  service_ = NULL;
+  service_->storage()->CancelDelegateCallbacks(this);
 
   // Break the connection with the group so the group cannot call delete
   // on this object after we've posted a task to delete ourselves.

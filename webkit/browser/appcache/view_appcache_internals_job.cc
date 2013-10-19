@@ -309,31 +309,16 @@ GURL ClearQuery(const GURL& url) {
 }
 
 // Simple base class for the job subclasses defined here.
-class BaseInternalsJob : public net::URLRequestSimpleJob,
-                         public AppCacheService::Observer {
+class BaseInternalsJob : public net::URLRequestSimpleJob {
  protected:
   BaseInternalsJob(net::URLRequest* request,
                    net::NetworkDelegate* network_delegate,
                    AppCacheService* service)
       : URLRequestSimpleJob(request, network_delegate),
-        appcache_service_(service),
-        appcache_storage_(service->storage()) {
-    appcache_service_->AddObserver(this);
-  }
-
-  virtual ~BaseInternalsJob() {
-    appcache_service_->RemoveObserver(this);
-  }
-
-  virtual void OnServiceReinitialized(
-      AppCacheStorageReference* old_storage_ref) OVERRIDE {
-    if (old_storage_ref->storage() == appcache_storage_)
-      disabled_storage_reference_ = old_storage_ref;
-  }
+        appcache_service_(service) {}
+  virtual ~BaseInternalsJob() {}
 
   AppCacheService* appcache_service_;
-  AppCacheStorage* appcache_storage_;
-  scoped_refptr<AppCacheStorageReference> disabled_storage_reference_;
 };
 
 // Job that lists all appcaches in the system.
@@ -474,7 +459,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
 
   virtual void Start() OVERRIDE {
     DCHECK(request_);
-    appcache_storage_->LoadOrCreateGroup(manifest_url_, this);
+    appcache_service_->storage()->LoadOrCreateGroup(manifest_url_, this);
   }
 
   // Produces a page containing the entries listing.
@@ -503,7 +488,7 @@ class ViewAppCacheJob : public BaseInternalsJob,
 
  private:
   virtual ~ViewAppCacheJob() {
-    appcache_storage_->CancelDelegateCallbacks(this);
+    appcache_service_->storage()->CancelDelegateCallbacks(this);
   }
 
   // AppCacheStorage::Delegate override
@@ -549,7 +534,7 @@ class ViewEntryJob : public BaseInternalsJob,
 
   virtual void Start() OVERRIDE {
     DCHECK(request_);
-    appcache_storage_->LoadResponseInfo(
+    appcache_service_->storage()->LoadResponseInfo(
         manifest_url_, group_id_, response_id_, this);
   }
 
@@ -588,7 +573,7 @@ class ViewEntryJob : public BaseInternalsJob,
 
  private:
   virtual ~ViewEntryJob() {
-    appcache_storage_->CancelDelegateCallbacks(this);
+    appcache_service_->storage()->CancelDelegateCallbacks(this);
   }
 
   virtual void OnResponseInfoLoaded(
@@ -605,7 +590,7 @@ class ViewEntryJob : public BaseInternalsJob,
         std::min(kLimit, response_info->response_data_size());
     response_data_ = new net::IOBuffer(amount_to_read);
 
-    reader_.reset(appcache_storage_->CreateResponseReader(
+    reader_.reset(appcache_service_->storage()->CreateResponseReader(
         manifest_url_, group_id_, response_id_));
     reader_->ReadData(
         response_data_.get(),

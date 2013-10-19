@@ -1417,7 +1417,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
   if (usage_map_.find(manifest_url.GetOrigin()) == usage_map_.end()) {
     // No need to query the database, return a new group immediately.
     scoped_refptr<AppCacheGroup> group(new AppCacheGroup(
-        this, manifest_url, NewGroupId()));
+        service_->storage(), manifest_url, NewGroupId()));
     delegate->OnGroupLoaded(group.get(), manifest_url);
     return;
   }
@@ -1807,24 +1807,17 @@ void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
     AppCacheHistograms::CountInitResult(AppCacheHistograms::DISK_CACHE_ERROR);
 
     // We're unable to open the disk cache, this is a fatal error that we can't
-    // really recover from. We handle it by temporarily disabling the appcache
-    // deleting the directory on disk and reinitializing the appcache system.
+    // really recover from. We handle it by disabling the appcache for this
+    // browser session and deleting the directory on disk. The next browser
+    // session should start with a clean slate.
     Disable();
-    if (!is_incognito_ && rv != net::ERR_ABORTED) {
+    if (!is_incognito_) {
       VLOG(1) << "Deleting existing appcache data and starting over.";
-      db_thread_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(base::IgnoreResult(&base::DeleteFile),
-                     cache_directory_, true),
-          base::Bind(&AppCacheStorageImpl::CallReinitialize,
-                     weak_factory_.GetWeakPtr()));
+      db_thread_->PostTask(
+          FROM_HERE, base::Bind(base::IgnoreResult(&base::DeleteFile),
+                                cache_directory_, true));
     }
   }
-}
-
-void AppCacheStorageImpl::CallReinitialize() {
-  service_->Reinitialize();
-  // note: 'this' may be deleted during reinit.
 }
 
 }  // namespace appcache

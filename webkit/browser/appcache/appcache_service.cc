@@ -427,21 +427,13 @@ void AppCacheService::CheckResponseHelper::OnReadDataComplete(int result) {
 }
 
 
-// AppCacheStorageReference ------
-
-AppCacheStorageReference::AppCacheStorageReference(
-    scoped_ptr<AppCacheStorage> storage)
-    : storage_(storage.Pass()) {}
-AppCacheStorageReference::~AppCacheStorageReference() {}
-
 // AppCacheService -------
 
 AppCacheService::AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy)
     : appcache_policy_(NULL), quota_client_(NULL), handler_factory_(NULL),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(NULL),
-      force_keep_session_state_(false),
-      was_reinitialized_(false) {
+      force_keep_session_state_(false) {
   if (quota_manager_proxy_.get()) {
     quota_client_ = new AppCacheQuotaClient(this);
     quota_manager_proxy_->RegisterClient(quota_client_);
@@ -466,28 +458,9 @@ void AppCacheService::Initialize(const base::FilePath& cache_directory,
                                  base::MessageLoopProxy* db_thread,
                                  base::MessageLoopProxy* cache_thread) {
   DCHECK(!storage_.get());
-  cache_directory_ = cache_directory;
-  db_thread_ = db_thread;
-  cache_thread_ = cache_thread;
   AppCacheStorageImpl* storage = new AppCacheStorageImpl(this);
   storage->Initialize(cache_directory, db_thread, cache_thread);
   storage_.reset(storage);
-}
-
-void AppCacheService::Reinitialize() {
-  // To avoid thrashing, we only do this once.
-  if (was_reinitialized_)
-    return;
-  was_reinitialized_ = true;
-
-  // Inform observers of about this and give them a chance to
-  // defer deletion of the old storage object.
-  scoped_refptr<AppCacheStorageReference>
-      old_storage_ref(new AppCacheStorageReference(storage_.Pass()));
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnServiceReinitialized(old_storage_ref.get()));
-
-  Initialize(cache_directory_, db_thread_, cache_thread_);
 }
 
 void AppCacheService::CanHandleMainResourceOffline(
