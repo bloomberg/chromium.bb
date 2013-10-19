@@ -84,7 +84,8 @@ def main():
   }
 
   # There are bots that are hard-coded to run some specific named tests.
-  # Convert these to the current naming conventions by overriding them in the runner.
+  # Convert these to the current naming conventions by overriding them
+  # in the runner.
   class MeasurementRunner(page_measurement_runner.PageMeasurementRunner):
     def GetModernizedTestName(self, arg):
       if arg not in old_benchmark_names:

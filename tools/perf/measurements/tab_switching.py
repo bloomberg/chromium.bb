@@ -15,7 +15,6 @@ from metrics import cpu
 from metrics import histogram_util
 from telemetry.core import util
 from telemetry.page import page_measurement
-from telemetry.page import page_runner
 
 # TODO: Revisit this test once multitab support is finalized.
 
@@ -29,33 +28,21 @@ class TabSwitching(page_measurement.PageMeasurement):
         '--enable-stats-collection-bindings'
     ])
 
+  def TabForPage(self, page, tab):
+    return tab.browser.tabs.New()
+
   def DidStartBrowser(self, browser):
     self._cpu_metric = cpu.CpuMetric(browser)
 
-  def CanRunForPage(self, page):
-    return not page.page_set.pages.index(page)
-
-  def DidNavigateToPage(self, page, tab):
-    for i in xrange(1, len(page.page_set.pages)):
-      t = tab.browser.tabs.New()
-
-      # We create a test_stub to be able to call 'navigate_steps' on pages
-      test_stub = page_measurement.PageMeasurement()
-      page_state = page_runner.PageState()
-      page_state.PreparePage(page.page_set.pages[i], t)
-      page_state.ImplicitPageNavigation(page.page_set.pages[i], t, test_stub)
-
-    # Start tracking cpu load after all pages have loaded.
-    self._cpu_metric.Start(page, tab)
-
   def MeasurePage(self, page, tab, results):
-    """Although this is called MeasurePage, we're actually using this function
-    to cycle through each tab that was opened via DidNavigateToPage and
-    then record a single histogram for the tab switching metric.
-    """
-    # Calculate the idle cpu load before any actions are done.
+    """On the last tab, cycle through each tab that was opened and then record
+    a single histogram for the tab switching metric."""
+    if len(tab.browser.tabs) != len(page.page_set.pages):
+      return
+    self._cpu_metric.Start(page, tab)
     time.sleep(.5)
     self._cpu_metric.Stop(page, tab)
+    # Calculate the idle cpu load before any actions are done.
     self._cpu_metric.AddResults(tab, results,
                                 'idle_cpu_utilization')
 
