@@ -2090,6 +2090,10 @@ const char kVideoCaptureAllowed[] = "hardware.video_capture_enabled";
 // TODO(tommi): Update comment when this is supported for all modes.
 const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 
+// A boolean pref that controls the enabled-state of hotword search voice
+// trigger.
+const char kHotwordSearchEnabled[] = "hotword.search_enabled";
+
 #if defined(OS_ANDROID)
 // Boolean that controls the global enabled-state of protected media identifier.
 const char kProtectedMediaIdentifierEnabled[] =

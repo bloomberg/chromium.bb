@@ -750,6 +750,8 @@ extern const char kAudioCaptureAllowedUrls[];
 extern const char kVideoCaptureAllowed[];
 extern const char kVideoCaptureAllowedUrls[];
 
+extern const char kHotwordSearchEnabled[];
+
 #if defined(OS_ANDROID)
 extern const char kProtectedMediaIdentifierEnabled[];
 #endif
