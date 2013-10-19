@@ -209,8 +209,6 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
       WebTextAreaElement text_area = control_element.to<WebTextAreaElement>();
       text_area.setValue(base::string16());
       text_area.dispatchFormControlChangeEvent();
-
-      // TODO(isherman): Call setAutofilled(false) once that's implemented.
     } else if (IsSelectElement(control_element)) {
       WebSelectElement select_element = control_element.to<WebSelectElement>();
 

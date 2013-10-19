@@ -546,7 +546,6 @@ void FillFormField(const FormFieldData& data,
     }
   } else if (IsTextAreaElement(*field)) {
     WebTextAreaElement text_area = field->to<WebTextAreaElement>();
-    // TODO(isherman): Call setAutofilled(true) once that is implemented.
     if (text_area.value() != data.value) {
       text_area.setValue(data.value);
       text_area.dispatchFormControlChangeEvent();
