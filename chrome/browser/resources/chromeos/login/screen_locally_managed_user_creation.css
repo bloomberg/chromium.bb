@@ -211,6 +211,10 @@ input.managed-user-creation-manager-password,
   vertical-align: top;
 }
 
+.import-pod.imported .import-pod-name {
+  color: rgb(141, 141, 141);
+}
+
 .import-pod .import-pod-image {
   border: 1px solid gray;
   display: inline;
@@ -289,6 +293,11 @@ input.managed-user-creation-manager-password,
 
 .manager-pod.focused {
   background-color: rgb(66, 129, 244);
+  opacity: 1;
+}
+
+.import-pod.imported.focused {
+  background-color: rgb(238, 238, 238);
   opacity: 1;
 }
 

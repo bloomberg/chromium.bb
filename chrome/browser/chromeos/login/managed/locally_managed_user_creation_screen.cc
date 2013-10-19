@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -30,6 +31,15 @@
 namespace chromeos {
 
 namespace {
+
+// Key for (boolean) value that indicates that user already exists on device.
+const char kUserExists[] = "exists";
+// Key for  value that indicates why user can not be imported.
+const char kUserConflict[] = "conflict";
+// User is already imported.
+const char kUserConflictImported[] = "imported";
+// There is another supervised user with same name.
+const char kUserConflictName[] = "name";
 
 const char kAvatarURLKey[] = "avatarurl";
 const char kRandomAvatarKey[] = "randomAvatar";
@@ -208,10 +218,25 @@ void LocallyManagedUserCreationScreen::ImportManagedUser(
   string16 display_name;
   std::string master_key;
   std::string avatar;
+  bool exists;
   int avatar_index = LocallyManagedUserCreationController::kDummyAvatarIndex;
   user_info->GetString(ManagedUserSyncService::kName, &display_name);
   user_info->GetString(ManagedUserSyncService::kMasterKey, &master_key);
   user_info->GetString(ManagedUserSyncService::kChromeOsAvatar, &avatar);
+  user_info->GetBoolean(kUserExists, &exists);
+
+  // We should not get here with existing user selected, so just display error.
+  if (exists) {
+    actor_->ShowErrorPage(
+        l10n_util::GetStringUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_TITLE),
+        l10n_util::GetStringUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR),
+        l10n_util::GetStringUTF16(
+            IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_BUTTON));
+    return;
+  }
+
   ManagedUserSyncService::GetAvatarIndex(avatar, &avatar_index);
 
   controller_->StartImport(display_name,
@@ -311,6 +336,28 @@ void LocallyManagedUserCreationScreen::OnLongCreationWarning() {
   }
 }
 
+bool LocallyManagedUserCreationScreen::FindUserByDisplayName(
+    const string16& display_name,
+    std::string *out_id) const {
+  if (!existing_users_.get())
+    return false;
+  for (base::DictionaryValue::Iterator it(*existing_users_.get());
+       !it.IsAtEnd(); it.Advance()) {
+    const base::DictionaryValue* user_info =
+        static_cast<const base::DictionaryValue*>(&it.value());
+    string16 user_display_name;
+    if (user_info->GetString(ManagedUserSyncService::kName,
+                             &user_display_name)) {
+      if (display_name == user_display_name) {
+        if (out_id)
+          *out_id = it.key();
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
 // It should be removed by issue 251179.
 
@@ -361,13 +408,18 @@ void LocallyManagedUserCreationScreen::OnGetManagedUsers(
     const base::DictionaryValue* users) {
   // Copy for passing to WebUI, contains only id, name and avatar URL.
   scoped_ptr<base::ListValue> ui_users(new base::ListValue());
+  SupervisedUserManager* supervised_user_manager =
+      UserManager::Get()->GetSupervisedUserManager();
 
   // Stored copy, contains all necessary information.
   existing_users_.reset(new base::DictionaryValue());
   for (base::DictionaryValue::Iterator it(*users); !it.IsAtEnd();
        it.Advance()) {
+    // Copy that would be stored in this class.
     base::DictionaryValue* local_copy =
         static_cast<base::DictionaryValue*>(it.value().DeepCopy());
+    // Copy that would be passed to WebUI. It has some extra values for
+    // displaying, but does not contain sensitive data, such as master password.
     base::DictionaryValue* ui_copy =
         static_cast<base::DictionaryValue*>(new base::DictionaryValue());
 
@@ -388,8 +440,23 @@ void LocallyManagedUserCreationScreen::OnGetManagedUsers(
       ui_copy->SetString(kAvatarURLKey, GetDefaultImageUrl(i));
     }
 
+    local_copy->SetBoolean(kUserExists, false);
+    ui_copy->SetBoolean(kUserExists, false);
+
     string16 display_name;
     local_copy->GetString(ManagedUserSyncService::kName, &display_name);
+
+    if (supervised_user_manager->FindBySyncId(it.key())) {
+      local_copy->SetBoolean(kUserExists, true);
+      ui_copy->SetBoolean(kUserExists, true);
+      local_copy->SetString(kUserConflict, kUserConflictImported);
+      ui_copy->SetString(kUserConflict, kUserConflictImported);
+    } else if (supervised_user_manager->FindByDisplayName(display_name)) {
+      local_copy->SetBoolean(kUserExists, true);
+      ui_copy->SetBoolean(kUserExists, true);
+      local_copy->SetString(kUserConflict, kUserConflictName);
+      ui_copy->SetString(kUserConflict, kUserConflictName);
+    }
     ui_copy->SetString(ManagedUserSyncService::kName, display_name);
     ui_copy->SetString("id", it.key());
 

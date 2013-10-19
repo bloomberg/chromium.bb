@@ -227,6 +227,16 @@ login.createScreen('LocallyManagedUserCreationScreen',
     update: function() {
       this.imageElement.src = this.user.avatarurl;
       this.nameElement.textContent = this.user.name;
+      if (this.user.exists) {
+        if (this.user.conflict == 'imported') {
+          this.nameElement.textContent =
+              loadTimeData.getStringF('importUserExists', this.user.name);
+        } else {
+          this.nameElement.textContent =
+              loadTimeData.getStringF('importUsernameExists', this.user.name);
+        }
+      }
+      this.classList.toggle('imported', this.user.exists);
     },
 
     /**
@@ -302,6 +312,48 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.selectedPod_ = null;
     },
 
+    scrollIntoView: function(pod) {
+      scroller = this.parentNode;
+      var itemHeight = pod.getBoundingClientRect().height;
+      var scrollTop = scroller.scrollTop;
+      var top = pod.offsetTop - scroller.offsetTop;
+      var clientHeight = scroller.clientHeight;
+
+      var self = scroller;
+
+      // Function to adjust the tops of viewport and row.
+      function scrollToAdjustTop() {
+        self.scrollTop = top;
+        return true;
+      };
+      // Function to adjust the bottoms of viewport and row.
+      function scrollToAdjustBottom() {
+        var cs = getComputedStyle(self);
+        var paddingY = parseInt(cs.paddingTop, 10) +
+                       parseInt(cs.paddingBottom, 10);
+
+        if (top + itemHeight > scrollTop + clientHeight - paddingY) {
+          self.scrollTop = top + itemHeight - clientHeight + paddingY;
+          return true;
+        }
+        return false;
+      };
+
+      // Check if the entire of given indexed row can be shown in the viewport.
+      if (itemHeight <= clientHeight) {
+        if (top < scrollTop)
+          return scrollToAdjustTop();
+        if (scrollTop + clientHeight < top + itemHeight)
+          return scrollToAdjustBottom();
+      } else {
+        if (scrollTop < top)
+          return scrollToAdjustTop();
+        if (top + itemHeight < scrollTop + clientHeight)
+          return scrollToAdjustBottom();
+      }
+      return false;
+    },
+
     /**
      * @param {Element} podToSelect - pod to select, can be null.
      */
@@ -319,15 +371,33 @@ login.createScreen('LocallyManagedUserCreationScreen',
         return;
       podToSelect.classList.add('focused');
       var screen = $('managed-user-creation');
-      screen.getScreenButton('import').disabled = !this.selectedPod_;
-      chrome.send('userSelectedForImportInManagedUserCreationFlow',
-                  [podToSelect.user.id]);
+      if (!this.selectedPod_) {
+        screen.getScreenButton('import').disabled = true;
+      } else {
+        screen.getScreenButton('import').disabled =
+            this.selectedPod_.user.exists;
+        if (!this.selectedPod_.user.exists) {
+          chrome.send('userSelectedForImportInManagedUserCreationFlow',
+                      [podToSelect.user.id]);
+        }
+      }
+    },
+
+    selectUser: function(user_id) {
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        if (pod.user.id == user_id) {
+          this.selectPod(pod);
+          this.scrollIntoView(pod);
+          break;
+        }
+      }
     },
   };
 
   return {
     EXTERNAL_API: [
       'loadManagers',
+      'managedUserSuggestImport',
       'managedUserNameError',
       'managedUserNameOk',
       'showErrorPage',
@@ -351,6 +421,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
     importList_: null,
 
     currentPage_: null,
+    imagesRequested_: false,
 
     // Contains data that can be auto-shared with handler.
     context_: {},
@@ -447,7 +518,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
           'webkitTransitionEnd', function(e) {
             previewElement.classList.remove('animation');
           });
-      chrome.send('supervisedUserGetImages');
     },
 
     buttonIds: [],
@@ -742,6 +812,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @param {string} errorText - reason why this name is invalid.
      */
     managedUserNameError: function(name, errorText) {
+      this.disabled = false;
       this.lastIncorrectUserName_ = name;
       this.lastVerifiedName_ = null;
 
@@ -755,7 +826,36 @@ login.createScreen('LocallyManagedUserCreationScreen',
             12, 4);
         this.setButtonDisabledStatus('next', true);
       }
+    },
+
+    managedUserSuggestImport: function(name, user_id) {
       this.disabled = false;
+      this.lastIncorrectUserName_ = name;
+      this.lastVerifiedName_ = null;
+
+      var userNameField = $('managed-user-creation-name');
+      var creationScreen = this;
+
+      if (userNameField.value == this.lastIncorrectUserName_) {
+        this.nameErrorVisible = true;
+        var link = this.ownerDocument.createElement('div');
+        link.innerHTML = loadTimeData.getStringF(
+            'importBubbleText',
+            '<a class="signin-link" href="#">',
+            name,
+            '</a>');
+        link.querySelector('.signin-link').addEventListener('click',
+            function(e) {
+              creationScreen.handleSuggestImport_(user_id);
+              e.stopPropagation();
+            });
+        $('bubble').showContentForElement(
+            $('managed-user-creation-name'),
+            cr.ui.Bubble.Attachment.RIGHT,
+            link,
+            12, 4);
+        this.setButtonDisabledStatus('next', true);
+      }
     },
 
     /**
@@ -850,6 +950,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.disabled = false;
       this.updateText_();
       $('bubble').hide();
+      if (!this.imagesRequested_) {
+        chrome.send('supervisedUserGetImages');
+        this.imagesRequested_ = true;
+      }
       var pageNames = ['intro',
                        'manager',
                        'username',
@@ -904,6 +1008,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
         chrome.send('supervisedUserSelectImage',
                     [selected.url, 'default']);
         this.getScreenElement('image-grid').redraw();
+        this.checkUserName_();
         this.updateNextButtonForUser_();
         this.getScreenElement('name').focus();
         this.getScreenElement('import-link').hidden =
@@ -914,7 +1019,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
       if (visiblePage == 'import') {
         this.getScreenElement('create-link').hidden = false;
         this.getScreenButton('import').disabled =
-            !this.importList_.selectedPod_;
+            !this.importList_.selectedPod_ ||
+            this.importList_.selectedPod_.user.exists;
       }
       chrome.send('currentSupervisedUserPage', [this.currentPage_]);
     },
@@ -955,8 +1061,16 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.setVisiblePage_('import');
     },
 
+    handleSuggestImport_: function(user_id) {
+      this.setVisiblePage_('import');
+      this.importList_.selectUser(user_id);
+    },
+
     createLinkPressed_: function() {
       this.setVisiblePage_('username');
+      this.lastIncorrectUserName_ = null;
+      this.lastVerifiedName_ = null;
+      this.checkUserName_();
     },
 
     prevButtonPressed_: function() {
@@ -1247,6 +1361,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var userList = users;
 
       userList.sort(function(a, b) {
+        // Put existing users last.
+        if (a.exists != b.exists)
+          return a.exists ? 1 : -1;
+        // Sort rest by name.
         return a.name.localeCompare(b.name, [], {sensitivity: 'base'});
       });
 

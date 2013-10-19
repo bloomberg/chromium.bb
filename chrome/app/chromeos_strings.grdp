@@ -621,6 +621,15 @@ Press any key to continue exploring.
   <message name="IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING" desc="Warning text that is shown on login screen trying to sign in as a supervised user that has expired token">
     This supervised user may have been deleted or disabled by the manager. Please contact the manager if you would like to continue signing in as this user.
   </message>
+  <message name="IDS_SUPERVISED_USER_IMPORT_USER_EXIST" desc="In list of supervised users eligible for import, this text indicates that user already is already imported on device.">
+    <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> (already on this device)
+  </message>
+  <message name="IDS_SUPERVISED_USER_IMPORT_USERNAME_EXIST" desc="In list of supervised users eligible for import, this text indicates that another supervised user with same name already exists on device.">
+    <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> (name used on this device)
+  </message>
+  <message name="IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT" desc="Text shown in notification bubble when user enters name of user that can be imported.">
+    Looks like you're already managing a user by that name. Did you want to <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>import <ph name="USER_DISPLAY_NAME">$2<ex>John</ex></ph> to this device<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>?
+  </message>
   <message name="IDS_LOCAL_STATE_ERROR_TEXT_0" desc="Text for notification that Local State file is corrupted and powerwash is required.">
     Unfortunately, <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is unable to recover your settings. To fix the error, <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> must reset your device with Powerwash.
   </message>

@@ -41,6 +41,12 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
         const string16& display_name,
         const std::string& managed_user_password) = 0;
 
+    // Look up if user with name |display_name| already exist and can be
+    // imported. Returns user ID in |out_id|. Returns true if user was found,
+    // false otherwise.
+    virtual bool FindUserByDisplayName(const string16& display_name,
+                                       std::string *out_id) const = 0;
+
     // Starts managed user import flow for user identified with |user_id|.
     virtual void ImportManagedUser(const std::string& user_id) = 0;
 

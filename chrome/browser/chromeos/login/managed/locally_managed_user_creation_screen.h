@@ -76,6 +76,8 @@ class LocallyManagedUserCreationScreen
       const std::string& manager_password) OVERRIDE;
   virtual void AbortFlow() OVERRIDE;
   virtual void FinishFlow() OVERRIDE;
+  virtual bool FindUserByDisplayName(const string16& display_name,
+                                     std::string *out_id) const OVERRIDE;
   virtual void OnPageSelected(const std::string& page) OVERRIDE;
 
   // LocallyManagedUserController::StatusConsumer overrides.

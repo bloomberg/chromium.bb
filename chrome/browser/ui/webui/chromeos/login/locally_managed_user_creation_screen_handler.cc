@@ -118,6 +118,10 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_PROFILES_IMPORT_EXISTING_MANAGED_USER_LINK);
   builder->Add("createSupervisedUserLink",
                IDS_CREATE_NEW_USER_LINK);
+  builder->Add("importBubbleText", IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT);
+  builder->Add("importUserExists", IDS_SUPERVISED_USER_IMPORT_USER_EXIST);
+  builder->Add("importUsernameExists",
+               IDS_SUPERVISED_USER_IMPORT_USERNAME_EXIST);
 
   builder->Add("managementURL", chrome::kSupervisedUserManagementDisplayURL);
 
@@ -263,6 +267,7 @@ void LocallyManagedUserCreationScreenHandler::HandleImportUserSelected(
 
 void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
     const string16& name) {
+  std::string user_id;
   if (NULL != UserManager::Get()->GetSupervisedUserManager()->
           FindByDisplayName(CollapseWhitespace(name, true))) {
     CallJS("managedUserNameError", name,
@@ -272,6 +277,9 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
     CallJS("managedUserNameError", name,
            l10n_util::GetStringUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ILLEGAL_USERNAME));
+  } else if (delegate_ && delegate_->FindUserByDisplayName(
+                 CollapseWhitespace(name, true), &user_id)) {
+    CallJS("managedUserSuggestImport", name, user_id);
   } else {
     CallJS("managedUserNameOk", name);
   }
