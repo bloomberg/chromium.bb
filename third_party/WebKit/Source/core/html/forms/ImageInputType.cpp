@@ -85,18 +85,23 @@ bool ImageInputType::supportsValidation() const
     return false;
 }
 
+static IntPoint extractClickLocation(Event* event)
+{
+    if (!event->underlyingEvent() || !event->underlyingEvent()->isMouseEvent())
+        return IntPoint();
+    MouseEvent* mouseEvent = toMouseEvent(event->underlyingEvent());
+    if (mouseEvent->isSimulated())
+        return IntPoint();
+    return IntPoint(mouseEvent->offsetX(), mouseEvent->offsetY());
+}
+
 void ImageInputType::handleDOMActivateEvent(Event* event)
 {
     RefPtr<HTMLInputElement> element = this->element();
     if (element->isDisabledFormControl() || !element->form())
         return;
     element->setActivatedSubmit(true);
-    if (event->underlyingEvent() && event->underlyingEvent()->isMouseEvent()) {
-        MouseEvent* mouseEvent = toMouseEvent(event->underlyingEvent());
-        m_clickLocation = IntPoint(mouseEvent->offsetX(), mouseEvent->offsetY());
-    } else {
-        m_clickLocation = IntPoint();
-    }
+    m_clickLocation = extractClickLocation(event);
     element->form()->prepareForSubmission(event); // Event handlers can run.
     element->setActivatedSubmit(false);
     event->setDefaultHandled();
