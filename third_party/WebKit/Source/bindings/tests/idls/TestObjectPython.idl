@@ -99,8 +99,8 @@ interface TestObjectPython {
     attribute Promise promiseAttribute;
 
     // Extended attributes
-    [ActivityLogging=Access] readonly attribute long activityLogAccessReadonlyLongAttribute;
-    [ActivityLogging=Getter] readonly attribute long activityLogGetterReadonlyLongAttribute;
+    [ActivityLogging=AccessForAllWorlds] readonly attribute long activityLogAccessReadonlyLongAttribute;
+    [ActivityLogging=GetterForAllWorlds] readonly attribute long activityLogGetterReadonlyLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CheckSecurityForNode] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;  // All uses are readonly
@@ -129,9 +129,9 @@ interface TestObjectPython {
     [NotEnumerable] readonly attribute long notEnumerableReadonlyLongAttribute;
     [PerContextEnabled=FeatureName] readonly attribute long perContextEnabledReadonlyLongAttribute;
     [PerWorldBindings] readonly attribute long perWorldBindingsReadonlyLongAttribute;  // FIXME: when implement setters, also include a [PerWorldBindings] *readonly* attribute (to check configuration line)
-    [ActivityLogging=Access, PerWorldBindings] readonly attribute long activityLoggingAccessPerWorldBindingsReadonlyLongAttribute;
+    [ActivityLogging=AccessForAllWorlds, PerWorldBindings] readonly attribute long activityLoggingAccessPerWorldBindingsReadonlyLongAttribute;
     [ActivityLogging=AccessForIsolatedWorlds, PerWorldBindings] readonly attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsReadonlyLongAttribute;
-    [ActivityLogging=Getter, PerWorldBindings] readonly attribute long activityLoggingGetterPerWorldBindingsReadonlyLongAttribute;
+    [ActivityLogging=GetterForAllWorlds, PerWorldBindings] readonly attribute long activityLoggingGetterPerWorldBindingsReadonlyLongAttribute;
     [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] readonly attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsReadonlyLongAttribute;
     [RaisesException] readonly attribute long raisesExceptionReadonlyLongAttribute;
     [Reflect] readonly attribute TestInterface reflectReadonlyTestInterfaceAttribute;

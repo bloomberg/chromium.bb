@@ -65,7 +65,6 @@
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/UnusedParam.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 

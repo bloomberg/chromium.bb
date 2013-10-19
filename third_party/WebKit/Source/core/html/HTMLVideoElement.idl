@@ -35,11 +35,11 @@
     readonly attribute boolean webkitSupportsFullscreen;
     readonly attribute boolean webkitDisplayingFullscreen;
 
-    [RaisesException, PerWorldBindings, ActivityLogging=Access] void webkitEnterFullscreen();
+    [RaisesException, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitEnterFullscreen();
     void webkitExitFullscreen();
 
     // Note the different capitalization of the "S" in FullScreen.
-    [RaisesException, PerWorldBindings, ActivityLogging=Access] void webkitEnterFullScreen();
+    [RaisesException, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitEnterFullScreen();
     void webkitExitFullScreen();
 
     // The number of frames that have been decoded and made available for

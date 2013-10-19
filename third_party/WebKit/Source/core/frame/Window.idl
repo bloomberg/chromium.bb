@@ -196,7 +196,7 @@
     attribute EventHandler onwebkitanimationiteration;
     attribute EventHandler onwebkitanimationstart;
     attribute EventHandler onwebkittransitionend;
-    [ActivityLogging=Setter] attribute EventHandler onwheel;
+    [ActivityLogging=SetterForAllWorlds] attribute EventHandler onwheel;
 
     [DeprecateAs=CaptureEvents] void captureEvents();
     [DeprecateAs=ReleaseEvents] void releaseEvents();

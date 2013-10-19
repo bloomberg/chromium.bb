@@ -189,7 +189,7 @@ callback CustomElementConstructor = Element ();
     attribute EventHandler onwebkitfullscreenerror;
     attribute EventHandler onwebkitpointerlockchange;
     attribute EventHandler onwebkitpointerlockerror;
-    [ActivityLogging=Setter] attribute EventHandler onwheel;
+    [ActivityLogging=SetterForAllWorlds] attribute EventHandler onwheel;
 
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,
                                                [Default=Undefined] optional EventTarget target,

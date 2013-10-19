@@ -1303,9 +1303,7 @@ sub GenerateActivityLogging
 
     my $interfaceName = $interface->name;
 
-    AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8DOMActivityLogger.h");
-    AddToImplIncludes("wtf/Vector.h");
 
     my $code = "";
     if ($accessType eq "Method") {

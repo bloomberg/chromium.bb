@@ -124,10 +124,10 @@
 
     // Mozilla version
     const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    [RuntimeEnabled=Fullscreen, PerWorldBindings, ActivityLogging=Access] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
+    [RuntimeEnabled=Fullscreen, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
 
     // W3C version
-    [RuntimeEnabled=Fullscreen, PerWorldBindings, ActivityLogging=Access] void webkitRequestFullscreen();
+    [RuntimeEnabled=Fullscreen, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitRequestFullscreen();
 
     void webkitRequestPointerLock();
 
@@ -150,7 +150,7 @@
     [RuntimeEnabled=Touch] attribute EventHandler ontouchstart;
     attribute EventHandler onwebkitfullscreenchange;
     attribute EventHandler onwebkitfullscreenerror;
-    [ActivityLogging=Setter] attribute EventHandler onwheel;
+    [ActivityLogging=SetterForAllWorlds] attribute EventHandler onwheel;
 };
 
 Element implements ParentNode;

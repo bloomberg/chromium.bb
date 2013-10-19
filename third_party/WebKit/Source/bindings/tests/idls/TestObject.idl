@@ -280,19 +280,19 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [PerWorldBindings] void overloadedPerWorldMethod(long longArg);
     [PerWorldBindings] void overloadedPerWorldMethod(DOMString strArg, long longArg);
 
-    [ActivityLogging=Access] void activityLoggedMethod1(long longArg);
-    [PerWorldBindings, ActivityLogging=Access] void activityLoggedMethod2(long longArg);
+    [ActivityLogging=AccessForAllWorlds] void activityLoggedMethod1(long longArg);
+    [PerWorldBindings, ActivityLogging=AccessForAllWorlds] void activityLoggedMethod2(long longArg);
     [PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] void activityLoggedInIsolatedWorldMethod(long longArg);
-    [PerWorldBindings, ActivityLogging=Access] void overloadedActivityLoggedMethod(long longArg);
-    [PerWorldBindings, ActivityLogging=Access] void overloadedActivityLoggedMethod(DOMString strArg, long longArg);
-    [ActivityLogging=Access] attribute long activityLoggedAttr1;
-    [PerWorldBindings, ActivityLogging=Access] attribute long activityLoggedAttr2;
+    [PerWorldBindings, ActivityLogging=AccessForAllWorlds] void overloadedActivityLoggedMethod(long longArg);
+    [PerWorldBindings, ActivityLogging=AccessForAllWorlds] void overloadedActivityLoggedMethod(DOMString strArg, long longArg);
+    [ActivityLogging=AccessForAllWorlds] attribute long activityLoggedAttr1;
+    [PerWorldBindings, ActivityLogging=AccessForAllWorlds] attribute long activityLoggedAttr2;
     [PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttr;
-    [ActivityLogging=Setter] attribute long activityLoggedAttrSetter1;
-    [PerWorldBindings, ActivityLogging=Setter] attribute long activityLoggedAttrSetter2;
+    [ActivityLogging=SetterForAllWorlds] attribute long activityLoggedAttrSetter1;
+    [PerWorldBindings, ActivityLogging=SetterForAllWorlds] attribute long activityLoggedAttrSetter2;
     [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttrSetter;
-    [ActivityLogging=Getter] attribute long activityLoggedAttrGetter1;
-    [PerWorldBindings, ActivityLogging=Getter] attribute long activityLoggedAttrGetter2;
+    [ActivityLogging=GetterForAllWorlds] attribute long activityLoggedAttrGetter1;
+    [PerWorldBindings, ActivityLogging=GetterForAllWorlds] attribute long activityLoggedAttrGetter2;
     [PerWorldBindings, ActivityLogging=GetterForIsolatedWorlds] attribute long activityLoggedInIsolatedWorldsAttrGetter;
 
     // DeprecateAs

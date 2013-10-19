@@ -58,9 +58,9 @@ enum XMLHttpRequestResponseType {
 
     [SetterRaisesException] attribute boolean withCredentials;
 
-    [Custom, ActivityLogging=Access, RaisesException] void open(DOMString method, DOMString url, optional boolean async, optional DOMString user, optional DOMString password);
+    [Custom, ActivityLogging=AccessForAllWorlds, RaisesException] void open(DOMString method, DOMString url, optional boolean async, optional DOMString user, optional DOMString password);
 
-    [ActivityLogging=Access, RaisesException] void setRequestHeader(DOMString header, DOMString value);
+    [ActivityLogging=AccessForAllWorlds, RaisesException] void setRequestHeader(DOMString header, DOMString value);
 
     [Custom, RaisesException] void send();
 

@@ -92,12 +92,12 @@ def has_activity_logging(member, includes, access_type=None):
                    (access_type and activity_logging.startswith(access_type)))
     if not has_logging:
         return set()
-    includes.update(['bindings/v8/V8Binding.h',
-                     'bindings/v8/V8DOMActivityLogger.h',
-                     'wtf/Vector.h'])
+    includes.add('bindings/v8/V8DOMActivityLogger.h')
     if activity_logging.endswith('ForIsolatedWorlds'):
         return set([''])
-    return set(['', 'ForMainWorld'])
+    if activity_logging.endswith('ForAllWorlds'):
+        return set(['', 'ForMainWorld'])
+    raise 'Unrecognized [ActivityLogging] value: "%s"' % activity_logging
 
 
 # [CallWith]
