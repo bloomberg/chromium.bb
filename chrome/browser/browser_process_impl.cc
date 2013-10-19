@@ -373,9 +373,12 @@ void BrowserProcessImpl::EndSession() {
   MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics && local_state()) {
     metrics->RecordStartOfSessionEnd();
-
+#if !defined(OS_CHROMEOS)
     // MetricsService lazily writes to prefs, force it to write now.
+    // On ChromeOS, chrome gets killed when hangs, so no need to
+    // commit prefs::kStabilitySessionEndCompleted change immediately.
     local_state()->CommitPendingWrite();
+#endif
   }
 
   // http://crbug.com/125207
