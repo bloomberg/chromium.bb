@@ -13,8 +13,8 @@
 namespace nacl_io {
 
 EventEmitterUDP::EventEmitterUDP(size_t rsize, size_t wsize)
-    : in_fifo_(std::max<size_t>(1, rsize)),
-      out_fifo_(std::max<size_t>(1, wsize)) {
+    : in_fifo_(rsize),
+      out_fifo_(wsize) {
   UpdateStatus_Locked();
 }
 

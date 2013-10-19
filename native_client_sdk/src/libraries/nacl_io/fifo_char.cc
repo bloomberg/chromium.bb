@@ -16,11 +16,8 @@ FIFOChar::FIFOChar(size_t size)
       size_(size),
       avail_(0),
       tail_(0) {
-  if (size) {
+  if (size)
     buffer_ = new char[size];
-  } else {
-    buffer_ = NULL;
-  }
 }
 
 FIFOChar::~FIFOChar() {
@@ -51,7 +48,6 @@ bool FIFOChar::Resize(size_t len) {
   return true;
 }
 
-
 size_t FIFOChar::ReadAvailable() {
   return avail_;
 }
@@ -73,7 +69,8 @@ size_t FIFOChar::Peek(void* buf, size_t len) {
 
     ptr += read_len;
     offs += read_len;
-    if (static_cast<size_t>(offs) == size_)
+
+    if (offs == size_)
       offs = 0;
 
     out += read_len;
@@ -98,7 +95,7 @@ size_t FIFOChar::Write(const void* buf, size_t len) {
   size_t room = size_ - avail_;
   len = std::min(len, room);
 
-  size_t offs = tail_ + avail_;
+  size_t offs = (tail_ + avail_) % size_;
   while (len > 0) {
     size_t write_len = std::min(len, size_ - offs);
     memcpy(&buffer_[offs], ptr, write_len);
@@ -115,6 +112,5 @@ size_t FIFOChar::Write(const void* buf, size_t len) {
   avail_ += out;
   return out;
 }
-
 
 }  // namespace nacl_io

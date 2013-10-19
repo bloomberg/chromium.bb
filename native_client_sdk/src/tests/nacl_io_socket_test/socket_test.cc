@@ -366,6 +366,74 @@ TEST_F(SocketTest, Setsockopt) {
   ASSERT_EQ(0, setsockopt(sock1, SOL_SOCKET, SO_REUSEADDR, &reuse, len));
 }
 
+// The size of the data to send is deliberately chosen to be
+// larger than the TCP buffer in nacl_io.
+// TODO(sbc): use ioctl to discover the actual buffer size at
+// runtime.
+#define LARGE_SEND_BYTES (800 * 1024)
+TEST_F(SocketTestWithServer, LargeSend) {
+  char* outbuf = (char*)malloc(LARGE_SEND_BYTES);
+  char* inbuf = (char*)malloc(LARGE_SEND_BYTES);
+  int bytes_sent = 0;
+  int bytes_received = 0;
+
+  // Fill output buffer with ascending integers
+  int* outbuf_int = (int*)outbuf;
+  int* inbuf_int = (int*)inbuf;
+  for (int i = 0; i < LARGE_SEND_BYTES/sizeof(int); i++) {
+    outbuf_int[i] = i;
+  }
+
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+  ASSERT_EQ(0, connect(sock_, (sockaddr*) &addr, addrlen))
+      << "Failed with " << errno << ": " << strerror(errno) << "\n";
+
+  // Call send an recv until all bytes have been transfered.
+  while (bytes_received < LARGE_SEND_BYTES) {
+    if (bytes_sent < LARGE_SEND_BYTES) {
+      int sent = send(sock_, outbuf + bytes_sent,
+                      LARGE_SEND_BYTES - bytes_sent, MSG_DONTWAIT);
+      if (sent < 0)
+        ASSERT_EQ(EWOULDBLOCK, errno) << "send failed: " << strerror(errno);
+      else
+        bytes_sent += sent;
+    }
+
+    int received = recv(sock_, inbuf + bytes_received,
+                        LARGE_SEND_BYTES - bytes_received, MSG_DONTWAIT);
+    if (received < 0)
+      ASSERT_EQ(EWOULDBLOCK, errno) << "recv failed: " << strerror(errno);
+    else
+      bytes_received += received;
+  }
+
+  // Make sure there is nothing else to recv at this point
+  char dummy[10];
+  ASSERT_EQ(-1, recv(sock_, dummy, 10, MSG_DONTWAIT));
+  ASSERT_EQ(EWOULDBLOCK, errno);
+
+  int errors = 0;
+  for (int i = 0; i < LARGE_SEND_BYTES/4; i++) {
+    if (inbuf_int[i] != outbuf_int[i]) {
+      printf("%d: in=%d out=%d\n", i, inbuf_int[i], outbuf_int[i]);
+      if (errors++ > 50)
+        break;
+    }
+  }
+
+  for (int i = 0; i < LARGE_SEND_BYTES; i++) {
+    ASSERT_EQ(outbuf[i], inbuf[i]) << "cmp failed at " << i;
+  }
+
+  ASSERT_EQ(0, memcmp(inbuf, outbuf, LARGE_SEND_BYTES));
+
+  free(inbuf);
+  free(outbuf);
+}
+
 TEST_F(SocketTestUDP, Listen) {
   EXPECT_EQ(-1, listen(sock1, 10));
   EXPECT_EQ(errno, ENOTSUP);

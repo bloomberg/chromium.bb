@@ -14,8 +14,8 @@
 namespace nacl_io {
 
 EventEmitterTCP::EventEmitterTCP(size_t rsize, size_t wsize)
-    : in_fifo_(std::max<size_t>(65536, rsize)),
-      out_fifo_(std::max<size_t>(65536, wsize)) {
+    : in_fifo_(rsize),
+      out_fifo_(wsize) {
 }
 
 uint32_t EventEmitterTCP::ReadIn_Locked(char* data, uint32_t len) {

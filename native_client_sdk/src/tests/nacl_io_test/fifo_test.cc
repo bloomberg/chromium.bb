@@ -24,8 +24,8 @@ using namespace nacl_io;
 
 namespace {
 const size_t kTestSize = 32;
-const size_t kHalfSize = 16;
-const size_t kQuarterSize = 8;
+const size_t kHalfSize = kTestSize / 2;
+const size_t kQuarterSize = kTestSize / 4;
 };
 
 TEST(FIFONull, Basic) {
@@ -35,6 +35,48 @@ TEST(FIFONull, Basic) {
 
   EXPECT_LT(0, fifo.ReadAvailable());
   EXPECT_LT(0, fifo.WriteAvailable());
+}
+
+/**
+ * Test writes that start a wrapped location.  We had
+ * a bug where writes that wrapped around were fine but
+ * bytes that started at a wrapped location were being
+ * written to the wrong loction.
+ */
+TEST(FIFOChar, WriteWrapped) {
+  char temp_wr[kTestSize * 2];
+  char temp_rd[kTestSize * 2];
+  size_t wr_offs = 0;
+  size_t rd_offs = 0;
+
+  memset(temp_rd, 0, sizeof(temp_rd));
+  for (size_t index = 0; index < sizeof(temp_wr); index++)
+    temp_wr[index] = index;
+
+  FIFOChar fifo(kTestSize);
+
+  // Fill the fifo
+  wr_offs += fifo.Write(temp_wr + wr_offs, kTestSize);
+  EXPECT_EQ(kTestSize, wr_offs);
+
+  // Read 1/2 of it
+  rd_offs += fifo.Read(temp_rd + rd_offs, kHalfSize);
+  EXPECT_EQ(kHalfSize, rd_offs);
+
+  // Write the next two quaters.  The second
+  // of these calls to write start at a wrapped
+  // location 1/4 of the way into the fifo
+  wr_offs += fifo.Write(temp_wr + wr_offs, kQuarterSize);
+  EXPECT_EQ(kTestSize + kQuarterSize, wr_offs);
+  wr_offs += fifo.Write(temp_wr + wr_offs, kQuarterSize);
+  EXPECT_EQ(kTestSize + kHalfSize, wr_offs);
+
+  // Finally read all the bytes we wrote.
+  rd_offs += fifo.Read(temp_rd + rd_offs, kTestSize);
+  EXPECT_EQ(kTestSize + kHalfSize, rd_offs);
+
+  for (size_t i = 0; i < rd_offs; i++)
+    ASSERT_EQ((char)i, temp_rd[i]) << "fifo mismatch at pos:" << i;
 }
 
 TEST(FIFOChar, Wrap) {
