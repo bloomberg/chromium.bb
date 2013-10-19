@@ -49,8 +49,19 @@ static_library("gtest") {
     "platform_test.h",
   ]
 
+    if (is_mac) {
+      sources += [
+        "gtest_mac.h",
+        "gtest_mac.mm",
+        "platform_test_mac.mm",
+      ]
+    }
+
   include_dirs = [ "gtest" ]
   direct_dependent_configs = [ ":gtest_config" ]
+
+  configs -= "//build/config/compiler:chromium_code"
+  configs += "//build/config/compiler:no_chromium_code"
 }
 
 # TODO(brettw) move to testing/gmock/BUILD.gn
