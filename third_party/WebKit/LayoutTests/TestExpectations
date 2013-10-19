@@ -49,12 +49,6 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 webkit.org/b/60877 loader/navigation-while-deferring-loads.html [ Skip ]
 webkit.org/b/60877 loader/load-defer-resume-crash.html [ Skip ]
 
-# Overflowing LayoutUnits cause RenderGeometryMap assertions
-webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
-webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
-webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Skip ]
-webkit.org/b/67434 [ Debug ] fast/block/float/overhanging-tall-block.html [ Skip ]
-
 # 'ex' unit length is different among platforms.
 crbug.com/31488 [ Linux Mac ] fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent.html [ Failure ]
 
