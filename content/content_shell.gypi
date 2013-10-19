@@ -21,22 +21,21 @@
     {
       'target_name': 'content_shell_lib',
       'type': 'static_library',
-      'defines!': ['CONTENT_IMPLEMENTATION'],
       'defines': ['CONTENT_SHELL_VERSION="<(content_shell_version)"'],
       'variables': {
         'chromium_code': 1,
       },
       'dependencies': [
-        'content_app_both',
-        'content_browser',
-        'content_common',
-        'content_gpu',
-        'content_plugin',
-        'content_ppapi_plugin',
-        'content_renderer',
+        'content.gyp:content_app_both',
+        'content.gyp:content_browser',
+        'content.gyp:content_common',
+        'content.gyp:content_gpu',
+        'content.gyp:content_plugin',
+        'content.gyp:content_ppapi_plugin',
+        'content.gyp:content_renderer',
+        'content.gyp:content_utility',
+        'content.gyp:content_worker',
         'content_shell_resources',
-        'content_utility',
-        'content_worker',
         'test_support_content',
         'content_resources.gyp:content_resources',
         '../base/base.gyp:base',
@@ -355,7 +354,6 @@
       'target_name': 'content_shell',
       'type': 'executable',
       'mac_bundle': 1,
-      'defines!': ['CONTENT_IMPLEMENTATION'],
       'variables': {
         'chromium_code': 1,
       },
@@ -694,7 +692,7 @@
           'target_name': 'content_shell_java',
           'type': 'none',
           'dependencies': [
-            'content_java',
+            'content.gyp:content_java',
           ],
           'variables': {
             'java_in_dir': '../content/shell/android/java',
@@ -721,7 +719,7 @@
           'target_name': 'content_shell_apk',
           'type': 'none',
           'dependencies': [
-            'content_java',
+            'content.gyp:content_java',
             'content_java_test_support',
             'content_shell_java',
             'libcontent_shell_content_view',

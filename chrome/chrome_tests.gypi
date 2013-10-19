@@ -1882,7 +1882,7 @@
           # npapi test plugin doesn't build on android or ios
           'dependencies': [
             # build time dependency.
-            '../content/content.gyp:copy_npapi_test_plugin',
+            '../content/content_shell_and_tests.gyp:copy_npapi_test_plugin',
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
           ],
         }],
@@ -2577,7 +2577,7 @@
             'common',
             'renderer',
             '../content/content.gyp:content_gpu',
-            '../content/content.gyp:test_support_content',
+            '../content/content_shell_and_tests.gyp:test_support_content',
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
             '../base/base.gyp:test_support_perf',
@@ -2893,7 +2893,7 @@
             '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../sql/sql.gyp:sql_unittests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             'unit_tests',
             '../sync/sync.gyp:sync_unit_tests',
           ],  # 'dependencies'
@@ -2916,7 +2916,7 @@
                 'interactive_ui_tests',
                 # Disabled from running in coverage_posix.py.
                 # We need to build this during compile step, so enabling here.
-                '../content/content.gyp:content_browsertests',
+                '../content/content_shell_and_tests.gyp:content_browsertests',
                 '../courgette/courgette.gyp:courgette_unittests',
                 '../crypto/crypto.gyp:crypto_unittests',
                 '../jingle/jingle.gyp:jingle_unittests',
@@ -3025,7 +3025,7 @@
             'chrome_java_test_support',
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
-            '../content/content.gyp:content_java_test_support',
+            '../content/content_shell_and_tests.gyp:content_java_test_support',
             '../sync/sync.gyp:sync_javatests',
           ],
           'variables': {
@@ -3066,7 +3066,7 @@
           },
           'dependencies': [
             'chrome_java',
-            '../content/content.gyp:content_java_test_support',
+            '../content/content_shell_and_tests.gyp:content_java_test_support',
             '../sync/sync.gyp:sync_java',
             '../sync/sync.gyp:sync_java_test_support',
           ],

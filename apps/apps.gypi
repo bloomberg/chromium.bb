@@ -117,7 +117,7 @@
             'apps',
             '../base/base.gyp:base',
             '../content/content.gyp:content',
-            '../content/content.gyp:content_shell_lib',
+            '../content/content_shell_and_tests.gyp:content_shell_lib',
             '../skia/skia.gyp:skia',
             '../ui/shell/shell.gyp:shell',
             '../ui/views/views.gyp:views',

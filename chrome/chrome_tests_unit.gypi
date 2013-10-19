@@ -20,7 +20,7 @@
         '../base/base.gyp:test_support_base',
         '../components/components.gyp:sessions_test_support',
         '../content/content.gyp:content_app_both',
-        '../content/content.gyp:test_support_content',
+        '../content/content_shell_and_tests.gyp:test_support_content',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',

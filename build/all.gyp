@@ -232,9 +232,9 @@
             '../chrome/chrome.gyp:sync_integration_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:components_unittests',
-            '../content/content.gyp:content_browsertests',
-            '../content/content.gyp:content_shell',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_shell',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../google_apis/google_apis.gyp:google_apis_unittests',
             '../gpu/gles2_conform_support/gles2_conform_support.gyp:gles2_conform_support',
@@ -355,7 +355,7 @@
           'type': 'none',
           'dependencies': [
             '../third_party/WebKit/public/all.gyp:all_blink',
-            '../content/content.gyp:content_shell',
+            '../content/content_shell_and_tests.gyp:content_shell',
           ],
         }, # target_name: all_webkit
         {
@@ -397,8 +397,8 @@
             '../chrome/chrome.gyp:chrome',
             '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:performance_ui_tests',
-            '../content/content.gyp:content_browsertests',
-            '../content/content.gyp:content_gl_tests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_gl_tests',
             '../gpu/gpu.gyp:gl_tests',
           ],
           'conditions': [
@@ -424,8 +424,8 @@
           'type': 'none',
           'dependencies': [
             '../chrome/chrome.gyp:chrome',
-            '../content/content.gyp:content_browsertests',
-            '../content/content.gyp:content_gl_tests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_gl_tests',
             '../gpu/gpu.gyp:gl_tests',
           ],
           'conditions': [
@@ -501,8 +501,8 @@
           'dependencies': [
             'chromium_builder_qa',  # needed for perf pyauto tests
             '../chrome/chrome.gyp:browser_tests',
-            '../content/content.gyp:content_browsertests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             '../third_party/libjingle/libjingle.gyp:peerconnection_server',
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
@@ -532,19 +532,19 @@
 
             # We refer to content_shell directly rather than all_webkit
             # because we don't want the _unittests binaries.
-            '../content/content.gyp:content_shell',
+            '../content/content_shell_and_tests.gyp:content_shell',
           ],
           'conditions': [
             ['OS!="win"', {
               'dependencies': [
-                '../content/content.gyp:content_browsertests',
+                '../content/content_shell_and_tests.gyp:content_browsertests',
                 '../net/net.gyp:dns_fuzz_stub',
               ],
             }],
             ['OS=="win" and fastbuild==0 and target_arch=="ia32"', {
               'dependencies': [
                 '../chrome/chrome_syzygy.gyp:chrome_dll_syzygy',
-                '../content/content.gyp:content_shell_syzyasan',
+                '../content/content_shell_and_tests.gyp:content_shell_syzyasan',
               ],
               'conditions': [
                 ['chrome_multiple_dll==1', {
@@ -583,8 +583,8 @@
             '../chrome/chrome.gyp:unit_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:components_unittests',
-            '../content/content.gyp:content_browsertests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
             '../ipc/ipc.gyp:ipc_tests',
@@ -616,8 +616,8 @@
             '../chrome/chrome.gyp:unit_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:components_unittests',
-            '../content/content.gyp:content_browsertests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
             '../ipc/ipc.gyp:ipc_tests',
@@ -670,7 +670,7 @@
             '../chrome/chrome.gyp:unit_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:components_unittests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             '../crypto/crypto.gyp:crypto_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../ipc/ipc.gyp:ipc_tests',
@@ -709,8 +709,8 @@
             '../chrome/chrome.gyp:unit_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:components_unittests',
-            '../content/content.gyp:content_browsertests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             # mini_installer_tests depends on mini_installer. This should be
             # defined in installer.gyp.
             '../chrome/installer/mini_installer.gyp:mini_installer',
@@ -777,7 +777,7 @@
             '../base/base.gyp:base_unittests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:components_unittests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             '../crypto/crypto.gyp:crypto_unittests',
             '../ipc/ipc.gyp:ipc_tests',
             '../jingle/jingle.gyp:jingle_unittests',
@@ -800,7 +800,7 @@
             '../chrome/chrome.gyp:browser_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:components_unittests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             '../crypto/crypto.gyp:crypto_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../ipc/ipc.gyp:ipc_tests',
@@ -890,8 +890,8 @@
             '../chrome/chrome.gyp:interactive_ui_tests',
             '../chrome/chrome.gyp:unit_tests',
             '../components/components.gyp:components_unittests',
-            '../content/content.gyp:content_browsertests',
-            '../content/content.gyp:content_unittests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
