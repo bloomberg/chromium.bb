@@ -71,7 +71,7 @@
       '<(DEPTH)/url/url.gyp:url_lib',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-      'platform_derived_sources.gyp:make_derived_sources',
+      'platform_derived_sources.gyp:make_platform_derived_sources',
       'blink_common',
     ],
     'export_dependent_settings': [
@@ -89,7 +89,7 @@
     'sources': [
       '<@(platform_files)',
 
-      # Additional .cpp files from platform_derived_sources.gyp:make_derived_sources actions.
+      # Additional .cpp files from platform_derived_sources.gyp:make_platform_derived_sources actions.
       '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.

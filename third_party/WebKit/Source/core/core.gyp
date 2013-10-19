@@ -211,7 +211,7 @@
       'dependencies': [
         'webcore_prerequisites',
         '../bindings/derived_sources.gyp:bindings_derived_sources',
-        'core_derived_sources.gyp:make_derived_sources',
+        'core_derived_sources.gyp:make_core_derived_sources',
         'inspector_overlay_page',
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
@@ -256,7 +256,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSPropertyNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSValueKeywords.cpp',
 
-        # Additional .cpp files from make_derived_sources actions.
+        # Additional .cpp files from make_core_derived_sources actions.
         '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/Event.cpp',
@@ -295,7 +295,7 @@
         # Generated from HTMLMetaElement-in.cpp
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',
 
-        # Additional .cpp files from the make_derived_sources rules.
+        # Additional .cpp files from the make_core_derived_sources rules.
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/XPathGrammar.cpp',
 
@@ -358,7 +358,7 @@
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
         '../bindings/derived_sources.gyp:bindings_derived_sources',
-        'core_derived_sources.gyp:make_derived_sources',
+        'core_derived_sources.gyp:make_core_derived_sources',
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
         '../platform/blink_platform.gyp:blink_platform',

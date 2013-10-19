@@ -35,7 +35,7 @@
 
   'targets': [
     {
-      'target_name': 'make_derived_sources',
+      'target_name': 'make_platform_derived_sources',
       'type': 'none',
       'hard_dependency': 1,
       'actions': [
