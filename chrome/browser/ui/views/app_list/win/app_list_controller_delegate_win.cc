@@ -108,6 +108,7 @@ void AppListControllerDelegateWin::LaunchApp(
   AppListServiceImpl::RecordAppListAppLaunch();
 
   AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB);
+  params.desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
 
   if (source != LAUNCH_FROM_UNKNOWN &&
       extension->id() == extension_misc::kWebStoreAppId) {
