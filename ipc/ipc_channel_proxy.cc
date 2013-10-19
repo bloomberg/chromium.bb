@@ -288,14 +288,12 @@ ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
                            Listener* listener,
                            base::SingleThreadTaskRunner* ipc_task_runner)
     : context_(new Context(listener, ipc_task_runner)),
-      outgoing_message_filter_(NULL),
       did_init_(false) {
   Init(channel_handle, mode, true);
 }
 
 ChannelProxy::ChannelProxy(Context* context)
     : context_(context),
-      outgoing_message_filter_(NULL),
       did_init_(false) {
 }
 
@@ -358,8 +356,6 @@ bool ChannelProxy::Send(Message* message) {
 
   // TODO(alexeypa): add DCHECK(CalledOnValidThread()) here. Currently there are
   // tests that call Send() from a wrong thread. See http://crbug.com/163523.
-  if (outgoing_message_filter())
-    message = outgoing_message_filter()->Rewrite(message);
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging::GetInstance()->OnSendMessage(message, context_->channel_id());

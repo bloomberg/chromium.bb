@@ -23,7 +23,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/render_messages.h"
@@ -295,9 +294,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->RegisterExtension(extensions_v8::PlaybackExtension::Get());
   }
 
-  if (command_line->HasSwitch(switches::kEnableIPCFuzzing)) {
-    thread->GetChannel()->set_outgoing_message_filter(LoadExternalIPCFuzzer());
-  }
   // chrome:, chrome-search:, chrome-devtools:, and chrome-internal: pages
   // should not be accessible by normal content, and should also be unable to
   // script anything but themselves (to help limit the damage that a corrupt

@@ -808,20 +808,6 @@
             }],
           ],
         },
-        {
-          'target_name': 'ipcfuzz',
-          'type': 'loadable_module',
-          'include_dirs': [
-            '..',
-          ],
-          'dependencies': [
-            'test_support_common',
-            '../skia/skia.gyp:skia',
-          ],
-          'sources': [
-            'tools/ipclist/ipcfuzz.cc',
-          ],
-        },
       ],
     }],  # OS=="linux"
     ['OS=="win"',

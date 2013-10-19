@@ -637,9 +637,6 @@ const char kEnableInstantExtendedAPI[]      = "enable-instant-extended-api";
 // "disable-ipv6" which appears elswhere in this file.
 const char kEnableIPv6[]                    = "enable-ipv6";
 
-/// Enables the IPC fuzzer for reliability testing
-const char kEnableIPCFuzzing[]              = "enable-ipc-fuzzing";
-
 // Enables IP Pooling within the networks stack (SPDY only). When a connection
 // is needed for a domain which shares an IP with an existing connection,
 // attempt to use the existing connection.

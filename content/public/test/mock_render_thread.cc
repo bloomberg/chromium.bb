@@ -123,10 +123,6 @@ void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
   NOTREACHED() << "filter to be removed not found";
 }
 
-void MockRenderThread::SetOutgoingMessageFilter(
-    IPC::ChannelProxy::OutgoingMessageFilter* filter) {
-}
-
 void MockRenderThread::AddObserver(RenderProcessObserver* observer) {
   observers_.AddObserver(observer);
 }

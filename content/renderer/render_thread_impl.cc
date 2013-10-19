@@ -590,10 +590,6 @@ void RenderThreadImpl::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
   channel()->RemoveFilter(filter);
 }
 
-void RenderThreadImpl::SetOutgoingMessageFilter(
-    IPC::ChannelProxy::OutgoingMessageFilter* filter) {
-}
-
 void RenderThreadImpl::AddObserver(RenderProcessObserver* observer) {
   observers_.AddObserver(observer);
 }

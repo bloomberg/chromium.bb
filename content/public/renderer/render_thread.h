@@ -61,8 +61,6 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   // These map to IPC::ChannelProxy methods.
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
-  virtual void SetOutgoingMessageFilter(
-      IPC::ChannelProxy::OutgoingMessageFilter* filter) = 0;
 
   // Add/remove observers for the process.
   virtual void AddObserver(RenderProcessObserver* observer) = 0;

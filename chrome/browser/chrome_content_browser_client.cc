@@ -1478,7 +1478,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableAdviewSrcAttribute,
       switches::kEnableAppWindowControls,
       switches::kEnableBenchmarking,
-      switches::kEnableIPCFuzzing,
       switches::kEnableNaCl,
       switches::kEnableNetBenchmarking,
       switches::kEnableWatchdog,

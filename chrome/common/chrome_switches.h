@@ -184,7 +184,6 @@ extern const char kEnableGoogleNowIntegration[];
 extern const char kEnableHttp2Draft04[];
 extern const char kEnableInlineSignin[];
 extern const char kEnableInstantExtendedAPI[];
-extern const char kEnableIPCFuzzing[];
 extern const char kEnableIPPooling[];
 extern const char kEnableIPv6[];
 extern const char kEnableLocalFirstLoadNTP[];

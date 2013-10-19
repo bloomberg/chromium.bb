@@ -50,8 +50,6 @@ class MockRenderThread : public RenderThread {
   virtual int GenerateRoutingID() OVERRIDE;
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
-  virtual void SetOutgoingMessageFilter(
-      IPC::ChannelProxy::OutgoingMessageFilter* filter) OVERRIDE;
   virtual void AddObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void RemoveObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void SetResourceDispatcherDelegate(
