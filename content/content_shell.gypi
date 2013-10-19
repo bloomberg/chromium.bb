@@ -130,7 +130,6 @@
         'shell/browser/shell_speech_recognition_manager_delegate.h',
         'shell/browser/shell_url_request_context_getter.cc',
         'shell/browser/shell_url_request_context_getter.h',
-        'shell/browser/shell_views.cc',
         'shell/browser/shell_web_contents_view_delegate_android.cc',
         'shell/browser/shell_web_contents_view_delegate_creator.h',
         'shell/browser/shell_web_contents_view_delegate_gtk.cc',
@@ -219,27 +218,14 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
             '../ui/base/strings/ui_strings.gyp:ui_strings',
+            '../ui/views/controls/webview/webview.gyp:webview',
+            '../ui/views/views.gyp:views',
+            '../ui/views/views.gyp:views_test_support',
+            '../ui/ui.gyp:ui_resources',
           ],
           'sources/': [
             ['exclude', 'shell/browser/shell_gtk.cc'],
             ['exclude', 'shell/browser/shell_win.cc'],
-          ],
-          'conditions': [
-            ['toolkit_views==1', {
-              'dependencies': [
-                '../ui/views/controls/webview/webview.gyp:webview',
-                '../ui/views/views.gyp:views',
-                '../ui/views/views.gyp:views_test_support',
-                '../ui/ui.gyp:ui_resources',
-              ],
-              'sources/': [
-                ['exclude', 'shell/browser/shell_aura.cc'],
-              ],
-            }, {
-              'sources/': [
-                ['exclude', 'shell/browser/shell_views.cc'],
-              ],
-            }],
           ],
         }],  # use_aura==1
         ['chromeos==1', {
