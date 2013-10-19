@@ -314,10 +314,13 @@ public:
     LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
     void setPaginationStrut(LayoutUnit);
 
-    bool shouldBreakAtLineToAvoidWidow() const { return m_rareData && m_rareData->m_shouldBreakAtLineToAvoidWidow; }
+    bool shouldBreakAtLineToAvoidWidow() const { return m_rareData && m_rareData->m_lineBreakToAvoidWidow >= 0; }
     void clearShouldBreakAtLineToAvoidWidow() const;
-    RootInlineBox* lineBreakToAvoidWidow() const { return m_rareData ? m_rareData->m_lineBreakToAvoidWidow : 0; }
-    void setBreakAtLineToAvoidWidow(RootInlineBox*);
+    int lineBreakToAvoidWidow() const { return m_rareData ? m_rareData->m_lineBreakToAvoidWidow : -1; }
+    void setBreakAtLineToAvoidWidow(int);
+    void clearDidBreakAtLineToAvoidWidow();
+    void setDidBreakAtLineToAvoidWidow();
+    bool didBreakAtLineToAvoidWidow() const { return m_rareData && m_rareData->m_didBreakAtLineToAvoidWidow; }
 
     // The page logical offset is the object's offset from the top of the page in the page progression
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).
@@ -339,7 +342,7 @@ public:
     enum ApplyLayoutDeltaMode { ApplyLayoutDelta, DoNotApplyLayoutDelta };
     LayoutUnit logicalWidthForChild(const RenderBox* child) const { return isHorizontalWritingMode() ? child->width() : child->height(); }
     LayoutUnit logicalHeightForChild(const RenderBox* child) const { return isHorizontalWritingMode() ? child->height() : child->width(); }
-    LayoutUnit logicalTopForChild(const RenderBox* child) { return isHorizontalWritingMode() ? child->y() : child->x(); }
+    LayoutUnit logicalTopForChild(const RenderBox* child) const { return isHorizontalWritingMode() ? child->y() : child->x(); }
     void setLogicalLeftForChild(RenderBox* child, LayoutUnit logicalLeft, ApplyLayoutDeltaMode = DoNotApplyLayoutDelta);
     void setLogicalTopForChild(RenderBox* child, LayoutUnit logicalTop, ApplyLayoutDeltaMode = DoNotApplyLayoutDelta);
     LayoutUnit marginBeforeForChild(const RenderBoxModelObject* child) const { return child->marginBefore(style()); }
@@ -762,6 +765,7 @@ protected:
 
     // Pagination routines.
     virtual bool relayoutForPagination(bool hasSpecifiedPageLogicalHeight, LayoutUnit pageLogicalHeight, LayoutStateMaintainer&);
+    bool relayoutToAvoidWidows(LayoutStateMaintainer&);
 
     // Returns the logicalOffset at the top of the next page. If the offset passed in is already at the top of the current page,
     // then nextPageLogicalTop with ExcludePageBoundary will still move to the top of the next page. nextPageLogicalTop with
@@ -792,6 +796,7 @@ protected:
 
     LayoutUnit adjustForUnsplittableChild(RenderBox* child, LayoutUnit logicalOffset, bool includeMargins = false); // If the child is unsplittable and can't fit on the current page, return the top of the next page/column.
     void adjustLinePositionForPagination(RootInlineBox*, LayoutUnit& deltaOffset, RenderFlowThread*); // Computes a deltaOffset value that put a line at the top of the next page if it doesn't fit on the current page.
+    void updateRegionForLine(RootInlineBox*) const;
 
     // Adjust from painting offsets to the local coords of this renderer
     void offsetForContents(LayoutPoint&) const;
@@ -828,8 +833,8 @@ public:
             : m_paginationStrut(0)
             , m_pageLogicalOffset(0)
             , m_lineGridBox(0)
-            , m_lineBreakToAvoidWidow(0)
-            , m_shouldBreakAtLineToAvoidWidow(false)
+            , m_lineBreakToAvoidWidow(-1)
+            , m_didBreakAtLineToAvoidWidow(false)
         {
         }
 
@@ -838,9 +843,9 @@ public:
 
         RootInlineBox* m_lineGridBox;
 
-        RootInlineBox* m_lineBreakToAvoidWidow;
+        int m_lineBreakToAvoidWidow;
         OwnPtr<ShapeInsideInfo> m_shapeInsideInfo;
-        bool m_shouldBreakAtLineToAvoidWidow : 1;
+        bool m_didBreakAtLineToAvoidWidow : 1;
      };
 
 protected:

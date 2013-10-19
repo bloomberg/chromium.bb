@@ -2120,7 +2120,7 @@ void RenderBlock::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutSc
     if (needsLayout())
         return;
 
-    if (view()->layoutState()->pageLogicalHeightChanged() || (view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(this, logicalTop()) != pageLogicalOffset()) || shouldBreakAtLineToAvoidWidow())
+    if (view()->layoutState()->pageLogicalHeightChanged() || (view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(this, logicalTop()) != pageLogicalOffset()))
         layoutScope.setChildNeedsLayout(this);
 }
 
@@ -4590,6 +4590,17 @@ LayoutRect RenderBlock::columnRectAt(ColumnInfo* colInfo, unsigned index) const
     return LayoutRect(colLogicalTop, colLogicalLeft, colLogicalHeight, colLogicalWidth);
 }
 
+bool RenderBlock::relayoutToAvoidWidows(LayoutStateMaintainer& statePusher)
+{
+    if (!shouldBreakAtLineToAvoidWidow())
+        return false;
+
+    statePusher.pop();
+    setEverHadLayout(true);
+    layoutBlock(false);
+    return true;
+}
+
 bool RenderBlock::relayoutForPagination(bool hasSpecifiedPageLogicalHeight, LayoutUnit pageLogicalHeight, LayoutStateMaintainer& statePusher)
 {
     if (!hasColumns())
@@ -6117,21 +6128,42 @@ void RenderBlock::setPageLogicalOffset(LayoutUnit logicalOffset)
     m_rareData->m_pageLogicalOffset = logicalOffset;
 }
 
-void RenderBlock::setBreakAtLineToAvoidWidow(RootInlineBox* lineToBreak)
+void RenderBlock::setBreakAtLineToAvoidWidow(int lineToBreak)
 {
-    ASSERT(lineToBreak);
+    ASSERT(lineToBreak >= 0);
     if (!m_rareData)
         m_rareData = adoptPtr(new RenderBlockRareData());
-    m_rareData->m_shouldBreakAtLineToAvoidWidow = true;
+
+    ASSERT(!m_rareData->m_didBreakAtLineToAvoidWidow);
     m_rareData->m_lineBreakToAvoidWidow = lineToBreak;
+}
+
+void RenderBlock::setDidBreakAtLineToAvoidWidow()
+{
+    ASSERT(!shouldBreakAtLineToAvoidWidow());
+
+    // This function should be called only after a break was applied to avoid widows
+    // so assert |m_rareData| exists.
+    ASSERT(m_rareData);
+
+    m_rareData->m_didBreakAtLineToAvoidWidow = true;
+}
+
+void RenderBlock::clearDidBreakAtLineToAvoidWidow()
+{
+    if (!m_rareData)
+        return;
+
+    m_rareData->m_didBreakAtLineToAvoidWidow = false;
 }
 
 void RenderBlock::clearShouldBreakAtLineToAvoidWidow() const
 {
+    ASSERT(shouldBreakAtLineToAvoidWidow());
     if (!m_rareData)
         return;
-    m_rareData->m_shouldBreakAtLineToAvoidWidow = false;
-    m_rareData->m_lineBreakToAvoidWidow = 0;
+
+    m_rareData->m_lineBreakToAvoidWidow = -1;
 }
 
 void RenderBlock::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
@@ -6506,12 +6538,17 @@ void RenderBlock::adjustLinePositionForPagination(RootInlineBox* lineBox, Layout
     // still going to add a strut, so that the visible overflow fits on a single page.
     if (!pageLogicalHeight || (hasUniformPageLogicalHeight && logicalVisualOverflow.height() > pageLogicalHeight)
         || !hasNextPage(logicalOffset))
+        // FIXME: In case the line aligns with the top of the page (or it's slightly shifted downwards) it will not be marked as the first line in the page.
+        // From here, the fix is not straightforward because it's not easy to always determine when the current line is the first in the page.
         return;
     LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, ExcludePageBoundary);
 
-    if (remainingLogicalHeight < lineHeight || (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineBox)) {
-        if (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineBox)
+    int lineIndex = lineCount(lineBox);
+    if (remainingLogicalHeight < lineHeight || (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex)) {
+        if (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex) {
             clearShouldBreakAtLineToAvoidWidow();
+            setDidBreakAtLineToAvoidWidow();
+        }
         // If we have a non-uniform page height, then we have to shift further possibly.
         if (!hasUniformPageLogicalHeight && !pushToNextPageWithMinimumLogicalHeight(remainingLogicalHeight, logicalOffset, lineHeight))
             return;
@@ -6522,7 +6559,7 @@ void RenderBlock::adjustLinePositionForPagination(RootInlineBox* lineBox, Layout
         LayoutUnit totalLogicalHeight = lineHeight + max<LayoutUnit>(0, logicalOffset);
         LayoutUnit pageLogicalHeightAtNewOffset = hasUniformPageLogicalHeight ? pageLogicalHeight : pageLogicalHeightForOffset(logicalOffset + remainingLogicalHeight);
         setPageBreak(logicalOffset, lineHeight - remainingLogicalHeight);
-        if (((lineBox == firstRootBox() && totalLogicalHeight < pageLogicalHeightAtNewOffset) || (!style()->hasAutoOrphans() && style()->orphans() >= lineCount(lineBox)))
+        if (((lineBox == firstRootBox() && totalLogicalHeight < pageLogicalHeightAtNewOffset) || (!style()->hasAutoOrphans() && style()->orphans() >= lineIndex))
             && !isOutOfFlowPositioned() && !isTableCell())
             setPaginationStrut(remainingLogicalHeight + max<LayoutUnit>(0, logicalOffset));
         else {
@@ -6537,6 +6574,22 @@ void RenderBlock::adjustLinePositionForPagination(RootInlineBox* lineBox, Layout
         if (lineBox != firstRootBox() || offsetFromLogicalTopOfFirstPage())
             setPageBreak(logicalOffset, lineHeight);
     }
+}
+
+void RenderBlock::updateRegionForLine(RootInlineBox* lineBox) const
+{
+    ASSERT(lineBox);
+    lineBox->setContainingRegion(regionAtBlockOffset(lineBox->lineTopWithLeading()));
+
+    RootInlineBox* prevLineBox = lineBox->prevRootBox();
+    if (!prevLineBox)
+        return;
+
+    // This check is more accurate than the one in |adjustLinePositionForPagination| because it takes into
+    // account just the container changes between lines. The before mentioned function doesn't set the flag
+    // correctly if the line is positioned at the top of the last fragment container.
+    if (lineBox->containingRegion() != prevLineBox->containingRegion())
+        lineBox->setIsFirstAfterPageBreak(true);
 }
 
 bool RenderBlock::lineWidthForPaginatedLineChanged(RootInlineBox* rootBox, LayoutUnit lineDelta, RenderFlowThread* flowThread) const

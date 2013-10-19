@@ -1882,7 +1882,7 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
                     }
 
                     if (layoutState.flowThread())
-                        lineBox->setContainingRegion(regionAtBlockOffset(lineBox->lineTopWithLeading()));
+                        updateRegionForLine(lineBox);
                 }
             }
         }
@@ -1921,7 +1921,10 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
         resolver.setPosition(end, numberOfIsolateAncestors(end));
     }
 
-    if (paginated && !style()->hasAutoWidows()) {
+    // In case we already adjusted the line positions during this layout to avoid widows
+    // then we need to ignore the possibility of having a new widows situation.
+    // Otherwise, we risk leaving empty containers which is against the block fragmentation principles.
+    if (paginated && !style()->hasAutoWidows() && !didBreakAtLineToAvoidWidow()) {
         // Check the line boxes to make sure we didn't create unacceptable widows.
         // However, we'll prioritize orphans - so nothing we do here should create
         // a new orphan.
@@ -1973,10 +1976,12 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
                 lineBox = lineBox->prevRootBox();
 
             // We now want to break at this line. Remember for next layout and trigger relayout.
-            setBreakAtLineToAvoidWidow(lineBox);
+            setBreakAtLineToAvoidWidow(lineCount(lineBox));
             markLinesDirtyInBlockRange(lastRootBox()->lineBottomWithLeading(), lineBox->lineBottomWithLeading(), lineBox);
         }
     }
+
+    clearDidBreakAtLineToAvoidWidow();
 }
 
 void RenderBlock::linkToEndLineIfNeeded(LineLayoutState& layoutState)
@@ -1997,7 +2002,7 @@ void RenderBlock::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                     line->adjustBlockDirectionPosition(delta);
                 }
                 if (layoutState.flowThread())
-                    line->setContainingRegion(regionAtBlockOffset(line->lineTopWithLeading()));
+                    updateRegionForLine(line);
                 if (Vector<RenderBox*>* cleanLineFloats = line->floatsPtr()) {
                     Vector<RenderBox*>::iterator end = cleanLineFloats->end();
                     for (Vector<RenderBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
@@ -2036,7 +2041,7 @@ void RenderBlock::linkToEndLineIfNeeded(LineLayoutState& layoutState)
             LayoutRect logicalVisualOverflow(0, blockLogicalHeight, 1, bottomVisualOverflow - blockLogicalHeight);
             trailingFloatsLineBox->setOverflowFromLogicalRects(logicalLayoutOverflow, logicalVisualOverflow, trailingFloatsLineBox->lineTop(), trailingFloatsLineBox->lineBottom());
             if (layoutState.flowThread())
-                trailingFloatsLineBox->setContainingRegion(regionAtBlockOffset(trailingFloatsLineBox->lineTopWithLeading()));
+                updateRegionForLine(trailingFloatsLineBox);
         }
 
         const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
@@ -2237,7 +2242,7 @@ RootInlineBox* RenderBlock::determineStartPosition(LineLayoutState& layoutState,
                     curr->adjustBlockDirectionPosition(paginationDelta);
                 }
                 if (layoutState.flowThread())
-                    curr->setContainingRegion(regionAtBlockOffset(curr->lineTopWithLeading()));
+                    updateRegionForLine(curr);
             }
 
             // If a new float has been inserted before this line or before its last known float, just do a full layout.
