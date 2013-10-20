@@ -875,8 +875,14 @@ void DragAllStep2(DetachToBrowserTabDragControllerTest* test,
 
 }  // namespace
 
+// Flaky on Windows Aura. crbug.com/309054
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_DragAll DISABLED_DragAll
+#else
+#define MAYBE_DragAll DragAll
+#endif
 // Selects multiple tabs and starts dragging the window.
-IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragAll) {
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, MAYBE_DragAll) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
