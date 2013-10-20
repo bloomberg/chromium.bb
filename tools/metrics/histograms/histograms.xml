@@ -8389,6 +8389,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.FinalTcpCwnd">
+  <summary>
+    The value of the TCP cubic sender's CWND when the session is closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.OutOfOrderGapReceived">
   <summary>
     The number of missing packets between the current received packet and the

@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/metrics/histogram.h"
+
 namespace net {
 
 namespace {
@@ -44,6 +46,7 @@ TcpCubicSender::TcpCubicSender(
 }
 
 TcpCubicSender::~TcpCubicSender() {
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
 }
 
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
