@@ -211,8 +211,7 @@ LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
   if (success) {
     output_surface_lost_ = false;
 
-    if (!contents_texture_manager_ &&
-        (!settings_.impl_side_painting || !settings_.solid_color_scrollbars)) {
+    if (!contents_texture_manager_ && !settings_.impl_side_painting) {
       contents_texture_manager_ =
           PrioritizedResourceManager::Create(proxy_.get());
       surface_memory_placeholder_ =

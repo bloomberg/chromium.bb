@@ -509,21 +509,9 @@ TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
 }
 
 TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_MultiThread_DirectRenderer_ImplSidePaint) {
-  use_surface_ = false;
-  RunTest(true, false, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
        NoSurface_MultiThread_DelegatingRenderer_MainThreadPaint) {
   use_surface_ = false;
   RunTest(true, true, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       NoSurface_MultiThread_DelegatingRenderer_ImplSidePaint) {
-  use_surface_ = false;
-  RunTest(true, true, true);
 }
 
 // Surfaces don't exist with a delegating renderer.
@@ -537,12 +525,6 @@ TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
        WithSurface_MultiThread_DirectRenderer_MainThreadPaint) {
   use_surface_ = true;
   RunTest(true, false, false);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextSucceedsWithContent,
-       WithSurface_MultiThread_DirectRenderer_ImplSidePaint) {
-  use_surface_ = true;
-  RunTest(true, false, true);
 }
 
 class LayerTreeHostContextTestOffscreenContextFails
@@ -907,12 +889,6 @@ TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
 }
 
 TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
-       LoseAfterEvict_MultiThread_DirectRenderer_ImplSidePaint) {
-  lose_after_evict_ = true;
-  RunTest(true, false, true);
-}
-
-TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
        LoseAfterEvict_MultiThread_DelegatingRenderer_MainThreadPaint) {
   lose_after_evict_ = true;
   RunTest(true, true, false);
@@ -1017,7 +993,7 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources
   int times_to_lose_on_end_query_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
     LayerTreeHostContextTestLostContextWhileUpdatingResources);
 
 class LayerTreeHostContextTestLayersNotified

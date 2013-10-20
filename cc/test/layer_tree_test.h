@@ -213,37 +213,61 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);        \
   SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
 
-#define MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME)               \
+#define MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME)        \
   TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DirectRenderer_MainThreadPaint) { \
     RunTest(true, false, false);                                             \
-  }                                                                          \
+  }
+
+#define MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME)               \
+  MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME)              \
   TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DirectRenderer_ImplSidePaint) {   \
     RunTest(true, false, true);                                              \
   }                                                                          \
   class MultiThreadDirectNeedsSemicolon##TEST_FIXTURE_NAME {}
 
+#define MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME)    \
+  TEST_F(TEST_FIXTURE_NAME,                                                  \
+         RunMultiThread_DelegatingRenderer_MainThreadPaint) {                \
+    RunTest(true, true, false);                                              \
+  }
+
 #define MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
-  TEST_F(TEST_FIXTURE_NAME,                                        \
-         RunMultiThread_DelegatingRenderer_MainThreadPaint) {      \
-    RunTest(true, true, false);                                    \
-  }                                                                \
+  MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME)\
   TEST_F(TEST_FIXTURE_NAME,                                        \
          RunMultiThread_DelegatingRenderer_ImplSidePaint) {        \
     RunTest(true, true, true);                                     \
   }                                                                \
   class MultiThreadDelegatingNeedsSemicolon##TEST_FIXTURE_NAME {}
 
+#define MULTI_THREAD_NOIMPL_TEST_F(TEST_FIXTURE_NAME)                   \
+  MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME);        \
+  MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME)
+
 #define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)                   \
   MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);        \
   MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
+
+#define SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F( \
+  TEST_FIXTURE_NAME)                                           \
+  SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);     \
+  MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME)
 
 #define SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   SINGLE_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);                \
   MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME)
 
+#define SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F( \
+  TEST_FIXTURE_NAME)                                               \
+  SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME);     \
+  MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME)
+
 #define SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME) \
   SINGLE_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME);                \
   MULTI_THREAD_DELEGATING_RENDERER_TEST_F(TEST_FIXTURE_NAME)
+
+#define SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(TEST_FIXTURE_NAME)              \
+  SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME);   \
+  SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(TEST_FIXTURE_NAME)
 
 #define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
   SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TEST_FIXTURE_NAME);    \

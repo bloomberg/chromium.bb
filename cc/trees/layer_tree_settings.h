@@ -40,7 +40,6 @@ class CC_EXPORT LayerTreeSettings {
   ScrollbarAnimator scrollbar_animator;
   int scrollbar_linear_fade_delay_ms;
   int scrollbar_linear_fade_length_ms;
-  bool solid_color_scrollbars;
   SkColor solid_color_scrollbar_color;
   bool calculate_top_controls_position;
   bool use_memory_management;

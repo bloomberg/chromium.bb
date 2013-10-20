@@ -1401,10 +1401,10 @@ void LayerTreeHostImpl::SetNeedsBeginFrame(bool enable) {
 }
 
 gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
-  // The container layer bounds should be used if non-overlay scrollbars may
-  // exist since it adjusts for them.
+  // Use the root container layer bounds if it clips to them, otherwise, the
+  // true viewport size should be used.
   LayerImpl* container_layer = active_tree_->RootContainerLayer();
-  if (!settings_.solid_color_scrollbars && container_layer) {
+  if (container_layer && container_layer->masks_to_bounds()) {
     DCHECK(!top_controls_manager_);
     DCHECK_EQ(0, overdraw_bottom_height_);
     return container_layer->bounds();
@@ -1736,7 +1736,6 @@ bool LayerTreeHostImpl::DeferredInitialize(
     scoped_refptr<ContextProvider> offscreen_context_provider) {
   DCHECK(output_surface_->capabilities().deferred_gl_initialization);
   DCHECK(settings_.impl_side_painting);
-  DCHECK(settings_.solid_color_scrollbars);
   DCHECK(output_surface_->context_provider());
 
   ReleaseTreeResources();
@@ -1793,7 +1792,6 @@ bool LayerTreeHostImpl::DeferredInitialize(
 void LayerTreeHostImpl::ReleaseGL() {
   DCHECK(output_surface_->capabilities().deferred_gl_initialization);
   DCHECK(settings_.impl_side_painting);
-  DCHECK(settings_.solid_color_scrollbars);
   DCHECK(output_surface_->context_provider());
 
   ReleaseTreeResources();

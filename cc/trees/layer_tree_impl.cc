@@ -311,8 +311,6 @@ void LayerTreeImpl::ClearViewportLayers() {
 // of login that works for both scrollbar layer types. This is already planned
 // as part of the larger pinch-zoom re-factoring viewport.
 void LayerTreeImpl::UpdateSolidColorScrollbars() {
-  DCHECK(settings().solid_color_scrollbars);
-
   LayerImpl* root_scroll = RootScrollLayer();
   DCHECK(root_scroll);
   DCHECK(IsActiveTree());
@@ -343,9 +341,9 @@ void LayerTreeImpl::UpdateDrawProperties() {
   if (IsActiveTree() && RootScrollLayer() && RootContainerLayer())
     UpdateRootScrollLayerSizeDelta();
 
-  if (settings().solid_color_scrollbars &&
-      IsActiveTree() &&
-      RootScrollLayer()) {
+  if (IsActiveTree() &&
+      RootContainerLayer()
+      && !RootContainerLayer()->masks_to_bounds()) {
     UpdateSolidColorScrollbars();
   }
 

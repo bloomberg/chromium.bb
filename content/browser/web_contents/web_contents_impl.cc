@@ -589,9 +589,10 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.pinch_virtual_viewport_enabled = true;
     prefs.pinch_overlay_scrollbar_thickness = 10;
   }
+  prefs.use_solid_color_scrollbars = command_line.HasSwitch(
+      switches::kEnableOverlayScrollbars);
 
 #if defined(OS_ANDROID)
-  prefs.use_solid_color_scrollbars = true;
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
       switches::kDisableGestureRequirementForMediaPlayback);
   prefs.user_gesture_required_for_media_fullscreen = !command_line.HasSwitch(

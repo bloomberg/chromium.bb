@@ -679,6 +679,7 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
 
+  this->impl_side_painting_ = false;
   RunPixelTest(SOFTWARE_WITH_DEFAULT,
                background,
                base::FilePath(FILE_PATH_LITERAL(
@@ -709,6 +710,7 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
 
+  this->impl_side_painting_ = false;
   RunPixelTest(GL_WITH_DEFAULT,
                background,
                base::FilePath(FILE_PATH_LITERAL(
@@ -740,6 +742,7 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
 
+  this->impl_side_painting_ = false;
   RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
                                  background,
                                  green.get(),
@@ -772,6 +775,7 @@ TEST_F(LayerTreeHostReadbackDeviceScalePixelTest,
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
 
+  this->impl_side_painting_ = false;
   RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
                                  background,
                                  green.get(),
@@ -870,6 +874,7 @@ TEST_F(LayerTreeHostReadbackViaCompositeAndReadbackPixelTest,
   device_viewport_copy_subrect_ = gfx::Rect(50, 50, 100, 100);
   device_scale_factor_ = 1.f;
 
+  this->impl_side_painting_ = false;
   RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
                                  background,
                                  green.get(),
@@ -901,6 +906,7 @@ TEST_F(LayerTreeHostReadbackViaCompositeAndReadbackPixelTest,
   device_viewport_copy_subrect_ = gfx::Rect(50, 50, 100, 100);
   device_scale_factor_ = 2.f;
 
+  this->impl_side_painting_ = false;
   RunPixelTestWithReadbackTarget(SOFTWARE_WITH_DEFAULT,
                                  background,
                                  green.get(),
@@ -932,6 +938,7 @@ TEST_F(LayerTreeHostReadbackViaCompositeAndReadbackPixelTest,
   device_viewport_copy_subrect_ = gfx::Rect(50, 50, 100, 100);
   device_scale_factor_ = 1.f;
 
+  this->impl_side_painting_ = false;
   RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
                                  background,
                                  green.get(),
@@ -963,6 +970,7 @@ TEST_F(LayerTreeHostReadbackViaCompositeAndReadbackPixelTest,
   device_viewport_copy_subrect_ = gfx::Rect(50, 50, 100, 100);
   device_scale_factor_ = 2.f;
 
+  this->impl_side_painting_ = false;
   RunPixelTestWithReadbackTarget(GL_WITH_DEFAULT,
                                  background,
                                  green.get(),

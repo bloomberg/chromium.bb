@@ -364,7 +364,6 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
  public:
   ScrollbarLayerSolidColorThumbTest() {
     LayerTreeSettings layer_tree_settings;
-    layer_tree_settings.solid_color_scrollbars = true;
     host_impl_.reset(new FakeLayerTreeHostImpl(layer_tree_settings, &proxy_));
 
     const int kThumbThickness = 3;

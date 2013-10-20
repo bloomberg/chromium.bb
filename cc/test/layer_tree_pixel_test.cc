@@ -25,7 +25,8 @@ namespace cc {
 LayerTreePixelTest::LayerTreePixelTest()
     : pixel_comparator_(new ExactPixelComparator(true)),
       test_type_(GL_WITH_DEFAULT),
-      pending_texture_mailbox_callbacks_(0) {}
+      pending_texture_mailbox_callbacks_(0),
+      impl_side_painting_(true) {}
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
@@ -145,12 +146,12 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::
                 border_width,
                 rect.height() - border_width * 2),
       border_color);
-  scoped_refptr<SolidColorLayer> border_right = CreateSolidColorLayer(
-      gfx::Rect(rect.width() - border_width,
-                border_width,
-                border_width,
-                rect.height() - border_width * 2),
-      border_color);
+  scoped_refptr<SolidColorLayer> border_right =
+      CreateSolidColorLayer(gfx::Rect(rect.width() - border_width,
+                                      border_width,
+                                      border_width,
+                                      rect.height() - border_width * 2),
+                            border_color);
   scoped_refptr<SolidColorLayer> border_bottom = CreateSolidColorLayer(
       gfx::Rect(0, rect.height() - border_width, rect.width(), border_width),
       border_color);
@@ -188,7 +189,7 @@ void LayerTreePixelTest::RunPixelTest(
   content_root_ = content_root;
   readback_target_ = NULL;
   ref_file_ = file_name;
-  RunTest(true, false, true);
+  RunTest(true, false, impl_side_painting_);
 }
 
 void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
@@ -200,7 +201,7 @@ void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
   content_root_ = content_root;
   readback_target_ = target;
   ref_file_ = file_name;
-  RunTest(true, false, true);
+  RunTest(true, false, impl_side_painting_);
 }
 
 void LayerTreePixelTest::SetupTree() {

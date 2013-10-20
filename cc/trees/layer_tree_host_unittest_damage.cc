@@ -331,7 +331,8 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
   int did_swap_and_succeed_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestNoDamageDoesNotSwap);
+SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
+    LayerTreeHostDamageTestNoDamageDoesNotSwap);
 
 class LayerTreeHostDamageTestNoDamageReadbackDoesDraw
     : public LayerTreeHostDamageTest {
@@ -509,12 +510,13 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
   gfx::RectF child_damage_rect_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
+SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
 
 class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
   virtual void SetupTree() OVERRIDE {
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(gfx::Size(400, 400));
+    root_layer->SetMasksToBounds(true);
     layer_tree_host()->SetRootLayer(root_layer);
 
     scoped_refptr<Layer> content_layer = FakeContentLayer::Create(&client_);

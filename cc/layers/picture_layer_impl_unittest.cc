@@ -1106,19 +1106,10 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   EXPECT_FALSE(active_layer_->needs_post_commit_initialization());
 }
 
-// Solid color scrollbar setting is required for deferred initialization.
-class ImplSidePaintingSolidColorScrollbarSettings
-    : public ImplSidePaintingSettings {
- public:
-  ImplSidePaintingSolidColorScrollbarSettings() {
-    solid_color_scrollbars = true;
-  }
-};
-
 class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
  public:
   DeferredInitPictureLayerImplTest()
-      : PictureLayerImplTest(ImplSidePaintingSolidColorScrollbarSettings()) {}
+      : PictureLayerImplTest(ImplSidePaintingSettings()) {}
 
   virtual void InitializeRenderer() OVERRIDE {
     host_impl_.InitializeRenderer(FakeOutputSurface::CreateDeferredGL(

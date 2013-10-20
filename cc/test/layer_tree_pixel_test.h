@@ -99,6 +99,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   scoped_ptr<SkBitmap> result_bitmap_;
   std::vector<scoped_refptr<TextureLayer> > texture_layers_;
   int pending_texture_mailbox_callbacks_;
+  bool impl_side_painting_;
 };
 
 }  // namespace cc
