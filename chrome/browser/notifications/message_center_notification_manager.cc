@@ -92,6 +92,9 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
   if (Update(notification, profile))
     return;
 
+  DesktopNotificationServiceFactory::GetForProfile(profile)->
+      ShowWelcomeNotificationIfNecessary(notification);
+
   AddProfileNotification(
       new ProfileNotification(profile, notification, message_center_));
 }

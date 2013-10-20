@@ -11,9 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/notifications/welcome_notification.h"
 #include "chrome/common/content_settings.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -162,6 +164,10 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled);
 
+  // Adds in a the welcome notification if required for components built
+  // into Chrome that show notifications like Chrome Now.
+  void ShowWelcomeNotificationIfNecessary(const Notification& notification);
+
  private:
   // Takes a notification object and shows it in the UI.
   void ShowNotification(const Notification& notification);
@@ -221,6 +227,9 @@ class DesktopNotificationService : public BrowserContextKeyedService,
 
   // Registrar for the other kind of notifications (event signaling).
   content::NotificationRegistrar registrar_;
+
+  // Welcome Notification
+  scoped_ptr<WelcomeNotification> welcome_notification;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };

@@ -1331,6 +1331,8 @@
         'browser/notifications/sync_notifier/notification_bitmap_fetcher.h',
         'browser/notifications/sync_notifier/synced_notification.cc',
         'browser/notifications/sync_notifier/synced_notification.h',
+        'browser/notifications/welcome_notification.cc',
+        'browser/notifications/welcome_notification.h',
         'browser/omnibox/omnibox_field_trial.cc',
         'browser/omnibox/omnibox_field_trial.h',
         'browser/omnibox/omnibox_log.cc',

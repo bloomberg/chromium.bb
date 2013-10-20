@@ -209,10 +209,7 @@ void DesktopNotificationService::RegisterProfilePrefs(
   registry->RegisterListPref(
       prefs::kMessageCenterEnabledSyncNotifierIds,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWelcomeNotificationDismissed,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  WelcomeNotification::RegisterProfilePrefs(registry);
 }
 
 // static
@@ -624,6 +621,17 @@ void DesktopNotificationService::SetNotifierEnabled(
   } else {
     list->Remove(*id, NULL);
   }
+}
+
+void DesktopNotificationService::ShowWelcomeNotificationIfNecessary(
+    const Notification& notification) {
+  if (!welcome_notification && message_center::IsRichNotificationEnabled()) {
+    welcome_notification.reset(
+        new WelcomeNotification(profile_, g_browser_process->message_center()));
+  }
+
+  if (welcome_notification)
+    welcome_notification->ShowWelcomeNotificationIfNecessary(notification);
 }
 
 void DesktopNotificationService::OnStringListPrefChanged(
