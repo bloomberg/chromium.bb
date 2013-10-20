@@ -162,9 +162,9 @@ base::string16 GetTrayDisplayMessage(base::string16* additional_message_out) {
         IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL);
   }
 
-  int64 first_id = display_manager->first_display_id();
+  int64 primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
   if (display_manager->HasInternalDisplay() &&
-      !display_manager->IsInternalDisplayId(first_id)) {
+      !display_manager->IsInternalDisplayId(primary_id)) {
     if (additional_message_out) {
       *additional_message_out = l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION);
@@ -178,10 +178,10 @@ base::string16 GetTrayDisplayMessage(base::string16* additional_message_out) {
 void OpenSettings() {
   user::LoginStatus login_status =
       Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
-  if (login_status == ash::user::LOGGED_IN_USER ||
-      login_status == ash::user::LOGGED_IN_OWNER ||
-      login_status == ash::user::LOGGED_IN_GUEST) {
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowDisplaySettings();
+  if (login_status == user::LOGGED_IN_USER ||
+      login_status == user::LOGGED_IN_OWNER ||
+      login_status == user::LOGGED_IN_GUEST) {
+    Shell::GetInstance()->system_tray_delegate()->ShowDisplaySettings();
   }
 }
 
@@ -189,17 +189,16 @@ void OpenSettings() {
 
 const char TrayDisplay::kNotificationId[] = "chrome://settings/display";
 
-class DisplayView : public ash::internal::ActionableView {
+class DisplayView : public internal::ActionableView {
  public:
   explicit DisplayView() {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal,
-        ash::kTrayPopupPaddingHorizontal, 0,
-        ash::kTrayPopupPaddingBetweenItems));
+        kTrayPopupPaddingHorizontal, 0,
+        kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_ =
-        new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
+    image_ = new internal::FixedSizedImageView(0, kTrayPopupItemHeight);
     image_->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY).ToImageSkia());
     AddChildView(image_);
