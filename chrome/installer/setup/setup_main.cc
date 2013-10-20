@@ -1791,8 +1791,10 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
         UninstallProducts(original_state, installer_state, cmd_line);
     // Report that the binaries were uninstalled if they were. This translates
     // into a successful install return code.
-    if (!is_uninstall && IsUninstallSuccess(install_status))
+    if (!is_uninstall && IsUninstallSuccess(install_status)) {
       install_status = installer::UNUSED_BINARIES_UNINSTALLED;
+      installer_state.WriteInstallerResult(install_status, 0, NULL);
+    }
   }
 
   // Validate that the machine is now in a good state following the operation.
