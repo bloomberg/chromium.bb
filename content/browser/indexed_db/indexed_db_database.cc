@@ -146,8 +146,7 @@ IndexedDBDatabase::IndexedDBDatabase(const string16& name,
                 kInvalidId),
       identifier_(unique_identifier),
       factory_(factory),
-      running_version_change_transaction_(NULL),
-      closing_connection_(false) {
+      running_version_change_transaction_(NULL) {
   DCHECK(!metadata_.name.empty());
 }
 
@@ -1674,14 +1673,6 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
     pending_second_half_open_.reset();
   }
 
-  // process_pending_calls allows the inspector to process a pending open call
-  // and call close, reentering IndexedDBDatabase::close. Then the
-  // backend would be removed both by the inspector closing its connection, and
-  // by the connection that first called close.
-  // To avoid that situation, don't proceed in case of reentrancy.
-  if (closing_connection_)
-    return;
-  base::AutoReset<bool> ClosingConnection(&closing_connection_, true);
   ProcessPendingCalls();
 
   // TODO(jsbell): Add a test for the pending_open_calls_ cases below.

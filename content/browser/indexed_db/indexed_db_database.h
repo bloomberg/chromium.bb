@@ -308,8 +308,6 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   typedef list_set<IndexedDBConnection*> ConnectionSet;
   ConnectionSet connections_;
-
-  bool closing_connection_;
 };
 
 }  // namespace content
