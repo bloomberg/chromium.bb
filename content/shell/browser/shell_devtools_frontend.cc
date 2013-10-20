@@ -63,7 +63,14 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
   else
     shell->LoadURL(delegate->devtools_http_handler()->GetFrontendURL());
 
+  devtools_frontend->Activate();
+  devtools_frontend->Focus();
+
   return devtools_frontend;
+}
+
+void ShellDevToolsFrontend::Activate() {
+  frontend_shell_->ActivateContents(web_contents());
 }
 
 void ShellDevToolsFrontend::Focus() {
