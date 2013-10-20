@@ -10,6 +10,7 @@
 #include "cc/base/switches.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/android/crash_dump_manager.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/main_function_params.h"
@@ -44,7 +45,9 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
 
   if (breakpad_enabled) {
     InitCrashReporter();
-    crash_dump_manager_.reset(new CrashDumpManager());
+    base::FilePath crash_dump_dir;
+    PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
+    crash_dump_manager_.reset(new CrashDumpManager(crash_dump_dir));
   }
 
   ChromeBrowserMainParts::PreProfileInit();

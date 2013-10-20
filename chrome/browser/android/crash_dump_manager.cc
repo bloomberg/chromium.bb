@@ -8,14 +8,11 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/descriptors_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/file_descriptor_info.h"
@@ -33,7 +30,8 @@ CrashDumpManager* CrashDumpManager::GetInstance() {
   return instance_;
 }
 
-CrashDumpManager::CrashDumpManager() {
+CrashDumpManager::CrashDumpManager(const base::FilePath& crash_dump_dir)
+    : crash_dump_dir_(crash_dump_dir) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!instance_);
 
@@ -81,6 +79,7 @@ int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
   return minidump_file;
 }
 
+// static
 void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
                                        base::ProcessHandle pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -99,18 +98,15 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
 
   // We are dealing with a valid minidump. Copy it to the crash report
   // directory from where Java code will upload it later on.
-  base::FilePath crash_dump_dir;
-  r = PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
-  if (!r) {
+  if (instance_->crash_dump_dir_.empty()) {
     NOTREACHED() << "Failed to retrieve the crash dump directory.";
     return;
   }
-
   const uint64 rand = base::RandUint64();
   const std::string filename =
       base::StringPrintf("chromium-renderer-minidump-%016" PRIx64 ".dmp%d",
                          rand, pid);
-  base::FilePath dest_path = crash_dump_dir.Append(filename);
+  base::FilePath dest_path = instance_->crash_dump_dir_.Append(filename);
   r = base::Move(minidump_path, dest_path);
   if (!r) {
     LOG(ERROR) << "Failed to move crash dump from " << minidump_path.value()
@@ -119,7 +115,7 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
     return;
   }
   LOG(INFO) << "Crash minidump successfully generated: " <<
-      crash_dump_dir.Append(filename).value();
+      instance_->crash_dump_dir_.Append(filename).value();
 }
 
 void CrashDumpManager::BrowserChildProcessHostDisconnected(

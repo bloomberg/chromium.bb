@@ -45,7 +45,7 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
   friend class ChromeBrowserMainPartsAndroid;
 
   // Should be created on the UI thread.
-  CrashDumpManager();
+  explicit CrashDumpManager(const base::FilePath& crash_dump_dir);
 
   typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
 
@@ -72,6 +72,8 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
   // from the PROCESS_LAUNCHER and UI threads.
   base::Lock child_process_id_to_minidump_path_lock_;
   ChildProcessIDToMinidumpPath child_process_id_to_minidump_path_;
+
+  base::FilePath crash_dump_dir_;
 
   static CrashDumpManager* instance_;
 
