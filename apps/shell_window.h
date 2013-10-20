@@ -90,6 +90,38 @@ class ShellWindow : public content::NotificationObserver,
     FRAME_NONE,  // Frameless window.
   };
 
+  class SizeConstraints {
+   public:
+    // The value SizeConstraints uses to represent an unbounded width or height.
+    // This is an enum so that it can be declared inline here.
+    enum { kUnboundedSize = 0 };
+
+    SizeConstraints();
+    SizeConstraints(const gfx::Size& min_size, const gfx::Size& max_size);
+    ~SizeConstraints();
+
+    // Returns the bounds with its size clamped to the min/max size.
+    gfx::Size ClampSize(gfx::Size size) const;
+
+    // When gfx::Size is used as a min/max size, a zero represents an unbounded
+    // component. This method checks whether either component is specified.
+    // Note we can't use gfx::Size::IsEmpty as it returns true if either width
+    // or height is zero.
+    bool HasMinimumSize() const;
+    bool HasMaximumSize() const;
+
+    // This returns true if all components are specified, and min and max are
+    // equal.
+    bool HasFixedSize() const;
+
+    gfx::Size GetMaximumSize() const;
+    gfx::Size GetMinimumSize() const;
+
+   private:
+    gfx::Size minimum_size_;
+    gfx::Size maximum_size_;
+  };
+
   struct CreateParams {
     CreateParams();
     ~CreateParams();
@@ -326,6 +358,11 @@ class ShellWindow : public content::NotificationObserver,
       const gfx::Rect& current_screen_bounds,
       const gfx::Size& minimum_size,
       gfx::Rect* bounds) const;
+
+  // Loads the appropriate default or cached window bounds and constrains them
+  // based on screen size and minimum/maximum size. Returns a new CreateParams
+  // that should be used to create the window.
+  CreateParams LoadDefaultsAndConstrain(CreateParams params) const;
 
   // Load the app's image, firing a load state change when loaded.
   void UpdateExtensionAppIcon();
