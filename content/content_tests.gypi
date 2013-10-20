@@ -379,6 +379,7 @@
         'browser/indexed_db/indexed_db_backing_store_unittest.cc',
         'browser/indexed_db/indexed_db_cleanup_on_io_error_unittest.cc',
         'browser/indexed_db/indexed_db_database_unittest.cc',
+        'browser/indexed_db/indexed_db_factory_unittest.cc',
         'browser/indexed_db/indexed_db_fake_backing_store.cc',
         'browser/indexed_db/indexed_db_fake_backing_store.h',
         'browser/indexed_db/indexed_db_leveldb_coding_unittest.cc',

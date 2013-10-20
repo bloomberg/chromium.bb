@@ -170,6 +170,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
   scoped_ptr<TestBrowserContext> browser_context_;
   quota::QuotaStatusCode delete_status_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClientTest);
 };
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {

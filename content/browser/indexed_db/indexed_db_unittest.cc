@@ -46,6 +46,8 @@ class IndexedDBTest : public testing::Test {
  private:
   BrowserThreadImpl file_thread_;
   BrowserThreadImpl io_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBTest);
 };
 
 TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
