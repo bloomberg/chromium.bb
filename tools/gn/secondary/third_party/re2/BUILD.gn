@@ -6,6 +6,8 @@ config("re2_config") {
   include_dirs = [ "." ]
 }
 
+gyp_file = "re2.gyp"
+
 static_library("re2") {
   sources = [
     "mswin/stdint.h",

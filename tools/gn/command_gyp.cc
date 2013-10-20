@@ -27,9 +27,9 @@ namespace commands {
 
 namespace {
 
-typedef GypTargetWriter::TargetPair TargetPair;
-typedef std::map<Label, TargetPair> CorrelatedTargetsMap;
-typedef std::map<SourceFile, std::vector<TargetPair> > GroupedTargetsMap;
+typedef GypTargetWriter::TargetGroup TargetGroup;
+typedef std::map<Label, TargetGroup> CorrelatedTargetsMap;
+typedef std::map<SourceFile, std::vector<TargetGroup> > GroupedTargetsMap;
 typedef std::map<std::string, std::string> StringStringMap;
 
 // Groups targets sharing the same label between debug and release.
@@ -48,10 +48,10 @@ void CorrelateTargets(const std::vector<const Target*>& debug_targets,
 
 // Verifies that both debug and release variants match. They can differ only
 // by flags.
-bool EnsureTargetsMatch(const TargetPair& pair, Err* err) {
+bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
   // Check that both debug and release made this target.
-  if (!pair.debug || !pair.release) {
-    const Target* non_null_one = pair.debug ? pair.debug : pair.release;
+  if (!group.debug || !group.release) {
+    const Target* non_null_one = group.debug ? group.debug : group.release;
     *err = Err(Location(), "The debug and release builds did not both generate "
         "a target with the name\n" +
         non_null_one->label().GetUserVisibleName(true));
@@ -59,48 +59,48 @@ bool EnsureTargetsMatch(const TargetPair& pair, Err* err) {
   }
 
   // Check the flags that determine if and where we write the GYP file.
-  if (pair.debug->item_node()->should_generate() !=
-          pair.release->item_node()->should_generate() ||
-      pair.debug->external() != pair.release->external() ||
-      pair.debug->gyp_file() != pair.release->gyp_file()) {
+  if (group.debug->item_node()->should_generate() !=
+          group.release->item_node()->should_generate() ||
+      group.debug->external() != group.release->external() ||
+      group.debug->gyp_file() != group.release->gyp_file()) {
     *err = Err(Location(), "The metadata for the target\n" +
-        pair.debug->label().GetUserVisibleName(true) +
+        group.debug->label().GetUserVisibleName(true) +
         "\ndoesn't match between the debug and release builds.");
     return false;
   }
 
   // Check that the sources match.
-  if (pair.debug->sources().size() != pair.release->sources().size()) {
+  if (group.debug->sources().size() != group.release->sources().size()) {
     *err = Err(Location(), "The source file count for the target\n" +
-        pair.debug->label().GetUserVisibleName(true) +
+        group.debug->label().GetUserVisibleName(true) +
         "\ndoesn't have the same number of files between the debug and "
         "release builds.");
     return false;
   }
-  for (size_t i = 0; i < pair.debug->sources().size(); i++) {
-    if (pair.debug->sources()[i] != pair.release->sources()[i]) {
+  for (size_t i = 0; i < group.debug->sources().size(); i++) {
+    if (group.debug->sources()[i] != group.release->sources()[i]) {
       *err = Err(Location(), "The debug and release version of the target \n" +
-          pair.debug->label().GetUserVisibleName(true) +
+          group.debug->label().GetUserVisibleName(true) +
           "\ndon't agree on the file\n" +
-          pair.debug->sources()[i].value());
+          group.debug->sources()[i].value());
       return false;
     }
   }
 
   // Check that the deps match.
-  if (pair.debug->deps().size() != pair.release->deps().size()) {
+  if (group.debug->deps().size() != group.release->deps().size()) {
     *err = Err(Location(), "The source file count for the target\n" +
-        pair.debug->label().GetUserVisibleName(true) +
+        group.debug->label().GetUserVisibleName(true) +
         "\ndoesn't have the same number of deps between the debug and "
         "release builds.");
     return false;
   }
-  for (size_t i = 0; i < pair.debug->deps().size(); i++) {
-    if (pair.debug->deps()[i]->label() != pair.release->deps()[i]->label()) {
+  for (size_t i = 0; i < group.debug->deps().size(); i++) {
+    if (group.debug->deps()[i]->label() != group.release->deps()[i]->label()) {
       *err = Err(Location(), "The debug and release version of the target \n" +
-          pair.debug->label().GetUserVisibleName(true) +
+          group.debug->label().GetUserVisibleName(true) +
           "\ndon't agree on the dep\n" +
-          pair.debug->deps()[i]->label().GetUserVisibleName(true));
+          group.debug->deps()[i]->label().GetUserVisibleName(true));
       return false;
     }
   }
@@ -232,20 +232,20 @@ std::pair<int, int> WriteGypFiles(
   int target_count = 0;
   for (CorrelatedTargetsMap::iterator i = correlated.begin();
        i != correlated.end(); ++i) {
-    const TargetPair& pair = i->second;
-    if (!EnsureTargetsMatch(pair, err))
+    const TargetGroup& group = i->second;
+    if (!EnsureTargetsMatch(group, err))
       return std::make_pair(0, 0);
 
-    if (!pair.debug->item_node()->should_generate())
+    if (!group.debug->item_node()->should_generate())
       continue;  // Skip non-generated ones.
-    if (pair.debug->external())
+    if (group.debug->external())
       continue;  // Skip external ones.
-    if (pair.debug->gyp_file().is_null())
+    if (group.debug->gyp_file().is_null())
       continue;  // Skip ones without GYP files.
 
     target_count++;
-    grouped_targets[helper.GetGypFileForTarget(pair.debug, err)].push_back(
-        pair);
+    grouped_targets[helper.GetGypFileForTarget(group.debug, err)].push_back(
+        group);
     if (err->has_error())
       return std::make_pair(0, 0);
   }

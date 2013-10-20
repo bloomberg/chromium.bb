@@ -26,7 +26,7 @@ GypTargetWriter::~GypTargetWriter() {
 
 // static
 void GypTargetWriter::WriteFile(const SourceFile& gyp_file,
-                                const std::vector<TargetPair>& targets,
+                                const std::vector<TargetGroup>& targets,
                                 Err* err) {
   if (targets.empty())
     return;
@@ -49,8 +49,7 @@ void GypTargetWriter::WriteFile(const SourceFile& gyp_file,
       case Target::STATIC_LIBRARY:
       case Target::SHARED_LIBRARY:
       case Target::SOURCE_SET: {
-        GypBinaryTargetWriter writer(targets[i].debug, targets[i].release,
-                                     NULL, NULL, file);
+        GypBinaryTargetWriter writer(targets[i], file);
         writer.Run();
         break;
       }

@@ -18,17 +18,24 @@ class Target;
 
 class GypTargetWriter {
  public:
-  struct TargetPair {
-    TargetPair() : debug(NULL), release(NULL) {}
+  struct TargetGroup {
+    TargetGroup()
+        : debug(NULL),
+          release(NULL),
+          host_debug(NULL),
+          host_release(NULL) {
+    }
     const Target* debug;
     const Target* release;
+    const Target* host_debug;
+    const Target* host_release;
   };
 
   GypTargetWriter(const Target* target, std::ostream& out);
   virtual ~GypTargetWriter();
 
   static void WriteFile(const SourceFile& gyp_file,
-                        const std::vector<TargetPair>& targets,
+                        const std::vector<TargetGroup>& targets,
                         Err* err);
 
   virtual void Run() = 0;
