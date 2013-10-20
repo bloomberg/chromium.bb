@@ -7228,3 +7228,12 @@
    fun:_ZN8SkCanvas10readPixelsEP8SkBitmapiiNS_10Config8888E
    fun:_ZN7WebCore15GraphicsContext10readPixelsEP8SkBitmapiiN8SkCanvas10Config8888E
 }
+{
+   bug_309468
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19TranslateBubbleView25CreateViewBeforeTranslateEv
+   fun:_ZN19TranslateBubbleView4InitEv
+   fun:_ZN5views18BubbleDelegateView12CreateBubbleEPS0_
+   fun:_ZN23TranslateBubbleViewTest5SetUpEv
+}

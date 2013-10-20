@@ -869,3 +869,12 @@
    fun:net::NSSCertDatabase::ImportCACerts
    fun:chromeos::ClientCertResolverTest::SetupTestCerts
 }
+{
+   bug_309468
+   Heapcheck:Leak
+   ...
+   fun:TranslateBubbleView::CreateViewBeforeTranslate
+   fun:TranslateBubbleView::Init
+   fun:views::BubbleDelegateView::CreateBubble
+   fun:TranslateBubbleViewTest::SetUp
+}
