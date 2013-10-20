@@ -862,8 +862,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
              "web_view/shim");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       Shim_TestWebRequestListenerSurvivesReparenting) {
+// This test is disabled due to being flaky. http://crbug.com/309451
+#if defined(OS_WIN)
+#define MAYBE_Shim_TestWebRequestListenerSurvivesReparenting \
+    DISABLED_Shim_TestWebRequestListenerSurvivesReparenting
+#else
+#define MAYBE_Shim_TestWebRequestListenerSurvivesReparenting \
+    Shim_TestWebRequestListenerSurvivesReparenting
+#endif
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    MAYBE_Shim_TestWebRequestListenerSurvivesReparenting) {
   TestHelper("testWebRequestListenerSurvivesReparenting",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
