@@ -43,56 +43,56 @@ class UDPWork : public MountStream::Work {
   Packet* packet_;
 };
 
-
 class UDPSendWork : public UDPWork {
  public:
-  explicit UDPSendWork(const ScopedEventEmitterUDP& emitter)
-      : UDPWork(emitter) {}
+  explicit UDPSendWork(const ScopedEventEmitterUDP& emitter,
+                       const ScopedMountNodeSocket& node)
+      : UDPWork(emitter), node_(node) {}
 
   virtual bool Start(int32_t val) {
     AUTO_LOCK(emitter_->GetLock());
-    MountNodeUDP* stream = static_cast<MountNodeUDP*>(emitter_->stream());
 
     // Does the stream exist, and can it send?
-    if (NULL == stream || !stream->TestStreamFlags(SSF_CAN_SEND))
+    if (!node_->TestStreamFlags(SSF_CAN_SEND))
       return false;
 
-    // If not currently sending...
-    if (!stream->TestStreamFlags(SSF_SENDING)) {
-      packet_ = emitter_->ReadTXPacket_Locked();
-      if (packet_) {
-        stream->SetStreamFlags(SSF_SENDING);
-        int err = UDPInterface()->SendTo(stream->socket_resource(),
-                                         packet_->buffer(),
-                                         packet_->len(),
-                                         packet_->addr(),
-                                         mount()->GetRunCompletion(this));
-        if (err == PP_OK_COMPLETIONPENDING)
-          return true;
+    packet_ = emitter_->ReadTXPacket_Locked();
+    if (NULL == packet_)
+      return false;
 
-        // Anything else, we should assume the socket has gone bad.
-        stream->SetError_Locked(err);
-      }
+    int err = UDPInterface()->SendTo(node_->socket_resource(),
+                                     packet_->buffer(),
+                                     packet_->len(),
+                                     packet_->addr(),
+                                     mount()->GetRunCompletion(this));
+    if (err != PP_OK_COMPLETIONPENDING) {
+      // Anything else, we should assume the socket has gone bad.
+      node_->SetError_Locked(err);
+      return false;
     }
-    return false;
+
+    node_->SetStreamFlags(SSF_SENDING);
+    return true;
   }
 
   virtual void Run(int32_t length_error) {
     AUTO_LOCK(emitter_->GetLock());
-    MountNodeUDP* stream = static_cast<MountNodeUDP*>(emitter_->stream());
 
-    // If the stream is still there...
-    if (stream) {
-      // And we did send, then Q more work.
-      if (length_error >= 0) {
-        stream->ClearStreamFlags(SSF_SENDING);
-        stream->QueueOutput();
-      } else {
-        // Otherwise this socket has gone bad.
-        stream->SetError_Locked(length_error);
-      }
+    if (length_error < 0) {
+      node_->SetError_Locked(length_error);
+      return;
     }
+
+    // If we did send, then Q more work.
+    node_->ClearStreamFlags(SSF_SENDING);
+    node_->QueueOutput();
   }
+
+ private:
+  // We assume that transmits will always complete.  If the upstream
+  // actually back pressures, enough to prevent the Send callback
+  // from triggering, this resource may never go away.
+  ScopedMountNodeSocket node_;
 };
 
 
@@ -115,37 +115,39 @@ class UDPRecvWork : public UDPWork {
     if (NULL == stream || !stream->TestStreamFlags(SSF_CAN_RECV))
       return false;
 
-    // If the stream is valid and we are not currently receiving
-    if (!stream->TestStreamFlags(SSF_RECVING)) {
-      stream->SetStreamFlags(SSF_RECVING);
-      int err = UDPInterface()->RecvFrom(stream->socket_resource(),
-                                         data_,
-                                         kMaxPacketSize,
-                                         &addr_,
-                                         mount()->GetRunCompletion(this));
-      if (err == PP_OK_COMPLETIONPENDING)
-        return true;
+    // Check if we are already receiving.
+    if (stream->TestStreamFlags(SSF_RECVING))
+      return false;
 
+    stream->SetStreamFlags(SSF_RECVING);
+    int err = UDPInterface()->RecvFrom(stream->socket_resource(),
+                                       data_,
+                                       kMaxPacketSize,
+                                       &addr_,
+                                       mount()->GetRunCompletion(this));
+    if (err != PP_OK_COMPLETIONPENDING) {
       stream->SetError_Locked(err);
+      return false;
     }
-    return false;
+
+    return true;
   }
 
   virtual void Run(int32_t length_error) {
     AUTO_LOCK(emitter_->GetLock());
     MountNodeUDP* stream = static_cast<MountNodeUDP*>(emitter_->stream());
+    if (NULL == stream)
+      return;
 
-    // If the stream is still there, see if we can queue more input
-    if (stream) {
-      if (length_error > 0) {
-        Packet* packet = new Packet(mount()->ppapi());
-        packet->Copy(data_, length_error, addr_);
-        emitter_->WriteRXPacket_Locked(packet);
-        stream->ClearStreamFlags(SSF_RECVING);
-        stream->QueueInput();
-      } else {
-        stream->SetError_Locked(length_error);
-      }
+    // On successful receive we queue more input
+    if (length_error > 0) {
+      Packet* packet = new Packet(mount()->ppapi());
+      packet->Copy(data_, length_error, addr_);
+      emitter_->WriteRXPacket_Locked(packet);
+      stream->ClearStreamFlags(SSF_RECVING);
+      stream->QueueInput();
+    } else {
+      stream->SetError_Locked(length_error);
     }
   }
 
@@ -191,7 +193,13 @@ void MountNodeUDP::QueueInput() {
 }
 
 void MountNodeUDP::QueueOutput() {
-  UDPSendWork* work = new UDPSendWork(emitter_);
+  if (!TestStreamFlags(SSF_CAN_SEND))
+    return;
+
+  if (TestStreamFlags(SSF_SENDING))
+    return;
+
+  UDPSendWork* work = new UDPSendWork(emitter_, ScopedMountNodeSocket(this));
   mount_stream()->EnqueueWork(work);
 }
 
@@ -200,7 +208,7 @@ Error MountNodeUDP::Bind(const struct sockaddr* addr, socklen_t len) {
     return EBADF;
 
   /* Only bind once. */
-  if (local_addr_ != 0)
+  if (IsBound())
     return EINVAL;
 
   PP_Resource out_addr = SockAddrToResource(addr, len);

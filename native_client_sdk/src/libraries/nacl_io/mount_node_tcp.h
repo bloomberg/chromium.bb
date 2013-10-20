@@ -43,7 +43,9 @@ class MountNodeTCP : public MountNodeSocket {
   virtual Error Connect(const HandleAttr& attr,
                         const struct sockaddr* addr,
                         socklen_t len);
+  virtual Error Shutdown(int how);
 
+  virtual void SetError_Locked(int pp_error_num);
   void ConnectDone_Locked();
   void ConnectFailed_Locked();
 

@@ -46,58 +46,63 @@ class TCPWork : public MountStream::Work {
 
 class TCPSendWork : public TCPWork {
  public:
-  explicit TCPSendWork(const ScopedEventEmitterTCP& emitter)
-      : TCPWork(emitter) {}
+  explicit TCPSendWork(const ScopedEventEmitterTCP& emitter,
+                       const ScopedMountNodeSocket& stream)
+      : TCPWork(emitter), node_(stream) {}
 
   virtual bool Start(int32_t val) {
     AUTO_LOCK(emitter_->GetLock());
-    MountNodeTCP* stream = static_cast<MountNodeTCP*>(emitter_->stream());
 
     // Does the stream exist, and can it send?
-    if (NULL == stream || !stream->TestStreamFlags(SSF_CAN_SEND))
+    if (!node_->TestStreamFlags(SSF_CAN_SEND))
       return false;
 
-    // If not currently sending...
-    if (!stream->TestStreamFlags(SSF_SENDING)) {
-      size_t tx_data_avail = emitter_->BytesInOutputFIFO();
-      int capped_len = std::min(tx_data_avail, kMaxPacketSize);
+    // Check if we are already sending.
+    if (node_->TestStreamFlags(SSF_SENDING))
+      return false;
 
-      if (capped_len == 0)
-        return false;
+    size_t tx_data_avail = emitter_->BytesInOutputFIFO();
+    int capped_len = std::min(tx_data_avail, kMaxPacketSize);
+    if (capped_len == 0)
+      return false;
 
-      data_ = new char[capped_len];
-      emitter_->ReadOut_Locked(data_, capped_len);
+    data_ = new char[capped_len];
+    emitter_->ReadOut_Locked(data_, capped_len);
 
-      stream->SetStreamFlags(SSF_SENDING);
-      int err = TCPInterface()->Write(stream->socket_resource(),
-                                      data_,
-                                      capped_len,
-                                      mount()->GetRunCompletion(this));
-      if (err == PP_OK_COMPLETIONPENDING)
-        return true;
+    int err = TCPInterface()->Write(node_->socket_resource(),
+                                    data_,
+                                    capped_len,
+                                    mount()->GetRunCompletion(this));
 
+    if (err != PP_OK_COMPLETIONPENDING) {
       // Anything else, we should assume the socket has gone bad.
-      stream->SetError_Locked(err);
+      node_->SetError_Locked(err);
+      return false;
     }
-    return false;
+
+    node_->SetStreamFlags(SSF_SENDING);
+    return true;
   }
 
   virtual void Run(int32_t length_error) {
     AUTO_LOCK(emitter_->GetLock());
-    MountNodeTCP* stream = static_cast<MountNodeTCP*>(emitter_->stream());
 
-    // If the stream is still there...
-    if (stream) {
-      // And we did send, then Q more work.
-      if (length_error >= 0) {
-        stream->ClearStreamFlags(SSF_SENDING);
-        stream->QueueOutput();
-      } else {
-        // Otherwise this socket has gone bad.
-        stream->SetError_Locked(length_error);
-      }
+    if (length_error < 0) {
+      // Send failed, mark the socket as bad
+      node_->SetError_Locked(length_error);
+      return;
     }
+
+    // If we did send, then Q more work.
+    node_->ClearStreamFlags(SSF_SENDING);
+    node_->QueueOutput();
   }
+
+ private:
+  // We assume that transmits will always complete.  If the upstream
+  // actually back pressures, enough to prevent the Send callback
+  // from triggering, this resource may never go away.
+  ScopedMountNodeSocket node_;
 };
 
 class TCPRecvWork : public TCPWork {
@@ -114,43 +119,47 @@ class TCPRecvWork : public TCPWork {
       return false;
 
     // If we are not currently receiving
-    if (!stream->TestStreamFlags(SSF_RECVING)) {
-      size_t rx_space_avail = emitter_->SpaceInInputFIFO();
-      int capped_len =
-          static_cast<int32_t>(std::min(rx_space_avail, kMaxPacketSize));
+    if (stream->TestStreamFlags(SSF_RECVING))
+      return false;
 
-      if (capped_len == 0)
-        return false;
+    size_t rx_space_avail = emitter_->SpaceInInputFIFO();
+    int capped_len =
+        static_cast<int32_t>(std::min(rx_space_avail, kMaxPacketSize));
 
-      stream->SetStreamFlags(SSF_RECVING);
-      data_ = new char[capped_len];
-      int err = TCPInterface()->Read(stream->socket_resource(),
-                                     data_,
-                                     capped_len,
-                                     mount()->GetRunCompletion(this));
-      if (err == PP_OK_COMPLETIONPENDING)
-        return true;
+    if (capped_len == 0)
+      return false;
 
+    data_ = new char[capped_len];
+    int err = TCPInterface()->Read(stream->socket_resource(),
+                                   data_,
+                                   capped_len,
+                                   mount()->GetRunCompletion(this));
+    if (err != PP_OK_COMPLETIONPENDING) {
       // Anything else, we should assume the socket has gone bad.
       stream->SetError_Locked(err);
+      return false;
     }
-    return false;
+
+    stream->SetStreamFlags(SSF_RECVING);
+    return true;
   }
 
   virtual void Run(int32_t length_error) {
     AUTO_LOCK(emitter_->GetLock());
     MountNodeTCP* stream = static_cast<MountNodeTCP*>(emitter_->stream());
 
-    // If the stream is still there, see if we can queue more input
-    if (stream) {
-      if (length_error > 0) {
-        emitter_->WriteIn_Locked(data_, length_error);
-        stream->ClearStreamFlags(SSF_RECVING);
-        stream->QueueInput();
-      } else {
-        stream->SetError_Locked(length_error);
-      }
+    if (!stream)
+      return;
+
+    if (length_error <= 0) {
+      stream->SetError_Locked(length_error);
+      return;
     }
+
+    // If we successfully received, queue more input
+    emitter_->WriteIn_Locked(data_, length_error);
+    stream->ClearStreamFlags(SSF_RECVING);
+    stream->QueueInput();
   }
 };
 
@@ -181,9 +190,11 @@ class TCPAcceptWork : public MountStream::Work {
                                      &new_socket_,
                                      mount()->GetRunCompletion(this));
 
-    if (err != PP_OK_COMPLETIONPENDING)
+    if (err != PP_OK_COMPLETIONPENDING) {
       // Anything else, we should assume the socket has gone bad.
       node->SetError_Locked(err);
+      return false;
+    }
 
     return true;
   }
@@ -230,10 +241,11 @@ class TCPConnectWork : public MountStream::Work {
     int err = TCPInterface()->Connect(node->socket_resource(),
                                       node->remote_addr(),
                                       mount()->GetRunCompletion(this));
-
-    if (err != PP_OK_COMPLETIONPENDING)
+    if (err != PP_OK_COMPLETIONPENDING) {
       // Anything else, we should assume the socket has gone bad.
       node->SetError_Locked(err);
+      return false;
+    }
 
     return true;
   }
@@ -283,8 +295,6 @@ Error MountNodeTCP::Init(int open_flags) {
   if (TCPInterface() == NULL)
     return EACCES;
 
-  SetStreamFlags(SSF_CAN_CONNECT);
-
   if (socket_resource_ != 0) {
     // TCP sockets that are contructed with an existing socket_resource_
     // are those that generated from calls to Accept() and therefore are
@@ -295,6 +305,7 @@ Error MountNodeTCP::Init(int open_flags) {
     socket_resource_ = TCPInterface()->Create(mount_->ppapi()->GetInstance());
     if (0 == socket_resource_)
       return EACCES;
+    SetStreamFlags(SSF_CAN_CONNECT);
   }
 
   return 0;
@@ -302,6 +313,11 @@ Error MountNodeTCP::Init(int open_flags) {
 
 EventEmitter* MountNodeTCP::GetEventEmitter() {
   return emitter_.get();
+}
+
+void MountNodeTCP::SetError_Locked(int pp_error_num) {
+  MountNodeSocket::SetError_Locked(pp_error_num);
+  emitter_->SetError_Locked();
 }
 
 void MountNodeTCP::QueueAccept() {
@@ -320,7 +336,17 @@ void MountNodeTCP::QueueInput() {
 }
 
 void MountNodeTCP::QueueOutput() {
-  MountStream::Work* work = new TCPSendWork(emitter_);
+  if (TestStreamFlags(SSF_SENDING))
+    return;
+
+  if (!TestStreamFlags(SSF_CAN_SEND))
+    return;
+
+  if (0 == emitter_->BytesInOutputFIFO())
+    return;
+
+  MountStream::Work* work = new TCPSendWork(emitter_,
+                                            ScopedMountNodeSocket(this));
   mount_stream()->EnqueueWork(work);
 }
 
@@ -337,7 +363,6 @@ Error MountNodeTCP::Accept(const HandleAttr& attr,
   int ms = attr.IsBlocking() ? -1 : 0;
 
   Error err = wait.WaitOnEvent(POLLIN, ms);
-
   if (ETIMEDOUT == err)
     return EWOULDBLOCK;
 
@@ -367,7 +392,7 @@ Error MountNodeTCP::Bind(const struct sockaddr* addr, socklen_t len) {
   AUTO_LOCK(node_lock_);
 
   /* Only bind once. */
-  if (local_addr_ != 0)
+  if (IsBound())
     return EINVAL;
 
   local_addr_ = SockAddrToResource(addr, len);
@@ -393,9 +418,8 @@ Error MountNodeTCP::Connect(const HandleAttr& attr,
   if (TestStreamFlags(SSF_CONNECTING))
     return EALREADY;
 
-  if (remote_addr_ != 0) {
+  if (IsConnected())
     return EISCONN;
-  }
 
   remote_addr_ = SockAddrToResource(addr, len);
   if (0 == remote_addr_)
@@ -420,6 +444,17 @@ Error MountNodeTCP::Connect(const HandleAttr& attr,
   return 0;
 }
 
+Error MountNodeTCP::Shutdown(int how) {
+  AUTO_LOCK(node_lock_);
+  if (!IsConnected())
+    return ENOTCONN;
+  {
+    AUTO_LOCK(emitter_->GetLock());
+    emitter_->SetError_Locked();
+  }
+  return 0;
+}
+
 void MountNodeTCP::ConnectDone_Locked() {
   local_addr_ = TCPInterface()->GetLocalAddress(socket_resource_);
 
@@ -440,7 +475,7 @@ void MountNodeTCP::ConnectFailed_Locked() {
 
 Error MountNodeTCP::Listen(int backlog) {
   AUTO_LOCK(node_lock_);
-  if (0 == local_addr_)
+  if (!IsBound())
     return EINVAL;
 
   int err = TCPInterface()->Listen(socket_resource_,
@@ -451,6 +486,7 @@ Error MountNodeTCP::Listen(int backlog) {
 
   ClearStreamFlags(SSF_CAN_CONNECT);
   SetStreamFlags(SSF_LISTENING);
+  emitter_->SetListening_Locked();
   QueueAccept();
   return 0;
 }
@@ -474,6 +510,8 @@ Error MountNodeTCP::Send_Locked(const void* buf,
                                 PP_Resource,
                                 int* out_len) {
   assert(emitter_.get());
+  if (emitter_->GetError_Locked())
+    return EPIPE;
   *out_len = emitter_->WriteOut_Locked((char*)buf, len);
   return 0;
 }

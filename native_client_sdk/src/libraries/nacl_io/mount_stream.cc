@@ -3,15 +3,13 @@
 // found in the LICENSE file.
 
 #include "nacl_io/ossocket.h"
-#ifdef PROVIDES_SOCKET_API
 
 #include <errno.h>
 
-#include "nacl_io/mount_node_socket.h"
 #include "nacl_io/mount_stream.h"
+#include "nacl_io/pepper_interface.h"
 
 namespace nacl_io {
-
 
 void DispatchStart(void* work_ptr, int32_t val) {
   MountStream::Work* work = static_cast<MountStream::Work*>(work_ptr);
@@ -74,7 +72,6 @@ void MountStream::EnqueueWork(Work* work) {
   ppapi_->GetMessageLoopInterface()->PostWork(message_loop_, cb, 0);
 }
 
-
 MountStream::MountStream()
     : message_loop_(0) {
   pthread_cond_init(&message_cond_, NULL);
@@ -99,4 +96,3 @@ Error MountStream::Rmdir(const Path& path) { return EACCES; }
 Error MountStream::Remove(const Path& path) { return EACCES; }
 
 }  // namespace nacl_io
-#endif  // PROVIDES_SOCKET_API

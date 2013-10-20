@@ -54,13 +54,13 @@ void SetNonBlocking(int sock) {
 
 class SocketTest : public ::testing::Test {
  public:
-  SocketTest() : sock1(-1), sock2(-1) {}
+  SocketTest() : sock1_(-1), sock2_(-1) {}
 
   void TearDown() {
-    if (sock1 != -1)
-      EXPECT_EQ(0, close(sock1));
-    if (sock2 != -1)
-      EXPECT_EQ(0, close(sock2));
+    if (sock1_ != -1)
+      EXPECT_EQ(0, close(sock1_));
+    if (sock2_ != -1)
+      EXPECT_EQ(0, close(sock2_));
   }
 
   int Bind(int fd, uint32_t ip, uint16_t port) {
@@ -75,9 +75,9 @@ class SocketTest : public ::testing::Test {
     return 0;
   }
 
- public:
-  int sock1;
-  int sock2;
+ protected:
+  int sock1_;
+  int sock2_;
 };
 
 class SocketTestUDP : public SocketTest {
@@ -85,11 +85,11 @@ class SocketTestUDP : public SocketTest {
   SocketTestUDP() {}
 
   void SetUp() {
-    sock1 = socket(AF_INET, SOCK_DGRAM, 0);
-    sock2 = socket(AF_INET, SOCK_DGRAM, 0);
+    sock1_ = socket(AF_INET, SOCK_DGRAM, 0);
+    sock2_ = socket(AF_INET, SOCK_DGRAM, 0);
 
-    EXPECT_GT(sock1, -1);
-    EXPECT_GT(sock2, -1);
+    EXPECT_GT(sock1_, -1);
+    EXPECT_GT(sock2_, -1);
   }
 };
 
@@ -98,11 +98,11 @@ class SocketTestTCP : public SocketTest {
   SocketTestTCP() {}
 
   void SetUp() {
-    sock1 = socket(AF_INET, SOCK_STREAM, 0);
-    sock2 = socket(AF_INET, SOCK_STREAM, 0);
+    sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+    sock2_ = socket(AF_INET, SOCK_STREAM, 0);
 
-    EXPECT_GT(sock1, -1);
-    EXPECT_GT(sock2, -1);
+    EXPECT_GT(sock1_, -1);
+    EXPECT_GT(sock2_, -1);
   }
 };
 
@@ -170,11 +170,11 @@ TEST(SocketTestSimple, Socket) {
   EXPECT_EQ(-1, socket(AF_INET, SOCK_RAW, 0));
   EXPECT_EQ(errno, EPROTONOSUPPORT);
 
-  int sock1 = socket(AF_INET, SOCK_DGRAM, 0);
-  EXPECT_NE(-1, sock1);
+  int sock1_ = socket(AF_INET, SOCK_DGRAM, 0);
+  EXPECT_NE(-1, sock1_);
 
-  int sock2 = socket(AF_INET6, SOCK_DGRAM, 0);
-  EXPECT_NE(-1, sock2);
+  int sock2_ = socket(AF_INET6, SOCK_DGRAM, 0);
+  EXPECT_NE(-1, sock2_);
 
   int sock3 = socket(AF_INET, SOCK_STREAM, 0);
   EXPECT_NE(-1, sock3);
@@ -182,27 +182,27 @@ TEST(SocketTestSimple, Socket) {
   int sock4 = socket(AF_INET6, SOCK_STREAM, 0);
   EXPECT_NE(-1, sock4);
 
-  close(sock1);
-  close(sock2);
+  close(sock1_);
+  close(sock2_);
   close(sock3);
   close(sock4);
 }
 
 TEST_F(SocketTestUDP, Bind) {
   // Bind away.
-  EXPECT_EQ(0, Bind(sock1, LOCAL_HOST, PORT1));
+  EXPECT_EQ(0, Bind(sock1_, LOCAL_HOST, PORT1));
 
   // Invalid to rebind a socket.
-  EXPECT_EQ(EINVAL, Bind(sock1, LOCAL_HOST, PORT1));
+  EXPECT_EQ(EINVAL, Bind(sock1_, LOCAL_HOST, PORT1));
 
   // Addr in use.
-  EXPECT_EQ(EADDRINUSE, Bind(sock2, LOCAL_HOST, PORT1));
+  EXPECT_EQ(EADDRINUSE, Bind(sock2_, LOCAL_HOST, PORT1));
 
   // Bind with a wildcard.
-  EXPECT_EQ(0, Bind(sock2, LOCAL_HOST, ANY_PORT));
+  EXPECT_EQ(0, Bind(sock2_, LOCAL_HOST, ANY_PORT));
 
   // Invalid to rebind after wildcard
-  EXPECT_EQ(EINVAL, Bind(sock2, LOCAL_HOST, PORT1));
+  EXPECT_EQ(EINVAL, Bind(sock2_, LOCAL_HOST, PORT1));
 }
 
 TEST_F(SocketTestUDP, SendRcv) {
@@ -212,15 +212,15 @@ TEST_F(SocketTestUDP, SendRcv) {
   memset(outbuf, 1, sizeof(outbuf));
   memset(inbuf, 0, sizeof(inbuf));
 
-  EXPECT_EQ(0, Bind(sock1, LOCAL_HOST, PORT1));
-  EXPECT_EQ(0, Bind(sock2, LOCAL_HOST, PORT2));
+  EXPECT_EQ(0, Bind(sock1_, LOCAL_HOST, PORT1));
+  EXPECT_EQ(0, Bind(sock2_, LOCAL_HOST, PORT2));
 
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
   IP4ToSockAddr(LOCAL_HOST, PORT2, &addr);
 
   int len1 =
-     sendto(sock1, outbuf, sizeof(outbuf), 0, (sockaddr *) &addr, addrlen);
+     sendto(sock1_, outbuf, sizeof(outbuf), 0, (sockaddr*) &addr, addrlen);
   EXPECT_EQ(sizeof(outbuf), len1);
 
   // Ensure the buffers are different
@@ -229,7 +229,7 @@ TEST_F(SocketTestUDP, SendRcv) {
 
   // Try to receive the previously sent packet
   int len2 =
-    recvfrom(sock2, inbuf, sizeof(inbuf), 0, (sockaddr *) &addr, &addrlen);
+    recvfrom(sock2_, inbuf, sizeof(inbuf), 0, (sockaddr*) &addr, &addrlen);
   EXPECT_EQ(sizeof(outbuf), len2);
   EXPECT_EQ(sizeof(sockaddr_in), addrlen);
   EXPECT_EQ(PORT1, htons(addr.sin_port));
@@ -242,8 +242,8 @@ const size_t kQueueSize = 65536 * 8;
 TEST_F(SocketTestUDP, FullFifo) {
   char outbuf[16 * 1024];
 
-  EXPECT_EQ(0, Bind(sock1, LOCAL_HOST, PORT1));
-  EXPECT_EQ(0, Bind(sock2, LOCAL_HOST, PORT2));
+  ASSERT_EQ(0, Bind(sock1_, LOCAL_HOST, PORT1));
+  ASSERT_EQ(0, Bind(sock2_, LOCAL_HOST, PORT2));
 
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
@@ -251,20 +251,19 @@ TEST_F(SocketTestUDP, FullFifo) {
 
   size_t total = 0;
   while (total < kQueueSize * 8) {
-     int len = sendto(sock1, outbuf, sizeof(outbuf), MSG_DONTWAIT,
-                      (sockaddr *) &addr, addrlen);
+    int len = sendto(sock1_, outbuf, sizeof(outbuf), MSG_DONTWAIT,
+                     (sockaddr*) &addr, addrlen);
 
-     if (len <= 0) {
-       EXPECT_EQ(-1, len);
-       EXPECT_EQ(EWOULDBLOCK, errno);
-       break;
-     }
+    if (len <= 0) {
+      EXPECT_EQ(-1, len);
+      EXPECT_EQ(EWOULDBLOCK, errno);
+      break;
+    }
 
-     if (len >= 0) {
-       EXPECT_EQ(sizeof(outbuf), len);
-       total += len;
-     }
-
+    if (len >= 0) {
+      EXPECT_EQ(sizeof(outbuf), len);
+      total += len;
+    }
   }
   EXPECT_GT(total, kQueueSize - 1);
   EXPECT_LT(total, kQueueSize * 8);
@@ -330,40 +329,40 @@ TEST_F(SocketTestWithServer, TCPConnectNonBlock) {
 }
 
 TEST_F(SocketTest, Getsockopt) {
-  sock1 = socket(AF_INET, SOCK_STREAM, 0);
-  EXPECT_GT(sock1, -1);
+  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  EXPECT_GT(sock1_, -1);
   int socket_error = 99;
   socklen_t len = sizeof(socket_error);
 
   // Test for valid option (SO_ERROR) which should be 0 when a socket
   // is first created.
-  ASSERT_EQ(0, getsockopt(sock1, SOL_SOCKET, SO_ERROR, &socket_error, &len));
+  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_ERROR, &socket_error, &len));
   ASSERT_EQ(0, socket_error);
   ASSERT_EQ(sizeof(socket_error), len);
 
   int reuse = 0;
   len = sizeof(reuse);
-  ASSERT_EQ(0, getsockopt(sock1, SOL_SOCKET, SO_REUSEADDR, &reuse, &len));
+  ASSERT_EQ(0, getsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &reuse, &len));
   ASSERT_EQ(1, reuse);
 
   // Test for an invalid option (-1)
-  ASSERT_EQ(-1, getsockopt(sock1, SOL_SOCKET, -1, &socket_error, &len));
+  ASSERT_EQ(-1, getsockopt(sock1_, SOL_SOCKET, -1, &socket_error, &len));
   ASSERT_EQ(ENOPROTOOPT, errno);
 }
 
 TEST_F(SocketTest, Setsockopt) {
-  sock1 = socket(AF_INET, SOCK_STREAM, 0);
-  EXPECT_GT(sock1, -1);
+  sock1_ = socket(AF_INET, SOCK_STREAM, 0);
+  EXPECT_GT(sock1_, -1);
 
   // It should not be possible to set SO_ERROR using setsockopt.
   int socket_error = 10;
   socklen_t len = sizeof(socket_error);
-  ASSERT_EQ(-1, setsockopt(sock1, SOL_SOCKET, SO_ERROR, &socket_error, len));
+  ASSERT_EQ(-1, setsockopt(sock1_, SOL_SOCKET, SO_ERROR, &socket_error, len));
   ASSERT_EQ(ENOPROTOOPT, errno);
 
   int reuse = 1;
   len = sizeof(reuse);
-  ASSERT_EQ(0, setsockopt(sock1, SOL_SOCKET, SO_REUSEADDR, &reuse, len));
+  ASSERT_EQ(0, setsockopt(sock1_, SOL_SOCKET, SO_REUSEADDR, &reuse, len));
 }
 
 // The size of the data to send is deliberately chosen to be
@@ -435,7 +434,7 @@ TEST_F(SocketTestWithServer, LargeSend) {
 }
 
 TEST_F(SocketTestUDP, Listen) {
-  EXPECT_EQ(-1, listen(sock1, 10));
+  EXPECT_EQ(-1, listen(sock1_, 10));
   EXPECT_EQ(errno, ENOTSUP);
 }
 
@@ -443,7 +442,7 @@ TEST_F(SocketTestTCP, Listen) {
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
 
-  int server_sock = sock1;
+  int server_sock = sock1_;
 
   // Accept before listen should fail
   ASSERT_EQ(-1, accept(server_sock, (sockaddr*)&addr, &addrlen));
@@ -457,7 +456,7 @@ TEST_F(SocketTestTCP, Listen) {
     << "listen failed with: " << strerror(errno);
 
   // Connect to listening socket
-  int client_sock = sock2;
+  int client_sock = sock2_;
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   addrlen = sizeof(addr);
   ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
@@ -486,7 +485,7 @@ TEST_F(SocketTestTCP, Listen) {
 }
 
 TEST_F(SocketTestTCP, ListenNonBlocking) {
-  int server_sock = sock1;
+  int server_sock = sock1_;
 
   // Set non-blocking
   SetNonBlocking(server_sock);
@@ -510,7 +509,7 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
   ASSERT_EQ(0, poll(&pollfd, 1, 0));
 
   // Connect to listening socket
-  int client_sock = sock2;
+  int client_sock = sock2_;
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   addrlen = sizeof(addr);
   ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
@@ -535,6 +534,121 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
   pollfd.fd = server_sock;
   pollfd.events = POLLIN | POLLOUT;
   ASSERT_EQ(0, poll(&pollfd, 1, 0));
+}
+
+TEST_F(SocketTestTCP, SendRecvAfterRemoteShutdown) {
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  int server_sock = sock1_;
+  int client_sock = sock2_;
+
+  // bind and listen
+  ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
+  ASSERT_EQ(0, listen(server_sock, 10))
+    << "listen failed with: " << strerror(errno);
+
+  // connect to listening socket
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+
+  addrlen = sizeof(addr);
+  int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  ASSERT_NE(-1, new_sock);
+
+  const char* send_buf = "hello world";
+  ASSERT_EQ(strlen(send_buf), send(new_sock, send_buf, strlen(send_buf), 0));
+
+  // Recv first 10 bytes
+  char buf[256];
+  ASSERT_EQ(10, recv(client_sock, buf, 10, 0));
+
+  // Close the new socket
+  ASSERT_EQ(0, close(new_sock));
+
+  // Recv remainder
+  int bytes_remaining = strlen(send_buf) - 10;
+  ASSERT_EQ(bytes_remaining, recv(client_sock, buf, 256, 0));
+
+  // Attempt to read/write after remote shutdown, with no bytes remainging
+  ASSERT_EQ(0, recv(client_sock, buf, 10, 0));
+  ASSERT_EQ(0, recv(client_sock, buf, 10, 0));
+  ASSERT_EQ(-1, send(client_sock, buf, 10, 0));
+  ASSERT_EQ(errno, EPIPE);
+}
+
+TEST_F(SocketTestTCP, SendRecvAfterLocalShutdown) {
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  int server_sock = sock1_;
+  int client_sock = sock2_;
+
+  // bind and listen
+  ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
+  ASSERT_EQ(0, listen(server_sock, 10))
+    << "listen failed with: " << strerror(errno);
+
+  // connect to listening socket
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+
+  addrlen = sizeof(addr);
+  int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  ASSERT_NE(-1, new_sock);
+
+  // Close the new socket
+  ASSERT_EQ(0, shutdown(client_sock, SHUT_RDWR));
+
+  // Attempt to read/write after shutdown
+  char buffer[10];
+  ASSERT_EQ(0, recv(client_sock, buffer, sizeof(buffer), 0));
+  ASSERT_EQ(-1, send(client_sock, buffer, sizeof(buffer), 0));
+  ASSERT_EQ(errno, EPIPE);
+}
+
+#define SEND_BYTES (1024)
+TEST_F(SocketTestTCP, SendBufferedDataAfterShutdown) {
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  int server_sock = sock1_;
+  int client_sock = sock2_;
+
+  // bind and listen
+  ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
+  ASSERT_EQ(0, listen(server_sock, 10))
+    << "listen failed with: " << strerror(errno);
+
+  // connect to listening socket
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+  ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
+    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+
+  addrlen = sizeof(addr);
+  int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
+  ASSERT_NE(-1, new_sock);
+
+  // send a fairly large amount of data and immediately close
+  // the socket.
+  void* buffer = alloca(SEND_BYTES);
+  ASSERT_EQ(SEND_BYTES, send(client_sock, buffer, SEND_BYTES, 0));
+  ASSERT_EQ(0, close(client_sock));
+
+  // avoid double close of sock2_
+  sock2_ = -1;
+
+  // Attempt to recv() all the sent data.  None should be lost.
+  int remainder = SEND_BYTES;
+  while (remainder > 0) {
+    int rtn = recv(new_sock, buffer, remainder, 0);
+    ASSERT_GT(rtn, 0);
+    remainder -= rtn;
+  }
+
+  ASSERT_EQ(0, close(new_sock));
 }
 
 #endif  // PROVIDES_SOCKET_API

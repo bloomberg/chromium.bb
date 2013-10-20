@@ -18,7 +18,6 @@
 #include <iterator>
 #include <string>
 
-#include "nacl_io/dbgprint.h"
 #include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"

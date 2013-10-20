@@ -75,6 +75,7 @@ class KernelHandle : public sdk_util::RefObject {
   const ScopedMount& mount() { return mount_; }
 
   const HandleAttr& Attr() { return handle_attr_; }
+
 private:
   // Returns the MountNodeSocket* if this node is a socket otherwise returns
   // NULL.

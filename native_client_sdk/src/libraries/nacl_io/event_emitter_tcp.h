@@ -31,9 +31,13 @@ class EventEmitterTCP : public EventEmitterStream {
   uint32_t ReadOut_Locked(char* buffer, uint32_t len);
   uint32_t WriteOut_Locked(const char* buffer, uint32_t len);
 
+  bool GetError_Locked();
+  void SetError_Locked();
   void ConnectDone_Locked();
   PP_Resource GetAcceptedSocket_Locked();
   void SetAcceptedSocket_Locked(PP_Resource socket);
+  void UpdateStatus_Locked();
+  void SetListening_Locked();
 
  protected:
   virtual FIFOChar* in_fifo() { return &in_fifo_; }
@@ -42,6 +46,8 @@ class EventEmitterTCP : public EventEmitterStream {
  private:
   FIFOChar in_fifo_;
   FIFOChar out_fifo_;
+  bool error_;
+  bool listening_;
   PP_Resource accepted_socket_;
   DISALLOW_COPY_AND_ASSIGN(EventEmitterTCP);
 };

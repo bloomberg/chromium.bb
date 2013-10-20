@@ -25,6 +25,8 @@ namespace nacl_io {
 static const size_t MAX_SOCK_TRANSFER = 65536;
 
 class MountStream;
+class MountNodeSocket;
+typedef sdk_util::ScopedRef<MountNodeSocket> ScopedMountNodeSocket;
 
 class MountNodeSocket : public MountNodeStream {
  public:
@@ -52,7 +54,6 @@ class MountNodeSocket : public MountNodeStream {
                            socklen_t len);
 
   // Unsupported Functions
-  virtual Error Shutdown(int how);
   virtual Error MMap(void* addr,
                      size_t length,
                      int prot,
@@ -82,7 +83,6 @@ class MountNodeSocket : public MountNodeStream {
                          struct sockaddr* src_addr,
                          socklen_t* addrlen,
                          int* out_len);
-
   virtual Error Send(const HandleAttr& attr,
                      const void* buf,
                      size_t len,
@@ -96,6 +96,8 @@ class MountNodeSocket : public MountNodeStream {
                        socklen_t addrlen,
                        int* out_len);
 
+  virtual Error Shutdown(int how);
+
   virtual Error GetPeerName(struct sockaddr* addr, socklen_t* len);
   virtual Error GetSockName(struct sockaddr* addr, socklen_t* len);
 
@@ -103,10 +105,11 @@ class MountNodeSocket : public MountNodeStream {
   PP_Resource remote_addr() { return remote_addr_; }
 
   // Updates socket's state, recording last error.
-  void SetError_Locked(int pp_error_num);
-
+  virtual void SetError_Locked(int pp_error_num);
 
  protected:
+  bool IsBound() { return local_addr_ != 0; }
+  bool IsConnected() { return remote_addr_ != 0; }
 
   // Wraps common error checks, timeouts, work pump for send.
   Error SendHelper(const HandleAttr& attr,
@@ -159,9 +162,7 @@ class MountNodeSocket : public MountNodeStream {
   friend class MountStream;
 };
 
-
 }  // namespace nacl_io
-
 
 #endif  // PROVIDES_SOCKET_API
 #endif  // LIBRARIES_NACL_IO_MOUNT_NODE_SOCKET_H_
