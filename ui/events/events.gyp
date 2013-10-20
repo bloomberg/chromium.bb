@@ -90,7 +90,9 @@
         ['use_aura==0 and toolkit_views==0', {
           'sources/': [
             ['exclude', '^gestures/*'],
-          ],
+          ]
+        }],
+        ['toolkit_views==0', {
           'sources!': [
             'event.cc',
             'event.h',

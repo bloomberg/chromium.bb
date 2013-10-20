@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
-#include "build/build_config.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ipc/ipc_channel.h"
@@ -39,10 +38,6 @@ class ViewsDelegate;
 
 class GURL;
 namespace content {
-
-#if defined(USE_AURA)
-class ShellAuraPlatformData;
-#endif
 
 class BrowserContext;
 class ShellDevToolsFrontend;
@@ -264,13 +259,9 @@ class Shell : public WebContentsDelegate,
 #if defined(OS_CHROMEOS)
   static shell::MinimalShell* minimal_shell_;
 #endif
-#if defined(TOOLKIT_VIEWS)
   static views::ViewsDelegate* views_delegate_;
 
   views::Widget* window_widget_;
-#else // defined(TOOLKIT_VIEWS)
-  scoped_ptr<ShellAuraPlatformData> platform_;
-#endif // defined(TOOLKIT_VIEWS)
 #elif defined(OS_MACOSX)
   int content_width_;
   int content_height_;
