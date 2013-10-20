@@ -474,8 +474,9 @@ TEST(LazyPixelRefUtilsTest, DrawBitmap) {
   canvas->restore();
   canvas->save();
 
+  canvas->translate(1, 0);
   canvas->rotate(90);
-  // At (0, 0), rotated 90 degrees
+  // At (1, 0), rotated 90 degrees
   canvas->drawBitmap(fourth, 0, 0);
 
   canvas->restore();
@@ -496,7 +497,7 @@ TEST(LazyPixelRefUtilsTest, DrawBitmap) {
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-1, 0, 1, 50),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 1, 50),
                        gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 60),
                        gfx::SkRectToRectF(pixel_refs[4].pixel_ref_rect));

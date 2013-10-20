@@ -61,11 +61,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
     SkBitmap bitmap;
     if (GetBitmapFromPaint(paint, &bitmap)) {
       SkRect clip_rect = SkRect::Make(draw.fRC->getBounds());
-      SkRect canvas_rect = SkRect::MakeWH(width(), height());
-      SkRect paint_rect = SkRect::MakeEmpty();
-      paint_rect.intersect(canvas_rect, clip_rect);
-
-      AddBitmap(bitmap, paint_rect);
+      AddBitmap(bitmap, clip_rect);
     }
   }
 
@@ -334,7 +330,10 @@ class GatherPixelRefDevice : public SkBitmapDevice {
   LazyPixelRefSet* lazy_pixel_ref_set_;
 
   void AddBitmap(const SkBitmap& bm, const SkRect& rect) {
-    lazy_pixel_ref_set_->Add(bm.pixelRef(), rect);
+    SkRect canvas_rect = SkRect::MakeWH(width(), height());
+    SkRect paint_rect = SkRect::MakeEmpty();
+    paint_rect.intersect(rect, canvas_rect);
+    lazy_pixel_ref_set_->Add(bm.pixelRef(), paint_rect);
   }
 
   bool GetBitmapFromPaint(const SkPaint& paint, SkBitmap* bm) {
