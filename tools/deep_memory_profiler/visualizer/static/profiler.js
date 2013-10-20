@@ -9,7 +9,10 @@
 var Profiler = function(jsonData, template) {
   this.jsonData_ = jsonData;
   // Initialize template with templates information.
-  this.template_ = template || jsonData.templates['l2'];
+  this.template_ = template ||
+      (jsonData.default_template &&
+       jsonData.templates[jsonData.default_template]) ||
+      jsonData.templates['l2'];
   // Initialize selected category, and nothing selected at first.
   this.selected_ = null;
 
