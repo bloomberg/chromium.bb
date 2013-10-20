@@ -18,6 +18,7 @@ extern const char kParamX[];
 extern const char kParamY[];
 extern const char kParamWidth[];
 extern const char kParamHeight[];
+extern const char kResult[];
 
 namespace DOM {
 
@@ -116,6 +117,10 @@ namespace Page {
     extern const char kParamMaxWidth[];
     extern const char kParamMaxHeight[];
   }  // captureScreenshot
+
+  namespace canScreencast {
+    extern const char kName[];
+  }  // canScreencast
 
   namespace startScreencast {
     extern const char kName[];

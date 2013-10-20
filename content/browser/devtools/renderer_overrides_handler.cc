@@ -121,6 +121,11 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
           &RendererOverridesHandler::PageCaptureScreenshot,
           base::Unretained(this)));
   RegisterCommandHandler(
+      devtools::Page::canScreencast::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageCanScreencast,
+          base::Unretained(this)));
+  RegisterCommandHandler(
       devtools::Page::startScreencast::kName,
       base::Bind(
           &RendererOverridesHandler::PageStartScreencast,
@@ -455,6 +460,18 @@ RendererOverridesHandler::PageCaptureScreenshot(
                  weak_factory_.GetWeakPtr(), command, format, quality,
                  last_compositor_frame_metadata_));
   return command->AsyncResponsePromise();
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageCanScreencast(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* result = new base::DictionaryValue();
+#if defined(OS_ANDROID)
+  result->SetBoolean(devtools::kResult, true);
+#else
+  result->SetBoolean(devtools::kResult, false);
+#endif  // defined(OS_ANDROID)
+  return command->SuccessResponse(result);
 }
 
 scoped_refptr<DevToolsProtocol::Response>

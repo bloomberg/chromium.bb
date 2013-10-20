@@ -11,6 +11,7 @@ const char kParamX[] = "x";
 const char kParamY[] = "y";
 const char kParamWidth[] = "width";
 const char kParamHeight[] = "height";
+const char kResult[] = "result";
 
 namespace DOM {
 
@@ -107,6 +108,10 @@ namespace captureScreenshot {
   const char kParamMaxWidth[] = "maxWidth";
   const char kParamMaxHeight[] = "maxHeight";
 }  // captureScreenshot
+
+namespace canScreencast {
+  const char kName[] = "Page.canScreencast";
+}  // canScreencast
 
 namespace startScreencast {
   const char kName[] = "Page.startScreencast";
