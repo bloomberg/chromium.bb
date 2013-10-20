@@ -204,6 +204,7 @@ def AddAndroidActions(actions):
   actions.add('DataReductionProxy_TurnedOn');
   actions.add('DataReductionProxy_TurnedOnFromPromo');
   actions.add('DataReductionProxy_TurnedOff');
+  actions.add('MobileActionBarShown')
   actions.add('MobileBeamCallbackSuccess')
   actions.add('MobileBeamInvalidAppState')
   actions.add('MobileBreakpadUploadAttempt')

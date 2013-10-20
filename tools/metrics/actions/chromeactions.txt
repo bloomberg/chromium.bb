@@ -1078,6 +1078,7 @@
 0x6b52c76dc897d0ac	MinButton_Clk
 0x7b262d2127dd8256	Minimize_UsingKey
 0xfa4408343dc15b72	MixedScript_LoadAnyway_Bubble
+0x3f09ed78b409184e	MobileActionBarShown
 0x3dce569ec6ea9080	MobileBeamCallbackSuccess
 0x90e5a607c36178ce	MobileBeamInvalidAppState
 0xbc28c6539da4d688	MobileBreakpadUploadAttempt
