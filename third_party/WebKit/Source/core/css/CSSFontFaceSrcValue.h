@@ -95,7 +95,7 @@ private:
 #endif
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(FontFaceSrcValue);
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, isFontFaceSrcValue());
 
 }
 

@@ -62,7 +62,7 @@ private:
         PassRefPtr<CSSPrimitiveValue> color);
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(ShadowValue);
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSShadowValue, isShadowValue());
 
 } // namespace
 

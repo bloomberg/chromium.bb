@@ -54,7 +54,7 @@ private:
     bool m_loadRequested;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(SVGDocumentValue);
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSSVGDocumentValue, isSVGDocumentValue());
 
 } // namespace WebCore
 

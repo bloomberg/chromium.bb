@@ -79,7 +79,7 @@ protected:
     HashMap<IntSize, RefPtr<Image> > m_images; // A cache of Image objects by image size.
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(ImageGeneratorValue);
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageGeneratorValue, isImageGeneratorValue());
 
 } // namespace WebCore
 

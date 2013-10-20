@@ -51,7 +51,7 @@ private:
     const int m_value;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(FontFeatureValue);
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFeatureValue, isFontFeatureValue());
 
 } // namespace
 
