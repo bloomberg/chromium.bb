@@ -224,6 +224,7 @@ class MetadataDatabase {
                      const SyncStatusCallback& callback);
 
  private:
+  friend class RegisterAppTaskTest;
   friend class SyncEngineInitializerTest;
 
   struct DirtyTrackerComparator {

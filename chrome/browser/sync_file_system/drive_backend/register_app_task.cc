@@ -105,7 +105,7 @@ void RegisterAppTask::DidCreateAppRootFolder(
   DCHECK(entry);
   scoped_ptr<google_apis::FileResource> resource(
       drive::util::ConvertResourceEntryToFileResource(*entry));
-  sync_context_->GetMetadataDatabase()->UpdateByFileResource(
+  metadata_database()->UpdateByFileResource(
       change_id,
       *resource,
       base::Bind(&RegisterAppTask::DidUpdateDatabase,
