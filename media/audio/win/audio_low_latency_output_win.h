@@ -168,7 +168,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Checks available amount of space in the endpoint buffer and reads
   // data from the client to fill up the buffer without causing audio
   // glitches.
-  void RenderAudioFromSource(IAudioClock* audio_clock, UINT64 device_frequency);
+  bool RenderAudioFromSource(IAudioClock* audio_clock, UINT64 device_frequency);
 
   // Called when the device will be opened in exclusive mode and use the
   // application specified format.

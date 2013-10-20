@@ -472,7 +472,7 @@ void WASAPIAudioOutputStream::Run() {
         break;
       case WAIT_OBJECT_0 + 1:
         // |audio_samples_render_event_| has been set.
-        RenderAudioFromSource(audio_clock, device_frequency);
+        error = !RenderAudioFromSource(audio_clock, device_frequency);
         break;
       default:
         error = true;
@@ -494,7 +494,7 @@ void WASAPIAudioOutputStream::Run() {
   }
 }
 
-void WASAPIAudioOutputStream::RenderAudioFromSource(
+bool WASAPIAudioOutputStream::RenderAudioFromSource(
     IAudioClock* audio_clock, UINT64 device_frequency) {
   TRACE_EVENT0("audio", "RenderAudioFromSource");
 
@@ -516,7 +516,7 @@ void WASAPIAudioOutputStream::RenderAudioFromSource(
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to retrieve amount of available space: "
                   << std::hex << hr;
-      return;
+      return false;
     }
   } else {
     // While the stream is running, the system alternately sends one
@@ -534,7 +534,7 @@ void WASAPIAudioOutputStream::RenderAudioFromSource(
   // Check if there is enough available space to fit the packet size
   // specified by the client.
   if (num_available_frames < packet_size_frames_)
-    return;
+    return true;
 
   DLOG_IF(ERROR, num_available_frames % packet_size_frames_ != 0)
       << "Non-perfect timing detected (num_available_frames="
@@ -557,7 +557,7 @@ void WASAPIAudioOutputStream::RenderAudioFromSource(
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to use rendering audio buffer: "
                  << std::hex << hr;
-      return;
+      return false;
     }
 
     // Derive the audio delay which corresponds to the delay between
@@ -615,6 +615,8 @@ void WASAPIAudioOutputStream::RenderAudioFromSource(
 
     num_written_frames_ += packet_size_frames_;
   }
+
+  return true;
 }
 
 HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
