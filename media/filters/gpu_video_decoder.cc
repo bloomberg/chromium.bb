@@ -189,6 +189,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
 }
 
 void GpuVideoDecoder::DestroyPictureBuffers(PictureBufferMap* buffers) {
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   for (PictureBufferMap::iterator it = buffers->begin(); it != buffers->end();
        ++it) {
     factories_->DeleteTexture(it->second.texture_id());
@@ -549,6 +550,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
 }
 
 GpuVideoDecoder::~GpuVideoDecoder() {
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   DCHECK(!vda_.get());  // Stop should have been already called.
   DCHECK(pending_decode_cb_.is_null());
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {

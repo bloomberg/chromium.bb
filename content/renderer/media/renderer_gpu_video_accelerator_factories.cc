@@ -111,32 +111,9 @@ RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator(
 scoped_ptr<media::VideoEncodeAccelerator>
 RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator(
     media::VideoEncodeAccelerator::Client* client) {
-  if (message_loop_->BelongsToCurrentThread()) {
-    AsyncCreateVideoEncodeAccelerator(client);
-    message_loop_async_waiter_.Reset();
-    return vea_.Pass();
-  }
-  // The VEA is returned in the vea_ member variable by the
-  // AsyncCreateVideoEncodeAccelerator() function.
-  message_loop_->PostTask(FROM_HERE,
-                          base::Bind(&RendererGpuVideoAcceleratorFactories::
-                                         AsyncCreateVideoEncodeAccelerator,
-                                     this,
-                                     client));
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
-  base::WaitableEvent* objects[] = {&aborted_waiter_,
-                                    &message_loop_async_waiter_};
-  if (base::WaitableEvent::WaitMany(objects, arraysize(objects)) == 0) {
-    // If we are aborting and the VDA is created by the
-    // AsyncCreateVideoEncodeAccelerator() function later we need to ensure
-    // that it is destroyed on the same thread.
-    message_loop_->PostTask(FROM_HERE,
-                            base::Bind(&RendererGpuVideoAcceleratorFactories::
-                                           AsyncDestroyVideoEncodeAccelerator,
-                                       this));
-    return scoped_ptr<media::VideoEncodeAccelerator>();
-  }
-  return vea_.Pass();
+  return gpu_channel_host_->CreateVideoEncoder(client);
 }
 
 void RendererGpuVideoAcceleratorFactories::AsyncCreateVideoDecodeAccelerator(
@@ -152,67 +129,26 @@ void RendererGpuVideoAcceleratorFactories::AsyncCreateVideoDecodeAccelerator(
   message_loop_async_waiter_.Signal();
 }
 
-void RendererGpuVideoAcceleratorFactories::AsyncCreateVideoEncodeAccelerator(
-    media::VideoEncodeAccelerator::Client* client) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-
-  vea_ = gpu_channel_host_->CreateVideoEncoder(client).Pass();
-  message_loop_async_waiter_.Signal();
-}
-
 uint32 RendererGpuVideoAcceleratorFactories::CreateTextures(
     int32 count,
     const gfx::Size& size,
     std::vector<uint32>* texture_ids,
     std::vector<gpu::Mailbox>* texture_mailboxes,
     uint32 texture_target) {
-  uint32 sync_point = 0;
-
-  if (message_loop_->BelongsToCurrentThread()) {
-    AsyncCreateTextures(count, size, texture_target, &sync_point);
-    texture_ids->swap(created_textures_);
-    texture_mailboxes->swap(created_texture_mailboxes_);
-    message_loop_async_waiter_.Reset();
-    return sync_point;
-  }
-  message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncCreateTextures,
-                 this,
-                 count,
-                 size,
-                 texture_target,
-                 &sync_point));
-
-  base::WaitableEvent* objects[] = {&aborted_waiter_,
-                                    &message_loop_async_waiter_};
-  if (base::WaitableEvent::WaitMany(objects, arraysize(objects)) == 0)
-    return 0;
-  texture_ids->swap(created_textures_);
-  texture_mailboxes->swap(created_texture_mailboxes_);
-  return sync_point;
-}
-
-void RendererGpuVideoAcceleratorFactories::AsyncCreateTextures(
-    int32 count,
-    const gfx::Size& size,
-    uint32 texture_target,
-    uint32* sync_point) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(texture_target);
 
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (!context) {
-    message_loop_async_waiter_.Signal();
-    return;
-  }
+  if (!context)
+    return 0;
+
   gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
-  created_textures_.resize(count);
-  created_texture_mailboxes_.resize(count);
-  gles2->GenTextures(count, &created_textures_[0]);
+  texture_ids->resize(count);
+  texture_mailboxes->resize(count);
+  gles2->GenTextures(count, &texture_ids->at(0));
   for (int i = 0; i < count; ++i) {
     gles2->ActiveTexture(GL_TEXTURE0);
-    uint32 texture_id = created_textures_[i];
+    uint32 texture_id = texture_ids->at(i);
     gles2->BindTexture(texture_target, texture_id);
     gles2->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -229,9 +165,9 @@ void RendererGpuVideoAcceleratorFactories::AsyncCreateTextures(
                         GL_UNSIGNED_BYTE,
                         NULL);
     }
-    gles2->GenMailboxCHROMIUM(created_texture_mailboxes_[i].name);
+    gles2->GenMailboxCHROMIUM(texture_mailboxes->at(i).name);
     gles2->ProduceTextureCHROMIUM(texture_target,
-                                  created_texture_mailboxes_[i].name);
+                                  texture_mailboxes->at(i).name);
   }
 
   // We need a glFlush here to guarantee the decoder (in the GPU process) can
@@ -240,25 +176,12 @@ void RendererGpuVideoAcceleratorFactories::AsyncCreateTextures(
   gles2->Flush();
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
 
-  *sync_point = gles2->InsertSyncPointCHROMIUM();
-  message_loop_async_waiter_.Signal();
+  return gles2->InsertSyncPointCHROMIUM();
 }
 
 void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32 texture_id) {
-  if (message_loop_->BelongsToCurrentThread()) {
-    AsyncDeleteTexture(texture_id);
-    return;
-  }
-  message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncDeleteTexture,
-                 this,
-                 texture_id));
-}
-
-void RendererGpuVideoAcceleratorFactories::AsyncDeleteTexture(
-    uint32 texture_id) {
   DCHECK(message_loop_->BelongsToCurrentThread());
+
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
   if (!context)
     return;
@@ -269,34 +192,14 @@ void RendererGpuVideoAcceleratorFactories::AsyncDeleteTexture(
 }
 
 void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
-  if (message_loop_->BelongsToCurrentThread()) {
-    AsyncWaitSyncPoint(sync_point);
-    message_loop_async_waiter_.Reset();
-    return;
-  }
-
-  message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncWaitSyncPoint,
-                 this,
-                 sync_point));
-  base::WaitableEvent* objects[] = {&aborted_waiter_,
-                                    &message_loop_async_waiter_};
-  base::WaitableEvent::WaitMany(objects, arraysize(objects));
-}
-
-void RendererGpuVideoAcceleratorFactories::AsyncWaitSyncPoint(
-    uint32 sync_point) {
   DCHECK(message_loop_->BelongsToCurrentThread());
+
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (!context) {
-    message_loop_async_waiter_.Signal();
+  if (!context)
     return;
-  }
 
   gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
   gles2->WaitSyncPointCHROMIUM(sync_point);
-  message_loop_async_waiter_.Signal();
 }
 
 void RendererGpuVideoAcceleratorFactories::ReadPixels(uint32 texture_id,
@@ -369,6 +272,7 @@ void RendererGpuVideoAcceleratorFactories::AsyncReadPixels(
 
 base::SharedMemory* RendererGpuVideoAcceleratorFactories::CreateSharedMemory(
     size_t size) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
   return ChildThread::AllocateSharedMemory(size, thread_safe_sender_.get());
 }
 
@@ -399,13 +303,6 @@ RendererGpuVideoAcceleratorFactories::AsyncDestroyVideoDecodeAccelerator() {
   // OK to release because Destroy() will delete the VDA instance.
   if (vda_)
     vda_.release()->Destroy();
-}
-
-void
-RendererGpuVideoAcceleratorFactories::AsyncDestroyVideoEncodeAccelerator() {
-  // OK to release because Destroy() will delete the VDA instance.
-  if (vea_)
-    vea_.release()->Destroy();
 }
 
 }  // namespace content

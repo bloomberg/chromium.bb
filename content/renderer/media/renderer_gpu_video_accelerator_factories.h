@@ -32,19 +32,23 @@ class WebGraphicsContext3DCommandBufferImpl;
 // RenderViewImpl and only has its own header to allow extraction of its
 // implementation from render_view_impl.cc which is already far too large.
 //
-// The public methods of the class can be called from any thread, and are
-// internally trampolined to the appropriate thread.  GPU/GL-related calls must
-// be made on the media thread.
+// The RendererGpuVideoAcceleratorFactories can be constructed on any thread.
+// Most public methods of the class must be called from the media thread.  The
+// exceptions (which can be called from any thread, as they are internally
+// trampolined) are:
+// * CreateVideoDecodeAccelerator()
+// * ReadPixels()
 class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
     : public media::GpuVideoAcceleratorFactories {
  public:
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
-  // use.
+  // use.  Safe to call from any thread.
   RendererGpuVideoAcceleratorFactories(
       GpuChannelHost* gpu_channel_host,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
 
   // media::GpuVideoAcceleratorFactories implementation.
+  // CreateVideoDecodeAccelerator() is safe to call from any thread.
   virtual scoped_ptr<media::VideoDecodeAccelerator>
       CreateVideoDecodeAccelerator(
           media::VideoCodecProfile profile,
@@ -61,6 +65,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
                                 uint32 texture_target) OVERRIDE;
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
   virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
+  // ReadPixels() is safe to call from any thread.
   virtual void ReadPixels(uint32 texture_id,
                           const gfx::Size& size,
                           const SkBitmap& pixels) OVERRIDE;
@@ -90,21 +95,11 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // a WaitableEvent* param to signal completion (except for DeleteTexture,
   // which is fire-and-forget).
   // AsyncCreateVideoDecodeAccelerator returns its output in the |vda_| member.
-  // AsyncCreateVideoEncodeAccelerator returns its output in the |vea_| member.
   void AsyncCreateVideoDecodeAccelerator(
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client);
-  void AsyncCreateVideoEncodeAccelerator(
-      media::VideoEncodeAccelerator::Client* client);
-  void AsyncCreateTextures(int32 count,
-                           const gfx::Size& size,
-                           uint32 texture_target,
-                           uint32* sync_point);
-  void AsyncDeleteTexture(uint32 texture_id);
-  void AsyncWaitSyncPoint(uint32 sync_point);
   void AsyncReadPixels(uint32 texture_id, const gfx::Size& size);
   void AsyncDestroyVideoDecodeAccelerator();
-  void AsyncDestroyVideoEncodeAccelerator();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
@@ -124,15 +119,8 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // The vda returned by the CreateVideoDecodeAccelerator function.
   scoped_ptr<media::VideoDecodeAccelerator> vda_;
 
-  // The vea returned by the CreateVideoEncodeAccelerator function.
-  scoped_ptr<media::VideoEncodeAccelerator> vea_;
-
   // Bitmap returned by ReadPixels().
   SkBitmap read_pixels_bitmap_;
-
-  // Textures returned by the CreateTexture() function.
-  std::vector<uint32> created_textures_;
-  std::vector<gpu::Mailbox> created_texture_mailboxes_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererGpuVideoAcceleratorFactories);
 };
