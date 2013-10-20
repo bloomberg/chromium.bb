@@ -636,6 +636,18 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   if (video_frame->texture_target() != GL_TEXTURE_2D)
     return false;
 
+  // Since this method changes which texture is bound to the TEXTURE_2D target,
+  // ideally it would restore the currently-bound texture before returning.
+  // The cost of getIntegerv is sufficiently high, however, that we want to
+  // avoid it in user builds. As a result assume (below) that |texture| is
+  // bound when this method is called, and only verify this fact when
+  // DCHECK_IS_ON.
+  if (DCHECK_IS_ON()) {
+    GLint bound_texture = 0;
+    web_graphics_context->getIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
+    DCHECK_EQ(static_cast<GLuint>(bound_texture), texture);
+  }
+
   scoped_refptr<media::VideoFrame::MailboxHolder> mailbox_holder =
       video_frame->texture_mailbox();
 
@@ -664,6 +676,9 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
                                     false);
+
+  // Restore the state for TEXTURE_2D binding point as mentioned above.
+  web_graphics_context->bindTexture(GL_TEXTURE_2D, texture);
 
   web_graphics_context->deleteTexture(source_texture);
 
