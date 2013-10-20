@@ -1015,15 +1015,20 @@ class NinjaWriter:
       self.AppendPostbuildVariable(extra_bindings, spec, output, output)
 
     is_executable = spec['type'] == 'executable'
+    # The ldflags config key is not used on mac or win. On those platforms
+    # linker flags are set via xcode_settings and msvs_settings, respectively.
+    env_ldflags = os.environ.get('LDFLAGS', '').split()
     if self.flavor == 'mac':
       ldflags = self.xcode_settings.GetLdflags(config_name,
           self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
           self.GypPathToNinja, arch)
+      ldflags = env_ldflags + ldflags
     elif self.flavor == 'win':
       manifest_name = self.GypPathToUniqueOutput(
           self.ComputeOutputFileName(spec))
       ldflags, manifest_files = self.msvs_settings.GetLdflags(config_name,
           self.GypPathToNinja, self.ExpandSpecial, manifest_name, is_executable)
+      ldflags = env_ldflags + ldflags
       self.WriteVariableList(ninja_file, 'manifests', manifest_files)
       command_suffix = _GetWinLinkRuleNameSuffix(
           self.msvs_settings.IsEmbedManifest(config_name),
@@ -1034,8 +1039,7 @@ class NinjaWriter:
     else:
       # Respect environment variables related to build, but target-specific
       # flags can still override them.
-      ldflags = (os.environ.get('LDFLAGS', '').split() +
-                 config.get('ldflags', []))
+      ldflags = env_ldflags + config.get('ldflags', [])
       if is_executable and len(solibs):
         rpath = 'lib/'
         if self.toolset != 'target':
