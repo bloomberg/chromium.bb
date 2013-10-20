@@ -1213,6 +1213,9 @@ void PrintPreviewHandler::SaveCUPSColorSetting(
 
 void PrintPreviewHandler::ConvertColorSettingToCUPSColorModel(
     base::DictionaryValue* settings) const {
+  if (!cups_printer_color_models_)
+    return;
+
   // Sanity check the printer name.
   std::string printer_name;
   if (!settings->GetString(printing::kSettingDeviceName, &printer_name) ||
