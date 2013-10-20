@@ -14,6 +14,7 @@ examples/api/mouse_lock/*
 examples/api/socket/*
 examples/api/url_loader/*
 examples/api/var_array_buffer/*
+examples/api/var_dictionary/*
 examples/api/websocket/*
 examples/button_close.png
 examples/button_close_hover.png
