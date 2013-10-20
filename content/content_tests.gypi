@@ -1113,21 +1113,6 @@
           ],
         },
         {
-          # TODO(jochen): remove this once the blink side has landed.
-          'target_name': 'content_webkit_unit_test_support_tmp',
-          'type': 'static_library',
-          'dependencies': [
-            'test_support_content',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'test/webkit_unit_test_support.cc',
-            'test/webkit_unit_test_support.h',
-          ],
-        },
-        {
           'target_name': 'content_webkit_unit_test_support',
           'type': 'static_library',
           'dependencies': [
