@@ -1236,8 +1236,7 @@ bool RenderLayer::cannotBlitToWindow() const
 
 bool RenderLayer::isTransparent() const
 {
-    // FIXME: This seems incorrect; why would SVG layers be opaque?
-    if (renderer()->node() && renderer()->node()->namespaceURI() == SVGNames::svgNamespaceURI)
+    if (renderer()->node() && renderer()->node()->isSVGElement())
         return false;
 
     return renderer()->isTransparent() || renderer()->hasMask();
