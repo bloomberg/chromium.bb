@@ -1339,14 +1339,20 @@ void TestRunner::findString(const CppArgumentList& arguments, CppVariant* result
     if (arguments.size() >= 2) {
         vector<string> optionsArray = arguments[1].toStringVector();
         findOptions.matchCase = true;
+        findOptions.findNext = true;
 
         for (size_t i = 0; i < optionsArray.size(); ++i) {
             const std::string& option = optionsArray[i];
-            // FIXME: Support all the options, so we can run findString.html too.
             if (option == "CaseInsensitive")
                 findOptions.matchCase = false;
             else if (option == "Backwards")
                 findOptions.forward = false;
+            else if (option == "StartInSelection")
+                findOptions.findNext = false;
+            else if (option == "AtWordStarts")
+                findOptions.wordStart = true;
+            else if (option == "TreatMedialCapitalAsWordStart")
+                findOptions.medialCapitalAsWordStart = true;
             else if (option == "WrapAround")
                 wrapAround = true;
         }
@@ -1354,6 +1360,7 @@ void TestRunner::findString(const CppArgumentList& arguments, CppVariant* result
 
     WebFrame* frame = m_webView->mainFrame();
     const bool findResult = frame->find(0, cppVariantToWebString(arguments[0]), findOptions, wrapAround, 0);
+    frame->stopFinding(false);
     result->set(findResult);
 }
 

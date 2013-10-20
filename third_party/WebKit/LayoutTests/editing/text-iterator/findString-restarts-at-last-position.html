@@ -22,9 +22,10 @@ if (!window.testRunner)
     testFailed('This test requires the testRunner object');
 else {
     shouldBeTrue('testRunner.findString("first_", [])');
-    shouldBeTrue('testRunner.findString("first_step", [])');
+    shouldBeTrue('testRunner.findString("first_step", ["StartInSelection"])');
     shouldBeTrue('testRunner.findString("last_step", [])');
     shouldBeFalse('testRunner.findString("last_step", [])');
+    shouldBeTrue('testRunner.findString("last_step", ["WrapAround"])');
 }
 
 document.getElementById("console").style.removeProperty("visibility");

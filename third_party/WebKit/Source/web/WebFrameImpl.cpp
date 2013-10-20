@@ -1486,7 +1486,9 @@ bool WebFrameImpl::find(int identifier, const WebString& searchText, const WebFi
     const FindOptions findOptions = (options.forward ? 0 : Backwards)
         | (options.matchCase ? 0 : CaseInsensitive)
         | (wrapWithinFrame ? WrapAround : 0)
-        | (!options.findNext ? StartInSelection : 0);
+        | (options.wordStart ? AtWordStarts : 0)
+        | (options.medialCapitalAsWordStart ? TreatMedialCapitalAsWordStart : 0)
+        | (options.findNext ? 0 : StartInSelection);
     m_activeMatch = frame()->editor().findStringAndScrollToVisible(searchText, m_activeMatch.get(), findOptions);
 
     if (!m_activeMatch) {
