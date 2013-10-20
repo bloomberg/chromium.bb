@@ -445,18 +445,9 @@ def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
   Args:
     opts: The options parsed from the command line through parse_args().
     custom_deps: A dictionary of additional dependencies to add to .gclient.
-
-  Returns:
-    Returns 0 on success, otherwise 1.
   """
   if not CreateAndChangeToSourceDirectory(opts.working_directory):
-    print 'Error: Could not create bisect directory.'
-    print
-    return 1
+    raise RuntimeError('Could not create bisect directory.')
 
   if not SetupGitDepot(opts, custom_deps):
-    print 'Error: Failed to grab source.'
-    print
-    return 1
-
-  return 0
+    raise RuntimeError('Failed to grab source.')

@@ -58,9 +58,11 @@ def main():
     return 1
 
   if not bisect_utils.CheckIfBisectDepotExists(opts):
-    return bisect_utils.CreateBisectDirectoryAndSetupDepot(
-               opts,
-               bisect_utils.DEFAULT_GCLIENT_CUSTOM_DEPS)
+    try:
+      bisect_utils.CreateBisectDirectoryAndSetupDepot(opts,
+          bisect_utils.DEFAULT_GCLIENT_CUSTOM_DEPS)
+    except RuntimeError:
+      return 1
   return 0
 
 
