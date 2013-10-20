@@ -8,6 +8,7 @@ namespace extensions {
 
 using api::system_storage::StorageUnitInfo;
 namespace EjectDevice = api::system_storage::EjectDevice;
+namespace GetAvailableCapacity = api::system_storage::GetAvailableCapacity;
 
 SystemStorageGetInfoFunction::SystemStorageGetInfoFunction() {
 }
@@ -90,6 +91,55 @@ void SystemStorageEjectDeviceFunction::HandleResponse(
   SetResult(new base::StringValue(
       api::system_storage::ToString(result)));
   SendResponse(true);
+}
+
+SystemStorageGetAvailableCapacityFunction::
+    SystemStorageGetAvailableCapacityFunction() {
+}
+
+SystemStorageGetAvailableCapacityFunction::
+    ~SystemStorageGetAvailableCapacityFunction() {
+}
+
+bool SystemStorageGetAvailableCapacityFunction::RunImpl() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  scoped_ptr<GetAvailableCapacity::Params> params(
+      GetAvailableCapacity::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
+      &SystemStorageGetAvailableCapacityFunction::OnStorageMonitorInit,
+      this,
+      params->id));
+  return true;
+}
+
+void SystemStorageGetAvailableCapacityFunction::OnStorageMonitorInit(
+    const std::string& transient_id) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(
+          &StorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread,
+          StorageInfoProvider::Get(), transient_id),
+      base::Bind(
+          &SystemStorageGetAvailableCapacityFunction::OnQueryCompleted,
+          this, transient_id));
+}
+
+void SystemStorageGetAvailableCapacityFunction::OnQueryCompleted(
+    const std::string& transient_id, double available_capacity) {
+  bool success = available_capacity >= 0;
+  if (success) {
+    api::system_storage::StorageAvailableCapacityInfo result;
+    result.id = transient_id;
+    result.available_capacity = available_capacity;
+    SetResult(result.ToValue().release());
+  } else {
+    SetError("Error occurred when querying available capacity.");
+  }
+  SendResponse(success);
 }
 
 }  // namespace extensions

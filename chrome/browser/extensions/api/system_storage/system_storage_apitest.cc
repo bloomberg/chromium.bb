@@ -21,12 +21,48 @@ using extensions::test::TestStorageUnitInfo;
 using extensions::test::kRemovableStorageData;
 
 const struct TestStorageUnitInfo kTestingData[] = {
-  {"dcim:device:001", "0xbeaf", 4098, 1000},
-  {"path:device:002", "/home", 4098, 1000},
-  {"path:device:003", "/data", 10000, 1000}
+  {"dcim:device:001", "0xbeaf", 4098, 1},
+  {"path:device:002", "/home", 4098, 2},
+  {"path:device:003", "/data", 10000, 3}
 };
 
 }  // namespace
+
+class TestStorageInfoProvider : public extensions::StorageInfoProvider {
+ public:
+  TestStorageInfoProvider(const struct TestStorageUnitInfo* testing_data,
+                          size_t n);
+
+ private:
+  virtual ~TestStorageInfoProvider();
+
+  // StorageInfoProvider implementations.
+  virtual double GetStorageFreeSpaceFromTransientIdOnFileThread(
+      const std::string& transient_id) OVERRIDE;
+
+  std::vector<struct TestStorageUnitInfo> testing_data_;
+};
+
+TestStorageInfoProvider::TestStorageInfoProvider(
+    const struct TestStorageUnitInfo* testing_data, size_t n)
+        : testing_data_(testing_data, testing_data + n) {
+}
+
+TestStorageInfoProvider::~TestStorageInfoProvider() {
+}
+
+double TestStorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
+    const std::string& transient_id) {
+  std::string device_id =
+      StorageMonitor::GetInstance()->GetDeviceIdForTransientId(
+          transient_id);
+  for (size_t i = 0; i < testing_data_.size(); ++i) {
+    if (testing_data_[i].device_id == device_id) {
+      return static_cast<double>(testing_data_[i].available_capacity);
+    }
+  }
+  return -1;
+}
 
 class SystemStorageApiTest : public ExtensionApiTest {
  public:
@@ -65,6 +101,10 @@ class SystemStorageApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
   SetUpAllMockStorageDevices();
+  TestStorageInfoProvider* provider =
+      new TestStorageInfoProvider(kTestingData,
+                                  arraysize(kTestingData));
+  extensions::StorageInfoProvider::InitializeForTesting(provider);
   std::vector<linked_ptr<ExtensionTestMessageListener> > device_ids_listeners;
   for (size_t i = 0; i < arraysize(kTestingData); ++i) {
     linked_ptr<ExtensionTestMessageListener> listener(

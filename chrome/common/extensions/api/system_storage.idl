@@ -30,6 +30,13 @@ namespace system.storage {
     double capacity;
   };
 
+  dictionary StorageAvailableCapacityInfo {
+    // A copied |id| of getAvailableCapacity function parameter |id|.
+    DOMString id;
+    // The available capacity of the storage device, in bytes.
+    double availableCapacity;
+  };
+
   [inline_doc] enum EjectDeviceResultCode {
     // The ejection command is successful -- the application can prompt the user
     // to remove the device.
@@ -48,6 +55,9 @@ namespace system.storage {
 
   callback StorageInfoCallback = void (StorageUnitInfo[] info);
 
+  callback GetAvailableCapacityCallback = void (
+      StorageAvailableCapacityInfo info);
+
   interface Functions {
     // Get the storage information from the system. The argument passed to the
     // callback is an array of StorageUnitInfo objects.
@@ -55,6 +65,11 @@ namespace system.storage {
 
     // Ejects a removable storage device.
     static void ejectDevice(DOMString id, EjectDeviceCallback callback);
+
+    // Get the available capacity of a specified |id| storage device.
+    // The |id| is the transient device ID from StorageUnitInfo.
+    static void getAvailableCapacity(DOMString id,
+                                     GetAvailableCapacityCallback callback);
   };
 
   interface Events {
@@ -66,4 +81,3 @@ namespace system.storage {
   };
 
 };
-
