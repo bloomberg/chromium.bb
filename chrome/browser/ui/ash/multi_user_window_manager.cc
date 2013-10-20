@@ -320,7 +320,9 @@ void MultiUserWindowManager::AddUser(const std::string& user_id) {
 }
 
 void MultiUserWindowManager::AddBrowserWindow(Browser* browser) {
-  if (browser->window() && !browser->window()->GetNativeWindow())
+  // A unit test (e.g. CrashRestoreComplexTest.RestoreSessionForThreeUsers) can
+  // come here with no valid window.
+  if (!browser->window() || !browser->window()->GetNativeWindow())
     return;
   SetWindowOwner(browser->window()->GetNativeWindow(),
                  GetUserIDFromProfile(browser->profile()));
