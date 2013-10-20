@@ -500,6 +500,9 @@ interface InspectorOverrides {
     [Page, Inline=FastReturn]
     DeviceOrientationData* overrideDeviceOrientation(Page* page, [DefaultReturn] DeviceOrientationData* deviceOrientation);
 
+    [Page, Inline=FastReturn]
+    bool overrideTextAutosizing(Page* page, [DefaultReturn] bool textAutosizing);
+
     [Profiler]
     String getCurrentUserInitiatedProfileName(ExecutionContext* context, bool incrementProfileNumber);
 }

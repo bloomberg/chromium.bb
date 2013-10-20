@@ -224,6 +224,11 @@ void Settings::setTextAutosizingEnabled(bool textAutosizingEnabled)
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
+bool Settings::textAutosizingEnabled() const
+{
+    return InspectorInstrumentation::overrideTextAutosizing(m_page, m_textAutosizingEnabled);
+}
+
 void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizingWindowSizeOverride)
 {
     if (m_textAutosizingWindowSizeOverride == textAutosizingWindowSizeOverride)

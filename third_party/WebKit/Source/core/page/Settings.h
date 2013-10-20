@@ -86,7 +86,7 @@ public:
     const AtomicString& pictographFontFamily(UScriptCode = USCRIPT_COMMON) const;
 
     void setTextAutosizingEnabled(bool);
-    bool textAutosizingEnabled() const { return m_textAutosizingEnabled; }
+    bool textAutosizingEnabled() const;
 
     void setTextAutosizingFontScaleFactor(float);
     float textAutosizingFontScaleFactor() const { return m_textAutosizingFontScaleFactor; }
