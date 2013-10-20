@@ -70,6 +70,7 @@ WTF_EXPORT void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_
     root->firstExtent.superPageBase = 0;
     root->firstExtent.superPagesEnd = 0;
     root->firstExtent.next = 0;
+    root->seedPage.guard = reinterpret_cast<size_t*>(&root->seedPage.guard);
     root->seedPage.numAllocatedSlots = 0;
     root->seedPage.numUnprovisionedSlots = 0;
     root->seedPage.bucket = &root->seedBucket;
@@ -226,6 +227,7 @@ static ALWAYS_INLINE size_t partitionBucketSlots(const PartitionBucket* bucket)
 static ALWAYS_INLINE void partitionPageReset(PartitionPageHeader* page, PartitionBucket* bucket)
 {
     ASSERT(page != &bucket->root->seedPage);
+    page->guard = reinterpret_cast<size_t*>(&page->guard);
     page->numAllocatedSlots = 0;
     page->numUnprovisionedSlots = partitionBucketSlots(bucket);
     ASSERT(page->numUnprovisionedSlots > 1);
@@ -319,6 +321,7 @@ void* partitionAllocSlowPath(PartitionBucket* bucket)
         ASSERT(next->next->prev == next);
         ASSERT(next->prev->next == next);
         ASSERT(next != &bucket->root->seedPage);
+        partitionValidatePage(next);
         if (LIKELY(next->freelistHead != 0)) {
             bucket->currPage = next;
             PartitionFreelistEntry* ret = next->freelistHead;
@@ -382,6 +385,7 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
 {
     PartitionBucket* bucket = page->bucket;
     ASSERT(page != &bucket->root->seedPage);
+    partitionValidatePage(bucket->currPage);
     if (LIKELY(page->numAllocatedSlots == 0)) {
         // Page became fully unused.
         // If it's the current page, change it!

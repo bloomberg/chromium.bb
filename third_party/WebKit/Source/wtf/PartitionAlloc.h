@@ -53,8 +53,7 @@
 // Allocation sizes must be aligned to the system pointer size.
 // The separate APIs partitionAllocGeneric and partitionFreeGeneric are
 // provided, and they do not have the above three restrictions. In return, you
-// take a small performance hit and are also obliged to keep track of
-// allocation sizes, and pass them to partitionFreeGeneric.
+// take a small performance hit.
 //
 // This allocator is designed to be extremely fast, thanks to the following
 // properties and design:
@@ -75,23 +74,24 @@
 // - Linear overflows cannot corrupt out of the partition.
 // - Freed pages will only be re-used within the partition.
 // - Freed pages will only hold same-sized objects when re-used.
-// - Dereference of freelist pointer will fault.
+// - Dereference of freelist pointer should fault.
+// - Linear overflow into page header should be trapped, as long as ASLR has
+// not been bypasses.
+// - Partial pointer overwrite of freelist pointer should fault.
+// - Rudimentary double-free detection.
 //
 // The following security properties could be investigated in the future:
-// - No double-free detection (tcmalloc has some but it may be only a detection
-// and not a defense).
-// - No randomness in freelist pointers.
 // - Per-object bucketing (instead of per-size) is mostly available at the API,
 // but not used yet.
 // - No randomness of freelist entries or bucket position.
-// - No specific protection against corruption of page header metadata.
 
 #include "wtf/Assertions.h"
+#include "wtf/ByteSwap.h"
+#include "wtf/CPU.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/PageAllocator.h"
 #include "wtf/QuantizedAllocation.h"
 #include "wtf/SpinLock.h"
-#include "wtf/UnusedParam.h"
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 #include <stdlib.h>
@@ -142,6 +142,7 @@ struct PartitionFreelistEntry {
 };
 
 struct PartitionPageHeader {
+    uintptr_t* guard; // Points to self, used as a fast type of canary.
     PartitionFreelistEntry* freelistHead;
     int numAllocatedSlots; // Deliberately signed.
     unsigned numUnprovisionedSlots;
@@ -205,13 +206,19 @@ WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRoot*, void*, siz
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
-    // For now, use a simple / fast mask that guarantees an invalid pointer in
-    // case it gets used as a vtable pointer.
-    // The one attack we're fully mitigating is where an object is freed and its
-    // vtable used where the attacker doesn't get the chance to run allocations
-    // between the free and use.
-    // We're deliberately not trying to defend against OOB reads or writes.
+    // We use bswap on little endian as a fast mask for two reasons:
+    // 1) If an object is freed and its vtable used where the attacker doesn't
+    // get the chance to run allocations between the free and use, the vtable
+    // dereference is likely to fault.
+    // 2) If the attacker has a linear buffer overflow and elects to try and
+    // corrupt a freelist pointer, partial pointer overwrite attacks are
+    // thwarted.
+    // For big endian, similar guarantees are arrived at with a negation.
+#if CPU(BIG_ENDIAN)
     uintptr_t masked = ~reinterpret_cast<uintptr_t>(ptr);
+#else
+    uintptr_t masked = bswapuintptrt(reinterpret_cast<uintptr_t>(ptr));
+#endif
     return reinterpret_cast<PartitionFreelistEntry*>(masked);
 }
 
@@ -265,9 +272,18 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
     return false;
 }
 
+ALWAYS_INLINE void partitionValidatePage(PartitionPageHeader* page)
+{
+    // Force the read by referencing a volatile version of the guard.
+    volatile uintptr_t* guard = page->guard;
+    *guard;
+    ASSERT(*guard == reinterpret_cast<uintptr_t>(&page->guard));
+}
+
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 {
     PartitionPageHeader* page = bucket->currPage;
+    partitionValidatePage(page);
     PartitionFreelistEntry* ret = page->freelistHead;
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
@@ -302,7 +318,9 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPageHeader* page)
     // If these asserts fire, you probably corrupted memory.
     ASSERT(!page->freelistHead || partitionPointerIsValid(page->bucket->root, page->freelistHead));
     ASSERT(!page->freelistHead || partitionPointerToPage(page->freelistHead));
-    ASSERT(ptr != page->freelistHead); // Catches an immediate double free.
+    RELEASE_ASSERT(ptr != page->freelistHead); // Catches an immediate double free.
+    ASSERT(!page->freelistHead || ptr != partitionFreelistMask(page->freelistHead->next)); // Look for double free one level deeper in debug.
+    partitionValidatePage(page);
     PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
     entry->next = partitionFreelistMask(page->freelistHead);
     page->freelistHead = entry;
