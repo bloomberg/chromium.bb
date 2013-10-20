@@ -66,8 +66,10 @@ struct SupportedTypeInfo {
 
 static const CodecInfo kVP8CodecInfo = { "vp8", CodecInfo::VIDEO, NULL,
                                          CodecInfo::HISTOGRAM_VP8 };
+#if !defined(OS_ANDROID)
 static const CodecInfo kVP9CodecInfo = { "vp9", CodecInfo::VIDEO, NULL,
                                          CodecInfo::HISTOGRAM_VP9 };
+#endif
 static const CodecInfo kVorbisCodecInfo = { "vorbis", CodecInfo::AUDIO, NULL,
                                             CodecInfo::HISTOGRAM_VORBIS };
 static const CodecInfo kOpusCodecInfo = { "opus", CodecInfo::AUDIO, NULL,

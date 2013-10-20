@@ -30,9 +30,6 @@ namespace {
 // Used to indicate that no line is currently selected by the user.
 const int kNoSelection = -1;
 
-// Size difference between name and subtext in pixels.
-const int kLabelFontSizeDelta = -2;
-
 // The vertical height of each row in pixels.
 const size_t kRowHeight = 24;
 
@@ -40,6 +37,9 @@ const size_t kRowHeight = 24;
 const size_t kSeparatorHeight = 1;
 
 #if !defined(OS_ANDROID)
+// Size difference between name and subtext in pixels.
+const int kLabelFontSizeDelta = -2;
+
 const size_t kNamePadding = AutofillPopupView::kNamePadding;
 const size_t kIconPadding = AutofillPopupView::kIconPadding;
 const size_t kEndPadding = AutofillPopupView::kEndPadding;

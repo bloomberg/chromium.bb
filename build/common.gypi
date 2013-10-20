@@ -3220,11 +3220,6 @@
             'cflags_cc': [
               '-Wno-implicit-exception-spec-mismatch',
             ],
-            'cflags': [
-              # TODO(hans): Remove once we've cleaned up the warnings.
-              # http://crbug.com/307668
-              '-Wno-unused-const-variable',
-            ],
           }],
           ['clang==1 and clang_use_chrome_plugins==1', {
             'cflags': [

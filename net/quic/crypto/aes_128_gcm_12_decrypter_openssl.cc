@@ -12,13 +12,8 @@ using base::StringPiece;
 
 namespace net {
 
-namespace {
-
-const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
 const size_t kAESNonceSize = 12;
-
-}  // namespace
 
 Aes128Gcm12Decrypter::Aes128Gcm12Decrypter() {}
 

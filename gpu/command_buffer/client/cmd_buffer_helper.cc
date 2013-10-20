@@ -10,10 +10,11 @@
 
 namespace gpu {
 
-namespace {
 const int kCommandsPerFlushCheck = 100;
+
+#if !defined(OS_ANDROID)
 const double kFlushDelay = 1.0 / (5.0 * 60.0);
-}
+#endif
 
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),

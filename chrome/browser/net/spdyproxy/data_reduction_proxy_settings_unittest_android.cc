@@ -26,7 +26,6 @@
 #include "url/gurl.h"
 
 const char kDataReductionProxyOrigin[] = "https://foo:443/";
-const char kDataReductionProxyOriginHostPort[] = "foo:443";
 const char kDataReductionProxyAuth[] = "12345";
 
 class TestDataReductionProxySettingsAndroid

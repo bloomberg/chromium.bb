@@ -66,8 +66,10 @@ using drive_backend::FakeDriveServiceHelper;
 
 namespace {
 
+#if !defined(OS_ANDROID)
 const char kExtensionName1[] = "example1";
 const char kExtensionName2[] = "example2";
+#endif
 
 void DidInitialize(bool* done, SyncStatusCode status, bool created) {
   EXPECT_FALSE(*done);

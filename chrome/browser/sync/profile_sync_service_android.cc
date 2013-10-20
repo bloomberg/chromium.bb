@@ -46,7 +46,6 @@ using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
 namespace {
-const char kSyncDisabledStatus[] = "OFFLINE_DISABLED";
 
 enum {
 #define DEFINE_MODEL_TYPE_SELECTION(name,value)  name = value,

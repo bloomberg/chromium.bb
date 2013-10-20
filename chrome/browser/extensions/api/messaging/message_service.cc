@@ -60,8 +60,10 @@ namespace extensions {
 
 const char kReceivingEndDoesntExistError[] =
     "Could not establish connection. Receiving end does not exist.";
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 const char kMissingPermissionError[] =
     "Access to native messaging requires nativeMessaging permission.";
+#endif
 
 struct MessageService::MessageChannel {
   scoped_ptr<MessagePort> opener;

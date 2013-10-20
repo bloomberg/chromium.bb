@@ -58,12 +58,14 @@ namespace {
 
 const char kTestUser[] = "testuser@test.com";
 
+#if !defined(OS_ANDROID)
 const char kValidTokenResponse[] =
     "{"
     "  \"access_token\": \"at1\","
     "  \"expires_in\": 3600,"
     "  \"token_type\": \"Bearer\""
     "}";
+#endif
 
 const char kHostedDomainResponse[] =
     "{"
