@@ -24,21 +24,21 @@ const char kReleaseChannelStable[] = "stable-channel";
 // Returns UPDATE_STATUS_ERROR on error.
 UpdateEngineClient::UpdateStatusOperation UpdateStatusFromString(
     const std::string& str) {
-  if (str == "UPDATE_STATUS_IDLE")
+  if (str == update_engine::kUpdateStatusIdle)
     return UpdateEngineClient::UPDATE_STATUS_IDLE;
-  if (str == "UPDATE_STATUS_CHECKING_FOR_UPDATE")
+  if (str == update_engine::kUpdateStatusCheckingForUpdate)
     return UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE;
-  if (str == "UPDATE_STATUS_UPDATE_AVAILABLE")
+  if (str == update_engine::kUpdateStatusUpdateAvailable)
     return UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE;
-  if (str == "UPDATE_STATUS_DOWNLOADING")
+  if (str == update_engine::kUpdateStatusDownloading)
     return UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
-  if (str == "UPDATE_STATUS_VERIFYING")
+  if (str == update_engine::kUpdateStatusVerifying)
     return UpdateEngineClient::UPDATE_STATUS_VERIFYING;
-  if (str == "UPDATE_STATUS_FINALIZING")
+  if (str == update_engine::kUpdateStatusFinalizing)
     return UpdateEngineClient::UPDATE_STATUS_FINALIZING;
-  if (str == "UPDATE_STATUS_UPDATED_NEED_REBOOT")
+  if (str == update_engine::kUpdateStatusUpdatedNeedReboot)
     return UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
-  if (str == "UPDATE_STATUS_REPORTING_ERROR_EVENT")
+  if (str == update_engine::kUpdateStatusReportingErrorEvent)
     return UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT;
   return UpdateEngineClient::UPDATE_STATUS_ERROR;
 }
