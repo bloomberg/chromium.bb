@@ -34,9 +34,6 @@ class PPAPI_PROXY_EXPORT PlatformVerificationPrivateResource
       AsPPB_PlatformVerification_API() OVERRIDE;
 
   // PPB_PlatformVerification_API implementation.
-  virtual int32_t CanChallengePlatform(
-      PP_Bool* can_challenge_platform,
-      const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
   virtual int32_t ChallengePlatform(
       const PP_Var& service_id,
       const PP_Var& challenge,
@@ -44,12 +41,6 @@ class PPAPI_PROXY_EXPORT PlatformVerificationPrivateResource
       PP_Var* signed_data_signature,
       PP_Var* platform_key_certificate,
       const scoped_refptr<TrackedCallback>& callback) OVERRIDE;
-
-  void OnCanChallengePlatformReply(
-      PP_Bool* can_challenge_platform,
-      const scoped_refptr<TrackedCallback>& callback,
-      const ResourceMessageReplyParams& params,
-      bool can_challenge_platform_response);
   void OnChallengePlatformReply(
       ChallengePlatformParams output_params,
       const ResourceMessageReplyParams& params,

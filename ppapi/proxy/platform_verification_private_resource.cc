@@ -30,35 +30,6 @@ PlatformVerificationPrivateResource::AsPPB_PlatformVerification_API() {
   return this;
 }
 
-int32_t PlatformVerificationPrivateResource::CanChallengePlatform(
-    PP_Bool* can_challenge_platform,
-    const scoped_refptr<TrackedCallback>& callback) {
-  if (!can_challenge_platform)
-    return PP_ERROR_BADARGUMENT;
-
-  Call<PpapiHostMsg_PlatformVerification_CanChallengePlatformReply>(
-      BROWSER, PpapiHostMsg_PlatformVerification_CanChallengePlatform(),
-      base::Bind(
-          &PlatformVerificationPrivateResource::OnCanChallengePlatformReply,
-          base::Unretained(this), can_challenge_platform, callback));
-
-  return PP_OK_COMPLETIONPENDING;
-}
-
-void PlatformVerificationPrivateResource::OnCanChallengePlatformReply(
-    PP_Bool* can_challenge_platform,
-    const scoped_refptr<TrackedCallback>& callback,
-    const ResourceMessageReplyParams& params,
-    bool can_challenge_platform_response) {
-  if (!TrackedCallback::IsPending(callback) ||
-      TrackedCallback::IsScheduledToRun(callback)) {
-    return;
-  }
-
-  *can_challenge_platform = PP_FromBool(can_challenge_platform_response);
-  callback->Run(params.result());
-}
-
 int32_t PlatformVerificationPrivateResource::ChallengePlatform(
     const PP_Var& service_id,
     const PP_Var& challenge,

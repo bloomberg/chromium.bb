@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_platform_verification_private.idl,
- *   modified Thu Sep 12 11:48:28 2013.
+ *   modified Fri Oct 18 15:02:09 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_PLATFORM_VERIFICATION_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_1 \
-    "PPB_PlatformVerification_Private;0.1"
+#define PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_2 \
+    "PPB_PlatformVerification_Private;0.2"
 #define PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE \
-    PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_1
+    PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_2
 
 /**
  * @file
@@ -39,7 +39,7 @@
  * services to verify that the underlying platform is trusted. An example of a
  * trusted platform is a Chrome OS device in verified boot mode.
  */
-struct PPB_PlatformVerification_Private_0_1 {
+struct PPB_PlatformVerification_Private_0_2 {
   /**
    * Create() creates a <code>PPB_PlatformVerification_Private</code> object.
    *
@@ -64,24 +64,6 @@ struct PPB_PlatformVerification_Private_0_1 {
    * <code>PPB_PlatformVerification_Private</code>.
    */
   PP_Bool (*IsPlatformVerification)(PP_Resource resource);
-  /**
-   * Check if the underlying host platform can be challenged; i.e., verified as
-   * a trusted platform. Useful for avoiding unnecessary work on platforms
-   * which will always fail; i.e. dev mode Chrome OS.
-   *
-   * @param[out] can_challenge_platform A <code>PP_Bool</code> which is set to
-   * <code>PP_TRUE</code> if a platform challenge might pass and
-   * <code>PP_FALSE</code> if it definitely won't.
-   *
-   * @param[in] callback A <code>PP_CompletionCallback</code> to be called after
-   * the method has been completed. This callback will only run if the return
-   * code is <code>PP_OK_COMPLETIONPENDING</code>.
-   *
-   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-   */
-  int32_t (*CanChallengePlatform)(PP_Resource instance,
-                                  PP_Bool* can_challenge_platform,
-                                  struct PP_CompletionCallback callback);
   /**
    * Requests a platform challenge for a given service id.
    *
@@ -118,7 +100,7 @@ struct PPB_PlatformVerification_Private_0_1 {
                                struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_PlatformVerification_Private_0_1
+typedef struct PPB_PlatformVerification_Private_0_2
     PPB_PlatformVerification_Private;
 /**
  * @}

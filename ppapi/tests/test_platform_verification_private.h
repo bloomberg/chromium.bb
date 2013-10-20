@@ -17,7 +17,6 @@ class TestPlatformVerificationPrivate : public TestCase {
   virtual void RunTests(const std::string& filter);
 
  private:
-  std::string TestCanChallengePlatform();
   std::string TestChallengePlatform();
 };
 

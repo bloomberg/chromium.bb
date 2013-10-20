@@ -18,23 +18,7 @@ TestPlatformVerificationPrivate::TestPlatformVerificationPrivate(
     : TestCase(instance) {}
 
 void TestPlatformVerificationPrivate::RunTests(const std::string& filter) {
-  RUN_CALLBACK_TEST(
-      TestPlatformVerificationPrivate, CanChallengePlatform, filter);
   RUN_CALLBACK_TEST(TestPlatformVerificationPrivate, ChallengePlatform, filter);
-}
-
-std::string TestPlatformVerificationPrivate::TestCanChallengePlatform() {
-  TestCompletionCallbackWithOutput<bool> callback(
-      instance_->pp_instance(), callback_type());
-
-  pp::PlatformVerification platform_verification_api(instance_);
-  callback.WaitForResult(platform_verification_api.CanChallengePlatform(
-      callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-
-  // Doesn't work on all platforms, so just ensure the function runs.
-  ASSERT_EQ(callback.result(), PP_OK);
-  PASS();
 }
 
 std::string TestPlatformVerificationPrivate::TestChallengePlatform() {

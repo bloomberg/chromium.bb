@@ -18,7 +18,6 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/system/statistics_provider.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,7 +83,6 @@ PlatformVerificationFlow::PlatformVerificationFlow()
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
       cryptohome_client_(DBusThreadManager::Get()->GetCryptohomeClient()),
       user_manager_(UserManager::Get()),
-      statistics_provider_(system::StatisticsProvider::GetInstance()),
       delegate_(NULL),
       testing_prefs_(NULL),
       weak_factory_(this) {
@@ -104,13 +102,11 @@ PlatformVerificationFlow::PlatformVerificationFlow(
     cryptohome::AsyncMethodCaller* async_caller,
     CryptohomeClient* cryptohome_client,
     UserManager* user_manager,
-    system::StatisticsProvider* statistics_provider,
     Delegate* delegate)
     : attestation_flow_(attestation_flow),
       async_caller_(async_caller),
       cryptohome_client_(cryptohome_client),
       user_manager_(user_manager),
-      statistics_provider_(statistics_provider),
       delegate_(delegate),
       testing_prefs_(NULL),
       weak_factory_(this) {
@@ -141,28 +137,6 @@ void PlatformVerificationFlow::ChallengePlatformKey(
                  callback),
       base::Bind(&ReportError, callback, INTERNAL_ERROR));
   cryptohome_client_->TpmAttestationIsEnrolled(dbus_callback);
-}
-
-void PlatformVerificationFlow::CheckPlatformState(
-    const base::Callback<void(bool result)>& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::string stat_value;
-  if (!statistics_provider_->GetMachineStatistic(system::kDevSwitchBootMode,
-                                                 &stat_value)) {
-    LOG(ERROR) << __func__ << ": Failed to get boot mode statistic.";
-    callback.Run(false);
-    return;
-  }
-  if (stat_value != "0") {
-    LOG(INFO) << __func__ << ": Statistic indicates developer mode.";
-    callback.Run(false);
-    return;
-  }
-  BoolDBusMethodCallback dbus_callback = base::Bind(
-      &DBusCallback,
-      callback,
-      base::Bind(callback, false));
-  cryptohome_client_->TpmAttestationIsPrepared(dbus_callback);
 }
 
 void PlatformVerificationFlow::CheckConsent(content::WebContents* web_contents,

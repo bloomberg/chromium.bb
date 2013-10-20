@@ -15,16 +15,16 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_PlatformVerification_Private_0_1>() {
-  return PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_1;
+template <> const char* interface_name<PPB_PlatformVerification_Private_0_2>() {
+  return PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_2;
 }
 
 inline bool HasInterface() {
-  return has_interface<PPB_PlatformVerification_Private_0_1>();
+  return has_interface<PPB_PlatformVerification_Private_0_2>();
 }
 
-inline const PPB_PlatformVerification_Private_0_1* GetInterface() {
-  return get_interface<PPB_PlatformVerification_Private_0_1>();
+inline const PPB_PlatformVerification_Private_0_2* GetInterface() {
+  return get_interface<PPB_PlatformVerification_Private_0_2>();
 }
 
 }  // namespace
@@ -35,15 +35,6 @@ PlatformVerification::PlatformVerification(const InstanceHandle& instance) {
 }
 
 PlatformVerification::~PlatformVerification() {}
-
-int32_t PlatformVerification::CanChallengePlatform(
-    const CompletionCallbackWithOutput<bool>& callback) {
-  if (!HasInterface())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-
-  return GetInterface()->CanChallengePlatform(
-      pp_resource(), callback.output(), callback.pp_completion_callback());
-}
 
 int32_t PlatformVerification::ChallengePlatform(
     const Var& service_id,

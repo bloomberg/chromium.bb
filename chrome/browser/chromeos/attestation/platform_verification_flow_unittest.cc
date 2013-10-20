@@ -20,7 +20,6 @@
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/system/mock_statistics_provider.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -124,33 +123,22 @@ class PlatformVerificationFlowTest : public ::testing::Test {
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         certificate_success_(true),
         sign_challenge_success_(true),
-        result_(PlatformVerificationFlow::INTERNAL_ERROR),
-        check_state_result_(false) {}
+        result_(PlatformVerificationFlow::INTERNAL_ERROR) {}
 
   void SetUp() {
     // Configure a user for the mock user manager.
     mock_user_manager_.SetActiveUser(kTestEmail);
-
-    // Configure the statistics provider to report verified mode.
-    EXPECT_CALL(mock_statistics_provider_,
-                GetMachineStatistic(system::kDevSwitchBootMode, _))
-        .WillRepeatedly(DoAll(SetArgumentPointee<1>(std::string("0")),
-                              Return(true)));
 
     // Create a verifier for tests to call.
     verifier_.reset(new PlatformVerificationFlow(&mock_attestation_flow_,
                                                  &mock_async_caller_,
                                                  &fake_cryptohome_client_,
                                                  &mock_user_manager_,
-                                                 &mock_statistics_provider_,
                                                  &fake_delegate_));
 
     // Create callbacks for tests to use with verifier_.
     callback_ = base::Bind(&PlatformVerificationFlowTest::FakeChallengeCallback,
                            base::Unretained(this));
-    check_state_callback_ = base::Bind(
-        &PlatformVerificationFlowTest::FakeCheckStateCallback,
-        base::Unretained(this));
 
     // Configure the test pref service.
     pref_service_.registry()->RegisterBooleanPref(prefs::kEnableDRM, true);
@@ -230,10 +218,6 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     certificate_ = certificate;
   }
 
-  void FakeCheckStateCallback(bool result) {
-    check_state_result_ = result;
-  }
-
   std::string CreateFakeResponseProto() {
     SignedData pb;
     pb.set_data(kTestSignedData);
@@ -250,7 +234,6 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   cryptohome::MockAsyncMethodCaller mock_async_caller_;
   CustomFakeCryptohomeClient fake_cryptohome_client_;
   MockUserManager mock_user_manager_;
-  system::MockStatisticsProvider mock_statistics_provider_;
   FakeDelegate fake_delegate_;
   TestingPrefServiceSimple pref_service_;
   CrosSettingsProvider* device_settings_provider_;
@@ -271,8 +254,6 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   std::string challenge_salt_;
   std::string challenge_signature_;
   std::string certificate_;
-  base::Callback<void(bool result)> check_state_callback_;
-  bool check_state_result_;
 };
 
 TEST_F(PlatformVerificationFlowTest, SuccessNoConsent) {
@@ -394,61 +375,6 @@ TEST_F(PlatformVerificationFlowTest, ConsentNoResponse) {
   verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::USER_REJECTED, result_);
-}
-
-TEST_F(PlatformVerificationFlowTest, FastCheck) {
-  verifier_->CheckPlatformState(check_state_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(check_state_result_);
-}
-
-TEST_F(PlatformVerificationFlowTest, FastCheckNoStat) {
-  // Configure the stats provider to fail.
-  EXPECT_CALL(mock_statistics_provider_,
-              GetMachineStatistic(system::kDevSwitchBootMode, _))
-      .WillRepeatedly(Return(false));
-
-  verifier_->CheckPlatformState(check_state_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(check_state_result_);
-}
-
-TEST_F(PlatformVerificationFlowTest, FastCheckStatDevMode) {
-  // Configure the stats provider to fail.
-  EXPECT_CALL(mock_statistics_provider_,
-              GetMachineStatistic(system::kDevSwitchBootMode, _))
-      .WillRepeatedly(DoAll(SetArgumentPointee<1>(std::string("1")),
-                            Return(true)));
-
-  verifier_->CheckPlatformState(check_state_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(check_state_result_);
-}
-
-TEST_F(PlatformVerificationFlowTest, FastCheckStatInvalidMode) {
-  // Configure the stats provider to fail.
-  EXPECT_CALL(mock_statistics_provider_,
-              GetMachineStatistic(system::kDevSwitchBootMode, _))
-      .WillRepeatedly(DoAll(SetArgumentPointee<1>(std::string("INVALID")),
-                            Return(true)));
-
-  verifier_->CheckPlatformState(check_state_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(check_state_result_);
-}
-
-TEST_F(PlatformVerificationFlowTest, FastCheckNoAttestation) {
-  fake_cryptohome_client_.set_attestation_prepared(false);
-  verifier_->CheckPlatformState(check_state_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(check_state_result_);
-}
-
-TEST_F(PlatformVerificationFlowTest, FastCheckDBusFailure) {
-  fake_cryptohome_client_.set_call_status(DBUS_METHOD_CALL_FAILURE);
-  verifier_->CheckPlatformState(check_state_callback_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(check_state_result_);
 }
 
 }  // namespace attestation

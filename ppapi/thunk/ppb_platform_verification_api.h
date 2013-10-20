@@ -18,9 +18,6 @@ class PPAPI_THUNK_EXPORT PPB_PlatformVerification_API {
  public:
   virtual ~PPB_PlatformVerification_API() {}
 
-  virtual int32_t CanChallengePlatform(
-      PP_Bool* can_challenge_platform,
-      const scoped_refptr<TrackedCallback>& callback) = 0;
   virtual int32_t ChallengePlatform(
       const PP_Var& service_id,
       const PP_Var& challenge,

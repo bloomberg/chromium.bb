@@ -1419,10 +1419,6 @@ IPC_MESSAGE_CONTROL2(PpapiPluginMsg_HostResolver_ResolveReply,
 
 // Platform Verification -------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_PlatformVerification_Create)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_PlatformVerification_CanChallengePlatform)
-IPC_MESSAGE_CONTROL1(
-    PpapiHostMsg_PlatformVerification_CanChallengePlatformReply,
-    bool /* can_challenge_platform */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PlatformVerification_ChallengePlatform,
                      std::string /* service_id  */,
                      std::vector<uint8_t> /* challenge */)

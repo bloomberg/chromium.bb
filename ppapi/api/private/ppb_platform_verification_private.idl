@@ -11,7 +11,7 @@
 [generate_thunk]
 
 label Chrome {
-  M31 = 0.1
+  M32 = 0.2
 };
 
 /**
@@ -46,25 +46,6 @@ interface PPB_PlatformVerification_Private {
    * <code>PPB_PlatformVerification_Private</code>.
    */
   PP_Bool IsPlatformVerification([in] PP_Resource resource);
-
-  /**
-   * Check if the underlying host platform can be challenged; i.e., verified as
-   * a trusted platform. Useful for avoiding unnecessary work on platforms
-   * which will always fail; i.e. dev mode Chrome OS.
-
-   * @param[out] can_challenge_platform A <code>PP_Bool</code> which is set to
-   * <code>PP_TRUE</code> if a platform challenge might pass and
-   * <code>PP_FALSE</code> if it definitely won't.
-   *
-   * @param[in] callback A <code>PP_CompletionCallback</code> to be called after
-   * the method has been completed. This callback will only run if the return
-   * code is <code>PP_OK_COMPLETIONPENDING</code>.
-   *
-   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-   */
-  int32_t CanChallengePlatform([in] PP_Resource instance,
-                               [out] PP_Bool can_challenge_platform,
-                               [in] PP_CompletionCallback callback);
 
   /**
    * Requests a platform challenge for a given service id.

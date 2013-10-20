@@ -18,8 +18,6 @@ class PlatformVerification : public Resource {
   explicit PlatformVerification(const InstanceHandle& instance);
   virtual ~PlatformVerification();
 
-  int32_t CanChallengePlatform(
-      const CompletionCallbackWithOutput<bool>& callback);
   int32_t ChallengePlatform(const Var& service_id,
                             const Var& challenge,
                             Var* signed_data,

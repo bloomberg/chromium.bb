@@ -43,27 +43,12 @@ int32_t PepperPlatformVerificationMessageFilter::OnResourceMessageReceived(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   IPC_BEGIN_MESSAGE_MAP(PepperPlatformVerificationMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_PlatformVerification_CanChallengePlatform,
-        OnCanChallengePlatform)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_PlatformVerification_ChallengePlatform,
         OnChallengePlatform)
   IPC_END_MESSAGE_MAP()
 
   return PP_ERROR_FAILED;
-}
-
-int32_t PepperPlatformVerificationMessageFilter::OnCanChallengePlatform(
-    ppapi::host::HostMessageContext* context) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!pv_)
-    pv_.reset(new PlatformVerificationFlow());
-  pv_->CheckPlatformState(base::Bind(
-      &PepperPlatformVerificationMessageFilter::CanChallengePlatformCallback,
-      this,
-      context->MakeReplyMessageContext()));
-  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PepperPlatformVerificationMessageFilter::OnChallengePlatform(
@@ -99,16 +84,6 @@ int32_t PepperPlatformVerificationMessageFilter::OnChallengePlatform(
           context->MakeReplyMessageContext()));
 
   return PP_OK_COMPLETIONPENDING;
-}
-
-void PepperPlatformVerificationMessageFilter::CanChallengePlatformCallback(
-    ppapi::host::ReplyMessageContext reply_context,
-    bool can_challenge_platform) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  reply_context.params.set_result(PP_OK);
-  SendReply(reply_context,
-            PpapiHostMsg_PlatformVerification_CanChallengePlatformReply(
-                can_challenge_platform));
 }
 
 void PepperPlatformVerificationMessageFilter::ChallengePlatformCallback(
