@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/graphics/ContentDecryptionModuleSession.h"
 
-#include "platform/NotImplemented.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebURL.h"

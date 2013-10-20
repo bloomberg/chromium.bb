@@ -35,7 +35,6 @@
 #include "core/html/VoidCallback.h"
 #include "core/page/Page.h"
 #include "platform/Logging.h"
-#include "platform/NotImplemented.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/ChangeVersionData.h"
 #include "modules/webdatabase/DatabaseCallback.h"

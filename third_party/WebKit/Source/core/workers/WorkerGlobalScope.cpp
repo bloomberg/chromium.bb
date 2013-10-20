@@ -47,7 +47,6 @@
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerNavigator.h"
-#include "platform/NotImplemented.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerLocation.h"
 #include "core/workers/WorkerObjectProxy.h"

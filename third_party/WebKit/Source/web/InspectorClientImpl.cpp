@@ -38,7 +38,6 @@
 #include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "platform/NotImplemented.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURL.h"

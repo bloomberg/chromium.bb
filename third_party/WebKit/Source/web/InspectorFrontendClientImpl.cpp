@@ -39,7 +39,6 @@
 #include "core/inspector/InspectorFrontendHost.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "platform/NotImplemented.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebString.h"
 #include "wtf/text/WTFString.h"

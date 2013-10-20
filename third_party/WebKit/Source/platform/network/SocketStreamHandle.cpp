@@ -32,7 +32,6 @@
 #include "platform/network/SocketStreamHandle.h"
 
 #include "platform/Logging.h"
-#include "platform/NotImplemented.h"
 #include "platform/network/SocketStreamError.h"
 #include "platform/network/SocketStreamHandleClient.h"
 #include "platform/network/SocketStreamHandleInternal.h"

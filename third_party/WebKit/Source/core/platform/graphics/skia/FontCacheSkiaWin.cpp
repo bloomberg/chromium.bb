@@ -35,7 +35,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
-#include "platform/NotImplemented.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"

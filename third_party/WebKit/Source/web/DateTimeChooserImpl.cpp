@@ -42,7 +42,6 @@
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
-#include "platform/NotImplemented.h"
 #include "platform/text/PlatformLocale.h"
 
 #if !ENABLE(CALENDAR_PICKER)
