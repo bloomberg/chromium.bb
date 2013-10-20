@@ -7237,3 +7237,14 @@
    fun:_ZN5views18BubbleDelegateView12CreateBubbleEPS0_
    fun:_ZN23TranslateBubbleViewTest5SetUpEv
 }
+{
+   bug_309477
+   Memcheck:Uninitialized
+   fun:_ZN13WebTestRunner11EventSender5resetEv
+   fun:_ZN13WebTestRunner14TestInterfaces26resetTestHelperControllersEv
+   fun:_ZN13WebTestRunner14TestInterfaces8resetAllEv
+   ...
+   fun:_ZN7content26ShellRenderProcessObserver17WebKitInitializedEv
+   fun:_ZN7content16RenderThreadImpl23EnsureWebKitInitializedEv
+   fun:_ZN7content16RenderThreadImpl15OnCreateNewViewERK18ViewMsg_New_Params
+}
