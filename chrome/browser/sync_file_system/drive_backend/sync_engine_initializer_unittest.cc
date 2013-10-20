@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -50,7 +50,7 @@ class SyncEngineInitializerTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     initializer_.reset();
     metadata_database_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   base::FilePath database_path() {
@@ -65,7 +65,7 @@ class SyncEngineInitializerTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
 
     initializer_->Run(CreateResultReceiver(&status));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     metadata_database_ = initializer_->PassMetadataDatabase();
     return status;
@@ -86,7 +86,7 @@ class SyncEngineInitializerTest : public testing::Test {
     scoped_ptr<google_apis::ResourceEntry> entry;
     fake_drive_service_.GetResourceEntry(file->metadata.file_id(),
                                          CreateResultReceiver(&error, &entry));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     if (entry) {
       file->resource =
@@ -108,7 +108,7 @@ class SyncEngineInitializerTest : public testing::Test {
         base::MessageLoopProxy::current(),
         database_path(),
         CreateResultReceiver(&status, &database));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     if (status != SYNC_STATUS_OK)
       return status;
 
@@ -125,7 +125,7 @@ class SyncEngineInitializerTest : public testing::Test {
                                   sync_root,
                                   app_root_list,
                                   CreateResultReceiver(&status));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     app_root_list.weak_clear();
 
@@ -140,7 +140,7 @@ class SyncEngineInitializerTest : public testing::Test {
     fake_drive_service_.AddNewDirectory(
         parent_folder_id, title,
         CreateResultReceiver(&error, &entry));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(google_apis::HTTP_CREATED, error);
     if (!entry)
@@ -158,7 +158,7 @@ class SyncEngineInitializerTest : public testing::Test {
           sync_root->parents()[i]->file_id(),
           sync_root->file_id(),
           CreateResultReceiver(&error));
-      base::MessageLoop::current()->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
       EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
     }
 
@@ -191,7 +191,7 @@ class SyncEngineInitializerTest : public testing::Test {
     fake_drive_service_.GetResourceEntry(
         file_id,
         CreateResultReceiver(&error, &entry));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
     return !entry->GetLinkByType(google_apis::Link::LINK_PARENT);
   }
@@ -211,7 +211,7 @@ class SyncEngineInitializerTest : public testing::Test {
     fake_drive_service_.AddResourceToDirectory(
         new_parent_folder_id, file_id,
         CreateResultReceiver(&error));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return error;
   }
 
