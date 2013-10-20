@@ -183,7 +183,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Exposed for testing.
   views::View* GetLoadingShieldForTesting();
-  views::View* GetSignInWebviewForTesting();
+  views::WebView* GetSignInWebViewForTesting();
   views::View* GetNotificationAreaForTesting();
   views::View* GetScrollableAreaForTesting();
 
@@ -657,7 +657,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // A WebView to that navigates to a Google sign-in page to allow the user to
   // sign-in.
-  views::WebView* sign_in_webview_;
+  views::WebView* sign_in_web_view_;
 
   // View that wraps |details_container_| and makes it scroll vertically.
   views::ScrollView* scrollable_area_;

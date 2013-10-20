@@ -16,6 +16,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
@@ -36,7 +37,7 @@ class TestAutofillDialogViews : public AutofillDialogViews {
   void ShowDetailInputMode() { ShowDialogInMode(DETAIL_INPUT); }
 
   using AutofillDialogViews::GetLoadingShieldForTesting;
-  using AutofillDialogViews::GetSignInWebviewForTesting;
+  using AutofillDialogViews::GetSignInWebViewForTesting;
   using AutofillDialogViews::GetNotificationAreaForTesting;
   using AutofillDialogViews::GetScrollableAreaForTesting;
 
@@ -84,6 +85,17 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
 
   TestAutofillDialogViews* dialog() { return dialog_.get(); }
 
+ protected:
+  // Allows each main section (e.g. loading shield, sign in web view,
+  // notification area, and scrollable area) to get focus. Used in focus-related
+  // tests.
+  void SetSectionsFocusable() {
+    dialog()->GetLoadingShieldForTesting()->set_focusable(true);
+    // The sign in web view has a different implementation of IsFocusable().
+    dialog()->GetNotificationAreaForTesting()->set_focusable(true);
+    dialog()->GetScrollableAreaForTesting()->set_focusable(true);
+  }
+
  private:
   // Fake dialog delegate and host to isolate test behavior.
   web_modal::TestWebContentsModalDialogManagerDelegate dialog_delegate_;
@@ -95,25 +107,80 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
   scoped_ptr<TestAutofillDialogViews> dialog_;
 };
 
-// Switching between dialog modes should make visually hidden views !visible().
-TEST_F(AutofillDialogViewsTest, ShowDialogInMode) {
+TEST_F(AutofillDialogViewsTest, ShowLoadingMode) {
+  SetSectionsFocusable();
+
   dialog()->ShowLoadingMode();
-  EXPECT_TRUE(dialog()->GetLoadingShieldForTesting()->visible());
-  EXPECT_FALSE(dialog()->GetSignInWebviewForTesting()->visible());
-  EXPECT_FALSE(dialog()->GetNotificationAreaForTesting()->visible());
-  EXPECT_FALSE(dialog()->GetScrollableAreaForTesting()->visible());
+
+  views::View* loading_shield = dialog()->GetLoadingShieldForTesting();
+  EXPECT_TRUE(loading_shield->visible());
+  EXPECT_TRUE(loading_shield->IsFocusable());
+
+  loading_shield->RequestFocus();
+  EXPECT_TRUE(loading_shield->HasFocus());
+
+  views::View* sign_in_web_view = dialog()->GetSignInWebViewForTesting();
+  EXPECT_FALSE(sign_in_web_view->visible());
+  EXPECT_FALSE(sign_in_web_view->IsFocusable());
+
+  views::View* notification_area = dialog()->GetNotificationAreaForTesting();
+  EXPECT_FALSE(notification_area->visible());
+  EXPECT_FALSE(notification_area->IsFocusable());
+
+  views::View* scrollable_area = dialog()->GetScrollableAreaForTesting();
+  EXPECT_FALSE(scrollable_area->visible());
+  EXPECT_FALSE(scrollable_area->IsFocusable());
+}
+
+TEST_F(AutofillDialogViewsTest, ShowSignInMode) {
+  SetSectionsFocusable();
 
   dialog()->ShowSignInMode();
-  EXPECT_FALSE(dialog()->GetLoadingShieldForTesting()->visible());
-  EXPECT_TRUE(dialog()->GetSignInWebviewForTesting()->visible());
-  EXPECT_FALSE(dialog()->GetNotificationAreaForTesting()->visible());
-  EXPECT_FALSE(dialog()->GetScrollableAreaForTesting()->visible());
+
+  views::View* loading_shield = dialog()->GetLoadingShieldForTesting();
+  EXPECT_FALSE(loading_shield->visible());
+  EXPECT_FALSE(loading_shield->IsFocusable());
+
+  views::View* sign_in_web_view = dialog()->GetSignInWebViewForTesting();
+  EXPECT_TRUE(sign_in_web_view->visible());
+  // NOTE: |sign_in_web_view| is not focusable until a web contents is created.
+  // TODO(dbeam): figure out how to create a web contents on the right thread.
+
+  views::View* notification_area = dialog()->GetNotificationAreaForTesting();
+  EXPECT_FALSE(notification_area->visible());
+  EXPECT_FALSE(notification_area->IsFocusable());
+
+  views::View* scrollable_area = dialog()->GetScrollableAreaForTesting();
+  EXPECT_FALSE(scrollable_area->visible());
+  EXPECT_FALSE(scrollable_area->IsFocusable());
+}
+
+TEST_F(AutofillDialogViewsTest, ShowDetailInputMode) {
+  SetSectionsFocusable();
 
   dialog()->ShowDetailInputMode();
-  EXPECT_FALSE(dialog()->GetLoadingShieldForTesting()->visible());
-  EXPECT_FALSE(dialog()->GetSignInWebviewForTesting()->visible());
-  EXPECT_TRUE(dialog()->GetNotificationAreaForTesting()->visible());
-  EXPECT_TRUE(dialog()->GetScrollableAreaForTesting()->visible());
+
+  views::View* loading_shield = dialog()->GetLoadingShieldForTesting();
+  EXPECT_FALSE(loading_shield->visible());
+  EXPECT_FALSE(loading_shield->IsFocusable());
+
+  views::View* sign_in_web_view = dialog()->GetSignInWebViewForTesting();
+  EXPECT_FALSE(sign_in_web_view->visible());
+  EXPECT_FALSE(sign_in_web_view->IsFocusable());
+
+  views::View* notification_area = dialog()->GetNotificationAreaForTesting();
+  EXPECT_TRUE(notification_area->visible());
+  EXPECT_TRUE(notification_area->IsFocusable());
+
+  views::View* scrollable_area = dialog()->GetScrollableAreaForTesting();
+  EXPECT_TRUE(scrollable_area->visible());
+  EXPECT_TRUE(scrollable_area->IsFocusable());
+
+  notification_area->RequestFocus();
+  EXPECT_TRUE(notification_area->HasFocus());
+
+  scrollable_area->RequestFocus();
+  EXPECT_TRUE(scrollable_area->HasFocus());
 }
 
 }  // namespace autofill

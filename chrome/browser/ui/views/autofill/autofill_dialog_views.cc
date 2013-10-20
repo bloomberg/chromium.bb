@@ -671,7 +671,7 @@ void AutofillDialogViews::ShowDialogInMode(DialogMode dialog_mode) {
   if (dialog_mode == LOADING) {
     visible.push_back(loading_shield_);
   } else if (dialog_mode == SIGN_IN) {
-    visible.push_back(sign_in_webview_);
+    visible.push_back(sign_in_web_view_);
   } else {
     DCHECK_EQ(DETAIL_INPUT, dialog_mode);
     visible.push_back(notification_area_);
@@ -693,8 +693,8 @@ views::View* AutofillDialogViews::GetLoadingShieldForTesting() {
   return loading_shield_;
 }
 
-views::View* AutofillDialogViews::GetSignInWebviewForTesting() {
-  return sign_in_webview_;
+views::WebView* AutofillDialogViews::GetSignInWebViewForTesting() {
+  return sign_in_web_view_;
 }
 
 views::View* AutofillDialogViews::GetNotificationAreaForTesting() {
@@ -934,7 +934,7 @@ void AutofillDialogViews::OnWidgetClosing(views::Widget* widget) {
 void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
                                                 const gfx::Rect& new_bounds) {
   // Notify the web contents of its new auto-resize limits.
-  if (sign_in_delegate_ && sign_in_webview_->visible()) {
+  if (sign_in_delegate_ && sign_in_web_view_->visible()) {
     sign_in_delegate_->UpdateLimitsAndEnableAutoResize(
         GetMinimumSignInViewSize(), GetMaximumSignInViewSize());
   }
@@ -1323,7 +1323,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
       window_(NULL),
       notification_area_(NULL),
       account_chooser_(NULL),
-      sign_in_webview_(NULL),
+      sign_in_web_view_(NULL),
       scrollable_area_(NULL),
       details_container_(NULL),
       loading_shield_(NULL),
@@ -1557,17 +1557,17 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
 
   sign_in_delegate_.reset(
       new AutofillDialogSignInDelegate(
-          this, sign_in_webview_->GetWebContents(),
+          this, sign_in_web_view_->GetWebContents(),
           delegate_->GetWebContents()->GetDelegate(),
           GetMinimumSignInViewSize(), GetMaximumSignInViewSize()));
-  sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
+  sign_in_web_view_->LoadInitialURL(wallet::GetSignInUrl());
 
   ShowDialogInMode(SIGN_IN);
-  sign_in_webview_->RequestFocus();
+  sign_in_web_view_->RequestFocus();
 
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
-  return &sign_in_webview_->web_contents()->GetController();
+  return &sign_in_web_view_->web_contents()->GetController();
 }
 
 void AutofillDialogViews::HideSignIn() {
@@ -1590,7 +1590,7 @@ TestableAutofillDialogView* AutofillDialogViews::GetTestableView() {
 }
 
 void AutofillDialogViews::OnSignInResize(const gfx::Size& pref_size) {
-  sign_in_webview_->SetPreferredSize(pref_size);
+  sign_in_web_view_->SetPreferredSize(pref_size);
   ContentsPreferredSizeChanged();
 }
 
@@ -1669,8 +1669,8 @@ gfx::Size AutofillDialogViews::GetMinimumSize() {
 
 void AutofillDialogViews::Layout() {
   const gfx::Rect content_bounds = GetContentsBounds();
-  if (sign_in_webview_->visible()) {
-    sign_in_webview_->SetBoundsRect(content_bounds);
+  if (sign_in_web_view_->visible()) {
+    sign_in_web_view_->SetBoundsRect(content_bounds);
     return;
   }
 
@@ -1912,8 +1912,8 @@ gfx::Size AutofillDialogViews::CalculatePreferredSize(bool get_minimum_size) {
   // The width is always set by the scroll area.
   const int width = scroll_size.width();
 
-  if (sign_in_webview_->visible()) {
-    const gfx::Size size = static_cast<views::View*>(sign_in_webview_)->
+  if (sign_in_web_view_->visible()) {
+    const gfx::Size size = static_cast<views::View*>(sign_in_web_view_)->
         GetPreferredSize();
     return gfx::Size(width + insets.width(), size.height() + insets.height());
   }
@@ -1998,8 +1998,8 @@ void AutofillDialogViews::InitChildViews() {
   loading_shield_ = new LoadingAnimationView(delegate_->SpinnerText());
   AddChildView(loading_shield_);
 
-  sign_in_webview_ = new views::WebView(delegate_->profile());
-  AddChildView(sign_in_webview_);
+  sign_in_web_view_ = new views::WebView(delegate_->profile());
+  AddChildView(sign_in_web_view_);
 
   overlay_view_ = new OverlayView(delegate_);
   overlay_view_->SetVisible(false);
