@@ -34,6 +34,8 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/message_port_message_filter.h"
+#include "content/browser/message_port_service.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -3400,6 +3402,21 @@ void WebContentsImpl::RouteMessageEvent(
     return;
 
   ViewMsg_PostMessage_Params new_params(params);
+
+  if (!params.message_port_ids.empty()) {
+    MessagePortMessageFilter* message_port_message_filter =
+        static_cast<RenderProcessHostImpl*>(GetRenderProcessHost())
+            ->message_port_message_filter();
+    std::vector<int> new_routing_ids(params.message_port_ids.size());
+    for (size_t i = 0; i < params.message_port_ids.size(); ++i) {
+      new_routing_ids[i] = message_port_message_filter->GetNextRoutingID();
+      MessagePortService::GetInstance()->UpdateMessagePort(
+          params.message_port_ids[i],
+          message_port_message_filter,
+          new_routing_ids[i]);
+    }
+    new_params.new_routing_ids = new_routing_ids;
+  }
 
   // If there is a source_routing_id, translate it to the routing ID for
   // the equivalent swapped out RVH in the target process.  If we need

@@ -186,6 +186,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   }
 #endif
 
+  MessagePortMessageFilter* message_port_message_filter() const {
+    return message_port_message_filter_;
+  }
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)

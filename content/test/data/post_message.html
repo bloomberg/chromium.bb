@@ -24,14 +24,23 @@
 
   // Listen to incoming messages.
   var receivedMessages = 0;
+  var receivedMessagesWithPort = 0;
   window.addEventListener("message", messageReceived, false);
   function messageReceived(event) {
     receivedMessages++;
     if (event.data === "2-1-reply") {
       event.source.postMessage("msg4", "*");
     }
-    // Change the title to generate a notification.
-    document.title = event.data;
+    if (event.ports.length > 0) {
+      receivedMessagesWithPort++;
+      var port = event.ports[0];
+      port.start();
+      port.postMessage("msg-back-via-port");
+      // Change the title to generate a notification.
+      document.title = event.data.message;
+    } else {
+      document.title = event.data;
+    }
   }
  </script>
  </head>

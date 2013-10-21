@@ -4335,6 +4335,20 @@ bool RenderViewImpl::willCheckAndDispatchMessageEvent(
   if (!target_origin.isNull())
     params.target_origin = target_origin.toString();
 
+  WebKit::WebMessagePortChannelArray channels = event.releaseChannels();
+  if (!channels.isEmpty()) {
+    std::vector<int> message_port_ids(channels.size());
+     // Extract the port IDs from the channel array.
+     for (size_t i = 0; i < channels.size(); ++i) {
+       WebMessagePortChannelImpl* webchannel =
+           static_cast<WebMessagePortChannelImpl*>(channels[i]);
+       message_port_ids[i] = webchannel->message_port_id();
+       webchannel->QueueMessages();
+       DCHECK_NE(message_port_ids[i], MSG_ROUTING_NONE);
+     }
+     params.message_port_ids = message_port_ids;
+  }
+
   // Include the routing ID for the source frame, which the browser process
   // will translate into the routing ID for the equivalent frame in the target
   // process.
@@ -5059,6 +5073,18 @@ void RenderViewImpl::OnPostMessageEvent(
       source_frame = source_view->webview()->mainFrame();
   }
 
+  // If the message contained MessagePorts, create the corresponding endpoints.
+  DCHECK_EQ(params.message_port_ids.size(), params.new_routing_ids.size());
+  WebKit::WebMessagePortChannelArray channels(params.message_port_ids.size());
+  for (size_t i = 0;
+       i < params.message_port_ids.size() && i < params.new_routing_ids.size();
+       ++i) {
+    channels[i] =
+        new WebMessagePortChannelImpl(params.new_routing_ids[i],
+                                      params.message_port_ids[i],
+                                      base::MessageLoopProxy::current().get());
+  }
+
   // Create an event with the message.  The final parameter to initMessageEvent
   // is the last event ID, which is not used with postMessage.
   WebDOMEvent event = frame->document().createEvent("MessageEvent");
@@ -5067,7 +5093,7 @@ void RenderViewImpl::OnPostMessageEvent(
                              // |canBubble| and |cancellable| are always false
                              false, false,
                              WebSerializedScriptValue::fromString(params.data),
-                             params.source_origin, source_frame, "");
+                             params.source_origin, source_frame, "", channels);
 
   // We must pass in the target_origin to do the security check on this side,
   // since it may have changed since the original postMessage call was made.

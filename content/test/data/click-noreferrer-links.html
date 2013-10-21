@@ -57,6 +57,24 @@
     receivedMessages++;
     event.source.postMessage(event.data, "*");
   }
+
+  // Send a message which contains a message port.
+  var mc;
+  function postWithPortToFoo() {
+    mc = new MessageChannel();
+    mc.port1.onmessage = portMessageReceived;
+    mc.port1.start();
+    var w = window.open("", "foo");
+    w.postMessage({message: "msg-with-port", port: mc.port2}, "*", [mc.port2]);
+    return true;
+  }
+
+  var receivedMessagesViaPort = 0;
+  function portMessageReceived(event) {
+    receivedMessagesViaPort++;
+    // Change the title to generate a notification.
+    document.title = event.data;
+  }
  </script>
  </head>
 

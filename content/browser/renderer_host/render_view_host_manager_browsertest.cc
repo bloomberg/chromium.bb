@@ -642,6 +642,109 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // http://crbug.com/153701 is fixed.
 }
 
+// Test for crbug.com/278336. MessagePorts should work cross-process. I.e.,
+// messages which contain Transferables and get intercepted by
+// RenderViewImpl::willCheckAndDispatchMessageEvent (because the RenderView is
+// swapped out) should work.
+// Specifically:
+// 1) Create 2 windows (opener and "foo") and send "foo" cross-process.
+// 2) Post a message containing a message port from opener to "foo".
+// 3) Post a message from "foo" back to opener via the passed message port.
+// The test will be enabled when the feature implementation lands.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+                       SupportCrossProcessPostMessageWithMessagePort) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Load a page with links that open in a new window.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/click-noreferrer-links.html",
+      https_server.host_port_pair(),
+      &replacement_path));
+  NavigateToURL(shell(), test_server()->GetURL(replacement_path));
+
+  // Get the original SiteInstance and RVHM for later comparison.
+  WebContents* opener_contents = shell()->web_contents();
+  scoped_refptr<SiteInstance> orig_site_instance(
+      opener_contents->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  RenderViewHostManager* opener_manager = static_cast<WebContentsImpl*>(
+      opener_contents)->GetRenderManagerForTesting();
+
+  // 1) Open a named target=foo window. We will later post a message between the
+  // opener and the new window.
+  ShellAddedObserver new_shell_observer;
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener_contents,
+      "window.domAutomationController.send(clickSameSiteTargetedLink());",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+
+  // Wait for the navigation in the new window to finish, if it hasn't, then
+  // send it to post_message.html on a different site.
+  WebContents* foo_contents = new_shell->web_contents();
+  WaitForLoadStop(foo_contents);
+  EXPECT_EQ("/files/navigate_opener.html",
+            foo_contents->GetLastCommittedURL().path());
+  NavigateToURL(
+      new_shell,
+      https_server.GetURL("files/post_message.html"));
+  scoped_refptr<SiteInstance> foo_site_instance(
+      foo_contents->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, foo_site_instance);
+
+  // We now have two windows. The opener should have a swapped out RVH
+  // for the new SiteInstance.
+  EXPECT_EQ(2u, Shell::windows().size());
+  EXPECT_TRUE(
+      opener_manager->GetSwappedOutRenderViewHost(foo_site_instance.get()));
+
+  // 2) Post a message containing a MessagePort from opener to the the foo
+  // window. The foo window will reply via the passed port, causing the opener
+  // to update its own title.
+  WindowedNotificationObserver title_observer(
+      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+      Source<WebContents>(opener_contents));
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener_contents,
+      "window.domAutomationController.send(postWithPortToFoo());",
+      &success));
+  EXPECT_TRUE(success);
+  ASSERT_FALSE(
+      opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
+  title_observer.Wait();
+
+  // Check message counts.
+  int opener_received_messages_via_port = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      opener_contents,
+      "window.domAutomationController.send(window.receivedMessagesViaPort);",
+      &opener_received_messages_via_port));
+  int foo_received_messages = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      foo_contents,
+      "window.domAutomationController.send(window.receivedMessages);",
+      &foo_received_messages));
+  int foo_received_messages_with_port = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      foo_contents,
+      "window.domAutomationController.send(window.receivedMessagesWithPort);",
+      &foo_received_messages_with_port));
+  EXPECT_EQ(1, foo_received_messages);
+  EXPECT_EQ(1, foo_received_messages_with_port);
+  EXPECT_EQ(1, opener_received_messages_via_port);
+  EXPECT_EQ(ASCIIToUTF16("msg-with-port"), foo_contents->GetTitle());
+  EXPECT_EQ(ASCIIToUTF16("msg-back-via-port"), opener_contents->GetTitle());
+}
+
 // Test for crbug.com/116192.  Navigations to a window's opener should
 // still work after a process swap.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,

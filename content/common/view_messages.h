@@ -753,6 +753,10 @@ IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)
 
   // The origin for the message's target.
   IPC_STRUCT_MEMBER(string16, target_origin)
+
+  // Information about the MessagePorts this message contains.
+  IPC_STRUCT_MEMBER(std::vector<int>, message_port_ids)
+  IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
