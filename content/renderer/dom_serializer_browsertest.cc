@@ -269,18 +269,18 @@ class DomSerializerTests : public ContentBrowserTest,
     // Find corresponding WebFrame according to page_url.
     WebFrame* web_frame = FindSubFrameByURL(GetWebView(), page_url);
     ASSERT_TRUE(web_frame != NULL);
-    // Add input file URl to links_.
-    links_.assign(&page_url,1);
-    // Add dummy file path to local_path_.
+    WebVector<WebURL> links;
+    links.assign(&page_url, 1);
     WebString file_path =
         base::FilePath(FILE_PATH_LITERAL("c:\\dummy.htm")).AsUTF16Unsafe();
-    local_paths_.assign(&file_path, 1);
+    WebVector<WebString> local_paths;
+    local_paths.assign(&file_path, 1);
     // Start serializing DOM.
     bool result = WebPageSerializer::serialize(web_frame,
        recursive_serialization,
        static_cast<WebPageSerializerClient*>(this),
-       links_,
-       local_paths_,
+       links,
+       local_paths,
        local_directory_name_.AsUTF16Unsafe());
     ASSERT_TRUE(result);
     ASSERT_TRUE(serialized_);
@@ -770,11 +770,6 @@ class DomSerializerTests : public ContentBrowserTest,
   SerializationFinishStatusMap serialization_finish_status_;
   // Flag indicates whether the process of serializing DOM is finished or not.
   bool serialized_;
-  // The links_ contain dummy original URLs of all saved links.
-  WebVector<WebURL> links_;
-  // The local_paths_ contain dummy corresponding local file paths of all saved
-  // links, which matched links_ one by one.
-  WebVector<WebString> local_paths_;
   // The local_directory_name_ is dummy relative path of directory which
   // contain all saved auxiliary files included all sub frames and resources.
   const base::FilePath local_directory_name_;
