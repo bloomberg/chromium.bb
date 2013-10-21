@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "content/common/content_export.h"
 #include "content/common/websocket.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -24,12 +25,22 @@ class WebSocketHost;
 
 // Creates a WebSocketHost object for each WebSocket channel, and dispatches
 // WebSocketMsg_* messages sent from renderer to the appropriate WebSocketHost.
-class WebSocketDispatcherHost : public BrowserMessageFilter {
+class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
  public:
   typedef base::Callback<net::URLRequestContext*()> GetRequestContextCallback;
 
+  // Given a routing_id, WebSocketHostFactory returns a new instance of
+  // WebSocketHost or its subclass.
+  typedef base::Callback<WebSocketHost*(int)> WebSocketHostFactory;
+
   explicit WebSocketDispatcherHost(
       const GetRequestContextCallback& get_context_callback);
+
+  // For testing. Specify a factory method that creates mock version of
+  // WebSocketHost.
+  WebSocketDispatcherHost(
+      const GetRequestContextCallback& get_context_callback,
+      const WebSocketHostFactory& websocket_host_factory);
 
   // BrowserMessageFilter:
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -67,6 +78,8 @@ class WebSocketDispatcherHost : public BrowserMessageFilter {
 
   virtual ~WebSocketDispatcherHost();
 
+  WebSocketHost* CreateWebSocketHost(int routing_id);
+
   // Looks up a WebSocketHost object by |routing_id|. Returns the object if one
   // is found, or NULL otherwise.
   WebSocketHost* GetHost(int routing_id) const;
@@ -88,6 +101,8 @@ class WebSocketDispatcherHost : public BrowserMessageFilter {
   // A callback which returns the appropriate net::URLRequestContext for us to
   // use.
   GetRequestContextCallback get_context_callback_;
+
+  WebSocketHostFactory websocket_host_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketDispatcherHost);
 };

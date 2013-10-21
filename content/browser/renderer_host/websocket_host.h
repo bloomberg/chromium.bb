@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/websocket.h"
 
 class GURL;
@@ -28,16 +29,17 @@ class WebSocketDispatcherHost;
 
 // Host of WebSocketChannel. The lifetime of an instance of this class is
 // completely controlled by the WebSocketDispatcherHost.
-class WebSocketHost {
+class CONTENT_EXPORT WebSocketHost {
  public:
   WebSocketHost(int routing_id,
                 WebSocketDispatcherHost* dispatcher,
                 net::URLRequestContext* url_request_context);
-  ~WebSocketHost();
+  virtual ~WebSocketHost();
 
   // General message dispatch. WebSocketDispatcherHost::OnMessageReceived
   // delegates to this method after looking up the |routing_id|.
-  bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
 
  private:
   // Handlers for each message type, dispatched by OnMessageReceived(), as

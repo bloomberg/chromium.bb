@@ -16,7 +16,20 @@ namespace content {
 
 WebSocketDispatcherHost::WebSocketDispatcherHost(
     const GetRequestContextCallback& get_context_callback)
-    : get_context_callback_(get_context_callback) {}
+    : get_context_callback_(get_context_callback),
+      websocket_host_factory_(
+          base::Bind(&WebSocketDispatcherHost::CreateWebSocketHost,
+                     base::Unretained(this))) {}
+
+WebSocketDispatcherHost::WebSocketDispatcherHost(
+    const GetRequestContextCallback& get_context_callback,
+    const WebSocketHostFactory& websocket_host_factory)
+    : get_context_callback_(get_context_callback),
+      websocket_host_factory_(websocket_host_factory) {}
+
+WebSocketHost* WebSocketDispatcherHost::CreateWebSocketHost(int routing_id) {
+  return new WebSocketHost(routing_id, this, get_context_callback_.Run());
+}
 
 bool WebSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                 bool* message_was_ok) {
@@ -44,7 +57,7 @@ bool WebSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
       // little extreme. So for now just ignore the bogus request.
       return true;  // We handled the message (by ignoring it).
     }
-    host = new WebSocketHost(routing_id, this, get_context_callback_.Run());
+    host = websocket_host_factory_.Run(routing_id);
     hosts_.insert(WebSocketHostTable::value_type(routing_id, host));
   }
   if (!host) {
