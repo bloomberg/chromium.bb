@@ -1054,8 +1054,9 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
       const WebKit::WebTouchEvent& touch_event,
       const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardTouchEvent");
-  if (IgnoreInputEvents())
-    return;
+
+  // Always forward TouchEvents for touch stream consistency. They will be
+  // ignored if appropriate in FilterInputEvent().
 
   ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
   TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
@@ -1958,7 +1959,10 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
 
 InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
     const WebKit::WebInputEvent& event, const ui::LatencyInfo& latency_info) {
-  if (IgnoreInputEvents())
+  // Don't ignore touch cancel events, since they may be sent while input
+  // events are being ignored in order to keep the renderer from getting
+  // confused about how many touches are active.
+  if (IgnoreInputEvents() && event.type != WebInputEvent::TouchCancel)
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
 
   if (!process_->HasConnection())

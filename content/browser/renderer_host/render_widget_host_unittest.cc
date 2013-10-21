@@ -150,7 +150,9 @@ class MockInputRouter : public InputRouter {
   }
   virtual void SendTouchEvent(
       const TouchEventWithLatencyInfo& touch_event) OVERRIDE {
-    send_touch_event_not_cancelled_ = true;
+    send_touch_event_not_cancelled_ =
+        client_->FilterInputEvent(touch_event.event, touch_event.latency) ==
+        INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }
   virtual const NativeWebKeyboardEvent* GetLastKeyboardEvent() const OVERRIDE {
     NOTREACHED();

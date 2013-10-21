@@ -15,6 +15,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/corewm/window_util.h"
 
@@ -152,12 +153,19 @@ void WindowModalityController::OnWindowPropertyChanged(aura::Window* window,
       window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE &&
       window->IsVisible()) {
     ActivateWindow(window);
+    ui::GestureRecognizer::Get()->TransferEventsTo(
+        window->transient_parent(), NULL);
   }
 }
 
 void WindowModalityController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
+  if (visible && window->GetProperty(aura::client::kModalKey) !=
+      ui::MODAL_TYPE_NONE) {
+    ui::GestureRecognizer::Get()->TransferEventsTo(
+        window->transient_parent(), NULL);
+  }
   if (visible && window->GetProperty(aura::client::kModalKey) ==
       ui::MODAL_TYPE_WINDOW) {
     // Make sure no other window has capture, otherwise |window| won't get mouse
@@ -180,6 +188,8 @@ bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
                                 event->type() == ui::ET_TOUCH_PRESSED)) {
     AnimateWindow(modal_transient_child, WINDOW_ANIMATION_TYPE_BOUNCE);
   }
+  if (event->type() == ui::ET_TOUCH_CANCELLED)
+    return false;
   return !!modal_transient_child;
 }
 
