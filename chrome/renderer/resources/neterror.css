@@ -7,7 +7,6 @@ body {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 10pt;
   margin: 50px 40px 20px 40px;
-  text-align: center;
 }
 
 #main-frame-error {
@@ -44,11 +43,20 @@ html:not([subframe]) #sub-frame-error {
   -webkit-margin-start: 0px;
 }
 
-h1 {
+#content-top #buttons,
+#content-top h1 {
   color: #666;
   margin: 10px 0px 25px 0px;
   font-weight: normal;
   font-size: 1.5em;
+  text-align: center;
+}
+
+h2 {
+  color: #666;
+  font-size: 1.2em;
+  font-weight: normal;
+  margin: 10px 0;
 }
 
 a {

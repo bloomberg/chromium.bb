@@ -18,12 +18,14 @@
           </div>
           <span i18n-content="heading"></span>
         </h1>
-         <button id="reload-button" onclick="location = this.url"
-            jsselect="reload" jsvalues=".url:reloadUrl"
-            jscontent="msg"></button>
-        <button id="more-less-button" onclick="toggleHelpBox()" jsdisplay="more"
-            jsvalues=".moreText:more; .lessText:less;"
-            jscontent="more"></button>
+        <div id="buttons">
+          <button id="reload-button" onclick="location = this.url"
+              jsselect="reload" jsvalues=".url:reloadUrl"
+              jscontent="msg"></button>
+          <button id="more-less-button" onclick="toggleHelpBox()"
+              jsdisplay="more" jsvalues=".moreText:more; .lessText:less;"
+              jscontent="more"></button>
+        </div>
       </div>
        <!-- Outer and inner divs are needed both for margins and sizing. -->
       <div id="help-box-outer" class="hidden">
