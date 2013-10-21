@@ -29,7 +29,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "net/cookies/canonical_cookie.h"
@@ -42,22 +41,6 @@ using content::RenderViewHost;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
-
-namespace {
-
-class InterstitialHostObserver : public content::RenderViewHostObserver {
- public:
-  explicit InterstitialHostObserver(RenderViewHost* rvh)
-      : content::RenderViewHostObserver(rvh) {}
-
-  // content::RenderViewHostObserver overrides.
-  virtual void RenderViewHostInitialized() OVERRIDE {
-    Send(new ChromeViewMsg_SetAsInterstitial(routing_id()));
-    delete this;
-  }
-};
-
-}  // namespace
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
     TabSpecificContentSettings* tab_specific_content_settings)
@@ -664,8 +647,8 @@ void TabSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {
 void TabSpecificContentSettings::RenderViewForInterstitialPageCreated(
     RenderViewHost* render_view_host) {
   // We want to tell the renderer-side code to ignore content settings for this
-  // page but we must wait until the RenderView is created.
-  new InterstitialHostObserver(render_view_host);
+  // page.
+  Send(new ChromeViewMsg_SetAsInterstitial(routing_id()));
 }
 
 bool TabSpecificContentSettings::OnMessageReceived(
