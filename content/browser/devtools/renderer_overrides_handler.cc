@@ -56,6 +56,7 @@ static const char kPng[] = "png";
 static const char kJpeg[] = "jpeg";
 static int kDefaultScreenshotQuality = 80;
 static int kFrameRateThresholdMs = 100;
+static int kCaptureRetryLimit = 2;
 
 void ParseGenericInputParams(base::DictionaryValue* params,
                              WebInputEvent* event) {
@@ -80,6 +81,7 @@ void ParseGenericInputParams(base::DictionaryValue* params,
 
 RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
     : agent_(agent),
+      capture_retry_count_(0),
       weak_factory_(this) {
   RegisterCommandHandler(
       devtools::DOM::setFileInputFiles::kName,
@@ -506,6 +508,13 @@ void RendererOverridesHandler::ScreenshotCaptured(
     if (command) {
       SendAsyncResponse(
           command->InternalErrorResponse("Unable to capture screenshot"));
+    } else if (capture_retry_count_) {
+      --capture_retry_count_;
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&RendererOverridesHandler::InnerSwapCompositorFrame,
+                     weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kFrameRateThresholdMs));
     }
     return;
   }
@@ -784,6 +793,8 @@ void RendererOverridesHandler::PageQueryUsageAndQuotaCompleted(
 }
 
 void RendererOverridesHandler::NotifyScreencastVisibility(bool visible) {
+  if (visible)
+    capture_retry_count_ = kCaptureRetryLimit;
   base::DictionaryValue* params = new base::DictionaryValue();
   params->SetBoolean(
       devtools::Page::screencastVisibilityChanged::kParamVisible, visible);

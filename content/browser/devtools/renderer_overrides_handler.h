@@ -97,6 +97,7 @@ class CONTENT_EXPORT RendererOverridesHandler
   scoped_refptr<DevToolsProtocol::Command> screencast_command_;
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;
   base::TimeTicks last_frame_time_;
+  int capture_retry_count_;
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RendererOverridesHandler);
 };
