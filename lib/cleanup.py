@@ -75,7 +75,7 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
     self._is_child = True
     try:
       self._lock.write_lock()
-    except BaseException, e:
+    except BaseException as e:
       print >> sys.stderr, ("EnforcedCleanupSection %s excepted(%r) attempting "
                             "to take the write lock; hard exiting." % (self, e))
       sys.stderr.flush()

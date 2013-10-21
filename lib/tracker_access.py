@@ -84,7 +84,7 @@ class TrackerAccess(object):
     query = gdata.projecthosting.client.Query(issue_id=issue_id)
     try:
       feed = self._tracker_client.get_issues(project_name, query=query)
-    except gdata.client.RequestError, e:
+    except gdata.client.RequestError as e:
       if VERBOSE:
         print >> sys.stderr, "ERROR: Unable to access bug %s:%s: %s" % (
             project_name, issue_id, str(e))

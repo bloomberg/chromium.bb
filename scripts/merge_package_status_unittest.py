@@ -227,7 +227,7 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
       # Running with --help should exit with code==0
       try:
         mps.main(['--help'])
-      except exceptions.SystemExit, e:
+      except exceptions.SystemExit as e:
         self.assertEquals(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed
@@ -242,7 +242,7 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
       # Running without --out should exit with code!=0
       try:
         mps.main([])
-      except exceptions.SystemExit, e:
+      except exceptions.SystemExit as e:
         self.assertNotEquals(e.args[0], 0)
 
     # Verify that output ends in error.
@@ -254,7 +254,7 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
       # Running without a package should exit with code!=0
       try:
         mps.main(['--out=any-out'])
-      except exceptions.SystemExit, e:
+      except exceptions.SystemExit as e:
         self.assertNotEquals(e.args[0], 0)
 
     # Verify that output ends in error.

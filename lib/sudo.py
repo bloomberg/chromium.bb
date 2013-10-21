@@ -37,7 +37,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     for source in (sys.stdin, sys.stdout, sys.stderr):
       try:
         return os.ttyname(source.fileno())
-      except EnvironmentError, e:
+      except EnvironmentError as e:
         if e.errno not in (errno.EINVAL, errno.ENOTTY):
           raise
 
@@ -131,7 +131,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     try:
       self._proc.terminate()
       self._proc.wait()
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       if e.errno != errno.ESRCH:
         raise
 

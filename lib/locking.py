@@ -48,7 +48,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     try:
       fcntl.lockf(self.fd, flags|fcntl.LOCK_NB)
       return
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       if e.errno == errno.EDEADLOCK:
         self.unlock()
       elif e.errno != errno.EAGAIN:
@@ -59,7 +59,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
       cros_build_lib.Info(message)
     try:
       fcntl.lockf(self.fd, flags)
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       if e.errno != errno.EDEADLOCK:
         raise
       self.unlock()

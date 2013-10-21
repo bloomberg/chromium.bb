@@ -261,7 +261,7 @@ class Cgroup(object):
     try:
       targets = [x for x in os.listdir(path)
                  if os.path.isdir(os.path.join(path, x))]
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       if e.errno != errno.ENOENT:
         raise
 
@@ -307,7 +307,7 @@ class Cgroup(object):
     If the file doesn't exist, return the given default."""
     try:
       return osutils.ReadFile(os.path.join(self.path, key))
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       if e.errno != errno.ENOENT:
         raise
       return default
@@ -402,7 +402,7 @@ class Cgroup(object):
     name = self._LimitName(key, True)
     try:
       return sudo.SetFileContents(name, value, cwd=os.path.dirname(name))
-    except cros_build_lib.RunCommandError, e:
+    except cros_build_lib.RunCommandError as e:
       if e.exception is not None:
         # Command failed before the exec itself; convert ENOENT
         # appropriately.
@@ -653,7 +653,7 @@ class Cgroup(object):
       # w/ procfs, and keep in mind that we have to work across multiple kernel
       # versions.
       cpuset = osutils.ReadFile('/proc/%s/cpuset' % (pid,)).rstrip('\n')
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       if e.errno != errno.ENOENT:
         raise
       with open('/proc/%s/cgroup' % pid) as f:

@@ -3574,7 +3574,7 @@ class MainTest(CpuTestBase):
     """
     try:
       cpu.main(args)
-    except exceptions.SystemExit, e:
+    except exceptions.SystemExit as e:
       if expect_zero:
         self.assertEquals(e.args[0], 0,
                           msg='expected call to main() to exit cleanly, '
@@ -3591,7 +3591,7 @@ class MainTest(CpuTestBase):
       # Running with --help should exit with code==0
       try:
         cpu.main(['--help'])
-      except exceptions.SystemExit, e:
+      except exceptions.SystemExit as e:
         self.assertEquals(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed
@@ -3604,7 +3604,7 @@ class MainTest(CpuTestBase):
       # Running without --board should exit with code!=0
       try:
         cpu.main([])
-      except exceptions.SystemExit, e:
+      except exceptions.SystemExit as e:
         self.assertNotEquals(e.args[0], 0)
 
     # Verify that an error message was printed.

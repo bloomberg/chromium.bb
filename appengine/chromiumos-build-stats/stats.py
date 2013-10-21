@@ -116,7 +116,7 @@ class MainPage(webapp.RequestHandler):
     error_msg = None
     try:
       stat_entries = model.Statistics.gql(query, DATASTORE_KEY)
-    except datastore_errors.BadQueryError, ex:
+    except datastore_errors.BadQueryError as ex:
       error_msg = '<p>%s.</p><p>Actual GCL query used: "%s"</p>' % (ex, query)
 
     results_html_table = self._PrepareResultsTable(stat_entries, columns,

@@ -167,7 +167,7 @@ def BuildRootGitCleanup(buildroot):
       try:
         if os.path.isdir(cwd):
           git.CleanAndCheckoutUpstream(cwd, False)
-      except cros_build_lib.RunCommandError, e:
+      except cros_build_lib.RunCommandError as e:
         result = e.result
         logging.warn('\n%s', result.error)
         logging.warn('Deleting %s because %s failed', cwd, e.result.cmd)

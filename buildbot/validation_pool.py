@@ -205,13 +205,13 @@ def _PatchWrapException(functor):
   def f(self, parent, *args, **kwds):
     try:
       return functor(self, parent, *args, **kwds)
-    except gerrit.GerritException, e:
+    except gerrit.GerritException as e:
       if isinstance(e, gerrit.QueryNotSpecific):
         e = ("%s\nSuggest you use gerrit numbers instead (prefixed with a * "
              "if it's an internal change)." % e)
       new_exc = cros_patch.PatchException(parent, e)
       raise new_exc.__class__, new_exc, sys.exc_info()[2]
-    except cros_patch.PatchException, e:
+    except cros_patch.PatchException as e:
       if e.patch.id == parent.id:
         raise
       new_exc = cros_patch.DependencyError(parent, e)
@@ -590,7 +590,7 @@ class PatchSeries(object):
           continue
         try:
           self._ResolveChange(dep, plan, stack, limit_to=limit_to)
-        except cros_patch.PatchException, e:
+        except cros_patch.PatchException as e:
           raise cros_patch.DependencyError, \
                 cros_patch.DependencyError(change, e), \
                 sys.exc_info()[2]
@@ -715,7 +715,7 @@ class PatchSeries(object):
                         ', '.join(map(str, transaction_changes)))
           self._ApplyChanges(inducing_change, transaction_changes,
                              dryrun=dryrun)
-      except cros_patch.PatchException, e:
+      except cros_patch.PatchException as e:
         logging.info("Failed applying transaction for %s: %s",
                      inducing_change, e)
         failed.append(e)
@@ -827,7 +827,7 @@ class PatchSeries(object):
 
       try:
         self.ApplyChange(change, dryrun=dryrun)
-      except cros_patch.PatchException, e:
+      except cros_patch.PatchException as e:
         if not e.inflight:
           self.failed_tot[change.id] = e
         raise
@@ -1366,7 +1366,7 @@ class ValidationPool(object):
           self.changes, dryrun=self.dryrun, manifest=manifest)
     except (KeyboardInterrupt, RuntimeError, SystemExit):
       raise
-    except Exception, e:
+    except Exception as e:
       if mox is not None and isinstance(e, mox.Error):
         raise
 
@@ -1383,7 +1383,7 @@ class ValidationPool(object):
       try:
         self._HandleApplyFailure(
             [InternalCQError(patch, msg) for patch in self.changes])
-      except Exception, e:
+      except Exception as e:
         if mox is None or not isinstance(e, mox.Error):
           # If it's not a mox error, let it fly.
           raise
@@ -1622,7 +1622,7 @@ class ValidationPool(object):
     d = dict(build_log=self.build_log, queue=self.queue, **kwargs)
     try:
       msg %= d
-    except (TypeError, ValueError), e:
+    except (TypeError, ValueError) as e:
       logging.error(
           "Generation of message %s for change %s failed: dict was %r, "
           "exception %s", msg, change, d, e)

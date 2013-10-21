@@ -505,7 +505,7 @@ class TestCase(unittest.TestCase):
     try:
       functor(*args, **kwargs)
       raise AssertionError(msg)
-    except exception, e:
+    except exception as e:
       if exact_kls:
         self.assertEqual(e.__class__, exception)
       bad = []
@@ -1319,7 +1319,7 @@ def main(**kwds):
   try:
     unittest.main(**kwds)
     raise SystemExit(0)
-  except SystemExit, e:
+  except SystemExit as e:
     if e.__class__ != SystemExit or allow_exit:
       raise
     # Redo the exit code ourselves- unittest throws True on occasion.

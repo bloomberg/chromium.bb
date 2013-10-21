@@ -586,7 +586,7 @@ class GitRepoPatch(object):
     try:
       lines = git.RunGit(git_repo, ['diff', '--no-renames', '--name-status',
                                     '%s^..%s' % (self.sha1, self.sha1)])
-    except cros_build_lib.RunCommandError, e:
+    except cros_build_lib.RunCommandError as e:
       # If we get a 128, that means git couldn't find the the parent of our
       # sha1- meaning we're the first commit in the repository (there is no
       # parent).
@@ -621,7 +621,7 @@ class GitRepoPatch(object):
       git.RunGit(git_repo, cmd)
       reset_target = None
       return
-    except cros_build_lib.RunCommandError, error:
+    except cros_build_lib.RunCommandError as error:
       ret = error.result.returncode
       if ret not in (1, 2):
         cros_build_lib.Error(
@@ -1310,7 +1310,7 @@ def PrepareRemotePatches(patches):
   for patch in patches:
     try:
       project, original_branch, ref, tracking_branch, tag = patch.split(':')
-    except ValueError, e:
+    except ValueError as e:
       raise ValueError(
           "Unexpected tryjob format.  You may be running an "
           "older version of chromite.  Run 'repo sync "

@@ -423,7 +423,7 @@ class CleanUpStage(bs.BuilderStage):
         manifest = git.ManifestCheckout.Cached(self._build_root, search=False)
       except (KeyboardInterrupt, MemoryError, SystemExit):
         raise
-      except Exception, e:
+      except Exception as e:
         # Either there is no repo there, or the manifest isn't usable.  If the
         # directory exists, log the exception for debugging reasons.  Either
         # way, the checkout needs to be wiped since it's in an unknown

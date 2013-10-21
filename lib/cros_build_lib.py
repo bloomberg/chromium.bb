@@ -190,7 +190,7 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
       if proc.poll() is None:
         # Still doesn't want to die.  Too bad, so sad, time to die.
         proc.kill()
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       Warning('Ignoring unhandled exception in _KillChildProcess: %s', e)
 
     # Ensure our child process has been reaped.
@@ -228,7 +228,7 @@ class _Popen(subprocess.Popen):
 
     try:
       os.kill(self.pid, signum)
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       if e.errno == errno.EPERM:
         # Kill returns either 0 (signal delivered), or 1 (signal wasn't
         # delivered).  This isn't particularly informative, but we still
@@ -323,7 +323,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   def _get_tempfile():
     try:
       return tempfile.TemporaryFile(bufsize=0)
-    except EnvironmentError, e:
+    except EnvironmentError as e:
       if e.errno != errno.ENOENT:
         raise
       # This can occur if we were pointed at a specific location for our
@@ -453,7 +453,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       if error_message:
         msg += '\n%s' % error_message
       raise RunCommandError(msg, cmd_result)
-  except OSError, e:
+  except OSError as e:
     estr = str(e)
     if e.errno == errno.EACCES:
       estr += '; does the program need `chmod a+x`?'
@@ -1243,7 +1243,7 @@ def RunCurl(args, **kwargs):
   try:
     return RunCommandWithRetries(5, cmd, sleep=3, retry_on=retriable_exits,
                                  **kwargs)
-  except RunCommandError, e:
+  except RunCommandError as e:
     code = e.result.returncode
     if code in (51, 58, 60):
       # These are the return codes of failing certs as per 'man curl'.
@@ -1252,7 +1252,7 @@ def RunCurl(args, **kwargs):
       try:
         return RunCommandWithRetries(5, cmd, sleep=60, retry_on=retriable_exits,
                                      **kwargs)
-      except RunCommandError, e:
+      except RunCommandError as e:
         Die("Curl failed w/ exit code %i", code)
 
 
@@ -1488,7 +1488,7 @@ def LoadKeyValueFile(input, ignore_missing=False):
           # Only strip quotes if the first & last one match.
           val = val[1:-1]
         d[chunks[0].strip()] = val
-  except EnvironmentError, e:
+  except EnvironmentError as e:
     if not (ignore_missing and e.errno == errno.ENOENT):
       raise
 

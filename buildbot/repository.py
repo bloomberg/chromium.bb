@@ -350,7 +350,7 @@ class RepoRepository(object):
       self._EnsureMirroring(True)
       self._DoCleanup()
 
-    except cros_build_lib.RunCommandError, e:
+    except cros_build_lib.RunCommandError as e:
       err_msg = e.Stringify(error=False, output=False)
       logging.error(err_msg)
       raise SrcCheckOutException(err_msg)

@@ -596,7 +596,7 @@ class TestListFiles(cros_test_lib.TempDirTestCase):
         if full_path.endswith('/'):
           # we only want to create directories
           return
-      except OSError, err:
+      except OSError as err:
         if err.errno == errno.EEXIST:
           # we don't care if the dir already exists
           pass
@@ -628,7 +628,7 @@ class TestListFiles(cros_test_lib.TempDirTestCase):
   def testNoSuchDir(self):
     try:
       cros_build_lib.ListFiles(os.path.join(self.tempdir, 'missing'))
-    except OSError, err:
+    except OSError as err:
       self.assertEqual(err.errno, errno.ENOENT)
 
 
@@ -874,7 +874,7 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
       try:
         func(repo_root)
         assert "Testing for %s, an exception wasn't thrown." % (message,)
-      except OSError, e:
+      except OSError as e:
         self.assertEqual(e.errno, errno.ENOENT)
         self.assertTrue(message in str(e),
                         msg="Couldn't find string %r in error message %r"

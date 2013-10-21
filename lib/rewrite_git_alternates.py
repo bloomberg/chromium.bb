@@ -124,7 +124,7 @@ def _GetProjects(repo_root):
   try:
     if long(os.stat(cache_path).st_mtime) == manifest_time:
       return osutils.ReadFile(cache_path).split()
-  except EnvironmentError, e:
+  except EnvironmentError as e:
     if e.errno != errno.ENOENT:
       raise
 

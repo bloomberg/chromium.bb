@@ -459,16 +459,16 @@ def ScriptWrapperMain(find_target_func, argv=None,
   ret = 1
   try:
     ret = target(argv[1:])
-  except _ShutDownException, e:
+  except _ShutDownException as e:
     sys.stdout.flush()
     print >> sys.stderr, ("%s: Signaled to shutdown: caught %i signal." %
                           (name, e.signal,))
     sys.stderr.flush()
-  except SystemExit, e:
+  except SystemExit as e:
     # Right now, let this crash through- longer term, we'll update the scripts
     # in question to not use sys.exit, and make this into a flagged error.
     raise
-  except Exception, e:
+  except Exception as e:
     sys.stdout.flush()
     print >> sys.stderr, ("%s: Unhandled exception:" % (name,))
     sys.stderr.flush()

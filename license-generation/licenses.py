@@ -788,7 +788,7 @@ class Licensing(object):
       try:
         pkg.GetLicenses(package_name)
         self.packages[package_name] = pkg
-      except PackageSkipped, e:
+      except PackageSkipped as e:
         logging.info(e)
       except PackageLicenseError:
         self.incomplete_packages += [pkg.fullnamerev]
