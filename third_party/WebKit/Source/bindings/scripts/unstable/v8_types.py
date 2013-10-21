@@ -296,6 +296,7 @@ def skip_includes(idl_type):
             is_enum_type(idl_type))
 
 INCLUDES_FOR_TYPE = {
+    'EventHandler': set(['bindings/v8/V8AbstractEventListener.h']),
     'Promise': set(['ScriptPromise.h']),
     'SerializedScriptValue': set(['bindings/v8/SerializedScriptValue.h']),
 }
@@ -380,7 +381,6 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, includes, iso
             'V8{idl_type}::HasInstance({v8_value}, {isolate}, worldType({isolate})) ? '
             'V8{idl_type}::toNative(v8::Handle<v8::Object>::Cast({v8_value})) : 0')
         includes.update(includes_for_type(idl_type))
-        includes.add('V8%s.h' % idl_type)
 
     return cpp_expression_format.format(arguments=arguments, idl_type=idl_type, isolate=isolate, v8_value=v8_value)
 
@@ -472,13 +472,9 @@ def v8_conversion_type(idl_type, extended_attributes, includes):
             includes.update(includes_for_type(this_array_or_sequence_type))
         return 'array'
 
-    if idl_type == 'EventHandler':
-        includes.add('bindings/v8/V8AbstractEventListener.h')
-        return 'EventHandler'
-
     includes.update(includes_for_type(idl_type))
-    if idl_type == 'SerializedScriptValue':
-        return 'SerializedScriptValue'
+    if idl_type in INCLUDES_FOR_TYPE:
+        return idl_type
 
     # Pointer type
     includes.add('wtf/GetPtr.h')  # FIXME: remove if can eliminate WTF::getPtr

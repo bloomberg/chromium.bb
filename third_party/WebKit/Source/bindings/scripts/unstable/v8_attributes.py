@@ -125,6 +125,7 @@ def generate_getter(interface, attribute, contents, includes):
         cpp_value = 'jsValue'
     contents['cpp_value'] = cpp_value
 
+    # FIXME: always have includes_for_type
     if contents['is_keep_alive_for_gc']:
         v8_set_return_value_statement = 'v8SetReturnValue(info, wrapper)'
         includes.update(v8_types.includes_for_type(idl_type))
@@ -133,10 +134,11 @@ def generate_getter(interface, attribute, contents, includes):
         v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, includes, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
     contents['v8_set_return_value'] = v8_set_return_value_statement
 
-    if (idl_type == 'EventHandler' and
-        interface.name in ['Window', 'WorkerGlobalScope'] and
-        attribute.name == 'onerror'):
-            includes.add('bindings/v8/V8ErrorHandler.h')
+    if idl_type == 'EventHandler':
+        includes.update(v8_types.includes_for_type('EventHandler'))
+        if (interface.name in ['Window', 'WorkerGlobalScope'] and
+            attribute.name == 'onerror'):
+                includes.add('bindings/v8/V8ErrorHandler.h')
 
     # [CheckSecurityForNode]
     is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
@@ -209,18 +211,28 @@ def generate_setter(interface, attribute, contents, includes):
     else:
         cpp_value = 'cppValue'
     contents.update({
-        'cpp_setter': setter_expression(interface, attribute, contents),
+        'cpp_setter': setter_expression(interface, attribute, contents, includes),
         'enum_validation_expression': enum_validation_expression(idl_type),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
     })
 
 
-def setter_expression(interface, attribute, contents):
+def setter_expression(interface, attribute, contents, includes):
     arguments = v8_utilities.call_with_arguments(attribute, contents)
     idl_type = attribute.data_type
-    # FIXME: should be able to eliminate WTF::getPtr in most or all cases
-    cpp_value = 'WTF::getPtr(cppValue)' if v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type) else 'cppValue'
-    arguments.append(cpp_value)
+    if idl_type == 'EventHandler':
+        # FIXME: move V8EventListenerList.h to INCLUDES_FOR_TYPE
+        includes.add('bindings/v8/V8EventListenerList.h')
+        # FIXME: pass the isolate instead of the isolated world
+        isolated_world = 'isolatedWorldForIsolate(info.GetIsolate())'
+        arguments.extend(['V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)', isolated_world])
+        contents['event_handler_getter_expression'] = 'imp->%s(%s)' % (cpp_name(attribute), isolated_world)
+    elif v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
+        # FIXME: should be able to eliminate WTF::getPtr in most or all cases
+        arguments.append('WTF::getPtr(cppValue)')
+    else:
+        arguments.append('cppValue')
+
     setter_name = scoped_name(interface, attribute, 'set%s' % capitalize(cpp_name(attribute)))
     return '%s(%s)' % (setter_name, ', '.join(arguments))
 

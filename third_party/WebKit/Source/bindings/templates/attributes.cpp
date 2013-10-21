@@ -110,7 +110,18 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
     {% if not attribute.is_static %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
+    {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
+    if (!imp->document())
+        return;
+    {% endif %}
+    {% if attribute.idl_type != 'EventHandler' %}
     {{attribute.v8_value_to_local_cpp_value}};
+    {% else %}{# EventHandler hack #}
+    {# Non-callable input should be treated as null #}
+    if (!jsValue->IsNull() && !jsValue->IsFunction())
+        jsValue = v8::Null(info.GetIsolate());
+    transferHiddenDependency(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class_name}}::eventListenerCacheIndex, info.GetIsolate());
+    {% endif %}
     {% if attribute.enum_validation_expression %}
     {# Setter ignores invalid enum values #}
     String string = cppValue;

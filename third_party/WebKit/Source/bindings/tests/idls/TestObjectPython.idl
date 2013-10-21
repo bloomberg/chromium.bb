@@ -95,7 +95,7 @@ interface TestObjectPython {
     static attribute DOMString staticStringAttribute;
     static attribute long staticLongAttribute;
     // Miscellaneous special types
-    readonly attribute EventHandler readonlyEventHandlerAttribute;
+    attribute EventHandler eventHandlerAttribute;
     attribute Promise promiseAttribute;
 
     // Extended attributes

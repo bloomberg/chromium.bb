@@ -49,6 +49,7 @@
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
@@ -1333,17 +1334,33 @@ static void staticLongAttributeAttributeSetterCallback(v8::Local<v8::String> nam
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readonlyEventHandlerAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void eventHandlerAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    EventListener* jsValue = imp->readonlyEventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate()));
+    EventListener* jsValue = imp->eventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate()));
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
-static void readonlyEventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readonlyEventHandlerAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::eventHandlerAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void eventHandlerAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    if (!jsValue->IsNull() && !jsValue->IsFunction())
+        jsValue = v8::Null(info.GetIsolate());
+    transferHiddenDependency(info.Holder(), imp->eventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
+    imp->setEventHandlerAttribute(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
+}
+
+static void eventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::eventHandlerAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -2549,7 +2566,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"nullableStringAttribute", TestObjectPythonV8Internal::nullableStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::nullableStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nullableLongAttribute", TestObjectPythonV8Internal::nullableLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::nullableLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testEnumAttribute", TestObjectPythonV8Internal::testEnumAttributeAttributeGetterCallback, TestObjectPythonV8Internal::testEnumAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readonlyEventHandlerAttribute", TestObjectPythonV8Internal::readonlyEventHandlerAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"eventHandlerAttribute", TestObjectPythonV8Internal::eventHandlerAttributeAttributeGetterCallback, TestObjectPythonV8Internal::eventHandlerAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"promiseAttribute", TestObjectPythonV8Internal::promiseAttributeAttributeGetterCallback, TestObjectPythonV8Internal::promiseAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"activityLoggingAccessForAllWorldsLongAttribute", TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"activityLoggingGetterForAllWorldsLongAttribute", TestObjectPythonV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
