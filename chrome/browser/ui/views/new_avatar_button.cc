@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/views/new_avatar_button.h"
 
 #include "base/win/windows_version.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,8 +43,10 @@ views::TextButtonDefaultBorder* CreateBorder(const int normal_image_set[],
 NewAvatarButton::NewAvatarButton(
     views::ButtonListener* listener,
     const string16& profile_name,
-    AvatarButtonStyle button_style)
-    : MenuButton(listener, profile_name, NULL, true) {
+    AvatarButtonStyle button_style,
+    Browser* browser)
+    : MenuButton(listener, profile_name, NULL, true),
+      browser_(browser) {
   set_animate_on_state_change(false);
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
@@ -77,6 +82,13 @@ NewAvatarButton::NewAvatarButton(
     set_menu_marker(
         rb->GetImageNamed(IDR_AVATAR_GLASS_BUTTON_DROPARROW).ToImageSkia());
   }
+
+  avatar_menu_.reset(new AvatarMenu(
+      &g_browser_process->profile_manager()->GetProfileInfoCache(),
+      this,
+      browser_));
+  avatar_menu_->RebuildMenu();
+
   SchedulePaint();
 }
 
@@ -107,4 +119,10 @@ void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
 
   // From MenuButton::PaintButton, paint the marker
   PaintMenuMarker(canvas);
+}
+
+void NewAvatarButton::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
+  SetText(profiles::GetActiveProfileDisplayName(browser_));
+  // We need to redraw the entire button because the width might have changed.
+  SchedulePaint();
 }

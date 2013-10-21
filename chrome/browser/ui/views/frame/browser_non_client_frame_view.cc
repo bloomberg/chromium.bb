@@ -128,7 +128,8 @@ void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
     if (!new_avatar_button_) {
       string16 profile_name =
           profiles::GetActiveProfileDisplayName(browser_view_->browser());
-      new_avatar_button_ = new NewAvatarButton(listener, profile_name, style);
+      new_avatar_button_ = new NewAvatarButton(
+          listener, profile_name, style, browser_view_->browser());
       new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
       AddChildView(new_avatar_button_);
       frame_->GetRootView()->Layout();
