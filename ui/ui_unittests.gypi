@@ -171,7 +171,7 @@
         'events/event_dispatcher_unittest.cc',
         'events/event_unittest.cc',
         'events/latency_info_unittest.cc',
-        'events/ozone/evdev/touch_event_converter_ozone_unittest.cc',
+        'events/ozone/evdev/touch_event_converter_unittest.cc',
         'gfx/blit_unittest.cc',
         'gfx/break_list_unittest.cc',
         'gfx/canvas_unittest.cc',

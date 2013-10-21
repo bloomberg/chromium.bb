@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/touch_event_converter_ozone.h"
+#include "ui/events/ozone/evdev/touch_event_converter.h"
 
 #include <fcntl.h>
 #include <linux/input.h>
@@ -32,7 +32,7 @@ const float kFingerWidth = 25.f;
 
 namespace ui {
 
-TouchEventConverterOzone::TouchEventConverterOzone(int fd, int id)
+TouchEventConverterEvdev::TouchEventConverterEvdev(int fd, int id)
     : pressure_min_(0),
       pressure_max_(0),
       x_scale_(1.),
@@ -45,12 +45,12 @@ TouchEventConverterOzone::TouchEventConverterOzone(int fd, int id)
   Init();
 }
 
-TouchEventConverterOzone::~TouchEventConverterOzone() {
+TouchEventConverterEvdev::~TouchEventConverterEvdev() {
   if (close(fd_) < 0)
     DLOG(WARNING) << "failed close on /dev/input/event" << id_;
 }
 
-void TouchEventConverterOzone::Init() {
+void TouchEventConverterEvdev::Init() {
   input_absinfo abs = {};
   if (ioctl(fd_, EVIOCGABS(ABS_MT_SLOT), &abs) != -1) {
     CHECK_GE(abs.maximum, abs.minimum);
@@ -97,12 +97,12 @@ void TouchEventConverterOzone::Init() {
   }
 }
 
-void TouchEventConverterOzone::OnFileCanWriteWithoutBlocking(int /* fd */) {
+void TouchEventConverterEvdev::OnFileCanWriteWithoutBlocking(int /* fd */) {
   // Read-only file-descriptors.
   NOTREACHED();
 }
 
-void TouchEventConverterOzone::OnFileCanReadWithoutBlocking(int fd) {
+void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
   input_event inputs[MAX_FINGERS * 6 + 1];
   ssize_t read_size = read(fd, inputs, sizeof(inputs));
   if (read_size <= 0)

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
-#include "ui/events/ozone/evdev/touch_event_converter_ozone.h"
+#include "ui/events/ozone/evdev/touch_event_converter.h"
 
 namespace {
 
@@ -32,11 +32,11 @@ static int SetNonBlocking(int fd) {
 
 namespace ui {
 
-class MockTouchEventConverterOzone : public TouchEventConverterOzone,
+class MockTouchEventConverterEvdev : public TouchEventConverterEvdev,
                                      public base::MessageLoop::Dispatcher {
  public:
-  MockTouchEventConverterOzone(int a, int b);
-  virtual ~MockTouchEventConverterOzone() {};
+  MockTouchEventConverterEvdev(int a, int b);
+  virtual ~MockTouchEventConverterEvdev() {};
 
   void ConfigureReadMock(struct input_event* queue,
                          long read_this_many,
@@ -59,11 +59,11 @@ class MockTouchEventConverterOzone : public TouchEventConverterOzone,
 
   ScopedVector<TouchEvent> dispatched_events_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockTouchEventConverterOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockTouchEventConverterEvdev);
 };
 
-MockTouchEventConverterOzone::MockTouchEventConverterOzone(int a, int b)
-    : TouchEventConverterOzone(a, b) {
+MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int a, int b)
+    : TouchEventConverterEvdev(a, b) {
   pressure_min_ = 30;
   pressure_max_ = 60;
 
@@ -78,13 +78,13 @@ MockTouchEventConverterOzone::MockTouchEventConverterOzone(int a, int b)
   write_pipe_ = fds[1];
 }
 
-bool MockTouchEventConverterOzone::Dispatch(const base::NativeEvent& event) {
+bool MockTouchEventConverterEvdev::Dispatch(const base::NativeEvent& event) {
   ui::TouchEvent* ev = new ui::TouchEvent(event);
   dispatched_events_.push_back(ev);
   return true;
 }
 
-void MockTouchEventConverterOzone::ConfigureReadMock(struct input_event* queue,
+void MockTouchEventConverterEvdev::ConfigureReadMock(struct input_event* queue,
                                                      long read_this_many,
                                                      long queue_index) {
   int nwrite = HANDLE_EINTR(write(write_pipe_,
@@ -98,14 +98,14 @@ void MockTouchEventConverterOzone::ConfigureReadMock(struct input_event* queue,
 }  // namespace ui
 
 // Test fixture.
-class TouchEventConverterOzoneTest : public testing::Test {
+class TouchEventConverterEvdevTest : public testing::Test {
  public:
-  TouchEventConverterOzoneTest() {}
+  TouchEventConverterEvdevTest() {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     loop_ = new base::MessageLoop(base::MessageLoop::TYPE_UI);
-    device_ = new ui::MockTouchEventConverterOzone(-1, 2);
+    device_ = new ui::MockTouchEventConverterEvdev(-1, 2);
     base::MessagePumpOzone::Current()->AddDispatcherForRootWindow(device_);
   }
   virtual void TearDown() OVERRIDE {
@@ -113,17 +113,17 @@ class TouchEventConverterOzoneTest : public testing::Test {
     delete loop_;
   }
 
-  ui::MockTouchEventConverterOzone* device() { return device_; }
+  ui::MockTouchEventConverterEvdev* device() { return device_; }
 
  private:
   base::MessageLoop* loop_;
-  ui::MockTouchEventConverterOzone* device_;
-  DISALLOW_COPY_AND_ASSIGN(TouchEventConverterOzoneTest);
+  ui::MockTouchEventConverterEvdev* device_;
+  DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdevTest);
 };
 
 // TODO(rjkroege): Test for valid handling of time stamps.
-TEST_F(TouchEventConverterOzoneTest, TouchDown) {
-  ui::MockTouchEventConverterOzone* dev = device();
+TEST_F(TouchEventConverterEvdevTest, TouchDown) {
+  ui::MockTouchEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue[] = {
     {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 684},
@@ -157,14 +157,14 @@ TEST_F(TouchEventConverterOzoneTest, TouchDown) {
   EXPECT_FLOAT_EQ(0.f, event->rotation_angle());
 }
 
-TEST_F(TouchEventConverterOzoneTest, NoEvents) {
-  ui::MockTouchEventConverterOzone* dev = device();
+TEST_F(TouchEventConverterEvdevTest, NoEvents) {
+  ui::MockTouchEventConverterEvdev* dev = device();
   dev->ConfigureReadMock(NULL, 0, 0);
   EXPECT_EQ(0u, dev->size());
 }
 
-TEST_F(TouchEventConverterOzoneTest, TouchMove) {
-  ui::MockTouchEventConverterOzone* dev = device();
+TEST_F(TouchEventConverterEvdevTest, TouchMove) {
+  ui::MockTouchEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue_press[] = {
     {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 684},
@@ -218,8 +218,8 @@ TEST_F(TouchEventConverterOzoneTest, TouchMove) {
   EXPECT_FLOAT_EQ(0.f, event->rotation_angle());
 }
 
-TEST_F(TouchEventConverterOzoneTest, TouchRelease) {
-  ui::MockTouchEventConverterOzone* dev = device();
+TEST_F(TouchEventConverterEvdevTest, TouchRelease) {
+  ui::MockTouchEventConverterEvdev* dev = device();
 
   struct input_event mock_kernel_queue_press[] = {
     {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 684},
@@ -255,8 +255,8 @@ TEST_F(TouchEventConverterOzoneTest, TouchRelease) {
   EXPECT_FLOAT_EQ(0.f, event->rotation_angle());
 }
 
-TEST_F(TouchEventConverterOzoneTest, TwoFingerGesture) {
-  ui::MockTouchEventConverterOzone* dev = device();
+TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
+  ui::MockTouchEventConverterEvdev* dev = device();
 
   ui::TouchEvent* ev0;
   ui::TouchEvent* ev1;

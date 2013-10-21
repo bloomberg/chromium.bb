@@ -27,4 +27,9 @@ const char kTouchEventsDisabled[] = "disabled";
 const char kTouchDevices[] = "touch-devices";
 #endif
 
+#if defined(USE_OZONE)
+// Specify default ozone events implementation.
+const char kOzoneEvents[] = "ozone-events";
+#endif
+
 }  // namespace switches

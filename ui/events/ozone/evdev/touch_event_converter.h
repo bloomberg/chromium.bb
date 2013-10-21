@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_OZONE_H_
-#define UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_OZONE_H_
+#ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
+#define UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
 
 #include <bitset>
 
@@ -16,16 +16,16 @@ namespace ui {
 
 class TouchEvent;
 
-class EVENTS_EXPORT TouchEventConverterOzone : public EventConverterOzone {
+class EVENTS_EXPORT TouchEventConverterEvdev : public EventConverterOzone {
  public:
   enum {
     MAX_FINGERS = 11
   };
-  TouchEventConverterOzone(int fd, int id);
-  virtual ~TouchEventConverterOzone();
+  TouchEventConverterEvdev(int fd, int id);
+  virtual ~TouchEventConverterEvdev();
 
  private:
-  friend class MockTouchEventConverterOzone;
+  friend class MockTouchEventConverterEvdev;
 
   // Unsafe part of initialization.
   void Init();
@@ -73,10 +73,10 @@ class EVENTS_EXPORT TouchEventConverterOzone : public EventConverterOzone {
   // In-progress touch points.
   InProgressEvents events_[MAX_FINGERS];
 
-  DISALLOW_COPY_AND_ASSIGN(TouchEventConverterOzone);
+  DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_OZONE_H_
+#endif  // UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
 

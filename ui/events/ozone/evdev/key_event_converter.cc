@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/evdev/key_event_converter_ozone.h"
+#include "ui/events/ozone/evdev/key_event_converter.h"
 
 #include <linux/input.h>
 
@@ -155,10 +155,10 @@ ui::KeyboardCode KeyboardCodeFromButton(unsigned int code) {
 namespace ui {
 
 // TODO(rjkroege): Stop leaking file descriptor.
-KeyEventConverterOzone::KeyEventConverterOzone() {}
-KeyEventConverterOzone::~KeyEventConverterOzone() {}
+KeyEventConverterEvdev::KeyEventConverterEvdev() {}
+KeyEventConverterEvdev::~KeyEventConverterEvdev() {}
 
-void KeyEventConverterOzone::OnFileCanReadWithoutBlocking(int fd) {
+void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
   input_event inputs[4];
   ssize_t read_size = read(fd, inputs, sizeof(inputs));
   if (read_size <= 0)
@@ -180,7 +180,7 @@ void KeyEventConverterOzone::OnFileCanReadWithoutBlocking(int fd) {
   }
 }
 
-void KeyEventConverterOzone::OnFileCanWriteWithoutBlocking(int fd) {
+void KeyEventConverterEvdev::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 

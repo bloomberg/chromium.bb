@@ -39,6 +39,7 @@
           'use_ash%': '<(use_ash)',
           'use_cras%': '<(use_cras)',
           'use_ozone%': '<(use_ozone)',
+          'use_ozone_evdev%': '<(use_ozone)',
 
           # Whether we are using Views Toolkit
           'toolkit_views%': 0,
@@ -102,6 +103,7 @@
         'use_ash%': '<(use_ash)',
         'use_cras%': '<(use_cras)',
         'use_ozone%': '<(use_ozone)',
+        'use_ozone_evdev%': '<(use_ozone_evdev)',
         'use_openssl%': '<(use_openssl)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
@@ -183,6 +185,7 @@
       'use_ash%': '<(use_ash)',
       'use_cras%': '<(use_cras)',
       'use_ozone%': '<(use_ozone)',
+      'use_ozone_evdev%': '<(use_ozone_evdev)',
       'use_openssl%': '<(use_openssl)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
@@ -797,6 +800,7 @@
     'use_glib%': '<(use_glib)',
     'use_pango%': '<(use_pango)',
     'use_ozone%': '<(use_ozone)',
+    'use_ozone_evdev%': '<(use_ozone_evdev)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
     'desktop_linux%': '<(desktop_linux)',
     'use_x11%': '<(use_x11)',

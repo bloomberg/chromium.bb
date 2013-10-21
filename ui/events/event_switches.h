@@ -20,6 +20,10 @@ EVENTS_EXPORT extern const char kTouchEventsDisabled[];
 EVENTS_EXPORT extern const char kTouchDevices[];
 #endif
 
+#if defined(USE_OZONE)
+EVENTS_EXPORT extern const char kOzoneEvents[];
+#endif
+
 }  // namespace switches
 
 #endif  // UI_EVENTS_EVENTS_SWITCHES_H_

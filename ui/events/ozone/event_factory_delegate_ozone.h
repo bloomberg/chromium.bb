@@ -5,6 +5,9 @@
 #ifndef UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_OZONE_H_
 #define UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_OZONE_H_
 
+#include "base/basictypes.h"
+#include "ui/events/events_export.h"
+
 namespace ui {
 class Event;
 class EventFactoryOzone;
