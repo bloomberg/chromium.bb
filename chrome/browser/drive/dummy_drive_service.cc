@@ -5,6 +5,7 @@
 #include "chrome/browser/drive/dummy_drive_service.h"
 
 #include "base/bind.h"
+#include "chrome/browser/drive/drive_api_util.h"
 
 using google_apis::AboutResourceCallback;
 using google_apis::AppListCallback;
@@ -23,13 +24,6 @@ using google_apis::UploadRangeCallback;
 
 namespace drive {
 
-namespace {
-
-// Returns the argument string.
-std::string Identity(const std::string& resource_id) { return resource_id; }
-
-}  // namespace
-
 DummyDriveService::DummyDriveService() {}
 
 DummyDriveService::~DummyDriveService() {}
@@ -43,7 +37,7 @@ void DummyDriveService::RemoveObserver(DriveServiceObserver* observer) {}
 bool DummyDriveService::CanSendRequest() const { return true; }
 
 ResourceIdCanonicalizer DummyDriveService::GetResourceIdCanonicalizer() const {
-  return base::Bind(&Identity);
+  return util::GetIdentityResourceIdCanonicalizer();
 }
 
 bool DummyDriveService::HasAccessToken() const { return true; }

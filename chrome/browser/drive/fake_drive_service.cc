@@ -132,9 +132,6 @@ void EntryActionCallbackAdapter(
   callback.Run(error);
 }
 
-// Returns the argument string.
-std::string Identity(const std::string& resource_id) { return resource_id; }
-
 }  // namespace
 
 struct FakeDriveService::UploadSession {
@@ -296,7 +293,7 @@ bool FakeDriveService::CanSendRequest() const {
 }
 
 ResourceIdCanonicalizer FakeDriveService::GetResourceIdCanonicalizer() const {
-  return base::Bind(&Identity);
+  return util::GetIdentityResourceIdCanonicalizer();
 }
 
 bool FakeDriveService::HasAccessToken() const {

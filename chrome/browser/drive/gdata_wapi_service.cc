@@ -123,9 +123,6 @@ void ConvertAppListAndRun(
   callback.Run(error, app_list.Pass());
 }
 
-// Returns the argument string.
-std::string Identity(const std::string& resource_id) { return resource_id; }
-
 }  // namespace
 
 GDataWapiService::GDataWapiService(
@@ -185,7 +182,7 @@ bool GDataWapiService::CanSendRequest() const {
 }
 
 ResourceIdCanonicalizer GDataWapiService::GetResourceIdCanonicalizer() const {
-  return base::Bind(&Identity);
+  return util::GetIdentityResourceIdCanonicalizer();
 }
 
 std::string GDataWapiService::GetRootResourceId() const {
