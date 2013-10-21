@@ -20,10 +20,6 @@ namespace rlz_lib {
 
 namespace {
 
-// Product names.
-const char kProductChrome[] = "chrome";
-const char kProductOther[] = "other";
-
 // Key names.
 const char kPingTimeKey[] = "ping_time";
 const char kAccessPointKey[] = "access_points";
