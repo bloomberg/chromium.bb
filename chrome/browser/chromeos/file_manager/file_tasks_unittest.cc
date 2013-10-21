@@ -253,41 +253,6 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   ASSERT_TRUE(tasks.empty());
 }
 
-TEST(FileManagerFileTasksTest, FindDriveAppTasks_GoogleDocument) {
-  // For DriveAppRegistry, which checks CurrentlyOn(BrowserThread::UI).
-  content::TestBrowserThreadBundle thread_bundle;
-
-  // Foo.app can handle ".gdoc" files.
-  scoped_ptr<google_apis::AppResource> foo_app(new google_apis::AppResource);
-  foo_app->set_product_url(
-      GURL("https://chrome.google.com/webstore/detail/foo_app_id"));
-  foo_app->set_application_id("foo_app_id");
-  foo_app->set_name("Foo");
-  foo_app->set_object_type("foo_object_type");
-  ScopedVector<std::string> foo_extensions;
-  foo_extensions.push_back(new std::string("gdoc"));  // Not ".gdoc"
-  foo_app->set_primary_file_extensions(foo_extensions.Pass());
-
-  // Prepare DriveAppRegistry from Foo.app.
-  ScopedVector<google_apis::AppResource> app_resources;
-  app_resources.push_back(foo_app.release());
-  google_apis::AppList app_list;
-  app_list.set_items(app_resources.Pass());
-  drive::DriveAppRegistry drive_app_registry(NULL);
-  drive_app_registry.UpdateFromAppList(app_list);
-
-  // Find apps for a ".gdoc file". Foo.app can handle it but should not be
-  // found, as it should be rejected.
-  PathAndMimeTypeSet path_mime_set;
-  path_mime_set.insert(
-      std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.gdoc"),
-          "application/vnd.google-apps.document"));
-  std::vector<FullTaskDescriptor> tasks;
-  FindDriveAppTasks(drive_app_registry, path_mime_set, &tasks);
-  EXPECT_TRUE(tasks.empty());
-}
-
 // Test that the right task is chosen from multiple choices per mime types
 // and file extensions.
 TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {
@@ -684,6 +649,87 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   EXPECT_EQ(kFooId, app_ids[0]);
   EXPECT_EQ(kBarId, app_ids[1]);
   EXPECT_EQ(kBazId, app_ids[2]);
+}
+
+TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
+  // kFooId and kBarId copied from FindFileHandlerTasks test above.
+  const char kFooId[] = "hhgbjpmdppecanaaogonaigmmifgpaph";
+  const char kBarId[] = "odlhccgofgkadkkhcmhgnhgahonahoca";
+
+  // Foo.app can handle ".gdoc" files.
+  scoped_ptr<google_apis::AppResource> foo_app(new google_apis::AppResource);
+  foo_app->set_product_url(
+      GURL("https://chrome.google.com/webstore/detail/foo_app"));
+  foo_app->set_application_id(kFooId);
+  foo_app->set_name("Foo");
+  foo_app->set_object_type("foo_object_type");
+  ScopedVector<std::string> foo_extensions;
+  foo_extensions.push_back(new std::string("gdoc"));  // Not ".gdoc"
+  foo_app->set_primary_file_extensions(foo_extensions.Pass());
+
+  // Prepare DriveAppRegistry from Foo.app.
+  ScopedVector<google_apis::AppResource> app_resources;
+  app_resources.push_back(foo_app.release());
+  google_apis::AppList app_list;
+  app_list.set_items(app_resources.Pass());
+  drive::DriveAppRegistry drive_app_registry(NULL);
+  drive_app_registry.UpdateFromAppList(app_list);
+
+  // Bar.app can handle ".gdoc" files.
+  // This is an extension (file browser handler).
+  extensions::ExtensionBuilder bar_app;
+  bar_app.SetManifest(extensions::DictionaryBuilder()
+                      .Set("name", "Bar")
+                      .Set("version", "1.0.0")
+                      .Set("manifest_version", 2)
+                      .Set("file_browser_handlers",
+                           extensions::ListBuilder()
+                           .Append(extensions::DictionaryBuilder()
+                                   .Set("id", "open")
+                                   .Set("default_title", "open")
+                                   .Set("file_filters",
+                                        extensions::ListBuilder()
+                                        .Append("filesystem:*.gdoc")))));
+  bar_app.SetID(kBarId);
+  extension_service_->AddExtension(bar_app.Build().get());
+
+  // Files.app can handle ".gdoc" files.
+  // The ID "kFileManagerAppId" used here is precisely the one that identifies
+  // the Chrome OS Files.app application.
+  extensions::ExtensionBuilder files_app;
+  files_app.SetManifest(extensions::DictionaryBuilder()
+                       .Set("name", "Files")
+                       .Set("version", "1.0.0")
+                       .Set("manifest_version", 2)
+                       .Set("file_browser_handlers",
+                            extensions::ListBuilder()
+                            .Append(extensions::DictionaryBuilder()
+                                    .Set("id", "open")
+                                    .Set("default_title", "open")
+                                    .Set("file_filters",
+                                         extensions::ListBuilder()
+                                         .Append("filesystem:*.gdoc")))));
+  files_app.SetID(kFileManagerAppId);
+  extension_service_->AddExtension(files_app.Build().get());
+
+  // Find apps for a ".gdoc file". Only the built-in handler of Files.apps
+  // should be found.
+  PathAndMimeTypeSet path_mime_set;
+  std::vector<GURL> file_urls;
+  path_mime_set.insert(
+      std::make_pair(
+          drive::util::GetDriveMountPointPath().AppendASCII("foo.gdoc"),
+          "application/vnd.google-apps.document"));
+  file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.gdoc"));
+
+  std::vector<FullTaskDescriptor> tasks;
+  FindAllTypesOfTasks(&test_profile_,
+                      &drive_app_registry,
+                      path_mime_set,
+                      file_urls,
+                      &tasks);
+  ASSERT_EQ(1U, tasks.size());
+  EXPECT_EQ(kFileManagerAppId, tasks[0].task_descriptor().app_id);
 }
 
 }  // namespace file_tasks
