@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -41,39 +42,6 @@ base::string16 RangeOfString(const base::string16& string,
                              const gfx::Range& range) {
   return string.substr(range.start(), range.end() - range.start());
 }
-
-class TestGeneratedCreditCardBubbleController
-    : public GeneratedCreditCardBubbleController {
- public:
-  explicit TestGeneratedCreditCardBubbleController(
-      content::WebContents* contents)
-      : GeneratedCreditCardBubbleController(contents) {
-    contents->SetUserData(UserDataKey(), this);
-  }
-
-  virtual ~TestGeneratedCreditCardBubbleController() {}
-
-  bool IsInstalled() const {
-    return web_contents()->GetUserData(UserDataKey()) == this;
-  }
-
-  TestGeneratedCreditCardBubbleView* GetTestingBubble() {
-    return static_cast<TestGeneratedCreditCardBubbleView*>(
-        GeneratedCreditCardBubbleController::bubble().get());
-  }
-
- protected:
-  virtual base::WeakPtr<GeneratedCreditCardBubbleView> CreateBubble() OVERRIDE {
-    return TestGeneratedCreditCardBubbleView::Create(GetWeakPtr());
-  }
-
-  virtual bool CanShow() const OVERRIDE {
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestGeneratedCreditCardBubbleController);
-};
 
 class GeneratedCreditCardBubbleControllerTest : public testing::Test {
  public:

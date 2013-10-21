@@ -281,6 +281,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // to the requesting site.
   virtual bool TransmissionWillBeSecure() const;
 
+  // Whether submission is currently waiting for |action| to be handled.
+  bool IsSubmitPausedOn(wallet::RequiredAction action) const;
+
   // Shows a new credit card saved bubble and passes ownership of |new_card| and
   // |billing_profile| to the bubble. Exposed for testing.
   virtual void ShowNewCreditCardBubble(
@@ -517,9 +520,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   void HandleSaveOrUpdateRequiredActions(
       const std::vector<wallet::RequiredAction>& required_actions);
 
-  // Whether submission is currently waiting for |action| to be handled.
-  bool IsSubmitPausedOn(wallet::RequiredAction action) const;
-
   // Shows a card generation overlay if necessary, then calls DoFinishSubmit.
   void FinishSubmit();
 
@@ -728,6 +728,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // show a bubble as the dialog closes to confirm a user's new card info was
   // saved. Never populated while incognito (as nothing's actually saved).
   scoped_ptr<CreditCard> newly_saved_card_;
+
+  // The last four digits of the backing card used for the current run of the
+  // dialog. Only applies to Wallet and is populated on submit.
+  base::string16 backing_card_last_four_;
 
   // The timer that delays enabling submit button for a short period of time on
   // startup.

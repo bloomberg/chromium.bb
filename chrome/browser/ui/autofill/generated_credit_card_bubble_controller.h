@@ -116,11 +116,15 @@ class GeneratedCreditCardBubbleController
   // will show in the omnibox.
   bool ShouldDisplayBubbleInitially() const;
 
+  // Exposed for testing.
+  base::string16 fronting_card_name() const { return fronting_card_name_; }
+  base::string16 backing_card_name() const { return backing_card_name_; }
+
   // Generates the correct bubble text and text highlighting ranges and shows a
   // bubble to educate the user about generated (fronting) cards and how they
   // are used to bill their original (backing) card. Exposed for testing.
-  virtual void SetupAndShow(const base::string16& backing_card_name,
-                            const base::string16& fronting_card_name);
+  virtual void SetupAndShow(const base::string16& fronting_card_name,
+                            const base::string16& backing_card_name);
 
  private:
   friend class

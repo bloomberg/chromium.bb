@@ -1413,6 +1413,8 @@
         'browser/ui/autofill/mock_autofill_dialog_view_delegate.h',
         'browser/ui/autofill/mock_new_credit_card_bubble_controller.cc',
         'browser/ui/autofill/mock_new_credit_card_bubble_controller.h',
+        'browser/ui/autofill/test_generated_credit_card_bubble_controller.cc',
+        'browser/ui/autofill/test_generated_credit_card_bubble_controller.h',
         'browser/ui/autofill/test_generated_credit_card_bubble_view.cc',
         'browser/ui/autofill/test_generated_credit_card_bubble_view.h',
         'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',

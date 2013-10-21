@@ -1497,7 +1497,7 @@ void AutofillDialogViews::FillSection(DialogSection section,
   // If the Autofill data comes from a credit card, make sure to overwrite the
   // CC comboboxes (even if they already have something in them). If the
   // Autofill data comes from an AutofillProfile, leave the comboboxes alone.
-  if ((section == SECTION_CC || section == SECTION_CC_BILLING) &&
+  if (section == GetCreditCardSection() &&
       AutofillType(originating_input.type).group() == CREDIT_CARD) {
     for (ComboboxMap::const_iterator it = group->comboboxes.begin();
          it != group->comboboxes.end(); ++it) {
@@ -1524,9 +1524,7 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
 }
 
 base::string16 AutofillDialogViews::GetCvc() {
-  DialogSection billing_section = delegate_->SectionIsActive(SECTION_CC) ?
-      SECTION_CC : SECTION_CC_BILLING;
-  return GroupForSection(billing_section)->suggested_info->
+  return GroupForSection(GetCreditCardSection())->suggested_info->
       decorated_textfield()->text();
 }
 
@@ -1964,6 +1962,14 @@ gfx::Size AutofillDialogViews::GetMaximumSignInViewSize() const {
   return gfx::Size(width, height);
 }
 
+DialogSection AutofillDialogViews::GetCreditCardSection() const {
+  if (delegate_->SectionIsActive(SECTION_CC))
+    return SECTION_CC;
+
+  DCHECK(delegate_->SectionIsActive(SECTION_CC_BILLING));
+  return SECTION_CC_BILLING;
+}
+
 void AutofillDialogViews::InitChildViews() {
   button_strip_extra_view_ = new LayoutPropagationView();
   button_strip_extra_view_->SetLayoutManager(
@@ -2290,7 +2296,7 @@ void AutofillDialogViews::MarkInputsInvalid(
         ++it;
     }
 
-    if (section == SECTION_CC) {
+    if (section == GetCreditCardSection()) {
       // Special case CVC as it's not part of |group->manual_input|.
       const ValidityMessage& message =
           messages.GetMessageOrDefault(CREDIT_CARD_VERIFICATION_CODE);
@@ -2327,12 +2333,14 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
           combobox->model()->GetItemAt(combobox->selected_index());
       detail_outputs[iter->first] = item;
     }
-  } else if (group.section == SECTION_CC) {
+  } else if (group.section == GetCreditCardSection()) {
     DecoratedTextfield* decorated_cvc =
         group.suggested_info->decorated_textfield();
-    cvc_input.reset(new DetailInput);
-    cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
-    detail_outputs[cvc_input.get()] = decorated_cvc->text();
+    if (decorated_cvc->visible()) {
+      cvc_input.reset(new DetailInput);
+      cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
+      detail_outputs[cvc_input.get()] = decorated_cvc->text();
+    }
   }
 
   ValidityMessages validity = delegate_->InputsAreValid(group.section,

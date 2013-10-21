@@ -527,6 +527,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // Returns the maximum size of the sign in view for this dialog.
   gfx::Size GetMaximumSignInViewSize() const;
 
+  // Returns which section should currently be used for credit card info.
+  DialogSection GetCreditCardSection() const;
+
   void InitChildViews();
 
   // Creates and returns a view that holds all detail sections.
@@ -541,10 +544,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // Creates a detail section (Shipping, Email, etc.) with the given label,
   // inputs View, and suggestion model. Relevant pointers are stored in |group|.
   void CreateDetailsSection(DialogSection section);
-
-  // Like CreateDetailsSection, but creates the combined billing/cc section,
-  // which is somewhat more complicated than the others.
-  void CreateBillingSection();
 
   // Creates the view that holds controls for inputing or selecting data for
   // a given section.

@@ -15,11 +15,13 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
+#include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/content/browser/wallet/mock_wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
@@ -41,6 +43,8 @@
 namespace autofill {
 
 namespace {
+
+using testing::_;
 
 void MockCallback(const FormStructure*) {}
 
@@ -74,10 +78,11 @@ class MockAutofillMetrics : public AutofillMetrics {
 
 class TestAutofillDialogController : public AutofillDialogControllerImpl {
  public:
-  TestAutofillDialogController(content::WebContents* contents,
-                               const FormData& form_data,
-                               const AutofillMetrics& metric_logger,
-                               scoped_refptr<content::MessageLoopRunner> runner)
+  TestAutofillDialogController(
+      content::WebContents* contents,
+      const FormData& form_data,
+      const AutofillMetrics& metric_logger,
+      scoped_refptr<content::MessageLoopRunner> runner)
       : AutofillDialogControllerImpl(contents,
                                      form_data,
                                      form_data.origin,
@@ -121,9 +126,15 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return false;
   }
 
+  void ForceFinishSubmit() {
+    DoFinishSubmit();
+  }
+
   // Increase visibility for testing.
   using AutofillDialogControllerImpl::view;
   using AutofillDialogControllerImpl::input_showing_popup;
+
+  MOCK_METHOD0(LoadRiskFingerprintData, void());
 
   virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE {
     return notifications_;
@@ -139,6 +150,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   using AutofillDialogControllerImpl::IsEditingExistingData;
   using AutofillDialogControllerImpl::IsManuallyEditingSection;
+  using AutofillDialogControllerImpl::IsSubmitPausedOn;
+  using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
 
   void set_use_validation(bool use_validation) {
     use_validation_ = use_validation;
@@ -146,6 +159,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   base::WeakPtr<TestAutofillDialogController> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  wallet::MockWalletClient* GetTestingWalletClient() {
+    return &mock_wallet_client_;
   }
 
  protected:
@@ -211,6 +228,11 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     FormFieldData field;
     field.autocomplete_attribute = "shipping tel";
     form.fields.push_back(field);
+
+    test_generated_bubble_controller_ =
+        new testing::NiceMock<TestGeneratedCreditCardBubbleController>(
+            GetActiveWebContents());
+    ASSERT_TRUE(test_generated_bubble_controller_->IsInstalled());
 
     message_loop_runner_ = new content::MessageLoopRunner;
     controller_ = new TestAutofillDialogController(
@@ -303,15 +325,23 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     WaitForWebDB();
   }
 
+  TestGeneratedCreditCardBubbleController* test_generated_bubble_controller() {
+    return test_generated_bubble_controller_;
+  }
+
  private:
   void WaitForWebDB() {
     content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
   }
 
-  MockAutofillMetrics metric_logger_;
+  testing::NiceMock<MockAutofillMetrics> metric_logger_;
   TestAutofillDialogController* controller_;  // Weak reference.
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   scoped_ptr<content::DOMMessageQueue> dom_message_queue_;
+
+  // Weak; owned by the active web contents.
+  TestGeneratedCreditCardBubbleController* test_generated_bubble_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
 
@@ -818,5 +848,59 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
             view->GetTextContentsOfInput(shipping_zip));
 }
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+
+// TODO(groby): figure out if the CVC challenge code actually works on Mac.
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       GeneratedCardLastFourAfterVerifyCvv) {
+  std::vector<std::string> usernames;
+  usernames.push_back("user@example.com");
+  controller()->OnUserNameFetchSuccess(usernames);
+  controller()->OnDidFetchWalletCookieValue(std::string());
+
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+
+  base::string16 last_four =
+      wallet_items->instruments()[0]->TypeAndLastFourDigits();
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  EXPECT_CALL(*controller(), LoadRiskFingerprintData());
+  controller()->OnAccept();
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
+  scoped_ptr<risk::Fingerprint> fingerprint(new risk::Fingerprint());
+  fingerprint->mutable_machine_characteristics()->mutable_screen_size()->
+      set_width(1024);
+  controller()->OnDidLoadRiskFingerprintData(fingerprint.Pass());
+
+  controller()->OnDidGetFullWallet(
+      wallet::GetTestFullWalletWithRequiredActions(
+          std::vector<wallet::RequiredAction>(1, wallet::VERIFY_CVV)));
+
+  ASSERT_TRUE(controller()->IsSubmitPausedOn(wallet::VERIFY_CVV));
+
+  std::string fake_cvc("123");
+  TestableAutofillDialogView* test_view = controller()->GetTestableView();
+  test_view->SetTextContentsOfSuggestionInput(SECTION_CC_BILLING,
+                                              ASCIIToUTF16(fake_cvc));
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              AuthenticateInstrument(_, fake_cvc));
+  controller()->OnAccept();
+
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
+  controller()->OnDidAuthenticateInstrument(true);
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->ForceFinishSubmit();
+
+  RunMessageLoop();
+
+  EXPECT_EQ(1, test_generated_bubble_controller()->bubbles_shown());
+  EXPECT_EQ(last_four, test_generated_bubble_controller()->backing_card_name());
+}
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace autofill
