@@ -320,6 +320,9 @@ void PrioritizedResourceManager::ReduceWastedMemory(
        ++it) {
     if ((*it)->owner())
       break;
+    if (resource_provider->InUseByConsumer((*it)->id()) &&
+        !resource_provider->IsLost((*it)->id()))
+      continue;
     wasted_memory += (*it)->bytes();
   }
   size_t ten_percent_of_memory = memory_available_bytes_ / 10;
