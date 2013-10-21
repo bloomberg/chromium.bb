@@ -34,10 +34,10 @@ IN_PROC_BROWSER_TEST_F(CompositorUtilTest, CompositingModeAsExpected) {
   expected_mode = THREADED;
 #elif defined(OS_MACOSX)
   if (base::mac::IsOSMountainLionOrLater())
-    expected_mode = THREADED;
+    expected_mode = ENABLED;
 #elif defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    expected_mode = THREADED;
+    expected_mode = ENABLED;
 #endif
 
   EXPECT_EQ(expected_mode == ENABLED ||

@@ -61,6 +61,11 @@ extern const int kStatsMaxCounters;
 // a browser-supplied sequence number.
 CONTENT_EXPORT extern const int kHistogramSynchronizerReservedSequenceNumber;
 
+CONTENT_EXPORT extern const char kGpuCompositingFieldTrialName[];
+CONTENT_EXPORT extern const char
+    kGpuCompositingFieldTrialForceCompositingEnabledName[];
+CONTENT_EXPORT extern const char kGpuCompositingFieldTrialThreadEnabledName[];
+
 // Shared constants for the low latency flash audio field trial.
 CONTENT_EXPORT extern const char kLowLatencyFlashAudioFieldTrialName[];
 CONTENT_EXPORT extern const char kLowLatencyFlashAudioFieldTrialEnabledName[];
