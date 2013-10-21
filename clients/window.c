@@ -3732,13 +3732,25 @@ idle_resize(struct window *window)
 void
 window_schedule_resize(struct window *window, int width, int height)
 {
+	/* We should probably get these numbers from the theme. */
+	const int min_width = 200, min_height = 200;
+
 	window->pending_allocation.x = 0;
 	window->pending_allocation.y = 0;
 	window->pending_allocation.width = width;
 	window->pending_allocation.height = height;
 
-	if (window->min_allocation.width == 0)
-		window->min_allocation = window->pending_allocation;
+	if (window->min_allocation.width == 0) {
+		if (width < min_width)
+			window->min_allocation.width = min_width;
+		else
+			window->min_allocation.width = width;
+		if (height < min_height)
+			window->min_allocation.height = min_height;
+		else
+			window->min_allocation.height = width;
+	}
+
 	if (window->pending_allocation.width < window->min_allocation.width)
 		window->pending_allocation.width = window->min_allocation.width;
 	if (window->pending_allocation.height < window->min_allocation.height)
