@@ -1370,6 +1370,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_DEV_TOOLS_CONSOLE" desc="The text label of the JavaScript console menu item">
           &amp;JavaScript console
         </message>
+        <message name="IDS_DEV_TOOLS_DEVICES" desc="The text label of the Inspect Devices menu item">
+          &amp;Inspect devices
+        </message>
         <message name="IDS_TASK_MANAGER" desc="The text label of the Task Manager menu item">
           &amp;Task manager
         </message>
@@ -1392,6 +1395,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_DEV_TOOLS_CONSOLE" desc="In Title Case: The text label of the JavaScript console menu item">
           &amp;JavaScript Console
+        </message>
+        <message name="IDS_DEV_TOOLS_DEVICES" desc="The text label of the Inspect Devices menu item">
+          &amp;Inspect Devices
         </message>
         <message name="IDS_TASK_MANAGER" desc="In Title Case: The text label of the Task Manager menu item">
           &amp;Task Manager

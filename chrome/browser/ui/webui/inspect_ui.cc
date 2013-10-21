@@ -19,6 +19,8 @@
 #include "chrome/browser/devtools/port_forwarding_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -38,6 +40,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -558,6 +561,14 @@ void InspectUI::OpenRemotePage(const std::string& browser_id,
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
   if (it != remote_browsers_.end())
     it->second->Open(gurl.spec());
+}
+
+void InspectUI::InspectDevices(Browser* browser) {
+  content::RecordAction(content::UserMetricsAction("InspectDevices"));
+  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+      browser, GURL(chrome::kChromeUIInspectURL)));
+  params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(browser, params);
 }
 
 void InspectUI::PopulateLists() {

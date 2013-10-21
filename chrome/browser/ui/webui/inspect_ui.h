@@ -20,6 +20,8 @@ namespace base {
 class Value;
 }
 
+class Browser;
+
 class InspectUI : public content::WebUIController,
                   public content::NotificationObserver,
                   public DevToolsAdbBridge::Listener {
@@ -33,6 +35,8 @@ class InspectUI : public content::WebUIController,
   void CloseRemotePage(const std::string& page_id);
   void ReloadRemotePage(const std::string& page_id);
   void OpenRemotePage(const std::string& browser_id, const std::string& url);
+
+  static void InspectDevices(Browser* browser);
 
  private:
   class WorkerCreationDestructionListener;

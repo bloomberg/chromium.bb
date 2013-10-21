@@ -580,6 +580,7 @@
 0x883d075e3e6d670c	InsertTab
 0xb8890ced118a58f6	InsertText
 0x1342e1e52f335f69	InsertUnorderedList
+0x57267fa8e684477a	InspectDevices
 0xb7c371f7dd19c6fd	InstallSite
 0x9ee757dac968cead	InstantExtended.MostVisitedClicked
 0x3545f6127f5688ab	InstantExtended.ShowNTP

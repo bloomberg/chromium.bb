@@ -166,6 +166,7 @@
 #define IDC_DEV_TOOLS                   40003
 #define IDC_DEV_TOOLS_CONSOLE           40004
 #define IDC_TASK_MANAGER                40005
+#define IDC_DEV_TOOLS_DEVICES           40006
 #if defined(GOOGLE_CHROME_BUILD)
 #define IDC_FEEDBACK                    40008
 #endif
