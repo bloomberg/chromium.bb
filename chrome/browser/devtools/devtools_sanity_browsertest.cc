@@ -444,16 +444,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestBeforeUnloadEvents) {
 }
 
 // Tests scripts panel showing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
+// Disabled: http://crbug.com/309822
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
 // Tests that scripts tab is populated with inspected scripts even if it
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
+// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(
     DevToolsSanityTest,
-    TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+    DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   content::BrowserContext* browser_context =
@@ -497,22 +499,25 @@ IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
 
 // Tests that a content script is in the scripts list.
 // http://crbug.com/114104
+// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       TestContentScriptIsPresent) {
+                       DISABLED_TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.
+// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestNoScriptDuplicatesOnPanelSwitch) {
+                       DISABLED_TestNoScriptDuplicatesOnPanelSwitch) {
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
 }
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
+// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestPauseWhenLoadingDevTools) {
+                       DISABLED_TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
@@ -527,7 +532,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 #else
 #define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
 #endif
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestPauseWhenScriptIsRunning) {
+// Disabled: http://crbug.com/309822
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       DISABLED_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
