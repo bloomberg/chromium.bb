@@ -51,6 +51,7 @@ public:
     }
 
     PassRefPtr<CSSValue> toCSSValue() const { return m_value; }
+    CSSValueID toCSSValueID() const { return toCSSPrimitiveValue(m_value.get())->getValueID(); }
 
 protected:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE
