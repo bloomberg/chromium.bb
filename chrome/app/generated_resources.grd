@@ -14977,6 +14977,12 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag to enable the new profile management">
       Enables the new profile management system, including profile sign-out and the new avatar menu UI.
     </message>
+    <message name="IDS_FLAGS_ENABLE_INLINE_SIGNIN_NAME" desc="Title for the flag to enable inline signin flows.">
+      Enable inline signin flows
+    </message>
+    <message name="IDS_FLAGS_ENABLE_INLINE_SIGNIN_DESCRIPTION" desc="Description for the flag to enable inline signin flows">
+      Enables inline sign flows, still using the existing gaia template.
+    </message>
     <message name="IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_NAME" desc="Title for the flag to enable the gaia profile information">
       Enable GAIA profile name and icon
     </message>

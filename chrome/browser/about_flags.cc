@@ -1668,6 +1668,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kNewProfileManagement)
   },
   {
+    "enable-inline-signin",
+    IDS_FLAGS_ENABLE_INLINE_SIGNIN_NAME,
+    IDS_FLAGS_ENABLE_INLINE_SIGNIN_DESCRIPTION,
+    kOsMac | kOsWin | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kEnableInlineSignin)
+  },
+  {
     "enable-gaia-profile-info",
     IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_NAME,
     IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_DESCRIPTION,
