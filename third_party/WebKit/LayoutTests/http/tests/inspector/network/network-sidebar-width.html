@@ -15,7 +15,7 @@ function test()
         var request = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
 
         oldSetting = setting.get();
-        panel.show();
+        WebInspector.inspectorView.showPanel("network");
 
         setting.set(undefined);
         panel._showRequest(request);

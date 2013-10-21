@@ -45,7 +45,7 @@ function test()
             addNetworkFile(workspace, "foobar.js");
 
             var panel = new WebInspector.SourcesPanel(workspace);
-            panel.show();
+            panel.show(WebInspector.inspectorView.element);
 
             addNetworkFile(workspace, "foo.js");
             addNetworkFile(workspace, "bar.js");
@@ -66,7 +66,7 @@ function test()
             var workspace = createMockWorkspace();
             var workspaceController = new WebInspector.WorkspaceController(workspace);
             var panel = new WebInspector.SourcesPanel(workspace);
-            panel.show();
+            panel.show(WebInspector.inspectorView.element);
 
             addNetworkFile(workspace, "foo.js");
             addNetworkFile(workspace, "bar.js");
@@ -88,7 +88,7 @@ function test()
         {
             var workspace = createMockWorkspace();
             var panel = new WebInspector.SourcesPanel(workspace);
-            panel.show();
+            panel.show(WebInspector.inspectorView.element);
 
             var uiSourceCode = addNetworkFile(workspace, "foo.js");
             var debuggerUISourceCode = addDebuggerFile(workspace, "compiled.js");

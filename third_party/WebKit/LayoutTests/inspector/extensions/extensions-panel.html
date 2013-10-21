@@ -12,7 +12,7 @@ function initialize_extensionsPanelTest()
 {
     InspectorTest.getPanelSize = function()
     {
-        var boundingRect = document.getElementById("main-panels").getBoundingClientRect();
+        var boundingRect = WebInspector.inspectorView._panelsElement.getBoundingClientRect();
         return {
             width: boundingRect.width,
             height: boundingRect.height
