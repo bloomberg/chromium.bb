@@ -360,6 +360,7 @@ void* partitionAllocSlowPath(PartitionBucket* bucket)
     PartitionPageHeader* newPage;
     PartitionFreepagelistEntry* pagelist = bucket->freePages;
     if (LIKELY(pagelist != 0)) {
+        ASSERT(page != &bucket->root->seedPage);
         newPage = pagelist->page;
         bucket->freePages = pagelist->next;
     } else {
@@ -385,17 +386,21 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
 {
     PartitionBucket* bucket = page->bucket;
     ASSERT(page != &bucket->root->seedPage);
+    ASSERT(bucket->currPage != &bucket->root->seedPage);
     partitionValidatePage(bucket->currPage);
     if (LIKELY(page->numAllocatedSlots == 0)) {
         // Page became fully unused.
         // If it's the current page, change it!
         if (LIKELY(page == bucket->currPage)) {
             if (UNLIKELY(page->next == page)) {
-                // Freeing the last page. Return to initial state.
-                bucket->currPage = &bucket->root->seedPage;
-            } else {
-                bucket->currPage = page->next;
+                // We do not free the last active page in a bucket.
+                // To do so is a serious performance issue as we can get into
+                // a repeating state change between 0 and 1 objects of a given
+                // size allocated; and each state change incurs either a system
+                // call or a page fault, or more.
+                return;
             }
+            bucket->currPage = page->next;
         }
 
         partitionUnlinkPage(page);
@@ -412,12 +417,7 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
         // non-full page list. Also make it the current page to increase the
         // chances of it being filled up again. The old current page will be
         // the next page.
-        if (LIKELY(bucket->currPage != &bucket->root->seedPage)) {
-            partitionLinkPageBefore(page, bucket->currPage);
-        } else {
-            page->next = page;
-            page->prev = page;
-        }
+        partitionLinkPageBefore(page, bucket->currPage);
         bucket->currPage = page;
         page->numAllocatedSlots = -page->numAllocatedSlots - 2;
         ASSERT(page->numAllocatedSlots == partitionBucketSlots(bucket) - 1);
