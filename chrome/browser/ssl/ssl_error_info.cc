@@ -198,6 +198,23 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
           l10n_util::GetStringUTF16(
               IDS_CERT_ERROR_WEAK_KEY_EXTRA_INFO_2));
       break;
+    case CERT_WEAK_KEY_DH:
+      title = l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY);
+      details = l10n_util::GetStringFUTF16(
+          IDS_CERT_ERROR_WEAK_KEY_DETAILS, UTF8ToUTF16(request_url.host()));
+      short_description = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
+      extra_info.push_back(
+          l10n_util::GetStringUTF16(
+              IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY));
+    case CERT_PINNED_KEY_MISSING:
+      title = l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_HEADING_PINNING_FAILURE);
+      details = l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE);
+      short_description = l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_DETAILS_PINNING_FAILURE);
     case UNKNOWN:
       title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE);
       details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS);
@@ -236,6 +253,10 @@ SSLErrorInfo::ErrorType SSLErrorInfo::NetErrorToErrorType(int net_error) {
       return CERT_WEAK_SIGNATURE_ALGORITHM;
     case net::ERR_CERT_WEAK_KEY:
       return CERT_WEAK_KEY;
+    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+      return CERT_WEAK_KEY_DH;
+    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
+      return CERT_PINNED_KEY_MISSING;
     default:
       NOTREACHED();
       return UNKNOWN;

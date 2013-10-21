@@ -889,18 +889,27 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
 
     SaveCookiesAndNotifyHeadersComplete(net::OK);
   } else if (IsCertificateError(result)) {
-    // We encountered an SSL certificate error.  Ask our delegate to decide
-    // what we should do.
-
-    TransportSecurityState::DomainState domain_state;
-    const URLRequestContext* context = request_->context();
-    const bool fatal = context->transport_security_state() &&
-        context->transport_security_state()->GetDomainState(
-            request_info_.url.host(),
-            SSLConfigService::IsSNIAvailable(context->ssl_config_service()),
-            &domain_state) &&
-        domain_state.ShouldSSLErrorsBeFatal();
-    NotifySSLCertificateError(transaction_->GetResponseInfo()->ssl_info, fatal);
+    // We encountered an SSL certificate error.
+    if (result == ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY ||
+        result == ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN) {
+      // These are hard failures. They're handled separately and don't have
+      // the correct cert status, so set it here.
+      SSLInfo info(transaction_->GetResponseInfo()->ssl_info);
+      info.cert_status = MapNetErrorToCertStatus(result);
+      NotifySSLCertificateError(info, true);
+    } else {
+      // Maybe overridable, maybe not. Ask the delegate to decide.
+      TransportSecurityState::DomainState domain_state;
+      const URLRequestContext* context = request_->context();
+      const bool fatal = context->transport_security_state() &&
+          context->transport_security_state()->GetDomainState(
+              request_info_.url.host(),
+              SSLConfigService::IsSNIAvailable(context->ssl_config_service()),
+              &domain_state) &&
+          domain_state.ShouldSSLErrorsBeFatal();
+      NotifySSLCertificateError(
+          transaction_->GetResponseInfo()->ssl_info, fatal);
+    }
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     NotifyCertificateRequested(
         transaction_->GetResponseInfo()->cert_request_info.get());
