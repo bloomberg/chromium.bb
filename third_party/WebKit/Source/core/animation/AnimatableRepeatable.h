@@ -74,7 +74,8 @@ private:
 
 inline const AnimatableRepeatable* toAnimatableRepeatable(const AnimatableValue* value)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(value && value->isRepeatable());
+    // FIXME: Use a better typing system for AnimatableValues that doesn't require ugliness like this to support subclassing.
+    ASSERT_WITH_SECURITY_IMPLICATION(value && (value->isRepeatable() || value->isStrokeDasharrayList()));
     return static_cast<const AnimatableRepeatable*>(value);
 }
 

@@ -3563,6 +3563,7 @@
             'animation/AnimatableDoubleTest.cpp',
             'animation/AnimatableLengthTest.cpp',
             'animation/AnimatableNeutralTest.cpp',
+            'animation/AnimatableStrokeDasharrayListTest.cpp',
             'animation/AnimatableUnknownTest.cpp',
             'animation/AnimatableValueTestHelper.cpp',
             'animation/AnimatableValueTestHelper.h',
