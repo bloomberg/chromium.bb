@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/balloon_host.h"
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/notification.h"
@@ -141,6 +142,8 @@ void BalloonHost::Init() {
   extensions::SetViewType(
       web_contents_.get(), extensions::VIEW_TYPE_NOTIFICATION);
   web_contents_->SetDelegate(this);
+  extensions::ExtensionWebContentsObserver::CreateForWebContents(
+      web_contents_.get());
   Observe(web_contents_.get());
   renderer_preferences_util::UpdateFromSystemSettings(
       web_contents_->GetMutableRendererPrefs(), balloon_->profile());

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -572,6 +573,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       web_contents_, this));
   file_helper_.reset(new DevToolsFileHelper(web_contents_, profile));
   file_system_indexer_ = new DevToolsFileSystemIndexer();
+  extensions::ExtensionWebContentsObserver::CreateForWebContents(web_contents_);
 
   g_instances.Get().push_back(this);
 

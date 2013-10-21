@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chrome_page_zoom.h"
+#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,6 +64,8 @@ void PanelHost::Init(const GURL& url) {
 
   FaviconTabHelper::CreateForWebContents(web_contents_.get());
   PrefsTabHelper::CreateForWebContents(web_contents_.get());
+  extensions::ExtensionWebContentsObserver::CreateForWebContents(
+      web_contents_.get());
 
   web_contents_->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());

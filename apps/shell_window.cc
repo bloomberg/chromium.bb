@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -154,6 +155,7 @@ void ShellWindow::Init(const GURL& url,
   WebContents* web_contents = shell_window_contents_->GetWebContents();
   delegate_->InitWebContents(web_contents);
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
+  extensions::ExtensionWebContentsObserver::CreateForWebContents(web_contents);
 
   web_contents->SetDelegate(this);
   WebContentsModalDialogManager::FromWebContents(web_contents)->

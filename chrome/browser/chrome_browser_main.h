@@ -16,7 +16,6 @@
 #include "chrome/browser/task_profiler/auto_tracking.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "content/public/browser/browser_main_parts.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/common/main_function_params.h"
 
 class ActiveTabTracker;
@@ -153,8 +152,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 
   ChromeBrowserFieldTrials browser_field_trials_;
-
-  content::RenderViewHost::CreatedCallback rvh_callback_;
 
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.

@@ -803,8 +803,6 @@
         'browser/extensions/management_policy.h',
         'browser/extensions/menu_manager.cc',
         'browser/extensions/menu_manager.h',
-        'browser/extensions/message_handler.cc',
-        'browser/extensions/message_handler.h',
         'browser/extensions/navigation_observer.cc',
         'browser/extensions/navigation_observer.h',
         'browser/extensions/pack_extension_job.cc',

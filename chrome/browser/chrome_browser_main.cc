@@ -54,7 +54,6 @@
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/message_handler.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/upgrade_util.h"
@@ -504,11 +503,6 @@ class LoadCompleteListener : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(LoadCompleteListener);
 };
 
-void RenderViewHostCreated(content::RenderViewHost* render_view_host) {
-  new extensions::MessageHandler(render_view_host);
-}
-
-
 }  // namespace
 
 namespace chrome_browser {
@@ -534,7 +528,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       shutdown_watcher_(new ShutdownWatcherHelper()),
       startup_timer_(new performance_monitor::StartupTimer()),
       browser_field_trials_(parameters.command_line),
-      rvh_callback_(base::Bind(&RenderViewHostCreated)),
       translate_manager_(NULL),
       profile_(NULL),
       run_message_loop_(true),
@@ -550,13 +543,9 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
   // a ChromeNetworkDelegate attached that selectively allows cookies again.
   if (!disable_enforcing_cookie_policies_for_tests_)
     net::URLRequest::SetDefaultCookiePolicyToBlock();
-
-  content::RenderViewHost::AddCreatedCallback(rvh_callback_);
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
-  content::RenderViewHost::RemoveCreatedCallback(rvh_callback_);
-
   for (int i = static_cast<int>(chrome_extra_parts_.size())-1; i >= 0; --i)
     delete chrome_extra_parts_[i];
   chrome_extra_parts_.clear();

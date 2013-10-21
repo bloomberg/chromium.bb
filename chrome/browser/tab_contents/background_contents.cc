@@ -6,6 +6,7 @@
 
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -47,6 +48,8 @@ BackgroundContents::BackgroundContents(
       web_contents_.get(), extensions::VIEW_TYPE_BACKGROUND_CONTENTS);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());
+  extensions::ExtensionWebContentsObserver::CreateForWebContents(
+      web_contents_.get());
 
   // Close ourselves when the application is shutting down.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,

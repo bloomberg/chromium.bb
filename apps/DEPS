@@ -40,6 +40,7 @@ include_rules = [
   "+chrome/browser/extensions/extension_service.h",
   "+chrome/browser/extensions/extension_system.h",
   "+chrome/browser/extensions/extension_system_factory.h",
+  "+chrome/browser/extensions/extension_web_contents_observer.h",
   "+chrome/browser/extensions/lazy_background_task_queue.h",
   "+chrome/browser/extensions/suggest_permission_util.h",
   "+chrome/browser/extensions/unpacked_installer.h",
