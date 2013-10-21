@@ -5,6 +5,8 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -202,7 +204,18 @@ public class ContentViewRenderView extends FrameLayout {
      * @return The created SurfaceView object.
      */
     protected SurfaceView createSurfaceView(Context context) {
-        return new SurfaceView(context);
+        return new SurfaceView(context) {
+            @Override
+            public void onDraw(Canvas canvas) {
+                // We only need to draw to software canvases, which are used for taking screenshots.
+                if (canvas.isHardwareAccelerated()) return;
+                Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+                        Bitmap.Config.ARGB_8888);
+                if (nativeCompositeToBitmap(mNativeContentViewRenderView, bitmap)) {
+                    canvas.drawBitmap(bitmap, 0, 0, null);
+                }
+            }
+        };
     }
 
     /**
@@ -286,4 +299,5 @@ public class ContentViewRenderView extends FrameLayout {
     private native void nativeSurfaceSetSize(int nativeContentViewRenderView,
             int width, int height);
     private native boolean nativeComposite(int nativeContentViewRenderView);
+    private native boolean nativeCompositeToBitmap(int nativeContentViewRenderView, Bitmap bitmap);
 }

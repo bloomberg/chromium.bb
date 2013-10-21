@@ -28,6 +28,7 @@ class ContentViewRenderView : public CompositorClient {
   void SurfaceDestroyed(JNIEnv* env, jobject obj);
   void SurfaceSetSize(JNIEnv* env, jobject obj, jint width, jint height);
   jboolean Composite(JNIEnv* env, jobject obj);
+  jboolean CompositeToBitmap(JNIEnv* env, jobject obj, jobject java_bitmap);
 
   // CompositorClient ---------------------------------------------------------
   virtual void ScheduleComposite() OVERRIDE;

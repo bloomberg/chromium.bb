@@ -16,8 +16,10 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"
 #include "jni/ContentViewRenderView_jni.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/size.h"
 
+#include <android/bitmap.h>
 #include <android/native_window_jni.h>
 
 using base::android::ScopedJavaLocalRef;
@@ -81,6 +83,15 @@ jboolean ContentViewRenderView::Composite(JNIEnv* env, jobject obj) {
   buffers_swapped_during_composite_ = false;
   compositor_->Composite();
   return buffers_swapped_during_composite_;
+}
+
+jboolean ContentViewRenderView::CompositeToBitmap(JNIEnv* env, jobject obj,
+                                                  jobject java_bitmap) {
+  gfx::JavaBitmap bitmap(java_bitmap);
+  if (!compositor_ || bitmap.format() != ANDROID_BITMAP_FORMAT_RGBA_8888)
+    return false;
+  return compositor_->CompositeAndReadback(bitmap.pixels(),
+                                           gfx::Rect(bitmap.size()));
 }
 
 void ContentViewRenderView::ScheduleComposite() {

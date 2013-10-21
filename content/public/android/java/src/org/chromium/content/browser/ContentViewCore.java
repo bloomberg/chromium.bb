@@ -388,6 +388,8 @@ public class ContentViewCore
     private int mOverdrawBottomHeightPix;
     private int mViewportSizeOffsetWidthPix;
     private int mViewportSizeOffsetHeightPix;
+    private int mLocationInWindowX;
+    private int mLocationInWindowY;
 
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
@@ -1600,6 +1602,15 @@ public class ContentViewCore
         }
 
         updateAfterSizeChanged();
+    }
+
+    /**
+     * Called when the ContentView's position in the activity window changed. This information is
+     * used for cropping screenshots.
+     */
+    public void onLocationInWindowChanged(int x, int y) {
+        mLocationInWindowX = x;
+        mLocationInWindowY = y;
     }
 
     /**
@@ -3067,6 +3078,16 @@ public class ContentViewCore
      */
     public RenderCoordinates getRenderCoordinates() {
         return mRenderCoordinates;
+    }
+
+    @CalledByNative
+    private int getLocationInWindowX() {
+        return mLocationInWindowX;
+    }
+
+    @CalledByNative
+    private int getLocationInWindowY() {
+        return mLocationInWindowY;
     }
 
     @CalledByNative
