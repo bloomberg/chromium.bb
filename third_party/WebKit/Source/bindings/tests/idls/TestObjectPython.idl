@@ -116,10 +116,10 @@ interface TestObjectPython {
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
     // FIXME: move to TestActiveDOMObject.idl (=> TestCheckSecurity) once
     // methods are implemented
-    [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;
-    // [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;  // FIXME: separate readonly attribute once implement setters
-    [DoNotCheckSecurityOnGetter] readonly attribute long doNotCheckSecurityOnGetterReadonlyLongAttribute;
-    [DoNotCheckSecurityOnSetter] readonly attribute long doNotCheckSecurityOnSetterReadonlyLongAttribute;
+    [DoNotCheckSecurity] attribute long doNotCheckSecurityLongAttribute;
+    [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;  // Separate read only attribute to check attribute configuration
+    [DoNotCheckSecurityOnGetter] attribute long doNotCheckSecurityOnGetterLongAttribute;
+    [DoNotCheckSecurityOnSetter] attribute long doNotCheckSecurityOnSetterLongAttribute;
     [EnforceRange] readonly attribute long enforceRangeReadonlyLongAttribute;  // FIXME: properly MUST NOT appear on read only attribute; will correct when implement setters
     [GetterRaisesException] readonly attribute long getterRaisesExceptionReadonlyLongAttribute;
     [CustomGetter, GetterRaisesException] readonly attribute long customGetterGetterRaisesExceptionReadonlyLongAttribute;

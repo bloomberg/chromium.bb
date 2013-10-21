@@ -1777,6 +1777,33 @@ static void deprecatedLongAttributeAttributeSetterCallback(v8::Local<v8::String>
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void doNotCheckSecurityLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->doNotCheckSecurityLongAttribute());
+}
+
+static void doNotCheckSecurityLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::doNotCheckSecurityLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setDoNotCheckSecurityLongAttribute(cppValue);
+}
+
+static void doNotCheckSecurityLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::doNotCheckSecurityLongAttributeAttributeSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void doNotCheckSecurityReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -1790,29 +1817,57 @@ static void doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback(v8::L
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void doNotCheckSecurityOnGetterReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityOnGetterLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->doNotCheckSecurityOnGetterReadonlyLongAttribute());
+    v8SetReturnValueInt(info, imp->doNotCheckSecurityOnGetterLongAttribute());
 }
 
-static void doNotCheckSecurityOnGetterReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityOnGetterLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::doNotCheckSecurityOnGetterReadonlyLongAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::doNotCheckSecurityOnGetterLongAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void doNotCheckSecurityOnSetterReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityOnGetterLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->doNotCheckSecurityOnSetterReadonlyLongAttribute());
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setDoNotCheckSecurityOnGetterLongAttribute(cppValue);
 }
 
-static void doNotCheckSecurityOnSetterReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void doNotCheckSecurityOnGetterLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::doNotCheckSecurityOnGetterLongAttributeAttributeSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void doNotCheckSecurityOnSetterLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->doNotCheckSecurityOnSetterLongAttribute());
+}
+
+static void doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::doNotCheckSecurityOnSetterReadonlyLongAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setDoNotCheckSecurityOnSetterLongAttribute(cppValue);
+}
+
+static void doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -2519,9 +2574,10 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
 #endif // ENABLE(Condition)
     {"customElementsCallbacksReadonlyLongAttribute", TestObjectPythonV8Internal::customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"deprecatedLongAttribute", TestObjectPythonV8Internal::deprecatedLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::deprecatedLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"doNotCheckSecurityLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::doNotCheckSecurityLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ | v8::ALL_CAN_WRITE), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"doNotCheckSecurityReadonlyLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"doNotCheckSecurityOnGetterReadonlyLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityOnGetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"doNotCheckSecurityOnSetterReadonlyLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityOnSetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_WRITE), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"doNotCheckSecurityOnGetterLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityOnGetterLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::doNotCheckSecurityOnGetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"doNotCheckSecurityOnSetterLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_WRITE), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforceRangeReadonlyLongAttribute", TestObjectPythonV8Internal::enforceRangeReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"getterRaisesExceptionReadonlyLongAttribute", TestObjectPythonV8Internal::getterRaisesExceptionReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"customGetterGetterRaisesExceptionReadonlyLongAttribute", TestObjectPythonV8Internal::customGetterGetterRaisesExceptionReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
