@@ -596,7 +596,7 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 	sigaddset(&mask, SIGINT);
 	sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
-	child_argv[0] = wl->pw->pw_shell;
+	child_argv[0] = "/bin/sh";
 	child_argv[1] = "-l";
 	child_argv[2] = "-c";
 	child_argv[3] = BINDIR "/weston \"$@\"";
