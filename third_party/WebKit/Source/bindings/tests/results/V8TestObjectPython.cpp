@@ -1888,16 +1888,30 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback(v8::L
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void enforceRangeReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void enforceRangeLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->enforceRangeReadonlyLongAttribute());
+    v8SetReturnValueInt(info, imp->enforceRangeLongAttribute());
 }
 
-static void enforceRangeReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void enforceRangeLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::enforceRangeReadonlyLongAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::enforceRangeLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void enforceRangeLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_WITH_TYPECHECK_VOID(int, cppValue, toInt32(jsValue, EnforceRange, ok), info.GetIsolate());
+    imp->setEnforceRangeLongAttribute(cppValue);
+}
+
+static void enforceRangeLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::enforceRangeLongAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -2595,7 +2609,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"doNotCheckSecurityReadonlyLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"doNotCheckSecurityOnGetterLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityOnGetterLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::doNotCheckSecurityOnGetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"doNotCheckSecurityOnSetterLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_WRITE), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"enforceRangeReadonlyLongAttribute", TestObjectPythonV8Internal::enforceRangeReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"enforceRangeLongAttribute", TestObjectPythonV8Internal::enforceRangeLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::enforceRangeLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"getterRaisesExceptionReadonlyLongAttribute", TestObjectPythonV8Internal::getterRaisesExceptionReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"customGetterGetterRaisesExceptionReadonlyLongAttribute", TestObjectPythonV8Internal::customGetterGetterRaisesExceptionReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"implementedAsReadonlyLongAttribute", TestObjectPythonV8Internal::implementedAsReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
