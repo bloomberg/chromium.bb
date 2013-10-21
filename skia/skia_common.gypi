@@ -5,6 +5,11 @@
 # This gypi file handles the removal of platform-specific files from the
 # Skia build.
 {
+  'include_dirs': [
+    '..',
+    'config',
+  ],
+
   'conditions': [
     [ 'OS != "android"', {
       'sources/': [
@@ -28,6 +33,13 @@
       'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
     }],
   ],
+
+  'direct_dependent_settings': {
+    'include_dirs': [
+      '..',
+      'config',
+    ],
+  },
 
   'msvs_disabled_warnings': [4244, 4267, 4341, 4345, 4390, 4554, 4748, 4800],
 }

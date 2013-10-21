@@ -183,19 +183,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 
 #define SK_BUILD_FOR_WIN
 
-// VC8 doesn't support stdint.h, so we define those types here.
-#define SK_IGNORE_STDINT_DOT_H
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef short int16_t;
-typedef unsigned short uint16_t;
-typedef int int32_t;
-typedef unsigned uint32_t;
-
-// VC doesn't support __restrict__, so make it a NOP.
-#undef SK_RESTRICT
-#define SK_RESTRICT
-
 // Skia uses this deprecated bzero function to fill zeros into a string.
 #define bzero(str, len) memset(str, 0, len)
 

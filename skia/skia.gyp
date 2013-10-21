@@ -93,7 +93,6 @@
       'include_dirs': [
         '..',
         'config',
-        '../third_party/skia/include/config',
         '../third_party/skia/include/core',
       ],
       'conditions': [

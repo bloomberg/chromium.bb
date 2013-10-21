@@ -149,9 +149,6 @@
     '../third_party/skia/include/utils/SkProxyCanvas.h',
   ],
   'include_dirs': [
-    '..',
-    'config',
-    '../third_party/skia/include/config',
     '../third_party/skia/include/core',
     '../third_party/skia/include/effects',
     '../third_party/skia/include/images',
@@ -222,7 +219,7 @@
 
     # For POSIX platforms, prefer the Mutex implementation provided by Skia
     # since it does not generate static initializers.
-    [ 'OS == "android" or OS == "linux" or OS == "mac" or OS == "ios"', {
+    [ 'os_posix == 1', {
       'defines+': [
         'SK_USE_POSIX_THREADS',
       ],
@@ -444,8 +441,6 @@
       #temporary until we can hide SkFontHost
       '../third_party/skia/src/core',
 
-      'config',
-      '../third_party/skia/include/config',
       '../third_party/skia/include/core',
       '../third_party/skia/include/effects',
       '../third_party/skia/include/pdf',

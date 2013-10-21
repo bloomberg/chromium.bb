@@ -27,9 +27,10 @@
     {
       'target_name': 'skia_opts',
       'type': 'static_library',
+      'includes': [
+        'skia_common.gypi',
+      ],
       'include_dirs': [
-        'config',
-        '../third_party/skia/include/config',
         '../third_party/skia/include/core',
         '../third_party/skia/src/core',
         '../third_party/skia/src/opts',
@@ -138,10 +139,10 @@
     {
       'target_name': 'skia_opts_ssse3',
       'type': 'static_library',
+      'includes': [
+        'skia_common.gypi',
+      ],
       'include_dirs': [
-        '..',
-        'config',
-        '../third_party/skia/include/config',
         '../third_party/skia/include/core',
         '../third_party/skia/src/core',
       ],
@@ -176,10 +177,10 @@
     {
       'target_name': 'skia_opts_none',
       'type': 'static_library',
+      'includes': [
+        'skia_common.gypi',
+      ],
       'include_dirs': [
-        '..',
-        'config',
-        '../third_party/skia/include/config',
         '../third_party/skia/include/core',
         '../third_party/skia/src/core',
       ],
@@ -202,9 +203,10 @@
         {
           'target_name': 'skia_opts_neon',
           'type': 'static_library',
+          'includes': [
+            'skia_common.gypi',
+          ],
           'include_dirs': [
-            '..',
-            'config',
             '../third_party/skia/include/core',
             '../third_party/skia/src/core',
             '../third_party/skia/src/opts',
