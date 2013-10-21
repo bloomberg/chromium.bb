@@ -681,6 +681,10 @@ class Host_2 {
                             MediaKeyError error_code,
                             uint32_t system_code) = 0;
 
+  // Get private data from the host. This function is limited to internal use.
+  virtual void GetPrivateData(int32_t* instance,
+                              Host_1::GetPrivateInterface* get_interface) = 0;
+
   // Sends a platform challenge for the given |service_id|. |challenge| is at
   // most 256 bits of data to be signed. Once the challenge has been completed,
   // the host will call ContentDecryptionModule::OnPlatformChallengeResponse()
