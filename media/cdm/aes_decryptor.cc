@@ -49,14 +49,33 @@ static void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
   }
 }
 
+// Helper to decode a base64 string. EME spec doesn't allow padding characters,
+// but base::Base64Decode() requires them. So check that they're not there, and
+// then add them before calling base::Base64Decode().
+static bool DecodeBase64(std::string encoded_text, std::string* decoded_text) {
+  const char base64_padding = '=';
+
+  // TODO(jrummell): Enable this after layout tests have been updated to not
+  // include trailing padding characters.
+  // if (encoded_text.back() == base64_padding)
+  //   return false;
+
+  // Add pad characters so length of |encoded_text| is exactly a multiple of 4.
+  size_t num_last_grouping_chars = encoded_text.length() % 4;
+  if (num_last_grouping_chars > 0)
+    encoded_text.append(4 - num_last_grouping_chars, base64_padding);
+
+  return base::Base64Decode(encoded_text, decoded_text);
+}
+
 // Processes a JSON Web Key to extract the key id and key value. Adds the
 // id/value pair to |jwk_keys| and returns true on success.
 static bool ProcessSymmetricKeyJWK(const DictionaryValue& jwk,
                                    JWKKeys* jwk_keys) {
   // A symmetric keys JWK looks like the following in JSON:
   //   { "kty":"oct",
-  //     "kid":"AAECAwQFBgcICQoLDA0ODxAREhM=",
-  //     "k":"FBUWFxgZGhscHR4fICEiIw==" }
+  //     "kid":"AAECAwQFBgcICQoLDA0ODxAREhM",
+  //     "k":"FBUWFxgZGhscHR4fICEiIw" }
   // There may be other properties specified, but they are ignored.
   // Ref: http://tools.ietf.org/html/draft-ietf-jose-json-web-key-14
   // and:
@@ -82,16 +101,14 @@ static bool ProcessSymmetricKeyJWK(const DictionaryValue& jwk,
   }
 
   // Key ID and key are base64-encoded strings, so decode them.
-  // TODO(jrummell): The JWK spec and the EME spec don't say that 'kid' must be
-  // base64-encoded (they don't say anything at all). Verify with the EME spec.
   std::string decoded_key_id;
   std::string decoded_key;
-  if (!base::Base64Decode(encoded_key_id, &decoded_key_id) ||
+  if (!DecodeBase64(encoded_key_id, &decoded_key_id) ||
       decoded_key_id.empty()) {
     DVLOG(1) << "Invalid 'kid' value";
     return false;
   }
-  if (!base::Base64Decode(encoded_key, &decoded_key) ||
+  if (!DecodeBase64(encoded_key, &decoded_key) ||
       decoded_key.length() !=
           static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
     DVLOG(1) << "Invalid length of 'k' " << decoded_key.length();

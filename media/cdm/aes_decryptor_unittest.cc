@@ -29,13 +29,17 @@ namespace media {
 const uint8 kOriginalData[] = "Original subsample data.";
 const int kOriginalDataSize = 24;
 
+// In the examples below, 'k'(key) has to be 16 bytes, and will always require
+// 2 bytes of padding. 'kid'(keyid) is variable length, and may require 0, 1,
+// or 2 bytes of padding.
+
 const uint8 kKeyId[] = {
-    // base64 equivalent is AAECAw==
+    // base64 equivalent is AAECAw
     0x00, 0x01, 0x02, 0x03
 };
 
 const uint8 kKey[] = {
-    // base64 equivalent is BAUGBwgJCgsMDQ4PEBESEw==
+    // base64 equivalent is BAUGBwgJCgsMDQ4PEBESEw
     0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
     0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13
 };
@@ -45,8 +49,8 @@ const char kKeyAsJWK[] =
     "  \"keys\": ["
     "    {"
     "      \"kty\": \"oct\","
-    "      \"kid\": \"AAECAw==\","
-    "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw==\""
+    "      \"kid\": \"AAECAw\","
+    "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
     "    }"
     "  ]"
     "}";
@@ -56,8 +60,8 @@ const char kWrongKeyAsJWK[] =
     "  \"keys\": ["
     "    {"
     "      \"kty\": \"oct\","
-    "      \"kid\": \"AAECAw==\","
-    "      \"k\": \"7u7u7u7u7u7u7u7u7u7u7g==\""
+    "      \"kid\": \"AAECAw\","
+    "      \"k\": \"7u7u7u7u7u7u7u7u7u7u7g\""
     "    }"
     "  ]"
     "}";
@@ -67,8 +71,8 @@ const char kWrongSizedKeyAsJWK[] =
     "  \"keys\": ["
     "    {"
     "      \"kty\": \"oct\","
-    "      \"kid\": \"AAECAw==\","
-    "      \"k\": \"AAECAw==\""
+    "      \"kid\": \"AAECAw\","
+    "      \"k\": \"AAECAw\""
     "    }"
     "  ]"
     "}";
@@ -113,8 +117,8 @@ const char kKey2AsJWK[] =
     "  \"keys\": ["
     "    {"
     "      \"kty\": \"oct\","
-    "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM=\","
-    "      \"k\": \"FBUWFxgZGhscHR4fICEiIw==\""
+    "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+    "      \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
     "    }"
     "  ]"
     "}";
@@ -532,8 +536,8 @@ TEST_F(AesDecryptorTest, JWKKey) {
   const std::string key1 =
       "{"
       "  \"kty\": \"oct\","
-      "  \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM=\","
-      "  \"k\": \"FBUWFxgZGhscHR4fICEiIw==\""
+      "  \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "  \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
       "}";
   AddKeyAndExpect(key1, KEY_ERROR);
 
@@ -543,13 +547,13 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "  \"keys\": ["
       "    {"
       "      \"kty\": \"oct\","
-      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM=\","
-      "      \"k\": \"FBUWFxgZGhscHR4fICEiIw==\""
+      "      \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
+      "      \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
       "    },"
       "    {"
       "      \"kty\": \"oct\","
-      "      \"kid\": \"JCUmJygpKissLS4vMA==\","
-      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4/QA==\""
+      "      \"kid\": \"JCUmJygpKissLS4vMA\","
+      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4/QA\""
       "    }"
       "  ]"
       "}";
@@ -558,8 +562,8 @@ TEST_F(AesDecryptorTest, JWKKey) {
   // Try a key with no spaces and some \n plus additional fields.
   const std::string key3 =
       "\n\n{\"something\":1,\"keys\":[{\n\n\"kty\":\"oct\",\"alg\":\"A128KW\","
-      "\"kid\":\"AAECAwQFBgcICQoLDA0ODxAREhM=\",\"k\":\"GawgguFyGrWKav7AX4VKUg="
-      "=\",\"foo\":\"bar\"}]}\n\n";
+      "\"kid\":\"AAECAwQFBgcICQoLDA0ODxAREhM\",\"k\":\"GawgguFyGrWKav7AX4VKUg"
+      "\",\"foo\":\"bar\"}]}\n\n";
   AddKeyAndExpect(key3, KEY_ADDED);
 
   // Try some non-ASCII characters.
@@ -585,21 +589,10 @@ TEST_F(AesDecryptorTest, JWKKey) {
   // Try with 'keys' a list of integers.
   AddKeyAndExpect("{ \"keys\": [ 1, 2, 3 ] }", KEY_ERROR);
 
-  // Try a key missing padding(=) at end of base64 string.
+  // TODO(jrummell): The next 2 tests should fail once checking for padding
+  // characters is enabled.
+  // Try a key with padding(=) at end of base64 string.
   const std::string key4 =
-      "{"
-      "  \"keys\": ["
-      "    {"
-      "      \"kty\": \"oct\","
-      "      \"kid\": \"AAECAw==\","
-      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
-      "    }"
-      "  ]"
-      "}";
-  AddKeyAndExpect(key4, KEY_ERROR);
-
-  // Try a key ID missing padding(=) at end of base64 string.
-  const std::string key5 =
       "{"
       "  \"keys\": ["
       "    {"
@@ -609,7 +602,20 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "    }"
       "  ]"
       "}";
-  AddKeyAndExpect(key5, KEY_ERROR);
+  AddKeyAndExpect(key4, KEY_ADDED);
+
+  // Try a key ID with padding(=) at end of base64 string.
+  const std::string key5 =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"kid\": \"AAECAw==\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  AddKeyAndExpect(key5, KEY_ADDED);
 
   // Try a key with invalid base64 encoding.
   const std::string key6 =
@@ -617,12 +623,40 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "  \"keys\": ["
       "    {"
       "      \"kty\": \"oct\","
-      "      \"kid\": \"!@#$%^&*()==\","
-      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw==\""
+      "      \"kid\": \"!@#$%^&*()\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
       "    }"
       "  ]"
       "}";
   AddKeyAndExpect(key6, KEY_ERROR);
+
+  // Try a key where no padding is required. 'k' has to be 16 bytes, so it
+  // will always require padding. (Test above using |key2| has 2 'kid's that
+  // require 1 and 2 padding bytes).
+  const std::string key7 =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"kid\": \"Kiss\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  AddKeyAndExpect(key7, KEY_ADDED);
+
+  // Empty key id.
+  const std::string key8 =
+      "{"
+      "  \"keys\": ["
+      "    {"
+      "      \"kty\": \"oct\","
+      "      \"kid\": \"\","
+      "      \"k\": \"BAUGBwgJCgsMDQ4PEBESEw\""
+      "    }"
+      "  ]"
+      "}";
+  AddKeyAndExpect(key8, KEY_ERROR);
 }
 
 TEST_F(AesDecryptorTest, RawKey) {
