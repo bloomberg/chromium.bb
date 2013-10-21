@@ -192,8 +192,6 @@ private:
             m_lineInfo.setPreviousLineBrokeCleanly(false);
         }
 
-        void setupContext();
-
         RenderObject* currentObject() { return m_current.m_obj; }
         InlineIterator lineBreak() { return m_lineBreak; }
         bool atEnd() { return m_atEnd; }
