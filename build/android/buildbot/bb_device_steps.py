@@ -73,7 +73,7 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
     ])
 
 VALID_TESTS = set(['chromedriver', 'gpu', 'ui', 'unit', 'webkit',
-                   'webkit_layout', 'webrtc'])
+                   'webkit_layout', 'webrtc_chromium', 'webrtc_native'])
 
 RunCmd = bb_utils.RunCmd
 
@@ -425,8 +425,12 @@ def RunWebkitTests(options):
   RunWebkitLint(options.target)
 
 
-def RunWebRTCTests(options):
-  RunTestSuites(options, gtest_config.WEBRTC_TEST_SUITES)
+def RunWebRTCChromiumTests(options):
+  RunTestSuites(options, gtest_config.WEBRTC_CHROMIUM_TEST_SUITES)
+
+
+def RunWebRTCNativeTests(options):
+  RunTestSuites(options, gtest_config.WEBRTC_NATIVE_TEST_SUITES)
 
 
 def RunGPUTests(options):
@@ -454,7 +458,8 @@ def GetTestStepCmds():
       ('ui', RunInstrumentationTests),
       ('webkit', RunWebkitTests),
       ('webkit_layout', RunWebkitLayoutTests),
-      ('webrtc', RunWebRTCTests),
+      ('webrtc_chromium', RunWebRTCChromiumTests),
+      ('webrtc_native', RunWebRTCNativeTests),
   ]
 
 

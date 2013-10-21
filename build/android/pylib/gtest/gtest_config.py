@@ -33,7 +33,11 @@ STABLE_TEST_SUITES = [
     'sandbox_linux_unittests',
 ]
 
-WEBRTC_TEST_SUITES = [
+WEBRTC_CHROMIUM_TEST_SUITES = [
+    'content_browsertests',
+]
+
+WEBRTC_NATIVE_TEST_SUITES = [
     'audio_decoder_unittests',
     'common_audio_unittests',
     'common_video_unittests',
