@@ -79,19 +79,17 @@ typedef base::Callback<void(const AndroidDevices&)> AndroidDevicesCallback;
 
 class AdbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
  public:
-  explicit AdbDeviceImpl(const std::string& serial);
+  AdbDeviceImpl(const std::string& serial, bool is_connected);
   virtual void RunCommand(const std::string& command,
                           const CommandCallback& callback) OVERRIDE;
   virtual void OpenSocket(const std::string& name,
                           const SocketCallback& callback) OVERRIDE;
-  virtual bool IsConnected() OVERRIDE;
-
  private:
   virtual ~AdbDeviceImpl() {}
 };
 
-AdbDeviceImpl::AdbDeviceImpl(const std::string& serial)
-    : AndroidDevice(serial) {
+AdbDeviceImpl::AdbDeviceImpl(const std::string& serial, bool is_connected)
+    : AndroidDevice(serial, is_connected) {
 }
 
 void AdbDeviceImpl::RunCommand(const std::string& command,
@@ -108,11 +106,6 @@ void AdbDeviceImpl::OpenSocket(const std::string& name,
   AdbClientSocket::TransportQuery(kAdbPort, serial(), socket_name, callback);
 }
 
-bool AdbDeviceImpl::IsConnected() {
-  return true;
-}
-
-
 // UsbDeviceImpl --------------------------------------------------------------
 
 class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
@@ -122,7 +115,6 @@ class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
                           const CommandCallback& callback) OVERRIDE;
   virtual void OpenSocket(const std::string& name,
                           const SocketCallback& callback) OVERRIDE;
-  virtual bool IsConnected() OVERRIDE;
 
  private:
   void OnOpenSocket(const SocketCallback& callback,
@@ -143,7 +135,7 @@ class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
 
 
 UsbDeviceImpl::UsbDeviceImpl(AndroidUsbDevice* device)
-    : AndroidDevice(device->serial()),
+    : AndroidDevice(device->serial(), device->is_connected()),
       device_(device) {
   device_->InitOnCallerThread();
 }
@@ -206,10 +198,6 @@ void UsbDeviceImpl::OnRead(net::StreamSocket* socket,
                                    socket, buffer, new_data, callback));
   if (result != net::ERR_IO_PENDING)
     OnRead(socket, buffer, new_data, callback, result);
-}
-
-bool UsbDeviceImpl::IsConnected() {
-  return device_->is_connected();
 }
 
 
@@ -351,7 +339,7 @@ void AdbPagesCommand::WrapUsbDevices(const AndroidUsbDevices& usb_devices) {
   DCHECK_EQ(adb_thread_->message_loop(), base::MessageLoop::current());
 
 #if defined(DEBUG_DEVTOOLS)
-  devices_.push_back(new AdbDeviceImpl(""));  // For desktop remote debugging.
+  devices_.push_back(new AdbDeviceImpl("", true));  // For desktop debugging.
 #endif  // defined(DEBUG_DEVTOOLS)
 
   for (AndroidUsbDevices::const_iterator it = usb_devices.begin();
@@ -373,7 +361,8 @@ void AdbPagesCommand::ReceivedAdbDevices(
   for (size_t i = 0; i < serials.size(); ++i) {
     std::vector<std::string> tokens;
     Tokenize(serials[i], "\t ", &tokens);
-    devices_.push_back(new AdbDeviceImpl(tokens[0]));
+    bool offline = tokens.size() > 1 && tokens[1] == "offline";
+    devices_.push_back(new AdbDeviceImpl(tokens[0], !offline));
   }
   ProcessSerials();
 }
@@ -409,7 +398,7 @@ void AdbPagesCommand::ProcessSerials() {
 #endif  // defined(DEBUG_DEVTOOLS)
 
   scoped_refptr<DevToolsAdbBridge::AndroidDevice> device = devices_.back();
-  if (device->IsConnected()) {
+  if (device->is_connected()) {
     device->RunCommand(kDeviceModelCommand,
                        base::Bind(&AdbPagesCommand::ReceivedModel, this));
   } else {
@@ -763,8 +752,10 @@ DevToolsAdbBridge::Factory::BuildServiceInstanceFor(
 
 // DevToolsAdbBridge::AndroidDevice -------------------------------------------
 
-DevToolsAdbBridge::AndroidDevice::AndroidDevice(const std::string& serial)
-    : serial_(serial) {
+DevToolsAdbBridge::AndroidDevice::AndroidDevice(const std::string& serial,
+                                                bool is_connected)
+    : serial_(serial),
+      is_connected_(is_connected) {
 }
 
 void DevToolsAdbBridge::AndroidDevice::HttpQuery(
@@ -1062,7 +1053,7 @@ std::string DevToolsAdbBridge::RemoteDevice::GetModel() {
 }
 
 bool DevToolsAdbBridge::RemoteDevice::IsConnected() {
-  return device_->IsConnected();
+  return device_->is_connected();
 }
 
 void DevToolsAdbBridge::RemoteDevice::AddBrowser(

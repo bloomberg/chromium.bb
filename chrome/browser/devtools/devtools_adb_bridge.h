@@ -211,13 +211,12 @@ class DevToolsAdbBridge
 
   class AndroidDevice : public base::RefCounted<AndroidDevice> {
    public:
-    explicit AndroidDevice(const std::string& serial);
+    AndroidDevice(const std::string& serial, bool is_connected);
 
     virtual void RunCommand(const std::string& command,
                             const CommandCallback& callback) = 0;
     virtual void OpenSocket(const std::string& socket_name,
                             const SocketCallback& callback) = 0;
-    virtual bool IsConnected() = 0;
     void HttpQuery(const std::string& la_name,
                    const std::string& request,
                    const CommandCallback& callback);
@@ -226,6 +225,7 @@ class DevToolsAdbBridge
                      const SocketCallback& callback);
 
     std::string serial() { return serial_; }
+    bool is_connected() { return is_connected_; }
 
     std::string model() { return model_; }
     void set_model(const std::string& model) { model_ = model; }
@@ -245,6 +245,7 @@ class DevToolsAdbBridge
                              net::StreamSocket* socket);
 
     std::string serial_;
+    bool is_connected_;
     std::string model_;
 
     DISALLOW_COPY_AND_ASSIGN(AndroidDevice);
