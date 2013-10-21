@@ -73,10 +73,6 @@ chrome_frame/CFInstance.js
 chrome/tools/test/generate_mime_tests.pl
 # Copyright Alf Watt; BSD license. Not used on Android.
 content/browser/geolocation/osx_wifi.h
-# Copyright The Chromium Authors and Apple Inc. Taken from Blink.
-content/browser/indexed_db/leveldb/avltree.h
-# Copyright The Chromium Authors and Apple Inc. Taken from Blink.
-content/browser/indexed_db/leveldb/fixed_array.h
 # Copyright The Chromium Authors, Apple Inc and Graham Dennis; BSD license. Not
 # used on Android.
 content/browser/renderer_host/render_widget_host_view_mac.mm
