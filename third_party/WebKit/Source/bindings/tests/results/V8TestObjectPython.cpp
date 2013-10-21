@@ -2028,23 +2028,37 @@ static void customSetterImplementedAsLongAttributeAttributeSetterCallback(v8::Lo
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void readonlyDocumentFragmentAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void documentFragmentAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    RefPtr<DocumentFragment> result = imp->readonlyDocumentFragmentAttribute();
+    RefPtr<DocumentFragment> result = imp->documentFragmentAttribute();
     if (result && DOMDataStore::setReturnValueFromWrapper<V8DocumentFragment>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "readonlyDocumentFragmentAttribute", wrapper);
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "documentFragmentAttribute", wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
 
-static void readonlyDocumentFragmentAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void documentFragmentAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::readonlyDocumentFragmentAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::documentFragmentAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void documentFragmentAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(DocumentFragment*, cppValue, V8DocumentFragment::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8DocumentFragment::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    imp->setDocumentFragmentAttribute(WTF::getPtr(cppValue));
+}
+
+static void documentFragmentAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::documentFragmentAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -2709,7 +2723,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"customImplementedAsLongAttribute", TestObjectPythonV8Internal::customImplementedAsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customImplementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"customGetterImplementedAsLongAttribute", TestObjectPythonV8Internal::customGetterImplementedAsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customGetterImplementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"customSetterImplementedAsLongAttribute", TestObjectPythonV8Internal::customSetterImplementedAsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customSetterImplementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"readonlyDocumentFragmentAttribute", TestObjectPythonV8Internal::readonlyDocumentFragmentAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"documentFragmentAttribute", TestObjectPythonV8Internal::documentFragmentAttributeAttributeGetterCallback, TestObjectPythonV8Internal::documentFragmentAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"measureAsReadonlyLongAttribute", TestObjectPythonV8Internal::measureAsReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"notEnumerableReadonlyLongAttribute", TestObjectPythonV8Internal::notEnumerableReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
     {"perWorldBindingsReadonlyLongAttribute", TestObjectPythonV8Internal::perWorldBindingsReadonlyLongAttributeAttributeGetterCallback, 0, TestObjectPythonV8Internal::perWorldBindingsReadonlyLongAttributeAttributeGetterCallbackForMainWorld, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

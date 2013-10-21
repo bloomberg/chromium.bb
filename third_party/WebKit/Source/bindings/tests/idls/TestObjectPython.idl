@@ -126,7 +126,7 @@ interface TestObjectPython {
     [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;
     [CustomGetter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customGetterImplementedAsLongAttribute;
     [CustomSetter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
-    [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
+    [KeepAttributeAliveForGC] attribute DocumentFragment documentFragmentAttribute;
     [MeasureAs=TestFeature] readonly attribute long measureAsReadonlyLongAttribute;
     [NotEnumerable] readonly attribute long notEnumerableReadonlyLongAttribute;
     [PerContextEnabled=FeatureName] readonly attribute long perContextEnabledReadonlyLongAttribute;
