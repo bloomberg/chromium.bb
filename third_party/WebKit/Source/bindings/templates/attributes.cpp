@@ -128,10 +128,16 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
     if (!({{attribute.enum_validation_expression}}))
         return;
     {% endif %}
+    {% if attribute.is_setter_raises_exception %}
+    ExceptionState es(info.GetIsolate());
+    {% endif %}
     {% if attribute.is_call_with_script_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();
     {% endif %}
     {{attribute.cpp_setter}};
+    {% if attribute.is_setter_raises_exception %}
+    es.throwIfNeeded();
+    {% endif %}
     {% if attribute.cached_attribute_validation_method %}
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("{{attribute.name}}")); // Invalidate the cached value.
     {% endif %}

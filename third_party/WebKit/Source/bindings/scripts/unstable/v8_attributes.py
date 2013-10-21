@@ -88,6 +88,7 @@ def generate_attribute_and_includes(interface, attribute):
         'is_getter_raises_exception': has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')),
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
+        'is_setter_raises_exception': has_extended_attribute(attribute, ('RaisesException', 'SetterRaisesException')),
         'is_static': attribute.is_static,
         'name': attribute.name,
         'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
@@ -170,7 +171,7 @@ def getter_expression(interface, attribute, contents, includes):
     arguments.extend(v8_utilities.call_with_arguments(attribute, contents))
     if attribute.is_nullable:
         arguments.append('isNull')
-    if has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')):
+    if contents['is_getter_raises_exception']:
         arguments.append('es')
     if attribute.data_type == 'EventHandler':
         arguments.append('isolatedWorldForIsolate(info.GetIsolate())')
@@ -232,6 +233,8 @@ def setter_expression(interface, attribute, contents, includes):
         arguments.append('WTF::getPtr(cppValue)')
     else:
         arguments.append('cppValue')
+    if contents['is_setter_raises_exception']:
+        arguments.append('es')
 
     setter_name = scoped_name(interface, attribute, 'set%s' % capitalize(cpp_name(attribute)))
     return '%s(%s)' % (setter_name, ', '.join(arguments))

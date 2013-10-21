@@ -121,8 +121,7 @@ interface TestObjectPython {
     [DoNotCheckSecurityOnGetter] attribute long doNotCheckSecurityOnGetterLongAttribute;
     [DoNotCheckSecurityOnSetter] attribute long doNotCheckSecurityOnSetterLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
-    [GetterRaisesException] readonly attribute long getterRaisesExceptionReadonlyLongAttribute;
-    [CustomGetter, GetterRaisesException] readonly attribute long customGetterGetterRaisesExceptionReadonlyLongAttribute;
+    [GetterRaisesException] attribute long getterRaisesExceptionLongAttribute;
     [ImplementedAs=implementedAsName] readonly attribute long implementedAsReadonlyLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] readonly attribute long customImplementedAsReadonlyLongAttribute;
     [CustomGetter, ImplementedAs=implementedAsNameWithCustomGetter] readonly attribute long customGetterImplementedAsReadonlyLongAttribute;
@@ -135,7 +134,7 @@ interface TestObjectPython {
     [ActivityLogging=AccessForIsolatedWorlds, PerWorldBindings] readonly attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsReadonlyLongAttribute;
     [ActivityLogging=GetterForAllWorlds, PerWorldBindings] readonly attribute long activityLoggingGetterPerWorldBindingsReadonlyLongAttribute;
     [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] readonly attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsReadonlyLongAttribute;
-    [RaisesException] readonly attribute long raisesExceptionReadonlyLongAttribute;
+    [RaisesException] attribute long raisesExceptionLongAttribute;
     [Reflect] readonly attribute TestInterface reflectReadonlyTestInterfaceAttribute;
     [Reflect=reflectedNameAttribute] readonly attribute TestInterface reflectReflectedNameAttributeReadonlyTestAttribute;
     // [Reflect] special types: special getters or range checking for unsigned
@@ -153,7 +152,7 @@ interface TestObjectPython {
     [RuntimeEnabled=FeatureName] readonly attribute long runtimeEnabledReadonlyLongAttribute;
     [Conditional=Condition, RuntimeEnabled=FeatureName] readonly attribute long conditionalEnabledAtRuntimeReadonlyLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] readonly attribute DOMString setterCallWithActiveWindowAndFirstWindowReadonlyStringAttribute;  // FIXME: stub test case b/c readonly, becomes real test case when implement setters
-    [SetterRaisesException] readonly attribute long setterRaisesExceptionReadonlyLongAttribute;  // FIXME: stub test case b/c readonly, becomes real test case when implement setters
+    [SetterRaisesException] attribute long setterRaisesExceptionLongAttribute;
     [StrictTypeChecking] readonly attribute float strictTypeCheckingReadonlyFloatAttribute;  // FIXME: only applicable to writable attributes, implement with setters
     [StrictTypeChecking] readonly attribute TestInterface strictTypeCheckingReadonlyTestInterfaceAttribute;  // FIXME: only applicable to writable attributes, implement with setters
     [TreatNullAs=NullString] readonly attribute DOMString treatNullAsNullStringReadonlyStringAttribute;  // FIXME: only applicable to writable attributes, implement with setters
