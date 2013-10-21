@@ -344,6 +344,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UpdateConstrainedWindowRects(const std::vector<gfx::Rect>& rects);
 #endif
 
+  // Method to indicate if this instance is shutting down or closing.
+  // TODO(shrikant): Discuss around to see if it makes sense to add this method
+  // as part of RenderWidgetHostView.
+  bool IsClosing() const { return in_shutdown_; };
+
  protected:
   friend class RenderWidgetHostView;
   virtual ~RenderWidgetHostViewAura();

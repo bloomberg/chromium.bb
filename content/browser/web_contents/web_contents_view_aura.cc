@@ -1077,10 +1077,6 @@ void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {
 
 void WebContentsViewAura::OnTabCrashed(base::TerminationStatus status,
                                        int error_code) {
-  // Set the focus to the parent because neither the view window nor this
-  // window can handle key events.
-  if (window_->HasFocus() && window_->parent())
-    window_->parent()->Focus();
 }
 
 void WebContentsViewAura::SizeContents(const gfx::Size& size) {
@@ -1499,9 +1495,15 @@ bool WebContentsViewAura::ShouldDescendIntoChildForEventHandling(
 }
 
 bool WebContentsViewAura::CanFocus() {
-  // Do not take the focus if the render widget host view is gone because
-  // neither the view window nor this window can handle key events.
-  return web_contents_->GetRenderWidgetHostView() != NULL;
+  // Do not take the focus if the render widget host view aura is gone or
+  // is in the process of shutting down because neither the view window nor
+  // this window can handle key events.
+  RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
+      web_contents_->GetRenderWidgetHostView());
+  if (view != NULL && !view->IsClosing())
+    return true;
+
+  return false;
 }
 
 void WebContentsViewAura::OnCaptureLost() {

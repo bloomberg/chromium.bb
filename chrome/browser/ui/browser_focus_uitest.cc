@@ -871,6 +871,19 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 }
 
+// Tests that focus goes to frame after crashed tab.
+// TODO(shrikant): Find out where the focus should be deterministically.
+// Currently focused_view after crash seem to be non null in debug mode
+// (invalidated pointer 0xcccccc).
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusAfterCrashedTab) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  content::CrashTab(browser()->tab_strip_model()->GetActiveWebContents());
+
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+}
+
 // Tests that when a new tab is opened from the omnibox, the focus is moved from
 // the omnibox for the current tab.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
