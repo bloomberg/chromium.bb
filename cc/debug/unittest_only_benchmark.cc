@@ -7,7 +7,8 @@
 
 namespace cc {
 
-UnittestOnlyBenchmark::UnittestOnlyBenchmark(const DoneCallback& callback)
+UnittestOnlyBenchmark::UnittestOnlyBenchmark(scoped_ptr<base::Value> value,
+                                             const DoneCallback& callback)
     : MicroBenchmark(callback) {}
 
 UnittestOnlyBenchmark::~UnittestOnlyBenchmark() {}

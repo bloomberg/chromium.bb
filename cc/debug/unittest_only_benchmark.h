@@ -11,7 +11,8 @@ namespace cc {
 
 class UnittestOnlyBenchmark : public MicroBenchmark {
  public:
-  explicit UnittestOnlyBenchmark(const DoneCallback& callback);
+  explicit UnittestOnlyBenchmark(scoped_ptr<base::Value> value,
+                                 const DoneCallback& callback);
   virtual ~UnittestOnlyBenchmark();
 
   virtual void DidUpdateLayers(LayerTreeHost* host) OVERRIDE;

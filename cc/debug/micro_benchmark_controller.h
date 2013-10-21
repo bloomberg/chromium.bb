@@ -29,6 +29,7 @@ class MicroBenchmarkController {
   void DidUpdateLayers();
 
   bool ScheduleRun(const std::string& micro_benchmark_name,
+                   scoped_ptr<base::Value> value,
                    const MicroBenchmark::DoneCallback& callback);
 
  private:

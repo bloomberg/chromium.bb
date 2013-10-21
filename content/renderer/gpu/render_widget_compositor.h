@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "cc/debug/rendering_stats.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -60,6 +61,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   const cc::Layer* GetRootLayer() const;
   bool ScheduleMicroBenchmark(
       const std::string& name,
+      scoped_ptr<base::Value> value,
       const base::Callback<void(scoped_ptr<base::Value>)>& callback);
 
   // WebLayerTreeView implementation.

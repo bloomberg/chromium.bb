@@ -404,8 +404,9 @@ const cc::Layer* RenderWidgetCompositor::GetRootLayer() const {
 
 bool RenderWidgetCompositor::ScheduleMicroBenchmark(
     const std::string& name,
+    scoped_ptr<base::Value> value,
     const base::Callback<void(scoped_ptr<base::Value>)>& callback) {
-  return layer_tree_host_->ScheduleMicroBenchmark(name, callback);
+  return layer_tree_host_->ScheduleMicroBenchmark(name, value.Pass(), callback);
 }
 
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {

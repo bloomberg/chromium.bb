@@ -41,14 +41,26 @@ class RecordPerArea(page_measurement.PageMeasurement):
             function(value) {
               window.benchmark_results.done = true;
               window.benchmark_results.results = value;
-            });
+            }, [{width: 1, height: 1},
+                {width: 250, height: 250},
+                {width: 500, height: 500},
+                {width: 750, height: 750},
+                {width: 1000, height: 1000},
+                {width: 256, height: 1024},
+                {width: 1024, height: 256}]);
     """)
 
     def _IsDone():
       return tab.EvaluateJavaScript(
-          'window.benchmark_results.done', timeout=120)
-    util.WaitFor(_IsDone, timeout=120)
+          'window.benchmark_results.done', timeout=300)
+    util.WaitFor(_IsDone, timeout=300)
 
     all_data = tab.EvaluateJavaScript('window.benchmark_results.results')
     for data in all_data:
-      results.Add('time_for_area_%07d' % (data['area']), 'ms', data['time_ms'])
+      width = data['width']
+      height = data['height']
+      area = width * height
+      time_ms = data['time_ms']
+
+      results.Add('area_%07d_%dx%d' % (area, width, height), 'ms', time_ms)
+

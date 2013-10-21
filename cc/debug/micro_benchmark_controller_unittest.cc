@@ -36,14 +36,14 @@ void IncrementCallCount(int* count, scoped_ptr<base::Value> value) {
 
 TEST_F(MicroBenchmarkControllerTest, ScheduleFail) {
   bool result = layer_tree_host_->ScheduleMicroBenchmark(
-      "non_existant_benchmark", base::Bind(&Noop));
+      "non_existant_benchmark", scoped_ptr<base::Value>(), base::Bind(&Noop));
   EXPECT_FALSE(result);
 }
 
 TEST_F(MicroBenchmarkControllerTest, CommitScheduled) {
   EXPECT_FALSE(layer_tree_host_->needs_commit());
   bool result = layer_tree_host_->ScheduleMicroBenchmark(
-      "unittest_only_benchmark", base::Bind(&Noop));
+      "unittest_only_benchmark", scoped_ptr<base::Value>(), base::Bind(&Noop));
   EXPECT_TRUE(result);
   EXPECT_TRUE(layer_tree_host_->needs_commit());
 }
@@ -52,6 +52,7 @@ TEST_F(MicroBenchmarkControllerTest, BenchmarkRan) {
   int run_count = 0;
   bool result = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
+      scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
   EXPECT_TRUE(result);
 
@@ -66,10 +67,12 @@ TEST_F(MicroBenchmarkControllerTest, MultipleBenchmarkRan) {
   int run_count = 0;
   bool result = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
+      scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
   EXPECT_TRUE(result);
   result = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
+      scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
   EXPECT_TRUE(result);
 
@@ -81,10 +84,12 @@ TEST_F(MicroBenchmarkControllerTest, MultipleBenchmarkRan) {
 
   result = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
+      scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
   EXPECT_TRUE(result);
   result = layer_tree_host_->ScheduleMicroBenchmark(
       "unittest_only_benchmark",
+      scoped_ptr<base::Value>(),
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
   EXPECT_TRUE(result);
 

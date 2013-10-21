@@ -7,6 +7,7 @@
 
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/time/time.h"
 #include "cc/debug/micro_benchmark_controller.h"
@@ -17,7 +18,8 @@ class LayerTreeHost;
 class Layer;
 class PictureRecordBenchmark : public MicroBenchmark {
  public:
-  explicit PictureRecordBenchmark(const MicroBenchmark::DoneCallback& callback);
+  explicit PictureRecordBenchmark(scoped_ptr<base::Value> value,
+                                  const MicroBenchmark::DoneCallback& callback);
   virtual ~PictureRecordBenchmark();
 
   // Implements MicroBenchmark interface.
@@ -28,7 +30,8 @@ class PictureRecordBenchmark : public MicroBenchmark {
   void Run(Layer* layer);
 
   typedef std::pair<base::TimeDelta, unsigned> TotalTime;
-  std::map<unsigned, TotalTime> times_;
+  std::map<std::pair<int, int>, TotalTime> times_;
+  std::vector<std::pair<int, int> > dimensions_;
 };
 
 }  // namespace cc

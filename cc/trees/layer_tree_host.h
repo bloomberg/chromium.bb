@@ -320,6 +320,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   int id() const { return tree_id_; }
 
   bool ScheduleMicroBenchmark(const std::string& benchmark_name,
+                              scoped_ptr<base::Value> value,
                               const MicroBenchmark::DoneCallback& callback);
 
  protected:

@@ -18,11 +18,15 @@ namespace {
 
 scoped_ptr<MicroBenchmark> CreateBenchmark(
     const std::string& name,
+    scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
-  if (name == "picture_record_benchmark")
-    return scoped_ptr<MicroBenchmark>(new PictureRecordBenchmark(callback));
-  else if (name == "unittest_only_benchmark")
-    return scoped_ptr<MicroBenchmark>(new UnittestOnlyBenchmark(callback));
+  if (name == "picture_record_benchmark") {
+    return scoped_ptr<MicroBenchmark>(
+        new PictureRecordBenchmark(value.Pass(), callback));
+  } else if (name == "unittest_only_benchmark") {
+    return scoped_ptr<MicroBenchmark>(
+        new UnittestOnlyBenchmark(value.Pass(), callback));
+  }
   return scoped_ptr<MicroBenchmark>();
 }
 
@@ -47,9 +51,10 @@ MicroBenchmarkController::~MicroBenchmarkController() {}
 
 bool MicroBenchmarkController::ScheduleRun(
     const std::string& micro_benchmark_name,
+    scoped_ptr<base::Value> value,
     const MicroBenchmark::DoneCallback& callback) {
   scoped_ptr<MicroBenchmark> benchmark =
-      CreateBenchmark(micro_benchmark_name, callback);
+      CreateBenchmark(micro_benchmark_name, value.Pass(), callback);
   if (benchmark.get()) {
     benchmarks_.push_back(benchmark.Pass());
     host_->SetNeedsCommit();
