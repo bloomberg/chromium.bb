@@ -119,7 +119,7 @@ class LocalCastSenderPacketReceiver : public PacketReceiver {
         ssrc_of_video_sender_(ssrc_of_video_sender) {}
 
   virtual void ReceivedPacket(const uint8* packet,
-                              int length,
+                              size_t length,
                               const base::Closure callback) OVERRIDE {
     if (!Rtcp::IsRtcpPacket(packet, length)) {
       // We should have no incoming RTP packets.

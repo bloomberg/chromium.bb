@@ -61,7 +61,7 @@ class VideoSender : public base::NonThreadSafe,
                              const base::Closure callback);
 
   // Only called from the main cast thread.
-  void IncomingRtcpPacket(const uint8* packet, int length,
+  void IncomingRtcpPacket(const uint8* packet, size_t length,
                           const base::Closure callback);
 
  protected:

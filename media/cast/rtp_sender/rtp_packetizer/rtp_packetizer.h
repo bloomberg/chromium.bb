@@ -46,8 +46,7 @@ class RtpPacketizer {
 
   int send_packets_count() { return send_packets_count_; }
 
-  // TODO(hclam): Revisit the use of static_cast here.
-  int send_octet_count() { return static_cast<int>(send_octet_count_); }
+  size_t send_octet_count() { return send_octet_count_; }
 
  private:
   void Cast(bool is_key, uint8 reference_frame_id,

@@ -35,7 +35,7 @@ class LocalRtpVideoData : public RtpData {
   virtual ~LocalRtpVideoData() {}
 
   virtual void OnReceivedPayloadData(const uint8* payload_data,
-                                     int payload_size,
+                                     size_t payload_size,
                                      const RtpCastHeader* rtp_header) OVERRIDE {
     base::TimeTicks now = clock_->NowTicks();
     if (time_incoming_packet_.is_null() || now - time_incoming_packet_ >
@@ -349,7 +349,7 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
   return (rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_);
 }
 
-void VideoReceiver::IncomingPacket(const uint8* packet, int length,
+void VideoReceiver::IncomingPacket(const uint8* packet, size_t length,
                                    const base::Closure callback) {
   if (Rtcp::IsRtcpPacket(packet, length)) {
     rtcp_->IncomingRtcpPacket(packet, length);
@@ -360,7 +360,7 @@ void VideoReceiver::IncomingPacket(const uint8* packet, int length,
 }
 
 void VideoReceiver::IncomingRtpPacket(const uint8* payload_data,
-                                      int payload_size,
+                                      size_t payload_size,
                                       const RtpCastHeader& rtp_header) {
   bool complete = framer_->InsertPacket(payload_data, payload_size, rtp_header);
 

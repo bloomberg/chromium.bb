@@ -12,7 +12,6 @@
 namespace media {
 namespace cast {
 
-static const int kRtcpInterval = 1000;
 static const uint32 kSendingSsrc = 0x12345678;
 static const uint32 kMediaSsrc = 0x87654321;
 static const std::string kCName("test@10.1.1.1");
@@ -39,7 +38,7 @@ class TestRtcpTransport : public PacedPacketSender {
     return false;
   }
 
-  void SetExpectedRtcpPacket(const uint8* rtcp_buffer, int length) {
+  void SetExpectedRtcpPacket(const uint8* rtcp_buffer, size_t length) {
     expected_packet_length_ = length;
     memcpy(expected_packet_, rtcp_buffer, length);
   }

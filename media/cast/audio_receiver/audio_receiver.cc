@@ -32,7 +32,7 @@ class LocalRtpAudioData : public RtpData {
 
   virtual void OnReceivedPayloadData(
       const uint8* payload_data,
-      int payload_size,
+      size_t payload_size,
       const RtpCastHeader* rtp_header) OVERRIDE {
     // TODO(pwestin): update this as video to refresh over time.
     if (time_first_incoming_packet_.is_null()) {
@@ -142,7 +142,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
 AudioReceiver::~AudioReceiver() {}
 
 void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
-                                            int payload_size,
+                                            size_t payload_size,
                                             const RtpCastHeader& rtp_header) {
   if (audio_decoder_) {
     DCHECK(!audio_buffer_) << "Invalid internal state";
@@ -280,7 +280,7 @@ void AudioReceiver::PostEncodedAudioFrame(
       base::Bind(callback, base::Passed(encoded_frame), playout_time));
 }
 
-void AudioReceiver::IncomingPacket(const uint8* packet, int length,
+void AudioReceiver::IncomingPacket(const uint8* packet, size_t length,
                                    const base::Closure callback) {
   bool rtcp_packet = Rtcp::IsRtcpPacket(packet, length);
   if (!rtcp_packet) {

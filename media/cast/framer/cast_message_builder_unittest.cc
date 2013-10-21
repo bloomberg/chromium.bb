@@ -17,7 +17,7 @@ static const uint32 kShortTimeIncrementMs = 10;
 static const uint32 kLongTimeIncrementMs = 40;
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
-typedef std::map<uint8, int> MissingPacketsMap;
+typedef std::map<uint8, size_t> MissingPacketsMap;
 
 class NackFeedbackVerification : public RtpPayloadFeedback {
  public:
@@ -45,15 +45,14 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
           std::make_pair(frame_it->first, kRtcpCastAllPacketsLost));
       } else {
       missing_packets_.insert(
-          std::make_pair(frame_it->first,
-                         static_cast<int>(frame_it->second.size())));
+          std::make_pair(frame_it->first, frame_it->second.size()));
       }
       ++frame_it;
     }
     triggered_ = true;
   }
 
-  int num_missing_packets(uint8 frame_id) {
+  size_t num_missing_packets(uint8 frame_id) {
     MissingPacketsMap::iterator it;
     it = missing_packets_.find(frame_id);
     if (it == missing_packets_.end()) return 0;

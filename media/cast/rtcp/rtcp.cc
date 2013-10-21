@@ -120,9 +120,9 @@ Rtcp::Rtcp(base::TickClock* clock,
 Rtcp::~Rtcp() {}
 
 // static
-bool Rtcp::IsRtcpPacket(const uint8* packet, int length) {
-  DCHECK_GE(length, 8) << "Invalid RTCP packet";
-  if (length < 8) return false;
+bool Rtcp::IsRtcpPacket(const uint8* packet, size_t length) {
+  DCHECK_GE(length, kMinLengthOfRtcp) << "Invalid RTCP packet";
+  if (length < kMinLengthOfRtcp) return false;
 
   uint8 packet_type = packet[1];
   if (packet_type >= kPacketTypeLow && packet_type <= kPacketTypeHigh) {
@@ -132,7 +132,8 @@ bool Rtcp::IsRtcpPacket(const uint8* packet, int length) {
 }
 
 // static
-uint32 Rtcp::GetSsrcOfSender(const uint8* rtcp_buffer, int length) {
+uint32 Rtcp::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
+  DCHECK_GE(length, kMinLengthOfRtcp) << "Invalid RTCP packet";
   uint32 ssrc_of_sender;
   net::BigEndianReader big_endian_reader(rtcp_buffer, length);
   big_endian_reader.Skip(4);  // Skip header

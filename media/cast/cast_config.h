@@ -191,7 +191,7 @@ class PacketReceiver : public base::RefCountedThreadSafe<PacketReceiver> {
  public:
   // All packets received from the network should be delivered via this
   // function.
-  virtual void ReceivedPacket(const uint8* packet, int length,
+  virtual void ReceivedPacket(const uint8* packet, size_t length,
                               const base::Closure callback) = 0;
 
   static void DeletePacket(const uint8* packet);

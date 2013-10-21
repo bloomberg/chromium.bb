@@ -13,8 +13,8 @@
 namespace media {
 namespace cast {
 
-static const int kPacketLength = 1500;
-static const int kCastRtpLength = 7;
+static const size_t kPacketLength = 1500;
+static const size_t kCastRtpLength = 7;
 static const int kTestPayloadType = 127;
 static const uint32 kTestSsrc = 1234;
 static const uint32 kTestTimestamp = 111111;
@@ -34,7 +34,7 @@ class RtpDataTest : public RtpData {
   }
 
   virtual void OnReceivedPayloadData(const uint8* payloadData,
-                                     int payloadSize,
+                                     size_t payloadSize,
                                      const RtpCastHeader* rtpHeader) OVERRIDE {
     VerifyCommonHeader(*rtpHeader);
     VerifyCastHeader(*rtpHeader);

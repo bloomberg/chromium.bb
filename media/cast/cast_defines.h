@@ -41,6 +41,11 @@ enum DefaultSettings {
 
 const uint16 kRtcpCastAllPacketsLost = 0xffff;
 
+const size_t kMinLengthOfRtcp = 8;
+
+// Basic RTP header + cast header.
+const size_t kMinLengthOfRtp = 12 + 6;
+
 // Each uint16 represents one packet id within a cast frame.
 typedef std::set<uint16> PacketIdSet;
 // Each uint8 represents one cast frame.

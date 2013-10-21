@@ -163,8 +163,7 @@ void AudioEncoder::EncodeAudioFrameThread(
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
                               release_callback);
 
-  // Note:
-  // Not all insert of 10 ms will generate a callback with encoded data.
+  // Note: Not all insert of 10 ms will generate a callback with encoded data.
   webrtc_encoder_callback_->SetEncodedCallbackInfo(recorded_time,
                                                    &frame_encoded_callback);
   for (size_t i = 0; i < number_of_10ms_blocks; ++i) {

@@ -79,11 +79,24 @@ class LocalPacketReceiver : public PacketReceiver {
         ssrc_of_video_sender_(ssrc_of_video_sender) {}
 
   virtual void ReceivedPacket(const uint8* packet,
-                              int length,
+                              size_t length,
                               const base::Closure callback) OVERRIDE {
+    if (length < kMinLengthOfRtcp) {
+      // No action; just log and call the callback informing that we are done
+      // with the packet.
+      VLOG(1) << "Received a packet which is too short " << length;
+      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
+      return;
+    }
     uint32 ssrc_of_sender;
-    // TODO(pwestin): where should we do the sanity check of the length?
     if (!Rtcp::IsRtcpPacket(packet, length)) {
+      if (length < kMinLengthOfRtp) {
+        // No action; just log and call the callback informing that we are done
+        // with the packet.
+        VLOG(1) << "Received a RTP packet which is too short " << length;
+        cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
+        return;
+      }
       ssrc_of_sender = RtpReceiver::GetSsrcOfSender(packet, length);
     } else {
       ssrc_of_sender = Rtcp::GetSsrcOfSender(packet, length);

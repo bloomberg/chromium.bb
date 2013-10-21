@@ -134,7 +134,7 @@ void AudioSender::ResendPackets(
   rtp_sender_.ResendPackets(missing_frames_and_packets);
 }
 
-void AudioSender::IncomingRtcpPacket(const uint8* packet, int length,
+void AudioSender::IncomingRtcpPacket(const uint8* packet, size_t length,
                                      const base::Closure callback) {
   rtcp_.IncomingRtcpPacket(packet, length);
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);

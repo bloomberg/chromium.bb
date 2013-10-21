@@ -34,7 +34,7 @@ class AudioDecoder : public base::RefCountedThreadSafe<AudioDecoder> {
   // Insert an RTP packet to the decoder.
   // Should be called from the main cast thread; however that is not required.
   void IncomingParsedRtpPacket(const uint8* payload_data,
-                               int payload_size,
+                               size_t payload_size,
                                const RtpCastHeader& rtp_header);
 
  protected:

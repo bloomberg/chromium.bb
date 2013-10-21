@@ -33,14 +33,14 @@ class RtpParser {
 
   ~RtpParser();
 
-  bool ParsePacket(const uint8* packet, int length,
+  bool ParsePacket(const uint8* packet, size_t length,
                    RtpCastHeader* rtp_header);
 
  private:
-  bool ParseCommon(const uint8* packet, int length,
+  bool ParseCommon(const uint8* packet, size_t length,
                    RtpCastHeader* rtp_header);
 
-  bool ParseCast(const uint8* packet, int length,
+  bool ParseCast(const uint8* packet, size_t length,
                  RtpCastHeader* rtp_header);
 
   RtpData* data_callback_;

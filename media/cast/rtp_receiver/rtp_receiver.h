@@ -18,7 +18,7 @@ namespace cast {
 class RtpData {
  public:
   virtual void OnReceivedPayloadData(const uint8* payload_data,
-                                     int payload_size,
+                                     size_t payload_size,
                                      const RtpCastHeader* rtp_header) = 0;
 
  protected:
@@ -36,9 +36,9 @@ class RtpReceiver {
               RtpData* incoming_payload_callback);
   ~RtpReceiver();
 
-  static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, int length);
+  static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
 
-  bool ReceivedPacket(const uint8* packet, int length);
+  bool ReceivedPacket(const uint8* packet, size_t length);
 
   void GetStatistics(uint8* fraction_lost,
                      uint32* cumulative_lost,  // 24 bits valid.

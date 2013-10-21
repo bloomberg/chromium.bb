@@ -32,7 +32,7 @@ struct RtcpSenderInfo {
   uint32 ntp_fraction;
   uint32 rtp_timestamp;
   uint32 send_packet_count;
-  uint32 send_octet_count;
+  size_t send_octet_count;
 };
 
 struct RtcpReportBlock {

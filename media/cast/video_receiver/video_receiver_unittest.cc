@@ -108,8 +108,7 @@ class VideoReceiverTest : public ::testing::Test {
 TEST_F(VideoReceiverTest, GetOnePacketEncodedframe) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).WillRepeatedly(
       testing::Return(true));
-  receiver_->IncomingRtpPacket(payload_.data(),
-                               static_cast<int>(payload_.size()), rtp_header_);
+  receiver_->IncomingRtpPacket(payload_.data(), payload_.size(), rtp_header_);
 
   VideoFrameEncodedCallback frame_to_decode_callback =
       base::Bind(&TestVideoReceiverCallback::FrameToDecode,
@@ -124,15 +123,12 @@ TEST_F(VideoReceiverTest, MultiplePackets) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).WillRepeatedly(
       testing::Return(true));
   rtp_header_.max_packet_id = 2;
-  receiver_->IncomingRtpPacket(payload_.data(),
-                               static_cast<int>(payload_.size()), rtp_header_);
+  receiver_->IncomingRtpPacket(payload_.data(), payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
   ++rtp_header_.webrtc.header.sequenceNumber;
-  receiver_->IncomingRtpPacket(payload_.data(),
-                               static_cast<int>(payload_.size()), rtp_header_);
+  receiver_->IncomingRtpPacket(payload_.data(), payload_.size(), rtp_header_);
   ++rtp_header_.packet_id;
-  receiver_->IncomingRtpPacket(payload_.data(),
-                               static_cast<int>(payload_.size()), rtp_header_);
+  receiver_->IncomingRtpPacket(payload_.data(), payload_.size(), rtp_header_);
 
   VideoFrameEncodedCallback frame_to_decode_callback =
       base::Bind(&TestVideoReceiverCallback::FrameToDecode,
@@ -147,8 +143,7 @@ TEST_F(VideoReceiverTest, MultiplePackets) {
 TEST_F(VideoReceiverTest, GetOnePacketRawframe) {
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).WillRepeatedly(
       testing::Return(true));
-  receiver_->IncomingRtpPacket(payload_.data(),
-                               static_cast<int>(payload_.size()), rtp_header_);
+  receiver_->IncomingRtpPacket(payload_.data(), payload_.size(), rtp_header_);
   // Decode error - requires legal input.
   VideoFrameDecodedCallback frame_decoded_callback =
       base::Bind(&TestVideoReceiverCallback::DecodeComplete,

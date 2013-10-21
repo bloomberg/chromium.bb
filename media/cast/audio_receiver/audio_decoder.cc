@@ -87,9 +87,11 @@ bool AudioDecoder::GetRawAudioFrame(int number_of_10ms_blocks,
 }
 
 void AudioDecoder::IncomingParsedRtpPacket(const uint8* payload_data,
-                                           int payload_size,
+                                           size_t payload_size,
                                            const RtpCastHeader& rtp_header) {
-  audio_decoder_->IncomingPacket(payload_data, payload_size, rtp_header.webrtc);
+  DCHECK_LE(payload_size, kIpPacketSize);
+  audio_decoder_->IncomingPacket(payload_data, static_cast<int32>(payload_size),
+                                 rtp_header.webrtc);
   have_received_packets_ = true;
 }
 

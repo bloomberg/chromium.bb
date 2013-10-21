@@ -19,6 +19,7 @@ RtpReceiver::RtpReceiver(base::TickClock* clock,
                          RtpData* incoming_payload_callback) {
   DCHECK(incoming_payload_callback) << "Invalid argument";
   DCHECK(audio_config || video_config) << "Invalid argument";
+
   // Configure parser.
   RtpParserConfig config;
   if (audio_config) {
@@ -38,7 +39,8 @@ RtpReceiver::RtpReceiver(base::TickClock* clock,
 RtpReceiver::~RtpReceiver() {}
 
 // static
-uint32 RtpReceiver::GetSsrcOfSender(const uint8* rtcp_buffer, int length) {
+uint32 RtpReceiver::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
+  DCHECK_GE(length, kMinLengthOfRtp) << "Invalid RTP packet";
   uint32 ssrc_of_sender;
   net::BigEndianReader big_endian_reader(rtcp_buffer, length);
   big_endian_reader.Skip(8);  // Skip header
@@ -46,7 +48,7 @@ uint32 RtpReceiver::GetSsrcOfSender(const uint8* rtcp_buffer, int length) {
   return ssrc_of_sender;
 }
 
-bool RtpReceiver::ReceivedPacket(const uint8* packet, int length) {
+bool RtpReceiver::ReceivedPacket(const uint8* packet, size_t length) {
   RtpCastHeader rtp_header;
   if (!parser_->ParsePacket(packet, length, &rtp_header)) return false;
 

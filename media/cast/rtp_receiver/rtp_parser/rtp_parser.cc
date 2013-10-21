@@ -12,8 +12,8 @@
 namespace media {
 namespace cast {
 
-static const int kRtpCommonHeaderLength = 12;
-static const int kRtpCastHeaderLength = 7;
+static const size_t kRtpCommonHeaderLength = 12;
+static const size_t kRtpCastHeaderLength = 7;
 static const uint8 kCastKeyFrameBitMask = 0x80;
 static const uint8 kCastReferenceFrameIdBitMask = 0x40;
 
@@ -26,7 +26,7 @@ RtpParser::RtpParser(RtpData* incoming_payload_callback,
 RtpParser::~RtpParser() {
 }
 
-bool RtpParser::ParsePacket(const uint8* packet, int length,
+bool RtpParser::ParsePacket(const uint8* packet, size_t length,
                             RtpCastHeader* rtp_header) {
   if (length == 0) return false;
   // Get RTP general header.
@@ -41,7 +41,7 @@ bool RtpParser::ParsePacket(const uint8* packet, int length,
 }
 
 bool RtpParser::ParseCommon(const uint8* packet,
-                            int length,
+                            size_t length,
                             RtpCastHeader* rtp_header) {
   if (length < kRtpCommonHeaderLength) return false;
   uint8 version = packet[0] >> 6;
@@ -76,13 +76,13 @@ bool RtpParser::ParseCommon(const uint8* packet,
 }
 
 bool RtpParser::ParseCast(const uint8* packet,
-                          int length,
+                          size_t length,
                           RtpCastHeader* rtp_header) {
   if (length < kRtpCastHeaderLength) return false;
 
   // Extract header.
   const uint8* data_ptr = packet;
-  int data_length = length;
+  size_t data_length = length;
   rtp_header->is_key_frame = (data_ptr[0] & kCastKeyFrameBitMask);
   rtp_header->is_reference = (data_ptr[0] & kCastReferenceFrameIdBitMask);
   rtp_header->frame_id = data_ptr[1];

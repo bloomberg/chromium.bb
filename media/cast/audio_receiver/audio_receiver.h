@@ -51,12 +51,12 @@ class AudioReceiver : public base::NonThreadSafe,
   void GetEncodedAudioFrame(const AudioFrameEncodedCallback& callback);
 
   // Should only be called from the main cast thread.
-  void IncomingPacket(const uint8* packet, int length,
+  void IncomingPacket(const uint8* packet, size_t length,
                       const base::Closure callback);
 
  protected:
   void IncomingParsedRtpPacket(const uint8* payload_data,
-                               int payload_size,
+                               size_t payload_size,
                                const RtpCastHeader& rtp_header);
  private:
   friend class LocalRtpAudioData;
