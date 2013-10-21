@@ -14,12 +14,13 @@ var camera = camera || {};
  * Flushes the result to a canvas.
  *
  * @param {Canvas|Video} input Canvas or Video with the input frame.
- * @param {fx.Canvas} output Canvas with the output frame.
+ * @param {Canvas} output Canvas with the output frame.
+ * @param {fx.Canvas} fxCanvas Fx canvas to be used for processing.
  * @param {camera.Processor.Mode=} opt_mode Optional mode of the processor.
  *     Default is the high quality mode.
  * @constructor
  */
-camera.Processor = function(input, output, opt_mode) {
+camera.Processor = function(input, output, fxCanvas, opt_mode) {
   /**
    * @type {Canvas|Video}
    * @private
@@ -27,10 +28,16 @@ camera.Processor = function(input, output, opt_mode) {
   this.input_ = input;
 
   /**
-   * @type {fx.Canvas}
+   * @type {Canvas}
    * @private
    */
   this.output_ = output;
+
+  /**
+   * @type {fx.Canvas}
+   * @private
+   */
+  this.fxCanvas_ = fxCanvas;
 
   /**
    * @type {camera.Processor.Mode}
@@ -90,7 +97,7 @@ camera.Processor.prototype.processFrame = function() {
     return;
 
   if (!this.texture_)
-    this.texture_ = this.output_.texture(this.input_);
+    this.texture_ = this.fxCanvas_.texture(this.input_);
 
   var textureWidth = null;
   var textureHeight = null;
@@ -107,9 +114,18 @@ camera.Processor.prototype.processFrame = function() {
   }
 
   this.texture_.loadContentsOf(this.input_);
-  this.output_.draw(this.texture_, textureWidth, textureHeight);
+  this.fxCanvas_.draw(this.texture_, textureWidth, textureHeight);
   if (this.effect_)
-    this.effect_.filterFrame(this.output_);
-  this.output_.update();
+    this.effect_.filterFrame(this.fxCanvas_);
+  this.fxCanvas_.update();
+
+  // If the fx canvas does not act as an output, then copy the result from it
+  // to the output canvas.
+  if (this.output_ != this.fxCanvas_) {
+    this.output_.width = this.fxCanvas_.width;
+    this.output_.height = this.fxCanvas_.height;
+    var context = this.output_.getContext('2d');
+    context.drawImage(this.fxCanvas_, 0, 0);
+  }
 };
 

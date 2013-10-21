@@ -91,6 +91,13 @@ camera.views.Camera = function(context) {
   this.mainFastCanvas_ = null;
 
   /**
+   * Shared fx canvas for effects' previews.
+   * @type {fx.Canvas}
+   * @private
+   */
+  this.previewCanvas_ = null;
+
+  /**
    * The main (full screen) processor in the full quality mode.
    * @type {camera.Processor}
    * @private
@@ -251,6 +258,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
   try {
     this.mainCanvas_ = fx.canvas();
     this.mainFastCanvas_ = fx.canvas();
+    this.previewCanvas_ = fx.canvas();
   }
   catch (e) {
     // TODO(mtomasz): Replace with a better icon.
@@ -266,9 +274,13 @@ camera.views.Camera.prototype.initialize = function(callback) {
 
   if (this.mainCanvas_ && this.mainFastCanvas_) {
     // Initialize the processors.
-    this.mainProcessor_ = new camera.Processor(this.video_, this.mainCanvas_);
+    this.mainProcessor_ = new camera.Processor(
+        this.video_, this.mainCanvas_, this.mainCanvas_);
     this.mainFastProcessor_ = new camera.Processor(
-        this.video_, this.mainFastCanvas_, camera.Processor.Mode.FAST);
+        this.video_,
+        this.mainFastCanvas_,
+        this.mainFastCanvas_,
+        camera.Processor.Mode.FAST);
 
     // Insert the main canvas to its container.
     document.querySelector('#main-canvas-wrapper').appendChild(
@@ -339,7 +351,7 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
   var list = document.querySelector('#effects .padder');
   var wrapper = document.createElement('div');
   wrapper.className = 'preview-canvas-wrapper';
-  var canvas = fx.canvas();
+  var canvas = document.createElement('canvas');
   var padder = document.createElement('div');
   padder.className = 'preview-canvas-padder';
   padder.appendChild(canvas);
@@ -360,7 +372,8 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
       this.setCurrentEffect_.bind(this, effectIndex));
 
   // Create the preview processor.
-  var processor = new camera.Processor(this.previewInputCanvas_, canvas);
+  var processor = new camera.Processor(
+      this.previewInputCanvas_, canvas, this.previewCanvas_);
   processor.effect = effect;
   this.previewProcessors_.push(processor);
 };
