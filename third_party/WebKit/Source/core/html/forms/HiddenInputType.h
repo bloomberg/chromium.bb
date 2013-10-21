@@ -37,10 +37,10 @@ namespace WebCore {
 
 class HiddenInputType : public InputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
 
 private:
-    HiddenInputType(HTMLInputElement* element) : InputType(element) { }
+    HiddenInputType(HTMLInputElement& element) : InputType(element) { }
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual FormControlState saveFormControlState() const OVERRIDE;
     virtual void restoreFormControlState(const FormControlState&) OVERRIDE;

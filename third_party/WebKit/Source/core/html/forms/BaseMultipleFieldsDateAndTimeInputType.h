@@ -53,7 +53,7 @@ public:
     virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const = 0;
 
 protected:
-    BaseMultipleFieldsDateAndTimeInputType(HTMLInputElement*);
+    BaseMultipleFieldsDateAndTimeInputType(HTMLInputElement&);
     virtual ~BaseMultipleFieldsDateAndTimeInputType();
 
     virtual void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const = 0;

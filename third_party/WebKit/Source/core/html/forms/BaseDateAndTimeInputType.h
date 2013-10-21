@@ -41,7 +41,7 @@ class ExceptionState;
 // A super class of date, datetime, datetime-local, month, time, and week types.
 class BaseDateAndTimeInputType : public InputType {
 protected:
-    BaseDateAndTimeInputType(HTMLInputElement* element) : InputType(element) { }
+    BaseDateAndTimeInputType(HTMLInputElement& element) : InputType(element) { }
     virtual Decimal parseToNumber(const String&, const Decimal&) const OVERRIDE;
     virtual bool parseToDateComponents(const String&, DateComponents*) const OVERRIDE;
     virtual String sanitizeValue(const String&) const OVERRIDE;

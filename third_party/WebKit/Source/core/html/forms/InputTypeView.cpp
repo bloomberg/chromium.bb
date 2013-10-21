@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-PassRefPtr<InputTypeView> InputTypeView::create(HTMLInputElement* input)
+PassRefPtr<InputTypeView> InputTypeView::create(HTMLInputElement& input)
 {
     return adoptRef(new InputTypeView(input));
 }
@@ -45,7 +45,7 @@ InputTypeView::~InputTypeView()
 
 bool InputTypeView::sizeShouldIncludeDecoration(int, int& preferredSize) const
 {
-    preferredSize = element()->size();
+    preferredSize = element().size();
     return false;
 }
 
@@ -88,12 +88,12 @@ bool InputTypeView::shouldSubmitImplicitly(Event* event)
 
 PassRefPtr<HTMLFormElement> InputTypeView::formForSubmission() const
 {
-    return element()->form();
+    return element().form();
 }
 
 RenderObject* InputTypeView::createRenderer(RenderStyle* style) const
 {
-    return RenderObject::createObject(element(), style);
+    return RenderObject::createObject(&element(), style);
 }
 
 PassRefPtr<RenderStyle> InputTypeView::customStyleForRenderer(PassRefPtr<RenderStyle> originalStyle)
@@ -103,7 +103,7 @@ PassRefPtr<RenderStyle> InputTypeView::customStyleForRenderer(PassRefPtr<RenderS
 
 void InputTypeView::blur()
 {
-    element()->defaultBlur();
+    element().defaultBlur();
 }
 
 bool InputTypeView::hasCustomFocusLogic() const

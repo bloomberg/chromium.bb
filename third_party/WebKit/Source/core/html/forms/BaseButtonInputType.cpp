@@ -65,14 +65,14 @@ public:
 
 void BaseButtonInputType::createShadowSubtree()
 {
-    ASSERT(element()->userAgentShadowRoot());
-    RefPtr<Text> text = NonSelectableText::create(element()->document(), element()->valueWithDefault());
-    element()->userAgentShadowRoot()->appendChild(text);
+    ASSERT(element().userAgentShadowRoot());
+    RefPtr<Text> text = NonSelectableText::create(element().document(), element().valueWithDefault());
+    element().userAgentShadowRoot()->appendChild(text);
 }
 
 void BaseButtonInputType::valueAttributeChanged()
 {
-    toText(element()->userAgentShadowRoot()->firstChild())->setData(element()->valueWithDefault());
+    toText(element().userAgentShadowRoot()->firstChild())->setData(element().valueWithDefault());
 }
 
 bool BaseButtonInputType::shouldSaveAndRestoreFormControlState() const
@@ -88,7 +88,7 @@ bool BaseButtonInputType::appendFormData(FormDataList&, bool) const
 
 RenderObject* BaseButtonInputType::createRenderer(RenderStyle*) const
 {
-    return new RenderButton(element());
+    return new RenderButton(&element());
 }
 
 bool BaseButtonInputType::storesValueSeparateFromAttribute()
@@ -98,7 +98,7 @@ bool BaseButtonInputType::storesValueSeparateFromAttribute()
 
 void BaseButtonInputType::setValue(const String& sanitizedValue, bool, TextFieldEventBehavior)
 {
-    element()->setAttribute(valueAttr, sanitizedValue);
+    element().setAttribute(valueAttr, sanitizedValue);
 }
 
 } // namespace WebCore

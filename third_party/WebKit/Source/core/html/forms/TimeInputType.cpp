@@ -51,12 +51,12 @@ static const int timeDefaultStep = 60;
 static const int timeDefaultStepBase = 0;
 static const int timeStepScaleFactor = 1000;
 
-TimeInputType::TimeInputType(HTMLInputElement*  element)
+TimeInputType::TimeInputType(HTMLInputElement& element)
     : BaseTimeInputType(element)
 {
 }
 
-PassRefPtr<InputType> TimeInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> TimeInputType::create(HTMLInputElement& element)
 {
     return adoptRef(new TimeInputType(element));
 }
@@ -95,10 +95,10 @@ StepRange TimeInputType::createStepRange(AnyStepHandling anyStepHandling) const
 {
     DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (timeDefaultStep, timeDefaultStepBase, timeStepScaleFactor, StepRange::ScaledStepValueShouldBeInteger));
 
-    const Decimal stepBase = parseToNumber(element()->fastGetAttribute(minAttr), 0);
-    const Decimal minimum = parseToNumber(element()->fastGetAttribute(minAttr), Decimal::fromDouble(DateComponents::minimumTime()));
-    const Decimal maximum = parseToNumber(element()->fastGetAttribute(maxAttr), Decimal::fromDouble(DateComponents::maximumTime()));
-    const Decimal step = StepRange::parseStep(anyStepHandling, stepDescription, element()->fastGetAttribute(stepAttr));
+    const Decimal stepBase = parseToNumber(element().fastGetAttribute(minAttr), 0);
+    const Decimal minimum = parseToNumber(element().fastGetAttribute(minAttr), Decimal::fromDouble(DateComponents::minimumTime()));
+    const Decimal maximum = parseToNumber(element().fastGetAttribute(maxAttr), Decimal::fromDouble(DateComponents::maximumTime()));
+    const Decimal step = StepRange::parseStep(anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
     return StepRange(stepBase, minimum, maximum, step, stepDescription);
 }
 
@@ -130,7 +130,7 @@ String TimeInputType::localizeValue(const String& proposedValue) const
 
     Locale::FormatType formatType = shouldHaveSecondField(date) ? Locale::FormatTypeMedium : Locale::FormatTypeShort;
 
-    String localized = element()->locale().formatDateTime(date, formatType);
+    String localized = element().locale().formatDateTime(date, formatType);
     return localized.isEmpty() ? proposedValue : localized;
 }
 
@@ -163,9 +163,9 @@ void TimeInputType::setupLayoutParameters(DateTimeEditElement::LayoutParameters&
         layoutParameters.dateTimeFormat = layoutParameters.locale.shortTimeFormat();
         layoutParameters.fallbackDateTimeFormat = "HH:mm";
     }
-    if (!parseToDateComponents(element()->fastGetAttribute(minAttr), &layoutParameters.minimum))
+    if (!parseToDateComponents(element().fastGetAttribute(minAttr), &layoutParameters.minimum))
         layoutParameters.minimum = DateComponents();
-    if (!parseToDateComponents(element()->fastGetAttribute(maxAttr), &layoutParameters.maximum))
+    if (!parseToDateComponents(element().fastGetAttribute(maxAttr), &layoutParameters.maximum))
         layoutParameters.maximum = DateComponents();
 }
 

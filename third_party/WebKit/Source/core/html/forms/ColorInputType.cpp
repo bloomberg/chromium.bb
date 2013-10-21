@@ -67,7 +67,7 @@ static bool isValidColorString(const String& value)
     return color.isValid() && !color.hasAlpha();
 }
 
-PassRefPtr<InputType> ColorInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> ColorInputType::create(HTMLInputElement& element)
 {
     return adoptRef(new ColorInputType(element));
 }
@@ -112,20 +112,20 @@ String ColorInputType::sanitizeValue(const String& proposedValue) const
 
 Color ColorInputType::valueAsColor() const
 {
-    return Color(element()->value());
+    return Color(element().value());
 }
 
 void ColorInputType::createShadowSubtree()
 {
-    ASSERT(element()->shadow());
+    ASSERT(element().shadow());
 
-    Document& document = element()->document();
+    Document& document = element().document();
     RefPtr<HTMLDivElement> wrapperElement = HTMLDivElement::create(document);
     wrapperElement->setPart(AtomicString("-webkit-color-swatch-wrapper", AtomicString::ConstructFromLiteral));
     RefPtr<HTMLDivElement> colorSwatch = HTMLDivElement::create(document);
     colorSwatch->setPart(AtomicString("-webkit-color-swatch", AtomicString::ConstructFromLiteral));
     wrapperElement->appendChild(colorSwatch.release());
-    element()->userAgentShadowRoot()->appendChild(wrapperElement.release());
+    element().userAgentShadowRoot()->appendChild(wrapperElement.release());
 
     updateColorSwatch();
 }
@@ -144,7 +144,7 @@ void ColorInputType::setValue(const String& value, bool valueChanged, TextFieldE
 
 void ColorInputType::handleDOMActivateEvent(Event* event)
 {
-    if (element()->isDisabledFormControl() || !element()->renderer())
+    if (element().isDisabledFormControl() || !element().renderer())
         return;
 
     if (!UserGestureIndicator::processingUserGesture())
@@ -174,11 +174,11 @@ bool ColorInputType::typeMismatchFor(const String& value) const
 
 void ColorInputType::didChooseColor(const Color& color)
 {
-    if (element()->isDisabledFormControl() || color == valueAsColor())
+    if (element().isDisabledFormControl() || color == valueAsColor())
         return;
-    element()->setValueFromRenderer(color.serialized());
+    element().setValueFromRenderer(color.serialized());
     updateColorSwatch();
-    element()->dispatchFormControlChangeEvent();
+    element().dispatchFormControlChangeEvent();
 }
 
 void ColorInputType::didEndChooser()
@@ -198,18 +198,18 @@ void ColorInputType::updateColorSwatch()
     if (!colorSwatch)
         return;
 
-    colorSwatch->setInlineStyleProperty(CSSPropertyBackgroundColor, element()->value());
+    colorSwatch->setInlineStyleProperty(CSSPropertyBackgroundColor, element().value());
 }
 
 HTMLElement* ColorInputType::shadowColorSwatch() const
 {
-    ShadowRoot* shadow = element()->userAgentShadowRoot();
+    ShadowRoot* shadow = element().userAgentShadowRoot();
     return shadow ? toHTMLElement(shadow->firstChild()->firstChild()) : 0;
 }
 
 IntRect ColorInputType::elementRectRelativeToRootView() const
 {
-    return element()->document().view()->contentsToRootView(element()->pixelSnappedBoundingBox());
+    return element().document().view()->contentsToRootView(element().pixelSnappedBoundingBox());
 }
 
 Color ColorInputType::currentColor()
@@ -220,7 +220,7 @@ Color ColorInputType::currentColor()
 bool ColorInputType::shouldShowSuggestions() const
 {
     if (RuntimeEnabledFeatures::dataListElementEnabled())
-        return element()->fastHasAttribute(listAttr);
+        return element().fastHasAttribute(listAttr);
 
     return false;
 }
@@ -229,11 +229,11 @@ Vector<Color> ColorInputType::suggestions() const
 {
     Vector<Color> suggestions;
     if (RuntimeEnabledFeatures::dataListElementEnabled()) {
-        HTMLDataListElement* dataList = element()->dataList();
+        HTMLDataListElement* dataList = element().dataList();
         if (dataList) {
             RefPtr<HTMLCollection> options = dataList->options();
             for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); i++) {
-                if (!element()->isValidValue(option->value()))
+                if (!element().isValidValue(option->value()))
                     continue;
                 Color color(option->value());
                 if (!color.isValid())

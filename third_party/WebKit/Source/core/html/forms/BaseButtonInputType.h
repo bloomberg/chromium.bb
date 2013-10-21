@@ -38,7 +38,7 @@ namespace WebCore {
 // Base of button, file, image, reset, and submit types.
 class BaseButtonInputType : public BaseClickableWithKeyInputType {
 protected:
-    BaseButtonInputType(HTMLInputElement* element) : BaseClickableWithKeyInputType(element) { }
+    BaseButtonInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }
 
 private:
     virtual void createShadowSubtree() OVERRIDE;

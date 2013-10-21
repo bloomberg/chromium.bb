@@ -44,10 +44,10 @@ typedef BaseChooserOnlyDateAndTimeInputType BaseWeekInputType;
 
 class WeekInputType : public BaseWeekInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
 
 private:
-    WeekInputType(HTMLInputElement* element) : BaseWeekInputType(element) { }
+    WeekInputType(HTMLInputElement& element) : BaseWeekInputType(element) { }
     virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual DateComponents::Type dateType() const OVERRIDE;

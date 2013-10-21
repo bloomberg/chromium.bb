@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-PassRefPtr<InputType> ButtonInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> ButtonInputType::create(HTMLInputElement& element)
 {
     return adoptRef(new ButtonInputType(element));
 }

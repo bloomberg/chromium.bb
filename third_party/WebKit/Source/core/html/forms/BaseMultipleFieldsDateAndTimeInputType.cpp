@@ -129,27 +129,27 @@ bool DateTimeFormatValidator::validateFormat(const String& format, const BaseMul
 
 DateTimeEditElement* BaseMultipleFieldsDateAndTimeInputType::dateTimeEditElement() const
 {
-    return toDateTimeEditElement(element()->userAgentShadowRoot()->getElementById(ShadowElementNames::dateTimeEdit()));
+    return toDateTimeEditElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::dateTimeEdit()));
 }
 
 SpinButtonElement* BaseMultipleFieldsDateAndTimeInputType::spinButtonElement() const
 {
-    return toSpinButtonElement(element()->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
+    return toSpinButtonElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
 ClearButtonElement* BaseMultipleFieldsDateAndTimeInputType::clearButtonElement() const
 {
-    return toClearButtonElement(element()->userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton()));
+    return toClearButtonElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton()));
 }
 
 PickerIndicatorElement* BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorElement() const
 {
-    return toPickerIndicatorElement(element()->userAgentShadowRoot()->getElementById(ShadowElementNames::pickerIndicator()));
+    return toPickerIndicatorElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::pickerIndicator()));
 }
 
 inline bool BaseMultipleFieldsDateAndTimeInputType::containsFocusedShadowElement() const
 {
-    return element()->userAgentShadowRoot()->contains(element()->document().focusedElement());
+    return element().userAgentShadowRoot()->contains(element().document().focusedElement());
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
@@ -161,7 +161,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
         return;
     RefPtr<HTMLInputElement> protector(element());
     // Remove focus ring by CSS "focus" pseudo class.
-    element()->setFocus(false);
+    element().setFocus(false);
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::didFocusOnControl()
@@ -173,7 +173,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didFocusOnControl()
         return;
     // Add focus ring by CSS "focus" pseudo class.
     // FIXME: Setting the focus flag to non-focused element is too tricky.
-    element()->setFocus(true);
+    element().setFocus(true);
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::editControlValueChanged()
@@ -201,12 +201,12 @@ bool BaseMultipleFieldsDateAndTimeInputType::hasCustomFocusLogic() const
 
 bool BaseMultipleFieldsDateAndTimeInputType::isEditControlOwnerDisabled() const
 {
-    return element()->isDisabledFormControl();
+    return element().isDisabledFormControl();
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::isEditControlOwnerReadOnly() const
 {
-    return element()->isReadOnly();
+    return element().isReadOnly();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::focusAndSelectSpinButtonOwner()
@@ -217,7 +217,7 @@ void BaseMultipleFieldsDateAndTimeInputType::focusAndSelectSpinButtonOwner()
 
 bool BaseMultipleFieldsDateAndTimeInputType::shouldSpinButtonRespondToMouseEvents()
 {
-    return !element()->isDisabledOrReadOnly();
+    return !element().isDisabledOrReadOnly();
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::shouldSpinButtonRespondToWheelEvents()
@@ -243,13 +243,13 @@ void BaseMultipleFieldsDateAndTimeInputType::spinButtonStepUp()
 
 bool BaseMultipleFieldsDateAndTimeInputType::isPickerIndicatorOwnerDisabledOrReadOnly() const
 {
-    return element()->isDisabledOrReadOnly();
+    return element().isDisabledOrReadOnly();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const String& value)
 {
-    if (element()->isValidValue(value)) {
-        element()->setValue(value, DispatchInputAndChangeEvent);
+    if (element().isValidValue(value)) {
+        element().setValue(value, DispatchInputAndChangeEvent);
         return;
     }
 
@@ -264,10 +264,10 @@ void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const St
 
 bool BaseMultipleFieldsDateAndTimeInputType::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)
 {
-    return element()->setupDateTimeChooserParameters(parameters);
+    return element().setupDateTimeChooserParameters(parameters);
 }
 
-BaseMultipleFieldsDateAndTimeInputType::BaseMultipleFieldsDateAndTimeInputType(HTMLInputElement* element)
+BaseMultipleFieldsDateAndTimeInputType::BaseMultipleFieldsDateAndTimeInputType(HTMLInputElement& element)
     : BaseDateAndTimeInputType(element)
     , m_isDestroyingShadowSubtree(false)
     , m_pickerIndicatorIsVisible(false)
@@ -306,7 +306,7 @@ PassRefPtr<RenderStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForRe
         newDisplay = INLINE_FLEX;
     else if (originalDisplay == BLOCK)
         newDisplay = FLEX;
-    TextDirection contentDirection = element()->locale().isRTL() ? RTL : LTR;
+    TextDirection contentDirection = element().locale().isRTL() ? RTL : LTR;
     if (originalStyle->direction() == contentDirection && originalDisplay == newDisplay)
         return originalStyle;
 
@@ -318,16 +318,16 @@ PassRefPtr<RenderStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForRe
 
 void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
 {
-    ASSERT(element()->shadow());
+    ASSERT(element().shadow());
 
     // Element must not have a renderer here, because if it did
     // DateTimeEditElement::customStyleForRenderer() is called in appendChild()
     // before the field wrapper element is created.
     // FIXME: This code should not depend on such craziness.
-    ASSERT(!element()->renderer());
+    ASSERT(!element().renderer());
 
-    Document& document = element()->document();
-    ContainerNode* container = element()->userAgentShadowRoot();
+    Document& document = element().document();
+    ContainerNode* container = element().userAgentShadowRoot();
 
     container->appendChild(DateTimeEditElement::create(document, *this));
     updateInnerTextValue();
@@ -364,7 +364,7 @@ void BaseMultipleFieldsDateAndTimeInputType::destroyShadowSubtree()
     // If a field element has focus, set focus back to the <input> itself before
     // deleting the field. This prevents unnecessary focusout/blur events.
     if (containsFocusedShadowElement())
-        element()->focus();
+        element().focus();
 
     BaseDateAndTimeInputType::destroyShadowSubtree();
     m_isDestroyingShadowSubtree = false;
@@ -376,8 +376,8 @@ void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Element* oldFocuse
     if (!edit || m_isDestroyingShadowSubtree)
         return;
     if (direction == FocusDirectionBackward) {
-        if (element()->document().page())
-            element()->document().page()->focusController().advanceFocus(direction);
+        if (element().document().page())
+            element().document().page()->focusController().advanceFocus(direction);
     } else if (direction == FocusDirectionNone || direction == FocusDirectionMouse || direction == FocusDirectionPage) {
         edit->focusByOwner(oldFocusedElement);
     } else {
@@ -426,12 +426,12 @@ void BaseMultipleFieldsDateAndTimeInputType::handleKeydownEvent(KeyboardEvent* e
 bool BaseMultipleFieldsDateAndTimeInputType::hasBadInput() const
 {
     DateTimeEditElement* edit = dateTimeEditElement();
-    return element()->value().isEmpty() && edit && edit->anyEditableFieldsHaveValues();
+    return element().value().isEmpty() && edit && edit->anyEditableFieldsHaveValues();
 }
 
 AtomicString BaseMultipleFieldsDateAndTimeInputType::localeIdentifier() const
 {
-    return element()->computeInheritedLanguage();
+    return element().computeInheritedLanguage();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::minOrMaxAttributeChanged()
@@ -454,7 +454,7 @@ void BaseMultipleFieldsDateAndTimeInputType::restoreFormControlState(const FormC
         return;
     DateTimeFieldsState dateTimeFieldsState = DateTimeFieldsState::restoreFormControlState(state);
     edit->setValueAsDateTimeFieldsState(dateTimeFieldsState);
-    element()->setValueInternal(sanitizeValue(edit->value()), DispatchNoEvent);
+    element().setValueInternal(sanitizeValue(edit->value()), DispatchNoEvent);
     updateClearButtonVisibility();
 }
 
@@ -471,7 +471,7 @@ void BaseMultipleFieldsDateAndTimeInputType::setValue(const String& sanitizedVal
     DateTimeEditElement* edit = dateTimeEditElement();
     if (valueChanged || (sanitizedValue.isEmpty() && edit && edit->anyEditableFieldsHaveValues())) {
         updateInnerTextValue();
-        element()->setNeedsValidityCheck();
+        element().setNeedsValidityCheck();
     }
 }
 
@@ -491,10 +491,10 @@ void BaseMultipleFieldsDateAndTimeInputType::updateInnerTextValue()
     if (!edit)
         return;
 
-    DateTimeEditElement::LayoutParameters layoutParameters(element()->locale(), createStepRange(AnyIsDefaultStep));
+    DateTimeEditElement::LayoutParameters layoutParameters(element().locale(), createStepRange(AnyIsDefaultStep));
 
     DateComponents date;
-    const bool hasValue = parseToDateComponents(element()->value(), &date);
+    const bool hasValue = parseToDateComponents(element().value(), &date);
     if (!hasValue)
         setMillisecondToDateComponents(layoutParameters.stepRange.minimum().toDouble(), &date);
 
@@ -516,7 +516,7 @@ void BaseMultipleFieldsDateAndTimeInputType::updateInnerTextValue()
 
 void BaseMultipleFieldsDateAndTimeInputType::valueAttributeChanged()
 {
-    if (!element()->hasDirtyValue())
+    if (!element().hasDirtyValue())
         updateInnerTextValue();
 }
 
@@ -532,10 +532,10 @@ void BaseMultipleFieldsDateAndTimeInputType::updatePickerIndicatorVisibility()
         return;
     }
     if (RuntimeEnabledFeatures::dataListElementEnabled()) {
-        if (HTMLDataListElement* dataList = element()->dataList()) {
+        if (HTMLDataListElement* dataList = element().dataList()) {
             RefPtr<HTMLCollection> options = dataList->options();
             for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); ++i) {
-                if (element()->isValidValue(option->value())) {
+                if (element().isValidValue(option->value())) {
                     showPickerIndicator();
                     return;
                 }
@@ -573,12 +573,12 @@ bool BaseMultipleFieldsDateAndTimeInputType::shouldHaveSecondField(const DateCom
 
 void BaseMultipleFieldsDateAndTimeInputType::focusAndSelectClearButtonOwner()
 {
-    element()->focus();
+    element().focus();
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::shouldClearButtonRespondToMouseEvents()
 {
-    return !element()->isDisabledOrReadOnly() && !element()->isRequired();
+    return !element().isDisabledOrReadOnly() && !element().isRequired();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::clearValue()
@@ -594,7 +594,7 @@ void BaseMultipleFieldsDateAndTimeInputType::updateClearButtonVisibility()
     if (!clearButton)
         return;
 
-    if (element()->isRequired() || !dateTimeEditElement()->anyEditableFieldsHaveValues())
+    if (element().isRequired() || !dateTimeEditElement()->anyEditableFieldsHaveValues())
         clearButton->setInlineStyleProperty(CSSPropertyVisibility, CSSValueHidden);
     else
         clearButton->removeInlineStyleProperty(CSSPropertyVisibility);

@@ -41,12 +41,12 @@ class SearchFieldDecorationElement;
 
 class SearchInputType : public BaseTextInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
 
     void stopSearchEventTimer();
 
 private:
-    SearchInputType(HTMLInputElement*);
+    SearchInputType(HTMLInputElement&);
     virtual void countUsage() OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;

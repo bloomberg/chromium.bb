@@ -37,10 +37,10 @@ namespace WebCore {
 
 class EmailInputType : public BaseTextInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
 
 private:
-    EmailInputType(HTMLInputElement* element) : BaseTextInputType(element) { }
+    EmailInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
     virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool typeMismatchFor(const String&) const OVERRIDE;

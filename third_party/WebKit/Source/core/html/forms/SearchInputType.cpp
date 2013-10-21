@@ -46,13 +46,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline SearchInputType::SearchInputType(HTMLInputElement* element)
+inline SearchInputType::SearchInputType(HTMLInputElement& element)
     : BaseTextInputType(element)
     , m_searchEventTimer(this, &SearchInputType::searchEventTimerFired)
 {
 }
 
-PassRefPtr<InputType> SearchInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> SearchInputType::create(HTMLInputElement& element)
 {
     return adoptRef(new SearchInputType(element));
 }
@@ -64,7 +64,7 @@ void SearchInputType::countUsage()
 
 RenderObject* SearchInputType::createRenderer(RenderStyle*) const
 {
-    return new RenderSearchField(element());
+    return new RenderSearchField(&element());
 }
 
 const AtomicString& SearchInputType::formControlType() const
@@ -91,24 +91,24 @@ void SearchInputType::createShadowSubtree()
 {
     TextFieldInputType::createShadowSubtree();
     Element* container = containerElement();
-    Element* viewPort = element()->userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
+    Element* viewPort = element().userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
     ASSERT(container);
     ASSERT(viewPort);
 
-    container->insertBefore(SearchFieldDecorationElement::create(element()->document()), viewPort);
-    container->insertBefore(SearchFieldCancelButtonElement::create(element()->document()), viewPort->nextSibling());
+    container->insertBefore(SearchFieldDecorationElement::create(element().document()), viewPort);
+    container->insertBefore(SearchFieldCancelButtonElement::create(element().document()), viewPort->nextSibling());
 }
 
 void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
 {
-    if (element()->isDisabledOrReadOnly()) {
+    if (element().isDisabledOrReadOnly()) {
         TextFieldInputType::handleKeydownEvent(event);
         return;
     }
 
     const String& key = event->keyIdentifier();
     if (key == "U+001B") {
-        RefPtr<HTMLInputElement> input = element();
+        RefPtr<HTMLInputElement> input(element());
         input->setValueForUser("");
         input->onSearch();
         event->setDefaultHandled();
@@ -119,12 +119,12 @@ void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
 
 void SearchInputType::startSearchEventTimer()
 {
-    ASSERT(element()->renderer());
-    unsigned length = element()->innerTextValue().length();
+    ASSERT(element().renderer());
+    unsigned length = element().innerTextValue().length();
 
     if (!length) {
         stopSearchEventTimer();
-        element()->onSearch();
+        element().onSearch();
         return;
     }
 
@@ -140,12 +140,12 @@ void SearchInputType::stopSearchEventTimer()
 
 void SearchInputType::searchEventTimerFired(Timer<SearchInputType>*)
 {
-    element()->onSearch();
+    element().onSearch();
 }
 
 bool SearchInputType::searchEventsShouldBeDispatched() const
 {
-    return element()->hasAttribute(incrementalAttr);
+    return element().hasAttribute(incrementalAttr);
 }
 
 void SearchInputType::didSetValueByUserEdit(ValueChangeState state)
@@ -167,10 +167,10 @@ void SearchInputType::updateInnerTextValue()
 
 void SearchInputType::updateCancelButtonVisibility()
 {
-    Element* button = element()->userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton());
+    Element* button = element().userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton());
     if (!button)
         return;
-    if (element()->value().isEmpty())
+    if (element().value().isEmpty())
         button->setInlineStyleProperty(CSSPropertyVisibility, CSSValueHidden);
     else
         button->removeInlineStyleProperty(CSSPropertyVisibility);

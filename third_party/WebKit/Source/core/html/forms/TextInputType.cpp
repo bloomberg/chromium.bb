@@ -39,14 +39,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<InputType> TextInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> TextInputType::create(HTMLInputElement& element)
 {
     return adoptRef(new TextInputType(element));
 }
 
 void TextInputType::countUsage()
 {
-    const AtomicString& type = element()->fastGetAttribute(typeAttr);
+    const AtomicString& type = element().fastGetAttribute(typeAttr);
     if (equalIgnoringCase(type, InputTypeNames::datetime()))
         observeFeatureIfVisible(UseCounter::InputTypeDateTimeFallback);
     else if (equalIgnoringCase(type, InputTypeNames::week()))

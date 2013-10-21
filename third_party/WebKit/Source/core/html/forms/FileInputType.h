@@ -43,11 +43,11 @@ class FileList;
 
 class FileInputType : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
 
 private:
-    FileInputType(HTMLInputElement*);
+    FileInputType(HTMLInputElement&);
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual FormControlState saveFormControlState() const OVERRIDE;
     virtual void restoreFormControlState(const FormControlState&) OVERRIDE;

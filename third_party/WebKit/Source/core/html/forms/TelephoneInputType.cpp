@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-PassRefPtr<InputType> TelephoneInputType::create(HTMLInputElement* element)
+PassRefPtr<InputType> TelephoneInputType::create(HTMLInputElement& element)
 {
     return adoptRef(new TelephoneInputType(element));
 }

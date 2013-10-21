@@ -37,10 +37,10 @@ namespace WebCore {
 
 class TextInputType : public BaseTextInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
 
 private:
-    TextInputType(HTMLInputElement* element) : BaseTextInputType(element) { }
+    TextInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
     virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool shouldRespectSpeechAttribute() OVERRIDE;

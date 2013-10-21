@@ -39,10 +39,10 @@ class ExceptionState;
 
 class NumberInputType : public TextFieldInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
 
 private:
-    NumberInputType(HTMLInputElement* element) : TextFieldInputType(element) { }
+    NumberInputType(HTMLInputElement& element) : TextFieldInputType(element) { }
     virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;

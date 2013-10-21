@@ -116,7 +116,7 @@ HTMLInputElement::HTMLInputElement(const QualifiedName& tagName, Document& docum
     , m_wasModifiedByUser(false)
     , m_canReceiveDroppedFiles(false)
     , m_hasTouchEventHandler(false)
-    , m_inputType(InputType::createText(this))
+    , m_inputType(InputType::createText(*this))
     , m_inputTypeView(m_inputType)
 {
     ASSERT(hasTagName(inputTag) || hasTagName(isindexTag));
@@ -149,7 +149,7 @@ void HTMLInputElement::didAddShadowRoot(ShadowRoot& root)
 {
     if (!root.isOldestAuthorShadowRoot())
         return;
-    m_inputTypeView = InputTypeView::create(this);
+    m_inputTypeView = InputTypeView::create(*this);
 }
 
 HTMLInputElement::~HTMLInputElement()
@@ -411,7 +411,7 @@ void HTMLInputElement::updateType()
         return;
     }
 
-    RefPtr<InputType> newType = InputType::create(this, newTypeName);
+    RefPtr<InputType> newType = InputType::create(*this, newTypeName);
     removeFromRadioButtonGroup();
 
     bool didStoreValue = m_inputType->storesValueSeparateFromAttribute();
@@ -425,7 +425,7 @@ void HTMLInputElement::updateType()
 
     m_inputType = newType.release();
     if (hasAuthorShadowRoot())
-        m_inputTypeView = InputTypeView::create(this);
+        m_inputTypeView = InputTypeView::create(*this);
     else
         m_inputTypeView = m_inputType;
     m_inputType->createShadowSubtree();

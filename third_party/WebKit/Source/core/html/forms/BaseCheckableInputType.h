@@ -38,7 +38,7 @@ namespace WebCore {
 // Base of checkbox and radio types.
 class BaseCheckableInputType : public InputType {
 protected:
-    BaseCheckableInputType(HTMLInputElement* element) : InputType(element) { }
+    BaseCheckableInputType(HTMLInputElement& element) : InputType(element) { }
     virtual void handleKeydownEvent(KeyboardEvent*);
 
 private:

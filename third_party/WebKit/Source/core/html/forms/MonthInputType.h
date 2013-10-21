@@ -44,10 +44,10 @@ typedef BaseChooserOnlyDateAndTimeInputType BaseMonthInputType;
 
 class MonthInputType : public BaseMonthInputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
 
 private:
-    MonthInputType(HTMLInputElement* element) : BaseMonthInputType(element) { }
+    MonthInputType(HTMLInputElement& element) : BaseMonthInputType(element) { }
     virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual DateComponents::Type dateType() const OVERRIDE;

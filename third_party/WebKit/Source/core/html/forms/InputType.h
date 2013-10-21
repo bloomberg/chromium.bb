@@ -58,8 +58,8 @@ class InputType : public InputTypeView {
     WTF_MAKE_FAST_ALLOCATED;
 
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*, const AtomicString&);
-    static PassRefPtr<InputType> createText(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&, const AtomicString&);
+    static PassRefPtr<InputType> createText(HTMLInputElement&);
     static const AtomicString& normalizeTypeName(const AtomicString&);
     virtual ~InputType();
 
@@ -239,7 +239,7 @@ public:
     virtual bool hasCustomFocusLogic() const OVERRIDE;
 
 protected:
-    InputType(HTMLInputElement* element) : InputTypeView(element) { }
+    InputType(HTMLInputElement& element) : InputTypeView(element) { }
     Chrome* chrome() const;
     Locale& locale() const;
     Decimal parseToNumberOrNaN(const String&) const;

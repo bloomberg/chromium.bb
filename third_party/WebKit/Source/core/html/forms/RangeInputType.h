@@ -40,10 +40,10 @@ class SliderThumbElement;
 
 class RangeInputType : public InputType {
 public:
-    static PassRefPtr<InputType> create(HTMLInputElement*);
+    static PassRefPtr<InputType> create(HTMLInputElement&);
 
 private:
-    RangeInputType(HTMLInputElement*);
+    RangeInputType(HTMLInputElement&);
     virtual void countUsage() OVERRIDE;
     virtual bool isRangeControl() const OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
