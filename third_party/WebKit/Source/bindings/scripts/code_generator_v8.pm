@@ -170,7 +170,6 @@ my %primitiveTypeHash = ("Date" => 1,
                         );
 
 my %nonWrapperTypes = ("CompareHow" => 1,
-                       "DOMTimeStamp" => 1,
                        "Dictionary" => 1,
                        "EventListener" => 1,
                        "EventHandler" => 1,
@@ -409,21 +408,11 @@ sub AddToHeaderIncludes
     }
 }
 
-sub SkipIncludeHeader
-{
-    my $type = shift;
-
-    return 1 if IsPrimitiveType($type);
-    return 1 if IsEnumType($type);
-    return 1 if IsCallbackFunctionType($type);
-    return 0;
-}
-
 sub AddIncludesForType
 {
     my $type = shift;
 
-    return if SkipIncludeHeader($type);
+    return if IsPrimitiveType($type) or IsEnumType($type);
 
     # Default includes
     if ($type eq "SerializedScriptValue") {
@@ -432,8 +421,13 @@ sub AddIncludesForType
         AddToImplIncludes("bindings/v8/ScriptValue.h");
     } elsif ($type eq "Promise") {
         AddToImplIncludes("bindings/v8/ScriptPromise.h");
+    } elsif ($type eq "EventHandler") {
+        AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
+        AddToImplIncludes("bindings/v8/V8EventListenerList.h");
     } elsif (IsTypedArrayType($type)) {
         AddToImplIncludes("bindings/v8/custom/V8${type}Custom.h");
+    } elsif (my $arrayType = GetArrayType($type)) {
+        AddIncludesForType($arrayType);
     } else {
         AddToImplIncludes("V8${type}.h");
     }
@@ -445,9 +439,11 @@ sub HeaderFilesForInterface
     my $implClassName = shift;
 
     my @includes = ();
-    if (IsTypedArrayType($interfaceName)) {
+    if (IsPrimitiveType($interfaceName) or IsEnumType($interfaceName) or IsCallbackFunctionType($interfaceName)) {
+        # Not interface type, no header files
+    } elsif (IsTypedArrayType($interfaceName)) {
         push(@includes, "wtf/${interfaceName}.h");
-    } elsif (!SkipIncludeHeader($interfaceName)) {
+    } else {
         my $idlFilename = Cwd::abs_path(IDLFileForInterface($interfaceName)) or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
         my $idlRelPath = File::Spec->abs2rel($idlFilename, $sourceRoot);
         push(@includes, dirname($idlRelPath) . "/" . $implClassName . ".h");
@@ -1479,8 +1475,9 @@ END
     }
 
     my $returnType = $attribute->type;
-    my $getterString;
+    AddIncludesForType($returnType);
 
+    my $getterString;
     my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
     push(@arguments, "isNull") if $isNullable;
     push(@arguments, "es") if $useExceptions;
@@ -1546,14 +1543,12 @@ END
     if (ShouldKeepAttributeAlive($interface, $attribute, $returnType)) {
         my $arrayType = GetArrayType($returnType);
         if ($arrayType) {
-            AddIncludeForType("V8$arrayType.h");
             $code .= "    v8SetReturnValue(info, v8Array(${getterString}, info.GetIsolate()));\n";
             $code .= "}\n\n";
             $implementation{nameSpaceInternal}->add($code);
             return;
         }
 
-        AddIncludesForType($returnType);
         AddToImplIncludes("bindings/v8/V8HiddenPropertyName.h");
         # Check for a wrapper in the wrapper cache. If there is one, we know that a hidden reference has already
         # been created. If we don't find a wrapper, we create both a wrapper and a hidden reference.
@@ -1960,7 +1955,6 @@ END
 
     if ($attribute->type eq "EventHandler") {
         my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
-        AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
         # Non callable input should be treated as null
         $code .= "    if (!jsValue->IsNull() && !jsValue->IsFunction())\n";
         $code .= "        jsValue = v8::Null(info.GetIsolate());\n";
@@ -1968,7 +1962,6 @@ END
             my $attrImplName = GetImplName($attribute);
             $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), jsValue, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
         }
-        AddToImplIncludes("bindings/v8/V8EventListenerList.h");
         if (($interfaceName eq "Window" or $interfaceName eq "WorkerGlobalScope") and $attribute->name eq "onerror") {
             AddToImplIncludes("bindings/v8/V8ErrorHandler.h");
             $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(jsValue, true, info.GetIsolate()), isolatedWorldForIsolate(info.GetIsolate()));\n";

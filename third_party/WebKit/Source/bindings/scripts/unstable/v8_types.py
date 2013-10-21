@@ -293,21 +293,18 @@ def includes_for_cpp_class(class_name, relative_dir_posix):
     return set([posixpath.join('bindings', relative_dir_posix, class_name + '.h')])
 
 
-def skip_includes(idl_type):
-    return (is_basic_type(idl_type) or
-            is_callback_function_type(idl_type) or
-            is_enum_type(idl_type))
-
 INCLUDES_FOR_TYPE = {
-    'EventHandler': set(['bindings/v8/V8AbstractEventListener.h']),
-    'Promise': set(['ScriptPromise.h']),
+    'any': set(['bindings/v8/ScriptValue.h']),
+    'EventHandler': set(['bindings/v8/V8AbstractEventListener.h',
+                         'bindings/v8/V8EventListenerList.h']),
+    'Promise': set(['bindings/v8/ScriptPromise.h']),
     'SerializedScriptValue': set(['bindings/v8/SerializedScriptValue.h']),
 }
 
 def includes_for_type(idl_type):
     if idl_type in INCLUDES_FOR_TYPE:
         return INCLUDES_FOR_TYPE[idl_type]
-    if skip_includes(idl_type):
+    if is_basic_type(idl_type) or is_enum_type(idl_type):
         return set()
     if is_typed_array_type(idl_type):
         return set(['bindings/v8/custom/V8%sCustom.h' % idl_type])

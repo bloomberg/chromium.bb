@@ -109,6 +109,7 @@ def generate_attribute_and_includes(interface, attribute):
 
 def generate_getter(interface, attribute, contents, includes):
     idl_type = attribute.data_type
+    includes.update(v8_types.includes_for_type(idl_type))
     extended_attributes = attribute.extended_attributes
 
     cpp_value = getter_expression(interface, attribute, contents, includes)
@@ -126,20 +127,17 @@ def generate_getter(interface, attribute, contents, includes):
         cpp_value = 'jsValue'
     contents['cpp_value'] = cpp_value
 
-    # FIXME: always have includes_for_type
     if contents['is_keep_alive_for_gc']:
         v8_set_return_value_statement = 'v8SetReturnValue(info, wrapper)'
-        includes.update(v8_types.includes_for_type(idl_type))
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
         v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, includes, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
     contents['v8_set_return_value'] = v8_set_return_value_statement
 
-    if idl_type == 'EventHandler':
-        includes.update(v8_types.includes_for_type('EventHandler'))
-        if (interface.name in ['Window', 'WorkerGlobalScope'] and
-            attribute.name == 'onerror'):
-                includes.add('bindings/v8/V8ErrorHandler.h')
+    if (idl_type == 'EventHandler' and
+        interface.name in ['Window', 'WorkerGlobalScope'] and
+        attribute.name == 'onerror'):
+        includes.add('bindings/v8/V8ErrorHandler.h')
 
     # [CheckSecurityForNode]
     is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
