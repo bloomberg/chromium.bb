@@ -65,6 +65,9 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, pageCounter, ("Page"));
 
 void Page::networkStateChanged(bool online)
 {
+    if (!allPages)
+        return;
+
     Vector<RefPtr<Frame> > frames;
 
     // Get all the frames of all the pages in all the page groups
