@@ -141,7 +141,8 @@ void ShowHelp(Browser* browser, HelpSource source) {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
     const extensions::Extension* extension = profile->GetExtensionService()->
         GetInstalledExtension(genius_app::kGeniusAppId);
-    OpenApplication(AppLaunchParams(profile, extension, 0));
+    OpenApplication(
+        AppLaunchParams(profile, extension, 0, browser->host_desktop_type()));
     return;
   }
 #endif

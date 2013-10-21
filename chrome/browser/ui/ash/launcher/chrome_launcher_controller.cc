@@ -573,7 +573,11 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
     return;
   }
 
-  AppLaunchParams params(GetProfileForNewWindows(), extension, event_flags);
+  AppLaunchParams params(
+      GetProfileForNewWindows(),
+      extension,
+      event_flags,
+      chrome::HOST_DESKTOP_TYPE_ASH);
   if (source != ash::LAUNCH_FROM_UNKNOWN &&
       app_id == extension_misc::kWebStoreAppId) {
     // Get the corresponding source string.
