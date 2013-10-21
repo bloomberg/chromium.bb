@@ -47,13 +47,16 @@ static const base::FilePath::CharType kToolsPath[] =
 static const char kMainWebrtcTestHtmlPage[] =
     "files/webrtc/webrtc_audio_quality_test.html";
 
-base::FilePath GetTestDataDir() {
+static base::FilePath GetTestDataDir() {
   base::FilePath source_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &source_dir);
   return source_dir;
 }
 
 // Test we can set up a WebRTC call and play audio through it.
+//
+// You must have the src-internal solution in your .gclient to put the required
+// pyauto_private directory into chrome/test/data/.
 //
 // This test will only work on machines that have been configured to record
 // their own input.

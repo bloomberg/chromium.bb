@@ -177,7 +177,7 @@ function addLocalStream() {
 }
 
 /**
- * Loads a file with WebAudio and plays it through the peer connection.
+ * Loads a file with WebAudio and connects it to the peer connection.
  *
  * The loadAudioAndAddToPeerConnection will return ok-added to the test when
  * the sound is loaded and added to the peer connection. The sound will start
@@ -193,6 +193,26 @@ function addAudioFile(url) {
     throw failTest('adding audio file, but we have no peer connection.');
 
   loadAudioAndAddToPeerConnection(url, gPeerConnection);
+}
+
+/**
+ * Mixes the local audio stream with an audio file through WebAudio.
+ *
+ * You must have successfully requested access to the user's microphone through
+ * getUserMedia before calling this function (see getUserMedia.js).
+ * Additionally, you must have loaded an audio file to mix with.
+ *
+ * When playAudioFile is called, WebAudio will effectively mix the user's
+ * microphone input with the previously loaded file and feed that into the
+ * peer connection.
+ */
+function mixLocalStreamWithPreviouslyLoadedAudioFile() {
+  if (gPeerConnection == null)
+    throw failTest('trying to mix in stream, but we have no peer connection.');
+  if (getLocalStream() == null)
+    throw failTest('trying to mix in stream, but we have no stream to mix in.');
+
+  mixLocalStreamIntoPeerConnection(gPeerConnection, getLocalStream());
 }
 
 /**

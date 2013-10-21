@@ -144,14 +144,18 @@ function getLocalStream() {
  */
 function getUserMediaOkCallback_(stream) {
   gLocalStream = stream;
-  var videoTag = $('local-view');
-  attachMediaStream(videoTag, stream);
-
-  // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
-  // videoTag.onloadedmetadata = displayVideoSize_(videoTag);.
-  // Use setTimeout as a workaround for now.
   gRequestWebcamAndMicrophoneResult = 'ok-got-stream';
-  setTimeout(function() {displayVideoSize_(videoTag);}, 500);
+
+  if (stream.getVideoTracks().length > 0) {
+    // Show the video tag if we did request video in the getUserMedia call.
+    var videoTag = $('local-view');
+    attachMediaStream(videoTag, stream);
+
+    // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
+    // videoTag.onloadedmetadata = displayVideoSize_(videoTag);.
+    // Use setTimeout as a workaround for now.
+    setTimeout(function() {displayVideoSize_(videoTag);}, 500);
+  }
 }
 
 /**
