@@ -18,50 +18,6 @@ namespace ui {
 
 namespace {
 
-// CancelledTouchEvent mirrors a TouchEvent object.
-class MirroredTouchEvent : public TouchEvent {
- public:
-  explicit MirroredTouchEvent(const TouchEvent* real)
-      : TouchEvent(real->type(),
-                   real->location(),
-                   real->touch_id(),
-                   real->time_stamp()) {
-    set_flags(real->flags());
-    set_radius(real->radius_x(), real->radius_y());
-    set_rotation_angle(real->rotation_angle());
-    set_force(real->force());
-  }
-
-  virtual ~MirroredTouchEvent() {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MirroredTouchEvent);
-};
-
-// A mirrored event, except for the type, which is always ET_TOUCH_CANCELLED.
-class CancelledTouchEvent : public MirroredTouchEvent {
- public:
-  explicit CancelledTouchEvent(const TouchEvent* src)
-      : MirroredTouchEvent(src) {
-    SetType(ET_TOUCH_CANCELLED);
-  }
-
-  virtual ~CancelledTouchEvent() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CancelledTouchEvent);
-};
-
-// Touches which are cancelled by a touch capture are routed to a
-// GestureEventIgnorer, which ignores them.
-class GestureConsumerIgnorer : public GestureConsumer {
- public:
-  GestureConsumerIgnorer()
-      : GestureConsumer(true) {
-  }
-};
-
 template <typename T>
 void TransferConsumer(GestureConsumer* current_consumer,
                       GestureConsumer* new_consumer,
@@ -100,7 +56,6 @@ void TransferTouchIdToConsumerMap(
 // GestureRecognizerImpl, public:
 
 GestureRecognizerImpl::GestureRecognizerImpl() {
-  gesture_consumer_ignorer_.reset(new GestureConsumerIgnorer());
 }
 
 GestureRecognizerImpl::~GestureRecognizerImpl() {
@@ -156,19 +111,31 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
                                              GestureConsumer* new_consumer) {
   // Send cancel to all those save |new_consumer| and |current_consumer|.
   // Don't send a cancel to |current_consumer|, unless |new_consumer| is NULL.
+  // Dispatching a touch-cancel event can end up altering |touch_id_target_|
+  // (e.g. when the target of the event is destroyed, causing it to be removed
+  // from |touch_id_target_| in |CleanupStateForConsumer()|). So create a list
+  // of the touch-ids that need to be cancelled, and dispatch the cancel events
+  // for them at the end.
+  std::vector<std::pair<int, GestureConsumer*> > ids;
   for (TouchIdToConsumerMap::iterator i = touch_id_target_.begin();
        i != touch_id_target_.end(); ++i) {
     if (i->second && i->second != new_consumer &&
         (i->second != current_consumer || new_consumer == NULL) &&
-        i->second != gesture_consumer_ignorer_.get()) {
-      TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
-                             ui::EF_IS_SYNTHESIZED, i->first,
-                             ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
-      GestureEventHelper* helper = FindDispatchHelperForConsumer(i->second);
-      if (helper)
-        helper->DispatchCancelTouchEvent(&touch_event);
-      DCHECK_EQ(gesture_consumer_ignorer_.get(), i->second);
+        i->second) {
+      ids.push_back(std::make_pair(i->first, i->second));
     }
+  }
+
+  while (!ids.empty()) {
+    int touch_id = ids.begin()->first;
+    GestureConsumer* target = ids.begin()->second;
+    TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
+                           ui::EF_IS_SYNTHESIZED, touch_id,
+                           ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
+    GestureEventHelper* helper = FindDispatchHelperForConsumer(target);
+    if (helper)
+      helper->DispatchCancelTouchEvent(&touch_event);
+    ids.erase(ids.begin());
   }
 
   // Transfer events from |current_consumer| to |new_consumer|.
@@ -214,10 +181,9 @@ GestureSequence* GestureRecognizerImpl::GetGestureSequenceForConsumer(
 
 void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
                                          GestureConsumer* target) {
-  if (event.type() == ui::ET_TOUCH_RELEASED) {
+  if (event.type() == ui::ET_TOUCH_RELEASED ||
+      event.type() == ui::ET_TOUCH_CANCELLED) {
     touch_id_target_.erase(event.touch_id());
-  } else if (event.type() == ui::ET_TOUCH_CANCELLED) {
-    touch_id_target_[event.touch_id()] = gesture_consumer_ignorer_.get();
   } else {
     touch_id_target_[event.touch_id()] = target;
     if (target)

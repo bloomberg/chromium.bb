@@ -34,7 +34,7 @@ namespace test {
 namespace {
 
 std::string WindowIDAsString(ui::GestureConsumer* consumer) {
-  return consumer && !consumer->ignores_events() ?
+  return consumer ?
       base::IntToString(static_cast<Window*>(consumer)->id()) : "?";
 }
 
@@ -639,6 +639,26 @@ class TestEventHandler : public ui::EventHandler {
   int touch_cancelled_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
+};
+
+// Removes the target window from its parent when it receives a touch-cancel
+// event.
+class RemoveOnTouchCancelHandler : public TestEventHandler {
+ public:
+  RemoveOnTouchCancelHandler() {}
+  virtual ~RemoveOnTouchCancelHandler() {}
+
+ private:
+  // ui::EventHandler:
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    TestEventHandler::OnTouchEvent(event);
+    if (event->type() == ui::ET_TOUCH_CANCELLED) {
+      Window* target = static_cast<Window*>(event->target());
+      target->parent()->RemoveChild(target);
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveOnTouchCancelHandler);
 };
 
 }  // namespace
@@ -3459,6 +3479,48 @@ TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
+}
+
+TEST_F(GestureRecognizerTest,
+       TransferEventDispatchesTouchCancel) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  TimedEvents tes;
+  const int kWindowWidth = 800;
+  const int kWindowHeight = 600;
+  const int kTouchId = 2;
+  gfx::Rect bounds(0, 0, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+  scoped_ptr<RemoveOnTouchCancelHandler>
+      handler(new RemoveOnTouchCancelHandler());
+  window->AddPreTargetHandler(handler.get());
+
+  // Start a gesture sequence on |window|. Then transfer the events to NULL.
+  // Make sure |window| receives a touch-cancel event.
+  delegate->Reset();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                       kTouchId, tes.Now());
+  ui::TouchEvent p2(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 1, tes.Now());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p2);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_TRUE(delegate->tap_cancel());
+  EXPECT_TRUE(delegate->begin());
+  EXPECT_EQ(2, handler->touch_pressed_count());
+  delegate->Reset();
+  handler->Reset();
+
+  ui::GestureRecognizer* gesture_recognizer = ui::GestureRecognizer::Get();
+  EXPECT_EQ(window.get(),
+            gesture_recognizer->GetTouchLockedTarget(&press));
+  gesture_recognizer->TransferEventsTo(window.get(), NULL);
+  EXPECT_EQ(NULL,
+            gesture_recognizer->GetTouchLockedTarget(&press));
+  // The event-handler removes |window| from its parent on the first
+  // touch-cancel event, so it won't receive the second touch-cancel event.
+  EXPECT_EQ(1, handler->touch_cancelled_count());
 }
 
 }  // namespace test

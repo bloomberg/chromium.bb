@@ -181,22 +181,7 @@ struct EVENTS_EXPORT GestureEventDetails {
 // gesture-recognizer.
 class EVENTS_EXPORT GestureConsumer {
  public:
-  GestureConsumer()
-      : ignores_events_(false) {
-  }
-
-  explicit GestureConsumer(bool ignores_events)
-      : ignores_events_(ignores_events) {
-  }
-
   virtual ~GestureConsumer() {}
-
-  // TODO: this is a hack! GestureRecognizer should never expose the internal
-  // marker object that implements this.
-  bool ignores_events() { return ignores_events_; }
-
- private:
-  const bool ignores_events_;
 };
 
 // GestureEventHelper creates implementation-specific gesture events and

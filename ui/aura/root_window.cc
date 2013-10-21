@@ -61,8 +61,7 @@ float GetDeviceScaleFactorFromDisplay(Window* window) {
 }
 
 Window* ConsumerToWindow(ui::GestureConsumer* consumer) {
-  return consumer && !consumer->ignores_events() ?
-      static_cast<Window*>(consumer) : NULL;
+  return consumer ? static_cast<Window*>(consumer) : NULL;
 }
 
 void SetLastMouseLocation(const RootWindow* root_window,

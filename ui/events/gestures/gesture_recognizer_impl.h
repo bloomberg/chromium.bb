@@ -77,10 +77,6 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   TouchIdToConsumerMap touch_id_target_;
   TouchIdToConsumerMap touch_id_target_for_gestures_;
 
-  // Touches cancelled by touch capture are routed to the
-  // gesture_consumer_ignorer_.
-  scoped_ptr<GestureConsumer> gesture_consumer_ignorer_;
-
   std::vector<GestureEventHelper*> helpers_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerImpl);
