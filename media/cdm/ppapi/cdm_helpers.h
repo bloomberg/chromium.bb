@@ -191,9 +191,10 @@ class VideoFrameImpl : public cdm::VideoFrame {
   DISALLOW_COPY_AND_ASSIGN(VideoFrameImpl);
 };
 
-class AudioFramesImpl : public cdm::AudioFrames {
+class AudioFramesImpl : public cdm::AudioFrames_1,
+                        public cdm::AudioFrames_2 {
  public:
-  AudioFramesImpl() : buffer_(NULL) {}
+  AudioFramesImpl() : buffer_(NULL), format_(cdm::kUnknownAudioFormat) {}
   virtual ~AudioFramesImpl() {
     if (buffer_)
       buffer_->Destroy();
@@ -206,9 +207,22 @@ class AudioFramesImpl : public cdm::AudioFrames {
   virtual cdm::Buffer* FrameBuffer() OVERRIDE {
     return buffer_;
   }
+  virtual void SetFormat(cdm::AudioFormat format) OVERRIDE {
+    format_ = format;
+  }
+  virtual cdm::AudioFormat Format() const OVERRIDE {
+    return format_;
+  }
+
+  cdm::Buffer* PassFrameBuffer() {
+    PpbBuffer* temp_buffer = buffer_;
+    buffer_ = NULL;
+    return temp_buffer;
+  }
 
  private:
   PpbBuffer* buffer_;
+  cdm::AudioFormat format_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFramesImpl);
 };

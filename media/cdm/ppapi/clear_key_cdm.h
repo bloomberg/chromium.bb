@@ -28,7 +28,7 @@ class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
-class ClearKeyCdm : public cdm::ContentDecryptionModule {
+class ClearKeyCdm : public cdm::ContentDecryptionModule_1 {
  public:
   explicit ClearKeyCdm(cdm::Host* host);
   virtual ~ClearKeyCdm();
@@ -56,7 +56,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
       cdm::VideoFrame* video_frame) OVERRIDE;
   virtual cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer& encrypted_buffer,
-      cdm::AudioFrames* audio_frames) OVERRIDE;
+      cdm::AudioFrames_1* audio_frames) OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
  private:

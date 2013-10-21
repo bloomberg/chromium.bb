@@ -64,6 +64,11 @@ class CdmWrapper {
   virtual cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer& encrypted_buffer,
       cdm::AudioFrames* audio_frames) = 0;
+  virtual void OnPlatformChallengeResponse(
+      const cdm::PlatformChallengeResponse& response) = 0;
+  virtual void OnQueryOutputProtectionStatus(
+      uint32_t link_mask,
+      uint32_t output_protection_mask) = 0;
 
  protected:
   CdmWrapper() {};
@@ -75,21 +80,20 @@ class CdmWrapper {
 // Template class that does the CdmWrapper -> CdmInterface conversion. Default
 // implementations are provided. Any methods that need special treatment should
 // be specialized.
-// TODO(xhwang): Remove CdmInterfaceVersion template parameter after we roll
-// CDM.h DEPS.
-template <class CdmInterface, int CdmInterfaceVersion>
+template <class CdmInterface>
 class CdmWrapperImpl : public CdmWrapper {
  public:
   static CdmWrapper* Create(const char* key_system,
                             int key_system_size,
                             GetCdmHostFunc get_cdm_host_func,
                             void* user_data) {
-    void* cdm_instance = ::CreateCdmInstance(CdmInterfaceVersion,
-        key_system, key_system_size, get_cdm_host_func, user_data);
+    void* cdm_instance = ::CreateCdmInstance(
+        CdmInterface::kVersion, key_system, key_system_size, get_cdm_host_func,
+        user_data);
     if (!cdm_instance)
       return NULL;
 
-    return new CdmWrapperImpl<CdmInterface, CdmInterfaceVersion>(
+    return new CdmWrapperImpl<CdmInterface>(
         static_cast<CdmInterface*>(cdm_instance));
   }
 
@@ -158,6 +162,17 @@ class CdmWrapperImpl : public CdmWrapper {
     return cdm_->DecryptAndDecodeSamples(encrypted_buffer, audio_frames);
   }
 
+  virtual void OnPlatformChallengeResponse(
+      const cdm::PlatformChallengeResponse& response) OVERRIDE {
+    cdm_->OnPlatformChallengeResponse(response);
+  }
+
+  virtual void OnQueryOutputProtectionStatus(
+      uint32_t link_mask,
+      uint32_t output_protection_mask) OVERRIDE {
+    cdm_->OnQueryOutputProtectionStatus(link_mask, output_protection_mask);
+  }
+
  private:
   CdmWrapperImpl(CdmInterface* cdm) : cdm_(cdm) {
     PP_DCHECK(cdm_);
@@ -168,43 +183,57 @@ class CdmWrapperImpl : public CdmWrapper {
   DISALLOW_COPY_AND_ASSIGN(CdmWrapperImpl);
 };
 
-// Specializations for old ContentDecryptionModule interfaces.
-// For example:
+// Specializations for ContentDecryptionModule_1.
 
-// template <> cdm::Status CdmAdapterImpl<cdm::ContentDecryptionModule_1>::
-//     DecryptAndDecodeSamples(const cdm::InputBuffer& encrypted_buffer,
-//                             cdm::AudioFrames* audio_frames) {
-//   AudioFramesImpl audio_frames_1;
-//   cdm::Status status =
-//       cdm_->DecryptAndDecodeSamples(encrypted_buffer, &audio_frames_1);
-//   if (status != cdm::kSuccess)
-//     return status;
-//
-//   audio_frames->SetFrameBuffer(audio_frames_1.PassFrameBuffer());
-//   audio_frames->SetFormat(cdm::kAudioFormatS16);
-//   return cdm::kSuccess;
-// }
+template <> void CdmWrapperImpl<cdm::ContentDecryptionModule_1>::
+    OnPlatformChallengeResponse(
+        const cdm::PlatformChallengeResponse& response) {
+  PP_NOTREACHED();
+}
+
+template <> void CdmWrapperImpl<cdm::ContentDecryptionModule_1>::
+    OnQueryOutputProtectionStatus(uint32_t link_mask,
+                                  uint32_t output_protection_mask) {
+  PP_NOTREACHED();
+}
+
+template <> cdm::Status CdmWrapperImpl<cdm::ContentDecryptionModule_1>::
+    DecryptAndDecodeSamples(const cdm::InputBuffer& encrypted_buffer,
+                            cdm::AudioFrames* audio_frames) {
+  AudioFramesImpl audio_frames_1;
+  cdm::Status status =
+      cdm_->DecryptAndDecodeSamples(encrypted_buffer, &audio_frames_1);
+  if (status != cdm::kSuccess)
+    return status;
+
+  audio_frames->SetFrameBuffer(audio_frames_1.PassFrameBuffer());
+  audio_frames->SetFormat(cdm::kAudioFormatS16);
+  return cdm::kSuccess;
+}
 
 CdmWrapper* CdmWrapper::Create(const char* key_system,
                                int key_system_size,
                                GetCdmHostFunc get_cdm_host_func,
                                void* user_data) {
   // Try to create the CDM using the latest CDM interface version.
-  CdmWrapper* cdm_wrapper =
-      CdmWrapperImpl<cdm::ContentDecryptionModule, cdm::kCdmInterfaceVersion>::
-          Create(key_system, key_system_size, get_cdm_host_func, user_data);
+  CdmWrapper* cdm_adapter =
+      CdmWrapperImpl<cdm::ContentDecryptionModule>::Create(
+          key_system, key_system_size, get_cdm_host_func, user_data);
+  if (cdm_adapter)
+    return cdm_adapter;
 
   // Try to see if the CDM supports older version(s) of CDM interface(s).
-  // For example:
-  //
-  // if (cdm_wrapper)
-  //   return cdm_wrapper;
-  //
-  // cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_1>::Create(
-  //     key_system, key_system_size, get_cdm_host_func, user_data);
-
-  return cdm_wrapper;
+  cdm_adapter = CdmWrapperImpl<cdm::ContentDecryptionModule_1>::Create(
+      key_system, key_system_size, get_cdm_host_func, user_data);
+  return cdm_adapter;
 }
+
+// When updating the CdmAdapter, ensure you've updated the CdmWrapper to contain
+// stub implementations for new or modified methods which the older CDM
+// interface does not have.
+COMPILE_ASSERT(cdm::ContentDecryptionModule_2::kVersion ==
+                   cdm::ContentDecryptionModule::kVersion,
+               ensure_cdm_wrapper_templates_have_old_version_support);
 
 }  // namespace media
 

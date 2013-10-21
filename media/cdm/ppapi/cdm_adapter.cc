@@ -4,27 +4,7 @@
 
 #include "media/cdm/ppapi/cdm_adapter.h"
 
-#include <cstring>
-#include <string>
-#include <vector>
-
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "media/cdm/ppapi/api/content_decryption_module.h"
 #include "media/cdm/ppapi/cdm_helpers.h"
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/private/pp_content_decryptor.h"
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/core.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/logging.h"
-#include "ppapi/cpp/module.h"
-#include "ppapi/cpp/pass_ref.h"
-#include "ppapi/cpp/resource.h"
-#include "ppapi/cpp/var.h"
-#include "ppapi/cpp/var_array_buffer.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 #if defined(CHECK_DOCUMENT_URL)
 #include "ppapi/cpp/dev/url_util_dev.h"
@@ -207,6 +187,14 @@ namespace media {
 CdmAdapter::CdmAdapter(PP_Instance instance, pp::Module* module)
     : pp::Instance(instance),
       pp::ContentDecryptor_Private(this),
+#if defined(OS_CHROMEOS)
+      output_protection_(this),
+      platform_verification_(this),
+      challenge_in_progress_(false),
+      output_link_mask_(0),
+      output_protection_mask_(0),
+      query_output_protection_in_progress_(false),
+#endif
       allocator_(this),
       cdm_(NULL) {
   callback_factory_.Initialize(this);
@@ -520,7 +508,7 @@ void CdmAdapter::SendKeyError(const char* session_id,
 }
 
 void CdmAdapter::GetPrivateData(int32_t* instance,
-                                cdm::Host::GetPrivateInterface* get_interface) {
+                                GetPrivateInterface* get_interface) {
   *instance = pp_instance();
   *get_interface = pp::Module::Get()->get_browser_interface();
 }
@@ -737,15 +725,138 @@ bool CdmAdapter::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
   return true;
 }
 
+void CdmAdapter::SendPlatformChallenge(
+    const char* service_id, int32_t service_id_length,
+    const char* challenge, int32_t challenge_length) {
+#if defined(OS_CHROMEOS)
+  PP_DCHECK(!challenge_in_progress_);
+
+  // Ensure member variables set by the callback are in a clean state.
+  signed_data_output_ = pp::Var();
+  signed_data_signature_output_ = pp::Var();
+  platform_key_certificate_output_ = pp::Var();
+
+  pp::VarArrayBuffer challenge_var(challenge_length);
+  uint8_t* var_data = static_cast<uint8_t*>(challenge_var.Map());
+  memcpy(var_data, challenge, challenge_length);
+
+  std::string service_id_str(service_id, service_id_length);
+  int32_t result = platform_verification_.ChallengePlatform(
+      pp::Var(service_id_str), challenge_var, &signed_data_output_,
+      &signed_data_signature_output_, &platform_key_certificate_output_,
+      callback_factory_.NewCallback(&CdmAdapter::SendPlatformChallengeDone));
+  challenge_var.Unmap();
+  if (result == PP_OK_COMPLETIONPENDING) {
+    challenge_in_progress_ = true;
+    return;
+  }
+
+  // Fall through on error and issue an empty OnPlatformChallengeResponse().
+  PP_DCHECK(result != PP_OK);
+#endif
+
+  cdm::PlatformChallengeResponse response = {};
+  cdm_->OnPlatformChallengeResponse(response);
+}
+
+void CdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
+#if defined(OS_CHROMEOS)
+  output_protection_.EnableProtection(
+      desired_protection_mask, callback_factory_.NewCallback(
+          &CdmAdapter::EnableProtectionDone));
+
+  // Errors are ignored since clients must call QueryOutputProtectionStatus() to
+  // inspect the protection status on a regular basis.
+  // TODO(dalecurtis): It'd be nice to log a message or non-fatal error here...
+#endif
+}
+
+void CdmAdapter::QueryOutputProtectionStatus() {
+#if defined(OS_CHROMEOS)
+  PP_DCHECK(!query_output_protection_in_progress_);
+
+  output_link_mask_ = output_protection_mask_ = 0;
+  const int32_t result = output_protection_.QueryStatus(
+      &output_link_mask_,
+      &output_protection_mask_,
+      callback_factory_.NewCallback(
+          &CdmAdapter::QueryOutputProtectionStatusDone));
+  if (result == PP_OK_COMPLETIONPENDING) {
+    query_output_protection_in_progress_ = true;
+    return;
+  }
+
+  // Fall through on error and issue an empty OnQueryOutputProtectionStatus().
+  PP_DCHECK(result != PP_OK);
+#endif
+
+  cdm_->OnQueryOutputProtectionStatus(0, 0);
+}
+
+#if defined(OS_CHROMEOS)
+void CdmAdapter::SendPlatformChallengeDone(int32_t result) {
+  challenge_in_progress_ = false;
+
+  if (result != PP_OK) {
+    cdm::PlatformChallengeResponse response = {};
+    cdm_->OnPlatformChallengeResponse(response);
+    return;
+  }
+
+  pp::VarArrayBuffer signed_data_var(signed_data_output_);
+  pp::VarArrayBuffer signed_data_signature_var(signed_data_signature_output_);
+  std::string platform_key_certificate_string =
+      platform_key_certificate_output_.AsString();
+
+  cdm::PlatformChallengeResponse response = {
+    static_cast<uint8_t*>(signed_data_var.Map()),
+    static_cast<int32_t>(signed_data_var.ByteLength()),
+
+    static_cast<uint8_t*>(signed_data_signature_var.Map()),
+    static_cast<int32_t>(signed_data_signature_var.ByteLength()),
+
+    reinterpret_cast<const uint8_t*>(platform_key_certificate_string.c_str()),
+    static_cast<int32_t>(platform_key_certificate_string.length())
+  };
+  cdm_->OnPlatformChallengeResponse(response);
+
+  signed_data_var.Unmap();
+  signed_data_signature_var.Unmap();
+}
+
+void CdmAdapter::EnableProtectionDone(int32_t result) {
+  // Does nothing since clients must call QueryOutputProtectionStatus() to
+  // inspect the protection status on a regular basis.
+  // TODO(dalecurtis): It'd be nice to log a message or non-fatal error here...
+}
+
+void CdmAdapter::QueryOutputProtectionStatusDone(int32_t result) {
+  PP_DCHECK(query_output_protection_in_progress_);
+  query_output_protection_in_progress_ = false;
+
+  // Return a protection status of none on error.
+  if (result != PP_OK)
+    output_link_mask_ = output_protection_mask_ = 0;
+
+  cdm_->OnQueryOutputProtectionStatus(output_link_mask_,
+                                      output_protection_mask_);
+}
+#endif
+
 void* GetCdmHost(int host_interface_version, void* user_data) {
   if (!host_interface_version || !user_data)
     return NULL;
 
-  if (host_interface_version != cdm::kHostInterfaceVersion)
-    return NULL;
-
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
-  return static_cast<cdm::Host*>(cdm_adapter);
+  switch (host_interface_version) {
+    case cdm::kHostInterfaceVersion_1:
+      return static_cast<cdm::Host_1*>(cdm_adapter);
+    case cdm::kHostInterfaceVersion_2:
+      return static_cast<cdm::Host_2*>(cdm_adapter);
+    default:
+      PP_NOTREACHED();
+      return NULL;
+  }
 }
 
 // This object is the global object representing this plugin library as long

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "media/cdm/ppapi/api/content_decryption_module.h"
 #include "media/cdm/ppapi/cdm_helpers.h"
 #include "media/cdm/ppapi/cdm_wrapper.h"
@@ -22,6 +23,11 @@
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+#if defined(OS_CHROMEOS)
+#include "ppapi/cpp/private/output_protection_private.h"
+#include "ppapi/cpp/private/platform_verification.h"
+#endif
+
 namespace media {
 
 // GetCdmHostFunc implementation.
@@ -31,7 +37,8 @@ void* GetCdmHost(int host_interface_version, void* user_data);
 // Content Decryption Module (CDM).
 class CdmAdapter : public pp::Instance,
                    public pp::ContentDecryptor_Private,
-                   public cdm::Host {
+                   public cdm::Host_1,
+                   public cdm::Host_2 {
  public:
   CdmAdapter(PP_Instance instance, pp::Module* module);
   virtual ~CdmAdapter();
@@ -44,6 +51,7 @@ class CdmAdapter : public pp::Instance,
   // PPP_ContentDecryptor_Private implementation.
   // Note: Results of calls to these methods must be reported through the
   // PPB_ContentDecryptor_Private interface.
+  // TODO(jrummell): |can_challenge_platform| should be removed.
   virtual void Initialize(const std::string& key_system,
                           bool can_challenge_platform) OVERRIDE;
   virtual void GenerateKeyRequest(const std::string& type,
@@ -84,6 +92,14 @@ class CdmAdapter : public pp::Instance,
                             uint32_t system_code) OVERRIDE;
   virtual void GetPrivateData(int32_t* instance,
                               GetPrivateInterface* get_interface) OVERRIDE;
+
+  // cdm::Host_2 implementation.
+  virtual void SendPlatformChallenge(
+      const char* service_id, int32_t service_id_length,
+      const char* challenge, int32_t challenge_length) OVERRIDE;
+  virtual void EnableOutputProtection(
+      uint32_t desired_protection_mask) OVERRIDE;
+  virtual void QueryOutputProtectionStatus() OVERRIDE;
 
  private:
   struct SessionInfo {
@@ -152,6 +168,29 @@ class CdmAdapter : public pp::Instance,
   void TimerExpired(int32_t result, void* context);
 
   bool IsValidVideoFrame(const LinkedVideoFrame& video_frame);
+
+
+#if defined(OS_CHROMEOS)
+  void SendPlatformChallengeDone(int32_t result);
+  void EnableProtectionDone(int32_t result);
+  void QueryOutputProtectionStatusDone(int32_t result);
+
+  pp::OutputProtection_Private output_protection_;
+  pp::PlatformVerification platform_verification_;
+
+  // Since PPAPI doesn't provide handlers for CompletionCallbacks with more than
+  // one output we need to manage our own.  These values are only read by
+  // SendPlatformChallengeDone().
+  pp::Var signed_data_output_;
+  pp::Var signed_data_signature_output_;
+  pp::Var platform_key_certificate_output_;
+  bool challenge_in_progress_;
+
+  // Same as above, these are only read by QueryOutputProtectionStatusDone().
+  uint32_t output_link_mask_;
+  uint32_t output_protection_mask_;
+  bool query_output_protection_in_progress_;
+#endif
 
   PpbBufferAllocator allocator_;
   pp::CompletionCallbackFactory<CdmAdapter> callback_factory_;

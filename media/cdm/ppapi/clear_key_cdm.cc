@@ -136,16 +136,15 @@ void* CreateCdmInstance(
     return NULL;
   }
 
-  if (cdm_interface_version != cdm::kCdmInterfaceVersion)
+  if (cdm_interface_version != cdm::ContentDecryptionModule_1::kVersion)
     return NULL;
 
   cdm::Host* host = static_cast<cdm::Host*>(
-      get_cdm_host_func(cdm::kHostInterfaceVersion, user_data));
+      get_cdm_host_func(cdm::ContentDecryptionModule_1::kVersion, user_data));
   if (!host)
     return NULL;
 
-  return static_cast<cdm::ContentDecryptionModule*>(
-      new media::ClearKeyCdm(host));
+  return new media::ClearKeyCdm(host);
 }
 
 const char* GetCdmVersion() {
@@ -418,7 +417,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
     const cdm::InputBuffer& encrypted_buffer,
-    cdm::AudioFrames* audio_frames) {
+    cdm::AudioFrames_1* audio_frames) {
   DVLOG(1) << "DecryptAndDecodeSamples()";
 
   scoped_refptr<media::DecoderBuffer> buffer;

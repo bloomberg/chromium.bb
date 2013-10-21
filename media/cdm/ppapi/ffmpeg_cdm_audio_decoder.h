@@ -49,7 +49,7 @@ class FFmpegCdmAudioDecoder {
   cdm::Status DecodeBuffer(const uint8_t* compressed_buffer,
                            int32_t compressed_buffer_size,
                            int64_t timestamp,
-                           cdm::AudioFrames* decoded_frames);
+                           cdm::AudioFrames_1* decoded_frames);
 
  private:
   void ResetTimestampState();
