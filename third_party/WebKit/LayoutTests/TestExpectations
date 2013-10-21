@@ -194,36 +194,6 @@ webkit.org/b/99893 svg/animations/mozilla/animateMotion-mpath-targetChange-1.svg
 
 webkit.org/b/93589 svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg [ Pass Timeout ]
 
-Bug(fmalita) css3/compositing/background-blend-mode-tiled-gradient.html [ NeedsManualRebaseline ]
-Bug(fmalita) css3/filters/effect-reference-hw.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/backgrounds/gradient-background-leakage-2.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/backgrounds/gradient-background-leakage.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/borders/border-image-scaled-gradient.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/calendar-picker-appearance-required.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/calendar-picker-appearance-step.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/calendar-picker-appearance.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/month-picker-appearance-step.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/month-picker-appearance.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/week-picker-appearance-step.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/calendar-picker/week-picker-appearance.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/search/search-appearance-basic.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/select/listbox-appearance-basic.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/submit/submit-appearance-basic.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/text/text-appearance-basic.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/forms/textarea/textarea-appearance-basic.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/gradients/background-clipped.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/gradients/border-image-gradient-sides-and-corners.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/gradients/border-image-gradient.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/gradients/crash-on-zero-radius.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/gradients/simple-gradients.html [ NeedsManualRebaseline ]
-Bug(fmalita) fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
-Bug(fmalita) svg/zoom/page/zoom-background-images.html [ NeedsManualRebaseline ]
-Bug(fmalita) virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsManualRebaseline ]
-
 # -----------------------------------------------------------------
 # End SVG TESTS
 # -----------------------------------------------------------------
