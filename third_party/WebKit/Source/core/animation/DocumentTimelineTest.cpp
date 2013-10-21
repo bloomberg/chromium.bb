@@ -32,6 +32,7 @@
 #include "core/animation/DocumentTimeline.h"
 
 #include "core/animation/Animation.h"
+#include "core/animation/AnimationClock.h"
 #include "core/animation/KeyframeAnimationEffect.h"
 #include "core/animation/TimedItem.h"
 #include "core/dom/Document.h"
@@ -52,6 +53,7 @@ protected:
         element = Element::create(nullQName() , document.get());
         timeline = DocumentTimeline::create(document.get());
         timeline->setZeroTimeAsPerfTime(0);
+        document->animationClock().updateTime(0);
         ASSERT_EQ(0, timeline->currentTime());
     }
 
@@ -87,6 +89,7 @@ TEST_F(CoreAnimationDocumentTimelineTest, ZeroTimeAsPerfTime)
     EXPECT_TRUE(isNull(timeline->currentTime()));
 
     timeline->setZeroTimeAsPerfTime(300);
+    document->animationClock().updateTime(300);
     timeline->serviceAnimations(300);
     EXPECT_EQ(0, timeline->currentTime());
 

@@ -60,6 +60,7 @@
 namespace WebCore {
 
 class AXObjectCache;
+class AnimationClock;
 class Attr;
 class CDATASection;
 class CSSStyleDeclaration;
@@ -1039,6 +1040,7 @@ public:
     // Return a Locale for the default locale if the argument is null or empty.
     Locale& getCachedLocale(const AtomicString& locale = nullAtom);
 
+    AnimationClock& animationClock() { return *m_animationClock; }
     DocumentTimeline* timeline() const { return m_timeline.get(); }
 
     void addToTopLayer(Element*, const Element* before = 0);
@@ -1380,6 +1382,7 @@ private:
     typedef HashMap<AtomicString, OwnPtr<Locale> > LocaleIdentifierToLocaleMap;
     LocaleIdentifierToLocaleMap m_localeCache;
 
+    OwnPtr<AnimationClock> m_animationClock;
     RefPtr<DocumentTimeline> m_timeline;
 
     RefPtr<Document> m_templateDocument;

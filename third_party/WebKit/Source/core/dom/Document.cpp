@@ -42,6 +42,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
@@ -459,6 +460,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 #ifndef NDEBUG
     , m_didDispatchViewportPropertiesChanged(false)
 #endif
+    , m_animationClock(AnimationClock::create())
     , m_timeline(DocumentTimeline::create(this))
     , m_templateDocumentHost(0)
     , m_fonts(0)
@@ -1762,6 +1764,7 @@ void Document::updateStyleIfNeeded()
 
     AnimationUpdateBlock animationUpdateBlock(m_frame ? m_frame->animation() : 0);
     recalcStyle(NoChange);
+    m_animationClock->unfreeze();
 }
 
 void Document::updateStyleForNodeIfNeeded(Node* node)
