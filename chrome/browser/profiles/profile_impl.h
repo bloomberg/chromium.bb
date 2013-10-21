@@ -185,6 +185,7 @@ class ProfileImpl : public Profile {
   // Updates the ProfileInfoCache with data from this profile.
   void UpdateProfileNameCache();
   void UpdateProfileAvatarCache();
+  void UpdateProfileIsEphemeralCache();
 
   void GetCacheParameters(bool is_media_context,
                           base::FilePath* cache_path,

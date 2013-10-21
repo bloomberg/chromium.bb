@@ -624,7 +624,10 @@ void ProfileManager::Observe(
       DCHECK(browser);
       Profile* profile = browser->profile();
       DCHECK(profile);
-      if (!profile->IsOffTheRecord() && ++browser_counts_[profile] == 1) {
+      bool is_ephemeral =
+          profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles);
+      if (!profile->IsOffTheRecord() && !is_ephemeral &&
+          ++browser_counts_[profile] == 1) {
         active_profiles_.push_back(profile);
         save_active_profiles = true;
       }
@@ -720,6 +723,12 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
     return;
 
   Profile* last_active = browser->profile();
+
+  // Don't remember ephemeral profiles as last because they are not going to
+  // persist after restart.
+  if (last_active->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles))
+    return;
+
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
   // Only keep track of profiles that we are managing; tests may create others.

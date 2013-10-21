@@ -58,6 +58,9 @@ class ProfileInfoInterface {
   // This profile is associated with an account but has been signed-out.
   virtual bool ProfileIsSigninRequiredAtIndex(size_t index) const = 0;
 
+  // Profile is known to be ephemeral and should be deleted when closed.
+  virtual bool ProfileIsEphemeralAtIndex(size_t index) const = 0;
+
  protected:
   virtual ~ProfileInfoInterface() {}
 };

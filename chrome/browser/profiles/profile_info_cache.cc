@@ -51,6 +51,7 @@ const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
 const char kIsManagedKey[] = "is_managed";
 const char kSigninRequiredKey[] = "signin_required";
 const char kManagedUserId[] = "managed_user_id";
+const char kProfileIsEphemeral[] = "is_ephemeral";
 
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
@@ -216,6 +217,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   // Default value for whether background apps are running is false.
   info->SetBoolean(kBackgroundAppsKey, false);
   info->SetString(kManagedUserId, managed_user_id);
+  info->SetBoolean(kProfileIsEphemeral, false);
   cache->SetWithoutPathExpansion(key, info.release());
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
@@ -402,6 +404,12 @@ std::string ProfileInfoCache::GetManagedUserIdOfProfileAtIndex(
   std::string managed_user_id;
   GetInfoForProfileAtIndex(index)->GetString(kManagedUserId, &managed_user_id);
   return managed_user_id;
+}
+
+bool ProfileInfoCache::ProfileIsEphemeralAtIndex(size_t index) const {
+  bool value = false;
+  GetInfoForProfileAtIndex(index)->GetBoolean(kProfileIsEphemeral, &value);
+  return value;
 }
 
 void ProfileInfoCache::OnGAIAPictureLoaded(const base::FilePath& path,
@@ -663,6 +671,16 @@ void ProfileInfoCache::SetProfileSigninRequiredAtIndex(size_t index,
 
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kSigninRequiredKey, value);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::SetProfileIsEphemeralAtIndex(size_t index, bool value) {
+  if (value == ProfileIsEphemeralAtIndex(index))
+    return;
+
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetBoolean(kProfileIsEphemeral, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 }

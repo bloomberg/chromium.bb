@@ -492,6 +492,10 @@ void ProfileImpl::DoFinalInit() {
       prefs::kProfileName,
       base::Bind(&ProfileImpl::UpdateProfileNameCache,
                  base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kForceEphemeralProfiles,
+      base::Bind(&ProfileImpl::UpdateProfileIsEphemeralCache,
+                 base::Unretained(this)));
 
   // It would be nice to use PathService for fetching this directory, but
   // the cache directory depends on the profile directory, which isn't available
@@ -1188,6 +1192,16 @@ void ProfileImpl::UpdateProfileAvatarCache() {
     size_t avatar_index =
         GetPrefs()->GetInteger(prefs::kProfileAvatarIndex);
     cache.SetAvatarIconOfProfileAtIndex(index, avatar_index);
+  }
+}
+
+void ProfileImpl::UpdateProfileIsEphemeralCache() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
+  if (index != std::string::npos) {
+    bool is_ephemeral = GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles);
+    cache.SetProfileIsEphemeralAtIndex(index, is_ephemeral);
   }
 }
 

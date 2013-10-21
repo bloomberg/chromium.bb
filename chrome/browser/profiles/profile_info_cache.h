@@ -80,6 +80,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual bool ProfileIsSigninRequiredAtIndex(size_t index) const OVERRIDE;
   virtual std::string GetManagedUserIdOfProfileAtIndex(size_t index) const
       OVERRIDE;
+  virtual bool ProfileIsEphemeralAtIndex(size_t index) const OVERRIDE;
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
@@ -96,6 +97,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
   void SetProfileSigninRequiredAtIndex(size_t index, bool value);
+  void SetProfileIsEphemeralAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.
   string16 ChooseNameForNewProfile(size_t icon_index) const;
