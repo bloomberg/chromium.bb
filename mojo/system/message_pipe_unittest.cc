@@ -333,8 +333,10 @@ TEST(MessagePipeTest, BasicWaiting) {
   uint32_t buffer_size;
 
   // Always writable (until the other port is closed).
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_WRITABLE, 0));
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             mp->AddWaiter(0,
                           &waiter,
@@ -342,6 +344,7 @@ TEST(MessagePipeTest, BasicWaiting) {
                           0));
 
   // Not yet readable.
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_OK,
             mp->AddWaiter(0, &waiter, MOJO_WAIT_FLAG_READABLE, 1));
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
@@ -356,14 +359,17 @@ TEST(MessagePipeTest, BasicWaiting) {
                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Port 1 should already be readable now.
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 2));
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             mp->AddWaiter(1,
                           &waiter,
                           MOJO_WAIT_FLAG_READABLE | MOJO_WAIT_FLAG_WRITABLE,
                           0));
   // ... and still writable.
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_WRITABLE, 3));
 
@@ -371,10 +377,12 @@ TEST(MessagePipeTest, BasicWaiting) {
   mp->Close(0);
 
   // Now port 1 should not be writable.
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_WRITABLE, 4));
 
   // But it should still be readable.
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 5));
 
@@ -389,6 +397,7 @@ TEST(MessagePipeTest, BasicWaiting) {
   EXPECT_EQ(123456789, buffer[0]);
 
   // Now port 1 should no longer be readable.
+  waiter.Init();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             mp->AddWaiter(1, &waiter, MOJO_WAIT_FLAG_READABLE, 6));
 
@@ -406,6 +415,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     scoped_refptr<MessagePipe> mp(new MessagePipe());
     test::SimpleWaiterThread thread(&result);
 
+    thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
               mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0));
     thread.Start();
@@ -431,6 +441,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     scoped_refptr<MessagePipe> mp(new MessagePipe());
     test::SimpleWaiterThread thread(&result);
 
+    thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
               mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0));
     thread.Start();
@@ -451,6 +462,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
     scoped_refptr<MessagePipe> mp(new MessagePipe());
     test::SimpleWaiterThread thread(&result);
 
+    thread.waiter()->Init();
     EXPECT_EQ(MOJO_RESULT_OK,
               mp->AddWaiter(1, thread.waiter(), MOJO_WAIT_FLAG_READABLE, 0));
     thread.Start();

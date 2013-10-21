@@ -46,6 +46,9 @@ class MOJO_SYSTEM_EXPORT Waiter {
  private:
   base::ConditionVariable cv_;  // Associated to |lock_|.
   base::Lock lock_;  // Protects the following members.
+#ifndef NDEBUG
+  bool initialized_;
+#endif
   bool awoken_;
   MojoResult wait_result_;
 

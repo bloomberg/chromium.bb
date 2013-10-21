@@ -14,6 +14,9 @@ namespace system {
 
 Waiter::Waiter()
     : cv_(&lock_),
+#ifndef NDEBUG
+      initialized_(false),
+#endif
       awoken_(false),
       wait_result_(MOJO_RESULT_INTERNAL) {
 }
@@ -22,6 +25,9 @@ Waiter::~Waiter() {
 }
 
 void Waiter::Init() {
+#ifndef NDEBUG
+  initialized_ = true;
+#endif
   awoken_ = false;
   // NOTE(vtl): If performance ever becomes an issue, we can disable the setting
   // of |wait_result_| (except the first one in |Awake()|) in Release builds.
@@ -31,6 +37,12 @@ void Waiter::Init() {
 // TODO(vtl): Fast-path the |deadline == 0| case?
 MojoResult Waiter::Wait(MojoDeadline deadline) {
   base::AutoLock locker(lock_);
+
+#ifndef NDEBUG
+  DCHECK(initialized_);
+  // It'll need to be re-initialized after this.
+  initialized_ = false;
+#endif
 
   // Fast-path the already-awoken case:
   if (awoken_) {
