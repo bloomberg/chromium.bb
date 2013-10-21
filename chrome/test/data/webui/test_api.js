@@ -1007,7 +1007,6 @@ var testing = {};
         a11yResults.push(auditResult);
       }
     }
-
     // TODO(aboxhall): have strict (no errors or warnings) vs non-strict
     // (warnings ok)
     // TODO(aboxhall): some kind of info logging for warnings only??

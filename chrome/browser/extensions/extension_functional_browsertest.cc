@@ -35,22 +35,19 @@ public:
     installer->set_off_store_install_allow_reason(
         extensions::CrxInstaller::OffStoreInstallAllowedInTest);
 
-    content::WindowedNotificationObserver observer(
+    observer_->Watch(
         chrome::NOTIFICATION_CRX_INSTALLER_DONE,
         content::Source<extensions::CrxInstaller>(installer.get()));
-    content::NotificationRegistrar registrar;
-    registrar.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                  content::Source<extensions::CrxInstaller>(installer.get()));
 
     installer->InstallCrx(path);
-    observer.Wait();
+    observer_->Wait();
 
     size_t num_after = service->extensions()->size();
     EXPECT_EQ(num_before + 1, num_after);
 
     extension_loaded_observer.Wait();
     const Extension* extension = service->GetExtensionById(
-        last_loaded_extension_id_, false);
+        last_loaded_extension_id(), false);
     EXPECT_TRUE(extension != NULL);
   }
 };
@@ -65,9 +62,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {
   ExtensionService* service = profile()->GetExtensionService();
   // Verify that the extension is enabled and allowed in incognito
   // is disabled.
-  EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id_));
-  EXPECT_FALSE(extension_util::IsIncognitoEnabled(last_loaded_extension_id_,
-                                                  service));
+  EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id()));
+  EXPECT_FALSE(
+      extension_util::IsIncognitoEnabled(last_loaded_extension_id(), service));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
@@ -76,29 +73,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
 
   // Disable the extension and verify.
   extension_util::SetIsIncognitoEnabled(
-      last_loaded_extension_id_, service, false);
-  service->DisableExtension(last_loaded_extension_id_,
+      last_loaded_extension_id(), service, false);
+  service->DisableExtension(last_loaded_extension_id(),
                             Extension::DISABLE_USER_ACTION);
-  EXPECT_FALSE(service->IsExtensionEnabled(last_loaded_extension_id_));
+  EXPECT_FALSE(service->IsExtensionEnabled(last_loaded_extension_id()));
 
   // Enable the extension and verify.
   extension_util::SetIsIncognitoEnabled(
-      last_loaded_extension_id_, service, false);
-  service->EnableExtension(last_loaded_extension_id_);
-  EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id_));
+      last_loaded_extension_id(), service, false);
+  service->EnableExtension(last_loaded_extension_id());
+  EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id()));
 
   // Allow extension in incognito mode and verify.
-  service->EnableExtension(last_loaded_extension_id_);
+  service->EnableExtension(last_loaded_extension_id());
   extension_util::SetIsIncognitoEnabled(
-      last_loaded_extension_id_, service, true);
-  EXPECT_TRUE(extension_util::IsIncognitoEnabled(last_loaded_extension_id_,
-                                                 service));
+      last_loaded_extension_id(), service, true);
+  EXPECT_TRUE(
+      extension_util::IsIncognitoEnabled(last_loaded_extension_id(), service));
 
   // Disallow extension in incognito mode and verify.
-  service->EnableExtension(last_loaded_extension_id_);
+  service->EnableExtension(last_loaded_extension_id());
   extension_util::SetIsIncognitoEnabled(
-      last_loaded_extension_id_, service, false);
-  EXPECT_FALSE(extension_util::IsIncognitoEnabled(last_loaded_extension_id_,
-                                                  service));
+      last_loaded_extension_id(), service, false);
+  EXPECT_FALSE(
+      extension_util::IsIncognitoEnabled(last_loaded_extension_id(), service));
 }
 }  // namespace extensions

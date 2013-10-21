@@ -109,7 +109,7 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
     *out_app_extension = service->GetExtensionById(
-        last_loaded_extension_id_, false);
+        last_loaded_extension_id(), false);
     ASSERT_TRUE(*out_app_extension);
 
     // Code that opens a new browser assumes we start with exactly one.

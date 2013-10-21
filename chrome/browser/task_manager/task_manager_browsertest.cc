@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
     "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/french_sentence.html");
   Panel* panel = PanelManager::GetInstance()->CreatePanel(
       web_app::GenerateApplicationNameFromExtensionId(
-          last_loaded_extension_id_),
+          last_loaded_extension_id()),
       browser()->profile(),
       url,
       gfx::Rect(300, 400),
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
 
   // Unload extension to avoid crash on Windows.
-  UnloadExtension(last_loaded_extension_id_);
+  UnloadExtension(last_loaded_extension_id());
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 }
 
@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillPanelExtension) {
     "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/french_sentence.html");
   PanelManager::GetInstance()->CreatePanel(
       web_app::GenerateApplicationNameFromExtensionId(
-          last_loaded_extension_id_),
+          last_loaded_extension_id()),
       browser()->profile(),
       url,
       gfx::Rect(300, 400),
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
                          prefix, true));
 
   // Unload extension to avoid crash on Windows.
-  UnloadExtension(last_loaded_extension_id_);
+  UnloadExtension(last_loaded_extension_id());
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 }
 
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   const extensions::Extension* extension =
-      service->GetExtensionById(last_loaded_extension_id_, false);
+      service->GetExtensionById(last_loaded_extension_id(), false);
 
   // New Tab Page.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
                          prefix, true));
 
   // Unload extension to avoid crash on Windows.
-  UnloadExtension(last_loaded_extension_id_);
+  UnloadExtension(last_loaded_extension_id());
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 }
 
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
                          app_prefix, true));
 
   // Disable extension and reload page.
-  DisableExtension(last_loaded_extension_id_);
+  DisableExtension(last_loaded_extension_id());
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Force the TaskManager to query the title.

@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionCountChangeTo(1));
 
-  UnloadExtension(last_loaded_extension_id_);
+  UnloadExtension(last_loaded_extension_id());
 
   // Make sure the page action goes away when it's unloaded.
   ASSERT_TRUE(WaitForPageActionCountChangeTo(0));

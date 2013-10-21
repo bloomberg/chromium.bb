@@ -186,7 +186,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   }
 }
 
-class NewTabUISortingBrowserTest : public ExtensionInstallUIBrowserTest {
+class NewTabUISortingBrowserTest : public ExtensionInstallUIBrowserTest,
+                                   public content::NotificationObserver {
  public:
   NewTabUISortingBrowserTest() {}
 
@@ -194,7 +195,7 @@ class NewTabUISortingBrowserTest : public ExtensionInstallUIBrowserTest {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     if (type != chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED) {
-      ExtensionInstallUIBrowserTest::Observe(type, source, details);
+      observer_->Observe(type, source, details);
       return;
     }
     const std::string* id = content::Details<const std::string>(details).ptr();

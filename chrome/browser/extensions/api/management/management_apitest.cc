@@ -70,7 +70,7 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
     ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(app_path)));
 
     if (out_app_id)
-      *out_app_id = last_loaded_extension_id_;
+      *out_app_id = last_loaded_extension_id();
 
     ASSERT_TRUE(launched_app.WaitUntilSatisfied());
   }

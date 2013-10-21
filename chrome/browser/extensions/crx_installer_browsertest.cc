@@ -365,7 +365,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DISABLED_AllowOffStore) {
     }
 
     crx_installer->InstallCrx(test_data_dir_.AppendASCII("good.crx"));
-    EXPECT_EQ(kTestData[i], WaitForExtensionInstall()) << kTestData[i];
+    EXPECT_EQ(kTestData[i],
+              WaitForExtensionInstall()) << kTestData[i];
     EXPECT_EQ(kTestData[i], mock_prompt->did_succeed());
     EXPECT_EQ(kTestData[i], mock_prompt->confirmation_requested()) <<
         kTestData[i];

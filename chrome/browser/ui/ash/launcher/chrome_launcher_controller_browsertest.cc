@@ -220,7 +220,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         profile())->extension_service();
     const Extension* extension =
-        service->GetExtensionById(last_loaded_extension_id_, false);
+        service->GetExtensionById(last_loaded_extension_id(), false);
     EXPECT_TRUE(extension);
 
     OpenApplication(AppLaunchParams(profile(),
@@ -237,7 +237,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
 
     // First get app_id.
     const Extension* extension =
-        service->GetExtensionById(last_loaded_extension_id_, false);
+        service->GetExtensionById(last_loaded_extension_id(), false);
     const std::string app_id = extension->id();
 
     // Then create a shortcut.
@@ -881,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchInBackground) {
   LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB,
                          NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->LaunchApp(last_loaded_extension_id_,
+  ChromeLauncherController::instance()->LaunchApp(last_loaded_extension_id(),
                                                   ash::LAUNCH_FROM_UNKNOWN,
                                                   0);
 }

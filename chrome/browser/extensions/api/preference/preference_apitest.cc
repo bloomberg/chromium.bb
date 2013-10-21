@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   CheckPreferencesSet();
 
   // The settings should not be reset when the extension is reloaded.
-  ReloadExtension(last_loaded_extension_id_);
+  ReloadExtension(last_loaded_extension_id());
   CheckPreferencesSet();
 
   // Uninstalling and installing the extension (without running the test that
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
       content::NotificationService::AllSources());
-  UninstallExtension(last_loaded_extension_id_);
+  UninstallExtension(last_loaded_extension_id());
   observer.Wait();
   CheckPreferencesCleared();
 

@@ -77,7 +77,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
       case INSTALL_TYPE_FROM_WEBSTORE:
         // Install native_client.crx from the webstore.
         if (InstallExtensionFromWebstore(file_path, 1)) {
-          extension = service->GetExtensionById(last_loaded_extension_id_,
+          extension = service->GetExtensionById(last_loaded_extension_id(),
                                                 false);
         }
         break;
@@ -85,7 +85,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
       case INSTALL_TYPE_NON_WEBSTORE:
         // Install native_client.crx but not from the webstore.
         if (ExtensionBrowserTest::InstallExtension(file_path, 1)) {
-          extension = service->GetExtensionById(last_loaded_extension_id_,
+          extension = service->GetExtensionById(last_loaded_extension_id(),
                                                 false);
         }
         break;

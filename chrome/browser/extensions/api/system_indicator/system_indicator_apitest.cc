@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, SystemIndicator) {
     // Lazy Background Page has been shut down.
     ExtensionProcessManager* pm =
         extensions::ExtensionSystem::Get(profile())->process_manager();
-    EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+    EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
 
     EXPECT_TRUE(manager->SendClickEventToExtensionForTest(extension->id()));
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

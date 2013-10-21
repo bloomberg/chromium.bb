@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   EXPECT_EQ(TaskManagerModel::TASK_PENDING, model->update_state_);
 
   // Unload the extension and check that listener count decreases
-  UnloadExtension(last_loaded_extension_id_);
+  UnloadExtension(last_loaded_extension_id());
   EXPECT_EQ(1, model->update_requests_);
 }
 
