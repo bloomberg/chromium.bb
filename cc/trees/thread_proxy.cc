@@ -383,9 +383,9 @@ void ThreadProxy::OnSwapBuffersCompleteOnImplThread() {
       base::Bind(&ThreadProxy::DidCompleteSwapBuffers, main_thread_weak_ptr_));
 }
 
-void ThreadProxy::SetNeedsBeginFrameOnImplThread(bool enable) {
+void ThreadProxy::SetNeedsBeginImplFrame(bool enable) {
   DCHECK(IsImplThread());
-  TRACE_EVENT1("cc", "ThreadProxy::SetNeedsBeginFrameOnImplThread",
+  TRACE_EVENT1("cc", "ThreadProxy::SetNeedsBeginImplFrame",
                "enable", enable);
   layer_tree_host_impl_->SetNeedsBeginFrame(enable);
   UpdateBackgroundAnimateTicking();
@@ -399,11 +399,7 @@ void ThreadProxy::BeginFrameOnImplThread(const BeginFrameArgs& args) {
   // when we draw.
   layer_tree_host_impl_->CurrentFrameTimeTicks();
 
-  scheduler_on_impl_thread_->BeginFrame(args);
-}
-
-void ThreadProxy::DidBeginFrameDeadlineOnImplThread() {
-  layer_tree_host_impl_->ResetCurrentFrameTimeForNextFrame();
+  scheduler_on_impl_thread_->BeginImplFrame(args);
 }
 
 void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
@@ -687,8 +683,8 @@ void ThreadProxy::FinishAllRenderingOnImplThread(CompletionEvent* completion) {
   completion->Signal();
 }
 
-void ThreadProxy::ScheduledActionSendBeginFrameToMainThread() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionSendBeginFrameToMainThread");
+void ThreadProxy::ScheduledActionSendBeginMainFrame() {
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionSendBeginMainFrame");
   scoped_ptr<BeginFrameAndCommitState> begin_frame_state(
       new BeginFrameAndCommitState);
   begin_frame_state->monotonic_frame_begin_time =
@@ -953,7 +949,7 @@ void ThreadProxy::BeginFrameAbortedByMainThreadOnImplThread(bool did_handle) {
     layer_tree_host_impl_->active_tree()->ResetContentsTexturesPurged();
     SetInputThrottledUntilCommitOnImplThread(false);
   }
-  scheduler_on_impl_thread_->BeginFrameAbortedByMainThread(did_handle);
+  scheduler_on_impl_thread_->BeginMainFrameAborted(did_handle);
 }
 
 void ThreadProxy::ScheduledActionCommit() {
@@ -1088,7 +1084,7 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   if (draw_frame) {
     layer_tree_host_impl_->DrawLayers(
         &frame,
-        scheduler_on_impl_thread_->LastBeginFrameOnImplThreadTime());
+        scheduler_on_impl_thread_->LastBeginImplFrameTime());
     result.did_draw = true;
   }
   layer_tree_host_impl_->DidDrawAllLayers(frame);
@@ -1246,7 +1242,7 @@ base::TimeDelta ThreadProxy::DrawDurationEstimate() {
   return historical_estimate + padding;
 }
 
-base::TimeDelta ThreadProxy::BeginFrameToCommitDurationEstimate() {
+base::TimeDelta ThreadProxy::BeginMainFrameToCommitDurationEstimate() {
   return begin_frame_to_commit_duration_history_.Percentile(
       kCommitAndActivationDurationEstimationPercentile);
 }
@@ -1256,12 +1252,16 @@ base::TimeDelta ThreadProxy::CommitToActivateDurationEstimate() {
       kCommitAndActivationDurationEstimationPercentile);
 }
 
-void ThreadProxy::PostBeginFrameDeadline(const base::Closure& closure,
-                                         base::TimeTicks deadline) {
+void ThreadProxy::PostBeginImplFrameDeadline(const base::Closure& closure,
+                                             base::TimeTicks deadline) {
   base::TimeDelta delta = deadline - base::TimeTicks::Now();
   if (delta <= base::TimeDelta())
     delta = base::TimeDelta();
   Proxy::ImplThreadTaskRunner()->PostDelayedTask(FROM_HERE, closure, delta);
+}
+
+void ThreadProxy::DidBeginImplFrameDeadline() {
+  layer_tree_host_impl_->ResetCurrentFrameTimeForNextFrame();
 }
 
 void ThreadProxy::ReadyToFinalizeTextureUpdates() {

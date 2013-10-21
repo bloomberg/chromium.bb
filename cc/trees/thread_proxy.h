@@ -70,7 +70,6 @@ class ThreadProxy : public Proxy,
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
   virtual void BeginFrameOnImplThread(const BeginFrameArgs& args) OVERRIDE;
-  virtual void DidBeginFrameDeadlineOnImplThread() OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
@@ -93,8 +92,8 @@ class ThreadProxy : public Proxy,
   virtual void DidActivatePendingTree() OVERRIDE;
 
   // SchedulerClient implementation
-  virtual void SetNeedsBeginFrameOnImplThread(bool enable) OVERRIDE;
-  virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE;
+  virtual void SetNeedsBeginImplFrame(bool enable) OVERRIDE;
+  virtual void ScheduledActionSendBeginMainFrame() OVERRIDE;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
       OVERRIDE;
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE;
@@ -107,10 +106,11 @@ class ThreadProxy : public Proxy,
   virtual void ScheduledActionManageTiles() OVERRIDE;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) OVERRIDE;
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE;
-  virtual base::TimeDelta BeginFrameToCommitDurationEstimate() OVERRIDE;
+  virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() OVERRIDE;
   virtual base::TimeDelta CommitToActivateDurationEstimate() OVERRIDE;
-  virtual void PostBeginFrameDeadline(const base::Closure& closure,
-                                      base::TimeTicks deadline) OVERRIDE;
+  virtual void PostBeginImplFrameDeadline(const base::Closure& closure,
+                                          base::TimeTicks deadline) OVERRIDE;
+  virtual void DidBeginImplFrameDeadline() OVERRIDE;
 
   // ResourceUpdateControllerClient implementation
   virtual void ReadyToFinalizeTextureUpdates() OVERRIDE;
@@ -224,7 +224,7 @@ class ThreadProxy : public Proxy,
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
 
   // Set when the main thread is waiting on a
-  // ScheduledActionSendBeginFrameToMainThread to be issued.
+  // ScheduledActionSendBeginMainFrame to be issued.
   CompletionEvent*
       begin_frame_sent_to_main_thread_completion_event_on_impl_thread_;
 
