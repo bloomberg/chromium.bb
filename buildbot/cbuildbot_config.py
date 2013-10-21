@@ -1130,6 +1130,26 @@ internal_paladin = internal.derive(official_chrome, paladin,
   description=paladin['description'] + ' (internal)',
 )
 
+# Used for paladin builders with nowithdebug flag (a.k.a -cros-debug)
+internal_nowithdebug_paladin = internal_paladin.derive(
+  useflags=official['useflags'] + ['-cros-debug'],
+  description=paladin['description'] + ' (internal, nowithdebug)',
+)
+
+internal_nowithdebug_paladin.add_config('x86-generic-nowithdebug-paladin',
+  boards=['x86-generic'],
+  paladin_builder_name='x86-generic nowithdebug-paladin',
+  prebuilts=False,
+  important=False,
+)
+
+internal_nowithdebug_paladin.add_config('amd64-generic-nowithdebug-paladin',
+  boards=['amd64-generic'],
+  paladin_builder_name='amd64-generic nowithdebug-paladin',
+  prebuilts=False,
+  important=False,
+)
+
 internal_pre_cq = internal_paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
   compilecheck=True,
