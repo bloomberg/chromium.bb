@@ -305,6 +305,9 @@ for platform in [
       real_arch = '32'
     if platform.startswith('mac'):
       arch_flags += ' --clang'
+    # Test with Breakpad tools only on basic Linux builds.
+    if sys.platform.startswith('linux'):
+      arch_flags += ' --use-breakpad-tools'
     for mode in ['dbg', 'opt']:
       for libc in ['newlib', 'glibc']:
         # Buildbots.

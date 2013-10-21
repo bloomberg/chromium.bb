@@ -72,6 +72,9 @@ def ParseStandardCommandLine(context):
                     help='Append SUFFIX to buildbot step names.')
   parser.add_option('--no-gyp', dest='no_gyp', default=False,
                     action='store_true', help='Do not run the gyp build')
+  parser.add_option('--use-breakpad-tools', dest='use_breakpad_tools',
+                    default=False, action='store_true',
+                    help='Use breakpad tools for testing')
 
   options, args = parser.parse_args()
 
@@ -123,6 +126,7 @@ def ParseStandardCommandLine(context):
   context['step_suffix'] = options.step_suffix
   context['no_gyp'] = options.no_gyp
   context['coverage'] = options.coverage
+  context['use_breakpad_tools'] = options.use_breakpad_tools
   # Don't run gyp on coverage builds.
   if context['coverage']:
     context['no_gyp'] = True
@@ -300,6 +304,8 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
   if context['clang']: cmd.append('--clang')
   if context['asan']: cmd.append('--asan')
   if context['use_glibc']: cmd.append('--nacl_glibc')
+  if context['use_breakpad_tools']:
+    cmd.append('breakpad_tools_dir=breakpad-out')
   # Append used-specified arguments.
   cmd.extend(args)
   Command(context, cmd, cwd)

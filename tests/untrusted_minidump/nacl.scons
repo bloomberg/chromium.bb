@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 Import('env')
 
 # Preserve debugging info (which is not ABI-stable under PNaCl).
@@ -32,17 +34,40 @@ for crash_in_lib in [0, 1]:
     if modules_live:
       name += '_modules_live'
     name += '_test'
-    # Note that this doesn't check the crash dump that is produced yet.
-    # TODO(mseaborn): Test that Breakpad can extract a stack backtrace.
     output_dump_file = env.File(name + '.dmp')
-    node = env.CommandSelLdrTestNacl(
-        name + '.out', nexe,
-        [output_dump_file.abspath, str(crash_in_lib), str(modules_live)],
-        declares_exit_status=True,
-        sel_ldr_flags=['-e', # Enable exception handling for catching crash
-                       '-a', # Enable file access for writing minidump file
-                      ])
-    env.AddNodeToTestSuite(node,
+    nodes = [
+        env.CommandSelLdrTestNacl(
+            name + '.out', nexe,
+            [output_dump_file.abspath, str(crash_in_lib), str(modules_live)],
+            declares_exit_status=True,
+            sel_ldr_flags=['-e', # Enable exception handling for catching crash
+                           '-a', # Enable file access for writing minidump file
+                          ]),
+    ]
+    env.SideEffect(output_dump_file, nodes[0])
+    breakpad_tools_dir = env.get('BREAKPAD_TOOLS_DIR')
+    if breakpad_tools_dir is not None:
+      # Check that the minidump can be decoded.
+      minidump_dump = breakpad_tools_dir.File('src/processor/minidump_dump')
+      if not os.path.exists(minidump_dump.abspath):
+        raise Error('minidump_dump not available, '
+                    'but breakpad_tools_dir=%s specified' % breakpad_tools_dir)
+      nodes.append(env.AutoDepsCommand(
+          [name + '.dump', name + '.dump_errors'],
+          [minidump_dump, output_dump_file,
+          '>${TARGETS[0]}', '2>${TARGETS[1]}']))
+      # Check that a stack trace can be extracted from the minidump.
+      # TODO(bradnelson): Check the trace is actually right.
+      minidump_stackwalk = breakpad_tools_dir.File(
+          'src/processor/minidump_stackwalk')
+      if not os.path.exists(minidump_dump.abspath):
+        raise Error('minidump_stackwalk not available, '
+                    'but breakpad_tools_dir=%s specified' % breakpad_tools_dir)
+      nodes.append(env.AutoDepsCommand(
+          [name + '.stackwalk', name + '.stackwalk_errors'],
+          [minidump_stackwalk, output_dump_file,
+          '>${TARGETS[0]}', '2>${TARGETS[1]}']))
+    env.AddNodeToTestSuite(nodes,
                            ['small_tests', 'exception_tests', 'nonpexe_tests'],
                            'run_' + name,
                            # Nexe build IDs are not available under the

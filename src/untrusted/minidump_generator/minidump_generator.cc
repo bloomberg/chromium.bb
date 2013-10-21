@@ -388,19 +388,6 @@ static int MinidumpArchFromElfMachine(int e_machine) {
   }
 }
 
-static void WriteSystemInfo(MinidumpAllocator *minidump_writer,
-                            MDRawDirectory *dirent,
-                            struct NaClExceptionContext *context) {
-  TypedMDRVA<MDRawSystemInfo> sysinfo(minidump_writer);
-  if (!sysinfo.Allocate())
-    return;
-  sysinfo.get()->processor_architecture =
-      MinidumpArchFromElfMachine(context->arch);
-  sysinfo.get()->platform_id = MD_OS_NACL;
-  dirent->stream_type = MD_SYSTEM_INFO_STREAM;
-  dirent->location = sysinfo.location();
-}
-
 static uint32_t WriteString(MinidumpAllocator *minidump_writer,
                             const char *string) {
   int string_length = strlen(string);
@@ -412,6 +399,31 @@ static uint32_t WriteString(MinidumpAllocator *minidump_writer,
     ((MDString *) obj.get())->buffer[i] = string[i];
   }
   return obj.position();
+}
+
+static void WriteSystemInfo(MinidumpAllocator *minidump_writer,
+                            MDRawDirectory *dirent,
+                            struct NaClExceptionContext *context) {
+  TypedMDRVA<MDRawSystemInfo> sysinfo(minidump_writer);
+  if (!sysinfo.Allocate())
+    return;
+  sysinfo.get()->processor_architecture =
+      MinidumpArchFromElfMachine(context->arch);
+  sysinfo.get()->platform_id = MD_OS_NACL;
+  sysinfo.get()->csd_version_rva = WriteString(minidump_writer, "nacl");
+  dirent->stream_type = MD_SYSTEM_INFO_STREAM;
+  dirent->location = sysinfo.location();
+}
+
+static void WriteMiscInfo(MinidumpAllocator *minidump_writer,
+                          MDRawDirectory *dirent) {
+  // Write empty record to keep minidump_dump happy.
+  TypedMDRVA<MDRawMiscInfo> info(minidump_writer);
+  if (!info.Allocate())
+    return;
+  info.get()->size_of_info = sizeof(MDRawMiscInfo);
+  dirent->stream_type = MD_MISC_INFO_STREAM;
+  dirent->location = info.location();
 }
 
 #if DYNAMIC_LOADING_SUPPORT
@@ -566,9 +578,40 @@ static void WriteModuleList(MinidumpAllocator *minidump_writer,
   dirent->location = module_list.location();
 }
 
+static void WriteMemoryList(MinidumpAllocator *minidump_writer,
+                            MDRawDirectory *dirent) {
+  // TODO(bradnelson): Actually capture memory regions.
+  // Write empty list to keep minidump_dump happy.
+  TypedMDRVA<uint32_t> memory_list(minidump_writer);
+  if (!memory_list.AllocateObjectAndArray(0, sizeof(MDMemoryDescriptor))) {
+    return;
+  }
+  *memory_list.get() = 0;
+
+  dirent->stream_type = MD_MEMORY_LIST_STREAM;
+  dirent->location = memory_list.location();
+}
+
+static void WriteMemoryInfoList(MinidumpAllocator *minidump_writer,
+                                MDRawDirectory *dirent) {
+  // TODO(bradnelson): Actually capture memory info regions.
+  // Write empty list to keep minidump_dump happy.
+  TypedMDRVA<MDRawMemoryInfoList> memory_info_list(minidump_writer);
+  if (!memory_info_list.AllocateObjectAndArray(
+        0, sizeof(MDRawMemoryInfo))) {
+    return;
+  }
+  memory_info_list.get()->size_of_header = sizeof(MDRawMemoryInfoList);
+  memory_info_list.get()->size_of_entry = sizeof(MDRawMemoryInfo);
+  memory_info_list.get()->number_of_entries = 0;
+
+  dirent->stream_type = MD_MEMORY_INFO_LIST_STREAM;
+  dirent->location = memory_info_list.location();
+}
+
 static void WriteMinidump(MinidumpAllocator *minidump_writer,
                           struct NaClExceptionContext *context) {
-  const int kNumWriters = 4;
+  const int kNumWriters = 7;
   TypedMDRVA<MDRawHeader> header(minidump_writer);
   TypedMDRVA<MDRawDirectory> dir(minidump_writer);
   if (!header.Allocate())
@@ -587,7 +630,10 @@ static void WriteMinidump(MinidumpAllocator *minidump_writer,
                   &thread_context);
   WriteExceptionList(minidump_writer, &dir.get()[dir_index++], thread_context);
   WriteSystemInfo(minidump_writer, &dir.get()[dir_index++], context);
+  WriteMiscInfo(minidump_writer, &dir.get()[dir_index++]);
   WriteModuleList(minidump_writer, &dir.get()[dir_index++]);
+  WriteMemoryList(minidump_writer, &dir.get()[dir_index++]);
+  WriteMemoryInfoList(minidump_writer, &dir.get()[dir_index++]);
   assert(dir_index == kNumWriters);
 }
 

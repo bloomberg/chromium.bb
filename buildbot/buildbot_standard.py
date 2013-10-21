@@ -216,6 +216,7 @@ def BuildScript(status, context):
   # Clean out build directories.
   with Step('clobber', status):
     RemoveDirectory('scons-out')
+    RemoveDirectory('breakpad-out')
     RemoveGypBuildDirectories()
 
   with Step('cleanup_temp', status):
@@ -315,6 +316,17 @@ def BuildScript(status, context):
   if not context['no_gyp']:
     with Step('gyp_compile', status):
       CommandGypBuild(context)
+
+  # On a subset of Linux builds, build Breakpad tools for testing.
+  if context['use_breakpad_tools']:
+    with Step('breakpad configure', status):
+      Command(context, cmd=['mkdir', '-p', 'breakpad-out'])
+      Command(context, cwd='breakpad-out',
+              cmd=['bash', '../../breakpad/configure',
+                   'CXXFLAGS=-I../..'])  # For third_party/lss
+    with Step('breakpad make', status):
+      Command(context, cmd=['make', '-j%d' % context['max_jobs']],
+              cwd='breakpad-out')
 
   # The main compile step.
   with Step('scons_compile', status):

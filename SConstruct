@@ -170,6 +170,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'libdir',
     # Where to install trusted-code binaries for public (SDK) consumption.
     'bindir',
+    # Where a Breakpad build output directory is for optional Breakpad testing.
+    'breakpad_tools_dir',
   ])
 
 
@@ -454,6 +456,12 @@ pre_base_env = Environment(
     COVERAGE_GENHTML = '../third_party/lcov/bin/genhtml',
     **kwargs
 )
+
+
+breakpad_tools_dir = ARGUMENTS.get('breakpad_tools_dir')
+if breakpad_tools_dir is not None:
+  pre_base_env['BREAKPAD_TOOLS_DIR'] = pre_base_env.Dir(
+      os.path.abspath(breakpad_tools_dir))
 
 
 # CLANG
