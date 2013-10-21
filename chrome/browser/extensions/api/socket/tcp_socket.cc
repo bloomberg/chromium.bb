@@ -120,6 +120,10 @@ void TCPSocket::Disconnect() {
   if (socket_.get())
     socket_->Disconnect();
   server_socket_.reset(NULL);
+  connect_callback_.Reset();
+  read_callback_.Reset();
+  accept_callback_.Reset();
+  accept_socket_.reset(NULL);
 }
 
 int TCPSocket::Bind(const std::string& address, int port) {
@@ -138,28 +142,23 @@ void TCPSocket::Read(int count,
   if (!read_callback_.is_null()) {
     callback.Run(net::ERR_IO_PENDING, NULL);
     return;
-  } else {
-    read_callback_ = callback;
   }
 
-  int result = net::ERR_FAILED;
-  scoped_refptr<net::IOBuffer> io_buffer;
-  do {
-    if (count < 0) {
-      result = net::ERR_INVALID_ARGUMENT;
-      break;
-    }
+  if (count < 0) {
+    callback.Run(net::ERR_INVALID_ARGUMENT, NULL);
+    return;
+  }
 
-    if (!socket_.get() || !IsConnected()) {
-        result = net::ERR_SOCKET_NOT_CONNECTED;
-        break;
-    }
+  if (!socket_.get() || !IsConnected()) {
+    callback.Run(net::ERR_SOCKET_NOT_CONNECTED, NULL);
+    return;
+  }
 
-    io_buffer = new net::IOBuffer(count);
-    result = socket_->Read(io_buffer.get(), count,
-        base::Bind(&TCPSocket::OnReadComplete, base::Unretained(this),
-            io_buffer));
-  } while (false);
+  read_callback_ = callback;
+  scoped_refptr<net::IOBuffer> io_buffer = new net::IOBuffer(count);
+  int result = socket_->Read(io_buffer.get(), count,
+      base::Bind(&TCPSocket::OnReadComplete, base::Unretained(this),
+          io_buffer));
 
   if (result != net::ERR_IO_PENDING)
     OnReadComplete(io_buffer, result);
@@ -277,8 +276,7 @@ void TCPSocket::RefreshConnectionStatus() {
   if (!is_connected_) return;
   if (server_socket_) return;
   if (!socket_->IsConnected()) {
-    is_connected_ = false;
-    socket_->Disconnect();
+    Disconnect();
   }
 }
 

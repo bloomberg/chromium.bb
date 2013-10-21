@@ -71,6 +71,10 @@ int UDPSocket::Bind(const std::string& address, int port) {
 void UDPSocket::Disconnect() {
   is_connected_ = false;
   socket_.Close();
+  read_callback_.Reset();
+  recv_from_callback_.Reset();
+  send_to_callback_.Reset();
+  multicast_groups_.clear();
 }
 
 void UDPSocket::Read(int count,

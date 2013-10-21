@@ -41,6 +41,13 @@ function arrayBuffer2String(buf, callback) {
   f.readAsText(blob);
 }
 
+function assertDataMatch(expecterDataPattern, data) {
+  var match = !!data.match(expecterDataPattern);
+  chrome.test.assertTrue(match, "Received data does not match. " +
+    "Expected pattern: \"" + expecterDataPattern + "\" - " +
+    "Data received: \"" + data + "\".");
+}
+
 var testSocketCreation = function() {
   function onCreate(socketInfo) {
     function onGetInfo(info) {
@@ -81,11 +88,10 @@ function onDataRead(readInfo) {
   }
 
   arrayBuffer2String(readInfo.data, function(s) {
-      dataAsString = s;  // save this for error reporting
-      var match = !!s.match(expectedResponsePattern);
-      chrome.test.assertTrue(match, "Received data does not match.");
-      succeeded = true;
-      chrome.test.succeed();
+    dataAsString = s;  // save this for error reporting
+    assertDataMatch(expectedResponsePattern, dataAsString);
+    succeeded = true;
+    chrome.test.succeed();
   });
 }
 
@@ -192,9 +198,8 @@ var testSocketListening = function() {
     chrome.test.assertEq(0, acceptInfo.resultCode);
     var acceptedSocketId = acceptInfo.socketId;
     socket.read(acceptedSocketId, function(readInfo) {
-      arrayBuffer2String(readInfo.data, function(s) {
-        var match = !!s.match(request);
-        chrome.test.assertTrue(match, "Received data does not match.");
+      arrayBuffer2String(readInfo.data, function (s) {
+        assertDataMatch(request, s);
         succeeded = true;
         // Test whether socket.getInfo correctly reflects the connection status
         // if the peer has closed the connection.
@@ -242,6 +247,97 @@ var testSocketListening = function() {
   socket.create('tcp', {}, onServerSocketCreate);
 };
 
+var testPendingCallback = function() {
+  dataRead = "";
+  succeeded = false;
+  waitCount = 0;
+
+  console.log("calling create");
+  chrome.socket.create(protocol, null, onCreate);
+
+  function onCreate(createInfo) {
+    chrome.test.assertTrue(createInfo.socketId > 0, "failed to create socket");
+    socketId = createInfo.socketId;
+    console.log("calling connect");
+    if (protocol == "tcp")
+      chrome.socket.connect(socketId, address, port, onConnect1);
+    else
+      chrome.socket.bind(socketId, "0.0.0.0", 0, onConnect1);
+  }
+
+  function onConnect1(result) {
+    chrome.test.assertEq(0, result, "failed to connect");
+    console.log("Socket connect: result=" + result, chrome.runtime.lastError);
+
+    console.log("calling read with readCB2 callback");
+    if (protocol == "tcp")
+      chrome.socket.read(socketId, readCB1);
+    else
+      chrome.socket.recvFrom(socketId, readCB1);
+
+    console.log("calling disconnect");
+    chrome.socket.disconnect(socketId);
+
+    console.log("calling connect");
+    if (protocol == "tcp")
+      chrome.socket.connect(socketId, address, port, onConnect2);
+    else
+      chrome.socket.bind(socketId, "0.0.0.0", 0, onConnect2);
+  }
+
+  function onConnect2(result) {
+    chrome.test.assertEq(0, result, "failed to connect");
+    console.log("Socket connect: result=" + result, chrome.runtime.lastError);
+
+    console.log("calling read with readCB1 callback");
+    if (protocol == "tcp")
+      chrome.socket.read(socketId, readCB2);
+    else
+      chrome.socket.recvFrom(socketId, readCB2);
+
+    string2ArrayBuffer(request, function (arrayBuffer) {
+      if (protocol == "tcp")
+        chrome.socket.write(socketId, arrayBuffer, onWriteComplete);
+      else
+        chrome.socket.sendTo(
+            socketId, arrayBuffer, address, port, onWriteComplete);
+    });
+  }
+
+  function onWriteComplete(res) {
+    console.log("write callback: bytesWritten=" + res.bytesWritten);
+  }
+
+  // Callback 1 for initial read call
+  function readCB1(readInfo) {
+    console.log("Socket read CB1: result=" + readInfo.resultCode,
+        chrome.runtime.lastError);
+
+    if (readInfo.resultCode < 0) {
+      chrome.test.fail("Error reading from socket: " + readInfo.resultCode);
+    }
+  }
+
+  // Second callback, for read call after re-connect
+  function readCB2(readInfo) {
+    console.log("Socket read CB2: result=" + readInfo.resultCode,
+        chrome.runtime.lastError);
+    if (readInfo.resultCode === -1) {
+      chrome.test.fail("Unable to register a read 2nd callback on the socket!");
+    } else if (readInfo.resultCode < 0) {
+      chrome.test.fail("Error reading from socket: " + readInfo.resultCode);
+    }
+    else {
+      arrayBuffer2String(readInfo.data, function (s) {
+        assertDataMatch(expectedResponsePattern, s);
+        console.log("Success!");
+        succeeded = true;
+        chrome.test.succeed();
+      });
+    }
+  }
+}
+
 var onMessageReply = function(message) {
   var parts = message.split(":");
   var test_type = parts[0];
@@ -256,7 +352,8 @@ var onMessageReply = function(message) {
     chrome.test.runTests([ testMulticast ]);
   } else {
     protocol = test_type;
-    chrome.test.runTests([ testSocketCreation, testSending ]);
+    chrome.test.runTests(
+        [testSocketCreation, testSending, testPendingCallback]);
   }
 };
 
