@@ -1683,17 +1683,32 @@ static void customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback(
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void deprecatedReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void deprecatedLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->deprecatedReadonlyLongAttribute());
+    v8SetReturnValueInt(info, imp->deprecatedLongAttribute());
 }
 
-static void deprecatedReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void deprecatedLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::ReadonlyLongAttribute);
-    TestObjectPythonV8Internal::deprecatedReadonlyLongAttributeAttributeGetter(name, info);
+    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::LongAttribute);
+    TestObjectPythonV8Internal::deprecatedLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setDeprecatedLongAttribute(cppValue);
+}
+
+static void deprecatedLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::LongAttribute);
+    TestObjectPythonV8Internal::deprecatedLongAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -2437,7 +2452,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"customLongAttribute", TestObjectPythonV8Internal::customLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition)
     {"customElementsCallbacksReadonlyLongAttribute", TestObjectPythonV8Internal::customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"deprecatedReadonlyLongAttribute", TestObjectPythonV8Internal::deprecatedReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"deprecatedLongAttribute", TestObjectPythonV8Internal::deprecatedLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::deprecatedLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"doNotCheckSecurityReadonlyLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"doNotCheckSecurityOnGetterReadonlyLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityOnGetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_READ), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"doNotCheckSecurityOnSetterReadonlyLongAttribute", TestObjectPythonV8Internal::doNotCheckSecurityOnSetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::ALL_CAN_WRITE), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

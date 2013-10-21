@@ -135,6 +135,9 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
 static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    {% if attribute.deprecate_as %}
+    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
+    {% endif %}
     {% if attribute.has_custom_setter %}
     {{v8_class_name}}::{{attribute.name}}AttributeSetterCustom(name, jsValue, info);
     {% else %}

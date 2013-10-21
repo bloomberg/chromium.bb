@@ -112,7 +112,7 @@ interface TestObjectPython {
     [CustomSetter] attribute long customSetterLongAttribute;
     [Conditional=Condition, Custom] attribute long customLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
-    [DeprecateAs=ReadonlyLongAttribute] readonly attribute long deprecatedReadonlyLongAttribute;
+    [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
     // FIXME: move to TestActiveDOMObject.idl (=> TestCheckSecurity) once
     // methods are implemented
     [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;
