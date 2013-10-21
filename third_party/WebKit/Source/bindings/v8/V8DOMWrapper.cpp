@@ -80,7 +80,7 @@ private:
 static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper, Node* impl, v8::Isolate* isolate)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static const int shadowTemplateUniqueKey = 0;
+    static const char* shadowTemplateUniqueKey = "wrapInShadowTemplate";
     WrapperWorldType currentWorldType = worldType(isolate);
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     v8::Handle<v8::FunctionTemplate> shadowTemplate = data->privateTemplateIfExists(currentWorldType, &shadowTemplateUniqueKey);

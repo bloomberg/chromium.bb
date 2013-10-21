@@ -1162,7 +1162,7 @@ sub GenerateDomainSafeFunctionGetter
 static void ${funcName}AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static const int privateTemplateUniqueKey = 0;
+    static const char* privateTemplateUniqueKey = "${funcName}PrivateTemplate";
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
     v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, $newTemplateParams, $functionLength);
@@ -1176,7 +1176,7 @@ static void ${funcName}AttributeGetter(v8::Local<v8::String> name, const v8::Pro
     }
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
-        static const int sharedTemplateUniqueKey = 0;
+        static const char* sharedTemplateUniqueKey = "${funcName}SharedTemplate";
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, $newTemplateParams, $functionLength);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
@@ -2968,7 +2968,7 @@ END
 v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static const int privateTemplateUniqueKey = 0;
+    static const char* privateTemplateUniqueKey = "${v8ClassName}Constructor::GetTemplatePrivateTemplate";
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     v8::Handle<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
     if (!result.IsEmpty())
