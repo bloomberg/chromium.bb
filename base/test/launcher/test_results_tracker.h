@@ -30,8 +30,6 @@ class FilePath;
 // detailed failure messages either.
 class TestResultsTracker {
  public:
-  typedef Callback<void(bool)> TestsResultCallback;
-
   TestResultsTracker();
   ~TestResultsTracker();
 
@@ -39,19 +37,14 @@ class TestResultsTracker {
   // calling any other methods. Returns true on success.
   bool Init(const CommandLine& command_line) WARN_UNUSED_RESULT;
 
-  // Called when a test iteration is starting. |callback| will be called
-  // be the result tracker at the end of that iteration.
-  void OnTestIterationStarting(const TestsResultCallback& callback);
-
-  // Called when test named |name| is scheduled to be started.
-  void OnTestStarted(const std::string& name);
-
-  // Called when all tests that were to be started have been scheduled
-  // to be started.
-  void OnAllTestsStarted();
+  // Called when a test iteration is starting.
+  void OnTestIterationStarting();
 
   // Adds |result| to the stored test results.
   void AddTestResult(const TestResult& result);
+
+  // Prints a summary of current test iteration to stdout.
+  void PrintSummaryOfCurrentIteration() const;
 
   // Prints a summary of all test iterations (not just the last one) to stdout.
   void PrintSummaryOfAllIterations() const;
@@ -72,18 +65,11 @@ class TestResultsTracker {
     // List of full names of failed tests.
     typedef std::map<TestResult::Status, std::vector<std::string> > StatusMap;
     StatusMap tests_by_status;
-
-    size_t test_started_count;
-
-    // Total number of tests run.
-    size_t test_run_count;
-
-    TestsResultCallback callback;
   };
 
   // Prints a list of tests that finished with |status|.
   void PrintTestsByStatus(TestResult::Status status,
-                          const std::string& description);
+                          const std::string& description) const;
 
   ThreadChecker thread_checker_;
 

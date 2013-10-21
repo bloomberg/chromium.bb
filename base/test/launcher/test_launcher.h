@@ -86,7 +86,11 @@ class TestLauncher {
   // Runs all tests in current iteration. Uses callbacks to communicate success.
   void RunTests();
 
-  void RunTestIteration(bool* final_result, bool run_tests_success);
+  void RunTestIteration();
+
+  void OnAllTestsStarted();
+
+  void OnTestFinished(const TestResult& result);
 
   TestLauncherDelegate* launcher_delegate_;
 
@@ -99,6 +103,18 @@ class TestLauncher {
   // Test filters (empty means no filter). Entries are separated by colons.
   std::string positive_test_filter_;
   std::string negative_test_filter_;
+
+  // Number of tests started in this iteration.
+  size_t test_started_count_;
+
+  // Number of tests finished in this iteration.
+  size_t test_finished_count_;
+
+  // Number of tests successfully finished in this iteration.
+  size_t test_success_count_;
+
+  // Result to be returned from Run.
+  bool run_result_;
 
   TestResultsTracker results_tracker_;
 

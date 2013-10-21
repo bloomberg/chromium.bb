@@ -133,94 +133,29 @@ bool TestResultsTracker::Init(const CommandLine& command_line) {
   return true;
 }
 
-void TestResultsTracker::OnTestIterationStarting(
-    const TestsResultCallback& callback) {
+void TestResultsTracker::OnTestIterationStarting() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Start with a fresh state for new iteration.
   iteration_++;
   per_iteration_data_.push_back(PerIterationData());
-  DCHECK_EQ(per_iteration_data_.size(), static_cast<size_t>(iteration_ + 1));
-
-  per_iteration_data_[iteration_].callback = callback;
-}
-
-void TestResultsTracker::OnTestStarted(const std::string& name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ++per_iteration_data_[iteration_].test_started_count;
-}
-
-void TestResultsTracker::OnAllTestsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (per_iteration_data_[iteration_].test_started_count == 0) {
-    fprintf(stdout, "0 tests run\n");
-    fflush(stdout);
-
-    // No tests have actually been started, so fire the callback
-    // to avoid a hang.
-    per_iteration_data_[iteration_].callback.Run(true);
-  }
 }
 
 void TestResultsTracker::AddTestResult(const TestResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ++per_iteration_data_[iteration_].test_run_count;
   per_iteration_data_[iteration_].results[result.test_case_name].push_back(
       result);
-
-  if (result.status != TestResult::TEST_SUCCESS) {
-    fprintf(stdout, "%s", result.output_snippet.c_str());
-    fflush(stdout);
-  }
-
-  // TODO(phajdan.jr): Align counter (padding).
-  std::string status_line(
-      StringPrintf("[%" PRIuS "/%" PRIuS "] %s ",
-                   per_iteration_data_[iteration_].test_run_count,
-                   per_iteration_data_[iteration_].test_started_count,
-                   result.GetFullName().c_str()));
-  if (result.completed()) {
-    status_line.append(StringPrintf("(%" PRId64 " ms)",
-                                    result.elapsed_time.InMilliseconds()));
-  } else if (result.status == TestResult::TEST_TIMEOUT) {
-    status_line.append("(TIMED OUT)");
-  } else if (result.status == TestResult::TEST_CRASH) {
-    status_line.append("(CRASHED)");
-  } else if (result.status == TestResult::TEST_SKIPPED) {
-    status_line.append("(SKIPPED)");
-  } else if (result.status == TestResult::TEST_UNKNOWN) {
-    status_line.append("(UNKNOWN)");
-  } else {
-    // Fail very loudly so it's not ignored.
-    CHECK(false) << "Unhandled test result status: " << result.status;
-  }
-  fprintf(stdout, "%s\n", status_line.c_str());
-  fflush(stdout);
-
   per_iteration_data_[iteration_].tests_by_status[result.status].push_back(
       result.GetFullName());
+}
 
-  if (per_iteration_data_[iteration_].test_run_count ==
-      per_iteration_data_[iteration_].test_started_count) {
-    fprintf(stdout, "%" PRIuS " test%s run\n",
-            per_iteration_data_[iteration_].test_run_count,
-            per_iteration_data_[iteration_].test_run_count > 1 ? "s" : "");
-    fflush(stdout);
-
-    PrintTestsByStatus(TestResult::TEST_FAILURE, "failed");
-    PrintTestsByStatus(TestResult::TEST_TIMEOUT, "timed out");
-    PrintTestsByStatus(TestResult::TEST_CRASH, "crashed");
-    PrintTestsByStatus(TestResult::TEST_SKIPPED, "skipped");
-    PrintTestsByStatus(TestResult::TEST_UNKNOWN, "had unknown result");
-
-    bool success = (per_iteration_data_[iteration_].tests_by_status[
-                        TestResult::TEST_SUCCESS].size() ==
-                    per_iteration_data_[iteration_].test_run_count);
-
-    per_iteration_data_[iteration_].callback.Run(success);
-  }
+void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
+  PrintTestsByStatus(TestResult::TEST_FAILURE, "failed");
+  PrintTestsByStatus(TestResult::TEST_TIMEOUT, "timed out");
+  PrintTestsByStatus(TestResult::TEST_CRASH, "crashed");
+  PrintTestsByStatus(TestResult::TEST_SKIPPED, "skipped");
+  PrintTestsByStatus(TestResult::TEST_UNKNOWN, "had unknown result");
 }
 
 void TestResultsTracker::PrintSummaryOfAllIterations() const {
@@ -295,21 +230,22 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
   return serializer.Serialize(*summary_root);
 }
 
-TestResultsTracker::PerIterationData::PerIterationData()
-    : test_started_count(0),
-      test_run_count(0) {
+TestResultsTracker::PerIterationData::PerIterationData() {
 }
 
 TestResultsTracker::PerIterationData::~PerIterationData() {
 }
 
-void TestResultsTracker::PrintTestsByStatus(TestResult::Status status,
-                                            const std::string& description) {
+void TestResultsTracker::PrintTestsByStatus(
+    TestResult::Status status,
+    const std::string& description) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const std::vector<std::string>& tests =
-      per_iteration_data_[iteration_].tests_by_status[status];
-  PrintTests(tests.begin(), tests.end(), description);
+  PerIterationData::StatusMap::const_iterator i(
+      per_iteration_data_[iteration_].tests_by_status.find(status));
+  if (i == per_iteration_data_[iteration_].tests_by_status.end())
+    return;
+  PrintTests(i->second.begin(), i->second.end(), description);
 }
 
 }  // namespace base
