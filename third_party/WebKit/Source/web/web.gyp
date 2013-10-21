@@ -176,7 +176,7 @@
                     ],
                 }, { # else: toolkit_uses_gtk != 1
                     'sources/': [
-                        ['exclude', 'gtk/'],
+                        ['exclude', 'WebInputEventFactoryGtk.cpp$'],
                     ],
                 }],
                 ['OS=="android"', {
@@ -186,7 +186,7 @@
                     ],
                 }, { # else: OS!="android"
                     'sources/': [
-                        ['exclude', 'android/'],
+                        ['exclude', 'WebInputEventFactoryAndroid.cpp$'],
                     ],
                 }],
                 ['OS=="mac"', {
@@ -201,7 +201,7 @@
                     },
                 }, { # else: OS!="mac"
                     'sources/': [
-                        ['exclude', 'mac/'],
+                        ['exclude', 'WebInputEventFactoryMac.mm$'],
                     ],
                 }],
                 ['OS=="win"', {
@@ -210,7 +210,7 @@
                     ],
                 }, { # else: OS!="win"
                     'sources/': [
-                        ['exclude', 'win/']
+                        ['exclude', 'WebInputEventFactoryWin.cpp$'],
                     ],
                     'variables': {
                         # FIXME: Turn on warnings on Windows.
