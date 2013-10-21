@@ -121,7 +121,7 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
                   self,
                   @selector(optionsMenuChanged:),
                   base::SysUTF16ToNSString(model->GetLabelAt(i)),
-                  model->GetCommandIdAt(i),
+                  i,
                   model->IsEnabledAt(i),
                   model->IsItemCheckedAt(i));
     }
