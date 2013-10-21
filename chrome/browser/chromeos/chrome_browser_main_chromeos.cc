@@ -102,6 +102,8 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/touch/touch_device.h"
+#include "ui/events/event_utils.h"
 
 // Exclude X11 dependents for ozone
 #if defined(USE_X11)
@@ -638,6 +640,13 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // amount of time for the other services to start up before we start
   // adjusting the oom priority.
   g_browser_process->platform_part()->oom_priority_manager()->Start();
+
+  // Turn on natural scroll if we have a touch screen.
+  if (ui::IsTouchDevicePresent()) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kNaturalScrollDefault);
+    ui::SetNaturalScroll(true);
+  }
 
   ChromeBrowserMainPartsLinux::PreBrowserStart();
 }
