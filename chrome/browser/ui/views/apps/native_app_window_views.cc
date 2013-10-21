@@ -131,8 +131,6 @@ NativeAppWindowViews::NativeAppWindowViews(
       is_fullscreen_(false),
       frameless_(create_params.frame == ShellWindow::FRAME_NONE),
       transparent_background_(create_params.transparent_background),
-      minimum_size_(create_params.minimum_size),
-      maximum_size_(create_params.maximum_size),
       resizable_(create_params.resizable),
       weak_ptr_factory_(this) {
   Observe(web_contents());
@@ -555,12 +553,11 @@ views::View* NativeAppWindowViews::GetInitiallyFocusedView() {
 }
 
 bool NativeAppWindowViews::CanResize() const {
-  return resizable_ &&
-      (maximum_size_.IsEmpty() || minimum_size_ != maximum_size_);
+  return resizable_ && !shell_window_->size_constraints().HasFixedSize();
 }
 
 bool NativeAppWindowViews::CanMaximize() const {
-  return resizable_ && maximum_size_.IsEmpty() &&
+  return resizable_ && !shell_window_->size_constraints().HasMaximumSize() &&
       !shell_window_->window_type_is_panel();
 }
 
@@ -722,11 +719,11 @@ gfx::Size NativeAppWindowViews::GetPreferredSize() {
 }
 
 gfx::Size NativeAppWindowViews::GetMinimumSize() {
-  return minimum_size_;
+  return shell_window_->size_constraints().GetMinimumSize();
 }
 
 gfx::Size NativeAppWindowViews::GetMaximumSize() {
-  return maximum_size_;
+  return shell_window_->size_constraints().GetMaximumSize();
 }
 
 void NativeAppWindowViews::OnFocus() {
@@ -836,3 +833,4 @@ bool NativeAppWindowViews::IsVisible() const {
 
 void NativeAppWindowViews::HideWithApp() {}
 void NativeAppWindowViews::ShowWithApp() {}
+void NativeAppWindowViews::UpdateWindowMinMaxSize() {}

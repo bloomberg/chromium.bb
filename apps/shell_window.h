@@ -117,6 +117,9 @@ class ShellWindow : public content::NotificationObserver,
     gfx::Size GetMaximumSize() const;
     gfx::Size GetMinimumSize() const;
 
+    void set_minimum_size(const gfx::Size& min_size);
+    void set_maximum_size(const gfx::Size& max_size);
+
    private:
     gfx::Size minimum_size_;
     gfx::Size maximum_size_;
@@ -283,8 +286,17 @@ class ShellWindow : public content::NotificationObserver,
   void Minimize();
   void Restore();
 
+  // Set the minimum and maximum size that this window is allowed to be.
+  void SetMinimumSize(const gfx::Size& min_size);
+  void SetMaximumSize(const gfx::Size& max_size);
+
   ShellWindowContents* shell_window_contents_for_test() {
     return shell_window_contents_.get();
+  }
+
+  // Get the size constraints.
+  const SizeConstraints& size_constraints() const {
+    return size_constraints_;
   }
 
  protected:
@@ -367,6 +379,9 @@ class ShellWindow : public content::NotificationObserver,
   // Load the app's image, firing a load state change when loaded.
   void UpdateExtensionAppIcon();
 
+  // Called when size_constraints is changed.
+  void OnSizeConstraintsChanged();
+
   // extensions::ExtensionKeybindingRegistry::Delegate implementation.
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() OVERRIDE;
@@ -422,6 +437,9 @@ class ShellWindow : public content::NotificationObserver,
 
   // The window content is visible.
   bool is_content_visible_;
+
+  // Size constraints on the window.
+  SizeConstraints size_constraints_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };

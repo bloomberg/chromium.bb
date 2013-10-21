@@ -154,6 +154,7 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual bool IsVisible() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
+  virtual void UpdateWindowMinMaxSize() OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;
@@ -185,8 +186,6 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
 
   const bool frameless_;
   const bool transparent_background_;
-  gfx::Size minimum_size_;
-  gfx::Size maximum_size_;
   gfx::Size preferred_size_;
   bool resizable_;
 

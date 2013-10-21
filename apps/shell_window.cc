@@ -107,6 +107,14 @@ gfx::Size ShellWindow::SizeConstraints::GetMaximumSize() const {
           std::max(maximum_size_.height(), minimum_size_.height()));
 }
 
+void ShellWindow::SizeConstraints::set_minimum_size(const gfx::Size& min_size) {
+  minimum_size_ = min_size;
+}
+
+void ShellWindow::SizeConstraints::set_maximum_size(const gfx::Size& max_size) {
+  maximum_size_ = max_size;
+}
+
 ShellWindow::CreateParams::CreateParams()
   : window_type(ShellWindow::WINDOW_TYPE_DEFAULT),
     frame(ShellWindow::FRAME_CHROME),
@@ -156,6 +164,8 @@ void ShellWindow::Init(const GURL& url,
   CreateParams new_params = LoadDefaultsAndConstrain(params);
   window_type_ = new_params.window_type;
   window_key_ = new_params.window_key;
+  size_constraints_ = SizeConstraints(new_params.minimum_size,
+                                      new_params.maximum_size);
   native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
 
   if (!new_params.hidden) {
@@ -419,6 +429,16 @@ void ShellWindow::Restore() {
   }
 }
 
+void ShellWindow::SetMinimumSize(const gfx::Size& min_size) {
+  size_constraints_.set_minimum_size(min_size);
+  OnSizeConstraintsChanged();
+}
+
+void ShellWindow::SetMaximumSize(const gfx::Size& max_size) {
+  size_constraints_.set_maximum_size(max_size);
+  OnSizeConstraintsChanged();
+}
+
 //------------------------------------------------------------------------------
 // Private methods
 
@@ -464,6 +484,17 @@ void ShellWindow::UpdateExtensionAppIcon() {
   // Triggers actual image loading with 1x resources. The 2x resource will
   // be handled by IconImage class when requested.
   app_icon_image_->image_skia().GetRepresentation(1.0f);
+}
+
+void ShellWindow::OnSizeConstraintsChanged() {
+  native_app_window_->UpdateWindowMinMaxSize();
+  gfx::Rect bounds = GetClientBounds();
+  gfx::Size constrained_size = size_constraints_.ClampSize(bounds.size());
+  if (bounds.size() != constrained_size) {
+    bounds.set_size(constrained_size);
+    native_app_window_->SetBounds(bounds);
+  }
+  OnNativeWindowChanged();
 }
 
 void ShellWindow::CloseContents(WebContents* contents) {

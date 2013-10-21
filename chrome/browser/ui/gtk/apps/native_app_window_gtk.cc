@@ -95,29 +95,7 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
   if (always_on_top_)
     gtk_window_set_keep_above(window_, TRUE);
 
-  int min_width = params.minimum_size.width();
-  int min_height = params.minimum_size.height();
-  int max_width = params.maximum_size.width();
-  int max_height = params.maximum_size.height();
-  GdkGeometry hints;
-  int hints_mask = 0;
-  if (min_width || min_height) {
-    hints.min_height = min_height;
-    hints.min_width = min_width;
-    hints_mask |= GDK_HINT_MIN_SIZE;
-  }
-  if (max_width || max_height) {
-    hints.max_height = max_height ? max_height : G_MAXINT;
-    hints.max_width = max_width ? max_width : G_MAXINT;
-    hints_mask |= GDK_HINT_MAX_SIZE;
-  }
-  if (hints_mask) {
-    gtk_window_set_geometry_hints(
-        window_,
-        GTK_WIDGET(window_),
-        &hints,
-        static_cast<GdkWindowHints>(hints_mask));
-  }
+  UpdateWindowMinMaxSize();
 
   // In some (older) versions of compiz, raising top-level windows when they
   // are partially off-screen causes them to get snapped back on screen, not
@@ -675,3 +653,30 @@ bool NativeAppWindowGtk::IsVisible() const {
 
 void NativeAppWindowGtk::HideWithApp() {}
 void NativeAppWindowGtk::ShowWithApp() {}
+
+void NativeAppWindowGtk::UpdateWindowMinMaxSize() {
+  GdkGeometry hints;
+  int hints_mask = 0;
+  if (shell_window_->size_constraints().HasMinimumSize()) {
+    gfx::Size min_size = shell_window_->size_constraints().GetMinimumSize();
+    hints.min_height = min_size.height();
+    hints.min_width = min_size.width();
+    hints_mask |= GDK_HINT_MIN_SIZE;
+  }
+  if (shell_window_->size_constraints().HasMaximumSize()) {
+    gfx::Size max_size = shell_window_->size_constraints().GetMaximumSize();
+    const int kUnboundedSize = ShellWindow::SizeConstraints::kUnboundedSize;
+    hints.max_height = max_size.height() == kUnboundedSize ?
+        G_MAXINT : max_size.height();
+    hints.max_width = max_size.width() == kUnboundedSize ?
+        G_MAXINT : max_size.width();
+    hints_mask |= GDK_HINT_MAX_SIZE;
+  }
+  if (hints_mask) {
+    gtk_window_set_geometry_hints(
+        window_,
+        GTK_WIDGET(window_),
+        &hints,
+        static_cast<GdkWindowHints>(hints_mask));
+  }
+}

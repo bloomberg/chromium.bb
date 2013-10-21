@@ -83,6 +83,8 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   virtual bool IsVisible() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
+  // Calls gtk_window_set_geometry_hints with the current size constraints.
+  virtual void UpdateWindowMinMaxSize() OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

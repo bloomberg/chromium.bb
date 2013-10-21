@@ -62,14 +62,6 @@ enum {
 
 namespace {
 
-// When gfx::Size is used as a min/max size, a zero represents an unbounded
-// component. This method checks whether either component is specified.
-// Note we can't use gfx::Size::IsEmpty as it returns true if either width or
-// height is zero.
-bool IsBoundedSize(const gfx::Size& size) {
-  return size.width() != 0 || size.height() != 0;
-}
-
 void SetFullScreenCollectionBehavior(NSWindow* window, bool allow_fullscreen) {
   NSWindowCollectionBehavior behavior = [window collectionBehavior];
   if (allow_fullscreen)
@@ -316,26 +308,18 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     window_class = [ShellFramelessNSWindow class];
   }
 
-  min_size_ = params.minimum_size;
-  max_size_ = params.maximum_size;
-  shows_resize_controls_ = params.resizable &&
-      (min_size_.IsEmpty() || max_size_.IsEmpty() || min_size_ != max_size_);
-  shows_fullscreen_controls_ = params.resizable && !IsBoundedSize(max_size_);
+  ShellWindow::SizeConstraints size_constraints =
+      shell_window_->size_constraints();
+  shows_resize_controls_ =
+      params.resizable && !size_constraints.HasFixedSize();
+  shows_fullscreen_controls_ =
+      params.resizable && !size_constraints.HasMaximumSize();
   window.reset([[window_class alloc]
       initWithContentRect:cocoa_bounds
                 styleMask:GetWindowStyleMask()
                   backing:NSBackingStoreBuffered
                     defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(extension()->name())];
-  if (IsBoundedSize(min_size_)) {
-    [window setContentMinSize:
-        NSMakeSize(min_size_.width(), min_size_.height())];
-  }
-  if (IsBoundedSize(max_size_)) {
-    CGFloat max_width = max_size_.width() ? max_size_.width() : CGFLOAT_MAX;
-    CGFloat max_height = max_size_.height() ? max_size_.height() : CGFLOAT_MAX;
-    [window setContentMaxSize:NSMakeSize(max_width, max_height)];
-  }
 
   if (base::mac::IsOSSnowLeopard() &&
       [window respondsToSelector:@selector(setBottomCornerRounded:)])
@@ -367,6 +351,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
 
   [[window_controller_ window] setDelegate:window_controller_];
   [window_controller_ setAppWindow:this];
+  UpdateWindowMinMaxSize();
 
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryCocoa(
       shell_window_->profile(),
@@ -1026,4 +1011,17 @@ ShellNSWindow* NativeAppWindowCocoa::window() const {
 void NativeAppWindowCocoa::UpdateRestoredBounds() {
   if (IsRestored(*this))
     restored_bounds_ = [window() frame];
+}
+
+void NativeAppWindowCocoa::UpdateWindowMinMaxSize() {
+  gfx::Size min_size = shell_window_->size_constraints().GetMinimumSize();
+  [window() setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
+
+  gfx::Size max_size = shell_window_->size_constraints().GetMinimumSize();
+  const int kUnboundedSize = ShellWindow::SizeConstraints::kUnboundedSize;
+  CGFloat max_width = max_size.width() == kUnboundedSize ?
+      CGFLOAT_MAX : max_size.width();
+  CGFloat max_height = max_size.height() == kUnboundedSize ?
+      CGFLOAT_MAX : max_size.height();
+  [window() setContentMaxSize:NSMakeSize(max_width, max_height)];
 }

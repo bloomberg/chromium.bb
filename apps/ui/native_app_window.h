@@ -64,6 +64,10 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void ShowWithApp() = 0;
   virtual void HideWithApp() = 0;
 
+  // Updates the minimum and maximum size of the native window with the current
+  // size constraints.
+  virtual void UpdateWindowMinMaxSize() = 0;
+
   virtual ~NativeAppWindow() {}
 };
 

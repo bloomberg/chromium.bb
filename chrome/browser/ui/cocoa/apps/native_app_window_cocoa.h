@@ -127,17 +127,18 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   virtual bool IsFrameless() const OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
-
-  // WebContentsObserver implementation.
-  virtual void RenderViewHostChanged(
-      content::RenderViewHost* old_host,
-      content::RenderViewHost* new_host) OVERRIDE;
-
   // These are used to simulate Mac-style hide/show. Since windows can be hidden
   // and shown using the app.window API, this sets is_hidden_with_app_ to
   // differentiate the reason a window was hidden.
   virtual void ShowWithApp() OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
+  // Calls setContent[Min|Max]Size with the current size constraints.
+  virtual void UpdateWindowMinMaxSize() OVERRIDE;
+
+  // WebContentsObserver implementation.
+  virtual void RenderViewHostChanged(
+      content::RenderViewHost* old_host,
+      content::RenderViewHost* new_host) OVERRIDE;
 
   virtual void SetAlwaysOnTop(bool always_on_top) OVERRIDE;
 
@@ -198,8 +199,6 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   bool is_fullscreen_;
   NSRect restored_bounds_;
 
-  gfx::Size min_size_;
-  gfx::Size max_size_;
   bool shows_resize_controls_;
   bool shows_fullscreen_controls_;
 
