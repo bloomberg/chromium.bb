@@ -35,7 +35,7 @@ from utils import threading_utils
 # Line too long (NN/80)
 # pylint: disable=C0301
 
-
+OS_NAME = 'Comodore64'
 TASK_OUTPUT = 'This task ran with great success'
 
 
@@ -117,7 +117,7 @@ class FakeSwarmBot(object):
         # slaves.
         'bits': '36',
         'machine': os.uname()[4] + '-experimental',
-        'os': ['Comodore64'],
+        'os': [OS_NAME],
       },
       'id': self._machine_id,
       'try_count': 0,

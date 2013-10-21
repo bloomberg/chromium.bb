@@ -64,8 +64,8 @@ def trigger_task(swarming_url, progress, unique, timeout, index):
 
   logging.info('trigger')
   manifest = swarming.Manifest(
-      None, name, 1, None, 'Comodor64', '', 'http://localhost:1', False, False,
-      100, None)
+      None, name, 1, None, swarming_load_test_bot.OS_NAME, '',
+      'http://localhost:1', False, False, 100, None)
   data = {'request': manifest.to_json()}
   response = net.url_open(swarming_url + '/test', data=data)
   if not response:
@@ -78,7 +78,7 @@ def trigger_task(swarming_url, progress, unique, timeout, index):
     'test_case_name': name,
     'test_keys': [
       {
-        'config_name': 'Comodor64',
+        'config_name': swarming_load_test_bot.OS_NAME,
         'num_instances': 1,
         'instance_index': 0,
       },
