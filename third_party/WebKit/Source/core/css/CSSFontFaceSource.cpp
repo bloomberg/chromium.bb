@@ -291,6 +291,12 @@ void CSSFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource*
         int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
         HistogramSupport::histogramCustomCounts(histogramName(font), duration, 0, 10000, 50);
         m_loadStartTime = -1;
+
+        enum { Miss, Hit, DataUrl, CacheHitEnumMax };
+        int histogramValue = font->url().protocolIsData() ? DataUrl
+            : font->response().wasCached() ? Hit
+            : Miss;
+        HistogramSupport::histogramEnumeration("WebFont.CacheHit", histogramValue, CacheHitEnumMax);
     }
 }
 
