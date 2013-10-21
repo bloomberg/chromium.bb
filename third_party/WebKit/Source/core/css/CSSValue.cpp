@@ -85,6 +85,8 @@ private:
     String m_cssText;
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(TextCloneCSSValue, isTextCloneCSSValue());
+
 bool CSSValue::isImplicitInitialValue() const
 {
     return m_classType == InitialClass && toCSSInitialValue(this)->isImplicit();
@@ -147,7 +149,7 @@ bool CSSValue::equals(const CSSValue& other) const
 {
     if (m_isTextClone) {
         ASSERT(isCSSOMSafe());
-        return static_cast<const TextCloneCSSValue*>(this)->cssText() == other.cssText();
+        return toTextCloneCSSValue(this)->cssText() == other.cssText();
     }
 
     if (m_classType == other.m_classType) {
@@ -235,7 +237,7 @@ String CSSValue::cssText() const
 {
     if (m_isTextClone) {
          ASSERT(isCSSOMSafe());
-        return static_cast<const TextCloneCSSValue*>(this)->cssText();
+        return toTextCloneCSSValue(this)->cssText();
     }
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
 
@@ -333,7 +335,7 @@ void CSSValue::destroy()
 {
     if (m_isTextClone) {
         ASSERT(isCSSOMSafe());
-        delete static_cast<TextCloneCSSValue*>(this);
+        delete toTextCloneCSSValue(this);
         return;
     }
     ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
