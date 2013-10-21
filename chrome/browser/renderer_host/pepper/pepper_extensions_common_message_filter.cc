@@ -15,7 +15,8 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/constants.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -27,19 +28,28 @@
 namespace chrome {
 
 class PepperExtensionsCommonMessageFilter::DispatcherOwner
-    : public content::RenderViewHostObserver,
+    : public content::WebContentsObserver,
       public ExtensionFunctionDispatcher::Delegate {
  public:
   DispatcherOwner(PepperExtensionsCommonMessageFilter* message_filter,
                   Profile* profile,
-                  content::RenderViewHost* view_host)
-      : content::RenderViewHostObserver(view_host),
+                  content::RenderViewHost* view_host,
+                  content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        render_view_host_(view_host),
         message_filter_(message_filter),
         dispatcher_(profile, this) {
   }
 
   virtual ~DispatcherOwner() {
     message_filter_->DetachDispatcherOwner();
+  }
+
+  // content::WebContentsObserver implementation.
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE {
+    if (render_view_host == render_view_host_)
+      delete this;
   }
 
   // ExtensionFunctionDispatcher::Delegate implementation.
@@ -55,11 +65,10 @@ class PepperExtensionsCommonMessageFilter::DispatcherOwner
   }
 
   ExtensionFunctionDispatcher* dispatcher() { return &dispatcher_; }
-  content::RenderViewHost* render_view_host() {
-    return content::RenderViewHostObserver::render_view_host();
-  }
+  content::RenderViewHost* render_view_host() { return render_view_host_; }
 
  private:
+  content::RenderViewHost* render_view_host_;
   scoped_refptr<PepperExtensionsCommonMessageFilter> message_filter_;
   ExtensionFunctionDispatcher dispatcher_;
 
@@ -154,6 +163,8 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
       render_process_id_, render_view_id_);
   if (!view_host)
     return;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(view_host);
 
   if (!document_url_.SchemeIs(extensions::kExtensionScheme))
     return;
@@ -164,7 +175,8 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
   Profile* profile = profile_manager->GetProfile(profile_directory_);
 
   // It will be automatically destroyed when |view_host| goes away.
-  dispatcher_owner_ = new DispatcherOwner(this, profile, view_host);
+  dispatcher_owner_ = new DispatcherOwner(
+      this, profile, view_host, web_contents);
 }
 
 void PepperExtensionsCommonMessageFilter::DetachDispatcherOwner() {
