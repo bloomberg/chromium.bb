@@ -100,7 +100,7 @@ TEST_F(AttestationFlowTest, GetCertificate) {
   EXPECT_CALL(
       async_caller,
       AsyncTpmAttestationCreateCertRequest(PROFILE_ENTERPRISE_USER_CERTIFICATE,
-                                           "fake_email", "fake_origin", _))
+                                           "fake@test.com", "fake_origin", _))
           .Times(1)
           .InSequence(flow_order);
 
@@ -115,6 +115,7 @@ TEST_F(AttestationFlowTest, GetCertificate) {
   EXPECT_CALL(async_caller,
               AsyncTpmAttestationFinishCertRequest(fake_cert_response,
                                                    KEY_USER,
+                                                   "fake@test.com",
                                                    kEnterpriseUserKey,
                                                    _))
       .Times(1)
@@ -132,7 +133,7 @@ TEST_F(AttestationFlowTest, GetCertificate) {
 
   scoped_ptr<ServerProxy> proxy_interface(proxy.release());
   AttestationFlow flow(&async_caller, &client, proxy_interface.Pass());
-  flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "fake_email",
+  flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, "fake@test.com",
                       "fake_origin", true, mock_callback);
   Run();
 }
@@ -241,6 +242,7 @@ TEST_F(AttestationFlowTest, GetMachineCertificateAlreadyEnrolled) {
   EXPECT_CALL(async_caller,
               AsyncTpmAttestationFinishCertRequest(fake_cert_response,
                                                    KEY_DEVICE,
+                                                   "",
                                                    kEnterpriseMachineKey,
                                                    _))
       .Times(1);
@@ -366,6 +368,7 @@ TEST_F(AttestationFlowTest, GetCertificate_CheckExisting) {
   EXPECT_CALL(async_caller,
               AsyncTpmAttestationFinishCertRequest(fake_cert_response,
                                                    KEY_USER,
+                                                   "",
                                                    kEnterpriseUserKey,
                                                    _))
       .Times(1);
@@ -374,8 +377,8 @@ TEST_F(AttestationFlowTest, GetCertificate_CheckExisting) {
   EXPECT_CALL(client, TpmAttestationIsEnrolled(_))
       .WillRepeatedly(Invoke(DBusCallbackTrue));
   EXPECT_CALL(client,
-              TpmAttestationDoesKeyExist(KEY_USER, kEnterpriseUserKey, _))
-      .WillRepeatedly(WithArgs<2>(Invoke(DBusCallbackFalse)));
+              TpmAttestationDoesKeyExist(KEY_USER, "", kEnterpriseUserKey, _))
+      .WillRepeatedly(WithArgs<3>(Invoke(DBusCallbackFalse)));
 
   scoped_ptr<MockServerProxy> proxy(new StrictMock<MockServerProxy>());
   proxy->DeferToFake(true);
@@ -406,11 +409,11 @@ TEST_F(AttestationFlowTest, GetCertificate_AlreadyExists) {
   EXPECT_CALL(client, TpmAttestationIsEnrolled(_))
       .WillRepeatedly(Invoke(DBusCallbackTrue));
   EXPECT_CALL(client,
-              TpmAttestationDoesKeyExist(KEY_USER, kEnterpriseUserKey, _))
-      .WillRepeatedly(WithArgs<2>(Invoke(DBusCallbackTrue)));
+              TpmAttestationDoesKeyExist(KEY_USER, "", kEnterpriseUserKey, _))
+      .WillRepeatedly(WithArgs<3>(Invoke(DBusCallbackTrue)));
   EXPECT_CALL(client,
-              TpmAttestationGetCertificate(KEY_USER, kEnterpriseUserKey, _))
-      .WillRepeatedly(WithArgs<2>(Invoke(FakeDBusData("fake_cert"))));
+              TpmAttestationGetCertificate(KEY_USER, "", kEnterpriseUserKey, _))
+      .WillRepeatedly(WithArgs<3>(Invoke(FakeDBusData("fake_cert"))));
 
   // We're not expecting any server calls in this case; StrictMock will verify.
   scoped_ptr<MockServerProxy> proxy(new StrictMock<MockServerProxy>());

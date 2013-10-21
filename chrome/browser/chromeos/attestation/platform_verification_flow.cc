@@ -10,9 +10,11 @@
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -20,6 +22,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -212,21 +215,29 @@ void PlatformVerificationFlow::OnConsentResponse(
 
   // At this point all user interaction is complete and we can proceed with the
   // certificate request.
+  chromeos::User* user = GetUser(web_contents);
+  if (!user) {
+    ReportError(callback, INTERNAL_ERROR);
+    LOG(ERROR) << "Profile does not map to a valid user.";
+    return;
+  }
   AttestationFlow::CertificateCallback certificate_callback = base::Bind(
       &PlatformVerificationFlow::OnCertificateReady,
       weak_factory_.GetWeakPtr(),
+      user->email(),
       service_id,
       challenge,
       callback);
   attestation_flow_->GetCertificate(
       PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-      user_manager_->GetActiveUser()->email(),
+      user->email(),
       service_id,
       false,  // Don't force a new key.
       certificate_callback);
 }
 
 void PlatformVerificationFlow::OnCertificateReady(
+    const std::string& user_id,
     const std::string& service_id,
     const std::string& challenge,
     const ChallengeCallback& callback,
@@ -246,6 +257,7 @@ void PlatformVerificationFlow::OnCertificateReady(
   std::string key_name = kContentProtectionKeyPrefix;
   key_name += service_id;
   async_caller_->TpmAttestationSignSimpleChallenge(KEY_USER,
+                                                   user_id,
                                                    key_name,
                                                    challenge,
                                                    cryptohome_callback);
@@ -287,6 +299,13 @@ const GURL& PlatformVerificationFlow::GetURL(
   if (!testing_url_.is_empty())
     return testing_url_;
   return web_contents->GetLastCommittedURL();
+}
+
+User* PlatformVerificationFlow::GetUser(content::WebContents* web_contents) {
+  if (!web_contents)
+    return user_manager_->GetActiveUser();
+  return user_manager_->GetUserByProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
 }
 
 bool PlatformVerificationFlow::IsAttestationEnabled(

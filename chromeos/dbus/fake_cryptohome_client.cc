@@ -275,7 +275,7 @@ void FakeCryptohomeClient::AsyncTpmAttestationEnroll(
 
 void FakeCryptohomeClient::AsyncTpmAttestationCreateCertRequest(
     attestation::AttestationCertificateProfile certificate_profile,
-    const std::string& user_email,
+    const std::string& user_id,
     const std::string& request_origin,
     const AsyncMethodCallback& callback) {
   ReturnAsyncMethodResult(callback, true);
@@ -284,6 +284,7 @@ void FakeCryptohomeClient::AsyncTpmAttestationCreateCertRequest(
 void FakeCryptohomeClient::AsyncTpmAttestationFinishCertRequest(
     const std::string& pca_response,
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const AsyncMethodCallback& callback) {
   ReturnAsyncMethodResult(callback, true);
@@ -291,6 +292,7 @@ void FakeCryptohomeClient::AsyncTpmAttestationFinishCertRequest(
 
 void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const BoolDBusMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(
@@ -299,6 +301,7 @@ void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
 
 void FakeCryptohomeClient::TpmAttestationGetCertificate(
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const DataMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(
@@ -308,6 +311,7 @@ void FakeCryptohomeClient::TpmAttestationGetCertificate(
 
 void FakeCryptohomeClient::TpmAttestationGetPublicKey(
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const DataMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(
@@ -317,6 +321,7 @@ void FakeCryptohomeClient::TpmAttestationGetPublicKey(
 
 void FakeCryptohomeClient::TpmAttestationRegisterKey(
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const AsyncMethodCallback& callback) {
   ReturnAsyncMethodResult(callback, true);
@@ -324,6 +329,7 @@ void FakeCryptohomeClient::TpmAttestationRegisterKey(
 
 void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const std::string& domain,
     const std::string& device_id,
@@ -335,6 +341,7 @@ void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(
 
 void FakeCryptohomeClient::TpmAttestationSignSimpleChallenge(
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const std::string& challenge,
     const AsyncMethodCallback& callback) {
@@ -343,6 +350,7 @@ void FakeCryptohomeClient::TpmAttestationSignSimpleChallenge(
 
 void FakeCryptohomeClient::TpmAttestationGetKeyPayload(
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const DataMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(
@@ -352,6 +360,7 @@ void FakeCryptohomeClient::TpmAttestationGetKeyPayload(
 
 void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
     attestation::AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const std::string& payload,
     const BoolDBusMethodCallback& callback) {

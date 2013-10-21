@@ -115,13 +115,13 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
 
   // Asks cryptohomed to asynchronously create an attestation certificate
   // request according to |certificate_profile|.  Some profiles require that the
-  // |user_email| of the currently active user and an identifier of the
+  // |user_id| of the currently active user and an identifier of the
   // |request_origin| be provided.  On success the data sent to |callback| is a
   // request to be sent to the Privacy CA.  The |request_origin| may be sent to
-  // the Privacy CA but the |user_email| will never be sent.
+  // the Privacy CA but the |user_id| will never be sent.
   virtual void AsyncTpmAttestationCreateCertRequest(
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
-      const std::string& user_email,
+      const std::string& user_id,
       const std::string& request_origin,
       const DataCallback& callback) = 0;
 
@@ -130,17 +130,23 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // in PEM format.  |pca_response| is the response to the certificate request
   // emitted by the Privacy CA.  |key_type| determines whether the certified key
   // is to be associated with the current user.  |key_name| is a name for the
-  // key.
+  // key.  If |key_type| is KEY_USER, a |user_id| must be provided.  Otherwise
+  // |user_id| is ignored.  For normal GAIA users the |user_id| is a canonical
+  // email address.
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const DataCallback& callback) = 0;
 
   // Asks cryptohomed to asynchronously register the attestation key specified
-  // by |key_type| and |key_name|.
+  // by |key_type| and |key_name|.  If |key_type| is KEY_USER, a |user_id| must
+  // be provided.  Otherwise |user_id| is ignored.  For normal GAIA users the
+  // |user_id| is a canonical email address.
   virtual void TpmAttestationRegisterKey(
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const Callback& callback) = 0;
 
@@ -148,9 +154,12 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // key specified by |key_type| and |key_name|.  The |domain| and |device_id|
   // parameters will be included in the challenge response.  |challenge| must be
   // a valid enterprise challenge.  On success, the data sent to |callback| is
-  // the challenge response.
+  // the challenge response.  If |key_type| is KEY_USER, a |user_id| must be
+  // provided.  Otherwise |user_id| is ignored.  For normal GAIA users the
+  // |user_id| is a canonical email address.
   virtual void TpmAttestationSignEnterpriseChallenge(
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
@@ -161,9 +170,12 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // Asks cryptohomed to asynchronously sign a simple challenge with the key
   // specified by |key_type| and |key_name|.  |challenge| can be any arbitrary
   // set of bytes.  On success, the data sent to |callback| is the challenge
-  // response.
+  // response.  If |key_type| is KEY_USER, a |user_id| must be provided.
+  // Otherwise |user_id| is ignored.  For normal GAIA users the |user_id| is a
+  // canonical email address.
   virtual void TpmAttestationSignSimpleChallenge(
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& challenge,
       const DataCallback& callback) = 0;

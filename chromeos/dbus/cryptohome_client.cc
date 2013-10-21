@@ -464,7 +464,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationCreateCertRequest(
       attestation::AttestationCertificateProfile certificate_profile,
-      const std::string& user_email,
+      const std::string& user_id,
       const std::string& request_origin,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
@@ -472,7 +472,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
         cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequestByProfile);
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(certificate_profile);
-    writer.AppendString(user_email);
+    writer.AppendString(user_id);
     writer.AppendString(request_origin);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
@@ -484,17 +484,19 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeAsyncTpmAttestationFinishCertRequestOld);
+        cryptohome::kCryptohomeAsyncTpmAttestationFinishCertRequest);
     dbus::MessageWriter writer(&method_call);
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8*>(pca_response.data()),
         pca_response.size());
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
@@ -505,14 +507,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationDoesKeyExist(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const BoolDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationDoesKeyExistOld);
+        cryptohome::kCryptohomeTpmAttestationDoesKeyExist);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     CallBoolMethod(&method_call, callback);
   }
@@ -520,14 +524,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationGetCertificate(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationGetCertificateOld);
+        cryptohome::kCryptohomeTpmAttestationGetCertificate);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnDataMethod,
@@ -538,14 +544,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationGetPublicKey(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationGetPublicKeyOld);
+        cryptohome::kCryptohomeTpmAttestationGetPublicKey);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnDataMethod,
@@ -556,14 +564,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationRegisterKey(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationRegisterKeyOld);
+        cryptohome::kCryptohomeTpmAttestationRegisterKey);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
@@ -574,6 +584,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationSignEnterpriseChallenge(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
@@ -582,10 +593,11 @@ class CryptohomeClientImpl : public CryptohomeClient {
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationSignEnterpriseChallengeOld);
+        cryptohome::kCryptohomeTpmAttestationSignEnterpriseChallenge);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     writer.AppendString(domain);
     writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(device_id.data()),
@@ -604,15 +616,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationSignSimpleChallenge(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationSignSimpleChallengeOld);
+        cryptohome::kCryptohomeTpmAttestationSignSimpleChallenge);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(challenge.data()),
                               challenge.size());
@@ -625,14 +639,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationGetKeyPayload(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationGetKeyPayloadOld);
+        cryptohome::kCryptohomeTpmAttestationGetKeyPayload);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnDataMethod,
@@ -643,15 +659,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationSetKeyPayload(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& payload,
       const BoolDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeTpmAttestationSetKeyPayloadOld);
+        cryptohome::kCryptohomeTpmAttestationSetKeyPayload);
     dbus::MessageWriter writer(&method_call);
     bool is_user_specific = (key_type == attestation::KEY_USER);
     writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
     writer.AppendString(key_name);
     writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(payload.data()),
                               payload.size());

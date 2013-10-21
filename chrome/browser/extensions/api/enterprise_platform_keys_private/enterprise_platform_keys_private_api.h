@@ -92,6 +92,7 @@ class EPKPChallengeKeyBase : public AsyncExtensionFunction {
   // user consent before calling GetCertificate().
   void PrepareKey(
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
       bool require_user_consent,
@@ -105,6 +106,7 @@ class EPKPChallengeKeyBase : public AsyncExtensionFunction {
  private:
   void DoesKeyExistCallback(
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
+      const std::string& user_id,
       bool require_user_consent,
       const base::Callback<void(PrepareKeyResult)>& callback,
       chromeos::DBusMethodCallStatus status,
@@ -112,6 +114,7 @@ class EPKPChallengeKeyBase : public AsyncExtensionFunction {
   void AskForUserConsent(const base::Callback<void(bool)>& callback) const;
   void AskForUserConsentCallback(
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
+      const std::string& user_id,
       const base::Callback<void(PrepareKeyResult)>& callback,
       bool result);
   void GetCertificateCallback(

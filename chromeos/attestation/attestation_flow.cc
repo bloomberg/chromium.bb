@@ -96,7 +96,7 @@ AttestationFlow::~AttestationFlow() {
 
 void AttestationFlow::GetCertificate(
     AttestationCertificateProfile certificate_profile,
-    const std::string& user_email,
+    const std::string& user_id,
     const std::string& request_origin,
     bool force_new_key,
     const CertificateCallback& callback) {
@@ -106,7 +106,7 @@ void AttestationFlow::GetCertificate(
       &AttestationFlow::StartCertificateRequest,
       weak_factory_.GetWeakPtr(),
       certificate_profile,
-      user_email,
+      user_id,
       request_origin,
       force_new_key,
       callback);
@@ -191,7 +191,7 @@ void AttestationFlow::OnEnrollComplete(const base::Closure& on_failure,
 
 void AttestationFlow::StartCertificateRequest(
     AttestationCertificateProfile certificate_profile,
-    const std::string& user_email,
+    const std::string& user_id,
     const std::string& request_origin,
     bool generate_new_key,
     const CertificateCallback& callback) {
@@ -202,11 +202,12 @@ void AttestationFlow::StartCertificateRequest(
     // Get the attestation service to create a Privacy CA certificate request.
     async_caller_->AsyncTpmAttestationCreateCertRequest(
         certificate_profile,
-        user_email,
+        user_id,
         request_origin,
         base::Bind(&AttestationFlow::SendCertificateRequestToPCA,
                    weak_factory_.GetWeakPtr(),
                    key_type,
+                   user_id,
                    key_name,
                    callback));
   } else {
@@ -215,6 +216,7 @@ void AttestationFlow::StartCertificateRequest(
         &AttestationFlow::GetExistingCertificate,
         weak_factory_.GetWeakPtr(),
         key_type,
+        user_id,
         key_name,
         callback);
     // If the key does not exist, call this method back with |generate_new_key|
@@ -223,12 +225,13 @@ void AttestationFlow::StartCertificateRequest(
         &AttestationFlow::StartCertificateRequest,
         weak_factory_.GetWeakPtr(),
         certificate_profile,
-        user_email,
+        user_id,
         request_origin,
         true,
         callback);
     cryptohome_client_->TpmAttestationDoesKeyExist(
         key_type,
+        user_id,
         key_name,
         base::Bind(&DBusBoolRedirectCallback,
             on_key_exists,
@@ -239,6 +242,7 @@ void AttestationFlow::StartCertificateRequest(
 
 void AttestationFlow::SendCertificateRequestToPCA(
     AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const CertificateCallback& callback,
     bool success,
@@ -256,12 +260,14 @@ void AttestationFlow::SendCertificateRequestToPCA(
       base::Bind(&AttestationFlow::SendCertificateResponseToDaemon,
                  weak_factory_.GetWeakPtr(),
                  key_type,
+                 user_id,
                  key_name,
                  callback));
 }
 
 void AttestationFlow::SendCertificateResponseToDaemon(
     AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const CertificateCallback& callback,
     bool success,
@@ -276,16 +282,19 @@ void AttestationFlow::SendCertificateResponseToDaemon(
   // Forward the response to the attestation service to complete the operation.
   async_caller_->AsyncTpmAttestationFinishCertRequest(data,
                                                       key_type,
+                                                      user_id,
                                                       key_name,
                                                       base::Bind(callback));
 }
 
 void AttestationFlow::GetExistingCertificate(
     AttestationKeyType key_type,
+    const std::string& user_id,
     const std::string& key_name,
     const CertificateCallback& callback) {
   cryptohome_client_->TpmAttestationGetCertificate(
       key_type,
+      user_id,
       key_name,
       base::Bind(&DBusDataMethodCallback, callback));
 }

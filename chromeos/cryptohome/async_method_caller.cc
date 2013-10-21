@@ -134,13 +134,13 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void AsyncTpmAttestationCreateCertRequest(
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
-      const std::string& username,
+      const std::string& user_id,
       const std::string& request_origin,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncTpmAttestationCreateCertRequest(
             certificate_profile,
-            username,
+            user_id,
             request_origin,
             base::Bind(&AsyncMethodCallerImpl::RegisterAsyncDataCallback,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -151,12 +151,14 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncTpmAttestationFinishCertRequest(
             pca_response,
             key_type,
+            user_id,
             key_name,
             base::Bind(
                 &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
@@ -167,11 +169,13 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void TpmAttestationRegisterKey(
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const Callback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         TpmAttestationRegisterKey(
             key_type,
+            user_id,
             key_name,
             base::Bind(
                 &AsyncMethodCallerImpl::RegisterAsyncCallback,
@@ -182,6 +186,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void TpmAttestationSignEnterpriseChallenge(
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
@@ -191,6 +196,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         TpmAttestationSignEnterpriseChallenge(
             key_type,
+            user_id,
             key_name,
             domain,
             device_id,
@@ -205,12 +211,14 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
 
   virtual void TpmAttestationSignSimpleChallenge(
       chromeos::attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& challenge,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         TpmAttestationSignSimpleChallenge(
             key_type,
+            user_id,
             key_name,
             challenge,
             base::Bind(

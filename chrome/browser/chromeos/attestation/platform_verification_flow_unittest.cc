@@ -185,9 +185,10 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     std::string expected_key_name = std::string(kContentProtectionKeyPrefix) +
                                     std::string(kTestID);
     EXPECT_CALL(mock_async_caller_,
-                TpmAttestationSignSimpleChallenge(KEY_USER, expected_key_name,
+                TpmAttestationSignSimpleChallenge(KEY_USER, kTestEmail,
+                                                  expected_key_name,
                                                   kTestChallenge, _))
-        .WillRepeatedly(WithArgs<3>(Invoke(
+        .WillRepeatedly(WithArgs<4>(Invoke(
             this, &PlatformVerificationFlowTest::FakeSignChallenge)));
   }
 

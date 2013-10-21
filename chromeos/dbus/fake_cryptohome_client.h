@@ -95,32 +95,38 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void AsyncTpmAttestationCreateCertRequest(
       attestation::AttestationCertificateProfile certificate_profile,
-      const std::string& user_email,
+      const std::string& user_id,
       const std::string& request_origin,
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationDoesKeyExist(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const BoolDBusMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationGetCertificate(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationGetPublicKey(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationRegisterKey(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationSignEnterpriseChallenge(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
@@ -129,15 +135,18 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationSignSimpleChallenge(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationGetKeyPayload(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE;
   virtual void TpmAttestationSetKeyPayload(
       attestation::AttestationKeyType key_type,
+      const std::string& user_id,
       const std::string& key_name,
       const std::string& payload,
       const BoolDBusMethodCallback& callback) OVERRIDE;

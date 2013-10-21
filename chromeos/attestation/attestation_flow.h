@@ -68,9 +68,9 @@ class CHROMEOS_EXPORT AttestationFlow {
   // Parameters
   //   certificate_profile - Specifies what kind of certificate should be
   //                         requested from the CA.
-  //   user_email - The canonical email address of the currently active user.
-  //                This is ignored when not using the content protection
-  //                profile.
+  //   user_id - Identifies the currently active user.  For normal GAIA users
+  //             this is a canonical email address.  This is ignored when using
+  //             the enterprise machine cert profile.
   //   request_origin - For content protection profiles, certificate requests
   //                    are origin-specific.  This string must uniquely identify
   //                    the origin of the request.
@@ -81,7 +81,7 @@ class CHROMEOS_EXPORT AttestationFlow {
   //              On success |result| will be true and |data| will contain the
   //              PCA-issued certificate chain in PEM format.
   virtual void GetCertificate(AttestationCertificateProfile certificate_profile,
-                              const std::string& user_email,
+                              const std::string& user_id,
                               const std::string& request_origin,
                               bool force_new_key,
                               const CertificateCallback& callback);
@@ -142,13 +142,13 @@ class CHROMEOS_EXPORT AttestationFlow {
   // Parameters
   //   certificate_profile - Specifies what kind of certificate should be
   //                         requested from the CA.
-  //   user_email - The active user's canonical email.
+  //   user_id - Identifies the active user.
   //   request_origin - An identifier for the origin of this request.
   //   generate_new_key - If set to true a new key is generated.
   //   callback - Called when the operation completes.
   void StartCertificateRequest(
       const AttestationCertificateProfile certificate_profile,
-      const std::string& user_email,
+      const std::string& user_id,
       const std::string& request_origin,
       bool generate_new_key,
       const CertificateCallback& callback);
@@ -159,11 +159,13 @@ class CHROMEOS_EXPORT AttestationFlow {
   //
   // Parameters
   //   key_type - The type of the key for which a certificate is requested.
+  //   user_id - Identifies the active user.
   //   key_name - The name of the key for which a certificate is requested.
   //   callback - Called when the operation completes.
   //   success - The status of request creation.
   //   data - The request data for the Privacy CA.
   void SendCertificateRequestToPCA(AttestationKeyType key_type,
+                                   const std::string& user_id,
                                    const std::string& key_name,
                                    const CertificateCallback& callback,
                                    bool success,
@@ -175,11 +177,13 @@ class CHROMEOS_EXPORT AttestationFlow {
   //
   // Parameters
   //   key_type - The type of the key for which a certificate is requested.
+  //   user_id - Identifies the active user.
   //   key_name - The name of the key for which a certificate is requested.
   //   callback - Called when the operation completes.
   //   success - The status of the Privacy CA operation.
   //   data - The response data from the Privacy CA.
   void SendCertificateResponseToDaemon(AttestationKeyType key_type,
+                                       const std::string& user_id,
                                        const std::string& key_name,
                                        const CertificateCallback& callback,
                                        bool success,
@@ -189,9 +193,11 @@ class CHROMEOS_EXPORT AttestationFlow {
   //
   // Parameters
   //   key_type - The type of the key for which a certificate is requested.
+  //   user_id - Identifies the active user.
   //   key_name - The name of the key for which a certificate is requested.
   //   callback - Called when the operation completes.
   void GetExistingCertificate(AttestationKeyType key_type,
+                              const std::string& user_id,
                               const std::string& key_name,
                               const CertificateCallback& callback);
 
