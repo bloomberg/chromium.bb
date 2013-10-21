@@ -12,6 +12,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ChromeDebug.LowLevel;
+using System.Runtime.InteropServices;
+using System.Drawing;
 
 namespace ChromeDebug {
   internal class ProcessDetail : IDisposable {
@@ -41,6 +43,43 @@ namespace ChromeDebug {
 
         CacheMachineType();
         return machineType;
+      }
+    }
+
+    public string NativeProcessImagePath {
+      get {
+        if (nativeProcessImagePath == null) {
+          nativeProcessImagePath = QueryProcessImageName(
+              LowLevelTypes.ProcessQueryImageNameMode.NATIVE_SYSTEM_FORMAT);
+        }
+        return nativeProcessImagePath;
+      }
+    }
+
+    public string Win32ProcessImagePath {
+      get {
+        if (win32ProcessImagePath == null) {
+          win32ProcessImagePath = QueryProcessImageName(
+              LowLevelTypes.ProcessQueryImageNameMode.WIN32_FORMAT);
+        }
+        return win32ProcessImagePath;
+      }
+    }
+
+    public Icon SmallIcon {
+      get {
+        LowLevel.LowLevelTypes.SHFILEINFO info = new LowLevelTypes.SHFILEINFO(true);
+        LowLevel.LowLevelTypes.SHGFI flags = LowLevel.LowLevelTypes.SHGFI.Icon
+                                             | LowLevelTypes.SHGFI.SmallIcon
+                                             | LowLevelTypes.SHGFI.OpenIcon
+                                             | LowLevelTypes.SHGFI.UseFileAttributes;
+        int cbFileInfo = Marshal.SizeOf(info);
+        LowLevel.NativeMethods.SHGetFileInfo(Win32ProcessImagePath,
+                                             256,
+                                             ref info,
+                                             (uint)cbFileInfo,
+                                             (uint)flags);
+        return Icon.FromHandle(info.hIcon);
       }
     }
 
@@ -90,6 +129,19 @@ namespace ChromeDebug {
         // In order to query the process, we need *either* of these flags.
         return (processHandleFlags & required_flags) != LowLevelTypes.ProcessAccessFlags.NONE;
       }
+    }
+
+    private string QueryProcessImageName(LowLevelTypes.ProcessQueryImageNameMode mode) {
+      StringBuilder moduleBuffer = new StringBuilder(1024);
+      int size = moduleBuffer.Capacity;
+      NativeMethods.QueryFullProcessImageName(
+          processHandle,
+          mode,
+          moduleBuffer,
+          ref size);
+      if (mode == LowLevelTypes.ProcessQueryImageNameMode.NATIVE_SYSTEM_FORMAT)
+        moduleBuffer.Insert(0, "\\\\?\\GLOBALROOT");
+      return moduleBuffer.ToString();
     }
 
     // Loads the top-level structure of the process's information block and caches it.
@@ -151,29 +203,19 @@ namespace ChromeDebug {
     private void CacheMachineType() {
       System.Diagnostics.Debug.Assert(CanQueryProcessInformation);
 
-      StringBuilder moduleBuffer = new StringBuilder(1024);
-      int size = moduleBuffer.Capacity;
-
       // If our extension is running in a 32-bit process (which it is), then attempts to access
       // files in C:\windows\system (and a few other files) will redirect to C:\Windows\SysWOW64
       // and we will mistakenly think that the image file is a 32-bit image.  The way around this
       // is to use a native system format path, of the form:
       //    \\?\GLOBALROOT\Device\HarddiskVolume0\Windows\System\foo.dat
-      // By using the NATIVE_SYSTEM_FORMAT flag to QueryFullProcessImageName, we can get the path
-      // in this format.
-      NativeMethods.QueryFullProcessImageName(
-          processHandle,
-          LowLevelTypes.ProcessQueryImageNameMode.NATIVE_SYSTEM_FORMAT,
-          moduleBuffer,
-          ref size);
-      moduleBuffer.Insert(0, "\\\\?\\GLOBALROOT");
-      string module = moduleBuffer.ToString();
+      // NativeProcessImagePath gives us the full process image path in the desired format.
+      string path = NativeProcessImagePath;
 
       // Open the PE File as a binary file, and parse just enough information to determine the
       // machine type.
       //http://www.microsoft.com/whdc/system/platform/firmware/PECOFF.mspx
       using (SafeFileHandle safeHandle = NativeMethods.CreateFile(
-                 module, 
+                 path, 
                  LowLevelTypes.FileAccessFlags.GENERIC_READ, 
                  LowLevelTypes.FileShareFlags.SHARE_READ, 
                  IntPtr.Zero, 
@@ -214,7 +256,9 @@ namespace ChromeDebug {
     // open with.
     private int processId;
     private IntPtr processHandle;
-    LowLevelTypes.ProcessAccessFlags processHandleFlags;
+    private LowLevelTypes.ProcessAccessFlags processHandleFlags;
+    private string nativeProcessImagePath;
+    private string win32ProcessImagePath;
 
     // The machine type is read by parsing the PE image file of the running process, so we cache
     // its value since the operation expensive.
@@ -228,6 +272,10 @@ namespace ChromeDebug {
     private Nullable<LowLevelTypes.PEB> cachedPeb;
     private Nullable<LowLevelTypes.RTL_USER_PROCESS_PARAMETERS> cachedProcessParams;
     private string cachedCommandLine;
+
+    ~ProcessDetail() {
+      Dispose();
+    }
 
     public void Dispose() {
       if (processHandle != IntPtr.Zero)

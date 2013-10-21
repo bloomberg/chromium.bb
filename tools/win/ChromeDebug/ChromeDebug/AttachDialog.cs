@@ -127,8 +127,10 @@ namespace ChromeDebug {
         item.Title = p.MainWindowTitle;
         item.Exe = p.ProcessName;
         if (item.CmdLineArgs != null)
-          item.Category = DetermineProcessCategory(item.CmdLineArgs);
+          item.Category = DetermineProcessCategory(item.Detail.Win32ProcessImagePath, 
+                                                   item.CmdLineArgs);
 
+        Icon icon = item.Detail.SmallIcon;
         List<ProcessViewItem> items = loadedProcessTable[item.Category];
         item.Group = processGroups[item.Category];
         items.Add(item);
@@ -147,11 +149,11 @@ namespace ChromeDebug {
 
     // Using a heuristic based on the command line, tries to determine what type of process this
     // is.
-    private ProcessCategory DetermineProcessCategory(string[] cmdline) {
+    private ProcessCategory DetermineProcessCategory(string imagePath, string[] cmdline) {
       if (cmdline == null || cmdline.Length == 0)
         return ProcessCategory.Other;
 
-      string file = Path.GetFileName(cmdline[0]);
+      string file = Path.GetFileName(imagePath);
       if (file.Equals("delegate_execute.exe", StringComparison.CurrentCultureIgnoreCase))
         return ProcessCategory.DelegateExecute;
       else if (file.Equals("chrome.exe", StringComparison.CurrentCultureIgnoreCase)) {
@@ -173,13 +175,19 @@ namespace ChromeDebug {
 
     private void InsertCategoryItems(ProcessCategory category) {
       foreach (ProcessViewItem item in loadedProcessTable[category]) {
-        item.SubItems.Add(item.Exe);
+        item.Text = item.Exe;
         item.SubItems.Add(item.ProcessId.ToString());
         item.SubItems.Add(item.Title);
         item.SubItems.Add(item.MachineType.ToString());
         item.SubItems.Add(item.SessionId.ToString());
         item.SubItems.Add(item.DisplayCmdLine);
         listViewProcesses.Items.Add(item);
+
+        Icon icon = item.Detail.SmallIcon;
+        if (icon != null) {
+          item.ImageList.Images.Add(icon);
+          item.ImageIndex = item.ImageList.Images.Count - 1;
+        }
       }
     }
 
@@ -196,9 +204,8 @@ namespace ChromeDebug {
       listViewProcesses.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
 
       // Finally, iterate over each column, and resize those columns that just got smaller.
-      listViewProcesses.Columns[0].Width = 0;
       int total = 0;
-      for (int i = 1; i < listViewProcesses.Columns.Count; ++i) {
+      for (int i = 0; i < listViewProcesses.Columns.Count; ++i) {
         // Resize to the largest of the two, but don't let it go over a pre-defined maximum.
         int max = Math.Max(listViewProcesses.Columns[i].Width, widths[i]);
         int capped = Math.Min(max, 300);
@@ -216,6 +223,8 @@ namespace ChromeDebug {
 
     private void RepopulateListView() {
       listViewProcesses.Items.Clear();
+      listViewProcesses.SmallImageList = new ImageList();
+      listViewProcesses.SmallImageList.ImageSize = new Size(16, 16);
 
       ReloadNativeProcessInfo();
 

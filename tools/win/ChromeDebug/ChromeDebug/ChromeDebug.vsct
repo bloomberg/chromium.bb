@@ -21,6 +21,10 @@
   <!--This header contains the command ids for the menus provided by the shell. -->
   <Extern href="vsshlids.h"/>
 
+  <!--These headers contain the menu guids for attaching commands to the debug menu. -->
+  <Extern href="VSDbgCmd.h"/>
+  <Extern href="VSDebugGuids.h"/>
+
 
 
 
@@ -44,7 +48,7 @@
     <Groups>
 
       <Group guid="guidChromeDebugCmdSet" id="MyMenuGroup" priority="0x0600">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+        <Parent guid="guidVSDebugGroup" id="IDM_DEBUG_MENU"/>
       </Group>
       
 

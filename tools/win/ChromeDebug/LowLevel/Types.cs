@@ -102,6 +102,28 @@ namespace ChromeDebug.LowLevel {
     public enum PROCESSINFOCLASS : int {
       PROCESS_BASIC_INFORMATION = 0
     };
+
+    [Flags]
+    public enum SHGFI : uint {
+      Icon = 0x000000100,
+      DisplayName = 0x000000200,
+      TypeName = 0x000000400,
+      Attributes = 0x000000800,
+      IconLocation = 0x000001000,
+      ExeType = 0x000002000,
+      SysIconIndex = 0x000004000,
+      LinkOverlay = 0x000008000,
+      Selected = 0x000010000,
+      Attr_Specified = 0x000020000,
+      LargeIcon = 0x000000000,
+      SmallIcon = 0x000000001,
+      OpenIcon = 0x000000002,
+      ShellIconSize = 0x000000004,
+      PIDL = 0x000000008,
+      UseFileAttributes = 0x000000010,
+      AddOverlays = 0x000000020,
+      OverlayIndex = 0x000000040,
+    }   
     #endregion
 
     #region Structures
@@ -172,6 +194,26 @@ namespace ChromeDebug.LowLevel {
       public IntPtr PebBaseAddress { get { return pebBaseAddress; } }
       public UIntPtr UniqueProcessId { get { return uniqueProcessId; } }
     }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct SHFILEINFO {
+      // C# doesn't support overriding the default constructor of value types, so we need to use
+      // a dummy constructor.
+      public SHFILEINFO(bool dummy) {
+        hIcon = IntPtr.Zero;
+        iIcon = 0;
+        dwAttributes = 0;
+        szDisplayName = "";
+        szTypeName = "";
+      }
+      public IntPtr hIcon;
+      public int iIcon;
+      public uint dwAttributes;
+      [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+      public string szDisplayName;
+      [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
+      public string szTypeName;
+    };
     #endregion
   }
 }

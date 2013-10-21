@@ -61,5 +61,12 @@ namespace ChromeDebug.LowLevel {
                                                    LowLevelTypes.FileCreationDisposition dwDisp,
                                                    LowLevelTypes.FileFlagsAndAttributes dwFlags,
                                                    IntPtr hTemplateFile);
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    public static extern IntPtr SHGetFileInfo(string pszPath,
+                                              uint dwFileAttributes,
+                                              ref LowLevelTypes.SHFILEINFO psfi,
+                                              uint cbFileInfo,
+                                              uint uFlags);
   }
 }
