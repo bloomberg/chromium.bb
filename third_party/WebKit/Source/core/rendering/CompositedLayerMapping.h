@@ -138,7 +138,6 @@ public:
     void animationFinished(const String& name);
 
     void suspendAnimations(double time = 0);
-    void resumeAnimations();
 
     IntRect compositedBounds() const;
     void setCompositedBounds(const IntRect&);

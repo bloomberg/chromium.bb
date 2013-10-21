@@ -1894,11 +1894,6 @@ void CompositedLayerMapping::suspendAnimations(double time)
     m_graphicsLayer->suspendAnimations(time);
 }
 
-void CompositedLayerMapping::resumeAnimations()
-{
-    m_graphicsLayer->resumeAnimations();
-}
-
 IntRect CompositedLayerMapping::compositedBounds() const
 {
     return m_compositedBounds;

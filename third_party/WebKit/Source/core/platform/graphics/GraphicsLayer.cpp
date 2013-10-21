@@ -1051,11 +1051,6 @@ void GraphicsLayer::suspendAnimations(double wallClockTime)
     platformLayer()->suspendAnimations(monotonicTime);
 }
 
-void GraphicsLayer::resumeAnimations()
-{
-    platformLayer()->resumeAnimations(monotonicallyIncreasingTime());
-}
-
 WebLayer* GraphicsLayer::platformLayer() const
 {
     return m_layer->layer();

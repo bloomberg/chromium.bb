@@ -416,38 +416,6 @@ unsigned Internals::numberOfActiveAnimations() const
     return 0;
 }
 
-void Internals::suspendAnimations(Document* document, ExceptionState& es) const
-{
-    if (!document || !document->frame()) {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
-        return;
-    }
-
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-        AnimationController* controller = document->frame()->animation();
-        if (!controller)
-            return;
-
-        controller->suspendAnimations();
-    }
-}
-
-void Internals::resumeAnimations(Document* document, ExceptionState& es) const
-{
-    if (!document || !document->frame()) {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
-        return;
-    }
-
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-        AnimationController* controller = document->frame()->animation();
-        if (!controller)
-            return;
-
-        controller->resumeAnimations();
-    }
-}
-
 void Internals::pauseAnimations(double pauseTime, ExceptionState& es)
 {
     if (pauseTime < 0) {

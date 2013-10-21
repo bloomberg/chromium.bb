@@ -61,10 +61,6 @@ public:
 
     AnimationControllerPrivate* animationController() const { return m_animationController; }
 
-    void suspendAnimations();
-    void resumeAnimations();
-    bool suspended() const { return m_suspended; }
-
     bool hasAnimations() const  { return !m_transitions.isEmpty() || !m_keyframeAnimations.isEmpty(); }
 
     bool isAnimatingProperty(CSSPropertyID, bool acceleratedOnly, bool isRunningNow) const;
@@ -80,7 +76,6 @@ public:
 private:
     CompositeAnimation(AnimationControllerPrivate* animationController)
         : m_animationController(animationController)
-        , m_suspended(false)
     {
     }
 
@@ -94,7 +89,6 @@ private:
     CSSPropertyTransitionsMap m_transitions;
     AnimationNameMap m_keyframeAnimations;
     Vector<AtomicString> m_keyframeAnimationOrderList;
-    bool m_suspended;
 };
 
 } // namespace WebCore

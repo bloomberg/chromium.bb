@@ -66,8 +66,6 @@
 
     // CSS Animation and Transition testing.
     unsigned long numberOfActiveAnimations();
-    [RaisesException] void suspendAnimations(Document document);
-    [RaisesException] void resumeAnimations(Document document);
     [RaisesException] void pauseAnimations(double pauseTime);
 
     [RaisesException] Node nextSiblingByWalker(Node node);

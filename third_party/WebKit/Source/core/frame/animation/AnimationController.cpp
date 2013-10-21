@@ -74,13 +74,12 @@ PassRefPtr<CompositeAnimation> AnimationControllerPrivate::accessCompositeAnimat
 
 bool AnimationControllerPrivate::clear(RenderObject* renderer)
 {
-    // Return false if we didn't do anything OR we are suspended (so we don't try to
-    // do a setNeedsStyleRecalc() when suspended).
+    // Return false if we didn't do anything.
     PassRefPtr<CompositeAnimation> animation = m_compositeAnimations.take(renderer);
     if (!animation)
         return false;
     animation->clearRenderer();
-    return !animation->suspended();
+    return true;
 }
 
 void AnimationControllerPrivate::updateAnimations(double& timeToNextService, double& timeToNextEvent, SetNeedsStyleRecalc callSetNeedsStyleRecalc/* = DoNotCallSetNeedsStyleRecalc*/)
@@ -92,7 +91,7 @@ void AnimationControllerPrivate::updateAnimations(double& timeToNextService, dou
     RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
     for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
         CompositeAnimation* compAnim = it->value.get();
-        if (!compAnim->suspended() && compAnim->hasAnimations()) {
+        if (compAnim->hasAnimations()) {
             double t = compAnim->timeToNextService();
             if (t != -1 && (t < minTimeToNextService || minTimeToNextService == -1))
                 minTimeToNextService = t;
@@ -125,7 +124,7 @@ void AnimationControllerPrivate::scheduleServiceForRenderer(RenderObject* render
     double timeToNextEvent = -1;
 
     RefPtr<CompositeAnimation> compAnim = m_compositeAnimations.get(renderer);
-    if (!compAnim->suspended() && compAnim->hasAnimations()) {
+    if (compAnim->hasAnimations()) {
         timeToNextService = compAnim->timeToNextService();
         timeToNextEvent = compAnim->timeToNextEvent();
     }
@@ -286,56 +285,6 @@ bool AnimationControllerPrivate::isRunningAcceleratedAnimationOnRenderer(RenderO
         return false;
 
     return animation->isAnimatingProperty(property, true, isRunningNow);
-}
-
-void AnimationControllerPrivate::suspendAnimations()
-{
-    suspendAnimationsForDocument(m_frame->document());
-
-    // Traverse subframes
-    for (Frame* child = m_frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
-        child->animation()->suspendAnimations();
-}
-
-void AnimationControllerPrivate::resumeAnimations()
-{
-    resumeAnimationsForDocument(m_frame->document());
-
-    // Traverse subframes
-    for (Frame* child = m_frame->tree()->firstChild(); child; child = child->tree()->nextSibling())
-        child->animation()->resumeAnimations();
-}
-
-void AnimationControllerPrivate::suspendAnimationsForDocument(Document* document)
-{
-    setBeginAnimationUpdateTime(cBeginAnimationUpdateTimeNotSet);
-
-    RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
-    for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
-        RenderObject* renderer = it->key;
-        if (renderer->document() == document) {
-            CompositeAnimation* compAnim = it->value.get();
-            compAnim->suspendAnimations();
-        }
-    }
-
-    scheduleService();
-}
-
-void AnimationControllerPrivate::resumeAnimationsForDocument(Document* document)
-{
-    setBeginAnimationUpdateTime(cBeginAnimationUpdateTimeNotSet);
-
-    RenderObjectAnimationMap::const_iterator animationsEnd = m_compositeAnimations.end();
-    for (RenderObjectAnimationMap::const_iterator it = m_compositeAnimations.begin(); it != animationsEnd; ++it) {
-        RenderObject* renderer = it->key;
-        if (renderer->document() == document) {
-            CompositeAnimation* compAnim = it->value.get();
-            compAnim->resumeAnimations();
-        }
-    }
-
-    scheduleService();
 }
 
 void AnimationControllerPrivate::pauseAnimationsForTesting(double t)
@@ -567,29 +516,9 @@ bool AnimationController::isRunningAcceleratedAnimationOnRenderer(RenderObject* 
     return m_data->isRunningAcceleratedAnimationOnRenderer(renderer, property, isRunningNow);
 }
 
-void AnimationController::suspendAnimations()
-{
-    m_data->suspendAnimations();
-}
-
-void AnimationController::resumeAnimations()
-{
-    m_data->resumeAnimations();
-}
-
 void AnimationController::serviceAnimations()
 {
     m_data->serviceAnimations();
-}
-
-void AnimationController::suspendAnimationsForDocument(Document* document)
-{
-    m_data->suspendAnimationsForDocument(document);
-}
-
-void AnimationController::resumeAnimationsForDocument(Document* document)
-{
-    m_data->resumeAnimationsForDocument(document);
 }
 
 void AnimationController::beginAnimationUpdate()

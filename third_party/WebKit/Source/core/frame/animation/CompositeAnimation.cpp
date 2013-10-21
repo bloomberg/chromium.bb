@@ -413,56 +413,6 @@ PassRefPtr<KeyframeAnimation> CompositeAnimation::getAnimationForProperty(CSSPro
     return retval;
 }
 
-void CompositeAnimation::suspendAnimations()
-{
-    if (m_suspended)
-        return;
-
-    m_suspended = true;
-
-    if (!m_keyframeAnimations.isEmpty()) {
-        AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
-        for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
-            if (KeyframeAnimation* anim = it->value.get())
-                anim->updatePlayState(AnimPlayStatePaused);
-        }
-    }
-    if (!m_transitions.isEmpty()) {
-        CSSPropertyTransitionsMap::const_iterator transitionsEnd = m_transitions.end();
-        for (CSSPropertyTransitionsMap::const_iterator it = m_transitions.begin(); it != transitionsEnd; ++it) {
-            ImplicitAnimation* anim = it->value.get();
-            if (anim && anim->hasStyle())
-                anim->updatePlayState(AnimPlayStatePaused);
-        }
-    }
-}
-
-void CompositeAnimation::resumeAnimations()
-{
-    if (!m_suspended)
-        return;
-
-    m_suspended = false;
-
-    if (!m_keyframeAnimations.isEmpty()) {
-        AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
-        for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
-            KeyframeAnimation* anim = it->value.get();
-            if (anim && anim->playStatePlaying())
-                anim->updatePlayState(AnimPlayStatePlaying);
-        }
-    }
-
-    if (!m_transitions.isEmpty()) {
-        CSSPropertyTransitionsMap::const_iterator transitionsEnd = m_transitions.end();
-        for (CSSPropertyTransitionsMap::const_iterator it = m_transitions.begin(); it != transitionsEnd; ++it) {
-            ImplicitAnimation* anim = it->value.get();
-            if (anim && anim->hasStyle())
-                anim->updatePlayState(AnimPlayStatePlaying);
-        }
-    }
-}
-
 void CompositeAnimation::overrideImplicitAnimations(CSSPropertyID property)
 {
     CSSPropertyTransitionsMap::const_iterator end = m_transitions.end();

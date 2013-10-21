@@ -397,10 +397,8 @@ void AnimationBase::updatePlayState(EAnimPlayState playState)
     if (!m_compAnim)
         return;
 
-    // When we get here, we can have one of 4 desired states: running, paused, suspended, paused & suspended.
-    // The state machine can be in one of two states: running, paused.
     // Set the state machine to the desired state.
-    bool pause = playState == AnimPlayStatePaused || m_compAnim->suspended();
+    bool pause = playState == AnimPlayStatePaused;
 
     if (pause == paused() && !isNew())
         return;

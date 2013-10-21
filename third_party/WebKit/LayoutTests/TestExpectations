@@ -282,10 +282,7 @@ crbug.com/258896 virtual/web-animations-css/animations/change-keyframes-name.htm
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-iteration-count-non-integer.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/fill-mode-reverse.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/play-state.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/play-state-suspend.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/3d/state-at-end-event-transform.html [ ImageOnlyFailure Pass ]
-crbug.com/258896 virtual/web-animations-css/animations/suspend-resume-animation.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/suspend-transform-animation.html [ ImageOnlyFailure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-1.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
 crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
@@ -388,15 +385,6 @@ crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-lr.html [
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure Pass ]
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-horizontal-bt.html [ Failure Pass ]
 
-# Added in WK r71424
-# We should probably just skip this test, everyone else has since
-# https://bugs.webkit.org/show_bug.cgi?id=49182
-crbug.com/62138 animations/stop-animation-on-suspend.html [ Failure Pass Timeout ]
-crbug.com/62138 virtual/web-animations-css/animations/stop-animation-on-suspend.html [ Failure Pass Timeout ]
-crbug.com/62138 virtual/threaded/animations/stop-animation-on-suspend.html [ Pass Failure Timeout Crash ]
-
-crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Failure Pass ]
-
 webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ Skip ]
 
 crbug.com/66087 [ Win ] http/tests/misc/no-last-modified.html [ Pass Timeout ]
@@ -414,7 +402,6 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 webkit.org/b/52063 [ Win ] http/tests/navigation/ping-cross-origin.html [ Pass Failure Timeout ]
 
 # These were flaky, now failing more consistently after r75169.
-webkit.org/b/52061 [ Debug ] transitions/suspend-transform-transition.html [ ImageOnlyFailure Pass ]
 webkit.org/b/52061 [ Debug ] transitions/change-values-during-transition.html [ Failure Pass ]
 webkit.org/b/52061 [ Linux Release ] transitions/change-values-during-transition.html [ Failure Pass ]
 
@@ -784,7 +771,6 @@ crbug.com/248938 virtual/threaded/animations/animation-direction-reverse.html [ 
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/animations/suspend-resume-animation.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 [ Mac ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Pass Failure ]
@@ -793,10 +779,8 @@ crbug.com/248938 virtual/threaded/animations/opacity-transform-animation.html [ 
 crbug.com/248938 [ Mac Linux ] virtual/threaded/animations/additive-transform-animations.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/animations/fill-mode-forwards.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/animations/play-state-suspend.html [ Pass Failure ]
 crbug.com/248938 [ Mac Linux ] virtual/threaded/animations/missing-values-first-keyframe.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
-crbug.com/248938 virtual/threaded/animations/suspend-resume-animation-events.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/animation-delay-changed.html [ Pass Failure ]
@@ -807,7 +791,6 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.h
 crbug.com/248938 virtual/threaded/transitions/hang-with-bad-transition-list.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/transitions/suspend-transform-transition.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/transitions/start-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/opacity-transition-zindex.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
@@ -848,7 +831,6 @@ crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-combined-missing.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-transform-parameters.html [ Crash ]
-crbug.com/243353 animations/suspend-resume-animation.html [ Failure Pass ]
 crbug.com/243353 animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
@@ -857,7 +839,6 @@ crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Fail
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
 crbug.com/243683 [ Linux Mac Win ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
-crbug.com/243353 animations/play-state-suspend.html [ Failure Pass ]
 crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure Pass ]
 crbug.com/243736 storage/websql/quota-tracking.html [ Failure Pass ]

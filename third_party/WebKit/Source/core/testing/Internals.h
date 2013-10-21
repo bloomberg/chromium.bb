@@ -104,8 +104,6 @@ public:
 
     // CSS Animation / Transition testing.
     unsigned numberOfActiveAnimations() const;
-    void suspendAnimations(Document*, ExceptionState&) const;
-    void resumeAnimations(Document*, ExceptionState&) const;
     void pauseAnimations(double pauseTime, ExceptionState&);
 
     PassRefPtr<Element> createContentElement(ExceptionState&);

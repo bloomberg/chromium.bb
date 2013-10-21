@@ -230,7 +230,6 @@ public:
     void removeAnimation(int animationId);
 
     void suspendAnimations(double time);
-    void resumeAnimations();
 
     // Layer contents
     void setContentsToImage(Image*);
