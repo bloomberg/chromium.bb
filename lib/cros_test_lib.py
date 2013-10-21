@@ -467,7 +467,7 @@ class TestCase(unittest.TestCase):
   def setUp(self):
     self.__saved_env__ = os.environ.copy()
     self.__saved_cwd__ = os.getcwd()
-    self.__saved_umask__ = os.umask(022)
+    self.__saved_umask__ = os.umask(0o22)
     for x in self.ENVIRON_VARIABLE_SUPPRESSIONS:
       os.environ.pop(x, None)
 

@@ -166,7 +166,7 @@ def _RebuildRepoCheckout(target_root, reference_map,
   projects = _FilterNonExistentProjects(proj_root, projects)
   projects = list(sorted(projects))
 
-  if not osutils.SafeMakedirs(alternates_dir, 0775):
+  if not osutils.SafeMakedirs(alternates_dir, 0o775):
     # We know the directory exists; thus cleanse out
     # dead alternates.
     _CleanAlternates(projects, alternates_dir)

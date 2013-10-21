@@ -109,7 +109,7 @@ exec \
   os.rename(wrappath, wrappath + '.elf')
   with open(wrappath, 'w') as f:
     f.write(wrapper % replacements)
-  os.chmod(wrappath, 0o0755)
+  os.chmod(wrappath, 0o755)
 
 
 def ParseLdPaths(str_ldpaths, root='', path=None):

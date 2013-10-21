@@ -282,7 +282,7 @@ def WritePkgData(image_dir, pkgname, license_text, homepage):
     dict(name=pkgname, license=license_text, url=homepage))
   base = os.path.join(image_dir, PKG_DATA_TARGET_DIR.lstrip('/'), pkgname)
   shutil.rmtree(base, ignore_errors=True)
-  os.makedirs(base, 0755)
+  os.makedirs(base, 0o755)
   with open(os.path.join(base, 'license_text'), 'w') as f:
     f.write(data)
 

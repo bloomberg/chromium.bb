@@ -497,7 +497,7 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
   staging directory.
   """
   osutils.SafeMakedirs(staging_dir)
-  os.chmod(staging_dir, 0755)
+  os.chmod(staging_dir, 0o755)
   if options.build_dir:
     with _StripBinContext(options) as strip_bin:
       strip_flags = (None if options.strip_flags is None else

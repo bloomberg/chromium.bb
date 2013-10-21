@@ -156,7 +156,7 @@ class FileLock(_Lock):
     # the threading race between open and fcntl setting; this is
     # extremely paranoid code, but might as well.
     cloexec = getattr(os, 'O_CLOEXEC', 0)
-    return os.open(self.path, os.W_OK|os.O_CREAT|cloexec, 0664)
+    return os.open(self.path, os.W_OK|os.O_CREAT|cloexec, 0o664)
 
 
 class ProcessLock(_Lock):

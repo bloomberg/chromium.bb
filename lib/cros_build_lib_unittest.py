@@ -87,7 +87,7 @@ class PopenMock(partial_mock.PartialCmdMock):
         script,
         ['#!/bin/bash\n', 'cat %s\n' % stdout, 'cat %s >&2\n' % stderr,
          'exit %s' % result.returncode])
-    os.chmod(script, 0700)
+    os.chmod(script, 0o700)
     kwargs['cwd'] = self.tempdir
     self.backup['__init__'](inst, [script, '--'] + cmd, *args, **kwargs)
 
@@ -511,7 +511,7 @@ class TestRetries(cros_test_lib.MoxTestCase):
         "print val\n"
         "sys.exit(0 if val == stop_val else 1)\n" % paths)
 
-    os.chmod(path, 0755)
+    os.chmod(path, 0o755)
 
     def _setup_counters(start, stop, sleep, sleep_cnt):
       self.mox.ResetAll()

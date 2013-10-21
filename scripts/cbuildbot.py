@@ -1359,7 +1359,7 @@ def main(argv):
   cros_build_lib.STRICT_SUDO = True
 
   # Set umask to 022 so files created by buildbot are readable.
-  os.umask(022)
+  os.umask(0o22)
 
   parser = _CreateParser()
   (options, args) = _ParseCommandLine(parser, argv)

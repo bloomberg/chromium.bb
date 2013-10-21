@@ -145,7 +145,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
                             header.name + '.sym')
     osutils.SafeMakedirs(os.path.dirname(sym_file))
     os.rename(temp.name, sym_file)
-    os.chmod(sym_file, 0644)
+    os.chmod(sym_file, 0o644)
     temp.delete = False
 
   return num_errors.value

@@ -103,7 +103,7 @@ I am the first commit.
     os.chdir(self.default_cwd)
     # Disallow write so as to smoke out any invalid writes to
     # cwd.
-    os.chmod(self.default_cwd, 0500)
+    os.chmod(self.default_cwd, 0o500)
 
   def tearDown(self):
     if hasattr(self, 'original_cwd'):

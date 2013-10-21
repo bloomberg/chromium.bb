@@ -559,7 +559,7 @@ exec "${basedir}/%(relroot)s%(path)s" "$@"
   else:
     osutils.SafeMakedirs(os.path.dirname(root_wrapper))
   osutils.WriteFile(root_wrapper, wrapper)
-  os.chmod(root_wrapper, 0755)
+  os.chmod(root_wrapper, 0o755)
 
 
 def FileIsCrosSdkElf(elf):
@@ -810,7 +810,7 @@ def _ProcessSysrootWrapper(_target, output_dir, srcpath):
   # Can't update the wrapper in place since it's a hardlink to a file in /.
   os.unlink(sysroot_wrapper)
   osutils.WriteFile(sysroot_wrapper, '\n'.join(contents))
-  os.chmod(sysroot_wrapper, 0755)
+  os.chmod(sysroot_wrapper, 0o755)
 
 
 def _ProcessDistroCleanups(target, output_dir):

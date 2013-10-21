@@ -106,7 +106,7 @@ def SafeUnlink(path, sudo=False):
   return False
 
 
-def SafeMakedirs(path, mode=0775, sudo=False):
+def SafeMakedirs(path, mode=0o775, sudo=False):
   """Make parent directories if needed.  Ignore if existing.
 
   Arguments:
@@ -272,7 +272,7 @@ def _TempDirSetup(self, prefix='tmp', set_global=False, base_dir=None):
   # Stash the old tempdir that was used so we can
   # switch it back on the way out.
   self.tempdir = tempfile.mkdtemp(prefix=prefix, dir=base_dir)
-  os.chmod(self.tempdir, 0700)
+  os.chmod(self.tempdir, 0o700)
 
   if set_global:
     with tempfile._once_lock:

@@ -733,7 +733,7 @@ def ArchiveFile(file_to_archive, archive_dir):
   if archive_dir:
     archived_file = os.path.join(archive_dir, filename)
     shutil.copy(file_to_archive, archived_file)
-    os.chmod(archived_file, 0644)
+    os.chmod(archived_file, 0o644)
 
   return filename
 
@@ -1050,7 +1050,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
 
   # Fix permissions and ownership on debug tarball.
   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tgz])
-  os.chmod(debug_tgz, 0644)
+  os.chmod(debug_tgz, 0o644)
 
   return os.path.basename(debug_tgz)
 

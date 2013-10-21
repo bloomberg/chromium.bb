@@ -117,8 +117,8 @@ class Copier(object):
 
   DEFAULT_BLACKLIST = (r'(^|.*/)\.svn($|/.*)',)
 
-  def __init__(self, strip_bin=None, strip_flags=None, default_mode=0644,
-               dir_mode=0755, exe_mode=0755, blacklist=None):
+  def __init__(self, strip_bin=None, strip_flags=None, default_mode=0o644,
+               dir_mode=0o755, exe_mode=0o755, blacklist=None):
     """Initialization.
 
     Arguments:
@@ -306,7 +306,7 @@ _COPY_PATHS = (
        cond=C.GypSet(_USE_DRM)),
   Path('chrome',
        exe=True),
-  Path('chrome_sandbox', mode=04755,
+  Path('chrome_sandbox', mode=0o4755,
        dest=_CHROME_SANDBOX_DEST),
   Path('chrome-wrapper'),
   Path('chrome_100_percent.pak'),
@@ -399,7 +399,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
       STAGING_FLAGS.
     strip_flags: A list of flags to pass to the tool used to strip binaries.
   """
-  os.mkdir(os.path.join(staging_dir, 'plugins'), 0755)
+  os.mkdir(os.path.join(staging_dir, 'plugins'), 0o755)
 
   if gyp_defines is None:
     gyp_defines = {}

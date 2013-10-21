@@ -490,7 +490,7 @@ class PathVerifyTest(cros_test_lib.MockTempDirTestCase,
     )
     abs_paths = [os.path.join(self.tempdir, relpath) for relpath in file_list]
     for p in abs_paths:
-      osutils.Touch(p, makedirs=True, mode=0755)
+      osutils.Touch(p, makedirs=True, mode=0o755)
 
     with cros_test_lib.LoggingCapturer() as logs:
       cros_chrome_sdk.ChromeSDKCommand._VerifyGoma(None)
