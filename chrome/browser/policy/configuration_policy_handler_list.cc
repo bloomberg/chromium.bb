@@ -10,6 +10,7 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chrome/browser/policy/policy_error_map.h"
@@ -473,17 +474,14 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(new SyncPolicyHandler(prefs::kSyncManaged));
   handlers_.push_back(new URLBlacklistPolicyHandler(prefs::kUrlBlacklist));
 
-  handlers_.push_back(
-      new ExtensionListPolicyHandler(key::kExtensionInstallWhitelist,
-                                     prefs::kExtensionInstallAllowList,
-                                     false));
-  handlers_.push_back(
-      new ExtensionListPolicyHandler(key::kExtensionInstallBlacklist,
-                                     prefs::kExtensionInstallDenyList,
-                                     true));
-  handlers_.push_back(new ExtensionInstallForcelistPolicyHandler(
-      prefs::kExtensionInstallForceList));
-  handlers_.push_back(new ExtensionURLPatternListPolicyHandler(
+  handlers_.push_back(new extensions::ExtensionListPolicyHandler(
+      key::kExtensionInstallWhitelist,
+      prefs::kExtensionInstallAllowList,
+      false));
+  handlers_.push_back(new extensions::ExtensionListPolicyHandler(
+      key::kExtensionInstallBlacklist, prefs::kExtensionInstallDenyList, true));
+  handlers_.push_back(new extensions::ExtensionInstallForcelistPolicyHandler());
+  handlers_.push_back(new extensions::ExtensionURLPatternListPolicyHandler(
       key::kExtensionInstallSources, prefs::kExtensionAllowedInstallSites));
   handlers_.push_back(new StringToIntEnumListPolicyHandler(
       key::kExtensionAllowedTypes,
@@ -491,10 +489,10 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       kExtensionAllowedTypesMap,
       kExtensionAllowedTypesMap + arraysize(kExtensionAllowedTypesMap)));
 #if defined(OS_CHROMEOS)
-  handlers_.push_back(
-      new ExtensionListPolicyHandler(key::kAttestationExtensionWhitelist,
-                                     prefs::kAttestationExtensionWhitelist,
-                                     false));
+  handlers_.push_back(new extensions::ExtensionListPolicyHandler(
+      key::kAttestationExtensionWhitelist,
+      prefs::kAttestationExtensionWhitelist,
+      false));
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)

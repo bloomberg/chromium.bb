@@ -868,6 +868,7 @@
         'browser/extensions/extension_icon_image_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
         'browser/extensions/extension_info_map_unittest.cc',
+        'browser/extensions/policy_handlers_unittest.cc',
         'browser/extensions/extension_pref_value_map_unittest.cc',
         'browser/extensions/extension_prefs_unittest.cc',
         'browser/extensions/extension_prefs_unittest.h',

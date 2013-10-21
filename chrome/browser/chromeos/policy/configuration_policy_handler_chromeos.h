@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
 
+#include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "components/onc/onc_constants.h"
@@ -56,7 +57,8 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
 };
 
 // Maps the PinnedLauncherApps policy to the corresponding pref.
-class PinnedLauncherAppsPolicyHandler : public ExtensionListPolicyHandler {
+class PinnedLauncherAppsPolicyHandler
+    : public extensions::ExtensionListPolicyHandler {
  public:
   PinnedLauncherAppsPolicyHandler();
   virtual ~PinnedLauncherAppsPolicyHandler();

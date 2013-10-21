@@ -44,19 +44,13 @@ specific_include_rules = {
 
   r"configuration_policy_handler\.cc": [
     "+chrome/browser/chrome_notification_types.h",
-    "+chrome/browser/extensions/external_policy_loader.h",
     "+chrome/browser/policy/policy_path_parser.h",
     "+chrome/browser/prefs/session_startup_pref.h",
-    "+chrome/common/extensions/extension.h",
   ],
 
   r"configuration_policy_handler\.h": [
     "+chrome/browser/prefs/incognito_mode_prefs.h",
     "+chrome/common/content_settings.h",
-  ],
-
-  r"configuration_policy_handler_unittest\.cc": [
-    "+chrome/browser/extensions/external_policy_loader.h",
   ],
 
   r"configuration_policy_pref_store_unittest\.cc": [

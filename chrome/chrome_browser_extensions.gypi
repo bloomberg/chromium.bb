@@ -699,6 +699,8 @@
         'browser/extensions/extension_installer.h',
         'browser/extensions/extension_keybinding_registry.cc',
         'browser/extensions/extension_keybinding_registry.h',
+        'browser/extensions/policy_handlers.cc',
+        'browser/extensions/policy_handlers.h',
         'browser/extensions/extension_pref_store.cc',
         'browser/extensions/extension_pref_store.h',
         'browser/extensions/extension_pref_value_map.cc',
