@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_LOCAL_ACCOUNT_POLICY_SERVICE_H_
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -15,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
@@ -25,13 +23,14 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
+class CrosSettings;
 class DeviceSettingsService;
 class SessionManagerClient;
 }
 
 namespace policy {
 
-struct DeviceLocalAccount;
+class CloudPolicyClient;
 class DeviceLocalAccountPolicyStore;
 class DeviceManagementService;
 
@@ -40,31 +39,19 @@ class DeviceManagementService;
 class DeviceLocalAccountPolicyBroker {
  public:
   // |task_runner| is the runner for policy refresh tasks.
-  DeviceLocalAccountPolicyBroker(
-      const DeviceLocalAccount& account,
+  explicit DeviceLocalAccountPolicyBroker(
+      const std::string& user_id,
       scoped_ptr<DeviceLocalAccountPolicyStore> store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DeviceLocalAccountPolicyBroker();
 
-  // Initialize the broker, loading its |store_|.
-  void Initialize();
-
-  // For the difference between |account_id| and |user_id|, see the
-  // documentation of DeviceLocalAccount.
-  const std::string& account_id() const { return account_id_; }
   const std::string& user_id() const { return user_id_; }
-
-  scoped_refptr<chromeos::DeviceLocalAccountExternalPolicyLoader>
-      extension_loader() const { return extension_loader_; }
 
   CloudPolicyCore* core() { return &core_; }
   const CloudPolicyCore* core() const { return &core_; }
 
-  // Fire up the cloud connection for fetching policy for the account from the
-  // cloud if this is an enterprise-managed device.
-  void ConnectIfPossible(
-      chromeos::DeviceSettingsService* device_settings_service,
-      DeviceManagementService* device_management_service);
+  // Establish a cloud connection for the service.
+  void Connect(scoped_ptr<CloudPolicyClient> client);
 
   // Destroy the cloud connection, stopping policy refreshes.
   void Disconnect();
@@ -77,11 +64,8 @@ class DeviceLocalAccountPolicyBroker {
   std::string GetDisplayName() const;
 
  private:
-  const std::string account_id_;
   const std::string user_id_;
-  const scoped_ptr<DeviceLocalAccountPolicyStore> store_;
-  scoped_refptr<chromeos::DeviceLocalAccountExternalPolicyLoader>
-      extension_loader_;
+  scoped_ptr<DeviceLocalAccountPolicyStore> store_;
   CloudPolicyCore core_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyBroker);
@@ -109,8 +93,7 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
       chromeos::SessionManagerClient* session_manager_client,
       chromeos::DeviceSettingsService* device_settings_service,
       chromeos::CrosSettings* cros_settings,
-      scoped_refptr<base::SequencedTaskRunner> store_background_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   virtual ~DeviceLocalAccountPolicyService();
 
   // Initializes the cloud policy service connection.
@@ -135,32 +118,31 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
   virtual void OnStoreError(CloudPolicyStore* store) OVERRIDE;
 
  private:
-  typedef std::map<std::string, DeviceLocalAccountPolicyBroker*>
-      PolicyBrokerMap;
+  struct PolicyBrokerWrapper {
+    PolicyBrokerWrapper();
+    ~PolicyBrokerWrapper();
 
-  // Returns |true| if the directory in which force-installed extensions are
-  // cached for |account_id| is busy, either because a broker that was using
-  // this directory has not shut down completely yet or because the directory is
-  // being deleted.
-  bool IsExtensionCacheDirectoryBusy(const std::string& account_id);
+    // Return the |broker|, creating it first if necessary.
+    DeviceLocalAccountPolicyBroker* GetBroker();
 
-  // Starts any extension caches that are not running yet but can be started now
-  // because their cache directories are no longer busy.
-  void StartExtensionCachesIfPossible();
+    // Fire up the cloud connection for fetching policy for the account from the
+    // cloud if this is an enterprise-managed device.
+    void ConnectIfPossible();
 
-  // Checks whether a broker exists for |account_id|. If so, starts the broker's
-  // extension cache and returns |true|. Otherwise, returns |false|.
-  bool StartExtensionCacheForAccountIfPresent(const std::string& account_id);
+    // Destroy the cloud connection.
+    void Disconnect();
 
-  // Called back when any extension caches belonging to device-local accounts
-  // that no longer exist have been removed at start-up.
-  void OnOrphanedExtensionCachesDeleted();
+    // Delete the broker.
+    void DeleteBroker();
 
-  // Called back when the extension cache for |account_id| has been shut down.
-  void OnObsoleteExtensionCacheShutdown(const std::string& account_id);
+    std::string user_id;
+    std::string account_id;
+    DeviceLocalAccountPolicyService* parent;
+    DeviceLocalAccountPolicyBroker* broker;
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner;
+  };
 
-  // Called back when the extension cache for |account_id| has been removed.
-  void OnObsoleteExtensionCacheDeleted(const std::string& account_id);
+  typedef std::map<std::string, PolicyBrokerWrapper> PolicyBrokerMap;
 
   // Re-queries the list of defined device-local accounts from device settings
   // and updates |policy_brokers_| to match that list.
@@ -184,33 +166,16 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
   // The device-local account policy brokers, keyed by user ID.
   PolicyBrokerMap policy_brokers_;
 
-  // Whether a call to UpdateAccountList() is pending because |cros_settings_|
-  // are not trusted yet.
-  bool waiting_for_cros_settings_;
-
-  // Orphaned extension caches are removed at startup. This tracks the status of
-  // that process.
-  enum OrphanCacheDeletionState {
-    NOT_STARTED,
-    IN_PROGRESS,
-    DONE,
-  };
-  OrphanCacheDeletionState orphan_cache_deletion_state_;
-
-  // Account IDs whose extension cache directories are busy, either because a
-  // broker for the account has not shut down completely yet or because the
-  // directory is being deleted.
-  std::set<std::string> busy_extension_cache_directories_;
-
-  const scoped_refptr<base::SequencedTaskRunner> store_background_task_runner_;
-  const scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner_;
-
   ObserverList<Observer, true> observers_;
 
-  const scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       local_accounts_subscription_;
 
-  base::WeakPtrFactory<DeviceLocalAccountPolicyService> weak_factory_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
+  // Weak pointer factory for cros_settings_->PrepareTrustedValues() callbacks.
+  base::WeakPtrFactory<DeviceLocalAccountPolicyService>
+      cros_settings_callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyService);
 };

@@ -34,13 +34,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/extensions/external_pref_cache_loader.h"
-#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
@@ -65,13 +61,12 @@ const char ExternalProviderImpl::kKeepIfPresent[] = "keep_if_present";
 const char ExternalProviderImpl::kRequirePermissionsConsent[] =
     "require_permissions_consent";
 
-ExternalProviderImpl::ExternalProviderImpl(
-    VisitorInterface* service,
-    const scoped_refptr<ExternalLoader>& loader,
-    Profile* profile,
-    Manifest::Location crx_location,
-    Manifest::Location download_location,
-    int creation_flags)
+ExternalProviderImpl::ExternalProviderImpl(VisitorInterface* service,
+                                           ExternalLoader* loader,
+                                           Profile* profile,
+                                           Manifest::Location crx_location,
+                                           Manifest::Location download_location,
+                                           int creation_flags)
     : crx_location_(crx_location),
       download_location_(download_location),
       service_(service),
@@ -351,41 +346,16 @@ void ExternalProviderImpl::CreateExternalProviders(
     VisitorInterface* service,
     Profile* profile,
     ProviderCollection* provider_list) {
-  scoped_refptr<ExternalLoader> external_loader;
-  extensions::Manifest::Location crx_location = Manifest::INVALID_LOCATION;
-#if defined(OS_CHROMEOS)
-  const chromeos::User* user =
-      chromeos::UserManager::Get()->GetUserByProfile(profile);
-  if (user && policy::IsDeviceLocalAccountUser(user->email(), NULL)) {
-    policy::DeviceLocalAccountPolicyBroker* broker =
-        g_browser_process->browser_policy_connector()->
-            GetDeviceLocalAccountPolicyService()->
-                GetBrokerForUser(user->email());
-    if (broker) {
-      external_loader = broker->extension_loader();
-      crx_location = Manifest::EXTERNAL_POLICY;
-    } else {
-      NOTREACHED();
-    }
-  } else {
-    external_loader = new ExternalPolicyLoader(profile);
-  }
-#else
-  external_loader = new ExternalPolicyLoader(profile);
-#endif
-
   // Policies are mandatory so they can't be skipped with command line flag.
-  if (external_loader) {
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                external_loader,
-                profile,
-                crx_location,
-                Manifest::EXTERNAL_POLICY_DOWNLOAD,
-                Extension::NO_FLAGS)));
-  }
+  provider_list->push_back(
+      linked_ptr<ExternalProviderInterface>(
+          new ExternalProviderImpl(
+              service,
+              new ExternalPolicyLoader(profile),
+              profile,
+              Manifest::INVALID_LOCATION,
+              Manifest::EXTERNAL_POLICY_DOWNLOAD,
+              Extension::NO_FLAGS)));
 
   // In tests don't install extensions from default external sources.
   // It would only slowdown tests and make them flaky.

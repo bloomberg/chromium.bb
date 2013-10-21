@@ -32,22 +32,6 @@ struct DeviceLocalAccount {
   ~DeviceLocalAccount();
 
   Type type;
-  // A device-local account has two identifiers:
-  // * The |account_id| is chosen by the entity that defines the device-local
-  //   account. The only constraints are that the |account_id| be unique and,
-  //   for legacy reasons, it contain an @ symbol.
-  // * The |user_id| is a synthesized identifier that is guaranteed to be
-  //   unique, contain an @ symbol, not collide with the |user_id| of any other
-  //   user on the device (such as regular users or supervised users) and be
-  //   identifiable as belonging to a device-local account by.
-  // The |account_id| is primarily used by policy code: If device policy defines
-  // a device-local account with a certain |account_id|, the user policy for
-  // that account has to be fetched by referencing the same |account_id|.
-  // The |user_id| is passed to the chromeos::UserManager where it becomes part
-  // of the global user list on the device. The |account_id| would not be safe
-  // to use here as it is a free-form identifier that could conflict with
-  // another |user_id| on the device and cannot be easily identified as
-  // belonging to a device-local account.
   std::string account_id;
   std::string user_id;
   std::string kiosk_app_id;
