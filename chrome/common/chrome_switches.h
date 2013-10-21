@@ -176,6 +176,7 @@ extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDeviceDiscoveryNotifications[];
 extern const char kEnableDnsProbes[];
 extern const char kEnableDomDistiller[];
+extern const char kEnableEphemeralApps[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];

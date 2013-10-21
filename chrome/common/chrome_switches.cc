@@ -599,6 +599,10 @@ const char kEnableDomDistiller[]               = "enable-dom-distiller";
 const char kEasyOffStoreExtensionInstall[]  =
     "easy-off-store-extension-install";
 
+// Enables experimentation with ephemeral apps, which are launched without
+// installing in Chrome.
+const char kEnableEphemeralApps[]           = "enable-ephemeral-apps";
+
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";

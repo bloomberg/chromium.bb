@@ -1783,6 +1783,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableStreamlinedHostedApps)
   },
   {
+    "enable-ephemeral-apps",
+    IDS_FLAGS_ENABLE_EPHEMERAL_APPS_NAME,
+    IDS_FLAGS_ENABLE_EPHEMERAL_APPS_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableEphemeralApps)
+  },
+  {
     "enable-service-worker",
     IDS_FLAGS_ENABLE_SERVICE_WORKER_NAME,
     IDS_FLAGS_ENABLE_SERVICE_WORKER_DESCRIPTION,
