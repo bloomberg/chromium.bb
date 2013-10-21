@@ -181,8 +181,6 @@ void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nod
         *errorString = "Not in the compositing mode";
         return;
     }
-    // FIXME: when inspector layer access is made asynchronous, this will probably need to be changed.
-    compositor->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
     if (!nodeId) {
         buildLayerIdToNodeIdMap(errorString, compositor->rootRenderLayer(), layerIdToNodeIdMap);
         gatherGraphicsLayers(compositor->rootGraphicsLayer(), layerIdToNodeIdMap, layers);
@@ -199,7 +197,6 @@ void InspectorLayerTreeAgent::getLayers(ErrorString* errorString, const int* nod
         return;
     }
     RenderLayer* enclosingLayer = renderer->enclosingLayer();
-    ASSERT(enclosingLayer->enclosingCompositingLayer());
     GraphicsLayer* enclosingGraphicsLayer = enclosingLayer->enclosingCompositingLayer()->compositedLayerMapping()->childForSuperlayers();
     buildLayerIdToNodeIdMap(errorString, enclosingLayer, layerIdToNodeIdMap);
     gatherGraphicsLayers(enclosingGraphicsLayer, layerIdToNodeIdMap, layers);

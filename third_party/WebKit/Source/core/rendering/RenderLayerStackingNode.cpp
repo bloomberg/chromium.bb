@@ -137,7 +137,7 @@ void RenderLayerStackingNode::dirtyZOrderLists()
         compositor()->setNeedsUpdateCompositingRequirementsState();
         compositor()->setCompositingLayersNeedRebuild();
         if (layer()->acceleratedCompositingForOverflowScrollEnabled())
-            compositor()->setNeedsToRecomputeCompositingRequirements();
+            compositor()->setShouldReevaluateCompositingAfterLayout();
     }
 }
 
@@ -174,7 +174,7 @@ void RenderLayerStackingNode::dirtyNormalFlowList()
     if (!renderer()->documentBeingDestroyed()) {
         compositor()->setCompositingLayersNeedRebuild();
         if (layer()->acceleratedCompositingForOverflowScrollEnabled())
-            compositor()->setNeedsToRecomputeCompositingRequirements();
+            compositor()->setShouldReevaluateCompositingAfterLayout();
     }
 }
 

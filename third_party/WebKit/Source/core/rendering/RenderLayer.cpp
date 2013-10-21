@@ -527,6 +527,20 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
         geometryMap->popMappingsToAncestor(parent());
 }
 
+void RenderLayer::positionNewlyCreatedOverflowControls()
+{
+    if (!compositedLayerMapping()->hasUnpositionedOverflowControlsLayers())
+        return;
+
+    RenderGeometryMap geometryMap(UseTransforms);
+    RenderView* view = renderer()->view();
+    if (this != view->layer() && parent())
+        geometryMap.pushMappingsToAncestor(parent(), 0);
+
+    LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
+    positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
+}
+
 bool RenderLayer::hasBlendMode() const
 {
     return RuntimeEnabledFeatures::cssCompositingEnabled() && renderer()->hasBlendMode();
@@ -1839,7 +1853,7 @@ void RenderLayer::didUpdateNeedsCompositedScrolling()
 
     m_stackingNode->dirtyStackingContainerZOrderLists();
 
-    compositor()->setNeedsToRecomputeCompositingRequirements();
+    compositor()->setShouldReevaluateCompositingAfterLayout();
     compositor()->setCompositingLayersNeedRebuild();
 }
 
@@ -4614,17 +4628,6 @@ IntRect RenderLayer::scrollCornerAndResizerRect() const
         return IntRect();
 
     return m_scrollableArea->scrollCornerAndResizerRect();
-}
-
-void RenderLayer::positionOverflowControls()
-{
-    RenderGeometryMap geometryMap(UseTransforms);
-    RenderView* view = renderer()->view();
-    if (this != view->layer() && parent())
-        geometryMap.pushMappingsToAncestor(parent(), 0);
-
-    LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
-    positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
 }
 
 void RenderLayer::positionOverflowControls(const IntSize& offsetFromRoot)

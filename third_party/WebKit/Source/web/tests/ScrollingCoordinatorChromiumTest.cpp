@@ -103,12 +103,6 @@ public:
         Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
-    void forceFullCompositingUpdate()
-    {
-        RenderLayerCompositor* compositor = m_webViewImpl->mainFrameImpl()->frame()->contentRenderer()->compositor();
-        compositor->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
-    }
-
     void registerMockedHttpURLLoad(const std::string& fileName)
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(fileName.c_str()));
@@ -135,7 +129,6 @@ protected:
 TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefault)
 {
     navigateTo("about:blank");
-    forceFullCompositingUpdate();
 
     // Make sure the scrolling coordinator is active.
     FrameView* frameView = m_webViewImpl->mainFrameImpl()->frameView();
@@ -173,7 +166,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingForFixedPosition)
 {
     registerMockedHttpURLLoad("fixed-position.html");
     navigateTo(m_baseURL + "fixed-position.html");
-    forceFullCompositingUpdate();
 
     // Fixed position should not fall back to main thread scrolling.
     WebLayer* rootScrollLayer = getRootScrollLayer();
@@ -258,7 +250,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, nonFastScrollableRegion)
 {
     registerMockedHttpURLLoad("non-fast-scrollable.html");
     navigateTo(m_baseURL + "non-fast-scrollable.html");
-    forceFullCompositingUpdate();
 
     WebLayer* rootScrollLayer = getRootScrollLayer();
     WebVector<WebRect> nonFastScrollableRegion = rootScrollLayer->nonFastScrollableRegion();
@@ -271,7 +262,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, wheelEventHandler)
 {
     registerMockedHttpURLLoad("wheel-event-handler.html");
     navigateTo(m_baseURL + "wheel-event-handler.html");
-    forceFullCompositingUpdate();
 
     WebLayer* rootScrollLayer = getRootScrollLayer();
     ASSERT_TRUE(rootScrollLayer->haveWheelEventHandlers());
@@ -281,7 +271,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, clippedBodyTest)
 {
     registerMockedHttpURLLoad("clipped-body.html");
     navigateTo(m_baseURL + "clipped-body.html");
-    forceFullCompositingUpdate();
 
     WebLayer* rootScrollLayer = getRootScrollLayer();
     ASSERT_EQ(0u, rootScrollLayer->nonFastScrollableRegion().size());
@@ -291,7 +280,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
 {
     registerMockedHttpURLLoad("overflow-scrolling.html");
     navigateTo(m_baseURL + "overflow-scrolling.html");
-    forceFullCompositingUpdate();
 
     // Verify the properties of the accelerated scrolling element starting from the RenderObject
     // all the way to the WebLayer.
@@ -330,7 +318,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, iframeScrolling)
     registerMockedHttpURLLoad("iframe-scrolling.html");
     registerMockedHttpURLLoad("iframe-scrolling-inner.html");
     navigateTo(m_baseURL + "iframe-scrolling.html");
-    forceFullCompositingUpdate();
 
     // Verify the properties of the accelerated scrolling element starting from the RenderObject
     // all the way to the WebLayer.
@@ -374,7 +361,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, rtlIframe)
     registerMockedHttpURLLoad("rtl-iframe.html");
     registerMockedHttpURLLoad("rtl-iframe-inner.html");
     navigateTo(m_baseURL + "rtl-iframe.html");
-    forceFullCompositingUpdate();
 
     // Verify the properties of the accelerated scrolling element starting from the RenderObject
     // all the way to the WebLayer.
@@ -413,7 +399,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, setupScrollbarLayerShouldNotCrash)
 {
     registerMockedHttpURLLoad("setup_scrollbar_layer_crash.html");
     navigateTo(m_baseURL + "setup_scrollbar_layer_crash.html");
-    forceFullCompositingUpdate();
     // This test document setup an iframe with scrollbars, then switch to
     // an empty document by javascript.
 }

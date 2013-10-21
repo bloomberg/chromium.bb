@@ -185,6 +185,7 @@ public:
     void updateLayerPositionsAfterOverflowScroll();
     void updateLayerPositionsAfterDocumentScroll();
 
+    void positionNewlyCreatedOverflowControls();
 
     bool isPaginated() const { return m_isPaginated; }
     RenderLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
@@ -680,9 +681,6 @@ private:
 
     RenderLayer* enclosingTransformedAncestor() const;
 
-    // If IntSize is not given, then we must incur additional overhead to instantiate a RenderGeometryMap
-    // and compute the correct offset ourselves.
-    void positionOverflowControls();
     void positionOverflowControls(const IntSize&);
 
     void updatePagination();

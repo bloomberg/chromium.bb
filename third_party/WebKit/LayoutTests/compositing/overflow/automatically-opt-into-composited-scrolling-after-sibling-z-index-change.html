@@ -52,7 +52,6 @@
             var container = document.getElementById('container');
 
             predecessor.style.zIndex = '5';
-            window.internals.forceCompositingUpdate(document);
 
             var pass = true;
             if (!didOptIn(container)) {
@@ -61,7 +60,6 @@
             }
 
             predecessor.style.zIndex = '';
-            window.internals.forceCompositingUpdate(document);
 
             if (didOptIn(container)) {
                 pass = false;
