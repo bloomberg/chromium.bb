@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 
-
 namespace base {
 
 const SyncSocket::Handle SyncSocket::kInvalidHandle = -1;
@@ -20,6 +19,7 @@ SyncSocket::SyncSocket() : handle_(kInvalidHandle) {
 }
 
 SyncSocket::~SyncSocket() {
+  Close();
 }
 
 // static
@@ -31,18 +31,19 @@ bool SyncSocket::Close() {
   if (handle_ != kInvalidHandle) {
     if (close(handle_) < 0)
       DPLOG(ERROR) << "close";
-    handle_ = -1;
+    handle_ = kInvalidHandle;
   }
   return true;
 }
 
 size_t SyncSocket::Send(const void* buffer, size_t length) {
-  // Not implemented since it's not needed by any client code yet.
-  return -1;
+  const ssize_t bytes_written = write(handle_, buffer, length);
+  return bytes_written > 0 ? bytes_written : 0;
 }
 
 size_t SyncSocket::Receive(void* buffer, size_t length) {
-  return read(handle_, buffer, length);
+  const ssize_t bytes_read = read(handle_, buffer, length);
+  return bytes_read > 0 ? bytes_read : 0;
 }
 
 size_t SyncSocket::ReceiveWithTimeout(void* buffer, size_t length, TimeDelta) {
@@ -51,7 +52,8 @@ size_t SyncSocket::ReceiveWithTimeout(void* buffer, size_t length, TimeDelta) {
 }
 
 size_t SyncSocket::Peek() {
-  return -1;
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 CancelableSyncSocket::CancelableSyncSocket() {
@@ -62,11 +64,11 @@ CancelableSyncSocket::CancelableSyncSocket(Handle handle)
 }
 
 size_t CancelableSyncSocket::Send(const void* buffer, size_t length) {
-  return -1;
+  return Send(buffer, length);
 }
 
 bool CancelableSyncSocket::Shutdown() {
-  return false;
+  return Close();
 }
 
 // static
