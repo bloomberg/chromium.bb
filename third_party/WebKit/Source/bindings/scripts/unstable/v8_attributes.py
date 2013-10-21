@@ -208,6 +208,7 @@ def content_attribute_getter_base_name(attribute, includes, arguments):
 
 def generate_setter(interface, attribute, contents, includes):
     idl_type = attribute.data_type
+    extended_attributes = attribute.extended_attributes
     if v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
         cpp_value = 'WTF::getPtr(cppValue)'
     else:
@@ -215,7 +216,8 @@ def generate_setter(interface, attribute, contents, includes):
     contents.update({
         'cpp_setter': setter_expression(interface, attribute, contents, includes),
         'enum_validation_expression': enum_validation_expression(idl_type),
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
+        'has_strict_type_checking': 'StrictTypeChecking' in extended_attributes and v8_types.is_interface_type(idl_type),
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
     })
 
 

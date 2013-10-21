@@ -28,6 +28,9 @@
 
 """Functions for type handling and type conversion (Blink/C++ <-> V8/JS).
 
+Spec:
+http://www.w3.org/TR/WebIDL/#es-type-mapping
+
 FIXME: Not currently used in build.
 This is a rewrite of the Perl IDL compiler in Python, but is not complete.
 Once it is complete, we will switch all IDL files over to Python at once.

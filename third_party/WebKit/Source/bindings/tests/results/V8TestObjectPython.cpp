@@ -2795,36 +2795,61 @@ static void setterRaisesExceptionLongAttributeAttributeSetterCallback(v8::Local<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void strictTypeCheckingReadonlyFloatAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void strictTypeCheckingFloatAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValue(info, imp->strictTypeCheckingReadonlyFloatAttribute());
+    v8SetReturnValue(info, imp->strictTypeCheckingFloatAttribute());
 }
 
-static void strictTypeCheckingReadonlyFloatAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void strictTypeCheckingFloatAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::strictTypeCheckingReadonlyFloatAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::strictTypeCheckingFloatAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void strictTypeCheckingReadonlyTestInterfaceAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void strictTypeCheckingFloatAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    RefPtr<TestInterface> result = imp->strictTypeCheckingReadonlyTestInterfaceAttribute();
-    if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterface>(info.GetReturnValue(), result.get()))
-        return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
-    if (!wrapper.IsEmpty()) {
-        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "strictTypeCheckingReadonlyTestInterfaceAttribute", wrapper);
-        v8SetReturnValue(info, wrapper);
-    }
+    V8TRYCATCH_VOID(float, cppValue, static_cast<float>(jsValue->NumberValue()));
+    imp->setStrictTypeCheckingFloatAttribute(cppValue);
 }
 
-static void strictTypeCheckingReadonlyTestInterfaceAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void strictTypeCheckingFloatAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::strictTypeCheckingFloatAttributeAttributeSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void strictTypeCheckingTestInterfaceAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueFast(info, imp->strictTypeCheckingTestInterfaceAttribute(), imp);
+}
+
+static void strictTypeCheckingTestInterfaceAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::strictTypeCheckingReadonlyTestInterfaceAttributeAttributeGetter(name, info);
+    TestObjectPythonV8Internal::strictTypeCheckingTestInterfaceAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void strictTypeCheckingTestInterfaceAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    if (!isUndefinedOrNull(jsValue) && !V8TestInterface::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
+        throwTypeError(info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    imp->setStrictTypeCheckingTestInterfaceAttribute(WTF::getPtr(cppValue));
+}
+
+static void strictTypeCheckingTestInterfaceAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::strictTypeCheckingTestInterfaceAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -3059,8 +3084,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"reflectedClass", TestObjectPythonV8Internal::reflectedClassAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"setterCallWithActiveWindowAndFirstWindowStringAttribute", TestObjectPythonV8Internal::setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"setterRaisesExceptionLongAttribute", TestObjectPythonV8Internal::setterRaisesExceptionLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::setterRaisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"strictTypeCheckingReadonlyFloatAttribute", TestObjectPythonV8Internal::strictTypeCheckingReadonlyFloatAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"strictTypeCheckingReadonlyTestInterfaceAttribute", TestObjectPythonV8Internal::strictTypeCheckingReadonlyTestInterfaceAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"strictTypeCheckingFloatAttribute", TestObjectPythonV8Internal::strictTypeCheckingFloatAttributeAttributeGetterCallback, TestObjectPythonV8Internal::strictTypeCheckingFloatAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"strictTypeCheckingTestInterfaceAttribute", TestObjectPythonV8Internal::strictTypeCheckingTestInterfaceAttributeAttributeGetterCallback, TestObjectPythonV8Internal::strictTypeCheckingTestInterfaceAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatNullAsNullStringReadonlyStringAttribute", TestObjectPythonV8Internal::treatNullAsNullStringReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsNullStringAttribute", TestObjectPythonV8Internal::treatReturnedNullStringAsNullStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::treatReturnedNullStringAsNullStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"treatReturnedNullStringAsUndefinedStringAttribute", TestObjectPythonV8Internal::treatReturnedNullStringAsUndefinedStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::treatReturnedNullStringAsUndefinedStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

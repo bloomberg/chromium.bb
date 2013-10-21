@@ -155,8 +155,8 @@ interface TestObjectPython {
     [Conditional=Condition, RuntimeEnabled=FeatureName] attribute long conditionalEnabledAtRuntimeLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterRaisesException] attribute long setterRaisesExceptionLongAttribute;
-    [StrictTypeChecking] readonly attribute float strictTypeCheckingReadonlyFloatAttribute;  // FIXME: only applicable to writable attributes, implement with setters
-    [StrictTypeChecking] readonly attribute TestInterface strictTypeCheckingReadonlyTestInterfaceAttribute;  // FIXME: only applicable to writable attributes, implement with setters
+    [StrictTypeChecking] attribute float strictTypeCheckingFloatAttribute;  // nop for non-interface types
+    [StrictTypeChecking] attribute TestInterface strictTypeCheckingTestInterfaceAttribute;
     [TreatNullAs=NullString] readonly attribute DOMString treatNullAsNullStringReadonlyStringAttribute;  // FIXME: only applicable to writable attributes, implement with setters
     [TreatReturnedNullStringAs=Null] attribute DOMString treatReturnedNullStringAsNullStringAttribute;
     [TreatReturnedNullStringAs=Undefined] attribute DOMString treatReturnedNullStringAsUndefinedStringAttribute;

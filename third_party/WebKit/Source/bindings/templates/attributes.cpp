@@ -107,6 +107,14 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    {% if attribute.has_strict_type_checking %}
+    {# Type checking for interface types (if interface not implemented, throw
+       TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
+    if (!isUndefinedOrNull(jsValue) && !V8{{attribute.idl_type}}::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
+        throwTypeError(info.GetIsolate());
+        return;
+    }
+    {% endif %}
     {% if not attribute.is_static %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
