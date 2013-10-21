@@ -50,7 +50,7 @@ extern const int kMessageLineHeight;         // In DIPs.
 
 // Colors.
 extern const SkColor kNotificationBackgroundColor; // Background of the card.
-extern const SkColor kLegacyIconBackgroundColor;   // Used behind icons smaller.
+extern const SkColor kIconBackgroundColor;         // Used behind icons smaller.
                                                    // than the icon view.
 extern const SkColor kRegularTextColor;            // Title, message, ...
 extern const SkColor kDimTextColor;

@@ -592,7 +592,7 @@
       [[AccessibilityIgnoredBox alloc] initWithFrame:imageFrame]);
   [self configureCustomBox:imageBox];
   [imageBox setFillColor:gfx::SkColorToCalibratedNSColor(
-      message_center::kLegacyIconBackgroundColor)];
+      message_center::kIconBackgroundColor)];
   [imageBox setAutoresizingMask:NSViewMinYMargin];
 
   // Inside the image box put the actual icon view.

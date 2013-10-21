@@ -559,11 +559,12 @@ NotificationView::NotificationView(const Notification& notification,
     icon_view->SetImageSize(gfx::Size(kLegacyIconSize, kLegacyIconSize));
     icon_view->SetHorizontalAlignment(views::ImageView::CENTER);
     icon_view->SetVerticalAlignment(views::ImageView::CENTER);
-    icon_view->set_background(MakeBackground(kLegacyIconBackgroundColor));
     icon_view_ = icon_view;
   } else {
     icon_view_ = new ProportionalImageView(icon);
   }
+
+  icon_view_->set_background(MakeBackground(kIconBackgroundColor));
 
   // Create the bottom_view_, which collects into a vertical box all content
   // below the notification icon except for the expand button.
