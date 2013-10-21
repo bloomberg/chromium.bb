@@ -491,9 +491,6 @@ class RenderWidgetHostViewWin
   // true if Enter was hit when render widget host was in focus.
   bool capture_enter_key_;
 
-  // true if the View is not visible.
-  bool is_hidden_;
-
   // The touch-state. Its touch-points are updated as necessary. A new
   // touch-point is added from an TOUCHEVENTF_DOWN message, and a touch-point
   // is removed from the list on an TOUCHEVENTF_UP message.

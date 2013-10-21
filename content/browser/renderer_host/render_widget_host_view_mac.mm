@@ -423,7 +423,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       allow_overlapping_views_(false),
       use_core_animation_(false),
       is_loading_(false),
-      is_hidden_(render_widget_host_->is_hidden()),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
       pending_swap_buffers_acks_weak_factory_(this),
@@ -727,12 +726,11 @@ RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewMac::WasShown() {
-  if (!is_hidden_)
+  if (!render_widget_host_->is_hidden())
     return;
 
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = base::TimeTicks::Now();
-  is_hidden_ = false;
   render_widget_host_->WasShown();
 
   // We're messing with the window, so do this to ensure no flashes.
@@ -743,17 +741,12 @@ void RenderWidgetHostViewMac::WasShown() {
 }
 
 void RenderWidgetHostViewMac::WasHidden() {
-  if (is_hidden_)
+  if (render_widget_host_->is_hidden())
     return;
 
   // Send ACKs for any pending SwapBuffers (if any) since we won't be displaying
   // them and the GPU process is waiting.
   AckPendingSwapBuffers();
-
-  // If we receive any more paint messages while we are hidden, we want to
-  // ignore them so we don't re-allocate the backing store.  We will paint
-  // everything again when we become selected again.
-  is_hidden_ = true;
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
@@ -779,7 +772,7 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
 void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   // |rect.size()| is view coordinates, |rect.origin| is screen coordinates,
   // TODO(thakis): fix, http://crbug.com/73362
-  if (is_hidden_)
+  if (render_widget_host_->is_hidden())
     return;
 
   // During the initial creation of the RenderWidgetHostView in
@@ -950,46 +943,46 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
 
   software_latency_info_.MergeWith(latency_info);
 
-  if (!is_hidden_) {
-    std::vector<gfx::Rect> rects(copy_rects);
+  if (render_widget_host_->is_hidden())
+    return;
 
-    // Because the findbar might be open, we cannot use scrollRect:by: here. For
-    // now, simply mark all of scroll rect as dirty.
-    if (!scroll_rect.IsEmpty())
-      rects.push_back(scroll_rect);
+  std::vector<gfx::Rect> rects(copy_rects);
 
-    for (size_t i = 0; i < rects.size(); ++i) {
-      NSRect ns_rect = [cocoa_view_ flipRectToNSRect:rects[i]];
+  // Because the findbar might be open, we cannot use scrollRect:by: here. For
+  // now, simply mark all of scroll rect as dirty.
+  if (!scroll_rect.IsEmpty())
+    rects.push_back(scroll_rect);
 
-      if (about_to_validate_and_paint_) {
-        // As much as we'd like to use -setNeedsDisplayInRect: here, we can't.
-        // We're in the middle of executing a -drawRect:, and as soon as it
-        // returns Cocoa will clear its record of what needs display. We
-        // instead use |performSelector:| to call |setNeedsDisplayInRect:|
-        // after returning to the main loop, at which point |drawRect:| is no
-        // longer on the stack.
-        DCHECK([NSThread isMainThread]);
-        if (!call_set_needs_display_in_rect_pending_) {
-          [cocoa_view_ performSelector:@selector(callSetNeedsDisplayInRect)
-                       withObject:nil
-                       afterDelay:0];
-          call_set_needs_display_in_rect_pending_ = true;
-          invalid_rect_ = ns_rect;
-        } else {
-          // The old invalid rect is probably invalid now, since the view has
-          // most likely been resized, but there's no harm in dirtying the
-          // union.  In the limit, this becomes equivalent to dirtying the
-          // whole view.
-          invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
-        }
+  for (size_t i = 0; i < rects.size(); ++i) {
+    NSRect ns_rect = [cocoa_view_ flipRectToNSRect:rects[i]];
+
+    if (about_to_validate_and_paint_) {
+      // As much as we'd like to use -setNeedsDisplayInRect: here, we can't.
+      // We're in the middle of executing a -drawRect:, and as soon as it
+      // returns Cocoa will clear its record of what needs display. We instead
+      // use |performSelector:| to call |setNeedsDisplayInRect:| after returning
+      //  to the main loop, at which point |drawRect:| is no longer on the
+      // stack.
+      DCHECK([NSThread isMainThread]);
+      if (!call_set_needs_display_in_rect_pending_) {
+        [cocoa_view_ performSelector:@selector(callSetNeedsDisplayInRect)
+                      withObject:nil
+                      afterDelay:0];
+        call_set_needs_display_in_rect_pending_ = true;
+        invalid_rect_ = ns_rect;
       } else {
-        [cocoa_view_ setNeedsDisplayInRect:ns_rect];
+        // The old invalid rect is probably invalid now, since the view has most
+        // likely been resized, but there's no harm in dirtying the union.  In
+        // the limit, this becomes equivalent to dirtying the whole view.
+        invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
       }
+    } else {
+      [cocoa_view_ setNeedsDisplayInRect:ns_rect];
     }
-
-    if (!about_to_validate_and_paint_)
-      [cocoa_view_ displayIfNeeded];
   }
+
+  if (!about_to_validate_and_paint_)
+    [cocoa_view_ displayIfNeeded];
 }
 
 void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
@@ -1271,7 +1264,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     const gfx::Size& size,
     float surface_scale_factor,
     const ui::LatencyInfo& latency_info) {
-  if (is_hidden_)
+  if (render_widget_host_->is_hidden())
     return;
 
   NSWindow* window = [cocoa_view_ window];
@@ -3792,7 +3785,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   CGRect clipRect = CGContextGetClipBoundingBox(context);
 
   if (!renderWidgetHostView_->render_widget_host_ ||
-      renderWidgetHostView_->is_hidden()) {
+      renderWidgetHostView_->render_widget_host_->is_hidden()) {
     CGContextSetFillColorWithColor(context,
                                    CGColorGetConstantColor(kCGColorWhite));
     CGContextFillRect(context, clipRect);

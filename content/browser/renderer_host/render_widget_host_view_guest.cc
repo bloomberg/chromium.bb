@@ -51,7 +51,6 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHostView* platform_view)
     : host_(RenderWidgetHostImpl::From(widget_host)),
       guest_(guest),
-      is_hidden_(host_->is_hidden()),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
 #if defined(OS_WIN) || defined(USE_AURA)
   gesture_recognizer_.reset(ui::GestureRecognizer::Create());
@@ -78,17 +77,15 @@ void RenderWidgetHostViewGuest::WasShown() {
   // first place: http://crbug.com/273089.
   //
   // |guest_| is NULL during test.
-  if (!is_hidden_ || (guest_ && guest_->is_in_destruction()))
+  if ((guest_ && guest_->is_in_destruction()) || !host_->is_hidden())
     return;
-  is_hidden_ = false;
   host_->WasShown();
 }
 
 void RenderWidgetHostViewGuest::WasHidden() {
   // |guest_| is NULL during test.
-  if (is_hidden_ || (guest_ && guest_->is_in_destruction()))
+  if ((guest_ && guest_->is_in_destruction()) || host_->is_hidden())
     return;
-  is_hidden_ = true;
   host_->WasHidden();
 }
 
@@ -139,7 +136,7 @@ void RenderWidgetHostViewGuest::Hide() {
 }
 
 bool RenderWidgetHostViewGuest::IsShowing() {
-  return !is_hidden_;
+  return !host_->is_hidden();
 }
 
 gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {

@@ -233,9 +233,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   // This is the rectangle which we'll paint.
   gfx::Rect invalid_rect_;
 
-  // Whether or not this widget is hidden.
-  bool is_hidden_;
-
   // Whether we are currently loading.
   bool is_loading_;
 

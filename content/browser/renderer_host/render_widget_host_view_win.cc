@@ -393,7 +393,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       imm32_manager_(new ui::IMM32Manager),
       ime_notification_(false),
       capture_enter_key_(false),
-      is_hidden_(render_widget_host_->is_hidden()),
       about_to_validate_and_paint_(false),
       close_on_deactivate_(false),
       being_destroyed_(false),
@@ -458,34 +457,34 @@ RenderWidgetHost* RenderWidgetHostViewWin::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewWin::WasShown() {
-  if (!is_hidden_)
+  // |render_widget_host_| may be NULL if the WebContentsImpl is in the process
+  // of closing.
+  if (!render_widget_host_)
+    return;
+
+  if (!render_widget_host_->is_hidden())
     return;
 
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = TimeTicks::Now();
-  is_hidden_ = false;
 
-  // |render_widget_host_| may be NULL if the WebContentsImpl is in the process
-  // of closing.
-  if (render_widget_host_)
-    render_widget_host_->WasShown();
+  render_widget_host_->WasShown();
 }
 
 void RenderWidgetHostViewWin::WasHidden() {
-  if (is_hidden_)
+  // |render_widget_host_| may be NULL if the WebContentsImpl is in the process
+  // of closing.
+  if (!render_widget_host_)
     return;
 
-  // If we receive any more paint messages while we are hidden, we want to
-  // ignore them so we don't re-allocate the backing store.  We will paint
-  // everything again when we become selected again.
-  is_hidden_ = true;
+  if (render_widget_host_->is_hidden())
+    return;
 
   ResetTooltip();
 
-  // If we have a renderer, then inform it that we are being hidden so it can
-  // reduce its resource utilization.
-  if (render_widget_host_)
-    render_widget_host_->WasHidden();
+  // Inform the renderer that we are being hidden so it can reduce its resource
+  // utilization.
+  render_widget_host_->WasHidden();
 
   if (accelerated_surface_)
     accelerated_surface_->WasHidden();
@@ -501,7 +500,7 @@ void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewWin::SetBounds(const gfx::Rect& rect) {
-  if (is_hidden_ || being_destroyed_)
+  if (being_destroyed_ || render_widget_host_->is_hidden())
     return;
 
   // No SWP_NOREDRAW as autofill popups can move and the underneath window
@@ -764,7 +763,7 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
     const ui::LatencyInfo& latency_info) {
   TRACE_EVENT0("content", "RenderWidgetHostViewWin::DidUpdateBackingStore");
   software_latency_info_.MergeWith(latency_info);
-  if (is_hidden_)
+  if (render_widget_host_->is_hidden())
     return;
 
   // Schedule invalidations first so that the ScrollWindowEx call is closer to
@@ -838,7 +837,7 @@ void RenderWidgetHostViewWin::Destroy() {
 }
 
 void RenderWidgetHostViewWin::SetTooltipText(const string16& tooltip_text) {
-  if (!is_hidden_)
+  if (!render_widget_host_->is_hidden())
     EnsureTooltip();
 
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
@@ -2784,7 +2783,7 @@ LRESULT RenderWidgetHostViewWin::OnSessionChange(UINT message,
       break;
     case WTS_SESSION_UNLOCK:
       // Force a repaint to update the window contents.
-      if (!is_hidden_)
+      if (!render_widget_host_->is_hidden())
         InvalidateRect(NULL, FALSE);
       accelerated_surface_->SetIsSessionLocked(false);
       break;

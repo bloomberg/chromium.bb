@@ -438,8 +438,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   float scale_factor() const;
 
-  bool is_hidden() const { return is_hidden_; }
-
   void FrameSwapped();
 
  private:
@@ -512,9 +510,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   // Indicates if the page is loading.
   bool is_loading_;
-
-  // true if the View is not visible.
-  bool is_hidden_;
 
   // The text to be shown in the tooltip, supplied by the renderer.
   string16 tooltip_text_;

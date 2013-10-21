@@ -182,7 +182,7 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean OnExposeEvent(GtkWidget* widget,
                                 GdkEventExpose* expose,
                                 RenderWidgetHostViewGtk* host_view) {
-    if (host_view->is_hidden_)
+    if (host_view->host_->is_hidden())
       return FALSE;
     const gfx::Rect damage_rect(expose->area);
     host_view->Paint(damage_rect);
@@ -551,7 +551,6 @@ class RenderWidgetHostViewGtkWidget {
 RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
       about_to_validate_and_paint_(false),
-      is_hidden_(host_->is_hidden()),
       is_loading_(false),
       parent_(NULL),
       is_popup_first_mouse_release_(true),
@@ -691,24 +690,18 @@ RenderWidgetHost* RenderWidgetHostViewGtk::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewGtk::WasShown() {
-  if (!host_ || !is_hidden_)
+  if (!host_ || !host_->is_hidden())
     return;
 
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = base::TimeTicks::Now();
-  is_hidden_ = false;
 
   host_->WasShown();
 }
 
 void RenderWidgetHostViewGtk::WasHidden() {
-  if (!host_ || is_hidden_)
+  if (!host_ || host_->is_hidden())
     return;
-
-  // If we receive any more paint messages while we are hidden, we want to
-  // ignore them so we don't re-allocate the backing store.  We will paint
-  // everything again when we become selected again.
-  is_hidden_ = true;
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
@@ -862,7 +855,7 @@ void RenderWidgetHostViewGtk::DidUpdateBackingStore(
   TRACE_EVENT0("ui::gtk", "RenderWidgetHostViewGtk::DidUpdateBackingStore");
   software_latency_info_.MergeWith(latency_info);
 
-  if (is_hidden_)
+  if (host_->is_hidden())
     return;
 
   // TODO(darin): Implement the equivalent of Win32's ScrollWindowEX.  Can that
