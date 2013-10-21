@@ -37,11 +37,11 @@ void IndexedDBTransactionCoordinator::DidFinishTransaction(
     IndexedDBTransaction* transaction) {
   DCHECK(transactions_.find(transaction) != transactions_.end());
 
-  if (queued_transactions_.has(transaction)) {
-    DCHECK(!started_transactions_.has(transaction));
+  if (queued_transactions_.count(transaction)) {
+    DCHECK(!started_transactions_.count(transaction));
     queued_transactions_.erase(transaction);
   } else {
-    if (started_transactions_.has(transaction))
+    if (started_transactions_.count(transaction))
       started_transactions_.erase(transaction);
   }
   transactions_.erase(transaction);
@@ -54,9 +54,9 @@ void IndexedDBTransactionCoordinator::DidFinishTransaction(
 bool IndexedDBTransactionCoordinator::IsActive(
     IndexedDBTransaction* transaction) {
   bool found = false;
-  if (queued_transactions_.has(transaction))
+  if (queued_transactions_.count(transaction))
     found = true;
-  if (started_transactions_.has(transaction)) {
+  if (started_transactions_.count(transaction)) {
     DCHECK(!found);
     found = true;
   }
@@ -155,7 +155,7 @@ static bool DoSetsIntersect(const std::set<T>& set1,
 bool IndexedDBTransactionCoordinator::CanRunTransaction(
     IndexedDBTransaction* const transaction,
     const std::set<int64>& locked_scope) const {
-  DCHECK(queued_transactions_.has(transaction));
+  DCHECK(queued_transactions_.count(transaction));
   switch (transaction->mode()) {
     case indexed_db::TRANSACTION_VERSION_CHANGE:
       DCHECK_EQ(static_cast<size_t>(1), queued_transactions_.size());

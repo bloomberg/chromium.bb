@@ -1396,7 +1396,7 @@ void IndexedDBDatabase::CreateTransaction(
     const std::vector<int64>& object_store_ids,
     uint16 mode) {
 
-  DCHECK(connections_.has(connection));
+  DCHECK(connections_.count(connection));
   DCHECK(transactions_.find(transaction_id) == transactions_.end());
   if (transactions_.find(transaction_id) != transactions_.end())
     return;
@@ -1525,7 +1525,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     WebKit::WebIDBCallbacks::DataLoss data_loss) {
 
   DCHECK(callbacks);
-  DCHECK(connections_.has(connection.get()));
+  DCHECK(connections_.count(connection.get()));
   if (ConnectionCount() > 1) {
     DCHECK_NE(WebKit::WebIDBCallbacks::DataLossTotal, data_loss);
     // Front end ensures the event is not fired at connections that have
@@ -1643,7 +1643,7 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
 }
 
 void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
-  DCHECK(connections_.has(connection));
+  DCHECK(connections_.count(connection));
   DCHECK(connection->IsConnected());
   DCHECK(connection->database() == this);
 

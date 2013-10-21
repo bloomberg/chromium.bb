@@ -64,9 +64,9 @@ TEST(ListSetTest, ListSetPrimitive) {
   set.erase(3);
   EXPECT_EQ(static_cast<size_t>(4), set.size());
 
-  EXPECT_TRUE(set.has(2));
+  EXPECT_EQ(static_cast<size_t>(1), set.count(2));
   set.erase(2);
-  EXPECT_FALSE(set.has(2));
+  EXPECT_EQ(static_cast<size_t>(0), set.count(2));
   EXPECT_EQ(static_cast<size_t>(3), set.size());
 
   {

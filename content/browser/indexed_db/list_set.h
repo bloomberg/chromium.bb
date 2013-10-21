@@ -47,7 +47,9 @@ class list_set {
     list_.erase(it);
   }
 
-  bool has(const T& elem) const { return set_.find(elem) != set_.end(); }
+  size_t count(const T& elem) const {
+    return set_.find(elem) == set_.end() ? 0 : 1;
+  }
 
   size_t size() const {
     DCHECK_EQ(list_.size(), set_.size());
