@@ -26,14 +26,14 @@ class FakeBluetoothDeviceClient;
 class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
 class FakeGsmSMSClient;
+class FakeShillDeviceClient;
+class FakeShillIPConfigClient;
 class MockCryptohomeClient;
-class MockShillDeviceClient;
-class MockShillIPConfigClient;
+class MockPowerManagerClient;
+class MockSessionManagerClient;
 class MockShillManagerClient;
 class MockShillProfileClient;
 class MockShillServiceClient;
-class MockPowerManagerClient;
-class MockSessionManagerClient;
 
 // This class provides a mock DBusThreadManager with mock clients
 // installed. You can customize the behaviors of mock clients with
@@ -103,14 +103,14 @@ class MockDBusThreadManager : public DBusThreadManager {
   FakeGsmSMSClient* fake_gsm_sms_client() {
     return fake_gsm_sms_client_.get();
   }
+  FakeShillDeviceClient* fake_shill_device_client() {
+    return fake_shill_device_client_.get();
+  }
+  FakeShillIPConfigClient* fake_shill_ipconfig_client() {
+    return fake_shill_ipconfig_client_.get();
+  }
   MockCryptohomeClient* mock_cryptohome_client() {
     return mock_cryptohome_client_.get();
-  }
-  MockShillDeviceClient* mock_shill_device_client() {
-    return mock_shill_device_client_.get();
-  }
-  MockShillIPConfigClient* mock_shill_ipconfig_client() {
-    return mock_shill_ipconfig_client_.get();
   }
   MockShillManagerClient* mock_shill_manager_client() {
     return mock_shill_manager_client_.get();
@@ -138,9 +138,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeBluetoothProfileManagerClient>
       fake_bluetooth_profile_manager_client_;
   scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
+  scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;
+  scoped_ptr<FakeShillIPConfigClient> fake_shill_ipconfig_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
-  scoped_ptr<MockShillDeviceClient> mock_shill_device_client_;
-  scoped_ptr<MockShillIPConfigClient> mock_shill_ipconfig_client_;
   scoped_ptr<MockShillManagerClient> mock_shill_manager_client_;
   scoped_ptr<MockShillProfileClient> mock_shill_profile_client_;
   scoped_ptr<MockShillServiceClient> mock_shill_service_client_;

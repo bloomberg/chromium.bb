@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/shill_ipconfig_client_stub.h"
+#include "chromeos/dbus/fake_shill_ipconfig_client.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -18,30 +18,30 @@
 
 namespace chromeos {
 
-ShillIPConfigClientStub::ShillIPConfigClientStub() : weak_ptr_factory_(this) {
+FakeShillIPConfigClient::FakeShillIPConfigClient() : weak_ptr_factory_(this) {
 }
 
-ShillIPConfigClientStub::~ShillIPConfigClientStub() {
+FakeShillIPConfigClient::~FakeShillIPConfigClient() {
 }
 
-void ShillIPConfigClientStub::Init(dbus::Bus* bus) {
+void FakeShillIPConfigClient::Init(dbus::Bus* bus) {
 }
 
-void ShillIPConfigClientStub::AddPropertyChangedObserver(
+void FakeShillIPConfigClient::AddPropertyChangedObserver(
     const dbus::ObjectPath& ipconfig_path,
     ShillPropertyChangedObserver* observer) {
 }
 
-void ShillIPConfigClientStub::RemovePropertyChangedObserver(
+void FakeShillIPConfigClient::RemovePropertyChangedObserver(
     const dbus::ObjectPath& ipconfig_path,
     ShillPropertyChangedObserver* observer) {
 }
 
-void ShillIPConfigClientStub::Refresh(const dbus::ObjectPath& ipconfig_path,
+void FakeShillIPConfigClient::Refresh(const dbus::ObjectPath& ipconfig_path,
                                       const VoidDBusMethodCallback& callback) {
 }
 
-void ShillIPConfigClientStub::GetProperties(
+void FakeShillIPConfigClient::GetProperties(
     const dbus::ObjectPath& ipconfig_path,
     const DictionaryValueCallback& callback) {
   const base::DictionaryValue* dict = NULL;
@@ -49,13 +49,13 @@ void ShillIPConfigClientStub::GetProperties(
                                                     &dict))
     return;
   base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&ShillIPConfigClientStub::PassProperties,
+        FROM_HERE, base::Bind(&FakeShillIPConfigClient::PassProperties,
                               weak_ptr_factory_.GetWeakPtr(),
                               dict,
                               callback));
 }
 
-void ShillIPConfigClientStub::SetProperty(
+void FakeShillIPConfigClient::SetProperty(
     const dbus::ObjectPath& ipconfig_path,
     const std::string& name,
     const base::Value& value,
@@ -76,7 +76,7 @@ void ShillIPConfigClientStub::SetProperty(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 
-void ShillIPConfigClientStub::ClearProperty(
+void FakeShillIPConfigClient::ClearProperty(
     const dbus::ObjectPath& ipconfig_path,
     const std::string& name,
     const VoidDBusMethodCallback& callback) {
@@ -84,13 +84,13 @@ void ShillIPConfigClientStub::ClearProperty(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 
-void ShillIPConfigClientStub::Remove(const dbus::ObjectPath& ipconfig_path,
+void FakeShillIPConfigClient::Remove(const dbus::ObjectPath& ipconfig_path,
                                      const VoidDBusMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 
-void ShillIPConfigClientStub::PassProperties(
+void FakeShillIPConfigClient::PassProperties(
     const base::DictionaryValue* values,
     const DictionaryValueCallback& callback) const {
   callback.Run(DBUS_METHOD_CALL_SUCCESS, *values);

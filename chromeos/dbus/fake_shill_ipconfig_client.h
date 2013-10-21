@@ -1,22 +1,23 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SHILL_IPCONFIG_CLIENT_STUB_H_
-#define CHROMEOS_DBUS_SHILL_IPCONFIG_CLIENT_STUB_H_
+#ifndef CHROMEOS_DBUS_FAKE_SHILL_IPCONFIG_CLIENT_H_
+#define CHROMEOS_DBUS_FAKE_SHILL_IPCONFIG_CLIENT_H_
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 
 namespace chromeos {
 
-// A stub implementation of ShillIPConfigClient.
-class ShillIPConfigClientStub : public ShillIPConfigClient {
+// A fake implementation of ShillIPConfigClient.
+class CHROMEOS_EXPORT FakeShillIPConfigClient : public ShillIPConfigClient {
  public:
-  ShillIPConfigClientStub();
-  virtual ~ShillIPConfigClientStub();
+  FakeShillIPConfigClient();
+  virtual ~FakeShillIPConfigClient();
 
   // ShillIPConfigClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
@@ -50,11 +51,11 @@ class ShillIPConfigClientStub : public ShillIPConfigClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ShillIPConfigClientStub> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeShillIPConfigClient> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShillIPConfigClientStub);
+  DISALLOW_COPY_AND_ASSIGN(FakeShillIPConfigClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SHILL_IPCONFIG_CLIENT_STUB_H_
+#endif  // CHROMEOS_DBUS_FAKE_SHILL_IPCONFIG_CLIENT_H_

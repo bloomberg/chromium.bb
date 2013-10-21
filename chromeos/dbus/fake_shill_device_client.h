@@ -5,15 +5,19 @@
 #ifndef CHROMEOS_DBUS_FAKE_SHILL_DEVICE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_SHILL_DEVICE_CLIENT_H_
 
-#include "base/callback_forward.h"
-#include "base/values.h"
+#include <string>
+
+#include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_property_changed_observer.h"
 
 namespace chromeos {
 
-// A fake implementation of ShillDeviceClient. This class does nothing.
-class FakeShillDeviceClient : public ShillDeviceClient {
+// A fake implementation of ShillDeviceClient.
+// Implemented: Stub cellular device for SMS testing.
+class CHROMEOS_EXPORT FakeShillDeviceClient
+    : public ShillDeviceClient,
+      public ShillDeviceClient::TestInterface {
  public:
   FakeShillDeviceClient();
   virtual ~FakeShillDeviceClient();
@@ -72,9 +76,44 @@ class FakeShillDeviceClient : public ShillDeviceClient {
   virtual void Reset(const dbus::ObjectPath& device_path,
                      const base::Closure& callback,
                      const ErrorCallback& error_callback) OVERRIDE;
-  virtual TestInterface* GetTestInterface() OVERRIDE;
+  virtual ShillDeviceClient::TestInterface* GetTestInterface() OVERRIDE;
+
+  // ShillDeviceClient::TestInterface overrides.
+  virtual void AddDevice(const std::string& device_path,
+                         const std::string& type,
+                         const std::string& object_path) OVERRIDE;
+  virtual void RemoveDevice(const std::string& device_path) OVERRIDE;
+  virtual void ClearDevices() OVERRIDE;
+  virtual void SetDeviceProperty(const std::string& device_path,
+                                 const std::string& name,
+                                 const base::Value& value) OVERRIDE;
+  virtual std::string GetDevicePathForType(const std::string& type) OVERRIDE;
 
  private:
+  typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
+
+  void SetDefaultProperties();
+  void PassStubDeviceProperties(const dbus::ObjectPath& device_path,
+                                const DictionaryValueCallback& callback) const;
+
+  // Posts a task to run a void callback with status code |status|.
+  void PostVoidCallback(const VoidDBusMethodCallback& callback,
+                        DBusMethodCallStatus status);
+
+  void NotifyObserversPropertyChanged(const dbus::ObjectPath& device_path,
+                                      const std::string& property);
+  base::DictionaryValue* GetDeviceProperties(const std::string& device_path);
+  PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
+
+  // Dictionary of <device_name, Dictionary>.
+  base::DictionaryValue stub_devices_;
+  // Observer list for each device.
+  std::map<dbus::ObjectPath, PropertyObserverList*> observer_list_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FakeShillDeviceClient> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeShillDeviceClient);
 };
 
