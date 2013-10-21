@@ -17,8 +17,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 
 using content::BrowserThread;
 using content::RenderProcessHost;
@@ -30,13 +30,16 @@ using content::WebContents;
 //
 
 class ExtensionRendererState::RenderViewHostObserver
-    : public content::RenderViewHostObserver {
+    : public content::WebContentsObserver {
  public:
-  explicit RenderViewHostObserver(content::RenderViewHost* host)
-      : content::RenderViewHostObserver(host) {
+  RenderViewHostObserver(RenderViewHost* host, WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        render_view_host_(host) {
   }
 
-  virtual void RenderViewHostDestroyed(content::RenderViewHost* host) OVERRIDE {
+  virtual void RenderViewDeleted(content::RenderViewHost* host) OVERRIDE {
+    if (host != render_view_host_)
+      return;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
@@ -48,6 +51,8 @@ class ExtensionRendererState::RenderViewHostObserver
   }
 
  private:
+  RenderViewHost* render_view_host_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostObserver);
 };
 
@@ -111,7 +116,7 @@ void ExtensionRendererState::TabObserver::Observe(
               session_tab_helper->window_id().id()));
 
       // The observer deletes itself.
-      new ExtensionRendererState::RenderViewHostObserver(host);
+      new ExtensionRendererState::RenderViewHostObserver(host, web_contents);
 
       break;
     }
