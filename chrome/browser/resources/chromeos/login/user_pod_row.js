@@ -1569,6 +1569,8 @@ cr.define('login', function() {
             }
           }
         });
+        // Guard timer for 1 second -- it would conver all possible animations.
+        ensureTransitionEndEvent(focusedPod, 1000);
       }
     },
 

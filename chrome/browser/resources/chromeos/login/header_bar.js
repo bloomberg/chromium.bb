@@ -222,6 +222,9 @@ cr.define('login', function() {
             launcher.removeEventListener('webkitTransitionEnd', f);
             callback();
           });
+      // Guard timer for 2 seconds + 200 ms + epsilon.
+      ensureTransitionEndEvent(launcher, 2250);
+
       this.classList.remove('login-header-bar-animate-slow');
       this.classList.add('login-header-bar-animate-fast');
       this.classList.add('login-header-bar-hidden');

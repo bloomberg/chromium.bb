@@ -50,6 +50,8 @@ cr.define('cr.ui', function() {
       window.addEventListener('blur', this.handleWindowBlur_.bind(this));
       this.addEventListener('webkitTransitionEnd',
                             this.handleTransitionEnd_.bind(this));
+      // Guard timer for 200ms + epsilon.
+      ensureTransitionEndEvent(this, 250);
     },
 
     /**
