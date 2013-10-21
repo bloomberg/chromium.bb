@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension_builder.h"
 #include "extensions/common/matcher/url_matcher_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,14 @@ namespace {
 template<typename T>
 linked_ptr<T> ScopedToLinkedPtr(scoped_ptr<T> ptr) {
   return linked_ptr<T>(ptr.release());
+}
+
+scoped_ptr<DictionaryValue> SimpleManifest() {
+  return DictionaryBuilder()
+      .Set("name", "extension")
+      .Set("manifest_version", 2)
+      .Set("version", "1.0")
+      .Build();
 }
 
 }  // namespace
@@ -37,6 +46,7 @@ struct RecordingCondition {
   }
 
   static scoped_ptr<RecordingCondition> Create(
+      const Extension* extension,
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
       std::string* error) {
@@ -61,9 +71,8 @@ TEST(DeclarativeConditionTest, ErrorConditionSet) {
   conditions.push_back(ScopedToLinkedPtr(ParseJson("{\"bad_key\": 2}")));
 
   std::string error;
-  scoped_ptr<RecordingConditionSet> result =
-      RecordingConditionSet::Create(matcher.condition_factory(),
-                                    conditions, &error);
+  scoped_ptr<RecordingConditionSet> result = RecordingConditionSet::Create(
+      NULL, matcher.condition_factory(), conditions, &error);
   EXPECT_EQ("Found error key", error);
   ASSERT_FALSE(result);
 }
@@ -76,9 +85,8 @@ TEST(DeclarativeConditionTest, CreateConditionSet) {
 
   // Test insertion
   std::string error;
-  scoped_ptr<RecordingConditionSet> result =
-      RecordingConditionSet::Create(matcher.condition_factory(),
-                                    conditions, &error);
+  scoped_ptr<RecordingConditionSet> result = RecordingConditionSet::Create(
+      NULL, matcher.condition_factory(), conditions, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result);
   EXPECT_EQ(2u, result->conditions().size());
@@ -120,7 +128,8 @@ struct FulfillableCondition {
   }
 
   static scoped_ptr<FulfillableCondition> Create(
-      URLMatcherConditionFactory* /*url_matcher_condition_factory*/,
+      const Extension* extension,
+      URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
       std::string* error) {
     scoped_ptr<FulfillableCondition> result(new FulfillableCondition());
@@ -157,7 +166,7 @@ TEST(DeclarativeConditionTest, FulfillConditionSet) {
   // Test insertion
   std::string error;
   scoped_ptr<FulfillableConditionSet> result =
-      FulfillableConditionSet::Create(NULL, conditions, &error);
+      FulfillableConditionSet::Create(NULL, NULL, conditions, &error);
   ASSERT_EQ("", error);
   ASSERT_TRUE(result);
   EXPECT_EQ(4u, result->conditions().size());
@@ -205,7 +214,8 @@ class SummingAction : public base::RefCounted<SummingAction> {
   SummingAction(int increment, int min_priority)
       : increment_(increment), min_priority_(min_priority) {}
 
-  static scoped_refptr<const SummingAction> Create(const base::Value& action,
+  static scoped_refptr<const SummingAction> Create(const Extension* extension,
+                                                   const base::Value& action,
                                                    std::string* error,
                                                    bool* bad_message) {
     int increment = 0;
@@ -255,7 +265,7 @@ TEST(DeclarativeActionTest, ErrorActionSet) {
   std::string error;
   bool bad = false;
   scoped_ptr<SummingActionSet> result =
-      SummingActionSet::Create(actions, &error, &bad);
+      SummingActionSet::Create(NULL, actions, &error, &bad);
   EXPECT_EQ("the error", error);
   EXPECT_FALSE(bad);
   EXPECT_FALSE(result);
@@ -263,7 +273,7 @@ TEST(DeclarativeActionTest, ErrorActionSet) {
   actions.clear();
   actions.push_back(ScopedToLinkedPtr(ParseJson("{\"value\": 1}")));
   actions.push_back(ScopedToLinkedPtr(ParseJson("{\"bad\": 3}")));
-  result = SummingActionSet::Create(actions, &error, &bad);
+  result = SummingActionSet::Create(NULL, actions, &error, &bad);
   EXPECT_EQ("", error);
   EXPECT_TRUE(bad);
   EXPECT_FALSE(result);
@@ -280,7 +290,7 @@ TEST(DeclarativeActionTest, ApplyActionSet) {
   std::string error;
   bool bad = false;
   scoped_ptr<SummingActionSet> result =
-      SummingActionSet::Create(actions, &error, &bad);
+      SummingActionSet::Create(NULL, actions, &error, &bad);
   EXPECT_EQ("", error);
   EXPECT_FALSE(bad);
   ASSERT_TRUE(result);
@@ -312,13 +322,17 @@ TEST(DeclarativeRuleTest, Create) {
       json_rule.get()));
 
   const char kExtensionId[] = "ext1";
+  scoped_refptr<Extension> extension = ExtensionBuilder()
+                                           .SetManifest(SimpleManifest())
+                                           .SetID(kExtensionId)
+                                           .Build();
 
   base::Time install_time = base::Time::Now();
 
   URLMatcher matcher;
   std::string error;
   scoped_ptr<Rule> rule(Rule::Create(matcher.condition_factory(),
-                                     kExtensionId,
+                                     extension.get(),
                                      install_time,
                                      json_rule,
                                      Rule::ConsistencyChecker(),
@@ -365,6 +379,10 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
   std::string error;
   linked_ptr<Rule::JsonRule> json_rule(new Rule::JsonRule);
   const char kExtensionId[] = "ext1";
+  scoped_refptr<Extension> extension = ExtensionBuilder()
+                                           .SetManifest(SimpleManifest())
+                                           .SetID(kExtensionId)
+                                           .Build();
 
   ASSERT_TRUE(Rule::JsonRule::Populate(
       *ParseJson("{ \n"
@@ -381,9 +399,12 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
                  "  \"priority\": 200 \n"
                  "}"),
       json_rule.get()));
-  scoped_ptr<Rule> rule(
-      Rule::Create(matcher.condition_factory(), kExtensionId, base::Time(),
-                   json_rule, base::Bind(AtLeastOneCondition), &error));
+  scoped_ptr<Rule> rule(Rule::Create(matcher.condition_factory(),
+                                     extension.get(),
+                                     base::Time(),
+                                     json_rule,
+                                     base::Bind(AtLeastOneCondition),
+                                     &error));
   EXPECT_TRUE(rule);
   EXPECT_EQ("", error);
 
@@ -400,8 +421,12 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
                  "  \"priority\": 200 \n"
                  "}"),
       json_rule.get()));
-  rule = Rule::Create(matcher.condition_factory(), kExtensionId, base::Time(),
-                      json_rule, base::Bind(AtLeastOneCondition), &error);
+  rule = Rule::Create(matcher.condition_factory(),
+                      extension.get(),
+                      base::Time(),
+                      json_rule,
+                      base::Bind(AtLeastOneCondition),
+                      &error);
   EXPECT_FALSE(rule);
   EXPECT_EQ("No conditions", error);
 }

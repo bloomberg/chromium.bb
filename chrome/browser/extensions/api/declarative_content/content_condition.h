@@ -62,6 +62,7 @@ class ContentCondition {
   // description |condition| passed by the extension API.  |condition| should be
   // an instance of declarativeContent.PageStateMatcher.
   static scoped_ptr<ContentCondition> Create(
+      const Extension* extension,
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
       std::string* error);

@@ -31,11 +31,12 @@ TEST(WebRequestConditionTest, CreateCondition) {
   // Test wrong condition name passed.
   error.clear();
   result = WebRequestCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{ \"invalid\": \"foobar\", \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
+           "{ \"invalid\": \"foobar\", \n"
+           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+           "}"),
       &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
@@ -43,12 +44,13 @@ TEST(WebRequestConditionTest, CreateCondition) {
   // Test wrong datatype in host_suffix.
   error.clear();
   result = WebRequestCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{ \n"
-          "  \"url\": [], \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
+           "{ \n"
+           "  \"url\": [], \n"
+           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+           "}"),
       &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
@@ -56,13 +58,14 @@ TEST(WebRequestConditionTest, CreateCondition) {
   // Test success (can we support multiple criteria?)
   error.clear();
   result = WebRequestCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{ \n"
-          "  \"resourceType\": [\"main_frame\"], \n"
-          "  \"url\": { \"hostSuffix\": \"example.com\" }, \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
+           "{ \n"
+           "  \"resourceType\": [\"main_frame\"], \n"
+           "  \"url\": { \"hostSuffix\": \"example.com\" }, \n"
+           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+           "}"),
       &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
@@ -102,12 +105,13 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   scoped_ptr<WebRequestCondition> result;
 
   result = WebRequestCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{ \n"
-          "  \"firstPartyForCookiesUrl\": { \"hostPrefix\": \"fpfc\"}, \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
+           "{ \n"
+           "  \"firstPartyForCookiesUrl\": { \"hostPrefix\": \"fpfc\"}, \n"
+           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+           "}"),
       &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
@@ -146,11 +150,12 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   // The empty condition.
   error.clear();
   scoped_ptr<WebRequestCondition> condition_empty = WebRequestCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{ \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
+           "{ \n"
+           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+           "}"),
       &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(condition_empty.get());
@@ -159,14 +164,16 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   error.clear();
   scoped_ptr<WebRequestCondition> condition_no_url_true =
       WebRequestCondition::Create(
+          NULL,
           matcher.condition_factory(),
           *base::test::ParseJson(
-              "{ \n"
-              "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-              // There is no "1st party for cookies" URL in the requests below,
-              // therefore all requests are considered first party for cookies.
-              "  \"thirdPartyForCookies\": false, \n"
-              "}"),
+               "{ \n"
+               "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", "
+               "\n"
+               // There is no "1st party for cookies" URL in the requests below,
+               // therefore all requests are considered first party for cookies.
+               "  \"thirdPartyForCookies\": false, \n"
+               "}"),
           &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(condition_no_url_true.get());
@@ -175,12 +182,14 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   error.clear();
   scoped_ptr<WebRequestCondition> condition_no_url_false =
       WebRequestCondition::Create(
+          NULL,
           matcher.condition_factory(),
           *base::test::ParseJson(
-              "{ \n"
-              "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-              "  \"thirdPartyForCookies\": true, \n"
-              "}"),
+               "{ \n"
+               "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", "
+               "\n"
+               "  \"thirdPartyForCookies\": true, \n"
+               "}"),
           &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(condition_no_url_false.get());
@@ -231,9 +240,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
 
   // Test insertion
   std::string error;
-  scoped_ptr<WebRequestConditionSet> result =
-      WebRequestConditionSet::Create(matcher.condition_factory(),
-                                     conditions, &error);
+  scoped_ptr<WebRequestConditionSet> result = WebRequestConditionSet::Create(
+      NULL, matcher.condition_factory(), conditions, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
   EXPECT_EQ(2u, result->conditions().size());
@@ -289,9 +297,8 @@ TEST(WebRequestConditionTest, TestPortFilter) {
 
   // Test insertion
   std::string error;
-  scoped_ptr<WebRequestConditionSet> result =
-      WebRequestConditionSet::Create(matcher.condition_factory(),
-                                     conditions, &error);
+  scoped_ptr<WebRequestConditionSet> result = WebRequestConditionSet::Create(
+      NULL, matcher.condition_factory(), conditions, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
   EXPECT_EQ(1u, result->conditions().size());
@@ -340,15 +347,16 @@ TEST(WebRequestConditionTest, ConditionsWithConflictingStages) {
   // Test error on incompatible application stages for involved attributes.
   error.clear();
   result = WebRequestCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{ \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          // Pass a JS array with one empty object to each of the header
-          // filters.
-          "  \"requestHeaders\": [{}], \n"
-          "  \"responseHeaders\": [{}], \n"
-          "}"),
+           "{ \n"
+           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+           // Pass a JS array with one empty object to each of the header
+           // filters.
+           "  \"requestHeaders\": [{}], \n"
+           "  \"responseHeaders\": [{}], \n"
+           "}"),
       &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());

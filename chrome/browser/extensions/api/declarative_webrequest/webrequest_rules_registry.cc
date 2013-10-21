@@ -178,7 +178,7 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 
     scoped_ptr<WebRequestRule> webrequest_rule(WebRequestRule::Create(
         url_matcher_.condition_factory(),
-        extension_id, extension_installation_time, *rule,
+        extension, extension_installation_time, *rule,
         base::Bind(&Checker, base::Unretained(extension)),
         &error));
     if (!error.empty()) {

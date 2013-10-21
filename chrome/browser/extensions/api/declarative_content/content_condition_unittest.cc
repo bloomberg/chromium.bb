@@ -24,12 +24,13 @@ TEST(DeclarativeContentConditionTest, UnknownConditionName) {
   URLMatcher matcher;
   std::string error;
   scoped_ptr<ContentCondition> result = ContentCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
-          "{\n"
-          "  \"invalid\": \"foobar\",\n"
-          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
-          "}"),
+           "{\n"
+           "  \"invalid\": \"foobar\",\n"
+           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+           "}"),
       &error);
   EXPECT_THAT(error, HasSubstr("Unknown condition attribute"));
   EXPECT_FALSE(result);
@@ -41,6 +42,7 @@ TEST(DeclarativeContentConditionTest, WrongPageUrlDatatype) {
   URLMatcher matcher;
   std::string error;
   scoped_ptr<ContentCondition> result = ContentCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
           "{\n"
@@ -58,6 +60,7 @@ TEST(DeclarativeContentConditionTest, WrongCssDatatype) {
   URLMatcher matcher;
   std::string error;
   scoped_ptr<ContentCondition> result = ContentCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
           "{\n"
@@ -76,6 +79,7 @@ TEST(DeclarativeContentConditionTest, ConditionWithUrlAndCss) {
 
   std::string error;
   scoped_ptr<ContentCondition> result = ContentCondition::Create(
+      NULL,
       matcher.condition_factory(),
       *base::test::ParseJson(
           "{\n"

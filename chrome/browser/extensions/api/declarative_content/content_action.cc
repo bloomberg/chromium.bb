@@ -27,6 +27,8 @@ namespace {
 // Error messages.
 const char kInvalidInstanceTypeError[] =
     "An action has an invalid instanceType: %s";
+const char kNoPageAction[] =
+    "Can't use declarativeContent.ShowPageAction without a page action";
 
 #define INPUT_FORMAT_VALIDATE(test) do { \
     if (!(test)) { \
@@ -43,6 +45,18 @@ const char kInvalidInstanceTypeError[] =
 class ShowPageAction : public ContentAction {
  public:
   ShowPageAction() {}
+
+  static scoped_refptr<ContentAction> Create(const Extension* extension,
+                                             const base::DictionaryValue* dict,
+                                             std::string* error,
+                                             bool* bad_message) {
+    // We can't show a page action if the extension doesn't have one.
+    if (ActionInfo::GetPageActionInfo(extension) == NULL) {
+      *error = kNoPageAction;
+      return scoped_refptr<ContentAction>();
+    }
+    return scoped_refptr<ContentAction>(new ShowPageAction);
+  }
 
   // Implementation of ContentAction:
   virtual Type GetType() const OVERRIDE { return ACTION_SHOW_PAGE_ACTION; }
@@ -80,33 +94,25 @@ class ShowPageAction : public ContentAction {
   DISALLOW_COPY_AND_ASSIGN(ShowPageAction);
 };
 
-// Helper function for ContentActions that can be instantiated by just
-// calling the constructor.
-template <class T>
-scoped_refptr<ContentAction> CallConstructorFactoryMethod(
-    const base::DictionaryValue* dict,
-    std::string* error,
-    bool* bad_message) {
-  return scoped_refptr<ContentAction>(new T);
-}
-
 struct ContentActionFactory {
-  // Factory methods for ContentAction instances. |dict| contains the json
-  // dictionary that describes the action. |error| is used to return error
-  // messages in case the extension passed an action that was syntactically
-  // correct but semantically incorrect. |bad_message| is set to true in case
-  // |dict| does not confirm to the validated JSON specification.
-  typedef scoped_refptr<ContentAction>
-      (* FactoryMethod)(const base::DictionaryValue* /* dict */,
-                        std::string* /* error */,
-                        bool* /* bad_message */);
+  // Factory methods for ContentAction instances. |extension| is the extension
+  // for which the action is being created. |dict| contains the json dictionary
+  // that describes the action. |error| is used to return error messages in case
+  // the extension passed an action that was syntactically correct but
+  // semantically incorrect. |bad_message| is set to true in case |dict| does
+  // not confirm to the validated JSON specification.
+  typedef scoped_refptr<ContentAction>(*FactoryMethod)(
+      const Extension* /* extension */,
+      const base::DictionaryValue* /* dict */,
+      std::string* /* error */,
+      bool* /* bad_message */);
   // Maps the name of a declarativeContent action type to the factory
   // function creating it.
   std::map<std::string, FactoryMethod> factory_methods;
 
   ContentActionFactory() {
     factory_methods[keys::kShowPageAction] =
-        &CallConstructorFactoryMethod<ShowPageAction>;
+        &ShowPageAction::Create;
   }
 };
 
@@ -125,6 +131,7 @@ ContentAction::~ContentAction() {}
 
 // static
 scoped_refptr<ContentAction> ContentAction::Create(
+    const Extension* extension,
     const base::Value& json_action,
     std::string* error,
     bool* bad_message) {
@@ -142,7 +149,8 @@ scoped_refptr<ContentAction> ContentAction::Create(
   std::map<std::string, ContentActionFactory::FactoryMethod>::iterator
       factory_method_iter = factory.factory_methods.find(instance_type);
   if (factory_method_iter != factory.factory_methods.end())
-    return (*factory_method_iter->second)(action_dict, error, bad_message);
+    return (*factory_method_iter->second)(
+        extension, action_dict, error, bad_message);
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
   return scoped_refptr<ContentAction>();

@@ -467,6 +467,7 @@ bool WebRequestAction::HasPermission(const ExtensionInfoMap* extension_info_map,
 
 // static
 scoped_refptr<const WebRequestAction> WebRequestAction::Create(
+    const Extension* extension,
     const base::Value& json_action,
     std::string* error,
     bool* bad_message) {

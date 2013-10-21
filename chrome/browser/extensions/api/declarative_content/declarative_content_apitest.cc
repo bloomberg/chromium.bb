@@ -28,21 +28,27 @@ const char kDeclarativeContentManifest[] =
     "  \"background\": {\n"
     "    \"scripts\": [\"background.js\"]\n"
     "  },\n"
+    "  \"page_action\": {},\n"
     "  \"permissions\": [\n"
     "    \"declarativeContent\"\n"
-    "  ],\n"
-    "  \"page_action\": {}\n"
+    "  ]\n"
     "}\n";
 
 const char kBackgroundHelpers[] =
     "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
     "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
     "var onPageChanged = chrome.declarativeContent.onPageChanged;\n"
+    "var Reply = window.domAutomationController.send.bind(\n"
+    "    window.domAutomationController);\n"
     "\n"
     "function setRules(rules, responseString) {\n"
     "  onPageChanged.removeRules(undefined, function() {\n"
     "    onPageChanged.addRules(rules, function() {\n"
-    "      window.domAutomationController.send(responseString);\n"
+    "      if (chrome.runtime.lastError) {\n"
+    "        Reply(chrome.runtime.lastError.message);\n"
+    "        return;\n"
+    "      }\n"
+    "      Reply(responseString);\n"
     "    });\n"
     "  });\n"
     "};\n";
@@ -230,6 +236,37 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                 "  window.domAutomationController.send('removed');\n"
                 "});\n"));
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+}
+
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       ShowPageActionWithoutPageAction) {
+  std::string manifest_without_page_action = kDeclarativeContentManifest;
+  ReplaceSubstringsAfterOffset(
+      &manifest_without_page_action, 0, "\"page_action\": {},", "");
+  ext_dir_.WriteManifest(manifest_without_page_action);
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+
+  EXPECT_THAT(ExecuteScriptInBackgroundPage(
+                  extension->id(),
+                  "setRules([{\n"
+                  "  conditions: [new PageStateMatcher({\n"
+                  "                   pageUrl: {hostPrefix: \"test\"}})],\n"
+                  "  actions: [new ShowPageAction()]\n"
+                  "}], 'test_rule');\n"),
+              testing::HasSubstr("without a page action"));
+
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  NavigateInRenderer(tab, GURL("http://test/"));
+
+  EXPECT_EQ(NULL,
+            ExtensionActionManager::Get(browser()->profile())->
+                GetPageAction(*extension));
+  EXPECT_EQ(0,
+            browser()->window()->GetLocationBar()->GetLocationBarForTesting()->
+            PageActionCount());
 }
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,

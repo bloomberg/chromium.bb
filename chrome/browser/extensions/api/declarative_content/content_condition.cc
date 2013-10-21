@@ -63,6 +63,7 @@ bool ContentCondition::IsFulfilled(
 
 // static
 scoped_ptr<ContentCondition> ContentCondition::Create(
+    const Extension* extension,
     URLMatcherConditionFactory* url_matcher_condition_factory,
     const base::Value& condition,
     std::string* error) {

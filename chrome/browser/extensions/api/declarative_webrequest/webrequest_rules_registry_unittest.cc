@@ -690,13 +690,13 @@ TEST(WebRequestRulesRegistrySimpleTest, StageChecker) {
   URLMatcher matcher;
   scoped_ptr<WebRequestConditionSet> conditions =
       WebRequestConditionSet::Create(
-          matcher.condition_factory(), rule.conditions, &error);
+          NULL, matcher.condition_factory(), rule.conditions, &error);
   ASSERT_TRUE(error.empty()) << error;
   ASSERT_TRUE(conditions);
 
   bool bad_message = false;
   scoped_ptr<WebRequestActionSet> actions =
-      WebRequestActionSet::Create(rule.actions, &error, &bad_message);
+      WebRequestActionSet::Create(NULL, rule.actions, &error, &bad_message);
   ASSERT_TRUE(error.empty()) << error;
   ASSERT_FALSE(bad_message);
   ASSERT_TRUE(actions);
@@ -723,7 +723,7 @@ TEST(WebRequestRulesRegistrySimpleTest, HostPermissionsChecker) {
   std::string error;
   bool bad_message = false;
   scoped_ptr<WebRequestActionSet> action_set(
-      WebRequestActionSet::Create(actions, &error, &bad_message));
+      WebRequestActionSet::Create(NULL, actions, &error, &bad_message));
   ASSERT_TRUE(error.empty()) << error;
   ASSERT_FALSE(bad_message);
   ASSERT_TRUE(action_set);

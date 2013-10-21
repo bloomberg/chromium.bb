@@ -21,6 +21,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/common/extensions/api/events.h"
+#include "chrome/common/extensions/extension.h"
 #include "extensions/common/matcher/url_matcher.h"
 
 namespace base {
@@ -39,6 +40,7 @@ namespace extensions {
 //
 //   // Arguments passed through from DeclarativeConditionSet::Create.
 //   static scoped_ptr<ConditionT> Create(
+//       const Extension* extension,
 //       URLMatcherConditionFactory* url_matcher_condition_factory,
 //       // Except this argument gets elements of the AnyVector.
 //       const base::Value& definition,
@@ -57,10 +59,11 @@ class DeclarativeConditionSet {
   typedef std::vector<linked_ptr<const ConditionT> > Conditions;
   typedef typename Conditions::const_iterator const_iterator;
 
-  // Factory method that creates a DeclarativeConditionSet according to the JSON
-  // array |conditions| passed by the extension API. Sets |error| and returns
-  // NULL in case of an error.
+  // Factory method that creates a DeclarativeConditionSet for |extension|
+  // according to the JSON array |conditions| passed by the extension API. Sets
+  // |error| and returns NULL in case of an error.
   static scoped_ptr<DeclarativeConditionSet> Create(
+      const Extension* extension,
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const AnyVector& conditions,
       std::string* error);
@@ -112,6 +115,7 @@ class DeclarativeConditionSet {
 //
 //   // Arguments passed through from ActionSet::Create.
 //   static scoped_ptr<ActionT> Create(
+//       const Extension* extension,
 //       // Except this argument gets elements of the AnyVector.
 //       const base::Value& definition,
 //       std::string* error, bool* bad_message);
@@ -139,10 +143,11 @@ class DeclarativeActionSet {
 
   explicit DeclarativeActionSet(const Actions& actions);
 
-  // Factory method that instantiates a DeclarativeActionSet according to
-  // |actions| which represents the array of actions received from the
-  // extension API.
-  static scoped_ptr<DeclarativeActionSet> Create(const AnyVector& actions,
+  // Factory method that instantiates a DeclarativeActionSet for |extension|
+  // according to |actions| which represents the array of actions received from
+  // the extension API.
+  static scoped_ptr<DeclarativeActionSet> Create(const Extension* extension,
+                                                 const AnyVector& actions,
                                                  std::string* error,
                                                  bool* bad_message);
 
@@ -202,9 +207,9 @@ class DeclarativeRule {
                   scoped_ptr<ActionSet> actions,
                   Priority priority);
 
-  // Creates a DeclarativeRule for an extension given a json definition.  The
+  // Creates a DeclarativeRule for |extension| given a json definition.  The
   // format of each condition and action's json is up to the specific ConditionT
-  // and ActionT.
+  // and ActionT.  |extension| may be NULL in tests.
   //
   // Before constructing the final rule, calls check_consistency(conditions,
   // actions, error) and returns NULL if it fails.  Pass NULL if no consistency
@@ -212,7 +217,7 @@ class DeclarativeRule {
   // the returned rule is internally consistent.
   static scoped_ptr<DeclarativeRule> Create(
       URLMatcherConditionFactory* url_matcher_condition_factory,
-      const std::string& extension_id,
+      const Extension* extension,
       base::Time extension_installation_time,
       linked_ptr<JsonRule> rule,
       ConsistencyChecker check_consistency,
@@ -288,6 +293,7 @@ void DeclarativeConditionSet<ConditionT>::GetURLMatcherConditionSets(
 template<typename ConditionT>
 scoped_ptr<DeclarativeConditionSet<ConditionT> >
 DeclarativeConditionSet<ConditionT>::Create(
+    const Extension* extension,
     URLMatcherConditionFactory* url_matcher_condition_factory,
     const AnyVector& conditions,
     std::string* error) {
@@ -296,8 +302,8 @@ DeclarativeConditionSet<ConditionT>::Create(
   for (AnyVector::const_iterator i = conditions.begin();
        i != conditions.end(); ++i) {
     CHECK(i->get());
-    scoped_ptr<ConditionT> condition =
-        ConditionT::Create(url_matcher_condition_factory, **i, error);
+    scoped_ptr<ConditionT> condition = ConditionT::Create(
+        extension, url_matcher_condition_factory, **i, error);
     if (!error->empty())
       return scoped_ptr<DeclarativeConditionSet>();
     result.push_back(make_linked_ptr(condition.release()));
@@ -346,6 +352,7 @@ DeclarativeActionSet<ActionT>::DeclarativeActionSet(const Actions& actions)
 template<typename ActionT>
 scoped_ptr<DeclarativeActionSet<ActionT> >
 DeclarativeActionSet<ActionT>::Create(
+    const Extension* extension,
     const AnyVector& actions,
     std::string* error,
     bool* bad_message) {
@@ -357,7 +364,7 @@ DeclarativeActionSet<ActionT>::Create(
        i != actions.end(); ++i) {
     CHECK(i->get());
     scoped_refptr<const ActionT> action =
-        ActionT::Create(**i, error, bad_message);
+        ActionT::Create(extension, **i, error, bad_message);
     if (!error->empty() || *bad_message)
       return scoped_ptr<DeclarativeActionSet>();
     result.push_back(action);
@@ -423,7 +430,7 @@ template<typename ConditionT, typename ActionT>
 scoped_ptr<DeclarativeRule<ConditionT, ActionT> >
 DeclarativeRule<ConditionT, ActionT>::Create(
     URLMatcherConditionFactory* url_matcher_condition_factory,
-    const std::string& extension_id,
+    const Extension* extension,
     base::Time extension_installation_time,
     linked_ptr<JsonRule> rule,
     ConsistencyChecker check_consistency,
@@ -431,14 +438,14 @@ DeclarativeRule<ConditionT, ActionT>::Create(
   scoped_ptr<DeclarativeRule> error_result;
 
   scoped_ptr<ConditionSet> conditions = ConditionSet::Create(
-      url_matcher_condition_factory, rule->conditions, error);
+      extension, url_matcher_condition_factory, rule->conditions, error);
   if (!error->empty())
     return error_result.Pass();
   CHECK(conditions.get());
 
   bool bad_message = false;
   scoped_ptr<ActionSet> actions =
-      ActionSet::Create(rule->actions, error, &bad_message);
+      ActionSet::Create(extension, rule->actions, error, &bad_message);
   if (bad_message) {
     // TODO(battre) Export concept of bad_message to caller, the extension
     // should be killed in case it is true.
@@ -459,7 +466,7 @@ DeclarativeRule<ConditionT, ActionT>::Create(
   CHECK(rule->priority.get());
   int priority = *(rule->priority);
 
-  GlobalRuleId rule_id(extension_id, *(rule->id));
+  GlobalRuleId rule_id(extension->id(), *(rule->id));
   Tags tags = rule->tags ? *rule->tags : Tags();
   return scoped_ptr<DeclarativeRule>(
       new DeclarativeRule(rule_id, tags, extension_installation_time,

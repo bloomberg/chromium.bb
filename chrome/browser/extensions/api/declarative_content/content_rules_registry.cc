@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -137,6 +138,11 @@ ContentRulesRegistry::GetMatches(
 std::string ContentRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
     const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+  DCHECK(extension) << "Must have extension with id " << extension_id;
+
   base::Time extension_installation_time =
       GetExtensionInstallationTime(extension_id);
 
@@ -150,7 +156,7 @@ std::string ContentRulesRegistry::AddRulesImpl(
 
     scoped_ptr<ContentRule> content_rule(
         ContentRule::Create(url_matcher_.condition_factory(),
-                            extension_id,
+                            extension,
                             extension_installation_time,
                             *rule,
                             ContentRule::ConsistencyChecker(),
