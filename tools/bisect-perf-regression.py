@@ -2138,6 +2138,17 @@ class BisectPerformanceMetrics(object):
 
     return results
 
+  def _PrintRevisionInfo(self, cl, info):
+    # The perf dashboard specifically looks for the string
+    # "Author  : " to parse out who to cc on a bug. If you change the
+    # formatting here, please update the perf dashboard as well.
+    print
+    print 'Commit  : %s' % cl
+    print 'Author  : %s' % info['author']
+    print 'Email   : %s' % info['email']
+    print 'Date    : %s' % info['date']
+    print 'Subject : %s' % info['subject']
+
   def FormatAndPrintResults(self, bisect_results):
     """Prints the results from a bisection run in a readable format.
 
@@ -2275,6 +2286,10 @@ class BisectPerformanceMetrics(object):
           max(0.0001, (len_broken_group + len_working_group ))))
       confidence = min(1.0, max(confidence, 0.0)) * 100.0
 
+      # The perf dashboard specifically looks for the string
+      # "Confidence in Bisection Results: 100%" to decide whether or not
+      # to cc the author(s). If you change this, please update the perf
+      # dashboard as well.
       print 'Confidence in Bisection Results: %d%%' % int(confidence)
       print
       print 'Experimental - If confidence is less than 100%, there are could '\
@@ -2331,12 +2346,7 @@ class BisectPerformanceMetrics(object):
           os.chdir(c[0])
           info = self.source_control.QueryRevisionInfo(c[1])
 
-          print
-          print 'Commit  : %s' % c[1]
-          print 'Author  : %s' % info['author']
-          print 'Email   : %s' % info['email']
-          print 'Date    : %s' % info['date']
-          print 'Subject : %s' % info['subject']
+          self._PrintRevisionInfo(c[1], info)
         print
       else:
         multiple_commits = 0
@@ -2349,12 +2359,7 @@ class BisectPerformanceMetrics(object):
 
           info = self.source_control.QueryRevisionInfo(k)
 
-          print
-          print 'Commit  : %s' % k
-          print 'Author  : %s' % info['author']
-          print 'Email   : %s' % info['email']
-          print 'Date    : %s' % info['date']
-          print 'Subject : %s' % info['subject']
+          self._PrintRevisionInfo(k, info)
 
           multiple_commits += 1
         if multiple_commits > 1:
