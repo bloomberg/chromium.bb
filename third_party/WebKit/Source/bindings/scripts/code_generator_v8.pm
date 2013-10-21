@@ -152,9 +152,11 @@ my %implementation;
 # as primitive types in the future.
 # Since V8 dosn't provide Promise primitive object currently,
 # primitiveTypeHash doesn't contain Promise.
-my %primitiveTypeHash = ("boolean" => 1,
+my %primitiveTypeHash = ("Date" => 1,
+                         "DOMString" => 1,
+                         "DOMTimeStamp" => 1,  # typedef unsigned long long
+                         "boolean" => 1,
                          "void" => 1,
-                         "Date" => 1,
                          "byte" => 1,
                          "octet" => 1,
                          "short" => 1,
@@ -414,7 +416,6 @@ sub SkipIncludeHeader
     return 1 if IsPrimitiveType($type);
     return 1 if IsEnumType($type);
     return 1 if IsCallbackFunctionType($type);
-    return 1 if $type eq "DOMString";
     return 0;
 }
 
@@ -5462,7 +5463,6 @@ sub IsWrapperType
     return 0 if IsCallbackFunctionType($type);
     return 0 if IsEnumType($type);
     return 0 if IsPrimitiveType($type);
-    return 0 if $type eq "DOMString";
     return 0 if $type eq "Promise";
     return !$nonWrapperTypes{$type};
 }
@@ -5607,17 +5607,6 @@ sub NativeToJSValue
         return "$indent$receiver v8::Number::New($getIsolate, static_cast<double>($nativeValue));";
     }
 
-    if (IsPrimitiveType($type)) {
-        die "unexpected type $type" if not ($type eq "float" or $type eq "double");
-        return "${indent}v8SetReturnValue(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
-        return "$indent$receiver v8::Number::New($getIsolate, $nativeValue);";
-    }
-
-    if ($nativeType eq "ScriptValue" or $nativeType eq "ScriptPromise") {
-        return "${indent}v8SetReturnValue(${getCallbackInfo}, ${nativeValue}.v8Value());" if $isReturnValue;
-        return "$indent$receiver $nativeValue.v8Value();";
-    }
-
     my $conv = $extendedAttributes->{"TreatReturnedNullStringAs"};
     if (($type eq "DOMString" || IsEnumType($type)) && $isReturnValue) {
         my $functionSuffix = "";
@@ -5647,6 +5636,17 @@ sub NativeToJSValue
             $returnValue = "v8String($nativeValue, $getIsolate)";
         }
         return "$indent$receiver $returnValue;";
+    }
+
+    if (IsPrimitiveType($type)) {
+        die "unexpected type $type" if not ($type eq "float" or $type eq "double");
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
+        return "$indent$receiver v8::Number::New($getIsolate, $nativeValue);";
+    }
+
+    if ($nativeType eq "ScriptValue" or $nativeType eq "ScriptPromise") {
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, ${nativeValue}.v8Value());" if $isReturnValue;
+        return "$indent$receiver $nativeValue.v8Value();";
     }
 
     my $arrayOrSequenceType = GetArrayOrSequenceType($type);
@@ -5882,7 +5882,6 @@ sub IsRefPtrType
     return 0 if IsPrimitiveType($type);
     return 0 if GetArrayType($type);
     return 0 if GetSequenceType($type);
-    return 0 if $type eq "DOMString";
     return 0 if $type eq "Promise";
     return 0 if IsCallbackFunctionType($type);
     return 0 if IsEnumType($type);
