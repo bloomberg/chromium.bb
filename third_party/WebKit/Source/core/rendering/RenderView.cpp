@@ -21,6 +21,7 @@
 #include "config.h"
 #include "core/rendering/RenderView.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLDialogElement.h"
@@ -167,7 +168,8 @@ void RenderView::layoutContent(const LayoutState& state)
 
     RenderBlock::layout();
 
-    positionDialogs();
+    if (RuntimeEnabledFeatures::dialogElementEnabled())
+        positionDialogs();
 
     if (m_frameView->partialLayout().isStopping())
         return;

@@ -26,6 +26,7 @@
 #ifndef HTMLDialogElement_h
 #define HTMLDialogElement_h
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/html/HTMLElement.h"
 
 namespace WebCore {
@@ -70,7 +71,12 @@ private:
     String m_returnValue;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLDialogElement, hasTagName(HTMLNames::dialogTag));
+inline HTMLDialogElement* toHTMLDialogElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::dialogTag));
+    ASSERT_WITH_SECURITY_IMPLICATION(RuntimeEnabledFeatures::dialogElementEnabled());
+    return static_cast<HTMLDialogElement*>(node);
+}
 
 } // namespace WebCore
 
