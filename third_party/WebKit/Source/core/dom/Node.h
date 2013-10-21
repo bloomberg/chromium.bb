@@ -925,6 +925,11 @@ inline bool operator==(const Node* a, const Node& b) { return a == &b; }
 inline bool operator!=(const Node& a, const Node& b) { return !(a == b); }
 inline bool operator!=(const Node& a, const Node* b) { return !(a == b); }
 inline bool operator!=(const Node* a, const Node& b) { return !(a == b); }
+inline bool operator==(const RefPtr<Node>& a, const Node& b) { return a.get() == &b; }
+inline bool operator==(const Node& a, const RefPtr<Node>& b) { return &a == b.get(); }
+inline bool operator!=(const RefPtr<Node>& a, const Node& b) { return !(a == b); }
+inline bool operator!=(const Node& a, const RefPtr<Node>& b) { return !(a == b); }
+
 
 #define DEFINE_NODE_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, Node, node, node->predicate, node.predicate)

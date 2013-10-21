@@ -168,27 +168,6 @@ namespace WTF {
         return a != b.get();
     }
 
-    // For types where identity is defined as pointer identity.
-    template<typename T> inline bool operator==(const RefPtr<T>& a, const T& b)
-    {
-        return a.get() == b;
-    }
-
-    template<typename T> inline bool operator==(const T& a, const RefPtr<T>& b)
-    {
-        return a == b.get();
-    }
-
-    template<typename T> inline bool operator!=(const RefPtr<T>& a, const T& b)
-    {
-        return a.get() != b;
-    }
-
-    template<typename T> inline bool operator!=(const T& a, const RefPtr<T>& b)
-    {
-        return a != b.get();
-    }
-
     template<typename T, typename U> inline RefPtr<T> static_pointer_cast(const RefPtr<U>& p)
     {
         return RefPtr<T>(static_cast<T*>(p.get()));
