@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -822,7 +824,38 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   void NavigateToDestURLWithDisposition(
       WindowOpenDisposition disposition,
       bool expect_swap_to_succeed) const {
-    NavigateToURLImpl(dest_url_, disposition, expect_swap_to_succeed);
+    NavigateToURLWithParams(
+        content::OpenURLParams(dest_url_, Referrer(), disposition,
+                               content::PAGE_TRANSITION_TYPED, false),
+        expect_swap_to_succeed);
+  }
+
+  void NavigateToDestUrlAndWaitForPassTitle() {
+    string16 expected_title = ASCIIToUTF16(kPassTitle);
+    content::TitleWatcher title_watcher(
+        GetPrerenderContents()->prerender_contents(),
+        expected_title);
+    NavigateToDestURL();
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  void NavigateToURL(const std::string& dest_html_file) const {
+    NavigateToURLWithDisposition(dest_html_file, CURRENT_TAB, true);
+  }
+
+  void NavigateToURLWithDisposition(const std::string& dest_html_file,
+                                    WindowOpenDisposition disposition,
+                                    bool expect_swap_to_succeed) const {
+    GURL dest_url = test_server()->GetURL(dest_html_file);
+    NavigateToURLWithParams(
+        content::OpenURLParams(dest_url, Referrer(), disposition,
+                               content::PAGE_TRANSITION_TYPED, false),
+        expect_swap_to_succeed);
+  }
+
+  void NavigateToURLWithParams(const content::OpenURLParams& params,
+                               bool expect_swap_to_succeed) const {
+    NavigateToURLImpl(params, expect_swap_to_succeed);
   }
 
   void OpenDestURLViaClick() const {
@@ -885,15 +918,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         test_server()->GetURL("files/prerender/prerender_page.html"));
   }
 
-  void NavigateToDestUrlAndWaitForPassTitle() {
-    string16 expected_title = ASCIIToUTF16(kPassTitle);
-    content::TitleWatcher title_watcher(
-        GetPrerenderContents()->prerender_contents(),
-        expected_title);
-    NavigateToDestURL();
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
-
   // Called after the prerendered page has been navigated to and then away from.
   // Navigates back through the history to the prerendered page.
   void GoBackToPrerender() {
@@ -929,17 +953,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         "window.domAutomationController.send(DidBackToOriginalPagePass())",
         &js_result));
     EXPECT_TRUE(js_result);
-  }
-
-  void NavigateToURL(const std::string& dest_html_file) const {
-    NavigateToURLWithDisposition(dest_html_file, CURRENT_TAB, true);
-  }
-
-  void NavigateToURLWithDisposition(const std::string& dest_html_file,
-                                    WindowOpenDisposition disposition,
-                                    bool expect_swap_to_succeed) const {
-    GURL dest_url = test_server()->GetURL(dest_html_file);
-    NavigateToURLImpl(dest_url, disposition, expect_swap_to_succeed);
   }
 
   bool UrlIsInPrerenderManager(const std::string& html_file) const {
@@ -1098,6 +1111,10 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return explicitly_set_browser_ ? explicitly_set_browser_ : browser();
   }
 
+  const GURL& dest_url() const {
+    return dest_url_;
+  }
+
   void IncreasePrerenderMemory() {
     // Increase the memory allowed in a prerendered page above normal settings.
     // Debug build bots occasionally run against the default limit, and tests
@@ -1229,8 +1246,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     EXPECT_FALSE(HadPrerenderEventErrors());
   }
 
-  void NavigateToURLImpl(const GURL& dest_url,
-                         WindowOpenDisposition disposition,
+  void NavigateToURLImpl(const content::OpenURLParams& params,
                          bool expect_swap_to_succeed) const {
     ASSERT_NE(static_cast<PrerenderManager*>(NULL), GetPrerenderManager());
     // Make sure in navigating we have a URL to use in the PrerenderManager.
@@ -1238,7 +1254,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
     // If opening the page in a background tab, it won't be shown when swapped
     // in.
-    if (disposition == NEW_BACKGROUND_TAB)
+    if (params.disposition == NEW_BACKGROUND_TAB)
       GetPrerenderContents()->set_should_be_shown(false);
 
     scoped_ptr<content::WindowedNotificationObserver> page_load_observer;
@@ -1260,20 +1276,21 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     // Navigate to the prerendered URL, but don't run the message loop. Browser
     // issued navigations to prerendered pages will synchronously swap in the
     // prerendered page.
-    ui_test_utils::NavigateToURLWithDisposition(
-        current_browser(), dest_url, disposition,
-        ui_test_utils::BROWSER_TEST_NONE);
+    WebContents* target_web_contents = current_browser()->OpenURL(params);
 
-    if (call_javascript_ && web_contents && expect_swap_to_succeed) {
-      if (page_load_observer.get())
-        page_load_observer->Wait();
+    if (web_contents && expect_swap_to_succeed) {
+      EXPECT_EQ(web_contents, target_web_contents);
+      if (call_javascript_) {
+        if (page_load_observer.get())
+          page_load_observer->Wait();
 
-      bool display_test_result = false;
-      ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-          web_contents,
-          "window.domAutomationController.send(DidDisplayPass())",
-          &display_test_result));
-      EXPECT_TRUE(display_test_result);
+        bool display_test_result = false;
+        ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+            web_contents,
+            "window.domAutomationController.send(DidDisplayPass())",
+            &display_test_result));
+        EXPECT_TRUE(display_test_result);
+      }
     }
   }
 
@@ -2749,7 +2766,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   manager->RegisterDevToolsClientHostFor(agent.get(), &client_host);
   const char* url = "files/prerender/prerender_page.html";
   PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
-  NavigateToURL(url);
+  NavigateToURLWithDisposition(url, CURRENT_TAB, false);
   manager->ClientHostClosing(&client_host);
 }
 
@@ -3193,6 +3210,33 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredSynchronousXHR) {
   PrerenderTestURL("files/prerender/prerender_deferred_sync_xhr.html",
                    FINAL_STATUS_BAD_DEFERRED_REDIRECT, 0);
   NavigateToDestURL();
+}
+
+// Checks that prerenders are not swapped for navigations with extra headers.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExtraHeadersNoSwap) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_APP_TERMINATING, 1);
+
+  content::OpenURLParams params(dest_url(), Referrer(), CURRENT_TAB,
+                                content::PAGE_TRANSITION_TYPED, false);
+  params.extra_headers = "X-Custom-Header: 42\r\n";
+  NavigateToURLWithParams(params, false);
+}
+
+// Checks that prerenders are not swapped for navigations with browser-initiated
+// POST data.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderBrowserInitiatedPostNoSwap) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_APP_TERMINATING, 1);
+
+  std::string post_data = "DATA";
+  content::OpenURLParams params(dest_url(), Referrer(), CURRENT_TAB,
+                                content::PAGE_TRANSITION_TYPED, false);
+  params.uses_post = true;
+  params.browser_initiated_post_data =
+      base::RefCountedString::TakeString(&post_data);
+  NavigateToURLWithParams(params, false);
 }
 
 }  // namespace prerender

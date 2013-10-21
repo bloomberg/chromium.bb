@@ -354,14 +354,16 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
   return target_contents;
 }
 
-// If a prerendered page exists for |url|, replace the page at |target_contents|
-// with it.
-bool SwapInPrerender(WebContents* target_contents, const GURL& url) {
+// If a prerendered page exists for |url|, replace the page at
+// |params->target_contents| with it and update to point to the swapped-in
+// WebContents.
+bool SwapInPrerender(const GURL& url, chrome::NavigateParams* params) {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(target_contents->GetBrowserContext()));
+          Profile::FromBrowserContext(
+              params->target_contents->GetBrowserContext()));
   return prerender_manager &&
-      prerender_manager->MaybeUsePrerenderedPage(target_contents, url);
+      prerender_manager->MaybeUsePrerenderedPage(url, params);
 }
 
 bool SwapInInstantNTP(chrome::NavigateParams* params,
@@ -540,8 +542,8 @@ void Navigate(NavigateParams* params) {
   // Check if this is a singleton tab that already exists
   int singleton_index = chrome::GetIndexOfSingletonTab(params);
 
-  // Did we use Instant's NTP contents?
-  bool swapped_in_instant = false;
+  // Did we use Instant's NTP contents or a prerender?
+  bool swapped_in = false;
 
   // If no target WebContents was specified, we need to construct one if
   // we are supposed to target a new tab; unless it's a singleton that already
@@ -557,8 +559,8 @@ void Navigate(NavigateParams* params) {
     }
 
     if (params->disposition != CURRENT_TAB) {
-      swapped_in_instant = SwapInInstantNTP(params, url, NULL);
-      if (!swapped_in_instant)
+      swapped_in = SwapInInstantNTP(params, url, NULL);
+      if (!swapped_in)
         params->target_contents = CreateTargetContents(*params, url);
 
       // This function takes ownership of |params->target_contents| until it
@@ -568,20 +570,21 @@ void Navigate(NavigateParams* params) {
       // ... otherwise if we're loading in the current tab, the target is the
       // same as the source.
       DCHECK(params->source_contents);
-      swapped_in_instant = SwapInInstantNTP(params, url,
-                                            params->source_contents);
-      if (!swapped_in_instant)
+      swapped_in = SwapInInstantNTP(params, url, params->source_contents);
+      if (!swapped_in)
         params->target_contents = params->source_contents;
       DCHECK(params->target_contents);
+      // Prerender expects |params->target_contents| to be attached to a browser
+      // window, so only call for CURRENT_TAB navigations. (Others are currently
+      // unsupported because of session storage namespaces anyway.)
+      if (!swapped_in)
+        swapped_in = SwapInPrerender(url, params);
     }
 
     if (user_initiated)
       params->target_contents->UserGestureDone();
 
-    if (!swapped_in_instant) {
-      if (SwapInPrerender(params->target_contents, url))
-        return;
-
+    if (!swapped_in) {
       // Try to handle non-navigational URLs that popup dialogs and such, these
       // should not actually navigate.
       if (!HandleNonNavigationAboutURL(url)) {
@@ -607,7 +610,7 @@ void Navigate(NavigateParams* params) {
     params->source_contents->GetView()->Focus();
 
   if (params->source_contents == params->target_contents ||
-      (swapped_in_instant && params->disposition == CURRENT_TAB)) {
+      (swapped_in && params->disposition == CURRENT_TAB)) {
     // The navigation occurred in the source tab.
     params->browser->UpdateUIForNavigationInTab(params->target_contents,
                                                 params->transition,

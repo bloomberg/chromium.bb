@@ -40,6 +40,7 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/common/chrome_switches.h"
@@ -409,10 +410,16 @@ void PrerenderManager::CancelAllPrerenders() {
   }
 }
 
-bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
-                                               const GURL& url) {
+bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
+                                               chrome::NavigateParams* params) {
   DCHECK(CalledOnValidThread());
+
+  content::WebContents* web_contents = params->target_contents;
   DCHECK(!IsWebContentsPrerendering(web_contents, NULL));
+
+  // Don't prerender if the navigation involves some special parameters.
+  if (params->uses_post || !params->extra_headers.empty())
+    return false;
 
   DeleteOldEntries();
   to_delete_prerenders_.clear();
@@ -545,6 +552,9 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   CoreTabHelper::FromWebContents(old_web_contents)->delegate()->
       SwapTabContents(old_web_contents, new_web_contents);
   prerender_contents->CommitHistory(new_web_contents);
+
+  // Record the new target_contents for the callers.
+  params->target_contents = new_web_contents;
 
   GURL icon_url = prerender_contents->icon_url();
 

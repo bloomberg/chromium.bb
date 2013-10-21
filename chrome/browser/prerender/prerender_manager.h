@@ -38,6 +38,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace chrome {
+struct NavigateParams;
+}
+
 namespace content {
 class WebContents;
 }
@@ -156,11 +160,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Cancels all active prerenders.
   void CancelAllPrerenders();
 
-  // If |url| matches a valid prerendered page, try to swap it into
-  // |web_contents| and merge browsing histories. Returns |true| if a
-  // prerendered page is swapped in, |false| otherwise.
-  bool MaybeUsePrerenderedPage(content::WebContents* web_contents,
-                               const GURL& url);
+  // If |url| matches a valid prerendered page and |params| are compatible, try
+  // to swap it and merge browsing histories. Returns |true| and updates
+  // |params->target_contents| if a prerendered page is swapped in, |false|
+  // otherwise.
+  bool MaybeUsePrerenderedPage(const GURL& url,
+                               chrome::NavigateParams* params);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.
