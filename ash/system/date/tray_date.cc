@@ -81,6 +81,7 @@ class DateDefaultView : public views::View,
     help_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
     view->AddButton(help_);
 
+#if !defined(OS_WIN)
     if (login != ash::user::LOGGED_IN_LOCKED &&
         login != ash::user::LOGGED_IN_RETAIL_MODE) {
       shutdown_ = new ash::internal::TrayPopupHeaderButton(this,
@@ -105,6 +106,7 @@ class DateDefaultView : public views::View,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCK));
       view->AddButton(lock_);
     }
+#endif  // !defined(OS_WIN)
   }
 
   virtual ~DateDefaultView() {}
