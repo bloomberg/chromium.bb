@@ -48,8 +48,10 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
   // along (and so shouldn't be canceled) and those that got moved, so
   // just leave them all where they are.
   if (new_capture_window) {
-    ui::GestureRecognizer::Get()->TransferEventsTo(old_capture_window,
-        new_capture_window);
+    for (Roots::const_iterator i = roots.begin(); i != roots.end(); ++i) {
+      (*i)->gesture_recognizer()->TransferEventsTo(
+          old_capture_window, new_capture_window);
+    }
   }
 
   capture_window_ = new_capture_window;

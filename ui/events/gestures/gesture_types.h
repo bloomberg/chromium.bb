@@ -206,10 +206,8 @@ class EVENTS_EXPORT GestureEventHelper {
   virtual ~GestureEventHelper() {
   }
 
-  // Returns true if this helper can dispatch events to |consumer|.
-  virtual bool CanDispatchToConsumer(GestureConsumer* consumer) = 0;
-  virtual void DispatchLongPressGestureEvent(GestureEvent* event) = 0;
-  virtual void DispatchCancelTouchEvent(TouchEvent* event) = 0;
+  virtual bool DispatchLongPressGestureEvent(GestureEvent* event) = 0;
+  virtual bool DispatchCancelTouchEvent(TouchEvent* event) = 0;
 };
 
 }  // namespace ui

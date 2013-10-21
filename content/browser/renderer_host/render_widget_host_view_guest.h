@@ -186,9 +186,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #endif
 
   // Overridden from ui::GestureEventHelper.
-  virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) OVERRIDE;
-  virtual void DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
  protected:
   friend class RenderWidgetHostView;

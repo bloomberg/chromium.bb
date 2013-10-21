@@ -59,11 +59,6 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #endif
 
-#if defined(OS_WIN) && defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/events/gestures/gesture_recognizer.h"
-#endif
-
 using content::OpenURLParams;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -902,18 +897,6 @@ TabDragController::DragBrowserToNewTabStrip(
       target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
     else
       browser_widget->ReleaseCapture();
-#if defined(OS_WIN) && defined(USE_AURA)
-    // The Gesture recognizer does not work well currently when capture changes
-    // while a touch gesture is in progress. So we need to manually transfer
-    // gesture sequence and the GR's touch events queue to the new window. This
-    // should really be done somewhere in capture change code and or inside the
-    // GR. But we currently do not have a consistent way for doing it that would
-    // work in all cases. Hence this hack.
-    ui::GestureRecognizer::Get()->TransferEventsTo(
-        browser_widget->GetNativeView(),
-        target_tabstrip->GetWidget()->GetNativeView());
-#endif
-
     // The window is going away. Since the drag is still on going we don't want
     // that to effect the position of any windows.
     SetWindowPositionManaged(browser_widget->GetNativeView(), false);
@@ -2244,8 +2227,9 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
     aura::Window* widget_window = widget->GetNativeWindow();
     DCHECK(widget_window->GetRootWindow());
     gfx::Point touch_point;
-    bool got_touch_point = ui::GestureRecognizer::Get()->
-        GetLastTouchPointForTarget(widget_window, &touch_point);
+    bool got_touch_point = widget_window->GetRootWindow()->
+        gesture_recognizer()->GetLastTouchPointForTarget(widget_window,
+                                                         &touch_point);
     DCHECK(got_touch_point);
     ash::wm::ConvertPointToScreen(widget_window->GetRootWindow(), &touch_point);
     return touch_point;

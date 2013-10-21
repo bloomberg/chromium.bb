@@ -99,7 +99,8 @@ void TransferTouchIdToConsumerMap(
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizerImpl, public:
 
-GestureRecognizerImpl::GestureRecognizerImpl() {
+GestureRecognizerImpl::GestureRecognizerImpl(GestureEventHelper* helper)
+    : helper_(helper) {
   gesture_consumer_ignorer_.reset(new GestureConsumerIgnorer());
 }
 
@@ -158,15 +159,13 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
   // Don't send a cancel to |current_consumer|, unless |new_consumer| is NULL.
   for (TouchIdToConsumerMap::iterator i = touch_id_target_.begin();
        i != touch_id_target_.end(); ++i) {
-    if (i->second && i->second != new_consumer &&
+    if (i->second != new_consumer &&
         (i->second != current_consumer || new_consumer == NULL) &&
         i->second != gesture_consumer_ignorer_.get()) {
       TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
                              ui::EF_IS_SYNTHESIZED, i->first,
                              ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
-      GestureEventHelper* helper = FindDispatchHelperForConsumer(i->second);
-      if (helper)
-        helper->DispatchCancelTouchEvent(&touch_event);
+      helper_->DispatchCancelTouchEvent(&touch_event);
       DCHECK_EQ(gesture_consumer_ignorer_.get(), i->second);
     }
   }
@@ -195,8 +194,8 @@ bool GestureRecognizerImpl::GetLastTouchPointForTarget(
 // GestureRecognizerImpl, protected:
 
 GestureSequence* GestureRecognizerImpl::CreateSequence(
-    GestureSequenceDelegate* delegate) {
-  return new GestureSequence(delegate);
+    GestureEventHelper* helper) {
+  return new GestureSequence(helper);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -206,7 +205,7 @@ GestureSequence* GestureRecognizerImpl::GetGestureSequenceForConsumer(
     GestureConsumer* consumer) {
   GestureSequence* gesture_sequence = consumer_sequence_[consumer];
   if (!gesture_sequence) {
-    gesture_sequence = CreateSequence(this);
+    gesture_sequence = CreateSequence(helper_);
     consumer_sequence_[consumer] = gesture_sequence;
   }
   return gesture_sequence;
@@ -244,62 +243,9 @@ void GestureRecognizerImpl::CleanupStateForConsumer(GestureConsumer* consumer) {
   RemoveConsumerFromMap(consumer, &touch_id_target_for_gestures_);
 }
 
-void GestureRecognizerImpl::AddGestureEventHelper(GestureEventHelper* helper) {
-  helpers_.push_back(helper);
-}
-
-void GestureRecognizerImpl::RemoveGestureEventHelper(
-    GestureEventHelper* helper) {
-  std::vector<GestureEventHelper*>::iterator it = std::find(helpers_.begin(),
-      helpers_.end(), helper);
-  if (it != helpers_.end())
-    helpers_.erase(it);
-}
-
-void GestureRecognizerImpl::DispatchLongPressGestureEvent(GestureEvent* event) {
-  GestureConsumer* consumer = GetTargetForGestureEvent(event);
-  if (consumer) {
-    GestureEventHelper* helper = FindDispatchHelperForConsumer(consumer);
-    if (helper)
-      helper->DispatchLongPressGestureEvent(event);
-  }
-}
-
-GestureEventHelper* GestureRecognizerImpl::FindDispatchHelperForConsumer(
-    GestureConsumer* consumer) {
-  std::vector<GestureEventHelper*>::iterator it;
-  for (it = helpers_.begin(); it != helpers_.end(); ++it) {
-    if ((*it)->CanDispatchToConsumer(consumer))
-      return (*it);
-  }
-  return NULL;
-}
-
 // GestureRecognizer, static
-GestureRecognizer* GestureRecognizer::Create() {
-  return new GestureRecognizerImpl();
-}
-
-static GestureRecognizerImpl* g_gesture_recognizer_instance = NULL;
-
-// GestureRecognizer, static
-GestureRecognizer* GestureRecognizer::Get() {
-  if (!g_gesture_recognizer_instance)
-    g_gesture_recognizer_instance = new GestureRecognizerImpl();
-  return g_gesture_recognizer_instance;
-}
-
-void SetGestureRecognizerForTesting(GestureRecognizer* gesture_recognizer) {
-  // Transfer helpers to the new GR.
-  std::vector<GestureEventHelper*>& helpers =
-      g_gesture_recognizer_instance->helpers();
-  std::vector<GestureEventHelper*>::iterator it;
-  for (it = helpers.begin(); it != helpers.end(); ++it)
-    gesture_recognizer->AddGestureEventHelper(*it);
-
-  helpers.clear();
-  g_gesture_recognizer_instance =
-      static_cast<GestureRecognizerImpl*>(gesture_recognizer);
+GestureRecognizer* GestureRecognizer::Create(GestureEventHelper* helper) {
+  return new GestureRecognizerImpl(helper);
 }
 
 }  // namespace ui

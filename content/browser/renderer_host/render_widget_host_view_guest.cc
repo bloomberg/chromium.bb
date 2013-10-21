@@ -54,16 +54,12 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       is_hidden_(host_->is_hidden()),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
 #if defined(OS_WIN) || defined(USE_AURA)
-  gesture_recognizer_.reset(ui::GestureRecognizer::Create());
-  gesture_recognizer_->AddGestureEventHelper(this);
+  gesture_recognizer_.reset(ui::GestureRecognizer::Create(this));
 #endif  // defined(OS_WIN) || defined(USE_AURA)
   host_->SetView(this);
 }
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {
-#if defined(OS_WIN) || defined(USE_AURA)
-  gesture_recognizer_->RemoveGestureEventHelper(this);
-#endif  // defined(OS_WIN) || defined(USE_AURA)
 }
 
 RenderWidgetHost* RenderWidgetHostViewGuest::GetRenderWidgetHost() const {
@@ -511,26 +507,21 @@ void RenderWidgetHostViewGuest::DestroyGuestView() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-bool RenderWidgetHostViewGuest::CanDispatchToConsumer(
-    ui::GestureConsumer* consumer) {
-  CHECK_EQ(static_cast<RenderWidgetHostViewGuest*>(consumer), this);
-  return true;
-}
-
-void RenderWidgetHostViewGuest::DispatchLongPressGestureEvent(
+bool RenderWidgetHostViewGuest::DispatchLongPressGestureEvent(
     ui::GestureEvent* event) {
-  ForwardGestureEventToRenderer(event);
+  return ForwardGestureEventToRenderer(event);
 }
 
-void RenderWidgetHostViewGuest::DispatchCancelTouchEvent(
+bool RenderWidgetHostViewGuest::DispatchCancelTouchEvent(
     ui::TouchEvent* event) {
   if (!host_)
-    return;
+    return false;
 
   WebKit::WebTouchEvent cancel_event;
   cancel_event.type = WebKit::WebInputEvent::TouchCancel;
   cancel_event.timeStampSeconds = event->time_stamp().InSecondsF();
   host_->ForwardTouchEventWithLatencyInfo(cancel_event, *event->latency());
+  return true;
 }
 
 bool RenderWidgetHostViewGuest::ForwardGestureEventToRenderer(

@@ -381,15 +381,14 @@ void UpdateGestureEventLatencyInfo(const TouchEvent& event,
 ////////////////////////////////////////////////////////////////////////////////
 // GestureSequence Public:
 
-GestureSequence::GestureSequence(GestureSequenceDelegate* delegate)
+GestureSequence::GestureSequence(GestureEventHelper* helper)
     : state_(GS_NO_GESTURE),
       flags_(0),
       pinch_distance_start_(0.f),
       pinch_distance_current_(0.f),
       scroll_type_(ST_FREE),
       point_count_(0),
-      delegate_(delegate) {
-  CHECK(delegate_);
+      helper_(helper) {
 }
 
 GestureSequence::~GestureSequence() {
@@ -1058,7 +1057,7 @@ void GestureSequence::AppendLongPressGestureEvent() {
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
       1 << point->touch_id()));
-  delegate_->DispatchLongPressGestureEvent(gesture.get());
+  helper_->DispatchLongPressGestureEvent(gesture.get());
 }
 
 void GestureSequence::AppendLongTapGestureEvent(const GesturePoint& point,

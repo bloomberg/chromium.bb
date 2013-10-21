@@ -31,23 +31,13 @@ enum ScrollType {
   ST_VERTICAL,
 };
 
-// Delegates dispatch of gesture events for which the GestureSequence does not
-// have enough context to dispatch itself.
-class EVENTS_EXPORT GestureSequenceDelegate {
- public:
-  virtual void DispatchLongPressGestureEvent(GestureEvent* event) = 0;
-
- protected:
-  virtual ~GestureSequenceDelegate() {}
-};
-
 // A GestureSequence recognizes gestures from touch sequences.
 class EVENTS_EXPORT GestureSequence {
  public:
   // Maximum number of points in a single gesture.
   static const int kMaxGesturePoints = 12;
 
-  explicit GestureSequence(GestureSequenceDelegate* delegate);
+  explicit GestureSequence(GestureEventHelper* consumer);
   virtual ~GestureSequence();
 
   typedef GestureRecognizer::Gestures Gestures;
@@ -229,7 +219,7 @@ class EVENTS_EXPORT GestureSequence {
   // Location of the last touch event.
   gfx::Point last_touch_location_;
 
-  GestureSequenceDelegate* delegate_;
+  GestureEventHelper* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureSequence);
 };

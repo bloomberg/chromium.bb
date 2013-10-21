@@ -13,7 +13,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/events/gestures/gesture_sequence.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
@@ -23,15 +22,12 @@ class GestureEventHelper;
 class GestureSequence;
 class TouchEvent;
 
-class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
-                                            public GestureSequenceDelegate {
+class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer {
  public:
   typedef std::map<int, GestureConsumer*> TouchIdToConsumerMap;
 
-  GestureRecognizerImpl();
+  explicit GestureRecognizerImpl(GestureEventHelper* helper);
   virtual ~GestureRecognizerImpl();
-
-  std::vector<GestureEventHelper*>& helpers() { return helpers_; }
 
   // Overridden from GestureRecognizer
   virtual GestureConsumer* GetTouchLockedTarget(TouchEvent* event) OVERRIDE;
@@ -45,7 +41,7 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
                                           gfx::Point* point) OVERRIDE;
 
  protected:
-  virtual GestureSequence* CreateSequence(GestureSequenceDelegate* delegate);
+  virtual GestureSequence* CreateSequence(GestureEventHelper* helper);
   virtual GestureSequence* GetGestureSequenceForConsumer(GestureConsumer* c);
 
  private:
@@ -58,15 +54,6 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
       ui::EventResult result,
       GestureConsumer* target) OVERRIDE;
   virtual void CleanupStateForConsumer(GestureConsumer* consumer) OVERRIDE;
-  virtual void AddGestureEventHelper(GestureEventHelper* helper) OVERRIDE;
-  virtual void RemoveGestureEventHelper(GestureEventHelper* helper) OVERRIDE;
-
-  // Overridden from ui::GestureSequenceDelegate.
-  virtual void DispatchLongPressGestureEvent(GestureEvent* event) OVERRIDE;
-
-  // Convenience method to find the GestureEventHelper that can dispatch events
-  // to a specific |consumer|.
-  GestureEventHelper* FindDispatchHelperForConsumer(GestureConsumer* consumer);
 
   std::map<GestureConsumer*, GestureSequence*> consumer_sequence_;
 
@@ -80,15 +67,10 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   // Touches cancelled by touch capture are routed to the
   // gesture_consumer_ignorer_.
   scoped_ptr<GestureConsumer> gesture_consumer_ignorer_;
-
-  std::vector<GestureEventHelper*> helpers_;
+  GestureEventHelper* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerImpl);
 };
-
-// Provided only for testing:
-EVENTS_EXPORT void SetGestureRecognizerForTesting(
-    GestureRecognizer* gesture_recognizer);
 
 }  // namespace ui
 

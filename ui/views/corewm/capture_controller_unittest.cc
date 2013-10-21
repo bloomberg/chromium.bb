@@ -161,8 +161,8 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, 0, ui::EventTimeForNow(), 1.0f,
       1.0f, 1.0f, 1.0f);
-  EXPECT_EQ(static_cast<ui::GestureConsumer*>(w2.get()),
-            ui::GestureRecognizer::Get()->GetTouchLockedTarget(
+  EXPECT_EQ(static_cast<ui::GestureConsumer*>(NULL),
+            root_window()->gesture_recognizer()->GetTouchLockedTarget(
                 &touch_event));
 }
 
