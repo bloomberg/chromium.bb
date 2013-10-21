@@ -74,41 +74,41 @@ body {
 .gallery[tools] .image-container[cursor='move'] {
   cursor: -webkit-image-set(
     url('../images/gallery/cursor_move.png') 1x,
-    url('../images/gallery/2x/cursor_move.png') 2x) 15 15;
+    url('../images/gallery/2x/cursor_move.png') 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='crop'] {
   cursor: -webkit-image-set(
     url('../images/gallery/cursor_crop.png') 1x,
-    url('../images/gallery/2x/cursor_crop.png') 2x) 15 15;
+    url('../images/gallery/2x/cursor_crop.png') 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='n-resize'],
 .gallery[tools] .image-container[cursor='s-resize'] {
   cursor: -webkit-image-set(
     url('../images/gallery/cursor_updown.png') 1x,
-    url('../images/gallery/2x/cursor_updown.png') 2x) 15 15;
+    url('../images/gallery/2x/cursor_updown.png') 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='e-resize'],
 .gallery[tools] .image-container[cursor='w-resize'] {
   cursor: -webkit-image-set(
     url('../images/gallery/cursor_leftright.png') 1x,
-    url('../images/gallery/2x/cursor_leftright.png') 2x) 15 15;
+    url('../images/gallery/2x/cursor_leftright.png') 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='nw-resize'],
 .gallery[tools] .image-container[cursor='se-resize'] {
   cursor: -webkit-image-set(
     url('../images/gallery/cursor_nwse.png') 1x,
-    url('../images/gallery/2x/cursor_nwse.png') 2x) 15 15;
+    url('../images/gallery/2x/cursor_nwse.png') 2x) 15 15, auto;
 }
 
 .gallery[tools] .image-container[cursor='ne-resize'],
 .gallery[tools] .image-container[cursor='sw-resize'] {
   cursor: -webkit-image-set(
     url('../images/gallery/cursor_swne.png') 1x,
-    url('../images/gallery/2x/cursor_swne.png') 2x) 15 15;
+    url('../images/gallery/2x/cursor_swne.png') 2x) 15 15, auto;
 }
 
 .gallery .image-container > .image {
