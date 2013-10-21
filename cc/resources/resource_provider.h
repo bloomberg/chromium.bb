@@ -390,8 +390,6 @@ class CC_EXPORT ResourceProvider {
     GLenum original_filter;
     GLenum filter;
     unsigned image_id;
-    unsigned bound_image_id;
-    bool dirty_image;
     GLenum texture_pool;
     GLint wrap_mode;
     bool lost;
@@ -456,6 +454,9 @@ class CC_EXPORT ResourceProvider {
                        GLenum target,
                        GLenum unit,
                        GLenum filter);
+  void UnbindForSampling(ResourceProvider::ResourceId resource_id,
+                         GLenum target,
+                         GLenum unit);
 
   // Returns NULL if the output_surface_ does not have a ContextProvider.
   WebKit::WebGraphicsContext3D* Context3d() const;

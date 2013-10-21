@@ -6,13 +6,6 @@
 
 namespace gfx {
 
-GLImageStub::GLImageStub() {
-}
-
-GLImageStub::~GLImageStub() {
-  Destroy();
-}
-
 void GLImageStub::Destroy() {
 }
 
@@ -27,10 +20,6 @@ bool GLImageStub::BindTexImage() {
 void GLImageStub::ReleaseTexImage() {
 }
 
-void GLImageStub::WillUseTexImage() {
-}
-
-void GLImageStub::DidUseTexImage() {
-}
+GLImageStub::~GLImageStub() {}
 
 }  // namespace gfx

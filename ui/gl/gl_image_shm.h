@@ -21,8 +21,6 @@ class GL_EXPORT GLImageShm : public GLImage {
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage() OVERRIDE;
   virtual void ReleaseTexImage() OVERRIDE;
-  virtual void WillUseTexImage() OVERRIDE;
-  virtual void DidUseTexImage() OVERRIDE;
 
  protected:
   virtual ~GLImageShm();

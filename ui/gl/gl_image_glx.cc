@@ -52,10 +52,6 @@ GLImageGLX::GLImageGLX(gfx::PluginWindowHandle window)
     glx_pixmap_(0) {
 }
 
-GLImageGLX::~GLImageGLX() {
-  Destroy();
-}
-
 bool GLImageGLX::Initialize() {
   if (!GLSurfaceGLX::IsTextureFromPixmapSupported()) {
     LOG(ERROR) << "GLX_EXT_texture_from_pixmap not supported.";
@@ -174,10 +170,8 @@ void GLImageGLX::ReleaseTexImage() {
   glXReleaseTexImageEXT(display_, glx_pixmap_, GLX_FRONT_LEFT_EXT);
 }
 
-void GLImageGLX::WillUseTexImage() {
-}
-
-void GLImageGLX::DidUseTexImage() {
+GLImageGLX::~GLImageGLX() {
+  Destroy();
 }
 
 }  // namespace gfx

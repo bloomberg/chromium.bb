@@ -114,10 +114,6 @@ class GPU_EXPORT Texture {
   // does not exist.
   gfx::GLImage* GetLevelImage(GLint target, GLint level) const;
 
-  bool HasImages() const {
-    return has_images_;
-  }
-
   // Returns true of the given dimensions are inside the dimensions of the
   // level and if the format and type match the level.
   bool ValidForTexture(
@@ -321,10 +317,6 @@ class GPU_EXPORT Texture {
   // texture.
   void UpdateCanRenderCondition();
 
-  // Updates the images count in all the managers referencing this
-  // texture.
-  void UpdateHasImages();
-
   // Increment the framebuffer state change count in all the managers
   // referencing this texture.
   void IncAllFramebufferStateChangeCount();
@@ -385,9 +377,6 @@ class GPU_EXPORT Texture {
   // Whether the texture is immutable and no further changes to the format
   // or dimensions of the texture object can be made.
   bool immutable_;
-
-  // Whether or not this texture has images.
-  bool has_images_;
 
   // Size in bytes this texture is assumed to take in memory.
   uint32 estimated_size_;
@@ -667,10 +656,6 @@ class GPU_EXPORT TextureManager {
     return num_uncleared_mips_ > 0;
   }
 
-  bool HaveImages() const {
-    return num_images_ > 0;
-  }
-
   GLuint black_texture_id(GLenum target) const {
     switch (target) {
       case GL_SAMPLER_2D:
@@ -773,7 +758,6 @@ class GPU_EXPORT TextureManager {
   void UpdateUnclearedMips(int delta);
   void UpdateCanRenderCondition(Texture::CanRenderCondition old_condition,
                                 Texture::CanRenderCondition new_condition);
-  void UpdateNumImages(int delta);
   void IncFramebufferStateChangeCount();
 
   MemoryTypeTracker* GetMemTracker(GLenum texture_pool);
@@ -797,7 +781,6 @@ class GPU_EXPORT TextureManager {
   int num_unrenderable_textures_;
   int num_unsafe_textures_;
   int num_uncleared_mips_;
-  int num_images_;
 
   // Counts the number of Textures allocated with 'this' as its manager.
   // Allows to check no Texture will outlive this.

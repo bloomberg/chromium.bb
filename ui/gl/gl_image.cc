@@ -19,14 +19,6 @@ void GLImage::ReleaseTexImage() {
   NOTIMPLEMENTED();
 }
 
-void GLImage::WillUseTexImage() {
-  NOTIMPLEMENTED();
-}
-
-void GLImage::DidUseTexImage() {
-  NOTIMPLEMENTED();
-}
-
 GLImage::~GLImage() {}
 
 }  // namespace gfx
