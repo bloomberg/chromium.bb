@@ -98,8 +98,6 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         'ChromeExtensionsCapabilityTest.*',
         # https://crbug.com/274650
         'ChromeDriverTest.testCloseWindow',
-        # https://code.google.com/p/chromedriver/issues/detail?id=259
-        'ChromeDriverTest.testSendKeysToElement',
         # https://code.google.com/p/chromedriver/issues/detail?id=270
         'ChromeDriverTest.testPopups',
         # https://code.google.com/p/chromedriver/issues/detail?id=298
