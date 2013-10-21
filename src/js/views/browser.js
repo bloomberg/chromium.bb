@@ -355,9 +355,11 @@ camera.views.Browser.prototype.onKeyPressed = function(event) {
       break;
     case 'End':
       this.model_.currentIndex = 0;
+      event.preventDefault();
       break;
     case 'Home':
       this.model_.currentIndex = this.model_.length - 1;
+      event.preventDefault();
       break;
     case 'U+007F':
       this.model_.deletePicture(currentPicture.picture,
