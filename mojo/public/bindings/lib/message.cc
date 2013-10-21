@@ -13,6 +13,7 @@ Message::Message()
 }
 
 Message::~Message() {
+  free(data);
 }
 
 }  // namespace mojo

@@ -27,6 +27,8 @@ class MessageBuilder {
 
  private:
   FixedBuffer buf_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
 };
 
 }  // namespace mojo

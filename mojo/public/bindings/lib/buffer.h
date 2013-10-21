@@ -76,7 +76,7 @@ class FixedBuffer : public Buffer {
   virtual ~FixedBuffer();
 
   // Grows the buffer by |num_bytes| and returns a pointer to the start of the
-  // addition. The resulting address is 8-byte aligned, and the contents of the
+  // addition. The resulting address is 8-byte aligned, and the content of the
   // memory is zero-filled.
   virtual void* Allocate(size_t num_bytes) MOJO_OVERRIDE;
 

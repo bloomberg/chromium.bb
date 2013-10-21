@@ -50,8 +50,6 @@ void ServiceProxy::Frobinate(const Foo* foo, bool baz, mojo::Handle port) {
   message.data = builder.Finish();
 
   receiver_->Accept(&message);
-
-  free(message.data);
 }
 
 }  // namespace sample

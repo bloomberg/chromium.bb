@@ -13,9 +13,7 @@ namespace mojo {
 // method in the parent class.
 // Use like:
 //   virtual void foo() OVERRIDE;
-#if defined(_MSC_VER)
-#define MOJO_OVERRIDE override
-#elif defined(__clang__)
+#if defined(_MSC_VER) || defined(__clang__)
 #define MOJO_OVERRIDE override
 #else
 #define MOJO_OVERRIDE

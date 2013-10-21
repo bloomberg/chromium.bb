@@ -31,10 +31,8 @@ struct Message {
 
 class MessageReceiver {
  public:
-  // The receiver may mutate the given message or take ownership of the its
-  // contents. Upon return, if message->data is non-null, then the caller
-  // regains ownership of the Message and should be responsible for freeing its
-  // data member.
+  // The receiver may mutate the given message or take ownership of its
+  // |message->data| member by setting it to NULL.
   virtual bool Accept(Message* message) = 0;
 };
 

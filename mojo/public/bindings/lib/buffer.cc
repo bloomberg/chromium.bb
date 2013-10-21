@@ -58,10 +58,15 @@ void* ScratchBuffer::AllocateInSegment(Segment* segment, size_t delta) {
 void ScratchBuffer::AddOverflowSegment(size_t delta) {
   if (delta < kMinSegmentSize)
     delta = kMinSegmentSize;
-  Segment* segment = static_cast<Segment*>(malloc(sizeof(Segment) + delta));
+
+  // Ensure segment buffer is aligned.
+  size_t segment_size = internal::Align(sizeof(Segment)) + delta;
+
+  Segment* segment = static_cast<Segment*>(malloc(segment_size));
   segment->next = overflow_;
   segment->cursor = reinterpret_cast<char*>(segment + 1);
   segment->end = segment->cursor + delta;
+
   overflow_ = segment;
 }
 
