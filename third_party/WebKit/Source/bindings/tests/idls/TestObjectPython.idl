@@ -122,9 +122,10 @@ interface TestObjectPython {
     [DoNotCheckSecurityOnSetter] attribute long doNotCheckSecurityOnSetterLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
     [GetterRaisesException] attribute long getterRaisesExceptionLongAttribute;
-    [ImplementedAs=implementedAsName] readonly attribute long implementedAsReadonlyLongAttribute;
-    [Custom, ImplementedAs=implementedAsNameWithCustom] readonly attribute long customImplementedAsReadonlyLongAttribute;
-    [CustomGetter, ImplementedAs=implementedAsNameWithCustomGetter] readonly attribute long customGetterImplementedAsReadonlyLongAttribute;
+    [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
+    [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;
+    [CustomGetter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customGetterImplementedAsLongAttribute;
+    [CustomSetter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
     [KeepAttributeAliveForGC] readonly attribute DocumentFragment readonlyDocumentFragmentAttribute;
     [MeasureAs=TestFeature] readonly attribute long measureAsReadonlyLongAttribute;
     [NotEnumerable] readonly attribute long notEnumerableReadonlyLongAttribute;
