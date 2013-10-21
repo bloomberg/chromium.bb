@@ -1,25 +1,27 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SHILL_PROFILE_CLIENT_STUB_H_
-#define CHROMEOS_DBUS_SHILL_PROFILE_CLIENT_STUB_H_
+#ifndef CHROMEOS_DBUS_FAKE_SHILL_PROFILE_CLIENT_H_
+#define CHROMEOS_DBUS_FAKE_SHILL_PROFILE_CLIENT_H_
 
 #include <map>
 #include <string>
 
 #include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 
 namespace chromeos {
 
 // A stub implementation of ShillProfileClient.
-class ShillProfileClientStub : public ShillProfileClient,
-                               public ShillProfileClient::TestInterface {
+class CHROMEOS_EXPORT FakeShillProfileClient :
+      public ShillProfileClient,
+      public ShillProfileClient::TestInterface {
  public:
-  ShillProfileClientStub();
-  virtual ~ShillProfileClientStub();
+  FakeShillProfileClient();
+  virtual ~FakeShillProfileClient();
 
   // ShillProfileClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
@@ -64,9 +66,9 @@ class ShillProfileClientStub : public ShillProfileClient,
   // necessary.
   ProfileMap profiles_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShillProfileClientStub);
+  DISALLOW_COPY_AND_ASSIGN(FakeShillProfileClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SHILL_PROFILE_CLIENT_STUB_H_
+#endif  // CHROMEOS_DBUS_FAKE_SHILL_PROFILE_CLIENT_H_

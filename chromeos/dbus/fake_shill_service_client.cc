@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/shill_service_client_stub.h"
+#include "chromeos/dbus/fake_shill_service_client.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -45,10 +45,10 @@ void PassStubServiceProperties(
 
 }  // namespace
 
-ShillServiceClientStub::ShillServiceClientStub() : weak_ptr_factory_(this) {
+FakeShillServiceClient::FakeShillServiceClient() : weak_ptr_factory_(this) {
 }
 
-ShillServiceClientStub::~ShillServiceClientStub() {
+FakeShillServiceClient::~FakeShillServiceClient() {
   STLDeleteContainerPairSecondPointers(
       observer_list_.begin(), observer_list_.end());
 }
@@ -56,22 +56,22 @@ ShillServiceClientStub::~ShillServiceClientStub() {
 
 // ShillServiceClient overrides.
 
-void ShillServiceClientStub::Init(dbus::Bus* bus) {
+void FakeShillServiceClient::Init(dbus::Bus* bus) {
 }
 
-void ShillServiceClientStub::AddPropertyChangedObserver(
+void FakeShillServiceClient::AddPropertyChangedObserver(
     const dbus::ObjectPath& service_path,
     ShillPropertyChangedObserver* observer) {
   GetObserverList(service_path).AddObserver(observer);
 }
 
-void ShillServiceClientStub::RemovePropertyChangedObserver(
+void FakeShillServiceClient::RemovePropertyChangedObserver(
     const dbus::ObjectPath& service_path,
     ShillPropertyChangedObserver* observer) {
   GetObserverList(service_path).RemoveObserver(observer);
 }
 
-void ShillServiceClientStub::GetProperties(
+void FakeShillServiceClient::GetProperties(
     const dbus::ObjectPath& service_path,
     const DictionaryValueCallback& callback) {
   base::DictionaryValue* nested_dict = NULL;
@@ -99,7 +99,7 @@ void ShillServiceClientStub::GetProperties(
                  base::Owned(result_properties.release())));
 }
 
-void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
+void FakeShillServiceClient::SetProperty(const dbus::ObjectPath& service_path,
                                          const std::string& name,
                                          const base::Value& value,
                                          const base::Closure& callback,
@@ -112,7 +112,7 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
-void ShillServiceClientStub::SetProperties(
+void FakeShillServiceClient::SetProperties(
     const dbus::ObjectPath& service_path,
     const base::DictionaryValue& properties,
     const base::Closure& callback,
@@ -128,7 +128,7 @@ void ShillServiceClientStub::SetProperties(
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
-void ShillServiceClientStub::ClearProperty(
+void FakeShillServiceClient::ClearProperty(
     const dbus::ObjectPath& service_path,
     const std::string& name,
     const base::Closure& callback,
@@ -144,7 +144,7 @@ void ShillServiceClientStub::ClearProperty(
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
-void ShillServiceClientStub::ClearProperties(
+void FakeShillServiceClient::ClearProperties(
     const dbus::ObjectPath& service_path,
     const std::vector<std::string>& names,
     const ListValueCallback& callback,
@@ -168,10 +168,10 @@ void ShillServiceClientStub::ClearProperties(
                  callback, base::Owned(results.release())));
 }
 
-void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
+void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
                                      const base::Closure& callback,
                                      const ErrorCallback& error_callback) {
-  VLOG(1) << "ShillServiceClientStub::Connect: " << service_path.value();
+  VLOG(1) << "FakeShillServiceClient::Connect: " << service_path.value();
   base::DictionaryValue* service_properties = NULL;
   if (!stub_services_.GetDictionary(
           service_path.value(), &service_properties)) {
@@ -200,7 +200,7 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
   }
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ShillServiceClientStub::ContinueConnect,
+      base::Bind(&FakeShillServiceClient::ContinueConnect,
                  weak_ptr_factory_.GetWeakPtr(),
                  service_path.value()),
       delay);
@@ -208,7 +208,7 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
   callback.Run();
 }
 
-void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
+void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
                                         const base::Closure& callback,
                                         const ErrorCallback& error_callback) {
   base::Value* service;
@@ -226,7 +226,7 @@ void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
   base::StringValue idle_value(shill::kStateIdle);
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ShillServiceClientStub::SetProperty,
+      base::Bind(&FakeShillServiceClient::SetProperty,
                  weak_ptr_factory_.GetWeakPtr(),
                  service_path,
                  shill::kStateProperty,
@@ -237,13 +237,13 @@ void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
   callback.Run();
 }
 
-void ShillServiceClientStub::Remove(const dbus::ObjectPath& service_path,
+void FakeShillServiceClient::Remove(const dbus::ObjectPath& service_path,
                                     const base::Closure& callback,
                                     const ErrorCallback& error_callback) {
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
-void ShillServiceClientStub::ActivateCellularModem(
+void FakeShillServiceClient::ActivateCellularModem(
     const dbus::ObjectPath& service_path,
     const std::string& carrier,
     const base::Closure& callback,
@@ -266,7 +266,7 @@ void ShillServiceClientStub::ActivateCellularModem(
   // Set Activated after a delay
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ShillServiceClientStub::SetCellularActivated,
+      base::Bind(&FakeShillServiceClient::SetCellularActivated,
                  weak_ptr_factory_.GetWeakPtr(),
                  service_path,
                  error_callback),
@@ -275,14 +275,14 @@ void ShillServiceClientStub::ActivateCellularModem(
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
-void ShillServiceClientStub::CompleteCellularActivation(
+void FakeShillServiceClient::CompleteCellularActivation(
     const dbus::ObjectPath& service_path,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
-void ShillServiceClientStub::GetLoadableProfileEntries(
+void FakeShillServiceClient::GetLoadableProfileEntries(
     const dbus::ObjectPath& service_path,
     const DictionaryValueCallback& callback) {
   // Provide a dictionary with a single { profile_path, service_path } entry
@@ -311,13 +311,13 @@ void ShillServiceClientStub::GetLoadableProfileEntries(
                  base::Owned(result_properties.release())));
 }
 
-ShillServiceClient::TestInterface* ShillServiceClientStub::GetTestInterface() {
+ShillServiceClient::TestInterface* FakeShillServiceClient::GetTestInterface() {
   return this;
 }
 
 // ShillServiceClient::TestInterface overrides.
 
-void ShillServiceClientStub::AddService(const std::string& service_path,
+void FakeShillServiceClient::AddService(const std::string& service_path,
                                         const std::string& name,
                                         const std::string& type,
                                         const std::string& state,
@@ -332,7 +332,7 @@ void ShillServiceClientStub::AddService(const std::string& service_path,
                          add_to_visible_list, add_to_watch_list);
 }
 
-void ShillServiceClientStub::AddServiceWithIPConfig(
+void FakeShillServiceClient::AddServiceWithIPConfig(
     const std::string& service_path,
     const std::string& name,
     const std::string& type,
@@ -366,7 +366,7 @@ void ShillServiceClientStub::AddServiceWithIPConfig(
         base::Value::CreateStringValue(ipconfig_path));
 }
 
-void ShillServiceClientStub::RemoveService(const std::string& service_path) {
+void FakeShillServiceClient::RemoveService(const std::string& service_path) {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       RemoveManagerService(service_path);
 
@@ -374,7 +374,7 @@ void ShillServiceClientStub::RemoveService(const std::string& service_path) {
   connect_behavior_.erase(service_path);
 }
 
-bool ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
+bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
                                                 const std::string& property,
                                                 const base::Value& value) {
   base::DictionaryValue* dict = NULL;
@@ -411,20 +411,20 @@ bool ShillServiceClientStub::SetServiceProperty(const std::string& service_path,
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
+      base::Bind(&FakeShillServiceClient::NotifyObserversPropertyChanged,
                  weak_ptr_factory_.GetWeakPtr(),
                  dbus::ObjectPath(service_path), changed_property));
   return true;
 }
 
-const base::DictionaryValue* ShillServiceClientStub::GetServiceProperties(
+const base::DictionaryValue* FakeShillServiceClient::GetServiceProperties(
     const std::string& service_path) const {
   const base::DictionaryValue* properties = NULL;
   stub_services_.GetDictionaryWithoutPathExpansion(service_path, &properties);
   return properties;
 }
 
-void ShillServiceClientStub::ClearServices() {
+void FakeShillServiceClient::ClearServices() {
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       ClearManagerServices();
 
@@ -432,12 +432,12 @@ void ShillServiceClientStub::ClearServices() {
   connect_behavior_.clear();
 }
 
-void ShillServiceClientStub::SetConnectBehavior(const std::string& service_path,
+void FakeShillServiceClient::SetConnectBehavior(const std::string& service_path,
                                 const base::Closure& behavior) {
   connect_behavior_[service_path] = behavior;
 }
 
-void ShillServiceClientStub::NotifyObserversPropertyChanged(
+void FakeShillServiceClient::NotifyObserversPropertyChanged(
     const dbus::ObjectPath& service_path,
     const std::string& property) {
   base::DictionaryValue* dict = NULL;
@@ -457,7 +457,7 @@ void ShillServiceClientStub::NotifyObserversPropertyChanged(
                     OnPropertyChanged(property, *value));
 }
 
-base::DictionaryValue* ShillServiceClientStub::GetModifiableServiceProperties(
+base::DictionaryValue* FakeShillServiceClient::GetModifiableServiceProperties(
     const std::string& service_path, bool create_if_missing) {
   base::DictionaryValue* properties = NULL;
   if (!stub_services_.GetDictionaryWithoutPathExpansion(service_path,
@@ -469,8 +469,8 @@ base::DictionaryValue* ShillServiceClientStub::GetModifiableServiceProperties(
   return properties;
 }
 
-ShillServiceClientStub::PropertyObserverList&
-ShillServiceClientStub::GetObserverList(const dbus::ObjectPath& device_path) {
+FakeShillServiceClient::PropertyObserverList&
+FakeShillServiceClient::GetObserverList(const dbus::ObjectPath& device_path) {
   std::map<dbus::ObjectPath, PropertyObserverList*>::iterator iter =
       observer_list_.find(device_path);
   if (iter != observer_list_.end())
@@ -480,7 +480,7 @@ ShillServiceClientStub::GetObserverList(const dbus::ObjectPath& device_path) {
   return *observer_list;
 }
 
-void ShillServiceClientStub::SetOtherServicesOffline(
+void FakeShillServiceClient::SetOtherServicesOffline(
     const std::string& service_path) {
   const base::DictionaryValue* service_properties = GetServiceProperties(
       service_path);
@@ -510,7 +510,7 @@ void ShillServiceClientStub::SetOtherServicesOffline(
   }
 }
 
-void ShillServiceClientStub::SetCellularActivated(
+void FakeShillServiceClient::SetCellularActivated(
     const dbus::ObjectPath& service_path,
     const ErrorCallback& error_callback) {
   SetProperty(service_path,
@@ -525,9 +525,9 @@ void ShillServiceClientStub::SetCellularActivated(
               error_callback);
 }
 
-void ShillServiceClientStub::ContinueConnect(
+void FakeShillServiceClient::ContinueConnect(
     const std::string& service_path) {
-  VLOG(1) << "ShillServiceClientStub::ContinueConnect: " << service_path;
+  VLOG(1) << "FakeShillServiceClient::ContinueConnect: " << service_path;
   base::DictionaryValue* service_properties = NULL;
   if (!stub_services_.GetDictionary(service_path, &service_properties)) {
     LOG(ERROR) << "Service not found: " << service_path;
@@ -553,7 +553,7 @@ void ShillServiceClientStub::ContinueConnect(
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
-            base::IgnoreResult(&ShillServiceClientStub::SetServiceProperty),
+            base::IgnoreResult(&FakeShillServiceClient::SetServiceProperty),
             weak_ptr_factory_.GetWeakPtr(),
             service_path,
             shill::kErrorProperty,

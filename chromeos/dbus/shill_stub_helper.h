@@ -15,7 +15,7 @@ namespace shill_stub_helper {
 CHROMEOS_EXPORT extern const char kSharedProfilePath[];
 
 // Add default devices, services and profiles. This works only if
-// DBusThreadManager was initialized with the Shill*ClientStubs.
+// DBusThreadManager was initialized with the FakeShill*Clients.
 void SetupDefaultEnvironment();
 
 std::string DevicePathForType(const std::string& type);

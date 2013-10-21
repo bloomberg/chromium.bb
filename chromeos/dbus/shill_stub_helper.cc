@@ -11,7 +11,6 @@
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_profile_client_stub.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

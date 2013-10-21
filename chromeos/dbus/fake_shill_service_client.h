@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SHILL_SERVICE_CLIENT_STUB_H_
-#define CHROMEOS_DBUS_SHILL_SERVICE_CLIENT_STUB_H_
+#ifndef CHROMEOS_DBUS_FAKE_SHILL_SERVICE_CLIENT_H_
+#define CHROMEOS_DBUS_FAKE_SHILL_SERVICE_CLIENT_H_
 
 #include <map>
 #include <string>
@@ -16,13 +16,14 @@
 
 namespace chromeos {
 
-// A stub implementation of ShillServiceClient. This works in close coordination
-// with ShillManagerClientStub and is not intended to be used independently.
-class ShillServiceClientStub : public ShillServiceClient,
-                               public ShillServiceClient::TestInterface {
+// A fake implementation of ShillServiceClient. This works in close coordination
+// with FakeShillManagerClient and is not intended to be used independently.
+class CHROMEOS_EXPORT FakeShillServiceClient :
+      public ShillServiceClient,
+      public ShillServiceClient::TestInterface {
  public:
-  ShillServiceClientStub();
-  virtual ~ShillServiceClientStub();
+  FakeShillServiceClient();
+  virtual ~FakeShillServiceClient();
 
   // ShillServiceClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
@@ -124,11 +125,11 @@ class ShillServiceClientStub : public ShillServiceClient,
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ShillServiceClientStub> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeShillServiceClient> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShillServiceClientStub);
+  DISALLOW_COPY_AND_ASSIGN(FakeShillServiceClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SHILL_SERVICE_CLIENT_STUB_H_
+#endif  // CHROMEOS_DBUS_FAKE_SHILL_SERVICE_CLIENT_H_

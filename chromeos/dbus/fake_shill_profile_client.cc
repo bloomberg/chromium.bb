@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/shill_profile_client_stub.h"
+#include "chromeos/dbus/fake_shill_profile_client.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -21,7 +21,7 @@
 
 namespace chromeos {
 
-struct ShillProfileClientStub::ProfileProperties {
+struct FakeShillProfileClient::ProfileProperties {
   base::DictionaryValue entries;
   base::DictionaryValue properties;
 };
@@ -36,27 +36,27 @@ void PassDictionary(
 
 }  // namespace
 
-ShillProfileClientStub::ShillProfileClientStub() {
+FakeShillProfileClient::FakeShillProfileClient() {
 }
 
-ShillProfileClientStub::~ShillProfileClientStub() {
+FakeShillProfileClient::~FakeShillProfileClient() {
   STLDeleteValues(&profiles_);
 }
 
-void ShillProfileClientStub::Init(dbus::Bus* bus) {
+void FakeShillProfileClient::Init(dbus::Bus* bus) {
 }
 
-void ShillProfileClientStub::AddPropertyChangedObserver(
+void FakeShillProfileClient::AddPropertyChangedObserver(
     const dbus::ObjectPath& profile_path,
     ShillPropertyChangedObserver* observer) {
 }
 
-void ShillProfileClientStub::RemovePropertyChangedObserver(
+void FakeShillProfileClient::RemovePropertyChangedObserver(
     const dbus::ObjectPath& profile_path,
     ShillPropertyChangedObserver* observer) {
 }
 
-void ShillProfileClientStub::GetProperties(
+void FakeShillProfileClient::GetProperties(
     const dbus::ObjectPath& profile_path,
     const DictionaryValueCallbackWithoutStatus& callback,
     const ErrorCallback& error_callback) {
@@ -77,7 +77,7 @@ void ShillProfileClientStub::GetProperties(
       base::Bind(&PassDictionary, callback, base::Owned(properties.release())));
 }
 
-void ShillProfileClientStub::GetEntry(
+void FakeShillProfileClient::GetEntry(
     const dbus::ObjectPath& profile_path,
     const std::string& entry_path,
     const DictionaryValueCallbackWithoutStatus& callback,
@@ -98,7 +98,7 @@ void ShillProfileClientStub::GetEntry(
       base::Bind(&PassDictionary, callback, base::Owned(entry->DeepCopy())));
 }
 
-void ShillProfileClientStub::DeleteEntry(const dbus::ObjectPath& profile_path,
+void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
                                          const std::string& entry_path,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
@@ -120,11 +120,11 @@ void ShillProfileClientStub::DeleteEntry(const dbus::ObjectPath& profile_path,
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
-ShillProfileClient::TestInterface* ShillProfileClientStub::GetTestInterface() {
+ShillProfileClient::TestInterface* FakeShillProfileClient::GetTestInterface() {
   return this;
 }
 
-void ShillProfileClientStub::AddProfile(const std::string& profile_path,
+void FakeShillProfileClient::AddProfile(const std::string& profile_path,
                                         const std::string& userhash) {
   if (GetProfile(dbus::ObjectPath(profile_path), ErrorCallback()))
     return;
@@ -137,7 +137,7 @@ void ShillProfileClientStub::AddProfile(const std::string& profile_path,
       AddProfile(profile_path);
 }
 
-void ShillProfileClientStub::AddEntry(const std::string& profile_path,
+void FakeShillProfileClient::AddEntry(const std::string& profile_path,
                                       const std::string& entry_path,
                                       const base::DictionaryValue& properties) {
   ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
@@ -149,7 +149,7 @@ void ShillProfileClientStub::AddEntry(const std::string& profile_path,
       AddManagerService(entry_path, false /* visible */, false /* watch */);
 }
 
-bool ShillProfileClientStub::AddService(const std::string& profile_path,
+bool FakeShillProfileClient::AddService(const std::string& profile_path,
                                         const std::string& service_path) {
   ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
                                           ErrorCallback());
@@ -184,7 +184,7 @@ bool ShillProfileClientStub::AddService(const std::string& profile_path,
   return true;
 }
 
-void ShillProfileClientStub::GetProfilePaths(
+void FakeShillProfileClient::GetProfilePaths(
     std::vector<std::string>* profiles) {
   for (ProfileMap::iterator iter = profiles_.begin();
        iter != profiles_.end(); ++iter) {
@@ -192,7 +192,7 @@ void ShillProfileClientStub::GetProfilePaths(
   }
 }
 
-ShillProfileClientStub::ProfileProperties* ShillProfileClientStub::GetProfile(
+FakeShillProfileClient::ProfileProperties* FakeShillProfileClient::GetProfile(
     const dbus::ObjectPath& profile_path,
     const ErrorCallback& error_callback) {
   ProfileMap::const_iterator found = profiles_.find(profile_path.value());
