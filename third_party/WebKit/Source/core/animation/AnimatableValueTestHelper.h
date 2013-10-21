@@ -42,6 +42,7 @@
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
+#include "core/animation/AnimatableLengthPoint.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableNeutral.h"
 #include "core/animation/AnimatableRepeatable.h"
@@ -71,6 +72,7 @@ void PrintTo(const AnimatableDouble&, ::std::ostream*);
 void PrintTo(const AnimatableImage&, ::std::ostream*);
 void PrintTo(const AnimatableLength&, ::std::ostream*);
 void PrintTo(const AnimatableLengthBox&, ::std::ostream*);
+void PrintTo(const AnimatableLengthPoint&, ::std::ostream*);
 void PrintTo(const AnimatableLengthSize&, ::std::ostream*);
 void PrintTo(const AnimatableNeutral&, ::std::ostream*);
 void PrintTo(const AnimatableRepeatable&, ::std::ostream*);

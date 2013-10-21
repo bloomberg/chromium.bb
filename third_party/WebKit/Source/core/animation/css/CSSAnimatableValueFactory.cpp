@@ -39,6 +39,7 @@
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthBoxAndBool.h"
+#include "core/animation/AnimatableLengthPoint.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
@@ -113,6 +114,13 @@ inline static PassRefPtr<AnimatableValue> createFromLengthBoxAndBool(const Lengt
     return AnimatableLengthBoxAndBool::create(
         createFromLengthBox(lengthBox, style),
         flag);
+}
+
+inline static PassRefPtr<AnimatableValue> createFromLengthPoint(const LengthPoint& lengthPoint, const RenderStyle* style)
+{
+    return AnimatableLengthPoint::create(
+        createFromLength(lengthPoint.x(), style),
+        createFromLength(lengthPoint.y(), style));
 }
 
 inline static PassRefPtr<AnimatableValue> createFromLengthSize(const LengthSize& lengthSize, const RenderStyle* style)
@@ -295,6 +303,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->minHeight(), style);
     case CSSPropertyMinWidth:
         return createFromLength(style->minWidth(), style);
+    case CSSPropertyObjectPosition:
+        return createFromLengthPoint(style->objectPosition(), style);
     case CSSPropertyOpacity:
         return createFromDouble(style->opacity());
     case CSSPropertyOrphans:

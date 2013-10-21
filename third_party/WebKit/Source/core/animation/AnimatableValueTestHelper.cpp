@@ -38,6 +38,7 @@
 #include "core/animation/AnimatableImage.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
+#include "core/animation/AnimatableLengthPoint.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableNeutral.h"
 #include "core/animation/AnimatableSVGLength.h"
@@ -93,6 +94,15 @@ void PrintTo(const AnimatableLengthBox& animLengthBox, ::std::ostream* os)
     PrintTo(*(animLengthBox.top()), os);
     *os << ", ";
     PrintTo(*(animLengthBox.bottom()), os);
+    *os << ")";
+}
+
+void PrintTo(const AnimatableLengthPoint& animLengthPoint, ::std::ostream* os)
+{
+    *os << "AnimatableLengthPoint(";
+    PrintTo(*(animLengthPoint.x()), os);
+    *os << ", ";
+    PrintTo(*(animLengthPoint.y()), os);
     *os << ")";
 }
 
@@ -246,6 +256,8 @@ void PrintTo(const AnimatableValue& animValue, ::std::ostream* os)
         PrintTo(*(toAnimatableLength(&animValue)), os);
     else if (animValue.isLengthBox())
         PrintTo(*(toAnimatableLengthBox(&animValue)), os);
+    else if (animValue.isLengthPoint())
+        PrintTo(*(toAnimatableLengthPoint(&animValue)), os);
     else if (animValue.isLengthSize())
         PrintTo(*(toAnimatableLengthSize(&animValue)), os);
     else if (animValue.isNeutral())

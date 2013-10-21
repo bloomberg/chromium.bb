@@ -38,6 +38,7 @@
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthBoxAndBool.h"
+#include "core/animation/AnimatableLengthPoint.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
@@ -84,6 +85,14 @@ LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleRe
         animatableValueToLength(animatableLengthBox->right(), state, range),
         animatableValueToLength(animatableLengthBox->bottom(), state, range),
         animatableValueToLength(animatableLengthBox->left(), state, range));
+}
+
+LengthPoint animatableValueToLengthPoint(const AnimatableValue* value, const StyleResolverState& state, NumberRange range = AllValues)
+{
+    const AnimatableLengthPoint* animatableLengthPoint = toAnimatableLengthPoint(value);
+    return LengthPoint(
+        animatableValueToLength(animatableLengthPoint->x(), state, range),
+        animatableValueToLength(animatableLengthPoint->y(), state, range));
 }
 
 LengthSize animatableValueToLengthSize(const AnimatableValue* value, const StyleResolverState& state, NumberRange range)
@@ -355,6 +364,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyMinWidth:
         style->setMinWidth(animatableValueToLength(value, state, NonNegativeValues));
+        return;
+    case CSSPropertyObjectPosition:
+        style->setObjectPosition(animatableValueToLengthPoint(value, state));
         return;
     case CSSPropertyOpacity:
         style->setOpacity(toAnimatableDouble(value)->toDouble());

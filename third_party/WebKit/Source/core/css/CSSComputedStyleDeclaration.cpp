@@ -2187,8 +2187,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyObjectPosition:
             return cssValuePool().createValue(
                 Pair::create(
-                    cssValuePool().createValue(style->objectPosition().x()),
-                    cssValuePool().createValue(style->objectPosition().y()),
+                    zoomAdjustedPixelValueForLength(style->objectPosition().x(), style.get()),
+                    zoomAdjustedPixelValueForLength(style->objectPosition().y(), style.get()),
                     Pair::KeepIdenticalValues));
         case CSSPropertyOpacity:
             return cssValuePool().createValue(style->opacity(), CSSPrimitiveValue::CSS_NUMBER);

@@ -90,6 +90,13 @@ TEST_F(CoreAnimationAnimatableValueTestHelperTest, PrintTo)
             )));
 
     EXPECT_EQ(
+        ::std::string("AnimatableLengthPoint(AnimatableLength(5%), AnimatableLength(6px))"),
+        PrintToString(AnimatableLengthPoint::create(
+            AnimatableLength::create(CSSPrimitiveValue::create(5, CSSPrimitiveValue::CSS_PERCENTAGE).get()),
+            AnimatableLength::create(CSSPrimitiveValue::create(6, CSSPrimitiveValue::CSS_PX).get())
+            )));
+
+    EXPECT_EQ(
         ::std::string("AnimatableLengthSize(AnimatableLength(3rem), AnimatableLength(4pt))"),
         PrintToString(AnimatableLengthSize::create(
             AnimatableLength::create(CSSPrimitiveValue::create(3, CSSPrimitiveValue::CSS_REMS).get()),
