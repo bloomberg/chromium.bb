@@ -19,6 +19,7 @@ namespace trace_analyzer {
 TraceEvent::TraceEvent()
     : thread(0, 0),
       timestamp(0),
+      duration(0),
       phase(TRACE_EVENT_PHASE_BEGIN),
       other_event(NULL) {
 }
@@ -44,6 +45,7 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
 
   phase = *phase_str.data();
 
+  bool may_have_duration = (phase == TRACE_EVENT_PHASE_COMPLETE);
   bool require_origin = (phase != TRACE_EVENT_PHASE_METADATA);
   bool require_id = (phase == TRACE_EVENT_PHASE_ASYNC_BEGIN ||
                      phase == TRACE_EVENT_PHASE_ASYNC_STEP ||
@@ -60,6 +62,9 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
   if (require_origin && !dictionary->GetDouble("ts", &timestamp)) {
     LOG(ERROR) << "ts is missing from TraceEvent JSON";
     return false;
+  }
+  if (may_have_duration) {
+    dictionary->GetDouble("dur", &duration);
   }
   if (!dictionary->GetString("cat", &category)) {
     LOG(ERROR) << "cat is missing from TraceEvent JSON";
@@ -446,6 +451,12 @@ bool Query::GetMemberValueAsDouble(const TraceEvent& event,
     case EVENT_DURATION:
       if (the_event->has_other_event()) {
         *num = the_event->GetAbsTimeToOtherEvent();
+        return true;
+      }
+      return false;
+    case EVENT_COMPLETE_DURATION:
+      if (the_event->phase == TRACE_EVENT_PHASE_COMPLETE) {
+        *num = the_event->duration;
         return true;
       }
       return false;

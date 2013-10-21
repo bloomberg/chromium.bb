@@ -79,6 +79,31 @@ class ConvertableToTraceFormat : public RefCounted<ConvertableToTraceFormat> {
   friend class RefCounted<ConvertableToTraceFormat>;
 };
 
+struct TraceEventHandle {
+  TraceEventHandle()
+      : chunk_seq(0),
+        chunk_index(0),
+        event_index(0) {
+  }
+
+  TraceEventHandle(uint32 a_chunk_seq,
+                   size_t a_chunk_index,
+                   size_t a_event_index)
+      : chunk_seq(a_chunk_seq),
+        chunk_index(static_cast<uint16>(a_chunk_index)),
+        event_index(static_cast<uint16>(a_event_index)) {
+    DCHECK(chunk_seq);
+    DCHECK(a_chunk_index < (1u << 16));
+    DCHECK(a_event_index < (1u << 16));
+  }
+
+  bool IsNull() const { return chunk_seq == 0; }
+
+  uint32 chunk_seq;
+  uint16 chunk_index;
+  uint16 event_index;
+};
+
 const int kTraceMaxNumArgs = 2;
 
 class BASE_EXPORT TraceEvent {
@@ -116,6 +141,11 @@ class BASE_EXPORT TraceEvent {
 
   void Reset();
 
+  void UpdateDuration() {
+    DCHECK(duration_.ToInternalValue() == -1);
+    duration_ = TimeTicks::NowFromSystemTraceTime() - timestamp_;
+  }
+
   // Serialize event data to JSON
   static void AppendEventsAsJSON(const std::vector<TraceEvent>& events,
                                  size_t start,
@@ -132,6 +162,7 @@ class BASE_EXPORT TraceEvent {
   TimeTicks thread_timestamp() const { return thread_timestamp_; }
   char phase() const { return phase_; }
   int thread_id() const { return thread_id_; }
+  TimeDelta duration() const { return duration_; }
 
   // Exposed for unittesting:
 
@@ -145,10 +176,15 @@ class BASE_EXPORT TraceEvent {
 
   const char* name() const { return name_; }
 
+#if defined(OS_ANDROID)
+  void SendToATrace();
+#endif
+
  private:
   // Note: these are ordered by size (largest first) for optimal packing.
   TimeTicks timestamp_;
   TimeTicks thread_timestamp_;
+  TimeDelta duration_;
   // id_ can be used to store phase-specific data.
   unsigned long long id_;
   TraceValue arg_values_[kTraceMaxNumArgs];
@@ -174,7 +210,7 @@ class BASE_EXPORT TraceBufferChunk {
   }
 
   void Reset(uint32 new_seq);
-  TraceEvent* AddTraceEvent();
+  TraceEvent* AddTraceEvent(size_t* event_index);
   bool IsFull() const { return next_free_ == kTraceBufferChunkSize; }
 
   uint32 seq() const { return seq_; }
@@ -212,8 +248,7 @@ class BASE_EXPORT TraceBuffer {
   virtual bool IsFull() const = 0;
   virtual size_t Size() const = 0;
   virtual size_t Capacity() const = 0;
-  virtual const TraceEvent* GetEventAt(
-      size_t chunk_index, size_t event_index) const = 0;
+  virtual TraceEvent* GetEventByHandle(TraceEventHandle handle) = 0;
 
   // For iteration. Each TraceBuffer can only be iterated once.
   virtual const TraceBufferChunk* NextChunk() = 0;
@@ -471,7 +506,7 @@ class BASE_EXPORT TraceLog {
   // Called by TRACE_EVENT* macros, don't call this directly.
   // If |copy| is set, |name|, |arg_name1| and |arg_name2| will be deep copied
   // into the event; see "Memory scoping note" and TRACE_EVENT_COPY_XXX above.
-  void AddTraceEvent(
+  TraceEventHandle AddTraceEvent(
       char phase,
       const unsigned char* category_group_enabled,
       const char* name,
@@ -482,7 +517,7 @@ class BASE_EXPORT TraceLog {
       const unsigned long long* arg_values,
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
       unsigned char flags);
-  void AddTraceEventWithThreadIdAndTimestamp(
+  TraceEventHandle AddTraceEventWithThreadIdAndTimestamp(
       char phase,
       const unsigned char* category_group_enabled,
       const char* name,
@@ -503,6 +538,8 @@ class BASE_EXPORT TraceLog {
                                const char* category_group,
                                const void* id,
                                const std::string& extra);
+
+  void UpdateTraceEventDuration(TraceEventHandle handle);
 
   // For every matching event, a notification will be fired. NOTE: the
   // notification will fire for each matching event that has already occurred
@@ -525,7 +562,7 @@ class BASE_EXPORT TraceLog {
 
   // Allow tests to inspect TraceEvents.
   size_t GetEventsSize() const { return logged_events_->Size(); }
-  const TraceEvent* GetEventAt(size_t index);
+  TraceEvent* GetEventByHandle(TraceEventHandle handle);
 
   void SetProcessID(int process_id);
 
@@ -597,25 +634,12 @@ class BASE_EXPORT TraceLog {
   };
 
   class ThreadLocalEventBuffer;
+  class OptionalAutoLock;
 
   TraceLog();
   ~TraceLog();
   const unsigned char* GetCategoryGroupEnabledInternal(const char* name);
   void AddMetadataEventsWhileLocked();
-
-#if defined(OS_ANDROID)
-  void SendToATrace(
-      char phase,
-      const char* category_group,
-      const char* name,
-      unsigned long long id,
-      int num_args,
-      const char** arg_names,
-      const unsigned char* arg_types,
-      const unsigned long long* arg_values,
-      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-      unsigned char flags);
-#endif
 
   TraceBuffer* trace_buffer() const { return logged_events_.get(); }
   TraceBuffer* CreateTraceBuffer();
@@ -623,8 +647,11 @@ class BASE_EXPORT TraceLog {
   void OutputEventToConsoleWhileLocked(TraceEvent* trace_event);
 
   TraceEvent* AddEventToThreadSharedChunkWhileLocked(
-      NotificationHelper* notifier);
+      NotificationHelper* notifier, TraceEventHandle* handle);
   void CheckIfBufferIsFullWhileLocked(NotificationHelper* notifier);
+
+  TraceEvent* GetEventByHandleInternal(TraceEventHandle handle,
+                                       OptionalAutoLock* lock);
 
   // |generation| is used in the following callbacks to check if the callback
   // is called for the flush of the current |logged_events_|.

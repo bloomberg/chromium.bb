@@ -146,6 +146,8 @@ struct TraceEvent {
   // Stored as double to match its JSON representation.
   double timestamp;
 
+  double duration;
+
   char phase;
 
   std::string category;
@@ -206,6 +208,11 @@ class Query {
   // Return the absolute time between event and other event in microseconds.
   // Only works if Query::EventHasOther() == true.
   static Query EventDuration() { return Query(EVENT_DURATION); }
+
+  // Return the duration of a COMPLETE event.
+  static Query EventCompleteDuration() {
+    return Query(EVENT_COMPLETE_DURATION);
+  }
 
   static Query EventPhase() { return Query(EVENT_PHASE); }
 
@@ -343,6 +350,11 @@ class Query {
            Query(EVENT_HAS_OTHER);
   }
 
+  // Find COMPLETE events.
+  static Query MatchComplete() {
+    return (Query(EVENT_PHASE) == Query::Phase(TRACE_EVENT_PHASE_COMPLETE));
+  }
+
   // Find ASYNC_BEGIN events that have a corresponding ASYNC_END event.
   static Query MatchAsyncBeginWithNext() {
     return (Query(EVENT_PHASE) ==
@@ -353,6 +365,11 @@ class Query {
   // Find BEGIN events of given |name| which also have associated END events.
   static Query MatchBeginName(const std::string& name) {
     return (Query(EVENT_NAME) == Query(name)) && MatchBeginWithEnd();
+  }
+
+  // Find COMPLETE events of given |name|.
+  static Query MatchCompleteName(const std::string& name) {
+    return (Query(EVENT_NAME) == Query(name)) && MatchComplete();
   }
 
   // Match given Process ID and Thread ID.
@@ -402,6 +419,7 @@ class Query {
     EVENT_TID,
     EVENT_TIME,
     EVENT_DURATION,
+    EVENT_COMPLETE_DURATION,
     EVENT_PHASE,
     EVENT_CATEGORY,
     EVENT_NAME,

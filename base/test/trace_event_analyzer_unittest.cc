@@ -390,7 +390,52 @@ TEST_F(TraceEventAnalyzerTest, StringPattern) {
 }
 
 // Test that duration queries work.
-TEST_F(TraceEventAnalyzerTest, Duration) {
+TEST_F(TraceEventAnalyzerTest, BeginEndDuration) {
+  ManualSetUp();
+
+  const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(200);
+  // We will search for events that have a duration of greater than 90% of the
+  // sleep time, so that there is no flakiness.
+  int duration_cutoff_us = (kSleepTime.InMicroseconds() * 9) / 10;
+
+  BeginTracing();
+  {
+    TRACE_EVENT_BEGIN0("cat1", "name1"); // found by duration query
+    TRACE_EVENT_BEGIN0("noise", "name2"); // not searched for, just noise
+    {
+      TRACE_EVENT_BEGIN0("cat2", "name3"); // found by duration query
+      // next event not searched for, just noise
+      TRACE_EVENT_INSTANT0("noise", "name4", TRACE_EVENT_SCOPE_THREAD);
+      base::debug::HighResSleepForTraceTest(kSleepTime);
+      TRACE_EVENT_BEGIN0("cat2", "name5"); // not found (duration too short)
+      TRACE_EVENT_END0("cat2", "name5"); // not found (duration too short)
+      TRACE_EVENT_END0("cat2", "name3"); // found by duration query
+    }
+    TRACE_EVENT_END0("noise", "name2"); // not searched for, just noise
+    TRACE_EVENT_END0("cat1", "name1"); // found by duration query
+  }
+  EndTracing();
+
+  scoped_ptr<TraceAnalyzer>
+      analyzer(TraceAnalyzer::Create(output_.json_output));
+  ASSERT_TRUE(analyzer.get());
+  analyzer->AssociateBeginEndEvents();
+
+  TraceEventVector found;
+  analyzer->FindEvents(
+      Query::MatchBeginWithEnd() &&
+      Query::EventDuration() > Query::Int(duration_cutoff_us) &&
+      (Query::EventCategory() == Query::String("cat1") ||
+       Query::EventCategory() == Query::String("cat2") ||
+       Query::EventCategory() == Query::String("cat3")),
+      &found);
+  ASSERT_EQ(2u, found.size());
+  EXPECT_STREQ("name1", found[0]->name.c_str());
+  EXPECT_STREQ("name3", found[1]->name.c_str());
+}
+
+// Test that duration queries work.
+TEST_F(TraceEventAnalyzerTest, CompleteDuration) {
   ManualSetUp();
 
   const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(200);
@@ -419,8 +464,7 @@ TEST_F(TraceEventAnalyzerTest, Duration) {
 
   TraceEventVector found;
   analyzer->FindEvents(
-      Query::MatchBeginWithEnd() &&
-      Query::EventDuration() > Query::Int(duration_cutoff_us) &&
+      Query::EventCompleteDuration() > Query::Int(duration_cutoff_us) &&
       (Query::EventCategory() == Query::String("cat1") ||
        Query::EventCategory() == Query::String("cat2") ||
        Query::EventCategory() == Query::String("cat3")),
@@ -437,9 +481,10 @@ TEST_F(TraceEventAnalyzerTest, BeginEndAssocations) {
   BeginTracing();
   {
     TRACE_EVENT_END0("cat1", "name1"); // does not match out of order begin
-    TRACE_EVENT0("cat1", "name2");
+    TRACE_EVENT_BEGIN0("cat1", "name2");
     TRACE_EVENT_INSTANT0("cat1", "name3", TRACE_EVENT_SCOPE_THREAD);
     TRACE_EVENT_BEGIN0("cat1", "name1");
+    TRACE_EVENT_END0("cat1", "name2");
   }
   EndTracing();
 
