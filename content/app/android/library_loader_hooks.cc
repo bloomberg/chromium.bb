@@ -14,6 +14,7 @@
 #include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/tracked_objects.h"
 #include "content/app/android/app_jni_registrar.h"
@@ -105,6 +106,17 @@ static jint LibraryLoaded(JNIEnv* env, jclass clazz,
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   return 0;
+}
+
+static void RecordContentAndroidLinkerHistogram(
+    JNIEnv* env,
+    jclass clazz,
+    jboolean loaded_at_fixed_address_failed,
+    jboolean is_low_memory_device) {
+  UMA_HISTOGRAM_BOOLEAN("ContentAndroidLinker.LoadedAtFixedAddressFailed",
+                        loaded_at_fixed_address_failed);
+  UMA_HISTOGRAM_BOOLEAN("ContentAndroidLinker.IsLowMemoryDevice",
+                        is_low_memory_device);
 }
 
 void LibraryLoaderExitHook() {

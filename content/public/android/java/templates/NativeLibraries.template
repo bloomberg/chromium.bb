@@ -5,6 +5,54 @@
 package org.chromium.content.app;
 
 public class NativeLibraries {
+    /**
+     * IMPORTANT NOTE: The variables defined here must _not_ be 'final'.
+     *
+     * The reason for this is very subtle:
+     *
+     * - This template is used to generate several distinct, but similar
+     *   files used in different contexts:
+     *
+     *   o .../gen/templates/org/chromium/content/app/NativeLibraries.java
+     *
+     *     This file is used to build content.jar, which is the library
+     *     jar used by several content-based projects. However, the
+     *     corresponding NativeLibraries.class file will _not_ be part
+     *     of the final content.jar.
+     *
+     *   o .../$PROJECT/native_libraries_java/NativeLibraries.java
+     *
+     *     This file is used to build a content-based APK (e.g. $PROJECT
+     *     could be 'content_shell_apk'). Its content will depend on
+     *     this target's specific build configuration, and differ from
+     *     the source file above.
+     *
+     * - During the final link, all .jar files are linked together into
+     *   a single .dex file, and the second version of NativeLibraries.class
+     *   will be put into the final output file, and used at runtime.
+     *
+     * - If the variables were defined as 'final', their value would be
+     *   optimized out inside of 'content.jar', and could not be specialized
+     *   for every content-based program.
+     *
+     * This exotic scheme is used to avoid injecting project-specific, or
+     * even build-specific, values into the content layer. E.g. this is
+     * how the component build is supported on Android without modifying
+     * the sources of each and every Chromium-based target.
+     */
+    // Set to true to enable the use of the content Linker.
+#if defined(ENABLE_CONTENT_LINKER)
+    public static boolean USE_LINKER = true;
+#else
+    public static boolean USE_LINKER = false;
+#endif
+
+#if defined(ENABLE_CONTENT_LINKER_TESTS)
+    public static boolean ENABLE_LINKER_TESTS = true;
+#else
+    public static boolean ENABLE_LINKER_TESTS = false;
+#endif
+
     // This is the list of native libraries to be loaded (in the correct order)
     // by LibraryLoader.java.  The content java library is compiled with no
     // array defined, and then the build system creates a version of the file

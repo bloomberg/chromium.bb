@@ -1317,6 +1317,58 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          'target_name': 'content_linker_test_apk',
+          'type': 'none',
+          'dependencies': [
+            'content_android_linker_test',
+            'content.gyp:content_java',
+            'content_shell_java',
+          ],
+          'variables': {
+            'apk_name': 'ContentLinkerTest',
+            'java_in_dir': 'shell/android/linker_test_apk',
+            'resource_dir': 'shell/android/linker_test_apk/res',
+            'native_lib_target': 'libcontent_android_linker_test',
+            'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
+            'asset_location': '<(ant_build_out)/content_shell/assets',
+            'use_content_linker': '1',
+            'enable_content_linker_tests': '1',
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },
+        {
+          'target_name': 'content_android_linker_test',
+          'type': 'shared_library',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'dependencies': [
+            'content_android_linker_test_jni_headers',
+            'content_shell_lib',
+            # Required to include "content/public/browser/android/compositor.h"
+            # in content_linker_test_android.cc :-(
+            '../skia/skia.gyp:skia',
+          ],
+          'sources': [
+            'shell/android/linker_test_apk/content_linker_test_android.cc',
+            'shell/android/linker_test_apk/content_linker_test_linker_tests.cc',
+          ],
+        },
+        {
+          'target_name': 'content_android_linker_test_jni_headers',
+          'type': 'none',
+          'sources': [
+            'shell/android/linker_test_apk/src/org/chromium/content_linker_test_apk/LinkerTests.java',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/content/shell',
+            ],
+          },
+          'variables': {
+            'jni_gen_package': 'content/shell',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
           'target_name': 'video_decode_accelerator_unittest_apk',
           'type': 'none',
           'dependencies': [

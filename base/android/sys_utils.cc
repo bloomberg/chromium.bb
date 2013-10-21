@@ -7,7 +7,14 @@
 #include "base/sys_info.h"
 #include "jni/SysUtils_jni.h"
 
-const int64 kLowEndMemoryThreshold = 1024 * 1024 * 512; // 512 mb.
+// Any device that reports a physical RAM size less than this, in megabytes
+// is considered 'low-end'. IMPORTANT: Read the LinkerLowMemoryThresholdTest
+// comments in build/android/pylib/linker/test_case.py before modifying this
+// value.
+#define ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB 512
+
+const int64 kLowEndMemoryThreshold =
+    1024 * 1024 * ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB;
 
 // Defined and called by JNI
 static jboolean IsLowEndDevice(JNIEnv* env, jclass clazz) {

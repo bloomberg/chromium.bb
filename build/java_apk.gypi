@@ -48,7 +48,11 @@
 #    strings.xml files, if any.
 #  library_manifest_paths'- Paths to additional AndroidManifest.xml files from
 #    libraries.
-
+#  use_content_linker - Enable the content dynamic linker that allows sharing the
+#    RELRO section of the native libraries between the different processes.
+#  enable_content_linker_tests - Enable the content dynamic linker test support
+#    code. This allows a test APK to inject a Linker.TestRunner instance at
+#    runtime. Should only be used by the content_linker_test_apk target!!
 {
   'variables': {
     'additional_input_paths': [],
@@ -116,6 +120,8 @@
     'variables': {
       'variables': {
         'native_lib_target%': '',
+        'use_content_linker%': 0,
+        'enable_content_linker_tests%': 0,
       },
       'conditions': [
         ['gyp_managed_install == 1 and native_lib_target != ""', {
@@ -131,6 +137,8 @@
       ],
     },
     'native_lib_target%': '',
+    'use_content_linker%': 0,
+    'enable_content_linker_tests%': 0,
     'emma_instrument': '<(emma_coverage)',
     'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
     'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
@@ -164,6 +172,11 @@
         '<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
       ],
     }],
+    ['use_content_linker == 1', {
+      'dependencies': [
+        '<(DEPTH)/content/content.gyp:content_android_linker',
+      ],
+    }],
     ['native_lib_target != ""', {
       'variables': {
         'compile_input_paths': [ '<(native_libraries_java_stamp)' ],
@@ -190,9 +203,23 @@
       'actions': [
         {
           'variables': {
+            'conditions': [
+              ['use_content_linker == 1', {
+                'variables': {
+                  'linker_input_libraries': [
+                    '<(SHARED_LIB_DIR)/libcontent_android_linker.>(android_product_extension)',
+                  ],
+                }
+              }, {
+                'variables': {
+                  'linker_input_libraries': [],
+                },
+              }],
+            ],
             'input_libraries': [
               '<@(native_libs_paths)',
               '<@(extra_native_libs)',
+              '<@(linker_input_libraries)',
             ],
           },
           'includes': ['../build/android/write_ordered_libraries.gypi'],
@@ -217,6 +244,36 @@
         },
         {
           'action_name': 'native_libraries_<(_target_name)',
+          'variables': {
+            'conditions': [
+              ['use_content_linker == 1', {
+                'variables': {
+                  'linker_gcc_preprocess_defines': [
+                    '--defines', 'ENABLE_CONTENT_LINKER',
+                  ],
+                }
+              }, {
+                'variables': {
+                  'linker_gcc_preprocess_defines': [],
+                },
+              }],
+              ['enable_content_linker_tests == 1', {
+                'variables': {
+                  'linker_tests_gcc_preprocess_defines': [
+                    '--defines', 'ENABLE_CONTENT_LINKER_TESTS',
+                  ],
+                }
+              }, {
+                'variables': {
+                  'linker_tests_gcc_preprocess_defines': [],
+                },
+              }],
+            ],
+            'gcc_preprocess_defines': [
+              '<@(linker_gcc_preprocess_defines)',
+              '<@(linker_tests_gcc_preprocess_defines)',
+            ],
+          },
           'message': 'Creating NativeLibraries.java for <(_target_name).',
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -233,6 +290,7 @@
             '--output=<(native_libraries_java_file)',
             '--template=<(native_libraries_template)',
             '--stamp=<(native_libraries_java_stamp)',
+            '<@(gcc_preprocess_defines)',
           ],
         },
         {

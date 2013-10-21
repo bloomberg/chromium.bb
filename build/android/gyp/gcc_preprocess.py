@@ -14,8 +14,10 @@ from util import build_utils
 def DoGcc(options):
   build_utils.MakeDirectory(os.path.dirname(options.output))
 
-  gcc_cmd = [
-      'gcc',                 # invoke host gcc.
+  gcc_cmd = [ 'gcc' ]  # invoke host gcc.
+  if options.defines:
+    gcc_cmd.extend(sum(map(lambda w: ['-D', w], options.defines), []))
+  gcc_cmd.extend([
       '-E',                  # stop after preprocessing.
       '-D', 'ANDROID',       # Specify ANDROID define for pre-processor.
       '-x', 'c-header',      # treat sources as C header files
@@ -23,7 +25,7 @@ def DoGcc(options):
       '-I', options.include_path,
       '-o', options.output,
       options.template
-      ]
+      ])
 
   build_utils.CheckCallDie(gcc_cmd)
 
@@ -34,6 +36,7 @@ def main(argv):
   parser.add_option('--template', help='Path to template.')
   parser.add_option('--output', help='Path for generated file.')
   parser.add_option('--stamp', help='Path to touch on success.')
+  parser.add_option('--defines', help='Pre-defines macros', action='append')
 
   # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
   parser.add_option('--ignore', help='Ignored.')

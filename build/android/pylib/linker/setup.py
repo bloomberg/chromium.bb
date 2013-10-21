@@ -27,7 +27,8 @@ def Setup(options, devices):
   test_cases = [
       test_case.LinkerLibraryAddressTest,
       test_case.LinkerSharedRelroTest,
-      test_case.LinkerRandomizationTest ]
+      test_case.LinkerRandomizationTest,
+      test_case.LinkerLowMemoryThresholdTest ]
 
   low_memory_modes = [False, True]
   all_tests = [t(is_low_memory=m) for t in test_cases for m in low_memory_modes]

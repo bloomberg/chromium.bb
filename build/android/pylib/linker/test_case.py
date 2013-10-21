@@ -42,6 +42,7 @@ import subprocess
 import tempfile
 import time
 
+from pylib import constants
 from pylib import android_commands
 from pylib import flag_changer
 from pylib.base import base_test_result
@@ -51,6 +52,17 @@ ResultType = base_test_result.ResultType
 _PACKAGE_NAME='org.chromium.content_linker_test_apk'
 _ACTIVITY_NAME='.ContentLinkerTestActivity'
 _COMMAND_LINE_FILE='/data/local/tmp/content-linker-test-command-line'
+
+# Path to the Linker.java source file.
+_LINKER_JAVA_SOURCE_PATH = \
+    'content/public/android/java/src/org/chromium/content/app/Linker.java'
+
+# A regular expression used to extract the browser shared RELRO configuration
+# from the Java source file above.
+_RE_LINKER_BROWSER_CONFIG = \
+    re.compile(r'.*BROWSER_SHARED_RELRO_CONFIG\s+=\s+' + \
+               'BROWSER_SHARED_RELRO_CONFIG_(\S+)\s*;.*',
+               re.MULTILINE | re.DOTALL)
 
 # Logcat filters used during each test. Only the 'chromium' one is really
 # needed, but the logs are added to the TestResult in case of error, and
@@ -65,6 +77,38 @@ re_status_line = re.compile(r'(BROWSER|RENDERER)_LINKER_TEST: (FAIL|SUCCESS)')
 # Regular expression used to mach library load addresses in logcat.
 re_library_address = re.compile(
     r'(BROWSER|RENDERER)_LIBRARY_ADDRESS: (\S+) ([0-9A-Fa-f]+)')
+
+
+def _GetBrowserSharedRelroConfig():
+  """Returns a string corresponding to the Linker's configuration of shared
+     RELRO sections in the browser process. This parses the Java linker source
+     file to get the appropriate information.
+  Return:
+      None in case of error (e.g. could not locate the source file).
+     'NEVER' if the browser process shall never use shared RELROs.
+     'LOW_RAM_ONLY' if if uses it only on low-end devices.
+     'ALWAYS' if it always uses a shared RELRO.
+  """
+  source_path = \
+      os.path.join(constants.DIR_SOURCE_ROOT, _LINKER_JAVA_SOURCE_PATH)
+  if not os.path.exists(source_path):
+    logging.error('Could not find linker source file: ' + source_path)
+    return None
+
+  with open(source_path) as f:
+    configs = _RE_LINKER_BROWSER_CONFIG.findall(f.read())
+    if not configs:
+      logging.error(
+          'Can\'t find browser shared RELRO configuration value in ' + \
+          source_path)
+      return None
+
+    if configs[0] not in ['NEVER', 'LOW_RAM_ONLY', 'ALWAYS']:
+      logging.error('Unexpected browser config value: ' + configs[0])
+      return None
+
+    logging.info('Found linker browser shared RELRO config: ' + configs[0])
+    return configs[0]
 
 
 def _WriteCommandLineFile(adb, command_line, command_line_file):
@@ -401,10 +445,14 @@ class LinkerLibraryAddressTest(LinkerTestCaseBase):
       logging.error('Renderer libraries loaded at high addresses: %s', bad_libs)
       return ResultType.FAIL, logs
 
-    if self.is_low_memory:
-      # For low-memory devices, the libraries must all be loaded at the same
-      # addresses. This also implicitly checks that the browser libraries are at
-      # low addresses.
+    browser_config = _GetBrowserSharedRelroConfig()
+    if not browser_config:
+      return ResultType.FAIL, 'Bad linker source configuration'
+
+    if browser_config == 'ALWAYS' or \
+        (browser_config == 'LOW_RAM_ONLY' and self.is_low_memory):
+      # The libraries must all be loaded at the same addresses. This also
+      # implicitly checks that the browser libraries are at low addresses.
       addr_mismatches = []
       for lib_name, lib_address in browser_libs.iteritems():
         lib_address2 = renderer_libs[lib_name]
@@ -416,10 +464,10 @@ class LinkerLibraryAddressTest(LinkerTestCaseBase):
             addr_mismatches)
         return ResultType.FAIL, logs
 
-    # For regular devices, check that libraries are loaded at 'high-addresses'.
+    # Otherwise, check that libraries are loaded at 'high-addresses'.
     # Note that for low-memory devices, the previous checks ensure that they
     # were loaded at low-addresses.
-    if not self.is_low_memory:
+    else:
       bad_libs = []
       for lib_name, lib_address in browser_libs.iteritems():
         if lib_address < memory_boundary:
@@ -473,9 +521,14 @@ class LinkerRandomizationTest(LinkerTestCaseBase):
     renderer_status, renderer_logs = _CheckLoadAddressRandomization(
         renderer_lib_map_list, 'Renderer')
 
+    browser_config = _GetBrowserSharedRelroConfig()
+    if not browser_config:
+      return ResultType.FAIL, 'Bad linker source configuration'
+
     if not browser_status:
-      if self.is_low_memory:
-          return ResultType.FAIL, browser_logs
+      if browser_config == 'ALWAYS' or \
+          (browser_config == 'LOW_RAM_ONLY' and self.is_low_memory):
+        return ResultType.FAIL, browser_logs
 
       # IMPORTANT NOTE: The system's ASLR implementation seems to be very poor
       # when starting an activity process in a loop with "adb shell am start".
@@ -501,3 +554,67 @@ class LinkerRandomizationTest(LinkerTestCaseBase):
       return ResultType.FAIL, renderer_logs
 
     return ResultType.PASS, logs
+
+
+class LinkerLowMemoryThresholdTest(LinkerTestCaseBase):
+  """This test checks that the definitions for the low-memory device physical
+     RAM threshold are identical in the base/ and linker sources. Because these
+     two components should absolutely not depend on each other, it's difficult
+     to perform this check correctly at runtime inside the linker test binary
+     without introducing hairy dependency issues in the build, or complicated
+     plumbing at runtime.
+
+     To work-around this, this test looks directly into the sources for a
+     definition of the same constant that should look like:
+
+       #define ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB  <number>
+
+     And will check that the values for <number> are identical in all of
+     them."""
+
+  # A regular expression used to find the definition of the threshold in all
+  # sources:
+  _RE_THRESHOLD_DEFINITION = re.compile(
+      r'^\s*#\s*define\s+ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB\s+(\d+)\s*$',
+      re.MULTILINE)
+
+  # The list of source files, relative to DIR_SOURCE_ROOT, which must contain
+  # a line that matches the re above.
+  _SOURCES_LIST = [
+      'base/android/sys_utils.cc',
+      'content/common/android/linker/linker_jni.cc' ]
+
+  def _RunTest(self, adb):
+    failure = False
+    values = []
+    # First, collect all the values in all input sources.
+    re = LinkerLowMemoryThresholdTest._RE_THRESHOLD_DEFINITION
+    for source in LinkerLowMemoryThresholdTest._SOURCES_LIST:
+      source_path = os.path.join(constants.DIR_SOURCE_ROOT, source);
+      if not os.path.exists(source_path):
+        logging.error('Missing source file: ' + source_path)
+        failure = True
+        continue
+      with open(source_path) as f:
+        source_text = f.read()
+        # For some reason, re.match() never works here.
+        source_values = re.findall(source_text)
+        if not source_values:
+          logging.error('Missing low-memory threshold definition in ' + \
+                        source_path)
+          logging.error('Source:\n%s\n' % source_text)
+          failure = True
+          continue
+        values += source_values
+
+    # Second, check that they are all the same.
+    if not failure:
+      for value in values[1:]:
+        if value != values[0]:
+          logging.error('Value mismatch: ' + repr(values))
+          failure = True
+
+    if failure:
+      return ResultType.FAIL, 'Incorrect low-end memory threshold definitions!'
+
+    return ResultType.PASS, ''
