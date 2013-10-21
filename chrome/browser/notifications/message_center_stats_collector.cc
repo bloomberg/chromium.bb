@@ -134,5 +134,12 @@ void MessageCenterStatsCollector::OnCenterVisibilityChanged(
 }
 
 void MessageCenterStatsCollector::OnQuietModeChanged(bool in_quiet_mode) {
+  if (in_quiet_mode) {
+    content::RecordAction(
+        content::UserMetricsAction("Notifications.Mute"));
+  } else {
+    content::RecordAction(
+        content::UserMetricsAction("Notifications.Unmute"));
+  }
 }
 

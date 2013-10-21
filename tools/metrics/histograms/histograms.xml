@@ -8376,10 +8376,9 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.QuicSession.NumTotalStreams">
+<histogram name="Net.QuicSession.FinalTcpCwnd">
   <summary>
-    The total number of streams created by the client when the session is
-    closed.
+    The value of the TCP cubic sender's CWND when the session is closed.
   </summary>
 </histogram>
 
@@ -8389,9 +8388,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.QuicSession.FinalTcpCwnd">
+<histogram name="Net.QuicSession.NumTotalStreams">
   <summary>
-    The value of the TCP cubic sender's CWND when the session is closed.
+    The total number of streams created by the client when the session is
+    closed.
   </summary>
 </histogram>
 
@@ -17918,6 +17918,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SyncedNotification.Actions"
+    enum="SyncedNotificationActionType">
+  <summary>
+    The actions taken on synced notifications, recorded every time they happen.
+    This histogram will record every single event that happens separately.
+  </summary>
+</histogram>
+
 <histogram name="Tab.AgeUponRestoreFromColdStart" units="minutes">
   <summary>
     Age (time since the last display in previous sessions) of a tab being
@@ -27308,6 +27316,14 @@ other types of suffix sets.
   <int value="1" label="Failure"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Attempted"/>
+</enum>
+
+<enum name="SyncedNotificationActionType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Notification clicked"/>
+  <int value="2" label="Notification button clicked"/>
+  <int value="3" label="Notification closed by user"/>
+  <int value="4" label="Notification closed by system"/>
 </enum>
 
 <enum name="TabRestoreResult" type="int">
