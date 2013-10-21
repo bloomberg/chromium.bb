@@ -13,6 +13,7 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
+class Profile;
 class RenderProcessHost;
 
 // WebRtcLoggingHandlerHost handles operations regarding the WebRTC logging:
@@ -30,7 +31,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   typedef base::Callback<void(bool, const std::string&, const std::string&)>
       UploadDoneCallback;
 
-  WebRtcLoggingHandlerHost();
+  explicit WebRtcLoggingHandlerHost(Profile* profile);
 
   // Sets meta data that will be uploaded along with the log and also written
   // in the beginning of the log. Must be called on the IO thread before calling
@@ -110,6 +111,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
   scoped_ptr<base::SharedMemory> shared_memory_;
+
+  // The profile associated with our renderer process.
+  Profile* profile_;
 
   // These are only accessed on the IO thread, except when in STARTING state. In
   // this state we are protected since entering any function that alters the

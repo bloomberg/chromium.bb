@@ -7,15 +7,17 @@
 
 #include "chrome/browser/upload_list.h"
 
+class Profile;
+
 // Loads and parses a text file list of uploaded WebRTC logs.
 class WebRtcLogUploadList : public UploadList {
  public:
-  // Creates the WebRTC log upload list with the given callback delegate.
-  static WebRtcLogUploadList* Create(Delegate* delegate);
+  // Creates the WebRTC log upload list with the given callback delegate for
+  // a profile.
+  static WebRtcLogUploadList* Create(Delegate* delegate, Profile* profile);
 
-  // Used in this class when reading the list file and in WebRtcLogUploader when
-  // writing to the list file.
-  static const char* kWebRtcLogListFilename;
+  // Get the file path for the log list file for a profile.
+  static base::FilePath GetFilePathForProfile(Profile* profile);
 
   // Creates a new WebRTC log upload list with the given callback delegate.
   // |upload_log_path| is the full path to the file to read the list from.

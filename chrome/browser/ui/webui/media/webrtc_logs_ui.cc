@@ -73,7 +73,7 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
 class WebRtcLogsDOMHandler : public WebUIMessageHandler,
                              public WebRtcLogUploadList::Delegate {
  public:
-  explicit WebRtcLogsDOMHandler();
+  explicit WebRtcLogsDOMHandler(Profile* profile);
   virtual ~WebRtcLogsDOMHandler();
 
   // WebUIMessageHandler implementation.
@@ -102,9 +102,9 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(WebRtcLogsDOMHandler);
 };
 
-WebRtcLogsDOMHandler::WebRtcLogsDOMHandler()
+WebRtcLogsDOMHandler::WebRtcLogsDOMHandler(Profile* profile)
     : list_available_(false), js_request_pending_(false) {
-  upload_list_ = WebRtcLogUploadList::Create(this);
+  upload_list_ = WebRtcLogUploadList::Create(this, profile);
 }
 
 WebRtcLogsDOMHandler::~WebRtcLogsDOMHandler() {
@@ -167,10 +167,10 @@ void WebRtcLogsDOMHandler::UpdateUI() {
 ///////////////////////////////////////////////////////////////////////////////
 
 WebRtcLogsUI::WebRtcLogsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new WebRtcLogsDOMHandler());
+  Profile* profile = Profile::FromWebUI(web_ui);
+  web_ui->AddMessageHandler(new WebRtcLogsDOMHandler(profile));
 
   // Set up the chrome://webrtc-logs/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateWebRtcLogsUIHTMLSource());
 }
 

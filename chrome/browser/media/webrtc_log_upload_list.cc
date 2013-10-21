@@ -6,19 +6,25 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 
-// static
-const char* WebRtcLogUploadList::kWebRtcLogListFilename =
-    "webrtc_log_uploads.log";
+namespace {
+
+const char* kWebRtcLogListFilename = "webrtc_log_uploads.log";
+
+}
 
 // static
-WebRtcLogUploadList* WebRtcLogUploadList::Create(Delegate* delegate) {
-  base::FilePath log_dir_path;
-  PathService::Get(chrome::DIR_USER_DATA, &log_dir_path);
-  base::FilePath upload_log_path =
-      log_dir_path.AppendASCII(kWebRtcLogListFilename);
-  return new WebRtcLogUploadList(delegate, upload_log_path);
+WebRtcLogUploadList* WebRtcLogUploadList::Create(Delegate* delegate,
+                                                 Profile* profile) {
+  return new WebRtcLogUploadList(delegate, GetFilePathForProfile(profile));
+}
+
+// static
+base::FilePath WebRtcLogUploadList::GetFilePathForProfile(Profile* profile) {
+  base::FilePath log_dir_path = profile->GetPath();
+  return log_dir_path.AppendASCII(kWebRtcLogListFilename);
 }
 
 WebRtcLogUploadList::WebRtcLogUploadList(Delegate* delegate,

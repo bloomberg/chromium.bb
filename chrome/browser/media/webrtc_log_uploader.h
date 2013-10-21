@@ -15,6 +15,8 @@
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+class Profile;
+
 namespace base {
 class SharedMemory;
 }
@@ -26,8 +28,9 @@ class URLRequestContextGetter;
 
 typedef struct z_stream_s z_stream;
 
-// Used when uploading is done to inform about that it's done.
+// Used when uploading is done to perform post-upload actions.
 typedef struct {
+  Profile* profile;
   WebRtcLoggingHandlerHost::UploadDoneCallback callback;
   scoped_refptr<WebRtcLoggingHandlerHost> host;
 } WebRtcLogUploadDoneData;
@@ -62,7 +65,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // Notifies that that logging has stopped and that the log should be uploaded.
   // Decreases log count. May only be called if permission to log has been
   // granted by calling ApplyForStartLogging() and getting true in return. After
-  //  this function has been called, a new permission must be granted. Call
+  // this function has been called, a new permission must be granted. Call
   // either this function or LoggingStoppedDontUpload().
   void LoggingStoppedDoUpload(
       net::URLRequestContextGetter* request_context,
@@ -101,14 +104,11 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // time,id
   // etc.
   // where each line represents an uploaded log and "time" is Unix time.
-  void AddUploadedLogInfoToUploadListFile(const std::string& report_id);
-
-  void SetUploadPathForTesting(const base::FilePath& path) {
-    upload_list_path_ = path;
-  }
+  void AddUploadedLogInfoToUploadListFile(
+      const base::FilePath& upload_list_path,
+      const std::string& report_id);
 
   int log_count_;
-  base::FilePath upload_list_path_;
 
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
   // on the FILE thread.

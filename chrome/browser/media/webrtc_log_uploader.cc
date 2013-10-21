@@ -43,22 +43,21 @@ const char kMultipartBoundary[] =
 
 WebRtcLogUploader::WebRtcLogUploader()
     : log_count_(0),
-      post_data_(NULL) {
-  base::FilePath log_dir_path;
-  PathService::Get(chrome::DIR_USER_DATA, &log_dir_path);
-  upload_list_path_ =
-      log_dir_path.AppendASCII(WebRtcLogUploadList::kWebRtcLogListFilename);
-}
+      post_data_(NULL) {}
 
 WebRtcLogUploader::~WebRtcLogUploader() {}
 
 void WebRtcLogUploader::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  DCHECK(upload_done_data_.find(source) != upload_done_data_.end());
   int response_code = source->GetResponseCode();
   std::string report_id;
-  if (response_code == 200 && source->GetResponseAsString(&report_id))
-    AddUploadedLogInfoToUploadListFile(report_id);
-  DCHECK(upload_done_data_.find(source) != upload_done_data_.end());
+  if (response_code == 200 && source->GetResponseAsString(&report_id)) {
+    AddUploadedLogInfoToUploadListFile(
+        WebRtcLogUploadList::GetFilePathForProfile(
+            upload_done_data_[source].profile),
+        report_id);
+  }
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
       base::Bind(&WebRtcLoggingHandlerHost::UploadLogDone,
                  upload_done_data_[source].host));
@@ -249,11 +248,12 @@ void WebRtcLogUploader::DecreaseLogCount() {
 }
 
 void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
+    const base::FilePath& upload_list_path,
     const std::string& report_id) {
   std::string contents;
 
-  if (base::PathExists(upload_list_path_)) {
-    bool read_ok = base::ReadFileToString(upload_list_path_, &contents);
+  if (base::PathExists(upload_list_path)) {
+    bool read_ok = base::ReadFileToString(upload_list_path, &contents);
     DPCHECK(read_ok);
 
     // Limit the number of log entries to |kLogListLimitLines| - 1, to make room
@@ -277,7 +277,7 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
   contents += base::DoubleToString(time_now.ToDoubleT()) +
               "," + report_id + '\n';
 
-  int written = file_util::WriteFile(upload_list_path_, &contents[0],
+  int written = file_util::WriteFile(upload_list_path, &contents[0],
                                      contents.size());
   DPCHECK(written == static_cast<int>(contents.size()));
 }

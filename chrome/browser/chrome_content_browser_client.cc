@@ -898,7 +898,7 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->AddFilter(new TtsMessageFilter(id, profile));
 #if defined(ENABLE_WEBRTC)
   WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
-      new WebRtcLoggingHandlerHost();
+      new WebRtcLoggingHandlerHost(profile);
   host->AddFilter(webrtc_logging_handler_host);
   host->SetUserData(host, new base::UserDataAdapter<WebRtcLoggingHandlerHost>(
       webrtc_logging_handler_host));

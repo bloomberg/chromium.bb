@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
 #include "chrome/common/partial_circular_buffer.h"
@@ -92,9 +93,11 @@ std::string IPAddressToSensitiveString(const net::IPAddressNumber& address) {
 
 }  // namespace
 
-WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost()
-    : logging_state_(CLOSED),
+WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(Profile* profile)
+    : profile_(profile),
+      logging_state_(CLOSED),
       upload_log_on_render_close_(false) {
+  DCHECK(profile_);
 }
 
 WebRtcLoggingHandlerHost::~WebRtcLoggingHandlerHost() {}
@@ -350,6 +353,7 @@ void WebRtcLoggingHandlerHost::TriggerUploadLog() {
 
   logging_state_ = UPLOADING;
   WebRtcLogUploadDoneData upload_done_data;
+  upload_done_data.profile = profile_;
   upload_done_data.callback = upload_callback_;
   upload_done_data.host = this;
   upload_callback_.Reset();
