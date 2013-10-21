@@ -171,10 +171,12 @@ class WebMediaPlayerAndroid
   void OnTimeUpdate(const base::TimeDelta& current_time);
 
   // Functions called when media player status changes.
-  void OnMediaPlayerPlay();
-  void OnMediaPlayerPause();
+  void OnConnectedToRemoteDevice();
+  void OnDisconnectedFromRemoteDevice();
   void OnDidEnterFullscreen();
   void OnDidExitFullscreen();
+  void OnMediaPlayerPlay();
+  void OnMediaPlayerPause();
 
   // Called when the player is released.
   virtual void OnPlayerReleased();
@@ -255,7 +257,9 @@ class WebMediaPlayerAndroid
 #endif
 
  private:
+  void DrawRemotePlaybackIcon();
   void ReallocateVideoFrame();
+  void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
   void DidLoadMediaInfo(MediaInfoLoader::Status status);
 
   // Actually do the work for generateKeyRequest/addKey so they can easily
@@ -296,6 +300,9 @@ class WebMediaPlayerAndroid
 
   // The video frame object used for rendering by the compositor.
   scoped_refptr<media::VideoFrame> current_frame_;
+  base::Lock current_frame_lock_;
+
+  base::ThreadChecker main_thread_checker_;
 
   // Message loop for main renderer thread.
   const scoped_refptr<base::MessageLoopProxy> main_loop_;
@@ -335,6 +342,9 @@ class WebMediaPlayerAndroid
   // Current player states.
   WebKit::WebMediaPlayer::NetworkState network_state_;
   WebKit::WebMediaPlayer::ReadyState ready_state_;
+
+  // GL texture ID used to show the remote playback icon.
+  unsigned int remote_playback_texture_id_;
 
   // GL texture ID allocated to the video.
   unsigned int texture_id_;
@@ -416,6 +426,9 @@ class WebMediaPlayerAndroid
   // process, it will regularly update the |current_time_| by calling
   // OnTimeUpdate().
   double current_time_;
+
+  // Whether the browser is currently connected to a remote media player.
+  bool is_remote_;
 
   media::MediaLog* media_log_;
 

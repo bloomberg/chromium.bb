@@ -113,6 +113,8 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   void OnVideoSizeChanged(int player_id, int width, int height);
   void OnTimeUpdate(int player_id, base::TimeDelta current_time);
   void OnMediaPlayerReleased(int player_id);
+  void OnConnectedToRemoteDevice(int player_id);
+  void OnDisconnectedFromRemoteDevice(int player_id);
   void OnDidExitFullscreen(int player_id);
   void OnDidEnterFullscreen(int player_id);
   void OnPlayerPlay(int player_id);

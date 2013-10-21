@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
+#include "content/public/common/content_client.h"
 #include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
@@ -22,6 +23,7 @@
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "grit/content_resources.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/media_switches.h"
@@ -33,6 +35,10 @@
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "ui/gfx/image/image.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 #if defined(GOOGLE_TV)
@@ -79,6 +85,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       manager_(manager),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
+      remote_playback_texture_id_(0),
       texture_id_(0),
       texture_mailbox_sync_point_(0),
       stream_id_(0),
@@ -101,9 +108,12 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       player_type_(MEDIA_PLAYER_TYPE_URL),
       proxy_(proxy),
       current_time_(0),
+      is_remote_(false),
       media_log_(media_log) {
   DCHECK(proxy_);
   DCHECK(manager_);
+
+  DCHECK(main_thread_checker_.CalledOnValidThread());
 
   // We want to be notified of |main_loop_| destruction.
   base::MessageLoop::current()->AddDestructionObserver(this);
@@ -157,6 +167,13 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 
   if (stream_id_)
     stream_texture_factory_->DestroyStreamTexture(texture_id_);
+
+  if (remote_playback_texture_id_) {
+    WebKit::WebGraphicsContext3D* context =
+        stream_texture_factory_->Context3d();
+    if (context->makeContextCurrent())
+      context->deleteTexture(remote_playback_texture_id_);
+  }
 
   if (manager_)
     manager_->UnregisterMediaPlayer(player_id_);
@@ -497,7 +514,7 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  if (!texture_id_)
+  if (is_remote_ || !texture_id_)
     return false;
 
   // For hidden video element (with style "display:none"), ensure the texture
@@ -730,6 +747,25 @@ void WebMediaPlayerAndroid::OnTimeUpdate(const base::TimeDelta& current_time) {
   current_time_ = current_time.InSecondsF();
 }
 
+void WebMediaPlayerAndroid::OnConnectedToRemoteDevice() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(!media_source_delegate_);
+  DrawRemotePlaybackIcon();
+  is_remote_ = true;
+  SetNeedsEstablishPeer(false);
+}
+
+void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(!media_source_delegate_);
+  SetNeedsEstablishPeer(true);
+  if (!paused())
+    EstablishSurfaceTexturePeer();
+  is_remote_ = false;
+  ReallocateVideoFrame();
+  // TODO(sievers): Consider deleting remote_playback_texture_id_ here.
+}
+
 void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
   if (!manager_->IsInFullscreen(frame_)) {
     frame_->view()->willEnterFullScreen();
@@ -853,9 +889,109 @@ void WebMediaPlayerAndroid::Detach() {
   }
 
   media_source_delegate_.reset();
-  current_frame_ = NULL;
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    current_frame_ = NULL;
+  }
+  is_remote_ = false;
   manager_ = NULL;
   proxy_ = NULL;
+}
+
+void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (!video_weblayer_)
+    return;
+  WebKit::WebGraphicsContext3D* context = stream_texture_factory_->Context3d();
+  if (!context->makeContextCurrent())
+    return;
+
+  // TODO(johnme): Should redraw this frame if the layer bounds change; but
+  // there seems no easy way to listen for the layer resizing (as opposed to
+  // OnVideoSizeChanged, which is when the frame sizes of the video file
+  // change). Perhaps have to poll (on main thread of course)?
+  gfx::Size video_size_css_px = video_weblayer_->bounds();
+  float device_scale_factor = frame_->view()->deviceScaleFactor();
+  // canvas_size will be the size in device pixels when pageScaleFactor == 1
+  gfx::Size canvas_size(
+      static_cast<int>(video_size_css_px.width() * device_scale_factor),
+      static_cast<int>(video_size_css_px.height() * device_scale_factor));
+
+  SkBitmap bitmap;
+  bitmap.setConfig(
+      SkBitmap::kARGB_8888_Config, canvas_size.width(), canvas_size.height());
+  bitmap.allocPixels();
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorBLACK);
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
+  const SkBitmap* icon_bitmap =
+      content::GetContentClient()
+          ->GetNativeImageNamed(IDR_MEDIAPLAYER_REMOTE_PLAYBACK_ICON)
+          .ToSkBitmap();
+  // In order to get a reasonable margin around the icon:
+  // - the icon should be under half the frame width
+  // - the icon should be at most 3/5 of the frame height
+  // Additionally, on very large screens, the icon size should be capped. A max
+  // width of 320 was arbitrarily chosen; since this is half the resource's
+  // pixel width, it should look crisp even on 2x deviceScaleFactor displays.
+  int icon_width = 320;
+  icon_width = std::min(icon_width, canvas_size.width() / 2);
+  icon_width = std::min(icon_width,
+                        canvas_size.height() * icon_bitmap->width() /
+                            icon_bitmap->height() * 3 / 5);
+  int icon_height = icon_width * icon_bitmap->height() / icon_bitmap->width();
+  // Center the icon within the frame
+  SkRect icon_rect = SkRect::MakeXYWH((canvas_size.width() - icon_width) / 2,
+                                      (canvas_size.height() - icon_height) / 2,
+                                      icon_width,
+                                      icon_height);
+  canvas.drawBitmapRectToRect(
+      *icon_bitmap, NULL /* src */, icon_rect /* dest */, &paint);
+
+  if (!remote_playback_texture_id_)
+    remote_playback_texture_id_ = context->createTexture();
+  unsigned texture_target = GL_TEXTURE_2D;
+  context->bindTexture(texture_target, remote_playback_texture_id_);
+  context->texParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  context->texParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  context->texParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  context->texParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  {
+    SkAutoLockPixels lock(bitmap);
+    context->texImage2D(texture_target,
+                        0 /* level */,
+                        GL_RGBA /* internalformat */,
+                        bitmap.width(),
+                        bitmap.height(),
+                        0 /* border */,
+                        GL_RGBA /* format */,
+                        GL_UNSIGNED_BYTE /* type */,
+                        bitmap.getPixels());
+  }
+
+  gpu::Mailbox texture_mailbox;
+  context->genMailboxCHROMIUM(texture_mailbox.name);
+  context->produceTextureCHROMIUM(texture_target, texture_mailbox.name);
+  context->flush();
+  unsigned texture_mailbox_sync_point = context->insertSyncPoint();
+
+  scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
+      new VideoFrame::MailboxHolder(
+          texture_mailbox,
+          texture_mailbox_sync_point,
+          VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
+      texture_target,
+      canvas_size /* coded_size */,
+      gfx::Rect(canvas_size) /* visible_rect */,
+      canvas_size /* natural_size */,
+      base::TimeDelta() /* timestamp */,
+      VideoFrame::ReadPixelsCB(),
+      base::Closure() /* no_longer_needed_cb */);
+  SetCurrentFrameInternal(new_frame);
 }
 
 void WebMediaPlayerAndroid::ReallocateVideoFrame() {
@@ -863,15 +999,17 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     // VideoFrame::CreateHoleFrame is only defined under GOOGLE_TV.
 #if defined(GOOGLE_TV)
     if (!natural_size_.isEmpty()) {
-      current_frame_ = VideoFrame::CreateHoleFrame(natural_size_);
+      scoped_refptr<VideoFrame> new_frame =
+          VideoFrame::CreateHoleFrame(natural_size_);
+      SetCurrentFrameInternal(new_frame);
       // Force the client to grab the hole frame.
       client_->repaint();
     }
 #else
     NOTIMPLEMENTED() << "Hole punching not supported outside of Google TV";
 #endif
-  } else if (texture_id_) {
-    current_frame_ = VideoFrame::WrapNativeTexture(
+  } else if (!is_remote_ && texture_id_) {
+    scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
         new VideoFrame::MailboxHolder(
             texture_mailbox_,
             texture_mailbox_sync_point_,
@@ -880,6 +1018,7 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
         gfx::Rect(natural_size_), natural_size_, base::TimeDelta(),
         VideoFrame::ReadPixelsCB(),
         base::Closure());
+    SetCurrentFrameInternal(new_frame);
   }
 }
 
@@ -896,16 +1035,32 @@ void WebMediaPlayerAndroid::SetVideoFrameProviderClient(
     stream_texture_proxy_->SetClient(client);
 }
 
+void WebMediaPlayerAndroid::SetCurrentFrameInternal(
+    scoped_refptr<media::VideoFrame>& video_frame) {
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    current_frame_ = video_frame;
+  }
+}
+
 scoped_refptr<media::VideoFrame> WebMediaPlayerAndroid::GetCurrentFrame() {
+  scoped_refptr<VideoFrame> video_frame;
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    video_frame = current_frame_;
+  }
+
   if (!stream_texture_proxy_initialized_ && stream_texture_proxy_ &&
-      stream_id_ && !needs_external_surface_) {
-    gfx::Size natural_size = current_frame_->natural_size();
+      stream_id_ && !needs_external_surface_ && !is_remote_) {
+    gfx::Size natural_size = video_frame->natural_size();
+    // TODO(sievers): These variables are accessed on the wrong thread here.
     stream_texture_proxy_->BindToCurrentThread(stream_id_);
     stream_texture_factory_->SetStreamTextureSize(stream_id_, natural_size);
     stream_texture_proxy_initialized_ = true;
     cached_stream_texture_size_ = natural_size;
   }
-  return current_frame_;
+
+  return video_frame;
 }
 
 void WebMediaPlayerAndroid::PutCurrentFrame(

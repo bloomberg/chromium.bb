@@ -174,6 +174,12 @@ IPC_MESSAGE_CONTROL2(MediaPlayerMsg_ReadFromDemuxer,
 IPC_MESSAGE_CONTROL1(MediaPlayerMsg_MediaConfigRequest,
                      int /* demuxer_client_id */)
 
+IPC_MESSAGE_ROUTED1(MediaPlayerMsg_ConnectedToRemoteDevice,
+                    int /* player_id */)
+
+IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DisconnectedFromRemoteDevice,
+                    int /* player_id */)
+
 // Messages for controlling the media playback in browser process ----------
 
 // Destroy the media player object.

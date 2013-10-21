@@ -19,6 +19,10 @@ MediaPlayerAndroid::MediaPlayerAndroid(
 
 MediaPlayerAndroid::~MediaPlayerAndroid() {}
 
+bool MediaPlayerAndroid::IsRemote() const {
+  return false;
+}
+
 GURL MediaPlayerAndroid::GetUrl() {
   return GURL();
 }

@@ -39,6 +39,10 @@ bool WebMediaPlayerProxyAndroid::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaTimeUpdate, OnTimeUpdate)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaPlayerReleased,
                         OnMediaPlayerReleased)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_ConnectedToRemoteDevice,
+                        OnConnectedToRemoteDevice)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_DisconnectedFromRemoteDevice,
+                        OnDisconnectedFromRemoteDevice)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidEnterFullscreen, OnDidEnterFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidExitFullscreen, OnDidExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
@@ -156,6 +160,18 @@ void WebMediaPlayerProxyAndroid::OnMediaPlayerReleased(int player_id) {
   WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnPlayerReleased();
+}
+
+void WebMediaPlayerProxyAndroid::OnConnectedToRemoteDevice(int player_id) {
+  WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  if (player)
+    player->OnConnectedToRemoteDevice();
+}
+
+void WebMediaPlayerProxyAndroid::OnDisconnectedFromRemoteDevice(int player_id) {
+  WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  if (player)
+    player->OnDisconnectedFromRemoteDevice();
 }
 
 void WebMediaPlayerProxyAndroid::OnDidEnterFullscreen(int player_id) {

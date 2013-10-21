@@ -137,4 +137,8 @@ void StreamTextureFactoryImpl::SetStreamTextureSize(
   channel_->Send(new GpuChannelMsg_SetStreamTextureSize(stream_id, size));
 }
 
+WebKit::WebGraphicsContext3D* StreamTextureFactoryImpl::Context3d() {
+  return context_;
+}
+
 }  // namespace content

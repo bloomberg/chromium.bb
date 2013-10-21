@@ -185,4 +185,10 @@ void StreamTextureFactorySynchronousImpl::SetStreamTextureSize(
     int32 stream_id,
     const gfx::Size& size) {}
 
+WebKit::WebGraphicsContext3D*
+StreamTextureFactorySynchronousImpl::Context3d() {
+  DCHECK(context_provider_);
+  return context_provider_->Context3d();
+}
+
 }  // namespace content

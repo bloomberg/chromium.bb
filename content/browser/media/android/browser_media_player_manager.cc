@@ -571,12 +571,21 @@ void BrowserMediaPlayerManager::OnCancelKeyRequest(
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
   DCHECK(!GetPlayer(player->player_id()));
   players_.push_back(player);
+  if (player->IsRemote()) {
+    Send(new MediaPlayerMsg_ConnectedToRemoteDevice(routing_id(),
+                                                    player->player_id()));
+  }
 }
 
 void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
-    if ((*it)->player_id() == player_id) {
+    MediaPlayerAndroid* player = *it;
+    if (player->player_id() == player_id) {
+      if (player->IsRemote()) {
+        Send(new MediaPlayerMsg_DisconnectedFromRemoteDevice(
+            routing_id(), player->player_id()));
+      }
       players_.erase(it);
       break;
     }
@@ -592,6 +601,13 @@ scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
       previous_player = *it;
       players_.weak_erase(it);
       players_.push_back(player);
+      if (!previous_player->IsRemote() && player->IsRemote()) {
+        Send(new MediaPlayerMsg_ConnectedToRemoteDevice(
+            routing_id(), player->player_id()));
+      } else if (previous_player->IsRemote() && !player->IsRemote()) {
+        Send(new MediaPlayerMsg_DisconnectedFromRemoteDevice(
+            routing_id(), player->player_id()));
+      }
       break;
     }
   }

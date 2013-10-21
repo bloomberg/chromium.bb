@@ -52,6 +52,7 @@ class StreamTextureFactorySynchronousImpl : public StreamTextureFactory {
   virtual void DestroyStreamTexture(unsigned texture_id) OVERRIDE;
   virtual void SetStreamTextureSize(int32 stream_id,
                                     const gfx::Size& size) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
 
  private:
   CreateContextProviderCallback create_context_provider_callback_;
