@@ -155,10 +155,6 @@
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
-#endif
-
 using base::TimeDelta;
 using content::NativeWebKeyboardEvent;
 using content::SSLStatus;
@@ -578,28 +574,6 @@ bool BrowserView::ShouldShowAvatar() const {
 #if defined(OS_CHROMEOS)
   if (IsOffTheRecord() && !IsGuestSession())
     return true;
-
-  // Note: In case of the M-31 mode the window manager won't exist.
-  chrome::MultiUserWindowManager* window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
-  if (window_manager) {
-    // This function is called via BrowserNonClientFrameView::UpdateAvatarInfo
-    // during the creation of the BrowserWindow, so browser->window() will not
-    // yet be set. In this case we can safely return false.
-    if (!browser_->window())
-      return false;
-
-    // If the window is shown on a different desktop than the user, it should
-    // have the avatar icon.
-    aura::Window* window = browser_->window()->GetNativeWindow();
-
-    // Note: When the window manager the window is either on it's owners desktop
-    // (and shows no icon) or it is now (in which it will show an icon). So we
-    // can return here.
-    return !window_manager->IsWindowOnDesktopOfUser(
-        window,
-        window_manager->GetWindowOwner(window));
-  }
 #else
   if (IsOffTheRecord())  // Desktop guest is incognito and needs avatar.
     return true;

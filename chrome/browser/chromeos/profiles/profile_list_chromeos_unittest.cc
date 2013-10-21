@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
@@ -301,26 +300,7 @@ TEST_F(ProfileListChromeOSTest, ChangeOnNotify) {
   EXPECT_EQ(name3, item3.name);
 }
 
-TEST_F(ProfileListChromeOSTest, DontShowAvatarMenu) {
-  // If in the new M-32 UX mode the icon gets shown, the menu will not.
-  string16 name1(ASCIIToUTF16("p1"));
-  string16 name2(ASCIIToUTF16("p2"));
-
-  AddProfile(name1, true);
-
-  // Should only show avatar menu with multiple users.
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
-
-  AddProfile(name2, false);
-
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
-}
-
-TEST_F(ProfileListChromeOSTest, ShowAvatarMenuInM31) {
-  // In M-31 mode, the menu will get shown.
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  cl->AppendSwitch(ash::switches::kAshEnableFullMultiProfileMode);
-
+TEST_F(ProfileListChromeOSTest, ShowAvatarMenu) {
   string16 name1(ASCIIToUTF16("p1"));
   string16 name2(ASCIIToUTF16("p2"));
 

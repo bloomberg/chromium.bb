@@ -91,7 +91,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     avatar = rb.GetImageNamed(browser_view_->GetGuestIconResourceID());
   } else if (browser_view_->IsOffTheRecord()) {
     avatar = rb.GetImageNamed(browser_view_->GetOTRIconResourceID());
-  } else if (avatar_button_) {
+  } else if (AvatarMenu::ShouldShowAvatarMenu()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     Profile* profile = browser_view_->browser()->profile();
@@ -103,9 +103,6 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     AvatarMenu::GetImageForMenuButton(browser_view_->browser()->profile(),
                                       &avatar,
                                       &is_rectangle);
-    // Disable the menu when we should not show the menu.
-    if (!AvatarMenu::ShouldShowAvatarMenu())
-      avatar_button_->SetEnabled(false);
   }
   if (avatar_button_) {
     avatar_button_->SetAvatarIcon(avatar, is_rectangle);
