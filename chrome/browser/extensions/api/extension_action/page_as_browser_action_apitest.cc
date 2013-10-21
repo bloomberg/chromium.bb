@@ -91,7 +91,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
     ResultCatcher catcher;
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
-    service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
+    service->toolbar_model()->ExecuteBrowserAction(
+        extension, browser(), NULL, true);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 
@@ -135,7 +136,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, AddPopup) {
     ResultCatcher catcher;
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
-    service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
+    service->toolbar_model()->ExecuteBrowserAction(
+        extension, browser(), NULL, true);
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -202,5 +204,5 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Getters) {
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
-}
+}  // namespace
 }  // namespace extensions

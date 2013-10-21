@@ -33,7 +33,7 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   };
 
   // A class which is informed of changes to the model; represents the view of
-  // MVC.
+  // MVC. Also used for signaling view changes such as showing extension popups.
   class Observer {
    public:
     // An extension with a browser action button has been added, and should go
@@ -47,6 +47,10 @@ class ExtensionToolbarModel : public content::NotificationObserver {
     // The browser action button for |extension| has been moved to |index|.
     virtual void BrowserActionMoved(const extensions::Extension* extension,
                                     int index) {}
+
+    // Signal the |extension| to show the popup now in the active window.
+    // Returns true if a popup was slated to be shown.
+    virtual bool BrowserActionShowPopup(const extensions::Extension* extension);
 
     // Called when the model has finished loading.
     virtual void ModelLoaded() {}
@@ -62,10 +66,14 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   // Executes the browser action for an extension and returns the action that
   // the UI should perform in response.
   // |popup_url_out| will be set if the extension should show a popup, with
-  // the URL that should be shown, if non-NULL.
+  // the URL that should be shown, if non-NULL. |should_grant| controls whether
+  // the extension should be granted page tab permissions, which is what happens
+  // when the user clicks the browser action, but not, for example, when the
+  // showPopup API is called.
   Action ExecuteBrowserAction(const extensions::Extension* extension,
                               Browser* browser,
-                              GURL* popup_url_out);
+                              GURL* popup_url_out,
+                              bool should_grant);
   // If count == size(), this will set the visible icon count to -1, meaning
   // "show all actions".
   void SetVisibleIconCount(int count);
@@ -84,6 +92,10 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   int OriginalIndexToIncognito(int original_index);
 
   void OnExtensionToolbarPrefChange();
+
+  // Tells observers to display a popup without granting tab permissions and
+  // returns whether the popup was slated to be shown.
+  bool ShowBrowserActionPopup(const extensions::Extension* extension);
 
  private:
   // content::NotificationObserver implementation.

@@ -310,6 +310,25 @@
             "description": "The id of the tab for which you want to modify the browser action."
           }
         ]
+      },
+      {
+        "name": "openPopup",
+        "type": "function",
+        "description": "Opens the extension popup window in the active window but does not grant tab permissions.",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "popupView",
+                "type": "object",
+                "additionalProperties": { "type": "any" }
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

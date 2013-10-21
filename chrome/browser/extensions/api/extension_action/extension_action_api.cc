@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 
-#include <string>
-
 #include "base/base64.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,6 +15,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -59,6 +58,10 @@ const char kNoTabError[] = "No tab with id: *.";
 const char kNoPageActionError[] =
     "This extension has no page action specified.";
 const char kUrlNotActiveError[] = "This url is no longer active: *.";
+const char kOpenPopupError[] =
+    "Failed to show popup either because there is an existing popup or another "
+    "error occurred.";
+const char kInternalError[] = "Internal error.";
 
 struct IconRepresentationInfo {
   // Size as a string that will be used to retrieve representation value from
@@ -209,6 +212,7 @@ ExtensionActionAPI::ExtensionActionAPI(Profile* profile) {
   registry->RegisterFunction<BrowserActionGetPopupFunction>();
   registry->RegisterFunction<BrowserActionEnableFunction>();
   registry->RegisterFunction<BrowserActionDisableFunction>();
+  registry->RegisterFunction<BrowserActionOpenPopupFunction>();
 
   // Page Actions
   registry->RegisterFunction<EnablePageActionsFunction>();
@@ -803,6 +807,65 @@ bool ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
       new base::FundamentalValue(static_cast<int>(SkColorGetA(color))));
   SetResult(list);
   return true;
+}
+
+BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()
+    : response_sent_(false) {
+}
+
+bool BrowserActionOpenPopupFunction::RunImpl() {
+  ExtensionToolbarModel* model = extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->toolbar_model();
+  if (!model) {
+    error_ = kInternalError;
+    return false;
+  }
+
+  if (!model->ShowBrowserActionPopup(extension_)) {
+    error_ = kOpenPopupError;
+    return false;
+  }
+
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+      content::Source<Profile>(profile_));
+
+  // Set a timeout for waiting for the notification that the popup is loaded.
+  // Waiting is required so that the popup view can be retrieved by the custom
+  // bindings for the response callback. It's also needed to keep this function
+  // instance around until a notification is observed.
+  base::MessageLoopForUI::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&BrowserActionOpenPopupFunction::OpenPopupTimedOut, this),
+      base::TimeDelta::FromSeconds(10));
+  return true;
+}
+
+void BrowserActionOpenPopupFunction::OpenPopupTimedOut() {
+  if (response_sent_)
+    return;
+
+  DVLOG(1) << "chrome.browserAction.openPopup did not show a popup.";
+  error_ = kOpenPopupError;
+  SendResponse(false);
+  response_sent_ = true;
+}
+
+void BrowserActionOpenPopupFunction::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING, type);
+  if (response_sent_)
+    return;
+
+  ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+  if (host->extension_host_type() != VIEW_TYPE_EXTENSION_POPUP ||
+      host->extension()->id() != extension_->id())
+    return;
+
+  SendResponse(true);
+  response_sent_ = true;
+  registrar_.RemoveAll();
 }
 
 //

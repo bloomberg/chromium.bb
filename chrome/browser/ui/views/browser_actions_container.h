@@ -259,6 +259,8 @@ class BrowserActionsContainer
       const extensions::Extension* extension) OVERRIDE;
   virtual void BrowserActionMoved(const extensions::Extension* extension,
                                   int index) OVERRIDE;
+  virtual bool BrowserActionShowPopup(
+      const extensions::Extension* extension) OVERRIDE;
   virtual void ModelLoaded() OVERRIDE;
 
   void LoadImages();
@@ -309,9 +311,12 @@ class BrowserActionsContainer
   // for incognito.
   bool ShouldDisplayBrowserAction(const extensions::Extension* extension);
 
-  // Show a popup.
-  void ShowPopup(BrowserActionButton* button,
-                 ExtensionPopup::ShowAction show_action);
+  // Show a popup. Returns true if a new popup was shown. Showing the popup will
+  // grant tab permissions if |should_grant| is true. Popup's shown via an API
+  // should not grant permissions.
+  bool ShowPopup(BrowserActionButton* button,
+                 ExtensionPopup::ShowAction show_action,
+                 bool should_grant);
 
   // The vector of browser actions (icons/image buttons for each action). Note
   // that not every BrowserAction in the ToolbarModel will necessarily be in

@@ -52,6 +52,8 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // |extension|. Used in positioning the ExtensionInstalledBubble for
   // BrowserActions.
   GtkWidget* GetBrowserActionWidget(const extensions::Extension* extension);
+  BrowserActionButton* GetBrowserActionButton(
+      const extensions::Extension* extension);
 
   int button_count() { return extension_button_map_.size(); }
 
@@ -118,6 +120,8 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
       const extensions::Extension* extension) OVERRIDE;
   virtual void BrowserActionMoved(const extensions::Extension* extension,
                                   int index) OVERRIDE;
+  virtual bool BrowserActionShowPopup(
+      const extensions::Extension* extension) OVERRIDE;
   virtual void ModelLoaded() OVERRIDE;
 
   // gfx::AnimationDelegate implementation.

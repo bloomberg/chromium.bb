@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_ACTION_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_ACTION_API_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -339,6 +341,30 @@ class BrowserActionDisableFunction : public ExtensionActionHideFunction {
 
  protected:
   virtual ~BrowserActionDisableFunction() {}
+};
+
+class BrowserActionOpenPopupFunction : public UIThreadExtensionFunction,
+                                       public content::NotificationObserver {
+ public:
+  DECLARE_EXTENSION_FUNCTION("browserAction.openPopup",
+                             BROWSERACTION_OPEN_POPUP)
+  BrowserActionOpenPopupFunction();
+
+ private:
+  virtual ~BrowserActionOpenPopupFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+  void OpenPopupTimedOut();
+
+  content::NotificationRegistrar registrar_;
+  bool response_sent_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionOpenPopupFunction);
 };
 
 //

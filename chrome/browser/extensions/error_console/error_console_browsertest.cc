@@ -247,7 +247,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
         ExtensionService* service =
             extensions::ExtensionSystem::Get(profile())->extension_service();
         service->toolbar_model()->ExecuteBrowserAction(
-            *extension, browser(), NULL);
+            *extension, browser(), NULL, true);
         break;
       }
       case ACTION_NONE:

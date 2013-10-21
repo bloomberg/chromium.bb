@@ -138,8 +138,11 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
            toIndex:(NSUInteger)index
            animate:(BOOL)animate;
 
-// Handles when the given BrowserActionButton object is clicked.
-- (void)browserActionClicked:(BrowserActionButton*)button;
+// Handles when the given BrowserActionButton object is clicked and whether
+// it should grant tab permissions. API-simulated clicks should not grant.
+- (BOOL)browserActionClicked:(BrowserActionButton*)button
+                 shouldGrant:(BOOL)shouldGrant;
+- (BOOL)browserActionClicked:(BrowserActionButton*)button;
 
 // Returns whether the given extension should be displayed. Only displays
 // incognito-enabled extensions in incognito mode. Otherwise returns YES.
@@ -237,6 +240,17 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   virtual void BrowserActionRemoved(const Extension* extension) OVERRIDE {
     [owner_ removeActionButtonForExtension:extension];
     [owner_ resizeContainerAndAnimate:NO];
+  }
+
+  virtual bool BrowserActionShowPopup(const Extension* extension) OVERRIDE {
+    // Do not override other popups and only show in active window.
+    ExtensionPopupController* popup = [ExtensionPopupController popup];
+    if (popup || !browser_->window()->IsActive())
+      return false;
+
+    BrowserActionButton* button = [owner_ buttonForExtension:extension];
+    return button && [owner_ browserActionClicked:button
+                                      shouldGrant:NO];
   }
 
  private:
@@ -740,10 +754,12 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   }
 }
 
-- (void)browserActionClicked:(BrowserActionButton*)button {
+- (BOOL)browserActionClicked:(BrowserActionButton*)button
+                 shouldGrant:(BOOL)shouldGrant {
   const Extension* extension = [button extension];
   GURL popupUrl;
-  switch (toolbarModel_->ExecuteBrowserAction(extension, browser_, &popupUrl)) {
+  switch (toolbarModel_->ExecuteBrowserAction(extension, browser_, &popupUrl,
+                                              shouldGrant)) {
     case ExtensionToolbarModel::ACTION_NONE:
       break;
     case ExtensionToolbarModel::ACTION_SHOW_POPUP: {
@@ -753,9 +769,15 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
                              anchoredAt:arrowPoint
                           arrowLocation:info_bubble::kTopRight
                                 devMode:NO];
-      break;
+      return YES;
     }
   }
+  return NO;
+}
+
+- (BOOL)browserActionClicked:(BrowserActionButton*)button {
+  return [self browserActionClicked:button
+                        shouldGrant:YES];
 }
 
 - (BOOL)shouldDisplayBrowserAction:(const Extension*)extension {

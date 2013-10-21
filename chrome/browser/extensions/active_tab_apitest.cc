@@ -43,7 +43,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
   // Granting to the extension should give it access to page.html.
   {
     ResultCatcher catcher;
-    service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
+    service->toolbar_model()->ExecuteBrowserAction(
+        extension, browser(), NULL, true);
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 

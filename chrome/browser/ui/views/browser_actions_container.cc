@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_action_view.h"
@@ -460,7 +461,7 @@ void BrowserActionsContainer::OnWidgetDestroying(views::Widget* widget) {
 
 void BrowserActionsContainer::InspectPopup(ExtensionAction* action) {
   BrowserActionView* view = GetBrowserActionView(action);
-  ShowPopup(view->button(), ExtensionPopup::SHOW_AND_INSPECT);
+  ShowPopup(view->button(), ExtensionPopup::SHOW_AND_INSPECT, true);
 }
 
 int BrowserActionsContainer::GetCurrentTabId() const {
@@ -474,7 +475,7 @@ int BrowserActionsContainer::GetCurrentTabId() const {
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
     BrowserActionButton* button) {
-  ShowPopup(button, ExtensionPopup::SHOW);
+  ShowPopup(button, ExtensionPopup::SHOW, true);
 }
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
@@ -687,6 +688,27 @@ void BrowserActionsContainer::BrowserActionMoved(const Extension* extension,
   SchedulePaint();
 }
 
+bool BrowserActionsContainer::BrowserActionShowPopup(
+    const extensions::Extension* extension) {
+  // Do not override other popups and only show in active window. The window
+  // must also have a toolbar, otherwise it should not be showing popups.
+  // TODO(justinlin): Remove toolbar check when http://crbug.com/308645 is
+  // fixed.
+  if (popup_ ||
+      !browser_->window()->IsActive() ||
+      !browser_->window()->IsToolbarVisible()) {
+    return false;
+  }
+
+  for (BrowserActionViews::iterator it = browser_action_views_.begin();
+       it != browser_action_views_.end(); ++it) {
+    BrowserActionButton* button = (*it)->button();
+    if (button && button->extension() == extension)
+      return ShowPopup(button, ExtensionPopup::SHOW, false);
+  }
+  return false;
+}
+
 void BrowserActionsContainer::ModelLoaded() {
   SetContainerWidth();
 }
@@ -814,14 +836,16 @@ bool BrowserActionsContainer::ShouldDisplayBrowserAction(
            extensions::ExtensionSystem::Get(profile_)->extension_service()));
 }
 
-void BrowserActionsContainer::ShowPopup(
+bool BrowserActionsContainer::ShowPopup(
     BrowserActionButton* button,
-    ExtensionPopup::ShowAction show_action) {
+    ExtensionPopup::ShowAction show_action,
+    bool should_grant) {
   const Extension* extension = button->extension();
   GURL popup_url;
-  if (model_->ExecuteBrowserAction(extension, browser_, &popup_url) !=
+  if (model_->ExecuteBrowserAction(
+          extension, browser_, &popup_url, should_grant) !=
       ExtensionToolbarModel::ACTION_SHOW_POPUP) {
-    return;
+    return false;
   }
 
   // If we're showing the same popup, just hide it and return.
@@ -832,7 +856,7 @@ void BrowserActionsContainer::ShowPopup(
   HidePopup();
 
   if (same_showing)
-    return;
+    return false;
 
   // We can get the execute event for browser actions that are not visible,
   // since buttons can be activated from the overflow menu (chevron). In that
@@ -847,5 +871,9 @@ void BrowserActionsContainer::ShowPopup(
                                      show_action);
   popup_->GetWidget()->AddObserver(this);
   popup_button_ = button;
-  popup_button_->SetButtonPushed();
+
+  // Only set button as pushed if it was triggered by a user click.
+  if (should_grant)
+    popup_button_->SetButtonPushed();
+  return true;
 }

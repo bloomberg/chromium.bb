@@ -120,7 +120,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
+  service->toolbar_model()->ExecuteBrowserAction(
+      extension, browser(), NULL, true);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
@@ -590,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
 
   // Click the browser action.
   extensions::ExtensionSystem::Get(browser()->profile())->extension_service()->
-      toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
+      toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL, true);
 
   // It can take a moment for the background page to actually get destroyed
   // so we wait for the notification before checking that it's really gone

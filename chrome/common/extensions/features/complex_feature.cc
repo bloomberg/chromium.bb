@@ -66,8 +66,8 @@ std::set<Feature::Context>* ComplexFeature::GetContexts() {
 }
 
 bool ComplexFeature::IsInternal() const {
-  NOTREACHED();
-  return false;
+  // TODO(justinlin): Same as the above TODO.
+  return features_[0]->IsInternal();
 }
 
 std::string ComplexFeature::GetAvailabilityMessage(AvailabilityResult result,
