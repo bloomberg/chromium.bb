@@ -43,7 +43,6 @@
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
-#include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -56,7 +55,6 @@
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -86,7 +84,6 @@ using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPagePopup;
-using WebKit::WebPoint;
 using WebKit::WebPopupMenu;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebPopupType;
@@ -1916,14 +1913,6 @@ void RenderWidget::show(WebNavigationPolicy) {
   // process will impose a default position otherwise.
   Send(new ViewHostMsg_ShowWidget(opener_id_, routing_id_, initial_pos_));
   SetPendingWindowRect(initial_pos_);
-}
-
-void RenderWidget::didProgrammaticallyScroll(
-    const WebKit::WebPoint& scroll_point) {
-  if (!compositor_)
-    return;
-  Send(new ViewHostMsg_DidProgrammaticallyScroll(
-    routing_id_, gfx::Vector2d(scroll_point.x, scroll_point.y)));
 }
 
 void RenderWidget::didFocus() {

@@ -21,7 +21,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect_f.h"
-#include "ui/gfx/vector2d.h"
 
 class GURL;
 
@@ -359,10 +358,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                                           bool enter_fullscreen) {}
   virtual bool IsFullscreenForTabOrPending(
       const WebContents* web_contents) const;
-
-  // Called when the renderer has scrolled programmatically.
-  virtual void DidProgrammaticallyScroll(WebContents* web_contents,
-                                         const gfx::Vector2d& scroll_point) {}
 
   // Called when a Javascript out of memory notification is received.
   virtual void JSOutOfMemory(WebContents* web_contents) {}

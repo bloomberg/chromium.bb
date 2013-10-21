@@ -30,7 +30,6 @@
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/vector2d.h"
 #include "webkit/common/resource_type.h"
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
@@ -602,7 +601,6 @@ class CONTENT_EXPORT WebContentsImpl
                    const gfx::Rect& selection_rect,
                    int active_match_ordinal,
                    bool final_update);
-  void OnDidProgrammaticallyScroll(const gfx::Vector2d& scroll_point);
 #if defined(OS_ANDROID)
   void OnFindMatchRectsReply(int version,
                              const std::vector<gfx::RectF>& rects,

@@ -1467,11 +1467,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateScreenRects_ACK)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestMove,
                     gfx::Rect /* position */)
 
-// Sent by the renderer process to notify the browser that the web page has
-// programmatically scrolled.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidProgrammaticallyScroll,
-                    gfx::Vector2d /* scroll_point */)
-
 // Notifies the browser that a frame in the view has changed. This message
 // has a lot of parameters and is packed/unpacked by functions defined in
 // render_messages.h.

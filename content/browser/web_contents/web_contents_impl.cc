@@ -727,8 +727,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidProgrammaticallyScroll,
-                        OnDidProgrammaticallyScroll)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenColorChooser, OnOpenColorChooser)
@@ -2509,12 +2507,6 @@ void WebContentsImpl::OnFindReply(int request_id,
     delegate_->FindReply(this, request_id, number_of_matches, selection_rect,
                          active_match_ordinal, final_update);
   }
-}
-
-void WebContentsImpl::OnDidProgrammaticallyScroll(
-    const gfx::Vector2d& scroll_point) {
-  if (delegate_)
-    delegate_->DidProgrammaticallyScroll(this, scroll_point);
 }
 
 #if defined(OS_ANDROID)

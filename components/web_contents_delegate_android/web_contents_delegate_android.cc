@@ -309,16 +309,6 @@ bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
       env, obj.obj());
 }
 
-void WebContentsDelegateAndroid::DidProgrammaticallyScroll(
-    WebContents* web_contents, const gfx::Vector2d& scroll_point) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return;
-  Java_WebContentsDelegateAndroid_didProgrammaticallyScroll(
-      env, obj.obj(), scroll_point.x(), scroll_point.y());
-}
-
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
