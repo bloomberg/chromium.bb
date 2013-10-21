@@ -252,14 +252,13 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Ownership passed to RootWindow on Init.
   DesktopRootWindowHost* desktop_root_window_host_;
 
-  // The content of |root_window_|. WARNING: this may be NULL if deleted out
-  // from under us.
-  aura::Window* window_;
-
-  // Contains the content window defined above. Ensures that ZOrder changes
-  // occurring in the content window hierarchy don't affect the other children
-  // of the root window.
+  // Child of the root, contains |content_window_|.
   aura::Window* content_window_container_;
+
+  // Child of |content_window_container_|. This is the return value from
+  // GetNativeView().
+  // WARNING: this may be NULL, in particular during shutdown it becomes NULL.
+  aura::Window* content_window_;
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
