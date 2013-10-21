@@ -226,10 +226,8 @@ cr.define('options', function() {
 
     // The page is already in history (the user may have clicked the same link
     // twice). Do nothing.
-    if (path == page.name &&
-        !document.documentElement.classList.contains('loading')) {
+    if (path == page.name && this.loading)
       return;
-    }
 
     var hash = opt_params && opt_params.ignoreHash ? '' : window.location.hash;
 
@@ -804,6 +802,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Whether the page is still loading (i.e. onload hasn't finished running).
+     * @return {boolean} Whether the page is still loading.
+     * @private
+     */
+    get loading() {
+      return document.documentElement.classList.contains('loading');
+    },
+
+    /**
      * Gets page visibility state.
      * @type {boolean}
      */
@@ -874,14 +881,17 @@ cr.define('options', function() {
       }
 
       var self = this;
-      // TODO(flackr): Use an event delegate to avoid having to subscribe and
-      // unsubscribe for webkitTransitionEnd events.
-      container.addEventListener('webkitTransitionEnd', function f(e) {
-        if (e.target != e.currentTarget || e.propertyName != 'opacity')
-          return;
-        container.removeEventListener('webkitTransitionEnd', f);
-        self.fadeCompleted_();
-      });
+      var loading = this.loading;
+      if (!loading) {
+        // TODO(flackr): Use an event delegate to avoid having to subscribe and
+        // unsubscribe for webkitTransitionEnd events.
+        container.addEventListener('webkitTransitionEnd', function f(e) {
+            if (e.target != e.currentTarget || e.propertyName != 'opacity')
+              return;
+            container.removeEventListener('webkitTransitionEnd', f);
+            self.fadeCompleted_();
+        });
+      }
 
       if (visible) {
         container.hidden = false;
@@ -903,6 +913,8 @@ cr.define('options', function() {
           document.activeElement.blur();
         container.classList.add('transparent');
       }
+      if (loading)
+        this.fadeCompleted_();
     },
 
     /**
