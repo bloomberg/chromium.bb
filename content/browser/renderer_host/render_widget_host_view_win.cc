@@ -411,14 +411,16 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       pointer_down_context_(false),
       last_touch_location_(-1, -1),
       touch_events_enabled_(ui::AreTouchEventsEnabled()),
-      gesture_recognizer_(ui::GestureRecognizer::Create(this)) {
+      gesture_recognizer_(ui::GestureRecognizer::Create()) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllBrowserContextsAndSources());
+  gesture_recognizer_->AddGestureEventHelper(this);
 }
 
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
+  gesture_recognizer_->RemoveGestureEventHelper(this);
   UnlockMouse();
   ResetTooltip();
 }
@@ -944,16 +946,22 @@ void RenderWidgetHostViewWin::UpdateDesiredTouchMode() {
   }
 }
 
-bool RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
-    ui::GestureEvent* event) {
-  return ForwardGestureEventToRenderer(event);
+bool RenderWidgetHostViewWin::CanDispatchToConsumer(
+    ui::GestureConsumer* consumer) {
+  CHECK_EQ(static_cast<RenderWidgetHostViewGuest*>(consumer), this);
+  return true;
 }
 
-bool RenderWidgetHostViewWin::DispatchCancelTouchEvent(
+void RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
+    ui::GestureEvent* event) {
+  ForwardGestureEventToRenderer(event);
+}
+
+void RenderWidgetHostViewWin::DispatchCancelTouchEvent(
     ui::TouchEvent* event) {
   if (!render_widget_host_ || !touch_events_enabled_ ||
       !render_widget_host_->ShouldForwardTouchEvent()) {
-    return false;
+    return;
   }
   DCHECK(event->type() == WebKit::WebInputEvent::TouchCancel);
   WebKit::WebTouchEvent cancel_event;
@@ -961,7 +969,6 @@ bool RenderWidgetHostViewWin::DispatchCancelTouchEvent(
   cancel_event.timeStampSeconds = event->time_stamp().InSecondsF();
   render_widget_host_->ForwardTouchEventWithLatencyInfo(
       cancel_event, *event->latency());
-  return true;
 }
 
 void RenderWidgetHostViewWin::SetHasHorizontalScrollbar(

@@ -208,13 +208,6 @@ class AURA_EXPORT RootWindow : public Window,
                            Window* window,
                            ui::EventResult result);
 
-  ui::GestureRecognizer* gesture_recognizer() const {
-    return gesture_recognizer_.get();
-  }
-
-  // Provided only for testing:
-  void SetGestureRecognizerForTesting(ui::GestureRecognizer* gr);
-
   // Returns the accelerated widget from the RootWindowHost.
   gfx::AcceleratedWidget GetAcceleratedWidget();
 
@@ -318,8 +311,9 @@ class AURA_EXPORT RootWindow : public Window,
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
 
   // Overridden from ui::GestureEventHelper.
-  virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) OVERRIDE;
+  virtual void DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
@@ -385,9 +379,6 @@ class AURA_EXPORT RootWindow : public Window,
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;
   Window* event_dispatch_target_;
-
-  // The gesture_recognizer_ for this.
-  scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;
 
   bool synthesize_mouse_move_;
   bool waiting_on_compositing_end_;

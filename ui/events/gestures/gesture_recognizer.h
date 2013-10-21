@@ -17,7 +17,8 @@ namespace ui {
 // into gestures.
 class EVENTS_EXPORT GestureRecognizer {
  public:
-  static GestureRecognizer* Create(GestureEventHelper* helper);
+  static GestureRecognizer* Create();
+  static GestureRecognizer* Get();
 
   // List of GestureEvent*.
   typedef ScopedVector<GestureEvent> Gestures;
@@ -64,6 +65,17 @@ class EVENTS_EXPORT GestureRecognizer {
   // |consumer| false is returned and |point| is untouched.
   virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
                                           gfx::Point* point) = 0;
+
+  // Subscribes |helper| for dispatching async gestures such as long press.
+  // The Gesture Recognizer does NOT take ownership of |helper| and it is the
+  // responsibility of the |helper| to call |RemoveGestureEventHelper()| on
+  // destruction.
+  virtual void AddGestureEventHelper(GestureEventHelper* helper) = 0;
+
+  // Unsubscribes |helper| from async gesture dispatch.
+  // Since the GestureRecognizer does not own the |helper|, it is not deleted
+  // and must be cleaned up appropriately by the caller.
+  virtual void RemoveGestureEventHelper(GestureEventHelper* helper) = 0;
 };
 
 }  // namespace ui
