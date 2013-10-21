@@ -239,6 +239,31 @@ camera.views.Camera = function(context) {
   this.shutterSound_.src = '../sounds/shutter.ogg';
 };
 
+/**
+ * Frame draw mode.
+ * @enum {number}
+ */
+camera.views.Camera.DrawMode = Object.freeze({
+  OPTIMIZED: 0,  // Quality optimized for performance.
+  FULL: 1  // The best quality possible.
+});
+
+/**
+ * Number of frames to be skipped between optimized effects' ribbon refreshes
+ * and the head detection invocations (which both use the preview back buffer).
+ *
+ * @type {number}
+ * @const
+ */
+camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES = 3;
+
+/**
+ * Number of frames to be skipped between effects' ribbon full refreshes.
+ * @type {number}
+ * @const
+ */
+camera.views.Camera.EFFECTS_RIBBON_FULL_REFRESH_SKIP_FRAMES = 30;
+
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
   get running() {
@@ -631,7 +656,7 @@ camera.views.Camera.prototype.synchronizeBounds_ = function() {
     var onAnimationFrame = function() {
       if (!this.running_)
         return;
-      this.drawFrame_();
+      this.onAnimationFrame_();
       requestAnimationFrame(onAnimationFrame);
     }.bind(this);
     onAnimationFrame();
@@ -724,10 +749,53 @@ camera.views.Camera.prototype.start_ = function() {
 };
 
 /**
- * Draws a single frame for the main canvas and effects.
+ * Draws the effects' ribbon.
+ * @param {camera.views.Camera.DrawMode} mode Drawing mode.
  * @private
  */
-camera.views.Camera.prototype.drawFrame_ = function() {
+camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
+  for (var index = 0; index < this.previewProcessors_.length; index++) {
+    var processor = this.previewProcessors_[index];
+    var effectRect = processor.output.getBoundingClientRect();
+    switch (mode) {
+      case camera.views.Camera.DrawMode.OPTIMIZED:
+        if (effectRect.right >= 0 &&
+            effectRect.left < document.body.offsetWidth) {
+          processor.processFrame();
+        }
+        break;
+      case camera.views.Camera.DrawMode.FULL:
+        processor.processFrame();
+        break;
+    }
+  }
+ };
+
+/**
+ * Draws a single frame for the main canvas and effects.
+ * @param {camera.views.Camera.DrawMode} mode Drawing mode.
+ * @private
+ */
+camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
+  switch (mode) {
+    case camera.views.Camera.DrawMode.OPTIMIZED:
+      this.mainFastProcessor_.processFrame();
+      this.mainCanvas_.parentNode.hidden = true;
+      this.mainFastCanvas_.parentNode.hidden = false;
+      break;
+    case camera.views.Camera.DrawMode.FULL:
+      this.mainProcessor_.processFrame();
+      this.mainCanvas_.parentNode.hidden = false;
+      this.mainFastCanvas_.parentNode.hidden = true;
+      break;
+  }
+};
+
+/**
+ * Handles the animation frame event and refreshes the viewport if necessary.
+ * @private
+ */
+camera.views.Camera.prototype.onAnimationFrame_ = function() {
   // No capturing when the view is inactive.
   if (!this.active)
     return;
@@ -736,49 +804,52 @@ camera.views.Camera.prototype.drawFrame_ = function() {
   if (this.context.resizing)
     return;
 
-  // Copy the video frame to the back buffer. The back buffer is low resolution,
-  // since it is only used by preview windows.
-  var context = this.previewInputCanvas_.getContext('2d');
-  context.drawImage(this.video_,
-                    0,
-                    0,
-                    this.previewInputCanvas_.width,
-                    this.previewInputCanvas_.height);
+  // Copy the video frame to the back buffer. The back buffer is low
+  // resolution, since it is only used by the effects' previews as by the
+  // head tracker.
+  if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
+    var context = this.previewInputCanvas_.getContext('2d');
+    context.drawImage(this.video_,
+                      0,
+                      0,
+                      this.previewInputCanvas_.width,
+                      this.previewInputCanvas_.height);
 
-  // Detect and track faces.
-  if (this.frame_ % 3 == 0)
+    // Detect and track faces.
     this.tracker_.detect();
+  }
 
   // Update internal state of the tracker.
   this.tracker_.update();
 
+  // Draw the camera frame. Decrease the rendering resolution when scrolling, or
+  // while performing animations.
+  if (this.taking_ || this.toolsEffect_.isActive() ||
+      this.mainProcessor_.effect.isSlow() ||
+      (this.scroller_.animating && this.expanded_)) {
+    this.drawCameraFrame_(camera.views.Camera.DrawMode.OPTIMIZED);
+  } else {
+    this.drawCameraFrame_(camera.views.Camera.DrawMode.FULL);
+  }
+
+  // Draw the effects' ribbon.
   // Process effect preview canvases. Ribbon initialization is true before the
   // ribbon is expanded for the first time. This trick is used to fill the
   // ribbon with images as soon as possible.
-  if (this.frame_ % 3 == 0 && this.expanded_ && !this.taking_ &&
+   if (this.expanded_ && !this.taking_ &&
       !this.scroller_.animating || this.ribbonInitialization_) {
-    for (var index = 0; index < this.previewProcessors_.length; index++) {
-      var processor = this.previewProcessors_[index];
-      var effectRect = processor.output.getBoundingClientRect();
-      // Render only visible effects.
-      if (effectRect.right >= 0 && effectRect.left < document.body.offsetWidth)
-        processor.processFrame();
-    }
-  }
-  this.frame_++;
 
-  // Process the full resolution frame. Decrease FPS when expanding for smooth
-  // animations.
-  if (this.taking_ || this.toolsEffect_.isActive() ||
-      this.mainProcessor_.effect.isSlow() ||
-      (this.scroller_.animating && this.expaneded_)) {
-    this.mainFastProcessor_.processFrame();
-    this.mainCanvas_.parentNode.hidden = true;
-    this.mainFastCanvas_.parentNode.hidden = false;
-  } else {
-    this.mainProcessor_.processFrame();
-    this.mainCanvas_.parentNode.hidden = false;
-    this.mainFastCanvas_.parentNode.hidden = true;
-   }
+     // Every third frame draw only the visible effects. Every 30-th frame, draw
+     // all of them, to avoid displaying old effects when scrolling.
+     if (this.frame_ %
+         camera.views.Camera.EFFECTS_RIBBON_FULL_REFRESH_SKIP_FRAMES == 0) {
+       this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FULL);
+     } else if (this.frame_ %
+         camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
+       this.drawEffectsRibbon_(camera.views.Camera.DrawMode.OPTIMIZED);
+     }
+  }
+
+  this.frame_++;
 };
 
