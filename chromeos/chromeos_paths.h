@@ -27,6 +27,9 @@ enum {
                                      // store the uptime at which an update
                                      // became necessary. The file should be
                                      // cleared on boot.
+  DIR_DEVICE_LOCAL_ACCOUNT_CACHE,  // Directory under which a cache of
+                                   // force-installed extensions is maintained
+                                   // for each device-local account.
 
   PATH_END
 };

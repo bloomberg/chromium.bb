@@ -21,7 +21,6 @@ class Version;
 }
 
 namespace extensions {
-class ExternalLoader;
 
 // A specialization of the ExternalProvider that uses an instance of
 // ExternalLoader to provide external extensions. This class can be seen as a
@@ -37,7 +36,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   // If either of the origins is not supported by this provider, then it should
   // be initialized as Manifest::INVALID_LOCATION.
   ExternalProviderImpl(VisitorInterface* service,
-                       ExternalLoader* loader,
+                       const scoped_refptr<ExternalLoader>& loader,
                        Profile* profile,
                        Manifest::Location crx_location,
                        Manifest::Location download_location,

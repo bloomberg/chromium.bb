@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -294,6 +295,7 @@ void BrowserPolicyConnector::Init(
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
             chromeos::DeviceSettingsService::Get(),
             chromeos::CrosSettings::Get(),
+            GetBackgroundTaskRunner(),
             GetBackgroundTaskRunner()));
     device_local_account_policy_service_->Connect(
         device_management_service_.get());
