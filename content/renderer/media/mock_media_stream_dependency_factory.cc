@@ -135,7 +135,8 @@ void MockAudioSource::UnregisterObserver(webrtc::ObserverInterface* observer) {
 }
 
 void MockAudioSource::SetLive() {
-  DCHECK_EQ(MediaSourceInterface::kInitializing, state_);
+  DCHECK(state_ == MediaSourceInterface::kInitializing ||
+         state_ == MediaSourceInterface::kLive);
   state_ = MediaSourceInterface::kLive;
   if (observer_)
     observer_->OnChanged();
@@ -202,7 +203,8 @@ void MockVideoSource::FireOnChanged() {
 }
 
 void MockVideoSource::SetLive() {
-  DCHECK_EQ(MediaSourceInterface::kInitializing, state_);
+  DCHECK(state_ == MediaSourceInterface::kInitializing ||
+         state_ == MediaSourceInterface::kLive);
   state_ = MediaSourceInterface::kLive;
   FireOnChanged();
 }

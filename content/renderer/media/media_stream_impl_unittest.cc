@@ -53,6 +53,7 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   }
 
   using MediaStreamImpl::OnLocalMediaStreamStop;
+  using MediaStreamImpl::OnLocalSourceStop;
 
   const WebKit::WebMediaStream& last_generated_stream() {
     return last_generated_stream_;
@@ -136,26 +137,128 @@ class MediaStreamImplTest : public ::testing::Test {
   scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;
 };
 
-TEST_F(MediaStreamImplTest, LocalMediaStream) {
-  // Test a stream with both audio and video.
+TEST_F(MediaStreamImplTest, GenerateMediaStream) {
+  // Generate a stream with both audio and video.
   WebKit::WebMediaStream mixed_desc = RequestLocalMediaStream();
+}
 
-  // Test a stream with audio only.
-  WebKit::WebMediaStream audio_desc = RequestLocalMediaStream();
+// Test that the same source object is used if two MediaStreams are generated
+// using the same source.
+TEST_F(MediaStreamImplTest, GenerateTwoMediaStreamsWithSameSource) {
+  WebKit::WebMediaStream desc1 = RequestLocalMediaStream();
+  WebKit::WebMediaStream desc2 = RequestLocalMediaStream();
 
-  // Test a stream with video only.
-  WebKit::WebMediaStream video_desc = RequestLocalMediaStream();
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> desc1_video_tracks;
+  desc1.videoTracks(desc1_video_tracks);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> desc2_video_tracks;
+  desc2.videoTracks(desc2_video_tracks);
+  EXPECT_EQ(desc1_video_tracks[0].source().id(),
+            desc2_video_tracks[0].source().id());
+
+  EXPECT_EQ(desc1_video_tracks[0].source().extraData(),
+            desc2_video_tracks[0].source().extraData());
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> desc1_audio_tracks;
+  desc1.audioTracks(desc1_audio_tracks);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> desc2_audio_tracks;
+  desc2.audioTracks(desc2_audio_tracks);
+  EXPECT_EQ(desc1_audio_tracks[0].source().id(),
+            desc2_audio_tracks[0].source().id());
+
+  EXPECT_EQ(desc1_audio_tracks[0].source().extraData(),
+            desc2_audio_tracks[0].source().extraData());
+}
+
+// Test that the same source object is not used if two MediaStreams are
+// generated using different sources.
+TEST_F(MediaStreamImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
+  WebKit::WebMediaStream desc1 = RequestLocalMediaStream();
+  // Make sure another device is selected (another |session_id|) in  the next
+  // gUM request.
+  ms_dispatcher_->IncrementSessionId();
+  WebKit::WebMediaStream desc2 = RequestLocalMediaStream();
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> desc1_video_tracks;
+  desc1.videoTracks(desc1_video_tracks);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> desc2_video_tracks;
+  desc2.videoTracks(desc2_video_tracks);
+  EXPECT_NE(desc1_video_tracks[0].source().id(),
+            desc2_video_tracks[0].source().id());
+
+  EXPECT_NE(desc1_video_tracks[0].source().extraData(),
+            desc2_video_tracks[0].source().extraData());
+
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> desc1_audio_tracks;
+  desc1.audioTracks(desc1_audio_tracks);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> desc2_audio_tracks;
+  desc2.audioTracks(desc2_audio_tracks);
+  EXPECT_NE(desc1_audio_tracks[0].source().id(),
+            desc2_audio_tracks[0].source().id());
+
+  EXPECT_NE(desc1_audio_tracks[0].source().extraData(),
+            desc2_audio_tracks[0].source().extraData());
+}
+
+TEST_F(MediaStreamImplTest, StopLocalMediaStream) {
+  // Generate a stream with both audio and video.
+  WebKit::WebMediaStream mixed_desc = RequestLocalMediaStream();
 
   // Stop generated local streams.
   ms_impl_->OnLocalMediaStreamStop(mixed_desc.id().utf8());
-  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
-  ms_impl_->OnLocalMediaStreamStop(audio_desc.id().utf8());
-  EXPECT_EQ(2, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
+}
+
+// This test that a source is not stopped even if the MediaStream is stopped if
+// there are two MediaStreams using the same device. The source is stopped
+// if there are no more MediaStreams using the device.
+TEST_F(MediaStreamImplTest, StopLocalMediaStreamWhenTwoStreamUseSameDevices) {
+  // Generate a stream with both audio and video.
+  WebKit::WebMediaStream desc1 = RequestLocalMediaStream();
+  WebKit::WebMediaStream desc2 = RequestLocalMediaStream();
+
+  ms_impl_->OnLocalMediaStreamStop(desc2.id().utf8());
+  EXPECT_EQ(0, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(0, ms_dispatcher_->stop_video_device_counter());
+
+  ms_impl_->OnLocalMediaStreamStop(desc1.id().utf8());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
+}
+
+// Test that the source is stopped even if there are two MediaStreams using
+// the same source.
+TEST_F(MediaStreamImplTest, StopSource) {
+  // Generate a stream with both audio and video.
+  WebKit::WebMediaStream desc1 = RequestLocalMediaStream();
+  WebKit::WebMediaStream desc2 = RequestLocalMediaStream();
+
+  // Stop the video source.
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+  desc1.videoTracks(video_tracks);
+  ms_impl_->OnLocalSourceStop(video_tracks[0].source());
+  EXPECT_EQ(0, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
+
+  // Stop the audio source.
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+  desc1.audioTracks(audio_tracks);
+  ms_impl_->OnLocalSourceStop(audio_tracks[0].source());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
+}
+
+// Test that the MediaStreams are deleted if the owning WebFrame is deleted.
+// In the unit test the owning frame is NULL.
+TEST_F(MediaStreamImplTest, FrameWillClose) {
+  // Test a stream with both audio and video.
+  WebKit::WebMediaStream mixed_desc = RequestLocalMediaStream();
 
   // Test that the MediaStreams are deleted if the owning WebFrame is deleted.
   // In the unit test the owning frame is NULL.
   ms_impl_->FrameWillClose(NULL);
-  EXPECT_EQ(3, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
 
 // This test what happens if a source to a MediaSteam fails to start.
@@ -167,7 +270,8 @@ TEST_F(MediaStreamImplTest, MediaSourceFailToStart) {
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_FAILED,
             ms_impl_->request_state());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
-  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
 
 // This test what happens if MediaStreamImpl is deleted while the sources of a
@@ -189,7 +293,8 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingStream) {
   ms_impl_->RequestUserMedia();
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
-  EXPECT_EQ(0, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(0, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(0, ms_dispatcher_->stop_video_device_counter());
   ChangeAudioSourceStateToLive();
   ChangeVideoSourceStateToLive();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
@@ -201,10 +306,10 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingStream) {
 TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
   ms_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherComplete();
-  EXPECT_EQ(0, ms_dispatcher_->stop_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   ms_impl_->FrameWillClose(NULL);
-  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
   ChangeAudioSourceStateToLive();
   ChangeVideoSourceStateToLive();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
@@ -215,12 +320,13 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
 // been reloaded.
 TEST_F(MediaStreamImplTest, StopStreamAfterReload) {
   WebKit::WebMediaStream mixed_desc = RequestLocalMediaStream();
-  EXPECT_EQ(0, ms_dispatcher_->stop_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   ms_impl_->FrameWillClose(NULL);
-  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
   ms_impl_->OnLocalMediaStreamStop(mixed_desc.id().utf8());
-  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
+  EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
 
 }  // namespace content

@@ -138,19 +138,17 @@ TEST(MediaStreamDispatcherTest, BasicStream) {
   EXPECT_EQ(dispatcher->audio_session_id(stream_label2, 0), kAudioSessionId);
   EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0), kVideoSessionId);
 
-  // Stop stream2.
-  dispatcher->StopStream(stream_label2);
-  EXPECT_EQ(dispatcher->audio_session_id(stream_label2, 0),
-            StreamDeviceInfo::kNoId);
-  EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0),
-            StreamDeviceInfo::kNoId);
 
-  // Stop stream1.
-  dispatcher->StopStream(stream_label1);
+  // Stop audio.
+  dispatcher->StopStreamDevice(audio_device_info);
   EXPECT_EQ(dispatcher->audio_session_id(stream_label1, 0),
             StreamDeviceInfo::kNoId);
+
+  // Stop video.
+  dispatcher->StopStreamDevice(video_device_info);
   EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0),
             StreamDeviceInfo::kNoId);
+
   EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));
 
   // Verify that the request has been completed.
@@ -211,19 +209,11 @@ TEST(MediaStreamDispatcherTest, BasicStreamForDevice) {
   // Check the session_id of stream2.
   EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0), kVideoSessionId);
 
-  // Stop stream2.
-  dispatcher->StopStream(stream_label2);
-  EXPECT_EQ(dispatcher->audio_session_id(stream_label2, 0),
-            StreamDeviceInfo::kNoId);
-  EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0),
-            StreamDeviceInfo::kNoId);
-
-  // Stop stream1.
-  dispatcher->StopStream(stream_label1);
-  EXPECT_EQ(dispatcher->audio_session_id(stream_label1, 0),
-            StreamDeviceInfo::kNoId);
+  // Stop video.
+  dispatcher->StopStreamDevice(video_device_info);
   EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0),
             StreamDeviceInfo::kNoId);
+
   EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));
 
   // Verify that the request has been completed.
@@ -302,13 +292,13 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
   EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0), kVideoSessionId);
   EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0), kVideoSessionId);
 
-  // Stop stream2.
-  dispatcher->StopStream(stream_label2);
+  // Close the device from request 2.
+  dispatcher->CloseDevice(stream_label2);
   EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0),
             StreamDeviceInfo::kNoId);
 
-  // Stop stream1.
-  dispatcher->StopStream(stream_label1);
+  // Close the device from request 1.
+  dispatcher->CloseDevice(stream_label1);
   EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0),
             StreamDeviceInfo::kNoId);
   EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));
@@ -364,10 +354,6 @@ TEST(MediaStreamDispatcherTest, TestFailure) {
   EXPECT_EQ(handler->request_id_, kRequestId1);
   EXPECT_EQ(handler->label_, stream_label1);
   EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0), kVideoSessionId);
-
-  // Stop stream1.
-  dispatcher->StopStream(stream_label1);
-  EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));
 }
 
 TEST(MediaStreamDispatcherTest, CancelGenerateStream) {

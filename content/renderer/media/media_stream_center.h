@@ -32,32 +32,35 @@ class CONTENT_EXPORT MediaStreamCenter
                     MediaStreamDependencyFactory* factory);
   virtual ~MediaStreamCenter();
 
+ private:
   virtual bool getMediaStreamTrackSources(
-      const WebKit::WebMediaStreamTrackSourcesRequest& request);
+      const WebKit::WebMediaStreamTrackSourcesRequest& request) OVERRIDE;
 
   virtual void didEnableMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
-      const WebKit::WebMediaStreamTrack& component);
+      const WebKit::WebMediaStreamTrack& component) OVERRIDE;
 
   virtual void didDisableMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
-      const WebKit::WebMediaStreamTrack& component);
+      const WebKit::WebMediaStreamTrack& component) OVERRIDE;
 
   virtual void didStopLocalMediaStream(
-      const WebKit::WebMediaStream& stream);
+      const WebKit::WebMediaStream& stream) OVERRIDE;
+
+  virtual bool didStopMediaStreamTrack(
+      const WebKit::WebMediaStreamTrack& web_track) OVERRIDE;
 
   virtual void didCreateMediaStream(
-      WebKit::WebMediaStream& stream);
+      WebKit::WebMediaStream& stream) OVERRIDE;
 
   virtual bool didAddMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
-      const WebKit::WebMediaStreamTrack& track);
+      const WebKit::WebMediaStreamTrack& track) OVERRIDE;
 
   virtual bool didRemoveMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
-      const WebKit::WebMediaStreamTrack& track);
+      const WebKit::WebMediaStreamTrack& track) OVERRIDE;
 
- private:
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 

@@ -14,7 +14,9 @@ MockMediaStreamDispatcher::MockMediaStreamDispatcher()
     : MediaStreamDispatcher(NULL),
       request_id_(-1),
       request_stream_counter_(0),
-      stop_stream_counter_(0) {
+      stop_audio_device_counter_(0),
+      stop_video_device_counter_(0),
+      session_id_(0) {
 }
 
 MockMediaStreamDispatcher::~MockMediaStreamDispatcher() {}
@@ -35,7 +37,7 @@ void MockMediaStreamDispatcher::GenerateStream(
     audio.device.id = "audio_device_id";
     audio.device.name = "microphone";
     audio.device.type = components.audio_type;
-    audio.session_id = request_id;
+    audio.session_id = session_id_;
     audio_array_.push_back(audio);
   }
   if (IsVideoMediaType(components.video_type)) {
@@ -43,7 +45,7 @@ void MockMediaStreamDispatcher::GenerateStream(
     video.device.id = "video_device_id";
     video.device.name = "usb video camera";
     video.device.type = components.video_type;
-    video.session_id = request_id;
+    video.session_id = session_id_;
     video_array_.push_back(video);
   }
   ++request_stream_counter_;
@@ -55,8 +57,17 @@ void MockMediaStreamDispatcher::CancelGenerateStream(
   EXPECT_EQ(request_id, request_id_);
 }
 
-void MockMediaStreamDispatcher::StopStream(const std::string& label) {
-  ++stop_stream_counter_;
+void MockMediaStreamDispatcher::StopStreamDevice(
+    const StreamDeviceInfo& device_info) {
+  if (IsAudioMediaType(device_info.device.type)) {
+    ++stop_audio_device_counter_;
+    return;
+  }
+  if (IsVideoMediaType(device_info.device.type)) {
+    ++stop_video_device_counter_;
+    return;
+  }
+  NOTREACHED();
 }
 
 bool MockMediaStreamDispatcher::IsStream(const std::string& label) {

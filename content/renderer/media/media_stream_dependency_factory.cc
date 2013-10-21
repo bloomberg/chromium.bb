@@ -281,11 +281,13 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     const WebKit::WebMediaStreamSource& source = video_tracks[i].source();
     MediaStreamSourceExtraData* source_data =
         static_cast<MediaStreamSourceExtraData*>(source.extraData());
-    if (!source_data) {
-      // TODO(perkj): Implement support for sources from remote MediaStreams.
-      NOTIMPLEMENTED();
+
+    // Check if the source has already been created. This happens when the same
+    // source is used in multiple MediaStreams as a result of calling
+    // getUserMedia.
+    if (source_data->video_source())
       continue;
-    }
+
     const bool is_screencast =
         source_data->device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
         source_data->device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
@@ -311,11 +313,12 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     const WebKit::WebMediaStreamSource& source = audio_tracks[i].source();
     MediaStreamSourceExtraData* source_data =
         static_cast<MediaStreamSourceExtraData*>(source.extraData());
-    if (!source_data) {
-      // TODO(henrika): Implement support for sources from remote MediaStreams.
-      NOTIMPLEMENTED();
+
+    // Check if the source has already been created. This happens when the same
+    // source is used in multiple MediaStreams as a result of calling
+    // getUserMedia.
+    if (source_data->local_audio_source())
       continue;
-    }
 
     // TODO(xians): Create a new capturer for difference microphones when we
     // support multiple microphones. See issue crbug/262117 .
@@ -332,6 +335,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
       // be called multiple times which is likely also a bug.
       return;
     }
+    source_data->SetAudioCapturer(capturer);
 
     // Creates a LocalAudioSource object which holds audio options.
     // TODO(xians): The option should apply to the track instead of the source.

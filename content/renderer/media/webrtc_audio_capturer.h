@@ -109,10 +109,14 @@ class CONTENT_EXPORT WebRtcAudioCapturer
                                  int* output_frames_per_buffer) const;
 
   const std::string& device_id() const { return device_id_; }
+  int session_id() const { return session_id_; }
 
   WebKit::WebAudioSourceProvider* audio_source_provider() const {
     return source_provider_.get();
   }
+
+  // Stops recording audio.
+  void Stop();
 
  protected:
   friend class base::RefCountedThreadSafe<WebRtcAudioCapturer>;
@@ -140,10 +144,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // thread. It should NOT be called under |lock_|.
   void Start();
 
-  // Stops recording audio.
-  // Triggered by RemoveSink() on the main render thread or a Libjingle working
-  // thread. It should NOT be called under |lock_|.
-  void Stop();
+
 
   // Helper function to get the buffer size based on |peer_connection_mode_|
   // and sample rate;

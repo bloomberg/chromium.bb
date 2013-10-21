@@ -52,14 +52,8 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
 
-  // Stop a started stream. Label is the label provided in OnStreamGenerated.
-  // TODO(perkj): Deprecate StopStream. Clients should stop the individual
-  // StreamDevices instead using CloseDevice using the
-  // StreamDeviceInfo::device::id.
-  virtual void StopStream(const std::string& label);
-
   // Stop a started device that has been requested by calling GenerateStream.
-  void StopStreamDevice(const StreamDeviceInfo& device_info);
+  virtual void StopStreamDevice(const StreamDeviceInfo& device_info);
 
   // Request to enumerate devices.
   void EnumerateDevices(
