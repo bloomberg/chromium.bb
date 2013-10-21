@@ -31,9 +31,9 @@
 #ifndef TimelineTraceEventProcessor_h
 #define TimelineTraceEventProcessor_h
 
-
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "platform/JSONValues.h"
+#include "platform/TraceEvent.h"
 #include "wtf/HashMap.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -81,44 +81,15 @@ private:
 
 class TimelineTraceEventProcessor : public ThreadSafeRefCounted<TimelineTraceEventProcessor> {
 public:
-    // FIXME: re-use definitions in TraceEvent.h once it's promoted to all platforms.
-    enum TraceEventPhase {
-        TracePhaseBegin = 'B',
-        TracePhaseEnd = 'E',
-        TracePhaseInstant = 'I',
-        TracePhaseCreateObject = 'N',
-        TracePhaseDeleteObject = 'D'
-    };
-
     TimelineTraceEventProcessor(WeakPtr<InspectorTimelineAgent>, InspectorClient*);
     ~TimelineTraceEventProcessor();
 
     void shutdown();
-    void processEventOnAnyThread(TraceEventPhase, const char* name, unsigned long long id,
+    void processEventOnAnyThread(char, const char* name, unsigned long long id,
         int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
         unsigned char flags);
 
 private:
-    // FIXME: use the definition in TraceEvent.h once we expose the latter to all plaforms.
-    union TraceValueUnion {
-        bool m_bool;
-        unsigned long long m_uint;
-        long long m_int;
-        double m_double;
-        const void* m_pointer;
-        const char* m_string;
-    };
-
-    enum TraceValueTypes {
-        TypeBool = 1,
-        TypeUInt = 2,
-        TypeInt = 3,
-        TypeDouble = 4,
-        TypePointer = 5,
-        TypeString = 6,
-        TypeCopyString = 7
-    };
-
     struct TimelineThreadState {
         TimelineThreadState() { }
 
@@ -142,7 +113,7 @@ private:
         {
         }
 
-        TraceEvent(double timestamp, TraceEventPhase phase, const char* name, unsigned long long id, ThreadIdentifier threadIdentifier,
+        TraceEvent(double timestamp, char phase, const char* name, unsigned long long id, ThreadIdentifier threadIdentifier,
             int argumentCount, const char* const* argumentNames, const unsigned char* argumentTypes, const unsigned long long* argumentValues)
             : m_timestamp(timestamp)
             , m_phase(phase)
@@ -163,7 +134,7 @@ private:
         }
 
         double timestamp() const { return m_timestamp; }
-        TraceEventPhase phase() const { return m_phase; }
+        char phase() const { return m_phase; }
         const char* name() const { return m_name; }
         unsigned long long id() const { return m_id; }
         ThreadIdentifier threadIdentifier() const { return m_threadIdentifier; }
@@ -172,16 +143,16 @@ private:
 
         bool asBool(const char* name) const
         {
-            return parameter(name, TypeBool).m_bool;
+            return parameter(name, TRACE_VALUE_TYPE_BOOL).m_bool;
         }
         long long asInt(const char* name) const
         {
             size_t index = findParameter(name);
-            if (index == kNotFound || (m_argumentTypes[index] != TypeInt && m_argumentTypes[index] != TypeUInt)) {
+            if (index == kNotFound || (m_argumentTypes[index] != TRACE_VALUE_TYPE_INT && m_argumentTypes[index] != TRACE_VALUE_TYPE_UINT)) {
                 ASSERT_NOT_REACHED();
                 return 0;
             }
-            return reinterpret_cast<const TraceValueUnion*>(m_argumentValues + index)->m_int;
+            return reinterpret_cast<const WebCore::TraceEvent::TraceValueUnion*>(m_argumentValues + index)->m_int;
         }
         unsigned long long asUInt(const char* name) const
         {
@@ -189,21 +160,21 @@ private:
         }
         double asDouble(const char* name) const
         {
-            return parameter(name, TypeDouble).m_double;
+            return parameter(name, TRACE_VALUE_TYPE_DOUBLE).m_double;
         }
         const char* asString(const char* name) const
         {
-            return parameter(name, TypeString).m_string;
+            return parameter(name, TRACE_VALUE_TYPE_STRING).m_string;
         }
 
     private:
         enum { MaxArguments = 2 };
 
         size_t findParameter(const char*) const;
-        const TraceValueUnion& parameter(const char* name, TraceValueTypes expectedType) const;
+        const WebCore::TraceEvent::TraceValueUnion& parameter(const char* name, unsigned char expectedType) const;
 
         double m_timestamp;
-        TraceEventPhase m_phase;
+        char m_phase;
         const char* m_name;
         unsigned long long m_id;
         ThreadIdentifier m_threadIdentifier;
@@ -228,7 +199,7 @@ private:
     void processBackgroundEvents();
     PassRefPtr<JSONObject> createRecord(const TraceEvent&, const String& recordType, PassRefPtr<JSONObject> data = 0);
 
-    void registerHandler(const char* name, TraceEventPhase, TraceEventHandler);
+    void registerHandler(const char* name, char, TraceEventHandler);
 
     void onBeginFrame(const TraceEvent&);
     void onUpdateLayerBegin(const TraceEvent&);
