@@ -1946,10 +1946,15 @@ TEST_F(ViewTest, SetBoundsPaint) {
 }
 
 // Tests conversion methods with a transform.
-TEST_F(ViewTest, ConvertPointToViewWithTransform) {
+TEST_F(ViewTest, ConversionsWithTransform) {
   TestView top_view;
+
+  // View hierarchy used to test scale transforms.
   TestView* child = new TestView;
   TestView* child_child = new TestView;
+
+  // View used to test a rotation transform.
+  TestView* child_2 = new TestView;
 
   top_view.AddChildView(child);
   child->AddChildView(child_child);
@@ -1965,6 +1970,12 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   transform.MakeIdentity();
   transform.Scale(5.0, 7.0);
   child_child->SetTransform(transform);
+
+  top_view.AddChildView(child_2);
+  child_2->SetBoundsRect(gfx::Rect(700, 725, 100, 100));
+  transform.MakeIdentity();
+  RotateClockwise(&transform);
+  child_2->SetTransform(transform);
 
   // Sanity check to make sure basic transforms act as expected.
   {
@@ -2012,10 +2023,24 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
     EXPECT_EQ(22, point.x());
     EXPECT_EQ(39, point.y());
 
+    gfx::RectF rect(5.0f, 5.0f, 10.0f, 20.0f);
+    View::ConvertRectToTarget(child, &top_view, &rect);
+    EXPECT_FLOAT_EQ(22.0f, rect.x());
+    EXPECT_FLOAT_EQ(39.0f, rect.y());
+    EXPECT_FLOAT_EQ(30.0f, rect.width());
+    EXPECT_FLOAT_EQ(80.0f, rect.height());
+
     point.SetPoint(22, 39);
     View::ConvertPointToTarget(&top_view, child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
+
+    rect.SetRect(22.0f, 39.0f, 30.0f, 80.0f);
+    View::ConvertRectToTarget(&top_view, child, &rect);
+    EXPECT_FLOAT_EQ(5.0f, rect.x());
+    EXPECT_FLOAT_EQ(5.0f, rect.y());
+    EXPECT_FLOAT_EQ(10.0f, rect.width());
+    EXPECT_FLOAT_EQ(20.0f, rect.height());
   }
 
   // Conversions from child_child->top and top->child_child.
@@ -2025,10 +2050,24 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
     EXPECT_EQ(133, point.x());
     EXPECT_EQ(211, point.y());
 
+    gfx::RectF rect(5.0f, 5.0f, 10.0f, 20.0f);
+    View::ConvertRectToTarget(child_child, &top_view, &rect);
+    EXPECT_FLOAT_EQ(133.0f, rect.x());
+    EXPECT_FLOAT_EQ(211.0f, rect.y());
+    EXPECT_FLOAT_EQ(150.0f, rect.width());
+    EXPECT_FLOAT_EQ(560.0f, rect.height());
+
     point.SetPoint(133, 211);
     View::ConvertPointToTarget(&top_view, child_child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
+
+    rect.SetRect(133.0f, 211.0f, 150.0f, 560.0f);
+    View::ConvertRectToTarget(&top_view, child_child, &rect);
+    EXPECT_FLOAT_EQ(5.0f, rect.x());
+    EXPECT_FLOAT_EQ(5.0f, rect.y());
+    EXPECT_FLOAT_EQ(10.0f, rect.width());
+    EXPECT_FLOAT_EQ(20.0f, rect.height());
   }
 
   // Conversions from child_child->child and child->child_child
@@ -2038,10 +2077,24 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
     EXPECT_EQ(42, point.x());
     EXPECT_EQ(48, point.y());
 
+    gfx::RectF rect(5.0f, 5.0f, 10.0f, 20.0f);
+    View::ConvertRectToTarget(child_child, child, &rect);
+    EXPECT_FLOAT_EQ(42.0f, rect.x());
+    EXPECT_FLOAT_EQ(48.0f, rect.y());
+    EXPECT_FLOAT_EQ(50.0f, rect.width());
+    EXPECT_FLOAT_EQ(140.0f, rect.height());
+
     point.SetPoint(42, 48);
     View::ConvertPointToTarget(child, child_child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
+
+    rect.SetRect(42.0f, 48.0f, 50.0f, 140.0f);
+    View::ConvertRectToTarget(child, child_child, &rect);
+    EXPECT_FLOAT_EQ(5.0f, rect.x());
+    EXPECT_FLOAT_EQ(5.0f, rect.y());
+    EXPECT_FLOAT_EQ(10.0f, rect.width());
+    EXPECT_FLOAT_EQ(20.0f, rect.height());
   }
 
   // Conversions from top_view to child with a value that should be negative.
@@ -2051,6 +2104,31 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
     View::ConvertPointToTarget(&top_view, child, &point);
     EXPECT_EQ(-1, point.x());
     EXPECT_EQ(-1, point.y());
+
+    float error = 0.01f;
+    gfx::RectF rect(6.0f, 18.0f, 10.0f, 39.0f);
+    View::ConvertRectToTarget(&top_view, child, &rect);
+    EXPECT_NEAR(-0.33f, rect.x(), error);
+    EXPECT_NEAR(-0.25f, rect.y(), error);
+    EXPECT_NEAR(3.33f, rect.width(), error);
+    EXPECT_NEAR(9.75f, rect.height(), error);
+  }
+
+  // Rect conversions from top_view->child_2 and child_2->top_view.
+  {
+    gfx::RectF rect(50.0f, 55.0f, 20.0f, 30.0f);
+    View::ConvertRectToTarget(child_2, &top_view, &rect);
+    EXPECT_FLOAT_EQ(615.0f, rect.x());
+    EXPECT_FLOAT_EQ(775.0f, rect.y());
+    EXPECT_FLOAT_EQ(30.0f, rect.width());
+    EXPECT_FLOAT_EQ(20.0f, rect.height());
+
+    rect.SetRect(615.0f, 775.0f, 30.0f, 20.0f);
+    View::ConvertRectToTarget(&top_view, child_2, &rect);
+    EXPECT_FLOAT_EQ(50.0f, rect.x());
+    EXPECT_FLOAT_EQ(55.0f, rect.y());
+    EXPECT_FLOAT_EQ(20.0f, rect.width());
+    EXPECT_FLOAT_EQ(30.0f, rect.height());
   }
 }
 

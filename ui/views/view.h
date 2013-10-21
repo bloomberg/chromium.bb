@@ -449,6 +449,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                                    const View* target,
                                    gfx::Point* point);
 
+  // Convert |rect| from the coordinate system of |source| to the coordinate
+  // system of |target|.
+  //
+  // |source| and |target| must be in the same widget, but doesn't need to be in
+  // the same view hierarchy.
+  // |source| can be NULL in which case it means the screen coordinate system.
+  static void ConvertRectToTarget(const View* source,
+                                  const View* target,
+                                  gfx::RectF* rect);
+
   // Convert a point from a View's coordinate system to that of its Widget.
   static void ConvertPointToWidget(const View* src, gfx::Point* point);
 
@@ -1306,9 +1316,20 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Convert a point in the ancestor's coordinate system to the view's
   // coordinate system using necessary transformations. Returns whether the
-  // point was successfully from the ancestor's coordinate system to the view's
-  // coordinate system.
+  // point was successfully converted from the ancestor's coordinate system
+  // to the view's coordinate system.
   bool ConvertPointFromAncestor(const View* ancestor, gfx::Point* point) const;
+
+  // Convert a rect in the view's coordinate to an ancestor view's coordinate
+  // system using necessary transformations. Returns whether the rect was
+  // successfully converted to the ancestor's coordinate system.
+  bool ConvertRectForAncestor(const View* ancestor, gfx::RectF* rect) const;
+
+  // Convert a rect in the ancestor's coordinate system to the view's
+  // coordinate system using necessary transformations. Returns whether the
+  // rect was successfully converted from the ancestor's coordinate system
+  // to the view's coordinate system.
+  bool ConvertRectFromAncestor(const View* ancestor, gfx::RectF* rect) const;
 
   // Accelerated painting ------------------------------------------------------
 

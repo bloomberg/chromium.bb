@@ -681,6 +681,32 @@ void View::ConvertPointToTarget(const View* source,
 }
 
 // static
+void View::ConvertRectToTarget(const View* source,
+                               const View* target,
+                               gfx::RectF* rect) {
+  if (source == target)
+    return;
+
+  // |source| can be NULL.
+  const View* root = GetHierarchyRoot(target);
+  if (source) {
+    CHECK_EQ(GetHierarchyRoot(source), root);
+
+    if (source != root)
+      source->ConvertRectForAncestor(root, rect);
+  }
+
+  if (target != root)
+    target->ConvertRectFromAncestor(root, rect);
+
+  // API defines NULL |source| as returning the point in screen coordinates.
+  if (!source) {
+    rect->set_origin(rect->origin() -
+        root->GetWidget()->GetClientAreaBoundsInScreen().OffsetFromOrigin());
+  }
+}
+
+// static
 void View::ConvertPointToWidget(const View* src, gfx::Point* p) {
   DCHECK(src);
   DCHECK(p);
@@ -1975,6 +2001,23 @@ bool View::ConvertPointFromAncestor(const View* ancestor,
   gfx::Point3F p(*point);
   trans.TransformPointReverse(&p);
   *point = gfx::ToFlooredPoint(p.AsPointF());
+  return result;
+}
+
+bool View::ConvertRectForAncestor(const View* ancestor,
+                                  gfx::RectF* rect) const {
+  gfx::Transform trans;
+  // TODO(sad): Have some way of caching the transformation results.
+  bool result = GetTransformRelativeTo(ancestor, &trans);
+  trans.TransformRect(rect);
+  return result;
+}
+
+bool View::ConvertRectFromAncestor(const View* ancestor,
+                                   gfx::RectF* rect) const {
+  gfx::Transform trans;
+  bool result = GetTransformRelativeTo(ancestor, &trans);
+  trans.TransformRectReverse(rect);
   return result;
 }
 
