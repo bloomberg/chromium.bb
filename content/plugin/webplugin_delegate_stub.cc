@@ -87,7 +87,8 @@ WebPluginDelegateStub::~WebPluginDelegateStub() {
   }
 
   // Remove the NPObject owner mapping for this instance.
-  channel_->RemoveMappingForNPObjectOwner(instance_id_);
+  if (delegate_)
+    channel_->RemoveMappingForNPObjectOwner(instance_id_);
 }
 
 bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
