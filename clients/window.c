@@ -3741,14 +3741,14 @@ window_schedule_resize(struct window *window, int width, int height)
 	window->pending_allocation.height = height;
 
 	if (window->min_allocation.width == 0) {
-		if (width < min_width)
+		if (width < min_width && window->frame)
 			window->min_allocation.width = min_width;
 		else
 			window->min_allocation.width = width;
-		if (height < min_height)
+		if (height < min_height && window->frame)
 			window->min_allocation.height = min_height;
 		else
-			window->min_allocation.height = width;
+			window->min_allocation.height = height;
 	}
 
 	if (window->pending_allocation.width < window->min_allocation.width)
