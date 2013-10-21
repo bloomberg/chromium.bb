@@ -115,15 +115,20 @@ bool ChunkedCopy(mkvparser::IMkvReader* source,
 // Frame Class
 
 Frame::Frame()
-    : frame_(NULL),
+    : add_id_(0),
+      additional_(NULL),
+      additional_length_(0),
+      duration_(0),
+      frame_(NULL),
+      is_key_(false),
       length_(0),
       track_number_(0),
-      timestamp_(0),
-      is_key_(false) {
+      timestamp_(0) {
 }
 
 Frame::~Frame() {
   delete [] frame_;
+  delete [] additional_;
 }
 
 bool Frame::Init(const uint8* frame, uint64 length) {
@@ -137,6 +142,22 @@ bool Frame::Init(const uint8* frame, uint64 length) {
   length_ = length;
 
   memcpy(frame_, frame, static_cast<size_t>(length_));
+  return true;
+}
+
+bool Frame::AddAdditionalData(const uint8* additional, uint64 length,
+                              uint64 add_id) {
+  uint8* const data =
+      new (std::nothrow) uint8[static_cast<size_t>(length)];  // NOLINT
+  if (!data)
+    return false;
+
+  delete [] additional_;
+  additional_ = data;
+  additional_length_ = length;
+  add_id_ = add_id;
+
+  memcpy(additional_, additional, static_cast<size_t>(additional_length_));
   return true;
 }
 
@@ -2140,7 +2161,8 @@ bool Segment::Finalize() {
     }
 
     const double duration =
-        static_cast<double>(last_timestamp_) / segment_info_.timecode_scale();
+        (static_cast<double>(last_timestamp_) + last_block_duration_) /
+        segment_info_.timecode_scale();
     segment_info_.set_duration(duration);
     if (!segment_info_.Finalize(writer_header_))
       return false;
@@ -2454,6 +2476,34 @@ bool Segment::AddMetadata(const uint8* frame,
     last_timestamp_ = timestamp_ns;
 
   return true;
+}
+
+bool Segment::AddGenericFrame(const Frame* frame) {
+  last_block_duration_ = frame->duration();
+  if (!tracks_.TrackIsAudio(frame->track_number()) &&
+      !tracks_.TrackIsVideo(frame->track_number()) &&
+      frame->duration() > 0) {
+    return AddMetadata(frame->frame(),
+                       frame->length(),
+                       frame->track_number(),
+                       frame->timestamp(),
+                       frame->duration());
+  } else if (frame->additional() && frame->additional_length() > 0) {
+    return AddFrameWithAdditional(frame->frame(),
+                                  frame->length(),
+                                  frame->additional(),
+                                  frame->additional_length(),
+                                  frame->add_id(),
+                                  frame->track_number(),
+                                  frame->timestamp(),
+                                  frame->is_key());
+  } else {
+    return AddFrame(frame->frame(),
+                    frame->length(),
+                    frame->track_number(),
+                    frame->timestamp(),
+                    frame->is_key());
+  }
 }
 
 void Segment::OutputCues(bool output_cues) {
