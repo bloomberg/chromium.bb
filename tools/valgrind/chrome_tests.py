@@ -602,7 +602,8 @@ def _main():
 
   # bake target into build_dir.
   assert not options.build_dir.endswith(options.target)
-  options.build_dir = os.path.join(options.build_dir, options.target)
+  options.build_dir = os.path.join(os.path.abspath(options.build_dir),
+                                   options.target)
 
   if options.verbose:
     logging_utils.config_root(logging.DEBUG)
