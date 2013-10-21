@@ -43,7 +43,8 @@ class TestTabModel : public TabModel {
   virtual TabAndroid* GetTabAt(int index) const OVERRIDE {
     return NULL;
   }
-
+  virtual void SetActiveIndex(int index) OVERRIDE {}
+  virtual void CloseTabAt(int index) OVERRIDE {}
 };
 
 TEST_F(TabModelTest, TestProfileHandling) {
