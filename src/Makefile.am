@@ -49,6 +49,14 @@ weston_SOURCES =				\
 	weston-launch.h				\
 	weston-egl-ext.h
 
+if ENABLE_DBUS
+weston_SOURCES +=				\
+	dbus.h					\
+	dbus.c
+weston_CFLAGS += $(DBUS_CFLAGS)
+weston_LDADD += $(DBUS_LIBS)
+endif
+
 git-version.h : .FORCE
 	$(AM_V_GEN)(echo "#define BUILD_ID \"$(shell git --git-dir=$(top_srcdir)/.git describe --always --dirty) $(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%s (%ci)')\"" > $@-new; \
 	cmp -s $@ $@-new || cp $@-new $@; \

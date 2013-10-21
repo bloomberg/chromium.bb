@@ -379,6 +379,28 @@ if test "x$enable_colord" != "xno"; then
 fi
 AM_CONDITIONAL(ENABLE_COLORD, test "x$enable_colord" = "xyes")
 
+# dbus support
+AC_ARG_ENABLE(dbus,
+              AS_HELP_STRING([--disable-dbus],
+                             [do not build with dbus support]),,
+              enable_dbus=auto)
+if test "x$enable_dbus" != "xno"; then
+        PKG_CHECK_MODULES(DBUS,
+                          dbus-1 >= 1.6,
+                          have_dbus=yes,
+                          have_dbus=no)
+        if test "x$have_dbus" = "xno" -a "x$enable_dbus" = "xyes"; then
+                AC_MSG_ERROR([dbus support explicitly requested, but libdbus couldn't be found])
+        fi
+        if test "x$have_dbus" = "xyes"; then
+                enable_dbus=yes
+                AC_DEFINE([HAVE_DBUS], [1], [Build with dbus support])
+        else
+                enable_dbus=no
+        fi
+fi
+AM_CONDITIONAL(ENABLE_DBUS, test "x$enable_dbus" = "xyes")
+
 AC_ARG_ENABLE(wcap-tools, [  --disable-wcap-tools],, enable_wcap_tools=yes)
 AM_CONDITIONAL(BUILD_WCAP_TOOLS, test x$enable_wcap_tools = xyes)
 if test x$enable_wcap_tools = xyes; then
@@ -467,6 +489,7 @@ AC_MSG_RESULT([
 	EGL				${enable_egl}
 	libxkbcommon			${enable_xkbcommon}
 	XWayland			${enable_xwayland}
+	dbus				${enable_dbus}
 
 	Build wcap utility		${enable_wcap_tools}
 	Build Tablet Shell		${enable_tablet_shell}
