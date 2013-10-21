@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/task_manager/resource_provider.h"
-#include "content/public/browser/render_view_host_observer.h"
 
 namespace content {
 class RenderViewHost;
@@ -17,8 +16,7 @@ namespace task_manager {
 
 // Base class for various types of render process resources that provides common
 // functionality like stats tracking.
-class RendererResource : public Resource,
-                         public content::RenderViewHostObserver {
+class RendererResource : public Resource {
  public:
   RendererResource(base::ProcessHandle process,
                    content::RenderViewHost* render_view_host);
@@ -56,10 +54,6 @@ class RendererResource : public Resource,
 
   virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
                                  size_t v8_memory_used) OVERRIDE;
-
-  // content::RenderViewHostObserver implementation.
-  virtual void RenderViewHostDestroyed(
-      content::RenderViewHost* render_view_host) OVERRIDE;
 
   content::RenderViewHost* render_view_host() const {
     return render_view_host_;

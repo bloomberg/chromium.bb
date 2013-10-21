@@ -15,8 +15,7 @@ namespace task_manager {
 
 RendererResource::RendererResource(base::ProcessHandle process,
                                    content::RenderViewHost* render_view_host)
-    : content::RenderViewHostObserver(render_view_host),
-      process_(process),
+    : process_(process),
       render_view_host_(render_view_host),
       pending_stats_update_(false),
       fps_(0.0f),
@@ -123,13 +122,6 @@ void RendererResource::Inspect() const {
 
 bool RendererResource::SupportNetworkUsage() const {
   return true;
-}
-
-void RendererResource::RenderViewHostDestroyed(
-    content::RenderViewHost* render_view_host) {
-  // We should never get here.  We should get deleted first.
-  // Use this CHECK to help diagnose http://crbug.com/165138.
-  CHECK(false);
 }
 
 }  // namespace task_manager

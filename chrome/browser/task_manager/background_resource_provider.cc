@@ -196,6 +196,8 @@ void BackgroundContentsResourceProvider::StartUpdating() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void BackgroundContentsResourceProvider::StopUpdating() {
@@ -212,6 +214,9 @@ void BackgroundContentsResourceProvider::StopUpdating() {
   registrar_.Remove(
       this, chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(
+      this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+      content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.
   STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
@@ -223,8 +228,7 @@ void BackgroundContentsResourceProvider::AddToTaskManager(
     BackgroundContents* background_contents,
     const string16& application_name) {
   BackgroundContentsResource* resource =
-      new BackgroundContentsResource(background_contents,
-                                                application_name);
+      new BackgroundContentsResource(background_contents, application_name);
   resources_[background_contents] = resource;
   task_manager_->AddResource(resource);
 }
@@ -307,6 +311,20 @@ void BackgroundContentsResourceProvider::Observe(
       // (applications may now be considered "foreground" that weren't before).
       task_manager_->ModelChanged();
       break;
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED: {
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
+      for (Resources::iterator i = resources_.begin(); i != resources_.end();
+           i++) {
+        if (i->first->web_contents() == web_contents) {
+          string16 application_name = i->second->application_name();
+          BackgroundContents* contents = i->first;
+          Remove(contents);
+          Add(contents, application_name);
+          return;
+        }
+      }
+      break;
+    }
     default:
       NOTREACHED() << "Unexpected notification.";
       return;

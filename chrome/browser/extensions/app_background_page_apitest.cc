@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -216,6 +217,11 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
+  // Keep the task manager up through this test to verify that a crash doesn't
+  // happen when window.open creates a background page that switches
+  // RenderViewHosts. See http://crbug.com/165138.
+  chrome::ShowTaskManager(browser());
+
   // Make sure that no BackgroundContentses get deleted (a signal that repeated
   // window.open calls recreate instances, instead of being no-ops).
   content::TestNotificationTracker background_deleted_tracker;
