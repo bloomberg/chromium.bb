@@ -74,6 +74,7 @@ class DeviceLocalAccountPolicyServiceTestBase
   DeviceLocalAccountPolicyServiceTestBase();
 
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   void CreatePolicyService();
 
@@ -164,6 +165,11 @@ void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
       true);
   device_local_account_policy_.policy_data().set_policy_type(
       dm_protocol::kChromePublicAccountPolicyType);
+}
+
+void DeviceLocalAccountPolicyServiceTestBase::TearDown() {
+  extension_cache_task_runner_->RunUntilIdle();
+  chromeos::DeviceSettingsTestBase::TearDown();
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
