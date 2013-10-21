@@ -46,6 +46,7 @@
 
 #include "compositor.h"
 #include "launcher-util.h"
+#include "logind-util.h"
 #include "weston-launch.h"
 
 #define DRM_MAJOR 226
@@ -57,6 +58,7 @@
 union cmsg_data { unsigned char b[4]; int fd; };
 
 struct weston_launcher {
+	struct weston_logind *logind;
 	struct weston_compositor *compositor;
 	int fd;
 	struct wl_event_source *source;
@@ -103,6 +105,9 @@ weston_launcher_open(struct weston_launcher *launcher,
 	ssize_t len;
 	struct weston_launcher_open *message;
 	struct stat s;
+
+	if (launcher->logind)
+		return weston_logind_open(launcher->logind, path, flags);
 
 	if (launcher->fd == -1) {
 		fd = open(path, flags | O_CLOEXEC);
@@ -176,6 +181,9 @@ weston_launcher_open(struct weston_launcher *launcher,
 void
 weston_launcher_close(struct weston_launcher *launcher, int fd)
 {
+	if (launcher->logind)
+		return weston_logind_close(launcher->logind, fd);
+
 	close(fd);
 }
 
@@ -183,6 +191,9 @@ void
 weston_launcher_restore(struct weston_launcher *launcher)
 {
 	struct vt_mode mode = { 0 };
+
+	if (launcher->logind)
+		return weston_logind_restore(launcher->logind);
 
 	if (ioctl(launcher->tty, KDSKBMUTE, 0) &&
 	    ioctl(launcher->tty, KDSKBMODE, launcher->kb_mode))
@@ -342,19 +353,25 @@ setup_tty(struct weston_launcher *launcher, int tty)
 int
 weston_launcher_activate_vt(struct weston_launcher *launcher, int vt)
 {
+	if (launcher->logind)
+		return weston_logind_activate_vt(launcher->logind, vt);
+
 	return ioctl(launcher->tty, VT_ACTIVATE, vt);
 }
 
 struct weston_launcher *
-weston_launcher_connect(struct weston_compositor *compositor, int tty)
+weston_launcher_connect(struct weston_compositor *compositor, int tty,
+			const char *seat_id)
 {
 	struct weston_launcher *launcher;
 	struct wl_event_loop *loop;
+	int r;
 
 	launcher = malloc(sizeof *launcher);
 	if (launcher == NULL)
 		return NULL;
 
+	launcher->logind = NULL;
 	launcher->compositor = compositor;
 	launcher->drm_fd = -1;
 	launcher->fd = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
@@ -369,14 +386,21 @@ weston_launcher_connect(struct weston_compositor *compositor, int tty)
 			free(launcher);
 			return NULL;
 		}
-	} else if (geteuid() == 0) {
-		if (setup_tty(launcher, tty) == -1) {
-			free(launcher);
-			return NULL;
-		}
 	} else {
-		free(launcher);
-		return NULL;
+		r = weston_logind_connect(&launcher->logind, compositor,
+					  seat_id, tty);
+		if (r < 0) {
+			launcher->logind = NULL;
+			if (geteuid() == 0) {
+				if (setup_tty(launcher, tty) == -1) {
+					free(launcher);
+					return NULL;
+				}
+			} else {
+				free(launcher);
+				return NULL;
+			}
+		}
 	}
 
 	return launcher;
@@ -385,6 +409,8 @@ weston_launcher_connect(struct weston_compositor *compositor, int tty)
 void
 weston_launcher_destroy(struct weston_launcher *launcher)
 {
+	if (launcher->logind)
+		weston_logind_destroy(launcher->logind);
 	if (launcher->fd != -1) {
 		close(launcher->fd);
 		wl_event_source_remove(launcher->source);
@@ -393,6 +419,8 @@ weston_launcher_destroy(struct weston_launcher *launcher)
 		wl_event_source_remove(launcher->vt_source);
 	}
 
-	close(launcher->tty);
+	if (launcher->tty >= 0)
+		close(launcher->tty);
+
 	free(launcher);
 }

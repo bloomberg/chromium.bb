@@ -55,6 +55,14 @@ weston_SOURCES +=				\
 	dbus.c
 weston_CFLAGS += $(DBUS_CFLAGS)
 weston_LDADD += $(DBUS_LIBS)
+
+if HAVE_SYSTEMD_LOGIN
+weston_SOURCES +=				\
+	logind-util.h				\
+	logind-util.c
+weston_CFLAGS += $(SYSTEMD_LOGIN_CFLAGS)
+weston_LDADD += $(SYSTEMD_LOGIN_LIBS)
+endif
 endif
 
 git-version.h : .FORCE

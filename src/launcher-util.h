@@ -30,7 +30,8 @@
 struct weston_launcher;
 
 struct weston_launcher *
-weston_launcher_connect(struct weston_compositor *compositor, int tty);
+weston_launcher_connect(struct weston_compositor *compositor, int tty,
+			const char *seat_id);
 
 void
 weston_launcher_destroy(struct weston_launcher *launcher);

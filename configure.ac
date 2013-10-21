@@ -316,14 +316,21 @@ AC_ARG_ENABLE(resize-optimization,
 AS_IF([test "x$enable_resize_optimization" = "xyes"],
       [AC_DEFINE([USE_RESIZE_POOL], [1], [Use resize memory pool as a performance optimization])])
 
+PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login],
+                  [have_systemd_login=yes], [have_systemd_login=no])
+AS_IF([test "x$have_systemd_login" = "xyes"],
+      [AC_DEFINE([HAVE_SYSTEMD_LOGIN], [1], [Have systemd-login])])
+AM_CONDITIONAL(HAVE_SYSTEMD_LOGIN, test "x$have_systemd_login" = "xyes")
+
+PKG_CHECK_MODULES(SYSTEMD_LOGIN_209, [libsystemd-login >= 209],
+                  [have_systemd_login_209=yes], [have_systemd_login_209=no])
+AS_IF([test "x$have_systemd_login_209" = "xyes"],
+      [AC_DEFINE([HAVE_SYSTEMD_LOGIN_209], [1], [Have systemd-login >= 209])])
+
 AC_ARG_ENABLE(weston-launch, [  --enable-weston-launch],, enable_weston_launch=yes)
 AM_CONDITIONAL(BUILD_WESTON_LAUNCH, test x$enable_weston_launch == xyes)
 if test x$enable_weston_launch == xyes; then
   PKG_CHECK_MODULES(WESTON_LAUNCH, [libdrm])
-  PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login],
-		    [have_systemd_login=yes], [have_systemd_login=no])
-  AS_IF([test "x$have_systemd_login" = "xyes"],
-	[AC_DEFINE([HAVE_SYSTEMD_LOGIN], [1], [Have systemd-login])])
 
   AC_CHECK_LIB([pam], [pam_open_session], [have_pam=yes], [have_pam=no])
   if test x$have_pam == xno; then
@@ -495,7 +502,7 @@ AC_MSG_RESULT([
 	Build Tablet Shell		${enable_tablet_shell}
 
 	weston-launch utility		${enable_weston_launch}
-	weston-launch systemd support	${have_systemd_login}
+	systemd-login support		${have_systemd_login}
 
 	DRM Compositor			${enable_drm_compositor}
 	X11 Compositor			${enable_x11_compositor}

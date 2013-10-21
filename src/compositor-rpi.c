@@ -752,7 +752,7 @@ rpi_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	wl_signal_add(&compositor->base.session_signal,
 		      &compositor ->session_listener);
 	compositor->base.launcher =
-		weston_launcher_connect(&compositor->base, param->tty);
+		weston_launcher_connect(&compositor->base, param->tty, "seat0");
 	if (!compositor->base.launcher) {
 		weston_log("Failed to initialize tty.\n");
 		goto out_udev;
