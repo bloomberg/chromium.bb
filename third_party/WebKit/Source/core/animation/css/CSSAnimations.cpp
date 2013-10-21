@@ -141,7 +141,7 @@ void calculateCandidateTransitionForProperty(const CSSAnimationData* anim, CSSPr
     // If we have multiple transitions on the same property, we will use the
     // last one since we iterate over them in order and this will override
     // a previously set CandidateTransition.
-    if (!from->equals(to.get()))
+    if (!from->equals(to.get()) && from->usesNonDefaultInterpolationWith(to.get()))
         candidateMap.add(id, CandidateTransition(from.release(), to.release(), anim));
 }
 

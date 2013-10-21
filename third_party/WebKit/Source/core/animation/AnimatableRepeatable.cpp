@@ -58,7 +58,7 @@ bool AnimatableRepeatable::interpolateLists(const Vector<RefPtr<AnimatableValue>
         const AnimatableValue* from = fromValues[i % fromValues.size()].get();
         const AnimatableValue* to = toValues[i % toValues.size()].get();
         // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
-        if (!from->isSameType(to) || from->isUnknown())
+        if (!from->usesNonDefaultInterpolationWith(to))
             return false;
         interpolatedValues.append(interpolate(from, to, fraction));
     }

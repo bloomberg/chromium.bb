@@ -79,6 +79,11 @@ public:
         return value->type() == type();
     }
 
+    bool usesNonDefaultInterpolationWith(const AnimatableValue* value) const
+    {
+        return isSameType(value) && !isUnknown();
+    }
+
 protected:
     enum AnimatableType {
         TypeClipPathOperation,
