@@ -863,7 +863,7 @@ def BuildStepTarNaClPorts(pepper_ver, tarfile):
 
 def main(args):
   parser = optparse.OptionParser()
-  parser.add_option('--skip-tar', help='Skip generating a tarball.',
+  parser.add_option('--tar', help='Force the tar step.',
       action='store_true')
   parser.add_option('--archive', help='Force the archive step.',
       action='store_true')
@@ -890,11 +890,12 @@ def main(args):
   if buildbot_common.IsSDKBuilder():
     options.archive = True
     options.build_ports = True
+    options.tar = True
 
   toolchains = ['newlib', 'glibc', 'arm', 'pnacl', 'host']
   print 'Building: ' + ' '.join(toolchains)
 
-  if options.archive and options.skip_tar:
+  if options.archive and not options.tar:
     parser.error('Incompatible arguments with archive.')
 
   chrome_version = int(build_version.ChromeMajorVersion())
@@ -937,14 +938,14 @@ def main(args):
   # Verify the SDK contains what we expect.
   BuildStepVerifyFilelist(pepperdir)
 
-  if not options.skip_tar:
+  if options.tar:
     BuildStepTarBundle(pepper_ver, tarfile)
 
   if options.build_ports and getos.GetPlatform() == 'linux':
     ports_tarfile = os.path.join(OUT_DIR, 'naclports.tar.bz2')
     BuildStepSyncNaClPorts()
     BuildStepBuildNaClPorts(pepper_ver, pepperdir)
-    if not options.skip_tar:
+    if options.tar:
       BuildStepTarNaClPorts(pepper_ver, ports_tarfile)
 
   # Archive on non-trybots.
