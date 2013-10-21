@@ -401,7 +401,7 @@ button.google-button:active {
 }
 
 #gc-sidebar {
-  width: 180px;
+  width: 185px;
   float: left;
 }
 
@@ -457,8 +457,9 @@ button.google-button:active {
   margin-left: 10px;
   padding-top: 10px;
 }
-#gc-sidebar ul.level3 {
-  list-style: url(../images/sidearrow.png);
+#gc-sidebar ul.level3,
+#gc-sidebar ul.level4,
+#gc-sidebar ul.level5 {
   margin-left: 20px;
   padding-top: 10px;
 }
