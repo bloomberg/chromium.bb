@@ -798,6 +798,28 @@
     ['OS!="ios"', {
       'targets': [
         {
+          'target_name': 'content_perftests',
+          'type': '<(gtest_target_type)',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'dependencies': [
+            'content.gyp:content_common',
+            'test_support_content',
+            '../base/base.gyp:test_support_base',
+            '../cc/cc.gyp:cc',
+            '../skia/skia.gyp:skia',
+            '../testing/gtest.gyp:gtest',
+            '../testing/perf/perf_test.gyp:*',
+            '../ui/gfx/gfx.gyp:gfx',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'common/cc_messages_perftest.cc',
+            'test/run_all_unittests.cc',
+          ],
+        },
+        {
           'target_name': 'content_browsertests',
           'type': '<(gtest_target_type)',
           'dependencies': [
