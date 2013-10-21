@@ -453,15 +453,9 @@
             '../chrome/chrome.gyp:chrome',
             # Dependencies of pyauto_functional tests.
             '../remoting/remoting.gyp:remoting_webapp',
+            '../chrome/chrome.gyp:pyautolib',
           ],
           'conditions': [
-            # If you change this condition, make sure you also change it
-            # in chrome_tests.gypi
-            ['enable_automation==1 and (OS=="mac" or ((OS=="win" or os_posix==1) and target_arch==python_arch))', {
-              'dependencies': [
-                '../chrome/chrome.gyp:pyautolib',
-              ],
-            }],
             ['OS=="mac"', {
               'dependencies': [
                 '../remoting/remoting.gyp:remoting_me2me_host_archive',
@@ -839,15 +833,9 @@
                 '../cloud_print/cloud_print.gyp:cloud_print',
                 '../remoting/remoting.gyp:remoting_webapp',
                 '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
+                '../chrome/chrome.gyp:pyautolib',
               ],
               'conditions': [
-                # If you change this condition, make sure you also change it
-                # in chrome_tests.gypi
-                ['enable_automation==1 and (OS=="mac" or (os_posix==1 and target_arch==python_arch))', {
-                  'dependencies': [
-                    '../chrome/chrome.gyp:pyautolib',
-                  ],
-                }],
                 ['internal_pdf', {
                   'dependencies': [
                     '../pdf/pdf.gyp:pdf',

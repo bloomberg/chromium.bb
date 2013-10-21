@@ -2513,6 +2513,173 @@
         }],
       ],
     },
+    {
+      # Documentation: http://dev.chromium.org/developers/testing/pyauto
+      'target_name': 'pyautolib',
+      'conditions': [
+        ['enable_automation==1 and (OS=="mac" or ((OS=="win" or os_posix==1) and target_arch==python_arch))', {
+          'type': 'loadable_module',
+          'product_prefix': '_',
+          'dependencies': [
+            'chrome',
+            'chrome_resources.gyp:chrome_resources',
+            'chrome_resources.gyp:chrome_strings',
+            'chrome_resources.gyp:theme_resources',
+            'debugger',
+            'test_support_common',
+            '../skia/skia.gyp:skia',
+            '../sync/sync.gyp:sync',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'export_dependent_settings': [
+            'test_support_common',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'cflags': [
+             '-Wno-uninitialized',
+             '-Wno-self-assign',  # to keep clang happy for generated code.
+          ],
+          'sources': [
+            'test/automation/proxy_launcher.cc',
+            'test/automation/proxy_launcher.h',
+            'test/pyautolib/pyautolib.cc',
+            'test/pyautolib/pyautolib.h',
+            'test/ui/ui_test.cc',
+            'test/ui/ui_test.h',
+            'test/ui/ui_test_suite.cc',
+            'test/ui/ui_test_suite.h',
+            '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+            '<@(pyautolib_sources)',
+          ],
+          'xcode_settings': {
+            # Link with python2.6. Using -L/usr/lib and -lpython2.6 does not
+            # work with the -isysroot argument passed in. Even if it did,
+            # the linker shouldn't use any other lib not in the 10.5 sdk.
+            'OTHER_LDFLAGS': [
+              '/usr/lib/libpython2.6.dylib'
+            ],
+          },
+          'msvs_disabled_warnings': [4211],
+          'conditions': [
+            # Disable the type profiler. _POSIX_C_SOURCE and _XOPEN_SOURCE
+            # conflict between <Python.h> and <typeinfo>.
+            ['OS=="linux" and clang_type_profiler==1', {
+              'cflags_cc!': [
+                '-fintercept-allocation-functions',
+              ],
+            }],
+            ['os_posix == 1 and OS!="mac"', {
+              'include_dirs': [
+                '..',
+                '<(sysroot)/usr/include/python<(python_ver)',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '-lpython<(python_ver)',
+                ],
+              },
+            }],
+            ['toolkit_uses_gtk == 1', {
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
+            }],
+            ['OS=="mac"', {
+              'include_dirs': [
+                '..',
+                '/usr/include/python2.6',
+              ],
+            }],
+            ['OS=="win"', {
+              'product_extension': 'pyd',
+              'include_dirs': [
+                '..',
+                '../third_party/python_26/include',
+              ],
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'AdditionalLibraryDirectories': [
+                    '<(DEPTH)/third_party/python_26/libs',
+                  ],
+                  'AdditionalDependencies': [
+                    'python26.lib',
+                  ],
+                },
+              }
+            }],
+            ['clang == 1', {
+              'xcode_settings': {
+                'WARNING_CFLAGS': [
+                  # swig creates code with self assignments.
+                  '-Wno-self-assign',
+                ],
+              },
+              'cflags': [
+                '-Wno-self-assign',
+              ],
+            }],
+            ['asan==1', {
+              'cflags!': [ '-fsanitize=address' ],
+              'xcode_settings': { 'OTHER_CFLAGS!': [ '-fsanitize=address' ] },
+            }],
+          ],
+          'actions': [
+            {
+              'variables' : {
+                'swig_args': [ '-I..',
+                               '-python',
+                               '-c++',
+                               '-threads',
+                               '-outdir',
+                               '<(PRODUCT_DIR)',
+                               '-o',
+                               '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+                ],
+                'conditions': [
+                  ['chromeos==1', {
+                    'swig_args': [
+                      '-DOS_CHROMEOS',
+                    ]
+                  }],
+                ],
+              },
+              'action_name': 'pyautolib_swig',
+              'inputs': [
+                'test/pyautolib/argc_argv.i',
+                'test/pyautolib/pyautolib.i',
+                '<@(pyautolib_sources)',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
+                '<(PRODUCT_DIR)/pyautolib.py',
+              ],
+              'action': [ 'python',
+                          '../tools/swig/swig.py',
+                          '<@(swig_args)',
+                          'test/pyautolib/pyautolib.i',
+              ],
+              'message': 'Generating swig wrappers for pyautolib.',
+              'msvs_cygwin_shell': 1,
+            },
+          ],  # actions
+        }, {
+          'type': 'none',
+        }],
+      ], # conditions
+    },  # target 'pyautolib'
+    {
+      # Required for WebRTC PyAuto tests.
+      'target_name': 'webrtc_test_tools',
+      'type': 'none',
+      'dependencies': [
+        'pyautolib',
+        '../third_party/libjingle/libjingle.gyp:peerconnection_server',
+        '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
+        '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
+      ],
+    },  # target 'webrtc_test_tools'
   ],
   'conditions': [
     ['OS=="mac"', {
@@ -2670,171 +2837,6 @@
     ],  # OS=="win"
     # If you change this condition, make sure you also change it in all.gyp
     # for the chromium_builder_qa target.
-    ['enable_automation==1 and (OS=="mac" or ((OS=="win" or os_posix==1) and target_arch==python_arch))', {
-      'targets': [
-        {
-          # Documentation: http://dev.chromium.org/developers/testing/pyauto
-          'target_name': 'pyautolib',
-          'type': 'loadable_module',
-          'product_prefix': '_',
-          'dependencies': [
-            'chrome',
-            'chrome_resources.gyp:chrome_resources',
-            'chrome_resources.gyp:chrome_strings',
-            'chrome_resources.gyp:theme_resources',
-            'debugger',
-            'test_support_common',
-            '../skia/skia.gyp:skia',
-            '../sync/sync.gyp:sync',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'export_dependent_settings': [
-            'test_support_common',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'cflags': [
-             '-Wno-uninitialized',
-             '-Wno-self-assign',  # to keep clang happy for generated code.
-          ],
-          'sources': [
-            'test/automation/proxy_launcher.cc',
-            'test/automation/proxy_launcher.h',
-            'test/pyautolib/pyautolib.cc',
-            'test/pyautolib/pyautolib.h',
-            'test/ui/ui_test.cc',
-            'test/ui/ui_test.h',
-            'test/ui/ui_test_suite.cc',
-            'test/ui/ui_test_suite.h',
-            '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
-            '<@(pyautolib_sources)',
-          ],
-          'xcode_settings': {
-            # Link with python2.6. Using -L/usr/lib and -lpython2.6 does not
-            # work with the -isysroot argument passed in. Even if it did,
-            # the linker shouldn't use any other lib not in the 10.5 sdk.
-            'OTHER_LDFLAGS': [
-              '/usr/lib/libpython2.6.dylib'
-            ],
-          },
-          'msvs_disabled_warnings': [4211],
-          'conditions': [
-            # Disable the type profiler. _POSIX_C_SOURCE and _XOPEN_SOURCE
-            # conflict between <Python.h> and <typeinfo>.
-            ['OS=="linux" and clang_type_profiler==1', {
-              'cflags_cc!': [
-                '-fintercept-allocation-functions',
-              ],
-            }],
-            ['os_posix == 1 and OS!="mac"', {
-              'include_dirs': [
-                '..',
-                '<(sysroot)/usr/include/python<(python_ver)',
-              ],
-              'link_settings': {
-                'libraries': [
-                  '-lpython<(python_ver)',
-                ],
-              },
-            }],
-            ['toolkit_uses_gtk == 1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            }],
-            ['OS=="mac"', {
-              'include_dirs': [
-                '..',
-                '/usr/include/python2.6',
-              ],
-            }],
-            ['OS=="win"', {
-              'product_extension': 'pyd',
-              'include_dirs': [
-                '..',
-                '../third_party/python_26/include',
-              ],
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'AdditionalLibraryDirectories': [
-                    '<(DEPTH)/third_party/python_26/libs',
-                  ],
-                  'AdditionalDependencies': [
-                    'python26.lib',
-                  ],
-                },
-              }
-            }],
-            ['clang == 1', {
-              'xcode_settings': {
-                'WARNING_CFLAGS': [
-                  # swig creates code with self assignments.
-                  '-Wno-self-assign',
-                ],
-              },
-              'cflags': [
-                '-Wno-self-assign',
-              ],
-            }],
-            ['asan==1', {
-              'cflags!': [ '-fsanitize=address' ],
-              'xcode_settings': { 'OTHER_CFLAGS!': [ '-fsanitize=address' ] },
-            }],
-          ],
-          'actions': [
-            {
-              'variables' : {
-                'swig_args': [ '-I..',
-                               '-python',
-                               '-c++',
-                               '-threads',
-                               '-outdir',
-                               '<(PRODUCT_DIR)',
-                               '-o',
-                               '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
-                ],
-                'conditions': [
-                  ['chromeos==1', {
-                    'swig_args': [
-                      '-DOS_CHROMEOS',
-                    ]
-                  }],
-                ],
-              },
-              'action_name': 'pyautolib_swig',
-              'inputs': [
-                'test/pyautolib/argc_argv.i',
-                'test/pyautolib/pyautolib.i',
-                '<@(pyautolib_sources)',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
-                '<(PRODUCT_DIR)/pyautolib.py',
-              ],
-              'action': [ 'python',
-                          '../tools/swig/swig.py',
-                          '<@(swig_args)',
-                          'test/pyautolib/pyautolib.i',
-              ],
-              'message': 'Generating swig wrappers for pyautolib.',
-              'msvs_cygwin_shell': 1,
-            },
-          ],  # actions
-        },  # target 'pyautolib'
-        {
-          # Required for WebRTC PyAuto tests.
-          'target_name': 'webrtc_test_tools',
-          'type': 'none',
-          'dependencies': [
-            'pyautolib',
-            '../third_party/libjingle/libjingle.gyp:peerconnection_server',
-            '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
-            '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
-          ],
-        },  # target 'webrtc_test_tools'
-      ]  # targets
-    }],
     # To enable the coverage targets, do
     #    GYP_DEFINES='coverage=1' gclient sync
     # To match the coverage buildbot more closely, do this:
@@ -2933,7 +2935,8 @@
                 'performance_ui_tests',
                 'pyautolib',
                 'sync_integration_tests',
-              ]}],
+              ],
+            }],
             ['OS=="mac"', {
               'dependencies': [
               # Placeholder; empty for now.
