@@ -162,6 +162,11 @@ case ${host_os} in
         darwin*)
         ax_pthread_flags="-pthread $ax_pthread_flags"
         ;;
+	netbsd*)
+	# use libc stubs, don't link against libpthread, to allow
+	# dynamic loading
+	ax_pthread_flags=""
+	;;
 esac
 
 # Clang doesn't consider unrecognized options an error unless we specify
