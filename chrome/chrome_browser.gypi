@@ -2706,6 +2706,12 @@
             'browser/media_galleries/fileapi/safe_picasa_albums_indexer.h',
           ],
         }],
+        ['OS!="android" and OS!="ios" and chromeos==0', {
+          'sources': [
+            'browser/download/download_dir_policy_handler.cc',
+            'browser/download/download_dir_policy_handler.h',
+          ],
+        }],
         ['OS=="mac"', {
           'sources': [
             'browser/media_galleries/fileapi/iphoto_data_provider.cc',

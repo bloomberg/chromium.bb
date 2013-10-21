@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
@@ -621,41 +620,6 @@ void AutofillPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 // Android doesn't support these policies, and doesn't have a policy_path_parser
 // implementation.
 #if !defined(OS_ANDROID)
-
-
-// DownloadDirPolicyHandler implementation -------------------------------------
-
-DownloadDirPolicyHandler::DownloadDirPolicyHandler(
-    const char* default_directory_pref_name,
-    const char* prompt_for_download_pref_name)
-    : TypeCheckingPolicyHandler(key::kDownloadDirectory, Value::TYPE_STRING),
-      default_directory_pref_name_(default_directory_pref_name),
-      prompt_for_download_pref_name_(prompt_for_download_pref_name) {}
-
-DownloadDirPolicyHandler::~DownloadDirPolicyHandler() {
-}
-
-void DownloadDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
-                                                   PrefValueMap* prefs) {
-  const Value* value = policies.GetValue(policy_name());
-  base::FilePath::StringType string_value;
-  if (!value || !value->GetAsString(&string_value))
-    return;
-
-  base::FilePath::StringType expanded_value =
-      policy::path_parser::ExpandPathVariables(string_value);
-  // Make sure the path isn't empty, since that will point to an undefined
-  // location; the default location is used instead in that case.
-  // This is checked after path expansion because a non-empty policy value can
-  // lead to an empty path value after expansion (e.g. "\"\"").
-  if (expanded_value.empty())
-    expanded_value = DownloadPrefs::GetDefaultDownloadDirectory().value();
-  prefs->SetValue(default_directory_pref_name_,
-                  Value::CreateStringValue(expanded_value));
-  prefs->SetValue(prompt_for_download_pref_name_,
-                  Value::CreateBooleanValue(false));
-}
-
 
 // DiskCacheDirPolicyHandler implementation ------------------------------------
 

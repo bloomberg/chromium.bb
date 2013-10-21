@@ -331,23 +331,6 @@ class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
 
 #if !defined(OS_ANDROID)
 
-// ConfigurationPolicyHandler for the DownloadDirectory policy.
-class DownloadDirPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  DownloadDirPolicyHandler(const char* default_directory_pref_name,
-                           const char* prompt_for_download_pref_name);
-  virtual ~DownloadDirPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  const char* default_directory_pref_name_;
-  const char* prompt_for_download_pref_name_;
-  DISALLOW_COPY_AND_ASSIGN(DownloadDirPolicyHandler);
-};
-
 // ConfigurationPolicyHandler for the DiskCacheDir policy.
 class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
  public:

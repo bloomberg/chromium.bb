@@ -484,37 +484,14 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
   EXPECT_TRUE(sync_managed);
 }
 
-// Test cases for how the DownloadDirectory and AllowFileSelectionDialogs policy
-// influence the PromptForDownload preference.
+// Test cases for how the AllowFileSelectionDialogs policy influences the
+// PromptForDownload preference.
 class ConfigurationPolicyPrefStorePromptDownloadTest
     : public ConfigurationPolicyPrefStoreTest {};
 
 TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, Default) {
   EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
 }
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
-  PolicyMap policy;
-  EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
-  policy.Set(key::kDownloadDirectory,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             base::Value::CreateStringValue(std::string()),
-             NULL);
-  UpdateProviderPolicy(policy);
-
-  // Setting a DownloadDirectory should disable the PromptForDownload pref.
-  const base::Value* value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kPromptForDownload,
-                                                 &value));
-  ASSERT_TRUE(value);
-  bool prompt_for_download = true;
-  bool result = value->GetAsBoolean(&prompt_for_download);
-  ASSERT_TRUE(result);
-  EXPECT_FALSE(prompt_for_download);
-}
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
        EnableFileSelectionDialogs) {

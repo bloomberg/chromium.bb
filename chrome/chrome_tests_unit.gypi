@@ -2644,6 +2644,11 @@
             }],
           ],
         }],  # OS == android
+        ['OS!="android" and OS!="ios" and chromeos==0', {
+          'sources': [
+            'browser/download/download_dir_policy_handler_unittest.cc',
+          ],
+        }],
         ['enable_printing!=1', {
           'sources/': [
             # No need for service process.

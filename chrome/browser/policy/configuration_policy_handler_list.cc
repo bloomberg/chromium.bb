@@ -31,6 +31,10 @@
 #include "chrome/browser/policy/configuration_policy_handler_android.h"
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/download/download_dir_policy_handler.h"
+#endif
+
 #if !defined(OS_MACOSX)
 #include "apps/pref_names.h"
 #endif
@@ -493,10 +497,9 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
                                      false));
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   handlers_.push_back(new DiskCacheDirPolicyHandler(prefs::kDiskCacheDir));
-  handlers_.push_back(new DownloadDirPolicyHandler(
-      prefs::kDownloadDefaultDirectory, prefs::kPromptForDownload));
+  handlers_.push_back(new DownloadDirPolicyHandler);
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
