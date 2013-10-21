@@ -128,13 +128,14 @@ interface TestObjectPython {
     [CustomSetter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
     [KeepAttributeAliveForGC] attribute DocumentFragment documentFragmentAttribute;
     [MeasureAs=TestFeature] readonly attribute long measureAsReadonlyLongAttribute;
-    [NotEnumerable] readonly attribute long notEnumerableReadonlyLongAttribute;
-    [PerContextEnabled=FeatureName] readonly attribute long perContextEnabledReadonlyLongAttribute;
-    [PerWorldBindings] readonly attribute long perWorldBindingsReadonlyLongAttribute;  // FIXME: when implement setters, also include a [PerWorldBindings] *readonly* attribute (to check configuration line)
-    [ActivityLogging=AccessForAllWorlds, PerWorldBindings] readonly attribute long activityLoggingAccessPerWorldBindingsReadonlyLongAttribute;
-    [ActivityLogging=AccessForIsolatedWorlds, PerWorldBindings] readonly attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsReadonlyLongAttribute;
-    [ActivityLogging=GetterForAllWorlds, PerWorldBindings] readonly attribute long activityLoggingGetterPerWorldBindingsReadonlyLongAttribute;
-    [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] readonly attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsReadonlyLongAttribute;
+    [NotEnumerable] attribute long notEnumerableLongAttribute;
+    [PerContextEnabled=FeatureName] attribute long perContextEnabledLongAttribute;
+    [PerWorldBindings] attribute long perWorldBindingsLongAttribute;
+    [PerWorldBindings] readonly attribute long perWorldBindingsReadonlyLongAttribute;  // Separate read only attribute to check attribute configuration
+    [ActivityLogging=AccessForAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
+    [ActivityLogging=AccessForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
+    [ActivityLogging=GetterForAllWorlds, PerWorldBindings] attribute long activityLoggingGetterPerWorldBindingsLongAttribute;
+    [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute;
     [RaisesException] attribute long raisesExceptionLongAttribute;
     [Reflect] readonly attribute TestInterface reflectReadonlyTestInterfaceAttribute;
     [Reflect=reflectedNameAttribute] readonly attribute TestInterface reflectReflectedNameAttributeReadonlyTestAttribute;
@@ -150,16 +151,16 @@ interface TestObjectPython {
     [Reflect=id] readonly attribute DOMString reflectedId;
     [Reflect=name] readonly attribute DOMString reflectedName;
     [Reflect=class] readonly attribute DOMString reflectedClass;
-    [RuntimeEnabled=FeatureName] readonly attribute long runtimeEnabledReadonlyLongAttribute;
-    [Conditional=Condition, RuntimeEnabled=FeatureName] readonly attribute long conditionalEnabledAtRuntimeReadonlyLongAttribute;
+    [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
+    [Conditional=Condition, RuntimeEnabled=FeatureName] attribute long conditionalEnabledAtRuntimeLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] readonly attribute DOMString setterCallWithActiveWindowAndFirstWindowReadonlyStringAttribute;  // FIXME: stub test case b/c readonly, becomes real test case when implement setters
     [SetterRaisesException] attribute long setterRaisesExceptionLongAttribute;
     [StrictTypeChecking] readonly attribute float strictTypeCheckingReadonlyFloatAttribute;  // FIXME: only applicable to writable attributes, implement with setters
     [StrictTypeChecking] readonly attribute TestInterface strictTypeCheckingReadonlyTestInterfaceAttribute;  // FIXME: only applicable to writable attributes, implement with setters
     [TreatNullAs=NullString] readonly attribute DOMString treatNullAsNullStringReadonlyStringAttribute;  // FIXME: only applicable to writable attributes, implement with setters
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString treatReturnedNullStringAsNullReadonlyStringAttribute;
-    [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString treatReturnedNullStringAsUndefinedReadonlyStringAttribute;
+    [TreatReturnedNullStringAs=Null] attribute DOMString treatReturnedNullStringAsNullStringAttribute;
+    [TreatReturnedNullStringAs=Undefined] attribute DOMString treatReturnedNullStringAsUndefinedStringAttribute;
     [Reflect, URL] readonly attribute DOMString urlReadonlyStringAttribute;
     [Reflect=ReflectUrlAttribute, URL] readonly attribute DOMString urlReadonlyStringAttribute;
-    [Unforgeable] readonly attribute long unforgeableReadonlyLongAttribute;
+    [Unforgeable] attribute long unforgeableLongAttribute;
 };
