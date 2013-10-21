@@ -179,14 +179,6 @@ camera.views.Camera = function(context) {
   this.ribbonInitialization_ = true;
 
   /**
-   * Scroll bar for the ribbon with effects.
-   * @type {camera.HorizontalScrollBar}
-   * @private
-   */
-  this.scrollBar_ = new camera.HorizontalScrollBar(
-      document.querySelector('#effects'));
-
-  /**
    * Scroller for the ribbon with effects.
    * @type {camera.util.SmoothScroller}
    * @private
@@ -194,6 +186,13 @@ camera.views.Camera = function(context) {
   this.scroller_ = new camera.util.SmoothScroller(
       document.querySelector('#effects'),
       document.querySelector('#effects .padder'));
+
+  /**
+   * Scroll bar for the ribbon with effects.
+   * @type {camera.HorizontalScrollBar}
+   * @private
+   */
+  this.scrollBar_ = new camera.HorizontalScrollBar(this.scroller_);
 
   /**
    * True if the window has been shown during startup. Used to avoid showing

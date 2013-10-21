@@ -7,15 +7,16 @@
 /**
  * Creates a scroll bar for a scrollable area.
  *
- * @param {HTMLElement} element Scrollable element.
+ * @param {camera.util.SmoothScroller} scoller Scroller for the scrollable
+ *     element.
  * @constructor
  */
-camera.ScrollBar = function(element) {
+camera.ScrollBar = function(scroller) {
   /**
-   * @type {HTMLElement}
+   * @type {camera.util.SmoothScroller}
    * @protected
    */
-  this.element = element;
+  this.scroller = scroller;
 
   /**
    * @type {?number}
@@ -56,7 +57,7 @@ camera.ScrollBar = function(element) {
   this.track.classList.add('scrollbar-track');
   this.thumb.classList.add('scrollbar-thumb');
 
-  this.element.appendChild(this.track);
+  this.scroller.element.appendChild(this.track);
   this.track.appendChild(this.thumb);
 
   // Add event handlers.
@@ -65,9 +66,10 @@ camera.ScrollBar = function(element) {
   window.addEventListener('mouseup', this.onMouseUp_.bind(this));
   window.addEventListener('mousemove', this.onMouseMove_.bind(this));
 
-  this.element.addEventListener('scroll', this.onScroll_.bind(this));
+  this.scroller.element.addEventListener('scroll', this.onScroll_.bind(this));
   this.domObserver_ = new MutationObserver(this.onDomChanged_.bind(this));
-  this.domObserver_.observe(this.element, {subtree: true, attributes: true});
+  this.domObserver_.observe(
+      this.scroller.element, {subtree: true, attributes: true});
 
   this.redraw_();
  };
@@ -230,12 +232,13 @@ camera.ScrollBar.prototype.redraw_ = function() {
 /**
  * Creates a horizontal scroll bar.
  *
- * @param {HTMLElement} element Scrollable element.
+ * @param {camera.util.SmoothScroller} scoller Scroller for the scrollable
+ *     element.
  * @constructor
  * @extends {camera.ScrollBar}
  */
-camera.HorizontalScrollBar = function(element) {
-  camera.ScrollBar.call(this, element);
+camera.HorizontalScrollBar = function(scroller) {
+  camera.ScrollBar.call(this, scroller);
   this.track.classList.add('scrollbar-track-horizontal');
 };
 
@@ -247,14 +250,14 @@ camera.HorizontalScrollBar.prototype = {
  * @override
  */
 camera.HorizontalScrollBar.prototype.getClientTotal = function() {
-  return this.element.clientWidth;
+  return this.scroller.element.clientWidth;
 };
 
 /**
  * @override
  */
 camera.HorizontalScrollBar.prototype.getScrollTotal = function() {
-  return this.element.scrollWidth;
+  return this.scroller.element.scrollWidth;
 };
 
 /**
@@ -275,14 +278,16 @@ camera.HorizontalScrollBar.prototype.getScreenPosition = function(event) {
  * @override
  */
 camera.HorizontalScrollBar.prototype.getScrollPosition = function() {
-  return this.element.scrollLeft;
+  return this.scroller.scrollLeft;
 };
 
 /**
  * @override
  */
 camera.HorizontalScrollBar.prototype.setScrollPosition = function(value) {
-  this.element.scrollLeft = value;
+  this.scroller.scrollTo(value,
+                         this.scroller.element.scrollTop,
+                         camera.util.SmoothScroller.Mode.INSTANT);
 };
 
 /**
@@ -297,12 +302,13 @@ camera.HorizontalScrollBar.prototype.setThumbGeometry = function(
 /**
  * Creates a vertical scroll bar.
  *
- * @param {HTMLElement} element Scrollable element.
+ * @param {camera.util.SmoothScroller} scoller Scroller for the scrollable
+ *     element.
  * @constructor
  * @extends {camera.ScrollBar}
  */
-camera.VerticalScrollBar = function(element) {
-  camera.ScrollBar.call(this, element);
+camera.VerticalScrollBar = function(scroller) {
+  camera.ScrollBar.call(this, scroller);
   this.track.classList.add('scrollbar-track-vertical');
 };
 
@@ -314,14 +320,14 @@ camera.VerticalScrollBar.prototype = {
  * @override
  */
 camera.VerticalScrollBar.prototype.getClientTotal = function() {
-  return this.element.clientHeight;
+  return this.scroller.element.clientHeight;
 };
 
 /**
  * @override
  */
 camera.VerticalScrollBar.prototype.getScrollTotal = function() {
-  return this.element.scrollHeight;
+  return this.scroller.element.scrollHeight;
 };
 
 /**
@@ -342,14 +348,16 @@ camera.VerticalScrollBar.prototype.getScreenPosition = function(event) {
  * @override
  */
 camera.VerticalScrollBar.prototype.getScrollPosition = function() {
-  return this.element.scrollTop;
+  return this.scroller.scrollTop;
 };
 
 /**
  * @override
  */
 camera.VerticalScrollBar.prototype.setScrollPosition = function(value) {
-  this.element.scrollTop = value;
+  this.scroller.scrollTo(this.scroller.element.scrollTop,
+                         value,
+                         camera.util.SmoothScroller.Mode.INSTANT);
 };
 
 /**
