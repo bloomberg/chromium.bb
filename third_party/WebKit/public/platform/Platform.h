@@ -440,11 +440,17 @@ public:
     // and reflects the sampling profiled results into about:tracing.
     virtual TraceEventAPIAtomicWord* getTraceSamplingState(const unsigned bucketName) { return 0; }
 
+    typedef uint64_t TraceEventHandle;
+
     // Add a trace event to the platform tracing system. Depending on the actual
     // enabled state, this event may be recorded or dropped.
     // - phase specifies the type of event:
     //   - BEGIN ('B'): Marks the beginning of a scoped event.
     //   - END ('E'): Marks the end of a scoped event.
+    //   - COMPLETE ('X'): Marks the beginning of a scoped event, but doesn't
+    //     need a matching END event. Instead, at the end of the scope,
+    //     updateTraceEventDuration() must be called with the TraceEventHandle
+    //     returned from addTraceEvent().
     //   - INSTANT ('I'): Standalone, instantaneous event.
     //   - START ('S'): Marks the beginning of an asynchronous event (the end
     //     event can occur in a different scope or thread). The id parameter is
@@ -497,6 +503,23 @@ public:
         const unsigned char* argTypes,
         const unsigned long long* argValues,
         unsigned char flags) { }
+
+    virtual TraceEventHandle addTraceEventNew(
+        char phase,
+        const unsigned char* categoryEnabledFlag,
+        const char* name,
+        unsigned long long id,
+        int numArgs,
+        const char** argNames,
+        const unsigned char* argTypes,
+        const unsigned long long* argValues,
+        unsigned char flags)
+    {
+        return 0;
+    }
+
+    // Set the duration field of a COMPLETE trace event.
+    virtual void updateTraceEventDuration(TraceEventHandle) { }
 
     // Callbacks for reporting histogram data.
     // CustomCounts histogram has exponential bucket sizes, so that min=1, max=1000000, bucketCount=50 would do.
