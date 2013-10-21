@@ -83,7 +83,8 @@ enum Status {
   kNoKey,  // The required decryption key is not available.
   kSessionError,  // Session management error.
   kDecryptError,  // Decryption failed.
-  kDecodeError  // Error decoding audio or video.
+  kDecodeError,  // Error decoding audio or video.
+  kDeferredInitialization  // Decoder is not ready for initialization.
 };
 
 // This must be consistent with MediaKeyError defined in the spec:
@@ -492,6 +493,9 @@ class ContentDecryptionModule_2 {
   // audio decoder is successfully initialized.
   // Returns kSessionError if |audio_decoder_config| is not supported. The CDM
   // may still be able to do Decrypt().
+  // Returns kDeferredInitialization if the CDM is not ready to initialize the
+  // decoder at this time. Must call Host::OnDeferredInitializationDone() once
+  // initialization is complete.
   //
   // TODO(xhwang): Add stream ID here and in the following audio decoder
   // functions when we need to support multiple audio streams in one CDM.
@@ -505,6 +509,9 @@ class ContentDecryptionModule_2 {
   // video decoder is successfully initialized.
   // Returns kSessionError if |video_decoder_config| is not supported. The CDM
   // may still be able to do Decrypt().
+  // Returns kDeferredInitialization if the CDM is not ready to initialize the
+  // decoder at this time. Must call Host::OnDeferredInitializationDone() once
+  // initialization is complete.
   //
   // TODO(xhwang): Add stream ID here and in the following video decoder
   // functions when we need to support multiple video streams in one CDM.
@@ -703,6 +710,11 @@ class Host_2 {
   // Requests the current output protection status. Once the host has the status
   // it will call ContentDecryptionModule::OnQueryOutputProtectionStatus().
   virtual void QueryOutputProtectionStatus() = 0;
+
+  // Must be called by the CDM if it returned kDeferredInitialization during
+  // InitializeAudioDecoder() or InitializeVideoDecoder().
+  virtual void OnDeferredInitializationDone(StreamType stream_type,
+                                            Status decoder_status);
 
  protected:
   Host_2() {}
