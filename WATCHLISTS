@@ -17,6 +17,10 @@
     'accessibility': {
       'filepath': 'chrome/browser/accessibility/' \
                   '|content/browser/accessibility/' \
+                  '|content/browser/resources/accessibility/' \
+                  '|content/renderer/accessibility/' \
+                  '|content/test/data/accessibility/' \
+                  '|content/public/android/.*accessib' \
                   '|chrome/.*accessib' \
                   '|ui/base/accessibility/' \
                   '|ui/views/accessibility/'
@@ -619,10 +623,8 @@
                           'yusukes+watch@chromium.org'],
     'accessibility': ['dmazzoni+watch@chromium.org',
                       'dtseng+watch@chromium.org',
-                      'ctguil+watch@chromium.org',
+                      'plundblad+watch@chromium.org',
                       'aboxhall+watch@chromium.org',
-                      'davidbarr+watch@chromium.org',
-                      'hashimoto+watch@chromium.org',
                       'yoshiki+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
     'activity_log': ['felt@chromium.org'],
