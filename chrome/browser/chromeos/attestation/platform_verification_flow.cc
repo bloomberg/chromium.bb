@@ -28,10 +28,6 @@
 #include "content/public/browser/web_contents.h"
 
 namespace {
-// A switch which allows consent to be given on the command line.
-// TODO(dkrahn): Remove this when UI has been implemented (crbug.com/270908).
-const char kAutoApproveSwitch[] =
-    "auto-approve-platform-verification-consent-prompts";
 
 // A callback method to handle DBus errors.
 void DBusCallback(const base::Callback<void(bool)>& on_success,
@@ -69,12 +65,7 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
       content::WebContents* web_contents,
       const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
       OVERRIDE {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(kAutoApproveSwitch)) {
-      LOG(WARNING) << "PlatformVerificationFlow: Automatic approval enabled.";
-      callback.Run(PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW);
-    } else {
-      PlatformVerificationDialog::ShowDialog(web_contents, callback);
-    }
+    PlatformVerificationDialog::ShowDialog(web_contents, callback);
   }
 
  private:
