@@ -574,6 +574,8 @@
             'animation/KeyframeAnimationEffect.h',
             'animation/Player.cpp',
             'animation/Player.h',
+            'animation/ThreadedAnimation.cpp',
+            'animation/ThreadedAnimation.h',
             'animation/TimedItem.cpp',
             'animation/TimedItem.h',
             'animation/TimedItemCalculations.h',
