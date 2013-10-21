@@ -95,11 +95,7 @@ WebKit::WebDiscardableMemory*
 WebKitPlatformSupportChildImpl::allocateAndLockDiscardableMemory(size_t bytes) {
   if (!base::DiscardableMemory::Supported())
     return NULL;
-  scoped_ptr<WebDiscardableMemoryImpl> discardable(
-      new WebDiscardableMemoryImpl());
-  if (discardable->InitializeAndLock(bytes))
-    return discardable.release();
-  return NULL;
+  return WebDiscardableMemoryImpl::CreateLockedMemory(bytes).release();
 }
 
 // static

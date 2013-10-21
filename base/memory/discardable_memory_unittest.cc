@@ -8,35 +8,35 @@
 namespace base {
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+const size_t kSize = 1024;
+
 // Test Lock() and Unlock() functionalities.
 TEST(DiscardableMemoryTest, LockAndUnLock) {
   ASSERT_TRUE(DiscardableMemory::Supported());
 
-  const size_t size = 1024;
-
-  DiscardableMemory memory;
-  ASSERT_TRUE(memory.InitializeAndLock(size));
-  void* addr = memory.Memory();
+  const scoped_ptr<DiscardableMemory> memory(
+      DiscardableMemory::CreateLockedMemory(kSize));
+  ASSERT_TRUE(memory);
+  void* addr = memory->Memory();
   ASSERT_NE(static_cast<void*>(NULL), addr);
 
-  memory.Unlock();
+  memory->Unlock();
   // The system should have no reason to purge discardable blocks in this brief
   // interval, though technically speaking this might flake.
-  EXPECT_EQ(DISCARDABLE_MEMORY_SUCCESS, memory.Lock());
-  addr = memory.Memory();
+  EXPECT_EQ(DISCARDABLE_MEMORY_SUCCESS, memory->Lock());
+  addr = memory->Memory();
   ASSERT_NE(static_cast<void*>(NULL), addr);
 
-  memory.Unlock();
+  memory->Unlock();
 }
 
 // Test delete a discardable memory while it is locked.
 TEST(DiscardableMemoryTest, DeleteWhileLocked) {
   ASSERT_TRUE(DiscardableMemory::Supported());
 
-  const size_t size = 1024;
-
-  DiscardableMemory memory;
-  ASSERT_TRUE(memory.InitializeAndLock(size));
+  const scoped_ptr<DiscardableMemory> memory(
+      DiscardableMemory::CreateLockedMemory(kSize));
+  ASSERT_TRUE(memory);
 }
 
 #if defined(OS_MACOSX)
@@ -45,16 +45,26 @@ TEST(DiscardableMemoryTest, Purge) {
   ASSERT_TRUE(DiscardableMemory::Supported());
   ASSERT_TRUE(DiscardableMemory::PurgeForTestingSupported());
 
-  const size_t size = 1024;
-
-  DiscardableMemory memory;
-  ASSERT_TRUE(memory.InitializeAndLock(size));
-  memory.Unlock();
+  const scoped_ptr<DiscardableMemory> memory(
+      DiscardableMemory::CreateLockedMemory(kSize));
+  ASSERT_TRUE(memory);
+  memory->Unlock();
 
   DiscardableMemory::PurgeForTesting();
-  EXPECT_EQ(DISCARDABLE_MEMORY_PURGED, memory.Lock());
+  EXPECT_EQ(DISCARDABLE_MEMORY_PURGED, memory->Lock());
 }
 #endif  // OS_MACOSX
+
+#if !defined(NDEBUG) && !defined(OS_ANDROID)
+// Death tests are not supported with Android APKs.
+TEST(DiscardableMemoryTest, UnlockedMemoryAccessCrashesInDebugMode) {
+  const scoped_ptr<DiscardableMemory> memory(
+      DiscardableMemory::CreateLockedMemory(kSize));
+  ASSERT_TRUE(memory);
+  memory->Unlock();
+  ASSERT_DEATH({ *static_cast<int*>(memory->Memory()) = 0xdeadbeef; }, ".*");
+}
+#endif
 
 #endif  // OS_*
 

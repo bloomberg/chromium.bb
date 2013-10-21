@@ -6,14 +6,16 @@
 
 namespace webkit_glue {
 
-WebDiscardableMemoryImpl::WebDiscardableMemoryImpl()
-    : discardable_(new base::DiscardableMemory()) {
-}
-
 WebDiscardableMemoryImpl::~WebDiscardableMemoryImpl() {}
 
-bool WebDiscardableMemoryImpl::InitializeAndLock(size_t size) {
-  return discardable_->InitializeAndLock(size);
+// static
+scoped_ptr<WebDiscardableMemoryImpl>
+WebDiscardableMemoryImpl::CreateLockedMemory(size_t size) {
+  scoped_ptr<base::DiscardableMemory> memory(
+      base::DiscardableMemory::CreateLockedMemory(size));
+  if (!memory)
+    return scoped_ptr<WebDiscardableMemoryImpl>();
+  return make_scoped_ptr(new WebDiscardableMemoryImpl(memory.Pass()));
 }
 
 bool WebDiscardableMemoryImpl::lock() {
@@ -30,12 +32,17 @@ bool WebDiscardableMemoryImpl::lock() {
   }
 }
 
+void WebDiscardableMemoryImpl::unlock() {
+  discardable_->Unlock();
+}
+
 void* WebDiscardableMemoryImpl::data() {
   return discardable_->Memory();
 }
 
-void WebDiscardableMemoryImpl::unlock() {
-  discardable_->Unlock();
+WebDiscardableMemoryImpl::WebDiscardableMemoryImpl(
+    scoped_ptr<base::DiscardableMemory> memory)
+    : discardable_(memory.Pass()) {
 }
 
 }  // namespace webkit_glue

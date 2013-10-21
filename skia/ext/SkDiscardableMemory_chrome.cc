@@ -4,15 +4,10 @@
 
 #include "SkDiscardableMemory_chrome.h"
 
-SkDiscardableMemoryChrome::SkDiscardableMemoryChrome()
-    : discardable_(new base::DiscardableMemory()) {
-}
-
-SkDiscardableMemoryChrome::~SkDiscardableMemoryChrome() {
-}
+SkDiscardableMemoryChrome::~SkDiscardableMemoryChrome() {}
 
 bool SkDiscardableMemoryChrome::lock() {
-  base::LockDiscardableMemoryStatus status = discardable_->Lock();
+  const base::LockDiscardableMemoryStatus status = discardable_->Lock();
   switch (status) {
     case base::DISCARDABLE_MEMORY_SUCCESS:
       return true;
@@ -33,17 +28,17 @@ void SkDiscardableMemoryChrome::unlock() {
   discardable_->Unlock();
 }
 
-bool SkDiscardableMemoryChrome::InitializeAndLock(size_t bytes) {
-  return discardable_->InitializeAndLock(bytes);
+SkDiscardableMemoryChrome::SkDiscardableMemoryChrome(
+    scoped_ptr<base::DiscardableMemory> memory)
+    : discardable_(memory.Pass()) {
 }
 
 SkDiscardableMemory* SkDiscardableMemory::Create(size_t bytes) {
-  if (!base::DiscardableMemory::Supported()) {
+  if (!base::DiscardableMemory::Supported())
     return NULL;
-  }
-  scoped_ptr<SkDiscardableMemoryChrome> discardable(
-      new SkDiscardableMemoryChrome());
-  if (discardable->InitializeAndLock(bytes))
-    return discardable.release();
-  return NULL;
+  scoped_ptr<base::DiscardableMemory> discardable(
+      base::DiscardableMemory::CreateLockedMemory(bytes));
+  if (!discardable)
+    return NULL;
+  return new SkDiscardableMemoryChrome(discardable.Pass());
 }

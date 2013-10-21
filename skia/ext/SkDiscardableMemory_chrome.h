@@ -13,20 +13,18 @@
 // base::DiscardableMemory.
 class SK_API SkDiscardableMemoryChrome : public SkDiscardableMemory {
 public:
-  SkDiscardableMemoryChrome();
   virtual ~SkDiscardableMemoryChrome();
 
-  // Initialize the SkDiscardableMemoryChrome object and lock the memory.
-  // Returns true on success. No memory is allocated if this call returns
-  // false. This call should only be called once.
-  bool InitializeAndLock(size_t bytes);
-
-  // Implementation of SkDiscardableMemory interface.
+  // SkDiscardableMemory:
   virtual bool lock() OVERRIDE;
   virtual void* data() OVERRIDE;
   virtual void unlock() OVERRIDE;
 
 private:
+  friend class SkDiscardableMemory;
+
+  SkDiscardableMemoryChrome(scoped_ptr<base::DiscardableMemory> memory);
+
   scoped_ptr<base::DiscardableMemory> discardable_;
 };
 
