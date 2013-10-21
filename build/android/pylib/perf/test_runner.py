@@ -48,6 +48,7 @@ import pickle
 import sys
 
 from pylib import constants
+from pylib import forwarder
 from pylib import pexpect
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
@@ -121,6 +122,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       A tuple containing (Output, base_test_result.ResultType)
     """
+    try:
+      logging.warning('Unmapping device ports')
+      forwarder.Forwarder.UnmapAllDevicePorts(self.adb)
+      self.adb.RestartAdbdOnDevice()
+    except Exception as e:
+      logging.error('Exception when tearing down device %s', e)
+
     cmd = ('%s --device %s' %
            (self._tests[test_name], self.device))
     logging.info('%s : %s', test_name, cmd)

@@ -175,6 +175,8 @@ class HostControllersManager {
       SendMessage(
           !removed_elements ? "ERROR: could not unmap port" : "OK",
           client_socket.get());
+
+      RemoveAdbPortForDeviceIfNeeded(device_serial);
       return;
     }
     if (host_port < 0) {
@@ -217,6 +219,34 @@ class HostControllersManager {
                        linked_ptr<HostController>(host_controller.release())));
   }
 
+  void RemoveAdbPortForDeviceIfNeeded(const std::string& device_serial) {
+    base::hash_map<std::string, int>::const_iterator it =
+        device_serial_to_adb_port_map_.find(device_serial);
+    if (it == device_serial_to_adb_port_map_.end())
+      return;
+
+    int port = it->second;
+    const std::string prefix = base::StringPrintf("%d:", port);
+    for (HostControllerMap::const_iterator others = controllers_->begin();
+         others != controllers_->end(); ++others) {
+      if (others->first.find(prefix) == 0U)
+        return;
+    }
+    // No other port is being forwarded to this device:
+    // - Remove it from our internal serial -> adb port map.
+    // - Remove from "adb forward" command.
+    device_serial_to_adb_port_map_.erase(device_serial);
+    const std::string serial_part = device_serial.empty() ?
+        std::string() : std::string("-s ") + device_serial;
+    const std::string command = base::StringPrintf(
+        "adb %s forward --remove tcp:%d",
+        serial_part.c_str(),
+        port);
+    LOG(INFO) << command;
+    const int ret = system(command.c_str());
+    DCHECK(ret == 0);
+  }
+
   int GetAdbPortForDevice(const std::string& device_serial) {
     base::hash_map<std::string, int>::const_iterator it =
         device_serial_to_adb_port_map_.find(device_serial);
@@ -230,7 +260,7 @@ class HostControllersManager {
         std::string() : std::string("-s ") + device_serial;
     const std::string command = base::StringPrintf(
         "adb %s forward tcp:%d localabstract:chrome_device_forwarder",
-        device_serial.empty() ? "" : serial_part.c_str(),
+        serial_part.c_str(),
         port);
     LOG(INFO) << command;
     const int ret = system(command.c_str());

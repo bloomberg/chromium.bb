@@ -13,6 +13,7 @@ import logging
 import os
 import re
 import shlex
+import signal
 import subprocess
 import sys
 import tempfile
@@ -458,6 +459,13 @@ class AndroidCommands(object):
     if out.strip() != 'remount succeeded':
       raise errors.MsgException('Remount failed: %s' % out)
 
+  def RestartAdbdOnDevice(self):
+    logging.info('Killing adbd on the device...')
+    adb_pids = self.KillAll('adbd', signal=signal.SIGTERM, with_su=True)
+    assert adb_pids, 'Unable to obtain adbd pid'
+    logging.info('Waiting for device to settle...')
+    self._adb.SendCommand('wait-for-device')
+
   def RestartAdbServer(self):
     """Restart the adb server."""
     ret = self.KillAdbServer()
@@ -596,18 +604,24 @@ class AndroidCommands(object):
       lines = lines[:-1] + [last_line[:status_pos]]
     return (status, lines)
 
-  def KillAll(self, process):
+  def KillAll(self, process, signal=9, with_su=False):
     """Android version of killall, connected via adb.
 
     Args:
-      process: name of the process to kill off
+      process: name of the process to kill off.
+      signal: signal to use, 9 (SIGKILL) by default.
+      with_su: wether or not to use su to kill the processes.
 
     Returns:
       the number of processes killed
     """
     pids = self.ExtractPid(process)
     if pids:
-      self.RunShellCommand('kill -9 ' + ' '.join(pids))
+      cmd = 'kill -%d %s' % (signal, ' '.join(pids))
+      if with_su:
+        self.RunShellCommandWithSU(cmd)
+      else:
+        self.RunShellCommand(cmd)
     return len(pids)
 
   def KillAllBlocking(self, process, timeout_sec):
