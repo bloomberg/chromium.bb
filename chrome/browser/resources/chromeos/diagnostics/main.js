@@ -24,10 +24,12 @@ cr.define('diag', function() {
    * List of network adapter types.
    */
   DiagPage.AdapterType = [
-      {adapter: 'wlan0', name: localStrings.getString('wlan0'), kind: 'wifi'},
-      {adapter: 'eth0', name: localStrings.getString('eth0'), kind: 'ethernet'},
-      {adapter: 'eth1', name: localStrings.getString('eth1'), kind: 'ethernet'},
-      {adapter: 'wwan0', name: localStrings.getString('wwan0'), kind: '3g'},
+      {adapter: 'wifi', name: localStrings.getString('wifi'), kind: 'wifi'},
+      {adapter: 'ethernet', name: localStrings.getString('ethernet1'),
+       kind: 'ethernet'},
+      {adapter: 'ethernet2', name: localStrings.getString('ethernet2'),
+       kind: 'ethernet'},
+      {adapter: 'cellular', name: localStrings.getString('3g'), kind: '3g'},
   ];
 
   /**
@@ -105,30 +107,49 @@ cr.define('diag', function() {
     },
 
     /**
-     * Updates the connectivity status with netif information.
-     * @param {Object} netifStatus Dictionary of network adapter status.
+     * Updates the connectivity status with the device information.
+     * @param {Object} deviceStatus Dictionary of network adapter status.
      */
-    setNetifStatus_: function(netifStatus) {
+    setDeviceStatus: function(deviceStatus) {
       // Hide the "loading" message and show the "choose-adapter" message.
       $('loading').hidden = true;
       $('choose-adapter').hidden = false;
 
-      // Update netif state.
-      var foundValidIp = false;
+      // Reset all adapters status.
+      var adapterLookup = {};
       for (var i = 0; i < DiagPage.AdapterType.length; i++) {
-        var adapterType = DiagPage.AdapterType[i];
-        var status = netifStatus[adapterType.adapter];
-        if (!status)
-          this.adapterStatus_[i] = DiagPage.AdapterStatus.NOT_FOUND;
-        else if (!status.flags || status.flags.indexOf('up') == -1)
-          this.adapterStatus_[i] = DiagPage.AdapterStatus.DISABLED;
-        else if (!status.ipv4)
-          this.adapterStatus_[i] = DiagPage.AdapterStatus.NO_IP;
-        else
-          this.adapterStatus_[i] = DiagPage.AdapterStatus.VALID_IP;
+        this.adapterStatus_[i] = DiagPage.AdapterStatus.NOT_FOUND;
+        adapterLookup[DiagPage.AdapterType[i].adapter] = i;
+      }
 
-        if (this.adapterStatus_[i] == DiagPage.AdapterStatus.VALID_IP)
-          foundValidIp = true;
+      // Update adapter status from data.
+      var foundValidIp = false;
+      for (var devicePath in deviceStatus) {
+        var device = deviceStatus[devicePath];
+        var type = device['Type'];
+        var idx = adapterLookup[type];
+        if (idx == null) {
+          console.warning('Unexpected adapter type: ' + type);
+          continue;
+        }
+
+        // Special case for multiple ethernet adapters.
+        if (type == 'ethernet' &&
+            this.adapterStatus_[idx] != DiagPage.AdapterStatus.NOT_FOUND) {
+          type = 'ethernet2';
+          idx = adapterLookup[type];
+        }
+
+        this.adapterStatus_[idx] = device['Powered'] == true ?
+            DiagPage.AdapterStatus.NO_IP : DiagPage.AdapterStatus.DISABLED;
+        var ipconfigs = device['ipconfigs'];
+        for (var ipconfigPath in ipconfigs) {
+          var ipconfig = ipconfigs[ipconfigPath];
+          if (ipconfig['Address']) {
+            this.adapterStatus_[idx] = DiagPage.AdapterStatus.VALID_IP;
+            foundValidIp = true;
+          }
+        }
       }
 
       // If we have valid IP, start ping test.
@@ -313,8 +334,8 @@ cr.define('diag', function() {
     }
   };
 
-  DiagPage.setNetifStatus = function(netifStatus) {
-    DiagPage.getInstance().setNetifStatus_(netifStatus);
+  DiagPage.setDeviceStatus = function(deviceStatus) {
+    DiagPage.getInstance().setDeviceStatus(deviceStatus);
   }
 
   DiagPage.setTestICMPStatus = function(testICMPStatus) {

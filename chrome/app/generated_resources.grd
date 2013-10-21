@@ -15243,16 +15243,16 @@ Do you accept?
       <message name="IDS_DIAGNOSTICS_CHOOSE_ADAPTER" desc="Prompts to choose the network adapter to be tested.">
         Choose the adapter you would like to use to connect to the internet...
       </message>
-      <message name="IDS_DIAGNOSTICS_ADAPTER_WLAN0" desc="Adapter name for wlan0 interface.">
+      <message name="IDS_DIAGNOSTICS_ADAPTER_WIFI" desc="Adapter name for Wi-Fi interface.">
         Wi-Fi
       </message>
-      <message name="IDS_DIAGNOSTICS_ADAPTER_ETH0" desc="Adapter name for eth0 interface.">
+      <message name="IDS_DIAGNOSTICS_ADAPTER_ETHERNET1" desc="Adapter name for first ethernet interface.">
         Ethernet 1
       </message>
-      <message name="IDS_DIAGNOSTICS_ADAPTER_ETH1" desc="Adapter name for eth1 interface.">
+      <message name="IDS_DIAGNOSTICS_ADAPTER_ETHERNET2" desc="Adapter name for second ethernet interface.">
         Ethernet 2
       </message>
-      <message name="IDS_DIAGNOSTICS_ADAPTER_WWAN0" desc="Adapter name for wwan0 interface.">
+      <message name="IDS_DIAGNOSTICS_ADAPTER_3G" desc="Adapter name for 3G interface.">
         3G
       </message>
       <message name="IDS_DIAGNOSTICS_TESTING_HARDWARE" desc="Indicates testing network hardware.">

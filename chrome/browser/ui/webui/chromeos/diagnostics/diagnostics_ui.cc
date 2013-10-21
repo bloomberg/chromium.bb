@@ -22,8 +22,11 @@ namespace chromeos {
 
 namespace {
 
+// Key for devices dictionary in JSON returned from GetNetworkStatus.
+const char kDevicesKey[] = "devices";
+
 // JS API callback names.
-const char kJsApiSetNetifStatus[] = "diag.DiagPage.setNetifStatus";
+const char kJsApiSetDeviceStatus[] = "diag.DiagPage.setDeviceStatus";
 const char kJsApiSetTestICMPStatus[] = "diag.DiagPage.setTestICMPStatus";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,11 +50,11 @@ class DiagnosticsWebUIHandler : public content::WebUIMessageHandler {
   // Called by JS layer to test ICMP connectivity to a specified host.
   void TestICMP(const base::ListValue* args);
 
-  // Called when GetNetworkInterfaces() is complete.
+  // Called when GetNetworkStatus() is complete.
   // |succeeded|: information was obtained successfully.
   // |status|: network interfaces information in json. See
-  //      DebugDaemonClient::GetNetworkInterfaces() for details.
-  void OnGetNetworkInterfaces(bool succeeded, const std::string& status);
+  //      DebugDaemonClient::GetNetworkStatus() for details.
+  void OnGetNetworkStatus(bool succeeded, const std::string& status);
 
   // Called when TestICMP() is complete.
   // |succeeded|: information was obtained successfully.
@@ -80,8 +83,8 @@ void DiagnosticsWebUIHandler::GetNetworkInterfaces(
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   DCHECK(debugd_client);
 
-  debugd_client->GetNetworkInterfaces(
-      base::Bind(&DiagnosticsWebUIHandler::OnGetNetworkInterfaces,
+  debugd_client->GetNetworkStatus(
+      base::Bind(&DiagnosticsWebUIHandler::OnGetNetworkStatus,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -103,7 +106,7 @@ void DiagnosticsWebUIHandler::TestICMP(const base::ListValue* args) {
                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DiagnosticsWebUIHandler::OnGetNetworkInterfaces(
+void DiagnosticsWebUIHandler::OnGetNetworkStatus(
     bool succeeded, const std::string& status) {
   if (!succeeded)
     return;
@@ -111,7 +114,12 @@ void DiagnosticsWebUIHandler::OnGetNetworkInterfaces(
   if (parsed_value.get() && parsed_value->IsType(Value::TYPE_DICTIONARY)) {
     base::DictionaryValue* result =
         static_cast<DictionaryValue*>(parsed_value.get());
-    web_ui()->CallJavascriptFunction(kJsApiSetNetifStatus, *result);
+    base::DictionaryValue* devices_info;
+    if (!result->GetDictionary(std::string(kDevicesKey), &devices_info)) {
+      NOTREACHED() <<
+          "Received improperly formatted result from GetNetworkStatus";
+    }
+    web_ui()->CallJavascriptFunction(kJsApiSetDeviceStatus, *devices_info);
   }
 }
 
@@ -150,10 +158,10 @@ DiagnosticsUI::DiagnosticsUI(content::WebUI* web_ui)
   source->AddLocalizedString("connectivity",
                              IDS_DIAGNOSTICS_CONNECTIVITY_TITLE);
   source->AddLocalizedString("loading", IDS_DIAGNOSTICS_LOADING);
-  source->AddLocalizedString("wlan0", IDS_DIAGNOSTICS_ADAPTER_WLAN0);
-  source->AddLocalizedString("eth0", IDS_DIAGNOSTICS_ADAPTER_ETH0);
-  source->AddLocalizedString("eth1", IDS_DIAGNOSTICS_ADAPTER_ETH1);
-  source->AddLocalizedString("wwan0", IDS_DIAGNOSTICS_ADAPTER_WWAN0);
+  source->AddLocalizedString("wifi", IDS_DIAGNOSTICS_ADAPTER_WIFI);
+  source->AddLocalizedString("ethernet1", IDS_DIAGNOSTICS_ADAPTER_ETHERNET1);
+  source->AddLocalizedString("ethernet2", IDS_DIAGNOSTICS_ADAPTER_ETHERNET2);
+  source->AddLocalizedString("3g", IDS_DIAGNOSTICS_ADAPTER_3G);
   source->AddLocalizedString("testing-hardware",
                              IDS_DIAGNOSTICS_TESTING_HARDWARE);
   source->AddLocalizedString("testing-connection-to-router",
