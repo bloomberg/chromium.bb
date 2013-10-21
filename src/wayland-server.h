@@ -20,8 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
-#ifndef WAYLAND_H
-#define WAYLAND_H
+#ifndef WAYLAND_SERVER_H
+#define WAYLAND_SERVER_H
 
 #ifdef  __cplusplus
 extern "C" {

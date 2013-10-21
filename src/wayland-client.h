@@ -20,8 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
-#ifndef _WAYLAND_CLIENT_H
-#define _WAYLAND_CLIENT_H
+#ifndef WAYLAND_CLIENT_H
+#define WAYLAND_CLIENT_H
 
 #include "wayland-util.h"
 #include "wayland-version.h"

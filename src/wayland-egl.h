@@ -21,8 +21,8 @@
  * OF THIS SOFTWARE.
  */
 
-#ifndef _WAYLAND_EGL_H
-#define _WAYLAND_EGL_H
+#ifndef WAYLAND_EGL_H
+#define WAYLAND_EGL_H
 
 #ifdef  __cplusplus
 extern "C" {

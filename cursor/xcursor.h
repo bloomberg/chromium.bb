@@ -20,8 +20,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _XCURSOR_H_
-#define _XCURSOR_H_
+#ifndef XCURSOR_H
+#define XCURSOR_H
 
 typedef int		XcursorBool;
 typedef unsigned int	XcursorUInt;
