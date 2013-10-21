@@ -27,8 +27,7 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString tagName;
 
     [TreatReturnedNullStringAs=Null] DOMString getAttribute([Default=Undefined] optional DOMString name);
-    [RaisesException, CustomElementCallbacks] void setAttribute([Default=Undefined] optional DOMString name,
-                                     [Default=Undefined] optional DOMString value);
+    [RaisesException, CustomElementCallbacks] void setAttribute([Default=Undefined] optional DOMString name, [Default=Undefined] optional DOMString value);
     [CustomElementCallbacks] void removeAttribute([Default=Undefined] optional DOMString name);
     [MeasureAs=ElementGetAttributeNode] Attr getAttributeNode([Default=Undefined] optional DOMString name); // Removed from DOM4.
     [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNode] Attr setAttributeNode([Default=Undefined, StrictTypeChecking] optional Attr newAttr); // Removed from DOM4.
@@ -40,21 +39,20 @@
 
     // DOM Level 2 Core
 
-     DOMString getAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                            [Default=Undefined] optional DOMString localName);
-     [RaisesException, CustomElementCallbacks] void setAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                       [Default=Undefined] optional DOMString qualifiedName,
-                                       [Default=Undefined] optional DOMString value);
-     [CustomElementCallbacks] void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI,
-                                          DOMString localName);
-     NodeList getElementsByTagNameNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                                   [Default=Undefined] optional DOMString localName);
-     [MeasureAs=ElementGetAttributeNodeNS] Attr getAttributeNodeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                                                   [Default=Undefined] optional DOMString localName); // Removed from DOM4.
+    DOMString getAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+                             [Default=Undefined] optional DOMString localName);
+    [RaisesException, CustomElementCallbacks] void setAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+                                                                  [Default=Undefined] optional DOMString qualifiedName,
+                                                                  [Default=Undefined] optional DOMString value);
+    [CustomElementCallbacks] void removeAttributeNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
+    NodeList getElementsByTagNameNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+                                    [Default=Undefined] optional DOMString localName);
+    [MeasureAs=ElementGetAttributeNodeNS] Attr getAttributeNodeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+                                                                  [Default=Undefined] optional DOMString localName); // Removed from DOM4.
     [RaisesException, CustomElementCallbacks] Attr setAttributeNodeNS([Default=Undefined, StrictTypeChecking] optional Attr newAttr);
     boolean hasAttribute(DOMString name);
-     boolean hasAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                          [Default=Undefined] optional DOMString localName);
+    boolean hasAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+                           [Default=Undefined] optional DOMString localName);
 
     [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
@@ -77,8 +75,8 @@
     [PerWorldBindings] readonly attribute long clientTop;
     [PerWorldBindings] readonly attribute long clientWidth;
     [PerWorldBindings] readonly attribute long clientHeight;
-             [PerWorldBindings] attribute long scrollLeft;
-             [PerWorldBindings] attribute long scrollTop;
+    [PerWorldBindings] attribute long scrollLeft;
+    [PerWorldBindings] attribute long scrollTop;
     [PerWorldBindings] readonly attribute long scrollWidth;
     [PerWorldBindings] readonly attribute long scrollHeight;
 
