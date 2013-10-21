@@ -2,20 +2,156 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/x509_util.h"
 #include "net/cert/x509_util_openssl.h"
 
 #include <algorithm>
+#include <openssl/asn1.h>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_cert_types.h"
+#include "net/cert/x509_util.h"
 
 namespace net {
 
 namespace x509_util {
+
+namespace {
+
+X509* CreateCertificate(EVP_PKEY* key,
+                        const std::string& common_name,
+                        uint32_t serial_number,
+                        base::Time not_valid_before,
+                        base::Time not_valid_after) {
+  // Put the serial number into an OpenSSL-friendly object.
+  crypto::ScopedOpenSSL<ASN1_INTEGER, ASN1_INTEGER_free> asn1_serial(
+      ASN1_INTEGER_new());
+  if (!asn1_serial.get() ||
+      !ASN1_INTEGER_set(asn1_serial.get(), static_cast<long>(serial_number))) {
+    LOG(ERROR) << "Invalid serial number " << serial_number;
+    return NULL;
+  }
+
+  // Do the same for the time stamps.
+  crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free> asn1_not_before_time(
+      ASN1_TIME_set(NULL, not_valid_before.ToTimeT()));
+  if (!asn1_not_before_time.get()) {
+    LOG(ERROR) << "Invalid not_valid_before time: "
+               << not_valid_before.ToTimeT();
+    return NULL;
+  }
+
+  crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free> asn1_not_after_time(
+      ASN1_TIME_set(NULL, not_valid_after.ToTimeT()));
+  if (!asn1_not_after_time.get()) {
+    LOG(ERROR) << "Invalid not_valid_after time: " << not_valid_after.ToTimeT();
+    return NULL;
+  }
+
+  // Because |common_name| only contains a common name and starts with 'CN=',
+  // there is no need for a full RFC 2253 parser here. Do some sanity checks
+  // though.
+  static const char kCommonNamePrefix[] = "CN=";
+  const size_t kCommonNamePrefixLen = sizeof(kCommonNamePrefix) - 1;
+  if (common_name.size() < kCommonNamePrefixLen ||
+      strncmp(common_name.c_str(), kCommonNamePrefix, kCommonNamePrefixLen)) {
+    LOG(ERROR) << "Common name must begin with " << kCommonNamePrefix;
+    return NULL;
+  }
+  if (common_name.size() > INT_MAX) {
+    LOG(ERROR) << "Common name too long";
+    return NULL;
+  }
+  unsigned char* common_name_str =
+      reinterpret_cast<unsigned char*>(const_cast<char*>(common_name.data())) +
+      kCommonNamePrefixLen;
+  int common_name_len =
+      static_cast<int>(common_name.size() - kCommonNamePrefixLen);
+
+  crypto::ScopedOpenSSL<X509_NAME, X509_NAME_free> name(X509_NAME_new());
+  if (!name.get() || !X509_NAME_add_entry_by_NID(name.get(),
+                                                 NID_commonName,
+                                                 MBSTRING_ASC,
+                                                 common_name_str,
+                                                 common_name_len,
+                                                 -1,
+                                                 0)) {
+    LOG(ERROR) << "Can't parse common name: " << common_name.c_str();
+    return NULL;
+  }
+
+  // Now create certificate and populate it.
+  crypto::ScopedOpenSSL<X509, X509_free> cert(X509_new());
+  if (!cert.get() || !X509_set_version(cert.get(), 2L) /* i.e. version 3 */ ||
+      !X509_set_pubkey(cert.get(), key) ||
+      !X509_set_serialNumber(cert.get(), asn1_serial.get()) ||
+      !X509_set_notBefore(cert.get(), asn1_not_before_time.get()) ||
+      !X509_set_notAfter(cert.get(), asn1_not_after_time.get()) ||
+      !X509_set_subject_name(cert.get(), name.get()) ||
+      !X509_set_issuer_name(cert.get(), name.get())) {
+    LOG(ERROR) << "Could not create certificate";
+    return NULL;
+  }
+
+  return cert.release();
+}
+
+bool SignAndDerEncodeCert(X509* cert, EVP_PKEY* key, std::string* der_encoded) {
+  // Sign it with the private key.
+  if (!X509_sign(cert, key, EVP_sha1())) {
+    LOG(ERROR) << "Could not sign certificate with key.";
+    return false;
+  }
+
+  // Convert it into a DER-encoded string copied to |der_encoded|.
+  int der_data_length = i2d_X509(cert, NULL);
+  if (der_data_length < 0)
+    return false;
+
+  der_encoded->resize(der_data_length);
+  unsigned char* der_data =
+      reinterpret_cast<unsigned char*>(&(*der_encoded)[0]);
+  if (i2d_X509(cert, &der_data) < 0)
+    return false;
+
+  return true;
+}
+
+// There is no OpenSSL NID for the 'originBoundCertificate' extension OID yet,
+// so create a global ASN1_OBJECT lazily with the right parameters.
+class DomainBoundOid {
+ public:
+  DomainBoundOid() : obj_(OBJ_txt2obj(kDomainBoundOidText, 1)) { CHECK(obj_); }
+
+  ~DomainBoundOid() {
+    if (obj_)
+      ASN1_OBJECT_free(obj_);
+  }
+
+  ASN1_OBJECT* obj() const { return obj_; }
+
+ private:
+  static const char kDomainBoundOidText[];
+
+  ASN1_OBJECT* obj_;
+};
+
+// 1.3.6.1.4.1.11129.2.1.6
+// (iso.org.dod.internet.private.enterprises.google.googleSecurity.
+//  certificateExtensions.originBoundCertificate)
+const char DomainBoundOid::kDomainBoundOidText[] = "1.3.6.1.4.1.11129.2.1.6";
+
+ASN1_OBJECT* GetDomainBoundOid() {
+  static base::LazyInstance<DomainBoundOid>::Leaky s_lazy =
+      LAZY_INSTANCE_INITIALIZER;
+  return s_lazy.Get().obj();
+}
+
+}  // namespace
 
 bool IsSupportedValidityRange(base::Time not_valid_before,
                               base::Time not_valid_after) {
@@ -57,8 +193,51 @@ bool CreateDomainBoundCertEC(
     base::Time not_valid_before,
     base::Time not_valid_after,
     std::string* der_cert) {
-  NOTIMPLEMENTED();
-  return false;
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  // Create certificate.
+  crypto::ScopedOpenSSL<X509, X509_free> cert(
+      CreateCertificate(key->key(),
+                        "CN=anonymous.invalid",
+                        serial_number,
+                        not_valid_before,
+                        not_valid_after));
+  if (!cert.get())
+    return false;
+
+  // Add TLS-Channel-ID extension to the certificate before signing it.
+  // The value must be stored DER-encoded, as a ASN.1 IA5String.
+  crypto::ScopedOpenSSL<ASN1_STRING, ASN1_STRING_free> domain_ia5(
+      ASN1_IA5STRING_new());
+  if (!domain_ia5.get() ||
+      !ASN1_STRING_set(domain_ia5.get(), domain.data(), domain.size()))
+    return false;
+
+  std::string domain_der;
+  int domain_der_len = i2d_ASN1_IA5STRING(domain_ia5.get(), NULL);
+  if (domain_der_len < 0)
+    return false;
+
+  domain_der.resize(domain_der_len);
+  unsigned char* domain_der_data =
+      reinterpret_cast<unsigned char*>(&domain_der[0]);
+  if (i2d_ASN1_IA5STRING(domain_ia5.get(), &domain_der_data) < 0)
+    return false;
+
+  crypto::ScopedOpenSSL<ASN1_OCTET_STRING, ASN1_OCTET_STRING_free> domain_str(
+      ASN1_OCTET_STRING_new());
+  if (!domain_str.get() ||
+      !ASN1_STRING_set(domain_str.get(), domain_der.data(), domain_der.size()))
+    return false;
+
+  crypto::ScopedOpenSSL<X509_EXTENSION, X509_EXTENSION_free> ext(
+      X509_EXTENSION_create_by_OBJ(
+          NULL, GetDomainBoundOid(), 1 /* critical */, domain_str.get()));
+  if (!ext.get() || !X509_add_ext(cert.get(), ext.get(), -1)) {
+    return false;
+  }
+
+  // Sign and encode it.
+  return SignAndDerEncodeCert(cert.get(), key->key(), der_cert);
 }
 
 bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
@@ -68,96 +247,16 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                           base::Time not_valid_after,
                           std::string* der_encoded) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  static const char kCommonNamePrefix[] = "CN=";
-  const size_t kCommonNamePrefixLen = sizeof(kCommonNamePrefix) - 1;
-
-  // Put the serial number into an OpenSSL-friendly object.
-  crypto::ScopedOpenSSL<ASN1_INTEGER, ASN1_INTEGER_free> asn1_serial(
-      ASN1_INTEGER_new());
-  if (!asn1_serial.get() ||
-      !ASN1_INTEGER_set(asn1_serial.get(), static_cast<long>(serial_number))) {
-    LOG(ERROR) << "Invalid serial number " << serial_number;
-    return false;
-  }
-
-  // Do the same for the time stamps.
-  crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free> asn1_not_before_time(
-      ASN1_TIME_set(NULL, not_valid_before.ToTimeT()));
-  if (!asn1_not_before_time.get()) {
-    LOG(ERROR) << "Invalid not_valid_before time: "
-               << not_valid_before.ToTimeT();
-    return false;
-  }
-
-  crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free> asn1_not_after_time(
-      ASN1_TIME_set(NULL, not_valid_after.ToTimeT()));
-  if (!asn1_not_after_time.get()) {
-    LOG(ERROR) << "Invalid not_valid_after time: " << not_valid_after.ToTimeT();
-    return false;
-  }
-
-  // Because |common_name| only contains a common name and starts with 'CN=',
-  // there is no need for a full RFC 2253 parser here. Do some sanity checks
-  // though.
-  if (common_name.size() < kCommonNamePrefixLen ||
-      strncmp(common_name.c_str(), kCommonNamePrefix, kCommonNamePrefixLen)) {
-    LOG(ERROR) << "Common name must begin with " << kCommonNamePrefix;
-    return false;
-  }
-  if (common_name.size() > INT_MAX) {
-    LOG(ERROR) << "Common name too long";
-    return false;
-  }
-  unsigned char* common_name_str =
-      reinterpret_cast<unsigned char*>(const_cast<char*>(common_name.data())) +
-      kCommonNamePrefixLen;
-  int common_name_len =
-      static_cast<int>(common_name.size()) - kCommonNamePrefixLen;
-
-  crypto::ScopedOpenSSL<X509_NAME, X509_NAME_free> name(X509_NAME_new());
-  if (!name.get() || !X509_NAME_add_entry_by_NID(name.get(),
-                                                 NID_commonName,
-                                                 MBSTRING_ASC,
-                                                 common_name_str,
-                                                 common_name_len,
-                                                 -1,
-                                                 0)) {
-    LOG(ERROR) << "Can't parse common name: " << common_name.c_str();
-    return false;
-  }
-
-  // Now create certificate and populate it.
-  crypto::ScopedOpenSSL<X509, X509_free> cert(X509_new());
-  if (!cert.get() || !X509_set_version(cert.get(), 2L) /* i.e. version 3 */ ||
-      !X509_set_pubkey(cert.get(), key->key()) ||
-      !X509_set_serialNumber(cert.get(), asn1_serial.get()) ||
-      !X509_set_notBefore(cert.get(), asn1_not_before_time.get()) ||
-      !X509_set_notAfter(cert.get(), asn1_not_after_time.get()) ||
-      !X509_set_subject_name(cert.get(), name.get()) ||
-      !X509_set_issuer_name(cert.get(), name.get())) {
-    LOG(ERROR) << "Could not create certificate";
-    return false;
-  }
-
-  // Sign it with the private key.
-  if (!X509_sign(cert.get(), key->key(), EVP_sha1())) {
-    LOG(ERROR) << "Could not sign certificate with key.";
-    return false;
-  }
-
-  // Convert it into a DER-encoded string copied to |der_encoded|.
-  int der_data_length = i2d_X509(cert.get(), NULL);
-  if (der_data_length < 0)
+  crypto::ScopedOpenSSL<X509, X509_free> cert(
+      CreateCertificate(key->key(),
+                        common_name,
+                        serial_number,
+                        not_valid_before,
+                        not_valid_after));
+  if (!cert.get())
     return false;
 
-  der_encoded->resize(static_cast<size_t>(der_data_length));
-  unsigned char* der_data =
-      reinterpret_cast<unsigned char*>(&(*der_encoded)[0]);
-
-  if (i2d_X509(cert.get(), &der_data) < 0)
-    return false;
-
-  return true;
+  return SignAndDerEncodeCert(cert.get(), key->key(), der_encoded);
 }
 
 bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,
