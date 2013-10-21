@@ -779,6 +779,8 @@
         'browser/extensions/global_shortcut_listener_chromeos.h',
         'browser/extensions/global_shortcut_listener_mac.cc',
         'browser/extensions/global_shortcut_listener_mac.h',
+        'browser/extensions/global_shortcut_listener_ozone.cc',
+        'browser/extensions/global_shortcut_listener_ozone.h',
         'browser/extensions/global_shortcut_listener_win.cc',
         'browser/extensions/global_shortcut_listener_win.h',
         'browser/extensions/global_shortcut_listener_x11.cc',
