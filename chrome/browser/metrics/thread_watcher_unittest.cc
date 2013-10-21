@@ -64,8 +64,8 @@ class CustomThreadWatcher : public ThreadWatcher {
   CheckResponseState check_response_state_;
   uint64 ping_sent_;
   uint64 pong_received_;
-  uint64 success_response_;
-  uint64 failed_response_;
+  base::subtle::Atomic32 success_response_;
+  base::subtle::Atomic32 failed_response_;
   base::TimeTicks saved_ping_time_;
   uint64 saved_ping_sequence_number_;
 
@@ -147,10 +147,12 @@ class CustomThreadWatcher : public ThreadWatcher {
     {
       base::AutoLock auto_lock(custom_lock_);
       if (responsive_) {
-        ++success_response_;
+        base::subtle::Release_Store(&success_response_,
+            base::subtle::Acquire_Load(&success_response_) + 1);
         check_response_state_ = SUCCESSFUL;
       } else {
-        ++failed_response_;
+        base::subtle::Release_Store(&failed_response_,
+            base::subtle::Acquire_Load(&failed_response_) + 1);
         check_response_state_ = FAILED;
       }
     }
@@ -473,8 +475,10 @@ TEST_F(ThreadWatcherTest, ThreadResponding) {
   // Verify watched thread is responding with ping/pong messaging.
   io_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), SUCCESSFUL);
-  EXPECT_GT(io_watcher_->success_response_, static_cast<uint64>(0));
-  EXPECT_EQ(io_watcher_->failed_response_, static_cast<uint64>(0));
+  EXPECT_GT(base::subtle::NoBarrier_Load(&(io_watcher_->success_response_)),
+      static_cast<base::subtle::Atomic32>(0));
+  EXPECT_EQ(base::subtle::NoBarrier_Load(&(io_watcher_->failed_response_)),
+      static_cast<base::subtle::Atomic32>(0));
 
   // DeActivate thread watching for shutdown.
   WatchDogThread::PostTask(
@@ -508,8 +512,10 @@ TEST_F(ThreadWatcherTest, ThreadNotResponding) {
   // Verify watched thread is not responding for ping messages.
   io_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), FAILED);
-  EXPECT_EQ(io_watcher_->success_response_, static_cast<uint64>(0));
-  EXPECT_GT(io_watcher_->failed_response_, static_cast<uint64>(0));
+  EXPECT_EQ(base::subtle::NoBarrier_Load(&(io_watcher_->success_response_)),
+      static_cast<base::subtle::Atomic32>(0));
+  EXPECT_GT(base::subtle::NoBarrier_Load(&(io_watcher_->failed_response_)),
+      static_cast<base::subtle::Atomic32>(0));
 
   // DeActivate thread watching for shutdown.
   WatchDogThread::PostTask(
@@ -541,8 +547,10 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
   EXPECT_GT(db_watcher_->ping_sent_, static_cast<uint64>(0));
   EXPECT_GT(db_watcher_->pong_received_, static_cast<uint64>(0));
   EXPECT_GE(db_watcher_->ping_sequence_number_, static_cast<uint64>(0));
-  EXPECT_GT(db_watcher_->success_response_, static_cast<uint64>(0));
-  EXPECT_EQ(db_watcher_->failed_response_, static_cast<uint64>(0));
+  EXPECT_GT(base::subtle::NoBarrier_Load(&(db_watcher_->success_response_)),
+      static_cast<base::subtle::Atomic32>(0));
+  EXPECT_EQ(base::subtle::NoBarrier_Load(&(db_watcher_->failed_response_)),
+      static_cast<base::subtle::Atomic32>(0));
 
   // Verify IO thread is responding with ping/pong messaging.
   io_watcher_->WaitForCheckResponse(
@@ -550,8 +558,10 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
   EXPECT_GT(io_watcher_->ping_sent_, static_cast<uint64>(0));
   EXPECT_GT(io_watcher_->pong_received_, static_cast<uint64>(0));
   EXPECT_GE(io_watcher_->ping_sequence_number_, static_cast<uint64>(0));
-  EXPECT_GT(io_watcher_->success_response_, static_cast<uint64>(0));
-  EXPECT_EQ(io_watcher_->failed_response_, static_cast<uint64>(0));
+  EXPECT_GT(base::subtle::NoBarrier_Load(&(io_watcher_->success_response_)),
+      static_cast<base::subtle::Atomic32>(0));
+  EXPECT_EQ(base::subtle::NoBarrier_Load(&(io_watcher_->failed_response_)),
+      static_cast<base::subtle::Atomic32>(0));
 
   // DeActivate thread watching for shutdown.
   WatchDogThread::PostTask(
@@ -593,14 +603,18 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
   // Verify DB thread is responding with ping/pong messaging.
   db_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), SUCCESSFUL);
-  EXPECT_GT(db_watcher_->success_response_, static_cast<uint64>(0));
-  EXPECT_EQ(db_watcher_->failed_response_, static_cast<uint64>(0));
+  EXPECT_GT(base::subtle::NoBarrier_Load(&(db_watcher_->success_response_)),
+      static_cast<base::subtle::Atomic32>(0));
+  EXPECT_EQ(base::subtle::NoBarrier_Load(&(db_watcher_->failed_response_)),
+      static_cast<base::subtle::Atomic32>(0));
 
   // Verify IO thread is not responding for ping messages.
   io_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), FAILED);
-  EXPECT_EQ(io_watcher_->success_response_, static_cast<uint64>(0));
-  EXPECT_GT(io_watcher_->failed_response_, static_cast<uint64>(0));
+  EXPECT_EQ(base::subtle::NoBarrier_Load(&(io_watcher_->success_response_)),
+      static_cast<base::subtle::Atomic32>(0));
+  EXPECT_GT(base::subtle::NoBarrier_Load(&(io_watcher_->failed_response_)),
+      static_cast<base::subtle::Atomic32>(0));
 
   // DeActivate thread watching for shutdown.
   WatchDogThread::PostTask(
