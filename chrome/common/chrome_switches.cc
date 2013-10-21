@@ -1037,9 +1037,9 @@ const char kNoEvents[]                      = "no-events";
 const char kNoExperiments[]                 = "no-experiments";
 
 // Skip First Run tasks, whether or not it's actually the First Run. Overridden
-// by kForceFirstRun.
-// Also drops the First Run beacon so that First Run will not occur in
-// subsequent runs as well.
+// by kForceFirstRun. This does not drop the First Run sentinel and thus doesn't
+// prevent first run from occuring the next time chrome is launched without this
+// flag (see kCancelFirstRun for that).
 const char kNoFirstRun[]                    = "no-first-run";
 
 // Support a separate switch that enables the v8 playback extension.
