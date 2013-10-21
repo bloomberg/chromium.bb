@@ -69,19 +69,18 @@ def generate_attribute_and_includes(interface, attribute):
     extended_attributes = attribute.extended_attributes
 
     has_custom_getter = has_extended_attribute(attribute, ('Custom', 'CustomGetter'))
-    has_custom_setter = not attribute.is_read_only and has_extended_attribute(attribute, ('Custom', 'CustomSetter'))
-    do_generate_setter = not (attribute.is_read_only or has_custom_setter)  # FIXME: need to check [PutForwards], [Reflect], and [Replaceable]
+    has_setter = not attribute.is_read_only  # FIXME: support [PutForwards], [Reflect], and [Replaceable]
+    has_custom_setter = has_setter and has_extended_attribute(attribute, ('Custom', 'CustomSetter'))
     contents = {
         'access_control_list': access_control_list(attribute),
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
-        'do_generate_setter': do_generate_setter,
         'getter_callback_name': getter_callback_name(interface, attribute),
         'getter_callback_name_for_main_world': getter_callback_name_for_main_world(interface, attribute),
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
-        'has_setter_callback': not attribute.is_read_only,  # FIXME: need to check [Replaceable]
+        'has_setter': has_setter,
         'idl_type': idl_type,
         'is_getter_raises_exception': has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')),
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
@@ -99,7 +98,7 @@ def generate_attribute_and_includes(interface, attribute):
     includes = set()
     if not has_custom_getter:
         generate_getter(interface, attribute, contents, includes)
-    if do_generate_setter:
+    if has_setter and not has_custom_setter:
         generate_setter(interface, attribute, contents, includes)
 
     return contents, includes

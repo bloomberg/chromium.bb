@@ -67,10 +67,10 @@ template <typename T> void V8_USE(T) { }
 {% endif %}
 {{attribute_getter_callback(attribute, world_suffix)}}
 {% endfor %}
-{% if attribute.do_generate_setter %}
+{% if attribute.has_setter %}
+{% if not attribute.has_custom_setter %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
-{% if attribute.has_setter_callback %}
 {{attribute_setter_callback(attribute, world_suffix)}}
 {% endif %}
 {% endfor %}
