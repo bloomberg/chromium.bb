@@ -1876,9 +1876,17 @@ Even if you have downloaded files from this website before, the website might ha
                desc="Text for the button used to stop a dangerous download.">
         Discard
       </message>
+      <message name="IDS_DISMISS_DOWNLOAD"
+               desc="Text for the button used to dismiss a malicious download notification.">
+        Dismiss
+      </message>
       <message name="IDS_REPORT_AND_DISCARD_DOWNLOAD"
                desc="Text for the button used to upload a malicious file to Google for analysis and then discard it.">
         Report &amp; Discard
+      </message>
+      <message name="IDS_REPORT_AND_DISMISS_DOWNLOAD"
+               desc="Text for the button used to dismiss a malicious download notification and upload the file to Google for analysis.">
+        Report &amp; Dismiss
       </message>
 
       <!-- Download Tab Items -->
