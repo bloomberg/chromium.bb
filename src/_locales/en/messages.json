@@ -11,6 +11,10 @@
     "message": "Andy",
     "description": "Andy effect's name."
   },
+  "bigEyesEffect": {
+    "message": "Big Eyes",
+    "description": "Big Eyes effect's name."
+  },
   "colorizeEffect": {
     "message": "Colorize",
     "description": "Colorize effect's name."

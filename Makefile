@@ -37,6 +37,7 @@ SRC_RESOURCES= \
 	src/js/background.js \
 	src/js/effect.js \
 	src/js/effects/andy.js \
+	src/js/effects/big_eyes.js \
 	src/js/effects/cinema.js \
 	src/js/effects/colorize.js \
 	src/js/effects/funky.js \
