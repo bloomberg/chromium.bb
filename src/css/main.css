@@ -493,12 +493,12 @@ body.browser #browser {
 }
 
 #browser img {
-  -webkit-transform: scale(0.9);
   border: 10px solid white;
   display: -webkit-box;
   pointer-events: auto;
   transition: -webkit-transform 200ms;
-  width: 80%;
+  margin: 4%;
+  width: 72%;
 }
 
 #browser div.bounds-padder {
@@ -508,7 +508,7 @@ body.browser #browser {
 }
 
 #browser img.selected {
-  -webkit-transform: scale(1);
+  -webkit-transform: scale(1.1);
 }
 
 body:not(.gallery):not(.browser) #gallery {
