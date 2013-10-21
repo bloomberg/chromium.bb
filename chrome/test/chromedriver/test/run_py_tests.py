@@ -96,8 +96,6 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         # Android doesn't support switches and extensions.
         'ChromeSwitchesCapabilityTest.*',
         'ChromeExtensionsCapabilityTest.*',
-        # https://code.google.com/p/chromedriver/issues/detail?id=459
-        'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         # https://crbug.com/274650
         'ChromeDriverTest.testCloseWindow',
         # https://code.google.com/p/chromedriver/issues/detail?id=259
@@ -117,12 +115,7 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
     ]
 )
 _ANDROID_NEGATIVE_FILTER['com.android.chrome'] = (
-    _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] + [
-        # Touch support was added to devtools in Chrome v30.
-        'ChromeDriverTest.testTouchDownUpElement',
-        'ChromeDriverTest.testTouchMovedElement',
-    ]
-)
+    _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'])
 _ANDROID_NEGATIVE_FILTER['com.chrome.beta'] = (
     _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'])
 _ANDROID_NEGATIVE_FILTER['org.chromium.chrome.testshell'] = (
@@ -130,6 +123,7 @@ _ANDROID_NEGATIVE_FILTER['org.chromium.chrome.testshell'] = (
         # ChromiumTestShell doesn't support multiple tabs.
         'ChromeDriverTest.testGetWindowHandles',
         'ChromeDriverTest.testSwitchToWindow',
+        'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
     ]
 )
 
@@ -166,11 +160,14 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def GlobalSetUp():
     ChromeDriverTest._http_server = webserver.WebServer(
         chrome_paths.GetTestData())
+    ChromeDriverTest._sync_server = webserver.SyncWebServer()
     if _ANDROID_PACKAGE:
       ChromeDriverTest._adb = android_commands.AndroidCommands()
-      host_port = ChromeDriverTest._http_server._server.server_port
+      http_host_port = ChromeDriverTest._http_server._server.server_port
+      sync_host_port = ChromeDriverTest._sync_server._server.server_port
       forwarder.Forwarder.Map(
-          [(host_port, host_port)], ChromeDriverTest._adb)
+          [(http_host_port, http_host_port), (sync_host_port, sync_host_port)],
+          ChromeDriverTest._adb)
 
   @staticmethod
   def GlobalTearDown():
@@ -544,7 +541,6 @@ class ChromeDriverTest(ChromeDriverBaseTest):
 
   def testShouldHandleNewWindowLoadingProperly(self):
     """Tests that ChromeDriver determines loading correctly for new windows."""
-    sync_server = webserver.SyncWebServer()
     self._http_server.SetDataForPath(
         '/newwindow',
         """
@@ -552,7 +548,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         <body>
         <a href='%s' target='_blank'>new window/tab</a>
         </body>
-        </html>""" % sync_server.GetUrl())
+        </html>""" % self._sync_server.GetUrl())
     self._driver.Load(self._http_server.GetUrl() + '/newwindow')
     old_windows = self._driver.GetWindowHandles()
     self._driver.FindElement('tagName', 'a').Click()
@@ -562,7 +558,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertFalse(self._driver.IsLoading())
     self._driver.SwitchToWindow(new_window)
     self.assertTrue(self._driver.IsLoading())
-    sync_server.RespondWithContent('<html>new window</html>')
+    self._sync_server.RespondWithContent('<html>new window</html>')
     self._driver.ExecuteScript('return 1')  # Shouldn't hang.
 
   def testPopups(self):
