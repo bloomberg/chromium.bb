@@ -48,6 +48,7 @@ namespace toplevel_config {
 ONC_EXPORT extern const char kCertificates[];
 ONC_EXPORT extern const char kEncryptedConfiguration[];
 ONC_EXPORT extern const char kNetworkConfigurations[];
+ONC_EXPORT extern const char kGlobalNetworkConfiguration[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kUnencryptedConfiguration[];
 }  // namespace toplevel_config
@@ -308,6 +309,10 @@ ONC_EXPORT extern const char kSocks[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kWPAD[];
 }  // namespace proxy
+
+namespace global_network_config {
+ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToAutoconnect[];
+}  // global_network_config
 
 }  // namespace onc
 

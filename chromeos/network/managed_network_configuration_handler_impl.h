@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -33,9 +34,6 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       public NetworkProfileObserver,
       public PolicyApplicator::ConfigurationHandler {
  public:
-  typedef std::map<std::string, const base::DictionaryValue*> GuidToPolicyMap;
-  typedef std::map<std::string, GuidToPolicyMap> UserToPoliciesMap;
-
   virtual ~ManagedNetworkConfigurationHandlerImpl();
 
   // ManagedNetworkConfigurationHandler overrides
@@ -70,9 +68,11 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const OVERRIDE;
 
-  virtual void SetPolicy(onc::ONCSource onc_source,
-                         const std::string& userhash,
-                         const base::ListValue& network_configs_onc) OVERRIDE;
+  virtual void SetPolicy(
+      onc::ONCSource onc_source,
+      const std::string& userhash,
+      const base::ListValue& network_configs_onc,
+      const base::DictionaryValue& global_network_config) OVERRIDE;
 
   virtual const base::DictionaryValue* FindPolicyByGUID(
       const std::string userhash,
@@ -91,10 +91,17 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   virtual void CreateConfigurationFromPolicy(
       const base::DictionaryValue& shill_properties) OVERRIDE;
 
+  virtual void UpdateExistingConfigurationWithPropertiesFromPolicy(
+      const base::DictionaryValue& existing_properties,
+      const base::DictionaryValue& new_properties) OVERRIDE;
+
  private:
   friend class ClientCertResolverTest;
   friend class NetworkHandler;
   friend class ManagedNetworkConfigurationHandlerTest;
+
+  struct Policies;
+  typedef std::map<std::string, linked_ptr<Policies> > UserToPoliciesMap;
 
   ManagedNetworkConfigurationHandlerImpl();
 
@@ -108,15 +115,12 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
 
-  const GuidToPolicyMap* GetPoliciesForUser(const std::string& userhash) const;
-  const GuidToPolicyMap* GetPoliciesForProfile(
-      const NetworkProfile& profile) const;
+  const Policies* GetPoliciesForUser(const std::string& userhash) const;
+  const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;
 
   void OnPolicyApplied(const std::string& service_path);
 
-  // The DictionaryValues of the nested maps are owned by this class and are
-  // explicitly deleted where necessary. If present, the empty string maps to
-  // the device policy.
+  // If present, the empty string maps to the device policy.
   UserToPoliciesMap policies_by_user_;
 
   // Local references to the associated handler instances.

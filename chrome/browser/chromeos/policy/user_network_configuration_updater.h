@@ -73,7 +73,8 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
       const base::ListValue& certificates_onc) OVERRIDE;
 
   virtual void ApplyNetworkPolicy(
-      base::ListValue* network_configs_onc) OVERRIDE;
+      base::ListValue* network_configs_onc,
+      base::DictionaryValue* global_network_config) OVERRIDE;
 
   // Push |web_trust_certs_| to |cert_verifier_| if necessary.
   void SetTrustAnchors();

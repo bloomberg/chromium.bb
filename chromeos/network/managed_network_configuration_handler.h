@@ -101,15 +101,17 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const = 0;
 
-  // Only to be called by NetworkConfigurationUpdater or from tests.  Sets
-  // |network_configs_onc| as the current policy of |onc_source|. The network
-  // configurations of the policy will be applied (not necessarily immediately)
-  // to Shill's profiles and enforced in future configurations until the policy
-  // associated with |onc_source| is changed again with this function. For
-  // device policies, |userhash| must be empty.
-  virtual void SetPolicy(::onc::ONCSource onc_source,
-                         const std::string& userhash,
-                         const base::ListValue& network_configs_onc) = 0;
+  // Only to be called by NetworkConfigurationUpdater or from tests. Sets
+  // |network_configs_onc| and |global_network_config| as the current policy of
+  // |userhash| and |onc_source|. The policy will be applied (not necessarily
+  // immediately) to Shill's profiles and enforced in future configurations
+  // until the policy associated with |userhash| and |onc_source| is changed
+  // again with this function. For device policies, |userhash| must be empty.
+  virtual void SetPolicy(
+      ::onc::ONCSource onc_source,
+      const std::string& userhash,
+      const base::ListValue& network_configs_onc,
+      const base::DictionaryValue& global_network_config) = 0;
 
   // Returns the user policy for user |userhash| or device policy, which has
   // |guid|. If |userhash| is empty, only looks for a device policy. If such

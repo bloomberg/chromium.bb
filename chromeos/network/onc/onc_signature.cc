@@ -263,6 +263,11 @@ const OncFieldSignature network_with_state_fields[] = {
     { ::onc::network_config::kWiFi, &kWiFiWithStateSignature},
     {NULL}};
 
+const OncFieldSignature global_network_configuration_fields[] = {
+    { ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      &kBoolSignature},
+    {NULL}};
+
 const OncFieldSignature certificate_fields[] = {
     { ::onc::certificate::kGUID, &kStringSignature},
     { ::onc::certificate::kPKCS12, &kStringSignature},
@@ -276,6 +281,8 @@ const OncFieldSignature toplevel_configuration_fields[] = {
     { ::onc::toplevel_config::kCertificates, &kCertificateListSignature},
     { ::onc::toplevel_config::kNetworkConfigurations,
       &kNetworkConfigurationListSignature},
+    { ::onc::toplevel_config::kGlobalNetworkConfiguration,
+      &kGlobalNetworkConfigurationSignature},
     { ::onc::toplevel_config::kType, &kStringSignature},
     { ::onc::encrypted::kCipher, &kStringSignature},
     { ::onc::encrypted::kCiphertext, &kStringSignature},
@@ -335,6 +342,9 @@ const OncValueSignature kCertificateSignature = {
 };
 const OncValueSignature kNetworkConfigurationSignature = {
   Value::TYPE_DICTIONARY, network_configuration_fields, NULL
+};
+const OncValueSignature kGlobalNetworkConfigurationSignature = {
+  Value::TYPE_DICTIONARY, global_network_configuration_fields, NULL
 };
 const OncValueSignature kCertificateListSignature = {
   Value::TYPE_LIST, NULL, &kCertificateSignature

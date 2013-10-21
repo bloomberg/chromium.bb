@@ -76,12 +76,15 @@ void UserNetworkConfigurationUpdater::ImportCertificates(
 }
 
 void UserNetworkConfigurationUpdater::ApplyNetworkPolicy(
-    base::ListValue* network_configs_onc) {
+    base::ListValue* network_configs_onc,
+    base::DictionaryValue* global_network_config) {
   DCHECK(user_);
   chromeos::onc::ExpandStringPlaceholdersInNetworksForUser(user_,
                                                            network_configs_onc);
-  network_config_handler_->SetPolicy(
-      onc_source_, user_->username_hash(), *network_configs_onc);
+  network_config_handler_->SetPolicy(onc_source_,
+                                     user_->username_hash(),
+                                     *network_configs_onc,
+                                     *global_network_config);
 }
 
 void UserNetworkConfigurationUpdater::SetTrustAnchors() {

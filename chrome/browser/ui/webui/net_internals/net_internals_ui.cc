@@ -1552,9 +1552,14 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
     onc::ONCSource onc_source = onc::ONC_SOURCE_USER_IMPORT;
 
     base::ListValue network_configs;
+    base::DictionaryValue global_network_config;
     base::ListValue certificates;
-    if (!chromeos::onc::ParseAndValidateOncForImport(
-            onc_blob, onc_source, passcode, &network_configs, &certificates)) {
+    if (!chromeos::onc::ParseAndValidateOncForImport(onc_blob,
+                                                     onc_source,
+                                                     passcode,
+                                                     &network_configs,
+                                                     &global_network_config,
+                                                     &certificates)) {
       error = "Errors occurred during the ONC parsing. ";
     }
 

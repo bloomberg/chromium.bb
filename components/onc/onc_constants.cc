@@ -26,6 +26,7 @@ namespace toplevel_config {
 const char kCertificates[] = "Certificates";
 const char kEncryptedConfiguration[] = "EncryptedConfiguration";
 const char kNetworkConfigurations[] = "NetworkConfigurations";
+const char kGlobalNetworkConfiguration[] = "GlobalNetworkConfiguration";
 const char kType[] = "Type";
 const char kUnencryptedConfiguration[] = "UnencryptedConfiguration";
 }  // namespace toplevel_config
@@ -285,6 +286,11 @@ namespace substitutes {
 const char kLoginIDField[] = "${LOGIN_ID}";
 const char kEmailField[] = "${LOGIN_EMAIL}";
 }  // namespace substitutes
+
+namespace global_network_config {
+const char kAllowOnlyPolicyNetworksToAutoconnect[] =
+    "AllowOnlyPolicyNetworksToAutoconnect";
+}  // global_network_config
 
 }  // namespace onc
 

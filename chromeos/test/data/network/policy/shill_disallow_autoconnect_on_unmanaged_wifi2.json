@@ -1,0 +1,8 @@
+{
+  "AutoConnect": false,
+  "Mode": "managed",
+  "Profile": "/profile/user1/shill",
+  "Security": "psk",
+  "Type": "wifi",
+  "WiFi.HexSSID": "7769666932"  // "wifi2"
+}

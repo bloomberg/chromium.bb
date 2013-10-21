@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -187,7 +188,10 @@ class ClientCertResolverTest : public testing::Test {
     ASSERT_TRUE(policy_value->GetAsList(&policy));
 
     managed_config_handler_->SetPolicy(
-        onc::ONC_SOURCE_USER_POLICY, kUserHash, *policy);
+        onc::ONC_SOURCE_USER_POLICY,
+        kUserHash,
+        *policy,
+        base::DictionaryValue() /* no global network config */);
   }
 
   void GetClientCertProperties(std::string* pkcs11_id) {

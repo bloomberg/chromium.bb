@@ -5,7 +5,7 @@
   "GUID": "policy2_wifi1",
   "Mode": "managed",
   "Passphrase": "user's passphrase",
-  "Profile": "/profile/chronos/shill",
+  "Profile": "/profile/user1/shill",
   "Security": "802_1x",
   "Type": "wifi",
   "UIData": "{\"onc_source\":\"user_policy\",\"user_settings\":{\"WiFi\":{\"Passphrase\":\"FAKE_CREDENTIAL_VPaJDV9x\"}}}",

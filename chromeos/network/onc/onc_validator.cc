@@ -385,14 +385,24 @@ bool Validator::RequireField(const base::DictionaryValue& dict,
   return false;
 }
 
-// Prohibit certificate patterns for device policy ONC so that an unmanaged user
-// won't have a certificate presented for them involuntarily.
-bool Validator::CertPatternInDevicePolicy(const std::string& cert_type) {
+bool Validator::IsCertPatternInDevicePolicy(const std::string& cert_type) {
   if (cert_type == ::onc::certificate::kPattern &&
       onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     error_or_warning_found_ = true;
     LOG(ERROR) << MessageHeader() << "Client certificate patterns are "
                << "prohibited in ONC device policies.";
+    return true;
+  }
+  return false;
+}
+
+bool Validator::IsGlobalNetworkConfigInUserImport(
+    const base::DictionaryValue& onc_object) {
+  if (onc_source_ == ::onc::ONC_SOURCE_USER_IMPORT &&
+      onc_object.HasKey(::onc::toplevel_config::kGlobalNetworkConfiguration)) {
+    error_or_warning_found_ = true;
+    LOG(ERROR) << MessageHeader() << "GlobalNetworkConfiguration is prohibited "
+               << "in ONC user imports";
     return true;
   }
   return false;
@@ -428,6 +438,9 @@ bool Validator::ValidateToplevelConfiguration(
       LOG(WARNING) << message;
     allRequiredExist = false;
   }
+
+  if (IsGlobalNetworkConfigInUserImport(*result))
+    return false;
 
   return !error_on_missing_field_ || allRequiredExist;
 }
@@ -609,7 +622,7 @@ bool Validator::ValidateIPsec(
   result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
                                         &cert_type);
 
-  if (CertPatternInDevicePolicy(cert_type))
+  if (IsCertPatternInDevicePolicy(cert_type))
     return false;
 
   if (cert_type == kPattern)
@@ -648,7 +661,7 @@ bool Validator::ValidateOpenVPN(
   result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
                                         &cert_type);
 
-  if (CertPatternInDevicePolicy(cert_type))
+  if (IsCertPatternInDevicePolicy(cert_type))
     return false;
 
   if (cert_type == kPattern)
@@ -734,7 +747,7 @@ bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
   std::string cert_type;
   result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
 
-  if (CertPatternInDevicePolicy(cert_type))
+  if (IsCertPatternInDevicePolicy(cert_type))
     return false;
 
   if (cert_type == kPattern)

@@ -14,6 +14,8 @@
 #include "components/onc/onc_constants.h"
 
 namespace base {
+class DictionaryValue;
+class ListValue;
 class Value;
 }
 
@@ -69,7 +71,8 @@ class NetworkConfigurationUpdater : public PolicyService::Observer {
   // Pushes the network part of the policy to the
   // ManagedNetworkConfigurationHandler. This can be overridden by subclasses to
   // modify |network_configs_onc| before the actual application.
-  virtual void ApplyNetworkPolicy(base::ListValue* network_configs_onc);
+  virtual void ApplyNetworkPolicy(base::ListValue* network_configs_onc,
+                                  base::DictionaryValue* global_network_config);
 
   onc::ONCSource onc_source_;
 

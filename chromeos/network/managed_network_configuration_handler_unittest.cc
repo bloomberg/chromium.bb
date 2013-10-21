@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
@@ -101,7 +102,7 @@ class ShillProfileTestClient {
       entry_paths->AppendString(it.key());
     }
 
-    ASSERT_GT(profile_to_user_.count(profile_path.value()), 0UL);
+    ASSERT_TRUE(ContainsKey(profile_to_user_, profile_path.value()));
     const std::string& userhash = profile_to_user_[profile_path.value()];
     result->SetStringWithoutPathExpansion(shill::kUserHashProperty, userhash);
 
@@ -229,12 +230,19 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     else
       policy = test_utils::ReadTestDictionary(path_to_onc);
 
-    base::ListValue* network_configs = NULL;
+    base::ListValue empty_network_configs;
+    base::ListValue* network_configs = &empty_network_configs;
     policy->GetListWithoutPathExpansion(
         ::onc::toplevel_config::kNetworkConfigurations, &network_configs);
 
+    base::DictionaryValue empty_global_config;
+    base::DictionaryValue* global_network_config = &empty_global_config;
+    policy->GetDictionaryWithoutPathExpansion(
+        ::onc::toplevel_config::kGlobalNetworkConfiguration,
+        &global_network_config);
+
     managed_handler()->SetPolicy(
-        ::onc::ONC_SOURCE_USER_POLICY, userhash, *network_configs);
+        onc_source, userhash, *network_configs, *global_network_config);
   }
 
   void SetNetworkConfigurationHandlerExpectations() {
@@ -326,7 +334,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
 
   // Also setup an unrelated WiFi configuration to verify that the right entry
   // is matched.
-  SetUpEntry("policy/shill_unmanaged_user_wifi1.json",
+  SetUpEntry("policy/shill_unmanaged_wifi1.json",
              kUser1ProfilePath,
              "wifi_entry");
 
@@ -361,7 +369,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
   message_loop_.RunUntilIdle();
   VerifyAndClearExpectations();
 
-  SetUpEntry("policy/shill_policy_on_unmanaged_user_wifi1.json",
+  SetUpEntry("policy/shill_policy_on_unmanaged_wifi1.json",
              kUser1ProfilePath,
              "some_entry_path");
 
@@ -377,13 +385,13 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnmanaged) {
   InitializeStandardProfiles();
-  SetUpEntry("policy/shill_unmanaged_user_wifi1.json",
+  SetUpEntry("policy/shill_unmanaged_wifi1.json",
              kUser1ProfilePath,
              "old_entry_path");
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
-          "policy/shill_policy_on_unmanaged_user_wifi1.json");
+          "policy/shill_policy_on_unmanaged_wifi1.json");
 
   EXPECT_CALL(mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
@@ -410,13 +418,13 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnmanaged) {
 TEST_F(ManagedNetworkConfigurationHandlerTest,
        SetPolicyManageUnmanagedWithoutUIData) {
   InitializeStandardProfiles();
-  SetUpEntry("policy/shill_unmanaged_user_wifi1.json",
+  SetUpEntry("policy/shill_unmanaged_wifi1.json",
              kUser1ProfilePath,
              "old_entry_path");
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
-          "policy/shill_policy_on_unmanaged_user_wifi1.json");
+          "policy/shill_policy_on_unmanaged_wifi1.json");
 
   EXPECT_CALL(mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
@@ -447,7 +455,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
-          "policy/shill_policy_on_unmanaged_user_wifi1.json");
+          "policy/shill_policy_on_unmanaged_wifi1.json");
 
   // The passphrase isn't sent again, because it's configured by the user and
   // Shill doesn't sent it on GetProperties calls.
@@ -477,13 +485,13 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
   InitializeStandardProfiles();
-  SetUpEntry("policy/shill_policy_on_unmanaged_user_wifi1.json",
+  SetUpEntry("policy/shill_policy_on_unmanaged_wifi1.json",
              kUser1ProfilePath,
              "old_entry_path");
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
-          "policy/shill_policy_on_unmanaged_user_wifi1.json");
+          "policy/shill_policy_on_unmanaged_wifi1.json");
 
   // The passphrase isn't sent again, because it's configured by the user and
   // Shill doesn't sent it on GetProperties calls.
@@ -522,7 +530,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUnmanageManaged) {
   InitializeStandardProfiles();
-  SetUpEntry("policy/shill_policy_on_unmanaged_user_wifi1.json",
+  SetUpEntry("policy/shill_policy_on_unmanaged_wifi1.json",
              kUser1ProfilePath,
              "old_entry_path");
 
@@ -545,7 +553,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUnmanageManaged) {
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetEmptyPolicyIgnoreUnmanaged) {
   InitializeStandardProfiles();
-  SetUpEntry("policy/shill_unmanaged_user_wifi1.json",
+  SetUpEntry("policy/shill_unmanaged_wifi1.json",
              kUser1ProfilePath,
              "old_entry_path");
 
@@ -563,7 +571,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetEmptyPolicyIgnoreUnmanaged) {
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmanaged) {
   InitializeStandardProfiles();
-  SetUpEntry("policy/shill_unmanaged_user_wifi2.json",
+  SetUpEntry("policy/shill_unmanaged_wifi2.json",
              kUser1ProfilePath,
              "wifi2_entry_path");
 
@@ -585,6 +593,35 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmanaged) {
                   _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
+  InitializeStandardProfiles();
+  SetUpEntry("policy/shill_unmanaged_wifi2.json",
+             kUser1ProfilePath,
+             "wifi2_entry_path");
+
+  EXPECT_CALL(mock_profile_client_,
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
+
+  EXPECT_CALL(
+      mock_profile_client_,
+      GetEntry(dbus::ObjectPath(kUser1ProfilePath), "wifi2_entry_path", _, _));
+
+  scoped_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/shill_disallow_autoconnect_on_unmanaged_wifi2.json");
+
+  EXPECT_CALL(mock_manager_client_,
+              ConfigureServiceForProfile(
+                  dbus::ObjectPath(kUser1ProfilePath),
+                  IsEqualTo(expected_shill_properties.get()),
+                  _, _));
+
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
+            kUser1,
+            "policy/policy_disallow_autoconnect.onc");
   message_loop_.RunUntilIdle();
 }
 

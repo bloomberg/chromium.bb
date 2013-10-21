@@ -71,6 +71,9 @@ const char kFakeONC[] =
     "        \"Security\": \"None\" }"
     "    }"
     "  ],"
+    "  \"GlobalNetworkConfiguration\": {"
+    "    \"AllowOnlyPolicyNetworksToAutoconnect\": true,"
+    "  },"
     "  \"Certificates\": ["
     "    { \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ac}\","
     "      \"PKCS12\": \"abc\","
@@ -79,18 +82,29 @@ const char kFakeONC[] =
     "  \"Type\": \"UnencryptedConfiguration\""
     "}";
 
-std::string ValueToString(const base::Value* value) {
+std::string ValueToString(const base::Value& value) {
   std::stringstream str;
-  str << *value;
+  str << value;
   return str.str();
+}
+
+void AppendAll(const base::ListValue& from, base::ListValue* to) {
+  for (base::ListValue::const_iterator it = from.begin(); it != from.end();
+       ++it) {
+    to->Append((*it)->DeepCopy());
+  }
 }
 
 // Matcher to match base::Value.
 MATCHER_P(IsEqualTo,
           value,
           std::string(negation ? "isn't" : "is") + " equal to " +
-              ValueToString(value)) {
+              ValueToString(*value)) {
   return value->Equals(&arg);
+}
+
+MATCHER(IsEmpty, std::string(negation ? "isn't" : "is") + " empty.") {
+  return arg.empty();
 }
 
 ACTION_P(SetCertificateList, list) {
@@ -114,25 +128,23 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     providers.push_back(&provider_);
     policy_service_.reset(new PolicyServiceImpl(providers));
 
-    empty_network_configs_.reset(new base::ListValue);
-    empty_certificates_.reset(new base::ListValue);
-
     scoped_ptr<base::DictionaryValue> fake_toplevel_onc =
         chromeos::onc::ReadDictionaryFromJson(kFakeONC);
 
-    scoped_ptr<base::Value> network_configs_value;
     base::ListValue* network_configs = NULL;
-    fake_toplevel_onc->RemoveWithoutPathExpansion(
-        onc::toplevel_config::kNetworkConfigurations, &network_configs_value);
-    network_configs_value.release()->GetAsList(&network_configs);
-    fake_network_configs_.reset(network_configs);
+    fake_toplevel_onc->GetListWithoutPathExpansion(
+        onc::toplevel_config::kNetworkConfigurations, &network_configs);
+    AppendAll(*network_configs, &fake_network_configs_);
 
-    scoped_ptr<base::Value> certs_value;
+    base::DictionaryValue* global_config = NULL;
+    fake_toplevel_onc->GetDictionaryWithoutPathExpansion(
+        onc::toplevel_config::kGlobalNetworkConfiguration, &global_config);
+    fake_global_network_config_.MergeDictionary(global_config);
+
     base::ListValue* certs = NULL;
-    fake_toplevel_onc->RemoveWithoutPathExpansion(
-        onc::toplevel_config::kCertificates, &certs_value);
-    certs_value.release()->GetAsList(&certs);
-    fake_certificates_.reset(certs);
+    fake_toplevel_onc->GetListWithoutPathExpansion(
+        onc::toplevel_config::kCertificates, &certs);
+    AppendAll(*certs, &fake_certificates_);
 
     certificate_importer_ =
         new StrictMock<chromeos::onc::MockCertificateImporter>();
@@ -172,10 +184,9 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
             &network_config_handler_);
   }
 
-  scoped_ptr<base::ListValue> empty_network_configs_;
-  scoped_ptr<base::ListValue> empty_certificates_;
-  scoped_ptr<base::ListValue> fake_network_configs_;
-  scoped_ptr<base::ListValue> fake_certificates_;
+  base::ListValue fake_network_configs_;
+  base::DictionaryValue fake_global_network_config_;
+  base::ListValue fake_certificates_;
   StrictMock<chromeos::MockManagedNetworkConfigurationHandler>
       network_config_handler_;
 
@@ -207,6 +218,12 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
       onc::toplevel_config::kNetworkConfigurations, &network_configs_repaired);
   ASSERT_TRUE(network_configs_repaired);
 
+  base::DictionaryValue* global_config_repaired = NULL;
+  onc_repaired->GetDictionaryWithoutPathExpansion(
+      onc::toplevel_config::kGlobalNetworkConfiguration,
+      &global_config_repaired);
+  ASSERT_TRUE(global_config_repaired);
+
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration,
              POLICY_LEVEL_MANDATORY,
@@ -215,10 +232,11 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
              NULL);
   UpdateProviderPolicy(policy);
 
-  EXPECT_CALL(
-      network_config_handler_,
-      SetPolicy(
-          onc::ONC_SOURCE_USER_POLICY, _, IsEqualTo(network_configs_repaired)));
+  EXPECT_CALL(network_config_handler_,
+              SetPolicy(onc::ONC_SOURCE_USER_POLICY,
+                        _,
+                        IsEqualTo(network_configs_repaired),
+                        IsEqualTo(global_config_repaired)));
   EXPECT_CALL(*certificate_importer_,
               ImportCertificates(_, onc::ONC_SOURCE_USER_POLICY, _));
 
@@ -236,7 +254,7 @@ TEST_F(NetworkConfigurationUpdaterTest,
   ASSERT_EQ(1u, cert_list.size());
 
   EXPECT_CALL(network_config_handler_,
-              SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _));
+              SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _, _));
   EXPECT_CALL(*certificate_importer_, ImportCertificates(_, _, _))
       .WillRepeatedly(SetCertificateList(cert_list));
 
@@ -265,7 +283,7 @@ TEST_F(NetworkConfigurationUpdaterTest, AllowTrustedCertificatesFromPolicy) {
   ASSERT_EQ(1u, cert_list.size());
 
   EXPECT_CALL(network_config_handler_,
-              SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _));
+              SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _, _));
   EXPECT_CALL(*certificate_importer_,
               ImportCertificates(_, onc::ONC_SOURCE_USER_POLICY, _))
       .WillRepeatedly(SetCertificateList(cert_list));
@@ -325,10 +343,11 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, InitialUpdates) {
   EXPECT_CALL(network_config_handler_,
               SetPolicy(CurrentONCSource(),
                         ExpectedUsernameHash(),
-                        IsEqualTo(fake_network_configs_.get())));
+                        IsEqualTo(&fake_network_configs_),
+                        IsEqualTo(&fake_global_network_config_)));
   EXPECT_CALL(*certificate_importer_,
               ImportCertificates(
-                  IsEqualTo(fake_certificates_.get()), CurrentONCSource(), _));
+                  IsEqualTo(&fake_certificates_), CurrentONCSource(), _));
 
   CreateNetworkConfigurationUpdater();
 }
@@ -336,7 +355,7 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, InitialUpdates) {
 
 TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
   // Ignore the initial updates.
-  EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _)).Times(AtLeast(1));
+  EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _)).Times(AtLeast(1));
   EXPECT_CALL(*certificate_importer_, ImportCertificates(_, _, _))
       .Times(AtLeast(1));
   CreateNetworkConfigurationUpdater();
@@ -344,12 +363,14 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
   Mock::VerifyAndClearExpectations(certificate_importer_);
 
   // The Updater should update if policy changes.
-  EXPECT_CALL(
-      network_config_handler_,
-      SetPolicy(CurrentONCSource(), _, IsEqualTo(fake_network_configs_.get())));
+  EXPECT_CALL(network_config_handler_,
+              SetPolicy(CurrentONCSource(),
+                        _,
+                        IsEqualTo(&fake_network_configs_),
+                        IsEqualTo(&fake_global_network_config_)));
   EXPECT_CALL(*certificate_importer_,
               ImportCertificates(
-                  IsEqualTo(fake_certificates_.get()), CurrentONCSource(), _));
+                  IsEqualTo(&fake_certificates_), CurrentONCSource(), _));
 
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -359,13 +380,10 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
   Mock::VerifyAndClearExpectations(certificate_importer_);
 
   // Another update is expected if the policy goes away.
-  EXPECT_CALL(
-      network_config_handler_,
-      SetPolicy(
-          CurrentONCSource(), _, IsEqualTo(empty_network_configs_.get())));
+  EXPECT_CALL(network_config_handler_,
+              SetPolicy(CurrentONCSource(), _, IsEmpty(), IsEmpty()));
   EXPECT_CALL(*certificate_importer_,
-              ImportCertificates(
-                  IsEqualTo(empty_certificates_.get()), CurrentONCSource(), _));
+              ImportCertificates(IsEmpty(), CurrentONCSource(), _));
 
   policy.Erase(GetParam());
   UpdateProviderPolicy(policy);

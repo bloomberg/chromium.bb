@@ -90,16 +90,18 @@ CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
     const base::DictionaryValue& onc_object,
     const std::string& mask);
 
-// Decrypts |onc_blob| with |passphrase| if necessary. Clears |network_configs|
-// and |certificates| and fills them with the validated NetworkConfigurations
-// and Certificates of |onc_blob|. Returns false if any validation errors or
-// warnings occurred. Still, some networks or certificates might be added to the
-// output lists and should be further processed by the caller.
+// Decrypts |onc_blob| with |passphrase| if necessary. Clears |network_configs|,
+// |global_network_config| and |certificates| and fills them with the validated
+// NetworkConfigurations, GlobalNetworkConfiguration and Certificates of
+// |onc_blob|. Returns false if any validation errors or warnings occurred.
+// Still, some configuration might be added to the output arguments and should
+// be further processed by the caller.
 CHROMEOS_EXPORT bool ParseAndValidateOncForImport(
     const std::string& onc_blob,
     ::onc::ONCSource onc_source,
     const std::string& passphrase,
     base::ListValue* network_configs,
+    base::DictionaryValue* global_network_config,
     base::ListValue* certificates);
 
 // Parse the given PEM encoded certificate |pem_encoded| and create a

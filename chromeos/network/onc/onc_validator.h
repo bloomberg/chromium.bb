@@ -215,7 +215,13 @@ class CHROMEOS_EXPORT Validator : public Mapper {
 
   bool RequireField(const base::DictionaryValue& dict, const std::string& key);
 
-  bool CertPatternInDevicePolicy(const std::string& cert_type);
+  // Prohibit certificate patterns for device policy ONC so that an unmanaged
+  // user won't have a certificate presented for them involuntarily.
+  bool IsCertPatternInDevicePolicy(const std::string& cert_type);
+
+  // Prohibit global network configuration in user ONC imports.
+  bool IsGlobalNetworkConfigInUserImport(
+      const base::DictionaryValue& onc_object);
 
   std::string MessageHeader();
 

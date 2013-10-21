@@ -43,11 +43,14 @@ const base::DictionaryValue* GetByGUID(
 
 }  // namespace
 
-PolicyApplicator::PolicyApplicator(base::WeakPtr<ConfigurationHandler> handler,
-                                   const NetworkProfile& profile,
-                                   const GuidToPolicyMap& all_policies,
-                                   std::set<std::string>* modified_policies)
+PolicyApplicator::PolicyApplicator(
+    base::WeakPtr<ConfigurationHandler> handler,
+    const NetworkProfile& profile,
+    const GuidToPolicyMap& all_policies,
+    const base::DictionaryValue& global_network_config,
+    std::set<std::string>* modified_policies)
     : handler_(handler), profile_(profile) {
+  global_network_config_.MergeDictionary(&global_network_config);
   remaining_policies_.swap(*modified_policies);
   for (GuidToPolicyMap::const_iterator it = all_policies.begin();
        it != all_policies.end(); ++it) {
@@ -191,10 +194,20 @@ void PolicyApplicator::GetEntryCallback(
     // unclear which values originating the policy should be removed.
     DeleteEntry(entry);
   } else {
-    VLOG(2) << "Ignore unmanaged entry.";
+    // The entry wasn't managed and doesn't match any current policy. Global
+    // network settings have to be applied.
 
-    // The entry wasn't managed and doesn't match any current policy. Thus
-    // leave it as it is.
+    base::DictionaryValue shill_properties_to_update;
+    GetPropertiesForUnmanagedEntry(entry_properties,
+                                   &shill_properties_to_update);
+    if (shill_properties_to_update.empty()) {
+      VLOG(2) << "Ignore unmanaged entry.";
+      // Calling a SetProperties of Shill with an empty dictionary is a no op.
+    } else {
+      VLOG(2) << "Apply global network config to unmanaged entry.";
+      handler_->UpdateExistingConfigurationWithPropertiesFromPolicy(
+          entry_properties, shill_properties_to_update);
+    }
   }
 }
 
@@ -230,6 +243,37 @@ void PolicyApplicator::CreateAndWriteNewShillConfiguration(
       policy_util::CreateShillConfiguration(
           profile_, guid, &policy, user_settings);
   handler_->CreateConfigurationFromPolicy(*shill_dictionary);
+}
+
+void PolicyApplicator::GetPropertiesForUnmanagedEntry(
+    const base::DictionaryValue& entry_properties,
+    base::DictionaryValue* properties_to_update) const {
+  // kAllowOnlyPolicyNetworksToAutoconnect is currently the only global config.
+
+  std::string type;
+  entry_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
+  if (NetworkTypePattern::Ethernet().MatchesType(type))
+    return;  // Autoconnect for Ethernet cannot be configured.
+
+  // By default all networks are allowed to autoconnect.
+  bool only_policy_autoconnect = false;
+  global_network_config_.GetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      &only_policy_autoconnect);
+  if (!only_policy_autoconnect)
+    return;
+
+  bool old_autoconnect = false;
+  if (entry_properties.GetBooleanWithoutPathExpansion(
+          shill::kAutoConnectProperty, &old_autoconnect) &&
+      !old_autoconnect) {
+    // Autoconnect is already explictly disabled. No need to set it again.
+    return;
+  }
+  // If autconnect is not explicitly set yet, it might automatically be enabled
+  // by Shill. To prevent that, disable it explicitly.
+  properties_to_update->SetBooleanWithoutPathExpansion(
+      shill::kAutoConnectProperty, false);
 }
 
 PolicyApplicator::~PolicyApplicator() {

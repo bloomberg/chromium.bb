@@ -139,6 +139,9 @@ INSTANTIATE_TEST_CASE_P(
                       OncParams("managed_toplevel2.onc",
                                 &kToplevelConfigurationSignature,
                                 true),
+                      OncParams("managed_toplevel_with_global_config.onc",
+                                &kToplevelConfigurationSignature,
+                                true),
                       // Check that at least one configuration is accepted for
                       // device policies.
                       OncParams("managed_toplevel_wifi_peap.onc",

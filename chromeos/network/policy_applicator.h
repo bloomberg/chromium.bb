@@ -11,11 +11,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chromeos/network/network_profile.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace chromeos {
 
@@ -36,6 +33,10 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
      virtual void CreateConfigurationFromPolicy(
          const base::DictionaryValue& shill_properties) = 0;
 
+     virtual void UpdateExistingConfigurationWithPropertiesFromPolicy(
+         const base::DictionaryValue& existing_properties,
+         const base::DictionaryValue& new_properties) = 0;
+
     private:
      DISALLOW_ASSIGN(ConfigurationHandler);
   };
@@ -46,6 +47,7 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
   PolicyApplicator(base::WeakPtr<ConfigurationHandler> handler,
                    const NetworkProfile& profile,
                    const GuidToPolicyMap& all_policies,
+                   const base::DictionaryValue& global_network_config,
                    std::set<std::string>* modified_policies);
 
   void Run();
@@ -74,6 +76,14 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
       const base::DictionaryValue& policy,
       const base::DictionaryValue* user_settings);
 
+  // Adds properties to |properties_to_update|, which are enforced on an
+  // unamaged network by the global network config of the policy.
+  // |entry_properties| are the network's current properties read from its
+  // profile entry.
+  void GetPropertiesForUnmanagedEntry(
+      const base::DictionaryValue& entry_properties,
+      base::DictionaryValue* properties_to_update) const;
+
   // Called once all Profile entries are processed. Calls
   // ApplyRemainingPolicies.
   virtual ~PolicyApplicator();
@@ -86,6 +96,7 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
   base::WeakPtr<ConfigurationHandler> handler_;
   NetworkProfile profile_;
   GuidToPolicyMap all_policies_;
+  base::DictionaryValue global_network_config_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyApplicator);
 };

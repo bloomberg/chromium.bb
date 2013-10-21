@@ -91,9 +91,12 @@ void NetworkConfigurationUpdater::ImportCertificates(
 }
 
 void NetworkConfigurationUpdater::ApplyNetworkPolicy(
-    base::ListValue* network_configs_onc) {
-  network_config_handler_->SetPolicy(
-      onc_source_, std::string() /* no username hash */, *network_configs_onc);
+    base::ListValue* network_configs_onc,
+    base::DictionaryValue* global_network_config) {
+  network_config_handler_->SetPolicy(onc_source_,
+                                     std::string() /* no username hash */,
+                                     *network_configs_onc,
+                                     *global_network_config);
 }
 
 void NetworkConfigurationUpdater::OnPolicyChanged(
@@ -115,15 +118,17 @@ void NetworkConfigurationUpdater::ApplyPolicy() {
     LOG(ERROR) << LogHeader() << " is not a string value.";
 
   base::ListValue network_configs;
+  base::DictionaryValue global_network_config;
   base::ListValue certificates;
   chromeos::onc::ParseAndValidateOncForImport(onc_blob,
                                               onc_source_,
                                               "" /* no passphrase */,
                                               &network_configs,
+                                              &global_network_config,
                                               &certificates);
 
   ImportCertificates(certificates);
-  ApplyNetworkPolicy(&network_configs);
+  ApplyNetworkPolicy(&network_configs, &global_network_config);
 }
 
 std::string NetworkConfigurationUpdater::LogHeader() const {

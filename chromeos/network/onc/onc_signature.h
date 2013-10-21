@@ -51,6 +51,8 @@ CHROMEOS_EXPORT extern const OncValueSignature kProxySettingsSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kWiFiSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCertificateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kNetworkConfigurationSignature;
+CHROMEOS_EXPORT extern const OncValueSignature
+    kGlobalNetworkConfigurationSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCertificateListSignature;
 CHROMEOS_EXPORT extern const OncValueSignature
     kNetworkConfigurationListSignature;
