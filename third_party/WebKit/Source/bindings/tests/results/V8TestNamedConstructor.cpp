@@ -107,7 +107,7 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
 v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static const char* privateTemplateUniqueKey = "V8TestNamedConstructorConstructor::GetTemplatePrivateTemplate";
+    static const int privateTemplateUniqueKey = 0;
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     v8::Handle<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
     if (!result.IsEmpty())

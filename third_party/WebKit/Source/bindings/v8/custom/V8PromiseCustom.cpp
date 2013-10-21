@@ -55,7 +55,7 @@ namespace WebCore {
 
 namespace {
 
-v8::Local<v8::ObjectTemplate> cachedObjectTemplate(void* privateTemplateUniqueKey, int internalFieldCount, v8::Isolate* isolate)
+v8::Local<v8::ObjectTemplate> cachedObjectTemplate(const void* privateTemplateUniqueKey, int internalFieldCount, v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     WrapperWorldType currentWorldType = worldType(isolate);
@@ -73,21 +73,21 @@ v8::Local<v8::ObjectTemplate> cachedObjectTemplate(void* privateTemplateUniqueKe
 v8::Local<v8::ObjectTemplate> promiseAllEnvironmentObjectTemplate(v8::Isolate* isolate)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey = 0;
+    static const int privateTemplateUniqueKey = 0;
     return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PromiseAllEnvironmentFieldCount, isolate);
 }
 
 v8::Local<v8::ObjectTemplate> primitiveWrapperObjectTemplate(v8::Isolate* isolate)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey = 0;
+    static const int privateTemplateUniqueKey = 0;
     return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PrimitiveWrapperFieldCount, isolate);
 }
 
 v8::Local<v8::ObjectTemplate> internalObjectTemplate(v8::Isolate* isolate)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static int privateTemplateUniqueKey = 0;
+    static const int privateTemplateUniqueKey = 0;
     return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::InternalFieldCount, isolate);
 }
 

@@ -136,7 +136,7 @@ static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
 static void postMessageAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
-    static const char* privateTemplateUniqueKey = "postMessagePrivateTemplate";
+    static const int privateTemplateUniqueKey = 0;
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
     v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestActiveDOMObjectV8Internal::postMessageMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::info, currentWorldType)), 1);
@@ -150,7 +150,7 @@ static void postMessageAttributeGetter(v8::Local<v8::String> name, const v8::Pro
     }
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
-        static const char* sharedTemplateUniqueKey = "postMessageSharedTemplate";
+        static const int sharedTemplateUniqueKey = 0;
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestActiveDOMObjectV8Internal::postMessageMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::info, currentWorldType)), 1);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;

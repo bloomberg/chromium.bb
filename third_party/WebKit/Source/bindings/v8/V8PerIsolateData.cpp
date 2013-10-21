@@ -92,7 +92,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
     return m_toStringTemplate.newLocal(m_isolate);
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, const void* privatePointer, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
 {
     TemplateMap& templates = templateMap(currentWorldType);
     TemplateMap::iterator result = templates.find(privatePointer);
@@ -103,7 +103,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldT
     return templ;
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplateIfExists(WrapperWorldType currentWorldType, void* privatePointer)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplateIfExists(WrapperWorldType currentWorldType, const void* privatePointer)
 {
     TemplateMap& templates = templateMap(currentWorldType);
     TemplateMap::iterator result = templates.find(privatePointer);
@@ -112,7 +112,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplateIfExists(Wrapp
     return v8::Local<v8::FunctionTemplate>();
 }
 
-void V8PerIsolateData::setPrivateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::Handle<v8::FunctionTemplate> templ)
+void V8PerIsolateData::setPrivateTemplate(WrapperWorldType currentWorldType, const void* privatePointer, v8::Handle<v8::FunctionTemplate> templ)
 {
     templateMap(currentWorldType).add(privatePointer, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
 }
