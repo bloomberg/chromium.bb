@@ -251,7 +251,11 @@ class scoped_refptr {
   }
 
   T* get() const { return ptr_; }
+
+  // Allow scoped_refptr<C> to be used in boolean expression
+  // and comparison operations.
   operator T*() const { return ptr_; }
+
   T* operator->() const {
     assert(ptr_ != NULL);
     return ptr_;
