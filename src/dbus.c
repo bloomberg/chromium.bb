@@ -334,3 +334,71 @@ void weston_dbus_close(DBusConnection *c, struct wl_event_source *ctx)
 	dbus_connection_close(c);
 	dbus_connection_unref(c);
 }
+
+int weston_dbus_add_match(DBusConnection *c, const char *format, ...)
+{
+	DBusError err;
+	int r;
+	va_list list;
+	char *str;
+
+	va_start(list, format);
+	r = vasprintf(&str, format, list);
+	va_end(list);
+
+	if (r < 0)
+		return -ENOMEM;
+
+	dbus_error_init(&err);
+	dbus_bus_add_match(c, str, &err);
+	free(str);
+	if (dbus_error_is_set(&err)) {
+		dbus_error_free(&err);
+		return -EIO;
+	}
+
+	return 0;
+}
+
+int weston_dbus_add_match_signal(DBusConnection *c, const char *sender,
+				 const char *iface, const char *member,
+				 const char *path)
+{
+	return weston_dbus_add_match(c,
+				     "type='signal',"
+				     "sender='%s',"
+				     "interface='%s',"
+				     "member='%s',"
+				     "path='%s'",
+				     sender, iface, member, path);
+}
+
+void weston_dbus_remove_match(DBusConnection *c, const char *format, ...)
+{
+	int r;
+	va_list list;
+	char *str;
+
+	va_start(list, format);
+	r = vasprintf(&str, format, list);
+	va_end(list);
+
+	if (r < 0)
+		return;
+
+	dbus_bus_remove_match(c, str, NULL);
+	free(str);
+}
+
+void weston_dbus_remove_match_signal(DBusConnection *c, const char *sender,
+				     const char *iface, const char *member,
+				     const char *path)
+{
+	return weston_dbus_remove_match(c,
+					"type='signal',"
+					"sender='%s',"
+					"interface='%s',"
+					"member='%s',"
+					"path='%s'",
+					sender, iface, member, path);
+}

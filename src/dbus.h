@@ -62,6 +62,46 @@ int weston_dbus_open(struct wl_event_loop *loop, DBusBusType bus,
  */
 void weston_dbus_close(DBusConnection *c, struct wl_event_source *ctx);
 
+/*
+ * weston_dbus_add_match() - Add dbus match
+ *
+ * Configure a dbus-match on the given dbus-connection. This match is saved
+ * on the dbus-server as long as the connection is open. See dbus-manual
+ * for information. Compared to the dbus_bus_add_match() this allows a
+ * var-arg formatted match-string.
+ */
+int weston_dbus_add_match(DBusConnection *c, const char *format, ...);
+
+/*
+ * weston_dbus_add_match_signal() - Add dbus signal match
+ *
+ * Same as weston_dbus_add_match() but does the dbus-match formatting for
+ * signals internally.
+ */
+int weston_dbus_add_match_signal(DBusConnection *c, const char *sender,
+				 const char *iface, const char *member,
+				 const char *path);
+
+/*
+ * weston_dbus_remove_match() - Remove dbus match
+ *
+ * Remove a previously configured dbus-match from the dbus server. There is
+ * no need to remove dbus-matches if you close the connection, anyway.
+ * Compared to dbus_bus_remove_match() this allows a var-arg formatted
+ * match string.
+ */
+void weston_dbus_remove_match(DBusConnection *c, const char *format, ...);
+
+/*
+ * weston_dbus_remove_match_signal() - Remove dbus signal match
+ *
+ * Same as weston_dbus_remove_match() but does the dbus-match formatting for
+ * signals internally.
+ */
+void weston_dbus_remove_match_signal(DBusConnection *c, const char *sender,
+				     const char *iface, const char *member,
+				     const char *path);
+
 #endif /* HAVE_DBUS */
 
 #endif // _WESTON_DBUS_H_
