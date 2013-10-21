@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/base/layout.h"
@@ -114,6 +115,7 @@ class OptionsPageUIHandlerHost {
 
 // The WebUI for chrome:settings-frame.
 class OptionsUI : public content::WebUIController,
+                  public content::WebContentsObserver,
                   public OptionsPageUIHandlerHost {
  public:
   explicit OptionsUI(content::WebUI* web_ui);
@@ -128,14 +130,18 @@ class OptionsUI : public content::WebUIController,
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
+  // Overridden from content::WebContentsObserver:
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      int64 parent_frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc,
+      content::RenderViewHost* render_view_host) OVERRIDE;
+
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;
-
-  // Overridden from content::WebUIController:
-  virtual void RenderViewCreated(content::RenderViewHost* render_view_host)
-      OVERRIDE;
-  virtual void RenderViewReused(content::RenderViewHost* render_view_host)
-      OVERRIDE;
 
  private:
   // Adds OptionsPageUiHandler to the handlers list if handler is enabled.

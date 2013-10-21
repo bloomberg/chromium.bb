@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
@@ -64,6 +65,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
@@ -235,6 +237,7 @@ void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
 
 OptionsUI::OptionsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
+      WebContentsObserver(web_ui->GetWebContents()),
       initialized_handlers_(false) {
   DictionaryValue* localized_strings = new DictionaryValue();
   localized_strings->Set(OptionsPageUIHandler::kSettingsAppKey,
@@ -376,6 +379,21 @@ base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes(
       LoadDataResourceBytesForScale(IDR_SETTINGS_FAVICON, scale_factor);
 }
 
+void OptionsUI::DidStartProvisionalLoadForFrame(
+    int64 frame_id,
+    int64 parent_frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    bool is_error_page,
+    bool is_iframe_srcdoc,
+    content::RenderViewHost* render_view_host) {
+  if (render_view_host == web_ui()->GetWebContents()->GetRenderViewHost() &&
+      validated_url.host() == chrome::kChromeUISettingsFrameHost) {
+    for (size_t i = 0; i < handlers_.size(); ++i)
+      handlers_[i]->PageLoadStarted();
+  }
+}
+
 void OptionsUI::InitializeHandlers() {
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(!profile->IsOffTheRecord() || profile->IsGuestSession());
@@ -403,18 +421,6 @@ void OptionsUI::InitializeHandlers() {
 
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.notifyInitializationComplete");
-}
-
-void OptionsUI::RenderViewCreated(content::RenderViewHost* render_view_host) {
-  content::WebUIController::RenderViewCreated(render_view_host);
-  for (size_t i = 0; i < handlers_.size(); ++i)
-    handlers_[i]->PageLoadStarted();
-}
-
-void OptionsUI::RenderViewReused(content::RenderViewHost* render_view_host) {
-  content::WebUIController::RenderViewReused(render_view_host);
-  for (size_t i = 0; i < handlers_.size(); ++i)
-    handlers_[i]->PageLoadStarted();
 }
 
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
