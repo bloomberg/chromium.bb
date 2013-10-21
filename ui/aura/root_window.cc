@@ -145,7 +145,6 @@ RootWindow::RootWindow(const CreateParams& params)
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       event_dispatch_target_(NULL),
-      gesture_recognizer_(ui::GestureRecognizer::Create(this)),
       synthesize_mouse_move_(false),
       move_hold_count_(0),
       event_factory_(this),
@@ -159,10 +158,13 @@ RootWindow::RootWindow(const CreateParams& params)
   prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),
                                kRootWindowForAcceleratedWidget,
                                this));
+  ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
 }
 
 RootWindow::~RootWindow() {
   TRACE_EVENT0("shutdown", "RootWindow::Destructor");
+
+  ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
 
   // Make sure to destroy the compositor before terminating so that state is
   // cleared and we don't hit asserts.
@@ -324,7 +326,7 @@ Window* RootWindow::GetGestureTarget(ui::GestureEvent* event) {
   Window* target = client::GetCaptureWindow(this);
   if (!target) {
     target = ConsumerToWindow(
-        gesture_recognizer_->GetTargetForGestureEvent(event));
+        ui::GestureRecognizer::Get()->GetTargetForGestureEvent(event));
   }
 
   return target;
@@ -445,13 +447,9 @@ void RootWindow::ProcessedTouchEvent(ui::TouchEvent* event,
                                      Window* window,
                                      ui::EventResult result) {
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
-      *event, result, window));
+  gestures.reset(ui::GestureRecognizer::Get()->
+      ProcessTouchEventForGesture(*event, result, window));
   ProcessGestures(gestures.get());
-}
-
-void RootWindow::SetGestureRecognizerForTesting(ui::GestureRecognizer* gr) {
-  gesture_recognizer_.reset(gr);
 }
 
 gfx::AcceleratedWidget RootWindow::GetAcceleratedWidget() {
@@ -656,7 +654,7 @@ void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
 }
 
 void RootWindow::CleanupGestureRecognizerState(Window* window) {
-  gesture_recognizer_->CleanupStateForConsumer(window);
+  ui::GestureRecognizer::Get()->CleanupStateForConsumer(window);
   const Windows& windows = window->children();
   for (Windows::const_iterator iter = windows.begin();
       iter != windows.end();
@@ -712,14 +710,6 @@ void RootWindow::OnDeviceScaleFactorChanged(
 
 void RootWindow::UpdateCapture(Window* old_capture,
                                Window* new_capture) {
-  if (!new_capture && old_capture && old_capture->GetRootWindow() != this) {
-    // If we no longer contain the window that had capture make sure we clean
-    // state in the GestureRecognizer. Since we don't contain the window we'll
-    // never get notification of its destruction and clean up state.
-    // We do this early on as OnCaptureLost() may delete |old_capture|.
-    gesture_recognizer_->CleanupStateForConsumer(old_capture);
-  }
-
   // |mouse_moved_handler_| may have been set to a Window in a different root
   // (see below). Clear it here to ensure we don't end up referencing a stale
   // Window.
@@ -767,12 +757,17 @@ bool RootWindow::CanDispatchToTarget(ui::EventTarget* target) {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, ui::GestureEventHelper implementation:
 
-bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
-  return DispatchGestureEvent(event);
+bool RootWindow::CanDispatchToConsumer(ui::GestureConsumer* consumer) {
+  Window* window = ConsumerToWindow(consumer);;
+  return (window && window->GetRootWindow() == this);
 }
 
-bool RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
-  return OnHostTouchEvent(event);
+void RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
+  DispatchGestureEvent(event);
+}
+
+void RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
+  OnHostTouchEvent(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1062,10 +1057,10 @@ bool RootWindow::DispatchTouchEventImpl(ui::TouchEvent* event) {
   Window* target = client::GetCaptureWindow(this);
   if (!target) {
     target = ConsumerToWindow(
-        gesture_recognizer_->GetTouchLockedTarget(event));
+        ui::GestureRecognizer::Get()->GetTouchLockedTarget(event));
     if (!target) {
-      target = ConsumerToWindow(
-          gesture_recognizer_->GetTargetForLocation(event->location()));
+      target = ConsumerToWindow(ui::GestureRecognizer::Get()->
+          GetTargetForLocation(event->location()));
     }
   }
 
@@ -1096,8 +1091,8 @@ bool RootWindow::DispatchTouchEventImpl(ui::TouchEvent* event) {
 
   // Get the list of GestureEvents from GestureRecognizer.
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
-      event_for_gr, result, target));
+  gestures.reset(ui::GestureRecognizer::Get()->
+      ProcessTouchEventForGesture(event_for_gr, result, target));
 
   return ProcessGestures(gestures.get()) ? true : handled;
 }

@@ -341,7 +341,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   if (move_source == aura::client::WINDOW_MOVE_SOURCE_TOUCH &&
       aura::Env::GetInstance()->is_touch_down()) {
     in_gesture_drag_ = true;
-    bool has_point = root_window->gesture_recognizer()->
+    bool has_point = ui::GestureRecognizer::Get()->
         GetLastTouchPointForTarget(source, &drag_location);
     DCHECK(has_point);
   } else {
