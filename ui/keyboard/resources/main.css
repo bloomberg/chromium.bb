@@ -23,6 +23,7 @@ kb-keyboard {
 
 kb-abc-key,
 kb-shift-key,
+kb-modifier-key,
 kb-hide-keyboard-key,
 kb-layout-selector,
 kb-key {
@@ -41,6 +42,7 @@ kb-key {
 }
 
 kb-abc-key::x-key,
+kb-modifier-key::x-key,
 kb-shift-key::x-key,
 kb-layout-selector::x-key,
 kb-key::x-key {
@@ -69,6 +71,11 @@ kb-key::x-key[inverted] {
 
 kb-key::x-hinttext[inverted] {
   color: #ffffff;
+}
+
+kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
+kb-keyboard.alt-active kb-modifier-key[char=Alt] {
+  color: lightblue;
 }
 
 /**
@@ -149,6 +156,7 @@ kb-altkey::x-key {
 
 kb-key.esc,
 kb-shift-key.shift,
+kb-modifier-key,
 kb-abc-key,
 kb-key:-webkit-any(.backspace,
                    .dotcom,

@@ -197,13 +197,15 @@
     };
 
     Polymer('kb-keyboard', {
-      lastPressedKey: null,
-      voiceInput_: null,
+      alt: null,
+      control: null,
       dblDetail_: null,
       dblTimer_: null,
-      swipeHandler: null,
-      shift: null,
       inputType: null,
+      lastPressedKey: null,
+      shift: null,
+      swipeHandler: null,
+      voiceInput_: null,
 
       /**
        * The default input type to keyboard layout map. The key must be one of
@@ -348,15 +350,16 @@
         var char = detail.char;
         switch(char) {
           case 'Shift':
-            // Removes caps-lock if caps-locked.
-            if (this.classList.contains('caps-locked')) {
-              this.classList.remove('caps-locked');
-            }
+          case 'Alt':
+          case 'Ctrl':
+            var modifier = char.toLowerCase() + "-active";
+            // Removes modifier if already active.
+            if (this.classList.contains(modifier))
+              this.classList.remove(modifier);
             break;
           default:
-            // Non-control key pressed, notify control keys.
-            // Control keys are shift, control and alt.
-            if(this.shift)
+            // Notify shift key.
+            if (this.shift)
               this.shift.onNonControlKeyDown();
             break;
         }
@@ -476,6 +479,15 @@
           return;
         if (swipeInProgress)
           return;
+        if (detail.activeModifier) {
+          var modifier = detail.activeModifier.toLowerCase() + "-active";
+          this.classList.add(modifier);
+        }
+        // Adds the current keyboard modifiers to the detail.
+        if (this.ctrl)
+          detail.controlModifier = this.ctrl.isActive();
+        if (this.alt)
+          detail.altModifier = this.alt.isActive();
         if (this.lastPressedKey)
           this.lastPressedKey.classList.remove('active');
         // Keyset transition key. This is needed to transition from upper
@@ -513,9 +525,9 @@
         }
         switch(char) {
           case 'Invalid':
-            swipeStatus.swipeFlags = 0;
-            return;
           case 'Shift':
+          case 'Ctrl':
+          case 'Alt':
             swipeStatus.swipeFlags = 0;
             return;
           case 'Microphone':
@@ -531,6 +543,12 @@
         }
         if(!this.keyTyped(detail))
           insertText(char);
+        if (this.ctrl)
+          this.ctrl.onNonControlKeyUp();
+        if (this.alt)
+          this.alt.onNonControlKeyUp();
+        this.classList.remove('ctrl-active');
+        this.classList.remove('alt-active');
         this.lastPressedKey = null;
       },
 
@@ -643,6 +661,10 @@
        */
       keyTyped: function(detail) {
         var builder = this.$.keyCodeMetadata;
+        if (this.ctrl)
+          detail.controlModifier = this.ctrl.isActive();
+        if (this.alt)
+          detail.altModifier = this.alt.isActive();
         var downEvent = builder.createVirtualKeyEvent(detail, "keydown");
         if (downEvent) {
           sendKeyEvent(downEvent);
@@ -669,9 +691,20 @@
              if (keysets[i].isDefault) {
                this.keyset = matches[REGEX_KEYSET_INDEX];
                this.classList.remove('caps-locked');
+               this.classList.remove('alt-active');
+               this.classList.remove('ctrl-active');
+               // Caches shift key.
                this.shift = this.querySelector('kb-shift-key');
                if (this.shift)
                  this.shift.reset();
+               // Caches control key.
+               this.ctrl = this.querySelector('kb-modifier-key[char=Ctrl');
+               if (this.ctrl)
+                 this.ctrl.reset();
+               // Caches alt key.
+               this.alt = this.querySelector('kb-modifier-key[char=Alt');
+               if (this.alt)
+                 this.alt.reset();
                this.isReady = true;
                this.fire('stateChange', {
                  state: 'keysetLoaded',
