@@ -1170,9 +1170,9 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
 
   // Draw placeholder text if needed.
   if (model_->GetText().empty() &&
-      !textfield_->placeholder_text().empty()) {
+      !textfield_->GetPlaceholderText().empty()) {
     canvas->DrawStringInt(
-        textfield_->placeholder_text(),
+        textfield_->GetPlaceholderText(),
         GetRenderText()->GetPrimaryFont(),
         textfield_->placeholder_text_color(),
         GetRenderText()->display_rect());

@@ -322,6 +322,10 @@ void Textfield::RemoveBorder() {
     native_wrapper_->UpdateBorder();
 }
 
+base::string16 Textfield::GetPlaceholderText() const {
+  return placeholder_text_;
+}
+
 bool Textfield::GetHorizontalMargins(int* left, int* right) {
   if (!horizontal_margins_were_set_)
     return false;

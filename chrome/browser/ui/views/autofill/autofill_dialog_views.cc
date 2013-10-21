@@ -1858,6 +1858,7 @@ void AutofillDialogViews::OnDidChangeFocus(
 void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
   DetailsGroup* group = GroupForView(combobox);
   ValidateGroup(*group, VALIDATE_EDIT);
+  SetEditabilityForSection(group->section);
 }
 
 void AutofillDialogViews::StyledLabelLinkClicked(const gfx::Range& range,
@@ -2317,7 +2318,7 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
   if (group.manual_input->visible()) {
     for (TextfieldMap::const_iterator iter = group.textfields.begin();
          iter != group.textfields.end(); ++iter) {
-      if (!iter->second->enabled())
+      if (!iter->second->editable())
         continue;
 
       detail_outputs[iter->first] = iter->second->text();
@@ -2549,7 +2550,7 @@ void AutofillDialogViews::SetEditabilityForSection(DialogSection section) {
     TextfieldMap::iterator text_mapping = group->textfields.find(&input);
     if (text_mapping != group->textfields.end()) {
       DecoratedTextfield* decorated = text_mapping->second;
-      decorated->SetEnabled(editable);
+      decorated->SetEditable(editable);
       continue;
     }
 

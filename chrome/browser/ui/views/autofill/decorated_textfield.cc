@@ -31,9 +31,9 @@ DecoratedTextfield::DecoratedTextfield(
     const base::string16& placeholder,
     views::TextfieldController* controller)
     : border_(new views::FocusableBorder()),
-      invalid_(false) {
-  set_background(
-      views::Background::CreateSolidBackground(GetBackgroundColor()));
+      invalid_(false),
+      editable_(true) {
+  UpdateBackground();
 
   set_border(border_);
   // Removes the border from |native_wrapper_|.
@@ -49,11 +49,32 @@ DecoratedTextfield::~DecoratedTextfield() {}
 
 void DecoratedTextfield::SetInvalid(bool invalid) {
   invalid_ = invalid;
+  if (!editable_)
+    return;
+
   if (invalid)
     border_->SetColor(kWarningColor);
   else
     border_->UseDefaultColor();
   SchedulePaint();
+}
+
+void DecoratedTextfield::SetEditable(bool editable) {
+  if (editable_ == editable)
+    return;
+
+  editable_ = editable;
+  if (editable) {
+    SetInvalid(invalid_);
+    UseDefaultBackgroundColor();
+  } else {
+    border_->SetColor(SK_ColorTRANSPARENT);
+    SetBackgroundColor(SK_ColorTRANSPARENT);
+  }
+
+  UpdateBackground();
+  SetEnabled(editable);
+  IconChanged();
 }
 
 void DecoratedTextfield::SetIcon(const gfx::Image& icon) {
@@ -88,6 +109,13 @@ void DecoratedTextfield::SetTooltipIcon(const base::string16& text) {
   IconChanged();
 }
 
+base::string16 DecoratedTextfield::GetPlaceholderText() const {
+  if (!editable_)
+    return base::string16();
+
+  return views::Textfield::GetPlaceholderText();
+}
+
 const char* DecoratedTextfield::GetClassName() const {
   return kViewClassName;
 }
@@ -113,7 +141,7 @@ gfx::Size DecoratedTextfield::GetPreferredSize() {
 void DecoratedTextfield::Layout() {
   views::Textfield::Layout();
 
-  if (icon_view_) {
+  if (icon_view_ && icon_view_->visible()) {
     gfx::Rect bounds = GetContentsBounds();
     gfx::Size icon_size = icon_view_->GetPreferredSize();
     int x = base::i18n::IsRTL() ?
@@ -128,7 +156,15 @@ void DecoratedTextfield::Layout() {
   }
 }
 
+void DecoratedTextfield::UpdateBackground() {
+  set_background(
+      views::Background::CreateSolidBackground(GetBackgroundColor()));
+}
+
 void DecoratedTextfield::IconChanged() {
+  // Don't show the icon if nothing else is showing.
+  icon_view_->SetVisible(editable_ || !text().empty());
+
   int icon_space = icon_view_ ?
       icon_view_->GetPreferredSize().width() + 2 * kTextfieldIconPadding : 0;
 

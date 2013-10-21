@@ -33,6 +33,10 @@ class DecoratedTextfield : public views::Textfield {
   void SetInvalid(bool invalid);
   bool invalid() const { return invalid_; }
 
+  // See docs for |editable_|.
+  void SetEditable(bool editable);
+  bool editable() const { return editable_; }
+
   // Sets the icon to be displayed inside the textfield at the end of the
   // text.
   void SetIcon(const gfx::Image& icon);
@@ -40,6 +44,9 @@ class DecoratedTextfield : public views::Textfield {
   // Sets a tooltip for this field. This will override the icon set with
   // SetIcon(), if any, and will be overridden by future calls to SetIcon().
   void SetTooltipIcon(const base::string16& text);
+
+  // views::Textfield implementation.
+  virtual base::string16 GetPlaceholderText() const OVERRIDE;
 
   // views::View implementation.
   virtual const char* GetClassName() const OVERRIDE;
@@ -50,6 +57,10 @@ class DecoratedTextfield : public views::Textfield {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DecoratedTextfieldTest, HeightMatchesButton);
+
+  // Updates the background of |this| after it may have changed. This is
+  // necessary for the sake of the padding around the native textfield.
+  void UpdateBackground();
 
   // Called to update the layout after SetIcon or SetTooltipIcon has been
   // called.
@@ -70,6 +81,11 @@ class DecoratedTextfield : public views::Textfield {
   // Whether the text contents are "invalid" (i.e. should special markers be
   // shown to indicate invalidness).
   bool invalid_;
+
+  // Whether the user can edit the field. When not editable, many of the
+  // pieces of the textfield disappear (border, background, icon, placeholder
+  // text) and it can't receive focus.
+  bool editable_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoratedTextfield);
 };
