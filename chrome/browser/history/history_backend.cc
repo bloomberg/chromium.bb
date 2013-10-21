@@ -1696,6 +1696,100 @@ void HistoryBackend::GetFavicons(
                                     bitmap_results);
 }
 
+void HistoryBackend::GetLargestFaviconForURL(
+      const GURL& page_url,
+      const std::vector<int>& icon_types,
+      int minimum_size_in_pixels,
+      chrome::FaviconBitmapResult* favicon_bitmap_result) {
+  DCHECK(favicon_bitmap_result);
+
+  if (!db_ || !thumbnail_db_)
+    return;
+
+  TimeTicks beginning_time = TimeTicks::Now();
+
+  std::vector<IconMapping> icon_mappings;
+  if (!thumbnail_db_->GetIconMappingsForPageURL(page_url, &icon_mappings) ||
+      icon_mappings.empty())
+    return;
+
+  int required_icon_types = 0;
+  for (std::vector<int>::const_iterator i = icon_types.begin();
+       i != icon_types.end(); ++i) {
+    required_icon_types |= *i;
+  }
+
+  // Find the largest bitmap for each IconType placing in
+  // |largest_favicon_bitmaps|.
+  std::map<chrome::IconType, FaviconBitmap> largest_favicon_bitmaps;
+  for (std::vector<IconMapping>::const_iterator i = icon_mappings.begin();
+       i != icon_mappings.end(); ++i) {
+    if (!(i->icon_type & required_icon_types))
+      continue;
+    std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
+    thumbnail_db_->GetFaviconBitmapIDSizes(i->icon_id, &bitmap_id_sizes);
+    FaviconBitmap& largest = largest_favicon_bitmaps[i->icon_type];
+    for (std::vector<FaviconBitmapIDSize>::const_iterator j =
+             bitmap_id_sizes.begin(); j != bitmap_id_sizes.end(); ++j) {
+      if (largest.bitmap_id == 0 ||
+          (largest.pixel_size.width() < j->pixel_size.width() &&
+           largest.pixel_size.height() < j->pixel_size.height())) {
+        largest.icon_id = i->icon_id;
+        largest.bitmap_id = j->bitmap_id;
+        largest.pixel_size = j->pixel_size;
+      }
+    }
+  }
+  if (largest_favicon_bitmaps.empty())
+    return;
+
+  // Find an icon which is larger than minimum_size_in_pixels in the order of
+  // icon_types.
+  FaviconBitmap largest_icon;
+  for (std::vector<int>::const_iterator t = icon_types.begin();
+       t != icon_types.end(); ++t) {
+    for (std::map<chrome::IconType, FaviconBitmap>::const_iterator f =
+            largest_favicon_bitmaps.begin(); f != largest_favicon_bitmaps.end();
+        ++f) {
+      if (f->first & *t &&
+          (largest_icon.bitmap_id == 0 ||
+           (largest_icon.pixel_size.height() < f->second.pixel_size.height() &&
+            largest_icon.pixel_size.width() < f->second.pixel_size.width()))) {
+        largest_icon = f->second;
+      }
+    }
+    if (largest_icon.pixel_size.width() > minimum_size_in_pixels &&
+        largest_icon.pixel_size.height() > minimum_size_in_pixels)
+      break;
+  }
+
+  GURL icon_url;
+  chrome::IconType icon_type;
+  if (!thumbnail_db_->GetFaviconHeader(largest_icon.icon_id, &icon_url,
+                                       &icon_type)) {
+    return;
+  }
+
+  base::Time last_updated;
+  chrome::FaviconBitmapResult bitmap_result;
+  bitmap_result.icon_url = icon_url;
+  bitmap_result.icon_type = icon_type;
+  if (!thumbnail_db_->GetFaviconBitmap(largest_icon.bitmap_id,
+                                       &last_updated,
+                                       &bitmap_result.bitmap_data,
+                                       &bitmap_result.pixel_size)) {
+    return;
+  }
+
+  bitmap_result.expired = (Time::Now() - last_updated) >
+      TimeDelta::FromDays(kFaviconRefetchDays);
+  if (bitmap_result.is_valid())
+    *favicon_bitmap_result = bitmap_result;
+
+  HISTOGRAM_TIMES("History.GetLargestFaviconForURL",
+                  TimeTicks::Now() - beginning_time);
+}
+
 void HistoryBackend::GetFaviconsForURL(
     const GURL& page_url,
     int icon_types,

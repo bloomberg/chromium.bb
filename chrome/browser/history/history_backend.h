@@ -242,6 +242,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                     const std::vector<ui::ScaleFactor>& desired_scale_factors,
                     std::vector<chrome::FaviconBitmapResult>* bitmap_results);
 
+  void GetLargestFaviconForURL(
+      const GURL& page_url,
+      const std::vector<int>& icon_types,
+      int minimum_size_in_pixels,
+      chrome::FaviconBitmapResult* bitmap_result);
+
   void GetFaviconsForURL(
       const GURL& page_url,
       int icon_types,

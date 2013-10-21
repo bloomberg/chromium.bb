@@ -1922,6 +1922,115 @@ TEST_F(HistoryBackendTest, MergeFaviconShowsUpInGetFaviconsForURLResult) {
   EXPECT_TRUE(BitmapDataEqual('c', result.bitmap_data));
 }
 
+// Tests GetFaviconsForURL with icon_types priority,
+TEST_F(HistoryBackendTest, TestGetFaviconsForURLWithIconTypesPriority) {
+  GURL page_url("http://www.google.com");
+  GURL icon_url("http://www.google.com/favicon.ico");
+  GURL touch_icon_url("http://wwww.google.com/touch_icon.ico");
+
+  std::vector<chrome::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<gfx::Size> favicon_size;
+  favicon_size.push_back(gfx::Size(16, 16));
+  favicon_size.push_back(gfx::Size(32, 32));
+  GenerateFaviconBitmapData(icon_url, favicon_size, &favicon_bitmap_data);
+  ASSERT_EQ(2u, favicon_bitmap_data.size());
+
+  std::vector<chrome::FaviconBitmapData> touch_icon_bitmap_data;
+  std::vector<gfx::Size> touch_icon_size;
+  touch_icon_size.push_back(gfx::Size(64, 64));
+  GenerateFaviconBitmapData(icon_url, touch_icon_size, &touch_icon_bitmap_data);
+  ASSERT_EQ(1u, touch_icon_bitmap_data.size());
+
+  // Set some preexisting favicons for |page_url|.
+  backend_->SetFavicons(page_url, chrome::FAVICON, favicon_bitmap_data);
+  backend_->SetFavicons(page_url, chrome::TOUCH_ICON, touch_icon_bitmap_data);
+
+  chrome::FaviconBitmapResult result;
+  std::vector<int> icon_types;
+  icon_types.push_back(chrome::FAVICON);
+  icon_types.push_back(chrome::TOUCH_ICON);
+
+  backend_->GetLargestFaviconForURL(page_url, icon_types, 16, &result);
+
+  // Verify the result icon is 32x32 favicon.
+  EXPECT_EQ(gfx::Size(32, 32), result.pixel_size);
+  EXPECT_EQ(chrome::FAVICON, result.icon_type);
+
+  // Change Minimal size to 32x32 and verify the 64x64 touch icon returned.
+  backend_->GetLargestFaviconForURL(page_url, icon_types, 32, &result);
+  EXPECT_EQ(gfx::Size(64, 64), result.pixel_size);
+  EXPECT_EQ(chrome::TOUCH_ICON, result.icon_type);
+}
+
+// Test the the first types of icon is returned if its size equal to the
+// second types icon.
+TEST_F(HistoryBackendTest, TestGetFaviconsForURLReturnFavicon) {
+  GURL page_url("http://www.google.com");
+  GURL icon_url("http://www.google.com/favicon.ico");
+  GURL touch_icon_url("http://wwww.google.com/touch_icon.ico");
+
+  std::vector<chrome::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<gfx::Size> favicon_size;
+  favicon_size.push_back(gfx::Size(16, 16));
+  favicon_size.push_back(gfx::Size(32, 32));
+  GenerateFaviconBitmapData(icon_url, favicon_size, &favicon_bitmap_data);
+  ASSERT_EQ(2u, favicon_bitmap_data.size());
+
+  std::vector<chrome::FaviconBitmapData> touch_icon_bitmap_data;
+  std::vector<gfx::Size> touch_icon_size;
+  touch_icon_size.push_back(gfx::Size(32, 32));
+  GenerateFaviconBitmapData(icon_url, touch_icon_size, &touch_icon_bitmap_data);
+  ASSERT_EQ(1u, touch_icon_bitmap_data.size());
+
+  // Set some preexisting favicons for |page_url|.
+  backend_->SetFavicons(page_url, chrome::FAVICON, favicon_bitmap_data);
+  backend_->SetFavicons(page_url, chrome::TOUCH_ICON, touch_icon_bitmap_data);
+
+  chrome::FaviconBitmapResult result;
+  std::vector<int> icon_types;
+  icon_types.push_back(chrome::FAVICON);
+  icon_types.push_back(chrome::TOUCH_ICON);
+
+  backend_->GetLargestFaviconForURL(page_url, icon_types, 16, &result);
+
+  // Verify the result icon is 32x32 favicon.
+  EXPECT_EQ(gfx::Size(32, 32), result.pixel_size);
+  EXPECT_EQ(chrome::FAVICON, result.icon_type);
+
+  // Change minimal size to 32x32 and verify the 32x32 favicon returned.
+  chrome::FaviconBitmapResult result1;
+  backend_->GetLargestFaviconForURL(page_url, icon_types, 32, &result1);
+  EXPECT_EQ(gfx::Size(32, 32), result1.pixel_size);
+  EXPECT_EQ(chrome::FAVICON, result1.icon_type);
+}
+
+// Test the favicon is returned if its size is smaller than minimal size,
+// because it is only one available.
+TEST_F(HistoryBackendTest, TestGetFaviconsForURLReturnFaviconEvenItSmaller) {
+  GURL page_url("http://www.google.com");
+  GURL icon_url("http://www.google.com/favicon.ico");
+
+  std::vector<chrome::FaviconBitmapData> favicon_bitmap_data;
+  std::vector<gfx::Size> favicon_size;
+  favicon_size.push_back(gfx::Size(16, 16));
+  GenerateFaviconBitmapData(icon_url, favicon_size, &favicon_bitmap_data);
+  ASSERT_EQ(1u, favicon_bitmap_data.size());
+
+  // Set preexisting favicons for |page_url|.
+  backend_->SetFavicons(page_url, chrome::FAVICON, favicon_bitmap_data);
+
+  chrome::FaviconBitmapResult result;
+  std::vector<int> icon_types;
+  icon_types.push_back(chrome::FAVICON);
+  icon_types.push_back(chrome::TOUCH_ICON);
+
+  backend_->GetLargestFaviconForURL(page_url, icon_types, 32, &result);
+
+  // Verify 16x16 icon is returned, even it small than minimal_size.
+  EXPECT_EQ(gfx::Size(16, 16), result.pixel_size);
+  EXPECT_EQ(chrome::FAVICON, result.icon_type);
+}
+
 // Test UpdateFaviconMapingsAndFetch() when multiple icon types are passed in.
 TEST_F(HistoryBackendTest, UpdateFaviconMappingsAndFetchMultipleIconTypes) {
   GURL page_url1("http://www.google.com");

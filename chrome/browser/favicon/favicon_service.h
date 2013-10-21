@@ -67,11 +67,9 @@ class FaviconService : public CancelableRequestProvider,
   typedef base::Callback<void(const chrome::FaviconImageResult&)>
       FaviconImageCallback;
 
-  // Callback for GetRawFavicon() and GetRawFaviconForURL().
-  // FaviconBitmapResult::bitmap_data is the bitmap in the thumbnail database
-  // for the passed in URL and icon types whose pixel size best matches the
-  // passed in |desired_size_in_dip| and |desired_scale_factor|. Returns an
-  // invalid chrome::FaviconBitmapResult if there are no matches.
+  // Callback for GetRawFavicon(), GetRawFaviconForURL() and
+  // GetLargestRawFavicon().
+  // See function for details on value.
   typedef base::Callback<void(const chrome::FaviconBitmapResult&)>
       FaviconRawCallback;
 
@@ -169,6 +167,15 @@ class FaviconService : public CancelableRequestProvider,
   CancelableTaskTracker::TaskId GetRawFaviconForURL(
       const FaviconForURLParams& params,
       ui::ScaleFactor desired_scale_factor,
+      const FaviconRawCallback& callback,
+      CancelableTaskTracker* tracker);
+
+  // See HistoryService::GetLargestFaviconForURL().
+  CancelableTaskTracker::TaskId GetLargestRawFaviconForURL(
+      Profile* profile,
+      const GURL& page_url,
+      const std::vector<int>& icon_types,
+      int minimum_size_in_pixels,
       const FaviconRawCallback& callback,
       CancelableTaskTracker* tracker);
 

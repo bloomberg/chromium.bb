@@ -84,6 +84,12 @@ void RunWithFaviconResults(
   callback.Run(*bitmap_results);
 }
 
+void RunWithFaviconResult(
+    const FaviconService::FaviconRawCallback& callback,
+    chrome::FaviconBitmapResult* bitmap_result) {
+  callback.Run(*bitmap_result);
+}
+
 // Extract history::URLRows into GURLs for VisitedLinkMaster.
 class URLIteratorFromURLRows
     : public visitedlink::VisitedLinkMaster::URLIterator {
@@ -642,6 +648,28 @@ CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
                  desired_scale_factors,
                  results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
+}
+
+CancelableTaskTracker::TaskId HistoryService::GetLargestFaviconForURL(
+    const GURL& page_url,
+    const std::vector<int>& icon_types,
+    int minimum_size_in_pixels,
+    const FaviconService::FaviconRawCallback& callback,
+    CancelableTaskTracker* tracker) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  LoadBackendIfNecessary();
+
+  chrome::FaviconBitmapResult* result = new chrome::FaviconBitmapResult();
+  return tracker->PostTaskAndReply(
+      thread_->message_loop_proxy().get(),
+      FROM_HERE,
+      base::Bind(&HistoryBackend::GetLargestFaviconForURL,
+                 history_backend_.get(),
+                 page_url,
+                 icon_types,
+                 minimum_size_in_pixels,
+                 result),
+      base::Bind(&RunWithFaviconResult, callback, base::Owned(result)));
 }
 
 CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(

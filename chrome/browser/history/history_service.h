@@ -707,6 +707,24 @@ class HistoryService : public CancelableRequestProvider,
       const FaviconService::FaviconResultsCallback& callback,
       CancelableTaskTracker* tracker);
 
+  // Used by FaviconService to find the first favicon bitmap whose width and
+  // height are greater than that of |minimum_size_in_pixels|. This searches
+  // for icons by IconType. Each element of |icon_types| is a bitmask of
+  // IconTypes indicating the types to search for.
+  // If the largest icon of |icon_types[0]| is not larger than
+  // |minimum_size_in_pixel|, the next icon types of
+  // |icon_types| will be searched and so on.
+  // If no icon is larger than |minimum_size_in_pixel|, the largest one of all
+  // icon types in |icon_types| is returned.
+  // This feature is especially useful when some types of icon is perfered as
+  // long as its size is larger than a specific value.
+  CancelableTaskTracker::TaskId GetLargestFaviconForURL(
+      const GURL& page_url,
+      const std::vector<int>& icon_types,
+      int minimum_size_in_pixels,
+      const FaviconService::FaviconRawCallback& callback,
+      CancelableTaskTracker* tracker);
+
   // Used by the FaviconService to get the favicon bitmap which most closely
   // matches |desired_size_in_dip| and |desired_scale_factor| from the favicon
   // with |favicon_id| from the history backend. If |desired_size_in_dip| is 0,
