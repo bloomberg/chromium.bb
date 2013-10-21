@@ -173,10 +173,11 @@
         'test/weburl_loader_mock_factory.cc',
         'test/weburl_loader_mock_factory.h',
 
-        # TODO(phajdan.jr): Those files should be moved to webkit
-        # test support target.
+        # TODO(kinuko): Those files should be moved to content/public/test.
         '../webkit/browser/appcache/appcache_test_helper.cc',
         '../webkit/browser/appcache/appcache_test_helper.h',
+        '../webkit/browser/fileapi/async_file_test_helper.cc',
+        '../webkit/browser/fileapi/async_file_test_helper.h',
       ],
       'conditions': [
         ['OS == "ios"', {
@@ -564,8 +565,6 @@
         '../webkit/browser/database/database_tracker_unittest.cc',
         '../webkit/browser/database/database_util_unittest.cc',
         '../webkit/browser/database/databases_table_unittest.cc',
-        '../webkit/browser/fileapi/async_file_test_helper.cc',
-        '../webkit/browser/fileapi/async_file_test_helper.h',
         '../webkit/browser/fileapi/external_mount_points_unittest.cc',
         '../webkit/browser/fileapi/file_system_url_unittest.cc',
         '../webkit/browser/fileapi/file_system_usage_cache_unittest.cc',

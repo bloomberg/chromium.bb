@@ -11,8 +11,8 @@
 #include "content/public/test/sandbox_file_system_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -265,22 +265,12 @@ TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
   const FileSystemURL kSrcDir = other_file_system_.CreateURLFromUTF8("/a");
   const FileSystemURL kSrcChild = other_file_system_.CreateURLFromUTF8("/a/b");
 
-  bool created = false;
-  scoped_ptr<FileSystemOperationContext> operation_context;
-
-  operation_context.reset(other_file_system_.NewOperationContext());
-  operation_context->set_allowed_bytes_growth(1024);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            other_file_system_.file_util()->CreateDirectory(
-                operation_context.get(),
-                kSrcDir, false /* exclusive */, false /* recursive */));
-
-  operation_context.reset(other_file_system_.NewOperationContext());
-  operation_context->set_allowed_bytes_growth(1024);
+            fileapi::AsyncFileTestHelper::CreateDirectory(
+                other_file_system_.file_system_context(), kSrcDir));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            other_file_system_.file_util()->EnsureFileExists(
-                operation_context.get(), kSrcChild, &created));
-  EXPECT_TRUE(created);
+            fileapi::AsyncFileTestHelper::CreateFile(
+                other_file_system_.file_system_context(), kSrcChild));
 
   // Now try copying the directory into the syncable file system, which should
   // fail if directory operation is disabled. (http://crbug.com/161442)
