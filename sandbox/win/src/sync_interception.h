@@ -14,24 +14,24 @@ extern "C" {
 
 typedef HANDLE (WINAPI *CreateEventWFunction) (
     LPSECURITY_ATTRIBUTES lpEventAttributes,
-    DWORD dwDesiredAccess,
-    BOOL bInheritHandle,
+    BOOL bManualReset,
+    BOOL bInitialState,
     LPCWSTR lpName);
 
 typedef HANDLE (WINAPI *CreateEventAFunction) (
     LPSECURITY_ATTRIBUTES lpEventAttributes,
-    DWORD dwDesiredAccess,
-    BOOL bInheritHandle,
+    BOOL bManualReset,
+    BOOL bInitialState,
     LPCSTR lpName);
 
 typedef HANDLE (WINAPI *OpenEventWFunction) (
-    BOOL bManualReset,
+    DWORD dwDesiredAccess,
     BOOL bInitialState,
     LPCWSTR lpName);
 
 typedef HANDLE (WINAPI *OpenEventAFunction) (
-    BOOL bManualReset,
-    BOOL bInitialState,
+    DWORD dwDesiredAccess,
+    BOOL bInheritHandle,
     LPCSTR lpName);
 
 // Interceptors for CreateEventW/A
@@ -52,13 +52,13 @@ SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventA(
 // Interceptors for OpenEventW/A
 SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventW(
     OpenEventWFunction orig_OpenEvent,
-    ACCESS_MASK desired_access,
+    DWORD desired_access,
     BOOL inherit_handle,
     LPCWSTR name);
 
 SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventA(
     OpenEventAFunction orig_OpenEvent,
-    ACCESS_MASK desired_access,
+    DWORD desired_access,
     BOOL inherit_handle,
     LPCSTR name);
 

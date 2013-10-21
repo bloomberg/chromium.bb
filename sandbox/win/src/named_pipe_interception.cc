@@ -27,11 +27,11 @@ HANDLE WINAPI TargetCreateNamedPipeW(
   if (INVALID_HANDLE_VALUE != pipe)
     return pipe;
 
-  DWORD original_error = ::GetLastError();
-
   // We don't trust that the IPC can work this early.
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return INVALID_HANDLE_VALUE;
+
+  DWORD original_error = ::GetLastError();
 
   // We don't support specific Security Attributes.
   if (security_attributes)

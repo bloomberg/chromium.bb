@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -273,11 +273,12 @@ BOOL WINAPI TargetCreateProcessW(CreateProcessWFunction orig_CreateProcessW,
                           process_information)) {
     return TRUE;
   }
-  DWORD original_error = ::GetLastError();
 
   // We don't trust that the IPC can work this early.
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return FALSE;
+
+  DWORD original_error = ::GetLastError();
 
   do {
     if (!ValidParameter(process_information, sizeof(PROCESS_INFORMATION),
@@ -331,11 +332,12 @@ BOOL WINAPI TargetCreateProcessA(CreateProcessAFunction orig_CreateProcessA,
                           process_information)) {
     return TRUE;
   }
-  DWORD original_error = ::GetLastError();
 
   // We don't trust that the IPC can work this early.
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return FALSE;
+
+  DWORD original_error = ::GetLastError();
 
   do {
     if (!ValidParameter(process_information, sizeof(PROCESS_INFORMATION),

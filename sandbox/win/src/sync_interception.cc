@@ -69,11 +69,11 @@ HANDLE WINAPI TargetCreateEventW(CreateEventWFunction orig_CreateEvent,
   if (handle || !name)
     return handle;
 
-  DWORD original_error = ::GetLastError();
-
   // We don't trust that the IPC can work this early.
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return NULL;
+
+  DWORD original_error = ::GetLastError();
 
   CrossCallReturn answer = {0};
   ResultCode code = ProxyCreateEvent(name, initial_state, manual_reset,
@@ -98,11 +98,11 @@ HANDLE WINAPI TargetCreateEventA(CreateEventAFunction orig_CreateEvent,
   if (handle || !name)
     return handle;
 
-  DWORD original_error = ::GetLastError();
-
   // We don't trust that the IPC can work this early.
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return NULL;
+
+  DWORD original_error = ::GetLastError();
 
   UNICODE_STRING* wide_name = AnsiToUnicode(name);
   if (!wide_name)
@@ -124,7 +124,7 @@ HANDLE WINAPI TargetCreateEventA(CreateEventAFunction orig_CreateEvent,
 // Interception of OpenEventW on the child process.
 // It should never be called directly
 HANDLE WINAPI TargetOpenEventW(OpenEventWFunction orig_OpenEvent,
-                               ACCESS_MASK desired_access,
+                               DWORD desired_access,
                                BOOL inherit_handle,
                                LPCWSTR name) {
   // Check if the process can open it first.
@@ -132,11 +132,11 @@ HANDLE WINAPI TargetOpenEventW(OpenEventWFunction orig_OpenEvent,
   if (handle || !name)
     return handle;
 
-  DWORD original_error = ::GetLastError();
-
   // We don't trust that the IPC can work this early.
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return NULL;
+
+  DWORD original_error = ::GetLastError();
 
   CrossCallReturn answer = {0};
 
@@ -151,7 +151,7 @@ HANDLE WINAPI TargetOpenEventW(OpenEventWFunction orig_OpenEvent,
 }
 
 HANDLE WINAPI TargetOpenEventA(OpenEventAFunction orig_OpenEvent,
-                               ACCESS_MASK desired_access,
+                               DWORD desired_access,
                                BOOL inherit_handle,
                                LPCSTR name) {
   // Check if the process can open it first.
@@ -159,11 +159,11 @@ HANDLE WINAPI TargetOpenEventA(OpenEventAFunction orig_OpenEvent,
   if (handle || !name)
     return handle;
 
-  DWORD original_error = ::GetLastError();
-
   // We don't trust that the IPC can work this early.
   if (!SandboxFactory::GetTargetServices()->GetState()->InitCalled())
     return NULL;
+
+  DWORD original_error = ::GetLastError();
 
   UNICODE_STRING* wide_name = AnsiToUnicode(name);
   if (!wide_name)

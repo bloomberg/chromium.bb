@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,7 +145,7 @@ bool ThreadProcessDispatcher::SetupService(InterceptionManager* manager,
       return false;
 
     case IPC_CREATEPROCESSW_TAG:
-      return INTERCEPT_EAT(manager, L"kernel32.dll", CreateProcessW,
+      return INTERCEPT_EAT(manager, kKerneldllName, CreateProcessW,
                            CREATE_PROCESSW_ID, 44) &&
              INTERCEPT_EAT(manager, L"kernel32.dll", CreateProcessA,
                            CREATE_PROCESSA_ID, 44);

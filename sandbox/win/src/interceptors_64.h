@@ -165,11 +165,11 @@ SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventA64(
 
 // Interception of OpenEventW on the child process.
 SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventW64(
-    ACCESS_MASK desired_access, BOOL inherit_handle, LPCWSTR name);
+    DWORD desired_access, BOOL inherit_handle, LPCWSTR name);
 
 // Interception of OpenEventA on the child process.
 SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventA64(
-    ACCESS_MASK desired_access, BOOL inherit_handle, LPCSTR name);
+    DWORD desired_access, BOOL inherit_handle, LPCSTR name);
 
 }  // extern "C"
 

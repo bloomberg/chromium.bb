@@ -268,14 +268,14 @@ SANDBOX_INTERCEPT HANDLE WINAPI TargetCreateEventA64(
 }
 
 SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventW64(
-    ACCESS_MASK desired_access, BOOL inherit_handle, LPCWSTR name) {
+    DWORD desired_access, BOOL inherit_handle, LPCWSTR name) {
   OpenEventWFunction orig_fn = reinterpret_cast<
       OpenEventWFunction>(g_originals[OPEN_EVENTW_ID]);
   return TargetOpenEventW(orig_fn, desired_access, inherit_handle, name);
 }
 
 SANDBOX_INTERCEPT HANDLE WINAPI TargetOpenEventA64(
-    ACCESS_MASK desired_access, BOOL inherit_handle, LPCSTR name) {
+    DWORD desired_access, BOOL inherit_handle, LPCSTR name) {
   OpenEventAFunction orig_fn = reinterpret_cast<
       OpenEventAFunction>(g_originals[OPEN_EVENTA_ID]);
   return TargetOpenEventA(orig_fn, desired_access, inherit_handle, name);

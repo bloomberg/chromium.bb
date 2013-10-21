@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ NamedPipeDispatcher::NamedPipeDispatcher(PolicyBase* policy_base)
 bool NamedPipeDispatcher::SetupService(InterceptionManager* manager,
                                        int service) {
   if (IPC_CREATENAMEDPIPEW_TAG == service)
-    return INTERCEPT_EAT(manager, L"kernel32.dll", CreateNamedPipeW,
+    return INTERCEPT_EAT(manager, kKerneldllName, CreateNamedPipeW,
                          CREATE_NAMED_PIPE_ID, 36);
 
   return false;
