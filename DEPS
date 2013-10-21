@@ -25,8 +25,8 @@ vars = {
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
   # checkouts and the other for Git checkouts.
-  "ffmpeg_revision": "227119",
-  "ffmpeg_hash": "aacd7f27b8e80d4371bdf77e46dff5396bc66b9b",
+  "ffmpeg_revision": "229188",
+  "ffmpeg_hash": "3cd1dee6583cb4e019c518945083d64f1b990300",
 
   "sfntly_revision": "228",
   "lighttpd_revision": "33737",
