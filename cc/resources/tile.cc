@@ -69,6 +69,7 @@ scoped_ptr<base::Value> Tile::AsValue() const {
   res->Set("active_priority", priority_[ACTIVE_TREE].AsValue().release());
   res->Set("pending_priority", priority_[PENDING_TREE].AsValue().release());
   res->Set("managed_state", managed_state_.AsValue().release());
+  res->SetBoolean("can_use_lcd_text", can_use_lcd_text_);
   return res.PassAs<base::Value>();
 }
 

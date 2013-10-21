@@ -1089,6 +1089,7 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
     coverage_tiles->Append(tile_data.release());
   }
   state->Set("coverage_tiles", coverage_tiles.release());
+  state->SetBoolean("is_using_lcd_text", is_using_lcd_text_);
 }
 
 size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {
