@@ -703,8 +703,6 @@
         'browser/google_apis/task_util.h',
         'browser/google_apis/time_util.cc',
         'browser/google_apis/time_util.h',
-        'browser/gpu/chrome_gpu_util.cc',
-        'browser/gpu/chrome_gpu_util.h',
         'browser/gpu/gl_string_manager.cc',
         'browser/gpu/gl_string_manager.h',
         'browser/gpu/gpu_feature_checker.cc',
