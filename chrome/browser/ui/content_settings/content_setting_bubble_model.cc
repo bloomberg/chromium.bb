@@ -925,7 +925,7 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
     if (!cameras.empty()) {
       std::string preferred_camera;
       if (requested_camera.empty()) {
-        preferred_camera = prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+        preferred_camera = prefs->GetString(prefs::kDefaultVideoCaptureDevice);
         camera_menu.disabled = false;
       } else {
         // Disable the menu since the website is managing the camera devices
