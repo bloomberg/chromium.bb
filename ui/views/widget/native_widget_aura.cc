@@ -33,7 +33,6 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/drop_helper.h"
-#include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
@@ -637,18 +636,6 @@ gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
     return gfx::Rect();
   return gfx::Screen::GetScreenFor(window_)->
       GetDisplayNearestWindow(window_).work_area();
-}
-
-void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
-  if (!window_)
-    return;
-
-  if (!value) {
-    active_window_observer_.reset();
-  } else {
-    active_window_observer_.reset(
-        new NativeWidgetAuraWindowObserver(window_, delegate_));
-  }
 }
 
 Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop(

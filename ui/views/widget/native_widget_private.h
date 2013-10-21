@@ -209,7 +209,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual bool IsMouseEventsEnabled() const = 0;
   virtual void ClearNativeFocus() = 0;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
-  virtual void SetInactiveRenderingDisabled(bool value) = 0;
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
       Widget::MoveLoopSource source,

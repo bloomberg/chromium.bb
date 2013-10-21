@@ -37,7 +37,6 @@ class WindowModalityController;
 class DesktopCaptureClient;
 class DesktopRootWindowHost;
 class DropHelper;
-class NativeWidgetAuraWindowObserver;
 class TooltipManagerAura;
 class WindowReorderer;
 
@@ -160,7 +159,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual bool IsMouseEventsEnabled() const OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
-  virtual void SetInactiveRenderingDisabled(bool value) OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
       Widget::MoveLoopSource source,
@@ -243,8 +241,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
   base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;
-
-  scoped_ptr<NativeWidgetAuraWindowObserver> active_window_observer_;
 
   // Can we be made active?
   bool can_activate_;

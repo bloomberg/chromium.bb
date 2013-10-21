@@ -28,7 +28,6 @@ class Font;
 namespace views {
 
 class DropHelper;
-class NativeWidgetAuraWindowObserver;
 class TooltipManagerAura;
 class WindowReorderer;
 
@@ -126,7 +125,6 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual bool IsMouseEventsEnabled() const OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
-  virtual void SetInactiveRenderingDisabled(bool value) OVERRIDE;
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
       Widget::MoveLoopSource source,
@@ -228,8 +226,6 @@ class VIEWS_EXPORT NativeWidgetAura
   // Reorders child windows of |window_| associated with a view based on the
   // order of the associated views in the widget's view hierarchy.
   scoped_ptr<WindowReorderer> window_reorderer_;
-
-  scoped_ptr<NativeWidgetAuraWindowObserver> active_window_observer_;
 
   scoped_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;

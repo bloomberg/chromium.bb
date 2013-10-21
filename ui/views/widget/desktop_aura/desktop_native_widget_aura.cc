@@ -39,7 +39,6 @@
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura.h"
-#include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
 #include "ui/views/widget/widget.h"
@@ -731,19 +730,6 @@ void DesktopNativeWidgetAura::ClearNativeFocus() {
 gfx::Rect DesktopNativeWidgetAura::GetWorkAreaBoundsInScreen() const {
   return desktop_root_window_host_ ?
       desktop_root_window_host_->GetWorkAreaBoundsInScreen() : gfx::Rect();
-}
-
-void DesktopNativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
-  if (!content_window_)
-    return;
-
-  if (!value) {
-    active_window_observer_.reset();
-  } else {
-    active_window_observer_.reset(
-        new NativeWidgetAuraWindowObserver(content_window_,
-                                           native_widget_delegate_));
-  }
 }
 
 Widget::MoveLoopResult DesktopNativeWidgetAura::RunMoveLoop(

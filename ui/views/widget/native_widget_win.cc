@@ -439,9 +439,6 @@ gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
       GetNativeView()).work_area());
 }
 
-void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
-}
-
 Widget::MoveLoopResult NativeWidgetWin::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,

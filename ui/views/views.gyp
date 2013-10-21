@@ -418,8 +418,6 @@
         'widget/native_widget.h',
         'widget/native_widget_aura.cc',
         'widget/native_widget_aura.h',
-        'widget/native_widget_aura_window_observer.cc',
-        'widget/native_widget_aura_window_observer.h',
         'widget/native_widget_delegate.h',
         'widget/native_widget_private.h',
         'widget/native_widget_win.cc',
@@ -520,8 +518,6 @@
             ['exclude', 'widget/window_reorderer.cc'],
           ],
           'sources!': [
-            'widget/native_widget_aura_window_observer.cc',
-            'widget/native_widget_aura_window_observer.h',
             'widget/widget_aura_utils.cc',
             'widget/widget_aura_utils.h',
           ],

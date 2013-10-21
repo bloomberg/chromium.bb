@@ -1329,7 +1329,6 @@ void Widget::SetInactiveRenderingDisabled(bool value) {
   disable_inactive_rendering_ = value;
   if (non_client_view_)
     non_client_view_->SetInactiveRenderingDisabled(value);
-  native_widget_->SetInactiveRenderingDisabled(value);
 }
 
 void Widget::SaveWindowPlacement() {
