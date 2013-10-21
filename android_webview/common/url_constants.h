@@ -14,6 +14,8 @@ extern const char kContentScheme[];
 extern const char kAndroidAssetPath[];
 extern const char kAndroidResourcePath[];
 
+extern const char kAndroidWebViewVideoPosterScheme[];
+
 }  // namespace android_webview
 
 #endif  // ANDROID_WEBVIEW_COMMON_URL_CONSTANTS_H_

@@ -34,6 +34,10 @@ void AwContentRendererClient::RenderThreadStarted() {
       ASCIIToUTF16(android_webview::kContentScheme));
   WebKit::WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);
 
+  WebKit::WebString aw_scheme(
+      ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
+  WebKit::WebSecurityPolicy::registerURLSchemeAsSecure(aw_scheme);
+
   content::RenderThread* thread = content::RenderThread::Get();
 
   aw_render_process_observer_.reset(new AwRenderProcessObserver);

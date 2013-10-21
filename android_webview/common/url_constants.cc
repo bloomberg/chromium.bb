@@ -17,4 +17,7 @@ const char kContentScheme[] = "content";
 const char kAndroidAssetPath[] = "/android_asset/";
 const char kAndroidResourcePath[] = "/android_res/";
 
+// This scheme is used to display a default HTML5 video poster.
+const char kAndroidWebViewVideoPosterScheme[] = "android-webview-video-poster";
+
 }  // namespace android_webview
