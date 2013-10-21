@@ -7,8 +7,10 @@
 
 #include "base/basictypes.h"
 #include "url/gurl.h"
+#include "webkit/common/resource_type.h"
 
 namespace net {
+class HttpResponseHeaders;
 class URLRequest;
 }
 
@@ -43,6 +45,13 @@ bool IsNoSwapInExperiment(uint8 experiment_id);
 // control group, regardless of the field trial.  This function will return true
 // iff this is the case for the experiment_id specified.
 bool IsControlGroupExperiment(uint8 experiment_id);
+
+// Called by URLRequestResponseStarted to gather data about Pagespeed headers
+// into the Prerender.PagespeedHeader histogram. Public so it can be accessed
+// by the unit test.
+void GatherPagespeedData(const ResourceType::Type resource_type,
+                         const GURL& request_url,
+                         const net::HttpResponseHeaders* response_headers);
 
 // Static method gathering stats about a URLRequest for which a response has
 // just started.
