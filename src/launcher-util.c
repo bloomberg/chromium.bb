@@ -174,6 +174,12 @@ weston_launcher_open(struct weston_launcher *launcher,
 }
 
 void
+weston_launcher_close(struct weston_launcher *launcher, int fd)
+{
+	close(fd);
+}
+
+void
 weston_launcher_restore(struct weston_launcher *launcher)
 {
 	struct vt_mode mode = { 0 };

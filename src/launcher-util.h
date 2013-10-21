@@ -39,6 +39,9 @@ int
 weston_launcher_open(struct weston_launcher *launcher,
 		     const char *path, int flags);
 
+void
+weston_launcher_close(struct weston_launcher *launcher, int fd);
+
 int
 weston_launcher_activate_vt(struct weston_launcher *launcher, int vt);
 

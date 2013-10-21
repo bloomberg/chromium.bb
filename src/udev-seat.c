@@ -83,11 +83,11 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 
 	device = evdev_device_create(&seat->base, devnode, fd);
 	if (device == EVDEV_UNHANDLED_DEVICE) {
-		close(fd);
+		weston_launcher_close(c->launcher, fd);
 		weston_log("not using input device '%s'.\n", devnode);
 		return 0;
 	} else if (device == NULL) {
-		close(fd);
+		weston_launcher_close(c->launcher, fd);
 		weston_log("failed to create input device '%s'.\n", devnode);
 		return 0;
 	}
@@ -219,9 +219,11 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 				if (!strcmp(device->devnode, devnode)) {
 					weston_log("input device %s, %s removed\n",
 							device->devname, device->devnode);
+					weston_launcher_close(input->compositor->launcher,
+							      device->fd);
 					evdev_device_destroy(device);
-				break;
-			}
+					break;
+				}
 		}
 	}
 
@@ -278,8 +280,11 @@ udev_input_remove_devices(struct udev_input *input)
 	struct udev_seat *seat;
 
 	wl_list_for_each(seat, &input->compositor->seat_list, base.link) {
-		wl_list_for_each_safe(device, next, &seat->devices_list, link)
+		wl_list_for_each_safe(device, next, &seat->devices_list, link) {
+			weston_launcher_close(input->compositor->launcher,
+					      device->fd);
 			evdev_device_destroy(device);
+		}
 
 		if (seat->base.keyboard)
 			notify_keyboard_focus_out(&seat->base);
