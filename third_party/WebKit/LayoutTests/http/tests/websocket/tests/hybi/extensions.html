@@ -22,14 +22,14 @@ shouldBeEqualToString("ws.extensions = 'foo'; ws.extensions", "");
 ws.onopen = function(event)
 {
     debug("Check the value after the connection is established:");
-    shouldBeEqualToString("ws.extensions", "x-webkit-deflate-frame");
+    shouldBeEqualToString("ws.extensions", "permessage-deflate");
     ws.send("hi!");
 };
 
 ws.onmessage = function(event)
 {
     debug("Check the value of the Sec-WebSocket-Extensions header sent to the server:");
-    shouldBeEqualToString("event.data", "x-webkit-deflate-frame");
+    shouldBeEqualToString("event.data", "permessage-deflate; client_max_window_bits, x-webkit-deflate-frame");
     finishJSTest();
 };
 
