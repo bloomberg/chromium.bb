@@ -15,7 +15,6 @@
 namespace content {
 
 namespace {
-const int kPeriodInMilliseconds = 100;
 
 static size_t GetConsumerSharedMemoryBufferSize(ConsumerType consumer_type) {
   switch (consumer_type) {
@@ -48,7 +47,6 @@ class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
 
   unsigned consumers_bitmask_;
   DataFetcherSharedMemoryBase* fetcher_;
-  base::TimeDelta poll_interval_;
   scoped_ptr<base::RepeatingTimer<PollingThread> > timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PollingThread);
@@ -60,8 +58,7 @@ DataFetcherSharedMemoryBase::PollingThread::PollingThread(
     const char* name, DataFetcherSharedMemoryBase* fetcher)
     : base::Thread(name),
       consumers_bitmask_(0),
-      fetcher_(fetcher),
-      poll_interval_(fetcher->GetPollDelay()) {
+      fetcher_(fetcher) {
 }
 
 DataFetcherSharedMemoryBase::PollingThread::~PollingThread() {
@@ -75,10 +72,10 @@ void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
 
   consumers_bitmask_ |= consumer_type;
 
-  if (!timer_ && poll_interval_.InMilliseconds() > 0) {
+  if (!timer_ && fetcher_->GetType() == FETCHER_TYPE_POLLING_CALLBACK) {
     timer_.reset(new base::RepeatingTimer<PollingThread>());
     timer_->Start(FROM_HERE,
-                  poll_interval_,
+                  fetcher_->GetInterval(),
                   this, &PollingThread::DoPoll);
   }
 }
@@ -128,7 +125,7 @@ bool DataFetcherSharedMemoryBase::StartFetchingDeviceData(
   if (!buffer)
     return false;
 
-  if (IsPolling()) {
+  if (GetType() != FETCHER_TYPE_DEFAULT) {
     if (!InitAndStartPollingThreadIfNecessary())
       return false;
     polling_thread_->message_loop()->PostTask(
@@ -151,7 +148,7 @@ bool DataFetcherSharedMemoryBase::StopFetchingDeviceData(
   if (!(started_consumers_ & consumer_type))
     return true;
 
-  if (IsPolling()) {
+  if (GetType() != FETCHER_TYPE_DEFAULT) {
     polling_thread_->message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&PollingThread::RemoveConsumer,
@@ -197,12 +194,13 @@ void DataFetcherSharedMemoryBase::Fetch(unsigned consumer_bitmask) {
   NOTIMPLEMENTED();
 }
 
-bool DataFetcherSharedMemoryBase::IsPolling() const {
-  return false;
+DataFetcherSharedMemoryBase::FetcherType
+DataFetcherSharedMemoryBase::GetType() const {
+  return FETCHER_TYPE_DEFAULT;
 }
 
-base::TimeDelta DataFetcherSharedMemoryBase::GetPollDelay() const {
-  return base::TimeDelta::FromMilliseconds(kPeriodInMilliseconds);
+base::TimeDelta DataFetcherSharedMemoryBase::GetInterval() const {
+  return base::TimeDelta::FromMilliseconds(kInertialSensorIntervalMillis);
 }
 
 base::SharedMemory* DataFetcherSharedMemoryBase::GetSharedMemory(

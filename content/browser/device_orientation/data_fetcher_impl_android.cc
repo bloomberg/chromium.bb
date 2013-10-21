@@ -8,19 +8,12 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/singleton.h"
+#include "content/browser/device_orientation/inertial_sensor_consts.h"
 #include "jni/DeviceMotionAndOrientation_jni.h"
 
 using base::android::AttachCurrentThread;
 
 namespace content {
-
-namespace {
-
-// This should match ProviderImpl::kDesiredSamplingIntervalMs.
-// TODO(husky): Make that constant public so we can use it directly.
-const int kPeriodInMilliseconds = 100;
-
-}  // namespace
 
 DataFetcherImplAndroid::DataFetcherImplAndroid()
     : number_active_device_motion_sensors_(0),
@@ -119,7 +112,7 @@ bool DataFetcherImplAndroid::Start(DeviceData::Type event_type) {
   return Java_DeviceMotionAndOrientation_start(
       AttachCurrentThread(), device_orientation_.obj(),
       reinterpret_cast<jint>(this), static_cast<jint>(event_type),
-      kPeriodInMilliseconds);
+      kInertialSensorIntervalMillis);
 }
 
 void DataFetcherImplAndroid::Stop(DeviceData::Type event_type) {
@@ -169,7 +162,7 @@ void DataFetcherImplAndroid::CheckMotionBufferReadyToRead() {
       received_motion_data_[RECEIVED_MOTION_DATA_ROTATION_RATE] ==
       number_active_device_motion_sensors_) {
     device_motion_buffer_->seqlock.WriteBegin();
-    device_motion_buffer_->data.interval = kPeriodInMilliseconds;
+    device_motion_buffer_->data.interval = kInertialSensorIntervalMillis;
     device_motion_buffer_->seqlock.WriteEnd();
     SetMotionBufferReadyStatus(true);
   }

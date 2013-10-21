@@ -62,6 +62,14 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     return true;
   }
 
+  virtual void Fetch(unsigned consumer_bitmask) OVERRIDE {
+    FAIL() << "fetch should not be called";
+  }
+
+  virtual FetcherType GetType() const OVERRIDE {
+    return FETCHER_TYPE_DEFAULT;
+  }
+
   void UpdateMotion(DeviceMotionHardwareBuffer* buffer) {
     buffer->seqlock.WriteBegin();
     buffer->data.accelerationX = 1;
@@ -100,10 +108,6 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     buffer->data.hasGamma = true;
     buffer->data.allAvailableSensorsAreActive = true;
     buffer->seqlock.WriteEnd();
-  }
-
-  virtual bool IsPolling() const OVERRIDE {
-    return false;
   }
 
   base::WaitableEvent started_orientation_;

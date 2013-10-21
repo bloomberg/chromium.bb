@@ -16,7 +16,6 @@
 namespace {
 
 const double kMeanGravity = 9.80665;
-const int kPeriodInMilliseconds = 100;
 
 }  // namespace
 
@@ -183,9 +182,8 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
             -acceleration_including_gravity_z * kMeanGravity;
         buffer_->data.hasAccelerationIncludingGravityZ =
             has_acceleration_including_gravity_z;
-        // TODO(timvolodine): consider setting the two variables below
-        // after all sensors have fired.
-        buffer_->data.interval = kPeriodInMilliseconds;
+        // TODO(timvolodine): consider setting this after all
+        // sensors have fired.
         buffer_->data.allAvailableSensorsAreActive = true;
         buffer_->seqlock.WriteEnd();
       }
@@ -209,7 +207,6 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
         buffer_->data.hasRotationRateBeta = has_beta;
         buffer_->data.rotationRateGamma = gamma;
         buffer_->data.hasRotationRateGamma = has_gamma;
-        buffer_->data.interval = kPeriodInMilliseconds;
         buffer_->data.allAvailableSensorsAreActive = true;
         buffer_->seqlock.WriteEnd();
       }
@@ -233,14 +230,8 @@ DataFetcherSharedMemory::DataFetcherSharedMemory()
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 }
 
-bool DataFetcherSharedMemory::IsPolling() const {
-  return true;
-}
-
-base::TimeDelta DataFetcherSharedMemory::GetPollDelay() const {
-  // We only need a new thread for this fetcher, the actual interface
-  // is push-bashed so no need for explicit callbacks to Fetch().
-  return base::TimeDelta::FromMilliseconds(0);
+DataFetcherSharedMemory::FetcherType DataFetcherSharedMemory::GetType() const {
+  return FETCHER_TYPE_SEPARATE_THREAD;
 }
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
@@ -270,8 +261,12 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
             sink);
         bool gyrometer_available = RegisterForSensor(
             SENSOR_TYPE_GYROMETER_3D, sensor_gyrometer_.Receive(), sink);
-        if (accelerometer_available || gyrometer_available)
+        if (accelerometer_available || gyrometer_available) {
+          motion_buffer_->seqlock.WriteBegin();
+          motion_buffer_->data.interval = GetInterval().InMilliseconds();
+          motion_buffer_->seqlock.WriteEnd();
           return true;
+        }
         // if no sensors are available set buffer to ready, to fire null-events.
         SetBufferAvailableState(consumer_type, true);
       }
@@ -329,7 +324,8 @@ bool DataFetcherSharedMemory::RegisterForSensor(
   base::win::ScopedComPtr<IPortableDeviceValues> device_values;
   if (SUCCEEDED(device_values.CreateInstance(CLSID_PortableDeviceValues))) {
     if (SUCCEEDED(device_values->SetUnsignedIntegerValue(
-        SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL, kPeriodInMilliseconds))) {
+        SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL,
+        GetInterval().InMilliseconds()))) {
       base::win::ScopedComPtr<IPortableDeviceValues> return_values;
       (*sensor)->SetProperties(device_values.get(), return_values.Receive());
     }

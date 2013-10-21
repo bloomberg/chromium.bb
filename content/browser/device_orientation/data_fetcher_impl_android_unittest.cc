@@ -7,13 +7,12 @@
 #include "base/android/jni_android.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/device_orientation/inertial_sensor_consts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
-
-const int kPeriodInMilliseconds = 100;
 
 class FakeDataFetcherImplAndroid : public DataFetcherImplAndroid {
  public:
@@ -84,7 +83,7 @@ TEST_F(AndroidDataFetcherTest, ThreeDeviceMotionSensorsActive) {
   ASSERT_TRUE(motion_buffer_->data.hasRotationRateBeta);
   ASSERT_EQ(9, motion_buffer_->data.rotationRateGamma);
   ASSERT_TRUE(motion_buffer_->data.hasRotationRateGamma);
-  ASSERT_EQ(kPeriodInMilliseconds, motion_buffer_->data.interval);
+  ASSERT_EQ(kInertialSensorIntervalMillis, motion_buffer_->data.interval);
 
   fetcher.StopFetchingDeviceMotionData();
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
@@ -103,7 +102,7 @@ TEST_F(AndroidDataFetcherTest, TwoDeviceMotionSensorsActive) {
 
   fetcher.GotAccelerationIncludingGravity(0, 0, 1, 2, 3);
   ASSERT_TRUE(motion_buffer_->data.allAvailableSensorsAreActive);
-  ASSERT_EQ(kPeriodInMilliseconds, motion_buffer_->data.interval);
+  ASSERT_EQ(kInertialSensorIntervalMillis, motion_buffer_->data.interval);
 
   fetcher.StopFetchingDeviceMotionData();
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);
@@ -116,7 +115,7 @@ TEST_F(AndroidDataFetcherTest, ZeroDeviceMotionSensorsActive) {
 
   fetcher.StartFetchingDeviceMotionData(motion_buffer_.get());
   ASSERT_TRUE(motion_buffer_->data.allAvailableSensorsAreActive);
-  ASSERT_EQ(kPeriodInMilliseconds, motion_buffer_->data.interval);
+  ASSERT_EQ(kInertialSensorIntervalMillis, motion_buffer_->data.interval);
 
   fetcher.StopFetchingDeviceMotionData();
   ASSERT_FALSE(motion_buffer_->data.allAvailableSensorsAreActive);

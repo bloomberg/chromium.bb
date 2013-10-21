@@ -16,9 +16,6 @@ namespace content {
 
 namespace {
 
-const int kPeriodInMilliseconds = 100;
-
-
 class FakeDataFetcher : public DataFetcherSharedMemoryBase {
  public:
   FakeDataFetcher()
@@ -54,7 +51,7 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
     DeviceMotionHardwareBuffer* buffer = GetMotionBuffer();
     ASSERT_TRUE(buffer);
     buffer->seqlock.WriteBegin();
-    buffer->data.interval = kPeriodInMilliseconds;
+    buffer->data.interval = kInertialSensorIntervalMillis;
     buffer->seqlock.WriteEnd();
     updated_motion_.Signal();
   }
@@ -160,13 +157,13 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
     return true;
   }
 
-  virtual bool IsPolling() const OVERRIDE {
-    return false;
-  }
-
   virtual void Fetch(unsigned consumer_bitmask) OVERRIDE {
     FAIL() << "fetch should not be called, "
         << "because this is a non-polling fetcher";
+  }
+
+  virtual FetcherType GetType() const OVERRIDE {
+    return FakeDataFetcher::GetType();
   }
 
  private:
@@ -223,8 +220,8 @@ class FakePollingDataFetcher : public FakeDataFetcher {
       UpdateMotion();
   }
 
-  virtual bool IsPolling() const OVERRIDE {
-    return true;
+  virtual FetcherType GetType() const OVERRIDE {
+    return FETCHER_TYPE_POLLING_CALLBACK;
   }
 
  private:
@@ -274,12 +271,8 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
     FAIL() << "fetch should not be called";
   }
 
-  virtual bool IsPolling() const OVERRIDE {
-    return true;
-  }
-
-  virtual base::TimeDelta GetPollDelay() const OVERRIDE {
-    return base::TimeDelta::FromMilliseconds(0);
+  virtual FetcherType GetType() const OVERRIDE {
+    return FETCHER_TYPE_SEPARATE_THREAD;
   }
 
   bool IsPollingTimerRunningForTesting() const {
@@ -294,12 +287,13 @@ class FakeZeroDelayPollingDataFetcher : public FakeDataFetcher {
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartMotion) {
   FakeNonPollingDataFetcher fake_data_fetcher;
-  EXPECT_FALSE(fake_data_fetcher.IsPolling());
+  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_DEFAULT,
+      fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
 
-  EXPECT_EQ(kPeriodInMilliseconds,
+  EXPECT_EQ(kInertialSensorIntervalMillis,
       fake_data_fetcher.GetMotionBuffer()->data.interval);
 
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
@@ -308,7 +302,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesStartMotion) {
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientation) {
   FakeNonPollingDataFetcher fake_data_fetcher;
-  EXPECT_FALSE(fake_data_fetcher.IsPolling());
+  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_DEFAULT,
+      fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
@@ -322,13 +317,14 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesStartOrientation) {
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotion) {
   FakePollingDataFetcher fake_data_fetcher;
-  EXPECT_TRUE(fake_data_fetcher.IsPolling());
+  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
+      fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(CONSUMER_TYPE_MOTION));
   fake_data_fetcher.WaitForStart(CONSUMER_TYPE_MOTION);
   fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_MOTION);
 
-  EXPECT_EQ(kPeriodInMilliseconds,
+  EXPECT_EQ(kInertialSensorIntervalMillis,
       fake_data_fetcher.GetMotionBuffer()->data.interval);
 
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
@@ -337,7 +333,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotion) {
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientation) {
   FakePollingDataFetcher fake_data_fetcher;
-  EXPECT_TRUE(fake_data_fetcher.IsPolling());
+  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
+      fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
@@ -352,7 +349,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollOrientation) {
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
   FakePollingDataFetcher fake_data_fetcher;
-  EXPECT_TRUE(fake_data_fetcher.IsPolling());
+  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_POLLING_CALLBACK,
+      fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
@@ -375,7 +373,7 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
   fake_data_fetcher.WaitForUpdate(CONSUMER_TYPE_MOTION);
 
   EXPECT_EQ(1, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
-  EXPECT_EQ(kPeriodInMilliseconds,
+  EXPECT_EQ(kInertialSensorIntervalMillis,
       fake_data_fetcher.GetMotionBuffer()->data.interval);
 
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
@@ -386,8 +384,8 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesPollMotionAndOrientation) {
 
 TEST(DataFetcherSharedMemoryBaseTest, DoesNotPollZeroDelay) {
   FakeZeroDelayPollingDataFetcher fake_data_fetcher;
-  EXPECT_TRUE(fake_data_fetcher.IsPolling());
-  EXPECT_EQ(0, fake_data_fetcher.GetPollDelay().InMilliseconds());
+  EXPECT_EQ(DataFetcherSharedMemoryBase::FETCHER_TYPE_SEPARATE_THREAD,
+      fake_data_fetcher.GetType());
 
   EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
       CONSUMER_TYPE_ORIENTATION));
@@ -399,7 +397,6 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesNotPollZeroDelay) {
   fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
 }
-
 
 
 }  // namespace

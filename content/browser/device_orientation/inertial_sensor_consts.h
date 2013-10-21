@@ -14,6 +14,12 @@ enum ConsumerType {
   CONSUMER_TYPE_ORIENTATION = 1 << 1,
 };
 
+// Specifies the minimal interval between subsequent sensor data updates.
+// Note that when changing this value it is desirable to have an adequate
+// matching value |DeviceSensorEventPump::kDefaultPumpDelayMillis| in
+// content/renderer/device_orientation/device_sensor_event_pump.cc.
+const int kInertialSensorIntervalMillis = 50;
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_INERTIAL_SENSOR_CONSTS_H_

@@ -111,8 +111,8 @@ void DataFetcherSharedMemory::Fetch(unsigned consumer_bitmask) {
     FetchMotion(sudden_motion_sensor_.get(), motion_buffer_);
 }
 
-bool DataFetcherSharedMemory::IsPolling() const {
-  return true;
+DataFetcherSharedMemory::FetcherType DataFetcherSharedMemory::GetType() const {
+  return FETCHER_TYPE_POLLING_CALLBACK;
 }
 
 bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {

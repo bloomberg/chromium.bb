@@ -39,6 +39,15 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
   base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
       ConsumerType consumer_type, base::ProcessHandle process);
 
+  enum FetcherType {
+    // Fetcher runs on the same thread as its creator.
+    FETCHER_TYPE_DEFAULT,
+    // Fetcher runs on a separate thread calling |Fetch()| at regular intervals.
+    FETCHER_TYPE_POLLING_CALLBACK,
+    // Fetcher runs on a separate thread, but no callbacks are executed.
+    FETCHER_TYPE_SEPARATE_THREAD
+  };
+
  protected:
   class PollingThread;
 
@@ -53,13 +62,13 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
   // at regular intervals.
   virtual void Fetch(unsigned consumer_bitmask);
 
-  // Returns true if this fetcher needs to use a polling thread to
-  // fetch the sensor data.
-  virtual bool IsPolling() const;
+  // Returns the type of thread this fetcher runs on.
+  virtual FetcherType GetType() const;
 
-  // Returns the interval between successive calls to Fetch().
-  // If interval is zero, Fetch() is never called.
-  virtual base::TimeDelta GetPollDelay() const;
+  // Returns the sensor sampling interval. In particular if this fetcher
+  // GetType() == FETCHER_TYPE_POLLING_CALLBACK the interval between
+  // successive calls to Fetch().
+  virtual base::TimeDelta GetInterval() const;
 
   // Start() method should call InitSharedMemoryBuffer() to get the shared
   // memory pointer. If IsPolling() is true both Start() and Stop() methods
