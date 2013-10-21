@@ -1049,6 +1049,7 @@ crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-null-
 crbug.com/295605 [ Win Debug ] fast/dom/custom/document-register-reentrant-throwing-constructor.html [ Crash ]
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
+crbug.com/306882 fast/forms/password/password-generation-appearance.html [ NeedsRebaseline ]
 
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]

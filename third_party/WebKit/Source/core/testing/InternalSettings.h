@@ -67,6 +67,7 @@ public:
         bool m_shouldDisplayTextDescriptions;
         String m_defaultVideoPosterURL;
         bool m_originalCompositorDrivenAcceleratedScrollEnabled;
+        bool m_originalPasswordGenerationDecorationEnabled;
     };
 
     static PassRefPtr<InternalSettings> create(Page* page)
@@ -92,6 +93,7 @@ public:
     void setImagesEnabled(bool, ExceptionState&);
     void setMediaTypeOverride(const String& mediaType, ExceptionState&);
     void setMockScrollbarsEnabled(bool, ExceptionState&);
+    void setPasswordGenerationDecorationEnabled(bool, ExceptionState&);
     void setTextAutosizingEnabled(bool, ExceptionState&);
     void setTextAutosizingFontScaleFactor(float fontScaleFactor, ExceptionState&);
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);

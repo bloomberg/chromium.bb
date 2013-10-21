@@ -75,6 +75,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_shouldDisplayTextDescriptions(settings->shouldDisplayTextDescriptions())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalCompositorDrivenAcceleratedScrollEnabled(settings->isCompositorDrivenAcceleratedScrollingEnabled())
+    , m_originalPasswordGenerationDecorationEnabled(settings->passwordGenerationDecorationEnabled())
 {
 }
 
@@ -98,6 +99,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setShouldDisplayTextDescriptions(m_shouldDisplayTextDescriptions);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->setCompositorDrivenAcceleratedScrollingEnabled(m_originalCompositorDrivenAcceleratedScrollEnabled);
+    settings->setPasswordGenerationDecorationEnabled(m_originalPasswordGenerationDecorationEnabled);
     settings->resetFontFamilies();
 }
 
@@ -313,6 +315,12 @@ void InternalSettings::setDefaultVideoPosterURL(const String& url, ExceptionStat
 {
     InternalSettingsGuardForSettings();
     settings()->setDefaultVideoPosterURL(url);
+}
+
+void InternalSettings::setPasswordGenerationDecorationEnabled(bool enabled, ExceptionState& es)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setPasswordGenerationDecorationEnabled(enabled);
 }
 
 }

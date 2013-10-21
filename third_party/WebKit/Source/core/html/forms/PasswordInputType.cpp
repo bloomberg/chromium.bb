@@ -41,6 +41,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -58,8 +59,17 @@ HTMLElement* PasswordInputType::passwordGeneratorButtonElement() const
 
 bool PasswordInputType::isPasswordGenerationEnabled() const
 {
+    if (isPasswordGenerationDecorationEnabled())
+        return true;
     if (Page* page = element()->document().page())
         return page->chrome().client().isPasswordGenerationEnabled();
+    return false;
+}
+
+bool PasswordInputType::isPasswordGenerationDecorationEnabled() const
+{
+    if (Page* page = element()->document().page())
+        return page->settings().passwordGenerationDecorationEnabled();
     return false;
 }
 
@@ -81,7 +91,8 @@ void PasswordInputType::createShadowSubtree()
     root->firstElementChild()->setInlineStyleProperty(CSSPropertyFlexGrow, 1.0, CSSPrimitiveValue::CSS_NUMBER);
     wrapper->appendChild(root->firstElementChild());
     m_generatorButton = PasswordGeneratorButtonElement::create(element()->document());
-    m_generatorButton->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    if (!isPasswordGenerationDecorationEnabled())
+        m_generatorButton->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
     wrapper->appendChild(m_generatorButton.get());
     element()->userAgentShadowRoot()->appendChild(wrapper);
 }

@@ -59,6 +59,8 @@ private:
     virtual void disableSecureTextInput() OVERRIDE;
 
     bool isPasswordGenerationEnabled() const;
+    // For testing.
+    bool isPasswordGenerationDecorationEnabled() const;
 
     RefPtr<PasswordGeneratorButtonElement> m_generatorButton;
 };
