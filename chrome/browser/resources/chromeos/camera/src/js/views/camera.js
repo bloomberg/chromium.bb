@@ -284,6 +284,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.addEffect_(new camera.effects.Vintage(this.tracker_));
     this.addEffect_(new camera.effects.BigHead(this.tracker_));
     this.addEffect_(new camera.effects.BigJaw(this.tracker_));
+    this.addEffect_(new camera.effects.BigEyes(this.tracker_));
     this.addEffect_(new camera.effects.BunnyHead(this.tracker_));
     this.addEffect_(new camera.effects.Swirl(this.tracker_));
     this.addEffect_(new camera.effects.Grayscale(this.tracker_));
