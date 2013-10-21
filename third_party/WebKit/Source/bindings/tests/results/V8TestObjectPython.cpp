@@ -1374,35 +1374,100 @@ static void promiseAttributeAttributeSetterCallback(v8::Local<v8::String> name, 
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void activityLogAccessReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->activityLogAccessReadonlyLongAttribute());
+    v8SetReturnValueInt(info, imp->activityLoggingAccessForAllWorldsLongAttribute());
 }
 
-static void activityLogAccessReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger())
-        contextData->activityLogger()->log("TestObjectPython.activityLogAccessReadonlyLongAttribute", 0, 0, "Getter");
-    TestObjectPythonV8Internal::activityLogAccessReadonlyLongAttributeAttributeGetter(name, info);
+        contextData->activityLogger()->log("TestObjectPython.activityLoggingAccessForAllWorldsLongAttribute", 0, 0, "Getter");
+    TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeGetter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void activityLogGetterReadonlyLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->activityLogGetterReadonlyLongAttribute());
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setActivityLoggingAccessForAllWorldsLongAttribute(cppValue);
 }
 
-static void activityLogGetterReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        v8::Handle<v8::Value> loggerArg[] = { jsValue };
+        contextData->activityLogger()->log("TestObjectPython.activityLoggingAccessForAllWorldsLongAttribute", 1, &loggerArg[0], "Setter");
+    }
+    TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggingGetterForAllWorldsLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->activityLoggingGetterForAllWorldsLongAttribute());
+}
+
+static void activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger())
-        contextData->activityLogger()->log("TestObjectPython.activityLogGetterReadonlyLongAttribute", 0, 0, "Getter");
-    TestObjectPythonV8Internal::activityLogGetterReadonlyLongAttributeAttributeGetter(name, info);
+        contextData->activityLogger()->log("TestObjectPython.activityLoggingGetterForAllWorldsLongAttribute", 0, 0, "Getter");
+    TestObjectPythonV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setActivityLoggingGetterForAllWorldsLongAttribute(cppValue);
+}
+
+static void activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(name, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggingSetterForAllWorldsLongAttributeAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->activityLoggingSetterForAllWorldsLongAttribute());
+}
+
+static void activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    imp->setActivityLoggingSetterForAllWorldsLongAttribute(cppValue);
+}
+
+static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        v8::Handle<v8::Value> loggerArg[] = { jsValue };
+        contextData->activityLogger()->log("TestObjectPython.activityLoggingSetterForAllWorldsLongAttribute", 1, &loggerArg[0], "Setter");
+    }
+    TestObjectPythonV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -2431,8 +2496,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"testEnumAttribute", TestObjectPythonV8Internal::testEnumAttributeAttributeGetterCallback, TestObjectPythonV8Internal::testEnumAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"readonlyEventHandlerAttribute", TestObjectPythonV8Internal::readonlyEventHandlerAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"promiseAttribute", TestObjectPythonV8Internal::promiseAttributeAttributeGetterCallback, TestObjectPythonV8Internal::promiseAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"activityLogAccessReadonlyLongAttribute", TestObjectPythonV8Internal::activityLogAccessReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"activityLogGetterReadonlyLongAttribute", TestObjectPythonV8Internal::activityLogGetterReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"activityLoggingAccessForAllWorldsLongAttribute", TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"activityLoggingGetterForAllWorldsLongAttribute", TestObjectPythonV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"activityLoggingSetterForAllWorldsLongAttribute", TestObjectPythonV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cachedAttributeAnyAttribute", TestObjectPythonV8Internal::cachedAttributeAnyAttributeAttributeGetterCallback, TestObjectPythonV8Internal::cachedAttributeAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"callWithExecutionContextAnyAttribute", TestObjectPythonV8Internal::callWithExecutionContextAnyAttributeAttributeGetterCallback, TestObjectPythonV8Internal::callWithExecutionContextAnyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"checkSecurityForNodeReadonlyDocumentAttribute", TestObjectPythonV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

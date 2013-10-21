@@ -99,8 +99,9 @@ interface TestObjectPython {
     attribute Promise promiseAttribute;
 
     // Extended attributes
-    [ActivityLogging=AccessForAllWorlds] readonly attribute long activityLogAccessReadonlyLongAttribute;
-    [ActivityLogging=GetterForAllWorlds] readonly attribute long activityLogGetterReadonlyLongAttribute;
+    [ActivityLogging=AccessForAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;
+    [ActivityLogging=GetterForAllWorlds] attribute long activityLoggingGetterForAllWorldsLongAttribute;
+    [ActivityLogging=SetterForAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CheckSecurityForNode] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;  // All uses are readonly

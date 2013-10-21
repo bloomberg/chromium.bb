@@ -71,8 +71,11 @@ def generate_attribute_and_includes(interface, attribute):
     has_custom_getter = has_extended_attribute(attribute, ('Custom', 'CustomGetter'))
     has_setter = not attribute.is_read_only  # FIXME: support [PutForwards], [Reflect], and [Replaceable]
     has_custom_setter = has_setter and has_extended_attribute(attribute, ('Custom', 'CustomSetter'))
+    includes = set()
     contents = {
         'access_control_list': access_control_list(attribute),
+        'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, includes, 'Getter'),  # [ActivityLogging]
+        'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, includes, 'Setter'),  # [ActivityLogging]
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.generate_conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
@@ -95,7 +98,6 @@ def generate_attribute_and_includes(interface, attribute):
         'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
     }
-    includes = set()
     if not has_custom_getter:
         generate_getter(interface, attribute, contents, includes)
     if has_setter and not has_custom_setter:
@@ -149,7 +151,6 @@ def generate_getter(interface, attribute, contents, includes):
                              'bindings/v8/ExceptionState.h']))
 
     contents.update({
-        'activity_logging_getter': v8_utilities.has_activity_logging(attribute, includes, 'Getter'),  # [ActivityLogging]
         'is_check_security_for_node': is_check_security_for_node,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
     })
@@ -208,9 +209,9 @@ def generate_setter(interface, attribute, contents, includes):
     else:
         cpp_value = 'cppValue'
     contents.update({
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
         'cpp_setter': setter_expression(interface, attribute, contents),
         'enum_validation_expression': enum_validation_expression(idl_type),
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, attribute.extended_attributes, 'jsValue', 'cppValue', includes, 'info.GetIsolate()'),
     })
 
 

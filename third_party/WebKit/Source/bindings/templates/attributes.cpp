@@ -86,7 +86,7 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
     {% if attribute.measure_as %}
     UseCounter::count(activeDOMWindow(), UseCounter::{{attribute.measure_as}});
     {% endif %}
-    {% if world_suffix in attribute.activity_logging_getter %}
+    {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger())
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 0, 0, "Getter");
@@ -137,6 +137,13 @@ static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     {% if attribute.deprecate_as %}
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
+    {% endif %}
+    {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        v8::Handle<v8::Value> loggerArg[] = { jsValue };
+        contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 1, &loggerArg[0], "Setter");
+    }
     {% endif %}
     {% if attribute.has_custom_setter %}
     {{v8_class_name}}::{{attribute.name}}AttributeSetterCustom(name, jsValue, info);

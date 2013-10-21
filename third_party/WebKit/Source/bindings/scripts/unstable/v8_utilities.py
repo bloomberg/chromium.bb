@@ -78,7 +78,7 @@ def v8_class_name(interface):
 
 
 # [ActivityLogging]
-def has_activity_logging(member, includes, access_type=None):
+def activity_logging_world_list(member, includes, access_type=None):
     """Returns a set of world suffixes for which a definition member has activity logging, for specified access type.
 
     access_type can be 'Getter' or 'Setter' if only checking getting or setting.
