@@ -84,7 +84,8 @@ class MockMediaStreamRequester : public MediaStreamRequester {
                     const StreamDeviceInfoArray& audio_devices,
                     const StreamDeviceInfoArray& video_devices));
   MOCK_METHOD1(StreamGenerationFailed, void(const std::string& label));
-  MOCK_METHOD1(StopGeneratedStream, void(const std::string& label));
+  MOCK_METHOD2(StopGeneratedStream, void(int render_id,
+                                         const std::string& label));
   MOCK_METHOD2(DevicesEnumerated, void(const std::string& label,
                                        const StreamDeviceInfoArray& devices));
   MOCK_METHOD2(DeviceOpened, void(const std::string& label,
@@ -314,7 +315,7 @@ class VideoCaptureHostTest : public testing::Test {
   void CloseSession() {
     if (opened_device_label_.empty())
       return;
-    media_stream_manager_->StopGeneratedStream(opened_device_label_);
+    media_stream_manager_->CancelRequest(opened_device_label_);
     opened_device_label_.clear();
     opened_session_id_ = kInvalidMediaCaptureSessionId;
   }

@@ -34,6 +34,7 @@
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/browser/media_request_state.h"
 
 namespace base {
 class Thread;
@@ -99,10 +100,14 @@ class CONTENT_EXPORT MediaStreamManager
                              const StreamOptions& components,
                              const GURL& security_origin);
 
-  void CancelRequest(const std::string& label);
+  virtual void CancelRequest(const std::string& label);
+  void CancelAllRequests(int render_process_id);
 
-  // Closes generated stream.
-  virtual void StopGeneratedStream(const std::string& label);
+  // Closes the stream device for a certain render view. The stream must have
+  // been opened by a call to GenerateStream.
+  void StopStreamDevice(int render_process_id,
+                        int render_view_id,
+                        const std::string& device_id);
 
   // Gets a list of devices of |type|, which must be MEDIA_DEVICE_AUDIO_CAPTURE
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
@@ -166,6 +171,8 @@ class CONTENT_EXPORT MediaStreamManager
   MediaStreamManager();
 
  private:
+  friend class MockMediaStreamDispatcherHost;
+
   // Contains all data needed to keep track of requests.
   class DeviceRequest;
 
@@ -195,6 +202,13 @@ class CONTENT_EXPORT MediaStreamManager
   void StopStreamFromUI(const std::string& label);
 
   // Helpers.
+  // Checks if all devices that was requested in the request identififed by
+  // |label| has been opened and set the request state accordingly.
+  void HandleRequestDone(const std::string& label,
+                                   DeviceRequest* request);
+  void StopDevice(const StreamDeviceInfo& device_info);
+  // Returns true if a request for devices has been completed and the devices
+  // has either been opened or an error has occurred.
   bool RequestDone(const DeviceRequest& request) const;
   MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type);
   void StartEnumeration(DeviceRequest* request);
@@ -203,13 +217,19 @@ class CONTENT_EXPORT MediaStreamManager
   void ClearEnumerationCache(EnumerationCache* cache);
   void PostRequestToUI(const std::string& label);
   void HandleRequest(const std::string& label);
+  // Returns true if a device with |device_id| has already been requested by
+  // |render_process_id| and |render_view_id| of type |type|. If it has been
+  // requested, |device_info| contain information about the the device.
+  bool FindExistingRequestedDeviceInfo(int render_process_id,
+                                       int render_view_id,
+                                       MediaStreamRequestType type,
+                                       const std::string& device_id,
+                                       StreamDeviceInfo* device_info,
+                                       MediaRequestState* request_state) const;
 
   // Sends cached device list to a client corresponding to the request
   // identified by |label|.
   void SendCachedDeviceList(EnumerationCache* cache, const std::string& label);
-
-  // Stop the request of enumerating devices indentified by |label|.
-  void StopEnumerateDevices(const std::string& label);
 
   // Helpers to start and stop monitoring devices.
   void StartMonitoring();
@@ -245,6 +265,9 @@ class CONTENT_EXPORT MediaStreamManager
 
   // All non-closed request.
   DeviceRequests requests_;
+
+  std::vector<int> opened_audio_session_ids_;
+  std::vector<int> opened_video_session_ids_;
 
   // Hold a pointer to the IO loop to check we delete the device thread and
   // managers on the right thread.

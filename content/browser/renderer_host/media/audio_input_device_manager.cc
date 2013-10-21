@@ -35,7 +35,7 @@ AudioInputDeviceManager::AudioInputDeviceManager(
                                media::AudioManagerBase::kDefaultDeviceName,
                                media::AudioManagerBase::kDefaultDeviceId,
                                44100, media::CHANNEL_LAYOUT_STEREO,
-                               0, false);
+                               0);
   fake_device.session_id = kFakeOpenSessionId;
   devices_.push_back(fake_device);
 }
@@ -143,7 +143,7 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
        it != device_names.end(); ++it) {
     // Add device information to device vector.
     devices->push_back(StreamDeviceInfo(
-        stream_type, it->device_name, it->unique_id, false));
+        stream_type, it->device_name, it->unique_id));
   }
 
   // If the |use_fake_device_| flag is on, inject the fake device if there is
@@ -151,7 +151,7 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
   if (use_fake_device_ && devices->empty()) {
     devices->push_back(StreamDeviceInfo(
         stream_type, media::AudioManagerBase::kDefaultDeviceName,
-        media::AudioManagerBase::kDefaultDeviceId, false));
+        media::AudioManagerBase::kDefaultDeviceId));
   }
 
   // Return the device list through the listener by posting a task on
@@ -170,7 +170,7 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
   DCHECK(IsOnDeviceThread());
 
   StreamDeviceInfo out(info.device.type, info.device.name, info.device.id,
-                       0, 0, 0, false);
+                       0, 0, 0);
   out.session_id = session_id;
 
   MediaStreamDevice::AudioDeviceParameters& input_params = out.device.input;

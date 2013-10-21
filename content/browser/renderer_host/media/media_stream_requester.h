@@ -25,7 +25,12 @@ class CONTENT_EXPORT MediaStreamRequester {
   virtual void StreamGenerationFailed(const std::string& label) = 0;
 
   // Called if stream has been stopped by user request.
-  virtual void StopGeneratedStream(const std::string& label) = 0;
+  // TODO(perkj): StopGeneratedStream is used by screen capture in order to be
+  // able to stop screen capture from UI instead of from JS.
+  // This should also be refactored to be stopped per stream source instead of
+  // the complete stream.
+  virtual void StopGeneratedStream(int render_view_id,
+                                   const std::string& label) = 0;
 
   // Called as a reply of a successful call to EnumerateDevices.
   virtual void DevicesEnumerated(const std::string& label,

@@ -296,7 +296,7 @@ void VideoCaptureManager::OnDevicesEnumerated(
   for (media::VideoCaptureDevice::Names::const_iterator it =
            device_names.begin(); it != device_names.end(); ++it) {
     devices.push_back(StreamDeviceInfo(
-        stream_type, it->GetNameAndModel(), it->id(), false));
+        stream_type, it->GetNameAndModel(), it->id()));
   }
 
   listener_->DevicesEnumerated(stream_type, devices);

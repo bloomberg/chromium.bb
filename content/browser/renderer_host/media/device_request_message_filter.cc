@@ -71,6 +71,7 @@ void DeviceRequestMessageFilter::StreamGenerationFailed(
 }
 
 void DeviceRequestMessageFilter::StopGeneratedStream(
+    int render_view_id,
     const std::string& label) {
   NOTIMPLEMENTED();
 }
@@ -123,9 +124,8 @@ void DeviceRequestMessageFilter::DevicesEnumerated(
 
   Send(new MediaStreamMsg_GetSourcesACK(request_it->request_id, all_devices));
 
-  // TODO(vrk): Rename StopGeneratedStream() to CancelDeviceRequest().
-  media_stream_manager_->StopGeneratedStream(request_it->audio_devices_label);
-  media_stream_manager_->StopGeneratedStream(request_it->video_devices_label);
+  media_stream_manager_->CancelRequest(request_it->audio_devices_label);
+  media_stream_manager_->CancelRequest(request_it->video_devices_label);
   requests_.erase(request_it);
 }
 
@@ -147,13 +147,8 @@ bool DeviceRequestMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void DeviceRequestMessageFilter::OnChannelClosing() {
   // Since the IPC channel is gone, cancel outstanding device requests.
-  for (DeviceRequestList::iterator it = requests_.begin();
-       it != requests_.end();
-       ++it) {
-    // TODO(vrk): Rename StopGeneratedStream() to CancelDeviceRequest().
-    media_stream_manager_->StopGeneratedStream(it->audio_devices_label);
-    media_stream_manager_->StopGeneratedStream(it->video_devices_label);
-  }
+  media_stream_manager_->CancelAllRequests(peer_pid());
+
   requests_.clear();
 }
 

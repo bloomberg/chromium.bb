@@ -129,8 +129,26 @@ void MediaStreamDispatcher::StopStream(const std::string& label) {
   if (it == label_stream_map_.end())
     return;
 
-  Send(new MediaStreamHostMsg_StopGeneratedStream(routing_id(), label));
+  const StreamDeviceInfoArray& audio_devices = it->second.audio_array;
+  for (StreamDeviceInfoArray::const_iterator device_it = audio_devices.begin();
+       device_it != audio_devices.end(); ++device_it) {
+    StopStreamDevice(*device_it);
+  }
+
+  const StreamDeviceInfoArray& video_devices = it->second.video_array;
+  for (StreamDeviceInfoArray::const_iterator device_it = video_devices.begin();
+       device_it != video_devices.end(); ++device_it) {
+    StopStreamDevice(*device_it);
+  }
   label_stream_map_.erase(it);
+}
+
+void MediaStreamDispatcher::StopStreamDevice(
+    const StreamDeviceInfo& device_info) {
+  DVLOG(1) << "MediaStreamDispatcher::StopStreamDevice"
+           << ", {device_id = " << device_info.device.id << "}";
+  Send(new MediaStreamHostMsg_StopStreamDevice(routing_id(),
+                                               device_info.device.id));
 }
 
 void MediaStreamDispatcher::EnumerateDevices(
@@ -187,7 +205,7 @@ void MediaStreamDispatcher::RemoveEnumerationRequest(
       if (requests->empty() && state->cached_devices) {
         // No more request and has a label, try to stop the label
         // and invalidate the state.
-        Send(new MediaStreamHostMsg_StopGeneratedStream(
+        Send(new MediaStreamHostMsg_CancelEnumerateDevices(
             routing_id(), state->cached_devices->label));
         state->ipc_id = -1;
         state->cached_devices.reset();
@@ -222,10 +240,16 @@ void MediaStreamDispatcher::CancelOpenDevice(
 
 void MediaStreamDispatcher::CloseDevice(const std::string& label) {
   DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(!label.empty());
   DVLOG(1) << "MediaStreamDispatcher::CloseDevice"
            << ", {label = " << label << "}";
 
-  StopStream(label);
+  LabelStreamMap::iterator it = label_stream_map_.find(label);
+  if (it == label_stream_map_.end())
+    return;
+  label_stream_map_.erase(it);
+
+  Send(new MediaStreamHostMsg_CloseDevice(routing_id(), label));
 }
 
 bool MediaStreamDispatcher::Send(IPC::Message* message) {
@@ -335,7 +359,7 @@ void MediaStreamDispatcher::OnDevicesEnumerated(
     // enumerated response is on the way. Have to stop the |label| because
     // this might be the first enumerated device list is received. This also
     // lead to same label being stopped multiple times.
-    Send(new MediaStreamHostMsg_StopGeneratedStream(routing_id(), label));
+    Send(new MediaStreamHostMsg_CancelEnumerateDevices(routing_id(), label));
     return;
   }
 

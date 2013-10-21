@@ -243,7 +243,7 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   MediaStreamType stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
   std::string device_name("device_doesnt_exist");
   std::string device_id("id_doesnt_exist");
-  StreamDeviceInfo dummy_device(stream_type, device_name, device_id, false);
+  StreamDeviceInfo dummy_device(stream_type, device_name, device_id);
 
   // This should fail with an error to the controller.
   int session_id = vcm_->Open(dummy_device);
