@@ -35,7 +35,7 @@ using net::CookieMonster;
 // See issue http://crbug.com/157683
 
 // All functions on the CookieManager can be called from any thread, including
-// threads without a message loop. BrowserThread::FILE is used to call methods
+// threads without a message loop. BrowserThread::IO is used to call methods
 // on CookieMonster that needs to be called, and called back, on a chrome
 // thread.
 
@@ -124,7 +124,7 @@ void CookieManager::ExecCookieTask(const CookieTask& task,
 
   DCHECK(cookie_monster_.get());
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(task, wait_for_completion ? &completion : NULL));
 
   if (wait_for_completion) {
