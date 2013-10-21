@@ -364,6 +364,7 @@ public class AwContents {
 
         @Override
         public void setFixedLayoutSize(int widthDip, int heightDip) {
+            if (mNativeAwContents == 0) return;
             nativeSetFixedLayoutSize(mNativeAwContents, widthDip, heightDip);
         }
     }
