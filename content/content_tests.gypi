@@ -360,6 +360,7 @@
         'browser/fileapi/fileapi_message_filter_unittest.cc',
         'browser/fileapi/local_file_util_unittest.cc',
         'browser/fileapi/obfuscated_file_util_unittest.cc',
+        'browser/fileapi/plugin_private_file_system_backend_unittest.cc',
         'browser/fileapi/recursive_operation_delegate_unittest.cc',
         'browser/fileapi/sandbox_file_system_backend_delegate_unittest.cc',
         'browser/fileapi/sandbox_file_system_backend_unittest.cc',

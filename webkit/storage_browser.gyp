@@ -147,6 +147,8 @@
         'browser/fileapi/obfuscated_file_util.cc',
         'browser/fileapi/obfuscated_file_util.h',
         'browser/fileapi/open_file_system_mode.h',
+        'browser/fileapi/plugin_private_file_system_backend.cc',
+        'browser/fileapi/plugin_private_file_system_backend.h',
         'browser/fileapi/recursive_operation_delegate.cc',
         'browser/fileapi/recursive_operation_delegate.h',
         'browser/fileapi/remove_operation_delegate.cc',
