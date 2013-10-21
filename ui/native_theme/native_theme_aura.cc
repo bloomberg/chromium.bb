@@ -15,12 +15,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/native_theme/common_theme.h"
 
-namespace {
-
-const SkColor kMenuBackgroundColor = SK_ColorWHITE;
-
-}  // namespace
-
 namespace ui {
 
 // static
@@ -46,11 +40,12 @@ void NativeThemeAura::PaintMenuPopupBackground(
     SkCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
+  SkColor color = GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor);
   if (menu_background.corner_radius > 0) {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(kMenuBackgroundColor);
+    paint.setColor(color);
 
     gfx::Path path;
     SkRect rect = SkRect::MakeWH(SkIntToScalar(size.width()),
@@ -62,7 +57,7 @@ void NativeThemeAura::PaintMenuPopupBackground(
 
     canvas->drawPath(path, paint);
   } else {
-    canvas->drawColor(kMenuBackgroundColor, SkXfermode::kSrc_Mode);
+    canvas->drawColor(color, SkXfermode::kSrc_Mode);
   }
 }
 

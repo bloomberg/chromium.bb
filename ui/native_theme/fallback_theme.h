@@ -16,10 +16,11 @@ class NATIVE_THEME_EXPORT FallbackTheme : public NativeThemeBase {
   FallbackTheme();
   virtual ~FallbackTheme();
 
- private:
+ protected:
   // Overridden from NativeThemeBase:
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FallbackTheme);
 };
 
