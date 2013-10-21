@@ -48,7 +48,7 @@
 namespace {
 
 bool g_opt_long;
-fileapi::FileSystemType g_opt_fs_type = fileapi::kFileSystemTypePersistent;
+const char* g_opt_fs_type = "p";
 
 void ShowMessageAndExit(const std::string& msg) {
   fprintf(stderr, "%s\n", msg.c_str());
@@ -67,8 +67,7 @@ namespace fileapi {
 
 static void DumpDirectoryTree(const std::string& origin_name,
                               base::FilePath origin_dir) {
-  origin_dir = origin_dir.Append(
-      ObfuscatedFileUtil::GetDirectoryNameForType(g_opt_fs_type));
+  origin_dir = origin_dir.Append(g_opt_fs_type);
 
   printf("=== ORIGIN %s %s ===\n",
          origin_name.c_str(), FilePathToString(origin_dir).c_str());
@@ -173,11 +172,11 @@ int main(int argc, char* argv[]) {
       argc--;
       argv++;
     } else if (std::string(argv[1]) == "-t") {
-      g_opt_fs_type = fileapi::kFileSystemTypeTemporary;
+      g_opt_fs_type = "t";
       argc--;
       argv++;
     } else if (std::string(argv[1]) == "-s") {
-      g_opt_fs_type = fileapi::kFileSystemTypeSyncable;
+      g_opt_fs_type = "s";
       argc--;
       argv++;
     } else {
