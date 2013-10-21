@@ -168,7 +168,8 @@ def getter_expression(interface, attribute, contents, includes):
 
     getter_name = scoped_name(interface, attribute, getter_base_name)
 
-    arguments.extend(v8_utilities.call_with_arguments(attribute, contents))
+    call_with = attribute.extended_attributes.get('CallWith')
+    arguments.extend(v8_utilities.call_with_arguments(call_with, contents))
     if attribute.is_nullable:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
@@ -219,7 +220,8 @@ def generate_setter(interface, attribute, contents, includes):
 
 
 def setter_expression(interface, attribute, contents, includes):
-    arguments = v8_utilities.call_with_arguments(attribute, contents)
+    call_with = attribute.extended_attributes.get('SetterCallWith') or attribute.extended_attributes.get('CallWith')
+    arguments = v8_utilities.call_with_arguments(call_with, contents)
     idl_type = attribute.data_type
     if idl_type == 'EventHandler':
         # FIXME: move V8EventListenerList.h to INCLUDES_FOR_TYPE

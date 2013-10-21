@@ -47,9 +47,9 @@ def has_extended_attribute(definition_or_member, extended_attribute_list):
     return any(extended_attribute in definition_or_member.extended_attributes
                for extended_attribute in extended_attribute_list)
 
-def has_extended_attribute_value(extended_attributes, key, value):
-    return (key in extended_attributes and
-            value in re.split('[|&]', extended_attributes[key]))
+
+def extended_attribute_value_contains(extended_attribute_value, value):
+    return value in re.split('[|&]', extended_attribute_value)
 
 
 def capitalize(name):
@@ -118,17 +118,16 @@ CALL_WITH_VALUES = [
 ]
 
 
-def call_with_arguments(member, contents):
-    extended_attributes = member.extended_attributes
-    if 'CallWith' not in extended_attributes:
+def call_with_arguments(call_with_values, contents):
+    if not call_with_values:
         return []
 
-    # FIXME: Implement other template values for setters and functions
-    contents['is_call_with_script_execution_context'] = has_extended_attribute_value(extended_attributes, 'CallWith', 'ExecutionContext')
+    # FIXME: Implement other template values for functions
+    contents['is_call_with_script_execution_context'] = extended_attribute_value_contains(call_with_values, 'ExecutionContext')
 
     return [CALL_WITH_ARGUMENTS[value]
             for value in CALL_WITH_VALUES
-            if has_extended_attribute_value(extended_attributes, 'CallWith', value)]
+            if extended_attribute_value_contains(call_with_values, value)]
 
 
 # [Conditional]

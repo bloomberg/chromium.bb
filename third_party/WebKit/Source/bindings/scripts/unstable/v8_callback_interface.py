@@ -36,7 +36,7 @@ For details, see bug http://crbug.com/239771
 """
 
 from v8_types import cpp_type, cpp_value_to_v8_value, includes_for_type
-from v8_utilities import v8_class_name, has_extended_attribute_value
+from v8_utilities import v8_class_name, extended_attribute_value_contains
 
 CALLBACK_INTERFACE_H_INCLUDES = set([
     'bindings/v8/ActiveDOMCallback.h',
@@ -94,12 +94,13 @@ def includes_for_operation(operation):
 
 
 def generate_method_contents(operation):
-    call_with_this_handle = has_extended_attribute_value(operation.extended_attributes, 'CallWith', 'ThisValue')
+    extended_attributes = operation.extended_attributes
+    call_with = extended_attributes.get('CallWith')
     contents = {
         'name': operation.name,
         'return_cpp_type': cpp_type(operation.data_type, 'RefPtr'),
-        'custom': 'Custom' in operation.extended_attributes,
-        'call_with_this_handle': call_with_this_handle,
+        'custom': 'Custom' in extended_attributes,
+        'call_with_this_handle': extended_attribute_value_contains(call_with, 'ThisValue'),
     }
     contents.update(generate_arguments_contents(operation.arguments, call_with_this_handle))
     return contents
