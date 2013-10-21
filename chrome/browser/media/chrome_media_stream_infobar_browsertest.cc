@@ -44,16 +44,24 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
 
  protected:
   content::WebContents* LoadTestPageInTab() {
+    return LoadTestPageInBrowser(browser());
+  }
+
+  content::WebContents* LoadTestPageInIncognitoTab() {
+    return LoadTestPageInBrowser(CreateIncognitoBrowser());
+  }
+
+ private:
+  content::WebContents* LoadTestPageInBrowser(Browser* browser) {
     EXPECT_TRUE(test_server()->Start());
 
     const char kMainWebrtcTestHtmlPage[] =
         "files/webrtc/webrtc_jsep01_test.html";
     ui_test_utils::NavigateToURL(
-        browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
-    return browser()->tab_strip_model()->GetActiveWebContents();
+        browser, test_server()->GetURL(kMainWebrtcTestHtmlPage));
+    return browser->tab_strip_model()->GetActiveWebContents();
   }
 
- private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamInfoBarTest);
 };
 
@@ -80,6 +88,11 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDenyingUserMedia) {
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissingInfobar) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndDismiss(tab_contents);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDenyingUserMediaIncognito) {
+  content::WebContents* tab_contents = LoadTestPageInIncognitoTab();
+  GetUserMediaAndDeny(tab_contents);
 }
 
 // Failing on ChromiumOS Debug and Win Aura, so disabling on Aura.
