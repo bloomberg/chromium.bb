@@ -74,8 +74,9 @@ void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
             m_currentTime = monotonicAnimationStartTime - m_zeroTimeAsPerfTime;
         }
 
+        double timeToNextEffect = -1;
         for (int i = m_players.size() - 1; i >= 0; --i) {
-            if (!m_players[i]->update())
+            if (!m_players[i]->update(&timeToNextEffect))
                 m_players.remove(i);
         }
 

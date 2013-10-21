@@ -74,6 +74,7 @@ public:
     bool isCurrent() const { return ensureCalculated().isCurrent; }
     bool isInEffect() const { return ensureCalculated().isInEffect; }
     bool isInPlay() const { return ensureCalculated().isInPlay; }
+    double timeToEffectChange() const { return ensureCalculated().timeToEffectChange; }
 
     double startTime() const { return m_startTime; }
 
@@ -91,11 +92,13 @@ protected:
     // it will (if necessary) recalculate timings and (if necessary) call
     // updateChildrenAndEffects.
     void updateInheritedTime(double inheritedTime) const;
+
+private:
     virtual void updateChildrenAndEffects(bool wasInEffect) const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
     virtual void willDetach() = 0;
+    virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const = 0;
 
-private:
     void attach(Player* player) { m_player = player; };
     void detach()
     {
@@ -120,6 +123,7 @@ private:
         bool isCurrent;
         bool isInEffect;
         bool isInPlay;
+        double timeToEffectChange;
     } m_calculated;
     mutable bool m_isFirstSample;
 

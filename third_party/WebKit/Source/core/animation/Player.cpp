@@ -84,13 +84,18 @@ double Player::currentTime() const
     return currentTimeBeforeDrift() - timeDrift();
 }
 
-bool Player::update()
+bool Player::update(double* timeToEffectChange)
 {
-    if (!m_content)
+    if (!m_content) {
+        if (timeToEffectChange)
+            *timeToEffectChange = std::numeric_limits<double>::infinity();
         return false;
+    }
 
     double newTime = isNull(m_timeline->currentTime()) ? nullValue() : currentTime();
     m_content->updateInheritedTime(newTime);
+    if (timeToEffectChange)
+        *timeToEffectChange = m_content->timeToEffectChange();
     return m_content->isCurrent() || m_content->isInEffect();
 }
 

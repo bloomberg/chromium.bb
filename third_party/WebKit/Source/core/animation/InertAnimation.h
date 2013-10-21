@@ -47,6 +47,7 @@ public:
 protected:
     virtual void updateChildrenAndEffects(bool) const OVERRIDE { };
     virtual void willDetach() OVERRIDE { };
+    virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const OVERRIDE FINAL;
 
 private:
     InertAnimation(PassRefPtr<AnimationEffect>, const Timing&);

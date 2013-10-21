@@ -78,6 +78,7 @@ public:
     void updateChildrenAndEffects(bool wasActiveOrInEffect) const FINAL OVERRIDE { }
     void willDetach() { }
     TestTimedItemEventDelegate* eventDelegate() { return m_eventDelegate; }
+    double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const FINAL OVERRIDE { return -1; }
 
 private:
     TestTimedItem(const Timing& specified, TestTimedItemEventDelegate* eventDelegate)

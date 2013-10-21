@@ -108,6 +108,9 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
 
     // FIXME: This probably shouldn't be recursive.
     updateChildrenAndEffects(wasInEffect);
+
+    m_calculated.timeToEffectChange = calculateTimeToEffectChange(localTime, m_startTime + m_specified.startDelay, m_calculated.phase);
+
 }
 
 } // namespace WebCore

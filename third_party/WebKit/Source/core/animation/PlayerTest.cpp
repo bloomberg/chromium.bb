@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/Player.h"
 
+#include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
@@ -51,11 +52,11 @@ protected:
         timeline->setZeroTimeAsPerfTime(0);
     }
 
-    bool updateTimeline(double time)
+    bool updateTimeline(double time, double* timeToEffectChange = 0)
     {
         timeline->serviceAnimations(time);
         // The timeline does not know about our player, so we have to explicitly call update().
-        return player->update();
+        return player->update(timeToEffectChange);
     }
 
     RefPtr<Document> document;
@@ -256,6 +257,46 @@ TEST_F(CoreAnimationPlayerTest, SetCurrentTimeMax)
     updateTimeline(100);
     EXPECT_EQ(std::numeric_limits<double>::max(), player->currentTime());
     EXPECT_EQ(-std::numeric_limits<double>::max(), player->timeDrift());
+}
+
+TEST_F(CoreAnimationPlayerTest, EmptyPlayersDontUpdateEffects)
+{
+    double timeToNextEffect;
+    updateTimeline(0, &timeToNextEffect);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+
+    timeToNextEffect = 0;
+    updateTimeline(1234, &timeToNextEffect);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+}
+
+TEST_F(CoreAnimationPlayerTest, PlayersReturnTimeToNextEffect)
+{
+    Timing timing;
+    timing.startDelay = 1;
+    timing.iterationDuration = 1;
+    timing.hasIterationDuration = true;
+    RefPtr<Animation> animation = Animation::create(0, 0, timing);
+    player = Player::create(timeline.get(), animation.get());
+
+    double timeToNextEffect;
+    updateTimeline(0, &timeToNextEffect);
+    EXPECT_EQ(1, timeToNextEffect);
+
+    updateTimeline(0.5, &timeToNextEffect);
+    EXPECT_EQ(0.5, timeToNextEffect);
+
+    updateTimeline(1, &timeToNextEffect);
+    EXPECT_EQ(0, timeToNextEffect);
+
+    updateTimeline(1.5, &timeToNextEffect);
+    EXPECT_EQ(0, timeToNextEffect);
+
+    updateTimeline(2, &timeToNextEffect);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+
+    updateTimeline(3, &timeToNextEffect);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
 }
 
 }

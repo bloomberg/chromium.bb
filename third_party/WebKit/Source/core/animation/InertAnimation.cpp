@@ -50,4 +50,10 @@ PassOwnPtr<AnimationEffect::CompositableValueMap> InertAnimation::sample()
     return isInEffect() ? m_effect->sample(currentIteration(), timeFraction()) : nullptr;
 }
 
+
+double InertAnimation::calculateTimeToEffectChange(double, double, Phase) const
+{
+    return std::numeric_limits<double>::infinity();
+}
+
 } // namespace WebCore
