@@ -58,13 +58,15 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         @Override
         public void onContentSizeChanged(int widthCss, int heightCss) {
             super.onContentSizeChanged(widthCss, heightCss);
-            mOnContentSizeChangedHelper.onContentSizeChanged(widthCss, heightCss);
+            if (mOnContentSizeChangedHelper != null)
+                mOnContentSizeChangedHelper.onContentSizeChanged(widthCss, heightCss);
         }
 
         @Override
         public void onPageScaleChanged(float pageScaleFactor) {
             super.onPageScaleChanged(pageScaleFactor);
-            mOnPageScaleChangedHelper.notifyCalled();
+            if (mOnPageScaleChangedHelper != null)
+                mOnPageScaleChangedHelper.notifyCalled();
         }
     }
 
@@ -317,7 +319,8 @@ public class AndroidViewIntegrationTest extends AwTestBase {
 
         // In wrap-content mode the AwLayoutSizer will size the view to be as wide as the parent
         // view.
-        final int expectedWidthCss = (int) (getRootLayoutWidthOnMainThread() / deviceDIPScale);
+        final int expectedWidthCss =
+            (int) Math.ceil(getRootLayoutWidthOnMainThread() / deviceDIPScale);
         final int expectedHeightCss = contentHeightCss;
 
         loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
@@ -342,7 +345,8 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         final int contentWidthCss = 142;
         final int contentHeightCss = 180;
 
-        final int expectedWidthCss = (int) (getRootLayoutWidthOnMainThread() / deviceDIPScale);
+        final int expectedWidthCss =
+            (int) Math.ceil(getRootLayoutWidthOnMainThread() / deviceDIPScale);
         final int expectedHeightCss = contentHeightCss +
             // The second div in the contents is styled to have 150% of the viewport height, hence
             // the 1.5.
