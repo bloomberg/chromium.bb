@@ -7,12 +7,15 @@
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "apps/app_shim/app_shim_host_mac.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "ipc/unix_domain_socket_util.h"
 
 using content::BrowserThread;
 
@@ -54,6 +57,15 @@ void AppShimHostManager::InitOnFileThread() {
 
   base::FilePath socket_path =
       user_data_dir.Append(app_mode::kAppShimSocketName);
+  // This mirrors a check in unix_domain_socket_util.cc which will guarantee
+  // failure and spam log files on bots because they have deeply nested paths to
+  // |user_data_dir| when swarming. See http://crbug.com/240554. Shim tests that
+  // run on the bots must override the path using AppShimHostManagerTestApi.
+  if (socket_path.value().length() >= IPC::kMaxSocketNameLength &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    return;
+  }
+
   factory_.reset(new IPC::ChannelFactory(socket_path, this));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
