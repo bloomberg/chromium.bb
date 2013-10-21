@@ -1145,10 +1145,6 @@ void AutofillDialogControllerImpl::ShowEditUiIfBadSuggestion(
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   if (wrapper && IsEditingExistingData(section))
     wrapper->FillInputs(inputs);
-
-  for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
-    it->editable = InputIsEditable(*it, section);
-  }
 }
 
 bool AutofillDialogControllerImpl::InputWasEdited(ServerFieldType type,
@@ -1589,6 +1585,41 @@ string16 AutofillDialogControllerImpl::TooltipForField(ServerFieldType type)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TOOLTIP_PHONE_NUMBER);
 
   return string16();
+}
+
+bool AutofillDialogControllerImpl::InputIsEditable(
+    const DetailInput& input,
+    DialogSection section) {
+  if (section != SECTION_CC_BILLING)
+    return true;
+
+  if (input.type == CREDIT_CARD_NUMBER)
+    return !IsEditingExistingData(section);
+
+  // For CVC, only require (allow) input if the user has edited some other
+  // aspect of the card.
+  if (input.type == CREDIT_CARD_VERIFICATION_CODE &&
+      IsEditingExistingData(section)) {
+    DetailOutputMap output;
+    view_->GetUserInput(section, &output);
+    WalletInstrumentWrapper wrapper(ActiveInstrument());
+
+    for (DetailOutputMap::iterator iter = output.begin(); iter != output.end();
+         ++iter) {
+      if (iter->first->type == input.type)
+        continue;
+
+      AutofillType type(iter->first->type);
+      if (type.group() == CREDIT_CARD &&
+          iter->second != wrapper.GetInfo(type)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  return true;
 }
 
 // TODO(groby): Add more tests.
@@ -2968,18 +2999,6 @@ base::string16 AutofillDialogControllerImpl::CreditCardNumberValidityMessage(
 
   // Card number is good and supported.
   return base::string16();
-}
-
-bool AutofillDialogControllerImpl::InputIsEditable(
-    const DetailInput& input,
-    DialogSection section) const {
-  if (input.type != CREDIT_CARD_NUMBER || !IsPayingWithWallet())
-    return true;
-
-  if (IsEditingExistingData(section))
-    return false;
-
-  return true;
 }
 
 bool AutofillDialogControllerImpl::AllSectionsAreValid() {

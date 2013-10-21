@@ -45,10 +45,6 @@ struct DetailInput {
   // When non-empty, indicates the starting value for this input. This will be
   // used when the user is editing existing data.
   string16 initial_value;
-
-  // Whether the input is able to be edited (e.g. text changed in textfields,
-  // index changed in comboboxes).
-  bool editable;
 };
 
 // Determines whether |input| and |field| match.

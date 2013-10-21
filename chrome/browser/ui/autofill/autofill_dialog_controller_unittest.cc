@@ -2455,4 +2455,78 @@ TEST_F(AutofillDialogControllerTest, SaveCreditCardIncludesName_WithBilling) {
   controller()->ViewClosed();
 }
 
+TEST_F(AutofillDialogControllerTest, InputEditability) {
+  // Empty wallet items: all fields are editable.
+  scoped_ptr<wallet::WalletItems> items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  controller()->OnDidGetWalletItems(items.Pass());
+
+  DialogSection sections[] = { SECTION_CC_BILLING, SECTION_SHIPPING };
+  for (size_t i = 0; i < arraysize(sections); ++i) {
+    const DetailInputs& inputs =
+        controller()->RequestedFieldsForSection(sections[i]);
+    for (size_t j = 0; j < inputs.size(); ++j) {
+      EXPECT_TRUE(controller()->InputIsEditable(inputs[j], sections[i]));
+    }
+  }
+
+  // Expired instrument: CC number + CVV are not editable.
+  items = wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  scoped_ptr<wallet::WalletItems::MaskedInstrument> expired_instrument =
+      wallet::GetTestMaskedInstrumentExpired();
+  items->AddInstrument(expired_instrument.Pass());
+  controller()->OnDidGetWalletItems(items.Pass());
+  EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC_BILLING));
+
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
+  DetailOutputMap outputs;
+  CopyInitialValues(inputs, &outputs);
+  controller()->GetView()->SetUserInput(SECTION_CC_BILLING, outputs);
+
+  for (size_t i = 0; i < arraysize(sections); ++i) {
+    const DetailInputs& inputs =
+        controller()->RequestedFieldsForSection(sections[i]);
+    for (size_t j = 0; j < inputs.size(); ++j) {
+      if (inputs[j].type == CREDIT_CARD_NUMBER ||
+          inputs[j].type == CREDIT_CARD_VERIFICATION_CODE) {
+        EXPECT_FALSE(controller()->InputIsEditable(inputs[j], sections[i]));
+      } else {
+        EXPECT_TRUE(controller()->InputIsEditable(inputs[j], sections[i]));
+      }
+    }
+  }
+
+  // User changes the billing address; same story.
+  SetOutputValue(inputs, ADDRESS_BILLING_ZIP, ASCIIToUTF16("77025"), &outputs);
+  controller()->GetView()->SetUserInput(SECTION_CC_BILLING, outputs);
+  for (size_t i = 0; i < arraysize(sections); ++i) {
+    const DetailInputs& inputs =
+        controller()->RequestedFieldsForSection(sections[i]);
+    for (size_t j = 0; j < inputs.size(); ++j) {
+      if (inputs[j].type == CREDIT_CARD_NUMBER ||
+          inputs[j].type == CREDIT_CARD_VERIFICATION_CODE) {
+        EXPECT_FALSE(controller()->InputIsEditable(inputs[j], sections[i]));
+      } else {
+        EXPECT_TRUE(controller()->InputIsEditable(inputs[j], sections[i]));
+      }
+    }
+  }
+
+  // User changes a detail of the CC itself (expiration date), CVV is now
+  // editable (and mandatory).
+  SetOutputValue(inputs, CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("06"), &outputs);
+  controller()->GetView()->SetUserInput(SECTION_CC_BILLING, outputs);
+  for (size_t i = 0; i < arraysize(sections); ++i) {
+    const DetailInputs& inputs =
+        controller()->RequestedFieldsForSection(sections[i]);
+    for (size_t j = 0; j < inputs.size(); ++j) {
+      if (inputs[j].type == CREDIT_CARD_NUMBER)
+        EXPECT_FALSE(controller()->InputIsEditable(inputs[j], sections[i]));
+      else
+        EXPECT_TRUE(controller()->InputIsEditable(inputs[j], sections[i]));
+    }
+  }
+}
+
 }  // namespace autofill

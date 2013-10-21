@@ -473,7 +473,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     NSControl<AutofillInputField>* field = [inputs_ viewWithTag:iter->type];
     DCHECK(field);
 
-    [field setEnabled:iter->editable];
+    // TODO(groby): We need to account for the fact editability state can change
+    // after any input in the same section is edited by the user.
+    [field setEnabled:delegate_->InputIsEditable(*iter, section_)];
 
     if (shouldClobber || [field isDefault]) {
       [field setFieldValue:base::SysUTF16ToNSString(iter->initial_value)];

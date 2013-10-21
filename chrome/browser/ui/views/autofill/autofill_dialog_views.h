@@ -625,6 +625,10 @@ class AutofillDialogViews : public AutofillDialogView,
   // sets the credit card and CVC icons according to the credit card number.
   void SetIconsForSection(DialogSection section);
 
+  // Iterates over all the inputs in |section| and sets their enabled/disabled
+  // state.
+  void SetEditabilityForSection(DialogSection section);
+
   // The delegate that drives this view. Weak pointer, always non-NULL.
   AutofillDialogViewDelegate* const delegate_;
 

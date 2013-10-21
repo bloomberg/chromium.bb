@@ -2165,7 +2165,6 @@ void AutofillDialogViews::UpdateSectionImpl(
 
     if (text_mapping != group->textfields.end()) {
       DecoratedTextfield* decorated = text_mapping->second;
-      decorated->SetEnabled(input.editable);
       if (decorated->text().empty() || clobber_inputs)
         decorated->SetText(iter->initial_value);
     }
@@ -2173,7 +2172,6 @@ void AutofillDialogViews::UpdateSectionImpl(
     ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
     if (combo_mapping != group->comboboxes.end()) {
       views::Combobox* combobox = combo_mapping->second;
-      combobox->SetEnabled(input.editable);
       if (combobox->selected_index() == combobox->model()->GetDefaultIndex() ||
           clobber_inputs) {
         for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
@@ -2187,6 +2185,7 @@ void AutofillDialogViews::UpdateSectionImpl(
   }
 
   SetIconsForSection(section);
+  SetEditabilityForSection(section);
   UpdateDetailsGroupState(*group);
 }
 
@@ -2318,14 +2317,14 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
   if (group.manual_input->visible()) {
     for (TextfieldMap::const_iterator iter = group.textfields.begin();
          iter != group.textfields.end(); ++iter) {
-      if (!iter->first->editable)
+      if (!iter->second->enabled())
         continue;
 
       detail_outputs[iter->first] = iter->second->text();
     }
     for (ComboboxMap::const_iterator iter = group.comboboxes.begin();
          iter != group.comboboxes.end(); ++iter) {
-      if (!iter->first->editable)
+      if (!iter->second->enabled())
         continue;
 
       views::Combobox* combobox = iter->second;
@@ -2420,6 +2419,8 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
 
   if (delegate_->FieldControlsIcons(type))
     SetIconsForSection(group->section);
+
+  SetEditabilityForSection(group->section);
 }
 
 void AutofillDialogViews::UpdateButtonStripExtraView() {
@@ -2532,6 +2533,31 @@ void AutofillDialogViews::SetIconsForSection(DialogSection section) {
       textfield->SetIcon(field_icon_it->second);
     else
       textfield->SetTooltipIcon(delegate_->TooltipForField(field_type));
+  }
+}
+
+void AutofillDialogViews::SetEditabilityForSection(DialogSection section) {
+  const DetailInputs& inputs =
+      delegate_->RequestedFieldsForSection(section);
+  DetailsGroup* group = GroupForSection(section);
+
+  for (DetailInputs::const_iterator iter = inputs.begin();
+       iter != inputs.end(); ++iter) {
+    const DetailInput& input = *iter;
+    bool editable = delegate_->InputIsEditable(input, section);
+
+    TextfieldMap::iterator text_mapping = group->textfields.find(&input);
+    if (text_mapping != group->textfields.end()) {
+      DecoratedTextfield* decorated = text_mapping->second;
+      decorated->SetEnabled(editable);
+      continue;
+    }
+
+    ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
+    if (combo_mapping != group->comboboxes.end()) {
+      views::Combobox* combobox = combo_mapping->second;
+      combobox->SetEnabled(editable);
+    }
   }
 }
 

@@ -135,6 +135,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
       const OVERRIDE;
   virtual bool FieldControlsIcons(ServerFieldType type) const OVERRIDE;
   virtual string16 TooltipForField(ServerFieldType type) const OVERRIDE;
+  virtual bool InputIsEditable(const DetailInput& input, DialogSection section)
+      OVERRIDE;
   virtual string16 InputValidityMessage(DialogSection section,
                                         ServerFieldType type,
                                         const string16& value) OVERRIDE;
@@ -461,9 +463,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Returns validity message for a given credit card number.
   base::string16 CreditCardNumberValidityMessage(
       const base::string16& number) const;
-
-  // Whether a particular DetailInput in |section| should be edited or not.
-  bool InputIsEditable(const DetailInput& input, DialogSection section) const;
 
   // Whether all of the input fields currently showing in the dialog have valid
   // contents. This validates only by checking "sure" messages, i.e. messages

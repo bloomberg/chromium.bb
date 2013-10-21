@@ -131,6 +131,10 @@ class AutofillDialogViewDelegate {
   // Returns a tooltip for the given field, or an empty string if none exists.
   virtual string16 TooltipForField(ServerFieldType type) const = 0;
 
+  // Whether a particular DetailInput in |section| should be edited or not.
+  virtual bool InputIsEditable(const DetailInput& input,
+                               DialogSection section) = 0;
+
   // Decides whether input of |value| is valid for a field of type |type|. If
   // valid, the returned string will be empty. Otherwise it will contain an
   // error message.

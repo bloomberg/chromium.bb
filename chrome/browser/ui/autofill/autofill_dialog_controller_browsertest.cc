@@ -613,49 +613,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ShouldShowErrorBubble) {
   EXPECT_TRUE(controller()->ShouldShowErrorBubble());
 }
 
-// Tests that credit card number is disabled while editing a Wallet instrument.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
-  std::vector<std::string> usernames;
-  usernames.push_back("user@example.com");
-  controller()->OnUserNameFetchSuccess(usernames);
-  controller()->OnDidFetchWalletCookieValue(std::string());
-
-  scoped_ptr<wallet::WalletItems> wallet_items =
-      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
-  // An expired card will be forced into edit mode.
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentWithDetails(
-      "instrument_id",
-      wallet::GetTestAddress(),
-      wallet::WalletItems::MaskedInstrument::VISA,
-      wallet::WalletItems::MaskedInstrument::EXPIRED));
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-
-  const DetailInputs& edit_inputs =
-      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
-  size_t i;
-  for (i = 0; i < edit_inputs.size(); ++i) {
-    if (edit_inputs[i].type == CREDIT_CARD_NUMBER) {
-      EXPECT_FALSE(edit_inputs[i].editable);
-      break;
-    }
-  }
-  ASSERT_LT(i, edit_inputs.size());
-
-  // Select "Add new billing info..." while using Wallet.
-  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_CC_BILLING);
-  model->ActivatedAt(model->GetItemCount() - 2);
-
-  const DetailInputs& add_inputs =
-      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
-  for (i = 0; i < add_inputs.size(); ++i) {
-    if (add_inputs[i].type == CREDIT_CARD_NUMBER) {
-      EXPECT_TRUE(add_inputs[i].editable);
-      break;
-    }
-  }
-  ASSERT_LT(i, add_inputs.size());
-}
-
 // Ensure that expired cards trigger invalid suggestions.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
   CreditCard verified_card(test::GetCreditCard());
