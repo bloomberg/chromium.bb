@@ -156,7 +156,7 @@ void GlobalShortcutListenerX11::UnregisterAccelerator(
 
 #if defined(TOOLKIT_GTK)
 GdkFilterReturn GlobalShortcutListenerX11::OnXEvent(GdkXEvent* gdk_x_event,
-                                                      GdkEvent* gdk_event) {
+                                                    GdkEvent* gdk_event) {
   XEvent* x_event = static_cast<XEvent*>(gdk_x_event);
   if (x_event->type == KeyPress)
     OnXKeyPressEvent(x_event);
