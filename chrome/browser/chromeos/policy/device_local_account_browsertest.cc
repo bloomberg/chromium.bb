@@ -12,14 +12,17 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -57,6 +60,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -113,9 +117,9 @@ const char kUpdateManifestFooter[] =
     "</gupdate>\n";
 const char kHostedAppID[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 const char kHostedAppCRXPath[] = "extensions/hosted_app.crx";
-const char kHostedAppVersion[] = "0.1";
+const char kHostedAppVersion[] = "1.0.0.0";
 const char kGoodExtensionID[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
-const char kGoodExtensionPath[] = "extensions/good.crx";
+const char kGoodExtensionCRXPath[] = "extensions/good.crx";
 const char kGoodExtensionVersion[] = "1.0";
 
 // Helper that serves extension update manifests to Chrome.
@@ -247,6 +251,11 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
                                 PolicyBuilder::kFakeDeviceId);
     ASSERT_TRUE(test_server_.Start());
 
+    ASSERT_TRUE(extension_cache_root_dir_.CreateUniqueTempDir());
+    extension_cache_root_dir_override_.reset(new base::ScopedPathOverride(
+        chromeos::DIR_DEVICE_LOCAL_ACCOUNT_CACHE,
+        extension_cache_root_dir_.path()));
+
     DevicePolicyCrosBrowserTest::SetUp();
   }
 
@@ -336,8 +345,23 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
     EXPECT_EQ(chromeos::User::USER_TYPE_PUBLIC_ACCOUNT, user->GetType());
   }
 
+  base::FilePath GetCacheDirectoryForAccountID(const std::string& account_id) {
+    return extension_cache_root_dir_.path()
+        .Append(base::HexEncode(account_id.c_str(), account_id.size()));
+  }
+
+  base::FilePath GetCacheCRXFile(const std::string& account_id,
+                                 const std::string& id,
+                                 const std::string& version) {
+    return GetCacheDirectoryForAccountID(account_id)
+        .Append(base::StringPrintf("%s-%s.crx", id.c_str(), version.c_str()));
+  }
+
   const std::string user_id_1_;
   const std::string user_id_2_;
+
+  base::ScopedTempDir extension_cache_root_dir_;
+  scoped_ptr<base::ScopedPathOverride> extension_cache_root_dir_override_;
 
   UserPolicyBuilder device_local_account_policy_;
   LocalPolicyTestServer test_server_;
@@ -554,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
   EXPECT_FALSE(browser_window->IsFullscreen());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionWhitelist) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Make it possible to force-install a hosted app and an extension.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   TestingUpdateManifestProvider testing_update_manifest_provider(
@@ -566,12 +590,111 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionWhitelist) {
   testing_update_manifest_provider.AddUpdate(
       kGoodExtensionID,
       kGoodExtensionVersion,
-      embedded_test_server()->GetURL(std::string("/") + kGoodExtensionPath));
+      embedded_test_server()->GetURL(std::string("/") + kGoodExtensionCRXPath));
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&TestingUpdateManifestProvider::HandleRequest,
                  base::Unretained(&testing_update_manifest_provider)));
 
   // Specify policy to force-install the hosted app and the extension.
+  em::StringList* forcelist = device_local_account_policy_.payload()
+      .mutable_extensioninstallforcelist()->mutable_value();
+  forcelist->add_entries(base::StringPrintf(
+      "%s;%s",
+      kHostedAppID,
+      embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
+  forcelist->add_entries(base::StringPrintf(
+      "%s;%s",
+      kGoodExtensionID,
+      embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
+
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  // This observes the display name becoming available as this indicates
+  // device-local account policy is fully loaded, which is a prerequisite for
+  // successful login.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_USER_LIST_CHANGED,
+      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
+
+  // Wait for the login UI to be ready.
+  chromeos::LoginDisplayHostImpl* host =
+      reinterpret_cast<chromeos::LoginDisplayHostImpl*>(
+          chromeos::LoginDisplayHostImpl::default_host());
+  ASSERT_TRUE(host);
+  chromeos::OobeUI* oobe_ui = host->GetOobeUI();
+  ASSERT_TRUE(oobe_ui);
+  base::RunLoop run_loop;
+  const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
+  if (!oobe_ui_ready)
+    run_loop.Run();
+
+  // Ensure that the browser stays alive, even though no windows are opened
+  // during session start.
+  chrome::StartKeepAlive();
+
+  // Start listening for app/extension installation results.
+  content::WindowedNotificationObserver hosted_app_observer(
+      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      base::Bind(DoesInstallSuccessReferToId, kHostedAppID));
+  content::WindowedNotificationObserver extension_observer(
+      chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+      base::Bind(DoesInstallFailureReferToId, kGoodExtensionID));
+
+  // Start login into the device-local account.
+  host->StartSignInScreen();
+  chromeos::ExistingUserController* controller =
+      chromeos::ExistingUserController::current_controller();
+  ASSERT_TRUE(controller);
+  controller->LoginAsPublicAccount(user_id_1_);
+
+  // Wait for the hosted app installation to succeed and the extension
+  // installation to fail (because hosted apps are whitelisted for use in
+  // device-local accounts and extensions are not).
+  hosted_app_observer.Wait();
+  extension_observer.Wait();
+
+  // Verify that the hosted app was installed.
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  ASSERT_TRUE(profile);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  EXPECT_TRUE(extension_service->GetExtensionById(kHostedAppID, true));
+
+  // Verify that the extension was not installed.
+  EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
+
+  // Verify that the app was copied to the account's extension cache.
+  base::FilePath test_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  EXPECT_TRUE(ContentsEqual(
+          GetCacheCRXFile(kAccountId1, kHostedAppID, kHostedAppVersion),
+          test_dir.Append(kHostedAppCRXPath)));
+
+  // Verify that the extension was not copied to the account's extension cache.
+  EXPECT_FALSE(PathExists(GetCacheCRXFile(
+      kAccountId1, kGoodExtensionID, kGoodExtensionVersion)));
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // Pre-populate the device local account's extension cache with a hosted app
+  // and an extension.
+  EXPECT_TRUE(file_util::CreateDirectory(
+      GetCacheDirectoryForAccountID(kAccountId1)));
+  base::FilePath test_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  const base::FilePath cached_hosted_app =
+      GetCacheCRXFile(kAccountId1, kHostedAppID, kHostedAppVersion);
+  EXPECT_TRUE(CopyFile(test_dir.Append(kHostedAppCRXPath),
+                       cached_hosted_app));
+  const base::FilePath cached_extension =
+      GetCacheCRXFile(kAccountId1, kGoodExtensionID, kGoodExtensionVersion);
+  EXPECT_TRUE(CopyFile(test_dir.Append(kGoodExtensionCRXPath),
+                       cached_extension));
+
+  // Specify policy to force-install the hosted app.
   em::StringList* forcelist = device_local_account_policy_.payload()
       .mutable_extensioninstallforcelist()->mutable_value();
   forcelist->add_entries(base::StringPrintf(
@@ -638,6 +761,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionWhitelist) {
 
   // Verify that the extension was not installed.
   EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
+
+  // Verify that the app is still in the account's extension cache.
+  EXPECT_TRUE(PathExists(cached_hosted_app));
+
+  // Verify that the extension was removed from the account's extension cache.
+  EXPECT_FALSE(PathExists(cached_extension));
 }
 
 class TermsOfServiceTest : public DeviceLocalAccountTest,

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 
 #include "base/bind.h"
+#include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_service.h"

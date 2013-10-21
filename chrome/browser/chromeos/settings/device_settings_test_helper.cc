@@ -63,6 +63,7 @@ void DeviceSettingsTestHelper::FlushRetrieve() {
   for (device_local_account_state = device_local_account_policy_.begin();
        device_local_account_state != device_local_account_policy_.end();
        ++device_local_account_state) {
+    std::vector<RetrievePolicyCallback> callbacks;
     callbacks.swap(device_local_account_state->second.retrieve_callbacks_);
     for (std::vector<RetrievePolicyCallback>::iterator cb(callbacks.begin());
          cb != callbacks.end(); ++cb) {

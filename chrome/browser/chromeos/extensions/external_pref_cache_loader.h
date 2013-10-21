@@ -9,9 +9,8 @@
 
 namespace chromeos {
 
-// A specialization of the ExternalPrefCacheLoader that caches crx files for
-// external extensions with update URL in common place for all users on the
-// machine.
+// A specialization of the ExternalPrefLoader that caches crx files for external
+// extensions with update URL in a common place for all users on the machine.
 class ExternalPrefCacheLoader : public extensions::ExternalPrefLoader {
  public:
   // All instances of ExternalPrefCacheLoader use the same cache so
