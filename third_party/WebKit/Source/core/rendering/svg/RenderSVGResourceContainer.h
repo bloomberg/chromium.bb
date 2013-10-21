@@ -37,7 +37,6 @@ public:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
 
     virtual bool isSVGResourceContainer() const OVERRIDE FINAL { return true; }
-    virtual RenderSVGResourceContainer* toRenderSVGResourceContainer() OVERRIDE FINAL { return this; }
 
     static bool shouldTransformOnTextPainting(RenderObject*, AffineTransform&);
     static AffineTransform transformOnNonScalingStroke(RenderObject*, const AffineTransform& resourceTransform);
@@ -96,6 +95,21 @@ Renderer* getRenderSVGResourceById(Document& document, const AtomicString& id)
 
     return 0;
 }
+
+inline RenderSVGResourceContainer* toRenderSVGResourceContainer(RenderObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGResourceContainer());
+    return static_cast<RenderSVGResourceContainer*>(object);
+}
+
+inline const RenderSVGResourceContainer* toRenderSVGResourceContainer(const RenderObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isSVGResourceContainer());
+    return static_cast<const RenderSVGResourceContainer*>(object);
+}
+
+// This will catch anyone doing an unnecessary cast.
+void toRenderSVGResourceContainer(const RenderSVGResourceContainer*);
 
 }
 

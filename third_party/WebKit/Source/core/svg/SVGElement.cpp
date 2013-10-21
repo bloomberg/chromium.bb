@@ -981,7 +981,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
         RenderObject* object = renderer();
         // Notify resources about id changes, this is important as we cache resources by id in SVGDocumentExtensions
         if (object && object->isSVGResourceContainer())
-            object->toRenderSVGResourceContainer()->idChanged();
+            toRenderSVGResourceContainer(object)->idChanged();
         if (inDocument())
             buildPendingResourcesIfNeeded();
         SVGElementInstance::invalidateAllInstancesOfElement(this);

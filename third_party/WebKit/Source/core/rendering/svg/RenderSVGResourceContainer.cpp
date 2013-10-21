@@ -109,7 +109,7 @@ void RenderSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
     for (HashSet<RenderObject*>::iterator it = m_clients.begin(); it != end; ++it) {
         RenderObject* client = *it;
         if (client->isSVGResourceContainer()) {
-            client->toRenderSVGResourceContainer()->removeAllClientsFromCache(markForInvalidation);
+            toRenderSVGResourceContainer(client)->removeAllClientsFromCache(markForInvalidation);
             continue;
         }
 

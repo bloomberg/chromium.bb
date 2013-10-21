@@ -2379,7 +2379,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
                     rootRelativeBoundsComputed = true;
                 }
 
-                resourceClipper = toRenderSVGResourceClipper(element->renderer()->toRenderSVGResourceContainer());
+                resourceClipper = toRenderSVGResourceClipper(toRenderSVGResourceContainer(element->renderer()));
                 if (!resourceClipper->applyClippingToContext(renderer(), rootRelativeBounds,
                     paintingInfo.paintDirtyRect, context, clipperContext)) {
                     // No need to post-apply the clipper if this failed.

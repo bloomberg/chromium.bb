@@ -112,7 +112,7 @@ void SVGResourcesCycleSolver::resolveCycles()
     RenderObject* parent = m_renderer->parent();
     while (parent) {
         if (parent->isSVGResourceContainer())
-            parentResources.add(parent->toRenderSVGResourceContainer());
+            parentResources.add(toRenderSVGResourceContainer(parent));
         parent = parent->parent();
     }
 
@@ -139,7 +139,7 @@ void SVGResourcesCycleSolver::resolveCycles()
 
     // If we're a resource, add ourselves to the HashSet.
     if (m_renderer->isSVGResourceContainer())
-        m_allResources.add(m_renderer->toRenderSVGResourceContainer());
+        m_allResources.add(toRenderSVGResourceContainer(m_renderer));
 
     ASSERT(!m_allResources.isEmpty());
 

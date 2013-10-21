@@ -3309,12 +3309,6 @@ bool RenderObject::canBeReplacedWithInlineRunIn() const
     return true;
 }
 
-RenderSVGResourceContainer* RenderObject::toRenderSVGResourceContainer()
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 void RenderObject::setNeedsBoundariesUpdate()
 {
     if (RenderObject* renderer = parent())

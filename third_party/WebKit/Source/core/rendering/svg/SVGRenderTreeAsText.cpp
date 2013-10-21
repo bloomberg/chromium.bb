@@ -67,6 +67,7 @@
 #include "core/svg/SVGStopElement.h"
 
 #include <math.h>
+#include <memory>
 
 namespace WebCore {
 
@@ -483,7 +484,7 @@ void writeSVGResourceContainer(TextStream& ts, const RenderObject& object, int i
     const AtomicString& id = element->getIdAttribute();
     writeNameAndQuotedValue(ts, "id", id);
 
-    RenderSVGResourceContainer* resource = const_cast<RenderObject&>(object).toRenderSVGResourceContainer();
+    RenderSVGResourceContainer* resource = toRenderSVGResourceContainer(const_cast<RenderObject*>(&object));
     ASSERT(resource);
 
     if (resource->resourceType() == MaskerResourceType) {

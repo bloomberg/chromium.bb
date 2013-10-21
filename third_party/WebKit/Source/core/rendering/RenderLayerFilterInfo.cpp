@@ -133,7 +133,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
             if (!filter || !filter->hasTagName(SVGNames::filterTag))
                 continue;
             if (filter->renderer())
-                filter->renderer()->toRenderSVGResourceContainer()->addClientRenderLayer(m_layer);
+                toRenderSVGResourceContainer(filter->renderer())->addClientRenderLayer(m_layer);
             else
                 toSVGFilterElement(filter)->addClient(m_layer->renderer()->node());
             m_internalSVGReferences.append(filter);
@@ -149,7 +149,7 @@ void RenderLayerFilterInfo::removeReferenceFilterClients()
     for (size_t i = 0; i < m_internalSVGReferences.size(); ++i) {
         Element* filter = m_internalSVGReferences.at(i).get();
         if (filter->renderer())
-            filter->renderer()->toRenderSVGResourceContainer()->removeClientRenderLayer(m_layer);
+            toRenderSVGResourceContainer(filter->renderer())->removeClientRenderLayer(m_layer);
         else
             toSVGFilterElement(filter)->removeClient(m_layer->renderer()->node());
     }
