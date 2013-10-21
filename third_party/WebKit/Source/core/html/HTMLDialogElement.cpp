@@ -91,7 +91,7 @@ void HTMLDialogElement::closeDialog(const String& returnValue)
     if (!returnValue.isNull())
         m_returnValue = returnValue;
 
-    dispatchEvent(Event::create(EventTypeNames::close));
+    dispatchScopedEvent(Event::create(EventTypeNames::close));
 }
 
 void HTMLDialogElement::forceLayoutForCentering()

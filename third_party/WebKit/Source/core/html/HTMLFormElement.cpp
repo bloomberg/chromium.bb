@@ -35,6 +35,7 @@
 #include "core/dom/NamedNodesCollection.h"
 #include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDialogElement.h"
@@ -364,8 +365,8 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(true);
 
-
     RefPtr<FormSubmission> formSubmission = FormSubmission::create(this, m_attributes, event, formSubmissionTrigger);
+    EventQueueScope scopeForDialogClose; // Delay dispatching 'close' to dialog until done submitting.
     if (formSubmission->method() == FormSubmission::DialogMethod)
         submitDialog(formSubmission.release());
     else
